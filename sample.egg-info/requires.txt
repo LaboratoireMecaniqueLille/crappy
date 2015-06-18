@@ -1,9 +1,0 @@
-numpy
-matplotlib
-pycomedi
-
-[test]
-coverage
-
-[dev]
-check-manifest
