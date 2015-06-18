@@ -32,8 +32,8 @@ setup(
     url='https://github.com/LaboratoireMecaniqueLille',
 
     # Author details
-    author='The Python Packaging Authority',
-    author_email='pypa-dev@googlegroups.com', ## Create a mailing list!
+    author='LML',
+    author_email='None', ## Create a mailing list!
 
     # Choose your license
     license='GPL V2', ### to confirm
