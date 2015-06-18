@@ -1,6 +1,4 @@
-A sample Python project
+Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)
 =======================
 
-A sample project that exists as an aid to the `Python Packaging User Guide
-<https://packaging.python.org>`_'s `Tutorial on Packaging and Distributing
-Projects <https://packaging.python.org/en/latest/distributing.html>`_.
+This package aims to provide easy-to-use tools for command and acquisition on complex experimental setups.
