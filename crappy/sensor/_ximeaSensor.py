@@ -17,7 +17,6 @@ class XimeaSensor(cameraSensor.CameraSensor):
 		self.height=height
 		self.xoffset=xoffset
 		self.yoffset=yoffset
-		self.cam = None
 		self.external_trigger=external_trigger
 		self.data_format=data_format
 		self.new()
@@ -27,7 +26,6 @@ class XimeaSensor(cameraSensor.CameraSensor):
 		this method opens the ximea device. Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
 		And return a camera object
 		"""
-		#try:
 		self.cam = cv2.VideoCapture(cv2.CAP_XIAPI + self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 
 		if self.external_trigger==True:	# this condition activate the trigger mode
@@ -48,10 +46,6 @@ class XimeaSensor(cameraSensor.CameraSensor):
 		self.cam.set(cv2.CAP_PROP_EXPOSURE,self.exposure) # setting up exposure
 		self.cam.set(cv2.CAP_PROP_GAIN,self.gain) #setting up gain
 		ret, frame= self.cam.read()
-		#except Exception as e:
-			#print e
-			#self.close()
-			#self.new()
 
 	
 	def getImage(self):
@@ -60,11 +54,9 @@ class XimeaSensor(cameraSensor.CameraSensor):
 		If the camera breaks down, it reinitializes it, and tries again.
 		"""
 		try:
-			#print "getting image ...."
-			#print self.cam
+
 			ret, frame = self.cam.read()
 			if ret:
-				#print "frame : ",frame[0][0]
 				return frame
 			else:
 				raise Exception('failed to grab a frame\n')

@@ -7,6 +7,7 @@ import struct
 np.set_printoptions(threshold='nan', linewidth=500)
 import pandas as pd
 
+
 class MasterBlock(object):
 	"""
 Main class for block architecture. All blocks should inherit this class.
@@ -54,6 +55,49 @@ stop() : stops the process.
 		
 	def stop(self):
 		self.proc.terminate()
+
+class CameraDisplayer(MasterBlock):
+	"""Many to one block. Compactate several data streams into arrays."""
+	def __init__(self):
+		"""
+Compacter(acquisition_step)
+
+Read data inputs and save them in an array of length acquisition_step.
+This block must be used to send data to the Saver or the Grapher.
+Input values sent by the Links must be array (1D).
+If you have multiple data input from several streamers, use multiple Compacter.
+You should use several input only if you know that they have the same frequency.
+You can have multiple outputs.
+
+Parameters
+----------
+acquisition_step : int
+	Number of values to save in each data-stream before returning the array.
+	
+Returns:
+--------
+Numpy array of shape (number_of_values_in_input,acquisition_step)
+
+		"""
+		print "cameraDisplayer!"
+      
+	def main(self):
+		plt.ion()
+		fig=plt.figure()
+		ax=fig.add_subplot(111)
+		first_loop=True
+		while True:
+			#print "top loop"
+			frame=self.inputs[0].recv()
+			if frame != None:
+				#print frame[0][0]
+				if first_loop:
+					im = plt.imshow(frame,cmap='gray')
+					first_loop=False
+				else:
+					im.set_array(frame)
+				plt.draw()
+
 
 
 class Compacter(MasterBlock):
@@ -548,7 +592,7 @@ class StreamerCamera(MasterBlock):
 	"""
 Children class of MasterBlock. Send comedi value through a Link object.
 	"""
-	def __init__(self,cameraSensor,freq=None,save=False,
+	def __init__(self,Camera,freq=None,save=False,
 			  save_directory="./images/"):
 		"""
 StreamerCamera(cameraSensor,freq=None,save=False,save_directory="./images/")
@@ -570,16 +614,19 @@ save_directory : directory
 		"""
 		print "streamer camera!!"
 		import SimpleITK as sitk
+		self.Camera=Camera
 		self.sitk = sitk
-		self.cameraSensor=cameraSensor
+		#self.cameraSensor=cameraSensor
+		#self.cameraSensor=Ximea()
 		self.freq=freq
 		self.save=save
 		self.i=0
 		self.save_directory=save_directory
-		if not os.path.exists(self.save_directory):
+		if not os.path.exists(self.save_directory) and self.save:
 			os.makedirs(self.save_directory)
 
 	def main(self):
+		self.cameraSensor=self.Camera()
 		try:
 			_a=self.inputs[:]
 			trigger="external"
@@ -594,9 +641,11 @@ save_directory : directory
 							pass
 					timer=time.time()
 					img=self.cameraSensor.sensor.getImage()
+					#print "internal"
 				if trigger=="external":
 					if self.inputs[0].recv(): # wait for a signal
 						img=self.cameraSensor.sensor.getImage()
+					#print "external"
 				if self.save:
 					image=self.sitk.GetImageFromArray(img)
 					self.sitk.WriteImage(image,
@@ -605,6 +654,7 @@ save_directory : directory
 				try:
 					for output in self.outputs:
 						output.send(img)
+						#print "sending :", img[0][0]
 				except AttributeError:
 					pass
 
