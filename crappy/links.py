@@ -118,13 +118,13 @@ recv(pickable) : receive a pickable object.
 		self.external_trigger=link_instance
 	
 	def send(self,value):
-		if condition==None:
+		if self.condition==None:
 			self.out_.send(value)
 		else:
-			if self.external_trigger=None:
-				self.out_.send(condition.evaluate(value))
+			if self.external_trigger==None:
+				self.out_.send(self.condition.evaluate(value))
 			else:
-				self.out_.send(condition.evaluate(value,self.external_trigger))
+				self.out_.send(self.condition.evaluate(value,self.external_trigger))
 		
 	
 	def recv(self):

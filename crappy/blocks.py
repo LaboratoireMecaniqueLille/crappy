@@ -5,6 +5,7 @@ import time
 import matplotlib.pyplot as plt
 import struct
 np.set_printoptions(threshold='nan', linewidth=500)
+import pandas as pd
 
 class MasterBlock(object):
 	"""
@@ -82,16 +83,24 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 		self.acquisition_step=acquisition_step
       
 	def main(self):
-		print "main compacter"
 		while True:
 			data=[0 for x in xrange(self.acquisition_step)]
 			for i in range(self.acquisition_step):
-				data[i]=self.inputs[0].recv()
+				if i==0:
+					Data=self.inputs[0].recv()
+				else:
+					Data1=self.inputs[0].recv()
 				if len(self.inputs)!=1:
 					for k in range(1,len(self.inputs)):
-						data[i].append(self.inputs[k].recv())
+						data_recv=self.inputs[k].recv()
+						if i ==0:
+							Data=pd.concat([Data,data_recv])
+						else:
+							Data1=pd.concat([Data1,data_recv])
+				if i!=0:
+					Data=pd.concat([Data,Data1],axis=1)
 			for j in range(len(self.outputs)):
-				self.outputs[j].send(np.transpose(np.asarray(data)))
+				self.outputs[j].send(Data)
 				
 				
 				
@@ -132,21 +141,21 @@ graph=Grapher("dynamic",(0,1),(0,2))
 			ax=fig.add_subplot(111)
 			for i in range(self.nbr_graphs):	# init lines
 				if i ==0:
-					li = ax.plot(np.arange(1),np.zeros(1),label='line '+str(i))
+					li = ax.plot(np.arange(1),np.zeros(1))
 				else:
-					li.extend(ax.plot(np.arange(1),np.zeros(1),
-					   label='line '+str(i)))
-			legend_=['line '+str(i) for i in range(self.nbr_graphs)]
-			plt.legend(legend_,bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-			  ncol=len(legend_), mode="expand", borderaxespad=0.)
+					li.extend(ax.plot(np.arange(1),np.zeros(1)))
 			plt.grid()
 			fig.canvas.draw()	# draw and show it
 			plt.show(block=False)
 			while True:
-				data=np.asarray(self.inputs[0].recv())	# recv data
+				Data=self.inputs[0].recv()	# recv data
+				data=Data.values
+				legend_=Data.index[1:]
 				if save_number>0: # lose the first round of data    
 					if save_number==1: # init
 						var=data
+						plt.legend(legend_,bbox_to_anchor=(0., 1.02, 1., .102),
+				 loc=3, ncol=len(legend_), mode="expand", borderaxespad=0.)
 					elif save_number<=10:	# stack values
 						var=np.hstack((var,data))
 					else :	# delete old value and add new ones
@@ -167,7 +176,9 @@ graph=Grapher("dynamic",(0,1),(0,2))
 			first_round=True
 			k=[0]*self.nbr_graphs	# internal value for downsampling
 			while True :
-				data=np.asarray(self.inputs[0].recv())	# recv data
+				Data=self.inputs[0].recv()	# recv data
+				data=Data.values
+				legend_=Data.index[1:]
 				if first_round:	# init at first round
 					for i in range(self.nbr_graphs):
 						if i==0:
@@ -179,7 +190,7 @@ graph=Grapher("dynamic",(0,1),(0,2))
 								data[self.args[i][0]],data[self.args[i][1]],
 								label='line '+str(i)))
 					# Display legend on first round
-					legend_=['line '+str(i) for i in range(self.nbr_graphs)]
+					#legend_=['line '+str(i) for i in range(self.nbr_graphs)]
 					plt.legend(legend_,bbox_to_anchor=(0., 1.02, 1., .102),
 						loc=3,ncol=len(legend_), mode="expand",
 						borderaxespad=0.)
@@ -211,9 +222,9 @@ class MeasureAgilent34420A(MasterBlock):
 	"""
 Children class of MasterBlock. Send comedi value through a Link object.
 	"""
-	def __init__(self,t0,agilentSensor,freq=None):
+	def __init__(self,t0,agilentSensor,labels=['t','R'],freq=None):
 		"""
-MeasureAgilent34420A(t0,agilentSensor,freq=None)
+MeasureAgilent34420A(t0,agilentSensor,labels=['t','R'],freq=None)
 
 This block read the value of the resistance measured by agilent34420A and send
 the values through a Link object.
@@ -226,11 +237,14 @@ t0 : float
 	Time origin, common to every Blocks
 agilentSensor : agilentSensor object
 	See sensor.agilentSensor documentation.
+labels : list
+	The labels you want with your data.
 freq : float or int, optional
 	Wanted acquisition frequency. Cannot exceed acquisition device capability.
 		"""
 		self.t0=t0
 		self.agilentSensor=agilentSensor
+		self.labels=labels
 		self.freq=freq
 
 	def main(self):
@@ -258,8 +272,9 @@ freq : float or int, optional
 						ret=self.agilentSensor.getData()
 						if ret != False:
 							data.append(ret)	
+				Array=pd.DataFrame(data,self.labels)
 				for output in self.outputs:
-						output.send(data)
+					output.send(Array)
 
 		except (KeyboardInterrupt):	
 			self.agilentSensor.close()
@@ -268,9 +283,9 @@ class MeasureComediByStep(MasterBlock):
 	"""
 Children class of MasterBlock. Send comedi value through a Link object.
 	"""
-	def __init__(self,t0,comediSensor,freq=None):
+	def __init__(self,t0,comediSensor,labels=None,freq=None):
 		"""
-MeasureComediByStep(t0,comediSensor,freq=None)
+MeasureComediByStep(t0,comediSensor,labels=None,freq=None)
 
 This streamer read the value on all channels ONE BY ONE and send the 
 values through a Link object. it is slower than StreamerComedi, but works on 
@@ -284,11 +299,14 @@ t0 : float
 	Time origin, common to every Blocks
 comediSensor : comediSensor object
 	See sensor.ComediSensor documentation.
+labels : list
+	The labels you want with your data.
 freq : float or int, optional
 	Wanted acquisition frequency. Cannot exceed acquisition card capability.
 		"""
 		self.t0=t0
 		self.comediSensor=comediSensor
+		self.labels=labels
 		self.freq=freq
 
 	def main(self):
@@ -315,8 +333,12 @@ freq : float or int, optional
 					for channel_number in range(self.comediSensor.nchans):
 						t,value=self.comediSensor.getData(channel_number)
 						data.append(value)
+
+				if self.labels==None:
+					self.Labels=[i for i in range(self.comediSensor.nchans+1)]
+				Array=pd.DataFrame(data,self.labels)
 				for output in self.outputs:
-						output.send(data)
+					output.send(Array)
 
 		except (KeyboardInterrupt):	
 			self.comediSensor.close()
@@ -374,11 +396,17 @@ log_file : string
 			os.makedirs(os.path.dirname(self.log_file))
       
 	def main(self):
-		print "main saver"
+		first=True
 		while True:
-			data=self.inputs[0].recv()
+			#data=self.inputs[0].recv()
+			Data=self.inputs[0].recv()	# recv data
+			data=Data.values
+			legend_=Data.index
 			fo=open(self.log_file,"a")		# "a" for appending
 			fo.seek(0,2)		#place the "cursor" at the end of the file
+			if first:
+				fo.write(str([legend_[i] for i in range(len(legend_))])+"\n")
+				first =False
 			data_to_save=str(np.transpose(data))+"\n"
 			fo.write(data_to_save)
 			fo.close()
@@ -415,7 +443,7 @@ class StreamerComedi(MasterBlock):
 	"""
 Children class of MasterBlock. Send comedi value through a Link object.
 	"""
-	def __init__(self,t0,comediSensor,freq=8000):
+	def __init__(self,t0,comediSensor,labels=None,freq=8000):
 		"""
 This streamer read the value on all channels at the same time and send the 
 values through a Link object. It can be very fast, but needs need an USB 2.0
@@ -427,8 +455,13 @@ t0 : float
 	Time origin, common to every Blocks
 comediSensor : comediSensor object
 	See sensor.ComediSensor documentation.
+labels : list
+	The labels you want with your data.
+freq : int (default 8000)
+	the frequency you need.
 		"""
 		import comedi as c
+		self.labels=labels
 		self.c=c
 		self.t0=t0
 		self.comediSensor=comediSensor
@@ -498,8 +531,11 @@ comediSensor : comediSensor object
 							array[i+1]=self.c.comedi_to_phys((datastr[i]),
 												self.range_ds[i],
 												self.maxdata[i])
+						if self.labels==None:
+							self.Labels=[i for i in range(self.nchans+1)]
+						Array=pd.DataFrame(array,self.labels)
 						for output in self.outputs:
-							output.send(array)
+							output.send(Array)
 
 		except (KeyboardInterrupt):	
 			self.comediSensor.close()
@@ -512,20 +548,25 @@ class StreamerCamera(MasterBlock):
 	"""
 Children class of MasterBlock. Send comedi value through a Link object.
 	"""
-	def __init__(self,cameraSensor,freq=None,save=False,save_directory="./images/"):
+	def __init__(self,cameraSensor,freq=None,save=False,
+			  save_directory="./images/"):
 		"""
 StreamerCamera(cameraSensor,freq=None,save=False,save_directory="./images/")
 
-This block read the value of the resistance measured by agilent34420A and send
-the values through a Link object. It can be triggered by a Link sending 
-boolean or internally by defining the frequency.
+This block fetch images from a camera object, save and/or transmit them to 
+another block. It can be triggered by a Link sending boolean or internally 
+by defining the frequency.
 
 Parameters:
 -----------
-agilentSensor : agilentSensor object
-	See sensor.agilentSensor documentation.
+cameraSensor : cameraSensor object
+	See sensor.cameraSensor documentation.
 freq : float or int, optional
 	Wanted acquisition frequency. Cannot exceed acquisition device capability.
+save : boolean
+	Set to True if you want the block to save images.
+save_directory : directory
+	directory to the saving folder. If inexistant, will be created.
 		"""
 		print "streamer camera!!"
 		import SimpleITK as sitk
