@@ -56,6 +56,67 @@ stop() : stops the process.
 	def stop(self):
 		self.proc.terminate()
 
+
+class PathGenerator(MasterBlock):
+	"""Many to one block. Compactate several data streams into arrays."""
+	def __init__(self,t0,send_freq=1000,actuator=None,waveform=["sinus"],freq=[None],cycles=[None],amplitude=[1],offset=[0],phase=[],init=0):
+		"""
+Compacter(acquisition_step)
+
+Read data inputs and save them in an array of length acquisition_step.
+This block must be used to send data to the Saver or the Grapher.
+Input values sent by the Links must be array (1D).
+If you have multiple data input from several streamers, use multiple Compacter.
+You should use several input only if you know that they have the same frequency.
+You can have multiple outputs.
+
+Parameters
+----------
+acquisition_step : int
+	Number of values to save in each data-stream before returning the array.
+	
+Returns:
+--------
+Numpy array of shape (number_of_values_in_input,acquisition_step)
+
+		"""
+		print "PathGenerator!"
+		self.t0=t0
+		self.send_freq=send_freq
+		self.actuator=actuator
+		self.waveform=waveform
+		self.freq=freq
+		self.cycles=cycles
+		self.amplitude=amplitude
+		self.offset=offset
+		self.phase=phase
+		self.init=init
+		self.alpha=self.init
+		
+	def main(self):
+		t_add=self.phase/(2*np.pi*self.freq)
+		self.labels=['t','signal']
+		last_t=self.t0
+		while True:
+			while time.time()-last_t<1./self.send_freq:
+				time.sleep(1./(100*self.send_freq))
+			last_t=time.time()
+			t=last_t+t_add
+			if self.waveform=="sinus":
+				self.alpha=self.amplitude*np.sin(2*np.pi*(t-self.t0)*self.freq+
+									 self.phase)+self.offset
+			elif self.waveform=="triangle":
+				self.alpha=(4*self.amplitude*self.freq)*((t-self.t0)-(np.floor(2*self.freq*(t-self.t0)+0.5))/(2*self.freq))*(-1)**(np.floor(2*self.freq*(t-self.t0)+0.5))+self.offset
+			elif self.waveform=="square":
+				self.alpha=self.amplitude*np.sign(np.cos(2*np.pi*(t-self.t0)*
+							self.freq+self.phase))+self.offset
+			else:
+				raise Exception("invalid waveform : use sinus,triangle or square")
+			Array=pd.DataFrame([t-self.t0,self.alpha],self.labels)
+			for output in self.outputs:
+				output.send(Array)
+
+
 class CameraDisplayer(MasterBlock):
 	"""Many to one block. Compactate several data streams into arrays."""
 	def __init__(self):
@@ -145,9 +206,8 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 					Data=pd.concat([Data,Data1],axis=1)
 			for j in range(len(self.outputs)):
 				self.outputs[j].send(Data)
-				
-				
-				
+
+
 class Grapher(MasterBlock):
 	"""Plot the input data"""
 	def __init__(self,mode,*args):
@@ -583,10 +643,7 @@ freq : int (default 8000)
 
 		except (KeyboardInterrupt):	
 			self.comediSensor.close()
-		
 
-
-			
 
 class StreamerCamera(MasterBlock):
 	"""
