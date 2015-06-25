@@ -25,8 +25,10 @@ class ComediSensor(object):
 		if type(self.channels)==list:	# if multiple channels
 			self.nchans=len(self.channels)
 			self.range_num=[self.range_num]*self.nchans
-			self.gain=[self.gain]*self.nchans
-			self.offset=[self.offset]*self.nchans
+			if type(self.gain)==int:
+				self.gain=[self.gain]*self.nchans
+			if type(self.offset)==int:
+				self.offset=[self.offset]*self.nchans
 			self.new()
 		else:
 			raise Exception("channels must be int or list")

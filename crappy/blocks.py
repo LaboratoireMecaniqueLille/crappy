@@ -81,6 +81,7 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 
 		"""
 		print "PathGenerator!"
+		self.nb_step=len(waveform)
 		self.t0=t0
 		self.send_freq=send_freq
 		self.actuator=actuator
@@ -92,29 +93,41 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 		self.phase=phase
 		self.init=init
 		self.alpha=self.init
-		
+		self.step=0
 	def main(self):
-		t_add=self.phase/(2*np.pi*self.freq)
 		self.labels=['t','signal']
 		last_t=self.t0
-		while True:
-			while time.time()-last_t<1./self.send_freq:
-				time.sleep(1./(100*self.send_freq))
-			last_t=time.time()
-			t=last_t+t_add
-			if self.waveform=="sinus":
-				self.alpha=self.amplitude*np.sin(2*np.pi*(t-self.t0)*self.freq+
-									 self.phase)+self.offset
-			elif self.waveform=="triangle":
-				self.alpha=(4*self.amplitude*self.freq)*((t-self.t0)-(np.floor(2*self.freq*(t-self.t0)+0.5))/(2*self.freq))*(-1)**(np.floor(2*self.freq*(t-self.t0)+0.5))+self.offset
-			elif self.waveform=="square":
-				self.alpha=self.amplitude*np.sign(np.cos(2*np.pi*(t-self.t0)*
-							self.freq+self.phase))+self.offset
-			else:
-				raise Exception("invalid waveform : use sinus,triangle or square")
-			Array=pd.DataFrame([t-self.t0,self.alpha],self.labels)
-			for output in self.outputs:
-				output.send(Array)
+		i=0
+		t_step=self.t0
+		while self.step<self.nb_step:
+			t_add=self.phase[self.step]/(2*np.pi*self.freq[self.step])
+			while i<self.cycles[self.step] or self.cycles==[None]:
+				while time.time()-last_t<1./self.send_freq:
+					time.sleep(1./(100*self.send_freq))
+				last_t=time.time()
+				t=last_t+t_add
+				if self.waveform[self.step]=="sinus":
+					self.alpha=self.amplitude[self.step]*np.sin(2*np.pi*(t-self.t0)*self.freq[self.step])+self.offset[self.step]
+				elif self.waveform[self.step]=="triangle":
+					self.alpha=(4*self.amplitude[self.step]*self.freq[self.step])*((t-self.t0)-(np.floor(2*self.freq[self.step]*(t-self.t0)+0.5))/(2*self.freq[self.step]))*(-1)**(np.floor(2*self.freq[self.step]*(t-self.t0)+0.5))+self.offset[self.step]
+				elif self.waveform[self.step]=="square":
+					self.alpha=self.amplitude[self.step]*np.sign(np.cos(2*np.pi*(t-self.t0)*
+								self.freq[self.step]))+self.offset[self.step]
+				else:
+					raise Exception("invalid waveform : use sinus,triangle or square")
+				Array=pd.DataFrame([t-self.t0,self.alpha],self.labels)
+				t_,cmd_=self.actuator.set_cmd(self.alpha)
+				if self.cycles!=[None] and int((t-t_step)*self.freq[self.step])>(i):
+					i+=1
+				try:
+					for output in self.outputs:
+						output.send(Array)
+				except:
+					pass
+			self.step+=1
+			t_step=time.time()
+			i=0
+			
 
 
 class CameraDisplayer(MasterBlock):
@@ -254,7 +267,7 @@ graph=Grapher("dynamic",(0,1),(0,2))
 			while True:
 				Data=self.inputs[0].recv()	# recv data
 				data=Data.values
-				legend_=Data.index[1:]
+				legend_=[Data.index[self.args[i][1]] for i in range(self.nbr_graphs)]
 				if save_number>0: # lose the first round of data    
 					if save_number==1: # init
 						var=data
@@ -282,7 +295,7 @@ graph=Grapher("dynamic",(0,1),(0,2))
 			while True :
 				Data=self.inputs[0].recv()	# recv data
 				data=Data.values
-				legend_=Data.index[1:]
+				legend_=[Data.index[self.args[i][1]] for i in range(self.nbr_graphs)]
 				if first_round:	# init at first round
 					for i in range(self.nbr_graphs):
 						if i==0:
