@@ -59,7 +59,7 @@ stop() : stops the process.
 
 class PathGenerator(MasterBlock):
 	"""Many to one block. Compactate several data streams into arrays."""
-	def __init__(self,t0,send_freq=1000,actuator=None,waveform=["sinus"],freq=[None],cycles=[None],amplitude=[1],offset=[0],phase=[],init=0):
+	def __init__(self,t0,send_freq=1000,actuator=None,waveform=["sinus"],freq=[None],time_cycles=[None],amplitude=[1],offset=[0],phase=[],init=0):
 		"""
 Compacter(acquisition_step)
 
@@ -87,7 +87,7 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 		self.actuator=actuator
 		self.waveform=waveform
 		self.freq=freq
-		self.cycles=cycles
+		self.time_cycles=time_cycles
 		self.amplitude=amplitude
 		self.offset=offset
 		self.phase=phase
@@ -97,11 +97,11 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 	def main(self):
 		self.labels=['t','signal']
 		last_t=self.t0
-		i=0
+		#i=0
 		t_step=self.t0
 		while self.step<self.nb_step:
 			t_add=self.phase[self.step]/(2*np.pi*self.freq[self.step])
-			while i<self.cycles[self.step] or self.cycles==[None]:
+			while (time.time()-t_step)<self.time_cycles[self.step] or self.time_cycles==[None]:
 				while time.time()-last_t<1./self.send_freq:
 					time.sleep(1./(100*self.send_freq))
 				last_t=time.time()
@@ -117,8 +117,8 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 					raise Exception("invalid waveform : use sinus,triangle or square")
 				Array=pd.DataFrame([t-self.t0,self.alpha],self.labels)
 				t_,cmd_=self.actuator.set_cmd(self.alpha)
-				if self.cycles!=[None] and int((t-t_step)*self.freq[self.step])>(i):
-					i+=1
+				#if self.cycles!=[None] and int((t-t_step)*self.freq[self.step])>(i):
+					#i+=1
 				try:
 					for output in self.outputs:
 						output.send(Array)
@@ -126,7 +126,7 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 					pass
 			self.step+=1
 			t_step=time.time()
-			i=0
+			#i=0
 			
 
 
