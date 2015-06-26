@@ -115,9 +115,7 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 				else:
 					raise Exception("invalid waveform : use sinus,triangle or square")
 				Array=pd.DataFrame([t-self.t0,self.alpha],self.labels)
-				t_,cmd_=self.actuator.set_cmd(self.alpha)
-				#if self.cycles!=[None] and int((t-t_step)*self.freq[self.step])>(i):
-					#i+=1
+				self.actuator.set_cmd(self.alpha)
 				try:
 					for output in self.outputs:
 						output.send(Array)
