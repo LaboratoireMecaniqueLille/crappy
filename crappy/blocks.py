@@ -59,7 +59,7 @@ stop() : stops the process.
 
 class PathGenerator(MasterBlock):
 	"""Many to one block. Compactate several data streams into arrays."""
-	def __init__(self,t0,send_freq=1000,actuator=None,waveform=["sinus"],freq=[None],time_cycles=[None],amplitude=[1],offset=[0],phase=[],init=0):
+	def __init__(self,t0,send_freq=1000,actuator=None,waveform=["sinus"],freq=[None],time_cycles=[None],amplitude=[1],offset=[0],phase=[],repeat=False):
 		"""
 Compacter(acquisition_step)
 
@@ -91,8 +91,7 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 		self.amplitude=amplitude
 		self.offset=offset
 		self.phase=phase
-		self.init=init
-		self.alpha=self.init
+		self.repeat=repeat
 		self.step=0
 	def main(self):
 		self.labels=['t','signal']
@@ -107,11 +106,11 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 				last_t=time.time()
 				t=last_t+t_add
 				if self.waveform[self.step]=="sinus":
-					self.alpha=self.amplitude[self.step]*np.sin(2*np.pi*(t-self.t0)*self.freq[self.step])+self.offset[self.step]
+					self.alpha=self.amplitude[self.step]*np.sin(2*np.pi*(t-t_step)*self.freq[self.step])+self.offset[self.step]
 				elif self.waveform[self.step]=="triangle":
-					self.alpha=(4*self.amplitude[self.step]*self.freq[self.step])*((t-self.t0)-(np.floor(2*self.freq[self.step]*(t-self.t0)+0.5))/(2*self.freq[self.step]))*(-1)**(np.floor(2*self.freq[self.step]*(t-self.t0)+0.5))+self.offset[self.step]
+					self.alpha=(4*self.amplitude[self.step]*self.freq[self.step])*((t-t_step)-(np.floor(2*self.freq[self.step]*(t-t_step)+0.5))/(2*self.freq[self.step]))*(-1)**(np.floor(2*self.freq[self.step]*(t-t_step)+0.5))+self.offset[self.step]
 				elif self.waveform[self.step]=="square":
-					self.alpha=self.amplitude[self.step]*np.sign(np.cos(2*np.pi*(t-self.t0)*
+					self.alpha=self.amplitude[self.step]*np.sign(np.cos(2*np.pi*(t-t_step)*
 								self.freq[self.step]))+self.offset[self.step]
 				else:
 					raise Exception("invalid waveform : use sinus,triangle or square")
@@ -125,6 +124,8 @@ Numpy array of shape (number_of_values_in_input,acquisition_step)
 				except:
 					pass
 			self.step+=1
+			if self.repeat and self.step==self.nb_step:
+				self.step=0
 			t_step=time.time()
 			#i=0
 			
