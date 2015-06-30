@@ -749,7 +749,7 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 			self.CameraClass=Jai
 		else:
 			raise Exception("camera must be Ximea or Jai")
-		
+		#print "1"
 		###################################################################### camera INIT with ZOI selection
 		self.white_spot=white_spot
 		self.t0=t0
@@ -766,7 +766,7 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 		bw= image>self.thresh #applying threshold
 		if not (self.white_spot):
 			bw=1-bw
-			
+		#print "2"
 		#still smoothing
 		bw = dilation(bw,square(3))
 		bw = erosion(bw,square(3))
@@ -780,7 +780,7 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 		label_image = label(cleared)
 		borders = np.logical_xor(bw, cleared)
 		label_image[borders] = -1
-
+		#print "3"
 		# Create the empty vectors for corners of each ZOI
 		regions=regionprops(label_image)
 		self.NumOfReg=len(regions)
@@ -790,7 +790,7 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 		self.maxy=np.empty([self.NumOfReg,1])
 
 		self.Points_coordinates=np.empty([self.NumOfReg,2])
-
+		#print "4"
 		# Definition of the ZOI and initialisation of the regions border
 		i=0
 		for i,region in enumerate(regions): # skip small regions
@@ -808,6 +808,17 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 		self.maxx+=self.xoffset
 		self.miny+=self.yoffset
 		self.maxy+=self.yoffset
+		self.numdevice=self.camera.sensor.numdevice
+		self.exposure=self.camera.sensor.exposure
+		self.gain=self.camera.sensor.gain
+		self.width=self.camera.sensor.width
+		self.height=self.camera.sensor.height
+		self.xoffset=self.camera.sensor.xoffset
+		self.yoffset=self.camera.sensor.yoffset
+		self.external_trigger=self.camera.sensor.external_trigger
+		self.data_format=self.camera.sensor.data_format
+		self.camera.sensor.close()
+		#print "5"
 
 	def barycenter_opencv(self,image):
 		"""
@@ -815,6 +826,7 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 		White_Mark must be True if spots are white on a dark material
 		"""
 		# The median filter helps a lot for real life images ...
+		#print "6"
 		bw=self.cv2.medianBlur(image,5)>self.thresh
 		if not (self.white_spot):
 			bw=1-bw
@@ -832,10 +844,12 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 		self.miny=self.miny-self.border+miny_
 		maxx=self.minx+self.border+maxx_
 		maxy=self.miny+self.border+maxy_
+		#print "7"
 		return Px,Py,self.minx,self.miny,maxx,maxy
 
 	def plot(self,plot_pipe_recv): # this function receive the pipe from the main function with the image and the position of the spot, the Lx /Ly and plot it all.
 		# initialise the variables and the plot
+		#print "8"
 		linewidth_=1
 		rec={}
 		center={}
@@ -853,6 +867,7 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 		L0x=data[6]
 		L0y=data[7]
 		frame=data[-1]
+		#print "9"
 		# to save images, uncomment this: 
 		#image=sitk.GetImageFromArray(frame)
 		#sitk.WriteImage(image,"/home/annie/Bureau/image_cours_JF/img_00000.tiff") ### works fast in 8 or 16 bit, always use sitk.
@@ -870,6 +885,7 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 		j=1
 		while True: # for every round, receive data, correct the positions of the rectangles/centers and the values of Lx/Ly , and refresh the plot.
 			data=plot_pipe_recv.recv()
+			#print "10"
 			NumOfReg=data[0]
 			minx=data[1]
 			maxx=data[2]
@@ -891,6 +907,7 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 			eyy.set_text("Eyy = %2.2f %%"%(100.*(Ly/L0y-1.)))
 			# Update the image
 			im.set_array(frame)
+			#print "11"
 			im.set_extent((0,frame.shape[1],0,frame.shape[0]))
 			plt.draw()
 
@@ -899,9 +916,12 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 		"""
 		main function, command the videoextenso and the motors
 		"""
+		self.camera.sensor.new()
+		#=self.CameraClass(self.numdevice, self.exposure, self.gain, self.width, self.height, self.xoffset, self.yoffset, self.external_trigger, self.data_format)
 		j=0
 		last_ttimer=self.t0
 		first_display=True
+		#print "12"
 		while True:
 			image = self.camera.sensor.getImage() # read a frame
 			for i in range(0,self.NumOfReg): # for each spot, calulate the news coordinates of the center, based on previous coordinate and border.
@@ -913,17 +933,20 @@ class VideoExtenso(MasterBlock): # This class is used to initialise the camera, 
 			maxy_=self.maxy.max()
 			Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
 			Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
-			
+			#print "13"
 			if self.display:
+				#print "14"
 				if first_display:
 					plot_pipe_recv,plot_pipe_send=Pipe()
 					proc=Process(target=self.plot,args=(plot_pipe_recv,))
 					proc.start()
 					first_display=False
+					#print "15"
 				if j%50==0 and j>0: # every 50 round, send an image to the plot function below, that display the cropped image, LX, Ly and the position of the area around the spots
 					plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_]])
-			t_now=time.time()
-			print "FPS: ", 50/(t_now-last_ttimer)
-			last_ttimer=t_now
+					t_now=time.time()
+			#print "16"
+					print "FPS: ", 50/(t_now-last_ttimer)
+					last_ttimer=t_now
 			j+=1
 
