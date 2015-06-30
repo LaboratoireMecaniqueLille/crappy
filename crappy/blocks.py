@@ -1,4 +1,4 @@
-from multiprocessing import Process
+from multiprocessing import Process, Pipe
 import os
 import numpy as np
 import time
@@ -152,8 +152,7 @@ Returns:
 Numpy array of shape (number_of_values_in_input,acquisition_step)
 
 		"""
-		print "cameraDisplayer!"
-      
+		print "cameraDisplayer!" 
 	def main(self):
 		plt.ion()
 		fig=plt.figure()
@@ -729,3 +728,202 @@ save_directory : directory
 
 		except (KeyboardInterrupt):	
 			self.cameraSensor.sensor.close()
+
+
+
+class VideoExtenso(MasterBlock): # This class is used to initialise the camera, the motor and locate the first position of the spots.
+	def __init__(self,t0,camera,white_spot=True,display=True):
+		import matplotlib.patches as mpatches
+		self.mpatches=mpatches
+		from skimage.segmentation import clear_border
+		from skimage.morphology import label,erosion, square,dilation
+		from skimage.measure import regionprops
+		from skimage.filter import threshold_otsu, rank#, threshold_yen
+		import cv2
+		self.cv2=cv2
+		if camera=="Ximea":
+			from crappy.technical import Ximea
+			self.CameraClass=Ximea
+		elif camera=="Jai":
+			from crappy.technical import Jai
+			self.CameraClass=Jai
+		else:
+			raise Exception("camera must be Ximea or Jai")
+		
+		###################################################################### camera INIT with ZOI selection
+		self.white_spot=white_spot
+		self.t0=t0
+		self.display=display
+		self.camera=self.CameraClass()
+		self.xoffset=self.camera.sensor.xoffset
+		self.yoffset=self.camera.sensor.yoffset
+		image=self.camera.sensor.getImage()
+		self.camera.sensor.reset_ZOI()
+		# the following is to initialise the spot detection
+		self.border=4 # Definition of the ZOI margin regarding the regionprops box			
+		image=rank.median(image,square(15)) # median filter to smooth the image and avoid little reflection that may appear as spots.
+		self.thresh = threshold_otsu(image) # calculate most effective threshold
+		bw= image>self.thresh #applying threshold
+		if not (self.white_spot):
+			bw=1-bw
+			
+		#still smoothing
+		bw = dilation(bw,square(3))
+		bw = erosion(bw,square(3))
+
+		# Remove artifacts connected to image border
+		cleared = bw.copy()
+		clear_border(cleared)
+
+		# Label image regions
+		label_image = label(bw) 
+		label_image = label(cleared)
+		borders = np.logical_xor(bw, cleared)
+		label_image[borders] = -1
+
+		# Create the empty vectors for corners of each ZOI
+		regions=regionprops(label_image)
+		self.NumOfReg=len(regions)
+		self.minx=np.empty([self.NumOfReg,1])
+		self.miny=np.empty([self.NumOfReg,1])
+		self.maxx=np.empty([self.NumOfReg,1])
+		self.maxy=np.empty([self.NumOfReg,1])
+
+		self.Points_coordinates=np.empty([self.NumOfReg,2])
+
+		# Definition of the ZOI and initialisation of the regions border
+		i=0
+		for i,region in enumerate(regions): # skip small regions
+			if region.area > 100:
+				self.minx[i], self.miny[i], self.maxx[i], self.maxy[i]= region.bbox	  	
+
+		for i in range(0,self.NumOfReg): # find the center of every region
+			self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]])
+			
+		#Evaluating initial distance bewteen 2 spots 
+		self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
+		self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
+		#evaluating global coordinate for next crop
+		self.minx+=self.xoffset
+		self.maxx+=self.xoffset
+		self.miny+=self.yoffset
+		self.maxy+=self.yoffset
+
+	def barycenter_opencv(self,image):
+		"""
+		computatition of the barycenter (moment 1 of image) on ZOI using OpenCV
+		White_Mark must be True if spots are white on a dark material
+		"""
+		# The median filter helps a lot for real life images ...
+		bw=self.cv2.medianBlur(image,5)>self.thresh
+		if not (self.white_spot):
+			bw=1-bw
+		M = self.cv2.moments(bw*255.)
+		Px=M['m01']/M['m00']
+		Py=M['m10']/M['m00'] 
+		# we add minx and miny to go back to global coordinate:
+		Px+=self.minx
+		Py+=self.miny
+		miny_, minx_, h, w= self.cv2.boundingRect((bw*255).astype(np.uint8))
+		maxy_=miny_+h
+		maxx_=miny_+w
+		# Determination of the new bounding box using global coordinates and the margin
+		self.minx=self.minx-self.border+minx_
+		self.miny=self.miny-self.border+miny_
+		maxx=self.minx+self.border+maxx_
+		maxy=self.miny+self.border+maxy_
+		return Px,Py,self.minx,self.miny,maxx,maxy
+
+	def plot(self,plot_pipe_recv): # this function receive the pipe from the main function with the image and the position of the spot, the Lx /Ly and plot it all.
+		# initialise the variables and the plot
+		linewidth_=1
+		rec={}
+		center={}
+		plt.ion()
+		fig=plt.figure()
+		ax=fig.add_subplot(111)
+		data=plot_pipe_recv.recv() # receiving data
+		# Set data to the correct variables:
+		NumOfReg=data[0]
+		minx=data[1]
+		maxx=data[2]
+		miny=data[3]
+		maxy=data[4]
+		Points_coordinates=data[5]
+		L0x=data[6]
+		L0y=data[7]
+		frame=data[-1]
+		# to save images, uncomment this: 
+		#image=sitk.GetImageFromArray(frame)
+		#sitk.WriteImage(image,"/home/annie/Bureau/image_cours_JF/img_00000.tiff") ### works fast in 8 or 16 bit, always use sitk.
+		im = plt.imshow(frame,cmap='gray')
+		for i in range(0,NumOfReg): # For each region, plots the rectangle around the spot and a cross at the center
+			rect = self.mpatches.Rectangle((miny[i], frame.shape[0]-maxx[i]), maxy[i] - miny[i], maxx[i] - minx[i],fill=False, edgecolor='red', linewidth=1)
+			rec[i]=ax.add_patch(rect)
+			center[i],= ax.plot(Points_coordinates[i,1],Points_coordinates[i,0],'+g',markersize=5) # coordinate here are not working, needs to be fixed
+		im.set_extent((0,frame.shape[1],0,frame.shape[0])) # adjust the width and height of the plotted figure depending of the size of the received image
+		Exx = "Exx = 0 %%"
+		Eyy = "Eyy = 0 %%"
+		exx=ax.text(1, 1, Exx, fontsize=12,color='white', va='bottom') # plot some text with the Lx and Ly values on the images
+		eyy=ax.text(1, 11, Eyy, fontsize=12,color='white', va='bottom')
+		plt.draw() # plot the figure
+		j=1
+		while True: # for every round, receive data, correct the positions of the rectangles/centers and the values of Lx/Ly , and refresh the plot.
+			data=plot_pipe_recv.recv()
+			NumOfReg=data[0]
+			minx=data[1]
+			maxx=data[2]
+			miny=data[3]
+			maxy=data[4]
+			Points_coordinates=data[5]
+			frame=data[-1]
+			#uncomment the following 2 lines to save images
+			#image=sitk.GetImageFromArray(frame)
+			#sitk.WriteImage(image,"/home/annie/Bureau/image_cours_JF/img_%.5d.tiff" %j)
+			j+=1
+			for i in range(0,NumOfReg): 
+				rec[i].set_bounds(miny[i],frame.shape[0]-maxx[i],maxy[i] - miny[i],maxx[i] - minx[i])
+				center[i].set_xdata(frame.shape[0]-Points_coordinates[i,1])
+				center[i].set_ydata(Points_coordinates[i,0])
+			Lx=Points_coordinates[:,0].max()-Points_coordinates[:,0].min()
+			Ly=Points_coordinates[:,1].max()-Points_coordinates[:,1].min()
+			exx.set_text("Exx = %2.2f %%"%(100.*(Lx/L0x-1.)))
+			eyy.set_text("Eyy = %2.2f %%"%(100.*(Ly/L0y-1.)))
+			# Update the image
+			im.set_array(frame)
+			im.set_extent((0,frame.shape[1],0,frame.shape[0]))
+			plt.draw()
+
+
+	def main(self):
+		"""
+		main function, command the videoextenso and the motors
+		"""
+		j=0
+		last_ttimer=self.t0
+		first_display=True
+		while True:
+			image = self.camera.sensor.getImage() # read a frame
+			for i in range(0,self.NumOfReg): # for each spot, calulate the news coordinates of the center, based on previous coordinate and border.
+				self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]:self.maxx[i]+1,self.miny[i]:self.maxy[i]+1])
+			# Get the extreme position for the image cropping:
+			minx_=self.minx.min()
+			miny_=self.miny.min()
+			maxx_=self.maxx.max()
+			maxy_=self.maxy.max()
+			Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
+			Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
+			
+			if self.display:
+				if first_display:
+					plot_pipe_recv,plot_pipe_send=Pipe()
+					proc=Process(target=self.plot,args=(plot_pipe_recv,))
+					proc.start()
+					first_display=False
+				if j%50==0 and j>0: # every 50 round, send an image to the plot function below, that display the cropped image, LX, Ly and the position of the area around the spots
+					plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_]])
+			t_now=time.time()
+			print "FPS: ", 50/(t_now-last_ttimer)
+			last_ttimer=t_now
+			j+=1
+
