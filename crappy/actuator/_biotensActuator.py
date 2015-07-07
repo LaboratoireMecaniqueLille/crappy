@@ -85,7 +85,7 @@ class BiotensActuator(object):
 	
 	
 	
-	 def mise_position(self): # set motor into position for sample's placement
+	def mise_position(self): # set motor into position for sample's placement
 		 self.setmode_position(self.size,70)
 		 startposition='\x52\x52\x52\xFF\x00'+convert_to_byte(10,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(10,'B')+ '\xAA\xAA'
 		 self.ser.write(startposition)	
@@ -106,7 +106,7 @@ class BiotensActuator(object):
 		toinit= '\x52\x52\x52\xFF\x00'+convert_to_byte(37,'B')+convert_to_byte(2,'B')+convert_to_byte(0,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(37,'B')+ '\xAA\xAA'
 		
 		self.ser.writelines([initposition, initspeed, inittorque, toinit])
-		self.ser.write('\x52\x52\x52\xFF\x00'+convert_to_byte(2,'B')+convert_to_byte(2,'B')+convert_to_byte(12,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(2,'B')+ '\xAA\xAA'
+		self.ser.write('\x52\x52\x52\xFF\x00'+convert_to_byte(2,'B')+convert_to_byte(2,'B')+convert_to_byte(12,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(2,'B')+ '\xAA\xAA')
 		
 		### initializes the count when the motors is out.
 		startposition='\x52\x52\x52\xFF\x00'+convert_to_byte(10,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(10,'B')+ '\xAA\xAA'
