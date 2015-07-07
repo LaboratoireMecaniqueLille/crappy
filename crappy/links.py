@@ -122,9 +122,13 @@ recv(pickable) : receive a pickable object.
 			self.out_.send(value)
 		else:
 			if self.external_trigger==None:
-				self.out_.send(self.condition.evaluate(value))
+				val=self.condition.evaluate(value)
+				if not val is None:
+					self.out_.send(val)
 			else:
-				self.out_.send(self.condition.evaluate(value,self.external_trigger))
+				val=self.condition.evaluate(value,self.external_trigger)
+				if not val is None:
+					self.out_.send(val)
 		
 	
 	def recv(self):

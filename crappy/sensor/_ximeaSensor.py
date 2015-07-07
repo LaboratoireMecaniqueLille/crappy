@@ -2,6 +2,8 @@ from ._meta import cameraSensor
 import numpy as np
 import cv2
 import time
+#import matplotlib
+#matplotlib.use('Agg')
 from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -110,19 +112,22 @@ class XimeaSensor(cameraSensor.CameraSensor):
 		This method close properly the frame grabber
 		It releases the allocated memory and stops the acquisition
 		"""
-		image=self.getImage()
-		xmin, xmax, ymin, ymax=self.ZOI_selection(image)
-		xmin=(int(xmin)-int(xmin)%4) # ensure %2
-		xmax=(int(xmax)-int(xmax)%4)
-		ymin=(int(ymin)/2)*2
-		ymax=(int(ymax)/2)*2
-		cx=xmax-xmin
-		cy=ymax-ymin
-		#print xmin,ymin,cx,cy
-		self.set_height(cy)
-		self.set_width(cx)
-		self.set_offset_y(ymin)
-		self.set_offset_x(xmin)
+		try:
+			image=self.getImage()
+			xmin, xmax, ymin, ymax=self.ZOI_selection(image)
+			xmin=(int(xmin)-int(xmin)%4) # ensure %2
+			xmax=(int(xmax)-int(xmax)%4)
+			ymin=(int(ymin)/2)*2
+			ymax=(int(ymax)/2)*2
+			cx=xmax-xmin
+			cy=ymax-ymin
+			#print xmin,ymin,cx,cy
+			self.set_height(cy)
+			self.set_width(cx)
+			self.set_offset_y(ymin)
+			self.set_offset_x(xmin)
+		except:
+			pass
 
 	
 	def set_height(self,height):
@@ -142,35 +147,38 @@ class XimeaSensor(cameraSensor.CameraSensor):
 		self.cam.set(cv2.CAP_PROP_XI_OFFSET_X,xoffset)
 		
 	def ZOI_selection(self,image):
-		rectprops = dict(facecolor='red', edgecolor = 'red', alpha=0.5, 
-				   fill=True)
+		try:
+			rectprops = dict(facecolor='red', edgecolor = 'red', alpha=0.5, 
+					fill=True)
 
-		def line_select_callback(eclick, erelease):
-			global xmin, ymin, xmax, ymax
-			x1, y1 = eclick.xdata, eclick.ydata
-			x2, y2 = erelease.xdata, erelease.ydata
-			#var=x1
-			xmin=round(min(x1,x2))
-			xmax=round(max(x1,x2))
-			ymin=round(min(y1,y2))
-			ymax=round(max(y1,y2))
-			#print ("(%3.2f, %3.2f) --> (%3.2f, %3.2f)" % (xmin, ymin, xmax, ymax))
-			
-		def toggle_selector(event):
-			toggle_selector.RS.set_active(False)
+			def line_select_callback(eclick, erelease):
+				global xmin, ymin, xmax, ymax
+				x1, y1 = eclick.xdata, eclick.ydata
+				x2, y2 = erelease.xdata, erelease.ydata
+				#var=x1
+				xmin=round(min(x1,x2))
+				xmax=round(max(x1,x2))
+				ymin=round(min(y1,y2))
+				ymax=round(max(y1,y2))
+				#print ("(%3.2f, %3.2f) --> (%3.2f, %3.2f)" % (xmin, ymin, xmax, ymax))
+				
+			def toggle_selector(event):
+				toggle_selector.RS.set_active(False)
 
 
-		fig, current_ax = plt.subplots()
-		plt.imshow(image,cmap='gray')  # plot something
+			fig, current_ax = plt.subplots()
+			plt.imshow(image,cmap='gray')  # plot something
 
-		toggle_selector.RS = RectangleSelector(current_ax, line_select_callback,
-							drawtype='box', useblit=True,
-							button=[1,3], # don't use middle button
-							minspanx=5, minspany=5,rectprops=rectprops,
-							spancoords='pixels')
+			toggle_selector.RS = RectangleSelector(current_ax, line_select_callback,
+								drawtype='box', useblit=True,
+								button=[1,3], # don't use middle button
+								minspanx=5, minspany=5,rectprops=rectprops,
+								spancoords='pixels')
 
-		plt.show()
-		return xmin, xmax, ymin, ymax
+			plt.show()
+			return xmin, xmax, ymin, ymax
+		except:
+			plt.close('all')
 		
 	def camera_setup(self):
 		try:
