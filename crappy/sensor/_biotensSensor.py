@@ -24,7 +24,7 @@ def convert_to_dec(sequence):
 	decim=unpack('i',sequence) # convert to signed int value
 	return decim[0]
 
-	
+
 
 #-------------------------------------------------------------------------------------------
 ###This function allows to start the motor in desired mode (1=velocity,2=position) or stop it (mode 0). 
@@ -39,7 +39,8 @@ class BiotensSensor(object):
 		command='\x50\x50\x50\xFF\x00'+ convert_to_byte(10,'B') + '\xAA\xAA'
 		
 		self.ser.write(command)
-		position=self.ser.read(19)
+		position_=self.ser.read(19)
+		position=position_[9:len(position_)-2:2]
 		position=convert_to_dec(position)*5/4096.
 		return position
 

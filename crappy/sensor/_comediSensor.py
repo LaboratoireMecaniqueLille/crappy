@@ -1,5 +1,4 @@
 import numpy as np
-import cv2
 import time
 import comedi as c
 from multiprocessing import Array

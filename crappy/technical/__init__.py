@@ -4,9 +4,9 @@
     #print("Call your main application code here")
 
 
-
-from ._ximeaTechnical import Ximea
 from ._biotensTechnical import Biotens
+from ._cameraInit import getCameraConfig
+from ._technicalCamera import TechnicalCamera
 #from ._jaiTechnical import Jai
 #from . import *
 #__all__ = ['Ximea']

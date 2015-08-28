@@ -23,9 +23,9 @@ class CameraSensor:
 		"""
 		pass
 	
-	@abc.abstractmethod
-	def setExposure(self, exposure):
-		pass
+	#@abc.abstractmethod
+	#def setExposure(self, exposure):
+		#pass
 			
 	@abc.abstractmethod
 	def close(self):

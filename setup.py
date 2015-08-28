@@ -9,13 +9,66 @@ https://github.com/pypa/sampleproject
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
-from os import path
+from os import path, uname
+from subprocess import call
+from multiprocessing import cpu_count
+from distutils.command.build import build
+from distutils.core import setup, Extension
+
+comediModule = Extension('crappy.sensor.comediModule', sources = ['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'], extra_link_args=["-l", "comedi", "-l", "python2.7"])
 
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
 with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
+
+
+class JaiLibBuild(build):
+  
+  def run(self):
+      if(uname()[2]=='3.2.0-70-generic'):
+	      # run original build code
+	      build.run(self)
+	      build_path = path.join(here, 'crappy/sources/Jai-lib/')
+      
+	      cmd = [
+		  'make',
+		  'OUT=' + build_path,
+		  'V=' + str(self.verbose),
+		  ]
+	      try:
+		  cmd.append('-j%d' % cpu_count())
+	      except NotImplementedError:
+		  print 'Unable to determine number of CPUs. Using single threaded make.'
+	      
+	      def compile():
+		call(cmd, cwd=build_path)
+
+	      self.execute(compile, [], 'Compiling Jai library')
+      else:
+	      print "Wrong Kernel version for Jai library, Jai library not compiled.\n"
+
+class JaiLibClean(build):
+  
+  def run(self):
+      if(uname()[2]=='3.2.0-70-generic'):
+	      # run original build code
+	      build.run(self)
+	      build_path = path.join(here, 'crappy/sources/Jai-lib/')
+      
+	      cmd = [
+		  'make clean',
+		  'OUT=' + build_path,
+		  'V=' + str(self.verbose),
+		  ]
+	      def clean():
+		call(cmd, cwd=build_path)
+
+	      self.execute(clean, [], 'Deleting cllib shared object.')
+      else:
+	      print "Wrong Kernel version for Jai library, unable to find Jai library\n"
+	      
 
 setup(
     name='crappy',
@@ -71,12 +124,14 @@ setup(
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-
+    
+    ext_modules = [comediModule],
+	
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy', 'matplotlib','pycomedi','pandas'],
+    install_requires=['numpy', 'matplotlib','pandas'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -86,7 +141,11 @@ setup(
         'dev': ['check-manifest'],
         'test': ['coverage'],
     },
-
+    
+    cmdclass={
+        'build': JaiLibBuild,
+        'clean': JaiLibClean,
+    },
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.

@@ -3,6 +3,7 @@
 
 from struct import *
 import serial
+import time
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ### This functions converts decimal into bytes or bytes into decimals. Mandatory in order to send or read anything into/from MAC Motors registers.
@@ -18,7 +19,7 @@ def convert_to_byte(number, length):
 		c+=encoded[i] + '%s'%x # concatenate byte and complement and add it to the sequece
 	return c
 
-	
+
 
 #-------------------------------------------------------------------------------------------
 ###This function allows to start the motor in desired mode (1=speed,2=position) or stop it (mode 0). 
@@ -30,9 +31,10 @@ class BiotensActuator(object):
 		self.size=size
 		self.clear_errors()
 		self.initialisation()
-		self.miseposition(self.size)
-	
-		 
+		time.sleep(3)
+		self.mise_position()
+
+		
 		
 	def stop_motor(self): # stop the motor. Amazing.
 		command='\x52\x52\x52\xFF\x00'+convert_to_byte(2,'B')+convert_to_byte(2,'B')+convert_to_byte(0,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(2,'B')+ '\xAA\xAA'
@@ -81,17 +83,17 @@ class BiotensActuator(object):
 		command='\x52\x52\x52\xFF\x00'+convert_to_byte(2,'B')+convert_to_byte(2,'B')+convert_to_byte(1,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(2,'B')+ '\xAA\xAA'
 
 		### write every parameters in motor's registers
-		self.ser.writelines([set_position, set_speed, set_torque, set_acceleration,command])
+		self.ser.writelines([set_speed, set_torque, set_acceleration,command])
 	
 	
 	
 	def mise_position(self): # set motor into position for sample's placement
-		 self.setmode_position(self.size,70)
-		 startposition='\x52\x52\x52\xFF\x00'+convert_to_byte(10,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(10,'B')+ '\xAA\xAA'
-		 self.ser.write(startposition)	
-		 
-		 
-		 
+		self.setmode_position(self.size,70)
+		startposition='\x52\x52\x52\xFF\x00'+convert_to_byte(10,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(10,'B')+ '\xAA\xAA'
+		self.ser.write(startposition)	
+		
+		
+		
 	def clear_errors(self): # clears error in motor registers. obviously.
 		command='\x52\x52\x52\xFF\x00'+convert_to_byte(35,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(35,'B')+ '\xAA\xAA'
 		self.ser.write(command)
@@ -102,7 +104,7 @@ class BiotensActuator(object):
 		### actuator is totally out.
 		initposition= '\x52\x52\x52\xFF\x00'+convert_to_byte(38,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(38,'B')+ '\xAA\xAA'
 		initspeed = '\x52\x52\x52\xFF\x00'+convert_to_byte(40,'B')+convert_to_byte(2,'B')+convert_to_byte(-50,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(40,'B')+ '\xAA\xAA'
-		inittorque = '\x52\x52\x52\xFF\x00'+convert_to_byte(41,'B')+convert_to_byte(2,'B')+convert_to_byte(1023,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(41,'B')+ '\xAA\xAA'	 
+		inittorque = '\x52\x52\x52\xFF\x00'+convert_to_byte(41,'B')+convert_to_byte(2,'B')+convert_to_byte(1023,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(41,'B')+ '\xAA\xAA'	
 		toinit= '\x52\x52\x52\xFF\x00'+convert_to_byte(37,'B')+convert_to_byte(2,'B')+convert_to_byte(0,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(37,'B')+ '\xAA\xAA'
 		
 		self.ser.writelines([initposition, initspeed, inittorque, toinit])
