@@ -5,6 +5,7 @@
 
 #from . import technical
 from ._cameraDisplayer  import CameraDisplayer 
+from ._commandBiaxe import CommandBiaxe
 from ._commandBiotens import CommandBiotens
 from ._compacter  import Compacter
 from ._grapher import Grapher
