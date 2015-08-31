@@ -59,8 +59,8 @@ Returns:
 --------
 Panda Dataframe with time and deformations Exx and Eyy.
 		"""
-		self.cv2=cv2
-		self.sitk=sitk
+		self.cv2=cv2 # remove this
+		self.sitk=sitk  #remove this 
 		go=False
 		###################################################################### camera INIT with ZOI selection
 		self.white_spot=white_spot
@@ -103,8 +103,8 @@ Panda Dataframe with time and deformations Exx and Eyy.
 
 	def barycenter_opencv(self,image,minx,miny):
 		"""
-		computatition of the barycenter (moment 1 of image) on ZOI using OpenCV
-		White_Mark must be True if spots are white on a dark material
+		computation of the barycenter (moment 1 of image) on ZOI using OpenCV
+		white_spot must be True if spots are white on a dark material
 		"""
 		# The median filter helps a lot for real life images ...
 		bw=self.cv2.medianBlur(image,5)>self.thresh

@@ -16,11 +16,11 @@ try:
 ########################################### Creating blocks
 	
 	compacter_effort=crappy.blocks.Compacter(200)
-	save_effort=crappy.blocks.Saver("/home/corentin/Bureau/effort.txt")
+	save_effort=crappy.blocks.Saver("/home/biotens/Bureau/effort.txt")
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
 	
 	compacter_extenso=crappy.blocks.Compacter(90)
-	save_extenso=crappy.blocks.Saver("/home/corentin/Bureau/extenso.txt")
+	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/extenso.txt")
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=200)
@@ -31,8 +31,8 @@ try:
 	
 	
 	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},
-												{"waveform":"limit","cycles":3,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[5,'Eyy(%)']}],
-												send_freq=400,repeat=True,labels=['t(s)','signal'])
+							{"waveform":"limit","cycles":3,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[5,'Eyy(%)']}],
+							send_freq=400,repeat=True,labels=['t(s)','signal'])
 	
 	
 	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)

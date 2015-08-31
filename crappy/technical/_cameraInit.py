@@ -82,7 +82,7 @@ class _CameraInit():
                                                button=[1,3], # don't use middle button
                                                minspanx=5, minspany=5,rectprops=rectprops,
                                                spancoords='pixels')
-        ani = animation.FuncAnimation(self._fig, self.get_frame, interval=100, frames=20, blit=False)
+        ani = animation.FuncAnimation(self._fig, self.get_frame, interval=50, frames=20, blit=False)
         plt.show()
 
     

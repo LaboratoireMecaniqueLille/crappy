@@ -32,9 +32,9 @@ class TechnicalCamera():
 		proc_test.terminate()
 		#self.cam.new(exposure=exposure, gain=gain, yoffset=yoffset, xoffset=xoffset, height=height, width=width)
 	
-	def _interface(self, send_pipe, camera):
-		settings = getCameraConfig(camera, self.videoextenso)
-		send_pipe.send(settings)
+	#def _interface(self, send_pipe, camera):
+		#settings = getCameraConfig(camera, self.videoextenso)
+		#send_pipe.send(settings)
 		
 	def __str__(self):
 		"""
