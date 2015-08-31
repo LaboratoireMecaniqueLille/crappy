@@ -1,2 +1,8 @@
 *.pyc
 *.egg-info
+# ignorer tous les fichiers dans le répertoire build
+build/
+dist/
+crappy.egg-info/
+data/
+
