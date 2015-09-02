@@ -12,7 +12,7 @@ class VideoExtenso(MasterBlock):
 	"""
 This class detects 4 spots, and evaluate the deformations Exx and Eyy.
 	"""
-	def __init__(self,camera="ximea",white_spot=True,display=True,labels=['t(s)','Exx ()', 'Eyy()']):
+	def __init__(self,camera="ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Exx ()', 'Eyy()']):
 		"""
 VideoExtenso(camera,white_spot=True,labels=['t(s)','Exx ()', 'Eyy()'],display=True)
 
@@ -41,7 +41,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		self.border=4
 		while go==False:
 		# the following is to initialise the spot detection
-			self.camera=tc(camera, {'enabled':True, 'white_spot':white_spot, 'border':self.border})
+			self.camera=tc(camera, {'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
 			self.minx=self.camera.minx
 			self.maxx=self.camera.maxx
 			self.miny=self.camera.miny
@@ -51,6 +51,12 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			self.L0y = self.camera.L0y
 			self.thresh=self.camera.thresh
 			self.Points_coordinates=self.camera.Points_coordinates
+			self.width=self.camera.width
+			self.height=self.camera.height
+			self.xoffset=self.camera.xoffset
+			self.yoffset=self.camera.yoffset
+			self.exposure=self.camera.exposure
+			self.gain=self.camera.gain
 			if self.NumOfReg==4: 
 				go=True
 			else:	#	If detection goes wrong, start again
@@ -86,7 +92,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		"""
 		main function, command the videoextenso and the motors
 		"""
-		self.camera.sensor.new()
+		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
 		j=0
 		last_ttimer=time.time()
 		first_display=True
@@ -94,12 +100,13 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		while True:
 			try:
 				image = self.camera.sensor.getImage() # read a frame
+				#print "image shape : ",np.shape(image)
 				for i in range(0,self.NumOfReg): # for each spot, calulate the news coordinates of the center, based on previous coordinate and border.
 					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]],self.minx[i],self.miny[i])
 				minx_=self.minx.min()
 				miny_=self.miny.min()
 				maxx_=self.maxx.max()
-				maxy_=self.maxy.max()
+				maxy_=self.maxy.max()				
 				Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
 				Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
 				self.Points_coordinates[:,1]-=miny_
@@ -117,11 +124,12 @@ Panda Dataframe with time and deformations Exx and Eyy.
 						proc=Process(target=self.plotter,args=())
 						proc.start()
 						first_display=False
-					if j%50==0 and j>0: # every 80 round, send an image to the plot function below, that display the cropped image, LX, Ly and the position of the area around the spots
+					if j%90==0 and j>0: # every 80 round, send an image to the plot function below, that display the cropped image, LX, Ly and the position of the area around the spots
 						self.plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_]])
-						t_now=time.time()
-						print "FPS: ", 50/(t_now-last_ttimer)
-						last_ttimer=t_now
+				if j%90==0 and j>0:
+					t_now=time.time()
+					print "FPS: ", 90/(t_now-last_ttimer)
+					last_ttimer=t_now
 				
 				j+=1
 			except KeyboardInterrupt:

@@ -152,7 +152,10 @@ The requiered informations depend on the type of waveform you need.
 				while self.time is None or (time.time()-t_step)<self.time:
 					while time.time()-last_t<1./self.send_freq:
 						time.sleep(1./(100*self.send_freq))
-					last_t=time.time()		
+					last_t=time.time()
+					for input_ in self.inputs: # recv inputs to avoid pipe overflow
+						if input_.in_.poll() or first: # if there is data waiting
+							Data=pd.concat([Data,input_.recv()],ignore_index=True)
 					if self.step==0:
 						self.alpha=0
 					else:

@@ -75,8 +75,8 @@ The requiered informations depend on the type of waveform you need.
 		self.vectors=None # WIP
 		
 		
-	def eval_def_VM(self):
-		self.def_VM= Data [x] **3 ....  # WIP
+	#def eval_def_VM(self):
+		#self.def_VM= Data [x] **3 ....  # WIP
 		# add a FIFO for mean(def_VM)?
 		
 		

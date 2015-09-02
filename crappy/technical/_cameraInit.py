@@ -18,7 +18,7 @@ from skimage.filter import threshold_otsu, rank#, threshold_yen
 
 class _CameraInit():
   
-    def __init__(self, camera, videoextenso={'enabled':True, 'white_spot':True, 'border':4}):
+    def __init__(self, camera, videoextenso={'enabled':True, 'white_spot':True, 'border':4,}):
         self.cam = camera
         self.videoextenso = videoextenso
         self.rect={}
@@ -27,10 +27,16 @@ class _CameraInit():
         Height=7.
         self._fig=plt.figure(figsize=(Height, Width))
         self._axim = self._fig.add_axes([0.15, 0.135, rat, rat*(Height/Width)]) # Image frame
+        self._axim.set_autoscale_on(True)
         self._cax = self._fig.add_axes([0.17+rat, 0.135, 0.02, rat*(Height/Width)]) # colorbar frame
         self._axhist=self._fig.add_axes([0.15,(0.17+rat),rat,0.1]) # histogram frame
         axcolor = 'lightgoldenrodyellow'
-        self.cam.new()                
+        self.cam.new() 
+        self.cam.height = self.videoextenso['height']
+        self.cam.width = self.videoextenso['width']
+        self.cam.yoffset = self.videoextenso['yoffset']
+        self.cam.xoffset = self.videoextenso['xoffset']
+                       
         if(self.cam.gain != None):
             self._axGain= plt.axes([0.15, 0.07,rat, 0.03], axisbg=axcolor)
             self._sGain = Slider(self._axGain, 'Gain', -1, 6, valinit=self.cam.gain)
@@ -68,10 +74,10 @@ class _CameraInit():
         cb = self._fig.colorbar(self._im, cax=self._cax) #plot colorbar
         self._cax.axis('off')
         
-        self.width = self.cam.width
-        self.height = self.cam.height
-        self.yoffset = self.cam.yoffset
-        self.xoffset = self.cam.xoffset
+        #self.width = self.cam.width
+        #self.height = self.cam.height
+        #self.yoffset = self.cam.yoffset
+        #self.xoffset = self.cam.xoffset
 
     def start(self):
         def toggle_selector(self, event):
@@ -83,8 +89,10 @@ class _CameraInit():
                                                minspanx=5, minspany=5,rectprops=rectprops,
                                                spancoords='pixels')
         ani = animation.FuncAnimation(self._fig, self.get_frame, interval=50, frames=20, blit=False)
-        plt.show()
-
+        try:
+	  plt.show()
+	except AttributeError:
+	  pass
     
     def ZOI_selection(self, eclick, erelease):
         x1, y1 = eclick.xdata, eclick.ydata
@@ -93,10 +101,12 @@ class _CameraInit():
         xmax=round(max(x1,x2))
         ymin=round(min(y1,y2))
         ymax=round(max(y1,y2))
+        # update dimension of the image:
         self.height = (ymax-ymin)
         self.width = (xmax-xmin)
         self.yoffset = ymin
         self.xoffset = xmin
+        #print "1"
         ###################################################################### camera INIT with ZOI selection
         if self.videoextenso['enabled']:
             # the following is to initialise the spot detection
@@ -108,6 +118,7 @@ class _CameraInit():
             image=rank.median(image,square(15)) # median filter to smooth the image and avoid little reflection that may appear as spots.
             self.thresh = threshold_otsu(image) # calculate most effective threshold
             bw= image>self.thresh 
+            #print "1"
             #applying threshold
             if not (self.videoextenso['white_spot']):
                 bw=(1-bw).astype(np.uint8)
@@ -154,7 +165,7 @@ class _CameraInit():
             self.maxy+=self.xoffset
             
             
-            
+            #print "2"
             image = self.cam.getImage() # read a frame
 
             minx_=self.minx.min()
@@ -167,7 +178,7 @@ class _CameraInit():
             miny=self.miny-miny_
             maxy=self.maxy-miny_
             
-            
+            #print "3"
             frame=image[minx_:maxx_,miny_:maxy_]
             self.rec={}
             center={}
@@ -178,21 +189,24 @@ class _CameraInit():
                 
             if len(self.rect)>0:
                 for i in range(0,len(self.rect)):
-                    print 'test'
+                    #print 'test'
                     self.rect[i].remove()
                 self.rect={}    
-                    
+            # evaluating the reduction ratio to enlarge the rectangles       
+            ratx=self.videoextenso['height']*1./self.cam.height
+            raty=self.videoextenso['width']*1./self.cam.width
             for i in range(0,self.NumOfReg):# For each region, plots the rectangle around the spot and a cross at the center
                 print self.maxx[i], self.maxy[i]
-                self.rect[i] = mpatches.Rectangle((self.miny[i], self.minx[i]), maxy[i] - miny[i], maxx[i] - minx[i],fill=False, edgecolor='red', linewidth=1)
+                self.rect[i] = mpatches.Rectangle((self.miny[i]*raty, self.minx[i]*ratx), (maxy[i] - miny[i])*raty, (maxx[i] - minx[i])*ratx,fill=False, edgecolor='red', linewidth=1)
                 self.rec[i]=self._axim.get_axes().add_patch(self.rect[i])
-
+	    
     def barycenter_opencv(self,image,minx,miny):
         """
         computatition of the barycenter (moment 1 of image) on ZOI using OpenCV
         White_Mark must be True if spots are white on a dark material
         """
         # The median filter helps a lot for real life images ...
+        #print "5"
         bw=cv2.medianBlur(image,5)>self.thresh
         if not (self.videoextenso['white_spot']):
             bw=1-bw
@@ -231,19 +245,21 @@ class _CameraInit():
         frame = self.cam.getImage() # read a frame
         #x=np.arange(0,2048,4)
         if i == 1:
+	    #print "6"
             self._cax.axis('on')
             self._im.set_data(frame) #change previous image by new frame
             self._im.set_clim([frame.min(), frame.max()]) # re-arrange colorbar limits
             histogram, bins=np.histogram(frame.ravel(),len(self.x),[0,max(self.x)]) # evalute new histogram
             histogram=np.sqrt(histogram) # this operation aims to improve the histogram visibility (avoid flattening)
             self._li.set_ydata((histogram-histogram.min())/(histogram.max()-histogram.min())) # change previous histogram
+            #self._axim.set_autoscale_on(True)
             return self._cax, self._axim , self._axhist # return the values that need to be updated
     
     def getConfiguration(self):
         if self.videoextenso['enabled']:
-            return int(self.cam.exposure), int(self.cam.gain), int(self.width), int(self.height), int(self.xoffset), int(self.yoffset), \
+            return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset), \
                    self.minx, self.maxx, self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh,self.Points_coordinates
-        print "in cameraInit :", int(self.cam.exposure), int(self.cam.gain), int(self.width), int(self.height), int(self.xoffset), int(self.yoffset)
+        print "in cameraInit :", int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
         return int(self.cam.exposure), int(self.cam.gain), int(self.width), int(self.height), int(self.xoffset), int(self.yoffset)
 
 def getCameraConfig(cam, videoExtenso,send_pipe=None):

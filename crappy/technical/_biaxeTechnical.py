@@ -9,4 +9,7 @@ class Biaxe(object):
 		self.sensor=None
 		self.actuator=_biaxeActuator.BiaxeActuator(self.port)
 		
+	def close(self):
+		self.actuator.set_speed(0)
+		self.actuator.close_port()
 		

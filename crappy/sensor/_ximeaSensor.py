@@ -118,7 +118,7 @@ class Ximea(cameraSensor.CameraSensor):
         
 	@height.setter
 	def height(self,height):
-		print "height setter"
+		print "height setter : ", height
 		self._height=((int(height)/2)*2)
 		self.ximea.set(cv2.CAP_PROP_FRAME_HEIGHT,self.height)
 
@@ -128,6 +128,7 @@ class Ximea(cameraSensor.CameraSensor):
     
 	@width.setter
 	def width(self,width):
+		print "width setter : ", width
 		self._width=(int(width)-int(width)%4)
 		self.ximea.set(cv2.CAP_PROP_FRAME_WIDTH,self.width)
 
@@ -137,6 +138,7 @@ class Ximea(cameraSensor.CameraSensor):
 
 	@yoffset.setter
 	def yoffset(self,yoffset):
+		print "yoffset setter : ", yoffset
 		y_offset = ((int(yoffset)/2)*2)
 		self._yoffset= y_offset
 		self.ximea.set(cv2.CAP_PROP_XI_OFFSET_Y,y_offset)
@@ -147,6 +149,7 @@ class Ximea(cameraSensor.CameraSensor):
     
 	@xoffset.setter
 	def xoffset(self,xoffset):
+		print "xoffset setter : ", xoffset
 		x_offset = (int(xoffset)-int(xoffset)%4)
 		self._xoffset= x_offset 
 		self.ximea.set(cv2.CAP_PROP_XI_OFFSET_X, x_offset)
