@@ -1,18 +1,18 @@
 from _meta import MasterBlock
 
 class CommandBiaxe(MasterBlock):
-	"""Receive a signal and translate it for the Biotens actuator"""
+	"""Receive a signal and translate it for the Biaxe actuator"""
 	def __init__(self, biaxe_technicals, speed=500):
 		"""
-Receive a signal and translate it for the Biotens actuator.
+Receive a signal and translate it for the Biaxe actuator.
 
-CommandBiotens(biotens_technical,speed=5)
+CommandBiaxe(biaxe_technicals)
 
 Parameters
 ----------
-biotens_technicals : list of crappy.technical.Biotens object.
+biaxe_technicals : list of crappy.technical.Biaxe object.
 
-speed: int
+speed: int, default = 500
 		"""
 		self.biaxe_technicals=biaxe_technicals
 		self.speed=speed
