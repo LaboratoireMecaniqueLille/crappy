@@ -85,6 +85,7 @@ The requiered informations depend on the type of waveform you need.
 				if self.waveform=='hold':
 					self.time=current_step["time"]
 				elif self.waveform=='limit':
+					self.gain=current_step["gain"]
 					self.cycles=current_step["cycles"]
 					self.phase=current_step["phase"]
 					self.lower_limit=current_step["lower_limit"]
@@ -136,7 +137,7 @@ The requiered informations depend on the type of waveform you need.
 							cycle+=0.5
 					if last_upper!=first_upper and last_lower!=first_lower: # clean old data
 						Data=Data[min(last_upper,last_lower):]
-					Array=pd.DataFrame([[last_t-self.t0,alpha]],columns=self.labels)
+					Array=pd.DataFrame([[last_t-self.t0,alpha*self.gain]],columns=self.labels)
 					try:
 						for output in self.outputs:
 							output.send(Array)

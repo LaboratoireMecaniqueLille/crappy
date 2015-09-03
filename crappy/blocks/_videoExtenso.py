@@ -63,30 +63,33 @@ Panda Dataframe with time and deformations Exx and Eyy.
 				print " Spots detected : ", self.NumOfReg		
 
 
-	def barycenter_opencv(self,image,minx,miny):
+	def barycenter_opencv(self,recv_):
 		"""
 		computation of the barycenter (moment 1 of image) on ZOI using OpenCV
 		white_spot must be True if spots are white on a dark material
 		"""
 		# The median filter helps a lot for real life images ...
-		bw=cv2.medianBlur(image,5)>self.thresh
-		if not (self.white_spot):
-			bw=1-bw
-		M = cv2.moments(bw*255.)
-		Px=M['m01']/M['m00']
-		Py=M['m10']/M['m00'] 
-		# we add minx and miny to go back to global coordinate:
-		Px+=minx
-		Py+=miny
-		miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
-		maxy_=miny_+h
-		maxx_=miny_+w
-		# Determination of the new bounding box using global coordinates and the margin
-		minx=minx-self.border+minx_
-		miny=miny-self.border+miny_
-		maxx=minx+self.border+maxx_
-		maxy=miny+self.border+maxy_
-		return Px,Py,minx,miny,maxx,maxy
+		while True:
+			image,minx,miny=recv_.recv()[:]
+			#print "minx ", minx
+			bw=cv2.medianBlur(image,5)>self.thresh
+			if not (self.white_spot):
+				bw=1-bw
+			M = cv2.moments(bw*255.)
+			Px=M['m01']/M['m00']
+			Py=M['m10']/M['m00'] 
+			# we add minx and miny to go back to global coordinate:
+			Px+=minx
+			Py+=miny
+			miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
+			maxy_=miny_+h
+			maxx_=miny_+w
+			# Determination of the new bounding box using global coordinates and the margin
+			minx=minx-self.border+minx_
+			miny=miny-self.border+miny_
+			maxx=minx+self.border+maxx_
+			maxy=miny+self.border+maxy_
+			recv_.send([Px,Py,minx,miny,maxx,maxy])
 
 	def main(self):
 		"""
@@ -94,15 +97,37 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		"""
 		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
 		j=0
+		#t2=0
+		#t3=0
+		#t4=0
+		#t5=0
 		last_ttimer=time.time()
 		first_display=True
-		self.t0 = time.time()
+		first=[True,True,True,True]
+		proc_bary={}
+		recv_={}
+		send_={}
+		#self.t0 = time.time()
 		while True:
-			try:
+			try:	
+				#t1=time.time()
 				image = self.camera.sensor.getImage() # read a frame
+				#t2_=time.time()
+				#t2+=t2_-t1
 				#print "image shape : ",np.shape(image)
 				for i in range(0,self.NumOfReg): # for each spot, calulate the news coordinates of the center, based on previous coordinate and border.
-					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]],self.minx[i],self.miny[i])
+					if first[i]:
+						recv_[i],send_[i]=Pipe()
+						proc_bary[i]=Process(target=self.barycenter_opencv,args=(recv_[i],))
+						proc_bary[i].start()
+						first[i]=False
+						#print "i : ",i
+						#print np.shape(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]]),self.minx[i],self.miny[i]
+					send_[i].send([image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]],self.minx[i],self.miny[i]])
+				for i in range(0,self.NumOfReg):
+					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:]
+					#self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]],self.minx[i],self.miny[i])
+				
 				minx_=self.minx.min()
 				miny_=self.miny.min()
 				maxx_=self.maxx.max()
@@ -112,12 +137,15 @@ Panda Dataframe with time and deformations Exx and Eyy.
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
 				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly]],columns=self.labels)
+				#t3_=time.time()
+				#t3+=t3_-t2_
 				try:
 					for output in self.outputs:
 						output.send(Array)
 				except AttributeError:
 					pass
-						
+				#t4_=time.time()
+				#t4+=t4_-t3_		
 				if self.display:
 					if first_display:
 						self.plot_pipe_recv,self.plot_pipe_send=Pipe()
@@ -126,13 +154,25 @@ Panda Dataframe with time and deformations Exx and Eyy.
 						first_display=False
 					if j%90==0 and j>0: # every 80 round, send an image to the plot function below, that display the cropped image, LX, Ly and the position of the area around the spots
 						self.plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_]])
+				#t5_=time.time()
+				#t5+=t5_-t4_
 				if j%90==0 and j>0:
 					t_now=time.time()
 					print "FPS: ", 90/(t_now-last_ttimer)
+					#print "bary :",t2/90.
+					#print "eval coord :",t3/90.
+					#print "send outputs :",t4/90.
+					#print "send display :",t5/90.
+					t2=0
+					t3=0
+					t4=0
+					t5=0
 					last_ttimer=t_now
 				
 				j+=1
 			except KeyboardInterrupt:
+				for i in range(0,self.NumOfReg):
+					proc_bary[i].terminate()
 				raise
 
 	def plotter(self):
