@@ -114,7 +114,8 @@ try:
 
 ########################################### Stopping objects
 
-except :
+except Exception as e:
+	print "Exception in main :", e
 	for instance in crappy.blocks._meta.MasterBlock.instances:
 		instance.join()
 	for instance in crappy.blocks._meta.MasterBlock.instances:

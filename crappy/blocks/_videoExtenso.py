@@ -170,7 +170,8 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					last_ttimer=t_now
 				
 				j+=1
-			except KeyboardInterrupt:
+			except Exception as e:
+				print "Exception in videoextenso : ",e
 				for i in range(0,self.NumOfReg):
 					proc_bary[i].terminate()
 				raise

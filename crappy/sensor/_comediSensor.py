@@ -135,5 +135,7 @@ class ComediSensor(object):
 							self.shared_array[i]=c.comedi_to_phys((datastr[i]),
 												range_ds[i],maxdata[i])
 
-		except (KeyboardInterrupt):	
+		except Exception as e:	
+			print "error in comediSensor : ", e
 			self.close()
+			raise
