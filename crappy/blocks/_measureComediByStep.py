@@ -60,7 +60,7 @@ freq : float or int, optional
 				for output in self.outputs:
 					output.send(Array)
 
-		except Exception as e:
+		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in measureComediByStep : ", e
 			self.comediSensor.close()
 			raise

@@ -57,7 +57,7 @@ freq : float or int, optional
 				for output in self.outputs:
 					output.send(Array)
 
-		except Exception as e:
+		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in measureAgilent34420A : ", e
 			self.agilentSensor.close()
 			raise

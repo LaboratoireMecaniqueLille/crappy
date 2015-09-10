@@ -70,26 +70,30 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		"""
 		# The median filter helps a lot for real life images ...
 		while True:
-			image,minx,miny=recv_.recv()[:]
-			#print "minx ", minx
-			bw=cv2.medianBlur(image,5)>self.thresh
-			if not (self.white_spot):
-				bw=1-bw
-			M = cv2.moments(bw*255.)
-			Px=M['m01']/M['m00']
-			Py=M['m10']/M['m00'] 
-			# we add minx and miny to go back to global coordinate:
-			Px+=minx
-			Py+=miny
-			miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
-			maxy_=miny_+h
-			maxx_=miny_+w
-			# Determination of the new bounding box using global coordinates and the margin
-			minx=minx-self.border+minx_
-			miny=miny-self.border+miny_
-			maxx=minx+self.border+maxx_
-			maxy=miny+self.border+maxy_
-			recv_.send([Px,Py,minx,miny,maxx,maxy])
+			try:
+				image,minx,miny=recv_.recv()[:]
+				#print "minx ", minx
+				bw=cv2.medianBlur(image,5)>self.thresh
+				if not (self.white_spot):
+					bw=1-bw
+				M = cv2.moments(bw*255.)
+				Px=M['m01']/M['m00']
+				Py=M['m10']/M['m00'] 
+				# we add minx and miny to go back to global coordinate:
+				Px+=minx
+				Py+=miny
+				miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
+				maxy_=miny_+h
+				maxx_=miny_+w
+				# Determination of the new bounding box using global coordinates and the margin
+				minx=minx-self.border+minx_
+				miny=miny-self.border+miny_
+				maxx=minx+self.border+maxx_
+				maxy=miny+self.border+maxy_
+				recv_.send([Px,Py,minx,miny,maxx,maxy])
+			except (Exception,KeyboardInterrupt) as e:
+				print "Exception in barycenter : ",e
+				raise
 
 	def main(self):
 		"""
@@ -170,7 +174,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					last_ttimer=t_now
 				
 				j+=1
-			except Exception as e:
+			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in videoextenso : ",e
 				for i in range(0,self.NumOfReg):
 					proc_bary[i].terminate()

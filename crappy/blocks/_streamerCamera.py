@@ -75,7 +75,7 @@ save_directory : directory
 				except AttributeError:
 					pass
 
-		except Exception as e:	
+		except (Exception,KeyboardInterrupt) as e:	
 			print "Exception in streamerCamera : ",
 			self.cameraSensor.sensor.close()
 			raise

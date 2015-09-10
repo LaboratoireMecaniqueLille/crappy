@@ -30,8 +30,8 @@ class BiotensActuator(object):
 		self.ser=ser
 		self.size=size
 		self.clear_errors()
-		self.initialisation()
-		time.sleep(3)
+		#self.initialisation()
+		#time.sleep(3)
 		self.mise_position()
 
 		
@@ -91,7 +91,18 @@ class BiotensActuator(object):
 		self.setmode_position(self.size,70)
 		startposition='\x52\x52\x52\xFF\x00'+convert_to_byte(10,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(10,'B')+ '\xAA\xAA'
 		self.ser.write(startposition)	
+		self.ser.readlines()
+		while position_SI-self.size-1.<=0.: 
+		  position_= Out(10).get_command() #command sequence for reading register 10 = actual position
+		  position=ser.write(position_)
+		  position2=ser.read(19)
+		  position_=GetAnswer(position2).get_answer()
+		  
+		  position_SI=Conversion(position_).displacement_SI()
+
+		self.stop_motor()
 		
+
 		
 		
 	def clear_errors(self): # clears error in motor registers. obviously.

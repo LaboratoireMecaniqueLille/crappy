@@ -43,25 +43,32 @@ if there is no data
 	
 	def send(self,value):
 		"""Send data through the condition.evaluate(value) function"""
-		if self.condition==None:
-			self.out_.send(value)
-		else:
-			if self.external_trigger==None:
-				val=self.condition.evaluate(value)
-				if not val is None:
-					self.out_.send(val)
+		try:
+			if self.condition==None:
+				self.out_.send(value)
 			else:
-				val=self.condition.evaluate(value,self.external_trigger)
-				if not val is None:
-					self.out_.send(val)
-		
+				if self.external_trigger==None:
+					val=self.condition.evaluate(value)
+					if not val is None:
+						self.out_.send(val)
+				else:
+					val=self.condition.evaluate(value,self.external_trigger)
+					if not val is None:
+						self.out_.send(val)
+		except (Exception,KeyboardInterrupt) as e:
+			print "Exception in link : ", e
+			raise
 	
 	def recv(self,blocking=True):
 		"""Receive data. If blocking=False, return None if there is no data"""
-		if blocking:
-			return self.in_.recv()
-		else:
-			if self.in_.poll():
+		try:
+			if blocking:
 				return self.in_.recv()
 			else:
-				return None
+				if self.in_.poll():
+					return self.in_.recv()
+				else:
+				  return None
+		except (Exception,KeyboardInterrupt) as e:
+			print "Exception in link : ", e
+			raise

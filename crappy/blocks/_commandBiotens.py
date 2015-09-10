@@ -29,7 +29,7 @@ speed: int
 					for biotens_technical in self.biotens_technicals:
 						biotens_technical.actuator.setmode_speed(cmd*self.speed)
 					last_cmd=cmd
-		except Exception as e:
+		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in CommandBiotens : ", e
 			for biotens_technical in self.biotens_technicals:
 				biotens_technical.actuator.stop_motor()

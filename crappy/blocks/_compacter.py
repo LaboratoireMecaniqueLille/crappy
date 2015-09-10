@@ -47,6 +47,6 @@ Panda Dataframe of shape (number_of_values_in_input,acquisition_step)
 						Data=pd.concat([Data,Data1])
 				for j in range(len(self.outputs)):
 					self.outputs[j].send(Data)
-		except Exception as e:
+		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in Compacter : ", e
 			raise

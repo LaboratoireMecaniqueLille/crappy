@@ -10,7 +10,7 @@ t0=time.time()
 try:
 ########################################### Creating objects
 	
-	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8])
+	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[0])
 	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=30)
 
 ########################################### Creating blocks
@@ -31,7 +31,7 @@ try:
 	
 	
 	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},
-							{"waveform":"limit","cycles":3,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[5,'Eyy(%)']}],
+							{"waveform":"limit","gain":1,"cycles":3,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[5,'Eyy(%)']}],
 							send_freq=400,repeat=True,labels=['t(s)','signal'])
 	
 	
@@ -94,8 +94,13 @@ try:
 
 ########################################### Stopping objects
 
-except KeyboardInterrupt:
+except (Exception,KeyboardInterrupt) as e:
+	print "Exception in main :", e
+	#for instance in crappy.blocks._meta.MasterBlock.instances:
+		#instance.join()
 	for instance in crappy.blocks._meta.MasterBlock.instances:
-		instance.join()
-	for instance in crappy.blocks._meta.MasterBlock.instances:
-		instance.stop()
+		try:
+			instance.stop()
+			print "instance stopped : ", instance
+		except:
+			pass
