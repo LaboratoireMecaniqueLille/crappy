@@ -32,7 +32,7 @@ class BiotensActuator(object):
 		self.clear_errors()
 		#self.initialisation()
 		#time.sleep(3)
-		self.mise_position()
+		#self.mise_position()
 
 		
 		
@@ -87,20 +87,21 @@ class BiotensActuator(object):
 	
 	
 	
-	def mise_position(self): # set motor into position for sample's placement
-		self.setmode_position(self.size,70)
-		startposition='\x52\x52\x52\xFF\x00'+convert_to_byte(10,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(10,'B')+ '\xAA\xAA'
-		self.ser.write(startposition)	
-		self.ser.readlines()
-		while position_SI-self.size-1.<=0.: 
-		  position_= Out(10).get_command() #command sequence for reading register 10 = actual position
-		  position=ser.write(position_)
-		  position2=ser.read(19)
-		  position_=GetAnswer(position2).get_answer()
+	#def mise_position(self): # set motor into position for sample's placement
+		#self.setmode_position(self.size,70)
+		#startposition='\x52\x52\x52\xFF\x00'+convert_to_byte(10,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(10,'B')+ '\xAA\xAA'
+		#self.ser.write(startposition)	
+		#self.ser.readlines()
+		#position_SI=0.
+		#while position_SI-self.size-1.<=0.: 
+		  #position_= Out(10).get_command() #command sequence for reading register 10 = actual position
+		  #position=ser.write(position_)
+		  #position2=ser.read(19)
+		  #position_=GetAnswer(position2).get_answer()
 		  
-		  position_SI=Conversion(position_).displacement_SI()
+		  #position_SI=Conversion(position_).displacement_SI()
 
-		self.stop_motor()
+		#self.stop_motor()
 		
 
 		
@@ -111,16 +112,3 @@ class BiotensActuator(object):
 		
 		
 		
-	def initialisation(self): # actuators goes out completely, in order to set the initial position
-		### actuator is totally out.
-		initposition= '\x52\x52\x52\xFF\x00'+convert_to_byte(38,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(38,'B')+ '\xAA\xAA'
-		initspeed = '\x52\x52\x52\xFF\x00'+convert_to_byte(40,'B')+convert_to_byte(2,'B')+convert_to_byte(-50,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(40,'B')+ '\xAA\xAA'
-		inittorque = '\x52\x52\x52\xFF\x00'+convert_to_byte(41,'B')+convert_to_byte(2,'B')+convert_to_byte(1023,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(41,'B')+ '\xAA\xAA'	
-		toinit= '\x52\x52\x52\xFF\x00'+convert_to_byte(37,'B')+convert_to_byte(2,'B')+convert_to_byte(0,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(37,'B')+ '\xAA\xAA'
-		
-		self.ser.writelines([initposition, initspeed, inittorque, toinit])
-		self.ser.write('\x52\x52\x52\xFF\x00'+convert_to_byte(2,'B')+convert_to_byte(2,'B')+convert_to_byte(12,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(2,'B')+ '\xAA\xAA')
-		
-		### initializes the count when the motors is out.
-		startposition='\x52\x52\x52\xFF\x00'+convert_to_byte(10,'B')+convert_to_byte(4,'B')+convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +convert_to_byte(10,'B')+ '\xAA\xAA'
-		self.ser.write(startposition)

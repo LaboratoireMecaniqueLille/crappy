@@ -11,7 +11,7 @@ try:
 ########################################### Creating objects
 	
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[0])
-	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=30)
+	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=20)
 
 ########################################### Creating blocks
 	
@@ -24,7 +24,7 @@ try:
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=200)
-	extenso=crappy.blocks.VideoExtenso(camera="Ximea",white_spot=True,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
+	extenso=crappy.blocks.VideoExtenso(camera="Ximea",white_spot=False,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
 	
 	#pathGenerator=crappy.blocks.PathGenerator(send_freq=1000,waveform=["limit","limit","limit"],time_cycles=[0.6,1,3],phase=[0,0,0],lower_limit=[[0.05,'F(N)'],[0.05,'F(N)'],[0,None]],upper_limit=[[5.0,'Eyy(%)'],[4.0,'Eyy(%)'],[0,None]],repeat=True)
 	#pathGenerator=crappy.blocks.SignalGenerator(send_freq=1000,waveform=["limit","limit","limit","limit"],time_cycles=[5,5,5,0.5],phase=[0,0,0,0],lower_limit=[[0.05,'F(N)'],[0.05,'F(N)'],[0.05,'F(N)'],[0.05,'F(N)']],upper_limit=[[5.0,'Eyy(%)'],[10.0,'Eyy(%)'],[20.0,'Eyy(%)'],[90,'F(N)']],repeat=False)
