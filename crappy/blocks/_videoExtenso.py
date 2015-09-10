@@ -6,6 +6,7 @@ import time
 import pandas as pd
 import cv2
 from ..technical import TechnicalCamera as tc
+import SimpleITK as sitk # only for testing
 
 
 class VideoExtenso(MasterBlock): 
@@ -60,7 +61,14 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			if self.NumOfReg==4: 
 				go=True
 			else:	#	If detection goes wrong, start again
-				print " Spots detected : ", self.NumOfReg		
+				print " Spots detected : ", self.NumOfReg	
+			# following is for tests only
+			self.save_directory="/home/biaxe/Bureau/Publi/"
+			fo=open(self.save_directory+"L0.txt","a")		# "a" for appending
+			fo.seek(0,2)		#place the "cursor" at the end of the file
+			data_to_save="L0x : "+str(self.L0x)+"\n"+"Loy : "+str(self.L0y)
+			fo.write(data_to_save)
+			fo.close()
 
 
 	def barycenter_opencv(self,recv_):
@@ -99,7 +107,21 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		"""
 		main function, command the videoextenso and the motors
 		"""
+		self.cap = cv2.VideoCapture(cv2.CAP_XIAPI + 1)
+		print "cam 2 live!"
+		self.cap.set(cv2.CAP_PROP_XI_AEAG,0)#auto gain auto exposure
+		self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,2048);  # doesn't work for this one
+		self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,2048); # reducing this one allows one to increase the FPS
+		##self.cap.set(cv2.CAP_PROP_XI_OFFSET_Y,300); # Vertical axis
+		##self.cap.set(cv2.CAP_PROP_XI_OFFSET_X,560); # horizontal axis from the left
+		self.cap.set(cv2.CAP_PROP_EXPOSURE,8000) # setting up exposure
+		self.cap.set(cv2.CAP_PROP_GAIN,0) #setting up gain
+		ret, frame = self.cap.read()
+		#ret, frame = self.cap.read()
+			
+			
 		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
+		
 		j=0
 		#t2=0
 		#t3=0
@@ -114,8 +136,16 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		#self.t0 = time.time()
 		while True:
 			try:	
-				#t1=time.time()
+				t2=time.time()
 				image = self.camera.sensor.getImage() # read a frame
+				if j%100==0 and j>0: # this loop is for test only
+					ret, frame = self.cap.read()
+					t2=time.time()
+					#print "time diff : ", t2-t1
+					#image1=sitk.GetImageFromArray(image)
+					#sitk.WriteImage(image1,self.save_directory+"img_videoExtenso%.5d.tiff" %j)
+					#image2=sitk.GetImageFromArray(frame)
+					#sitk.WriteImage(image2,self.save_directory+"img_mouchetis%.5d.tiff" %j)
 				#t2_=time.time()
 				#t2+=t2_-t1
 				#print "image shape : ",np.shape(image)
@@ -160,17 +190,15 @@ Panda Dataframe with time and deformations Exx and Eyy.
 						self.plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_]])
 				#t5_=time.time()
 				#t5+=t5_-t4_
-				if j%90==0 and j>0:
+				if j%100==0 and j>0:
 					t_now=time.time()
-					print "FPS: ", 90/(t_now-last_ttimer)
-					#print "bary :",t2/90.
-					#print "eval coord :",t3/90.
-					#print "send outputs :",t4/90.
-					#print "send display :",t5/90.
-					t2=0
-					t3=0
-					t4=0
-					t5=0
+					print "FPS: ", 100/(t_now-last_ttimer)
+					#t2=time.time()
+					#print "time diff : ", t2-t1
+					image1=sitk.GetImageFromArray(image)
+					sitk.WriteImage(image1,self.save_directory+"img_videoExtenso%.5d_t%3.3f_Exx%2.2f_Eyy%2.2f.tiff" %(j,(t2-self.t0),Lx,Ly))
+					image2=sitk.GetImageFromArray(frame)
+					sitk.WriteImage(image2,self.save_directory+"img_mouchetis%.5d_t%3.3f_Exx%2.2d_Eyy%2.2f.tiff" %(j,(t2-self.t0),Lx,Ly))
 					last_ttimer=t_now
 				
 				j+=1
