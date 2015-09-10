@@ -114,12 +114,16 @@ try:
 
 ########################################### Stopping objects
 
-except Exception as e:
-	print "Exception : ", e
+except (Exception,KeyboardInterrupt) as e:
+	print "Exception in main :", e
 	for instance in crappy.blocks._meta.MasterBlock.instances:
-		instance.join()
-	for instance in crappy.blocks._meta.MasterBlock.instances:
-		instance.stop()
+		try:
+			instance.stop()
+		except:
+			pass
 	for axe in axes:
-		axe.close()
+		try:
+			axe.close()
+		except:
+			pass
 		

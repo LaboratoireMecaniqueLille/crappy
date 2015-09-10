@@ -26,6 +26,8 @@ comedi_actuators : list of crappy.actuators.ComediActuator objects.
 					for comedi_actuator in self.comedi_actuators:
 						comedi_actuator.set_cmd(cmd)
 					last_cmd=cmd
-		except:
+		except Exception as e:
+			print "Exception in CommandComedi : ", e
 			for comedi_actuator in self.comedi_actuators:
 				comedi_actuator.close()
+			raise

@@ -29,7 +29,9 @@ speed: int, default = 500
 					for biaxe_technical in self.biaxe_technicals:
 						biaxe_technical.actuator.set_speed(cmd*self.speed)
 					last_cmd=cmd
-		except:
+		except Exception as e:
+			print "Exception in measureComediByStep : ", e
 			for biaxe_technical in self.biaxe_technicals:
 				biaxe_technical.actuator.set_speed(0)
 				biaxe_technical.actuator.close_port()
+			raise

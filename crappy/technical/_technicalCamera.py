@@ -15,6 +15,7 @@ class TechnicalCamera():
 		except Exception as e:
 			print "%s "%e, " Unreconized camera\n"
 			sys.exit()
+			raise
 		
         #initialisation:
 		self.sensor = CameraClass()

@@ -113,4 +113,6 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 					ax.autoscale_view(True,True,True)
 					fig.canvas.draw() 
 		except Exception as e:
+			print "Exception in grapher : ", e
 			plt.close('all')
+			raise

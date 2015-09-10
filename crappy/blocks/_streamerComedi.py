@@ -101,5 +101,7 @@ freq : int (default 8000)
 						for output in self.outputs:
 							output.send(Array)
 
-		except (KeyboardInterrupt):	
+		except Exception as e:	
+			print "Exception in streamerComedi : ",
 			self.comediSensor.close()
+			raise

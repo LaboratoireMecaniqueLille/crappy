@@ -99,6 +99,7 @@ The requiered informations depend on the type of waveform you need.
 					
 			except KeyError as e:
 				print "You didn't define parameter %s for step number %s" %(e,self.step)
+				raise
 
 				
 			if self.waveform=="limit": #	 signal defined by a lower and upper limit
