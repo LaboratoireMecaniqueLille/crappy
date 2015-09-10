@@ -11,7 +11,7 @@ t0=time.time()
 try:
 ########################################### Creating objects
 	
-	instronSensor=crappy.sensor.ComediSensor(channels=[1,3],gain=[-3749.3,-3198.9*1.2],offset=[23.6,10.5])
+	instronSensor=crappy.sensor.ComediSensor(channels=[1,3],gain=[-3749.3,-3198.9*1.18],offset=[24,13])
 	biaxeTech1=crappy.technical.Biaxe(port='/dev/ttyS4')
 	biaxeTech2=crappy.technical.Biaxe(port='/dev/ttyS5')
 	biaxeTech3=crappy.technical.Biaxe(port='/dev/ttyS6')
@@ -21,15 +21,15 @@ try:
 ########################################### Creating blocks
 	
 	compacter_effort=crappy.blocks.Compacter(200)
-	save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/effort.txt")
+	save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Publi/effort.txt")
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
 	
 	compacter_extenso=crappy.blocks.Compacter(150)
-	save_extenso=crappy.blocks.Saver("/home/biaxe/Bureau/extenso.txt")
+	save_extenso=crappy.blocks.Saver("/home/biaxe/Bureau/Publi/extenso.txt")
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
-	extenso=crappy.blocks.VideoExtenso(camera="Ximea",xoffset=100,yoffset=400,width=1024,height=1024,white_spot=True,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
+	extenso=crappy.blocks.VideoExtenso(camera="Ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
 	
 	#signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},
 							#{"waveform":"limit","cycles":3,"phase":0,"lower_limit":[50,'F(N)'],"upper_limit":[5,'Exx(%)']}],
@@ -39,14 +39,14 @@ try:
 								#{"waveform":"limit","gain":0,"cycles":0.5,"phase":0,"lower_limit":[50,'F4(N)'],"upper_limit":[9.7,'Eyy(%)']},
 								#{"waveform":"limit","gain":1,"cycles":0.5,"phase":-np.pi,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']}],
 								#send_freq=400,repeat=True,labels=['t(s)','signal'])
-	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":50,"phase":0,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']}],
+	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":1,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[1000,'Exx(%)']}],
 							send_freq=400,repeat=True,labels=['t(s)','signal'])
 	
-	signalGenerator_horizontal=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":50,"phase":0,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']}],
+	signalGenerator_horizontal=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":1,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[1000,'Exx(%)']}],
 							send_freq=400,repeat=True,labels=['t(s)','signal'])
 	
 	biotens=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1,biaxeTech2],speed=-200) # vertical
-	biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-200) #horizontal
+	biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-200) #horizontal # speed must be <0 for traction
 
 ########################################### Creating links
 	
@@ -101,25 +101,29 @@ try:
 	graph_extenso.add_input(link5)
 	
 ########################################### Starting objects
-
+	#print "top :",crappy.blocks._meta.MasterBlock.instances
 	t0=time.time()
 	for instance in crappy.blocks._meta.MasterBlock.instances:
 		instance.set_t0(t0)
 
 	for instance in crappy.blocks._meta.MasterBlock.instances:
 		instance.start()
-
+	
 ########################################### Waiting for execution
 
 
 ########################################### Stopping objects
 
-except Exception as e:
+except (Exception,KeyboardInterrupt) as e:
 	print "Exception in main :", e
 	for instance in crappy.blocks._meta.MasterBlock.instances:
-		instance.join()
-	for instance in crappy.blocks._meta.MasterBlock.instances:
-		instance.stop()
+		try:
+			instance.stop()
+		except:
+			pass
 	for axe in axes:
-		axe.close()
+		try:
+			axe.close()
+		except:
+			pass
 		

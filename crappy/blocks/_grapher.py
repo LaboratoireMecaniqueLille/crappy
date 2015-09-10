@@ -36,6 +36,7 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 		try:
 			print "main grapher"
 			if self.mode=="dynamic":
+				#print "1"
 				save_number=0
 				fig=plt.figure()
 				ax=fig.add_subplot(111)
@@ -45,9 +46,11 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 					else:
 						li.extend(ax.plot(np.arange(1),np.zeros(1)))
 				plt.grid()
+				#print "2"
 				fig.canvas.draw()	# draw and show it
 				plt.show(block=False)
 				while True:
+					#print "3"
 					Data=self.inputs[0].recv()	# recv data
 					legend_=Data.columns[1:]
 					if save_number>0: # lose the first round of data    
@@ -63,6 +66,7 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 							li[i].set_xdata(var[self.args[i][0]])
 							li[i].set_ydata(var[self.args[i][1]])
 					ax.relim()
+					#print "4"
 					ax.autoscale_view(True,True,True)
 					fig.canvas.draw() 
 					if save_number <=10 :
@@ -112,7 +116,7 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 					ax.relim()
 					ax.autoscale_view(True,True,True)
 					fig.canvas.draw() 
-		except Exception as e:
+		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in grapher : ", e
 			plt.close('all')
 			raise

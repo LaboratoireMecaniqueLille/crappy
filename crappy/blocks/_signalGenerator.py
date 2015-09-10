@@ -203,4 +203,5 @@ The requiered informations depend on the type of waveform you need.
 				if self.repeat and self.step==self.nb_step:
 					self.step=0
 				t_step=time.time()
+		raise Exception("Completed !")
   

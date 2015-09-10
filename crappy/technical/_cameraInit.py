@@ -156,8 +156,8 @@ class _CameraInit():
 			for i in range(0,self.NumOfReg): # find the center of every region
 				self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]-1:self.maxx[i]+1,self.miny[i]-1:self.maxy[i]+1],self.minx[i]-1,self.miny[i]-1)
 			#Evaluating initial distance bewteen 2 spots 
-			self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
-			self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
+			#self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
+			#self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
 			
 			self.minx+=self.yoffset
 			self.maxx+=self.yoffset
@@ -237,8 +237,11 @@ class _CameraInit():
 		self._fig.canvas.draw_idle()
 	
 	def close(self, event):
-		self.cam.close()
-		plt.close()
+		self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
+		self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
+		print "L0 saved!"
+		#self.cam.close()
+		#plt.close()
 		
 	### Main
 	def get_frame(self,i):

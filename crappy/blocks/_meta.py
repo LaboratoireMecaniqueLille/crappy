@@ -41,7 +41,7 @@ stop() : stops the process.
 		try:
 			self.proc=Process(target=self.main,args=())
 			self.proc.start()
-		except Exception as e:
+		except (Exception,KeyboardInterrupt) as e:
 			print "Exception : ", e
 			self.proc.terminate()
 			raise #raise the error to the next level for global shutdown

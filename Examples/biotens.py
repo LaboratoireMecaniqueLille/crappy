@@ -10,8 +10,10 @@ t0=time.time()
 try:
 ########################################### Creating objects
 	
-	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8])
-	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=30)
+	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[0])
+	t,F0=instronSensor.getData(0)
+	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[-F0])
+	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=20)
 
 ########################################### Creating blocks
 	
@@ -24,15 +26,15 @@ try:
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=200)
-	extenso=crappy.blocks.VideoExtenso(camera="Ximea",white_spot=True,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
+	extenso=crappy.blocks.VideoExtenso(camera="Ximea",white_spot=False,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
 	
-	#pathGenerator=crappy.blocks.PathGenerator(send_freq=1000,waveform=["limit","limit","limit"],time_cycles=[0.6,1,3],phase=[0,0,0],lower_limit=[[0.05,'F(N)'],[0.05,'F(N)'],[0,None]],upper_limit=[[5.0,'Eyy(%)'],[4.0,'Eyy(%)'],[0,None]],repeat=True)
-	#pathGenerator=crappy.blocks.SignalGenerator(send_freq=1000,waveform=["limit","limit","limit","limit"],time_cycles=[5,5,5,0.5],phase=[0,0,0,0],lower_limit=[[0.05,'F(N)'],[0.05,'F(N)'],[0.05,'F(N)'],[0.05,'F(N)']],upper_limit=[[5.0,'Eyy(%)'],[10.0,'Eyy(%)'],[20.0,'Eyy(%)'],[90,'F(N)']],repeat=False)
-	
-	
-	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},
-							{"waveform":"limit","cycles":3,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[5,'Eyy(%)']}],
-							send_freq=400,repeat=True,labels=['t(s)','signal'])
+	#signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":0},
+							#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[90,'Eyy(%)']}],
+							#send_freq=400,repeat=False,labels=['t(s)','signal'])
+	#example of path:[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[i,'Eyy(%)']} for i in range(10,90,10)]
+
+	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[3,'Eyy(%)']}],
+							send_freq=400,repeat=False,labels=['t(s)','signal'])
 	
 	
 	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
@@ -94,8 +96,13 @@ try:
 
 ########################################### Stopping objects
 
-except KeyboardInterrupt:
+except (Exception,KeyboardInterrupt) as e:
+	print "Exception in main :", e
+	#for instance in crappy.blocks._meta.MasterBlock.instances:
+		#instance.join()
 	for instance in crappy.blocks._meta.MasterBlock.instances:
-		instance.join()
-	for instance in crappy.blocks._meta.MasterBlock.instances:
-		instance.stop()
+		try:
+			instance.stop()
+			print "instance stopped : ", instance
+		except:
+			pass
