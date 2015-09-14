@@ -38,6 +38,8 @@ try:
 	
 	
 	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
+	compacter_position=crappy.blocks.Compacter(50)
+	save_position=crappy.blocks.Saver("/home/biotens/Bureau/position.txt")
 
 ########################################### Creating links
 	
@@ -50,7 +52,7 @@ try:
 	link7=crappy.links.Link()
 	link8=crappy.links.Link()
 	link9=crappy.links.Link()
-	
+	link10=crappy.links.Link()
 	
 ########################################### Linking objects
 
@@ -65,6 +67,7 @@ try:
 	signalGenerator.add_output(link9)
 	
 	biotens.add_input(link9)
+	biotens.add_output(link10)
 
 	compacter_effort.add_input(link6)
 	compacter_effort.add_output(link7)
@@ -82,6 +85,10 @@ try:
 	
 	graph_extenso.add_input(link5)
 	
+	compacter_position.add_input(link10)
+	compacter_position.add_output(link11)
+	
+	save_position.add_input(link11)
 ########################################### Starting objects
 
 	t0=time.time()
