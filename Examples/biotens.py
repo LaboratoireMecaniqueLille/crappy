@@ -13,7 +13,7 @@ try:
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[0])
 	t,F0=instronSensor.getData(0)
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[-F0])
-	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=20)
+	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=15)
 
 ########################################### Creating blocks
 	
