@@ -1,12 +1,9 @@
 #from multiprocessing import Pipe,Process
 import time
-#import copy
-#import Blocks
-#import Links
 import crappy
-modules.blocks.MasterBlock.instances=[] # Init masterblock instances
+crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
-class condition_cycle(modules.links.Condition):
+class condition_cycle(crappy.links.Condition):
 	def __init__(self):
 		self.cycle=0
 		self.go=True
@@ -19,7 +16,7 @@ class condition_cycle(modules.links.Condition):
 			self.go=True
 		return self.cycle
 
-class condition_cycle_bool(modules.links.Condition):
+class condition_cycle_bool(crappy.links.Condition):
 	def __init__(self,n=1):
 		self.cycle=0
 		self.go=True
@@ -90,38 +87,38 @@ class condition_cycle_bool(modules.links.Condition):
 
 F_max=3.1e-5
 F_min=2.9e-5
-t0=time.time()
+#t0=time.time()
 try:
 ########################################### Creating objects
 	
-	instronSensor=modules.sensor.ComediSensor(channels=[0,1])
-	cameraSensor=modules.technical.Ximea()
-	#agilentSensor=modules.sensor.Agilent34420ASensor()
+	instronSensor=crappy.sensor.ComediSensor(channels=[0,1],gain=[1,1])
+	#cameraSensor=crappy.technical.Ximea()
+	#agilentSensor=crappy.sensor.Agilent34420ASensor()
 
 ########################################### Creating blocks
 	
-	stream=modules.blocks.StreamerComediByStep(t0,instronSensor,labels=['t','m','N'])
-	camera=modules.blocks.StreamerCamera(cameraSensor,freq=None,save=True,save_directory="./images_fissuration/")
-	#resistance=modules.blocks.MeasureAgilent34420A(t0,agilentSensor)
-	compacter=modules.blocks.Compacter(100)
-	compacter_resistance=modules.blocks.Compacter(10)
-	save=modules.blocks.Saver("/home/corentin/Bureau/t_F_dep_cycle.txt")
-	save_resistance=modules.blocks.Saver("/home/corentin/Bureau/t_Res_cycle.txt")
-	graph=modules.blocks.Grapher("dynamic",(0,1),(0,2))
-	#graph_resistance=modules.blocks.Grapher("dynamic",(0,1))
+	stream=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','dep(mm)','F(N)'],freq=200)
+	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="./images_fissuration/")
+	#resistance=crappy.blocks.MeasureAgilent34420A(agilentSensor)
+	compacter=crappy.blocks.Compacter(100)
+	compacter_resistance=crappy.blocks.Compacter(10)
+	save=crappy.blocks.Saver("/home/corentin/Bureau/t_F_dep_cycle.txt")
+	save_resistance=crappy.blocks.Saver("/home/corentin/Bureau/t_Res_cycle.txt")
+	graph=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
+	graph_resistance=crappy.blocks.Grapher("dynamic",('t(s)','R(Ohm)'))
 	
 ########################################### Creating links
 	
-	link1=modules.links.Link()
-	link2=modules.links.Link()
-	link3=modules.links.Link()
-	link4=modules.links.Link(condition=condition_cycle_bool())
-	link5=modules.links.Link(condition=condition_cycle_bool(n=5))
-	link6=modules.links.Link()
-	link7=modules.links.Link()
-	link8=modules.links.Link()
-	link9=modules.links.Link(condition=condition_cycle())
-	link10=modules.links.Link(condition=condition_cycle())
+	link1=crappy.links.Link()
+	link2=crappy.links.Link()
+	link3=crappy.links.Link()
+	link4=crappy.links.Link(condition=condition_cycle_bool())
+	link5=crappy.links.Link(condition=condition_cycle_bool(n=5))
+	link6=crappy.links.Link()
+	link7=crappy.links.Link()
+	link8=crappy.links.Link()
+	link9=crappy.links.Link(condition=condition_cycle())
+	link10=crappy.links.Link(condition=condition_cycle())
 	
 ########################################### Linking objects
 	stream.add_output(link1)
@@ -150,18 +147,27 @@ try:
 	
 ########################################### Starting objects
 
-	for instance in modules.blocks.MasterBlock.instances:
+
+	t0=time.time()
+	for instance in crappy.blocks._meta.MasterBlock.instances:
+		instance.set_t0(t0)
+		
+	for instance in crappy.blocks.MasterBlock.instances:
 		instance.start()
 
 ########################################### Waiting for execution
-	time.sleep(1)
-	time.sleep(100)
+	#time.sleep(1)
+	#time.sleep(100)
 
 ########################################### Stopping objects
 
-	for instance in modules.blocks.MasterBlock.instances:
-		instance.stop()
+	#for instance in crappy.blocks.MasterBlock.instances:
+		#instance.stop()
 
-except KeyboardInterrupt:
-	for instance in modules.blocks.MasterBlock.instances:
-		instance.stop()
+except (Exception,KeyboardInterrupt) as e:
+	print "Exception in main :", e
+	for instance in crappy.blocks._meta.MasterBlock.instances:
+		try:
+			instance.stop()
+		except:
+			pass

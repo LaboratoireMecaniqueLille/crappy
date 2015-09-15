@@ -1,4 +1,5 @@
 from _meta import MasterBlock
+import time
 
 class CommandBiotens(MasterBlock):
 	"""Receive a signal and translate it for the Biotens actuator"""
@@ -29,6 +30,15 @@ speed: int
 					for biotens_technical in self.biotens_technicals:
 						biotens_technical.actuator.setmode_speed(cmd*self.speed)
 					last_cmd=cmd
+				for biotens_technical in self.biotens_technicals:
+					position=biotens_technical.sensor.read_position()
+					Array=pd.DataFrame([[time.time()-self.t0,position]],columns=['t(s)','position'])
+					try:
+						for output in self.outputs:
+							output.send(Array)
+					except:
+						pass
+				
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in CommandBiotens : ", e
 			for biotens_technical in self.biotens_technicals:

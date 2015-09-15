@@ -65,7 +65,7 @@ The requiered informations depend on the type of waveform you need.
 
 		"""
 		print "MultiPath!"
-		self.path=path
+		self.path=path # list of list or arrays
 		self.nb_step=len(path)
 		self.send_freq=send_freq
 		self.repeat=repeat
@@ -108,25 +108,28 @@ The requiered informations depend on the type of waveform you need.
 			
 			
 	def move(self):
-		self.position=self.inputs_[0].recv()
+		self.Data=self.inputs_[0].recv()
+		self.position=[self.Data[self.labels[1]][0],self.Data[self.labels[2]][0]]
 		self.target=self.path[self.step]
-		self.last_vector=(self.target-self.position)/max(self.target-self.position)
-		while max(abs(self.position-self.target))> offset:
-			self.vector=(self.target-self.position)/max(self.target-self.position)
-			self.traction+=speed*vector[0]
-			self.torsion+=speed*vector[1]
+		self.last_vector=np.substract(self.target,self.position)/np.linalg.norm(np.substract(self.target,self.position))
+		# go to wanted position
+		while np.linalg.norm(np.substract(self.target,self.position))> offset:
+			self.vector=np.substract(self.target,self.position)/np.linalg.norm(np.substract(self.target,self.position))
+			self.traction+=speed*self.vector[0]
+			self.torsion+=speed*self.vector[1]
 			self.send()
-			self.position=self.inputs_[0].recv()
+			self.Data=self.inputs_[0].recv()
+			self.position=[self.Data[self.labels[1]][0],self.Data[self.labels[2]][0]]
 		# return in the elastic domain
 		self.last_position=self.position
-		self.target=-self.last_vector*back_value+self.last_position
-		self.last_vector*=-1
-		while max(abs(self.position-self.target))> offset:
-			self.vector=(self.target-self.position)/max(self.target-self.position)
+		self.target=np.add(np.multiply(self.last_vector,(-1*self.back_value)),self.last_position) 
+		self.last_vector=np.add((self.last_vector,-1)
+		while np.linalg.norm(np.substract(self.target,self.position))> offset:
+			self.vector=np.substract(self.target,self.position)/np.linalg.norm(np.substract(self.target,self.position))
 			self.traction+=speed*vector[0]
 			self.torsion+=speed*vector[1]
-			self.send()
-			self.position=self.inputs_[0].recv()
+			self.Data=self.inputs_[0].recv()
+			self.position=[self.Data[self.labels[1]][0],self.Data[self.labels[2]][0]]
 		
 		
 		
