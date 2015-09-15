@@ -33,12 +33,12 @@ try:
 							#send_freq=400,repeat=False,labels=['t(s)','signal'])
 	#example of path:[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[i,'Eyy(%)']} for i in range(10,90,10)]
 
-	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[3,'Eyy(%)']}],
-							send_freq=400,repeat=False,labels=['t(s)','signal'])
+	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[1000,'Eyy(%)']}],
+							send_freq=5,repeat=False,labels=['t(s)','signal'])
 	
 	
 	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
-	compacter_position=crappy.blocks.Compacter(50)
+	compacter_position=crappy.blocks.Compacter(5)
 	save_position=crappy.blocks.Saver("/home/biotens/Bureau/position.txt")
 
 ########################################### Creating links
@@ -53,6 +53,7 @@ try:
 	link8=crappy.links.Link()
 	link9=crappy.links.Link()
 	link10=crappy.links.Link()
+	link11=crappy.links.Link()
 	
 ########################################### Linking objects
 

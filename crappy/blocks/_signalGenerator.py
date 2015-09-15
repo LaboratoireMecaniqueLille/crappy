@@ -106,6 +106,10 @@ The requiered informations depend on the type of waveform you need.
 				alpha=np.sign(np.cos(self.phase))
 				while self.cycles is None or cycle<self.cycles:
 					while time.time()-last_t<1./self.send_freq:
+						for input_ in self.inputs:
+							if input_.in_.poll() or first: # if there is data waiting
+								Data=pd.concat([Data,input_.recv()],ignore_index=True)
+						first=False
 						time.sleep(1./(100*self.send_freq))
 					last_t=time.time()					
 					###################################################get data
@@ -153,6 +157,10 @@ The requiered informations depend on the type of waveform you need.
 			elif self.waveform=="hold":
 				while self.time is None or (time.time()-t_step)<self.time:
 					while time.time()-last_t<1./self.send_freq:
+						for input_ in self.inputs:
+							if input_.in_.poll() or first: # if there is data waiting
+								Data=pd.concat([Data,input_.recv()],ignore_index=True)
+						first=False
 						time.sleep(1./(100*self.send_freq))
 					last_t=time.time()
 					for input_ in self.inputs: # recv inputs to avoid pipe overflow

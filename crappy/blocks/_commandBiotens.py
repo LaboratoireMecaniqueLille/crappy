@@ -1,5 +1,6 @@
 from _meta import MasterBlock
 import time
+import pandas as pd
 
 class CommandBiotens(MasterBlock):
 	"""Receive a signal and translate it for the Biotens actuator"""
@@ -23,6 +24,7 @@ speed: int
 	def main(self):
 		try:
 			last_cmd=0
+			self.last_time=self.t0
 			while True:
 				Data=self.inputs[0].recv()
 				cmd=Data['signal'].values[0]
@@ -30,9 +32,12 @@ speed: int
 					for biotens_technical in self.biotens_technicals:
 						biotens_technical.actuator.setmode_speed(cmd*self.speed)
 					last_cmd=cmd
-				for biotens_technical in self.biotens_technicals:
-					position=biotens_technical.sensor.read_position()
-					Array=pd.DataFrame([[time.time()-self.t0,position]],columns=['t(s)','position'])
+				t=time.time()
+				if (t-self.last_time)>=0.2:
+					self.last_time=t
+					for biotens_technical in self.biotens_technicals:
+						position=biotens_technical.sensor.read_position()
+					Array=pd.DataFrame([[t-self.t0,position]],columns=['t(s)','position'])
 					try:
 						for output in self.outputs:
 							output.send(Array)
