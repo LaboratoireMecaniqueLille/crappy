@@ -14,6 +14,7 @@ from ._measureComediByStep import MeasureComediByStep
 from ._pid import PID
 from ._reader import Reader
 from ._saver import Saver
+from ._signalAdapter import SignalAdapter
 from ._signalGenerator import SignalGenerator
 from ._streamerCamera import StreamerCamera
 from ._streamerComedi import StreamerComedi

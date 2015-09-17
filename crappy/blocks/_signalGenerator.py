@@ -104,7 +104,11 @@ The requiered informations depend on the type of waveform you need.
 				
 			if self.waveform=="limit": #	 signal defined by a lower and upper limit
 				alpha=np.sign(np.cos(self.phase))
+				#last_a=self.t0
 				while self.cycles is None or cycle<self.cycles:
+					#a=time.time()
+					#print "total time: ", (a-last_a)
+					#last_a=a
 					while time.time()-last_t<1./self.send_freq:
 						for input_ in self.inputs:
 							if input_.in_.poll() or first: # if there is data waiting
@@ -113,10 +117,10 @@ The requiered informations depend on the type of waveform you need.
 						time.sleep(1./(100*self.send_freq))
 					last_t=time.time()					
 					###################################################get data
-					for input_ in self.inputs:
-						if input_.in_.poll() or first: # if there is data waiting
-							Data=pd.concat([Data,input_.recv()],ignore_index=True)
-					first=False
+					#for input_ in self.inputs:
+						#if input_.in_.poll() or first: # if there is data waiting
+							#Data=pd.concat([Data,input_.recv()],ignore_index=True)
+					#first=False
 					last_upper = (Data[self.upper_limit[1]]).last_valid_index()
 					last_lower=(Data[self.lower_limit[1]]).last_valid_index()
 					first_lower=(Data[self.lower_limit[1]]).first_valid_index()
@@ -163,9 +167,9 @@ The requiered informations depend on the type of waveform you need.
 						first=False
 						time.sleep(1./(100*self.send_freq))
 					last_t=time.time()
-					for input_ in self.inputs: # recv inputs to avoid pipe overflow
-						if input_.in_.poll() or first: # if there is data waiting
-							Data=pd.concat([Data,input_.recv()],ignore_index=True)
+					#for input_ in self.inputs: # recv inputs to avoid pipe overflow
+						#if input_.in_.poll() or first: # if there is data waiting
+							#Data=pd.concat([Data,input_.recv()],ignore_index=True)
 					if self.step==0:
 						self.alpha=0
 					else:
@@ -187,8 +191,13 @@ The requiered informations depend on the type of waveform you need.
 				t_step=time.time()
 			else:
 				t_add=self.phase/(2*np.pi*self.freq)
+				last_a=self.t0
 				while self.time is None or (time.time()-t_step)<self.time:
+					#a=time.time()
+					#print "total time signal: ", (a-last_a)
+					#last_a=a
 					while time.time()-last_t<1./self.send_freq:
+						#pass
 						time.sleep(1./(100*self.send_freq))
 					last_t=time.time()
 					t=last_t+t_add
