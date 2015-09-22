@@ -52,7 +52,8 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 				while True:
 					#print "3"
 					Data=self.inputs[0].recv()	# recv data
-					legend_=Data.columns[1:]
+					#legend_=Data.columns[1:]
+					legend_=[self.args[i][1] for i in range(self.nbr_graphs)]
 					if save_number>0: # lose the first round of data    
 						if save_number==1: # init
 							var=Data
@@ -80,7 +81,8 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 				k=[0]*self.nbr_graphs	# internal value for downsampling
 				while True :
 					Data=self.inputs[0].recv()	# recv data
-					legend_=Data.columns[1:]
+					#legend_=Data.columns[1:]
+					legend_=[self.args[i][1] for i in range(self.nbr_graphs)]
 					if first_round:	# init at first round
 						for i in range(self.nbr_graphs):
 							if i==0:
