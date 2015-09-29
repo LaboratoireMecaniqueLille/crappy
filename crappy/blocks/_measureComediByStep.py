@@ -1,6 +1,7 @@
 from _meta import MasterBlock
 import time
 import pandas as pd
+import os
 
 class MeasureComediByStep(MasterBlock):
 	"""
@@ -31,6 +32,7 @@ freq : float or int, optional
 
 	def main(self):
 		try:
+			print "measurecomedi : ", os.getpid()
 			_a=self.inputs[:]
 			trigger="external"
 		except AttributeError:

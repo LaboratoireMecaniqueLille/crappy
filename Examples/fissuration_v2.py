@@ -43,14 +43,14 @@ class condition_coeff(crappy.links.MetaCondition):
 				self.coeff=self.new_coeff
 				self.last_coeff=self.coeff
 			self.t1=self.t2
-		print "coeff :", self.coeff
+		#print "coeff :", self.coeff
 		value['signal'][0]*=self.coeff
 		return value
 
 class condition_cycle_bool(crappy.links.MetaCondition):
-	def __init__(self):
-		self.cycle=0
+	def __init__(self,n=1):
 		self.last_cycle=-1
+		self.n=n
 		
 	def evaluate(self,value):
 		cycle=value['cycle'][0]
@@ -58,8 +58,9 @@ class condition_cycle_bool(crappy.links.MetaCondition):
 		#print cycle
 		if cycle!=self.last_cycle:
 			self.last_cycle=cycle
-			#self.go=False
-			return value
+			if cycle%self.n==0 or (cycle-0.5)%self.n==0:
+				return value
+			else: return None
 		else:
 			return None
 
@@ -69,7 +70,7 @@ class condition_K(crappy.links.MetaCondition):
 		#self.last_cycle=-1
 		
 	def evaluate(self,value):
-		self.K=0*(value['tension'][0])+0*(1.18/1.63)+0.2
+		self.K=0*(value['tension(V)'][0])+0*(1.18/1.63)+1
 		value['coeff'] = pd.Series((self.K), index=value.index)
 		#print value
 		return value
@@ -77,26 +78,29 @@ class condition_K(crappy.links.MetaCondition):
 try:
 ########################################### Creating objects
 	
-	instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0],gain=[10],offset=[0])
+	instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,5000],offset=[0,0])
 	#agilentSensor=crappy.sensor.Agilent34420ASensor(device='/dev/ttyUSB0',baud_rate=9600,timeout=1)
 	agilentSensor=crappy.sensor.DummySensor()
 	comedi_actuator=crappy.actuator.ComediActuator(device='/dev/comedi1',subdevice=1,channel=1,range_num=0,gain=1,offset=0)
 	comedi_actuator.set_cmd(0)
 	
 ########################################### Creating blocks
-	tension=crappy.blocks.MeasureAgilent34420A(agilentSensor,labels=['t_agilent(s)','tension'])
+	comedi_output=crappy.blocks.CommandComedi([comedi_actuator])
+	tension=crappy.blocks.MeasureAgilent34420A(agilentSensor,labels=['t_agilent(s)','tension(V)'])
 	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="/home/corentin/Bureau/images_fissuration/")
 	
 	compacter_tension=crappy.blocks.Compacter(5)
-	graph_tension=crappy.blocks.Grapher("dynamic",('t(s)','t_agilent(s)'),('t(s)','coeff'))
+	graph_tension=crappy.blocks.Grapher("dynamic",('t(s)','tension(V)')) #,('t(s)','tension(V)')
+	save_tension=crappy.blocks.Saver("/home/corentin/Bureau/tension_coeff.txt")
 	
-	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','dep(mm)'],freq=400)
-	compacter_effort=crappy.blocks.Compacter(400)
-	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','dep(mm)'))
+	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','dep(mm)','F(N)'],freq=500)
+	compacter_effort=crappy.blocks.Compacter(500)
+	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
+	save_effort=crappy.blocks.Saver("/home/corentin/Bureau/t_dep_F.txt")
 	
 	compacter_signal=crappy.blocks.Compacter(500)
-	save_signal=crappy.blocks.Saver("/home/corentin/Bureau/signal.txt")
-	#graph_signal=crappy.blocks.Grapher("dynamic",('t(s)','cycle'))
+	save_signal=crappy.blocks.Saver("/home/corentin/Bureau/signal_cycle.txt")
+	graph_signal=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
 
 
 	#coeffGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"triangle","time":10,"phase":0,"amplitude":0,"offset":8000,"freq":0.02},
@@ -109,31 +113,34 @@ try:
 	
 	####CommandComedi([comedi_actuator])
 	
-	adapter=crappy.blocks.SignalAdapter(initial_coeff=0,delay=10,send_freq=600,labels=['t(s)','signal'])
-	compacter_adapter=crappy.blocks.Compacter(500)
-	graph_adapter=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
-	save_adapter=crappy.blocks.Saver("/home/corentin/Bureau/signal_adapted.txt")
-	comedi_output=crappy.blocks.CommandComedi([comedi_actuator])
+	#adapter=crappy.blocks.SignalAdapter(initial_coeff=0,delay=10,send_freq=600,labels=['t(s)','signal'])
+	#compacter_adapter=crappy.blocks.Compacter(500)
+	#graph_adapter=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
+	#save_adapter=crappy.blocks.Saver("/home/corentin/Bureau/signal_adapted.txt")
+	
 
 
 ########################################### Creating links
 	
-	link1=crappy.links.Link(condition=condition_cycle_bool())
+	link1=crappy.links.Link(condition=condition_cycle_bool(n=100))
 	link2=crappy.links.Link(condition=condition_cycle_bool())
 	link3=crappy.links.Link(condition=condition_K())
 	link4=crappy.links.Link()
 	link5=crappy.links.Link()
 	link6=crappy.links.Link(condition=condition_K())
-	link7=crappy.links.Link()
-	link8=crappy.links.Link()
+	link7=crappy.links.Link(condition=condition_coeff())
+	link7.add_external_trigger(link6)
+	link8=crappy.links.Link(condition=condition_coeff())
+	link14=crappy.links.Link()
+	link8.add_external_trigger(link14)
 	link9=crappy.links.Link()
 	link10=crappy.links.Link()
 	link11=crappy.links.Link()
 	link12=crappy.links.Link()
 	link13=crappy.links.Link()
-	link14=crappy.links.Link()
-	link15=crappy.links.Link()
-	link16=crappy.links.Link()
+	
+	#link15=crappy.links.Link()
+	#link16=crappy.links.Link()
 	
 ########################################### Linking objects
 
@@ -142,32 +149,38 @@ try:
 	tension.add_input(link2)
 	tension.add_output(link3)
 	tension.add_output(link6)
+	tension.add_output(link14)
 	
 	compacter_tension.add_input(link3)
 	compacter_tension.add_output(link5)
+	compacter_tension.add_output(link4)
 	
 	graph_tension.add_input(link5)
+	save_tension.add_input(link4)
 	
 	effort.add_output(link9)
 	compacter_effort.add_input(link9)
 	compacter_effort.add_output(link10)
+	compacter_effort.add_output(link11)
 	
 	graph_effort.add_input(link10)
+	save_effort.add_input(link11)
 	
 	signalGenerator.add_output(link1)
 	signalGenerator.add_output(link2)
 	signalGenerator.add_output(link7)
-	signalGenerator.add_output(link13)
+	signalGenerator.add_output(link8)
 	
-	adapter.add_input(link6)
-	adapter.add_input(link7)
-	adapter.add_output(link8)
-	adapter.add_output(link15)
+	#adapter.add_input(link6)
+	#adapter.add_input(link7)
+	#adapter.add_output(link8)
+	#adapter.add_output(link15)
 	
-	compacter_signal.add_input(link13)
-	compacter_signal.add_output(link14)
-	save_signal.add_input(link14)
-	#graph_signal.add_input(link14)
+	compacter_signal.add_input(link8)
+	compacter_signal.add_output(link12)
+	compacter_signal.add_output(link13)
+	save_signal.add_input(link13)
+	graph_signal.add_input(link12)
 	
 	#coeffGenerator.add_output(link1)
 	#coeffGenerator.add_output(link2)
@@ -178,12 +191,12 @@ try:
 	#adapter.add_input(link1)
 	#adapter.add_input(link4)
 	#adapter.add_output(link5)
-	comedi_output.add_input(link8)
-	compacter_adapter.add_input(link15)
-	compacter_adapter.add_output(link12)
-	compacter_adapter.add_output(link16)
-	save_adapter.add_input(link16)
-	graph_adapter.add_input(link12)
+	comedi_output.add_input(link7)
+	#compacter_adapter.add_input(link15)
+	#compacter_adapter.add_output(link12)
+	#compacter_adapter.add_output(link16)
+	#save_adapter.add_input(link16)
+	#graph_adapter.add_input(link12)
 
 ########################################### Starting objects
 

@@ -2,6 +2,7 @@ from _meta import MasterBlock
 import pandas as pd
 import time
 import itertools
+import os
 
 class SignalAdapter(MasterBlock):
 	"""Multiply the signal by a coefficient"""
@@ -36,44 +37,87 @@ Panda Dataframe.
 		
 	def main(self):
 		try:
+			print "signal adapter!", os.getpid()
 			#last_signal=0
 			#new_coeff=0
 			first=True
 			#Data=pd.DataFrame()
 			last_t=self.t0
+			#i=1
+			#delta=0
+			t_sleep=0
+			t_recv=0
+			t_calc=0
+			t_send=0
+			t_total=0
+			k=1
+			count=0
+			block=[True,True]
 			while True:
+				t_1=time.time()
 				while time.time()-last_t<1./self.send_freq:
-					time.sleep(1./(100*self.send_freq))
+					#time.sleep(1./(100*self.send_freq))
+					pass
 				last_t=time.time()	
+				t_sleep=max(t_sleep,last_t-t_1)
 				#a=time.time()
 				#print "total time: ", (a-last_a)
 				#last_a=a
+				#t_test=0
+				#t_coeff=0
+				
 				if first:
-					first=False
-					for input_ in self.inputs:
-					#print "1"
-						recv=input_.recv(blocking=True)
-					try:
-						new_coeff=recv['coeff'].values[0]
-						#print "new coeff!"
-					except KeyError:
-						last_signal=recv['signal'].values[0]
-						t=recv['t(s)'].values[0]
-						#print "last signal !"
-					except:
-						pass
-				for input_ in self.inputs:
-					#print "1"
-					recv=input_.recv(blocking=False)
-					try:
-						new_coeff=recv['coeff'].values[0]
-						#print "new coeff!"
-					except KeyError:
-						last_signal=recv['signal'].values[0]
-						t=recv['t(s)'].values[0]
-						#print "last signal !"
-					except:
-						pass
+					for num,input_ in enumerate(self.inputs):
+						#print "1"
+						#print input_
+						recv=input_.recv()
+						#print "2"
+						try:
+							#print "new coeff ?"
+							new_coeff=recv['coeff'].values[0]
+							#print block
+							block[num]=False
+							#print block
+							#print "new coeff!"
+						except KeyError:
+							last_signal=recv['signal'].values[0]
+							t=recv['t(s)'].values[0]
+							block[num]=True
+							print "last signal !"
+						except Exception as e:
+							print e
+							pass
+				else: # if not the first time
+					#last_signal=None
+					#while last_signal is None:
+						#count+=1
+					for num,input_ in enumerate(self.inputs):
+						#print block
+						#print "11", block[num], input_
+						recv=input_.recv(blocking=block[num])
+						#print "21"
+						try:
+							new_coeff=recv['coeff'].values[0]
+							#t_coeff=recv['t(s)'][0]
+							#print "new coeff!"
+						except KeyError:
+							last_signal=recv['signal'].values[0]
+							t=recv['t(s)'].values[0]
+							#t_test=t
+							#t_coeff=
+							#print "last signal !"
+						except Exception as e:
+							#time.sleep(0.0005)
+							#print e
+							pass
+				first=False
+				t_2=time.time()
+				t_recv=max(t_recv,t_2-last_t)
+				#if t_test!=0 and t_coeff!=0:
+					#delta+=t_coeff-t_test
+					#if i%100==0:
+						#print "delta t signal : ", delta/i
+					#i+=1
 				#a3=time.time()
 				#aaa=list(itertools.chain.from_iterable([Data,rec]))
 				#print aaa
@@ -104,19 +148,32 @@ Panda Dataframe.
 						self.coeff+=(new_coeff-self.last_coeff)*((t2-t1)/(self.delay))
 					else: # if less than 1% difference
 						self.coeff=new_coeff
+						self.last_coeff=self.coeff
 					t1=t2
-				if new_coeff==self.coeff: # if coeff=new_coeff, update the last_coeff
-					self.last_coeff=self.coeff
+				#if new_coeff==self.coeff: # if coeff=new_coeff, update the last_coeff
+					#self.last_coeff=self.coeff
 				#a4=time.time()
 				#print "eval coeff time :", (a4-a3)
 				Array=pd.DataFrame([[t,last_signal*self.coeff]],columns=self.labels)
+				t_3=time.time()
+				t_calc=max(t_calc,t_3-t_2)
 				try:
 					for j in range(len(self.outputs)):
 						self.outputs[j].send(Array)
 				except:
 					pass
-				#a5=time.time()
-				#print "sending time :", (a5-a4)
+				a5=time.time()
+				t_send=max(t_send,a5-t_3)
+				t_total=max(t_total,a5-t_1)
+				if k%100==0:
+					print "sleep,recv,calc,send,total: ", t_sleep,t_recv,t_calc,t_send,t_total
+					print count*1./k
+					t_sleep=0
+					t_recv=0
+					t_calc=0
+					t_send=0
+					t_total=0
+				k+=1
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in SignalAdapter : ", e
 			raise
