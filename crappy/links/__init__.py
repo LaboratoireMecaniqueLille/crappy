@@ -5,5 +5,5 @@
 
 #from . import technical
 from ._link import Link
-#from ._meta._condition import MetaCondition ## WIP
+from ._metaCondition import MetaCondition 
 #from _condition import Condition

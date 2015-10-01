@@ -1,12 +1,13 @@
 from _meta import MasterBlock
 import time
 import pandas as pd
+import os
 
 class MeasureAgilent34420A(MasterBlock):
 	"""
 Children class of MasterBlock. Send value through a Link object.
 	"""
-	def __init__(self,agilentSensor,labels=['t(s)','R'],freq=None):
+	def __init__(self,agilentSensor,labels=['t_agilent(s)','R'],freq=None):
 		"""
 MeasureAgilent34420A(agilentSensor,labels=['t','R'],freq=None)
 
@@ -36,6 +37,10 @@ freq : float or int, optional
 			trigger="internal"
 		timer=time.time()
 		try:
+			#t_max=0
+			#t_mean=0
+			#k=1
+			print "mesureagilent " , os.getpid()
 			while True:
 				data=[]
 				if trigger=="internal":
@@ -47,15 +52,30 @@ freq : float or int, optional
 					ret=self.agilentSensor.getData()
 					if ret != False:
 						data.append(ret)	
+					Data=pd.DataFrame([data],columns=self.labels)
 				if trigger=="external":
-					if self.inputs.input_.recv(): # wait for a signal
-						data=[time.time()-self.t0]
+					#t_1=time.time()
+					Data = self.inputs[0].recv() # wait for a signal
+					#t_recv=time.time()-t_1
+					#t_max=max(t_max,t_recv)
+					#t_mean+=t_recv
+					#if k%10==0:
+						#print "t_max, t_mean tension: ", t_max,t_mean/k
+						#t_max=0
+					#k+=1
+					if Data is not None:
+						#print "top res3"
 						ret=self.agilentSensor.getData()
-						if ret != False:
-							data.append(ret)	
-				Array=pd.DataFrame([data],columns=self.labels)
-				for output in self.outputs:
-					output.send(Array)
+						if ret == False:
+							ret=np.nan
+						Data[self.labels[0]] = pd.Series((time.time()-self.t0), index=Data.index) # verify if timestamps really differ and delete this line
+						Data[self.labels[1]] = pd.Series((ret), index=Data.index) # add one column
+				#Array=pd.DataFrame([data],columns=self.labels)
+				#Data.append(Array)
+				if trigger=="internal" or Data is not None:
+					#print "top res4"
+					for output in self.outputs:
+						output.send(Data)
 
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in measureAgilent34420A : ", e
