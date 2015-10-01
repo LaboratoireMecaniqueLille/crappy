@@ -12,20 +12,21 @@ try:
 	
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[0])
 	t,F0=instronSensor.getData(0)
+	print "offset=", F0
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[-F0])
 	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=15)
 
 ########################################### Creating blocks
 	
-	compacter_effort=crappy.blocks.Compacter(200)
-	save_effort=crappy.blocks.Saver("/home/biotens/Bureau/effort.txt")
+	compacter_effort=crappy.blocks.Compacter(150)
+	save_effort=crappy.blocks.Saver("/home/biotens/Bureau/laure_gvu/4vug3_5_45_effort.txt")
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
 	
 	compacter_extenso=crappy.blocks.Compacter(90)
-	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/extenso.txt")
+	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/laure_gvu/4vug3_5_45_extenso.txt")
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
-	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=200)
+	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=150)
 	extenso=crappy.blocks.VideoExtenso(camera="Ximea",white_spot=False,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
 	
 	#signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":0},
@@ -39,7 +40,7 @@ try:
 	
 	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
 	compacter_position=crappy.blocks.Compacter(5)
-	save_position=crappy.blocks.Saver("/home/biotens/Bureau/position.txt")
+	save_position=crappy.blocks.Saver("/home/biotens/Bureau/laure_gvu/4vug3_5_45_position.txt")
 
 ########################################### Creating links
 	
