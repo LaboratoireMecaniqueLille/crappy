@@ -207,7 +207,10 @@ The requiered informations depend on the type of waveform you need.
 				t_sleep=0
 				t_calc=0
 				t_send=0
+				loop_max=0
 				j=1
+				t_loop=self.t0
+				t_loop_mean=0
 				while self.time is None or (time.time()-t_step)<self.time:
 					t1=time.time()
 					#last_t=time.time()
@@ -255,11 +258,16 @@ The requiered informations depend on the type of waveform you need.
 						pass
 					t3=time.time()
 					t_send=max(t3-t2,t_send)
+					loop_max=max(loop_max,t3-t_loop)
+					t_loop_mean+=t3-t_loop
 					if j%500==0:
-						print "sleep, calc, send = ", t_sleep,t_calc,t_send
+						#print "sleep, calc, send = ", t_sleep,t_calc,t_send
+						#print "time signalgenerator mean, max : ", t_loop_mean/j,loop_max
+						loop_max=0
 						t_sleep=0
 						t_calc=0
 						t_send=0
+					t_loop=t3
 					j+=1
 				self.step+=1
 				if self.repeat and self.step==self.nb_step:

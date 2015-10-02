@@ -21,7 +21,7 @@ class condition_coeff(crappy.links.MetaCondition):
 		self.last_cycle=-1
 		self.coeff=initial_coeff
 		self.last_coeff=initial_coeff
-		self.delay=5
+		self.delay=10
 		self.blocking=True
 		self.test=test
 		
@@ -85,25 +85,25 @@ try:
 	instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,5000],offset=[0,0])
 	#agilentSensor=crappy.sensor.Agilent34420ASensor(device='/dev/ttyUSB0',baud_rate=9600,timeout=1)
 	agilentSensor=crappy.sensor.DummySensor()
-	comedi_actuator=crappy.actuator.ComediActuator(device='/dev/comedi1',subdevice=1,channel=1,range_num=0,gain=1,offset=0)
+	comedi_actuator=crappy.actuator.ComediActuator(device='/dev/comedi1',subdevice=1,channel=1,range_num=0,gain=4,offset=0)
 	comedi_actuator.set_cmd(0)
 	
 ########################################### Creating blocks
 	comedi_output=crappy.blocks.CommandComedi([comedi_actuator])
 	tension=crappy.blocks.MeasureAgilent34420A(agilentSensor,labels=['t_agilent(s)','tension(V)'])
-	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="/home/corentin/Bureau/images_fissuration/")
+	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="/home/essais-2015-1/Bureau/images_fissuration/")
 	
 	compacter_tension=crappy.blocks.Compacter(5)
 	graph_tension=crappy.blocks.Grapher("dynamic",('t(s)','tension(V)')) #,('t(s)','tension(V)')
-	save_tension=crappy.blocks.Saver("/home/corentin/Bureau/tension_coeff.txt")
+	save_tension=crappy.blocks.Saver("/home/essais-2015-1/Bureau/tension_coeff.txt")
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','dep(mm)','F(N)'],freq=500)
 	compacter_effort=crappy.blocks.Compacter(500)
-	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
-	save_effort=crappy.blocks.Saver("/home/corentin/Bureau/t_dep_F.txt")
+	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','dep(mm)'))
+	save_effort=crappy.blocks.Saver("/home/essais-2015-1/Bureau/t_dep_F.txt")
 	
 	compacter_signal=crappy.blocks.Compacter(500)
-	save_signal=crappy.blocks.Saver("/home/corentin/Bureau/signal_cycle.txt")
+	save_signal=crappy.blocks.Saver("/home/essais-2015-1/Bureau/signal_cycle.txt")
 	graph_signal=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
 
 
@@ -126,7 +126,7 @@ try:
 
 ########################################### Creating links
 	
-	link1=crappy.links.Link(condition=condition_cycle_bool(n=10000))
+	link1=crappy.links.Link(condition=condition_cycle_bool(n=100))
 	link2=crappy.links.Link(condition=condition_cycle_bool(n=10000))
 	link3=crappy.links.Link(condition=condition_K())
 	link4=crappy.links.Link()

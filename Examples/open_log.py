@@ -15,7 +15,7 @@ def get_data(file_path,columns):
   data=np.transpose(c) # allow to use data as column
   return data
 
-data=get_data('/home/corentin/Bureau/t_dep_F.txt',(1,2,3))
+data=get_data('/home/essais-2015-1/Bureau/t_dep_F.txt',(1,2,3))
 #data_t=np.transpose(data)
 #data2=get_data('/home/corentin/Bureau/signal_adapted.txt',(1,2))
 
