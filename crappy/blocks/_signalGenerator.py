@@ -1,4 +1,4 @@
-from _meta import MasterBlock
+from _meta import MasterBlock,delay
 import numpy as np
 import time
 import pandas as pd
@@ -122,7 +122,7 @@ The requiered informations depend on the type of waveform you need.
 							if input_.in_.poll() or first: # if there is data waiting
 								Data=pd.concat([Data,input_.recv()],ignore_index=True)
 						first=False
-						time.sleep(1./(100*self.send_freq))
+						delay(1./(100*1000*self.send_freq))
 					last_t=time.time()					
 					###################################################get data
 					#for input_ in self.inputs:
@@ -173,7 +173,7 @@ The requiered informations depend on the type of waveform you need.
 							if input_.in_.poll() or first: # if there is data waiting
 								Data=pd.concat([Data,input_.recv()],ignore_index=True)
 						first=False
-						time.sleep(1./(100*self.send_freq))
+						delay(1./(100*1000*self.send_freq))
 					last_t=time.time()
 					#for input_ in self.inputs: # recv inputs to avoid pipe overflow
 						#if input_.in_.poll() or first: # if there is data waiting
@@ -218,7 +218,7 @@ The requiered informations depend on the type of waveform you need.
 					#sleep_avg=sleep_tot/j
 					#t_sleep=last_t
 					while time.time()-last_t<1./self.send_freq:
-						pass
+						delay(1./(100*1000*self.send_freq))
 						#time.sleep(0.0001)
 						#select.select([],[],[],0.0001)
 						#time.sleep(1./(100*self.send_freq))
@@ -256,7 +256,7 @@ The requiered informations depend on the type of waveform you need.
 					t3=time.time()
 					t_send=max(t3-t2,t_send)
 					if j%500==0:
-						#print "sleep, calc, send = ", t_sleep,t_calc,t_send
+						print "sleep, calc, send = ", t_sleep,t_calc,t_send
 						t_sleep=0
 						t_calc=0
 						t_send=0

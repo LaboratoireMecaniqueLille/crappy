@@ -16,13 +16,14 @@ crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 #summary.print_(diff)     
 
 class condition_coeff(crappy.links.MetaCondition):
-	def __init__(self):
+	def __init__(self,test=False):
 		initial_coeff=0
 		self.last_cycle=-1
 		self.coeff=initial_coeff
 		self.last_coeff=initial_coeff
 		self.delay=5
 		self.blocking=True
+		self.test=test
 		
 	def evaluate(self,value):
 		recv=self.external_trigger.recv(blocking=self.blocking)
@@ -45,7 +46,10 @@ class condition_coeff(crappy.links.MetaCondition):
 			self.t1=self.t2
 		#print "coeff :", self.coeff
 		value['signal'][0]*=self.coeff
-		return value
+		if self.test:
+			return None
+		else:
+			return value
 
 class condition_cycle_bool(crappy.links.MetaCondition):
 	def __init__(self,n=1):
@@ -122,15 +126,15 @@ try:
 
 ########################################### Creating links
 	
-	link1=crappy.links.Link(condition=condition_cycle_bool(n=100))
-	link2=crappy.links.Link(condition=condition_cycle_bool())
+	link1=crappy.links.Link(condition=condition_cycle_bool(n=10000))
+	link2=crappy.links.Link(condition=condition_cycle_bool(n=10000))
 	link3=crappy.links.Link(condition=condition_K())
 	link4=crappy.links.Link()
 	link5=crappy.links.Link()
 	link6=crappy.links.Link(condition=condition_K())
 	link7=crappy.links.Link(condition=condition_coeff())
 	link7.add_external_trigger(link6)
-	link8=crappy.links.Link(condition=condition_coeff())
+	link8=crappy.links.Link(condition=condition_coeff(test=True))
 	link14=crappy.links.Link()
 	link8.add_external_trigger(link14)
 	link9=crappy.links.Link()
