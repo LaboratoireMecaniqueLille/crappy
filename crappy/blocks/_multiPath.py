@@ -1,4 +1,4 @@
-from _meta import MasterBlock
+﻿from _meta import MasterBlock
 import numpy as np
 import time
 import pandas as pd
@@ -123,7 +123,7 @@ The requiered informations depend on the type of waveform you need.
 		# return in the elastic domain
 		self.last_position=self.position
 		self.target=np.add(np.multiply(self.last_vector,(-1*self.back_value)),self.last_position) 
-		self.last_vector=np.add((self.last_vector,-1)
+		self.last_vector=np.add((self.last_vector,-1))
 		while np.linalg.norm(np.substract(self.target,self.position))> offset:
 			self.vector=np.substract(self.target,self.position)/np.linalg.norm(np.substract(self.target,self.position))
 			self.traction+=speed*vector[0]
