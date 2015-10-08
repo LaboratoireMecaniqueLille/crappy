@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 np.set_printoptions(threshold='nan', linewidth=500)
 import pandas as pd
+import os
 
 class Grapher(MasterBlock):
 	"""Plot the input data"""
@@ -34,7 +35,7 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
       
 	def main(self):
 		try:
-			print "main grapher"
+			print "main grapher" , os.getpid()
 			if self.mode=="dynamic":
 				#print "1"
 				save_number=0

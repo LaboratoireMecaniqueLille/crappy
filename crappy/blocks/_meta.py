@@ -1,4 +1,7 @@
 from multiprocessing import Process, Pipe
+#import os
+import ctypes, time
+libc = ctypes.CDLL('libc.so.6')
 
 class MasterBlock(object):
 	"""
@@ -54,3 +57,9 @@ stop() : stops the process.
 		
 	def set_t0(self,t0):
 		self.t0=t0
+
+
+def delay(ms):
+  """ Delay milliseconds with libc usleep() using ctypes. """
+  ms = int(ms*1000)
+  libc.usleep(ms)

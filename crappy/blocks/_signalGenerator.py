@@ -1,12 +1,15 @@
-from _meta import MasterBlock
+from _meta import MasterBlock,delay
 import numpy as np
 import time
 import pandas as pd
+import os
+import select # for testing loop frequency enforcement
+import psutil
 
 
 class SignalGenerator(MasterBlock):
 	"""Many to one block. Generate a signal."""
-	def __init__(self,path=None,send_freq=800,repeat=False,labels=['t(s)','signal']):
+	def __init__(self,path=None,send_freq=800,repeat=False,labels=['t(s)','signal','cycle']):
 		"""
 SignalGenerator(path=None,send_freq=800,repeat=False,labels=['t(s)','signal'])
 
@@ -49,7 +52,7 @@ labels : list of strings, default =['t(s)','signal']
 
 Returns:
 --------
-Panda Dataframe with time and signal. If waveform='limit', signal can be -1/0/1.
+Panda Dataframe with time, signal and cycle number. If waveform='limit', signal can be -1/0/1.
 
 Examples:
 ---------
@@ -72,6 +75,11 @@ The requiered informations depend on the type of waveform you need.
 		self.labels=labels
 		self.step=0
 	def main(self):
+		print "PathGenerator!" ,os.getpid()
+		#p=psutil.Process(os.getpid())
+		#print "niceness : ", p.nice
+		#os.nice(-19)
+		#print "niceness : ", p.nice
 		last_t=self.t0
 		cycle=0
 		first=True
@@ -114,7 +122,7 @@ The requiered informations depend on the type of waveform you need.
 							if input_.in_.poll() or first: # if there is data waiting
 								Data=pd.concat([Data,input_.recv()],ignore_index=True)
 						first=False
-						time.sleep(1./(100*self.send_freq))
+						delay(1./(100*1000*self.send_freq))
 					last_t=time.time()					
 					###################################################get data
 					#for input_ in self.inputs:
@@ -146,7 +154,7 @@ The requiered informations depend on the type of waveform you need.
 							cycle+=0.5
 					if last_upper!=first_upper and last_lower!=first_lower: # clean old data
 						Data=Data[min(last_upper,last_lower):]
-					Array=pd.DataFrame([[last_t-self.t0,alpha*self.gain]],columns=self.labels)
+					Array=pd.DataFrame([[last_t-self.t0,alpha*self.gain,cycle]],columns=self.labels)
 					try:
 						for output in self.outputs:
 							output.send(Array)
@@ -165,7 +173,7 @@ The requiered informations depend on the type of waveform you need.
 							if input_.in_.poll() or first: # if there is data waiting
 								Data=pd.concat([Data,input_.recv()],ignore_index=True)
 						first=False
-						time.sleep(1./(100*self.send_freq))
+						delay(1./(100*1000*self.send_freq))
 					last_t=time.time()
 					#for input_ in self.inputs: # recv inputs to avoid pipe overflow
 						#if input_.in_.poll() or first: # if there is data waiting
@@ -177,7 +185,7 @@ The requiered informations depend on the type of waveform you need.
 							alpha=0
 						else:
 							self.alpha=self.alpha
-					Array=pd.DataFrame([[last_t-self.t0,self.alpha]],columns=self.labels)
+					Array=pd.DataFrame([[last_t-self.t0,self.alpha,0]],columns=self.labels)
 					try:
 						for output in self.outputs:
 							output.send(Array)
@@ -191,15 +199,42 @@ The requiered informations depend on the type of waveform you need.
 				t_step=time.time()
 			else:
 				t_add=self.phase/(2*np.pi*self.freq)
-				last_a=self.t0
+				#last_a=self.t0
+				sleep_max=0
+				sleep_min=500
+				sleep_avg=0
+				sleep_tot=0
+				t_sleep=0
+				t_calc=0
+				t_send=0
+				loop_max=0
+				j=1
+				t_loop=self.t0
+				t_loop_mean=0
 				while self.time is None or (time.time()-t_step)<self.time:
-					#a=time.time()
-					#print "total time signal: ", (a-last_a)
-					#last_a=a
+					t1=time.time()
+					#last_t=time.time()
+					#sleep_time=last_t-t_sleep
+					#sleep_max=max(sleep_max,sleep_time)
+					#sleep_min=min(sleep_min,sleep_time)
+					#sleep_tot+=sleep_time
+					#sleep_avg=sleep_tot/j
+					#t_sleep=last_t
 					while time.time()-last_t<1./self.send_freq:
-						#pass
-						time.sleep(1./(100*self.send_freq))
+						delay(1./(100*1000*self.send_freq))
+						#time.sleep(0.0001)
+						#select.select([],[],[],0.0001)
+						#time.sleep(1./(100*self.send_freq))
 					last_t=time.time()
+					t_sleep=max(last_t-t1,t_sleep)
+					#sleep_time=last_t-t_sleep
+					#sleep_max=max(sleep_max,sleep_time)
+					#sleep_min=min(sleep_min,sleep_time)
+					#sleep_tot+=t_sleep-last_t-t_sleep
+					#sleep_avg=sleep_tot/j
+					#if j%500==0:
+						#print "min, avg, max = ", sleep_min,sleep_avg,sleep_max
+					#j+=1
 					t=last_t+t_add
 					if self.waveform=="sinus":
 						self.alpha=self.amplitude*np.sin(2*np.pi*(t-t_step)*self.freq)+self.offset
@@ -210,12 +245,30 @@ The requiered informations depend on the type of waveform you need.
 									self.freq))+self.offset
 					else:
 						raise Exception("invalid waveform : use sinus,triangle or square")
-					Array=pd.DataFrame([[t-self.t0,self.alpha]],columns=self.labels)
+					t2=time.time()
+					t_calc=max(t2-last_t,t_calc)
+					cycle=0.5*np.floor(2*((t-t_step+0.25)*self.freq))
+					Array=pd.DataFrame([[t-self.t0,self.alpha,cycle]],columns=self.labels)
 					try:
 						for output in self.outputs:
 							output.send(Array)
+							#print "sent!"
 					except:
+						print "exception"
 						pass
+					t3=time.time()
+					t_send=max(t3-t2,t_send)
+					loop_max=max(loop_max,t3-t_loop)
+					t_loop_mean+=t3-t_loop
+					if j%500==0:
+						#print "sleep, calc, send = ", t_sleep,t_calc,t_send
+						#print "time signalgenerator mean, max : ", t_loop_mean/j,loop_max
+						loop_max=0
+						t_sleep=0
+						t_calc=0
+						t_send=0
+					t_loop=t3
+					j+=1
 				self.step+=1
 				if self.repeat and self.step==self.nb_step:
 					self.step=0

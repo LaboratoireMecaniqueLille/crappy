@@ -7,6 +7,7 @@
 from ._cameraDisplayer  import CameraDisplayer 
 from ._commandBiaxe import CommandBiaxe
 from ._commandBiotens import CommandBiotens
+from ._commandComedi import CommandComedi
 from ._compacter  import Compacter
 from ._grapher import Grapher
 from ._measureAgilent34420A import MeasureAgilent34420A
