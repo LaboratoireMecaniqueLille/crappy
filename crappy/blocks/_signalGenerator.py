@@ -256,7 +256,7 @@ The requiered informations depend on the type of waveform you need.
 					t3=time.time()
 					t_send=max(t3-t2,t_send)
 					if j%500==0:
-						print "sleep, calc, send = ", t_sleep,t_calc,t_send
+						#print "sleep, calc, send = ", t_sleep,t_calc,t_send
 						t_sleep=0
 						t_calc=0
 						t_send=0
