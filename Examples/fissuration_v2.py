@@ -119,10 +119,12 @@ class condition_K(crappy.links.MetaCondition):
 try:
 ########################################### Creating objects
 	
+
 	instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10000],offset=[0,0])
 	agilentSensor=crappy.sensor.Agilent34420ASensor(device='/dev/ttyUSB0',baudrate=9600,timeout=1)
 	#agilentSensor=crappy.sensor.DummySensor()
 	comedi_actuator=crappy.actuator.ComediActuator(device='/dev/comedi1',subdevice=1,channel=1,range_num=0,gain=1,offset=0)
+
 	comedi_actuator.set_cmd(0)
 	time.sleep(0.5)
 	comedi_actuator.set_cmd(0)
@@ -145,6 +147,7 @@ try:
 	##graph_signal=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
 
 
+
 	#coeffGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"triangle","time":10,"phase":0,"amplitude":0,"offset":8000,"freq":0.02},
 														#{"waveform":"triangle","time":10,"phase":0,"amplitude":0,"offset":7000,"freq":0.02},
 														#{"waveform":"triangle","time":10,"phase":0,"amplitude":0,"offset":2000,"freq":0.02}],
@@ -164,8 +167,13 @@ try:
 
 ########################################### Creating links
 	
+<<<<<<< HEAD
 	link1=crappy.links.Link(condition=condition_cycle_bool(n=50))
 	link2=crappy.links.Link(condition=condition_cycle_bool(n=1,n_per_cycle=1))
+=======
+	link1=crappy.links.Link(condition=condition_cycle_bool(n=100))
+	link2=crappy.links.Link(condition=condition_cycle_bool(n=10000))
+>>>>>>> 326d784433793d074bb6b045fb78f19fff800084
 	link3=crappy.links.Link(condition=condition_K())
 	link4=crappy.links.Link()
 	link5=crappy.links.Link()

@@ -34,7 +34,7 @@ recv(blocking=True) : receive a pickable object. If blocking=False, return None
 if there is no data
 		"""
 		
-		self.in_,self.out_=Pipe(duplex=True)
+		self.in_,self.out_=Pipe(duplex=False)
 		self.external_trigger=None
 		self.condition=condition
 	

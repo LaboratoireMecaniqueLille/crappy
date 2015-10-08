@@ -27,8 +27,10 @@ comedi_actuators : list of crappy.actuators.ComediActuator objects.
 			#t_mean=0
 			#k=1
 			last_cmd=0
-			#i=1
-			#delta=0
+			i=1
+			loop_mean=0
+			loop_max=0
+			last_t=self.t0
 			while True:
 				#t_1=time.time()
 				Data=self.inputs[0].recv()
@@ -43,7 +45,7 @@ comedi_actuators : list of crappy.actuators.ComediActuator objects.
 				#t_ori=Data['t(s)'][0]
 				#t_now=time.time()-self.t0
 				#delta+=(t_now-t_ori)
-				#if i%500==0:
+				#
 					#print "delta comedi = ", (delta/i)
 				if cmd!= last_cmd:
 					for comedi_actuator in self.comedi_actuators:
