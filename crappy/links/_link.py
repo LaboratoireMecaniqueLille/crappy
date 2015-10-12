@@ -1,6 +1,6 @@
 from multiprocessing import Pipe
 
-class Link:
+class Link(object):
 	"""
 Main class for links. All links should inherit this class.
 	"""
@@ -34,12 +34,13 @@ recv(blocking=True) : receive a pickable object. If blocking=False, return None
 if there is no data
 		"""
 		
-		self.out_,self.in_=Pipe()
+		self.in_,self.out_=Pipe(duplex=False)
 		self.external_trigger=None
 		self.condition=condition
 	
 	def add_external_trigger(self,link_instance):
 		self.external_trigger=link_instance
+		self.condition.external_trigger=link_instance
 	
 	def send(self,value):
 		"""Send data through the condition.evaluate(value) function"""
@@ -47,14 +48,14 @@ if there is no data
 			if self.condition==None:
 				self.out_.send(value)
 			else:
-				if self.external_trigger==None:
-					val=self.condition.evaluate(value)
-					if not val is None:
-						self.out_.send(val)
-				else:
-					val=self.condition.evaluate(value,self.external_trigger)
-					if not val is None:
-						self.out_.send(val)
+				#if self.external_trigger==None:
+				val=self.condition.evaluate(value)
+				if not val is None:
+					self.out_.send(val)
+				#else:
+					#val=self.condition.evaluate(value,self.external_trigger)
+					#if val is not None:
+						#self.out_.send(val)
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in link : ", e
 			raise

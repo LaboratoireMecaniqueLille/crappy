@@ -18,7 +18,7 @@ from skimage.filter import threshold_otsu, rank#, threshold_yen
 
 class _CameraInit():
   
-	def __init__(self, camera, videoextenso={'enabled':True, 'white_spot':True, 'border':4,}):
+	def __init__(self, camera, videoextenso={'enabled':True, 'white_spot':True, 'border':4,'xoffset':0,'yoffset':0,'width':2048,'height':2048}):
 		self.cam = camera
 		self.videoextenso = videoextenso
 		self.rect={}
@@ -237,9 +237,12 @@ class _CameraInit():
 		self._fig.canvas.draw_idle()
 	
 	def close(self, event):
-		self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
-		self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
-		print "L0 saved!"
+		try:
+			self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
+			self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
+			print "L0 saved!"
+		except AttributeError: #if no selected Points_coordinates
+			print "no points selected"
 		#self.cam.close()
 		#plt.close()
 		
@@ -263,13 +266,15 @@ class _CameraInit():
 			return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset), \
 				   self.minx, self.maxx, self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh,self.Points_coordinates
 		print "in cameraInit :", int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
-		return int(self.cam.exposure), int(self.cam.gain), int(self.width), int(self.height), int(self.xoffset), int(self.yoffset)
+		return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
 
 def getCameraConfig(cam, videoExtenso,send_pipe=None):
 	d = _CameraInit(cam, videoExtenso)
 	d.start()
 	try:
 		send_pipe.send(d.getConfiguration())
+		print "data sent"
 	except:
+		print "error"
 		pass
 	

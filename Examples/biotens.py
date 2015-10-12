@@ -13,7 +13,7 @@ try:
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[0])
 	t,F0=instronSensor.getData(0)
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[-F0])
-	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=20)
+	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=15)
 
 ########################################### Creating blocks
 	
@@ -33,11 +33,13 @@ try:
 							#send_freq=400,repeat=False,labels=['t(s)','signal'])
 	#example of path:[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[i,'Eyy(%)']} for i in range(10,90,10)]
 
-	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[3,'Eyy(%)']}],
-							send_freq=400,repeat=False,labels=['t(s)','signal'])
+	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[1000,'Eyy(%)']}],
+							send_freq=5,repeat=False,labels=['t(s)','signal'])
 	
 	
 	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
+	compacter_position=crappy.blocks.Compacter(5)
+	save_position=crappy.blocks.Saver("/home/biotens/Bureau/position.txt")
 
 ########################################### Creating links
 	
@@ -50,7 +52,8 @@ try:
 	link7=crappy.links.Link()
 	link8=crappy.links.Link()
 	link9=crappy.links.Link()
-	
+	link10=crappy.links.Link()
+	link11=crappy.links.Link()
 	
 ########################################### Linking objects
 
@@ -65,6 +68,7 @@ try:
 	signalGenerator.add_output(link9)
 	
 	biotens.add_input(link9)
+	biotens.add_output(link10)
 
 	compacter_effort.add_input(link6)
 	compacter_effort.add_output(link7)
@@ -82,6 +86,10 @@ try:
 	
 	graph_extenso.add_input(link5)
 	
+	compacter_position.add_input(link10)
+	compacter_position.add_output(link11)
+	
+	save_position.add_input(link11)
 ########################################### Starting objects
 
 	t0=time.time()
