@@ -58,7 +58,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			self.yoffset=self.camera.yoffset
 			self.exposure=self.camera.exposure
 			self.gain=self.camera.gain
-			if self.NumOfReg==4: 
+			if self.NumOfReg==4 or self.NumOfReg==1: 
 				go=True
 			else:	#	If detection goes wrong, start again
 				print " Spots detected : ", self.NumOfReg	
@@ -70,7 +70,17 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			#fo.write(data_to_save)
 			#fo.close()
 
-
+	#def barycenter_monospot(self,recv_):
+		
+		#img = cv2.imread('star.jpg',0)
+		#ret,thresh = cv2.threshold(img,127,255,0)
+		#contours,hierarchy = cv2.findContours(thresh, 1, 2)
+		#cnt = contours[0]
+		#x,y,w,h = cv2.boundingRect(cnt)
+		#img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+		
+		
+		
 	def barycenter_opencv(self,recv_):
 		"""
 		computation of the barycenter (moment 1 of image) on ZOI using OpenCV
@@ -165,9 +175,13 @@ Panda Dataframe with time and deformations Exx and Eyy.
 				minx_=self.minx.min()
 				miny_=self.miny.min()
 				maxx_=self.maxx.max()
-				maxy_=self.maxy.max()				
-				Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
-				Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
+				maxy_=self.maxy.max()		
+				if self.NumOfReg ==4:
+					Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
+					Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
+				elif self.NumOfReg ==1:
+					Lx=100.*((maxx_-minx_)/self.L0x-1.)
+					Ly=100.*((maxy_-miny_)/self.L0x-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
 				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly]],columns=self.labels)
