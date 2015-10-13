@@ -181,10 +181,10 @@ The requiered informations depend on the type of waveform you need.
 					if self.step==0:
 						self.alpha=0
 					else:
-						if path[self.step-1]["waveform"]=="limit":
-							alpha=0
+						if self.path[self.step-1]["waveform"]=="limit":
+							self.alpha=0
 						else:
-							self.alpha=self.alpha
+							pass
 					Array=pd.DataFrame([[last_t-self.t0,self.alpha,0]],columns=self.labels)
 					try:
 						for output in self.outputs:
