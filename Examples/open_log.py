@@ -15,14 +15,23 @@ def get_data(file_path,columns):
   data=np.transpose(c) # allow to use data as column
   return data
 
-data=get_data('/home/corentin/Bureau/signal_cycle.txt',(1,2,3))
+<<<<<<< HEAD
+data=get_data('/home/essais-2015-3/Bureau/tension_coeff.txt',(1,2))
+#data=get_data('/home/essais-2015-3/Bureau/t_dep_F.txt',(1,2,3))
+
+=======
+data=get_data('/home/essais-2015-1/Bureau/t_dep_F.txt',(1,2,3))
+>>>>>>> 326d784433793d074bb6b045fb78f19fff800084
 #data_t=np.transpose(data)
 #data2=get_data('/home/corentin/Bureau/signal_adapted.txt',(1,2))
 
 
-plt.plot(data[0],data[1],'+b')
+plt.plot(data[0][0::2],data[1][0::2],'+b')
 #plt.figure()
-#plt.plot(data[0],data[2],'r')
+plt.plot(data[0][1::2],data[1][1::2],'+r')
+#plt.plot(data[0],data[1],'+b')
+##plt.figure()
+#plt.plot(data[0],data[2],'+r')
 #plt.plot(data2[0],data2[1],'+r')
 plt.show()
 #offset=36.662803889999999

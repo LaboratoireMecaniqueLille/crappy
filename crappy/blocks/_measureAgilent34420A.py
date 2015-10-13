@@ -1,7 +1,8 @@
-from _meta import MasterBlock
+from _meta import MasterBlock, delay
 import time
 import pandas as pd
 import os
+import numpy as np
 
 class MeasureAgilent34420A(MasterBlock):
 	"""
@@ -46,13 +47,16 @@ freq : float or int, optional
 				if trigger=="internal":
 					if self.freq!=None:
 						while time.time()-timer< 1./self.freq:
-							pass
+							delay(1./(100*1000*self.freq))
 					timer=time.time()
 					data=[timer-self.t0]
 					ret=self.agilentSensor.getData()
-					if ret != False:
+					if ret!= False: # if there is data
 						data.append(ret)	
-					Data=pd.DataFrame([data],columns=self.labels)
+						enable_sending=True 
+						Data=pd.DataFrame([data],columns=self.labels)
+					else: 
+						enable_sending=False # no data means no sending
 				if trigger=="external":
 					#t_1=time.time()
 					Data = self.inputs[0].recv() # wait for a signal
@@ -66,13 +70,15 @@ freq : float or int, optional
 					if Data is not None:
 						#print "top res3"
 						ret=self.agilentSensor.getData()
-						if ret == False:
-							ret=np.nan
-						Data[self.labels[0]] = pd.Series((time.time()-self.t0), index=Data.index) # verify if timestamps really differ and delete this line
-						Data[self.labels[1]] = pd.Series((ret), index=Data.index) # add one column
+						if ret != False:
+							Data[self.labels[0]] = pd.Series((time.time()-self.t0), index=Data.index) # verify if timestamps really differ and delete this line
+							Data[self.labels[1]] = pd.Series((ret), index=Data.index) # add one column
+							enable_sending=True
+						else: 
+							enable_sending=False
 				#Array=pd.DataFrame([data],columns=self.labels)
 				#Data.append(Array)
-				if trigger=="internal" or Data is not None:
+				if enable_sending:  #or Data is not None:
 					#print "top res4"
 					for output in self.outputs:
 						output.send(Data)
