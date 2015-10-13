@@ -7,6 +7,7 @@ import pandas as pd
 import cv2
 from ..technical import TechnicalCamera as tc
 import SimpleITK as sitk # only for testing
+from skimage.filter import threshold_otsu
 
 
 class VideoExtenso(MasterBlock): 
@@ -81,6 +82,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			try:
 				image,minx,miny=recv_.recv()[:]
 				#print "minx ", minx
+				self.thresh=threshold_otsu(image)
 				bw=cv2.medianBlur(image,5)>self.thresh
 				if not (self.white_spot):
 					bw=1-bw
