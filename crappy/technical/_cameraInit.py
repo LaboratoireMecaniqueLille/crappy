@@ -238,7 +238,7 @@ class _CameraInit():
 	
 	def close(self, event):
 		try:
-			if self.NumOfReg ==4:
+			if self.NumOfReg ==4 or self.NumOfReg ==2:
 				self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
 				self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
 			elif self.NumOfReg ==1:
@@ -248,7 +248,7 @@ class _CameraInit():
 				maxy_=self.maxy.max()
 				self.L0x=(maxx_-minx_)
 				self.L0y=(maxy_-miny_)
-			print "L0 saved!"
+			print "L0 saved! : ", self.L0x, self.L0y
 		except AttributeError: #if no selected Points_coordinates
 			print "no points selected"
 		#self.cam.close()
