@@ -7,7 +7,10 @@ import pandas as pd
 import cv2
 from ..technical import TechnicalCamera as tc
 import SimpleITK as sitk # only for testing
-from skimage.filter import threshold_otsu
+from skimage.filter import threshold_otsu, rank
+from skimage.measure import regionprops
+from skimage.morphology import label,erosion, square,dilation
+from skimage.segmentation import clear_border
 
 
 class VideoExtenso(MasterBlock): 
@@ -59,7 +62,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			self.yoffset=self.camera.yoffset
 			self.exposure=self.camera.exposure
 			self.gain=self.camera.gain
-			if self.NumOfReg==4: 
+			if self.NumOfReg==4 or self.NumOfReg==2 or self.NumOfReg==1: 
 				go=True
 			else:	#	If detection goes wrong, start again
 				print " Spots detected : ", self.NumOfReg	
@@ -71,7 +74,17 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			#fo.write(data_to_save)
 			#fo.close()
 
-
+	#def barycenter_monospot(self,recv_):
+		
+		#img = cv2.imread('star.jpg',0)
+		#ret,thresh = cv2.threshold(img,127,255,0)
+		#contours,hierarchy = cv2.findContours(thresh, 1, 2)
+		#cnt = contours[0]
+		#x,y,w,h = cv2.boundingRect(cnt)
+		#img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+		
+		
+		
 	def barycenter_opencv(self,recv_):
 		"""
 		computation of the barycenter (moment 1 of image) on ZOI using OpenCV
@@ -80,26 +93,71 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		# The median filter helps a lot for real life images ...
 		while True:
 			try:
+				last_region_area=0
 				image,minx,miny=recv_.recv()[:]
-				#print "minx ", minx
+				#print "minx ", minx, image.shape
+				#image=rank.median(image,square(15))
 				self.thresh=threshold_otsu(image)
 				bw=cv2.medianBlur(image,5)>self.thresh
 				if not (self.white_spot):
 					bw=1-bw
+					image=255.-image
 				M = cv2.moments(bw*255.)
-				Px=M['m01']/M['m00']
-				Py=M['m10']/M['m00'] 
-				# we add minx and miny to go back to global coordinate:
-				Px+=minx
-				Py+=miny
-				miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
-				maxy_=miny_+h
-				maxx_=miny_+w
-				# Determination of the new bounding box using global coordinates and the margin
+				if self.NumOfReg==1:
+					#bw = dilation(bw,square(3))
+					#bw = erosion(bw,square(3))
+					#cleared = bw.copy()
+					#clear_border(cleared)
+					#label_image = label(cleared)
+					#borders = np.logical_xor(bw, cleared)
+					#label_image[borders] = -1
+					#for region in regionprops(label_image):
+						#if region.area>last_region_area:
+							#maxy_, minx_, miny_, maxx_ = region.bbox
+							#Px=minx+(minx_+ maxx_)/2.
+							#Py=minx+(miny_+ maxy_)/2.
+					#thresh = (bw*255).astype(np.uint8)
+					#print "1"
+					#ret,thresh = cv2.threshold(image,self.thresh,255,0)
+					#print "2"
+					#image,contours,hierarchy = cv2.findContours(thresh, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+					#cnt = contours[0]
+					#print contours
+					#ellipse = cv2.fitEllipse(cnt)
+					Dx=2*np.sqrt(M['m02']/M['m00'])
+					Dy=2*np.sqrt(M['m20']/M['m00'])
+					print Dx, Dy
+					Px=M['m01']/M['m00']
+					Py=M['m10']/M['m00'] 
+					maxy_=Py+Dy/2.
+					minx_=Px-Dx/2.
+					miny_=Py-Dy/2.
+					maxx_=Px+Dx/2.
+					if minx_<0:
+						minx_=0
+					if miny_<0:
+						miny_=0
+					print "ellipse: ", minx_,miny_,maxx_,maxy_
+					#Px=minx+(minx_+ maxx_)/2.
+					#Py=minx+(miny_+ maxy_)/2.
+				else:
+					Px=M['m01']/M['m00']
+					Py=M['m10']/M['m00'] 
+					# we add minx and miny to go back to global coordinate:
+					Px+=minx
+					Py+=miny
+					miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
+					maxy_=miny_+h
+					maxx_=miny_+w
+					#print "rect : ",minx_,miny_,maxx_,maxy_
+					# Determination of the new bounding box using global coordinates and the margin
 				minx=minx-self.border+minx_
 				miny=miny-self.border+miny_
 				maxx=minx+self.border+maxx_
 				maxy=miny+self.border+maxy_
+				#if self.NumOfReg==1:
+					#maxx=Dx
+					#maxy=Dy
 				recv_.send([Px,Py,minx,miny,maxx,maxy])
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in barycenter : ",e
@@ -159,17 +217,21 @@ Panda Dataframe with time and deformations Exx and Eyy.
 						first[i]=False
 						#print "i : ",i
 						#print np.shape(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]]),self.minx[i],self.miny[i]
-					send_[i].send([image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]],self.minx[i],self.miny[i]])
+					send_[i].send([image[int(self.minx[i])-1:int(self.maxx[i])+1,int(self.miny[i])-1:int(self.maxy[i])+1],self.minx[i]-1,self.miny[i]-1])
 				for i in range(0,self.NumOfReg):
-					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:]
+					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:] #self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]
 					#self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]],self.minx[i],self.miny[i])
 				
 				minx_=self.minx.min()
 				miny_=self.miny.min()
 				maxx_=self.maxx.max()
-				maxy_=self.maxy.max()				
-				Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
-				Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
+				maxy_=self.maxy.max()		
+				if self.NumOfReg ==4 or self.NumOfReg ==2:
+					Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
+					Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
+				elif self.NumOfReg ==1:
+					Lx=100.*((maxx_-minx_)/self.L0x-1.)
+					Ly=100.*((maxy_-miny_)/self.L0y-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
 				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly]],columns=self.labels)
