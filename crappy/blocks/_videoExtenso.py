@@ -93,16 +93,17 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		# The median filter helps a lot for real life images ...
 		while True:
 			try:
-				last_region_area=0
+				#last_region_area=0
 				image,minx,miny=recv_.recv()[:]
-				#print "minx ", minx, image.shape
+				#print "shape :",  image.shape
 				#image=rank.median(image,square(15))
 				self.thresh=threshold_otsu(image)
 				bw=cv2.medianBlur(image,5)>self.thresh
 				if not (self.white_spot):
 					bw=1-bw
-					image=255.-image
 				M = cv2.moments(bw*255.)
+				Px=M['m01']/M['m00']
+				Py=M['m10']/M['m00']
 				if self.NumOfReg==1:
 					#bw = dilation(bw,square(3))
 					#bw = erosion(bw,square(3))
@@ -111,11 +112,13 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					#label_image = label(cleared)
 					#borders = np.logical_xor(bw, cleared)
 					#label_image[borders] = -1
+					#print "NofReg :", len(regionprops(label_image))
 					#for region in regionprops(label_image):
 						#if region.area>last_region_area:
-							#maxy_, minx_, miny_, maxx_ = region.bbox
+							#minx_, miny_, maxx_, maxy_ = region.bbox
 							#Px=minx+(minx_+ maxx_)/2.
 							#Py=minx+(miny_+ maxy_)/2.
+							#last_region_area=region.area
 					#thresh = (bw*255).astype(np.uint8)
 					#print "1"
 					#ret,thresh = cv2.threshold(image,self.thresh,255,0)
@@ -123,32 +126,49 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					#image,contours,hierarchy = cv2.findContours(thresh, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 					#cnt = contours[0]
 					#print contours
-					#ellipse = cv2.fitEllipse(cnt)
-					Dx=2*np.sqrt(M['m02']/M['m00'])
-					Dy=2*np.sqrt(M['m20']/M['m00'])
-					print Dx, Dy
-					Px=M['m01']/M['m00']
-					Py=M['m10']/M['m00'] 
-					maxy_=Py+Dy/2.
-					minx_=Px-Dx/2.
-					miny_=Py-Dy/2.
-					maxx_=Px+Dx/2.
-					if minx_<0:
-						minx_=0
-					if miny_<0:
-						miny_=0
-					print "ellipse: ", minx_,miny_,maxx_,maxy_
+					#ellipse = cv2.fitEllipse(cnt)a
+					a=M['mu20']/M['m00']
+					b=-M['mu11']/M['m00']
+					c=M['mu02']/M['m00']
+					#print "a,c : ", a,c
+					l1=0.5*((a+c)+np.sqrt(4*b**2+(a-c)**2))
+					l2=0.5*((a+c)-np.sqrt(4*b**2+(a-c)**2))
+					minor_axis=4*np.sqrt(l2)
+					major_axis=4*np.sqrt(l1)
+					if (a-c)==0:
+						if b>0:
+							theta=-np.pi/4
+						else:
+							theta=np.pi/4
+					else:
+						theta=0.5*np.arctan2(2*b,(a-c))
+					#print "min,maj,theta :" ,minor_axis,major_axis,theta
+					Dx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
+					Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
+					
+					#print Dx, Dy, Px,Py
+						#Px=M['m01']/M['m00']
+						#Py=M['m10']/M['m00'] 
+					#maxy_=Dx #Py+Dy/2.
+					#minx_= 0 #Px-Dx/2.
+					#miny_=0 #Py-Dy/2.
+					#maxx_=Dy #Px+Dx/2.
+					Px=Dx
+					Py=Dy
+						#if minx_<0:
+							#minx_=0
+						#if miny_<0:
+							#miny_=0
+					#print "ellipse: ", minx_, maxx_, miny_, maxy_ 
 					#Px=minx+(minx_+ maxx_)/2.
 					#Py=minx+(miny_+ maxy_)/2.
-				else:
-					Px=M['m01']/M['m00']
-					Py=M['m10']/M['m00'] 
+				else: 
 					# we add minx and miny to go back to global coordinate:
 					Px+=minx
 					Py+=miny
-					miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
-					maxy_=miny_+h
-					maxx_=miny_+w
+				miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
+				maxy_=miny_+h
+				maxx_=miny_+w
 					#print "rect : ",minx_,miny_,maxx_,maxy_
 					# Determination of the new bounding box using global coordinates and the margin
 				minx=minx-self.border+minx_
@@ -230,8 +250,8 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
 					Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
 				elif self.NumOfReg ==1:
-					Lx=100.*((maxx_-minx_)/self.L0x-1.)
-					Ly=100.*((maxy_-miny_)/self.L0y-1.)
+					Lx=100.*((self.Points_coordinates[0,0])/self.L0x-1.)
+					Ly=100.*((self.Points_coordinates[0,1])/self.L0y-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
 				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly]],columns=self.labels)
