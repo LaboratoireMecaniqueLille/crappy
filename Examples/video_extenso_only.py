@@ -29,7 +29,7 @@ try:
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	#effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
-	extenso=crappy.blocks.VideoExtenso(camera="Ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=False,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
+	extenso=crappy.blocks.VideoExtenso(camera="Ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
 	
 	#signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},
 							#{"waveform":"limit","cycles":3,"phase":0,"lower_limit":[50,'F(N)'],"upper_limit":[5,'Exx(%)']}],

@@ -11,7 +11,7 @@ from skimage.filter import threshold_otsu, rank
 from skimage.measure import regionprops
 from skimage.morphology import label,erosion, square,dilation
 from skimage.segmentation import clear_border
-
+import pyglet
 
 class VideoExtenso(MasterBlock): 
 	"""
@@ -181,6 +181,12 @@ Panda Dataframe with time and deformations Exx and Eyy.
 				recv_.send([Px,Py,minx,miny,maxx,maxy])
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in barycenter : ",e
+				try:
+					song = pyglet.media.load('/home/outfile.wav')
+					song.play()
+					pyglet.app.run()
+				except:
+					pass
 				raise
 
 	def main(self):
