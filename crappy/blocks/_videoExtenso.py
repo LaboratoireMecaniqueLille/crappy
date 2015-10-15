@@ -11,9 +11,13 @@ from skimage.filter import threshold_otsu, rank
 from skimage.measure import regionprops
 from skimage.morphology import label,erosion, square,dilation
 from skimage.segmentation import clear_border
-import pyglet
-import glob
-import random
+try:
+	import pyglet
+	import glob
+	import random
+except ImportError:
+	print "no sound module installed"
+	
 
 class VideoExtenso(MasterBlock): 
 	"""
@@ -256,8 +260,8 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
 					Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
 				elif self.NumOfReg ==1:
-					Lx=100.*((self.Points_coordinates[0,0])/self.L0x-1.)
-					Ly=100.*((self.Points_coordinates[0,1])/self.L0y-1.)
+					Ly=100.*((self.Points_coordinates[0,0])/self.L0x-1.)
+					Lx=100.*((self.Points_coordinates[0,1])/self.L0y-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
 				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly]],columns=self.labels)
@@ -297,6 +301,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					song_list=glob.glob('/home/*.wav')
 					song = pyglet.media.load(random.choice(song_list))
 					song.play()
+					pyglet.clock.schedule_once(lambda x:pyglet.app.exit(), 10) # stop music after 10 sec
 					pyglet.app.run()
 				except:
 					pass
