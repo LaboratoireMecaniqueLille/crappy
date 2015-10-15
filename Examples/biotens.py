@@ -19,11 +19,11 @@ try:
 ########################################### Creating blocks
 	
 	compacter_effort=crappy.blocks.Compacter(150)
-	save_effort=crappy.blocks.Saver("/home/biotens/Bureau/Annie/dragon/dragon8_41815_effort_1.txt")
+	save_effort=crappy.blocks.Saver("/home/biotens/Bureau/Annie/dragon/dragon8_41815_effort_4.txt")
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
 	
 	compacter_extenso=crappy.blocks.Compacter(90)
-	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/Annie/dragon/dragon8_41815_extenso_1.txt")
+	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/Annie/dragon/dragon8_41815_extenso_4.txt")
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=150)
@@ -41,7 +41,7 @@ try:
 	
 	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=20)
 	compacter_position=crappy.blocks.Compacter(5)
-	save_position=crappy.blocks.Saver("/home/biotens/Bureau/Annie/dragon/dragon8_41815_position_1.txt")
+	save_position=crappy.blocks.Saver("/home/biotens/Bureau/Annie/dragon/dragon8_41815_position_4.txt")
 
 ########################################### Creating links
 	

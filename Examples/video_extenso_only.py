@@ -25,7 +25,7 @@ try:
 	#graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
 	
 	compacter_extenso=crappy.blocks.Compacter(150)
-	save_extenso=crappy.blocks.Saver("/home/corentin/Bureau/extenso_to_delete.txt")
+	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/extenso_to_delete.txt")
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	#effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
