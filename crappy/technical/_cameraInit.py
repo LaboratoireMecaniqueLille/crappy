@@ -207,15 +207,38 @@ class _CameraInit():
 		"""
 		# The median filter helps a lot for real life images ...
 		#print "5"
+		self.thresh=threshold_otsu(image)
 		bw=cv2.medianBlur(image,5)>self.thresh
 		if not (self.videoextenso['white_spot']):
 			bw=1-bw
 		M = cv2.moments(bw*255.)
 		Px=M['m01']/M['m00']
 		Py=M['m10']/M['m00'] 
+		if self.NumOfReg==1:
+			a=M['mu20']/M['m00']
+			b=-M['mu11']/M['m00']
+			c=M['mu02']/M['m00']
+			l1=0.5*((a+c)+np.sqrt(4*b**2+(a-c)**2))
+			l2=0.5*((a+c)-np.sqrt(4*b**2+(a-c)**2))
+			minor_axis=4*np.sqrt(l2)
+			major_axis=4*np.sqrt(l1)
+			if (a-c)==0:
+				if b>0:
+					theta=-np.pi/4
+				else:
+					theta=np.pi/4
+			else:
+				theta=0.5*np.arctan2(2*b,(a-c))
+			#print "min,maj,theta :" ,minor_axis,major_axis,theta
+			Dx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
+			Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
+			#print Dx, Dy, Px,Py
+			Px=Dx
+			Py=Dy
 		# we add minx and miny to go back to global coordinate:
-		Px+=minx
-		Py+=miny
+		else:
+			Px+=minx
+			Py+=miny
 		miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
 		maxy_=miny_+h
 		maxx_=miny_+w
@@ -242,12 +265,12 @@ class _CameraInit():
 				self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
 				self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
 			elif self.NumOfReg ==1:
-				minx_=self.minx.min()
-				miny_=self.miny.min()
-				maxx_=self.maxx.max()
-				maxy_=self.maxy.max()
-				self.L0x=(maxx_-minx_)
-				self.L0y=(maxy_-miny_)
+				#minx_=self.Points_coordinates[0,0]
+				#miny_=self.miny.min()
+				#maxx_=self.maxx.max()
+				#maxy_=self.maxy.max()
+				self.L0x=self.Points_coordinates[0,0]
+				self.L0y=self.Points_coordinates[0,1]
 			print "L0 saved! : ", self.L0x, self.L0y
 		except AttributeError: #if no selected Points_coordinates
 			print "no points selected"

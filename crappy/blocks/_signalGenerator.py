@@ -247,7 +247,7 @@ The requiered informations depend on the type of waveform you need.
 						raise Exception("invalid waveform : use sinus,triangle or square")
 					t2=time.time()
 					t_calc=max(t2-last_t,t_calc)
-					cycle=0.5*np.floor(2*((t-t_step+0.25)*self.freq))
+					cycle=0.5*np.floor(2*((t-t_step)*self.freq+0.25))
 					Array=pd.DataFrame([[t-self.t0,self.alpha,cycle]],columns=self.labels)
 					try:
 						for output in self.outputs:
