@@ -184,10 +184,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in barycenter : ",e
 				try:
-					song_list=glob.glob('/home/*.wav')
-					song = pyglet.media.load(random.choice(song_list))
-					song.play()
-					pyglet.app.run()
+					recv_.send(["Error"]) # kill pill
 				except:
 					pass
 				raise
@@ -295,6 +292,15 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					last_ttimer=t_now
 				
 				j+=1
+			except ValueError: # if lost spots in barycenter
+				try:
+					song_list=glob.glob('/home/*.wav')
+					song = pyglet.media.load(random.choice(song_list))
+					song.play()
+					pyglet.app.run()
+				except:
+					pass
+				raise Exception("Spots lost")
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in videoextenso : ",e
 				for i in range(0,self.NumOfReg):
