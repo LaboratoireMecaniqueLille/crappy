@@ -141,20 +141,39 @@ class _CameraInit():
 			regions=[region for region in regions if region.area>200]
 			self.NumOfReg=len(regions)
 			print " Spots detected : ", self.NumOfReg
-			
-			self.minx=np.empty([self.NumOfReg,1])
-			self.miny=np.empty([self.NumOfReg,1])
-			self.maxx=np.empty([self.NumOfReg,1])
-			self.maxy=np.empty([self.NumOfReg,1])
-			self.Points_coordinates=np.empty([self.NumOfReg,2])
+			smoothing=1
+			self.minx=np.empty([self.NumOfReg,1,smoothing])
+			self.miny=np.empty([self.NumOfReg,1,smoothing])
+			self.maxx=np.empty([self.NumOfReg,1,smoothing])
+			self.maxy=np.empty([self.NumOfReg,1,smoothing])
+			self.Points_coordinates=np.empty([self.NumOfReg,2,smoothing])
 			# Definition of the ZOI and initialisation of the regions border
 			i=0
 			for i,region in enumerate(regions): # skip small regions
 				#if region.area > 100:
 				self.minx[i], self.miny[i], self.maxx[i], self.maxy[i]= region.bbox
+				
+			for k in range(smoothing):
+				#print k
+				image=self.cam.getImage()
+				#plt.imsave("/home/corentin/Bureau/image_originale.tiff",image)
+				croped_image = image[self.yoffset:self.height+self.yoffset,self.xoffset:self.xoffset+self.width]
+				image = croped_image
+				
+				for i in range(0,self.NumOfReg): # find the center of every region
+					self.Points_coordinates[i,0,k],self.Points_coordinates[i,1,k],self.minx[i,0,k],self.miny[i,0,k],self.maxx[i,0,k],self.maxy[i,0,k]=self.barycenter_opencv(image[self.minx[i,0,k]-1:self.maxx[i,0,k]+1,self.miny[i,0,k]-1:self.maxy[i,0,k]+1],self.minx[i,0,k]-1,self.miny[i,0,k]-1)
 			
-			for i in range(0,self.NumOfReg): # find the center of every region
-				self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]-1:self.maxx[i]+1,self.miny[i]-1:self.maxy[i]+1],self.minx[i]-1,self.miny[i]-1)
+			
+			self.Points_coordinates=np.mean(self.Points_coordinates,axis=2)
+			self.minx=np.mean(self.minx,axis=2)
+			self.miny=np.mean(self.miny,axis=2)
+			self.maxx=np.mean(self.maxx,axis=2)
+			self.maxy=np.mean(self.maxy,axis=2)
+			#print "new image"
+			#image=self.cam.getImage()
+			#for i in range(0,self.NumOfReg): # find the center of every region
+				#print "round 2"
+				#self.Points_coordinates[i,0],self.Points_coordinates[i,1],a_,b_,c_,d_=self.barycenter_opencv(image[self.minx[i]-1:self.maxx[i]+1,self.miny[i]-1:self.maxy[i]+1],self.minx[i]-1,self.miny[i]-1)
 			#Evaluating initial distance bewteen 2 spots 
 			#self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
 			#self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
@@ -207,6 +226,7 @@ class _CameraInit():
 		"""
 		# The median filter helps a lot for real life images ...
 		#print "5"
+		#print image.shape
 		self.thresh=threshold_otsu(image)
 		bw=cv2.medianBlur(image,5)>self.thresh
 		if not (self.videoextenso['white_spot']):
@@ -235,13 +255,14 @@ class _CameraInit():
 			#print Dx, Dy, Px,Py
 			Px=Dx
 			Py=Dy
+			#print "Dx0,Dy0 : ", Dx,Dy
 		# we add minx and miny to go back to global coordinate:
 		else:
 			Px+=minx
 			Py+=miny
 		miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
 		maxy_=miny_+h
-		maxx_=miny_+w
+		maxx_=minx_+w
 		# Determination of the new bounding box using global coordinates and the margin
 		border=self.videoextenso['border']
 		minx=minx-border+minx_
@@ -294,7 +315,7 @@ class _CameraInit():
 	
 	def getConfiguration(self):
 		if self.videoextenso['enabled']:
-			return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset), \
+			return (self.cam.exposure), (self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset), \
 				   self.minx, self.maxx, self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh,self.Points_coordinates
 		print "in cameraInit :", int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
 		return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)

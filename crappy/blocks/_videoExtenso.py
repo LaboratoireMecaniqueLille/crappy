@@ -23,7 +23,7 @@ class VideoExtenso(MasterBlock):
 	"""
 This class detects 4 spots, and evaluate the deformations Exx and Eyy.
 	"""
-	def __init__(self,camera="ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Exx ()', 'Eyy()']):
+	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Exx ()', 'Eyy()']):
 		"""
 VideoExtenso(camera,white_spot=True,labels=['t(s)','Exx ()', 'Eyy()'],display=True)
 
@@ -50,9 +50,10 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		self.labels=labels
 		self.display=display
 		self.border=4
+		self.numdevice=numdevice
 		while go==False:
 		# the following is to initialise the spot detection
-			self.camera=tc(camera, {'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
+			self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
 			self.minx=self.camera.minx
 			self.maxx=self.camera.maxx
 			self.miny=self.camera.miny
@@ -161,6 +162,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					#maxx_=Dy #Px+Dx/2.
 					Px=Dx
 					Py=Dy
+					print "Dx,Dy : ", Dx,Dy
 						#if minx_<0:
 							#minx_=0
 						#if miny_<0:
@@ -174,7 +176,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					Py+=miny
 				miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
 				maxy_=miny_+h
-				maxx_=miny_+w
+				maxx_=minx_+w
 					#print "rect : ",minx_,miny_,maxx_,maxy_
 					# Determination of the new bounding box using global coordinates and the margin
 				minx=minx-self.border+minx_
@@ -260,6 +262,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
 					Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
 				elif self.NumOfReg ==1:
+					#print self.Points_coordinates
 					Ly=100.*((self.Points_coordinates[0,0])/self.L0x-1.)
 					Lx=100.*((self.Points_coordinates[0,1])/self.L0y-1.)
 				self.Points_coordinates[:,1]-=miny_

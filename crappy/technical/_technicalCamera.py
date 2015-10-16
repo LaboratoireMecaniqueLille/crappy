@@ -8,7 +8,7 @@ class TechnicalCamera():
 	"""
 	Camera class for ximea devices, this class should inherit from CameraObject
 	"""
-	def __init__(self, camera="ximea", videoextenso={}):
+	def __init__(self, camera="ximea",numdevice=0, videoextenso={}):
 		try:
 			module = __import__("crappy.sensor", fromlist=[camera.capitalize()])
 			CameraClass= getattr(module, camera.capitalize())
@@ -18,7 +18,7 @@ class TechnicalCamera():
 			raise
 		
         #initialisation:
-		self.sensor = CameraClass()
+		self.sensor = CameraClass( numdevice=numdevice)
 		self.videoextenso = videoextenso
 		recv_pipe,send_pipe=Pipe()
 		proc_test=Process(target=getCameraConfig,args=(self.sensor,self.videoextenso,send_pipe))
