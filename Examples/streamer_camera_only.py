@@ -4,7 +4,7 @@ import time
 import crappy 
 import numpy as np
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
-
+import alerte_jerome
 
 t0=time.time()
 
@@ -19,17 +19,17 @@ try:
 	#axes=[biaxeTech1,biaxeTech2,biaxeTech3,biaxeTech4]
 
 ########################################### Creating blocks
-	
+	camera=crappy.blocks.StreamerCamera("Ximea",freq=10,save=False,save_directory="/home/corentin/Bureau/images_fissuration/")
 	#compacter_effort=crappy.blocks.Compacter(200)
 	#save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Publi/effort.txt")
 	#graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
 	
-	compacter_extenso=crappy.blocks.Compacter(100)
-	save_extenso=crappy.blocks.Saver("/home/corentin/Bureau/extenso_big_spots_non_binarise.txt")
-	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
+	#compacter_extenso=crappy.blocks.Compacter(100)
+	#save_extenso=crappy.blocks.Saver("/home/corentin/Bureau/extenso_big_spots_non_binarise.txt")
+	#graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
-	#effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
-	extenso=crappy.blocks.VideoExtenso(camera="Ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
+	##effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
+	#extenso=crappy.blocks.VideoExtenso(camera="Ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
 	
 	#compacter_extenso2=crappy.blocks.Compacter(100)
 	#save_extenso2=crappy.blocks.Saver("/home/corentin/Bureau/extenso_1_spot.txt")
@@ -57,24 +57,25 @@ try:
 
 ########################################### Creating links
 	
-	link1=crappy.links.Link()
-	link2=crappy.links.Link()
-	link6=crappy.links.Link()
+	link1=crappy.links.Link(condition=alerte_jerome.Alert())
+	#link2=crappy.links.Link()
+	#link6=crappy.links.Link()
 
-	link3=crappy.links.Link()
-	link4=crappy.links.Link()
-	link5=crappy.links.Link()
+	#link3=crappy.links.Link()
+	#link4=crappy.links.Link()
+	#link5=crappy.links.Link()
 	
 	
 ########################################### Linking objects
 
+	camera.add_output(link1)
 	#effort.add_output(link1)
 	#effort.add_output(link12)
 	#effort.add_output(link6)
 	
 	#extenso.add_output(link2)
 	#extenso.add_output(link22)
-	extenso.add_output(link3)
+	#extenso.add_output(link3)
 	#extenso2.add_output(link1)
 
 	#signalGenerator.add_input(link1)
@@ -96,17 +97,17 @@ try:
 	
 	#graph_effort.add_input(link8)
 	
-	compacter_extenso.add_input(link3)
-	#compacter_extenso2.add_input(link1)
-	compacter_extenso.add_output(link4)
-	compacter_extenso.add_output(link5)
-	#compacter_extenso2.add_output(link2)
-	#compacter_extenso2.add_output(link6)
+	#compacter_extenso.add_input(link3)
+	##compacter_extenso2.add_input(link1)
+	#compacter_extenso.add_output(link4)
+	#compacter_extenso.add_output(link5)
+	##compacter_extenso2.add_output(link2)
+	##compacter_extenso2.add_output(link6)
 	
-	save_extenso.add_input(link4)
+	#save_extenso.add_input(link4)
 	
-	graph_extenso.add_input(link5)
-	#graph_extenso2.add_input(link2)
+	#graph_extenso.add_input(link5)
+	##graph_extenso2.add_input(link2)
 	#save_extenso2.add_input(link6)
 	
 ########################################### Starting objects

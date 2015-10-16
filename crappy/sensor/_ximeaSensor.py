@@ -164,6 +164,7 @@ class Ximea(cameraSensor.CameraSensor):
 		this method changes the exposure of the camera
 		and set the exposure attribute
 		"""
+		print "exposure setter : ", exposure
 		self.ximea.set(cv2.CAP_PROP_EXPOSURE,exposure)
 		self._exposure = exposure
 		
@@ -177,6 +178,7 @@ class Ximea(cameraSensor.CameraSensor):
 		this method changes the exposure of the camera
 		and set the exposure attribute
 		"""
+		print "gain setter : ", gain
 		self.ximea.set(cv2.CAP_PROP_GAIN,gain)
 		self._gain= gain
 		
