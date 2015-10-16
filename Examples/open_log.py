@@ -15,20 +15,20 @@ def get_data(file_path,columns):
   data=np.transpose(c) # allow to use data as column
   return data
 
-<<<<<<< HEAD
-data=get_data('/home/essais-2015-3/Bureau/tension_coeff.txt',(1,2))
+#<<<<<<< HEAD
+data1=get_data('/home/biotens/Bureau/Annie/dragon/dragon8_41815_extenso_1.txt',(1,2,3))
 #data=get_data('/home/essais-2015-3/Bureau/t_dep_F.txt',(1,2,3))
 
-=======
-data=get_data('/home/essais-2015-1/Bureau/t_dep_F.txt',(1,2,3))
->>>>>>> 326d784433793d074bb6b045fb78f19fff800084
+#=======
+data=get_data('/home/biotens/Bureau/Annie/dragon/dragon8_41815_extenso_5.txt',(1,2,3))
+#>>>>>>> 326d784433793d074bb6b045fb78f19fff800084
 #data_t=np.transpose(data)
 #data2=get_data('/home/corentin/Bureau/signal_adapted.txt',(1,2))
 
 
-plt.plot(data[0][0::2],data[1][0::2],'+b')
+plt.plot(data1[0][0::],data1[1][0::],'+b')
 #plt.figure()
-plt.plot(data[0][1::2],data[1][1::2],'+r')
+plt.plot(data[0][0::],data[2][0::],'+r')
 #plt.plot(data[0],data[1],'+b')
 ##plt.figure()
 #plt.plot(data[0],data[2],'+r')
