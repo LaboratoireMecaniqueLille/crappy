@@ -117,7 +117,7 @@ The requiered informations depend on the type of waveform you need.
 					#a=time.time()
 					#print "total time: ", (a-last_a)
 					#last_a=a
-					while time.time()-last_t<1./self.send_freq:
+					while time.time()-last_t<1./self.send_freq or first:
 						for input_ in self.inputs:
 							if input_.in_.poll() or first: # if there is data waiting
 								Data=pd.concat([Data,input_.recv()],ignore_index=True)
@@ -181,7 +181,7 @@ The requiered informations depend on the type of waveform you need.
 					if self.step==0:
 						self.alpha=0
 					else:
-						if path[self.step-1]["waveform"]=="limit":
+						if self.path[self.step-1]["waveform"]=="limit":
 							alpha=0
 						else:
 							self.alpha=self.alpha
