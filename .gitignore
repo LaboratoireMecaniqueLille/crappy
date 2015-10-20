@@ -1,6 +1,8 @@
 *.pyc
 *.egg-info
+*.kate-swp
 # ignorer tous les fichiers dans le répertoire build
+Examples/alerte_jerome.py
 build/
 dist/
 crappy.egg-info/

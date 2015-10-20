@@ -7,13 +7,23 @@ import pandas as pd
 import cv2
 from ..technical import TechnicalCamera as tc
 import SimpleITK as sitk # only for testing
-
+from skimage.filter import threshold_otsu, rank
+from skimage.measure import regionprops
+from skimage.morphology import label,erosion, square,dilation
+from skimage.segmentation import clear_border
+try:
+	import pyglet
+	import glob
+	import random
+except ImportError:
+	print "no sound module installed"
+	
 
 class VideoExtenso(MasterBlock): 
 	"""
 This class detects 4 spots, and evaluate the deformations Exx and Eyy.
 	"""
-	def __init__(self,camera="ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Exx ()', 'Eyy()']):
+	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Exx ()', 'Eyy()']):
 		"""
 VideoExtenso(camera,white_spot=True,labels=['t(s)','Exx ()', 'Eyy()'],display=True)
 
@@ -40,9 +50,10 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		self.labels=labels
 		self.display=display
 		self.border=4
+		self.numdevice=numdevice
 		while go==False:
 		# the following is to initialise the spot detection
-			self.camera=tc(camera, {'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
+			self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
 			self.minx=self.camera.minx
 			self.maxx=self.camera.maxx
 			self.miny=self.camera.miny
@@ -58,7 +69,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			self.yoffset=self.camera.yoffset
 			self.exposure=self.camera.exposure
 			self.gain=self.camera.gain
-			if self.NumOfReg==4: 
+			if self.NumOfReg==4 or self.NumOfReg==2 or self.NumOfReg==1: 
 				go=True
 			else:	#	If detection goes wrong, start again
 				print " Spots detected : ", self.NumOfReg	
@@ -70,7 +81,17 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			#fo.write(data_to_save)
 			#fo.close()
 
-
+	#def barycenter_monospot(self,recv_):
+		
+		#img = cv2.imread('star.jpg',0)
+		#ret,thresh = cv2.threshold(img,127,255,0)
+		#contours,hierarchy = cv2.findContours(thresh, 1, 2)
+		#cnt = contours[0]
+		#x,y,w,h = cv2.boundingRect(cnt)
+		#img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+		
+		
+		
 	def barycenter_opencv(self,recv_):
 		"""
 		computation of the barycenter (moment 1 of image) on ZOI using OpenCV
@@ -79,28 +100,99 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		# The median filter helps a lot for real life images ...
 		while True:
 			try:
+				#last_region_area=0
 				image,minx,miny=recv_.recv()[:]
-				#print "minx ", minx
+				#print "shape :",  image.shape
+				#image=rank.median(image,square(15))
+				self.thresh=threshold_otsu(image)
 				bw=cv2.medianBlur(image,5)>self.thresh
 				if not (self.white_spot):
 					bw=1-bw
 				M = cv2.moments(bw*255.)
 				Px=M['m01']/M['m00']
-				Py=M['m10']/M['m00'] 
-				# we add minx and miny to go back to global coordinate:
-				Px+=minx
-				Py+=miny
+				Py=M['m10']/M['m00']
+				if self.NumOfReg==1:
+					#bw = dilation(bw,square(3))
+					#bw = erosion(bw,square(3))
+					#cleared = bw.copy()
+					#clear_border(cleared)
+					#label_image = label(cleared)
+					#borders = np.logical_xor(bw, cleared)
+					#label_image[borders] = -1
+					#print "NofReg :", len(regionprops(label_image))
+					#for region in regionprops(label_image):
+						#if region.area>last_region_area:
+							#minx_, miny_, maxx_, maxy_ = region.bbox
+							#Px=minx+(minx_+ maxx_)/2.
+							#Py=minx+(miny_+ maxy_)/2.
+							#last_region_area=region.area
+					#thresh = (bw*255).astype(np.uint8)
+					#print "1"
+					#ret,thresh = cv2.threshold(image,self.thresh,255,0)
+					#print "2"
+					#image,contours,hierarchy = cv2.findContours(thresh, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+					#cnt = contours[0]
+					#print contours
+					#ellipse = cv2.fitEllipse(cnt)a
+					a=M['mu20']/M['m00']
+					b=-M['mu11']/M['m00']
+					c=M['mu02']/M['m00']
+					#print "a,c : ", a,c
+					l1=0.5*((a+c)+np.sqrt(4*b**2+(a-c)**2))
+					l2=0.5*((a+c)-np.sqrt(4*b**2+(a-c)**2))
+					minor_axis=4*np.sqrt(l2)
+					major_axis=4*np.sqrt(l1)
+					if (a-c)==0:
+						if b>0:
+							theta=-np.pi/4
+						else:
+							theta=np.pi/4
+					else:
+						theta=0.5*np.arctan2(2*b,(a-c))
+					#print "min,maj,theta :" ,minor_axis,major_axis,theta
+					Dx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
+					Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
+					
+					#print Dx, Dy, Px,Py
+						#Px=M['m01']/M['m00']
+						#Py=M['m10']/M['m00'] 
+					#maxy_=Dx #Py+Dy/2.
+					#minx_= 0 #Px-Dx/2.
+					#miny_=0 #Py-Dy/2.
+					#maxx_=Dy #Px+Dx/2.
+					Px=Dx
+					Py=Dy
+					print "Dx,Dy : ", Dx,Dy
+						#if minx_<0:
+							#minx_=0
+						#if miny_<0:
+							#miny_=0
+					#print "ellipse: ", minx_, maxx_, miny_, maxy_ 
+					#Px=minx+(minx_+ maxx_)/2.
+					#Py=minx+(miny_+ maxy_)/2.
+				else: 
+					# we add minx and miny to go back to global coordinate:
+					Px+=minx
+					Py+=miny
 				miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
 				maxy_=miny_+h
-				maxx_=miny_+w
-				# Determination of the new bounding box using global coordinates and the margin
+				maxx_=minx_+w
+					#print "rect : ",minx_,miny_,maxx_,maxy_
+					# Determination of the new bounding box using global coordinates and the margin
 				minx=minx-self.border+minx_
 				miny=miny-self.border+miny_
 				maxx=minx+self.border+maxx_
 				maxy=miny+self.border+maxy_
+				#if self.NumOfReg==1:
+					#maxx=Dx
+					#maxy=Dy
 				recv_.send([Px,Py,minx,miny,maxx,maxy])
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in barycenter : ",e
+				try:
+					recv_.send(["Error"]) # kill pill
+				except:
+					pass
 				raise
 
 	def main(self):
@@ -157,17 +249,22 @@ Panda Dataframe with time and deformations Exx and Eyy.
 						first[i]=False
 						#print "i : ",i
 						#print np.shape(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]]),self.minx[i],self.miny[i]
-					send_[i].send([image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]],self.minx[i],self.miny[i]])
+					send_[i].send([image[int(self.minx[i])-1:int(self.maxx[i])+1,int(self.miny[i])-1:int(self.maxy[i])+1],self.minx[i]-1,self.miny[i]-1])
 				for i in range(0,self.NumOfReg):
-					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:]
+					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:] #self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]
 					#self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]],self.minx[i],self.miny[i])
 				
 				minx_=self.minx.min()
 				miny_=self.miny.min()
 				maxx_=self.maxx.max()
-				maxy_=self.maxy.max()				
-				Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
-				Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
+				maxy_=self.maxy.max()		
+				if self.NumOfReg ==4 or self.NumOfReg ==2:
+					Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
+					Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
+				elif self.NumOfReg ==1:
+					#print self.Points_coordinates
+					Ly=100.*((self.Points_coordinates[0,0])/self.L0x-1.)
+					Lx=100.*((self.Points_coordinates[0,1])/self.L0y-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
 				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly]],columns=self.labels)
@@ -202,6 +299,16 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					last_ttimer=t_now
 				
 				j+=1
+			except ValueError: # if lost spots in barycenter
+				try:
+					song_list=glob.glob('/home/*.wav')
+					song = pyglet.media.load(random.choice(song_list))
+					song.play()
+					pyglet.clock.schedule_once(lambda x:pyglet.app.exit(), 10) # stop music after 10 sec
+					pyglet.app.run()
+				except:
+					pass
+				raise Exception("Spots lost")
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in videoextenso : ",e
 				for i in range(0,self.NumOfReg):
