@@ -274,8 +274,10 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					#print self.Points_coordinates
 					Ly=self.Points_coordinates[0,0]
 					Lx=self.Points_coordinates[0,1]
-					Dy=100.*((Ly)/self.L0y-1.)
-					Dx=100.*((Lx)/self.L0x-1.)
+
+					Dy=100.*((Ly)/self.L0x-1.)
+					Dx=100.*((Lx)/self.L0y-1.)
+
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
 				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly,Dx,Dy]],columns=self.labels)
