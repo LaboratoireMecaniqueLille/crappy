@@ -14,16 +14,16 @@ try:
 	t,F0=instronSensor.getData(0)
 	print "offset=", F0
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[-F0])
-	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=30)
+	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=18)
 
 ########################################### Creating blocks
 	
 	compacter_effort=crappy.blocks.Compacter(150)
-	save_effort=crappy.blocks.Saver("/home/biotens/Bureau/Annie/poulet_cycles/smallspot_effort_3.txt")
+	save_effort=crappy.blocks.Saver("/home/biotens/Bureau/Annie/jr_1.txt")
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
 	
 	compacter_extenso=crappy.blocks.Compacter(90)
-	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/Annie/poulet_cycles/smallspot_extenso_3.txt")
+	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/Annie/jr_1.txt")
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=150)
@@ -34,20 +34,20 @@ try:
 							#send_freq=400,repeat=False,labels=['t(s)','signal'])
 	#example of path:[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[i,'Eyy(%)']} for i in range(10,90,10)]
 
-	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":1,"phase":0,"lower_limit":[0.,'F(N)'],"upper_limit":[0,'Eyy(%)']},
-							{"waveform":"limit","gain":1,"cycles":5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[5,'Eyy(%)']},
-							{"waveform":"limit","gain":1,"cycles":10,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[10,'Eyy(%)']}, 
-							{"waveform":"limit","gain":1,"cycles":10,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[20,'Eyy(%)']},
-							{"waveform":"limit","gain":1,"cycles":10,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[30,'Eyy(%)']},
-							{"waveform":"limit","gain":1,"cycles":10,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[40,'Eyy(%)']},
-							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[90,'F(N)']},
-							{"waveform":"hold","time":None}],
+	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":1,"phase":0,"lower_limit":[0.01,'F(N)'],"upper_limit":[0.01,'F(N)']},
+							{"waveform":"limit","gain":1,"cycles":2,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[10,'Eyy(%)']},
+							{"waveform":"limit","gain":1,"cycles":10,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[50,'Eyy(%)']}, 
+							{"waveform":"limit","gain":1,"cycles":10,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[100,'Eyy(%)']}],
+							#{"waveform":"limit","gain":1,"cycles":2,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[30,'Eyy(%)']},
+							#{"waveform":"limit","gain":1,"cycles":2,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[40,'Eyy(%)']},
+							#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[90,'F(N)']},
+							#{"waveform":"hold","time":None}],
 							send_freq=5,repeat=False,labels=['t(s)','signal','cycle'])
 	
 	
-	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
+	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=20)
 	compacter_position=crappy.blocks.Compacter(5)
-	save_position=crappy.blocks.Saver("/home/biotens/Bureau/Annie/poulet_cycles/smallspot_position_3.txt")
+	save_position=crappy.blocks.Saver("/home/biotens/Bureau/Annie/jr_1.txt")
 
 ########################################### Creating links
 	

@@ -1,4 +1,4 @@
-import time
+﻿import time
 #import matplotlib
 #matplotlib.use('Agg')
 import crappy 
@@ -19,11 +19,11 @@ try:
 ########################################### Creating blocks
 	
 	compacter_effort=crappy.blocks.Compacter(150)
-	save_effort=crappy.blocks.Saver("/home/biotens/Bureau/Annie/dragon/dragon8_41815_effort_5.txt")
+	save_effort=crappy.blocks.Saver("/home/annie/Bureau/essais_paroi_video/silicone_effort_1.txt")
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
 	
 	compacter_extenso=crappy.blocks.Compacter(90)
-	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/Annie/dragon/dragon8_41815_extenso_5.txt")
+	save_extenso=crappy.blocks.Saver("/home/annie/Bureau/essais_paroi_video/silicone_extenso_1.txt")
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=150)
@@ -34,14 +34,25 @@ try:
 							#send_freq=400,repeat=False,labels=['t(s)','signal'])
 	#example of path:[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[i,'Eyy(%)']} for i in range(10,90,10)]
 
-	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":1,"phase":0,"lower_limit":[0.,'F(N)'],"upper_limit":[0,'F(N)']},
+	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":3,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[5,'Eyy(%)']},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.0,'F(N)'],"upper_limit":[10,'Eyy(%)']},
+							{"waveform":"hold","time":180},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.0,'F(N)'],"upper_limit":[20,'Eyy(%)']},
+							{"waveform":"hold","time":180},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.0,'F(N)'],"upper_limit":[30,'Eyy(%)']},
+							{"waveform":"hold","time":180},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.0,'F(N)'],"upper_limit":[40,'Eyy(%)']},
+							{"waveform":"hold","time":180},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.0,'F(N)'],"upper_limit":[50,'Eyy(%)']},
+							{"waveform":"hold","time":180},
 							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.0,'F(N)'],"upper_limit":[90,'F(N)']}],
+	
 							send_freq=5,repeat=False,labels=['t(s)','signal','cycle'])
 	
 	
-	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=20)
+	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
 	compacter_position=crappy.blocks.Compacter(5)
-	save_position=crappy.blocks.Saver("/home/biotens/Bureau/Annie/dragon/dragon8_41815_position_5.txt")
+	save_position=crappy.blocks.Saver("/home/annie/Bureau/essais_paroi_video/silicone_position_1.txt")
 
 ########################################### Creating links
 	

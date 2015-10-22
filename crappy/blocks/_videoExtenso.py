@@ -1,4 +1,4 @@
-from ._meta import MasterBlock
+﻿from ._meta import MasterBlock
 from multiprocessing import Process, Pipe
 import numpy as np
 np.set_printoptions(threshold='nan', linewidth=500)
@@ -226,16 +226,18 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		recv_={}
 		send_={}
 		#self.t0 = time.time()
+		j=0
 		while True:
 			try:	
 				t2=time.time()
 				image = self.camera.sensor.getImage() # read a frame
-				#if j%100==0 and j>0: # this loop is for test only
+				if j%20==0 and j>0: # this loop is for test only
 					#ret, frame = self.cap.read()
 					#t2=time.time()
 					#print "time diff : ", t2-t1
-					#image1=sitk.GetImageFromArray(image)
-					#sitk.WriteImage(image1,self.save_directory+"img_videoExtenso%.5d.tiff" %j)
+					image1=sitk.GetImageFromArray(image)
+					sitk.WriteImage(image1,"/media/donnees/These/video_essais/img_videoExtenso%.5d.tiff" %j)
+				j+=1
 					#image2=sitk.GetImageFromArray(frame)
 					#sitk.WriteImage(image2,self.save_directory+"img_mouchetis%.5d.tiff" %j)
 				#t2_=time.time()
