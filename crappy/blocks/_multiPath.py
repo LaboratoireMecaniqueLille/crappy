@@ -6,9 +6,14 @@ from scipy import stats
 
 
 class MultiPath(MasterBlock):
-	"""Many to one block. Generate a signal."""
+	"""
+Children class of MasterBlock. Use it for traction-torsion testing.
+	"""
 	def __init__(self,path=None,send_freq=800,labels=['t(s)','dep(mm)','angle(deg)']):
 		"""
+		
+WIP
+
 SignalGenerator(path=None,send_freq=800,repeat=False,labels=['t(s)','signal'])
 
 Calculate a signal, based on the time (from t0). There is several configurations,

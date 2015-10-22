@@ -14,7 +14,7 @@ Parameters
 ----------
 biotens_technicals : list of crappy.technical.Biotens object.
 
-speed: int
+speed: int, default = 5
 		"""
 		self.biotens_technicals=biotens_technicals
 		self.speed=speed

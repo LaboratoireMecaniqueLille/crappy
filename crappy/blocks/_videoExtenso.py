@@ -21,28 +21,48 @@ except ImportError:
 
 class VideoExtenso(MasterBlock): 
 	"""
-This class detects 4 spots, and evaluate the deformations Exx and Eyy.
+This class detects spots (1,2 or 4), and evaluate the deformations Exx and Eyy.
 	"""
 	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)']):
 		"""
-VideoExtenso(camera,white_spot=True,labels=['t(s)','Exx ()', 'Eyy()'],display=True)
+VideoExtenso(camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)'])
 
-Detects 4 spots, and evaluate the deformations Exx and Eyy. Can display the 
+Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. Can display the 
 image with the center of the spots.
+4 spots mode : deformations are evaluated on the distance between centers of spots.
+2 spots mode : same, but deformation is only reliable on 1 axis.
+1 spot : deformation is evaluated on the major/minor axis of a theorical ellipse 
+around the spot, projected over axis x and y. Results are less precise if your
+spot isn't big enough, but it is easier on smaller sample to only have 1 spot.
+
+Note that if this block lose the spots, it will play a song in the '/home/' 
+repository. You need a .wav sound, python-pyglet and python-glob. This can be 
+usefull if you have a long test to do, has th scripts doesn't stop when losing 
+spots.
 
 Parameters
 ----------
 camera : string, {"Ximea","Jai"},default=Ximea
 	See sensor.cameraSensor documentation.
+numdevice : int, default=0
+	If you have multiple camera plugged, select the correct one.
+xoffset: int, default =0
+	Offset on the x axis.
+yoffset: int, default =0
+	Offset on the y axis.
+width: int, default = 2048
+	Width of the image.
+height: int, default = 2048
+	Height of the image.
 white_spot : Boolean, default=True
 	Set to False if you have dark spots on a light surface.
 display : Boolean, default=True
 	Set to False if you don't want to see the image with the spot detected.
-labels : list of string, default = ['t(s)','Exx ()', 'Eyy()']
+labels : list of string, default = ['t(s)','Lx','Ly','Exx(%)','Eyy(%)']
 
 Returns:
 --------
-Panda Dataframe with time and deformations Exx and Eyy.
+Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 		"""
 		go=False
 		###################################################################### camera INIT with ZOI selection

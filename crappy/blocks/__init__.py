@@ -12,6 +12,7 @@ from ._compacter  import Compacter
 from ._grapher import Grapher
 from ._measureAgilent34420A import MeasureAgilent34420A
 from ._measureComediByStep import MeasureComediByStep
+from ._multiPath import MultiPath
 from ._pid import PID
 from ._reader import Reader
 from ._saver import Saver
