@@ -1,8 +1,52 @@
 import time
+import numpy as np
 #import matplotlib
 #matplotlib.use('Agg')
 import crappy 
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
+
+class condition_def(crappy.links.MetaCondition):
+	def __init__(self,test=False):
+		self.FIFO=[]
+		self.len_FIFO=10.
+		self.start=False
+		self.first=True
+		
+	def evaluate(self,value):
+		recv=self.external_trigger.recv(blocking=False) 
+		if recv is not None:
+			self.start=True
+		if self.start and self.first:
+			if len(self.FIFO)<self.len_FIFO:
+				FIFO.append([value['Lx'][0],value['Ly'][0]])
+			else:
+				self.val0=np.mean(FIFO,axis=0) ###### check if axis is good
+				self.first=False
+		elif not self.first:
+			value['Exx(%)'][0]=100*(value['Lx'][0]/self.val0[0]-1) # is that correct??
+			value['Eyy(%)'][0]=100*(value['Ly'][0]/self.val0[1]-1)
+			return value
+		else:
+			return value
+		
+
+
+class condition_offset(crappy.links.MetaCondition):
+	def __init__(self):
+		self.offset=0.1
+		self.first=True
+		# self.V0=   ################################################################################################################################### Add here the v0 value if you restart the script
+	def evaluate(self,value):
+		if value['F(N)'][0]>self.offset and self.first:
+			self.first=False
+			return value
+		else:
+			return None
+
+
+
+
+
 
 
 t0=time.time()
@@ -27,7 +71,7 @@ try:
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=150)
-	extenso=crappy.blocks.VideoExtenso(camera="Ximea",white_spot=False,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
+	extenso=crappy.blocks.VideoExtenso(camera="Ximea",white_spot=False,labels=['t(s)','Lx','Ly','Exx ()', 'Eyy()'],display=True)
 	
 	#signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":0},
 							#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[90,'Eyy(%)']}],
