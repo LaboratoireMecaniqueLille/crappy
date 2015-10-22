@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import time
 from struct import *
 import serial
 
@@ -35,11 +35,22 @@ class BiotensSensor(object):
 		self.ser=ser
 
 	def read_position(self): 
-		self.ser.readlines()
+		#print "reading position..."
+		#print self.ser.inWaiting()
+		try:
+			self.ser.readlines()
+		except serial.SerialException:
+			#print "readlines failed"
+			pass
+		#print "position read"
 		command='\x50\x50\x50\xFF\x00'+ convert_to_byte(10,'B') + '\xAA\xAA'
 		
 		self.ser.write(command)
+		#time.sleep(0.01)
+		#print "reading..."
+		#print self.ser.inWaiting()
 		position_=self.ser.read(19)
+		#print "read"
 		position=position_[9:len(position_)-2:2]
 		position=convert_to_dec(position)*5/4096.
 		return position

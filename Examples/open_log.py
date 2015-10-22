@@ -1,4 +1,4 @@
-import numpy as np
+﻿import numpy as np
 import scipy.ndimage as nd
 import scipy.optimize as optimization
 import matplotlib.pyplot as plt
@@ -17,11 +17,11 @@ def get_data(file_path,columns):
 
 
 #<<<<<<< HEAD
-data1=get_data('/home/biotens/Bureau/Annie/dragon/dragon8_41815_extenso_1.txt',(1,2,3))
+data1=get_data('/home/annie/Bureau/bordel/test_effort_1.txt',(1,2))
 #data=get_data('/home/essais-2015-3/Bureau/t_dep_F.txt',(1,2,3))
 
 #=======
-data=get_data('/home/biotens/Bureau/Annie/dragon/dragon8_41815_extenso_5.txt',(1,2,3))
+data=get_data('/home/annie/Bureau/bordel/test_effort_extenso_1.txt',(1,2,3,4,5))
 #>>>>>>> 326d784433793d074bb6b045fb78f19fff800084
 
 

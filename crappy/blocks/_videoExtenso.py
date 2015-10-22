@@ -1,4 +1,4 @@
-from ._meta import MasterBlock
+﻿from ._meta import MasterBlock
 from multiprocessing import Process, Pipe
 import numpy as np
 np.set_printoptions(threshold='nan', linewidth=500)
@@ -23,7 +23,7 @@ class VideoExtenso(MasterBlock):
 	"""
 This class detects 4 spots, and evaluate the deformations Exx and Eyy.
 	"""
-	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Exx ()', 'Eyy()']):
+	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)']):
 		"""
 VideoExtenso(camera,white_spot=True,labels=['t(s)','Exx ()', 'Eyy()'],display=True)
 
@@ -210,7 +210,14 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		#self.cap.set(cv2.CAP_PROP_GAIN,0) #setting up gain
 		#ret, frame = self.cap.read()
 		#ret, frame = self.cap.read()
-			
+		Array=pd.DataFrame([[time.time()-self.t0,self.L0x,self.L0y,0,0]],columns=self.labels)
+		#t3_=time.time()
+		#t3+=t3_-t2_
+		try:
+			for output in self.outputs:
+				output.send(Array)
+		except AttributeError:
+			pass
 			
 		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
 		
@@ -259,15 +266,19 @@ Panda Dataframe with time and deformations Exx and Eyy.
 				maxx_=self.maxx.max()
 				maxy_=self.maxy.max()		
 				if self.NumOfReg ==4 or self.NumOfReg ==2:
-					Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
-					Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
+					Lx=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
+					Ly=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
+					Dx=100.*((Lx)/self.L0x-1.)
+					Dy=100.*((Ly)/self.L0y-1.)
 				elif self.NumOfReg ==1:
 					#print self.Points_coordinates
-					Ly=100.*((self.Points_coordinates[0,0])/self.L0x-1.)
-					Lx=100.*((self.Points_coordinates[0,1])/self.L0y-1.)
+					Ly=self.Points_coordinates[0,0]
+					Lx=self.Points_coordinates[0,1]
+					Dy=100.*((Ly)/self.L0y-1.)
+					Dx=100.*((Lx)/self.L0x-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
-				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly]],columns=self.labels)
+				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly,Dx,Dy]],columns=self.labels)
 				#t3_=time.time()
 				#t3+=t3_-t2_
 				try:
