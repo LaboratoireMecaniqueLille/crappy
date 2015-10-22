@@ -3,6 +3,7 @@
 *.kate-swp
 # ignorer tous les fichiers dans le répertoire build
 Examples/alerte_jerome.py
+Examples/biotens_cycles.py
 build/
 dist/
 crappy.egg-info/
