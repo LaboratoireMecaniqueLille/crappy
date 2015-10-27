@@ -23,25 +23,35 @@ speed: int, default = 5
 	
 	def main(self):
 		try:
+			#print "top command"
 			last_cmd=0
 			self.last_time=self.t0
 			while True:
-				Data=self.inputs[0].recv()
-				cmd=Data['signal'].values[0]
-				if cmd!= last_cmd:
-					for biotens_technical in self.biotens_technicals:
-						biotens_technical.actuator.setmode_speed(cmd*self.speed)
-					last_cmd=cmd
+				#print "top command2"
+				Data=self.inputs[0].recv(blocking=False)
+				try :
+					cmd=Data['signal'].values[0]
+					#print "cmd : ", cmd
+					if cmd!= last_cmd:
+						for biotens_technical in self.biotens_technicals:
+							biotens_technical.actuator.setmode_speed(cmd*self.speed)
+						last_cmd=cmd
+				except TypeError:
+					pass
 				t=time.time()
 				if (t-self.last_time)>=0.2:
+					#print "top command3"
 					self.last_time=t
 					for biotens_technical in self.biotens_technicals:
 						position=biotens_technical.sensor.read_position()
 					Array=pd.DataFrame([[t-self.t0,position]],columns=['t(s)','position'])
 					try:
 						for output in self.outputs:
+							#print "sending position ..."
 							output.send(Array)
+							#print "position sent ..."
 					except:
+						#print "no outputs"
 						pass
 				
 		except (Exception,KeyboardInterrupt) as e:

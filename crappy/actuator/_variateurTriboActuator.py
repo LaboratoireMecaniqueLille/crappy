@@ -29,7 +29,7 @@ class VariateurTriboActuator(object):
 		self.mode='effort'
 		print self.mode
 		
-	def go_speed(self,speed)
+	def go_speed(self,speed):
 		self.ser_arduino.write(speed+'\r\n')
 		
 	def initialisation(self):
