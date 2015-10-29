@@ -5,6 +5,12 @@ import crappy
 import pandas as pd
 import numpy as np
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
+try:
+	import sys
+	sys.path.insert(0, '/home/essais-2015-3/Bureau/')
+	import alerte_jerome
+except:
+	pass
 #for tracking memory leaks:
 #from pympler import tracker
 #tr = tracker.SummaryTracker()
@@ -40,6 +46,7 @@ class condition_coeff(crappy.links.MetaCondition):
 				self.t_init=time.time()
 				self.t1=self.t_init
 				self.last_new_coeff=self.new_coeff
+				self.last_coeff=self.coeff
 			self.t2=time.time()
 			if (self.t2-self.t_init)<self.delay:
 				self.coeff+=(self.new_coeff-self.last_coeff)*((self.t2-self.t1)/(self.delay))
@@ -82,32 +89,38 @@ class condition_K(crappy.links.MetaCondition):
 		self.y = 3.*10**(-3) #distance de prise potentielle depuis centre eprouvette
 		self.a0_elec= 4.1*10**(-3) #longueur prefissure
 		self.e = 3.8*10**(-3) # epaisseur eprouvette
-		self.K1=8*10**6
-		self.F0=8000.
-		self.K0=self.F0/(2000.) # 2000 Newtons/Volt on the instron computer
+		self.K1=6*10**6
+		self.F0=10000.
+		self.K0=self.F0/(2500.) # 2000 Newtons/Volt on the instron computer
 		self.FIFO=[]
 		self.size=120 # 120 cycles = 1 minute
 		if self.K0>4:
 			print "WARNING, K0 is too high for the USB-DUX D, please stop and modify your script"
 		self.first=True
-		# self.V0=   ################################################################################################################################### Add here the v0 value if you restart the script
+		self.V0=2.348060601499999723e-04   ################################################################################################################################### Add here the v0 value if you restart the script
 	def evaluate(self,value):
-		self.FIFO.insert(0,value['t_agilent(s)'][0])
+		self.FIFO.insert(0,value['tension(V)'][0])
 		if len(self.FIFO)>self.size:
 			self.FIFO.pop()
 		median_value=np.median(self.FIFO)
-		if value['t_agilent(s)'][0] > 60000: ###################################################################################################################### delay before starting
+		if value['t_agilent(s)'][0] > 0: ###################################################################################################################### delay before starting
 			if self.first:
 				self.first=False
-				self.V0= value['tension(V)'][0]
+				self.V0= median_value*0.727
 				np.savetxt('/home/essais-2015-3/Bureau/V0.txt',[self.V0])
-			a= (2.*self.W/np.pi)*np.arccos(np.cosh(np.pi*self.y/(2.*self.W))/np.cosh(median_value/self.V0*np.arccosh(np.cosh(np.pi*self.y/(2.*self.W))/np.cos(np.pi*self.a0_elec*10**(-3)/(2.*self.W)))))
+				self.K=self.K0
+				#self.V0= 2.138003450000000236e-04 #jusqu au cycle 508200
+			#a= (2.*self.W/np.pi)*np.arccos(np.cosh(np.pi*self.y/(2.*self.W))/np.cosh(median_value/self.V0*np.arccosh(np.cosh(np.pi*self.y/(2.*self.W))/np.cos(np.pi*self.a0_elec*10**(-3)/(2.*self.W))))) #johnson law
+			#a = (-(median_value/self.V0)**4*0.00036203+(median_value/self.V0)**3*0.00329946-(median_value/self.V0)**2*0.0116056+(median_value/self.V0)*0.02238681-0.009609) # FEM law1
+			a = (-(median_value/self.V0)**4*0.00086926+(median_value/self.V0)**3*0.00631791-(median_value/self.V0)**2*0.01777262+(median_value/self.V0)*0.02732055-0.01139102) # FEM law2 VG cast iron
 			alpha = a/self.W #rapport longueur fissure sur largeur
-			Y = alpha**4*196.89980597-alpha**3*281.49618641+alpha**2*157.05615266-alpha*36.9122841+3.54991714
+			#Y = alpha**4*13.569+alpha**3*7.850-alpha**2*10.150+alpha*4.820-0.247 # V2 ep sacrificielle
+			#Y = alpha**4*196.89980597-alpha**3*281.49618641+alpha**2*157.05615266-alpha*36.9122841+3.54991714 # FEM law1
+			Y = alpha**4*88.68154823-alpha**3*103.98805267+alpha**2*51.65245584-alpha*10.17983283+1.11828637 # FEM law2 VG cast iron
 			Fmax = self.K1/(Y*np.sqrt(3.1416*a))*self.e*self.W
 			if not(np.isnan(Fmax)):
 				self.K=(Fmax/self.F0)*self.K0
-			print "a, Fmax, K : ", a, Fmax, self.K
+			print "a, Fmax, K ,median value : ", a, Fmax, self.K, median_value
 		if self.K>self.K0:
 			print "WARNING, evaluation of K is wrong!"
 			self.K=self.K0
@@ -131,7 +144,7 @@ try:
 ########################################### Creating blocks
 	comedi_output=crappy.blocks.CommandComedi([comedi_actuator])
 	tension=crappy.blocks.MeasureAgilent34420A(agilentSensor,labels=['t_agilent(s)','tension(V)'])
-	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="/home/essais-2015-3/Bureau/images_fissuration/")
+	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="/home/essais-2015-3/Bureau/images_fissuration2/")
 	
 	compacter_tension=crappy.blocks.Compacter(5)
 	graph_tension=crappy.blocks.Grapher("dynamic",('t_agilent(s)','tension(V)')) #,('t(s)','tension(V)')
@@ -167,13 +180,9 @@ try:
 
 ########################################### Creating links
 	
-<<<<<<< HEAD
+
 	link1=crappy.links.Link(condition=condition_cycle_bool(n=50))
 	link2=crappy.links.Link(condition=condition_cycle_bool(n=1,n_per_cycle=1))
-=======
-	link1=crappy.links.Link(condition=condition_cycle_bool(n=100))
-	link2=crappy.links.Link(condition=condition_cycle_bool(n=10000))
->>>>>>> 326d784433793d074bb6b045fb78f19fff800084
 	link3=crappy.links.Link(condition=condition_K())
 	link4=crappy.links.Link()
 	link5=crappy.links.Link()
@@ -192,9 +201,11 @@ try:
 	#link15=crappy.links.Link()
 	#link16=crappy.links.Link()
 	
+	link_alert=crappy.links.Link(condition=alerte_jerome.Alert())
 ########################################### Linking objects
 
 	camera.add_input(link1)
+	camera.add_output(link_alert)
 	
 	tension.add_input(link2)
 	tension.add_output(link3)
@@ -250,7 +261,7 @@ try:
 
 ########################################### Starting objects
 
-	t0=time.time() ############################################################################################### modify t0 here if you restart your script
+	t0=1.445448736241215944e+09 ############################################################################################### modify t0 here if you restart your script
 	np.savetxt('/home/essais-2015-3/Bureau/t0.txt',[t0])
 	for instance in crappy.blocks._meta.MasterBlock.instances:
 		instance.set_t0(t0)
