@@ -20,11 +20,16 @@ class Biotens(object):
 		self.actuator.setmode_position(self.size+0.3,70) # add 0.2 to ensure going to the wanted position
 		startposition='\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(10,'B')+_biotensSensor.convert_to_byte(4,'B')+_biotensSensor.convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(10,'B')+ '\xAA\xAA'
 		self.ser.write(startposition)	
-		self.ser.readlines()
-		position_SI=0.
-		while position_SI-self.size<=0.: 
-			position_SI=self.sensor.read_position() #command sequence for reading register 10 = actual position
-			print "position :" , position_SI
+		try:
+			self.ser.readlines()
+		except serial.SerialException:
+			pass
+		last_position_SI=0
+		position_SI=99
+		while position_SI!=last_position_SI:
+			last_position_SI=position_SI
+			position_SI=self.sensor.read_position()
+			print "position : ", position_SI
 		print "Fin"
 		self.actuator.stop_motor()	
 		
@@ -40,6 +45,7 @@ class Biotens(object):
 		self.ser.write('\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(12,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(2,'B')+ '\xAA\xAA')
 		last_position_SI=0
 		position_SI=99
+		time.sleep(1)
 		while position_SI!=last_position_SI:
 			last_position_SI=position_SI
 			position_SI=self.sensor.read_position()
@@ -51,5 +57,8 @@ class Biotens(object):
 		startposition='\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(10,'B')+_biotensSensor.convert_to_byte(4,'B')+_biotensSensor.convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(10,'B')+ '\xAA\xAA'
 		self.ser.write(startposition)
 		#time.sleep(1)
-		self.ser.readlines()
+		try:
+			self.ser.readlines()
+		except serial.SerialException:
+			pass
 		

@@ -2,12 +2,18 @@
 import numpy as np
 import time
 import pandas as pd
+from scipy import stats
 
 
 class MultiPath(MasterBlock):
-	"""Many to one block. Generate a signal."""
+	"""
+Children class of MasterBlock. Use it for traction-torsion testing.
+	"""
 	def __init__(self,path=None,send_freq=800,labels=['t(s)','dep(mm)','angle(deg)']):
 		"""
+		
+WIP
+
 SignalGenerator(path=None,send_freq=800,repeat=False,labels=['t(s)','signal'])
 
 Calculate a signal, based on the time (from t0). There is several configurations,
@@ -72,15 +78,10 @@ The requiered informations depend on the type of waveform you need.
 		self.labels=labels
 		self.step=0
 		self.last_t=self.t0
-		self.vectors=None # WIP
+		self.surface=surface
+
 		
-		
-	#def eval_def_VM(self):
-		#self.def_VM= Data [x] **3 ....  # WIP
-		# add a FIFO for mean(def_VM)?
-		
-		
-	def send(self):
+	def send(self,traction,torsion):
 		while time.time()-self.last_t<1./self.send_freq:
 			time.sleep(1./(100*self.send_freq))
 		self.last_t=time.time()					
@@ -91,55 +92,91 @@ The requiered informations depend on the type of waveform you need.
 		except:
 			pass
 	
-	def detection(self):
+	def return_elastic(self):
 		# eval the closest vector and start detecting the border
-		scalar=[np.inner(self.last_vector,vector[i]) for i in range(len(vector))]
-		max_scalar=np.index(max(scalar))
-		for i in range(len(self.vectors)):
-			j=(i+max_scalar)%(len(self.vectors))
-			vector=vectors[j]
-			while def_VM < offset:
-				self.traction+=speed*vector[0]
-				self.torsion+=speed*vector[1]
-				self.send()
-				self.Data=self.inputs_[0].recv()
-				self.eval_def_VM()
+		self.initial_total_def=self.total_def
+		self.initial_position=self.position
+		while self.total_def>(self.initial_total_def-0.1): # go back from 0.1%
+			self.goto([0,0],mode="towards")
+			self.get_position()
 			
-			
-			
-	def move(self):
+	def detection(self):
+		self.detection_step=0
+		self.first_step_of_detection=True
+		while self.detection_step<16: # while we doesn't have 16 points for the plasticity surface
+			self.get_position()
+			if self.first_step_of_detection:
+				self.central_position=self.position
+				self.central_effort=self.effort
+				first_vector=np.substract(self.initial_position,self.position)/np.linalg.norm(np.subtract(self.initial_position,self.position))
+				a0=np.angle(np.complex(first_vector[0],first_vector[1]))
+				angles=np.arange(a0,a0+2*np.pi,np.pi/16.) # create 16 vectors equali oriented.
+				angles[1::2]+=np.pi #reorganized vectors
+				self.target_positions=[np.cos(angles),np.sin(angles)]*10 # normalized positions, multiplied by 10 to be unreachable
+				self.first_step_of_detection=False
+				self.detection_substep=0
+			if self.detection_substep==0: # if going to plasticity
+				self.goto(self.target_positions[0][self.detection_step],self.target_positions[1][self.detection_step],mode="towards") # move a little to detetc the plasticity surface
+				if self.total_def<self.R_eps:
+					pass 
+				elif self.total_def<self.R_eps+self.D_eps: # eval E and G
+					if self.first_of_branch:
+						self.eps0=self.position[0]
+						self.F0=self.effort[0]
+						self.gam0=self.position[1]
+						self.C0=self.effort[1]
+						self.first_of_branch=False
+					self.eps.append(self.position[0]-self.eps0)
+					self.F.append(self.effort[0]-self.F0)
+					self.gam.append(self.position[1]-self.gam0)
+					self.C.append(self.effort[1]-self.C0)
+					self.E, intercept, r_value, p_value, std_err = stats.linregress(self.eps,self.F)
+					self.G, intercept, r_value, p_value, std_err = stats.linregress(self.gam,self.C)
+				elif np.sqrt((self.position[0]-self.eps0-(self.effort[0]-self.F0)/self.E)**2+((self.position[1]-self.gam0-(self.effort[1]-self.C0)/self.G)**2)/3.)<self.plastic_offset:
+					self.eps=[]
+					self.F=[]
+					self.gam=[]
+					self.C=[]
+				
+				else: # if plasticity
+				   self.detection_substep=1
+				   self.first_of_branch=True
+			else: # if detection_substep==1, going back to center
+				self.goto(self.central_position,mode="absolute")
+				self.detection_substep=0
+				self.detection_step+=1
+
+	
+	def get_position(self): # get position and eval total stress
+		self.outputs[0].send("trigger signal")
 		self.Data=self.inputs_[0].recv()
 		self.position=[self.Data[self.labels[1]][0],self.Data[self.labels[2]][0]]
-		self.target=self.path[self.step]
-		self.last_vector=np.substract(self.target,self.position)/np.linalg.norm(np.substract(self.target,self.position))
-		# go to wanted position
-		while np.linalg.norm(np.substract(self.target,self.position))> offset:
-			self.vector=np.substract(self.target,self.position)/np.linalg.norm(np.substract(self.target,self.position))
-			self.traction+=speed*self.vector[0]
-			self.torsion+=speed*self.vector[1]
-			self.send()
-			self.Data=self.inputs_[0].recv()
-			self.position=[self.Data[self.labels[1]][0],self.Data[self.labels[2]][0]]
-		# return in the elastic domain
-		self.last_position=self.position
-		self.target=np.add(np.multiply(self.last_vector,(-1*self.back_value)),self.last_position) 
-		self.last_vector=np.add((self.last_vector,-1))
-		while np.linalg.norm(np.substract(self.target,self.position))> offset:
-			self.vector=np.substract(self.target,self.position)/np.linalg.norm(np.substract(self.target,self.position))
-			self.traction+=speed*vector[0]
-			self.torsion+=speed*vector[1]
-			self.Data=self.inputs_[0].recv()
-			self.position=[self.Data[self.labels[1]][0],self.Data[self.labels[2]][0]]
-		
-		
+		self.effort=[self.Data[self.labels[3]][0]/self.surface,self.Data[self.labels[4]][0]/self.surface]
+		self.total_def=np.sqrt((self.position[0])**2+((self.position[1])**2)/3.)
+
+	def goto(self,target,mode="towards"): # go to absolute position, use as a substep in main loop
+		if mode=="towards":
+			if np.linalg.norm(np.substract(target,self.position))>self.offset:
+				self.vector=np.substract(target,self.position)/np.linalg.norm(np.substract(target,self.position))
+				self.traction=self.position[0]+speed*self.vector[0]
+				self.torsion=self.position[1]+speed*self.vector[1]
+				self.send(traction,torsion)
+		elif mode=="absolute":
+			while np.linalg.norm(np.substract(target,self.position))>self.offset:
+				self.vector=np.substract(target,self.position)/np.linalg.norm(np.substract(target,self.position))
+				self.traction=self.position[0]+self.speed*self.vector[0]
+				self.torsion=self.position[1]+self.speed*self.vector[1]
+				self.send(traction,torsion)
+				self.get_position()
 		
 	def main(self):
+		self.detection()
 		while self.step < self.nb_step:
+			self.goto(self.path[self.step],mode="absolute")
+			self.return_elastic()
 			self.detection()
-			self.move()
 			self.step+=1
-		self.detection() # if there is no path to follow, only detection is launched
-		# stopping procedure ??? #WIP
+		
 		
 		
 		

@@ -6,7 +6,7 @@ class CommandBiaxe(MasterBlock):
 		"""
 Receive a signal and translate it for the Biaxe actuator.
 
-CommandBiaxe(biaxe_technicals)
+CommandBiaxe(biaxe_technicals, speed)
 
 Parameters
 ----------

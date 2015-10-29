@@ -1,4 +1,4 @@
-import numpy as np
+﻿import numpy as np
 import scipy.ndimage as nd
 import scipy.optimize as optimization
 import matplotlib.pyplot as plt
@@ -16,22 +16,53 @@ def get_data(file_path,columns):
   return data
 
 
+
 #data=get_data('/home/essais-2015-3/Bureau/tension_coeff.txt',(4,5))
 data=get_data('/home/essais-2015-3/Bureau/data_fissuration/tension_coeff.txt',(4,5))
 
 
 #data=get_data('/home/essais-2015-1/Bureau/t_dep_F.txt',(1,2,3))
 
+data1=get_data('/home/annie/Bureau/bordel/test_effort_1.txt',(1,2))
+#data=get_data('/home/essais-2015-3/Bureau/t_dep_F.txt',(1,2,3))
+
+
+data=get_data('/home/annie/Bureau/bordel/test_effort_extenso_1.txt',(1,2,3,4,5))
+
+
+
+
+#data=get_data('/home/essais-2015-3/Bureau/t_dep_F.txt',(1,2,3))
+
+
+#data2=get_data('/home/corentin/Bureau/essai_spot_4/extenso_1_spot_small.txt',(1,2,3))
+
+
+
 #data_t=np.transpose(data)
 #data2=get_data('/home/corentin/Bureau/signal_adapted.txt',(1,2))
+
 
 
 #plt.plot(data[0][0::2],data[1][0::2],'+b')
 ##plt.figure()
 #plt.plot(data[0][1::2],data[1][1::2],'+r')
+
+
+plt.plot(data1[0][0::],data1[1][0::],'+b')
+#plt.figure()
+plt.plot(data[0][0::],data[2][0::],'+r')
+
 #plt.plot(data[0],data[1],'+b')
+#plt.figure()
+#plt.plot(data[0],data[2],'+b')
 ##plt.figure()
+
 plt.plot(data[0],data[1],'+r')
+
+#plt.plot(data2[0],data2[2],'+r')
+#plt.plot(data[0],data[2],'+r')
+
 #plt.plot(data2[0],data2[1],'+r')
 plt.show()
 #offset=36.662803889999999

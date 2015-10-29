@@ -1,45 +1,57 @@
-import time
+﻿import time
+import numpy as np
 #import matplotlib
 #matplotlib.use('Agg')
 import crappy 
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
 
-t0=time.time()
-
 try:
 ########################################### Creating objects
 	
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[0])
 	t,F0=instronSensor.getData(0)
+	print "offset=", F0
 	instronSensor=crappy.sensor.ComediSensor(channels=[0],gain=[-48.8],offset=[-F0])
-	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=15)
+	biotensTech=crappy.technical.Biotens(port='/dev/ttyUSB0', size=30)
 
 ########################################### Creating blocks
 	
-	compacter_effort=crappy.blocks.Compacter(200)
-	save_effort=crappy.blocks.Saver("/home/biotens/Bureau/effort.txt")
+	compacter_effort=crappy.blocks.Compacter(150)
+	save_effort=crappy.blocks.Saver("/home/annie/Bureau/essais_paroi_video/temoin_effort_3.txt")
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
 	
 	compacter_extenso=crappy.blocks.Compacter(90)
-	save_extenso=crappy.blocks.Saver("/home/biotens/Bureau/extenso.txt")
+	save_extenso=crappy.blocks.Saver("/home/annie/Bureau/essais_paroi_video/temoin_extenso_3.txt")
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
-	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=200)
-	extenso=crappy.blocks.VideoExtenso(camera="Ximea",white_spot=False,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
+	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F(N)'],freq=150)
+	extenso=crappy.blocks.VideoExtenso(camera="Ximea",white_spot=False,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)'],display=True)
 	
 	#signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":0},
 							#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[90,'Eyy(%)']}],
 							#send_freq=400,repeat=False,labels=['t(s)','signal'])
 	#example of path:[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[i,'Eyy(%)']} for i in range(10,90,10)]
 
-	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[1000,'Eyy(%)']}],
-							send_freq=5,repeat=False,labels=['t(s)','signal'])
+	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":2,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[5,'Eyy(%)']},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[10,'Eyy(%)']},
+							{"waveform":"hold","time":120},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[20,'Eyy(%)']},
+							{"waveform":"hold","time":120},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[30,'Eyy(%)']},
+							{"waveform":"hold","time":120},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[40,'Eyy(%)']},
+							{"waveform":"hold","time":120},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[50,'Eyy(%)']},
+							{"waveform":"hold","time":120},
+							{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[90,'F(N)']}],
+	
+							send_freq=5,repeat=False,labels=['t(s)','signal','cycle'])
 	
 	
 	biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
 	compacter_position=crappy.blocks.Compacter(5)
-	save_position=crappy.blocks.Saver("/home/biotens/Bureau/position.txt")
+	save_position=crappy.blocks.Saver("/home/annie/Bureau/essais_paroi_video/temoin_position_3.txt")
 
 ########################################### Creating links
 	
@@ -114,3 +126,10 @@ except (Exception,KeyboardInterrupt) as e:
 			print "instance stopped : ", instance
 		except:
 			pass
+		
+#try:
+	#while True:
+		#print instronSensor.getData(0)[1]
+		#time.sleep(0.1)
+#except KeyboardInterrupt:
+	#pass

@@ -8,10 +8,12 @@ import psutil
 
 
 class SignalGenerator(MasterBlock):
-	"""Many to one block. Generate a signal."""
+	"""
+Many to one block. Generate a signal.
+	"""
 	def __init__(self,path=None,send_freq=800,repeat=False,labels=['t(s)','signal','cycle']):
 		"""
-SignalGenerator(path=None,send_freq=800,repeat=False,labels=['t(s)','signal'])
+SignalGenerator(path=None,send_freq=800,repeat=False,labels=['t(s)','signal','cycle'])
 
 Calculate a signal, based on the time (from t0). There is several configurations,
 see the examples section for more details.
@@ -47,7 +49,7 @@ send_freq : int or float , default = 800
 	filling the link too fast.
 repeat : Boolean, default=False
 	Set True is you want to repeat your sequence forever.
-labels : list of strings, default =['t(s)','signal']
+labels : list of strings, default =['t(s)','signal','cycle']
 	Allows you to set the labels of output data.
 
 Returns:
@@ -76,10 +78,6 @@ The requiered informations depend on the type of waveform you need.
 		self.step=0
 	def main(self):
 		print "PathGenerator!" ,os.getpid()
-		#p=psutil.Process(os.getpid())
-		#print "niceness : ", p.nice
-		#os.nice(-19)
-		#print "niceness : ", p.nice
 		last_t=self.t0
 		cycle=0
 		first=True
@@ -112,23 +110,14 @@ The requiered informations depend on the type of waveform you need.
 				
 			if self.waveform=="limit": #	 signal defined by a lower and upper limit
 				alpha=np.sign(np.cos(self.phase))
-				#last_a=self.t0
 				while self.cycles is None or cycle<self.cycles:
-					#a=time.time()
-					#print "total time: ", (a-last_a)
-					#last_a=a
-					while time.time()-last_t<1./self.send_freq:
+					while time.time()-last_t<1./self.send_freq or first:
 						for input_ in self.inputs:
 							if input_.in_.poll() or first: # if there is data waiting
 								Data=pd.concat([Data,input_.recv()],ignore_index=True)
 						first=False
 						delay(1./(100*1000*self.send_freq))
 					last_t=time.time()					
-					###################################################get data
-					#for input_ in self.inputs:
-						#if input_.in_.poll() or first: # if there is data waiting
-							#Data=pd.concat([Data,input_.recv()],ignore_index=True)
-					#first=False
 					last_upper = (Data[self.upper_limit[1]]).last_valid_index()
 					last_lower=(Data[self.lower_limit[1]]).last_valid_index()
 					first_lower=(Data[self.lower_limit[1]]).first_valid_index()
@@ -175,16 +164,13 @@ The requiered informations depend on the type of waveform you need.
 						first=False
 						delay(1./(100*1000*self.send_freq))
 					last_t=time.time()
-					#for input_ in self.inputs: # recv inputs to avoid pipe overflow
-						#if input_.in_.poll() or first: # if there is data waiting
-							#Data=pd.concat([Data,input_.recv()],ignore_index=True)
 					if self.step==0:
 						self.alpha=0
 					else:
-						if path[self.step-1]["waveform"]=="limit":
-							alpha=0
+						if self.path[self.step-1]["waveform"]=="limit":
+							self.alpha=0
 						else:
-							self.alpha=self.alpha
+							pass
 					Array=pd.DataFrame([[last_t-self.t0,self.alpha,0]],columns=self.labels)
 					try:
 						for output in self.outputs:
@@ -199,43 +185,27 @@ The requiered informations depend on the type of waveform you need.
 				t_step=time.time()
 			else:
 				t_add=self.phase/(2*np.pi*self.freq)
-				#last_a=self.t0
-				sleep_max=0
-				sleep_min=500
-				sleep_avg=0
-				sleep_tot=0
-				t_sleep=0
-				t_calc=0
-				t_send=0
-				loop_max=0
-				j=1
-				t_loop=self.t0
-				t_loop_mean=0
+				#sleep_max=0
+				#sleep_min=500
+				#sleep_avg=0
+				#sleep_tot=0
+				#t_sleep=0
+				#t_calc=0
+				#t_send=0
+				#loop_max=0
+				#j=1
+				#t_loop=self.t0
+				#t_loop_mean=0
 				while self.time is None or (time.time()-t_step)<self.time:
-					t1=time.time()
-					#last_t=time.time()
-					#sleep_time=last_t-t_sleep
-					#sleep_max=max(sleep_max,sleep_time)
-					#sleep_min=min(sleep_min,sleep_time)
-					#sleep_tot+=sleep_time
-					#sleep_avg=sleep_tot/j
-					#t_sleep=last_t
+					#t1=time.time()
 					while time.time()-last_t<1./self.send_freq:
 						delay(1./(100*1000*self.send_freq))
 						#time.sleep(0.0001)
 						#select.select([],[],[],0.0001)
 						#time.sleep(1./(100*self.send_freq))
-					last_t=time.time()
-					t_sleep=max(last_t-t1,t_sleep)
-					#sleep_time=last_t-t_sleep
-					#sleep_max=max(sleep_max,sleep_time)
-					#sleep_min=min(sleep_min,sleep_time)
-					#sleep_tot+=t_sleep-last_t-t_sleep
-					#sleep_avg=sleep_tot/j
-					#if j%500==0:
-						#print "min, avg, max = ", sleep_min,sleep_avg,sleep_max
-					#j+=1
-					t=last_t+t_add
+					#last_t=time.time()
+					#t_sleep=max(last_t-t1,t_sleep)
+					#t=last_t+t_add
 					if self.waveform=="sinus":
 						self.alpha=self.amplitude*np.sin(2*np.pi*(t-t_step)*self.freq)+self.offset
 					elif self.waveform=="triangle":
@@ -245,30 +215,27 @@ The requiered informations depend on the type of waveform you need.
 									self.freq))+self.offset
 					else:
 						raise Exception("invalid waveform : use sinus,triangle or square")
-					t2=time.time()
-					t_calc=max(t2-last_t,t_calc)
+					#t2=time.time()
+					#t_calc=max(t2-last_t,t_calc)
 					cycle=0.5*np.floor(2*((t-t_step)*self.freq+0.25))
 					Array=pd.DataFrame([[t-self.t0,self.alpha,cycle]],columns=self.labels)
 					try:
 						for output in self.outputs:
 							output.send(Array)
-							#print "sent!"
 					except:
 						print "exception"
 						pass
-					t3=time.time()
-					t_send=max(t3-t2,t_send)
-					loop_max=max(loop_max,t3-t_loop)
-					t_loop_mean+=t3-t_loop
-					if j%500==0:
-						#print "sleep, calc, send = ", t_sleep,t_calc,t_send
-						#print "time signalgenerator mean, max : ", t_loop_mean/j,loop_max
-						loop_max=0
-						t_sleep=0
-						t_calc=0
-						t_send=0
-					t_loop=t3
-					j+=1
+					#t3=time.time()
+					#t_send=max(t3-t2,t_send)
+					#loop_max=max(loop_max,t3-t_loop)
+					#t_loop_mean+=t3-t_loop
+					#if j%500==0:
+						#loop_max=0
+						#t_sleep=0
+						#t_calc=0
+						#t_send=0
+					#t_loop=t3
+					#j+=1
 				self.step+=1
 				if self.repeat and self.step==self.nb_step:
 					self.step=0

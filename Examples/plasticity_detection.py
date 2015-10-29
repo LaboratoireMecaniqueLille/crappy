@@ -16,14 +16,15 @@ try:
 
 	cmd_torsion.set_cmd(0)
 	cmd_traction.set_cmd(0)
+	time.sleep(0.5)
+	cmd_torsion.set_cmd(0)
+	cmd_traction.set_cmd(0)
 	
 ########################################### Creating blocks
+	comedi_output=crappy.blocks.CommandComedi([comedi_actuator])
 	
 	stream=crappy.blocks.MeasureComediByStep(t0,instronSensor,labels=['t(s)','dep(mm)','f(N)','angle(deg)','C(Nm)'])
-	traction=crappy.blocks.PathGenerator(t0, send_freq=400, actuator=cmd_traction, waveform=['sinus','sinus','sinus'], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[1,2,4], offset=[0,0,0], phase=[0,0,0], repeat=True)
-	torsion=crappy.blocks.PathGenerator(t0, send_freq=400, actuator=cmd_torsion, waveform=['sinus','triangle','sinus'], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[0,0,0], offset=[0,0,0], phase=[np.pi,np.pi,np.pi], repeat=True)
-	
-	
+	multipath=crappy.blocks.MultiPath()
 	
 	
 	
