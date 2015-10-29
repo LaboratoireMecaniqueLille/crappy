@@ -9,4 +9,5 @@ build/
 dist/
 crappy.egg-info/
 data/
+Examples/open_log.py
 
