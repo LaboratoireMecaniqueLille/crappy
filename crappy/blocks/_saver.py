@@ -20,7 +20,6 @@ log_file : string
 	Path to the log file. If non-existant, will be created.
 
 		"""
-		#super(Saver, self).__init__()	
 		print "saver!"
 		self.log_file=log_file
 		if not os.path.exists(os.path.dirname(self.log_file)):

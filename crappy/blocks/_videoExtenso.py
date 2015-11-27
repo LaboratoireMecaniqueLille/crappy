@@ -1,4 +1,4 @@
-from ._meta import MasterBlock
+﻿from ._meta import MasterBlock
 from multiprocessing import Process, Pipe
 import numpy as np
 np.set_printoptions(threshold='nan', linewidth=500)
@@ -21,28 +21,48 @@ except ImportError:
 
 class VideoExtenso(MasterBlock): 
 	"""
-This class detects 4 spots, and evaluate the deformations Exx and Eyy.
+This class detects spots (1,2 or 4), and evaluate the deformations Exx and Eyy.
 	"""
-	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Exx ()', 'Eyy()']):
+	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)']):
 		"""
-VideoExtenso(camera,white_spot=True,labels=['t(s)','Exx ()', 'Eyy()'],display=True)
+VideoExtenso(camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)'])
 
-Detects 4 spots, and evaluate the deformations Exx and Eyy. Can display the 
+Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. Can display the 
 image with the center of the spots.
+4 spots mode : deformations are evaluated on the distance between centers of spots.
+2 spots mode : same, but deformation is only reliable on 1 axis.
+1 spot : deformation is evaluated on the major/minor axis of a theorical ellipse 
+around the spot, projected over axis x and y. Results are less precise if your
+spot isn't big enough, but it is easier on smaller sample to only have 1 spot.
+
+Note that if this block lose the spots, it will play a song in the '/home/' 
+repository. You need a .wav sound, python-pyglet and python-glob. This can be 
+usefull if you have a long test to do, has th scripts doesn't stop when losing 
+spots.
 
 Parameters
 ----------
 camera : string, {"Ximea","Jai"},default=Ximea
 	See sensor.cameraSensor documentation.
+numdevice : int, default=0
+	If you have multiple camera plugged, select the correct one.
+xoffset: int, default =0
+	Offset on the x axis.
+yoffset: int, default =0
+	Offset on the y axis.
+width: int, default = 2048
+	Width of the image.
+height: int, default = 2048
+	Height of the image.
 white_spot : Boolean, default=True
 	Set to False if you have dark spots on a light surface.
 display : Boolean, default=True
 	Set to False if you don't want to see the image with the spot detected.
-labels : list of string, default = ['t(s)','Exx ()', 'Eyy()']
+labels : list of string, default = ['t(s)','Lx','Ly','Exx(%)','Eyy(%)']
 
 Returns:
 --------
-Panda Dataframe with time and deformations Exx and Eyy.
+Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 		"""
 		go=False
 		###################################################################### camera INIT with ZOI selection
@@ -81,17 +101,6 @@ Panda Dataframe with time and deformations Exx and Eyy.
 			#fo.write(data_to_save)
 			#fo.close()
 
-	#def barycenter_monospot(self,recv_):
-		
-		#img = cv2.imread('star.jpg',0)
-		#ret,thresh = cv2.threshold(img,127,255,0)
-		#contours,hierarchy = cv2.findContours(thresh, 1, 2)
-		#cnt = contours[0]
-		#x,y,w,h = cv2.boundingRect(cnt)
-		#img = cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
-		
-		
-		
 	def barycenter_opencv(self,recv_):
 		"""
 		computation of the barycenter (moment 1 of image) on ZOI using OpenCV
@@ -100,10 +109,7 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		# The median filter helps a lot for real life images ...
 		while True:
 			try:
-				#last_region_area=0
 				image,minx,miny=recv_.recv()[:]
-				#print "shape :",  image.shape
-				#image=rank.median(image,square(15))
 				self.thresh=threshold_otsu(image)
 				bw=cv2.medianBlur(image,5)>self.thresh
 				if not (self.white_spot):
@@ -112,28 +118,6 @@ Panda Dataframe with time and deformations Exx and Eyy.
 				Px=M['m01']/M['m00']
 				Py=M['m10']/M['m00']
 				if self.NumOfReg==1:
-					#bw = dilation(bw,square(3))
-					#bw = erosion(bw,square(3))
-					#cleared = bw.copy()
-					#clear_border(cleared)
-					#label_image = label(cleared)
-					#borders = np.logical_xor(bw, cleared)
-					#label_image[borders] = -1
-					#print "NofReg :", len(regionprops(label_image))
-					#for region in regionprops(label_image):
-						#if region.area>last_region_area:
-							#minx_, miny_, maxx_, maxy_ = region.bbox
-							#Px=minx+(minx_+ maxx_)/2.
-							#Py=minx+(miny_+ maxy_)/2.
-							#last_region_area=region.area
-					#thresh = (bw*255).astype(np.uint8)
-					#print "1"
-					#ret,thresh = cv2.threshold(image,self.thresh,255,0)
-					#print "2"
-					#image,contours,hierarchy = cv2.findContours(thresh, cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-					#cnt = contours[0]
-					#print contours
-					#ellipse = cv2.fitEllipse(cnt)a
 					a=M['mu20']/M['m00']
 					b=-M['mu11']/M['m00']
 					c=M['mu02']/M['m00']
@@ -152,24 +136,10 @@ Panda Dataframe with time and deformations Exx and Eyy.
 					#print "min,maj,theta :" ,minor_axis,major_axis,theta
 					Dx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
 					Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
-					
-					#print Dx, Dy, Px,Py
-						#Px=M['m01']/M['m00']
-						#Py=M['m10']/M['m00'] 
-					#maxy_=Dx #Py+Dy/2.
-					#minx_= 0 #Px-Dx/2.
-					#miny_=0 #Py-Dy/2.
-					#maxx_=Dy #Px+Dx/2.
 					Px=Dx
 					Py=Dy
 					print "Dx,Dy : ", Dx,Dy
-						#if minx_<0:
-							#minx_=0
-						#if miny_<0:
-							#miny_=0
-					#print "ellipse: ", minx_, maxx_, miny_, maxy_ 
-					#Px=minx+(minx_+ maxx_)/2.
-					#Py=minx+(miny_+ maxy_)/2.
+
 				else: 
 					# we add minx and miny to go back to global coordinate:
 					Px+=minx
@@ -177,15 +147,10 @@ Panda Dataframe with time and deformations Exx and Eyy.
 				miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
 				maxy_=miny_+h
 				maxx_=minx_+w
-					#print "rect : ",minx_,miny_,maxx_,maxy_
-					# Determination of the new bounding box using global coordinates and the margin
 				minx=minx-self.border+minx_
 				miny=miny-self.border+miny_
 				maxx=minx+self.border+maxx_
 				maxy=miny+self.border+maxy_
-				#if self.NumOfReg==1:
-					#maxx=Dx
-					#maxy=Dy
 				recv_.send([Px,Py,minx,miny,maxx,maxy])
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in barycenter : ",e
@@ -210,7 +175,14 @@ Panda Dataframe with time and deformations Exx and Eyy.
 		#self.cap.set(cv2.CAP_PROP_GAIN,0) #setting up gain
 		#ret, frame = self.cap.read()
 		#ret, frame = self.cap.read()
-			
+		Array=pd.DataFrame([[time.time()-self.t0,self.L0x,self.L0y,0,0]],columns=self.labels)
+		#t3_=time.time()
+		#t3+=t3_-t2_
+		try:
+			for output in self.outputs:
+				output.send(Array)
+		except AttributeError:
+			pass
 			
 		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
 		
@@ -259,24 +231,24 @@ Panda Dataframe with time and deformations Exx and Eyy.
 				maxx_=self.maxx.max()
 				maxy_=self.maxy.max()		
 				if self.NumOfReg ==4 or self.NumOfReg ==2:
-					Lx=100.*((self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min())/self.L0x-1.)
-					Ly=100.*((self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min())/self.L0y-1.)
+					Lx=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
+					Ly=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
+					Dx=100.*((Lx)/self.L0x-1.)
+					Dy=100.*((Ly)/self.L0y-1.)
 				elif self.NumOfReg ==1:
 					#print self.Points_coordinates
-					Ly=100.*((self.Points_coordinates[0,0])/self.L0x-1.)
-					Lx=100.*((self.Points_coordinates[0,1])/self.L0y-1.)
+					Ly=self.Points_coordinates[0,0]
+					Lx=self.Points_coordinates[0,1]
+					Dy=100.*((Ly)/self.L0x-1.)
+					Dx=100.*((Lx)/self.L0y-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
-				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly]],columns=self.labels)
-				#t3_=time.time()
-				#t3+=t3_-t2_
+				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly,Dx,Dy]],columns=self.labels)
 				try:
 					for output in self.outputs:
 						output.send(Array)
 				except AttributeError:
-					pass
-				#t4_=time.time()
-				#t4+=t4_-t3_		
+					pass		
 				if self.display:
 					if first_display:
 						self.plot_pipe_recv,self.plot_pipe_send=Pipe()
