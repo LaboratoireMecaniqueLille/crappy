@@ -24,15 +24,15 @@ try:
 ########################################### Creating blocks
 	
 	compacter_effort=crappy.blocks.Compacter(200)
-	save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Annie/effort.txt")
+	save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Impact/effort.txt")
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
 	
 	compacter_extenso=crappy.blocks.Compacter(150)
-	save_extenso=crappy.blocks.Saver("/home/biaxe/Bureau/Annie/extenso.txt")
+	save_extenso=crappy.blocks.Saver("/home/biaxe/Bureau/Impact/extenso.txt")
 	graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
-	extenso=crappy.blocks.VideoExtenso(camera="Ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
+	extenso=crappy.blocks.VideoExtenso(camera="Ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=False,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
 	
 	#signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},
 							#{"waveform":"limit","cycles":3,"phase":0,"lower_limit":[50,'F(N)'],"upper_limit":[5,'Exx(%)']}],
@@ -42,22 +42,14 @@ try:
 								#{"waveform":"limit","gain":0,"cycles":0.5,"phase":0,"lower_limit":[50,'F4(N)'],"upper_limit":[9.7,'Eyy(%)']},
 								#{"waveform":"limit","gain":1,"cycles":0.5,"phase":-np.pi,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']}],
 								#send_freq=400,repeat=True,labels=['t(s)','signal'])
-	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.1,'F2(N)'],"upper_limit":[200,'F(N)']},
-														#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[80,'Exx(%)']},
-														#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[120,'Exx(%)']},
-														#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[160,'Exx(%)']},
-														#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[200,'Exx(%)']}],
-														send_freq=400,repeat=True,labels=['t(s)','signal'])
+	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":1,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[100,'Exx(%)']}],
+														send_freq=400,repeat=True,labels=['t(s)','signal','cycle'])
 	
-	#signalGenerator_horizontal=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[40,'Exx(%)']},
-																	#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[80,'Exx(%)']},
-																	#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[120,'Exx(%)']},
-																	#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[160,'Exx(%)']},
-																	#{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[200,'Exx(%)']}],
-																	send_freq=400,repeat=True,labels=['t(s)','signal'])
+	signalGenerator_horizontal=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":1,"phase":0,"lower_limit":[10,'F2(N)'],"upper_limit":[100,'Exx(%)']}],
+																	send_freq=400,repeat=True,labels=['t(s)','signal','cycle'])
 	
-	biotens=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1,biaxeTech2],speed=-0) # vertical
-	biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-167)
+	biotens=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1,biaxeTech2],speed=-500) # vertical
+	biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-500)
 	#horizontal # speed must be <0 for traction
 
 ########################################### Creating links
