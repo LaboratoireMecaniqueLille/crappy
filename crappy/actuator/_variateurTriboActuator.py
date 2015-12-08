@@ -22,7 +22,7 @@ class VariateurTriboActuator(object):
 		str(speed)+" 8192 "+str(acc)+" "+str(dec)+" "+" 0 0 0 0\r\n") #creating the order for the motor
 		self.ser_servostar.write("MOVE 0\r\n")                   #activates the order
 		
-	def set_mode_speed(self):
+	def set_mode_analog(self):
 		self.ser_servostar.write('opmode 1\r\n')
 		self.ser_servostar.write('ancnfg 0\r\n')
 		time.sleep(0.1)

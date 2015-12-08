@@ -10,4 +10,3 @@ from ._biotensSensor import BiotensSensor
 from ._Agilent34420ASensor import Agilent34420ASensor
 import comediModule as comediModule
 from ._dummySensor import DummySensor
-from ._variateurTriboSensor import VariateurTriboSensor
