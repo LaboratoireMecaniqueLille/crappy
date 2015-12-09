@@ -9,14 +9,14 @@ https://github.com/pypa/sampleproject
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
-from os import path, uname
+from os import path, uname, system
 from subprocess import call
 from multiprocessing import cpu_count
 from distutils.command.build import build
 from distutils.core import setup, Extension
 
-comediModule = Extension('crappy.sensor.comediModule', sources = ['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'], extra_link_args=["-l", "comedi", "-l", "python2.7"])
-
+comediModule = Extension('sensor.comediModule', sources = ['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'], extra_link_args=["-l", "comedi", "-l", "python2.7"])
+ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
@@ -24,51 +24,50 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 
-class JaiLibBuild(build):
+class LibBuild(build):
   
-  def run(self):
-      if(uname()[2]=='3.2.0-70-generic'):
-	      # run original build code
-	      build.run(self)
-	      build_path = path.join(here, 'crappy/sources/Jai-lib/')
-      
-	      cmd = [
-		  'make',
-		  'OUT=' + build_path,
-		  'V=' + str(self.verbose),
-		  ]
-	      try:
-		  cmd.append('-j%d' % cpu_count())
-	      except NotImplementedError:
-		  print 'Unable to determine number of CPUs. Using single threaded make.'
-	      
-	      def compile():
-		call(cmd, cwd=build_path)
+    def run(self):
+		# run original build code
+		build.run(self)
+		self.run_command("build_ext -b ../crappy/")
+		jai_build_path = path.join(here, 'sources/JaiLib/')
+		jai_cmd = [
+			'make',
+			'OUT=' + jai_build_path,
+			'V=' + str(self.verbose),
+			]
+		try:
+			jai_cmd.append('-j%d' % cpu_count())
+		except NotImplementedError:
+			print 'Unable to determine number of CPUs. Using single threaded make.'
+		
+		def compile():
+			if(uname()[2]=='3.2.0-70-generic'):
+				call(jai_cmd, cwd=jai_build_path)
+			else:
+				print "Wrong Kernel version, Jai library not compiled.\n"
+			
+		self.execute(compile, [], 'Compiling libraries')
 
-	      self.execute(compile, [], 'Compiling Jai library')
-      else:
-	      print "Wrong Kernel version for Jai library, Jai library not compiled.\n"
-
-class JaiLibClean(build):
+class LibClean(build):
   
-  def run(self):
-      if(uname()[2]=='3.2.0-70-generic'):
-	      # run original build code
-	      build.run(self)
-	      build_path = path.join(here, 'crappy/sources/Jai-lib/')
-      
-	      cmd = [
-		  'make clean',
-		  'OUT=' + build_path,
-		  'V=' + str(self.verbose),
-		  ]
-	      def clean():
-		call(cmd, cwd=build_path)
+	def run(self):
+		# run original build code
+		build.run(self)
+		jai_build_path = path.join(here, 'sources/JaiLib/')
+		jai_cmd = [
+			'make clean',
+			'OUT=' + jai_build_path,
+			'V=' + str(self.verbose),
+			]
+		def clean():
+			if(uname()[2]=='3.2.0-70-generic'):
+				call(jai_cmd, cwd=jai_build_path)
+			else:
+				print "Wrong Kernel version, unable to find Jai library\n"
+			
+		self.execute(clean, [], 'Deleting shared objects.')
 
-	      self.execute(clean, [], 'Deleting cllib shared object.')
-      else:
-	      print "Wrong Kernel version for Jai library, unable to find Jai library\n"
-	      
 
 setup(
     name='crappy',
@@ -125,7 +124,8 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     
-    ext_modules = [comediModule],
+    ext_package='crappy',
+    ext_modules = [comediModule, ximeaModule],
 	
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
@@ -143,8 +143,8 @@ setup(
     },
     
     cmdclass={
-        'build': JaiLibBuild,
-        'clean': JaiLibClean,
+        'build': LibBuild,
+        'clean': LibClean,
     },
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
@@ -168,3 +168,5 @@ setup(
         #],
     #},
 )
+system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
+system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')

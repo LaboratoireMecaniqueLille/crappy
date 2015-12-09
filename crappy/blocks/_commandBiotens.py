@@ -1,6 +1,7 @@
 from _meta import MasterBlock
 import time
-import pandas as pd
+#import pandas as pd
+from collections import OrderedDict
 
 class CommandBiotens(MasterBlock):
 	"""Receive a signal and translate it for the Biotens actuator"""
@@ -27,7 +28,10 @@ speed: int, default = 5
 			self.last_time=self.t0
 			while True:
 				Data=self.inputs[0].recv()
-				cmd=Data['signal'].values[0]
+				try:
+					cmd=Data['signal'].values[0]
+				except AttributeError:
+					cmd=Data['signal']
 				if cmd!= last_cmd:
 					for biotens_technical in self.biotens_technicals:
 						biotens_technical.actuator.setmode_speed(cmd*self.speed)
@@ -37,7 +41,8 @@ speed: int, default = 5
 					self.last_time=t
 					for biotens_technical in self.biotens_technicals:
 						position=biotens_technical.sensor.read_position()
-					Array=pd.DataFrame([[t-self.t0,position]],columns=['t(s)','position'])
+					#Array=pd.DataFrame([[t-self.t0,position]],columns=['t(s)','position'])
+					Array=OrderedDict(zip(['t(s)','position'],[t-self.t0,position]))
 					try:
 						for output in self.outputs:
 							output.send(Array)

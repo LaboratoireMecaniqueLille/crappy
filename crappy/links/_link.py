@@ -1,4 +1,5 @@
 from multiprocessing import Pipe
+import copy
 
 class Link(object):
 	"""
@@ -49,7 +50,11 @@ if there is no data
 				self.out_.send(value)
 			else:
 				#if self.external_trigger==None:
-				val=self.condition.evaluate(value)
+				#print "100"
+				#value2=copy.copy(value)
+				#print value2
+				val=self.condition.evaluate(copy.copy(value))
+				#print "200"
 				if not val is None:
 					self.out_.send(val)
 				#else:

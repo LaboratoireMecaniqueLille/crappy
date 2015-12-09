@@ -11,6 +11,7 @@ from skimage.filter import threshold_otsu, rank
 from skimage.measure import regionprops
 from skimage.morphology import label,erosion, square,dilation
 from skimage.segmentation import clear_border
+from collections import OrderedDict
 try:
 	import pyglet
 	import glob
@@ -175,7 +176,8 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 		#self.cap.set(cv2.CAP_PROP_GAIN,0) #setting up gain
 		#ret, frame = self.cap.read()
 		#ret, frame = self.cap.read()
-		Array=pd.DataFrame([[time.time()-self.t0,self.L0x,self.L0y,0,0]],columns=self.labels)
+		#Array=pd.DataFrame([[time.time()-self.t0,self.L0x,self.L0y,0,0]],columns=self.labels)
+		Array=OrderedDict(zip(self.labels,[time.time()-self.t0,self.L0x,self.L0y,0,0]))
 		#t3_=time.time()
 		#t3+=t3_-t2_
 		try:
@@ -243,7 +245,8 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 					Dx=100.*((Lx)/self.L0y-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
-				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly,Dx,Dy]],columns=self.labels)
+				#Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly,Dx,Dy]],columns=self.labels)
+				Array=OrderedDict(zip(self.labels,[time.time()-self.t0,Lx,Ly,Dx,Dy]))
 				try:
 					for output in self.outputs:
 						output.send(Array)

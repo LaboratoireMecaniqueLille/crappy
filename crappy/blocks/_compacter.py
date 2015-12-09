@@ -2,6 +2,7 @@ from _meta import MasterBlock
 import pandas as pd
 import os
 import gc
+from collections import OrderedDict
 
 class Compacter(MasterBlock):
 	"""Many to one block. Compactate several data streams into arrays."""
@@ -42,15 +43,27 @@ Panda Dataframe of shape (number_of_values_in_input,acquisition_step)
 					if len(self.inputs)!=1:
 						for k in range(1,len(self.inputs)):
 							data_recv=self.inputs[k].recv()
-							if i ==0:
-								Data=pd.concat([Data,data_recv],axis=1)
-							else:
-								Data1=pd.concat([Data1,data_recv],axis=1)
+							try:
+								if i ==0:
+									Data=pd.concat([Data,data_recv],axis=1)
+								else:
+									Data1=pd.concat([Data1,data_recv],axis=1)
+							except AttributeError:
+								if i ==0:
+									Data.update(data_recv)
+								else:
+									Data1.update(data_recv)
 					if i!=0:
-						Data=pd.concat([Data,Data1])
+						try:
+							Data=pd.concat([Data,Data1])
+						except AttributeError:
+							try:
+								Data=OrderedDict(zip(Data.keys(),[Data.values()[t]+(Data1.values()[t],) for t in range(len(Data.keys()))]))
+							except TypeError:
+								Data=OrderedDict(zip(Data.keys(),[(Data.values()[t],)+(Data1.values()[t],) for t in range(len(Data.keys()))]))
 				for j in range(len(self.outputs)):
 					self.outputs[j].send(Data)
 				gc.collect()
 		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in Compacter : ", e
+			print "Exception in Compacter %s: %s" %(os.getpid(),e)
 			raise

@@ -8,7 +8,7 @@ class StreamerCamera(MasterBlock):
 Children class of MasterBlock. Send frames through a Link object.
 	"""
 	def __init__(self,camera,numdevice=0,freq=None,save=False,
-			  save_directory="./images/"):
+			  save_directory="./images/",label="cycle"):
 		"""
 StreamerCamera(camera,freq=None,save=False,save_directory="./images/")
 
@@ -28,6 +28,9 @@ save : boolean
 	Set to True if you want the block to save images.
 save_directory : directory
 	directory to the saving folder. If inexistant, will be created.
+label : string, default="cycle"
+	label of the input data you want to save in the name of the saved image, in 
+	case of external trigger.
 		"""
 		print "streamer camera!!" 
 		import SimpleITK as sitk
@@ -38,6 +41,7 @@ save_directory : directory
 		self.save=save
 		self.i=0
 		self.save_directory=save_directory
+		self.label=label
 		if not os.path.exists(self.save_directory) and self.save:
 			os.makedirs(self.save_directory)
 
@@ -71,7 +75,7 @@ save_directory : directory
 						if self.save:
 							image=self.sitk.GetImageFromArray(img)
 							self.sitk.WriteImage(image,
-								self.save_directory+"img_%.6d_cycle%09.1f.tiff" %(self.i,Data['cycle'][0]))
+								self.save_directory+"img_%.6d_cycle%09.1f.tiff" %(self.i,Data[self.label]))
 							self.i+=1
 				try:
 					if trigger=="internal" or Data is not None:
