@@ -4,6 +4,7 @@ import scipy.optimize as optimization
 import matplotlib.pyplot as plt
 np.set_printoptions(threshold='nan', linewidth=500,suppress=True)
 
+
 if __name__ == '__main__':
 	### basic commands to open a log file 
 	def get_data(file_path,columns):

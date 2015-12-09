@@ -13,7 +13,7 @@ class ComediActuator(object): #acqSensor.AcqSensor
 	Comedi actuator object, commands the output of comedi cards
 	"""
 	def __init__(self,device='/dev/comedi0',subdevice=1,channel=0,range_num=0,gain=1,offset=0): 
-		self.subdevice=subdevice
+		self.subdevice=1   #delete as argument
 		self.channel=channel
 		self.range_num=range_num
 		self.gain=gain
@@ -21,7 +21,7 @@ class ComediActuator(object): #acqSensor.AcqSensor
 		self.device=c.comedi_open(device)
 		self.maxdata=c.comedi_get_maxdata(self.device,self.subdevice,self.channel)
 		self.range_ds=c.comedi_get_range(self.device,self.subdevice,self.channel,self.range_num)
-		
+		c.comedi_dio_config(self.device,2,self.channel,1)
 		
 	def set_cmd(self,cmd):
 		"""send a signal"""
@@ -34,6 +34,12 @@ class ComediActuator(object): #acqSensor.AcqSensor
 		#t=time.time()
 		#return (t,self.out)
 
+	
+	def On(self):
+		c.comedi_dio_write(self.device,2,self.channel,1)
+		
+	def Off(self):
+		c.comedi_dio_write(self.device,2,self.channel,0)
 			
 	def close(self):
 		#c.comedi_cancel(self.device,self.subdevice)
