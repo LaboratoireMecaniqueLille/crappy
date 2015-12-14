@@ -39,20 +39,10 @@ class condition_coeff(crappy.links.MetaCondition):
 		#print "1"
 		recv=self.external_trigger.recv(blocking=self.blocking) # first run is blocking, others are not
 		self.blocking=False
-		#try:
-			#self.new_coeff=recv['coeff'][0]
-			##print "new_coeff :", self.new_coeff
-		#print "1.1"
 		try:
 			self.new_coeff=recv['coeff']
 		except TypeError: # if no new coeff
 			pass
-		#print "1.1"
-		#self.new_coeff=recv['coeff']
-		#print "1.2"
-		#finally:
-			#pass
-		#print "2"
 		if self.new_coeff!=self.coeff: # if coeff is changing
 			if self.new_coeff!=self.last_new_coeff: # if first change
 				self.t_init=time.time()
@@ -66,12 +56,8 @@ class condition_coeff(crappy.links.MetaCondition):
 				self.coeff=self.new_coeff
 				self.last_coeff=self.coeff
 			self.t1=self.t2
-		#print "coeff :", self.coeff
-		#print "value before: ",value
 		val=value.pop('signal')
-		#print "3"
 		value['signal']=val*self.coeff
-		#print "value after: ",value
 		if self.test:
 			return None
 		else:
@@ -82,27 +68,17 @@ class condition_cycle_bool(crappy.links.MetaCondition):
 		self.last_cycle=-1
 		self.n=n
 		self.n_per_cycle=n_per_cycle
-		#print "condition cycle"
 		
 	def evaluate(self,value):
-		#print value
-		#try:
-			#cycle=value['cycle'][0]
-		#except:
 		cycle=value['cycle']
-		#print "cycle : " ,cycle
-		#print cycle
 		if cycle!=self.last_cycle:
 			#print "here"
 			self.last_cycle=cycle
 			if (cycle%self.n==0 or (cycle-0.5)%self.n==0) and self.n_per_cycle==2:
-				##print "ther"
 				return value
 			elif ((cycle-0.5)%self.n==0) and self.n_per_cycle==1:
-				#print "or here"
 				return value
 			else: 
-				#print "here??"
 				return None
 		else:
 			return None
@@ -123,27 +99,17 @@ class condition_K(crappy.links.MetaCondition):
 			print "WARNING, K0 is too high for the USB-DUX D, please stop and modify your script"
 		self.first=True
 		self.finish=False
-		#print "condition K"
 		#self.V0=0#2.348060601499999723e-04   ################################################################################################################################### Add here the v0 value if you restart the script
-	def evaluate(self,value):
-		#print "10"
-		#try:
-			#val=value['tension(V)'][0]
-			#t=value['t_agilent(s)'][0]
-		#except TypeError:
-		val=value['tension(V)']
-		t=value['t_agilent(s)']
-		#print "11"
-		self.FIFO.insert(0,val)
-		#print "val :", val
+	def evaluate(self,value):]
+		self.FIFO.insert(0,value['tension(V)'])
 		if len(self.FIFO)>self.size:
 			self.FIFO.pop()
 		median_value=np.median(self.FIFO)
-		if t > 00: ###################################################################################################################### delay before starting
+		if value['t_agilent(s)']> 00: ###################################################################################################################### delay before starting
 			if self.first:
 				self.first=False
 				self.V0= median_value #*0.727
-				#np.savetxt('/home/essais-2015-3/Bureau/V0.txt',[self.V0])
+				np.savetxt('/home/essais-2015-3/Bureau/V0.txt',[self.V0])
 				self.K=self.K0
 				#self.V0= 2.138003450000000236e-04 #jusqu au cycle 508200
 			#a= (2.*self.W/np.pi)*np.arccos(np.cosh(np.pi*self.y/(2.*self.W))/np.cosh(median_value/self.V0*np.arccosh(np.cosh(np.pi*self.y/(2.*self.W))/np.cos(np.pi*self.a0_elec*10**(-3)/(2.*self.W))))) #johnson law
@@ -157,15 +123,16 @@ class condition_K(crappy.links.MetaCondition):
 			if not(np.isnan(Fmax)):
 				self.K=(Fmax/self.F0)*self.K0
 			if a > (4.4*10**(-3)): ##########################################################################################################################################
+				# comment this loop if you don't want to stop the test
 				self.K=0
 				self.finish=True
 			print "a, Fmax, K ,median value : ", a, Fmax, self.K, median_value
 		if self.K>self.K0:
 			print "WARNING, evaluation of K is wrong!"
 			self.K=self.K0
-		#self.K=4 ################################################################################################################################################
 		if self.finish: # if the notch is long enough, stop the test
 			self.K=0
+		#self.K=4 ################################################################################################################################################
 		#value['coeff'] = pd.Series((self.K), index=value.index)
 		value['coeff'] = self.K
 		#print "value coeff :" ,value
@@ -178,7 +145,7 @@ try:
 	instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10000],offset=[0,0])
 	agilentSensor=crappy.sensor.Agilent34420ASensor(device='/dev/ttyUSB0',baudrate=9600,timeout=1)
 	#agilentSensor=crappy.sensor.DummySensor()
-	comedi_actuator=crappy.actuator.ComediActuator(device='/dev/comedi0',subdevice=1,channel=1,range_num=0,gain=1,offset=0)
+	comedi_actuator=crappy.actuator.ComediActuator(device='/dev/comedi1',subdevice=1,channel=1,range_num=0,gain=1,offset=0)
 
 	comedi_actuator.set_cmd(0)
 	time.sleep(0.5)
@@ -190,12 +157,12 @@ try:
 	
 	compacter_tension=crappy.blocks.Compacter(5)
 	graph_tension=crappy.blocks.Grapher("dynamic",('t_agilent(s)','tension(V)')) #,('t(s)','tension(V)')
-	save_tension=crappy.blocks.Saver("/home/corentin/Bureau/tension_coeff.txt")
+	save_tension=crappy.blocks.Saver("/home/essais-2015-3/Bureau/tension_coeff.txt")
 	
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','dep(mm)','F(N)'],freq=300)
 	compacter_effort=crappy.blocks.Compacter(300)
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
-	save_effort=crappy.blocks.Saver("/home/corentin/Bureau/t_dep_F.txt")
+	save_effort=crappy.blocks.Saver("/home/essais-2015-3/Bureau/t_dep_F.txt")
 	
 	##compacter_signal=crappy.blocks.Compacter(500)
 	##save_signal=crappy.blocks.Saver("/home/essais-2015-3/Bureau/signal_cycle.txt")
@@ -243,11 +210,11 @@ try:
 	#link15=crappy.links.Link()
 	#link16=crappy.links.Link()
 	
-	#link_alert=crappy.links.Link(condition=alerte_jerome.Alert())
+	link_alert=crappy.links.Link(condition=alerte_jerome.Alert())
 ########################################### Linking objects
 
 	camera.add_input(link1)
-	#camera.add_output(link_alert)
+	camera.add_output(link_alert)
 	
 	tension.add_input(link2)
 	tension.add_output(link3)
@@ -304,7 +271,7 @@ try:
 ########################################### Starting objects
 
 	t0=time.time() #1.445448736241215944e+09 ############################################################################################### modify t0 here if you restart your script
-	#np.savetxt('/home/essais-2015-3/Bureau/t0.txt',[t0])
+	np.savetxt('/home/essais-2015-3/Bureau/t0.txt',[t0])
 	for instance in crappy.blocks._meta.MasterBlock.instances:
 		instance.set_t0(t0)
 
