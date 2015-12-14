@@ -22,3 +22,4 @@ from ._streamerCamera import StreamerCamera
 from ._streamerComedi import StreamerComedi
 from ._streamer import Streamer
 from ._videoExtenso import VideoExtenso
+from lal300Command import CommandLal300
