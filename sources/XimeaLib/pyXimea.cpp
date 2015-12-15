@@ -48,49 +48,49 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 		case XI_MONO8: {
 			const int ndim = 2;
 			npy_intp nd[2] = {capt->width, capt->height};
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_INT8);
+			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height);
 			break;}
 		case XI_MONO16:{ 
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->width, capt->height, sizeof(n)};
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_INT16);
+			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT16);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*sizeof(n));
 			break;}
 		case XI_RGB24       : {
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->width, capt->height, 3};
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_INT8);
+			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*3);
 			break;}
 		case XI_RGB32       : {
 			const int ndim = 4;
 			npy_intp nd[3] = {capt->width, capt->height, 4};
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_INT8);
+			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*4);
 			break;}
 		case XI_RGB_PLANAR  : {
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->width, capt->height, 3};
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_INT8);
+			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*3);
 			break;}
 		case XI_RAW8        : {
 			const int ndim = 2;
 			npy_intp nd[2] = {capt->width, capt->height};
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_INT8);
+			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height);
 			break;}
 		case XI_RAW16       : {
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->width, capt->height, sizeof(n)};
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_INT16);
+			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT16);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*sizeof(n));
 			break;}

@@ -19,6 +19,7 @@ Parameters
 condition : Children class of links.Condition, optionnal
 	Each "send" call will pass through the condition.evaluate method and sends
 	the returned value.
+	You can pass a list of conditions, the link will execute them in order.
 	
 Attributes
 ----------
@@ -29,8 +30,7 @@ external_trigger : Default=None, can be add through "add_external_trigger" insta
 Methods
 -------
 add_external_trigger(link_instance): add an external trigger Link.
-send(pickable) : sends a pickable object (or the boolean returned by the 
-	condition).
+send : send the value, or a modified value if you pass it through a condition.
 recv(blocking=True) : receive a pickable object. If blocking=False, return None
 if there is no data
 		"""

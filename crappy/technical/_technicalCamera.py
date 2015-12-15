@@ -18,7 +18,7 @@ class TechnicalCamera():
 			raise
 		
         #initialisation:
-		self.sensor = CameraClass( numdevice=numdevice)
+		self.sensor = CameraClass(numdevice=numdevice)
 		self.videoextenso = videoextenso
 		recv_pipe,send_pipe=Pipe()
 		proc_test=Process(target=getCameraConfig,args=(self.sensor,self.videoextenso,send_pipe))

@@ -8,7 +8,7 @@ class StreamerCamera(MasterBlock):
 Children class of MasterBlock. Send frames through a Link object.
 	"""
 	def __init__(self,camera,numdevice=0,freq=None,save=False,
-			  save_directory="./images/",label="cycle"):
+			  save_directory="./images/",label="cycle",xoffset=0,yoffset=0,width=2048,height=2048):
 		"""
 StreamerCamera(camera,freq=None,save=False,save_directory="./images/")
 
@@ -36,18 +36,24 @@ label : string, default="cycle"
 		import SimpleITK as sitk
 		self.sitk = sitk
 		self.numdevice=numdevice
-		self.camera=tc(camera,self.numdevice,videoextenso={'enabled':False,'xoffset':0,'yoffset':0,'width':2048,'height':2048})
+		self.camera=tc(camera,self.numdevice,videoextenso={'enabled':False,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
 		self.freq=freq
 		self.save=save
 		self.i=0
 		self.save_directory=save_directory
 		self.label=label
+		self.width=self.camera.width
+		self.height=self.camera.height
+		self.xoffset=self.camera.xoffset
+		self.yoffset=self.camera.yoffset
+		self.exposure=self.camera.exposure
+		self.gain=self.camera.gain
 		if not os.path.exists(self.save_directory) and self.save:
 			os.makedirs(self.save_directory)
 
 	def main(self):
 		print "streamer camera!!" , os.getpid()
-		self.camera.sensor.new()
+		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
 		try:
 			_a=self.inputs[:]
 			trigger="external"

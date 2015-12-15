@@ -19,7 +19,7 @@ if __name__ == '__main__':
 		#axes=[biaxeTech1,biaxeTech2,biaxeTech3,biaxeTech4]
 
 	########################################### Creating blocks
-		camera=crappy.blocks.StreamerCamera("Ximea",freq=10,save=False,save_directory="/home/corentin/Bureau/images_fissuration/")
+		camera=crappy.blocks.StreamerCamera("Ximea",freq=1,save=True,save_directory="/home/corentin/Bureau/ximea/",xoffset=511,yoffset=101,width=1024,height=1024)
 		#compacter_effort=crappy.blocks.Compacter(200)
 		#save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Publi/effort.txt")
 		#graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
 	########################################### Creating links
 		
-		link1=crappy.links.Link(condition=alerte_jerome.Alert())
+		link1=crappy.links.Link()
 		#link2=crappy.links.Link()
 		#link6=crappy.links.Link()
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 		
 	########################################### Linking objects
 
-		camera.add_output(link1)
+		#camera.add_output(link1)
 		#effort.add_output(link1)
 		#effort.add_output(link12)
 		#effort.add_output(link6)
