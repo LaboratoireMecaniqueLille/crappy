@@ -55,7 +55,9 @@ freq : float or int, optional
 						data.append(ret)	
 						enable_sending=True 
 						#Data=pd.DataFrame([data],columns=self.labels)
-						Data=OrderedDict(zip(self.labels,[data]))
+						#print self.labels, data
+						Data=OrderedDict(zip(self.labels,data))
+						#print zip(self.labels,[data])
 					else: 
 						enable_sending=False # no data means no sending
 				if trigger=="external":
@@ -74,7 +76,7 @@ freq : float or int, optional
 				if enable_sending:  #or Data is not None:
 					for output in self.outputs:
 						output.send(Data)
-						#print "data agilent sent"
+						#print "data agilent sent: ", Data
 
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in measureAgilent34420A : ", e

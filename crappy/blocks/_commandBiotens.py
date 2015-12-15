@@ -30,10 +30,10 @@ speed: int, default = 5
 			while True:
 #<<<<<<< HEAD
 				Data=self.inputs[0].recv()
-				try:
-					cmd=Data['signal'].values[0]
-				except AttributeError:
-					cmd=Data['signal']
+				#try:
+					#cmd=Data['signal'].values[0]
+				#except AttributeError:
+				cmd=Data['signal']
 				if cmd!= last_cmd:
 					for biotens_technical in self.biotens_technicals:
 						biotens_technical.actuator.setmode_speed(cmd*self.speed)
