@@ -13,15 +13,18 @@ class CommandLal300(MasterBlock):
 
 	def main(self):
             try:
-                print "Debut du programme"
+                print "Debut du programme SMAC"
                 self.technical.actuator.reset()
                 t0=time.time()
-                inputs_var=self.inputs.recv()
+                inputs_var=self.inputs[0].recv()
                 effort=inputs_var['F(N)']
-                lvdt=inputs_var['F(N)']
+                lvdt=inputs_var['dep(mm)']
                 block=0
                 cycle=0
-              
+                #li1=[0,1,2,3,4,5]
+                #for etape in li1
+                li2=[6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+                
                 for etape in range(len(self.param['CYCLES'])):
                     block=0
                     print "Etape= :", etape
@@ -38,19 +41,20 @@ class CommandLal300(MasterBlock):
                                 
                             ########################### Commande moteur en vitesse avec limite haute en deplacement #####################
                             
-                            self.technical.actuator.set_position("MN,VM,SA%i,SV%i,SQ%i,MA%i,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['ENTREE_VERIN']))
-                            while lvdt <= (self.param['ETIRE'][etape]+self.param['CORRLVDT-']): #or lvdt >= (self.param['ETIRE'][etape]+self.param['CORRLVDT+']):
+                            self.technical.actuator.set_position("MN,VM,SA%i,SV%i,SQ%i,%s,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['ENTREE_VERIN']))
+                            while (lvdt*10000) <= (self.param['ETIRE'][etape]+self.param['CORRLVDT-']): #or lvdt >= (self.param['ETIRE'][etape]+self.param['CORRLVDT+']):
                                 print "top3"
-                                inputs_var=self.inputs.recv()
-                                lvdt=inputs_var['F(N)']
+                                inputs_var=self.inputs[0].recv()
+                                lvdt=inputs_var['dep(mm)']
+                                print "lvdt =", lvdt
                                 
                             block+=0.5
                             cycle+=0.5
                             t=time.time()
                             #Array=pd.DataFrame([[t-t0,cycle,position]],columns=['t(s)','cycle','position'])
                             #Array=OrderedDict(zip(['t(s)','cycle','position'],[t-t0,cycle,position]))
-                            #Array=pd.DataFrame([[t-t0,cycle]],columns=['t(s)','cycle'])
-                            Array=OrderedDict(zip(['t(s)','cycle'],[t-t0,cycle]))
+                            Array=pd.DataFrame([[t-t0,cycle]],columns=['t(s)','cycle'])
+                            #Array=OrderedDict(zip(['t(s)','cycle'],[t-t0,cycle]))
                             try:
                                 for output in self.outputs:
                                     output.send(Array)
@@ -67,26 +71,26 @@ class CommandLal300(MasterBlock):
                                 
                             ########################### Commande moteur vitesse avec limite basse en effort #####################
                                 
-                            self.technical.actuator.set_position("MN,VM,SA%i,SV%i,SQ%i,MA%i,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['SORTIE_VERIN']))
+                            self.technical.actuator.set_position("MN,VM,SA%i,SV%i,SQ%i,%s,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['SORTIE_VERIN']))
                             while effort >= 0.08:#or effort <= 0.25:
                                 print "top4"
-                                inputs_var=self.inputs.recv()
+                                inputs_var=self.inputs[0].recv()
                                 effort=inputs_var['F(N)']
+                                print "effort=", effort
     
                             block+=0.5
                             cycle+=0.5
                             t=time.time()
                             #Array=pd.DataFrame([[t-t0,cycle,position]],columns=['t(s)','cycle','position'])
                             #Array=OrderedDict(zip(['t(s)','cycle','position'],[t-t0,cycle,position]))
-                            #Array=pd.DataFrame([[t-t0,cycle]],columns=['t(s)','cycle'])
-                            Array=OrderedDict(zip(['t(s)','cycle'],[t-t0,cycle]))
+                            Array=pd.DataFrame([[t-t0,cycle]],columns=['t(s)','cycle'])
+                            #Array=OrderedDict(zip(['t(s)','cycle'],[t-t0,cycle]))
                             try:
                                 for output in self.outputs:
                                     output.send(Array)
                             except:
                                 print "panda2"
-                                
-                            #print "Nombre de cycles:",cycle
+    
                         
                         except (SerialException) as s:
                             print "SerialException: ",s
@@ -95,10 +99,6 @@ class CommandLal300(MasterBlock):
                         except (ValueError) as v:
                             print "ValueError detectee: ",v
                             pass
-                        
-                    #cycle+=cycle
-                    #print cycle
-                                
 
                 self.technical.actuator.stoplal300()
                 time.sleep(0.5)
@@ -119,28 +119,3 @@ class CommandLal300(MasterBlock):
                     time.sleep(0.5)
                     self.technical.actuator.closelal300()
     
-# try:
-			# last_cmd=0
-			# self.last_time=self.t0
-			# while True:
-				# Data=self.inputs[0].recv()
-				# cmd=Data['signal'].values[0]
-				# if cmd!= last_cmd:
-					# TechnicalLal300.actuator.set_position(cmd)
-					# last_cmd=cmd
-				# t=time.time()
-				# if (t-self.last_time)>=0.2:
-					# self.last_time=t
-						# position=TechnicalLal300.sensor.checkdisp()
-					# Array=pd.DataFrame([[t-self.t0,position]],columns=['t(s)','position'])
-					# try:
-						# for output in self.outputs:
-							# output.send(Array)
-					# except:
-						# pass
-				
-		# except (Exception,KeyboardInterrupt) as e:
-			# print "Exception in CommandSmacLal300 : ", e
-				# TechnicalLal300.actuator.stoplal300()
-				# TechnicalLal300.actuator.reset()
-			# raise
