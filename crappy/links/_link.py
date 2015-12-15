@@ -53,10 +53,15 @@ if there is no data
 				#print "100"
 				#value2=copy.copy(value)
 				#print value2
-				val=self.condition.evaluate(copy.copy(value))
+				try:
+					for i in range(len(self.condition)):
+						value=self.condition[i].evaluate(copy.copy(value))
+				except TypeError: # if only one condition
+					#print "only one condition"
+					value=self.condition.evaluate(copy.copy(value))
 				#print "200"
-				if not val is None:
-					self.out_.send(val)
+				if not value is None:
+					self.out_.send(value)
 				#else:
 					#val=self.condition.evaluate(value,self.external_trigger)
 					#if val is not None:
