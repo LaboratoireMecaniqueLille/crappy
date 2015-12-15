@@ -49,15 +49,15 @@ Panda Dataframe of shape (number_of_values_in_input,acquisition_step)
 								#else:
 									#Data1=pd.concat([Data1,data_recv],axis=1)
 							#except AttributeError:
-                                                        if i ==0:
-                                                                Data.update(data_recv)
-                                                        else:
-                                                                Data1.update(data_recv)
+							if i ==0:
+								Data.update(data_recv)
+							else:
+								Data1.update(data_recv)
 					if i!=0:
-                                            try:
-                                                    Data=OrderedDict(zip(Data.keys(),[Data.values()[t]+(Data1.values()[t],) for t in range(len(Data.keys()))]))
-                                            except TypeError:
-                                                        Data=OrderedDict(zip(Data.keys(),[(Data.values()[t],)+(Data1.values()[t],) for t in range(len(Data.keys()))]))
+						try:
+							Data=OrderedDict(zip(Data.keys(),[Data.values()[t]+(Data1.values()[t],) for t in range(len(Data.keys()))]))
+						except TypeError:
+							Data=OrderedDict(zip(Data.keys(),[(Data.values()[t],)+(Data1.values()[t],) for t in range(len(Data.keys()))]))
 				for j in range(len(self.outputs)):
 					self.outputs[j].send(Data)
 				gc.collect()

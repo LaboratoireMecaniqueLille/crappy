@@ -56,7 +56,6 @@ freq : float or int, optional
 					for channel_number in range(self.comediSensor.nchans):
 						t,value=self.comediSensor.getData(channel_number)
 						data.append(value)
-
 				if self.labels==None:
 					self.Labels=[i for i in range(self.comediSensor.nchans+1)]
 				#Array=pd.DataFrame([data],columns=self.labels)

@@ -26,10 +26,10 @@ comedi_actuators : list of crappy.actuators.ComediActuator objects.
 			last_cmd=0
 			while True:
 				Data=self.inputs[0].recv()
-				try:
-					cmd=Data['signal'].values[0]
-				except AttributeError:
-					cmd=Data['signal']
+				#try:
+					#cmd=Data['signal'].values[0]
+				#except AttributeError:
+				cmd=Data['signal']
 				if cmd!= last_cmd:
 					for comedi_actuator in self.comedi_actuators:
 						comedi_actuator.set_cmd(cmd)
