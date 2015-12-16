@@ -61,7 +61,7 @@ CRAPPY is composed of 2 main parts :
   - Links : links are connections between Blocks, as you graphically could 
     represent them as a line between 2 blocks. They send data from one to 
     another, and can be customized with condition to modify the data or control 
-    when to send it.
+    when to send it. You can for instance apply a filter to your data.
 
 
 Examples

@@ -34,7 +34,7 @@ Bug reports
 
 Please reports bugs at:
 
-    https://github.com/LaboratoireMecaniqueLille/crappy/issues
+https://github.com/LaboratoireMecaniqueLille/crappy/issues
 
 
 License information
