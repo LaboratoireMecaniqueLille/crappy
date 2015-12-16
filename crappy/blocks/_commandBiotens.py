@@ -28,7 +28,6 @@ speed: int, default = 5
 			last_cmd=0
 			self.last_time=self.t0
 			while True:
-#<<<<<<< HEAD
 				Data=self.inputs[0].recv()
 				#try:
 					#cmd=Data['signal'].values[0]
@@ -38,19 +37,6 @@ speed: int, default = 5
 					for biotens_technical in self.biotens_technicals:
 						biotens_technical.actuator.setmode_speed(cmd*self.speed)
 					last_cmd=cmd
-#=======
-				##print "top command2"
-				#Data=self.inputs[0].recv(blocking=False)
-				#try :
-					#cmd=Data['signal'].values[0]
-					##print "cmd : ", cmd
-					#if cmd!= last_cmd:
-						#for biotens_technical in self.biotens_technicals:
-							#biotens_technical.actuator.setmode_speed(cmd*self.speed)
-						#last_cmd=cmd
-				#except TypeError:
-					#pass
-#>>>>>>> da574d1a068d65b39ade18b0a76722785c27f855
 				t=time.time()
 				if (t-self.last_time)>=0.2:
 					#print "top command3"

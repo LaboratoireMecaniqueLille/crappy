@@ -19,6 +19,7 @@ Parameters
 condition : Children class of links.Condition, optionnal
 	Each "send" call will pass through the condition.evaluate method and sends
 	the returned value.
+	You can pass a list of conditions, the link will execute them in order.
 	
 Attributes
 ----------
@@ -29,8 +30,7 @@ external_trigger : Default=None, can be add through "add_external_trigger" insta
 Methods
 -------
 add_external_trigger(link_instance): add an external trigger Link.
-send(pickable) : sends a pickable object (or the boolean returned by the 
-	condition).
+send : send the value, or a modified value if you pass it through a condition.
 recv(blocking=True) : receive a pickable object. If blocking=False, return None
 if there is no data
 		"""
@@ -53,10 +53,15 @@ if there is no data
 				#print "100"
 				#value2=copy.copy(value)
 				#print value2
-				val=self.condition.evaluate(copy.copy(value))
+				try:
+					for i in range(len(self.condition)):
+						value=self.condition[i].evaluate(copy.copy(value))
+				except TypeError: # if only one condition
+					#print "only one condition"
+					value=self.condition.evaluate(copy.copy(value))
 				#print "200"
-				if not val is None:
-					self.out_.send(val)
+				if not value is None:
+					self.out_.send(value)
 				#else:
 					#val=self.condition.evaluate(value,self.external_trigger)
 					#if val is not None:

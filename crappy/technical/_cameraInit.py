@@ -314,11 +314,12 @@ class _CameraInit():
 			return self._cax, self._axim , self._axhist # return the values that need to be updated
 	
 	def getConfiguration(self):
+		print "in cameraInit :", int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
 		if self.videoextenso['enabled']:
 			return (self.cam.exposure), (self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset), \
 				   self.minx, self.maxx, self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh,self.Points_coordinates
-		print "in cameraInit :", int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
-		return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
+		else:
+			return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
 
 def getCameraConfig(cam, videoExtenso,send_pipe=None):
 	d = _CameraInit(cam, videoExtenso)

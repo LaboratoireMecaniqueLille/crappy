@@ -1,6 +1,6 @@
 from _meta import MasterBlock, delay
 import time
-import pandas as pd
+#import pandas as pd
 import os
 import numpy as np
 from collections import OrderedDict

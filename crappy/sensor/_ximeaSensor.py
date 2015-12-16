@@ -88,7 +88,7 @@ class Ximea(cameraSensor.CameraSensor):
 				return frame
 			elif not(self.quit):
 				self.close()
-				self.new() # Reset the camera instance
+				self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
 				return self.getImage()
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
 			pass

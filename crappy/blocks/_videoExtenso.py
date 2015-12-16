@@ -139,7 +139,7 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 					Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
 					Px=Dx
 					Py=Dy
-					print "Dx,Dy : ", Dx,Dy
+					#print "Dx,Dy : ", Dx,Dy
 
 				else: 
 					# we add minx and miny to go back to global coordinate:

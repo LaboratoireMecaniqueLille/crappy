@@ -3,8 +3,8 @@ import numpy as np
 import time
 import pandas as pd
 import os
-import select # for testing loop frequency enforcement
-import psutil
+#import select # for testing loop frequency enforcement
+#import psutil
 from collections import OrderedDict
 
 class SignalGenerator(MasterBlock):
