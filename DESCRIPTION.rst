@@ -65,18 +65,18 @@ CRAPPY is composed of 2 main parts :
     
 To write a test sequence : 
 
- - Declare the needed sensors, actuators and technicals with the arguments you
-    need.
+- Declare the needed sensors, actuators and technicals with the arguments you
+  need.
     
- - Declare the needed blocks, using as argument the previous sensors, 
-    actuators and technicals.
+- Declare the needed blocks, using as argument the previous sensors, 
+  actuators and technicals.
   
- - Declare the needed links with the associated conditions.
+- Declare the needed links with the associated conditions.
   
- - Link blocks to other blocks, by attributing them inputs and outputs of 
-    links.
+- Link blocks to other blocks, by attributing them inputs and outputs of 
+  links.
     
- - Start all the blocks (see the Examples for correct synthax).
+- Start all the blocks (see the Examples for correct synthax).
   
 
 
