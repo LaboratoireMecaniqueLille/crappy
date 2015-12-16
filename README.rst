@@ -9,7 +9,7 @@ This package aims to provide easy-to-use tools for command and acquisition on co
 Description
 -----------
 
-See DESCRIPTION.rst for a more complete description.
+See ``DESCRIPTION.rst`` for a more complete description.
 
 
 Installation
