@@ -50,21 +50,22 @@ CRAPPY is composed of 2 main parts :
   - Actuators : each actuators methods are available here.
 
   - Technicals : some hardware are both a sensor AND an actuator. Methods 
-  common to both are available here
+    common to both are available here
 
 * A directly usable part, containing:
 
   - Blocks : blocks are independant parts. Each one of them run in a different
-  process, and they use the methods available in the library part. They communicate
-  with each other through Links.
+    process, and they use the methods available in the library part. They 
+    communicate with each other through Links.
 
   - Links : links are connections between Blocks, as you graphically could 
-  represent them as a line between 2 blocks. They send data from one to another,
-  and can be customized with condition to modify the data or control when to send it.
+    represent them as a line between 2 blocks. They send data from one to 
+    another, and can be customized with condition to modify the data or control 
+    when to send it.
 
 
 Examples
 --------
 
-Examples of working sequences can be found in the Examples directory. Most of them
-recquire specific hardware to work, so they may not all work.
+Examples of working sequences can be found in the Examples directory. Most of 
+them require specific hardware to work, so they may not all work.
