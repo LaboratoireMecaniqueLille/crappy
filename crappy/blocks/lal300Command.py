@@ -14,17 +14,16 @@ class CommandLal300(MasterBlock):
 	def main(self):
             try:
                 print "Debut du programme SMAC"
+                #self.technical.ser.read(self.technical.ser.inWaiting())
+                #time.sleep(0.25)
                 self.technical.actuator.reset()
                 t0=time.time()
-                inputs_var=self.inputs[0].recv()
-                effort=inputs_var['F(N)']
-                lvdt=inputs_var['dep(mm)']
+                #inputs_var=self.inputs[0].recv() ####### Pour le mode vitesse
+                #effort=inputs_var['F(N)']
+                #lvdt=(-10000*inputs_var['dep(mm)'])
                 block=0
                 cycle=0
-                #li1=[0,1,2,3,4,5]
-                #for etape in li1
-                li2=[6,7,8,9,10,11,12,13,14,15,16,17,18,19]
-                
+              
                 for etape in range(len(self.param['CYCLES'])):
                     block=0
                     print "Etape= :", etape
@@ -33,58 +32,69 @@ class CommandLal300(MasterBlock):
                             
                             ########################### Commande moteur en mode position ###########################
                             
-                            #position=self.technical.sensor.checkdisp()
-                            #self.technical.actuator.set_position("MN,PM,SA%i,SV%i,SQ%i,MA%i,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['ETIRE'][etape]))
-                            #while position <= (self.param['ETIRE'][etape]+self.param['CORR-']): #or position >= (self.param['ETIRE'][etape]+self.param['CORR+']):
+                            position=self.technical.sensor.checkdisp()
+                            self.technical.actuator.set_position("MN,PM,SA%i,SV%i,SQ%i,MA%i,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['ETIRE'][etape]))
+                            while position >= (self.param['ETIRE'][etape]+self.param['CORR+'][etape]): #or position >= (self.param['ETIRE'][etape]+self.param['CORR-']):
                                 #print "Top1"
-                                #position=self.technical.sensor.checkdisp()
+                                print "position =", position
+                                position=self.technical.sensor.checkdisp()
                                 
                             ########################### Commande moteur en vitesse avec limite haute en deplacement #####################
                             
-                            self.technical.actuator.set_position("MN,VM,SA%i,SV%i,SQ%i,%s,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['ENTREE_VERIN']))
-                            while (lvdt*10000) <= (self.param['ETIRE'][etape]+self.param['CORRLVDT-']): #or lvdt >= (self.param['ETIRE'][etape]+self.param['CORRLVDT+']):
-                                print "top3"
-                                inputs_var=self.inputs[0].recv()
-                                lvdt=inputs_var['dep(mm)']
-                                print "lvdt =", lvdt
+                            #inputs_var=self.inputs[0].recv()
+                            #lvdt=(-10000*inputs_var['dep(mm)'])
+                            #self.technical.ser.read(self.technical.ser.inWaiting())
+                            #time.sleep(0.13)
+                            #self.technical.actuator.set_position("MN,VM,SA%i,SV%i,SQ%i,%s,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['ENTREE_VERIN']))
+                            #while lvdt >= (self.param['ETIRE'][etape]+self.param['CORRLVDT+']): #or lvdt >= (self.param['ETIRE'][etape]+self.param['CORRLVDT+']):
+                                #inputs_var=self.inputs[0].recv()
+                                #lvdt=(-10000*inputs_var['dep(mm)'])
+                                #print "lvdt =",lvdt
                                 
                             block+=0.5
                             cycle+=0.5
                             t=time.time()
+                            s=t-t0
                             #Array=pd.DataFrame([[t-t0,cycle,position]],columns=['t(s)','cycle','position'])
-                            #Array=OrderedDict(zip(['t(s)','cycle','position'],[t-t0,cycle,position]))
-                            Array=pd.DataFrame([[t-t0,cycle]],columns=['t(s)','cycle'])
-                            #Array=OrderedDict(zip(['t(s)','cycle'],[t-t0,cycle]))
+                            Array=OrderedDict(zip(['t(s)','cycle','position'],[s,cycle,position])) ####### Mode position
+                            #Array=pd.DataFrame([[t-t0,cycle]],columns=['t(s)','cycle']) 
+                            #Array=OrderedDict(zip(['t(s)','cycle'],[s,cycle])) ########### Mode vitesse
                             try:
                                 for output in self.outputs:
                                     output.send(Array)
-                            except:
-                                print "panda"
+                                    
+                            except :
+                                 print "panda"
                                 
                             ########################### Commande moteur en mode position ###########################
-                            
-                            #position=self.technical.sensor.checkdisp()
-                            #self.technical.actuator.set_position("MN,PM,SA%i,SV%i,SQ%i,MA%i,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['COMPRIME'][etape]))
-                            #while position >= (self.param['COMPRIME'][etape]+self.param['CORR+']): #or position <= (self.param['COMPRIME'][etape]+self.param['CORR-'])
+    
+                            position=self.technical.sensor.checkdisp()
+                            self.technical.actuator.set_position("MN,PM,SA%i,SV%i,SQ%i,MA%i,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['COMPRIME'][etape]))
+                            while position <= (self.param['COMPRIME'][etape]+self.param['CORR-'][etape]): #or position <= (self.param['COMPRIME'][etape]+self.param['CORR-'])
                                 #print "Top2"
-                                #position=self.technical.sensor.checkdisp()
+                                print "position =", position
+                                position=self.technical.sensor.checkdisp()
                                 
                             ########################### Commande moteur vitesse avec limite basse en effort #####################
                                 
-                            self.technical.actuator.set_position("MN,VM,SA%i,SV%i,SQ%i,%s,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['SORTIE_VERIN']))
-                            while effort >= 0.08:#or effort <= 0.25:
-                                print "top4"
-                                inputs_var=self.inputs[0].recv()
-                                effort=inputs_var['F(N)']
-                                print "effort=", effort
+                            #inputs_var=self.inputs[0].recv()
+                            #effort=inputs_var['F(N)']    
+                            #self.technical.ser.read(self.technical.ser.inWaiting())
+                            #time.sleep(0.13)   
+                            #self.technical.actuator.set_position("MN,VM,SA%i,SV%i,SQ%i,%s,GO\r\n"%(self.param['ACC'],self.param['SPEED'][etape],self.param['FORCE'],self.param['SORTIE_VERIN']))
+                            #while effort >= (effort*0.3): #or effort <= 0.25:
+                                #inputs_var=self.inputs[0].recv()
+                                #effort=inputs_var['F(N)']
+                                #print "effort=", effort
     
                             block+=0.5
                             cycle+=0.5
                             t=time.time()
+                            s=t-t0
                             #Array=pd.DataFrame([[t-t0,cycle,position]],columns=['t(s)','cycle','position'])
-                            #Array=OrderedDict(zip(['t(s)','cycle','position'],[t-t0,cycle,position]))
-                            Array=pd.DataFrame([[t-t0,cycle]],columns=['t(s)','cycle'])
-                            #Array=OrderedDict(zip(['t(s)','cycle'],[t-t0,cycle]))
+                            Array=OrderedDict(zip(['t(s)','cycle','position'],[s,cycle,position])) ##########" Mode position
+                            #Array=pd.DataFrame([[t-t0,cycle]],columns=['t(s)','cycle'])
+                            #Array=OrderedDict(zip(['t(s)','cycle'],[s,cycle])) ####### Mode vitesse
                             try:
                                 for output in self.outputs:
                                     output.send(Array)
