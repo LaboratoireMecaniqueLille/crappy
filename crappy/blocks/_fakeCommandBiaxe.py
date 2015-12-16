@@ -7,15 +7,7 @@ class FakeCommandBiaxe(MasterBlock):
 	"""Receive a signal and translate it for the Biaxe actuator"""
 	def __init__(self, axes=1, spots=4, speed=1):
 		"""
-Receive a signal and translate it for the Biaxe actuator.
-
-CommandBiaxe(biaxe_technicals, speed)
-
-Parameters
-----------
-biaxe_technicals : list of crappy.technical.Biaxe object.
-
-speed: int, default = 500
+WIP
 		"""
 		self.axes=axes
 		self.spots=spots

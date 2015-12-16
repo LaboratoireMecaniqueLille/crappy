@@ -10,7 +10,8 @@ Children class of MasterBlock. Send frames through a Link object.
 	def __init__(self,camera,numdevice=0,freq=None,save=False,
 			  save_directory="./images/",label="cycle",xoffset=0,yoffset=0,width=2048,height=2048):
 		"""
-StreamerCamera(camera,freq=None,save=False,save_directory="./images/")
+StreamerCamera(camera,numdevice=0,freq=None,save=False,save_directory="./images/",
+			label="cycle",xoffset=0,yoffset=0,width=2048,height=2048)
 
 This block fetch images from a camera object, save and/or transmit them to 
 another block. It can be triggered by a Link sending boolean or internally 
@@ -31,6 +32,11 @@ save_directory : directory
 label : string, default="cycle"
 	label of the input data you want to save in the name of the saved image, in 
 	case of external trigger.
+xoffset : int, default=0
+yoffset: int, default=0
+width: int, default=2048
+height: int, default=2048
+
 		"""
 		print "streamer camera!!" 
 		import SimpleITK as sitk

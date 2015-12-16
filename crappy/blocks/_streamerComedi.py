@@ -13,6 +13,8 @@ Children class of MasterBlock. Send comedi value through a Link object.
 	"""
 	def __init__(self,comediSensor,labels=None,freq=8000,buffsize=10000):
 		"""
+WARNING :DOES NOT WORK AT THE MOMENT, USE measureComediByStep INSTEAD.
+
 This streamer read the value on all channels at the same time and send the 
 values through a Link object. It can be very fast, but needs need an USB 2.0
 port drove by ehci to work properly. xhci driver DOES NOT work (for now).

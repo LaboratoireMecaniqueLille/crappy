@@ -1,7 +1,7 @@
 from _meta import MasterBlock
 import pandas as pd
 import os
-import gc
+#import gc
 from collections import OrderedDict
 
 class Compacter(MasterBlock):
@@ -60,7 +60,7 @@ Panda Dataframe of shape (number_of_values_in_input,acquisition_step)
 							Data=OrderedDict(zip(Data.keys(),[(Data.values()[t],)+(Data1.values()[t],) for t in range(len(Data.keys()))]))
 				for j in range(len(self.outputs)):
 					self.outputs[j].send(Data)
-				gc.collect()
+				#gc.collect()
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in Compacter %s: %s" %(os.getpid(),e)
 			raise

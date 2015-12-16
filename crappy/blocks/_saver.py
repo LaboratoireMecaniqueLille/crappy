@@ -13,6 +13,8 @@ Saver(log_file)
 
 Saves data in a file. Be aware that the log file needs to be cleaned before 
 starting this function, otherwise it just keep writing a the end of the file.
+First line of the file will be meta-data. If file already exists, skips the
+meta-data writing.
 
 Parameters
 ----------
