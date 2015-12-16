@@ -62,6 +62,23 @@ CRAPPY is composed of 2 main parts :
     represent them as a line between 2 blocks. They send data from one to 
     another, and can be customized with condition to modify the data or control 
     when to send it. You can for instance apply a filter to your data.
+    
+To write a test sequence : 
+
+  - Declare the needed sensors, actuators and technicals with the arguments you
+    need.
+    
+  - Declare the needed blocks, using as argument the previous sensors, 
+    actuators and technicals.
+  
+  - Declare the needed links with the associated conditions.
+  
+  - Link blocks to other blocks, by attributing them inputs and outputs of 
+    links.
+    
+  - Start all the blocks (see the Examples for correct synthax).
+  
+  - 
 
 
 Examples
