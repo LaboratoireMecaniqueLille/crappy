@@ -18,7 +18,9 @@ Installation
 
 Only tested on Ubuntu 14.04 / 15.1 :
 
-Download the folder and run :
+       git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
+       
+       cd crappy
 
        sudo python setup install
 
