@@ -4,7 +4,7 @@ import time
 import crappy 
 import numpy as np
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
-import alerte_jerome
+#import alerte_jerome
 
 t0=time.time()
 if __name__ == '__main__':
@@ -19,7 +19,7 @@ if __name__ == '__main__':
 		#axes=[biaxeTech1,biaxeTech2,biaxeTech3,biaxeTech4]
 
 	########################################### Creating blocks
-		camera=crappy.blocks.StreamerCamera("Ximea",freq=1,save=True,save_directory="/home/corentin/Bureau/ximea/",xoffset=511,yoffset=101,width=1024,height=1024)
+		camera=crappy.blocks.StreamerCamera("Ximea",freq=1,save=True,save_directory="/home/biotens/Bureau/ximea/",xoffset=0,yoffset=0,width=1024,height=500)
 		#compacter_effort=crappy.blocks.Compacter(200)
 		#save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Publi/effort.txt")
 		#graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))

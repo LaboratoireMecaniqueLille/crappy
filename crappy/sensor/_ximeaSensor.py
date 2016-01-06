@@ -5,13 +5,13 @@ import numpy as np
 from numpy.ctypeslib import ndpointer
 from os import path
 here = path.abspath(path.dirname(__file__))
-#import ximeaModule as xi
+import ximeaModule as xi
 
 
-try :
-	import cv2 as xi
-except ImportError: 
-	print "WARNING : OpenCV2 is not installed, some functionalities may crash"
+#try :
+	#import cv2 as xi
+#except ImportError: 
+	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
 
 
@@ -67,7 +67,6 @@ class Ximea(cameraSensor.CameraSensor):
 		self.yoffset = yoffset
 		self.exposure = exposure
 		self.gain=gain
-	
 		
 	def getImage(self):
 		"""
@@ -84,10 +83,16 @@ class Ximea(cameraSensor.CameraSensor):
 
 		try:
 			if ret:
-				#return frame.get('data')
-				return frame
+				#print '- height: ', frame.get('height')
+				#print '- width: ', frame.get('width')
+				#print '- xoffset: ', frame.get('AbsoluteOffsetX')
+				#print '- yoffset: ', frame.get('AbsoluteOffsetY')
+				return frame.get('data')
+				#return frame
 			elif not(self.quit):
 				self.close()
+				time.sleep(1)
+				#self.__init__()
 				self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
 				return self.getImage()
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
@@ -127,7 +132,7 @@ class Ximea(cameraSensor.CameraSensor):
         
 	@height.setter
 	def height(self,height):
-		print "height setter : ", height
+		#print "height setter : ", height
 		self._height=((int(height)/2)*2)
 		self.ximea.set(xi.CAP_PROP_FRAME_HEIGHT,self.height)
 
@@ -137,7 +142,7 @@ class Ximea(cameraSensor.CameraSensor):
     
 	@width.setter
 	def width(self,width):
-		print "width setter : ", width
+		#print "width setter : ", width
 		self._width=(int(width)-int(width)%4)
 		self.ximea.set(xi.CAP_PROP_FRAME_WIDTH,self.width)
 
@@ -147,7 +152,7 @@ class Ximea(cameraSensor.CameraSensor):
 
 	@yoffset.setter
 	def yoffset(self,yoffset):
-		print "yoffset setter : ", yoffset
+		#print "yoffset setter : ", yoffset
 		y_offset = ((int(yoffset)/2)*2)
 		self._yoffset= y_offset
 		self.ximea.set(xi.CAP_PROP_XI_OFFSET_Y,y_offset)
@@ -158,7 +163,7 @@ class Ximea(cameraSensor.CameraSensor):
     
 	@xoffset.setter
 	def xoffset(self,xoffset):
-		print "xoffset setter : ", xoffset
+		#print "xoffset setter : ", xoffset
 		x_offset = (int(xoffset)-int(xoffset)%4)
 		self._xoffset= x_offset 
 		self.ximea.set(xi.CAP_PROP_XI_OFFSET_X, x_offset)
