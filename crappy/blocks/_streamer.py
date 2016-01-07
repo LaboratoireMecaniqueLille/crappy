@@ -1,6 +1,7 @@
 from _meta import MasterBlock
 import time
 import pandas as pd
+from collections import OrderedDict
 
 class Streamer(MasterBlock):
 	"""
@@ -18,5 +19,5 @@ Send iterated value through a Link object.
 		while True:
 			time.sleep(0.001)
 			for output in self.outputs:
-				output.send(pd.DataFrame([[time.time()-self.t0,self.i]],columns=self.labels))
+				output.send(OrderedDict(zip(self.labels,[time.time()-self.t0,self.i])))
 			self.i+=1     

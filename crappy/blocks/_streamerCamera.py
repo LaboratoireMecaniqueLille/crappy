@@ -8,9 +8,10 @@ class StreamerCamera(MasterBlock):
 Children class of MasterBlock. Send frames through a Link object.
 	"""
 	def __init__(self,camera,numdevice=0,freq=None,save=False,
-			  save_directory="./images/"):
+			  save_directory="./images/",label="cycle",xoffset=0,yoffset=0,width=2048,height=2048):
 		"""
-StreamerCamera(camera,freq=None,save=False,save_directory="./images/")
+StreamerCamera(camera,numdevice=0,freq=None,save=False,save_directory="./images/",
+			label="cycle",xoffset=0,yoffset=0,width=2048,height=2048)
 
 This block fetch images from a camera object, save and/or transmit them to 
 another block. It can be triggered by a Link sending boolean or internally 
@@ -28,22 +29,37 @@ save : boolean
 	Set to True if you want the block to save images.
 save_directory : directory
 	directory to the saving folder. If inexistant, will be created.
+label : string, default="cycle"
+	label of the input data you want to save in the name of the saved image, in 
+	case of external trigger.
+xoffset : int, default=0
+yoffset: int, default=0
+width: int, default=2048
+height: int, default=2048
+
 		"""
 		print "streamer camera!!" 
 		import SimpleITK as sitk
 		self.sitk = sitk
 		self.numdevice=numdevice
-		self.camera=tc(camera,self.numdevice,videoextenso={'enabled':False,'xoffset':0,'yoffset':0,'width':2048,'height':2048})
+		self.camera=tc(camera,self.numdevice,videoextenso={'enabled':False,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
 		self.freq=freq
 		self.save=save
 		self.i=0
 		self.save_directory=save_directory
+		self.label=label
+		self.width=self.camera.width
+		self.height=self.camera.height
+		self.xoffset=self.camera.xoffset
+		self.yoffset=self.camera.yoffset
+		self.exposure=self.camera.exposure
+		self.gain=self.camera.gain
 		if not os.path.exists(self.save_directory) and self.save:
 			os.makedirs(self.save_directory)
 
 	def main(self):
 		print "streamer camera!!" , os.getpid()
-		self.camera.sensor.new()
+		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
 		try:
 			_a=self.inputs[:]
 			trigger="external"
@@ -71,7 +87,7 @@ save_directory : directory
 						if self.save:
 							image=self.sitk.GetImageFromArray(img)
 							self.sitk.WriteImage(image,
-								self.save_directory+"img_%.6d_cycle%09.1f.tiff" %(self.i,Data['cycle'][0]))
+								self.save_directory+"img_%.6d_cycle%09.1f.tiff" %(self.i,Data[self.label]))
 							self.i+=1
 				try:
 					if trigger=="internal" or Data is not None:

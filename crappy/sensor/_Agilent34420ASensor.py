@@ -25,6 +25,7 @@ class Agilent34420ASensor(object):
 			self.ser.write("READ?  \n")
 			tmp = self.ser.readline()
 			self.ser.flush()
+			#print tmp
 			return float(tmp)
 		except:
 			print "bad serial"

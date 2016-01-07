@@ -1,9 +1,17 @@
 from ._meta import cameraSensor
 import numpy as np
-try :
-	import cv2
-except ImportError: 
-	print "WARNING : OpenCV2 is not installed, some functionalities may crash"
+import ctypes
+import numpy as np
+from numpy.ctypeslib import ndpointer
+from os import path
+here = path.abspath(path.dirname(__file__))
+import ximeaModule as xi
+
+
+#try :
+	#import cv2 as xi
+#except ImportError: 
+	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
 
 
@@ -33,20 +41,20 @@ class Ximea(cameraSensor.CameraSensor):
 		"""
 		#self.sensor=_ximeaSensor.XimeaSensor(self.numdevice, self.exposure, self.gain, self.width, self.height, self.xoffset, self.yoffset, self.framespersec, self.external_trigger, self.data_format)
 		GLOBAL_ENABLE_FLAG = True
-		self.ximea = cv2.VideoCapture(cv2.CAP_XIAPI + self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
-
+		self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		
 		if self.external_trigger==True:	# this condition activate the trigger mode
-			self.ximea.set(cv2.CAP_PROP_XI_TRG_SOURCE,1)
-			self.ximea.set(cv2.CAP_PROP_XI_GPI_SELECTOR,1)
-			self.ximea.set(cv2.CAP_PROP_XI_GPI_MODE,1)
+			self.ximea.set(xi.CAP_PROP_XI_TRG_SOURCE,1)
+			self.ximea.set(xi.CAP_PROP_XI_GPI_SELECTOR,1)
+			self.ximea.set(xi.CAP_PROP_XI_GPI_MODE,1)
 			
-		self.ximea.set(cv2.CAP_PROP_XI_DATA_FORMAT,self.data_format) #0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW	
+		self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT,self.data_format) #0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW	
 
 		if self.data_format ==1 or self.data_format==6: #increase the FPS in 10 bits
-			self.ximea.set(cv2.CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH,10)
-			self.ximea.set(cv2.CAP_PROP_XI_DATA_PACKING,1)
+			self.ximea.set(xi.CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH,10)
+			self.ximea.set(xi.CAP_PROP_XI_DATA_PACKING,1)
 		
-		self.ximea.set(cv2.CAP_PROP_XI_AEAG,0)#auto gain auto exposure
+		self.ximea.set(xi.CAP_PROP_XI_AEAG,0)#auto gain auto exposure
 		#self.cam.set(cv2.CAP_PROP_FRAME_WIDTH,self.width);	# doesn't work for this one
 		#self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT,self.height); # reducing this one allows one to increase the FPS
 		
@@ -59,7 +67,6 @@ class Ximea(cameraSensor.CameraSensor):
 		self.yoffset = yoffset
 		self.exposure = exposure
 		self.gain=gain
-	
 		
 	def getImage(self):
 		"""
@@ -76,10 +83,17 @@ class Ximea(cameraSensor.CameraSensor):
 
 		try:
 			if ret:
-				return frame
+				#print '- height: ', frame.get('height')
+				#print '- width: ', frame.get('width')
+				#print '- xoffset: ', frame.get('AbsoluteOffsetX')
+				#print '- yoffset: ', frame.get('AbsoluteOffsetY')
+				return frame.get('data')
+				#return frame
 			elif not(self.quit):
 				self.close()
-				self.new() # Reset the camera instance
+				time.sleep(1)
+				#self.__init__()
+				self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
 				return self.getImage()
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
 			pass
@@ -118,9 +132,9 @@ class Ximea(cameraSensor.CameraSensor):
         
 	@height.setter
 	def height(self,height):
-		print "height setter : ", height
+		#print "height setter : ", height
 		self._height=((int(height)/2)*2)
-		self.ximea.set(cv2.CAP_PROP_FRAME_HEIGHT,self.height)
+		self.ximea.set(xi.CAP_PROP_FRAME_HEIGHT,self.height)
 
 	@property
 	def width(self):
@@ -128,9 +142,9 @@ class Ximea(cameraSensor.CameraSensor):
     
 	@width.setter
 	def width(self,width):
-		print "width setter : ", width
+		#print "width setter : ", width
 		self._width=(int(width)-int(width)%4)
-		self.ximea.set(cv2.CAP_PROP_FRAME_WIDTH,self.width)
+		self.ximea.set(xi.CAP_PROP_FRAME_WIDTH,self.width)
 
 	@property
 	def yoffset(self):
@@ -138,10 +152,10 @@ class Ximea(cameraSensor.CameraSensor):
 
 	@yoffset.setter
 	def yoffset(self,yoffset):
-		print "yoffset setter : ", yoffset
+		#print "yoffset setter : ", yoffset
 		y_offset = ((int(yoffset)/2)*2)
 		self._yoffset= y_offset
-		self.ximea.set(cv2.CAP_PROP_XI_OFFSET_Y,y_offset)
+		self.ximea.set(xi.CAP_PROP_XI_OFFSET_Y,y_offset)
         
 	@property
 	def xoffset(self):
@@ -149,10 +163,10 @@ class Ximea(cameraSensor.CameraSensor):
     
 	@xoffset.setter
 	def xoffset(self,xoffset):
-		print "xoffset setter : ", xoffset
+		#print "xoffset setter : ", xoffset
 		x_offset = (int(xoffset)-int(xoffset)%4)
 		self._xoffset= x_offset 
-		self.ximea.set(cv2.CAP_PROP_XI_OFFSET_X, x_offset)
+		self.ximea.set(xi.CAP_PROP_XI_OFFSET_X, x_offset)
 	
 	@property
 	def exposure(self):
@@ -164,8 +178,7 @@ class Ximea(cameraSensor.CameraSensor):
 		this method changes the exposure of the camera
 		and set the exposure attribute
 		"""
-		print "exposure setter : ", exposure
-		self.ximea.set(cv2.CAP_PROP_EXPOSURE,exposure)
+		self.ximea.set(xi.CAP_PROP_EXPOSURE,exposure)
 		self._exposure = exposure
 		
 	@property
@@ -178,8 +191,7 @@ class Ximea(cameraSensor.CameraSensor):
 		this method changes the exposure of the camera
 		and set the exposure attribute
 		"""
-		print "gain setter : ", gain
-		self.ximea.set(cv2.CAP_PROP_GAIN,gain)
+		self.ximea.set(xi.CAP_PROP_GAIN,gain)
 		self._gain= gain
 		
 		

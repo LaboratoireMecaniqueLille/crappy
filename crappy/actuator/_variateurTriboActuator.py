@@ -7,7 +7,7 @@ class VariateurTriboActuator(object):
 	def __init__(self,ser_servostar,ser_arduino):
 		self.ser_servostar=ser_servostar
 		self.ser_arduino=ser_arduino
-	
+		self.init=False
 	def stop_motor(self):
 		self.ser_servostar.write('dis\r\n')
 		
@@ -22,15 +22,15 @@ class VariateurTriboActuator(object):
 		str(speed)+" 8192 "+str(acc)+" "+str(dec)+" "+" 0 0 0 0\r\n") #creating the order for the motor
 		self.ser_servostar.write("MOVE 0\r\n")                   #activates the order
 		
-	def set_mode_speed(self):
+	def set_mode_analog(self):
 		self.ser_servostar.write('opmode 1\r\n')
 		self.ser_servostar.write('ancnfg 0\r\n')
 		time.sleep(0.1)
 		self.mode='effort'
 		print self.mode
 		
-	def go_speed(self,speed):
-		self.ser_arduino.write(speed+'\r\n')
+	def go_effort(self,effort):
+		self.ser_arduino.write(str(effort)+'\r\n')
 		
 	def initialisation(self):
 		ser_servostar.write('opmode 8\r\n')

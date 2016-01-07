@@ -3,9 +3,9 @@ import numpy as np
 import time
 import pandas as pd
 import os
-import select # for testing loop frequency enforcement
-import psutil
-
+#import select # for testing loop frequency enforcement
+#import psutil
+from collections import OrderedDict
 
 class SignalGenerator(MasterBlock):
 	"""
@@ -114,7 +114,9 @@ The requiered informations depend on the type of waveform you need.
 					while time.time()-last_t<1./self.send_freq or first:
 						for input_ in self.inputs:
 							if input_.in_.poll() or first: # if there is data waiting
-								Data=pd.concat([Data,input_.recv()],ignore_index=True)
+								recv=input_.recv()
+								df=pd.DataFrame([recv.values()],columns=recv.keys())
+								Data=pd.concat([Data,df],ignore_index=True)
 						first=False
 						delay(1./(100*1000*self.send_freq))
 					last_t=time.time()					
@@ -143,7 +145,8 @@ The requiered informations depend on the type of waveform you need.
 							cycle+=0.5
 					if last_upper!=first_upper and last_lower!=first_lower: # clean old data
 						Data=Data[min(last_upper,last_lower):]
-					Array=pd.DataFrame([[last_t-self.t0,alpha*self.gain,cycle]],columns=self.labels)
+					#Array=pd.DataFrame([[last_t-self.t0,alpha*self.gain,cycle]],columns=self.labels)
+					Array=OrderedDict(zip(self.labels,[last_t-self.t0,alpha*self.gain,cycle]))
 					try:
 						for output in self.outputs:
 							output.send(Array)
@@ -160,7 +163,9 @@ The requiered informations depend on the type of waveform you need.
 					while time.time()-last_t<1./self.send_freq:
 						for input_ in self.inputs:
 							if input_.in_.poll() or first: # if there is data waiting
-								Data=pd.concat([Data,input_.recv()],ignore_index=True)
+								recv=input_.recv()
+								df=pd.DataFrame([recv.values()],columns=recv.keys())
+								Data=pd.concat([Data,df],ignore_index=True)
 						first=False
 						delay(1./(100*1000*self.send_freq))
 					last_t=time.time()
@@ -171,7 +176,8 @@ The requiered informations depend on the type of waveform you need.
 							self.alpha=0
 						else:
 							pass
-					Array=pd.DataFrame([[last_t-self.t0,self.alpha,0]],columns=self.labels)
+					#Array=pd.DataFrame([[last_t-self.t0,self.alpha,0]],columns=self.labels)
+					Array=OrderedDict(zip(self.labels,[last_t-self.t0,self.alpha,0]))
 					try:
 						for output in self.outputs:
 							output.send(Array)
@@ -199,13 +205,19 @@ The requiered informations depend on the type of waveform you need.
 				while self.time is None or (time.time()-t_step)<self.time:
 					#t1=time.time()
 					while time.time()-last_t<1./self.send_freq:
+						try:
+							for input_ in self.inputs:
+								recv=input_.recv(blocking=False)
+							first=False
+						except AttributeError:
+							pass
 						delay(1./(100*1000*self.send_freq))
 						#time.sleep(0.0001)
 						#select.select([],[],[],0.0001)
 						#time.sleep(1./(100*self.send_freq))
-					#last_t=time.time()
+					last_t=time.time()
 					#t_sleep=max(last_t-t1,t_sleep)
-					#t=last_t+t_add
+					t=last_t+t_add
 					if self.waveform=="sinus":
 						self.alpha=self.amplitude*np.sin(2*np.pi*(t-t_step)*self.freq)+self.offset
 					elif self.waveform=="triangle":
@@ -218,12 +230,13 @@ The requiered informations depend on the type of waveform you need.
 					#t2=time.time()
 					#t_calc=max(t2-last_t,t_calc)
 					cycle=0.5*np.floor(2*((t-t_step)*self.freq+0.25))
-					Array=pd.DataFrame([[t-self.t0,self.alpha,cycle]],columns=self.labels)
+					#Array=pd.DataFrame([[t-self.t0,self.alpha,cycle]],columns=self.labels)
+					Array=OrderedDict(zip(self.labels,[t-self.t0,self.alpha,cycle]))
 					try:
 						for output in self.outputs:
 							output.send(Array)
 					except:
-						print "exception"
+						#print "exception"
 						pass
 					#t3=time.time()
 					#t_send=max(t3-t2,t_send)

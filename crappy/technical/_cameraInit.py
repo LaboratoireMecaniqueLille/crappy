@@ -8,6 +8,7 @@ from matplotlib import rcParams
 from matplotlib.widgets import Slider, Button
 import matplotlib.patches as mpatches
 import cv2
+from ..sensor import ximeaModule as xi
 import SimpleITK as sitk
 rectprops = dict(facecolor='red', edgecolor = 'red', alpha=0.5, fill=True)
 from skimage.segmentation import clear_border
@@ -18,7 +19,7 @@ from skimage.filter import threshold_otsu, rank#, threshold_yen
 
 class _CameraInit():
   
-	def __init__(self, camera, videoextenso={'enabled':True, 'white_spot':True, 'border':4,'xoffset':0,'yoffset':0,'width':2048,'height':2048}):
+	def __init__(self, camera, videoextenso={}):#'enabled':True, 'white_spot':True, 'border':4,'xoffset':0,'yoffset':0,'width':2048,'height':2048}):
 		self.cam = camera
 		self.videoextenso = videoextenso
 		self.rect={}
@@ -31,7 +32,7 @@ class _CameraInit():
 		self._cax = self._fig.add_axes([0.17+rat, 0.135, 0.02, rat*(Height/Width)]) # colorbar frame
 		self._axhist=self._fig.add_axes([0.15,(0.17+rat),rat,0.1]) # histogram frame
 		axcolor = 'lightgoldenrodyellow'
-		self.cam.new() 
+		self.cam.new(width=self.videoextenso['width'], height=self.videoextenso['height'], yoffset=self.videoextenso['yoffset'], xoffset=self.videoextenso['xoffset']) 
 		self.cam.height = self.videoextenso['height']
 		self.cam.width = self.videoextenso['width']
 		self.cam.yoffset = self.videoextenso['yoffset']
@@ -56,15 +57,16 @@ class _CameraInit():
 		
 		### initialising the histogram
 		#if camera.lower() == 'ximea':
-		if self.cam.ximea.get(cv2.CAP_PROP_XI_DATA_FORMAT)==0 or self.cam.ximea.get(cv2.CAP_PROP_XI_DATA_FORMAT)==5:
+		if self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==0 or self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==5:
 			self.x=np.arange(0,256,4)
-		elif self.cam.ximea.get(cv2.CAP_PROP_XI_DATA_FORMAT)==1 or self.cam.ximea.get(cv2.CAP_PROP_XI_DATA_FORMAT)==6:
+		elif self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==1 or self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==6:
 			self.x=np.arange(0,1024,4)
 		else:   
 			self.x=np.arange(0,1024,4)
 			
 		hist=np.ones(np.shape(self.x))
 		frame = self.cam.getImage()
+		#print "type frame : " , type(frame)
 		
 		self._axhist.set_xlim([0,max(self.x)]) #set histogram limit in x...
 		self._axhist.set_ylim([0,1]) # ... and y
@@ -282,17 +284,21 @@ class _CameraInit():
 	
 	def close(self, event):
 		try:
-			if self.NumOfReg ==4 or self.NumOfReg ==2:
-				self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
-				self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
-			elif self.NumOfReg ==1:
-				#minx_=self.Points_coordinates[0,0]
-				#miny_=self.miny.min()
-				#maxx_=self.maxx.max()
-				#maxy_=self.maxy.max()
-				self.L0x=self.Points_coordinates[0,0]
-				self.L0y=self.Points_coordinates[0,1]
-			print "L0 saved! : ", self.L0x, self.L0y
+			if not self.videoextenso['enabled']:
+				plt.close()
+			else:
+				if self.NumOfReg ==4 or self.NumOfReg ==2:
+					self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
+					self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
+				elif self.NumOfReg ==1:
+					#minx_=self.Points_coordinates[0,0]
+					#miny_=self.miny.min()
+					#maxx_=self.maxx.max()
+					#maxy_=self.maxy.max()
+					self.L0x=self.Points_coordinates[0,0]
+					self.L0y=self.Points_coordinates[0,1]
+				print "L0 saved! : ", self.L0x, self.L0y
+			self.cam.close()
 		except AttributeError: #if no selected Points_coordinates
 			print "no points selected"
 		#self.cam.close()
@@ -314,11 +320,12 @@ class _CameraInit():
 			return self._cax, self._axim , self._axhist # return the values that need to be updated
 	
 	def getConfiguration(self):
+		print "in cameraInit :", int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
 		if self.videoextenso['enabled']:
 			return (self.cam.exposure), (self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset), \
 				   self.minx, self.maxx, self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh,self.Points_coordinates
-		print "in cameraInit :", int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
-		return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
+		else:
+			return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
 
 def getCameraConfig(cam, videoExtenso,send_pipe=None):
 	d = _CameraInit(cam, videoExtenso)

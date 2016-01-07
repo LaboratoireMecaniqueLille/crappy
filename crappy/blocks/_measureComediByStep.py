@@ -1,7 +1,8 @@
 from _meta import MasterBlock
 import time
-import pandas as pd
+#import pandas as pd
 import os
+from collections import OrderedDict
 
 class MeasureComediByStep(MasterBlock):
 	"""
@@ -55,10 +56,11 @@ freq : float or int, optional
 					for channel_number in range(self.comediSensor.nchans):
 						t,value=self.comediSensor.getData(channel_number)
 						data.append(value)
-
 				if self.labels==None:
 					self.Labels=[i for i in range(self.comediSensor.nchans+1)]
-				Array=pd.DataFrame([data],columns=self.labels)
+				#Array=pd.DataFrame([data],columns=self.labels)
+				#print data, self.labels
+				Array=OrderedDict(zip(self.labels,data))
 				for output in self.outputs:
 					output.send(Array)
 
