@@ -86,8 +86,12 @@ height: int, default=2048
 						t=time.time()-self.t0
 						if self.save:
 							image=self.sitk.GetImageFromArray(img)
-							self.sitk.WriteImage(image,
-								self.save_directory+"img_%.6d_cycle%09.1f.tiff" %(self.i,Data[self.label]))
+							try :
+								self.sitk.WriteImage(image,
+									self.save_directory+"img_%.6d_cycle%09.1f.tiff" %(self.i,Data[self.label]))
+							except KeyError:
+								self.sitk.WriteImage(image,
+									self.save_directory+"img_%.6d.tiff" %(self.i))
 							self.i+=1
 				try:
 					if trigger=="internal" or Data is not None:
