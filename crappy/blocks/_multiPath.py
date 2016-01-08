@@ -101,9 +101,9 @@ The requiered informations depend on the type of waveform you need.
 	def send(self,traction,torsion):
 		#while time.time()-self.last_t<1./self.send_freq:
 			#time.sleep(1./(100*self.send_freq))
-		self.last_t=time.time()					
+		#t=time.time()					
 		#Array=pd.DataFrame([[self.last_t-self.t0,traction,torsion]],columns=['t(s)','def(%)','dist(deg)']) # not very good to force labels
-		Array=OrderedDict(zip(['t(s)','def(%)','dist(deg)','def_plast(%)','E(Pa)','G(Pa)','status','relative_eps_tot'],[self.last_t-self.t0,traction,torsion,self.plastic_def,self.E,self.G,self.status,self._relative_total_def]))
+		Array=OrderedDict(zip(['t(s)','def(%)','dist(deg)','def_plast(%)','E(Pa)','G(Pa)','status','relative_eps_tot'],[time.time()-self.t0,traction,torsion,self.plastic_def,self.E,self.G,self.status,self._relative_total_def]))
 		#print "array : ",Array
 		try:
 			for output in self.outputs:
@@ -126,6 +126,7 @@ The requiered informations depend on the type of waveform you need.
 		self.plastic_def=0
 		self.denoiser=0
 		self.FIFO=[]
+		self.first_of_branch=True
 		while self.detection_step<16: # while we doesn't have 16 points for the plasticity surface
 			#print "11"
 			self.get_position()
@@ -299,26 +300,122 @@ The requiered informations depend on the type of waveform you need.
 				#self.traction*=100.
 				self.send(self.traction,self.torsion)
 				self.get_position()
+				
+	#def eval_path(self):	
+		#theta=np.arange(0,2*np.pi,1*10**-4)
+		#def_=A*np.sin(2*theta)*np.sin(theta+0.75*np.pi)
+		#dist=np.sqrt(3)*A*np.sin(2*theta)*np.sin(theta+np.pi/4)
+		#sub_path=zip(def_,dist)
+		#for i in range(len(sub_path)):
+		#self.get_position()
+		#self.goto([sub_path[0],sub_path[1]],mode="absolute")
 		
-	def main(self):
-		self.last_t=self.t0
-		self.first_of_branch=True
-		for i in range(100):
+		
+	def function_trefle(self):
+		self.theta=((time.time()-self.t_init)*(2*np.pi*self.normal_speed)/(9.7*self.gain))
+		def_=self.gain*np.sin(2*self.theta)*np.sin(self.theta+0.75*np.pi)
+		dist=np.sqrt(3)*self.gain*np.sin(2*self.theta)*np.sin(self.theta+np.pi/4)
+		return [def_,dist]
+	
+	def function_sablier(self):
+		self.theta=((time.time()-self.t_init)*(2*np.pi*self.normal_speed)/(7.55*self.gain))
+		def_=0.8*self.gain*np.sin(2*self.theta)
+		dist=0.8*np.sqrt(3)*self.gain*np.sin(self.theta)
+		return [def_,dist]
+	
+	def function_circle(self):
+		self.theta=((time.time()-self.t_init)*(2*np.pi*self.normal_speed)/(2*np.pi*self.gain))
+		def_=self.gain*np.cos(self.theta)
+		dist=np.sqrt(3)*self.gain*np.sin(self.theta)
+		return [def_,dist]
+	
+	def function_traction(self):
+		self.theta=((time.time()-self.t_init)*(2*np.pi*self.normal_speed)/(self.gain))
+		def_=self.gain*self.theta
+		dist=0
+		return [def_,dist]
+	
+	def function_torsion(self):
+		self.theta=((time.time()-self.t_init)*(self.normal_speed))
+		def_=0
+		dist=self.gain*self.theta
+		return [def_,dist]
+	
+	def function_proportionnal(self):
+		self.theta=((time.time()-self.t_init)*(self.normal_speed))
+		def_=self.gain*self.theta
+		dist=self.gain*self.theta
+		return [def_,dist]
+	
+	def function_square(self):
+		self.theta=((time.time()-self.t_init)*(self.normal_speed))
+		def_=self.gain*np.cos(self.theta)
+		dist=np.sqrt(3)*self.gain*np.sin(self.theta)
+		return [def_,dist]
+	
+	
+	def main(self): ######### WIP
+		#self.last_t=self.t0
+		#self.first_of_branch=True
+		self.path=path
+		self.nb_step=len(path)
+		self.step=0
+		while self.step<self.nb_step:
+			current_step=self.path[self.step] 
+			try:
+				self.waveform=current_step["waveform"]
+				self.gain=current_step["gain"]
+				self.cycles=current_step["cycles"]
+				self.offset=current_step["offset"]
+			except KeyError as e:
+				print "You didn't define parameter %s for step number %s" %(e,self.step)
+				raise
+			if self.waveform=='trefle':
+				self.f=self.function_trefle
+			elif self.waveform=='sablier':
+				self.f=self.function_sablier
+			elif self.waveform=='circle':
+				self.f=self.function_circle
+			elif self.waveform=='traction':
+				self.f=self.function_traction
+			elif self.waveform=='torsion':
+				self.f=self.function_torsion
+			elif self.waveform=='proportionnal':
+				self.f=self.function_proportionnal
+			elif self.waveform=='square':
+				self.f=self.function_square
+			else:
+				raise Exception('not an acceptable waveform for step number %s' %self.step)
+			self.theta=0
 			self.get_position()
-		print "initial_position : ", self.position
-		#self.initial_position=self.position
-		#print "1"
-		#self.goto([0.1-self.position[0],0-self.position[1]],mode="absolute")
-		self.detection()
-		#print "2"
-		#while self.step < self.nb_step:
-			#print "3"
-			#self.goto(self.path[self.step],mode="absolute")
-			#self.return_elastic()
-			#print "4"
-			#self.detection()
-			#self.step+=1
-		
+			initial_step_position=self.position
+			if np.linalg.norm(np.subtract([self.f(0)],self.position))>self.offset: # if not in starting position
+				self.goto([x + y for x, y in zip(self.f(0), initial_step_position)],mode="absolute")
+				self.t_init=time.time()
+			while self.theta<=2*np.pi*self.cycles:
+				self.get_position()
+				self.send([x + y for x, y in zip(self.f(), initial_step_position)])
+			self.step+=1
+			if self.repeat and self.step==self.nb_step:
+				self.step=0
+	
+	#totale_distance :
+		#trefle : 9.7A
+		#sablier : 7.55A
+		#cercle : 2PI*A
+	x=[]
+	y=[]
+	t0=time.time()
+	theta=0
+	while theta < 2*np.pi:
+		theta=((time.time()-t0)*(2*np.pi)/(2*np.pi)) # =Delta_t*2Pi*v/total_distance
+		print theta
+		a,b=self.f()
+		x.append(a)
+		y.append(b)
+	print "finished in : ", (time.time()-t0)
+	plt.plot(x,y)
+	plt.show()
 		
 #######   Write Crappy:
 	#def main(self): 
@@ -409,4 +506,7 @@ The requiered informations depend on the type of waveform you need.
 #for i in range(len(sub_path)):
 	#self.get_position()
 	#self.goto([sub_path[0],sub_path[1]],mode="absolute")
+	#import time
+	#import numpy as np
+	#import matplotlib.pyplot as plt
 	
