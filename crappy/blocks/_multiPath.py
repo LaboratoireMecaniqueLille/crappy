@@ -403,19 +403,19 @@ The requiered informations depend on the type of waveform you need.
 		#trefle : 9.7A
 		#sablier : 7.55A
 		#cercle : 2PI*A
-	x=[]
-	y=[]
-	t0=time.time()
-	theta=0
-	while theta < 2*np.pi:
-		theta=((time.time()-t0)*(2*np.pi)/(2*np.pi)) # =Delta_t*2Pi*v/total_distance
-		print theta
-		a,b=self.f()
-		x.append(a)
-		y.append(b)
-	print "finished in : ", (time.time()-t0)
-	plt.plot(x,y)
-	plt.show()
+	#x=[]
+	#y=[]
+	#t0=time.time()
+	#theta=0
+	#while theta < 2*np.pi:
+		#theta=((time.time()-t0)*(2*np.pi)/(2*np.pi)) # =Delta_t*2Pi*v/total_distance
+		#print theta
+		#a,b=self.f()
+		#x.append(a)
+		#y.append(b)
+	#print "finished in : ", (time.time()-t0)
+	#plt.plot(x,y)
+	#plt.show()
 		
 #######   Write Crappy:
 	#def main(self): 
