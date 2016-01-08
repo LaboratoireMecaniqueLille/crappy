@@ -64,8 +64,8 @@ bool CaptureCAM_XIMEA::open( int wIndex )
     int mvret = XI_OK;
     if(numDevices == 0)
         return false;
-	cout << "numdevice:" << numDevices << endl;
-	cout << "index: " << wIndex << endl;
+	//cout << "numdevice:" << numDevices << endl;
+	//cout << "index: " << wIndex << endl;
 	stat = xiOpenDevice(wIndex, &hmv);
 	HandleResult(stat,"Open XI_DEVICE failed");
 	stat = xiSetParamInt(hmv, XI_PRM_EXPOSURE, 10000);

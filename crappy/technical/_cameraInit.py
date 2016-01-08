@@ -21,7 +21,7 @@ class _CameraInit():
   
 	def __init__(self, camera, videoextenso={}):#'enabled':True, 'white_spot':True, 'border':4,'xoffset':0,'yoffset':0,'width':2048,'height':2048}):
 		self.cam = camera
-		print "in camerainit : nudevice = ", self.cam.numdevice
+		#print "in camerainit : nudevice = ", self.cam.numdevice
 		self.videoextenso = videoextenso
 		self.rect={}
 		rat = 0.7
