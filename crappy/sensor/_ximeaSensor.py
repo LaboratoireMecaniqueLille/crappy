@@ -14,11 +14,25 @@ import ximeaModule as xi
 	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
 
+def resettable(f):
+    import copy
+
+    def __init_and_copy__(self, *args, **kwargs):
+        f(self, *args)
+        self.__original_dict__ = copy.deepcopy(self.__dict__)
+
+        def reset(o = self):
+            o.__dict__ = o.__original_dict__
+
+        self.reset = reset
+    return __init_and_copy__
+	
 
 class Ximea(cameraSensor.CameraSensor):
 	"""
 	Camera class for ximea devices, this class should inherit from CameraObject
 	"""
+	#@resettable
 	def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):
 		self.quit=False
 		self.FPS=framespersec
@@ -41,8 +55,9 @@ class Ximea(cameraSensor.CameraSensor):
 		"""
 		#self.sensor=_ximeaSensor.XimeaSensor(self.numdevice, self.exposure, self.gain, self.width, self.height, self.xoffset, self.yoffset, self.framespersec, self.external_trigger, self.data_format)
 		GLOBAL_ENABLE_FLAG = True
-		self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
-		
+		#print "num>>>", self.numdevice
+		self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		#self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 		if self.external_trigger==True:	# this condition activate the trigger mode
 			self.ximea.set(xi.CAP_PROP_XI_TRG_SOURCE,1)
 			self.ximea.set(xi.CAP_PROP_XI_GPI_SELECTOR,1)
@@ -83,17 +98,13 @@ class Ximea(cameraSensor.CameraSensor):
 
 		try:
 			if ret:
-				#print '- height: ', frame.get('height')
-				#print '- width: ', frame.get('width')
-				#print '- xoffset: ', frame.get('AbsoluteOffsetX')
-				#print '- yoffset: ', frame.get('AbsoluteOffsetY')
 				return frame.get('data')
 				#return frame
 			elif not(self.quit):
-				self.close()
-				time.sleep(1)
-				#self.__init__()
-				self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
+				expo, wi, he, xoff,yoff,ga=self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain
+				self.reset()
+				self.__init__()
+				self.new(expo, wi, he, xoff,yoff,ga) # Reset the camera instance
 				return self.getImage()
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
 			pass
