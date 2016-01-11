@@ -8,7 +8,8 @@ from matplotlib import rcParams
 from matplotlib.widgets import Slider, Button
 import matplotlib.patches as mpatches
 import cv2
-from ..sensor import ximeaModule as xi
+#from ..sensor import ximeaModule as xi
+import cv2 as xi
 import SimpleITK as sitk
 rectprops = dict(facecolor='red', edgecolor = 'red', alpha=0.5, fill=True)
 from skimage.segmentation import clear_border

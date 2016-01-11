@@ -5,11 +5,11 @@ import numpy as np
 from numpy.ctypeslib import ndpointer
 from os import path
 here = path.abspath(path.dirname(__file__))
-import ximeaModule as xi
+#import ximeaModule as xi
 
 
 #try :
-	#import cv2 as xi
+import cv2 as xi
 #except ImportError: 
 	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
@@ -55,9 +55,9 @@ class Ximea(cameraSensor.CameraSensor):
 		"""
 		#self.sensor=_ximeaSensor.XimeaSensor(self.numdevice, self.exposure, self.gain, self.width, self.height, self.xoffset, self.yoffset, self.framespersec, self.external_trigger, self.data_format)
 		GLOBAL_ENABLE_FLAG = True
-		#print "num>>>", self.numdevice
-		self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
-		#self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		print "num>>>", self.numdevice
+		#self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 		if self.external_trigger==True:	# this condition activate the trigger mode
 			self.ximea.set(xi.CAP_PROP_XI_TRG_SOURCE,1)
 			self.ximea.set(xi.CAP_PROP_XI_GPI_SELECTOR,1)
@@ -98,12 +98,12 @@ class Ximea(cameraSensor.CameraSensor):
 
 		try:
 			if ret:
-				return frame.get('data')
-				#return frame
+				#return frame.get('data')
+				return frame
 			elif not(self.quit):
 				expo, wi, he, xoff,yoff,ga=self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain
-				self.reset()
-				self.__init__()
+				#self.reset()
+				#self.__init__()
 				self.new(expo, wi, he, xoff,yoff,ga) # Reset the camera instance
 				return self.getImage()
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
@@ -170,7 +170,7 @@ class Ximea(cameraSensor.CameraSensor):
         
 	@property
 	def xoffset(self):
-            return self._xoffset
+		return self._xoffset
     
 	@xoffset.setter
 	def xoffset(self,xoffset):
