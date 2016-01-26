@@ -2,6 +2,8 @@ from _meta import MasterBlock
 import os
 import time
 from crappy.technical import TechnicalCamera as tc
+from ..links._link import TimeoutError
+
 
 class StreamerCamera(MasterBlock):
 	"""
@@ -86,18 +88,24 @@ height: int, default=2048
 						t=time.time()-self.t0
 						if self.save:
 							image=self.sitk.GetImageFromArray(img)
-							self.sitk.WriteImage(image,
-								self.save_directory+"img_%.6d_cycle%09.1f.tiff" %(self.i,Data[self.label]))
+							try :
+								self.sitk.WriteImage(image,
+									self.save_directory+"img_%.6d_cycle%09.1f.tiff" %(self.i,Data[self.label]))
+							except KeyError:
+								self.sitk.WriteImage(image,
+									self.save_directory+"img_%.6d.tiff" %(self.i))
 							self.i+=1
 				try:
 					if trigger=="internal" or Data is not None:
 						for output in self.outputs:
 							output.send(img)
-				except AttributeError: # if no output or img not defined
+				except TimeoutError:
+					raise
+				except AttributeError: #if no outputs
 					pass
 
 		except (Exception,KeyboardInterrupt) as e:	
 			print "Exception in streamerCamera : ",
 			self.camera.sensor.close()
-			raise
+			#raise
 			

@@ -3,6 +3,8 @@ import time
 #import pandas as pd
 import os
 from collections import OrderedDict
+from ..links._link import TimeoutError
+
 
 class MeasureComediByStep(MasterBlock):
 	"""
@@ -33,13 +35,13 @@ freq : float or int, optional
 
 	def main(self):
 		try:
-			print "measurecomedi : ", os.getpid()
-			_a=self.inputs[:]
-			trigger="external"
-		except AttributeError:
-			trigger="internal"
-		timer=time.time()
-		try:
+			try:
+				print "measurecomedi : ", os.getpid()
+				_a=self.inputs[:]
+				trigger="external"
+			except AttributeError:
+				trigger="internal"
+			timer=time.time()
 			while True:
 				if trigger=="internal":
 					if self.freq!=None:
@@ -61,10 +63,15 @@ freq : float or int, optional
 				#Array=pd.DataFrame([data],columns=self.labels)
 				#print data, self.labels
 				Array=OrderedDict(zip(self.labels,data))
-				for output in self.outputs:
-					output.send(Array)
+				try:
+					for output in self.outputs:
+						output.send(Array)
+				except TimeoutError:
+					raise
+				except AttributeError: #if no outputs
+					pass
 
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in measureComediByStep : ", e
 			self.comediSensor.close()
-			raise
+			#raise

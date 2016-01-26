@@ -22,9 +22,10 @@ class CaptureCAM_XIMEA
 {
 public:
     CaptureCAM_XIMEA();
-    virtual ~CaptureCAM_XIMEA() { close(); }
+    virtual ~CaptureCAM_XIMEA();
     virtual bool open( int index );
     virtual void close();
+// 	bool isOpened();
     virtual bool grabFrame();
 	double getProperty(int);
     bool setProperty(int, double);
@@ -33,6 +34,8 @@ public:
     int       format;
     int       width;
     int       height;
+	int       xoffset;
+	int       yoffset;
     void resetCvImage();
 
 

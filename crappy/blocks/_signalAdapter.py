@@ -30,6 +30,7 @@ Returns:
 Panda Dataframe.
 
 		"""
+		print "WARNING : the signal adapater block is deprecated"
 		print "signal adapter!"
 		self.coeff=initial_coeff
 		self.last_coeff=initial_coeff

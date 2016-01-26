@@ -2,6 +2,7 @@ from _meta import MasterBlock
 import time
 import pandas as pd
 from collections import OrderedDict
+from ..links._link import TimeoutError
 
 class Streamer(MasterBlock):
 	"""
@@ -18,6 +19,11 @@ Send iterated value through a Link object.
 		self.i=0
 		while True:
 			time.sleep(0.001)
-			for output in self.outputs:
-				output.send(OrderedDict(zip(self.labels,[time.time()-self.t0,self.i])))
+			try:
+				for output in self.outputs:
+					output.send(OrderedDict(zip(self.labels,[time.time()-self.t0,self.i])))
+			except TimeoutError:
+				raise
+			except AttributeError: #if no outputs
+				pass
 			self.i+=1     

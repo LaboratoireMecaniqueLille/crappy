@@ -18,6 +18,28 @@ CaptureCAM_XIMEA::CaptureCAM_XIMEA() {
 	init();
 }
 
+CaptureCAM_XIMEA::~CaptureCAM_XIMEA(){
+	close();
+}
+
+// bool CaptureCAM_XIMEA::isOpened(){
+// 	try{
+// 		 stat = xiOpenDevice(0, &hmv);
+// 		 if(stat!=XI_OK){
+// 			 /*throw logic_error*/cout << "\nCamera is openned\n\n" << endl;
+// 			return true; 
+// 		}else{
+// 			return false;
+// 		}
+// 	}
+// 	catch(const exception & e)
+// 	{
+// 		close();
+// 		cerr << e.what();
+// 		return false;
+// 	}
+// }
+
 // Enumerate connected devices
 void CaptureCAM_XIMEA::init()
 {
@@ -42,30 +64,25 @@ bool CaptureCAM_XIMEA::open( int wIndex )
     int mvret = XI_OK;
     if(numDevices == 0)
         return false;
-	
-	stat = xiOpenDevice(0, &hmv);
+	//cout << "numdevice:" << numDevices << endl;
+	//cout << "index: " << wIndex << endl;
+	stat = xiOpenDevice(wIndex, &hmv);
 	HandleResult(stat,"Open XI_DEVICE failed");
-	
 	stat = xiSetParamInt(hmv, XI_PRM_EXPOSURE, 10000);
 	HandleResult(stat,"xiSetParam (exposure set)");
-	
     // always use auto exposure/gain
     mvret = xiSetParamInt( hmv, XI_PRM_AEAG, 1);
     HandleResult(mvret, "error while setting exposure and gain auto\n");
-
     mvret = xiGetParamInt( hmv, XI_PRM_WIDTH, &width);
     HandleResult(mvret, "error while setting width");
-
     mvret = xiGetParamInt( hmv, XI_PRM_HEIGHT, &height);
     HandleResult(mvret, "error while setting height");
-
     mvret = xiGetParamInt(hmv, XI_PRM_IMAGE_IS_COLOR, &isColor);
     HandleResult(mvret, "error while setting color parameter ");
-
     mvret = xiGetParamInt(hmv,  XI_PRM_IMAGE_DATA_FORMAT, &format);
     xiSetParamInt( hmv, XI_PRM_DOWNSAMPLING_TYPE, 1);
-    HandleResult(mvret, "error while setting data format");   
-    
+	xiSetParamInt(hmv, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
+    HandleResult(mvret, "error while setting data format");
 
     //default capture timeout 10s
     timeout = 10000;
@@ -75,6 +92,7 @@ bool CaptureCAM_XIMEA::open( int wIndex )
         errMsg("StartAcquisition XI_DEVICE failed", mvret);
         close();
     }
+	
     isopened=true;
     return true;
 }
@@ -85,32 +103,36 @@ void CaptureCAM_XIMEA::close()
     {
         xiStopAcquisition(hmv);
         xiCloseDevice(hmv);
+		isopened=false;
     }
     hmv = NULL;
-	isopened=false;
 }
 
 bool CaptureCAM_XIMEA::grabFrame()
 {
     memset(&image, 0, sizeof(XI_IMG));
     image.size = sizeof(XI_IMG);
+	
+	image.width = width;
+	image.height = height;
+	image.AbsoluteOffsetX= xoffset;
+	image.AbsoluteOffsetY= yoffset;
     int stat = xiGetImage( hmv, timeout, &image);
     if(stat == MM40_ACQUISITION_STOPED)
     {
         xiStartAcquisition(hmv);
         stat = xiGetImage(hmv, timeout, &image);
     }
-	stat = xiGetImage(hmv, 5000, &image);
-	HandleResult(stat,"xiGetImage");
+// 	stat = xiGetImage(hmv, 5000, &image);
+// 	HandleResult(stat,"xiGetImage");
     if(stat != XI_OK)
     {
         errMsg("Error during GetImage", stat);
         return false;
     }
-
+    int mvret = XI_OK;
     return true;
 }
-
 
 void CaptureCAM_XIMEA::resetCvImage()
 {
@@ -178,16 +200,16 @@ bool CaptureCAM_XIMEA::setProperty( int property_id, double value )
     switch(property_id)
     {
     // OCV parameters
-    case CAP_PROP_FRAME_WIDTH  : mvret = xiSetParamInt( hmv, XI_PRM_WIDTH, ival); break;
-    case CAP_PROP_FRAME_HEIGHT : mvret = xiSetParamInt( hmv, XI_PRM_HEIGHT, ival); break;
+		case CAP_PROP_FRAME_WIDTH  : mvret = xiSetParamInt( hmv, XI_PRM_WIDTH, ival); width = ival; break;
+		case CAP_PROP_FRAME_HEIGHT : mvret = xiSetParamInt( hmv, XI_PRM_HEIGHT, ival); height=ival; break;
     case CAP_PROP_FPS          : mvret = xiSetParamFloat( hmv, XI_PRM_FRAMERATE, fval); break;
     case CAP_PROP_GAIN         : mvret = xiSetParamFloat( hmv, XI_PRM_GAIN, fval); break;
     case CAP_PROP_EXPOSURE     : mvret = xiSetParamInt( hmv, XI_PRM_EXPOSURE, ival); break;
     // XIMEA camera properties
     case CAP_PROP_XI_DOWNSAMPLING  		: mvret = xiSetParamInt( hmv, XI_PRM_DOWNSAMPLING, ival); break;
     case CAP_PROP_XI_DATA_FORMAT   		: mvret = xiSetParamInt( hmv, XI_PRM_IMAGE_DATA_FORMAT, ival); break;
-    case CAP_PROP_XI_OFFSET_X      		: mvret = xiSetParamInt( hmv, XI_PRM_OFFSET_X, ival); break;
-    case CAP_PROP_XI_OFFSET_Y      		: mvret = xiSetParamInt( hmv, XI_PRM_OFFSET_Y, ival); break;
+	case CAP_PROP_XI_OFFSET_X      		: mvret = xiSetParamInt( hmv, XI_PRM_OFFSET_X, ival); xoffset = ival; break;
+    case CAP_PROP_XI_OFFSET_Y      		: mvret = xiSetParamInt( hmv, XI_PRM_OFFSET_Y, ival); yoffset = ival; break;
     case CAP_PROP_XI_TRG_SOURCE    		: xiStopAcquisition(hmv);mvret = xiSetParamInt( hmv, XI_PRM_TRG_SOURCE, ival);xiStartAcquisition(hmv); break;
     case CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH  	: xiStopAcquisition(hmv);mvret = xiSetParamInt( hmv, XI_PRM_OUTPUT_DATA_BIT_DEPTH, ival); xiStartAcquisition(hmv); break; 
     case CAP_PROP_XI_DATA_PACKING	  	: xiStopAcquisition(hmv);mvret = xiSetParamInt( hmv, XI_PRM_OUTPUT_DATA_PACKING, ival); xiStartAcquisition(hmv); break; 
