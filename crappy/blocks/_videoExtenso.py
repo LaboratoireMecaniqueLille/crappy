@@ -5,6 +5,7 @@ np.set_printoptions(threshold='nan', linewidth=500)
 import time
 import pandas as pd
 import cv2
+from ..links._link import TimeoutError
 from ..technical import TechnicalCamera as tc
 import SimpleITK as sitk # only for testing
 from skimage.filter import threshold_otsu, rank
@@ -183,7 +184,9 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 		try:
 			for output in self.outputs:
 				output.send(Array)
-		except AttributeError:
+		except TimeoutError:
+			raise
+		except AttributeError: #if no outputs
 			pass
 			
 		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
@@ -250,8 +253,10 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 				try:
 					for output in self.outputs:
 						output.send(Array)
-				except AttributeError:
-					pass		
+				except TimeoutError:
+					raise
+				except AttributeError: #if no outputs
+					pass	
 				if self.display:
 					if first_display:
 						self.plot_pipe_recv,self.plot_pipe_send=Pipe()
@@ -288,7 +293,7 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 				print "Exception in videoextenso : ",e
 				for i in range(0,self.NumOfReg):
 					proc_bary[i].terminate()
-				raise
+				#raise
 
 	def plotter(self):
 		data=self.plot_pipe_recv.recv() # receiving data

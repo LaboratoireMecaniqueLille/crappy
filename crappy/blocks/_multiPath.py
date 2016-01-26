@@ -6,6 +6,7 @@ from scipy import stats
 from collections import OrderedDict
 import copy
 import pickle
+from ..links._link import TimeoutError
 
 class MultiPath(MasterBlock):
 	"""
@@ -108,7 +109,9 @@ The requiered informations depend on the type of waveform you need.
 		try:
 			for output in self.outputs:
 				output.send(Array)
-		except:
+		except TimeoutError:
+			raise
+		except AttributeError: #if no outputs
 			pass
 	
 	def return_elastic(self):

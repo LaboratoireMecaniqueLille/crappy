@@ -37,4 +37,4 @@ speed: int, default = 500
 			for biaxe_technical in self.biaxe_technicals:
 				biaxe_technical.actuator.set_speed(0)
 				biaxe_technical.actuator.close_port()
-			raise
+			#raise

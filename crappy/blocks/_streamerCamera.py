@@ -2,6 +2,8 @@ from _meta import MasterBlock
 import os
 import time
 from crappy.technical import TechnicalCamera as tc
+from ..links._link import TimeoutError
+
 
 class StreamerCamera(MasterBlock):
 	"""
@@ -97,11 +99,13 @@ height: int, default=2048
 					if trigger=="internal" or Data is not None:
 						for output in self.outputs:
 							output.send(img)
-				except AttributeError: # if no output or img not defined
+				except TimeoutError:
+					raise
+				except AttributeError: #if no outputs
 					pass
 
 		except (Exception,KeyboardInterrupt) as e:	
 			print "Exception in streamerCamera : ",
 			self.camera.sensor.close()
-			raise
+			#raise
 			
