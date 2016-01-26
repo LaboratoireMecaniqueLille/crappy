@@ -14,4 +14,4 @@ import ximeaModule as ximeaModule
 
 from ._dummySensor import DummySensor
 from ._variateurTriboSensor import VariateurTriboSensor
-from lal300Sensor import SensorLal300
+from _lal300Sensor import SensorLal300

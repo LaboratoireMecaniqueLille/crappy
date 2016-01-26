@@ -26,10 +26,10 @@ try:
 												#send_freq=400,repeat=True,labels=['t(s)','signal'])
 	#torsion=crappy.blocks.SignalGenerator(path=[{"waveform":"triangle","time":50,"phase":0,"amplitude":5,"offset":-0.5,"freq":1}]
 											#,send_freq=400,repeat=False,labels=['t(s)','signal'])
-	compacter=crappy.blocks.Compacter(100)
+	compacter=crappy.blocks.Compacter(500)
 	#compacter2=crappy.blocks.Compacter(400)
-	#save=crappy.blocks.Saver("/home/corentin/Bureau/delete_me3.txt")
-	graph=crappy.blocks.Grapher("dynamic",('t(s)','V'))
+	save=crappy.blocks.Saver("/home/ilyesse/Bureau/delete_me3.txt")
+	#graph=crappy.blocks.Grapher("dynamic",('t(s)','V'))
 	#graph_stat=crappy.blocks.Grapher("dynamic",(0,2))
 	#graph2=crappy.blocks.Grapher("dynamic",('t(s)','ang(deg)'),('t(s)','dep(mm)'))
 	#graph3=crappy.blocks.Grapher("dynamic",(0,4))
@@ -53,15 +53,15 @@ try:
 	compacter.add_input(link1)
 	#compacter2.add_input(link2)
 	
-	compacter.add_output(link3)
+	#compacter.add_output(link3)
 	#compacter.add_output(link4)
-	#compacter.add_output(link5)
+	compacter.add_output(link5)
 	#compacter.add_output(link6)
 	#compacter.add_output(link7)
 	
-	#save.add_input(link5)
+	save.add_input(link5)
 	
-	graph.add_input(link3)
+	#graph.add_input(link3)
 	
 	#graph_stat.add_input(link5)
 	#graph2.add_input(link4)
