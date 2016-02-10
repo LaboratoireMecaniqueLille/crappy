@@ -88,6 +88,7 @@ The requiered informations depend on the type of waveform you need.
 			Data=pd.DataFrame()
 			while self.step<self.nb_step:
 				current_step=self.path[self.step] 
+				print "current step : ", self.step
 				try:
 					self.waveform=current_step["waveform"]
 					if self.waveform=='hold':
