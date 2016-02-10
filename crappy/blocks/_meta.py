@@ -47,7 +47,7 @@ stop() : stops the process.
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception : ", e
 			self.proc.terminate()
-			raise #raise the error to the next level for global shutdown
+			#raise #raise the error to the next level for global shutdown
 		
 	def join(self):
 		self.proc.join()
