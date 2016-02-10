@@ -5,12 +5,14 @@ np.set_printoptions(threshold='nan', linewidth=500)
 import time
 import pandas as pd
 import cv2
+from ..links._link import TimeoutError
 from ..technical import TechnicalCamera as tc
 import SimpleITK as sitk # only for testing
 from skimage.filter import threshold_otsu, rank
 from skimage.measure import regionprops
 from skimage.morphology import label,erosion, square,dilation
 from skimage.segmentation import clear_border
+from collections import OrderedDict
 try:
 	import pyglet
 	import glob
@@ -138,7 +140,7 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 					Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
 					Px=Dx
 					Py=Dy
-					print "Dx,Dy : ", Dx,Dy
+					#print "Dx,Dy : ", Dx,Dy
 
 				else: 
 					# we add minx and miny to go back to global coordinate:
@@ -175,13 +177,16 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 		#self.cap.set(cv2.CAP_PROP_GAIN,0) #setting up gain
 		#ret, frame = self.cap.read()
 		#ret, frame = self.cap.read()
-		Array=pd.DataFrame([[time.time()-self.t0,self.L0x,self.L0y,0,0]],columns=self.labels)
+		#Array=pd.DataFrame([[time.time()-self.t0,self.L0x,self.L0y,0,0]],columns=self.labels)
+		Array=OrderedDict(zip(self.labels,[time.time()-self.t0,self.L0x,self.L0y,0,0]))
 		#t3_=time.time()
 		#t3+=t3_-t2_
 		try:
 			for output in self.outputs:
 				output.send(Array)
-		except AttributeError:
+		except TimeoutError:
+			raise
+		except AttributeError: #if no outputs
 			pass
 			
 		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
@@ -243,12 +248,15 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 					Dx=100.*((Lx)/self.L0y-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
-				Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly,Dx,Dy]],columns=self.labels)
+				#Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly,Dx,Dy]],columns=self.labels)
+				Array=OrderedDict(zip(self.labels,[time.time()-self.t0,Lx,Ly,Dx,Dy]))
 				try:
 					for output in self.outputs:
 						output.send(Array)
-				except AttributeError:
-					pass		
+				except TimeoutError:
+					raise
+				except AttributeError: #if no outputs
+					pass	
 				if self.display:
 					if first_display:
 						self.plot_pipe_recv,self.plot_pipe_send=Pipe()
@@ -285,7 +293,7 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 				print "Exception in videoextenso : ",e
 				for i in range(0,self.NumOfReg):
 					proc_bary[i].terminate()
-				raise
+				#raise
 
 	def plotter(self):
 		data=self.plot_pipe_recv.recv() # receiving data

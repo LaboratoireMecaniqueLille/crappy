@@ -16,9 +16,11 @@ from ._multiPath import MultiPath
 from ._pid import PID
 from ._reader import Reader
 from ._saver import Saver
-from ._signalAdapter import SignalAdapter
+#from ._signalAdapter import SignalAdapter
 from ._signalGenerator import SignalGenerator
 from ._streamerCamera import StreamerCamera
 from ._streamerComedi import StreamerComedi
 from ._streamer import Streamer
 from ._videoExtenso import VideoExtenso
+from _lal300Command import CommandLal300
+#from _interpolation import Interpolation

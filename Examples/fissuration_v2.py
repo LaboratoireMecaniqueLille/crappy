@@ -87,26 +87,27 @@ class condition_K(crappy.links.MetaCondition):
 		self.K=0
 		self.W = 18.*10**(-3) #largeur eprouvette
 		self.y = 3.*10**(-3) #distance de prise potentielle depuis centre eprouvette
-		self.a0_elec= 4.1*10**(-3) #longueur prefissure
+		#self.a0_elec= 3.4*10**(-3) #longueur prefissure
 		self.e = 3.8*10**(-3) # epaisseur eprouvette
 		self.K1=6*10**6
-		self.F0=10000.
-		self.K0=self.F0/(2500.) # 2000 Newtons/Volt on the instron computer
+		self.F0=6000.
+		self.K0=self.F0/(2000.) # 2000 Newtons/Volt on the instron computer
 		self.FIFO=[]
+		self.finish=False
 		self.size=120 # 120 cycles = 1 minute
 		if self.K0>4:
 			print "WARNING, K0 is too high for the USB-DUX D, please stop and modify your script"
 		self.first=True
-		self.V0=2.348060601499999723e-04   ################################################################################################################################### Add here the v0 value if you restart the script
+		#self.V0=0#2.348060601499999723e-04   ################################################################################################################################### Add here the v0 value if you restart the script
 	def evaluate(self,value):
 		self.FIFO.insert(0,value['tension(V)'][0])
 		if len(self.FIFO)>self.size:
 			self.FIFO.pop()
 		median_value=np.median(self.FIFO)
-		if value['t_agilent(s)'][0] > 0: ###################################################################################################################### delay before starting
+		if value['t_agilent(s)'][0] > 18000: ###################################################################################################################### delay before starting
 			if self.first:
 				self.first=False
-				self.V0= median_value*0.727
+				self.V0= median_value #*0.727
 				np.savetxt('/home/essais-2015-3/Bureau/V0.txt',[self.V0])
 				self.K=self.K0
 				#self.V0= 2.138003450000000236e-04 #jusqu au cycle 508200
@@ -120,11 +121,16 @@ class condition_K(crappy.links.MetaCondition):
 			Fmax = self.K1/(Y*np.sqrt(3.1416*a))*self.e*self.W
 			if not(np.isnan(Fmax)):
 				self.K=(Fmax/self.F0)*self.K0
+			if a > (4.4*10**(-3)): ##########################################################################################################################################
+				self.K=0
+				self.finish=True
 			print "a, Fmax, K ,median value : ", a, Fmax, self.K, median_value
 		if self.K>self.K0:
 			print "WARNING, evaluation of K is wrong!"
 			self.K=self.K0
-			
+		if self.finish:
+			self.K=0
+		self.K=4 ################################################################################################################################################
 		value['coeff'] = pd.Series((self.K), index=value.index)
 		#print value
 		return value
@@ -144,7 +150,7 @@ try:
 ########################################### Creating blocks
 	comedi_output=crappy.blocks.CommandComedi([comedi_actuator])
 	tension=crappy.blocks.MeasureAgilent34420A(agilentSensor,labels=['t_agilent(s)','tension(V)'])
-	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="/home/essais-2015-3/Bureau/images_fissuration2/")
+	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="/home/essais-2015-3/Bureau/images_fissuration_21-12-15/")
 	
 	compacter_tension=crappy.blocks.Compacter(5)
 	graph_tension=crappy.blocks.Grapher("dynamic",('t_agilent(s)','tension(V)')) #,('t(s)','tension(V)')
@@ -201,11 +207,11 @@ try:
 	#link15=crappy.links.Link()
 	#link16=crappy.links.Link()
 	
-	link_alert=crappy.links.Link(condition=alerte_jerome.Alert())
+	#link_alert=crappy.links.Link(condition=alerte_jerome.Alert())
 ########################################### Linking objects
 
 	camera.add_input(link1)
-	camera.add_output(link_alert)
+	#camera.add_output(link_alert)
 	
 	tension.add_input(link2)
 	tension.add_output(link3)
@@ -261,7 +267,7 @@ try:
 
 ########################################### Starting objects
 
-	t0=1.445448736241215944e+09 ############################################################################################### modify t0 here if you restart your script
+	t0=time.time() #1.445448736241215944e+09 ############################################################################################### modify t0 here if you restart your script
 	np.savetxt('/home/essais-2015-3/Bureau/t0.txt',[t0])
 	for instance in crappy.blocks._meta.MasterBlock.instances:
 		instance.set_t0(t0)

@@ -1,8 +1,10 @@
 from _meta import MasterBlock, delay
 import time
-import pandas as pd
+#import pandas as pd
 import os
 import numpy as np
+from collections import OrderedDict
+from ..links._link import TimeoutError
 
 class MeasureAgilent34420A(MasterBlock):
 	"""
@@ -32,16 +34,18 @@ freq : float or int, optional
 
 	def main(self):
 		try:
-			_a=self.inputs[:]
-			trigger="external"
-		except AttributeError:
-			trigger="internal"
-		timer=time.time()
-		try:
+			try:
+				_a=self.inputs[:]
+				trigger="external"
+			except AttributeError:
+				trigger="internal"
+			timer=time.time()
 			print "mesureagilent " , os.getpid()
 			while True:
 				data=[]
+				#print "-1"
 				if trigger=="internal":
+					#print "-2"
 					if self.freq!=None:
 						while time.time()-timer< 1./self.freq:
 							delay(1./(100*1000*self.freq))
@@ -51,25 +55,36 @@ freq : float or int, optional
 					if ret!= False: # if there is data
 						data.append(ret)	
 						enable_sending=True 
-						Data=pd.DataFrame([data],columns=self.labels)
+						#Data=pd.DataFrame([data],columns=self.labels)
+						#print self.labels, data
+						Data=OrderedDict(zip(self.labels,data))
+						#print zip(self.labels,[data])
 					else: 
 						enable_sending=False # no data means no sending
 				if trigger=="external":
+					#print "-3"
 					Data = self.inputs[0].recv() # wait for a signal
+					#print "data agilent : ", Data
 					if Data is not None:
 						ret=self.agilentSensor.getData()
+						#print "ret :", ret
 						if ret != False:
-							Data[self.labels[0]] = pd.Series((time.time()-self.t0), index=Data.index) # verify if timestamps really differ and delete this line
-							Data[self.labels[1]] = pd.Series((ret), index=Data.index) # add one column
+							Data[self.labels[0]] = (time.time()-self.t0) # verify if timestamps really differ and delete this line
+							Data[self.labels[1]] = ret # add one column
 							enable_sending=True
 						else: 
 							enable_sending=False
 				if enable_sending:  #or Data is not None:
-					for output in self.outputs:
-						output.send(Data)
+					try:
+						for output in self.outputs:
+							output.send(Data)
+					except TimeoutError:
+						raise
+					except AttributeError: #if no outputs
+						pass
 
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in measureAgilent34420A : ", e
 			self.agilentSensor.close()
-			raise
+			#raise
 

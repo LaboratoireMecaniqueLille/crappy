@@ -9,3 +9,5 @@ from . import sensor
 from . import actuator
 from . import blocks
 from . import links
+from .__version__ import __version__
+#execfile('./version.py')

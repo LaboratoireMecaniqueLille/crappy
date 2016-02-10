@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 np.set_printoptions(threshold='nan', linewidth=500)
 import pandas as pd
 import os
+from collections import OrderedDict
 
 class Grapher(MasterBlock):
 	"""Plot the input data"""
@@ -39,7 +40,7 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 			if self.mode=="dynamic":
 				#print "1"
 				save_number=0
-				fig=plt.figure()
+				fig=plt.figure(figsize=(8,8))
 				ax=fig.add_subplot(111)
 				for i in range(self.nbr_graphs):	# init lines
 					if i ==0:
@@ -53,17 +54,36 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 				while True:
 					#print "3"
 					Data=self.inputs[0].recv()	# recv data
+					if type(Data) is not OrderedDict:
+						Data=OrderedDict(zip(Data.columns,Data.values[0]))
 					#legend_=Data.columns[1:]
 					legend_=[self.args[i][1] for i in range(self.nbr_graphs)]
 					if save_number>0: # lose the first round of data    
 						if save_number==1: # init
 							var=Data
-							plt.legend(legend_,bbox_to_anchor=(0., 1.02, 1., .102),
-					loc=3, ncol=len(legend_), mode="expand", borderaxespad=0.)
+							#box = ax.get_position()
+							#ax.set_position([box.x0, box.y0 + box.height * 0.1,
+											#box.width, box.height * 0.9])
+							#plt.legend(legend_,bbox_to_anchor=(0, -0.14, 1., .102),
+					#loc=3, ncol=len(legend_), mode="expand", borderaxespad=-2.)
+							plt.legend(legend_,bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
+							loc=3,ncol=len(legend_), mode="expand",
+							borderaxespad=1)
 						elif save_number<=10:	# stack values
-							var=pd.concat([var,Data])
-						else :	# delete old value and add new ones
-							var=pd.concat([var[np.shape(Data)[0]:],Data])
+							#var=pd.concat([var,Data])
+							#var=OrderedDict(zip(var.keys(),zip(var.values(),Data.values())))
+							try:
+								var=OrderedDict(zip(var.keys(),[var.values()[t]+Data.values()[t] for t in range(len(var.keys()))]))
+							except TypeError:
+								var=OrderedDict(zip(var.keys(),[(var.values()[t],)+(Data.values()[t],) for t in range(len(var.keys()))]))
+							#print var
+						else:	# delete old value and add new ones
+							#try:
+								#pass 
+								#var=pd.concat([var[np.shape(Data)[0]:],Data])
+							#except AttributeError:
+							#var=OrderedDict(zip(var.keys(),zip(tuple(np.asarray(var.values())[np.shape(Data.values())[1]:]),Data.values())))
+							var=OrderedDict(zip(var.keys(),[var.values()[t][np.shape(Data.values())[1]:]+Data.values()[t] for t in range(len(var.keys()))]))
 						for i in range(self.nbr_graphs):	# update lines
 							li[i].set_xdata(var[self.args[i][0]])
 							li[i].set_ydata(var[self.args[i][1]])
@@ -76,17 +96,20 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 						
 			if self.mode=="static":
 				plt.ion()
-				fig=plt.figure()
+				fig=plt.figure(figsize=(8,8))
 				ax=fig.add_subplot(111)
 				first_round=True
 				k=[0]*self.nbr_graphs	# internal value for downsampling
 				while True :
 					Data=self.inputs[0].recv()	# recv data
+					if type(Data) is not OrderedDict:
+						Data=OrderedDict(zip(Data.columns,Data.values[0]))
 					#legend_=Data.columns[1:]
 					legend_=[self.args[i][1] for i in range(self.nbr_graphs)]
 					if first_round:	# init at first round
 						for i in range(self.nbr_graphs):
 							if i==0:
+								#print Data,Data[self.args[i][0]]
 								li=ax.plot(
 									Data[self.args[i][0]],Data[self.args[i][1]],
 									label='line '+str(i))
@@ -94,9 +117,14 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 								li.extend(ax.plot(
 									Data[self.args[i][0]],Data[self.args[i][1]],
 									label='line '+str(i)))
-						plt.legend(legend_,bbox_to_anchor=(0., 1.02, 1., .102),
+						#box = ax.get_position()
+						#ax.set_position([box.x0, box.y0 + box.height * 0.1,
+										#box.width, box.height * 0.9])
+						#plt.legend(legend_,bbox_to_anchor=(0, -0.14, 1., .102),
+							#loc=3, ncol=len(legend_), mode="expand", borderaxespad=0.)
+						plt.legend(legend_,bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
 							loc=3,ncol=len(legend_), mode="expand",
-							borderaxespad=0.)
+							borderaxespad=1.)
 						plt.grid()
 						fig.canvas.draw()
 						first_round=False
@@ -119,7 +147,10 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 					ax.relim()
 					ax.autoscale_view(True,True,True)
 					fig.canvas.draw() 
+		
 		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in grapher : ", e
+			print "Exception in grapher %s: %s" %(os.getpid(),e)
 			plt.close('all')
-			raise
+			#raise
+		finally:
+			plt.close('all')

@@ -25,10 +25,11 @@ class ComediActuator(object): #acqSensor.AcqSensor
 		
 	def set_cmd(self,cmd):
 		"""send a signal"""
-		self.out=(cmd/self.gain)-self.offset
-		out_a=c.comedi_from_phys(self.out,self.range_ds,self.maxdata) # convert the cmd to digital value
+		#self.out=(cmd/self.gain)-self.offset
+		#out_a=c.comedi_from_phys(self.out,self.range_ds,self.maxdata) # convert the cmd to digital value
 		self.out=(cmd*self.gain)+self.offset
 		out_a=c.comedi_from_phys(self.out,self.range_ds,self.maxdata) # convert the cmd 
+		#print self.out, out_a
 		c.comedi_data_write(self.device,self.subdevice,self.channel,self.range_num,c.AREF_GROUND,out_a) # send the signal to the controler
 		#t=time.time()
 		#return (t,self.out)

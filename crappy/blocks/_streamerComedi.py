@@ -5,6 +5,9 @@ import time
 import struct
 np.set_printoptions(threshold='nan', linewidth=500)
 import pandas as pd
+from collections import OrderedDict
+from ..links._link import TimeoutError
+
 
 class StreamerComedi(MasterBlock):
 	"""
@@ -12,6 +15,8 @@ Children class of MasterBlock. Send comedi value through a Link object.
 	"""
 	def __init__(self,comediSensor,labels=None,freq=8000,buffsize=10000):
 		"""
+WARNING :DOES NOT WORK AT THE MOMENT, USE measureComediByStep INSTEAD.
+
 This streamer read the value on all channels at the same time and send the 
 values through a Link object. It can be very fast, but needs need an USB 2.0
 port drove by ehci to work properly. xhci driver DOES NOT work (for now).
@@ -41,7 +46,7 @@ freq : int (default 8000)
 		mylist = self.c.chanlist(self.nchans)	# create a chanlist of length nchans
 		self.maxdata=[0]*(self.nchans)
 		self.range_ds=[0]*(self.nchans)
-
+		#print "1"
 		for index in range(self.nchans):	# pack informations into the chanlist
 			mylist[index]=self.c.cr_pack(self.comediSensor.channels[index],
 						   self.comediSensor.range_num[index],
@@ -61,7 +66,7 @@ freq : int (default 8000)
 									   self.comediSensor.subdevice,
 									   cmd,self.nchans,period)
 		if ret: raise Exception("Error comedi_get_cmd_generic failed")
-			
+		#print "2"
 		cmd.chanlist = mylist # adjust for our particular context
 		cmd.chanlist_len = self.nchans
 		cmd.scan_end_arg = self.nchans
@@ -83,13 +88,16 @@ freq : int (default 8000)
 			
 	# init is over, start acquisition and stream
 	def main(self):
+		#print "3"
 		try:
 			while True:
+				#print "4"
 				array=np.zeros(self.nchans+1)
 				data = os.read(self.fd,self.BUFSZ) # read buffer and returns binary
 				if len(data)==self.data_length:
 					datastr = struct.unpack(self.format,data)
 					if len(datastr)==self.nchans: #if data not corrupted
+						#print "5"
 						array[0]=time.time()-self.t0
 						for i in range(self.nchans):
 							array[i+1]=self.c.comedi_to_phys((datastr[i]),
@@ -97,11 +105,17 @@ freq : int (default 8000)
 												self.maxdata[i])
 						if self.labels==None:
 							self.Labels=[i for i in range(self.nchans+1)]
-						Array=pd.DataFrame([array],columns=self.labels)
-						for output in self.outputs:
-							output.send(Array)
+						#Array=pd.DataFrame([array],columns=self.labels)
+						Array=OrderedDict(zip(self.labels,array))
+						try:
+							for output in self.outputs:
+								output.send(Array)
+						except TimeoutError:
+							raise
+						except AttributeError: #if no outputs
+							pass
 
 		except (Exception,KeyboardInterrupt) as e:	
 			print "Exception in streamerComedi : ",
 			self.comediSensor.close()
-			raise
+			#raise

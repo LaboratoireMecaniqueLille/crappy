@@ -1,7 +1,7 @@
 from _meta import MasterBlock
 import time
 import os
-import gc
+#import gc
 
 class CommandComedi(MasterBlock):
 	"""Receive a signal and translate it for the Biotens actuator"""
@@ -14,8 +14,6 @@ CommandComedi(comedi_actuators)
 Parameters
 ----------
 comedi_actuators : list of crappy.actuators.ComediActuator objects.
-
-
 		"""
 		self.comedi_actuators=comedi_actuators
 		print "command comedi! "
@@ -26,15 +24,16 @@ comedi_actuators : list of crappy.actuators.ComediActuator objects.
 			last_cmd=0
 			while True:
 				Data=self.inputs[0].recv()
-				cmd=Data['signal'].values[0]
+				#try:
+					#cmd=Data['signal'].values[0]
+				#except AttributeError:
+				cmd=Data['signal']
 				if cmd!= last_cmd:
 					for comedi_actuator in self.comedi_actuators:
 						comedi_actuator.set_cmd(cmd)
 					last_cmd=cmd
-				else:
-					gc.collect()
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in CommandComedi : ", e
 			for comedi_actuator in self.comedi_actuators:
 				comedi_actuator.close()
-			raise
+			#raise

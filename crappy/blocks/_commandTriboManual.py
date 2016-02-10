@@ -1,14 +1,14 @@
 from _meta import MasterBlock
 
 class CommandTriboMaintien(MasterBlock):
-	def __init__(self, VariateurTribo, comediDigital):
+	def __init__(self, VariateurTribo, comediOut):
 		self.VariateurTribo=VariateurTribo
 		
 	def main(self):
 		t_0=time.time()
 		print "t0 = ", t_0
 		datastring=''
-		init=False
+		self.VariateurTribo.init=False
 		consigne=0.0
 		self.VariateurTribo.go_effort(consigne)
 		while 1:
@@ -17,16 +17,16 @@ class CommandTriboMaintien(MasterBlock):
 			if input_== 'init\n':
 				self.VariateurTribo.initialisation()
 	
-			elif input_ == 'effort\n' and self.VariateurTribo.mode!='effort' and self.VariateurTribo.init:
-				self.VariateurTribo.set_mode_speed()
+			elif input_== 'effort\n' and self.VariateurTribo.mode!='effort' and self.VariateurTribo.init:
+				self.VariateurTribo.set_mode_analog()
 				self.comediDigital.On()
 			
-			elif input_=='position' and  self.VariateurTribo.init:
+			elif input_=='position' and self.VariateurTribo.mode!='effort' and self.VariateurTribo.init:
 				self.VariateurTribo.set_mode_position()
 				self.comediDigital.Off()
 				self.VariateurTribo.read_position()
 				
-			elif input_='stop':
+			elif input_=='stop':
 				self.VariateurTribo.stop_motor()
 			elif self.VariateurTribo.mode=='effort' and self.VariateurTribo.init:
 				try:

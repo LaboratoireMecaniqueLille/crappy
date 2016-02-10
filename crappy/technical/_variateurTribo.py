@@ -3,8 +3,10 @@ from ..sensor import _variateurTriboSensor
 from ..actuator import _variateurTriboActuator
 
 class VariateurTribo(object):
-	def __init__(self, port='/dev/ttyS0'):
+	def __init__(self, port='/dev/ttyS0',port_arduino='/dev/ttyACM0'):
 		self.port=port
-		self.ser=serial.Serial(self.port, baudrate=38400, timeout=0.1)
-		self.sensor=_variateurTriboSensor.variateurTriboSensor(self.ser)
-		self.actuator=_variateurTriboActuator.variateurTriboActuator(self.ser)
+		self.port_arduino=port_arduino
+		self.ser=serial.Serial(self.port, baudrate=9600,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE,bytesize=serial.EIGHTBITS)
+		self.ser_arduino=serial.Serial(self.port_arduino,baudrate=9600,parity=serial.PARITY_NONE,stopbits=serial.STOPBITS_ONE,bytesize=serial.EIGHTBITS)
+		self.sensor=_variateurTriboSensor.VariateurTriboSensor(self.ser)
+		self.actuator=_variateurTriboActuator.VariateurTriboActuator(self.ser,self.ser_arduino)
