@@ -59,6 +59,7 @@ if __name__ == '__main__':
 		biotens=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1,biaxeTech2],speed=-0) # vertical
 		biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-167)
 		#horizontal # speed must be <0 for traction
+>>>>>>> dec8fbdacb21706b1c5b005ae6ccd9c75fba5c2c
 
 	########################################### Creating links
 		

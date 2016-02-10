@@ -291,9 +291,10 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 				raise Exception("Spots lost")
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in videoextenso : ",e
+				proc.terminate()
 				for i in range(0,self.NumOfReg):
 					proc_bary[i].terminate()
-				#raise
+				raise
 
 	def plotter(self):
 		data=self.plot_pipe_recv.recv() # receiving data

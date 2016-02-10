@@ -16,7 +16,7 @@ from distutils.command.build import build
 from distutils.core import setup, Extension
 
 comediModule = Extension('sensor.comediModule', sources = ['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'], extra_link_args=["-l", "comedi", "-l", "python2.7"])
-ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
+#ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
@@ -126,7 +126,7 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     
     ext_package='crappy',
-    ext_modules = [comediModule, ximeaModule],
+    ext_modules = [comediModule], #, ximeaModule
 	
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
@@ -169,5 +169,5 @@ setup(
         #],
     #},
 )
-system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
+#system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
 system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')
