@@ -110,7 +110,7 @@ The requiered informations depend on the type of waveform you need.
 					print "You didn't define parameter %s for step number %s" %(e,self.step)
 					raise
 
-					
+				#print "here1"
 				if self.waveform=="limit": #	 signal defined by a lower and upper limit
 					alpha=np.sign(np.cos(self.phase))
 					while self.cycles is None or cycle<self.cycles:
@@ -118,15 +118,19 @@ The requiered informations depend on the type of waveform you need.
 							for input_ in self.inputs:
 								if input_.in_.poll() or first: # if there is data waiting
 									recv=input_.recv()
+									#print recv
 									df=pd.DataFrame([recv.values()],columns=recv.keys())
 									Data=pd.concat([Data,df],ignore_index=True)
 							first=False
 							delay(1./(100*1000*self.send_freq))
+						#print "here" , df, Data
 						last_t=time.time()					
 						last_upper = (Data[self.upper_limit[1]]).last_valid_index()
 						last_lower=(Data[self.lower_limit[1]]).last_valid_index()
 						first_lower=(Data[self.lower_limit[1]]).first_valid_index()
 						first_upper=(Data[self.upper_limit[1]]).first_valid_index()
+						#print Data
+						#print "here2"
 						if first_of_step:
 							if alpha>0:
 								if Data[self.upper_limit[1]][last_upper]>self.upper_limit[0]: # if value > high_limit
@@ -135,6 +139,14 @@ The requiered informations depend on the type of waveform you need.
 								if Data[self.lower_limit[1]][last_lower]<self.lower_limit[0]: # if value < low_limit
 									alpha=1
 							first_of_step=False
+						#if self.step==1:
+							#print Data
+							#print alpha
+							#print last_upper,last_lower,first_lower,first_upper
+							#print self.cycles
+							#print self.lower_limit
+							#print self.upper_limit
+							
 						if self.upper_limit==self.lower_limit: # if same limits
 							alpha=0
 							cycle=time.time()-t_step
@@ -158,6 +170,7 @@ The requiered informations depend on the type of waveform you need.
 						except AttributeError: #if no outputs
 							pass
 					self.step+=1
+					first=True
 					first_of_step=True
 					cycle=0
 					if self.repeat and self.step==self.nb_step:
