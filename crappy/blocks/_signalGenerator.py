@@ -3,6 +3,7 @@ import numpy as np
 import time
 import pandas as pd
 import os
+import sys
 #import select # for testing loop frequency enforcement
 #import psutil
 from collections import OrderedDict
@@ -99,7 +100,13 @@ The requiered informations depend on the type of waveform you need.
 						self.phase=current_step["phase"]
 						self.lower_limit=current_step["lower_limit"]
 						self.upper_limit=current_step["upper_limit"]
-					else :
+					elif self.waveform=='goto':
+						self.direction=current_step["direction"]
+						self.value=current_step["value"]
+						self.offset=current_step["offset"]
+						#print "goto 1"
+					else:
+						#print "test"
 						self.time=current_step["time"]
 						self.phase=current_step["phase"]
 						self.amplitude=current_step["amplitude"]
@@ -110,8 +117,53 @@ The requiered informations depend on the type of waveform you need.
 					print "You didn't define parameter %s for step number %s" %(e,self.step)
 					raise
 
-				#print "here1"
-				if self.waveform=="limit": #	 signal defined by a lower and upper limit
+				if self.waveform=="goto": #	 signal defined by a lower and upper limit
+					#print "goto 2"
+					cycle=0
+					security=0
+					while cycle==0:
+						while time.time()-last_t<1./self.send_freq or first:
+							for input_ in self.inputs:
+								if input_.in_.poll() or first: # if there is data waiting
+									recv=input_.recv()
+									#print recv
+									df=pd.DataFrame([recv.values()],columns=recv.keys())
+									Data=pd.concat([Data,df],ignore_index=True)
+							security+=1
+							if security>=2:
+								first=False
+							#first=False
+							delay(1./(100*1000*self.send_freq))
+						last_t=time.time()		
+						#print "goto 3"
+						last_upper = (Data[self.value[1]]).last_valid_index()
+						last_lower=(Data[self.value[1]]).last_valid_index()
+						first_lower=(Data[self.value[1]]).first_valid_index()
+						first_upper=(Data[self.value[1]]).first_valid_index()
+						alpha=self.direction
+						#print Data,self.value
+						print abs(Data[self.value[1]][last_upper]-self.value[0])
+						if abs(Data[self.value[1]][last_upper]-self.value[0])<self.offset: # if value > high_limit
+							alpha=0
+							cycle=1
+						if last_upper!=first_upper and last_lower!=first_lower: # clean old data
+							Data=Data[min(last_upper,last_lower):]
+						Array=OrderedDict(zip(self.labels,[last_t-self.t0,alpha,cycle]))
+						#print "goto 4"
+						try:
+							for output in self.outputs:
+								output.send(Array)
+						except TimeoutError:
+							raise
+						except AttributeError: #if no outputs
+							pass
+					self.step+=1
+					first=True
+					first_of_step=True
+					cycle=0
+					#print "end goto"
+					t_step=time.time()
+				elif self.waveform=="limit": #	 signal defined by a lower and upper limit
 					alpha=np.sign(np.cos(self.phase))
 					while self.cycles is None or cycle<self.cycles:
 						while time.time()-last_t<1./self.send_freq or first:
@@ -173,10 +225,11 @@ The requiered informations depend on the type of waveform you need.
 					first=True
 					first_of_step=True
 					cycle=0
-					if self.repeat and self.step==self.nb_step:
-						self.step=0
+					#if self.repeat and self.step==self.nb_step:
+						#self.step=0
 					t_step=time.time()
 				elif self.waveform=="hold":
+					#print "holding"
 					while self.time is None or (time.time()-t_step)<self.time:
 						while time.time()-last_t<1./self.send_freq:
 							for input_ in self.inputs:
@@ -192,6 +245,8 @@ The requiered informations depend on the type of waveform you need.
 						else:
 							if self.path[self.step-1]["waveform"]=="limit":
 								self.alpha=0
+							elif self.path[self.step-1]["waveform"]=="goto":
+								self.alpha=0
 							else:
 								pass
 						#Array=pd.DataFrame([[last_t-self.t0,self.alpha,0]],columns=self.labels)
@@ -206,10 +261,11 @@ The requiered informations depend on the type of waveform you need.
 					self.step+=1
 					first_of_step=True
 					cycle=0
-					if self.repeat and self.step==self.nb_step:
-						self.step=0
+					#if self.repeat and self.step==self.nb_step:
+						#self.step=0
 					t_step=time.time()
 				else:
+					#print self.waveform
 					t_add=self.phase/(2*np.pi*self.freq)
 					#sleep_max=0
 					#sleep_min=500
@@ -271,11 +327,13 @@ The requiered informations depend on the type of waveform you need.
 						#t_loop=t3
 						#j+=1
 					self.step+=1
-					if self.repeat and self.step==self.nb_step:
-						self.step=0
 					t_step=time.time()
+				if self.repeat and self.step==self.nb_step:
+					self.step=0
 			raise Exception("Completed !")
 		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in PathGenerator %s: %s" %(os.getpid(),e)
+			exc_type, exc_obj, tb = sys.exc_info()
+			lineno = tb.tb_lineno
+			print "Exception in PathGenerator %s: %s line %s" %(os.getpid(),e,lineno)
 			#raise
   
