@@ -144,7 +144,7 @@ class _CameraInit():
 			#mean_area=np.mean[region.area for region in regions]
 			regions=[region for region in regions if region.area>200]
 			self.NumOfReg=len(regions)
-			print " Spots detected : ", self.NumOfReg
+			print " Spots detected in camerainit: ", self.NumOfReg
 			smoothing=1
 			self.minx=np.empty([self.NumOfReg,1,smoothing])
 			self.miny=np.empty([self.NumOfReg,1,smoothing])
@@ -163,6 +163,7 @@ class _CameraInit():
 				#plt.imsave("/home/corentin/Bureau/image_originale.tiff",image)
 				croped_image = image[self.yoffset:self.height+self.yoffset,self.xoffset:self.xoffset+self.width]
 				image = croped_image
+				self.thresh = threshold_otsu(image) # you have to re-evaluate the threashold here to have the same as you will after
 				
 				for i in range(0,self.NumOfReg): # find the center of every region
 					self.Points_coordinates[i,0,k],self.Points_coordinates[i,1,k],self.minx[i,0,k],self.miny[i,0,k],self.maxx[i,0,k],self.maxy[i,0,k]=self.barycenter_opencv(image[self.minx[i,0,k]-1:self.maxx[i,0,k]+1,self.miny[i,0,k]-1:self.maxy[i,0,k]+1],self.minx[i,0,k]-1,self.miny[i,0,k]-1)
@@ -231,7 +232,7 @@ class _CameraInit():
 		# The median filter helps a lot for real life images ...
 		#print "5"
 		#print image.shape
-		self.thresh=threshold_otsu(image)
+		#self.thresh=threshold_otsu(image)
 		bw=cv2.medianBlur(image,5)>self.thresh
 		if not (self.videoextenso['white_spot']):
 			bw=1-bw
@@ -297,10 +298,10 @@ class _CameraInit():
 					#miny_=self.miny.min()
 					#maxx_=self.maxx.max()
 					#maxy_=self.maxy.max()
-					self.L0x=self.Points_coordinates[0,0]
-					self.L0y=self.Points_coordinates[0,1]
+					self.L0x=self.Points_coordinates[0,1]
+					self.L0y=self.Points_coordinates[0,0]
 				print "L0 saved! : ", self.L0x, self.L0y
-			self.cam.close()
+			#self.cam.close()
 		except AttributeError: #if no selected Points_coordinates
 			print "no points selected"
 		#self.cam.close()
@@ -324,6 +325,7 @@ class _CameraInit():
 	def getConfiguration(self):
 		print "in cameraInit :", int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
 		if self.videoextenso['enabled']:
+			#print "thresh in camera init :" ,self.thresh
 			return (self.cam.exposure), (self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset), \
 				   self.minx, self.maxx, self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh,self.Points_coordinates
 		else:
@@ -334,8 +336,12 @@ def getCameraConfig(cam, videoExtenso,send_pipe=None):
 	d.start()
 	try:
 		send_pipe.send(d.getConfiguration())
+		d.cam.close()
 		print "data sent"
+		plt.close()
 	except Exception as e:
 		print "error : ", e
+		d.cam.close()
+		plt.close()
 		pass
 	

@@ -16,15 +16,16 @@ class TechnicalCamera():
 			print "%s "%e, " Unreconized camera\n"
 			sys.exit()
 			raise
-		
+		#print "module, cameraclass : ", module, CameraClass
         #initialisation:
 		self.sensor = CameraClass(numdevice=numdevice)
 		self.videoextenso = videoextenso
 		recv_pipe,send_pipe=Pipe()
+		print "lauching camera config..."
 		proc_test=Process(target=getCameraConfig,args=(self.sensor,self.videoextenso,send_pipe))
 		proc_test.start()
 		data=recv_pipe.recv()
-		print "data received!"
+		print "data received, config done."
 		if self.videoextenso['enabled']:
 			self.exposure,self.gain,self.width,self.height,self.xoffset,self.yoffset, self.minx, self.maxx, self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y,self.thresh,self.Points_coordinates =data[:]
 		else:

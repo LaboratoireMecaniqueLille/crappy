@@ -13,6 +13,7 @@ from skimage.measure import regionprops
 from skimage.morphology import label,erosion, square,dilation
 from skimage.segmentation import clear_border
 from collections import OrderedDict
+from sys import stdout
 try:
 	import pyglet
 	import glob
@@ -25,7 +26,7 @@ class VideoExtenso(MasterBlock):
 	"""
 This class detects spots (1,2 or 4), and evaluate the deformations Exx and Eyy.
 	"""
-	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)']):
+	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,update_tresh=False,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)']):
 		"""
 VideoExtenso(camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)'])
 
@@ -39,7 +40,7 @@ spot isn't big enough, but it is easier on smaller sample to only have 1 spot.
 
 Note that if this block lose the spots, it will play a song in the '/home/' 
 repository. You need a .wav sound, python-pyglet and python-glob. This can be 
-usefull if you have a long test to do, has th scripts doesn't stop when losing 
+usefull if you have a long test to do, as the script doesn't stop when losing 
 spots.
 
 Parameters
@@ -60,6 +61,13 @@ white_spot : Boolean, default=True
 	Set to False if you have dark spots on a light surface.
 display : Boolean, default=True
 	Set to False if you don't want to see the image with the spot detected.
+update_tresh : Boolean, default=False
+	Set to True if you want to re-evaluate the threshold for every new image.
+	Updside is that it allows you to follow more easily your spots even if your 
+	light changes. Downside is that it will change the area and possibly the 
+	shape of the spots, wich may inscrease the noise on the deformation and 
+	artificially change its value. This is especially true with a single spot 
+	configuration.
 labels : list of string, default = ['t(s)','Lx','Ly','Exx(%)','Eyy(%)']
 
 Returns:
@@ -73,6 +81,7 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 		self.display=display
 		self.border=4
 		self.numdevice=numdevice
+		self.update_tresh=update_tresh
 		while go==False:
 		# the following is to initialise the spot detection
 			self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
@@ -84,6 +93,7 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 			self.L0x = self.camera.L0x
 			self.L0y = self.camera.L0y
 			self.thresh=self.camera.thresh
+			#print "tresh initial :", self.thresh
 			self.Points_coordinates=self.camera.Points_coordinates
 			self.width=self.camera.width
 			self.height=self.camera.height
@@ -93,8 +103,9 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 			self.gain=self.camera.gain
 			if self.NumOfReg==4 or self.NumOfReg==2 or self.NumOfReg==1: 
 				go=True
-			else:	#	If detection goes wrong, start again
+			else:	#	If detection goes wrong, start again, may not be usefull now ?
 				print " Spots detected : ", self.NumOfReg	
+		print "initialisation done, starting acquisition"
 			# following is for tests only
 			#self.save_directory="/home/biaxe/Bureau/Publi/"
 			#fo=open(self.save_directory+"L0.txt","a")		# "a" for appending
@@ -112,8 +123,10 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 		while True:
 			try:
 				image,minx,miny=recv_.recv()[:]
-				self.thresh=threshold_otsu(image)
+				if self.update_tresh:
+					self.thresh=threshold_otsu(image)
 				bw=cv2.medianBlur(image,5)>self.thresh
+				#print "thresh : ", self.thresh
 				if not (self.white_spot):
 					bw=1-bw
 				M = cv2.moments(bw*255.)
@@ -142,7 +155,7 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 					Py=Dy
 					#print "Dx,Dy : ", Dx,Dy
 
-				else: 
+				else: #if 2 or 4 spots
 					# we add minx and miny to go back to global coordinate:
 					Px+=minx
 					Py+=miny
@@ -202,6 +215,7 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 		proc_bary={}
 		recv_={}
 		send_={}
+		image = self.camera.sensor.getImage() # eliminate the first frame, most likely corrupted
 		#self.t0 = time.time()
 		while True:
 			try:	
@@ -211,8 +225,9 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 					#ret, frame = self.cap.read()
 					#t2=time.time()
 					#print "time diff : ", t2-t1
-					#image1=sitk.GetImageFromArray(image)
-					#sitk.WriteImage(image1,self.save_directory+"img_videoExtenso%.5d.tiff" %j)
+				#image1=sitk.GetImageFromArray(image)
+				#sitk.WriteImage(image1,"/home/corentin/Bureau/img_to_delete/img_videoExtenso%.5d.tiff" %j)
+				
 					#image2=sitk.GetImageFromArray(frame)
 					#sitk.WriteImage(image2,self.save_directory+"img_mouchetis%.5d.tiff" %j)
 				#t2_=time.time()
@@ -244,12 +259,14 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 					#print self.Points_coordinates
 					Ly=self.Points_coordinates[0,0]
 					Lx=self.Points_coordinates[0,1]
-					Dy=100.*((Ly)/self.L0x-1.)
-					Dx=100.*((Lx)/self.L0y-1.)
+					Dy=100.*((Ly)/self.L0y-1.)
+					Dx=100.*((Lx)/self.L0x-1.)
 				self.Points_coordinates[:,1]-=miny_
 				self.Points_coordinates[:,0]-=minx_
+				
 				#Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly,Dx,Dy]],columns=self.labels)
 				Array=OrderedDict(zip(self.labels,[time.time()-self.t0,Lx,Ly,Dx,Dy]))
+				#print Array
 				try:
 					for output in self.outputs:
 						output.send(Array)
@@ -269,7 +286,9 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 				#t5+=t5_-t4_
 				if j%100==0 and j>0:
 					t_now=time.time()
-					print "FPS: ", 100/(t_now-last_ttimer)
+					#print "FPS: ", 100/(t_now-last_ttimer)
+					stdout.write("\rFPS: %2.2f" % (100/(t_now-last_ttimer)))
+					stdout.flush()
 					#t2=time.time()
 					#print "time diff : ", t2-t1
 					#image1=sitk.GetImageFromArray(image)

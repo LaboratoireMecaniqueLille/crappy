@@ -55,7 +55,7 @@ class Ximea(cameraSensor.CameraSensor):
 		"""
 		#self.sensor=_ximeaSensor.XimeaSensor(self.numdevice, self.exposure, self.gain, self.width, self.height, self.xoffset, self.yoffset, self.framespersec, self.external_trigger, self.data_format)
 		GLOBAL_ENABLE_FLAG = True
-		print "num>>>", self.numdevice
+		print "num >>>", self.numdevice
 		#self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 		self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 		if self.external_trigger==True:	# this condition activate the trigger mode
@@ -101,6 +101,7 @@ class Ximea(cameraSensor.CameraSensor):
 				#return frame.get('data')
 				return frame
 			elif not(self.quit):
+				print "restarting camera..."
 				expo, wi, he, xoff,yoff,ga=self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain
 				#self.reset()
 				#self.__init__()
