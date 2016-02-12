@@ -80,6 +80,7 @@ if __name__ == '__main__':
 												#{"waveform":"goto","position":[0,0]}
 		multipath=crappy.blocks.MultiPath(path=[{"waveform":"detection","cycles":1},
 												{"waveform":"traction","gain":-0.001,"cycles":0.5,"offset":[-0.001,0]},
+												{"waveform":"goto","mode":"plastic_def","target":0.002,"position":[-10,0]}
 												{"waveform":"detection","cycles":3}],
 												send_freq=200,dmin=22,dmax=25,repeat=False)
 		
