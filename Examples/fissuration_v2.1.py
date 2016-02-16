@@ -23,14 +23,13 @@ except:
 #summary.print_(diff)     
 
 class condition_coeff(crappy.links.MetaCondition):
-	def __init__(self,test=False):
+	def __init__(self):
 		initial_coeff=0
 		self.last_cycle=-1
 		self.coeff=initial_coeff
 		self.last_coeff=initial_coeff
 		self.delay=10
-		self.blocking=False
-		self.test=test
+		self.blocking=True
 		self.last_new_coeff=initial_coeff
 		self.new_coeff=0
 		#print "condition coeff"
@@ -58,8 +57,6 @@ class condition_coeff(crappy.links.MetaCondition):
 			self.t1=self.t2
 		val=value.pop('signal')
 		value['signal']=val*self.coeff
-		if self.test:
-			return None
 		else:
 			return value
 
