@@ -1,3 +1,4 @@
+# coding: utf-8
 #from ._ximeaSensor import XimeaSensor
 from ._ximeaSensor import Ximea
 try:

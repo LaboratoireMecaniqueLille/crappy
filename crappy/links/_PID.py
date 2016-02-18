@@ -1,3 +1,4 @@
+# coding: utf-8
 class PID(crappy.links.MetaCondition):
 	def __init__(self,P,I,D,label_consigne,label_retour,outMin=-10,outMax=10):
 		self.P=P

@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock,delay
 import numpy as np
 import time

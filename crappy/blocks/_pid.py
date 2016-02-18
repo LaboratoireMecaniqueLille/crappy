@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock
 #from multiprocessing import Process, Pipe
 #import os

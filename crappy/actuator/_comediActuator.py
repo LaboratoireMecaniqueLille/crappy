@@ -1,3 +1,4 @@
+# coding: utf-8
 #from ._meta import acqSensor
 import numpy as np
 import time

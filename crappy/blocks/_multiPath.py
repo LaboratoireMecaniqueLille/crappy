@@ -1,4 +1,5 @@
-﻿from _meta import MasterBlock
+﻿# coding: utf-8
+from _meta import MasterBlock
 import numpy as np
 import time
 import pandas as pd
@@ -12,87 +13,121 @@ from sys import stdout
 
 class MultiPath(MasterBlock):
 	"""
-Children class of MasterBlock. Use it for traction-torsion testing.
+	Children class of MasterBlock. Use it for traction-torsion testing.
 	"""
 	def __init__(self,path=None,send_freq=400,dmin=22,dmax=25,default_G=71*10**9,default_E=196*10**9,repeat=False):
 		"""
-MultiPath(path=None,send_freq=400,dmin=22,dmax=25,default_G=71*10**9,default_E=196*10**9,repeat=False)
+		This block is specific for use in traction-torsion testing. You need 
+		to define a path to follow, with the available waveform. Unlike the 
+		SignalGenerator block, as we don't need time synchronisation in this 
+		case, the link beween one step and the next will be done smoothly and 
+		automatically, even if there is a gap. 
+		default_G and default_E will only be used for plasticity evaluation in
+		case of "goto" waveform, and if the evaluated E and G are not good 
+		enough in plasticity detection. This can happend if your are close to
+		the axis, e.g is the def or dist stay close to 0. To avoid this 
+		phenomenom, if the evaluated vectors are too close of the axis, they 
+		will be rotated.
 
-This block is specific for use in traction-torsion testing. You need to define 
-a path to follow, with the available waveform. Unlike the SignalGenerator block,
-as we don't need time synchronisation in this case, the link beween one step and
-the next will be done smoothly and automatically, even if there is a gap.
-default_G and default_E will only be used for plasticity evaluation in case of 
-"goto" waveform, and if the evaluated E and G are not good enough in plasticity
-detection. This can happend if your are close to the axis, e.g is the def or dist
-stay close to 0. To avoid this phenomenom, if the evaluated vectors are too close 
-of the axis, they will be rotated.
+		Parameters
+		----------
+		path : list of dict
+			Each dict must contain parameters for one step. See Examples section below.
+			
+				* waveform : string
+					{detection,goto,trefle,sablier,circle,traction,torsion,proportionnal}
+					Shape of your signal, for every step.
+					`detection` is the plasticity surface detection.
+					`goto` get you to a certain point in the def-dist referentiel.
+					You can specify `mode`:`plastic_def` to apply a plastic load.
+					In this case, you will mode in direction of `position` until 
+					`target` def is reached.
+					
+				* time : int or float or None.
+					Time before change of step, for every step. If None, means infinite.
+					
+				* cycles : int or float or None (default).
+					Number of cycles before change of step, for every step. If None, means infinite.
+				
+				* gain : int or float.
+					Amplitude of your signal. WARNING : a gain of 1 will result in 100% deformation.
+				
+				* offset: tuple of int of tuple of float
+					Offset of your signal.
+					
+		send_freq : int or float , default = 400
+			Loop frequency. Use this parameter to avoid over-use of processor.
+			
+		dmin : int or float, default = 22
+			value of the internal diameter of the test specimen, in mm.
+			
+		dmax : int or float, default = 25
+			value of the external diameter of the test specimen, in mm.
+			
+		default_G : int or float, default = 71*10**9
+			value of the default shear modulus, in Pa.
+			
+		default_E : int or float, default = 196*10**9
+			value of the default Young modulus, in Pa.
+			
+		repeat : Boolean, default=False
+			Set True is you want to repeat your sequence forever.
 
-Parameters
-----------
-path : list of dict
-	Each dict must contain parameters for one step. See Examples section below.
-	Available parameters are :
-	* waveform : {'detection','goto','trefle','sablier','circle','traction','torsion','proportionnal'}
-		Shape of your signal, for every step.
-		"detection" is the plasticity surface detetcion.
-		"goto" get you to a certain point in the def-dist referentiel. You can 
-		specify "mode":"plastic_def" to apply a plastic load. In this case, you
-		will mode in direction of "position" until "target" def is reached.
-	* time : int or float or None
-		Time before change of step, for every step. If None, means infinite.
-	* cycles : int or float or None (default)
-		Number of cycles before change of step, for every step. If None, means infinite.
-	* gain : int or float
-		Amplitude of your signal. WARNING : a gain of 1 will result in 100% deformation.
-	* offset: [int,int] or [float,float]
-		Offset of your signal.
-send_freq : int or float , default = 400
-	Loop frequency. Use this parameter to avoid over-use of processor
-dmin : int or float, default = 22
-	value of the internal diameter of the test specimen, in mm
-dmax : int or float, default = 25
-	value of the external diameter of the test specimen, in mm
-default_G : int or float, default = 71*10**9
-	value of the default shear modulus, in Pa
-default_E : int or float, default = 196*10**9
-	value of the default Young modulus, in Pa
-repeat : Boolean, default=False
-	Set True is you want to repeat your sequence forever.
+		Returns
+		-------
+		dict : OrderedDict()
 
-Returns:
---------
-OrderedDict(['t(s)','def(%)','dist(deg)','def_plast(%)','E(Pa)','G(Pa)','status','relative_eps_tot'])
 
-'def(%)' : output signal for traction
-'dist(deg)' : output signal for torsion
-'def_plast(%)' : evaluated plastic def, if evaluated
-'E(Pa)' : Young modulus
-'G(Pa)' : shear modulus
-'status' : status of the plasticity detection, formated x.y
-	- x : number of the current branch 
-	- y : substep : 
-		0 : just starting, eliminating the first points
-		1 : evaluating E and G
-		2 : detecting plasticity
-		3 : platicity detected
-		-1 : plasticity surface detected
-'relative_eps_tot' : total deformation, relative to the starting point. Used for 
-	plasticity detection.
+			def(%) : 
+				output signal for traction
+			
+			dist(deg) : 
+				output signal for torsion
+			
+			def_plast(%) : 
+				evaluated plastic def, if evaluated
+			
+			E(Pa) : 
+				Young modulus
+			
+			G(Pa) : 
+				shear modulus
+			
+			status : 
+				Status of the plasticity detection, formated x.y
+			
+				- x : number of the current branch 
+				- y : substep 
+				
+					* 0 : just starting, eliminating the first points
+					
+					* 1 : evaluating E and G
+					
+					* 2 : detecting plasticity
+					
+					* 3 : platicity detected
+					
+					* -1 : plasticity surface detected
+			
+			
+			relative_eps_tot : 
+				total deformation, relative to the starting point. Used for 
+				plasticity detection.
 
-Examples:
----------
-SignalGenerator(path=[{"waveform":"detection","cycles":1}, # detect platicity surface
-					{"waveform":"goto","mode":"total_def","position":[0,0]}, # going back to center
-					{"waveform":"goto","mode":"plastic_def","target":0.002,"position":[-10,0]}, # apply 0.2% plastic def in compression
-					{"waveform":"trefle","gain":0.001,"cycles":1,"offset":[0.001:-0.002]},
-					{"waveform":"traction","gain":0.001,"cycles":0.25,"offset":[-0.001:0.002]}],
-					send_freq=400,dmin=22,dmax=25,default_G=71*10**9,default_E=196*10**9,repeat=False)
-In this example we displayed some possibilities of waveform.
-Every dict contains informations for one step.
-The requiered informations depend on the type of waveform you need.
 
-		"""
+		Examples
+		--------
+		>>> SignalGenerator(path=[{"waveform":"detection","cycles":1}, # detect platicity surface
+							{"waveform":"goto","mode":"total_def","position":[0,0]}, # going back to center
+							{"waveform":"goto","mode":"plastic_def","target":0.002,"position":[-10,0]}, # apply 0.2% plastic def in compression
+							{"waveform":"trefle","gain":0.001,"cycles":1,"offset":[0.001:-0.002]},
+							{"waveform":"traction","gain":0.001,"cycles":0.25,"offset":[-0.001:0.002]}],
+							send_freq=400,dmin=22,dmax=25,default_G=71*10**9,default_E=196*10**9,repeat=False)
+		
+		In this example we displayed some possibilities of waveform.
+		Every dict contains informations for one step.
+		The requiered informations depend on the type of waveform you need.
+		""" 
 		print "MultiPath!"
 		self.path=path # list of list or arrays
 		self.nb_step=len(path)

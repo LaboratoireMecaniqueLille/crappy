@@ -1,4 +1,5 @@
-﻿from ._meta import MasterBlock
+﻿# coding: utf-8
+from ._meta import MasterBlock
 from multiprocessing import Process, Pipe
 import numpy as np
 np.set_printoptions(threshold='nan', linewidth=500)

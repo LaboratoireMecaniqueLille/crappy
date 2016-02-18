@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock
 import time
 import os

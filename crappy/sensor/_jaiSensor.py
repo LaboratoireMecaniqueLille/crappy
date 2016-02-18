@@ -3,9 +3,12 @@ import ctypes
 import numpy as np
 from numpy.ctypeslib import ndpointer
 from os import path
-here = path.abspath(path.dirname(__file__))
-build_path = path.join(here, '../sources/Jai-lib/cllib.so')
-jai = ctypes.CDLL(build_path)
+try: # for autodocumentation
+	here = path.abspath(path.dirname(__file__))
+	build_path = path.join(here, '../sources/Jai-lib/cllib.so')
+	jai = ctypes.CDLL(build_path)
+except OSError:
+	pass
 
 from ._meta import cameraSensor
 

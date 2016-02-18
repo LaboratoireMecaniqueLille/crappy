@@ -1,3 +1,4 @@
+# coding: utf-8
 import serial
 
 class Agilent34420ASensor(object):

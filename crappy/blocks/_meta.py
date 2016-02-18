@@ -1,3 +1,4 @@
+# coding: utf-8
 from multiprocessing import Process, Pipe
 #import os
 import ctypes, time
@@ -5,17 +6,20 @@ libc = ctypes.CDLL('libc.so.6')
 
 class MasterBlock(object):
 	"""
-Main class for block architecture. All blocks should inherit this class.
-	
-Methods:
---------
-main() : override it to define the main function of this block.
-add_input(Link object): add a Link object as input.
-add_output(Link object) : add a Link as output.
-start() : start the main() method as a Process. It is designed to catch all 
-	exceptions/error and terminate the process for safety. It also 	re-raises 
-	the exception/error for upper-level handling.
-stop() : stops the process.
+	Main class for block architecture. All blocks should inherit this class.	
+
+	Methods
+	-------
+	main()
+		Override it to define the main function of this block.
+	add_input(Link object)
+		Add a Link object as input.
+	add_output(Link object)
+		Add a Link as output.
+	start()
+		Start the main() method as a Process.
+	stop()
+		Stops the process.
 	"""
 	instances = []
 	def __new__(cls, *args, **kwargs): #	Keeps track of all instances
@@ -49,9 +53,8 @@ stop() : stops the process.
 			self.proc.terminate()
 			#raise #raise the error to the next level for global shutdown
 		
-	def join(self):
-		self.proc.join()
-		
+	#def join(self):
+		#self.proc.join()
 	def stop(self):
 		self.proc.terminate()
 		
@@ -60,6 +63,7 @@ stop() : stops the process.
 
 
 def delay(ms):
-  """ Delay milliseconds with libc usleep() using ctypes. """
+  """Delay in milliseconds with libc usleep() using ctypes.
+  It has a better repeatability than time.sleep()"""
   ms = int(ms*1000)
   libc.usleep(ms)

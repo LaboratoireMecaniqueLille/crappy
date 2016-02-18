@@ -1,3 +1,4 @@
+# coding: utf-8
 from ..sensor import _fakeCameraSensor
 #from ..actuator import ximeaActuator
 import numpy as np
