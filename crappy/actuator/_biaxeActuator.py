@@ -12,7 +12,19 @@ import os
 ##alpha = 1.05
 
 class BiaxeActuator(object):
+	"""Declare a new axis for the Biaxe"""
 	def __init__(self,port_number,baud_rate=38400, timeout=1):
+		"""This class create an axis and opens the corresponding serial port.
+		
+		Parameters
+		----------
+		port_number : str
+			Path to the corresponding serial port, e.g '/dev/ttyS4'
+		baud_rate : int, default = 38400
+			Set the corresponding baud rate.
+		timeout : int or float, default = 1
+			Serial timeout.
+		"""
 		self.port_number=port_number
 		self.baud_rate=baud_rate
 		self.timeout=timeout
@@ -27,7 +39,7 @@ class BiaxeActuator(object):
 		self.ser.write("OPMODE 0\r\n EN\r\n")
     
 	def set_speed(self,speed):
-		"""send a signal"""
+		"""Re-define the speed of the motor. 1 = 0.002 mm/s"""
 		# here we should add the physical conversion for the speed
 		self.ser.write("J "+str(speed)+"\r\n")
 
@@ -36,6 +48,7 @@ class BiaxeActuator(object):
 		self.ser.close()
 	
 	def CLRFAULT(self):
+		"""Reset errors"""
 		self.ser.write("CLRFAULT\r\n")
 		self.ser.write("OPMODE 0\r\n EN\r\n")
 

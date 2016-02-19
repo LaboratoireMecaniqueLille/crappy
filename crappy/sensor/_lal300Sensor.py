@@ -4,12 +4,15 @@ import time
 
 
 class SensorLal300(object):
-	
     def __init__(self,param,ser):# Arguments param et ser indiques dans la classe TechnicalLal300
+        """This class contains methods to get info from the motors of the lal300
+        machine. You should NOT use it directly, but use the Lal300Technical.
+        """
         self.param=param
         self.ser=ser
 
     def checkdisp(self):#Releve de la position du moteur via le port serie
+        """Check current position."""
         self.ser.read(self.ser.in_waiting) #Nettoyage du port serie
         time.sleep(0.015)
         self.ser.write('TP\r\n') #Ecriture de l'instruction "Tell Position" pour indiquer la position moteur

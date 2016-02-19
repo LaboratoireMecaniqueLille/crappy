@@ -11,9 +11,7 @@ import time
 
 
 class FakeCameraSensor(cameraSensor.CameraSensor):
-	"""
-	Fake camera sensor object
-	"""
+	"""WIP. Fake camera sensor object"""
 	def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):
 		self.quit=False
 		self.FPS=framespersec
@@ -70,11 +68,10 @@ class FakeCameraSensor(cameraSensor.CameraSensor):
 		If the camera breaks down, it reinitializes it, and tries again.
 		"""
 		try:
-			frame=plt.imread(os.path.expanduser("~/Bureau/fake_camera_sensor_img.tiff")
-
+			frame=plt.imread(os.path.expanduser("~/Bureau/fake_camera_sensor_img.tiff"))
 		except IOError:
 			try:
-				frame=plt.imread(os.path.expanduser("~/Desktop/fake_camera_sensor_img.tiff")
+				frame=plt.imread(os.path.expanduser("~/Desktop/fake_camera_sensor_img.tiff"))
 			except IOError:
 				raise Exception("Path not found")
 
@@ -172,7 +169,4 @@ class FakeCameraSensor(cameraSensor.CameraSensor):
 		
 		
 	def __str__(self):
-		"""
-		This method prints out the attributes values
-		"""
 		return " Exposure: {0} \n FPS: {1} \n Numdevice: {2} \n Width: {3} \n Height: {4} \n X offset: {5} \n Y offset: {6}".format(self.exposure, self.FPS, self.numdevice, self.width, self.height, self.xoffset, self.yoffset)

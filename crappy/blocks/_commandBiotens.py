@@ -18,7 +18,7 @@ biotens_technicals : list of crappy.technical.Biotens objects.
 signal_label : str, default = 'signal'
 	Label of the data to be transfered.
 speed: int, default = 5
-	Wanted speed.
+	Wanted speed, in mm/min.
 		"""
 		self.biotens_technicals=biotens_technicals
 		self.speed=speed

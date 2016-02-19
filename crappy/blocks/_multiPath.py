@@ -41,12 +41,12 @@ path : list of dict
 			‘traction’,’torsion’,’proportionnal’}
 			Shape of your signal, for every step. Possible values are :
 			
-			*detection* is the plasticity surface detection.
+			**detection** is the plasticity surface detection.
 			
-			*goto* get you to a certain point in the def-dist referentiel :
+			**goto** get you to a certain point in the def-dist referentiel :
 			You can specify *mode* : *plastic_def* to apply a plastic load.
-			In this case, you will move in direction of *position* until 
-			*target* def is reached.
+			In this case, you will move in direction of **position** until 
+			**target** def is reached.
 		time : int or float or None.
 			Time before change of step, for every step. If None, means infinite.
 		cycles : int or float or None (default).
