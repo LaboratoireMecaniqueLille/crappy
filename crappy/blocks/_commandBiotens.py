@@ -6,21 +6,23 @@ from collections import OrderedDict
 from ..links._link import TimeoutError
 
 class CommandBiotens(MasterBlock):
-	"""Receive a signal and translate it for the Biotens actuator"""
-	def __init__(self, biotens_technicals, speed=5):
+	"""Receive a signal and send it for the Biotens actuator"""
+	def __init__(self, biotens_technicals, signal_label='signal', speed=5):
 		"""
 Receive a signal and translate it for the Biotens actuator.
 
-CommandBiotens(biotens_technical,speed=5)
-
 Parameters
 ----------
-biotens_technicals : list of crappy.technical.Biotens object.
-
+biotens_technicals : list of crappy.technical.Biotens objects.
+	List of all the axes to control.
+signal_label : str, default = 'signal'
+	Label of the data to be transfered.
 speed: int, default = 5
+	Wanted speed.
 		"""
 		self.biotens_technicals=biotens_technicals
 		self.speed=speed
+		self.signal_label=signal_label
 		for biotens_technical in self.biotens_technicals:
 			biotens_technical.actuator.clear_errors()
 	
@@ -34,7 +36,7 @@ speed: int, default = 5
 				#try:
 					#cmd=Data['signal'].values[0]
 				#except AttributeError:
-				cmd=Data['signal']
+				cmd=Data[self.signal_label]
 				if cmd!= last_cmd:
 					for biotens_technical in self.biotens_technicals:
 						biotens_technical.actuator.setmode_speed(cmd*self.speed)

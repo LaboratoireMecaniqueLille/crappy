@@ -11,24 +11,26 @@ class Grapher(MasterBlock):
 	"""Plot the input data"""
 	def __init__(self,mode,*args):
 		"""
-Grapher(mode,*args)
-
 The grapher receive data from the Compacter (via a Link) and plots it.
 
 Parameters
 ----------
-mode : string
-	"dynamic" : create a dynamic graphe that updates in real time. 
-	"static" : create a graphe that add new values at every refresh. If there 
+mode : {"dynamic","static"}
+	* "dynamic" : create a dynamic graphe that updates in real time. 
+	
+	* "static" : create a graphe that add new values at every refresh. If there \
 	is too many data (> 20000), delete one out of 2 to avoid memory overflow.
+	
 args : tuple
-	tuples of the columns labels of input data for plotting. You can add as
+	tuples of the columns labels of input data for plotting. You can add as\
 	much as you want, depending on your computer performances.
 
-Examples:
----------
-graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
-	plot a dynamic graph with two lines plot( F=f(t) and def=f(t)
+Examples
+--------
+>>> graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
+	plot a dynamic graph with two lines plot(F=f(t) and def=f(t)).
+>>> graph=Grapher("static",('def(%)','F(N)'))
+	plot a static graph.
 		"""
 		print "grapher!"
 		self.mode=mode
