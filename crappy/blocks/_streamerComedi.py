@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock
 import os
 import numpy as np
@@ -6,6 +7,8 @@ import struct
 np.set_printoptions(threshold='nan', linewidth=500)
 import pandas as pd
 from collections import OrderedDict
+from ..links._link import TimeoutError
+
 
 class StreamerComedi(MasterBlock):
 	"""
@@ -105,13 +108,15 @@ freq : int (default 8000)
 							self.Labels=[i for i in range(self.nchans+1)]
 						#Array=pd.DataFrame([array],columns=self.labels)
 						Array=OrderedDict(zip(self.labels,array))
-						for output in self.outputs:
-							#print "6"
-							#print Array
-							output.send(Array)
-							#print "7"
+						try:
+							for output in self.outputs:
+								output.send(Array)
+						except TimeoutError:
+							raise
+						except AttributeError: #if no outputs
+							pass
 
 		except (Exception,KeyboardInterrupt) as e:	
 			print "Exception in streamerComedi : ",
 			self.comediSensor.close()
-			raise
+			#raise

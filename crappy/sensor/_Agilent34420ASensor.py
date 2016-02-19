@@ -1,3 +1,4 @@
+# coding: utf-8
 import serial
 
 class Agilent34420ASensor(object):
@@ -23,7 +24,8 @@ class Agilent34420ASensor(object):
 		"""Read the signal, return False if error"""
 		try:
 			self.ser.write("READ?  \n")
-			tmp = self.ser.readline()
+			#tmp = self.ser.readline()
+			tmp = self.ser.read(self.ser.in_waiting)
 			self.ser.flush()
 			#print tmp
 			return float(tmp)

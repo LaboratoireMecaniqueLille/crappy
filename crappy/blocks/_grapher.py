@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock
 import numpy as np
 import matplotlib.pyplot as plt
@@ -149,6 +150,8 @@ graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
 					fig.canvas.draw() 
 		
 		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in grapher : ", e
+			print "Exception in grapher %s: %s" %(os.getpid(),e)
 			plt.close('all')
-			raise
+			#raise
+		finally:
+			plt.close('all')

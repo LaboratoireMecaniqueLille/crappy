@@ -1,4 +1,8 @@
-from PyDAQmx import *
+# coding: utf-8
+try:
+	from PyDAQmx import *
+except ImportError:
+	print "WARNING : no module PyDAQmx installed, sensor won't work!"
 import numpy
 import time
 

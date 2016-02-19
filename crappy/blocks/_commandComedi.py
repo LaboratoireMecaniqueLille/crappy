@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock
 import time
 import os
@@ -14,8 +15,6 @@ CommandComedi(comedi_actuators)
 Parameters
 ----------
 comedi_actuators : list of crappy.actuators.ComediActuator objects.
-
-
 		"""
 		self.comedi_actuators=comedi_actuators
 		print "command comedi! "
@@ -38,4 +37,4 @@ comedi_actuators : list of crappy.actuators.ComediActuator objects.
 			print "Exception in CommandComedi : ", e
 			for comedi_actuator in self.comedi_actuators:
 				comedi_actuator.close()
-			raise
+			#raise

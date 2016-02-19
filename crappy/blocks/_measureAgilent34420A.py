@@ -1,9 +1,11 @@
+# coding: utf-8
 from _meta import MasterBlock, delay
 import time
 #import pandas as pd
 import os
 import numpy as np
 from collections import OrderedDict
+from ..links._link import TimeoutError
 
 class MeasureAgilent34420A(MasterBlock):
 	"""
@@ -33,12 +35,12 @@ freq : float or int, optional
 
 	def main(self):
 		try:
-			_a=self.inputs[:]
-			trigger="external"
-		except AttributeError:
-			trigger="internal"
-		timer=time.time()
-		try:
+			try:
+				_a=self.inputs[:]
+				trigger="external"
+			except AttributeError:
+				trigger="internal"
+			timer=time.time()
 			print "mesureagilent " , os.getpid()
 			while True:
 				data=[]
@@ -74,12 +76,16 @@ freq : float or int, optional
 						else: 
 							enable_sending=False
 				if enable_sending:  #or Data is not None:
-					for output in self.outputs:
-						output.send(Data)
-						#print "data agilent sent: ", Data
+					try:
+						for output in self.outputs:
+							output.send(Data)
+					except TimeoutError:
+						raise
+					except AttributeError: #if no outputs
+						pass
 
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in measureAgilent34420A : ", e
 			self.agilentSensor.close()
-			raise
+			#raise
 

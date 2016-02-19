@@ -1,4 +1,4 @@
-
+# coding: utf-8
 #def main():
     #"""Entry point for the application script"""
     #print("Call your main application code here")
@@ -12,4 +12,4 @@ from ._variateurTribo import VariateurTribo
 #from ._jaiTechnical import Jai
 #from . import *
 #__all__ = ['Ximea']
-from lal300Technical import TechnicalLal300
+from _lal300Technical import TechnicalLal300

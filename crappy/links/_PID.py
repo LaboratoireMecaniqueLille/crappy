@@ -1,42 +1,31 @@
-from _meta import MasterBlock
-#from multiprocessing import Process, Pipe
-#import os
-import numpy as np
-import time
-#import matplotlib.pyplot as plt
-#import matplotlib.patches as mpatches
-#import struct
-#np.set_printoptions(threshold='nan', linewidth=500)
-import pandas as pd
-#import sys
-
-class PID(MasterBlock):
-	"""
-	Work In Progress
-	"""
-	def __init__(self,P,I,D,ControllerDirection,outMin=-10,outMax=10):
-		
-		self.kp=P
-		self.ki=I
-		self.kd=D
-		self.inAuto=False
-		self.t_0=time.time()
+# coding: utf-8
+class PID(crappy.links.MetaCondition):
+	def __init__(self,P,I,D,label_consigne,label_retour,outMin=-10,outMax=10):
+		self.P=P
+		self.I=I
+		self.D=D
+		self.label_consigne=label_consigne
+		self.label_retour=label_retour
 		self.outMin=outMin
 		self.outMax=outMax
-		self.Iterm=0
-		self.mode=Off
-		self.lastOutput=0
-	def add_setpoint(self,link):
-		self.setpoint=link
-	
-	def setMode(mode):
-		newMode=mode
-		if newMode==On || newMode==Off:
-			if newMode !=self.mode && newMode == On
-				self.initialize()
-				self.inAuto=True
-			else if newMode == Off:
-				self.inAuto=False
+		
+	def evaluate(self,value):
+		self.t=time.time()
+		retour=self.external_trigger.recv()[self.label_retour]
+		consigne=value.pop(self.label_consigne)
+		t_init=time.time()-self.t0
+		self.lastTime=time.time()
+		while True:
+			self.compute()
+		
+	##def setMode(mode):
+		##newMode=self.mode
+		##if newMode is 'On' or newMode is 'Off':
+			##if newMode is not self.mode and newMode is 'On'
+				##self.initialize()
+				##self.inAuto=True
+			##else if newMode is 'Off':
+				##self.inAuto=False
 	
 	def initialize():
 		self.Iterm=self.lastOutput
@@ -94,5 +83,25 @@ class PID(MasterBlock):
 				#Data=pd.concat([Data,self.consigne.recv()])
 				#Sensor=self.inputs[0].recv()
 				#[Series.last_valid_index][2]
-			
-
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		value[self.label_consigne]=val*self.coeff
+		return value

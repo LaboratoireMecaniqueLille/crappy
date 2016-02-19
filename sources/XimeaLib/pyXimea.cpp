@@ -32,7 +32,6 @@ VideoCapture_release()
 	return Py_None;
 }
 
-
 bool VideoCapture_grab()
 {
     return capt->grabFrame();
@@ -47,49 +46,49 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 		{
 		case XI_MONO8: {
 			const int ndim = 2;
-			npy_intp nd[2] = {capt->width, capt->height};
+			npy_intp nd[2] = {capt->height, capt->width};
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height);
 			break;}
 		case XI_MONO16:{ 
 			const int ndim = 3;
-			npy_intp nd[3] = {capt->width, capt->height, sizeof(n)};
+			npy_intp nd[3] = {capt->height, capt->width, sizeof(n)};
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT16);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*sizeof(n));
 			break;}
 		case XI_RGB24       : {
 			const int ndim = 3;
-			npy_intp nd[3] = {capt->width, capt->height, 3};
+			npy_intp nd[3] = {capt->height, capt->width, 3};
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*3);
 			break;}
 		case XI_RGB32       : {
 			const int ndim = 4;
-			npy_intp nd[3] = {capt->width, capt->height, 4};
+			npy_intp nd[3] = {capt->height, capt->width, 4};
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*4);
 			break;}
 		case XI_RGB_PLANAR  : {
 			const int ndim = 3;
-			npy_intp nd[3] = {capt->width, capt->height, 3};
+			npy_intp nd[3] = {capt->height, capt->width, 3};
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*3);
 			break;}
 		case XI_RAW8        : {
 			const int ndim = 2;
-			npy_intp nd[2] = {capt->width, capt->height};
+			npy_intp nd[2] = {capt->height, capt->width};
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height);
 			break;}
 		case XI_RAW16       : {
 			const int ndim = 3;
-			npy_intp nd[3] = {capt->width, capt->height, sizeof(n)};
+			npy_intp nd[3] = {capt->height, capt->width, sizeof(n)};
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT16);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*sizeof(n));
@@ -110,8 +109,8 @@ VideoCapture_getMeta()
 {
 	PyDateTime_IMPORT;
 	PyObject *myDict = PyDict_New();
-// 	PyDict_SetItemString(myDict, "width", Py_BuildValue("I", capt->image.width));
-// 	PyDict_SetItemString(myDict, "height", Py_BuildValue("I",capt->image.height));
+	PyDict_SetItemString(myDict, "width", Py_BuildValue("I", capt->image.width));
+	PyDict_SetItemString(myDict, "height", Py_BuildValue("I",capt->image.height));
 // 	PyDict_SetItemString(myDict, "bp_size", Py_BuildValue("I",capt->image.bp_size));
 // 	PyDict_SetItemString(myDict, "size", Py_BuildValue("I",capt->image.size));
 // 	PyDict_SetItemString(myDict, "GPI_level", Py_BuildValue("I",capt->image.GPI_level));
@@ -214,7 +213,7 @@ static PyMemberDef VideoCapture_members[] = {
 
 static PyMethodDef VideoCapture_methods[] = {
     {"read", (PyCFunction)VideoCapture_xiread, METH_NOARGS,
-	 "read a frame from ximea device, return a tuple containing a bool (true= success, false= fail) and a dictionnary with an ndarray and meta."},
+	 "read a frame from ximea device, return a tuple containing a bool (true= success, false= fail) and a dictionnary with a ndarray and meta."},
 	 {"set", (PyCFunction)VideoCapture_set, METH_VARARGS,
 	 "set the configuration parameter specified of a ximea device"},
 	 {"get", (PyCFunction)VideoCapture_get, METH_VARARGS,
@@ -275,17 +274,20 @@ static PyMethodDef module_methods[] = {
 PyMODINIT_FUNC
 initximeaModule(void) 
 {
+	try{
     PyObject* m;
 	PyObject *tmp, *d;
 	import_array();
     if (PyType_Ready(&VideoCaptureType) < 0)
-        return;
+		throw std::logic_error( "unable to install ximea module" );
+//         return;
 
     m = Py_InitModule3("ximeaModule", module_methods,
-                       "Example module that creates an extension type.");
+                       "Module that allows the use of Ximea camera");
 
     if (m == NULL)
-      return;
+		throw std::logic_error( "unable to install ximea module" ); 
+//       return;
 	d = PyModule_GetDict(m);
 	map<string, int>::iterator p;
 	for(p = my_map.begin(); p != my_map.end(); p++)
@@ -297,4 +299,10 @@ initximeaModule(void)
 	
     Py_INCREF(&VideoCaptureType);
     PyModule_AddObject(m, "VideoCapture", (PyObject *)&VideoCaptureType);
+    } 
+    catch ( const std::exception & e ) 
+    { 
+        // affiche "Exemple d'exception" 
+        std::cerr << e.what(); 
+    } 
 }

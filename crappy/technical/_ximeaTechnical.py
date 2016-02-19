@@ -1,3 +1,4 @@
+# coding: utf-8
 from ..sensor import _ximeaSensor
 #from ..actuator import ximeaActuator
 import numpy as np

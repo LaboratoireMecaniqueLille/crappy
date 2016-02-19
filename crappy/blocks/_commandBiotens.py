@@ -1,7 +1,9 @@
+# coding: utf-8
 from _meta import MasterBlock
 import time
 #import pandas as pd
 from collections import OrderedDict
+from ..links._link import TimeoutError
 
 class CommandBiotens(MasterBlock):
 	"""Receive a signal and translate it for the Biotens actuator"""
@@ -49,13 +51,13 @@ speed: int, default = 5
 						for output in self.outputs:
 							#print "sending position ..."
 							output.send(Array)
-							#print "position sent ..."
-					except:
-						#print "no outputs"
+					except TimeoutError:
+						raise
+					except AttributeError: #if no outputs
 						pass
 				
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in CommandBiotens : ", e
 			for biotens_technical in self.biotens_technicals:
 				biotens_technical.actuator.stop_motor()
-			raise
+			#raise

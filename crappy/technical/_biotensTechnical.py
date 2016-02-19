@@ -1,4 +1,5 @@
-﻿import serial
+﻿# coding: utf-8
+import serial
 import time
 from ..sensor import _biotensSensor
 from ..actuator import _biotensActuator

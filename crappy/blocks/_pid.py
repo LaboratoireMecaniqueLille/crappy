@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock
 #from multiprocessing import Process, Pipe
 #import os
@@ -14,7 +15,7 @@ class PID(MasterBlock):
 	"""
 	Work In Progress
 	"""
-	def __init__(self,P,I,D,ControllerDirection,outMin=-10,outMax=10):
+	def __init__(self,P,I,D,outMin=-10,outMax=10):
 		
 		self.kp=P
 		self.ki=I

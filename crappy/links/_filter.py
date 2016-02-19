@@ -1,3 +1,4 @@
+# coding: utf-8
 from ._metaCondition import MetaCondition
 import numpy as np
 
