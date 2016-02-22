@@ -15,39 +15,39 @@ import cv2 as xi
 	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
 
-def resettable(f):
-	"""Decorator for resetting the camera device. Not working yet.
-	"""
-    import copy
+#def resettable(f):
+	#"""Decorator for resetting the camera device. Not working yet.
+	#"""
+    #import copy
 
-    def __init_and_copy__(self, *args, **kwargs):
-        f(self, *args)
-        self.__original_dict__ = copy.deepcopy(self.__dict__)
+    #def __init_and_copy__(self, *args, **kwargs):
+        #f(self, *args)
+        #self.__original_dict__ = copy.deepcopy(self.__dict__)
 
-        def reset(o = self):
-            o.__dict__ = o.__original_dict__
+        #def reset(o = self):
+            #o.__dict__ = o.__original_dict__
 
-        self.reset = reset
-    return __init_and_copy__
+        #self.reset = reset
+    #return __init_and_copy__
 	
 
 class Ximea(cameraSensor.CameraSensor):
 	"""
-	Camera class for ximea devices, this class should inherit from CameraObject
-	
-	Contains all the methods to open a device, resize the Zone Of Interest, and
-	grab frames.
-	
-	Parameters
-	----------
-	numdevice : int, default = 0
-		Number of your device.
-	framespersec : int or float or None, default = None
-		The wanted frequency for grabbing frame. DOESN'T WORK at the moment.
-	external_trigger : bool, default = False
-		Define to True if you want to trigg the acquyisition of a frame externally.
-	data_format : int, default = 0
-		Value must be in [0:7]. See documentation for more informations.
+Camera class for ximea devices, this class should inherit from CameraObject
+
+Contains all the methods to open a device, resize the Zone Of Interest, and
+grab frames.
+
+Parameters
+----------
+numdevice : int, default = 0
+	Number of your device.
+framespersec : int or float or None, default = None
+	The wanted frequency for grabbing frame. DOESN'T WORK at the moment.
+external_trigger : bool, default = False
+	Define to True if you want to trigg the acquyisition of a frame externally.
+data_format : int, default = 0
+	Value must be in [0:7]. See documentation for more informations.
 	"""
 	#@resettable
 	def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):

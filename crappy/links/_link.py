@@ -7,15 +7,17 @@ import os
 import signal
 
 class TimeoutError(Exception):
-    pass
+	"""Custom error to raise in case of timeout."""
+	pass
 
 def timeout_func(f):
+	"""Decorator for adding a timeout to a link send."""
 	def _handle_timeout(signum, frame):
 		raise TimeoutError("timeout error in pipe send")
 	
 	def wrapper(*args):
 		signal.signal(signal.SIGALRM, _handle_timeout)
-		signal.setitimer(signal.ITIMER_REAL,args[0].timeout)
+		signal.setitimer(signal.ITIMER_REAL,args[0].timeout) # args[0] is the class "self" here.
 		try:
 			result = f(*args)
 		finally:
@@ -26,34 +28,40 @@ def timeout_func(f):
 
 class Link(object):
 	"""
-Main class for links. All links should inherit this class.
+Link class. All connection between Blocks should be made with this.
 	"""
 	def __init__(self,condition=None,timeout=0.1,action="warn"):
 		"""
-Link([condition=None])
+Creates a pipe and is used to transfer information between Blocks using a pipe.
+You can add one or multiple conditions to modify the value transfered.
 
-Creates a pipe with a condition as attribute, and is used to transfer 
-information between blocks using a pipe, triggered by the condition.
 
 Parameters
 ----------
-condition : Children class of links.Condition, optionnal
+condition : Children class of links.MetaCondition, optionnal
 	Each "send" call will pass through the condition.evaluate method and sends
 	the returned value.
 	You can pass a list of conditions, the link will execute them in order.
 	
+timeout : int or float, default = 0.1
+	Timeout for the send method.
+	
+action : {'warn','kill'}, default = "warn"
+	Action in case of TimeoutError in the send method. You can warn only or 
+	choose to kill the link.
+
+
 Attributes
 ----------
-in_ : input extremity of the pipe.
-out_ : output extremity of the pipe.
-external_trigger : Default=None, can be add through "add_external_trigger" instance
+in_ : 
+	Input extremity of the pipe.
+	
+out_ : 
+	Output extremity of the pipe.
+	
+external_trigger : Default=None
+	Can be add through "add_external_trigger" instance
 
-Methods
--------
-add_external_trigger(link_instance): add an external trigger Link.
-send : send the value, or a modified value if you pass it through a condition.
-recv(blocking=True) : receive a pickable object. If blocking=False, return None
-if there is no data
 		"""
 		
 		self.in_,self.out_=Pipe(duplex=False)
@@ -63,10 +71,13 @@ if there is no data
 		self.action=action
 	
 	def add_external_trigger(self,link_instance):
+		"""Add an external trigger Link."""
 		self.external_trigger=link_instance
 		self.condition.external_trigger=link_instance
 	
 	def send(self,value):
+		"""Send the value, or a modified value if you pass it through a 
+		condition."""
 		try:
 			self.send_timeout(value)
 		except TimeoutError as e:
@@ -82,7 +93,6 @@ if there is no data
 			
 	@timeout_func
 	def send_timeout(self,value):
-		"""Send data through the condition.evaluate(value) function"""
 		try:
 			if self.condition==None:
 				self.out_.send(value)
