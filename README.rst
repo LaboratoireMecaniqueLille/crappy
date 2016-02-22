@@ -28,8 +28,14 @@ Only tested on Ubuntu 14.04 / 15.1 :
 Documentation
 -------------
 
-The documentation is yet in progress, but a quick help for each block
-is available.
+The documentation can be compiled by simply running in the doc folder :
+
+       make html
+ 
+We used the scipy-style for Sphinx, you can find the original on SciPy's Github:
+
+https://github.com/scipy/scipy
+
 
 Bug reports
 -----------
