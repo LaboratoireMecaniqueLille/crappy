@@ -3,7 +3,29 @@ from ._metaCondition import MetaCondition
 import numpy as np
 
 class Filter(MetaCondition):
+	"""Filters the signal."""
 	def __init__(self,labels=[],mode="median",size=10):
+		"""
+This condition filters the selected data with a mean or a median.
+
+Parameters
+----------
+labels : list of str
+	List of all the labels of the data you want to filter.
+mode : {'median', 'mean'}
+	You can either filter with a mean or a median.
+size : int, default = 10
+	Define on how many point you want to apply your filter.
+	
+Returns
+-------
+dict : OrderedDict
+
+
+	The dict contains the same values as the input, plus the filtered value, 
+	labeled as (name_of_the_input_label)_filtered.
+
+		"""
 		self.mode=mode
 		self.size=size
 		self.labels=labels
@@ -22,10 +44,3 @@ class Filter(MetaCondition):
 				result=np.mean(self.FIFO[i])
 			value[label+"_filtered"]=result
 		return value
-
-"""Receive a stream (multiprocessing.Value), filter it with said method and size, and return another Value (filtered_stream)
-method : must be "median" or "mean"
-size : number of values for floating mean or median
-data_stream: input data as shared multiprocessing.Value
-filtered_stream: output data as shared multiprocessing.Value
-"""

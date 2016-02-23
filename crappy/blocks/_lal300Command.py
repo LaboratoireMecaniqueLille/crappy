@@ -9,16 +9,13 @@ import numpy as np
 #from time import *
 
 class CommandLal300(MasterBlock):
-    """Programme permettant de realiser des essais cycliques avec parametres de deplacement, de cycles et de vitesse variables"""
-    """
-    CommandLal300(TechnicalLal300(param)) ##Les param editables se trouvent dans le programme lal300Main.py
-
-    Parameters
-    ----------
-    TechnicalLal300 : list of crappy.technical.TechnicalLal300 object.
-    """
-	
+    """Programme permettant de realiser des essais cycliques avec parametres de deplacement, de cycles et de vitesse variables"""	
     def __init__(self, TechnicalLal300): #Initialisation de la classe CommandLal300 avec la classe TechnicalLal300
+            """
+Parameters
+----------
+TechnicalLal300 : crappy.technical.TechnicalLal300 object.
+            """
             self.technical=TechnicalLal300
             self.param=self.technical.param
 

@@ -7,7 +7,7 @@ import time
 
 class Ximea(object):
 	"""
-	Camera class for ximea devices, this class should inherit from CameraObject
+DEPRECATED : use technicalCamera instead.
 	"""
 	def __init__(self, numdevice=0, exposure=10000, gain=0, width=2048, height=2048, xoffset=0, yoffset=0, framespersec=None, external_trigger=False, data_format=0):
 		self.exposure= exposure

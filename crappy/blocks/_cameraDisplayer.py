@@ -4,7 +4,7 @@ import time
 import matplotlib.pyplot as plt
 
 class CameraDisplayer(MasterBlock):
-	"""Simple camera displayer. Must receive frames from StreamerCamera"""
+	"""Simple images displayer. Can be paired with StreamerCamera"""
 	def __init__(self):
 		print "cameraDisplayer!" 
 

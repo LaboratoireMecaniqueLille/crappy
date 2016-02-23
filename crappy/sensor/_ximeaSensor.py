@@ -15,23 +15,39 @@ import cv2 as xi
 	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
 
-def resettable(f):
-    import copy
+#def resettable(f):
+	#"""Decorator for resetting the camera device. Not working yet.
+	#"""
+    #import copy
 
-    def __init_and_copy__(self, *args, **kwargs):
-        f(self, *args)
-        self.__original_dict__ = copy.deepcopy(self.__dict__)
+    #def __init_and_copy__(self, *args, **kwargs):
+        #f(self, *args)
+        #self.__original_dict__ = copy.deepcopy(self.__dict__)
 
-        def reset(o = self):
-            o.__dict__ = o.__original_dict__
+        #def reset(o = self):
+            #o.__dict__ = o.__original_dict__
 
-        self.reset = reset
-    return __init_and_copy__
+        #self.reset = reset
+    #return __init_and_copy__
 	
 
 class Ximea(cameraSensor.CameraSensor):
 	"""
-	Camera class for ximea devices, this class should inherit from CameraObject
+Camera class for ximea devices, this class should inherit from CameraObject
+
+Contains all the methods to open a device, resize the Zone Of Interest, and
+grab frames.
+
+Parameters
+----------
+numdevice : int, default = 0
+	Number of your device.
+framespersec : int or float or None, default = None
+	The wanted frequency for grabbing frame. DOESN'T WORK at the moment.
+external_trigger : bool, default = False
+	Define to True if you want to trigg the acquyisition of a frame externally.
+data_format : int, default = 0
+	Value must be in [0:7]. See documentation for more informations.
 	"""
 	#@resettable
 	def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):
@@ -51,9 +67,9 @@ class Ximea(cameraSensor.CameraSensor):
 
 	def new(self, exposure=10000, width=2048, height=2048, xoffset=0, yoffset=0, gain=0):
 		"""
-		this method opens the ximea device. Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
-		And return a camera object
+		This method opens the ximea device and return a camera object.
 		"""
+		#Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
 		#self.sensor=_ximeaSensor.XimeaSensor(self.numdevice, self.exposure, self.gain, self.width, self.height, self.xoffset, self.yoffset, self.framespersec, self.external_trigger, self.data_format)
 		GLOBAL_ENABLE_FLAG = True
 		print "num >>>", self.numdevice
@@ -113,8 +129,8 @@ class Ximea(cameraSensor.CameraSensor):
 		
 	def close(self):
 		"""
-		This method close properly the frame grabber
-		It releases the allocated memory and stops the acquisition
+		This method close properly the frame grabber.
+		It releases the allocated memory and stops the acquisition.
 		"""
 		print "closing camera..."
 		if self.ximea.isOpened():
@@ -123,17 +139,19 @@ class Ximea(cameraSensor.CameraSensor):
 		else:
 			print "cam already closed"
 			
-	def stop(self):
-		#self.ximea.release()
-		pass
+	#def stop(self):
+		##self.ximea.release()
+		#pass
 		
 	def reset_ZOI(self):
+		"""Re-initialize the Zone Of Interest"""
 		self.yoffset = self._defaultYoffset
 		self.xoffset = self._defaultXoffset
 		self.height = self._defaultHeight
 		self.width = self._defaultWidth
 	
 	def set_ZOI(self, width, height, xoffset, yoffset):
+		"""Define the Zone Of Interest"""
 		self.yoffset = yoffset
 		self.xoffset = xoffset
 		self.width = width
@@ -141,6 +159,7 @@ class Ximea(cameraSensor.CameraSensor):
 		
 	@property
 	def height(self):
+		"""Property. Set / get the current height."""
 		return self._height
         
 	@height.setter
@@ -151,6 +170,7 @@ class Ximea(cameraSensor.CameraSensor):
 
 	@property
 	def width(self):
+		"""Property. Set / get the current width."""
 		return self._width
     
 	@width.setter
@@ -161,6 +181,7 @@ class Ximea(cameraSensor.CameraSensor):
 
 	@property
 	def yoffset(self):
+		"""Property. Set / get the current yoffset."""
 		return self._yoffset
 
 	@yoffset.setter
@@ -172,6 +193,7 @@ class Ximea(cameraSensor.CameraSensor):
         
 	@property
 	def xoffset(self):
+		"""Property. Set / get the current xoffset."""
 		return self._xoffset
     
 	@xoffset.setter
@@ -183,33 +205,24 @@ class Ximea(cameraSensor.CameraSensor):
 	
 	@property
 	def exposure(self):
+		"""Property. Set / get the current exposure."""
 		return self._exposure
 		
 	@exposure.setter
 	def exposure(self, exposure):
-		"""
-		this method changes the exposure of the camera
-		and set the exposure attribute
-		"""
 		self.ximea.set(xi.CAP_PROP_EXPOSURE,exposure)
 		self._exposure = exposure
 		
 	@property
 	def gain(self):
+		"""Property. Set / get the current gain."""
 		return self._gain
 		
 	@gain.setter
 	def gain(self, gain):
-		"""
-		this method changes the exposure of the camera
-		and set the exposure attribute
-		"""
 		self.ximea.set(xi.CAP_PROP_GAIN,gain)
 		self._gain= gain
 		
 		
 	def __str__(self):
-		"""
-		This method prints out the attributes values
-		"""
 		return " Exposure: {0} \n FPS: {1} \n Numdevice: {2} \n Width: {3} \n Height: {4} \n X offset: {5} \n Y offset: {6}".format(self.exposure, self.FPS, self.numdevice, self.width, self.height, self.xoffset, self.yoffset)

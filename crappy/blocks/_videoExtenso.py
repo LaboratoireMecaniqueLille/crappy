@@ -25,14 +25,13 @@ except ImportError:
 
 class VideoExtenso(MasterBlock): 
 	"""
-This class detects spots (1,2 or 4), and evaluate the deformations Exx and Eyy.
+Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
 	"""
 	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,update_tresh=False,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)']):
 		"""
-VideoExtenso(camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)'])
-
 Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. Can display the 
 image with the center of the spots.
+
 4 spots mode : deformations are evaluated on the distance between centers of spots.
 2 spots mode : same, but deformation is only reliable on 1 axis.
 1 spot : deformation is evaluated on the major/minor axis of a theorical ellipse 
@@ -42,7 +41,7 @@ spot isn't big enough, but it is easier on smaller sample to only have 1 spot.
 Note that if this block lose the spots, it will play a song in the '/home/' 
 repository. You need a .wav sound, python-pyglet and python-glob. This can be 
 usefull if you have a long test to do, as the script doesn't stop when losing 
-spots.
+spots. Not to mention it is fun.
 
 Parameters
 ----------
@@ -70,10 +69,23 @@ update_tresh : Boolean, default=False
 	artificially change its value. This is especially true with a single spot 
 	configuration.
 labels : list of string, default = ['t(s)','Lx','Ly','Exx(%)','Eyy(%)']
+	Labels of your output. Order is important.
 
-Returns:
---------
-Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
+Returns
+-------
+dict : OrderedDict
+
+
+	time : float
+		Time of the measure, relative to t0.
+	Lx : float
+		Lenght (in pixels) of the spot.
+	Ly : float
+		Width (in pixels) of the spot.
+	Exx : float
+		Deformation = Lx/L0x
+	Eyy : float
+		Deformation = Lxy/L0y
 		"""
 		go=False
 		###################################################################### camera INIT with ZOI selection
@@ -116,10 +128,8 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 			#fo.close()
 
 	def barycenter_opencv(self,recv_):
-		"""
-		computation of the barycenter (moment 1 of image) on ZOI using OpenCV
-		white_spot must be True if spots are white on a dark material
-		"""
+		#computation of the barycenter (moment 1 of image) on ZOI using OpenCV
+		#white_spot must be True if spots are white on a dark material
 		# The median filter helps a lot for real life images ...
 		while True:
 			try:
@@ -177,9 +187,6 @@ Panda Dataframe with time, spot lenght Lx, Ly and deformations Exx and Eyy.
 				raise
 
 	def main(self):
-		"""
-		main function, command the videoextenso and the motors
-		"""
 		#self.cap = cv2.VideoCapture(cv2.CAP_XIAPI + 1)
 		#print "cam 2 live!"
 		#self.cap.set(cv2.CAP_PROP_XI_AEAG,0)#auto gain auto exposure

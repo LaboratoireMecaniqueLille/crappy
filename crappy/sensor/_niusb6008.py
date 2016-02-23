@@ -7,9 +7,7 @@ import numpy
 import time
 
 class DaqmxSensor(object):
-    """
-    Sensor class for Daqmx devices.
-    """
+    """Sensor class for Daqmx devices."""
     
     def __init__(self,device='Dev1',channels=0,
                  range_num=0, mode= "single"):
@@ -81,6 +79,7 @@ class DaqmxSensor(object):
 
 
     def close(self):
+        """Close the connection."""
         if self.taskHandle:
             # DAQmx Stop Code
             DAQmxStopTask(self.taskHandle)
@@ -89,9 +88,6 @@ class DaqmxSensor(object):
             raise Exception('closing failed...')
     
     def __str__(self):
-        """
-        This method prints out the attributes values
-        """
         return " Device: {0} \n Channels({1}): {2} \n Range({3}): min:{4} max: {5} \
                \n Mode: {6}".format(self.device,
                                     self.channels,self._channels_tab[self.channels], 

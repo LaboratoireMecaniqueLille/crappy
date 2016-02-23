@@ -3,6 +3,7 @@ from ._metaCondition import MetaCondition
 
 
 class Trigger(MetaCondition):
+	"""DEPRECATED"""
 	def __init__(self,label=[],output=None):
 		self.label=label
 		self.output=output

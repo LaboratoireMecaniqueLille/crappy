@@ -6,20 +6,20 @@ libc = ctypes.CDLL('libc.so.6')
 
 class MasterBlock(object):
 	"""
-	Main class for block architecture. All blocks should inherit this class.	
+Main class for block architecture. All blocks should inherit this class.	
 
-	Methods
-	-------
-	main()
-		Override it to define the main function of this block.
-	add_input(Link object)
-		Add a Link object as input.
-	add_output(Link object)
-		Add a Link as output.
-	start()
-		Start the main() method as a Process.
-	stop()
-		Stops the process.
+Methods
+-------
+main()
+	Override it to define the main function of this block.
+add_input(Link object)
+	Add a Link object as input.
+add_output(Link object)
+	Add a Link as output.
+start()
+	Start the main() method as a Process.
+stop()
+	Stops the process.
 	"""
 	instances = []
 	def __new__(cls, *args, **kwargs): #	Keeps track of all instances

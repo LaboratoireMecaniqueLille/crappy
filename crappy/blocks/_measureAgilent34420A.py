@@ -9,23 +9,21 @@ from ..links._link import TimeoutError
 
 class MeasureAgilent34420A(MasterBlock):
 	"""
-Children class of MasterBlock. Send value through a Link object.
+Streams value of tension/resistance emasured on the Agilent34420A.
 	"""
 	def __init__(self,agilentSensor,labels=['t_agilent(s)','R'],freq=None):
 		"""
-MeasureAgilent34420A(agilentSensor,labels=['t','R'],freq=None)
-
 This block read the value of the resistance measured by agilent34420A and send
 the values through a Link object.
 It can be triggered by a Link sending boolean (through "add_input" method),
 or internally by defining the frequency.
 
-Parameters:
------------
+Parameters
+----------
 agilentSensor : agilentSensor object
 	See sensor.agilentSensor documentation.
 labels : list
-	The labels you want with your data.
+	The labels you want on your output data.
 freq : float or int, optional
 	Wanted acquisition frequency. Cannot exceed acquisition device capability.
 		"""
@@ -70,7 +68,7 @@ freq : float or int, optional
 						ret=self.agilentSensor.getData()
 						#print "ret :", ret
 						if ret != False:
-							Data[self.labels[0]] = (time.time()-self.t0) # verify if timestamps really differ and delete this line
+							Data[self.labels[0]] = (time.time()-self.t0) #TODO verify if timestamps really differ and delete this line
 							Data[self.labels[1]] = ret # add one column
 							enable_sending=True
 						else: 

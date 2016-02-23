@@ -5,11 +5,39 @@ from multiprocessing import Process,Pipe
 from . import getCameraConfig
 
 
-class TechnicalCamera():
+class TechnicalCamera(object):
 	"""
-	Camera class for ximea devices, this class should inherit from CameraObject
+Opens a camera device and initialise it.
 	"""
 	def __init__(self, camera="ximea",numdevice=0, videoextenso={}):
+		"""
+This Class opens a device and runs the initialisation sequence (CameraInit). 
+It then closes the device and keep the parameters in memory for later use.
+
+Parameters
+----------
+cam : {'ximea','jai'}, default = 'ximea'
+	Name of the desired camera device.
+numdevice : int, default = 0
+	Number of the desired device.
+videoextenso : dict
+	dict of parameters that you can use to pass informations.
+
+		* 'enabled' : Bool
+			Set True if you need the videoextenso.
+		* 'white_spot' : Bool
+			Set to True if your spots are white on a dark material.
+		* 'border' : int, default = 4
+			Size of the border for spot detection
+		* 'xoffset' : int
+			Offset for the x-axis.
+		* 'yoffset' : int
+			Offset for the y-axis
+		* 'height' : int
+			Height of the image, in pixels.
+		* 'width : int
+			Width of the image, in pixels.
+		"""
 		try:
 			module = __import__("crappy.sensor", fromlist=[camera.capitalize()])
 			CameraClass= getattr(module, camera.capitalize())
@@ -45,7 +73,4 @@ class TechnicalCamera():
 		#send_pipe.send(settings)
 		
 	def __str__(self):
-		"""
-		This method prints out the attributes values
-		"""
 		return self.cam.__str__()

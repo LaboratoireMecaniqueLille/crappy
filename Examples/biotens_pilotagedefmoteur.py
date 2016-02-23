@@ -34,7 +34,7 @@ crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
 class condition_offset(crappy.links.MetaCondition):
 	def __init__(self):
-		self.offset=0.08 # a remplir avant de lancer l'essai
+		self.offset=0.06 # a remplir avant de lancer l'essai
 		self.first=True
 		self.i=0
 	def evaluate(self,value):

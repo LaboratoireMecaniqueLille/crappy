@@ -12,20 +12,22 @@ from ..links._link import TimeoutError
 
 class SignalGenerator(MasterBlock):
 	"""
-Many to one block. Generate a signal.
+Generate a signal.
 	"""
 	def __init__(self,path=None,send_freq=800,repeat=False,labels=['t(s)','signal','cycle']):
 		"""
-SignalGenerator(path=None,send_freq=800,repeat=False,labels=['t(s)','signal','cycle'])
-
 Calculate a signal, based on the time (from t0). There is several configurations,
 see the examples section for more details.
+
+As t0 is used for evaluating the signal, multiple instances of this block will
+be synchronised.
 
 Parameters
 ----------
 path : list of dict
 	Each dict must contain parameters for one step. See Examples section below.
 	Available parameters are :
+	
 	* waveform : {'sinus','square','triangle','limit','hold'}
 		Shape of your signal, for every step.
 	* freq : int or float
@@ -55,22 +57,30 @@ repeat : Boolean, default=False
 labels : list of strings, default =['t(s)','signal','cycle']
 	Allows you to set the labels of output data.
 
-Returns:
---------
-Panda Dataframe with time, signal and cycle number. If waveform='limit', signal can be -1/0/1.
+Returns
+-------
+dict : OrderedDict
 
-Examples:
----------
-SignalGenerator(path=[{"waveform":"hold","time":3},
-					{"waveform":"sinus","time":10,"phase":0,"amplitude":2,"offset":0.5,"freq":2.5},
-					{"waveform":"triangle","time":10,"phase":np.pi,"amplitude":2,"offset":0.5,"freq":2.5},
-					{"waveform":"square","time":10,"phase":0,"amplitude":2,"offset":0.5,"freq":2.5}
-					{"waveform":"limit","cycles":3,"phase":0,"lower_limit":[-3,"signal"],"upper_limit":[2,"signal"]}],
-					send_freq=400,repeat=True,labels=['t(s)','signal'])
+
+	time : float
+		Relative time to t0.
+	signal : float
+		Generated signal. If waveform='limit', signal can be -1/0/1.
+	cycle number : float
+		Number of the current cycle.
+
+Examples
+--------
+>>> SignalGenerator(path=[{'waveform':'hold','time':3},
+{'waveform':'sinus','time':10,'phase':0,'amplitude':2,'offset':0.5,'freq':2.5},
+{'waveform':'triangle','time':10,'phase':np.pi,'amplitude':2,'offset':0.5,'freq':2.5},
+{'waveform':'square','time':10,'phase':0,'amplitude':2,'offset':0.5,'freq':2.5}
+{'waveform':'limit','cycles':3,'phase':0,'lower_limit':[-3,'signal'],'upper_limit':[2,'signal']}],
+send_freq=400,repeat=True,labels=['t(s)','signal'])
+
 In this example we displayed every possibility or waveform.
 Every dict contains informations for one step.
 The requiered informations depend on the type of waveform you need.
-
 		"""
 		print "PathGenerator!"
 		self.path=path

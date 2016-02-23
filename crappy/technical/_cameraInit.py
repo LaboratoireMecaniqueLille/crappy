@@ -20,7 +20,7 @@ from skimage.filter import threshold_otsu, rank#, threshold_yen
 
 
 class _CameraInit():
-  
+	"""This class initialise the camera"""
 	def __init__(self, camera, videoextenso={}):#'enabled':True, 'white_spot':True, 'border':4,'xoffset':0,'yoffset':0,'width':2048,'height':2048}):
 		self.cam = camera
 		#print "in camerainit : nudevice = ", self.cam.numdevice
@@ -333,6 +333,11 @@ class _CameraInit():
 			return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
 
 def getCameraConfig(cam, videoExtenso,send_pipe=None):
+	"""
+This class opens a window to set exposure/gain on a camera device.
+You can also select the spots for the videoextenso.
+**It should only be used by the TechnicalCamera instances.**
+	"""
 	d = _CameraInit(cam, videoExtenso)
 	d.start()
 	try:

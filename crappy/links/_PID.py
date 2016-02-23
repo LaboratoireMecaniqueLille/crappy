@@ -1,5 +1,8 @@
 # coding: utf-8
-class PID(crappy.links.MetaCondition):
+from ._metaCondition import MetaCondition
+
+class PID(MetaCondition):
+	"""WIP, not working yet."""
 	def __init__(self,P,I,D,label_consigne,label_retour,outMin=-10,outMax=10):
 		self.P=P
 		self.I=I
@@ -27,15 +30,15 @@ class PID(crappy.links.MetaCondition):
 			##else if newMode is 'Off':
 				##self.inAuto=False
 	
-	def initialize():
+	def initialize(self):
 		self.Iterm=self.lastOutput
 
 		if self.Iterm > outMax:
 			self.Iterm = outMax
-		else if self.Iterm < outMin:
+		elif self.Iterm < outMin:
 			self.Iterm=outMin
 	
-	def compute()
+	def compute(self):
 		if self.inAuto is True:
 			now=time.time()
 			timeChange=now-self.lastTime
@@ -46,14 +49,14 @@ class PID(crappy.links.MetaCondition):
 			self.Iterm = self.ki * error*timeChange
 			if self.Iterm > outMax:
 				self.Iterm = outMax
-			else if self.Iterm < outMin:
+			elif self.Iterm < outMin:
 				self.Iterm=outMin
 			dInput=self.input_-self.lastInput
 			self.output=self.kp * error + self.Iterm - self.kd * dInput/timeChange
 			
 			if self.output > outMax:
 				self.output = outMax
-			else if self.output < outMin:
+			elif self.output < outMin:
 				self.output = outMin
 			self.lastOutput=self.output
 			Array=pd.DataFrame([[now-self.t_0, self.output]])
@@ -66,23 +69,24 @@ class PID(crappy.links.MetaCondition):
 			self.lastTime = now
 			self.lastTimeChange=timeChange
 			return True
-		else return False
+		else:
+			return False
 	
 
 		
 	
-	def main(self):
-		for input_ in self.inputs:
-			Sensor=self.inputs[0].recv()
-		t_init=time.time()-self.t0
-		self.lastTime=time.time()
-		while True:
-			self.compute()
-			#Data=pd.DataFrame()
-			#for input_ in self.inputs:
-				#Data=pd.concat([Data,self.consigne.recv()])
-				#Sensor=self.inputs[0].recv()
-				#[Series.last_valid_index][2]
+	#def main(self):
+		#for input_ in self.inputs:
+			#Sensor=self.inputs[0].recv()
+		#t_init=time.time()-self.t0
+		#self.lastTime=time.time()
+		#while True:
+			#self.compute()
+			##Data=pd.DataFrame()
+			##for input_ in self.inputs:
+				##Data=pd.concat([Data,self.consigne.recv()])
+				##Sensor=self.inputs[0].recv()
+				##[Series.last_valid_index][2]
 		
 		
 		
@@ -103,5 +107,5 @@ class PID(crappy.links.MetaCondition):
 		
 		
 		
-		value[self.label_consigne]=val*self.coeff
-		return value
+		#value[self.label_consigne]=val*self.coeff
+		#return value

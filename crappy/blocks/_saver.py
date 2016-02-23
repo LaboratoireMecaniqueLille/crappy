@@ -4,22 +4,22 @@ import os
 import numpy as np
 import time
 np.set_printoptions(threshold='nan', linewidth=500)
-import pandas as pd
+#import pandas as pd
 
 class Saver(MasterBlock):
 	"""Saves data in a file"""
 	def __init__(self,log_file):
 		"""
-Saver(log_file)
-
-Saves data in a file. Be aware that the log file needs to be cleaned before 
-starting this function, otherwise it just keep writing a the end of the file.
+Be aware that the log file needs to be cleaned before starting this function, 
+otherwise it just keep writing a the end of the file.
 First line of the file will be meta-data. If file already exists, skips the
 meta-data writing.
 
+If the folder doesn't exists, creates it.
+
 Parameters
 ----------
-log_file : string
+log_file : str
 	Path to the log file. If non-existant, will be created.
 
 		"""
