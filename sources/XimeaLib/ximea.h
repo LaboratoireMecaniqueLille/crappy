@@ -26,6 +26,7 @@ public:
     virtual bool open( int index );
     virtual void close();
     virtual bool grabFrame();
+    virtual void addTrigger(int timout, bool triggered);
     double getProperty(int);
     bool setProperty(int, double);
     bool      isopened;
@@ -58,6 +59,7 @@ extern "C" {
     PyObject* VideoCapture_open(int device);
     PyObject* VideoCapture_isOpened();
     PyObject* VideoCapture_release();
+    PyObject* VideoCapture_addTrigger(VideoCapture *self, PyObject *args);
     bool VideoCapture_grab();
     PyObject* VideoCapture_retrieve(VideoCapture *self);
     PyObject* VideoCapture_getMeta();

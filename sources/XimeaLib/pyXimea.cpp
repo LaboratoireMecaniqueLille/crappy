@@ -19,6 +19,19 @@ VideoCapture_open(int device)
 }
 
 PyObject*
+VideoCapture_addTrigger(VideoCapture *self, PyObject *args)
+{
+    int timeout;
+    bool triggered;
+    if (!PyArg_ParseTuple(args, "ib", &timeout, &triggered))
+            exit(0);
+    capt->addTrigger(timeout, triggered);
+    return Py_None;
+}
+
+
+
+PyObject*
 VideoCapture_isOpened()
 {
     if(capt->isopened) {
@@ -247,7 +260,9 @@ static PyMethodDef VideoCapture_methods[] = {
 	 "return true if the ximea device is opened, false otherwise."},
 	 {"release", (PyCFunction)VideoCapture_release, METH_NOARGS,
 	 "release the ximea device."},
-    {NULL}  
+         {"addTrigger", (PyCFunction)VideoCapture_addTrigger, METH_VARARGS,
+	 "add an external trigger to the camera, a frame will be taken on each rising edge of the trigger."},
+    {NULL}
 };
 
 static PyTypeObject VideoCaptureType = {

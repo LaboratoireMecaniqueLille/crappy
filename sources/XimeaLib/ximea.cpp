@@ -21,6 +21,41 @@ CaptureCAM_XIMEA::~CaptureCAM_XIMEA(){
 	close();
 }
 
+
+void CaptureCAM_XIMEA::addTrigger(int timout, bool triggered)
+{
+    int mvret = XI_OK;
+    mvret = xiStopAcquisition(hmv);
+    HandleResult(mvret, "Acquisition stopped");
+    isopened=false;
+    if(triggered){
+        // select trigger source
+        mvret = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_EDGE_RISING);
+        HandleResult(mvret, "Error while activating external trigger source");
+        // select input pin 1 mode
+        mvret = xiSetParamInt(hmv, XI_PRM_GPI_SELECTOR, 1);
+        HandleResult(mvret, "Error while setting input pin");
+        mvret = xiSetParamInt(hmv, XI_PRM_GPI_MODE, XI_GPI_TRIGGER);
+        HandleResult(mvret, "Error while setting input pin mode");
+        // set digital output 1 mode
+        mvret = xiSetParamInt(hmv, XI_PRM_GPO_SELECTOR, 1);
+        HandleResult(mvret, "Error while setting digital ouput");
+        mvret = xiSetParamInt(hmv, XI_PRM_GPO_MODE,  XI_GPO_EXPOSURE_ACTIVE);
+        HandleResult(mvret, "Error while setting digital output mode");
+    }else{
+        mvret = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE,  XI_TRG_OFF);
+        HandleResult(mvret, "Error while disabling external trigger source");
+    }
+    mvret = xiStartAcquisition(hmv);
+    if(mvret != XI_OK)
+    {
+        errMsg("StartAcquisition XI_DEVICE failed", mvret);
+        close();
+    }
+    timeout = timout;
+    isopened=true;
+}
+
 void CaptureCAM_XIMEA::init()
 {
     stat = xiGetNumberDevices(&numDevices);
@@ -65,8 +100,7 @@ bool CaptureCAM_XIMEA::open( int wIndex )
     xiSetParamInt( hmv, XI_PRM_DOWNSAMPLING_TYPE, 1);
     xiSetParamInt(hmv, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
     HandleResult(mvret, "error while setting data format");
-
-    //default capture timeout 10s
+    
     timeout = 10000;
     mvret = xiStartAcquisition(hmv);
     if(mvret != XI_OK)

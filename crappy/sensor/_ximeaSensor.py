@@ -75,13 +75,12 @@ class Ximea(cameraSensor.CameraSensor):
 		self.__init__(numdevice=nd, framespersec = fps, external_trigger=et, data_format=df)
 		
 		GLOBAL_ENABLE_FLAG = True
+		
 		self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 		#self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 		if self.external_trigger==True:	# this condition activate the trigger mode
-			self.ximea.set(xi.CAP_PROP_XI_TRG_SOURCE,1)
-			self.ximea.set(xi.CAP_PROP_XI_GPI_SELECTOR,1)
-			self.ximea.set(xi.CAP_PROP_XI_GPI_MODE,1)
-			
+                    self.ximea.addTrigger(1000000, True)
+                #self.ximea.addTrigger(10000, false)
 		self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT,self.data_format) #0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW	
 
 		if self.data_format ==1 or self.data_format==6: #increase the FPS in 10 bits
