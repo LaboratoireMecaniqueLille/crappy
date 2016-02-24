@@ -4,6 +4,9 @@
 #include <datetime.h>
 #include "structmember.h"
 CaptureCAM_XIMEA* capt;
+PyObject *myDict = PyDict_New();
+PyObject *rslt = PyTuple_New(2);
+char *array_buffer;
 
 PyObject*
 VideoCapture_open(int device)
@@ -40,56 +43,74 @@ bool VideoCapture_grab()
 
 PyObject* VideoCapture_retrieve(VideoCapture *self)
 {
-		char *array_buffer;
 		short n;
+                if(array_buffer==NULL){
+                    free(array_buffer);
+                    array_buffer=NULL;
+                }
+                
 		switch(capt->image.frm)
 		{
 		case XI_MONO8: {
 			const int ndim = 2;
 			npy_intp nd[2] = {capt->height, capt->width};
+                        Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
+                        Py_XDECREF(nd);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height);
 			break;}
 		case XI_MONO16:{ 
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->height, capt->width, sizeof(n)};
+                        Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT16);
+                        Py_XDECREF(nd);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*sizeof(n));
 			break;}
 		case XI_RGB24       : {
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->height, capt->width, 3};
+                        Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
+                        Py_XDECREF(nd);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*3);
 			break;}
 		case XI_RGB32       : {
 			const int ndim = 4;
 			npy_intp nd[3] = {capt->height, capt->width, 4};
+                        Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
+                        Py_XDECREF(nd);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*4);
 			break;}
 		case XI_RGB_PLANAR  : {
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->height, capt->width, 3};
+                        Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
+                        Py_XDECREF(nd);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*3);
 			break;}
 		case XI_RAW8        : {
 			const int ndim = 2;
 			npy_intp nd[2] = {capt->height, capt->width};
+                        Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
+                        Py_XDECREF(nd);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height);
 			break;}
 		case XI_RAW16       : {
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->height, capt->width, sizeof(n)};
+                        Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT16);
+                        Py_XDECREF(nd);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*sizeof(n));
 			break;}
@@ -97,8 +118,7 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 			return Py_None;
 		}
 		capt-> resetCvImage();
-		
-		PyObject *myDict = PyDict_New();
+                myDict = PyDict_New();
 		myDict = VideoCapture_getMeta();
 		PyDict_SetItemString(myDict, "data", self->myarray);
     return myDict;
@@ -108,7 +128,6 @@ PyObject*
 VideoCapture_getMeta()
 {
 	PyDateTime_IMPORT;
-	PyObject *myDict = PyDict_New();
 	PyDict_SetItemString(myDict, "width", Py_BuildValue("I", capt->image.width));
 	PyDict_SetItemString(myDict, "height", Py_BuildValue("I",capt->image.height));
 // 	PyDict_SetItemString(myDict, "bp_size", Py_BuildValue("I",capt->image.bp_size));
@@ -124,19 +143,25 @@ VideoCapture_getMeta()
 	PyObject *timeTuple = Py_BuildValue("(O)", floatObj);  
 	PyObject *dateTime = PyDateTime_FromTimestamp(timeTuple);
 	PyDict_SetItemString(myDict, "tsSec", dateTime);
+        Py_CLEAR(floatObj);
+        Py_CLEAR(timeTuple);
+        Py_CLEAR(dateTime);
 	
 	PyObject *floatObj1 = PyFloat_FromDouble(capt->image.tsUSec);
 	PyObject *timeTuple1 = Py_BuildValue("(O)", floatObj1);  
 	PyObject *dateTime1 = PyDateTime_FromTimestamp(timeTuple1);
 	PyDict_SetItemString(myDict, "tsUSec", dateTime1);
-	
+	Py_CLEAR(floatObj1);
+        Py_CLEAR(timeTuple1);
+        Py_CLEAR(dateTime1);
+        
 	return myDict;
 }
 
 PyObject*
 VideoCapture_xiread(VideoCapture *self)
 {
-	PyObject *rslt = PyTuple_New(2);
+	rslt = PyTuple_New(2);
 	if(!VideoCapture_grab()){
 		PyTuple_SetItem(rslt, 0, Py_False);
 		PyTuple_SetItem(rslt, 1, Py_None);
@@ -173,7 +198,7 @@ static void
 VideoCapture_dealloc(VideoCapture* self)
 {
     Py_XDECREF(self->myarray);
-	VideoCapture_release();
+    VideoCapture_release();
     self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -302,7 +327,6 @@ initximeaModule(void)
     } 
     catch ( const std::exception & e ) 
     { 
-        // affiche "Exemple d'exception" 
         std::cerr << e.what(); 
     } 
 }
