@@ -31,7 +31,13 @@ Documentation
 The documentation can be compiled by simply running in the doc folder :
 
        make html
- 
+
+Note that you will need to install sphinx and numpy-doc:
+       
+       pip install -U Sphinx
+       
+       apt-get install python-numpydoc
+        
 We used the scipy-style for Sphinx, you can find the original on SciPy's Github:
 
 https://github.com/scipy/scipy
