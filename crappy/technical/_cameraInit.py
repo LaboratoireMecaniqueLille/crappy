@@ -20,7 +20,7 @@ from skimage.filter import threshold_otsu, rank#, threshold_yen
 
 
 class _CameraInit():
-	"""This class initialise the camera"""
+  
 	def __init__(self, camera, videoextenso={}):#'enabled':True, 'white_spot':True, 'border':4,'xoffset':0,'yoffset':0,'width':2048,'height':2048}):
 		self.cam = camera
 		#print "in camerainit : nudevice = ", self.cam.numdevice
@@ -313,7 +313,6 @@ class _CameraInit():
 		frame = self.cam.getImage() # read a frame
 		#x=np.arange(0,2048,4)
 		if i == 1:
-		#print "6"
 			self._cax.axis('on')
 			self._im.set_data(frame) #change previous image by new frame
 			self._im.set_clim([frame.min(), frame.max()]) # re-arrange colorbar limits
@@ -333,18 +332,13 @@ class _CameraInit():
 			return int(self.cam.exposure), int(self.cam.gain), int(self.cam.width), int(self.cam.height), int(self.cam.xoffset), int(self.cam.yoffset)
 
 def getCameraConfig(cam, videoExtenso,send_pipe=None):
-	"""
-This class opens a window to set exposure/gain on a camera device.
-You can also select the spots for the videoextenso.
-**It should only be used by the TechnicalCamera instances.**
-	"""
 	d = _CameraInit(cam, videoExtenso)
 	d.start()
 	try:
-		send_pipe.send(d.getConfiguration())
 		d.cam.close()
 		print "data sent"
 		plt.close()
+		send_pipe.send(d.getConfiguration())
 	except Exception as e:
 		print "error : ", e
 		d.cam.close()

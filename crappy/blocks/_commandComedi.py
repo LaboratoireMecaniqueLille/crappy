@@ -6,7 +6,7 @@ import os
 
 class CommandComedi(MasterBlock):
 	"""Receive a signal and send it to a Comedi card"""
-	def __init__(self, comedi_actuators,signal_label):
+	def __init__(self, comedi_actuators,signal_label="signal"):
 		"""
 Receive a signal and translate it for the Comedi card.
 
