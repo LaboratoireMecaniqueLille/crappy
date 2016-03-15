@@ -1,16 +1,14 @@
+/** @addtogroup sources
+ *  
+ *  More documentation for the first group.
+ *  @{
+ */
+
+/** @defgroup ximea Ximea
+ *  Ximea module to be interfaced with Python.
+ *  @{
+ */
 #include "ximea.h"
-
-CaptureCAM_XIMEA* CreateCameraCapture_XIMEA( int index )
-{
-    CaptureCAM_XIMEA* capture = new CaptureCAM_XIMEA;
-    if( capture->open( index ))
-        return capture;
-
-    delete capture;
-    return 0;
-}
-
-
 
 CaptureCAM_XIMEA::CaptureCAM_XIMEA() {
 	isopened=false;
@@ -265,18 +263,5 @@ void CaptureCAM_XIMEA::errMsg(const char* msg, int errNum)
 #endif
 }
 
-int  CaptureCAM_XIMEA::getBpp()
-{
-    switch( image.frm)
-    {
-    case XI_MONO8       : return 1; // int value = 0
-    case XI_MONO16      : return 2; // int value = 1 
-    case XI_RGB24       : return 3; // int value = 2
-    case XI_RGB32       : return 4; // int value = 3
-    case XI_RGB_PLANAR  : return 3; // int value = 4
-    case XI_RAW8        : return 1; // int value = 5
-    case XI_RAW16       : return 2; // int value = 6
-    default :
-        return 0;
-    }
-}
+/** @} */ 
+/** @} */ 

@@ -77,7 +77,7 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->height, capt->width, sizeof(n)};
                         Py_XDECREF(self->myarray);
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT16);
+			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
                         Py_XDECREF(nd);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->image.bp, capt->width*capt->height*sizeof(n));

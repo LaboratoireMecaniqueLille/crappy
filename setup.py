@@ -6,17 +6,18 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, setuptools
 # To use a consistent encoding
 from codecs import open
-from os import path, uname, system
+from os import path, uname, system, popen
 from subprocess import call
 from multiprocessing import cpu_count
 from distutils.command.build import build
 from distutils.core import setup, Extension
-
+from distutils.command.install import install
 comediModule = Extension('sensor.comediModule', sources = ['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'], extra_link_args=["-l", "comedi", "-l", "python2.7"])
 ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
+clModule = Extension('sensor.clModule', sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-l", "python2.7", "-L", "/opt/SiliconSoftware/Runtime5.4.1.2/lib64/", "-l", "display", "-l", "clsersis", "-l", "fglib5"])
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the relevant file
@@ -24,14 +25,29 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 execfile('./crappy/__version__.py') # read the current version in version.py
+extentions = [comediModule]
 
+p = popen("lsmod |grep menable")
+
+if(len(p.read())!=0):
+    extentions.append(clModule)
+else:
+    print "Wrong Kernel version, Jai library will not compile.\n"
+
+p = popen("lsmod |grep m3api")
+if(len(p.read()) != 0):
+    extentions.append(ximeaModule)
+else:
+    print "libm3api not installed, ximeaModule will not compile"
+    
+    
 class LibBuild(build):
   
     def run(self):
 		# run original build code
 		build.run(self)
-		self.run_command("build_ext -b ../crappy/")
-		jai_build_path = path.join(here, 'sources/JaiLib/')
+		#self.run_command("build_ext ../crappy/")
+		jai_build_path = path.join(here, 'sources/Jai_lib/')
 		jai_cmd = [
 			'make',
 			'OUT=' + jai_build_path,
@@ -43,10 +59,10 @@ class LibBuild(build):
 			print 'Unable to determine number of CPUs. Using single threaded make.'
 		
 		def compile():
-			if(uname()[2]=='3.2.0-70-generic'):
+			#if(uname()[2]=='3.2.0-70-generic'):
 				call(jai_cmd, cwd=jai_build_path)
-			else:
-				print "Wrong Kernel version, Jai library not compiled.\n"
+			#else:
+				#print "Wrong Kernel version, Jai library not compiled.\n"
 			
 		self.execute(compile, [], 'Compiling libraries')
 
@@ -55,19 +71,20 @@ class LibClean(build):
 	def run(self):
 		# run original build code
 		build.run(self)
-		jai_build_path = path.join(here, 'sources/JaiLib/')
+		jai_build_path = path.join(here, 'sources/Jai_lib/')
 		jai_cmd = [
 			'make clean',
 			'OUT=' + jai_build_path,
 			'V=' + str(self.verbose),
 			]
 		def clean():
-			if(uname()[2]=='3.2.0-70-generic'):
+			#if(uname()[2]=='3.2.0-70-generic'):
 				call(jai_cmd, cwd=jai_build_path)
-			else:
-				print "Wrong Kernel version, unable to find Jai library\n"
+			#else:
+				#print "Wrong Kernel version, unable to find Jai library\n"
 			
 		self.execute(clean, [], 'Deleting shared objects.')
+		
 
 
 setup(
@@ -126,7 +143,7 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     
     ext_package='crappy',
-    ext_modules = [comediModule, ximeaModule],
+    ext_modules = extentions,
 	
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
@@ -145,7 +162,7 @@ setup(
     
     cmdclass={
         'build': LibBuild,
-        'clean': LibClean,
+        'clean': LibClean
     },
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
@@ -169,5 +186,9 @@ setup(
         #],
     #},
 )
-system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
-system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')
+if(ximeaModule in extentions):
+     system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
+if(comediModule in extentions):
+     system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')
+if(clModule in extentions):
+     system('cp build/lib.linux-x86_64-2.7/crappy/sensor/clModule.so crappy/sensor/')

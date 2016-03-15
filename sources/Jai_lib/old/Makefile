@@ -1,9 +1,9 @@
 LIB = CameraLink.h
-LINKING = -L/opt/SiliconSoftware/Runtime5.2.2/lib/ -lclsersis -lfglib5
+LINKING = -L/opt/SiliconSoftware/Runtime5.4.1.1/lib64/ -lclsersis -lfglib5
 SRC_OBJ = CameraLink.o clSerial.o clExport.o clSetParameter.o clGetParameters.o
 
-cllib.so:$(SRC_OBJ) $(LIB)
-	g++ -shared -fPIC -o cllib.so $(SRC_OBJ) $(LINKING)
+cameraLinkModule.so:$(SRC_OBJ) $(LIB)
+	g++ -shared -fPIC -o cameraLinkModule.so $(SRC_OBJ) $(LINKING)
 	
 clSetParameter.o: clSetParameter.cpp $(LIB)
 	g++ -fPIC -c clSetParameter.cpp 

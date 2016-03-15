@@ -2,7 +2,9 @@
 *.egg-info
 *.kate-swp
 *.so
+*.o
 *~
+*.bat
 # ignorer tous les fichiers dans le répertoire build
 Examples/alerte_jerome.py
 build/

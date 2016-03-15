@@ -1,6 +1,6 @@
 #include "CameraLink.h"
 
-int CaptureCAM_CL::checkSerialCom(int stat){
+int Camera::checkSerialCom(int stat){
     switch(stat){
       case CL_ERR_INVALID_REFERENCE: {
 	sprintf(Data,"Invalid reference(%d)\n",stat);
@@ -45,7 +45,7 @@ int CaptureCAM_CL::checkSerialCom(int stat){
     }
 }
 
-void CaptureCAM_CL::serialInit(unsigned int serialIndex){
+void Camera::serialInit(unsigned int serialIndex){
   try
   { 
     unsigned int * numSerialPorts;
@@ -54,18 +54,22 @@ void CaptureCAM_CL::serialInit(unsigned int serialIndex){
     char *portID= NULL;
     unsigned int bufferSize= 512;
     portID = (char *) malloc(bufferSize);
+
     if (clSerialInit(serialIndex, &serialRefPtr) == CL_ERR_PORT_IN_USE or clSerialInit(serialIndex, &serialRefPtr) == CL_ERR_INVALID_INDEX)
       return;
     serialRefPtr = (void*) malloc(10);
     if (clSerialInit(serialIndex, &serialRefPtr)  == CL_ERR_NO_ERR)
       printf("PORT %d IS OPENED\n", serialIndex);
+    
     char *buf = NULL;
     unsigned int buflen = 10;
     if (clGetSerialPortIdentifier(serialIndex, buf, &buflen) != CL_ERR_BUFFER_TOO_SMALL)
       return;
+    
     buf = (char*) malloc (buflen);
     if (clGetSerialPortIdentifier(serialIndex, buf, &buflen) == CL_ERR_NO_ERR)
       printf("port %i is identified as %s\n", serialIndex, buf);
+    
     free(buf);
   }
   
@@ -75,18 +79,15 @@ void CaptureCAM_CL::serialInit(unsigned int serialIndex){
   }
 }
 
-void CaptureCAM_CL::serialWrite(char buffer[]){
+void Camera::serialWrite(char buffer[]){
     clFlushPort(serialRefPtr);
     unsigned int bufferlen= 20;
-    unsigned int serialTimeout = 1000;
-//     char * str = "(0x10)\r\n";
-//     char *newBuffer = (char *) malloc(strlen(buffer)+strlen(str));
-//     strcpy(newBuffer, buffer);
-//     strcat(newBuffer,str);
+    unsigned int serialTimeout = 500;
     try{
         checkSerialCom(clSerialWrite(serialRefPtr, buffer, &bufferlen, serialTimeout));
     }catch(string const& error){
         cout << "Write ERROR:" << error << endl;
+	serialWrite(buffer);
     }
     char *mybuff= NULL;
 
@@ -100,8 +101,8 @@ void CaptureCAM_CL::serialWrite(char buffer[]){
 // 	serialWrite(buffer);
 	return;
     }
-//     char temp[8];
-//     strncpy(temp, mybuff, 8);
-//     cout << "Camera response:" << temp << endl;
+    char temp[8];
+    strncpy(temp, mybuff, 8);
+    cout << "Camera response:" << temp << endl;
     free(mybuff);
 }

@@ -1,12 +1,23 @@
 # coding: utf-8
+import ctypes
+import numpy as np
+from numpy.ctypeslib import ndpointer
 from os import path
+#try: # for autodocumentation
+	#here = path.abspath(path.dirname(__file__))
+	#build_path = path.join(here, '../../sources/Jai_lib/cameraLinkModule.so')
+	#print "here:",here
+	#print "build_path:",build_path
+	#jai = ctypes.CDLL(build_path)
+#except Exception e:
+	#print "FAIL:", e
+#except:
+	#print "FAIL2"
 import clModule as cl
 from ._meta import cameraSensor
-import tkFileDialog as tk
-from Tkinter import *
 
 class Jai(cameraSensor.CameraSensor):
-    def __init__(self,numdevice=0, framespersec=99, serial=None):
+    def __init__(self,numdevice=0, framespersec=99):
         """Opens a Jai camera and allow to grab frame and set the various parameters.
         
         Parameters
@@ -17,12 +28,9 @@ class Jai(cameraSensor.CameraSensor):
             Wanted frame rate.
         """
         self.FPS = framespersec
-        self.framespersec=framespersec
+        self.framespersec=ctypes.c_double(self.FPS)
         self.numdevice = numdevice
-	root = Tk()
-	root.withdraw()
-	self.configFile = tk.askopenfilename(parent=root)
-        self.serial=serial
+        self.configFile = ctypes.c_char_p("../sources/Jai-lib/config.mcf")
         self._init = True
         
     def new(self, exposure=8000, width=2560, height=2048, xoffset=0, yoffset=0, gain=None):
@@ -30,7 +38,9 @@ class Jai(cameraSensor.CameraSensor):
         This method create a new instance of the camera jai class with the class attributes (device number, exposure, width, height, x offset, y offset and FPS)
         Then it prints these settings and initialises the camera and load a configuration file
         """
-        self.jai = cl.VideoCapture(self.numdevice, self.configFile)
+        self.cam = jai.Camera_new(self.numdevice, self.framespersec) # self.exposure, self.width, self.height, self.xoffset, self.yoffset,
+        jai.Camera_Buffer.restype = ndpointer(dtype=np.uint8, shape=(height, width))
+        jai.Camera_init(self.cam, self.configFile)
         
         self.width = width
         self.height = height
@@ -43,123 +53,89 @@ class Jai(cameraSensor.CameraSensor):
         self._defaultXoffset = 0
         self._defaultYoffset = 0
         self._defaultExposure = 8000
-        self.jai.startAcq()
+        jai.Camera_start(self.cam)
         
       
     def getImage(self):
-	    """
-	    This method get a frame on the selected camera and return a ndarray 
-	    If the camera breaks down, it reinitializes it, and tries again.
-	    """
-	    try:
-		    ret, frame = self.jai.read()
-
-	    except KeyboardInterrupt:
-		    print "KeyboardInterrupt, closing camera ..."
-		    self.close()
-		    self.quit=True
-
-	    try:
-		    if ret:
-			    return frame.get('data')
-			    #return frame
-		    elif not(self.quit):
-			    print "restarting camera..."
-			    time.sleep(0.5)
-			    #expo, wi, he, xoff,yoff,ga=self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain
-			    #self.reset()
-			    #self.__init__()
-			    #self.new(expo, wi, he, xoff,yoff,ga) # Reset the camera instance
-			    self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
-			    return self.getImage()
-	    except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
-		    pass
-	    
+        """This method get a frame on the selected camera and return a ndarray """
+        return jai.Camera_Buffer(self.cam)	
+  
     def stop(self):
         """This method stops the acquisition."""
-        try:
-	  self.jai.stopAcq()
-	except:
-	  print "cannot stop acquisition\n"
-	  
+        jai.Camera_stop(self.cam)
+        
     def close(self):
         """This method close properly the frame grabber. 
         It releases the allocated memory and stops the acquisition.
         """
-        try:
-	  self.jai.release()
-	except:
-	  print "cannot close Jai device"
-	  
+        return jai.Camera_close(self.cam)
     
     def restart(self):
         """Restart the device."""
-        self.jai.startAcq()
-      
+        print "restart camera \n"
+        jai.Camera_Buffer.restype = ndpointer(dtype=np.uint8, shape=(self.height, self.width))
+        jai.Camera_start(self.cam)
+        
     def reset_ZOI(self):
         """Reset to initial dimensions."""
+        print "stop camera \n"
         self.stop()
+        self.cam = jai.Camera_new(self.numdevice, self.framespersec)
+        jai.Camera_init(self.cam, self.configFile)
         self.yoffset = self._defaultYoffset
         self.xoffset = self._defaultXoffset
         self.height = self._defaultHeight
         self.width = self._defaultWidth
         self.restart()
         
-    def set_ZOI(self, width, height, xoffset, yoffset):
-	"""Define the Zone Of Interest"""
-	self.stop()
-	self.yoffset = yoffset
-	self.xoffset = xoffset
-	self.width = width
-	self.height = height
-	self.restart()
-	
     @property
     def height(self):
         """Property. Set / get the current height"""
+        print "height getter"
         return self._height
     
     @height.setter
     def height(self,height):
-        self.jai.set(cl.FG_HEIGHT, int(height))
-        self._height=self.jai.get(cl.FG_HEIGHT)
-        if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_HEIGHT,self._height))
+
+        print "height setter"
+        jai.Camera_setHeight(self.cam, int(height))
+        self._height=jai.Camera_getHeight(self.cam)
+        
     @property
     def width(self):
         """Property. Set / get the current width"""
+        print "width getter"
         return self._width
     
     @width.setter
     def width(self,width):
-	"width setter"
-        self.jai.set(cl.FG_WIDTH, (int(width)-(int(width)%32)))
-        self._width= self.jai.get(cl.FG_WIDTH)
-	if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_WIDTH,self._width))
+        print "width setter"
+        jai.Camera_setWidth(self.cam, (int(width)-(int(width)%32)))
+        self._width= jai.Camera_getWidth(self.cam)
+
     @property
     def yoffset(self):
         """Property. Set / get the current yoffset"""
+        print "yoffset getter"
         return self._yoffset
     
     @yoffset.setter
     def yoffset(self,yoffset):
-        self.jai.set(cl.FG_YOFFSET, int(yoffset))
-        self._yoffset= self.jai.get(cl.FG_YOFFSET)
-	if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_YOFFSET,self._yoffset))
-
+        print "yoffset setter"
+        jai.Camera_setYoffset(self.cam, int(yoffset))
+        self._yoffset=jai.Camera_getYoffset(self.cam)
+    
     @property
     def xoffset(self):
         """Property. Set / get the current xoffset"""
+        print "xoffset getter"
         return self._xoffset
 
     @xoffset.setter
     def xoffset(self,xoffset):
-        self.jai.set(cl.FG_XOFFSET, (int(xoffset)-(int(xoffset)%32)))
-        self._xoffset= self.jai.get(cl.FG_XOFFSET)
-        if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_XOFFSET,self._xoffset))
+        print "xoffset setter"
+        jai.Camera_setXoffset(self.cam, (int(xoffset)-(int(xoffset)%32)))
+        self._xoffset= jai.Camera_getXoffset(self.cam)
     
     @property
     def exposure(self):
@@ -176,14 +152,9 @@ class Jai(cameraSensor.CameraSensor):
         
     @exposure.setter
     def exposure(self, exposure):
-        self.jai.set(cl.FG_EXPOSURE, int(exposure))
-        self._exposure = self.jai.get(cl.FG_EXPOSURE)
-        if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_EXPOSURE,self._exposure))
+        jai.Camera_setExposure(self.cam, int(exposure))
+        self._exposure = jai.Camera_getExposure(self.cam)
               
     def __str__(self):
         return " Exposure: {0} \n FPS: {1} \n Numdevice: {2} \n Width: {3} \n Height: {4} \n X offset: {5} \n Y offset: {6}".format(self.exposure, self.FPS, self.numdevice, self.width, self.height, self.xoffset, self.yoffset)
-    
-    @property
-    def name(self):
-	return "jai"
+      

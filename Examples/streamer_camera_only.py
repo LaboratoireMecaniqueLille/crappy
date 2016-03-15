@@ -19,7 +19,7 @@ if __name__ == '__main__':
 		#axes=[biaxeTech1,biaxeTech2,biaxeTech3,biaxeTech4]
 
 	########################################### Creating blocks
-		camera=crappy.blocks.StreamerCamera("Ximea",freq=1,save=True,save_directory="/home/biotens/Bureau/ximea/",xoffset=0,yoffset=0,width=1024,height=500)
+		camera=crappy.blocks.StreamerCamera("Jai",numdevice=1,freq=1,save=True,save_directory="/home/biotens/Bureau/ximea/",xoffset=0,yoffset=0,width=640,height=513)
 		#compacter_effort=crappy.blocks.Compacter(200)
 		#save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Publi/effort.txt")
 		#graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))

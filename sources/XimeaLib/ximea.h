@@ -20,7 +20,6 @@ using namespace std;
 class CaptureCAM_XIMEA
 {
 public:
-    CaptureCAM_XIMEA* CreateCameraCapture_XIMEA( int index );
     CaptureCAM_XIMEA();
     virtual ~CaptureCAM_XIMEA();
     virtual bool open( int index );
@@ -42,7 +41,6 @@ public:
 private:
     void init();
     void errMsg(const char* msg, int errNum);
-    int  getBpp();
     XI_RETURN stat;
     HANDLE    hmv = NULL;
     DWORD     numDevices;

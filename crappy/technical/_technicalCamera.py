@@ -4,7 +4,6 @@ import time
 from multiprocessing import Process,Pipe
 from . import getCameraConfig
 
-
 class TechnicalCamera(object):
 	"""
 Opens a camera device and initialise it.
@@ -42,12 +41,22 @@ videoextenso : dict
 			module = __import__("crappy.sensor", fromlist=[camera.capitalize()])
 			CameraClass= getattr(module, camera.capitalize())
 		except Exception as e:
-			print "%s "%e, " Unreconized camera\n"
+			print "{0}".format(e), " : Unreconized camera\n"
+			import sys
 			sys.exit()
 			raise
-		#print "module, cameraclass : ", module, CameraClass
+		try:
+			module = __import__("crappy.sensor.clserial", fromlist=[camera.capitalize()+"Serial"])
+			codeClass = getattr(module, camera.capitalize()+"Serial")
+			from crappy.sensor.clserial import ClSerial as cl
+			ser = codeClass()
+			self.serial = cl(ser)
+		except Exception as e:
+			print "{0}".format(e)
+			self.serial = None
+		#print "module, cameraclass, serial : ", module, CameraClass, self.serial
         #initialisation:
-		self.sensor = CameraClass(numdevice=numdevice)
+		self.sensor = CameraClass(numdevice=numdevice, serial= self.serial)
 		self.videoextenso = videoextenso
 		recv_pipe,send_pipe=Pipe()
 		print "lauching camera config..."
