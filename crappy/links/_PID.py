@@ -11,15 +11,20 @@ class PID(MetaCondition):
 		self.label_retour=label_retour
 		self.outMin=outMin
 		self.outMax=outMax
+		self.first=True
 		
 	def evaluate(self,value):
-		self.t=time.time()
-		retour=self.external_trigger.recv()[self.label_retour]
-		consigne=value.pop(self.label_consigne)
-		t_init=time.time()-self.t0
-		self.lastTime=time.time()
-		while True:
-			self.compute()
+		#self.t=time.time()
+		self.retour=self.external_trigger.recv()[self.label_retour]
+		self.consigne=value.pop(self.label_consigne)
+		if self.first:
+			self.lastTime=time.time()
+			self.last_retour=self.retour
+			self.first=False
+			self.lastTimeChange=10**118 # for initialization
+		self.compute()
+		value[self.label_consigne]=self.output
+		return value
 		
 	##def setMode(mode):
 		##newMode=self.mode
@@ -42,35 +47,27 @@ class PID(MetaCondition):
 		if self.inAuto is True:
 			now=time.time()
 			timeChange=now-self.lastTime
-			self.input_=self.inputs[0].recv()
-			self.error=self.setpoint-self.input_
-			self.ki*=timeChange/self.lastTimeChange
-			self.kd/=timeChange/self.lastTimeChange
-			self.Iterm = self.ki * error*timeChange
-			if self.Iterm > outMax:
-				self.Iterm = outMax
-			elif self.Iterm < outMin:
-				self.Iterm=outMin
-			dInput=self.input_-self.lastInput
-			self.output=self.kp * error + self.Iterm - self.kd * dInput/timeChange
+			#self.input_=self.inputs[0].recv()
+			self.error=self.consigne-self.retour
+			self.I*=timeChange/self.lastTimeChange
+			self.D/=timeChange/self.lastTimeChange
+			self.Iterm = self.I * error*timeChange
+			if self.Iterm > self.outMax:
+				self.Iterm = self.outMax
+			elif self.Iterm < self.outMin:
+				self.Iterm=self.outMin
+			dInput=self.retour-self.last_retour
+			self.output=self.P*error+self.Iterm-self.D*dInput/timeChange
 			
-			if self.output > outMax:
-				self.output = outMax
-			elif self.output < outMin:
-				self.output = outMin
+			if self.output > self.outMax:
+				self.output = self.outMax
+			elif self.output < self.outMin:
+				self.output = self.outMin
 			self.lastOutput=self.output
-			Array=pd.DataFrame([[now-self.t_0, self.output]])
-			try:
-				for output in self.outputs:
-					output.send(Array)
-			except:
-				pass
-			self.lastInput = self.input_
+			self.last_retour = self.retour
 			self.lastTime = now
 			self.lastTimeChange=timeChange
-			return True
-		else:
-			return False
+
 	
 
 		
