@@ -1,0 +1,30 @@
+set HTTPS_PROXY=http://yourproxyadresse.com:port or add it to your environnement variable
+
+pip install numpy
+pip install scipy
+
+if you have an error like "cannot find laplack/blas": try to install numpy+MLK and scipy from python wheel: http://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+pip install -i https://pypi.anaconda.org/carlkl/simple mingwpy
+
+add "c:\Python27\share\mingwpy\bin" to your Path environnement variable.
+
+pip install pyserial
+pip install pandas
+
+- Download latest OpenCV release from sourceforge site and double-click to extract it.
+- Goto opencv/build/python/2.7 folder.
+- Copy cv2.pyd to C:/Python27/lib/site-packeges.
+
+
+- create a file in C:\Python27\Lib\distutils, named distutils.cfg and containing these two lines:
+
+[build]
+compiler = mingw32
+
+
+
+- if you want ipython:
+	
+pip install pyreadline
+pip isntall ipython

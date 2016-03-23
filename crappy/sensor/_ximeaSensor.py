@@ -14,7 +14,7 @@ import ximeaModule as xi
 #except ImportError: 
 	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
-
+import platform
 def resettable(f, *args, **kwargs):
     """
     Decorator for resetting the camera device. Not working yet.
@@ -48,7 +48,7 @@ class Ximea(cameraSensor.CameraSensor):
 	data_format : int, default = 0
 		Value must be in [0:7]. See documentation for more informations.
 	"""
-	@resettable
+	#@resettable
 	def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):
 		self.quit=False
 		self.FPS=framespersec
@@ -70,9 +70,10 @@ class Ximea(cameraSensor.CameraSensor):
 		"""
 		#Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
 		#self.sensor=_ximeaSensor.XimeaSensor(self.numdevice, self.exposure, self.gain, self.width, self.height, self.xoffset, self.yoffset, self.framespersec, self.external_trigger, self.data_format)
-		nd, fps, et, df = self.numdevice,self.FPS,self.external_trigger,self.data_format
-		self.reset()
-		self.__init__(numdevice=nd, framespersec = fps, external_trigger=et, data_format=df)
+		if(platform.system()=="Linux"):
+			nd, fps, et, df = self.numdevice,self.FPS,self.external_trigger,self.data_format
+			self.reset()
+			self.__init__(numdevice=nd, framespersec = fps, external_trigger=et, data_format=df)
 		
 		GLOBAL_ENABLE_FLAG = True
 		

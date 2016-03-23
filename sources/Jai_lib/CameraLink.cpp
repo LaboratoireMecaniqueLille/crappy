@@ -71,7 +71,7 @@ void CaptureCAM_CL::init()
     nId = 0;
 }
 
-void CaptureCAM_CL::display(int dis){
+/*void CaptureCAM_CL::display(int dis){
     if(dis==1){
       if(nId== 0)
 	  nId=CreateDisplay(24,640,513);
@@ -84,7 +84,7 @@ void CaptureCAM_CL::display(int dis){
 	nId=0;
       }
     }
-}
+}*/
 
 /**
  * \fn bool CaptureCAM_CL::open( int wIndex, const char* file)
@@ -98,7 +98,7 @@ bool CaptureCAM_CL::open( int wIndex, const char* file)
 {
     int isSlave =0;
     boardNr=wIndex;
-    if ((fg = Fg_InitEx("MediumAreaGray16", wIndex, isSlave)) == NULL) {
+    if ((fg = Fg_InitEx("FullLineGray8", wIndex, isSlave)) == NULL) {
       fprintf(stderr, "error in Fg_InitEx: %s\n", Fg_getLastErrorDescription(NULL));
       exit(EXIT_FAILURE);
     }
@@ -171,7 +171,7 @@ bool CaptureCAM_CL::grabFrame()
     try{
     cur_pic_nr = Fg_getLastPicNumberBlockingEx(fg, last_pic_nr + 1, camPort, timeout, memHandle);
     if (cur_pic_nr < 0) {
-      sprintf(Data,"Fg_getLastPicNumberBlockingEx(%li) failed: %s\n",last_pic_nr+1, Fg_getLastErrorDescription(fg));
+      sprintf(Data,"Fg_getLastPicNumberBlockingEx failed: %s\n", Fg_getLastErrorDescription(fg));
 //       cout << "timeout: " << timeout << endl;
       stop();
       throw string(Data);

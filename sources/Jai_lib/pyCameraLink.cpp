@@ -459,6 +459,7 @@ static int VideoCapture_init(VideoCapture *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
+/*
 PyObject* VideoCapture_Display(VideoCapture *self, PyObject *args)
 {
 	int open;
@@ -469,7 +470,8 @@ PyObject* VideoCapture_Display(VideoCapture *self, PyObject *args)
 	    capt->display(open);
 	}
 	return Py_None;
-}
+}*/
+
 static PyMemberDef VideoCapture_members[] = {
     {NULL} 
 };
@@ -492,8 +494,8 @@ static PyMethodDef VideoCapture_methods[] = {
 	 "Stop the acquisition of a camera device."},
 	 {"serialWrite", (PyCFunction)VideoCapture_serialSet, METH_VARARGS,
 	 "Write data to the serial port of a camera device."},
-	 {"show", (PyCFunction)VideoCapture_Display, METH_VARARGS,
-	 "display image."},
+	 //{"show", (PyCFunction)VideoCapture_Display, METH_VARARGS,
+	 //"display image."},
     {NULL}
 };
 
@@ -553,26 +555,26 @@ initclModule(void)
 {
     try{
         PyObject* m;
-	PyObject *tmp, *d;
-	import_array();
+		PyObject *tmp, *d;
+		import_array();
         if (PyType_Ready(&VideoCaptureType) < 0)
-//                     throw std::logic_error( "unable to install cameraLink module" );
-            return;
+			cout << "unable to install ximea module" << endl;
 
         m = Py_InitModule3("clModule", module_methods,
                         "Python module to control devices throught cameraLink interface");
 
-        if (m == NULL)//                     throw std::logic_error( "unable to install cameraLink module" ); 
-	    return;
-	d = PyModule_GetDict(m);
-	map<string, int>::iterator p;
-	for(p = my_map.begin(); p != my_map.end(); p++)
-	{
-		tmp = Py_BuildValue("i", p->second);
-		PyDict_SetItemString(d, (char *)p->first.c_str(), tmp);
-		Py_DECREF(tmp);
-	}
-            
+	    if (m == NULL)
+			cout << ( "unable to install ximea module" ) << endl;
+
+		d = PyModule_GetDict(m);
+		map<string, int>::iterator p;
+		for(p = my_map.begin(); p != my_map.end(); p++)
+		{
+			tmp = Py_BuildValue("i", p->second);
+			PyDict_SetItemString(d, (char *)p->first.c_str(), tmp);
+			Py_DECREF(tmp);
+		}
+	            
         Py_INCREF(&VideoCaptureType);
         PyModule_AddObject(m, "VideoCapture", (PyObject *)&VideoCaptureType);
     } 
@@ -581,8 +583,6 @@ initclModule(void)
         std::cerr << e.what(); 
     } 
 }
-
-
 /** @} */ 
 /** @} */
 /** @} */

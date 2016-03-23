@@ -19,9 +19,9 @@ class Jai(cameraSensor.CameraSensor):
         self.FPS = framespersec
         self.framespersec=framespersec
         self.numdevice = numdevice
-	root = Tk()
-	root.withdraw()
-	self.configFile = tk.askopenfilename(parent=root)
+        root = Tk()
+        root.withdraw()
+        self.configFile = tk.askopenfilename(parent=root)
         self.serial=serial
         self._init = True
         

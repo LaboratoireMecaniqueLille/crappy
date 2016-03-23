@@ -1,6 +1,6 @@
 #include "ximea.h"
 #include "export.h"
-#include <numpy/arrayobject.h>
+#include "numpy/arrayobject.h"
 #include <datetime.h>
 #include "structmember.h"
 CaptureCAM_XIMEA* capt;
@@ -319,15 +319,14 @@ initximeaModule(void)
 	PyObject *tmp, *d;
 	import_array();
     if (PyType_Ready(&VideoCaptureType) < 0)
-		throw std::logic_error( "unable to install ximea module" );
-//         return;
+		cout << "unable to install ximea module" << endl;
 
     m = Py_InitModule3("ximeaModule", module_methods,
                        "Module that allows the use of Ximea camera");
 
     if (m == NULL)
-		throw std::logic_error( "unable to install ximea module" ); 
-//       return;
+		cout << ( "unable to install ximea module" ) << endl;
+
 	d = PyModule_GetDict(m);
 	map<string, int>::iterator p;
 	for(p = my_map.begin(); p != my_map.end(); p++)

@@ -1,4 +1,7 @@
-from ._comediActuator import ComediActuator
+import platform
+
+if(platform.system()=="Linux"):
+	from ._comediActuator import ComediActuator
 from ._biaxeActuator import BiaxeActuator
 from ._biotensActuator import BiotensActuator
 from ._variateurTriboActuator import VariateurTriboActuator

@@ -24,14 +24,24 @@
 #define XIMEA_H
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "Python.h"
+
+#ifndef WIN32
+#ifdef _WIN32
+#define WIN32 _WIN32
+#include <windows.h>
+#define sleep(x) Sleep(x)
+#endif
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include<iostream>
 #include <memory.h>
 #include <string.h>
-#include <unistd.h>
+#include <io.h>
+// #include <unistd.h>
 #include <typeinfo>
-#include <cstdint>
+// #include <cstdint>
 #include <fgrab_prototyp.h>
 #include <clser.h>
 // #include "export.h"
@@ -78,7 +88,7 @@ public:
     void            *ImgPtr; /*!< Pointer to image data*/
     bool isopened; /*!< State of the camera device*/
     void serialWrite(char buffer[]);
-    void display(int dis);
+    //void display(int dis);
 private:
     void init();
     void errMsg(const char* msg, int errNum);
@@ -108,7 +118,7 @@ extern "C" {
         int device;
         const char* file;
     } VideoCapture;
-    PyObject* VideoCapture_Display(VideoCapture *self, PyObject *args);
+    //PyObject* VideoCapture_Display(VideoCapture *self, PyObject *args);
     PyObject* VideoCapture_open(int device, const char* file);
     PyObject* VideoCapture_isOpened();
     PyObject* VideoCapture_release();

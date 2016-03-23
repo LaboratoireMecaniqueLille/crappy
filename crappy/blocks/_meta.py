@@ -1,8 +1,10 @@
 # coding: utf-8
 from multiprocessing import Process, Pipe
 #import os
+import platform
 import ctypes, time
-libc = ctypes.CDLL('libc.so.6')
+if(platform.system()=="Linux"):
+	libc = ctypes.CDLL('libc.so.6')
 
 class MasterBlock(object):
 	"""
@@ -66,4 +68,7 @@ def delay(ms):
   """Delay in milliseconds with libc usleep() using ctypes.
   It has a better repeatability than time.sleep()"""
   ms = int(ms*1000)
-  libc.usleep(ms)
+  if(platform.system()=="Linux"):
+  	libc.usleep(ms)
+  else:
+  	time.sleep(ms)

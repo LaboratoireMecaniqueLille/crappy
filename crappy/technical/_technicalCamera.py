@@ -56,7 +56,7 @@ videoextenso : dict
 			self.serial = None
 		#print "module, cameraclass, serial : ", module, CameraClass, self.serial
         #initialisation:
-		self.sensor = CameraClass(numdevice=numdevice, serial= self.serial)
+		self.sensor = CameraClass(numdevice=numdevice) #, serial= self.serial)
 		self.videoextenso = videoextenso
 		recv_pipe,send_pipe=Pipe()
 		print "lauching camera config..."

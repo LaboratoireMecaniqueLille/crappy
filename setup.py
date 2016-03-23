@@ -9,45 +9,62 @@ https://github.com/pypa/sampleproject
 from setuptools import setup, find_packages, setuptools
 # To use a consistent encoding
 from codecs import open
-from os import path, uname, system, popen
+import os
+from os import path, system, popen
 from subprocess import call
 from multiprocessing import cpu_count
 from distutils.command.build import build
 from distutils.core import setup, Extension
+import platform
 from distutils.command.install import install
 comediModule = Extension('sensor.comediModule', sources = ['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'], extra_link_args=["-l", "comedi", "-l", "python2.7"])
-ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
-clModule = Extension('sensor.clModule', sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-l", "python2.7", "-L", "/opt/SiliconSoftware/Runtime5.4.1.2/lib64/", "-l", "display", "-l", "clsersis", "-l", "fglib5"])
 here = path.abspath(path.dirname(__file__))
-
 # Get the long description from the relevant file
 with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-execfile('./crappy/__version__.py') # read the current version in version.py
-extentions = [comediModule]
+execfile(".\crappy\__version__.py") # read the current version in version.py
 
-p = popen("lsmod |grep menable")
+extentions = []
 
-if(len(p.read())!=0):
-    extentions.append(clModule)
-else:
-    print "Wrong Kernel version, Jai library will not compile.\n"
+if(platform.system()=="Linux") :
+    ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
+    clModule = Extension('sensor.clModule', sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-l", "python2.7", "-L", "/opt/SiliconSoftware/Runtime5.4.1.2/lib64/", "-l", "display", "-l", "clsersis", "-l", "fglib5"])
+    extentions.append(comediModule)
+    p = popen("lsmod |grep menable")
+    if(len(p.read())!=0) :
+        extentions.append(clModule)
+    else:
+        print "Wrong Kernel version, Jai library will not be compiled.\n"
+    p = popen("lsmod |grep m3api")
+    if(len(p.read()) != 0) :
+        extentions.append(ximeaModule)
+    else:
+        print "libm3api not installed, ximeaModule will not be compiled"
 
-p = popen("lsmod |grep m3api")
-if(len(p.read()) != 0):
-    extentions.append(ximeaModule)
-else:
-    print "libm3api not installed, ximeaModule will not compile"
+if(platform.system()=="Windows"):
+    ximeaModule = Extension('sensor.ximeaModule', include_dirs = ["c:\\XIMEA\\API", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyximea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-Lc:\\XIMEA\\API", "-Lc:\\XIMEA\\API\\x64", "-lm3apiX64"])
+    clModule = Extension('sensor.clModule', include_dirs = ["C:\Program Files\SiliconSoftware\Runtime5.2.1\lib", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-LC:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\bin" ,"" , "-lclsersis", "-lfglib5"])
+    p = popen('driverquery /NH |findstr "mu3camX64"')
+    if(len(p.read())!=0):
+        extentions.append(ximeaModule)
+    else:
+        print "Can't find Ximea driver,ximeaModule will not be compiled.\n"
     
-    
+    p = popen('driverquery /NH |findstr "me4"')
+    if(len(p.read()) != 0):
+        extentions.append(clModule)
+    else:
+        print "Can't find microEnable4 Device driver, clModule will not be compiled"
+
+"""    
 class LibBuild(build):
   
     def run(self):
 		# run original build code
 		build.run(self)
 		#self.run_command("build_ext ../crappy/")
-		jai_build_path = path.join(here, 'sources/Jai_lib/')
+		jai_build_path = path.join(here, 'sources/Jai_lib/old')
 		jai_cmd = [
 			'make',
 			'OUT=' + jai_build_path,
@@ -59,10 +76,11 @@ class LibBuild(build):
 			print 'Unable to determine number of CPUs. Using single threaded make.'
 		
 		def compile():
-			#if(uname()[2]=='3.2.0-70-generic'):
-				call(jai_cmd, cwd=jai_build_path)
-			#else:
-				#print "Wrong Kernel version, Jai library not compiled.\n"
+                p = popen("lsmod |grep menable")
+                if(len(p.read())!=0):
+    				call(jai_cmd, cwd=jai_build_path)
+    			else:
+    				print "Wrong Kernel version, Jai library not compiled.\n"
 			
 		self.execute(compile, [], 'Compiling libraries')
 
@@ -71,21 +89,22 @@ class LibClean(build):
 	def run(self):
 		# run original build code
 		build.run(self)
-		jai_build_path = path.join(here, 'sources/Jai_lib/')
+		jai_build_path = path.join(here, 'sources/Jai_lib/old')
 		jai_cmd = [
 			'make clean',
 			'OUT=' + jai_build_path,
 			'V=' + str(self.verbose),
 			]
 		def clean():
-			#if(uname()[2]=='3.2.0-70-generic'):
+			p = popen("lsmod |grep menable")
+            if(len(p.read())!=0)
 				call(jai_cmd, cwd=jai_build_path)
-			#else:
-				#print "Wrong Kernel version, unable to find Jai library\n"
+			else:
+				print "Wrong Kernel version, unable to find Jai library\n"
 			
 		self.execute(clean, [], 'Deleting shared objects.')
 		
-
+"""
 
 setup(
     name='crappy',
@@ -149,7 +168,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy','scipy', 'matplotlib','pandas'],
+    #install_requires=['scipy','numpy', 'matplotlib', 'pandas'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -160,10 +179,10 @@ setup(
         'test': ['coverage'],
     },
     
-    cmdclass={
-        'build': LibBuild,
-        'clean': LibClean
-    },
+    #cmdclass={
+    #    'build': LibBuild
+    #    'clean': LibClean
+    #},
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
@@ -187,8 +206,17 @@ setup(
     #},
 )
 if(ximeaModule in extentions):
-     system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
+    if(platform.system()=="Windows"):
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\ximeaModule.pyd crappy\\sensor\\')
+    if(platform.system()=="Linux"):
+        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
 if(comediModule in extentions):
-     system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')
+    if(platform.system()=="Linux"):
+        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')
 if(clModule in extentions):
-     system('cp build/lib.linux-x86_64-2.7/crappy/sensor/clModule.so crappy/sensor/')
+    if(platform.system()=="Windows"):
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\clModule.pyd crappy\\sensor\\')
+    if(platform.system()=="Linux"):
+        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/clModule.so crappy/sensor/')
+
+

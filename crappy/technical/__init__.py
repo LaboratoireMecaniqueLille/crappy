@@ -3,8 +3,10 @@
     #"""Entry point for the application script"""
     #print("Call your main application code here")
 
-
-from ._biotensTechnical import Biotens
+try:
+	from ._biotensTechnical import Biotens
+except:
+	print 'Cannot install Biotens module'
 from ._biaxeTechnical import Biaxe
 from ._cameraInit import getCameraConfig
 from ._technicalCamera import TechnicalCamera
