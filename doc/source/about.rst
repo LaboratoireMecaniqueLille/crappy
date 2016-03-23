@@ -1,5 +1,5 @@
 What is Crappy ?
-==============
+================
 
 CRAPPY is an acronym and stands for Command and Real-time Acquisition in 
 Parallelized PYthon.

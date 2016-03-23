@@ -1,7 +1,7 @@
 # coding: utf-8
 #from ._meta import cameraSensor
 import numpy as np
-import time
+#import time
 from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation

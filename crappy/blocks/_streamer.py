@@ -1,7 +1,7 @@
 # coding: utf-8
 from _meta import MasterBlock
 import time
-import pandas as pd
+#import pandas as pd
 from collections import OrderedDict
 from ..links._link import TimeoutError
 

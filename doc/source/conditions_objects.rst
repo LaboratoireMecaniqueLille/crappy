@@ -10,11 +10,11 @@ small classes, implemented by the user, and they are added on the links.
 A link paired with a condition won't simply transfer data, but transfer the 
 result of the data passed by the condition.
 That mean almost infinite possibilites :
+
 - Modify the values you are passing
 - Evaluate a composition of the values
 - Decide wether you should transfer - or not - the data
 - Transfer something completely different from the input values
-
 
 This can be used to send a signal to another block (for example to synchronise 
 a camera), filter the signal with a mean, include numerical modelisation in 

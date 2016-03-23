@@ -1,5 +1,5 @@
 ﻿# coding: utf-8
-import serial
+#import serial
 #from ..sensor import _biotensSensor
 from ..actuator import _biaxeActuator
 

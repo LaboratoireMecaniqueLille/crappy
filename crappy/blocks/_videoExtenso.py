@@ -4,11 +4,11 @@ from multiprocessing import Process, Pipe
 import numpy as np
 np.set_printoptions(threshold='nan', linewidth=500)
 import time
-import pandas as pd
+#import pandas as pd
 import cv2
 from ..links._link import TimeoutError
 from ..technical import TechnicalCamera as tc
-import SimpleITK as sitk # only for testing
+#import SimpleITK as sitk # only for testing
 from skimage.filter import threshold_otsu, rank
 from skimage.measure import regionprops
 from skimage.morphology import label,erosion, square,dilation

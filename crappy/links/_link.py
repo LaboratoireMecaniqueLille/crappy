@@ -3,7 +3,7 @@ from multiprocessing import Pipe
 import copy
 from functools import wraps
 #import errno
-import os
+#import os
 import signal
 
 class TimeoutError(Exception):

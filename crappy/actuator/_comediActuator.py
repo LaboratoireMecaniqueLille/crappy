@@ -1,7 +1,7 @@
 # coding: utf-8
 #from ._meta import acqSensor
-import numpy as np
-import time
+#import numpy as np
+#import time
 import comedi as c
 #from multiprocessing import Array
 #import os

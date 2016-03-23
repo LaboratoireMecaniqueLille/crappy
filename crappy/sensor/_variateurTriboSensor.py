@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import serial
+#import serial
 
 class VariateurTriboSensor(object):
 	def __init__(self,ser):

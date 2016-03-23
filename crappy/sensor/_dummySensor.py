@@ -1,10 +1,10 @@
 # coding: utf-8
-import numpy as np
+#import numpy as np
 import time
 #import comedi as c
-from multiprocessing import Array
+#from multiprocessing import Array
 #import os
-import sys, string, struct
+#import sys, string, struct
 
 
 

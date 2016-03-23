@@ -1,5 +1,5 @@
 # coding: utf-8
-from multiprocessing import Process, Pipe
+from multiprocessing import Process
 #import os
 import ctypes, time
 libc = ctypes.CDLL('libc.so.6')

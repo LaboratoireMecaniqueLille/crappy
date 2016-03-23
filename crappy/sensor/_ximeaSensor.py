@@ -1,11 +1,11 @@
 # coding: utf-8
 from ._meta import cameraSensor
-import numpy as np
-import ctypes
-import numpy as np
-from numpy.ctypeslib import ndpointer
-from os import path
-here = path.abspath(path.dirname(__file__))
+#import numpy as np
+#import ctypes
+#import numpy as np
+#from numpy.ctypeslib import ndpointer
+#from os import path
+#here = path.abspath(path.dirname(__file__))
 import ximeaModule as xi
 
 
