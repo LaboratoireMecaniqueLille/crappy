@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock
 import pandas as pd
 import time
@@ -8,9 +9,7 @@ class SignalAdapter(MasterBlock):
 	"""DEPRECATED. Multiply the signal by a coefficient"""
 	def __init__(self,initial_coeff=0,delay=5,send_freq=800,labels=['t(s)','signal']):
 		"""
-SignalAdapter(initial_coeff=0,delay=5,labels=['t(s)','signal'])
-
-DEPRECATED: use a link condition instead. See Examples/fissuration_v2.py
+DEPRECATED : use a link condition instead. See Examples/fissuration_v2.py
 
 Multiply input signal by an input coefficient.
 
@@ -25,8 +24,8 @@ delay : float, default = 5
 labels : list of string, default = ['t(s)','signal']
 	Labels of output signal, in a pandas.DataFrame() format.
 	
-Returns:
---------
+Returns
+-------
 Panda Dataframe.
 
 		"""

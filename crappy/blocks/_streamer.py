@@ -1,17 +1,22 @@
+# coding: utf-8
 from _meta import MasterBlock
 import time
-import pandas as pd
+#import pandas as pd
 from collections import OrderedDict
 from ..links._link import TimeoutError
 
 class Streamer(MasterBlock):
 	"""
-Children class of MasterBlock. Send a fake stream of data in a pipe, with 
-labels ["t(s)","signal"]
+Send a fake stream of data.
 	"""
 	def __init__(self,labels=['t(s)','signal']):
 		"""
-Send iterated value through a Link object.
+Use it for testing.
+
+Parameters
+----------
+labels : list of str, default = ['t(s)','signal']
+	Output labels.
 		"""
 		self.labels=labels
 		

@@ -1,11 +1,12 @@
+# coding: utf-8
 from _meta import MasterBlock
 import time
 import os
 #import gc
 
 class CommandComedi(MasterBlock):
-	"""Receive a signal and translate it for the Biotens actuator"""
-	def __init__(self, comedi_actuators):
+	"""Receive a signal and send it to a Comedi card"""
+	def __init__(self, comedi_actuators,signal_label="signal"):
 		"""
 Receive a signal and translate it for the Comedi card.
 
@@ -14,7 +15,11 @@ CommandComedi(comedi_actuators)
 Parameters
 ----------
 comedi_actuators : list of crappy.actuators.ComediActuator objects.
+	List of all the outputs to control.
+signal_label : str, default = 'signal'
+	Label of the data to be transfered.
 		"""
+		self.signal_label=signal_label
 		self.comedi_actuators=comedi_actuators
 		print "command comedi! "
 	
@@ -27,7 +32,7 @@ comedi_actuators : list of crappy.actuators.ComediActuator objects.
 				#try:
 					#cmd=Data['signal'].values[0]
 				#except AttributeError:
-				cmd=Data['signal']
+				cmd=Data[self.signal_label]
 				if cmd!= last_cmd:
 					for comedi_actuator in self.comedi_actuators:
 						comedi_actuator.set_cmd(cmd)

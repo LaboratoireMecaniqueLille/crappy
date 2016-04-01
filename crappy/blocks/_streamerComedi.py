@@ -1,17 +1,18 @@
+# coding: utf-8
 from _meta import MasterBlock
 import os
 import numpy as np
 import time
 import struct
 np.set_printoptions(threshold='nan', linewidth=500)
-import pandas as pd
+#import pandas as pd
 from collections import OrderedDict
 from ..links._link import TimeoutError
 
 
 class StreamerComedi(MasterBlock):
 	"""
-Children class of MasterBlock. Send comedi value through a Link object.
+Stream comedi values at high frequency.
 	"""
 	def __init__(self,comediSensor,labels=None,freq=8000,buffsize=10000):
 		"""
@@ -19,16 +20,19 @@ WARNING :DOES NOT WORK AT THE MOMENT, USE measureComediByStep INSTEAD.
 
 This streamer read the value on all channels at the same time and send the 
 values through a Link object. It can be very fast, but needs need an USB 2.0
-port drove by ehci to work properly. xhci driver DOES NOT work (for now).
+port drove by ehci-driver to work properly. 
+xhci driver DOES NOT work (for now).
 
-Parameters:
------------
+Parameters
+----------
 comediSensor : comediSensor object
 	See sensor.ComediSensor documentation.
-labels : list
+labels : list of str
 	The labels you want with your data.
-freq : int (default 8000)
+freq : int (default = 8000)
 	the frequency you need.
+buffsize : int, default = 10000
+	Only use for testing purpose.
 		"""
 		import comedi as c
 		self.labels=labels

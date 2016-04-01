@@ -1,5 +1,6 @@
+# coding: utf-8
 from _meta import MasterBlock
-import pandas as pd
+#import pandas as pd
 import os
 from ..links._link import TimeoutError
 from collections import OrderedDict
@@ -8,8 +9,6 @@ class Compacter(MasterBlock):
 	"""Many to one block. Compactate several data streams into arrays."""
 	def __init__(self,acquisition_step):
 		"""
-Compacter(acquisition_step)
-
 Read data inputs and save them in a panda dataframe of length acquisition_step.
 This block must be used to send data to the Saver or the Grapher.
 Input values sent by the Links must be array (1D).
@@ -21,11 +20,11 @@ Parameters
 ----------
 acquisition_step : int
 	Number of values to save in each data-stream before returning the array.
-	
-Returns:
---------
-Panda Dataframe of shape (number_of_values_in_input,acquisition_step)
 
+
+Returns
+-------
+dict : OrderedDict(shape (number_of_values_in_input,acquisition_step))
 		"""
 		print "compacter!"
 		self.acquisition_step=acquisition_step

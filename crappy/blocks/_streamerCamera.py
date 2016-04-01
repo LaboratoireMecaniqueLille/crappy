@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock
 import os
 import time
@@ -7,38 +8,39 @@ from ..links._link import TimeoutError
 
 class StreamerCamera(MasterBlock):
 	"""
-Children class of MasterBlock. Send frames through a Link object.
+Streams pictures.
 	"""
 	def __init__(self,camera,numdevice=0,freq=None,save=False,
 			  save_directory="./images/",label="cycle",xoffset=0,yoffset=0,width=2048,height=2048):
 		"""
-StreamerCamera(camera,numdevice=0,freq=None,save=False,save_directory="./images/",
-			label="cycle",xoffset=0,yoffset=0,width=2048,height=2048)
-
-This block fetch images from a camera object, save and/or transmit them to 
-another block. It can be triggered by a Link sending boolean or internally 
+This block fetch images from a camera object, can save and/or transmit them to 
+another block. It can be triggered by a Link or internally 
 by defining the frequency.
 
-Parameters:
------------
-camera : string, {"Ximea","Jai"}
+Parameters
+----------
+camera : {"Ximea","Jai"}
 	See sensor.cameraSensor documentation.
 numdevice : int, default = 0
 	If you have several camera plugged, choose the right one.
-freq : float or int, optional
+freq : float or int or None, default=None
 	Wanted acquisition frequency. Cannot exceed acquisition device capability.
-save : boolean
-	Set to True if you want the block to save images.
-save_directory : directory
+	If None, will go as fast as possible.
+save : boolean, default =False
+	Set to True if you want to save images.
+save_directory : directory, default = "./images/"
 	directory to the saving folder. If inexistant, will be created.
 label : string, default="cycle"
 	label of the input data you want to save in the name of the saved image, in 
 	case of external trigger.
-xoffset : int, default=0
-yoffset: int, default=0
-width: int, default=2048
-height: int, default=2048
-
+xoffset: int, default = 0
+	Offset on the x axis.
+yoffset: int, default = 0
+	Offset on the y axis.
+width: int, default = 2048
+	Width of the image.
+height: int, default = 2048
+	Height of the image.
 		"""
 		print "streamer camera!!" 
 		import SimpleITK as sitk

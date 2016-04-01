@@ -1,3 +1,4 @@
+# coding: utf-8
 import serial
 from ..sensor import _variateurTriboSensor
 from ..actuator import _variateurTriboActuator

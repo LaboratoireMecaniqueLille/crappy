@@ -1,80 +1,134 @@
-﻿from _meta import MasterBlock
+﻿# coding: utf-8
+from _meta import MasterBlock
 import numpy as np
 import time
-import pandas as pd
+#import pandas as pd
 from scipy import stats
 from collections import OrderedDict
-import copy
+#import copy
 #import pickle
 from ..links._link import TimeoutError
-import multiprocessing
+#import multiprocessing
 from sys import stdout
 
 class MultiPath(MasterBlock):
 	"""
-Children class of MasterBlock. Use it for traction-torsion testing.
+	Children class of MasterBlock. Use it for traction-torsion testing.
 	"""
-	def __init__(self,path=None,send_freq=400,dmin=22,dmax=25,default_G=71*10**9,default_E=196*10**9,repeat=False):
+	def __init__(self,path=None,send_freq=400,dmin=22,dmax=25,\
+			  default_G=71*10**9,default_E=196*10**9,repeat=False):
 		"""
-		
-WIP
-
-SignalGenerator(path=None,send_freq=800,repeat=False,labels=['t(s)','signal'])
-
-Calculate a signal, based on the time (from t0). There is several configurations,
-see the examples section for more details.
+This block is specific for use in traction-torsion testing. You need 
+to define a path to follow, with the available waveform. Unlike the 
+SignalGenerator block, as we don't need time synchronisation in this 
+case, the link beween one step and the next will be done smoothly and 
+automatically, even if there is a gap.
+default_G and default_E will only be used for plasticity evaluation in
+case of "goto" waveform, and if the evaluated E and G are not good 
+enough in plasticity detection. This can happend if your are close to
+the axis, e.g is the def or dist stay close to 0. To avoid this 
+phenomenom, if the evaluated vectors are too close of the axis, they 
+will be rotated.
 
 Parameters
 ----------
 path : list of dict
-	Each dict must contain parameters for one step. See Examples section below.
-	Available parameters are :
-	* waveform : {'sinus','square','triangle','limit','hold'}
-		Shape of your signal, for every step.
-	* freq : int or float
-		Frequency of your signal.
-	* time : int or float or None
-		Time before change of step, for every step. If None, means infinite.
-	* cycles : int or float or None (default)
-		Number of cycles before change of step, for every step. If None, means infinite.
-	* amplitude : int or float
-		Amplitude of your signal.
-	* offset: int or float
-		Offset of your signal.
-	* phase: int or float
-		Phase of your signal (in radians). If waveform='limit', phase will be 
-		the direction of the signal (up or down).
-	* lower_limit : [int or float,sting]
-		Only for 'limit' mode. Define the lower limit as a value of the
-		labeled signal : [value,'label']
-	* upper_limit : [int or float,sting]
-		Only for 'limit' mode. Define the upper limit as a value of the 
-		labeled signal : [value,'label']
-send_freq : int or float , default = 800
-	Loop frequency. Use this parameter to avoid over-use of processor and avoid
-	filling the link too fast.
+	Each dict must contain parameters for one step.
+	
+	See Examples section below.
+	
+		waveform : {‘detection’,’goto’,’trefle’,’sablier’,’circle’,\ 
+			‘traction’,’torsion’,’proportionnal’}
+			Shape of your signal, for every step. Possible values are :
+			
+			**detection** is the plasticity surface detection.
+			
+			**goto** get you to a certain point in the def-dist referentiel :
+			You can specify *mode* : *plastic_def* to apply a plastic load.
+			In this case, you will move in direction of **position** until 
+			**target** def is reached.
+		time : int or float or None.
+			Time before change of step, for every step. If None, means infinite.
+		cycles : int or float or None (default).
+			Number of cycles before change of step, for every step. If None, means infinite.
+		gain : int or float.
+			Amplitude of your signal. WARNING : a gain of 1 will result in 100% deformation.
+		offset: tuple of int of tuple of float
+			Offset of your signal.
+			
+send_freq : int or float , default = 400
+	Loop frequency. Use this parameter to avoid over-use of processor.
+	
+dmin : int or float, default = 22
+	value of the internal diameter of the test specimen, in mm.
+	
+dmax : int or float, default = 25
+	value of the external diameter of the test specimen, in mm.
+	
+default_G : int or float, default = 71*10**9
+	value of the default shear modulus, in Pa.
+	
+default_E : int or float, default = 196*10**9
+	value of the default Young modulus, in Pa.
+	
 repeat : Boolean, default=False
 	Set True is you want to repeat your sequence forever.
-labels : list of strings, default =['t(s)','signal']
-	Allows you to set the labels of output data.
 
-Returns:
+Returns
+-------
+dict : OrderedDict
+
+
+	def(%) : 
+		output signal for traction
+	
+	dist(deg) : 
+		output signal for torsion
+	
+	def_plast(%) : 
+		evaluated plastic def, if evaluated
+	
+	E(Pa) : 
+		Young modulus
+	
+	G(Pa) : 
+		shear modulus
+	
+	status : 
+		Status of the plasticity detection, formated x.y
+	
+		- x : number of the current branch 
+		- y : substep 
+		
+			* 0 : just starting, eliminating the first points
+			
+			* 1 : evaluating E and G
+			
+			* 2 : detecting plasticity
+			
+			* 3 : platicity detected
+			
+			* -1 : plasticity surface detected
+	
+	
+	relative_eps_tot : 
+		total deformation, relative to the starting point. Used for 
+		plasticity detection.
+
+
+Examples
 --------
-Panda Dataframe with time and signal. If waveform='limit', signal can be -1/0/1.
+>>> SignalGenerator(path=[{"waveform":"detection","cycles":1},
+{"waveform":"goto","mode":"total_def","position":[0,0]},
+{"waveform":"goto","mode":"plastic_def","target":0.002,"position":[-10,0]},
+{"waveform":"trefle","gain":0.001,"cycles":1,"offset":[0.001:-0.002]},
+{"waveform":"traction","gain":0.001,"cycles":0.25,"offset":[-0.001:0.002]}],
+send_freq=400,dmin=22,dmax=25,default_G=71*10**9,default_E=196*10**9,repeat=False)
 
-Examples:
----------
-SignalGenerator(path=[{"waveform":"hold","time":3},
-					{"waveform":"sinus","time":10,"phase":0,"amplitude":2,"offset":0.5,"freq":2.5},
-					{"waveform":"triangle","time":10,"phase":np.pi,"amplitude":2,"offset":0.5,"freq":2.5},
-					{"waveform":"square","time":10,"phase":0,"amplitude":2,"offset":0.5,"freq":2.5}
-					{"waveform":"limit","cycles":3,"phase":0,"lower_limit":[-3,"signal"],"upper_limit":[2,"signal"]}],
-					send_freq=400,repeat=True,labels=['t(s)','signal'])
-In this example we displayed every possibility or waveform.
+In this example we displayed some possibilities of waveform.
 Every dict contains informations for one step.
 The requiered informations depend on the type of waveform you need.
-
-		"""
+		""" 
 		print "MultiPath!"
 		self.path=path # list of list or arrays
 		self.nb_step=len(path)

@@ -3,16 +3,26 @@ import ctypes
 import numpy as np
 from numpy.ctypeslib import ndpointer
 from os import path
-here = path.abspath(path.dirname(__file__))
-build_path = path.join(here, '../sources/Jai-lib/cllib.so')
-jai = ctypes.CDLL(build_path)
+try: # for autodocumentation
+	here = path.abspath(path.dirname(__file__))
+	build_path = path.join(here, '../sources/Jai-lib/cllib.so')
+	jai = ctypes.CDLL(build_path)
+except OSError:
+	pass
 
 from ._meta import cameraSensor
 
 class Jai(cameraSensor.CameraSensor):
-  
     def __init__(self,numdevice=0, framespersec=99):
+        """Opens a Jai camera and allow to grab frame and set the various parameters.
         
+        Parameters
+        ----------
+        numdevice : int, dault = 0
+            Number of the wanted device.
+        framepersec : int, default = 99
+            Wanted frame rate.
+        """
         self.FPS = framespersec
         self.framespersec=ctypes.c_double(self.FPS)
         self.numdevice = numdevice
@@ -43,30 +53,27 @@ class Jai(cameraSensor.CameraSensor):
         
       
     def getImage(self):
-        """
-        This method get a frame on the selected camera and return a ndarray 
-        """
+        """This method get a frame on the selected camera and return a ndarray """
         return jai.Camera_Buffer(self.cam)	
   
     def stop(self):
-        """
-        This method stops the acquisition 
-        """
+        """This method stops the acquisition."""
         jai.Camera_stop(self.cam)
         
     def close(self):
-        """
-        This method close properly the frame grabber
-        It releases the allocated memory and stops the acquisition
+        """This method close properly the frame grabber. 
+        It releases the allocated memory and stops the acquisition.
         """
         return jai.Camera_close(self.cam)
     
     def restart(self):
+        """Restart the device."""
         print "restart camera \n"
         jai.Camera_Buffer.restype = ndpointer(dtype=np.uint8, shape=(self.height, self.width))
         jai.Camera_start(self.cam)
         
     def reset_ZOI(self):
+        """Reset to initial dimensions."""
         print "stop camera \n"
         self.stop()
         self.cam = jai.Camera_new(self.numdevice, self.framespersec)
@@ -79,17 +86,20 @@ class Jai(cameraSensor.CameraSensor):
         
     @property
     def height(self):
+        """Property. Set / get the current height"""
         print "height getter"
         return self._height
     
     @height.setter
     def height(self,height):
+
         print "height setter"
         jai.Camera_setHeight(self.cam, int(height))
         self._height=jai.Camera_getHeight(self.cam)
         
     @property
     def width(self):
+        """Property. Set / get the current width"""
         print "width getter"
         return self._width
     
@@ -101,6 +111,7 @@ class Jai(cameraSensor.CameraSensor):
 
     @property
     def yoffset(self):
+        """Property. Set / get the current yoffset"""
         print "yoffset getter"
         return self._yoffset
     
@@ -112,6 +123,7 @@ class Jai(cameraSensor.CameraSensor):
     
     @property
     def xoffset(self):
+        """Property. Set / get the current xoffset"""
         print "xoffset getter"
         return self._xoffset
 
@@ -123,24 +135,22 @@ class Jai(cameraSensor.CameraSensor):
     
     @property
     def exposure(self):
+        """Property. Set / get the current exposure
+        
+        Return a status (0 if it succed, -1 if it failed).
+        """
         return self._exposure
     
     @property
     def gain(self):
+        """No gain on Jai camera"""
         return None
         
     @exposure.setter
     def exposure(self, exposure):
-        """
-        this method changes the exposure of the camera
-        set the exposure attribute and return a status (0 if it succed, -1 if it failed)
-        """
         jai.Camera_setExposure(self.cam, int(exposure))
         self._exposure = jai.Camera_getExposure(self.cam)
               
     def __str__(self):
-        """
-        This method prints out the attributes values
-        """
         return " Exposure: {0} \n FPS: {1} \n Numdevice: {2} \n Width: {3} \n Height: {4} \n X offset: {5} \n Y offset: {6}".format(self.exposure, self.FPS, self.numdevice, self.width, self.height, self.xoffset, self.yoffset)
       

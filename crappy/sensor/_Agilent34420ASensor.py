@@ -1,12 +1,27 @@
+# coding: utf-8
 import serial
 
 class Agilent34420ASensor(object):
-	"""
-	Sensor class for Agilent34420A devices.
-	"""
+	"""Sensor class for Agilent34420A devices."""
 	def __init__(self,mode="VOLT",device='/dev/ttyUSB0',baudrate=9600,timeout=10):
-		# We could add several type of measure: RES, CUR, TENS...
-		#self.serial=serial
+		"""This class contains method to measure values of resistance or \
+		tension on Agilent34420A devices. May work for other devices too, but \
+		not tested.
+		
+		If you have issues with this class returning a lot of 'bad serial', \
+		make sure you have the last version of pySerial.
+		
+		Parameters
+		----------
+		mode : {"VOLT","RES"} , default = "VOLT"
+			Desired value to measure.
+		device : str, default = '/dev/ttyUSB0'
+			Path to the device.
+		baudrate : int, default = 9600
+			Desired baudrate.
+		timeout : int or float, default = 10
+			Timeout for the serial connection.
+		"""
 		self.device=device
 		self.baudrate=baudrate
 		self.timeout=timeout
@@ -20,7 +35,7 @@ class Agilent34420ASensor(object):
 		self.getData()
 
 	def getData(self):
-		"""Read the signal, return False if error"""
+		"""Read the signal, return False if error and print 'bad serial'."""
 		try:
 			self.ser.write("READ?  \n")
 			#tmp = self.ser.readline()
@@ -37,6 +52,7 @@ class Agilent34420ASensor(object):
 			return False
 					
 	def close(self):
+		"""Close the serial port."""
 		self.ser.close()
 		
 #def get_serial(ser):

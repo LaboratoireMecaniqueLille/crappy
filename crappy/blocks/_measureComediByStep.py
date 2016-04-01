@@ -1,3 +1,4 @@
+# coding: utf-8
 from _meta import MasterBlock
 import time
 #import pandas as pd
@@ -8,24 +9,23 @@ from ..links._link import TimeoutError
 
 class MeasureComediByStep(MasterBlock):
 	"""
-Children class of MasterBlock. Send comedi value through a Link object.
+Streams value measure on a comedi card through a Link object.
 	"""
 	def __init__(self,comediSensor,labels=None,freq=None):
 		"""
-MeasureComediByStep(comediSensor,labels=None,freq=None)
-
 This streamer read the value on all channels ONE BY ONE and send the 
 values through a Link object. it is slower than StreamerComedi, but works on 
 every USB driver. 
+
 It can be triggered by a Link sending boolean (through "add_input" method),
 or internally by defining the frequency.
 
-Parameters:
------------
+Parameters
+----------
 comediSensor : comediSensor object
 	See sensor.ComediSensor documentation.
 labels : list
-	The labels you want with your data.
+	The labels you want on your output data.
 freq : float or int, optional
 	Wanted acquisition frequency. Cannot exceed acquisition card capability.
 		"""

@@ -5,12 +5,12 @@ import crappy
 import pandas as pd
 import numpy as np
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
-try:
-	import sys
-	sys.path.insert(0, '/home/essais-2015-3/Bureau/')
-	import alerte_jerome
-except:
-	pass
+#try:
+	#import sys
+	#sys.path.insert(0, '/home/essais-2015-3/Bureau/')
+	#import alerte_jerome
+#except:
+	#pass
 #for tracking memory leaks:
 #from pympler import tracker
 #tr = tracker.SummaryTracker()
@@ -23,14 +23,13 @@ except:
 #summary.print_(diff)     
 
 class condition_coeff(crappy.links.MetaCondition):
-	def __init__(self,test=False):
+	def __init__(self):
 		initial_coeff=0
 		self.last_cycle=-1
 		self.coeff=initial_coeff
 		self.last_coeff=initial_coeff
 		self.delay=10
 		self.blocking=False
-		self.test=test
 		self.last_new_coeff=initial_coeff
 		self.new_coeff=0
 		#print "condition coeff"
@@ -38,11 +37,14 @@ class condition_coeff(crappy.links.MetaCondition):
 	def evaluate(self,value):
 		#print "1"
 		recv=self.external_trigger.recv(blocking=self.blocking) # first run is blocking, others are not
+		#print "2"
 		self.blocking=False
 		try:
 			self.new_coeff=recv['coeff']
 		except TypeError: # if no new coeff
+			#print "no new coeff"
 			pass
+		#print recv
 		if self.new_coeff!=self.coeff: # if coeff is changing
 			if self.new_coeff!=self.last_new_coeff: # if first change
 				self.t_init=time.time()
@@ -58,10 +60,7 @@ class condition_coeff(crappy.links.MetaCondition):
 			self.t1=self.t2
 		val=value.pop('signal')
 		value['signal']=val*self.coeff
-		if self.test:
-			return None
-		else:
-			return value
+		return value
 
 class condition_cycle_bool(crappy.links.MetaCondition):
 	def __init__(self,n=1,n_per_cycle=2):
@@ -91,8 +90,8 @@ class condition_K(crappy.links.MetaCondition):
 		#self.a0_elec= 3.4*10**(-3) #longueur prefissure
 		self.e = 3.8*10**(-3) # epaisseur eprouvette
 		self.K1=6*10**6
-		self.F0=6800.
-		self.K0=self.F0/(2000.) # 2000 Newtons/Volt on the instron computer
+		self.F0=10000.
+		self.K0=self.F0/(2500.) # 2000 Newtons/Volt on the instron computer
 		self.FIFO=[]
 		self.size=120 # 120 cycles = 1 minute
 		if self.K0>4:
@@ -100,16 +99,17 @@ class condition_K(crappy.links.MetaCondition):
 		self.first=True
 		self.finish=False
 		#self.V0=0#2.348060601499999723e-04   ################################################################################################################################### Add here the v0 value if you restart the script
-	def evaluate(self,value):]
+	def evaluate(self,value):
+		#print "sending tension value"
 		self.FIFO.insert(0,value['tension(V)'])
 		if len(self.FIFO)>self.size:
 			self.FIFO.pop()
 		median_value=np.median(self.FIFO)
-		if value['t_agilent(s)']> 00: ###################################################################################################################### delay before starting
+		if value['t_agilent(s)']> 30: ###################################################################################################################### delay before starting
 			if self.first:
 				self.first=False
 				self.V0= median_value #*0.727
-				np.savetxt('/home/essais-2015-3/Bureau/V0.txt',[self.V0])
+				np.savetxt('/home/essais-2015-3/Bureau/test_fissurationv2.1/V0.txt',[self.V0])
 				self.K=self.K0
 				#self.V0= 2.138003450000000236e-04 #jusqu au cycle 508200
 			#a= (2.*self.W/np.pi)*np.arccos(np.cosh(np.pi*self.y/(2.*self.W))/np.cosh(median_value/self.V0*np.arccosh(np.cosh(np.pi*self.y/(2.*self.W))/np.cos(np.pi*self.a0_elec*10**(-3)/(2.*self.W))))) #johnson law
@@ -122,10 +122,10 @@ class condition_K(crappy.links.MetaCondition):
 			Fmax = self.K1/(Y*np.sqrt(3.1416*a))*self.e*self.W
 			if not(np.isnan(Fmax)):
 				self.K=(Fmax/self.F0)*self.K0
-			if a > (4.4*10**(-3)): ##########################################################################################################################################
-				# comment this loop if you don't want to stop the test
-				self.K=0
-				self.finish=True
+			#if a > (4.4*10**(-3)): ##########################################################################################################################################
+				## comment this loop if you don't want to stop the test
+				#self.K=0
+				#self.finish=True
 			print "a, Fmax, K ,median value : ", a, Fmax, self.K, median_value
 		if self.K>self.K0:
 			print "WARNING, evaluation of K is wrong!"
@@ -142,8 +142,8 @@ try:
 ########################################### Creating objects
 	
 
-	instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10000],offset=[0,0])
-	agilentSensor=crappy.sensor.Agilent34420ASensor(device='/dev/ttyUSB0',baudrate=9600,timeout=1)
+	instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,15000],offset=[0,0])
+	agilentSensor=crappy.sensor.Agilent34420ASensor(device='/dev/ttyUSB1',baudrate=9600,timeout=1)
 	#agilentSensor=crappy.sensor.DummySensor()
 	comedi_actuator=crappy.actuator.ComediActuator(device='/dev/comedi1',subdevice=1,channel=1,range_num=0,gain=1,offset=0)
 
@@ -153,16 +153,16 @@ try:
 ########################################### Creating blocks
 	comedi_output=crappy.blocks.CommandComedi([comedi_actuator])
 	tension=crappy.blocks.MeasureAgilent34420A(agilentSensor,labels=['t_agilent(s)','tension(V)'])
-	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="/home/corentin/Bureau/images_fissuration_25-11-15/")
+	camera=crappy.blocks.StreamerCamera("Ximea",freq=None,save=True,save_directory="/home/essais-2015-3/Bureau/test_fissurationv2.1/images_fissuration_18-02-16/")
 	
 	compacter_tension=crappy.blocks.Compacter(5)
 	graph_tension=crappy.blocks.Grapher("dynamic",('t_agilent(s)','tension(V)')) #,('t(s)','tension(V)')
-	save_tension=crappy.blocks.Saver("/home/essais-2015-3/Bureau/tension_coeff.txt")
+	save_tension=crappy.blocks.Saver("/home/essais-2015-3/Bureau/test_fissurationv2.1/tension_coeff.txt")
 	
-	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','dep(mm)','F(N)'],freq=300)
-	compacter_effort=crappy.blocks.Compacter(300)
+	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','dep(mm)','F(N)'],freq=200)
+	compacter_effort=crappy.blocks.Compacter(100)
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
-	save_effort=crappy.blocks.Saver("/home/essais-2015-3/Bureau/t_dep_F.txt")
+	save_effort=crappy.blocks.Saver("/home/essais-2015-3/Bureau/test_fissurationv2.1/t_dep_F.txt")
 	
 	##compacter_signal=crappy.blocks.Compacter(500)
 	##save_signal=crappy.blocks.Saver("/home/essais-2015-3/Bureau/signal_cycle.txt")
@@ -175,8 +175,8 @@ try:
 														#{"waveform":"triangle","time":10,"phase":0,"amplitude":0,"offset":2000,"freq":0.02}],
 							#send_freq=100,repeat=True,labels=['t(s)','coeff','cycle'])
 	
-	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"sinus","time":1000000,"phase":0,"amplitude":0.45,"offset":0.55,"freq":2}],
-							send_freq=500,repeat=True,labels=['t(s)','signal','cycle'])
+	signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"sinus","time":1000000,"phase":0,"amplitude":0.45,"offset":0.55,"freq":4}],
+							send_freq=600,repeat=True,labels=['t(s)','signal','cycle'])
 	
 	####CommandComedi([comedi_actuator])
 	
@@ -190,7 +190,7 @@ try:
 ########################################### Creating links
 	
 
-	link1=crappy.links.Link(condition=condition_cycle_bool(n=50))
+	link1=crappy.links.Link(condition=condition_cycle_bool(n=100))
 	link2=crappy.links.Link(condition=condition_cycle_bool(n=1,n_per_cycle=1))
 	link3=crappy.links.Link(condition=condition_K())
 	link4=crappy.links.Link()
@@ -210,11 +210,11 @@ try:
 	#link15=crappy.links.Link()
 	#link16=crappy.links.Link()
 	
-	link_alert=crappy.links.Link(condition=alerte_jerome.Alert())
+	#link_alert=crappy.links.Link(condition=alerte_jerome.Alert())
 ########################################### Linking objects
 
 	camera.add_input(link1)
-	camera.add_output(link_alert)
+	#camera.add_output(link_alert)
 	
 	tension.add_input(link2)
 	tension.add_output(link3)
@@ -271,7 +271,7 @@ try:
 ########################################### Starting objects
 
 	t0=time.time() #1.445448736241215944e+09 ############################################################################################### modify t0 here if you restart your script
-	np.savetxt('/home/essais-2015-3/Bureau/t0.txt',[t0])
+	np.savetxt('/home/essais-2015-3/Bureau/test_fissurationv2.1/t0.txt',[t0])
 	for instance in crappy.blocks._meta.MasterBlock.instances:
 		instance.set_t0(t0)
 
