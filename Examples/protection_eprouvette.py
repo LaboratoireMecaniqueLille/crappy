@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
 	########################################### Creating blocks
 		
-		compacter_effort=crappy.blocks.Compacter(200)
+		compacter_effort=crappy.blocks.Compacter(100)
 		#save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Annie/effort.txt")
 		graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
 		
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 		#save_extenso=crappy.blocks.Saver("/home/biaxe/Bureau/Annie/extenso.txt")
 		#graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 		
-		effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
+		effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=100)
 		#extenso=crappy.blocks.VideoExtenso(camera="Ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True)
 		
 		#signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},
@@ -42,14 +42,14 @@ if __name__ == '__main__':
 									#{"waveform":"limit","gain":0,"cycles":0.5,"phase":0,"lower_limit":[50,'F4(N)'],"upper_limit":[9.7,'Eyy(%)']},
 									#{"waveform":"limit","gain":1,"cycles":0.5,"phase":-np.pi,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']}],
 									#send_freq=400,repeat=True,labels=['t(s)','signal'])
-		signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":1,"phase":0,"lower_limit":[-0.1,'F2(N)'],"upper_limit":[0.1,'F2(N)']},
-															send_freq=400,repeat=True,labels=['t(s)','signal'])
+		signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F2(N)'],"upper_limit":[1,'F2(N)']}],
+															send_freq=100,repeat=True)
 		
-		signalGenerator_horizontal=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":1,"phase":0,"lower_limit":[-0.1,'F4(N)'],"upper_limit":[0.1,'F4(N)']},
-																		send_freq=400,repeat=True,labels=['t(s)','signal'])
+		signalGenerator_horizontal=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F4(N)'],"upper_limit":[1,'F4(N)']}],
+																		send_freq=100,repeat=True)
 		
-		biotens=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1,biaxeTech2],speed=-200) # vertical
-		biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-200)
+		biotens=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1,biaxeTech2],speed=-5000) # vertical
+		biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-5000)
 		#horizontal # speed must be <0 for traction
 
 	########################################### Creating links
@@ -89,7 +89,7 @@ if __name__ == '__main__':
 		biotens_horizontal.add_input(link92)
 
 		compacter_effort.add_input(link6)
-		compacter_effort.add_output(link7)
+		#compacter_effort.add_output(link7)
 		compacter_effort.add_output(link8)
 		
 		#save_effort.add_input(link7)
