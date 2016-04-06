@@ -22,6 +22,7 @@ class Jai(cameraSensor.CameraSensor):
         root = Tk()
         root.withdraw()
         self.configFile = tk.askopenfilename(parent=root)
+        # self.configFile = "C:\\Users\\ECOLE\\fullareagray8.mcf"
         self.serial=serial
         self._init = True
         
@@ -47,50 +48,49 @@ class Jai(cameraSensor.CameraSensor):
         
       
     def getImage(self):
-	    """
-	    This method get a frame on the selected camera and return a ndarray 
-	    If the camera breaks down, it reinitializes it, and tries again.
-	    """
-	    try:
-		    ret, frame = self.jai.read()
+        """
+        This method get a frame on the selected camera and return a ndarray 
+        If the camera breaks down, it reinitializes it, and tries again.
+        """
+        try:
+            ret, frame = self.jai.read()
+        except KeyboardInterrupt:
+            print "KeyboardInterrupt, closing camera ..."
+            self.close()
+            self.quit=True
 
-	    except KeyboardInterrupt:
-		    print "KeyboardInterrupt, closing camera ..."
-		    self.close()
-		    self.quit=True
-
-	    try:
-		    if ret:
-			    return frame.get('data')
-			    #return frame
-		    elif not(self.quit):
-			    print "restarting camera..."
-			    time.sleep(0.5)
-			    #expo, wi, he, xoff,yoff,ga=self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain
-			    #self.reset()
-			    #self.__init__()
-			    #self.new(expo, wi, he, xoff,yoff,ga) # Reset the camera instance
-			    self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
-			    return self.getImage()
-	    except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
-		    pass
-	    
+        try:   
+            if ret:
+             return frame.get('data')
+                #return frame
+            elif not(self.quit):
+                print "restarting camera..."
+                time.sleep(0.5)
+                #expo, wi, he, xoff,yoff,ga=self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain
+                #self.reset()
+                #self.__init__()
+                #self.new(expo, wi, he, xoff,yoff,ga) # Reset the camera instance
+                self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
+                return self.getImage()
+        except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
+            pass
+        
     def stop(self):
         """This method stops the acquisition."""
         try:
-	  self.jai.stopAcq()
-	except:
-	  print "cannot stop acquisition\n"
-	  
+          self.jai.stopAcq()
+        except:
+          print "cannot stop acquisition\n"
+      
     def close(self):
         """This method close properly the frame grabber. 
         It releases the allocated memory and stops the acquisition.
         """
         try:
-	  self.jai.release()
-	except:
-	  print "cannot close Jai device"
-	  
+          self.jai.release()
+        except:
+          print "cannot close Jai device"
+      
     
     def restart(self):
         """Restart the device."""
@@ -106,14 +106,14 @@ class Jai(cameraSensor.CameraSensor):
         self.restart()
         
     def set_ZOI(self, width, height, xoffset, yoffset):
-	"""Define the Zone Of Interest"""
-	self.stop()
-	self.yoffset = yoffset
-	self.xoffset = xoffset
-	self.width = width
-	self.height = height
-	self.restart()
-	
+        """Define the Zone Of Interest"""
+        self.stop()
+        self.yoffset = yoffset
+        self.xoffset = xoffset
+        self.width = width
+        self.height = height
+        self.restart()
+    
     @property
     def height(self):
         """Property. Set / get the current height"""
@@ -124,7 +124,8 @@ class Jai(cameraSensor.CameraSensor):
         self.jai.set(cl.FG_HEIGHT, int(height))
         self._height=self.jai.get(cl.FG_HEIGHT)
         if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_HEIGHT,self._height))
+            self.jai.serialWrite(self.serial.getCode(cl.FG_HEIGHT,self._height))
+
     @property
     def width(self):
         """Property. Set / get the current width"""
@@ -132,11 +133,11 @@ class Jai(cameraSensor.CameraSensor):
     
     @width.setter
     def width(self,width):
-	"width setter"
         self.jai.set(cl.FG_WIDTH, (int(width)-(int(width)%32)))
         self._width= self.jai.get(cl.FG_WIDTH)
-	if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_WIDTH,self._width))
+        if(self.serial!=None):
+            self.jai.serialWrite(self.serial.getCode(cl.FG_WIDTH,self._width))
+
     @property
     def yoffset(self):
         """Property. Set / get the current yoffset"""
@@ -146,8 +147,8 @@ class Jai(cameraSensor.CameraSensor):
     def yoffset(self,yoffset):
         self.jai.set(cl.FG_YOFFSET, int(yoffset))
         self._yoffset= self.jai.get(cl.FG_YOFFSET)
-	if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_YOFFSET,self._yoffset))
+        if(self.serial!=None):
+            self.jai.serialWrite(self.serial.getCode(cl.FG_YOFFSET,self._yoffset))
 
     @property
     def xoffset(self):
@@ -159,7 +160,7 @@ class Jai(cameraSensor.CameraSensor):
         self.jai.set(cl.FG_XOFFSET, (int(xoffset)-(int(xoffset)%32)))
         self._xoffset= self.jai.get(cl.FG_XOFFSET)
         if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_XOFFSET,self._xoffset))
+            self.jai.serialWrite(self.serial.getCode(cl.FG_XOFFSET,self._xoffset))
     
     @property
     def exposure(self):
@@ -179,11 +180,11 @@ class Jai(cameraSensor.CameraSensor):
         self.jai.set(cl.FG_EXPOSURE, int(exposure))
         self._exposure = self.jai.get(cl.FG_EXPOSURE)
         if(self.serial!=None):
-	  self.jai.serialWrite(self.serial.getCode(cl.FG_EXPOSURE,self._exposure))
+            self.jai.serialWrite(self.serial.getCode(cl.FG_EXPOSURE,self._exposure))
               
     def __str__(self):
         return " Exposure: {0} \n FPS: {1} \n Numdevice: {2} \n Width: {3} \n Height: {4} \n X offset: {5} \n Y offset: {6}".format(self.exposure, self.FPS, self.numdevice, self.width, self.height, self.xoffset, self.yoffset)
     
     @property
     def name(self):
-	return "jai"
+       return "jai"

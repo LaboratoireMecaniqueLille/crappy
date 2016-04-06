@@ -32,7 +32,6 @@ CaptureCAM_CL::CaptureCAM_CL() {
 	init();
 }
 
-
 /**
  * \fn CaptureCAM_CL::~CaptureCAM_CL()
  * \brief Destructor of CaptureCAM_CL Class
@@ -58,7 +57,7 @@ void CaptureCAM_CL::init()
     nbBuffers= 4;
     samplePerPixel= 1;
     bytePerSample= 1;
-    TriggerMode= 1;
+    TriggerMode= GRABBER_CONTROLLED;
     memHandle =NULL;
     serialRefPtr = NULL;
     file = NULL;
@@ -94,15 +93,17 @@ void CaptureCAM_CL::init()
  * \param file path to the configuration file of the camera, cannot be Null.
  * \return True if the camera was correctly openned.
  */
-bool CaptureCAM_CL::open( int wIndex, const char* file)
+bool CaptureCAM_CL::open( int wIndex, const char* conffile)
 {
     int isSlave =0;
     boardNr=wIndex;
-    if ((fg = Fg_InitEx("FullLineGray8", wIndex, isSlave)) == NULL) {
+    // file=conffile;
+    cout << "FullLineGray8" << endl;
+    if ((fg = Fg_InitEx("FullAreaGray8", wIndex, isSlave)) == NULL) {
       fprintf(stderr, "error in Fg_InitEx: %s\n", Fg_getLastErrorDescription(NULL));
       exit(EXIT_FAILURE);
     }
-    if(Fg_loadConfig(fg,file)!=FG_OK){
+    if(Fg_loadConfig(fg,conffile)!=FG_OK){
       printf("\nFile config loading failed\n");
       exit(EXIT_FAILURE);
     }
@@ -112,27 +113,8 @@ bool CaptureCAM_CL::open( int wIndex, const char* file)
     if(Fg_setParameter(fg,FG_TRIGGERMODE,&TriggerMode,camPort)==FG_OK){
       printf("\nTrig config succeed\n");
     }
-    size_t totalBufferSize = width * height * samplePerPixel * bytePerSample * nbBuffers;
-    memHandle = Fg_AllocMemEx(fg, totalBufferSize, nbBuffers);
-    if (memHandle == NULL) {
-        fprintf(stderr, "error in Fg_AllocMemEx: %s\n", Fg_getLastErrorDescription(fg));
-        Fg_FreeGrabber(fg);
-        exit(EXIT_FAILURE);
-    }
-    int mvret = FG_OK;
-    mvret = Fg_setParameter(fg, FG_WIDTH, &width, camPort);
-    HandleResult(mvret, "error while setting width");
-    mvret = Fg_setParameter(fg, FG_HEIGHT, &height, camPort);
-    HandleResult(mvret, "error while setting height");
-    format = FG_GRAY16;
-    mvret = Fg_setParameter(fg,  FG_FORMAT, &format , camPort);
-    HandleResult(mvret, "error while setting data format");
-    
-    timeout = 10000;
-    
     return true;
 }
-
 
 
 /**
@@ -172,12 +154,11 @@ bool CaptureCAM_CL::grabFrame()
     cur_pic_nr = Fg_getLastPicNumberBlockingEx(fg, last_pic_nr + 1, camPort, timeout, memHandle);
     if (cur_pic_nr < 0) {
       sprintf(Data,"Fg_getLastPicNumberBlockingEx failed: %s\n", Fg_getLastErrorDescription(fg));
-//       cout << "timeout: " << timeout << endl;
       stop();
       throw string(Data);
     }else{
       last_pic_nr = cur_pic_nr;
-//       timeout=4;
+      timeout=4;
       ImgPtr = Fg_getImagePtrEx(fg, last_pic_nr, camPort, memHandle);
       return true;
     }
@@ -186,8 +167,10 @@ bool CaptureCAM_CL::grabFrame()
     sleep(5);
     timeout+= 100;
     last_pic_nr = 0;
+    const char *f=file;
+    int boardNb = boardNr;
     init();
-    open(boardNr,file);
+    open(boardNb,f);
     startAcquire();
     return grabFrame();
   }
@@ -201,6 +184,7 @@ bool CaptureCAM_CL::grabFrame()
  */
 void CaptureCAM_CL::resetCvImage()
 {
+    cout << "resetCvImage" << endl;
   //TODO
 //     if( (int)image.width != width || (int)image.height != height || image.frm != (XI_IMG_FORMAT)format)
 //     {
@@ -262,33 +246,49 @@ void CaptureCAM_CL::resetCvImage()
  */
 unsigned int CaptureCAM_CL::getProperty( int property_id )
 {
+/*    int i;
+    for (i = 0; i < 95; i++) {
+        const char *name = Fg_getParameterName(fg, i);
+        fprintf(stdout, " Param %d: %s, 0x%x\n", i, name, Fg_getParameterId(fg, i));
+    }
+    */
     if(fg == NULL)
         return 0;
     unsigned int value = NULL;
+    double val = NULL;
+    int ret = FG_OK;
     switch( property_id )
     {
-    case FG_PORT                : Fg_getParameter( fg, FG_PORT, &value, camPort); break;
-    case FG_WIDTH               : Fg_getParameter( fg, FG_WIDTH, &value, camPort); break;
-    case FG_HEIGHT              : Fg_getParameter( fg, FG_HEIGHT, &value, camPort); break;
-    case FG_XOFFSET             : Fg_getParameter( fg, FG_XOFFSET, &value, camPort); break;
-    case FG_YOFFSET             : Fg_getParameter( fg, FG_YOFFSET, &value, camPort); break;
-    case FG_XSHIFT              : Fg_getParameter( fg, FG_XSHIFT, &value, camPort); break;
-    case FG_TIMEOUT             : Fg_getParameter( fg, FG_TIMEOUT, &value, camPort); break;
-    case FG_FRAMESPERSEC        : Fg_getParameter( fg, FG_FRAMESPERSEC, &value, camPort); break;
-    case FG_FORMAT              : Fg_getParameter( fg, FG_FORMAT, &value, camPort); break;
-    case FG_EXPOSURE            : Fg_getParameter( fg, FG_EXPOSURE, &value, camPort); break;
-    case FG_TRIGGERMODE         : Fg_getParameter( fg, FG_TRIGGERMODE, &value, camPort); break;
-    case FG_STROBEPULSEDELAY    : Fg_getParameter( fg, FG_STROBEPULSEDELAY, &value, camPort); break;
-    case FG_GLOBAL_ACCESS       : Fg_getParameter( fg, FG_GLOBAL_ACCESS, &value, camPort); break;
-    case FG_CAMSTATUS           : Fg_getParameter( fg, FG_CAMSTATUS, &value, camPort); break;
-    case FG_REVNR               : Fg_getParameter( fg, FG_REVNR, &value, camPort); break;
-    case FG_MAXHEIGHT           : Fg_getParameter( fg, FG_MAXHEIGHT, &value, camPort); break;
-    case FG_PIXELDEPTH          : Fg_getParameter( fg, FG_PIXELDEPTH, &value, camPort); break;
-    case FG_LINEALIGNMENT       : Fg_getParameter( fg, FG_LINEALIGNMENT, &value, camPort); break;
-    case FG_TRANSFER_LEN        : Fg_getParameter( fg, FG_TRANSFER_LEN, &value, camPort); break;
-    case FG_TWOCAMMODEL         : Fg_getParameter( fg, FG_TWOCAMMODEL, &value, camPort); break;
-    case FG_HDSYNC              : Fg_getParameter( fg, FG_HDSYNC, &value, camPort); break;
-    case FG_BOARD_INFORMATION   : Fg_getParameter( fg, FG_BOARD_INFORMATION, &value, camPort); break;
+    case FG_PORT                : ret= Fg_getParameter( fg, FG_PORT, &value, camPort); break;
+    case FG_WIDTH               : ret= Fg_getParameter( fg, FG_WIDTH, &value, camPort); break;
+    case FG_HEIGHT              : ret= Fg_getParameter( fg, FG_HEIGHT, &value, camPort); break;
+    case FG_XOFFSET             : ret= Fg_getParameter( fg, FG_XOFFSET, &value, camPort); break;
+    case FG_YOFFSET             : ret= Fg_getParameter( fg, FG_YOFFSET, &value, camPort); break;
+    case FG_XSHIFT              : ret= Fg_getParameter( fg, FG_XSHIFT, &value, camPort); break;
+    case FG_TIMEOUT             : ret= Fg_getParameter( fg, FG_TIMEOUT, &value, camPort); break;
+    case FG_FRAMESPERSEC        : ret= Fg_getParameter( fg, FG_FRAMESPERSEC, &val, camPort); value = (unsigned int) val; break;
+    case FG_MAXFRAMESPERSEC     : ret= Fg_getParameter( fg, FG_MAXFRAMESPERSEC, &val, camPort); value = (unsigned int) val; break;
+    case FG_FORMAT              : ret= Fg_getParameter( fg, FG_FORMAT, &value, camPort); break;
+    case FG_EXPOSURE            : ret= Fg_getParameter( fg, FG_EXPOSURE, &value, camPort); break;
+    case FG_TRIGGERMODE         : ret= Fg_getParameter( fg, FG_TRIGGERMODE, &value, camPort); break;
+    case FG_STROBEPULSEDELAY    : ret= Fg_getParameter( fg, FG_STROBEPULSEDELAY, &value, camPort); break;
+    case FG_GLOBAL_ACCESS       : ret= Fg_getParameter( fg, FG_GLOBAL_ACCESS, &value, camPort); break;
+    case FG_CAMSTATUS           : ret= Fg_getParameter( fg, FG_CAMSTATUS, &value, camPort); break;
+    case FG_REVNR               : ret= Fg_getParameter( fg, FG_REVNR, &value, camPort); break;
+    case FG_MAXHEIGHT           : ret= Fg_getParameter( fg, FG_MAXHEIGHT, &value, camPort); break;
+    case FG_PIXELDEPTH          : ret= Fg_getParameter( fg, FG_PIXELDEPTH, &value, camPort); break;
+    case FG_LINEALIGNMENT       : ret= Fg_getParameter( fg, FG_LINEALIGNMENT, &value, camPort); break;
+    case FG_TRANSFER_LEN        : ret= Fg_getParameter( fg, FG_TRANSFER_LEN, &value, camPort); break;
+    case FG_TWOCAMMODEL         : ret= Fg_getParameter( fg, FG_TWOCAMMODEL, &value, camPort); break;
+    case FG_HDSYNC              : ret= Fg_getParameter( fg, FG_HDSYNC, &value, camPort); break;
+    case FG_BOARD_INFORMATION   : ret= Fg_getParameter( fg, FG_BOARD_INFORMATION, &value, camPort); break;
+
+    }
+    switch(ret)
+    {
+        case FG_NOT_INIT: cout << "Initialization failed." << endl; break; 
+        case FG_INVALID_PARAMETER: cout << "An invalid parameter has been entered." << endl; break; 
+        case FG_VALUE_OUT_OF_RANGE : cout << "Value is besides valid ranges." << endl; break; 
 
     }
     return value;
@@ -337,29 +337,29 @@ bool CaptureCAM_CL::setProperty( int property_id, int value )
 
     switch(property_id)
     {
-    case FG_PORT                : Fg_setParameter( fg, FG_PORT, &value, camPort); camPort = value; break;
-    case FG_WIDTH               : Fg_setParameter( fg, FG_WIDTH, &value, camPort); width = value; break;
-    case FG_HEIGHT              : Fg_setParameter( fg, FG_HEIGHT, &value, camPort); height = value; break;
-    case FG_XOFFSET             : Fg_setParameter( fg, FG_XOFFSET, &value, camPort); xoffset = value; break;
-    case FG_YOFFSET             : Fg_setParameter( fg, FG_YOFFSET, &value, camPort); yoffset = value; break;
-    case FG_XSHIFT              : Fg_setParameter( fg, FG_XSHIFT, &value, camPort); break;
-    case FG_TIMEOUT             : Fg_setParameter( fg, FG_TIMEOUT, &value, camPort); timeout = value; break;
-    case FG_FRAMESPERSEC        : {double val = double(value); Fg_setParameter( fg, FG_FRAMESPERSEC, &val, camPort); framespersec = value; break;}
-    case FG_FORMAT              : Fg_setParameter( fg, FG_FORMAT, &value, camPort); format = value; break;
-    case FG_EXPOSURE            : Fg_setParameter( fg, FG_EXPOSURE, &value, camPort); exposure = value; break;
-    case FG_TRIGGERMODE         : Fg_setParameter( fg, FG_TRIGGERMODE, &value, camPort); break;
-    case FG_STROBEPULSEDELAY    : Fg_setParameter( fg, FG_STROBEPULSEDELAY, &value, camPort); break;
-    case FG_GLOBAL_ACCESS       : Fg_setParameter( fg, FG_GLOBAL_ACCESS, &value, camPort); break;
+    case FG_PORT                : mvret = Fg_setParameter( fg, FG_PORT, &value, camPort); camPort = value; break;
+    case FG_WIDTH               : mvret = Fg_setParameter( fg, FG_WIDTH, &value, camPort); width = value; break;
+    case FG_HEIGHT              : mvret = Fg_setParameter( fg, FG_HEIGHT, &value, camPort); height = value; break;
+    case FG_XOFFSET             : mvret = Fg_setParameter( fg, FG_XOFFSET, &value, camPort); xoffset = value; break;
+    case FG_YOFFSET             : mvret = Fg_setParameter( fg, FG_YOFFSET, &value, camPort); yoffset = value; break;
+    case FG_XSHIFT              : mvret = Fg_setParameter( fg, FG_XSHIFT, &value, camPort); break;
+    case FG_TIMEOUT             : mvret = Fg_setParameter( fg, FG_TIMEOUT, &value, camPort); timeout = value; break;
+    case FG_FRAMESPERSEC        : {double val = double(value); cout << val << endl; mvret = Fg_setParameter( fg, FG_FRAMESPERSEC, &val, camPort); framespersec = value; break;}
+    case FG_FORMAT              : mvret = Fg_setParameter( fg, FG_FORMAT, &value, camPort); format = value; break;
+    case FG_EXPOSURE            : mvret = Fg_setParameter( fg, FG_EXPOSURE, &value, camPort); exposure = value; break;
+    case FG_TRIGGERMODE         : mvret = Fg_setParameter( fg, FG_TRIGGERMODE, &value, camPort); break;
+    case FG_STROBEPULSEDELAY    : mvret = Fg_setParameter( fg, FG_STROBEPULSEDELAY, &value, camPort); break;
+    case FG_GLOBAL_ACCESS       : mvret = Fg_setParameter( fg, FG_GLOBAL_ACCESS, &value, camPort); break;
     }
 
-    if(mvret != FG_OK)
+    switch(mvret)
     {
-        errMsg("Set parameter error", mvret);
-        return false;
-    }
-    else
-        return true;
+        case FG_NOT_INIT: cout << "Initialization failed." << endl; return false; break; 
+        case FG_INVALID_PARAMETER: cout << "An invalid parameter has been entered." << endl; return false; break; 
+        case FG_VALUE_OUT_OF_RANGE : cout << "Value is besides valid ranges." << endl; return false; break; 
 
+    }
+    return true;
 }
 
 
@@ -373,6 +373,21 @@ bool CaptureCAM_CL::setProperty( int property_id, int value )
  * \return FG_OK if the acquisition has started, FG_ERROR if it has failed.
  */
 int CaptureCAM_CL::startAcquire(){
+    size_t totalBufferSize = width * height * samplePerPixel * bytePerSample * nbBuffers;
+    memHandle = Fg_AllocMemEx(fg, totalBufferSize, nbBuffers);
+    if (memHandle == NULL) {
+        fprintf(stderr, "error in Fg_AllocMemEx: %s\n", Fg_getLastErrorDescription(fg));
+        Fg_FreeGrabber(fg);
+        exit(EXIT_FAILURE);
+    }
+    int mvret = FG_OK;
+    mvret = Fg_setParameter(fg, FG_WIDTH, &width, camPort);
+    HandleResult(mvret, "error while setting width");
+    mvret = Fg_setParameter(fg, FG_HEIGHT, &height, camPort);
+    HandleResult(mvret, "error while setting height");
+    format = FG_GRAY;
+    mvret = Fg_setParameter(fg,  FG_FORMAT, &format , camPort);
+    HandleResult(mvret, "error while setting data format");
     if ((Fg_AcquireEx(fg, camPort, nrOfPicturesToGrab, ACQ_STANDARD, memHandle)) < 0) {
       fprintf(stderr, "Fg_AcquireEx() failed: %s\n", Fg_getLastErrorDescription(fg));
       cout << "Start acquisition failed: " << Fg_getLastErrorDescription(fg) << endl;
@@ -390,10 +405,6 @@ int CaptureCAM_CL::startAcquire(){
 	close();
 	init();
 	return FG_ERROR;
-    }catch(int e){
-	close();
-	init();
-	return FG_ERROR;
     }
     return FG_OK;
 }
@@ -405,14 +416,21 @@ int CaptureCAM_CL::startAcquire(){
  * \return FG_OK if the acquisition ha restarted, FG_ERROR if it has failed.
  */
 int CaptureCAM_CL::restart(){
-  if ((Fg_AcquireEx(fg, camPort, nrOfPicturesToGrab, ACQ_STANDARD, memHandle)) < 0) {
+    size_t totalBufferSize = width * height * samplePerPixel * bytePerSample * nbBuffers;
+    memHandle = Fg_AllocMemEx(fg, totalBufferSize, nbBuffers);
+    if (memHandle == NULL) {
+        fprintf(stderr, "error in Fg_AllocMemEx: %s\n", Fg_getLastErrorDescription(fg));
+        Fg_FreeGrabber(fg);
+        exit(EXIT_FAILURE);
+    }
+    if ((Fg_AcquireEx(fg, camPort, nrOfPicturesToGrab, ACQ_STANDARD, memHandle)) < 0) {
     fprintf(stderr, "Fg_AcquireEx() failed: %s\n", Fg_getLastErrorDescription(fg));
     Fg_FreeMemEx(fg, memHandle);
     Fg_FreeGrabber(fg);
     return FG_ERROR;
-  }
+    }
 //   serialInit(ComNr);
-  return FG_OK;
+    return FG_OK;
 }
 
 void CaptureCAM_CL::errMsg(const char* msg, int errNum)

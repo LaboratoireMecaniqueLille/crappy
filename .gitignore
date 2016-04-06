@@ -1,5 +1,6 @@
 ﻿*.pyd
 *.pyc
+*.mcf
 *.egg-info
 *.kate-swp
 *.so

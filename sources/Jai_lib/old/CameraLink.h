@@ -1,11 +1,32 @@
-#ifndef DEF_CAMERA
-#define DEF_CAMERA
+#ifndef CAMERA_LINK_H
+#define CAMERA_LINK_H
+
+#ifndef WIN32
+#ifdef _WIN32
+#define WIN32 _WIN32
+#endif
+#endif
+
+#ifdef _WIN32
+#include <windows.h>
+#define sleep(x) Sleep(x)
+#else
+#include <unistd.h>
+#endif
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
+#include<iostream>
+#include <memory.h>
 #include <string.h>
+#include <typeinfo>
+#include <map>
+//#include <io.h>
+// #include <unistd.h>
+// #include <cstdint>
 #include <fgrab_prototyp.h>
 #include <clser.h>
+#include <SisoDisplay.h>
+
 #define DLLEXPORT extern "C"
 #define CHECK(param, paramDescr, Value)   if((Fg_setParameter(fg,param,Value, camPort)<0)){  \
 					      sprintf(Data,"Fg_setParameter(%s) failed: %s\n",paramDescr, Fg_getLastErrorDescription(fg)); \

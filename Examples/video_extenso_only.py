@@ -30,7 +30,7 @@ if __name__ == '__main__':
 		
 		#effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
 
-		extenso=crappy.blocks.VideoExtenso(camera="Ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=False,display=True)
+		extenso=crappy.blocks.VideoExtenso(camera="jai",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=False,display=True)
 		
 		#compacter_extenso2=crappy.blocks.Compacter(100)
 		#save_extenso2=crappy.blocks.Saver("/home/corentin/Bureau/extenso_1_spot.txt")

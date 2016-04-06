@@ -19,37 +19,35 @@
  * \version 0.1
  * \date 29/02/2016
  */
-
-#ifndef XIMEA_H
-#define XIMEA_H
+#ifndef CAMERA_LINK_H
+#define CAMERA_LINK_H
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "Python.h"
 
 #ifndef WIN32
 #ifdef _WIN32
 #define WIN32 _WIN32
-#include <windows.h>
-#define sleep(x) Sleep(x)
 #endif
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#define sleep(x) Sleep(x)
+#else
+#include <unistd.h>
+#endif
+
 #include <stdio.h>
-#include <stdlib.h>
-#include<iostream>
+#include <iostream>
 #include <memory.h>
-#include <string.h>
-#include <io.h>
-// #include <unistd.h>
+#include <string>
 #include <typeinfo>
+#include <map>
+//#include <io.h>
+// #include <unistd.h>
 // #include <cstdint>
 #include <fgrab_prototyp.h>
-#include <clser.h>
-// #include "export.h"
-#include <numpy/arrayobject.h>
 #include <SisoDisplay.h>
-// #include <datetime.h>
-#include "structmember.h"
-// #include <map>
 #define DLLEXPORT extern "C"
 #define CHECK(param, paramDescr, Value)   if((Fg_setParameter(fg,param,Value, camPort)<0)){  \
 					      sprintf(Data,"Fg_setParameter(%s) failed: %s\n",paramDescr, Fg_getLastErrorDescription(fg)); \
@@ -64,12 +62,12 @@ class CaptureCAM_CL
 public:
     CaptureCAM_CL(); /*!< Constructor */
     virtual ~CaptureCAM_CL(); /*!< Desctructor*/
-    virtual bool open( int index, const char* file);
-    virtual void close();
-    virtual bool grabFrame();
+    bool open( int index, const char* file);
+    void close();
+    bool grabFrame();
     int startAcquire();
     int restart();
-    int stop();
+    virtual int stop();
     unsigned int getProperty(int);
     bool setProperty(int, int);
     void resetCvImage();
@@ -106,7 +104,7 @@ private:
     char            Data[255];
     int             ComNr;
     void serialInit(unsigned int);
-    int checkSerialCom(int);
+    void checkSerialCom(int);
     void *serialRefPtr;
 };
 

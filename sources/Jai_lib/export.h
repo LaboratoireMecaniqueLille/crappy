@@ -1,4 +1,9 @@
-#include <map>
+#include "CameraLink.h"
+#include <utility>
+
+#ifdef WIN32
+map< string, int > my_map;
+#else 
 map< string, int > my_map= 
 {
 	{"FG_OK", FG_OK},// The parameter was set correctly.
@@ -28,22 +33,22 @@ map< string, int > my_map=
          *  48bit (FG_COL48).
          * See color management of the according frame grabber design.  
          */
-        {"FG_FORMAT", FG_FORMAT},
-        
-        {"FG_BINARY", FG_BINARY},
-        {"FG_GRAY", FG_GRAY},
+    {"FG_FORMAT", FG_FORMAT},
+    
+    {"FG_BINARY", FG_BINARY},
+    {"FG_GRAY", FG_GRAY},
 	{"FG_GRAY16 ", FG_GRAY16},
 	{"FG_COL24", FG_COL24},
 	{"FG_COL30", FG_COL30},
         {"FG_COL32", FG_COL32},
 	{"FG_COL48 ", FG_COL48},
 	
-        {"PORT_A", PORT_A}, // base config
-        {"PORT_B", PORT_B}, // base config
+    {"PORT_A", PORT_A}, // base config
+    {"PORT_B", PORT_B}, // base config
 	{"FG_COL48 ", PORT_AB}, // medium/full config
         
 	{"FG_PORT", FG_PORT},//Logical number of the active CameraLink port.
-        {"FG_PIXELDEPTH", FG_PIXELDEPTH},// Returns the depth of color of the pixel. 
+    {"FG_PIXELDEPTH", FG_PIXELDEPTH},// Returns the depth of color of the pixel. 
 	{"FG_LINEALIGNMENT ", FG_LINEALIGNMENT},// Returns the alignment of a line (in bits).
 	{"FG_RIGHT_ALIGNED", FG_RIGHT_ALIGNED}, // right
 	{"FG_LEFT_ALIGNED ", FG_LEFT_ALIGNED}, // left
@@ -83,6 +88,6 @@ map< string, int > my_map=
          *      0 for microEnable IV-Base x1
          *      1 for microEnable IV-Base x1 PoCL 
          */
-        {"FG_BOARD_INFORMATION", FG_BOARD_INFORMATION}
+    {"FG_BOARD_INFORMATION", FG_BOARD_INFORMATION}
 };
-
+#endif

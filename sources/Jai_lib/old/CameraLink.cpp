@@ -39,7 +39,7 @@ void Camera::toString(){
 
 int Camera::init(const char* file) {
   int isSlave =0;
-  if ((fg = Fg_InitEx("MediumLineRGB24", m_boardNr, isSlave)) == NULL) {
+  if ((fg = Fg_InitEx("FullAreaGray8", m_boardNr, isSlave)) == NULL) {
     fprintf(stderr, "error in Fg_InitEx: %s\n", Fg_getLastErrorDescription(NULL));
     exit(EXIT_FAILURE);
   }

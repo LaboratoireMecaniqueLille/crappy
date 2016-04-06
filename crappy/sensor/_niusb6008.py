@@ -52,23 +52,24 @@ class DaqmxSensor(object):
         DAQmxCreateAIVoltageChan(self.taskHandle,self.device,"",DAQmx_Val_Cfg_Default,
                                  self._ranges_tab[self.range_num][0],self._ranges_tab[self.range_num][1],
                                  DAQmx_Val_Volts,None)
-        ## DAQmx Start Code
-        DAQmxStartTask(self.taskHandle)
-
+        
 
     def getData(self,nbPoints=1):
         """Read the signal"""
         try:
             DAQmxCfgSampClkTiming(self.taskHandle, "", 
                                   10000.0, DAQmx_Val_Rising, DAQmx_Val_FiniteSamps, 
-                                  nbPoints)
-            # DAQmx Start Code
+                                  nbPoints+1)
+            ## DAQmx Start Code
             DAQmxStartTask(self.taskHandle)
-            data = numpy.zeros((nbPoints,), dtype=numpy.float64)
-            DAQmxReadAnalogF64(self.taskHandle, nbPoints, 10.0, 
+            
+            data = numpy.zeros((nbPoints+1,), dtype=numpy.float64)
+            DAQmxReadAnalogF64(self.taskHandle, nbPoints+1, 10.0, 
                                DAQmx_Val_GroupByChannel, data, 
-                               nbPoints, byref(self.read), None) # DAQmx Read Code
+                               nbPoints+1, byref(self.read), None) # DAQmx Read Code
             t=time.time()
+            # DAQmx Stop Code
+            DAQmxStopTask(self.taskHandle)
             if(nbPoints==1):
                 return (t, data[0])
             else:

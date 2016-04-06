@@ -2,8 +2,8 @@ import ctypes
 import numpy as np
 from numpy.ctypeslib import ndpointer
 from matplotlib import pyplot as plt
-cl = ctypes.CDLL('cllib.so')
-configFile= ctypes.c_char_p("config.mcf")
+cl = ctypes.CDLL('cameraLinkModule.dll')
+configFile= ctypes.c_char_p("testconfig.mcf")
 boardNr = 0	
 exposure = 4000
 width=2048
@@ -13,7 +13,7 @@ yoffset=0
 FPS=80
 framespersec=ctypes.c_double(FPS)
 
-cam = cl.Camera_new(boardNr, exposure, width, height, xoffset, yoffset, framespersec)
+cam = cl.Camera_new(boardNr, exposure, width, height, xoffset, yoffset, FPS)
 cl.Camera_toString(cam)
 cl.Camera_init(cam, configFile)
 

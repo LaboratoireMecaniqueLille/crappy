@@ -20,10 +20,18 @@
 
 #include "CameraLink.h"
 #include "export.h"
+#include <numpy/ndarrayobject.h>
+#include <datetime.h>
+#include "structmember.h"
 CaptureCAM_CL* capt;
 PyObject *myDict = PyDict_New();
 PyObject *rslt = PyTuple_New(2);
 char *array_buffer;
+
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 /**
  * \fn PyObject* VideoCapture_open(int device, const char* file)
 
@@ -159,11 +167,11 @@ bool VideoCapture_grab()
  */
 PyObject* VideoCapture_retrieve(VideoCapture *self)
 {
-		short n;
-                if(array_buffer==NULL){
-                    free(array_buffer);
-                    array_buffer=NULL;
-                }
+
+        if(array_buffer==NULL){
+            free(array_buffer);
+            array_buffer=NULL;
+        }
 		switch(capt->format)
 		{
 		case FG_BINARY: {
@@ -176,30 +184,23 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->ImgPtr, capt->width*capt->height);
 			break;}
-		case FG_GRAY:{ 
-			cout << "FG_GRAY" << endl;
+		case FG_GRAY:{
 			const int ndim = 2;
 			npy_intp nd[2] = {capt->height, capt->width};
-                        Py_XDECREF(self->myarray);
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_BYTE);
-                        Py_XDECREF(nd);
-			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			memcpy(array_buffer, capt->ImgPtr, capt->width*capt->height);
+            Py_XDECREF(self->myarray);
+			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->ImgPtr);
+			Py_XDECREF(nd);
 			break;
 			}
 		case FG_GRAY16: {
 			cout << "FG_GRAY16" << endl;
-			const int ndim = 3;
-			npy_intp nd[3] = {capt->height,capt->width, 2};
-                        Py_XDECREF(self->myarray);
-			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT16);
-                        Py_XDECREF(nd);
-			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			cout << capt->height << ":"<<capt->width << endl;
-			memcpy(array_buffer, capt->ImgPtr, capt->width*capt->height*4);
-// 			unsigned int (*array)[640*513] = (unsigned int (*)[640*513]) capt->ImgPtr;
-// 			cout << sizeof(array) << endl;
-			break;}
+			const int ndim = 2;
+			npy_intp nd[2] = {capt->height,capt->width};
+            Py_XDECREF(self->myarray);
+			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT16, capt->ImgPtr);
+			Py_XDECREF(nd);
+			break;
+			}
 		case FG_COL24: {
 			cout << "FG_COL24" << endl;
 			const int ndim = 1;
@@ -208,7 +209,6 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 			self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT16);
                         Py_XDECREF(nd);
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			cout << capt->height << ":"<<capt->width << endl;
 			memcpy(array_buffer, capt->ImgPtr, capt->width*capt->height*3);
 			break;}
 		case FG_COL30: {
@@ -241,8 +241,8 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 		default : 
 			return Py_None;
 		}
-		capt-> resetCvImage();
-                myDict = PyDict_New();
+		//capt-> resetCvImage();
+        myDict = PyDict_New();
 		myDict = VideoCapture_getMeta();
 		PyDict_SetItemString(myDict, "data", self->myarray);
     return myDict;
@@ -301,6 +301,7 @@ PyObject* VideoCapture_fgread(VideoCapture *self)
     }else{
 		PyTuple_SetItem(rslt, 0, Py_True);
 		PyTuple_SetItem(rslt, 1, VideoCapture_retrieve(self));
+		//PyTuple_SetItem(rslt, 1, Py_BuildValue("O&", capt->ImgPtr));
     }
     return rslt;
     
@@ -343,8 +344,8 @@ PyObject* VideoCapture_fgread(VideoCapture *self)
 PyObject* VideoCapture_set(VideoCapture *self, PyObject *args)
 {
 	int propId;
-	double value;
-	if (!PyArg_ParseTuple(args, "id", &propId, &value))
+	int value;
+	if (!PyArg_ParseTuple(args, "ii", &propId, &value))
 		exit(0);
     if(capt->setProperty(propId, value)) return Py_True;
 	else return Py_False;
@@ -437,7 +438,6 @@ static PyObject * VideoCapture_new(PyTypeObject *type, PyObject *args, PyObject 
 			return NULL;
 		}
     }
-
     return (PyObject *)self;
 }
 
@@ -476,6 +476,94 @@ static PyMemberDef VideoCapture_members[] = {
     {NULL} 
 };
 
+
+// only for windows
+void set_map_to_export(){
+	my_map.insert(make_pair("FG_OK", FG_OK));// The parameter was set correctly.
+	my_map.insert(make_pair("FG_NOT_INIT ",  FG_NOT_INIT));// Initialization failed.
+	my_map.insert(make_pair("FG_INVALID_PARAMETER", FG_INVALID_PARAMETER));// An invalid parameter has been entered.
+	my_map.insert(make_pair("FG_VALUE_OUT_OF_RANGE" , FG_VALUE_OUT_OF_RANGE));// Value is besides valid ranges.
+	my_map.insert(make_pair("FG_CAMSTATUS", FG_CAMSTATUS));// If a camera signal is on CameraLink port value is 1 else 0.
+	my_map.insert(make_pair("FG_REVNR ", FG_REVNR));// Current revision version of camera DLL.
+	my_map.insert(make_pair("FG_TIMEOUT", FG_TIMEOUT));// Time in seconds until device driver displays a timeout of the frame grabber.
+	my_map.insert(make_pair("FG_WIDTH", FG_WIDTH));//  Width of the clipping image.
+	my_map.insert(make_pair("FG_MAXWIDTH", FG_MAXWIDTH));// Maximum width of the clipping image.
+	my_map.insert(make_pair("FG_HEIGHT", FG_HEIGHT));// Height of the clipping image.
+	my_map.insert(make_pair("FG_MAXHEIGHT", FG_MAXHEIGHT));// Maximum height of the clipping image.
+	my_map.insert(make_pair("FG_XSHIFT", FG_XSHIFT));// Number of invalid words at the beginning of a row (modulo of the width of the interface). 
+	my_map.insert(make_pair("FG_XOFFSET", FG_XOFFSET));// X-offset from the left top corner in pixel. 
+	my_map.insert(make_pair("FG_YOFFSET", FG_YOFFSET));// Y-offset from the left top corner in pixel. 
+	my_map.insert(make_pair("FG_FRAMESPERSEC", FG_FRAMESPERSEC));// Number of images per second.
+	my_map.insert(make_pair("FG_MAXFRAMESPERSEC", FG_MAXFRAMESPERSEC));// Max number of images per second.
+	my_map.insert(make_pair("FG_EXPOSURE", FG_EXPOSURE));// Exposure time in µs.
+        /*
+         * Color format of the transferred image: 
+         *  1bit (FG_BINARY),
+         *  8bit (FG_GRAY),
+         *  16bit (FG_GRAY16),
+         *  24bit (FG_COL24),
+         *  30bit (FG_COL30),
+         *  32bit (FG_COL32),
+         *  48bit (FG_COL48).
+         * See color management of the according frame grabber design.  
+         */
+	my_map.insert(make_pair("FG_FORMAT", FG_FORMAT));
+        
+	my_map.insert(make_pair("FG_BINARY", FG_BINARY));
+	my_map.insert(make_pair("FG_GRAY", FG_GRAY));
+	my_map.insert(make_pair("FG_GRAY16 ", FG_GRAY16));
+	my_map.insert(make_pair("FG_COL24", FG_COL24));
+	my_map.insert(make_pair("FG_COL30", FG_COL30));
+	my_map.insert(make_pair("FG_COL32", FG_COL32));
+	my_map.insert(make_pair("FG_COL48 ", FG_COL48));
+	
+	my_map.insert(make_pair("PORT_A", PORT_A)); // base config
+	my_map.insert(make_pair("PORT_B", PORT_B)); // base config
+	my_map.insert(make_pair("FG_COL48 ", PORT_AB)); // medium/full config
+        
+	my_map.insert(make_pair("FG_PORT", FG_PORT));//Logical number of the active CameraLink port.
+	my_map.insert(make_pair("FG_PIXELDEPTH", FG_PIXELDEPTH));// Returns the depth of color of the pixel. 
+	my_map.insert(make_pair("FG_LINEALIGNMENT ", FG_LINEALIGNMENT));// Returns the alignment of a line (in bits).
+	my_map.insert(make_pair("FG_RIGHT_ALIGNED", FG_RIGHT_ALIGNED)); // right
+	my_map.insert(make_pair("FG_LEFT_ALIGNED ", FG_LEFT_ALIGNED)); // left
+	
+	my_map.insert(make_pair("FG_TRANSFER_LEN", FG_TRANSFER_LEN));// Returns the length of the last DMA transfer.
+	
+        /* 
+         *Trigger modes: 
+         *  - FREE_RUN
+         *  - GRABBER_CONTROLLED
+         *  - GRABBER_CONTROLLED_SYNCRON
+         *  - ASYNC_SOFTWARE_TRIGGER
+         *  - ASYNC_TRIGGER 
+         */
+	my_map.insert(make_pair("FG_TRIGGERMODE", FG_TRIGGERMODE));
+        
+	my_map.insert(make_pair("FREE_RUN", FREE_RUN));
+	my_map.insert(make_pair("GRABBER_CONTROLLED",  GRABBER_CONTROLLED));
+// 		my_map.insert(make_pair("GRABBER_CONTROLLED_SYNCRON", GRABBER_CONTROLLED_SYNCRON));
+	my_map.insert(make_pair("ASYNC_SOFTWARE_TRIGGER" , ASYNC_SOFTWARE_TRIGGER));
+	my_map.insert(make_pair("ASYNC_TRIGGER" , ASYNC_TRIGGER));
+	
+// 		my_map.insert(make_pair("FG_STROBPULSEDELAY", FG_STROBPULSEDELAY));// Strobe delay to the trigger in µs.
+	my_map.insert(make_pair("FG_TWOCAMMODEL", FG_TWOCAMMODEL));// Returns the value, if the loaded camera applet is a dual (1) or a single applet (0).
+	my_map.insert(make_pair("FG_HDSYNC", FG_HDSYNC));// Returns the HDSYNC value. 
+	my_map.insert(make_pair("FG_GLOBAL_ACCESS", FG_GLOBAL_ACCESS));// Returns the value for the set plausibility access.
+	 
+        /*
+         * Information on the board type: 
+         *
+         *  BINFO_BOARD_TYPE:
+         *      0xa40 for microEnable IV-Base x1
+         *      0xa41 for microEnable IV-Full x1
+         *      0xa44 for microEnable IV-Full x4
+         *
+         *  BINFO_POCL:
+         *      0 for microEnable IV-Base x1
+         *      1 for microEnable IV-Base x1 PoCL 
+         */
+	my_map.insert(make_pair("FG_BOARD_INFORMATION", FG_BOARD_INFORMATION));
+}
 
 static PyMethodDef VideoCapture_methods[] = {
 	 {"read", (PyCFunction)VideoCapture_fgread, METH_NOARGS,
@@ -565,7 +653,9 @@ initclModule(void)
 
 	    if (m == NULL)
 			cout << ( "unable to install ximea module" ) << endl;
-
+		#if defined WIN32 || defined _WIN32
+		set_map_to_export();
+		#endif
 		d = PyModule_GetDict(m);
 		map<string, int>::iterator p;
 		for(p = my_map.begin(); p != my_map.end(); p++)
@@ -583,6 +673,9 @@ initclModule(void)
         std::cerr << e.what(); 
     } 
 }
+#ifdef __cplusplus
+}
+#endif 
 /** @} */ 
 /** @} */
 /** @} */

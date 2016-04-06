@@ -95,9 +95,10 @@ bool CaptureCAM_XIMEA::open( int wIndex )
     mvret = xiGetParamInt(hmv, XI_PRM_IMAGE_IS_COLOR, &isColor);
     HandleResult(mvret, "error while setting color parameter ");
     mvret = xiGetParamInt(hmv,  XI_PRM_IMAGE_DATA_FORMAT, &format);
-    xiSetParamInt( hmv, XI_PRM_DOWNSAMPLING_TYPE, 1);
-    xiSetParamInt(hmv, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
-    HandleResult(mvret, "error while setting data format");
+    // xiSetParamInt(hmv, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
+    // HandleResult(mvret, "error while setting data format");
+
+    
     
     timeout = 10000;
     mvret = xiStartAcquisition(hmv);
@@ -126,10 +127,10 @@ bool CaptureCAM_XIMEA::grabFrame()
 {
     memset(&image, 0, sizeof(XI_IMG));
     image.size = sizeof(XI_IMG);
-    image.width = width;
-    image.height = height;
-    image.AbsoluteOffsetX= xoffset;
-    image.AbsoluteOffsetY= yoffset;
+    // image.width = width;
+    // image.height = height;
+    // image.AbsoluteOffsetX= xoffset;
+    // image.AbsoluteOffsetY= yoffset;
     int stat = xiGetImage( hmv, timeout, &image);
     if(stat == MM40_ACQUISITION_STOPED)
     {
@@ -166,16 +167,16 @@ double CaptureCAM_XIMEA::getProperty( int property_id )
     {
     // OCV parameters
     case CAP_PROP_POS_FRAMES   : return (double) image.nframe;
-    case CAP_PROP_FRAME_WIDTH  : xiGetParamInt( hmv, XI_PRM_WIDTH, &ival); cout <<"ival:" <<  ival << endl; return ival;
-    case CAP_PROP_FRAME_HEIGHT : xiGetParamInt( hmv, XI_PRM_HEIGHT, &ival);  cout <<"ival:" <<  ival << endl; return ival;
-    case CAP_PROP_FPS          : xiGetParamFloat( hmv, XI_PRM_FRAMERATE, &fval); return fval;
+    case CAP_PROP_FRAME_WIDTH  : xiGetParamInt( hmv, XI_PRM_WIDTH, &ival); return ival;
+    case CAP_PROP_FRAME_HEIGHT : xiGetParamInt( hmv, XI_PRM_HEIGHT, &ival); return ival;
+    case CAP_PROP_FPS          : xiGetParamFloat( hmv, XI_PRM_FRAMERATE, &fval); cout << fval << endl; return fval;
     case CAP_PROP_GAIN         : xiGetParamFloat( hmv, XI_PRM_GAIN, &fval); return fval;
     case CAP_PROP_EXPOSURE     : xiGetParamInt( hmv, XI_PRM_EXPOSURE, &ival); return ival;
 
     // XIMEA camera properties
     case CAP_PROP_XI_DOWNSAMPLING  : xiGetParamInt( hmv, XI_PRM_DOWNSAMPLING, &ival); return ival;
     case CAP_PROP_XI_DATA_FORMAT   : xiGetParamInt( hmv, XI_PRM_IMAGE_DATA_FORMAT, &ival);  return ival;
-    case CAP_PROP_XI_OFFSET_X      : xiGetParamInt( hmv, XI_PRM_OFFSET_X, &ival); cout <<"ival:" <<  ival << endl; return ival;
+    case CAP_PROP_XI_OFFSET_X      : xiGetParamInt( hmv, XI_PRM_OFFSET_X, &ival); return ival;
     case CAP_PROP_XI_OFFSET_Y      : xiGetParamInt( hmv, XI_PRM_OFFSET_Y, &ival); return ival;
     case CAP_PROP_XI_TRG_SOURCE    : xiCloseDevice(hmv);xiGetParamInt( hmv, XI_PRM_TRG_SOURCE, &ival); return ival;
     case CAP_PROP_XI_GPI_SELECTOR  : xiGetParamInt( hmv, XI_PRM_GPI_SELECTOR, &ival); return ival;
@@ -212,7 +213,7 @@ bool CaptureCAM_XIMEA::setProperty( int property_id, double value )
     // OCV parameters
     case CAP_PROP_FRAME_WIDTH  : mvret = xiSetParamInt( hmv, XI_PRM_WIDTH, ival); width = ival; break;
     case CAP_PROP_FRAME_HEIGHT : mvret = xiSetParamInt( hmv, XI_PRM_HEIGHT, ival); height=ival; break;
-    case CAP_PROP_FPS          : mvret = xiSetParamFloat( hmv, XI_PRM_FRAMERATE, fval); break;
+    case CAP_PROP_FPS          : mvret = xiSetParamFloat( hmv, XI_PRM_FRAMERATE, fval); cout << "FPS:" << fval << endl; break;
     case CAP_PROP_GAIN         : mvret = xiSetParamFloat( hmv, XI_PRM_GAIN, fval); break;
     case CAP_PROP_EXPOSURE     : mvret = xiSetParamInt( hmv, XI_PRM_EXPOSURE, ival); break;
     // XIMEA camera properties
@@ -252,6 +253,7 @@ bool CaptureCAM_XIMEA::setProperty( int property_id, double value )
 }
 
 
+
 void CaptureCAM_XIMEA::errMsg(const char* msg, int errNum)
 {
 #if defined WIN32 || defined _WIN32
@@ -259,6 +261,7 @@ void CaptureCAM_XIMEA::errMsg(const char* msg, int errNum)
     sprintf( buf, "%s : %d\n", msg, errNum);
     OutputDebugString(buf);
 #else
+    // printf("%s\n", msg);
     cout << msg << errNum << endl;
 #endif
 }

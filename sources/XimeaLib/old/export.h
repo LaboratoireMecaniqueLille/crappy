@@ -1,4 +1,9 @@
-// PyObject *myarray;
+#include "ximea.h"
+#include <utility>
+
+#ifdef WIN32
+map< string, int > my_map;
+#else 
 map< string, int > my_map= 
 {
 	{"CAP_PROP_XI_DOWNSAMPLING", 400},// Change image resolution by binning or skipping.
@@ -55,4 +60,4 @@ map< string, int > my_map=
 	{"CAP_INTELPERC", 1500},  // Intel Perceptual Computing SDK
 	{"CAP_OPENNI2", 1600 }  // OpenNI2 (for Kinect) 
 };
-
+#endif

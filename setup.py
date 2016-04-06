@@ -15,6 +15,7 @@ from subprocess import call
 from multiprocessing import cpu_count
 from distutils.command.build import build
 from distutils.core import setup, Extension
+import distutils.sysconfig
 import platform
 from distutils.command.install import install
 comediModule = Extension('sensor.comediModule', sources = ['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'], extra_link_args=["-l", "comedi", "-l", "python2.7"])
@@ -24,8 +25,12 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 execfile(".\crappy\__version__.py") # read the current version in version.py
-
+# print distutils.sysconfig.get_python_lib()
+# import sys
+# print sys.exec_prefix
+# sys.exit()
 extentions = []
+ext_lib = []
 
 if(platform.system()=="Linux") :
     ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
@@ -43,8 +48,10 @@ if(platform.system()=="Linux") :
         print "libm3api not installed, ximeaModule will not be compiled"
 
 if(platform.system()=="Windows"):
-    ximeaModule = Extension('sensor.ximeaModule', include_dirs = ["c:\\XIMEA\\API", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyximea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-Lc:\\XIMEA\\API", "-Lc:\\XIMEA\\API\\x64", "-lm3apiX64"])
-    clModule = Extension('sensor.clModule', include_dirs = ["C:\Program Files\SiliconSoftware\Runtime5.2.1\lib", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-LC:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\bin" ,"" , "-lclsersis", "-lfglib5"])
+    ximeaModule = Extension('sensor.ximeaModule', include_dirs = ["c:\\XIMEA\\API","c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/XimeaLib/old/ximea.cpp', 'sources/XimeaLib/old/pyximea.cpp'], libraries=["m3apiX64"], library_dirs=["c:\\XIMEA\\API", "c:\\XIMEA\\API\\x64"], extra_compile_args=["/EHsc"])
+    # ximeaModule = Extension('sensor.ximeaModule', include_dirs = ["c:\\XIMEA\\API", "C:\Users\ECOLE\Downloads\opencv\\build\include", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/XimeaLib/old/ximea.cpp', 'sources/XimeaLib/old/pyximea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-Lc:\\XIMEA\\API", "-Lc:\\XIMEA\\API\\x64", "-lm3apiX64"])
+    clModule = Extension('sensor.clModule', include_dirs = ["C:\Program Files\SiliconSoftware\Runtime5.2.1\include", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], libraries=["clsersis", "fglib5"], library_dirs=["C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\lib\\visualc"], extra_compile_args = ["/EHsc", "/WX"])
+    # clModule = Extension('sensor.clModule', include_dirs = ["C:\Program Files\SiliconSoftware\Runtime5.2.1\include", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-LC:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\bin" ,"-lclsersis", "-lfglib5"])
     p = popen('driverquery /NH |findstr "mu3camX64"')
     if(len(p.read())!=0):
         extentions.append(ximeaModule)
@@ -57,54 +64,84 @@ if(platform.system()=="Windows"):
     else:
         print "Can't find microEnable4 Device driver, clModule will not be compiled"
 
-"""    
+# try: 
+#     if(platform.system()=="Windows"):
+#         ext_lib.append(("sources\\XimeaLib\\", ["sources\\XimeaLib\\ximeaModule.dll"]))
+#         # system('copy /Y sources\\XimeaLib\\ximeaModule.dll crappy\\sensor\\')
+#     if(platform.system()=="Linux"):
+#         system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
+# except:
+#     print "use setup.py build to build ximeaModule.dll"
+
+# if(ximeaModule in extentions):
+#     if(platform.system()=="Windows"):
+#         ext_lib.append(("sensor\\", ["build\\lib.win-amd64-2.7\\crappy\\sensor\\ximeaModule.pyd"]))
+
+
+"""
 class LibBuild(build):
   
     def run(self):
-		# run original build code
-		build.run(self)
-		#self.run_command("build_ext ../crappy/")
-		jai_build_path = path.join(here, 'sources/Jai_lib/old')
-		jai_cmd = [
-			'make',
-			'OUT=' + jai_build_path,
-			'V=' + str(self.verbose),
-			]
-		try:
-			jai_cmd.append('-j%d' % cpu_count())
-		except NotImplementedError:
-			print 'Unable to determine number of CPUs. Using single threaded make.'
-		
-		def compile():
+        # run original build code
+        build.run(self)
+        #self.run_command("build_ext ../crappy/")
+        jai_build_path = path.join(here, 'sources/Jai_lib/old')
+        jai_cmd = [
+            'make',
+            'OUT=' + jai_build_path,
+            'V=' + str(self.verbose),
+            ]
+        try:
+            jai_cmd.append('-j%d' % cpu_count())
+        except NotImplementedError:
+            print 'Unable to determine number of CPUs. Using single threaded make.'
+        
+        def compile():
                 p = popen("lsmod |grep menable")
                 if(len(p.read())!=0):
-    				call(jai_cmd, cwd=jai_build_path)
-    			else:
-    				print "Wrong Kernel version, Jai library not compiled.\n"
-			
-		self.execute(compile, [], 'Compiling libraries')
+                    call(jai_cmd, cwd=jai_build_path)
+                else:
+                    print "Wrong Kernel version, Jai library not compiled.\n"
+            
+        self.execute(compile, [], 'Compiling libraries')
 
 class LibClean(build):
   
-	def run(self):
-		# run original build code
-		build.run(self)
-		jai_build_path = path.join(here, 'sources/Jai_lib/old')
-		jai_cmd = [
-			'make clean',
-			'OUT=' + jai_build_path,
-			'V=' + str(self.verbose),
-			]
-		def clean():
-			p = popen("lsmod |grep menable")
+    def run(self):
+        # run original build code
+        build.run(self)
+        jai_build_path = path.join(here, 'sources/Jai_lib/old')
+        jai_cmd = [
+            'make clean',
+            'OUT=' + jai_build_path,
+            'V=' + str(self.verbose),
+            ]
+        def clean():
+            p = popen("lsmod |grep menable")
             if(len(p.read())!=0)
-				call(jai_cmd, cwd=jai_build_path)
-			else:
-				print "Wrong Kernel version, unable to find Jai library\n"
-			
-		self.execute(clean, [], 'Deleting shared objects.')
-		
+                call(jai_cmd, cwd=jai_build_path)
+            else:
+                print "Wrong Kernel version, unable to find Jai library\n"
+            
+        self.execute(clean, [], 'Deleting shared objects.')
 """
+
+class LibBuild(build):
+  
+    def run(self):
+        # run original build code
+        build.run(self)
+        # self.run_command("build_ext ../crappy/")
+        ximea_build_path = path.join(here, 'sources\\XimeaLib\\')
+        ximea_cmd = [
+        	'mingw32-make',
+            'OUT=' + ximea_build_path,
+            'V=' + str(self.verbose),
+        	]
+        def compile():
+            print "test"
+            call(ximea_cmd, cwd=ximea_build_path)
+        self.execute(compile, [], 'Compiling libraries')
 
 setup(
     name='crappy',
@@ -179,13 +216,13 @@ setup(
         'test': ['coverage'],
     },
     
-    #cmdclass={
-    #    'build': LibBuild
-    #    'clean': LibClean
-    #},
+    cmdclass={
+       'build': LibBuild
+    },
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
+     data_files = ext_lib,
     #package_data={
         #'sample': ['package_data.dat'],
     #},
@@ -205,18 +242,34 @@ setup(
         #],
     #},
 )
+
+
+
+# if(platform.system()=="Linux"):
+#     system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
+# if(comediModule in extentions):
+#     if(platform.system()=="Linux"):
+#         system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')
+# if(clModule in extentions):
+#     if(platform.system()=="Windows"):
+#         system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\clModule.pyd crappy\\sensor\\')
+#     if(platform.system()=="Linux"):
+#         system('cp build/lib.linux-x86_64-2.7/crappy/sensor/clModule.so crappy/sensor/')
+
+
+
 if(ximeaModule in extentions):
     if(platform.system()=="Windows"):
         system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\ximeaModule.pyd crappy\\sensor\\')
     if(platform.system()=="Linux"):
         system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
+
 if(comediModule in extentions):
     if(platform.system()=="Linux"):
         system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')
+
 if(clModule in extentions):
     if(platform.system()=="Windows"):
         system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\clModule.pyd crappy\\sensor\\')
     if(platform.system()=="Linux"):
         system('cp build/lib.linux-x86_64-2.7/crappy/sensor/clModule.so crappy/sensor/')
-
-

@@ -48,10 +48,13 @@ stop()
 	
 	def start(self):
 		try:
+			print self.main
 			self.proc=Process(target=self.main,args=())
+			print "TEST"
 			self.proc.start()
+			print "TEST2"
 		except (Exception,KeyboardInterrupt) as e:
-			print "Exception : ", e
+			print "Exception in MasterBlock: ", e
 			self.proc.terminate()
 			#raise #raise the error to the next level for global shutdown
 		

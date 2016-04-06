@@ -1,7 +1,7 @@
 # coding: utf-8
 #from ._meta import cameraSensor
 import numpy as np
-import time
+#import time
 from matplotlib.widgets import RectangleSelector
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -10,13 +10,13 @@ from matplotlib.widgets import Slider, Button
 import matplotlib.patches as mpatches
 import cv2
 #from ..sensor import ximeaModule as xi
-#import cv2 as xi
+import cv2 as xi
 import SimpleITK as sitk
 rectprops = dict(facecolor='red', edgecolor = 'red', alpha=0.5, fill=True)
 from skimage.segmentation import clear_border
 from skimage.morphology import label,erosion, square,dilation
 from skimage.measure import regionprops
-from skimage.filter import threshold_otsu, rank#, threshold_yen
+from skimage.filters import threshold_otsu, rank#, threshold_yen
 
 
 class _CameraInit():
@@ -59,14 +59,13 @@ class _CameraInit():
 		self._CloseButton.on_clicked(self.close)
 		
 		### initialising the histogram
-		if self.cam.name.lower() == 'ximea':
-		    from ..sensor import ximeaModule as xi
-		    if self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==0 or self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==5:
-			    self.x=np.arange(0,256,4)
-		    elif self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==1 or self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==6:
-			    self.x=np.arange(0,1024,4)
+		if camera.name.lower() == 'ximea':
+			if self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==0 or self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==5:
+				self.x=np.arange(0,256,4)
+			elif self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==1 or self.cam.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)==6:
+				self.x=np.arange(0,1024,4)
 		else:   
-		    self.x=np.arange(0,1024,4)
+			self.x=np.arange(0,1024,4)
 			
 		hist=np.ones(np.shape(self.x))
 		frame = self.cam.getImage()
@@ -89,7 +88,7 @@ class _CameraInit():
 		def toggle_selector(self, event):
 			toggle_selector.RS.set_active(False)
 	
-		toggle_selector.RS = RectangleSelector(self._axim.get_axes(), self.ZOI_selection,
+		toggle_selector.RS = RectangleSelector(self._axim.properties().get('axes'), self.ZOI_selection,
 											   drawtype='box', useblit=True,
 											   button=[1,3], # don't use middle button
 											   minspanx=5, minspany=5,rectprops=rectprops,
@@ -345,4 +344,3 @@ def getCameraConfig(cam, videoExtenso,send_pipe=None):
 		d.cam.close()
 		plt.close()
 		pass
-	
