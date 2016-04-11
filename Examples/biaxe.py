@@ -5,6 +5,7 @@ import crappy
 import numpy as np
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
+# conversion : 1 speed = 0.002 mm/s
 
 t0=time.time()
 if __name__ == '__main__':
