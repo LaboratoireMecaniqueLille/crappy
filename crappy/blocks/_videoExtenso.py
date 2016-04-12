@@ -9,7 +9,10 @@ import cv2
 from ..links._link import TimeoutError
 from ..technical import TechnicalCamera as tc
 import SimpleITK as sitk # only for testing
-from skimage.filters import threshold_otsu, rank
+try:
+  from skimage.filters import threshold_otsu, rank #load newest version
+except:
+  from skimage.filter import threshold_otsu, rank #load deprecated version
 from skimage.measure import regionprops
 from skimage.morphology import label,erosion, square,dilation
 from skimage.segmentation import clear_border

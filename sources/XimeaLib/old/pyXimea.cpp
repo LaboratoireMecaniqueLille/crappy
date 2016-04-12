@@ -59,14 +59,8 @@ bool VideoCapture_grab()
 
 
 PyObject* VideoCapture_retrieve(VideoCapture *self)
-{
+{		
 		short n;
-        // if(array_buffer==NULL){
-        //     free(array_buffer);
-        //     cout << "free" << endl;
-        //     array_buffer=NULL;
-        // }
-                
 		switch(capt->image.frm)
 		{
 		case XI_MONO8: {
@@ -74,75 +68,59 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 			npy_intp nd[2] = {capt->height, capt->width};
 			Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
-			// self->myarray = PyArray_SimpleNew(ndim, nd, NPY_UINT8);
-            Py_XDECREF(nd);
-			// array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			// memcpy(array_buffer, capt->image.bp, capt->width*capt->height);
+			Py_XDECREF(nd);
 			break;
 		}
 		case XI_MONO16:{ 
-			const int ndim = 3;
-			npy_intp nd[3] = {capt->height, capt->width, sizeof(n)};
-            Py_XDECREF(self->myarray);
-			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
-            Py_XDECREF(nd);
-			// array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			// memcpy(array_buffer, capt->image.bp, capt->width*capt->height*sizeof(n));
+			const int ndim = 2;
+			npy_intp nd[2] = {capt->height, capt->width};
+			Py_XDECREF(self->myarray);
+			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT16, capt->image.bp);
+			Py_XDECREF(nd);
 			break;
 		}
 		case XI_RGB24       : {
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->height, capt->width, 3};
-            Py_XDECREF(self->myarray);
+			Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
-            Py_XDECREF(nd);
-			// array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			// memcpy(array_buffer, capt->image.bp, capt->width*capt->height*3);
+			Py_XDECREF(nd);
 			break;}
 		case XI_RGB32       : {
 			const int ndim = 4;
 			npy_intp nd[3] = {capt->height, capt->width, 4};
-            Py_XDECREF(self->myarray);
+			Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
-            Py_XDECREF(nd);
-			// array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			// memcpy(array_buffer, capt->image.bp, capt->width*capt->height*4);
+			Py_XDECREF(nd);
 			break;}
 		case XI_RGB_PLANAR  : {
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->height, capt->width, 3};
-            Py_XDECREF(self->myarray);
+			Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
-            Py_XDECREF(nd);
-			// array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			// memcpy(array_buffer, capt->image.bp, capt->width*capt->height*3);
+			Py_XDECREF(nd);
 			break;}
 		case XI_RAW8        : {
 			const int ndim = 2;
 			npy_intp nd[2] = {capt->height, capt->width};
-            Py_XDECREF(self->myarray);
+			Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
-            Py_XDECREF(nd);
-			// array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			// memcpy(array_buffer, capt->image.bp, capt->width*capt->height);
+			Py_XDECREF(nd);
 			break;}
 		case XI_RAW16       : {
 			const int ndim = 3;
 			npy_intp nd[3] = {capt->height, capt->width, sizeof(n)};
-            Py_XDECREF(self->myarray);
+			Py_XDECREF(self->myarray);
 			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT16, capt->image.bp);
-            Py_XDECREF(nd);
-			// array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
-			// memcpy(array_buffer, capt->image.bp, capt->width*capt->height*sizeof(n));
+			Py_XDECREF(nd);
 			break;}
 		default : 
 			return Py_None;
 		}
 		capt-> resetCvImage();
-        myDict = PyDict_New();
+		myDict = PyDict_New();
 		myDict = VideoCapture_getMeta();
 		PyDict_SetItemString(myDict, "data", self->myarray);
-		// Py_DECREF(self->myarray);
     return myDict;
 }
 

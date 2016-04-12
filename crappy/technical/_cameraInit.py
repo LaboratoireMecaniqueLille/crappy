@@ -16,7 +16,10 @@ rectprops = dict(facecolor='red', edgecolor = 'red', alpha=0.5, fill=True)
 from skimage.segmentation import clear_border
 from skimage.morphology import label,erosion, square,dilation
 from skimage.measure import regionprops
-from skimage.filters import threshold_otsu, rank#, threshold_yen
+try:
+  from skimage.filters import threshold_otsu, rank# load newer version
+except:
+  from skimage.filter import threshold_otsu, rank# load deprecated version
 
 
 class _CameraInit():

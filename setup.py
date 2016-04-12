@@ -24,7 +24,8 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-execfile(".\crappy\__version__.py") # read the current version in version.py
+
+
 # print distutils.sysconfig.get_python_lib()
 # import sys
 # print sys.exec_prefix
@@ -33,7 +34,8 @@ extentions = []
 ext_lib = []
 
 if(platform.system()=="Linux") :
-    ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
+    execfile("./crappy/__version__.py") # read the current version in version.py
+    ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/old/ximea.cpp', 'sources/XimeaLib/old/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
     clModule = Extension('sensor.clModule', sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-l", "python2.7", "-L", "/opt/SiliconSoftware/Runtime5.4.1.2/lib64/", "-l", "display", "-l", "clsersis", "-l", "fglib5"])
     extentions.append(comediModule)
     p = popen("lsmod |grep menable")
@@ -46,8 +48,9 @@ if(platform.system()=="Linux") :
         extentions.append(ximeaModule)
     else:
         print "libm3api not installed, ximeaModule will not be compiled"
-
+    extentions.append(ximeaModule)
 if(platform.system()=="Windows"):
+    execfile(".\crappy\__version__.py") # read the current version in version.py
     ximeaModule = Extension('sensor.ximeaModule', include_dirs = ["c:\\XIMEA\\API","c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/XimeaLib/old/ximea.cpp', 'sources/XimeaLib/old/pyximea.cpp'], libraries=["m3apiX64"], library_dirs=["c:\\XIMEA\\API", "c:\\XIMEA\\API\\x64"], extra_compile_args=["/EHsc"])
     # ximeaModule = Extension('sensor.ximeaModule', include_dirs = ["c:\\XIMEA\\API", "C:\Users\ECOLE\Downloads\opencv\\build\include", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/XimeaLib/old/ximea.cpp', 'sources/XimeaLib/old/pyximea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-Lc:\\XIMEA\\API", "-Lc:\\XIMEA\\API\\x64", "-lm3apiX64"])
     clModule = Extension('sensor.clModule', include_dirs = ["C:\Program Files\SiliconSoftware\Runtime5.2.1\include", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], libraries=["clsersis", "fglib5"], library_dirs=["C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\lib\\visualc"], extra_compile_args = ["/EHsc", "/WX"])

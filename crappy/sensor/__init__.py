@@ -7,11 +7,11 @@ try:
     import clModule as clModule
 except:
     print "Jai not compatible with this installation \n"
-# try:
-import ximeaModule as ximeaModule
-from ._ximeaSensor import Ximea
-# except:
-# 	print "Cannot load ximea Module"
+try:
+    import ximeaModule as ximeaModule
+    from ._ximeaSensor import Ximea
+except:
+	print "Cannot load ximea Module"
     
 import platform as _platform
 if(_platform.system()=="Linux"):
