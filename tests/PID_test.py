@@ -46,7 +46,7 @@ try:
 	#condition=[crappy.links.Filter(labels=['V'],mode="median",size=50),crappy.links.Filter(labels=['t(s)'],mode="mean",size=50)]
 	link1=crappy.links.Link()
 	link4=crappy.links.Link()
-	link2=crappy.links.Link(condition=crappy.links.PID(1.01,0.00,0.00,'signal','signal_mesure',outMin=-8,outMax=8))
+	link2=crappy.links.Link(condition=crappy.links.PID(1.01,0.00,0,'signal','signal_mesure',outMin=-8,outMax=8))
 	link2.add_external_trigger(link4)
 	link3=crappy.links.Link()
 	

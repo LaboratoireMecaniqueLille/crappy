@@ -313,7 +313,8 @@ dict : OrderedDict
 					song.play()
 					pyglet.clock.schedule_once(lambda x:pyglet.app.exit(), 10) # stop music after 10 sec
 					pyglet.app.run()
-				except:
+				except Exception as e:
+					print "No music because : ", e
 					pass
 				raise Exception("Spots lost")
 			except (Exception,KeyboardInterrupt) as e:

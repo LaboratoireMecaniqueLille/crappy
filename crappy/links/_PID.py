@@ -36,13 +36,13 @@ class PID(MetaCondition):
 		#print value
 		return value
 	
-	def initialize(self):
-		self.Iterm=self.lastOutput
+	#def initialize(self):
+		#self.Iterm=self.lastOutput
 
-		if self.Iterm > outMax:
-			self.Iterm = outMax
-		elif self.Iterm < outMin:
-			self.Iterm=outMin
+		#if self.Iterm > outMax:
+			#self.Iterm = outMax
+		#elif self.Iterm < outMin:
+			#self.Iterm=outMin
 	
 	def compute(self):
 		#if self.inAuto is True:
