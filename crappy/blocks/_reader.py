@@ -1,6 +1,6 @@
 # coding: utf-8
 from _meta import MasterBlock
-
+import time
 class Reader(MasterBlock):
 	"""
 Children class of MasterBlock. Read and print the input Link.
@@ -19,5 +19,6 @@ k : printable
 	def main(self):
 		while True:
 			for input_ in self.inputs:
+				time.sleep(10)
 				self.data=input_.recv()
 			print self.k,self.data

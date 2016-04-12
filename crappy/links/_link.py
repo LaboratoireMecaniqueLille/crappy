@@ -3,28 +3,66 @@ from multiprocessing import Pipe
 import copy
 from functools import wraps
 #import errno
-import os
-import signal
+# import os
+from threading import Thread
+# import signal
 
 class TimeoutError(Exception):
 	"""Custom error to raise in case of timeout."""
 	pass
 
-def timeout_func(f):
-	"""Decorator for adding a timeout to a link send."""
-	def _handle_timeout(signum, frame):
-		raise TimeoutError("timeout error in pipe send")
-	
-	def wrapper(*args):
-		signal.signal(signal.SIGALRM, _handle_timeout)
-		signal.setitimer(signal.ITIMER_REAL,args[0].timeout) # args[0] is the class "self" here.
-		try:
-			result = f(*args)
-		finally:
-			signal.alarm(0)
-		return result
-	return wrapper
 
+class MethodThread(Thread):
+    "ThreadMethodThread, daemonic descendant class of threading.Thread which " \
+    "simply runs the specified target method with the specified arguments."
+
+    def __init__(self, target, args, kwargs):
+        Thread.__init__(self)
+        self.setDaemon(True)
+        self.target, self.args, self.kwargs = target, args, kwargs
+        self.start()
+
+    def run(self):
+        try:
+            self.result = self.target(*self.args, **self.kwargs)
+        except Exception, e:
+            self.exception = e
+        except:
+            self.exception = Exception()
+        else:
+            self.exception = None
+
+# def timeout_func(f):
+# 	"""Decorator for adding a timeout to a link send."""
+# 	def _handle_timeout(signum, frame):
+# 		raise TimeoutError("timeout error in pipe send")
+	
+# 	def wrapper(*args):
+# 		signal.signal(signal.SIGALRM, _handle_timeout)
+# 		signal.setitimer(signal.ITIMER_REAL,args[0].timeout) # args[0] is the class "self" here.
+# 		try:
+# 			result = f(*args)
+# 		finally:
+# 			signal.alarm(0)
+# 		return result
+# 	return wrapper
+
+def win_timeout(timeout= None):
+	"""Decorator for adding a timeout to a link send."""
+	def win_timeout_proxy(f):
+		def wrapper(*args, **kwargs):
+			worker = MethodThread(f, args, kwargs)
+			if timeout is None:
+				return worker
+			worker.join(timeout)
+			if worker.isAlive():
+				raise TimeoutError("timeout error in pipe send")
+			elif worker.exception is not None:
+				raise worker.exception
+			else:
+				return worker.result
+		return wrapper
+	return win_timeout_proxy
 
 class Link(object):
 	"""
@@ -91,7 +129,7 @@ external_trigger : Default=None
 			raise
 			
 			
-	@timeout_func
+	@win_timeout(1)
 	def send_timeout(self,value):
 		try:
 			if self.condition==None:

@@ -29,8 +29,8 @@ stop()
 		instance.instances.append(instance)
 		return instance
 	
-	def main(self):
-		pass
+	def main(b):
+		b.main()
 	
 	def add_output(self,link):
 		try: # test if the outputs list exist
@@ -48,14 +48,13 @@ stop()
 	
 	def start(self):
 		try:
-			print self.main
-			self.proc=Process(target=self.main,args=())
-			print "TEST"
+			self.proc=Process(target=main,args=(self))
 			self.proc.start()
-			print "TEST2"
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in MasterBlock: ", e
-			self.proc.terminate()
+			if(platform.system()=="Linux"):
+				self.proc.terminate()
+
 			#raise #raise the error to the next level for global shutdown
 		
 	#def join(self):
