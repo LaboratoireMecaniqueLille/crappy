@@ -108,7 +108,7 @@ class Ximea(cameraSensor.CameraSensor):
 		"""
 		try:
 			ret, frame = self.ximea.read()
-			print "return : ", ret
+			#print "return : ", ret
 		except KeyboardInterrupt:
 			print "KeyboardInterrupt, closing camera ..."
 			self.close()
@@ -116,7 +116,7 @@ class Ximea(cameraSensor.CameraSensor):
 
 		try:
 			if ret==1:
-				print "sending frame"
+				#print "sending frame"
 				#return frame.get('data')
 				return frame
 			elif not(self.quit):
@@ -128,8 +128,6 @@ class Ximea(cameraSensor.CameraSensor):
 				#self.new(expo, wi, he, xoff,yoff,ga) # Reset the camera instance
 				self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
 				return self.getImage()
-			else:
-				print "here"
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
 			print "ximea quitting, probably because of KeyBoardInterrupt"
 			pass
