@@ -44,11 +44,11 @@ if __name__ == '__main__':
 									#{"waveform":"limit","gain":0,"cycles":0.5,"phase":0,"lower_limit":[50,'F4(N)'],"upper_limit":[9.7,'Eyy(%)']},
 									#{"waveform":"limit","gain":1,"cycles":0.5,"phase":-np.pi,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']}],
 									#send_freq=400,repeat=True,labels=['t(s)','signal'])
-		signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F2(N)'],"upper_limit":[1,'F2(N)']}],
-															send_freq=100,repeat=True)
+		signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-0.5,'F2(N)'],"upper_limit":[0.5,'F2(N)']}],
+															send_freq=50,repeat=True)
 		
 		signalGenerator_horizontal=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F4(N)'],"upper_limit":[1,'F4(N)']}],
-																		send_freq=100,repeat=True)
+																		send_freq=50,repeat=True)
 		
 		biotens=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1,biaxeTech2],speed=-5000) # vertical
 		biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-5000)
