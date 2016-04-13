@@ -60,6 +60,7 @@ dict : OrderedDict(shape (number_of_values_in_input,acquisition_step))
 				try:
 					for j in range(len(self.outputs)):
 						self.outputs[j].send(Data)
+						#print "compacted data : ",Data
 				except TimeoutError:
 					raise
 				except AttributeError: #if no outputs

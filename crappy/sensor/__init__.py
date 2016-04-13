@@ -16,3 +16,4 @@ import comediModule as comediModule
 from ._dummySensor import DummySensor
 from ._variateurTriboSensor import VariateurTriboSensor
 from _lal300Sensor import SensorLal300
+from _labJackSensor import LabJackSensor

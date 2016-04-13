@@ -65,15 +65,27 @@ offset : float, default = 0
 			self.range_ds[i]=c.comedi_get_range(self.device,self.subdevice,
 									   self.channels[i],self.range_num[i])
 
-	def getData(self,channel_number):
+	def getData(self,channel_number="all"):
 		"""Read the signal for desired channel"""
-		data = c.comedi_data_read(self.device,self.subdevice,
+		if channel_number=="all":
+			result=[]
+			for channel in range(self.nchans):
+				data = c.comedi_data_read(self.device,self.subdevice,
+									self.channels[channel],
+									self.range_num[channel], c.AREF_GROUND)
+				self.position=(c.comedi_to_phys(data[1],self.range_ds[channel],
+							self.maxdata[channel])*self.gain[channel]+self.offset[channel])
+				result.append(self.position)
+			t=time.time()
+			return (t, result)
+		else:
+			data = c.comedi_data_read(self.device,self.subdevice,
 							self.channels[channel_number],
 							self.range_num[channel_number], c.AREF_GROUND)
-		self.position=(c.comedi_to_phys(data[1],self.range_ds[channel_number],
-					self.maxdata[channel_number])*self.gain[channel_number]+self.offset[channel_number])
-		t=time.time()
-		return (t, self.position)
+			self.position=(c.comedi_to_phys(data[1],self.range_ds[channel_number],
+						self.maxdata[channel_number])*self.gain[channel_number]+self.offset[channel_number])
+			t=time.time()
+			return (t, self.position)
 			
 	def close(self):
 		"""Close the device."""

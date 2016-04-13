@@ -6,11 +6,11 @@ from ._meta import cameraSensor
 #from numpy.ctypeslib import ndpointer
 #from os import path
 #here = path.abspath(path.dirname(__file__))
-import ximeaModule as xi
+#import ximeaModule as xi
 
 
 #try :
-#import cv2 as xi
+import cv2 as xi
 #except ImportError: 
 	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
@@ -76,8 +76,8 @@ class Ximea(cameraSensor.CameraSensor):
 		
 		GLOBAL_ENABLE_FLAG = True
 		
-		self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
-		#self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		#self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 		if self.external_trigger==True:	# this condition activate the trigger mode
                     self.ximea.addTrigger(1000000, True)
                 #self.ximea.addTrigger(10000, false)
@@ -108,16 +108,17 @@ class Ximea(cameraSensor.CameraSensor):
 		"""
 		try:
 			ret, frame = self.ximea.read()
-
+			#print "return : ", ret
 		except KeyboardInterrupt:
 			print "KeyboardInterrupt, closing camera ..."
 			self.close()
 			self.quit=True
 
 		try:
-			if ret:
-				return frame.get('data')
-				#return frame
+			if ret==1:
+				#print "sending frame"
+				#return frame.get('data')
+				return frame
 			elif not(self.quit):
 				print "restarting camera..."
 				time.sleep(0.5)
@@ -128,6 +129,7 @@ class Ximea(cameraSensor.CameraSensor):
 				self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
 				return self.getImage()
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
+			print "ximea quitting, probably because of KeyBoardInterrupt"
 			pass
 		
 	def close(self):

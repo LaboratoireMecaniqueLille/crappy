@@ -1,5 +1,7 @@
 # coding: utf-8
 from ._metaCondition import MetaCondition
+import time
+
 
 class PID(MetaCondition):
 	"""WIP, not working yet."""
@@ -12,20 +14,61 @@ class PID(MetaCondition):
 		self.outMin=outMin
 		self.outMax=outMax
 		self.first=True
+
 		
 	def evaluate(self,value):
 		#self.t=time.time()
 		self.retour=self.external_trigger.recv()[self.label_retour]
 		self.consigne=value.pop(self.label_consigne)
+		#print self.retour,self.consigne
 		if self.first:
 			self.lastTime=time.time()
 			self.last_retour=self.retour
 			self.first=False
 			self.lastTimeChange=10**118 # for initialization
 		self.compute()
-		value[self.label_consigne]=self.output
+		val=self.output+self.retour
+		if val > self.outMax:
+			val = self.outMax
+		elif val < self.outMin:
+			val = self.outMin
+		value[self.label_consigne]=val
+		#print value
 		return value
-		
+	
+	#def initialize(self):
+		#self.Iterm=self.lastOutput
+
+		#if self.Iterm > outMax:
+			#self.Iterm = outMax
+		#elif self.Iterm < outMin:
+			#self.Iterm=outMin
+	
+	def compute(self):
+		#if self.inAuto is True:
+		now=time.time()
+		timeChange=now-self.lastTime
+		#self.input_=self.inputs[0].recv()
+		self.error=self.consigne-self.retour
+		self.I*=timeChange/self.lastTimeChange
+		self.D/=timeChange/self.lastTimeChange
+		self.Iterm = self.I * self.error*timeChange
+		if self.Iterm > self.outMax:
+			self.Iterm = self.outMax
+		elif self.Iterm < self.outMin:
+			self.Iterm=self.outMin
+		dInput=self.retour-self.last_retour
+		self.output=self.P*self.error+self.Iterm+self.D*dInput/timeChange
+		if self.output > self.outMax:
+			self.output = self.outMax
+		elif self.output < self.outMin:
+			self.output = self.outMin
+		self.lastOutput=self.output
+		self.last_retour = self.retour
+		self.lastTime = now
+		self.lastTimeChange=timeChange
+
+			
 	##def setMode(mode):
 		##newMode=self.mode
 		##if newMode is 'On' or newMode is 'Off':
@@ -34,41 +77,6 @@ class PID(MetaCondition):
 				##self.inAuto=True
 			##else if newMode is 'Off':
 				##self.inAuto=False
-	
-	def initialize(self):
-		self.Iterm=self.lastOutput
-
-		if self.Iterm > outMax:
-			self.Iterm = outMax
-		elif self.Iterm < outMin:
-			self.Iterm=outMin
-	
-	def compute(self):
-		if self.inAuto is True:
-			now=time.time()
-			timeChange=now-self.lastTime
-			#self.input_=self.inputs[0].recv()
-			self.error=self.consigne-self.retour
-			self.I*=timeChange/self.lastTimeChange
-			self.D/=timeChange/self.lastTimeChange
-			self.Iterm = self.I * error*timeChange
-			if self.Iterm > self.outMax:
-				self.Iterm = self.outMax
-			elif self.Iterm < self.outMin:
-				self.Iterm=self.outMin
-			dInput=self.retour-self.last_retour
-			self.output=self.P*error+self.Iterm-self.D*dInput/timeChange
-			
-			if self.output > self.outMax:
-				self.output = self.outMax
-			elif self.output < self.outMin:
-				self.output = self.outMin
-			self.lastOutput=self.output
-			self.last_retour = self.retour
-			self.lastTime = now
-			self.lastTimeChange=timeChange
-
-	
 
 		
 	
