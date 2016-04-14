@@ -6,10 +6,11 @@ import numpy as np
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
 
-t0=time.time()
+#t0=time.time()
 if __name__ == '__main__':
 	try:
 	########################################### Creating objects
+		#Init : Offset determination (gain is kept as usual)
 		instronSensor=crappy.sensor.ComediSensor(channels=[1,3],gain=[-3749.3,-3198.9*1.18],offset=[0,0])
 		t,F2=instronSensor.getData(0)
 		t,F4=instronSensor.getData(1)
@@ -22,9 +23,10 @@ if __name__ == '__main__':
 		axes=[biaxeTech1,biaxeTech2,biaxeTech3,biaxeTech4]
 
 	########################################### Creating blocks
-		
+		# Declare the compacter that allows to transfer by block of a given length 
 		compacter_effort=crappy.blocks.Compacter(100)
 		#save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Annie/effort.txt")
+		# Init : Declaration of The graph
 		graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
 		
 		#compacter_extenso=crappy.blocks.Compacter(150)
@@ -42,11 +44,11 @@ if __name__ == '__main__':
 									#{"waveform":"limit","gain":0,"cycles":0.5,"phase":0,"lower_limit":[50,'F4(N)'],"upper_limit":[9.7,'Eyy(%)']},
 									#{"waveform":"limit","gain":1,"cycles":0.5,"phase":-np.pi,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']}],
 									#send_freq=400,repeat=True,labels=['t(s)','signal'])
-		signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F2(N)'],"upper_limit":[1,'F2(N)']}],
-															send_freq=100,repeat=True)
+		signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-0.5,'F2(N)'],"upper_limit":[0.5,'F2(N)']}],
+															send_freq=50,repeat=True)
 		
 		signalGenerator_horizontal=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F4(N)'],"upper_limit":[1,'F4(N)']}],
-																		send_freq=100,repeat=True)
+																		send_freq=50,repeat=True)
 		
 		biotens=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1,biaxeTech2],speed=-5000) # vertical
 		biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-5000)
