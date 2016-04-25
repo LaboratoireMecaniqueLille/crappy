@@ -5,19 +5,23 @@
 try:
     from ._jaiSensor import Jai
     import clModule as clModule
-except:
-    print "Jai not compatible with this installation \n"
+except Exception as e:
+    print "WARNING: ", e
+                
 try:
     import ximeaModule as ximeaModule
     from ._ximeaSensor import Ximea
-except:
-	print "Cannot load ximea Module"
-    
+except Exception as e:
+    print "WARNING: ", e
+            
 import platform as _platform
 if(_platform.system()=="Linux"):
-	from ._comediSensor import ComediSensor
-	import comediModule as comediModule
-
+        try:
+            from ._comediSensor import ComediSensor
+            import comediModule as comediModule
+        except Exception as e:
+            print "WARNING: ", e
+                
 from ._biotensSensor import BiotensSensor
 from ._Agilent34420ASensor import Agilent34420ASensor
 
@@ -26,6 +30,7 @@ from ._variateurTriboSensor import VariateurTriboSensor
 from _lal300Sensor import SensorLal300
 try:
 	from _niusb6008 import DaqmxSensor
-except:
-	print "cannot find Daqmx Drivers \n"
+except Exception as e:
+        print "WARNING: ", e
+
 from . import clserial

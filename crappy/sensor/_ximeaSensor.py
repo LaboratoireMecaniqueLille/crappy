@@ -15,21 +15,27 @@ import ximeaModule as xi
 	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
 import platform
+from sys import stdout
+    
 def resettable(f, *args, **kwargs):
     """
     Decorator for resetting the camera device. Not working yet.
     """
-    import copy
-    def __init_and_copy__(self, *args, **kwargs):
-        f(self, **kwargs)
-        self.__original_dict__ = copy.deepcopy(self.__dict__)
-        def reset(o = self):
-            o.__dict__ = o.__original_dict__
+    if(platform.system()=="Linux"):
 
-        self.reset = reset
-    return __init_and_copy__
+        import copy
+        def __init_and_copy__(self, *args, **kwargs):
+            f(self, **kwargs)
+            self.__original_dict__ = copy.deepcopy(self.__dict__)
+            def reset(o = self):
+                o.__dict__ = o.__original_dict__
+
+            self.reset = reset
+        return __init_and_copy__
 	
-
+    else:
+        pass
+    
 class Ximea(cameraSensor.CameraSensor):
 	"""
 	Camera class for ximea devices, this class should inherit from CameraObject
@@ -48,7 +54,7 @@ class Ximea(cameraSensor.CameraSensor):
 	data_format : int, default = 0
 		Value must be in [0:7]. See documentation for more informations.
 	"""
-	#@resettable
+	@resettable
 	def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):
 		self.quit=False
 		self.FPS=framespersec
@@ -63,6 +69,7 @@ class Ximea(cameraSensor.CameraSensor):
 		self._defaultYoffset = 0
 		self._defaultExposure = 10000
 		self._defaultGain= 0
+		self.nbi = 0
 
 	def new(self, exposure=10000, width=2048, height=2048, xoffset=0, yoffset=0, gain=0):
 		"""
@@ -106,6 +113,7 @@ class Ximea(cameraSensor.CameraSensor):
 		This method get a frame on the selected camera and return a ndarray 
 		If the camera breaks down, it reinitializes it, and tries again.
 		"""
+		self.nbi = self.nbi+1
 		try:
 			ret, frame = self.ximea.read()
 
@@ -115,8 +123,11 @@ class Ximea(cameraSensor.CameraSensor):
 			self.quit=True
 
 		try:
-			if ret:
-				return frame.get('data')
+                        data = frame.get('data')
+                        stdout.write("\rimage n°: {0} ret: {1}, type frame: {2}".format(self.nbi, ret, type(data)))
+                        stdout.flush()
+			if ret == 1:
+				return data
 			elif not(self.quit):
 				print "restarting camera..."
 				time.sleep(0.5)
@@ -127,7 +138,6 @@ class Ximea(cameraSensor.CameraSensor):
 				self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
 				return self.getImage()
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
-			print 'test'
 			pass
 		
 	def close(self):

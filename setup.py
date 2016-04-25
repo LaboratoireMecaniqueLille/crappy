@@ -35,9 +35,9 @@ ext_lib = []
 
 if(platform.system()=="Linux") :
     execfile("./crappy/__version__.py") # read the current version in version.py
-    ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/old/ximea.cpp', 'sources/XimeaLib/old/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
+    ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/old/ximea.cpp', 'sources/XimeaLib/old/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-Werror", "-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
     clModule = Extension('sensor.clModule', sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-l", "python2.7", "-L", "/opt/SiliconSoftware/Runtime5.4.1.2/lib64/", "-l", "display", "-l", "clsersis", "-l", "fglib5"])
-    extentions.append(comediModule)
+    #extentions.append(comediModule)
     p = popen("lsmod |grep menable")
     if(len(p.read())!=0) :
         extentions.append(clModule)

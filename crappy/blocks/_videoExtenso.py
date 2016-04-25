@@ -13,8 +13,8 @@ try:
   from skimage.filters import threshold_otsu, rank #load newest version
 except:
   from skimage.filter import threshold_otsu, rank #load deprecated version
-from skimage.measure import regionprops
-from skimage.morphology import label,erosion, square,dilation
+from skimage.measure import regionprops, label
+from skimage.morphology import erosion, square,dilation
 from skimage.segmentation import clear_border
 from collections import OrderedDict
 from sys import stdout
@@ -291,6 +291,7 @@ dict : OrderedDict
 						proc=Process(target=self.plotter,args=())
 						proc.start()
 						first_display=False
+                                                self.plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_]])
 					if j%90==0 and j>0: # every 80 round, send an image to the plot function below, that display the cropped image, LX, Ly and the position of the area around the spots
 						self.plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_]])
 				#t5_=time.time()

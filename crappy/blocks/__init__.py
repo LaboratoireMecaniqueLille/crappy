@@ -22,8 +22,16 @@ from ._reader import Reader
 from ._saver import Saver
 #from ._signalAdapter import SignalAdapter
 from ._signalGenerator import SignalGenerator
-from ._streamerCamera import StreamerCamera
+try:
+    from ._streamerCamera import StreamerCamera
+except Exception as e:
+    print "WARNING: ", e
+    
 from ._streamer import Streamer
-from ._videoExtenso import VideoExtenso
+try:
+    from ._videoExtenso import VideoExtenso
+except Exception as e:
+    print "WARNING: ", e
+    
 from _lal300Command import CommandLal300
 #from _interpolation import Interpolation

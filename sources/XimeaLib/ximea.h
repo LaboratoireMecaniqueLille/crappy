@@ -1,5 +1,9 @@
-#ifndef CAMERA_LINK_H
-#define CAMERA_LINK_H
+#ifndef XIMEA_H
+#define XIMEA_H
+
+
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include "Python.h"
 
 #ifndef WIN32
 #ifdef _WIN32
@@ -18,15 +22,16 @@
 
 
 #include <stdio.h>
-#include<iostream>
+#include <iostream>
 #include <memory.h>
-#include <string.h>
+#include <string>
 #include <typeinfo>
+#include <map>
+
 
 #define HandleResult(res,place) if (res!=XI_OK) {printf(" An error occured: %s (%d)\n",place,res);close();}
 
 using namespace std;
-
 
 class CaptureCAM_XIMEA
 {
@@ -37,9 +42,8 @@ public:
     virtual void close();
     virtual bool grabFrame();
     virtual void addTrigger(int timout, bool triggered);
-    double getProperty(int);
-    bool setProperty(int, double);
-    void resetCvImage();
+    virtual double getProperty(int);
+    virtual bool setProperty(int, double);
     bool      isopened;
     XI_IMG    image;
     int       format;
@@ -47,6 +51,8 @@ public:
     int       height;
     int       xoffset;
     int       yoffset;
+    void resetCvImage();
+
 
 private:
     void init();
@@ -57,35 +63,31 @@ private:
     int       timeout;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
 
-/*typedef struct {
+
+typedef struct {
     PyObject_HEAD
     PyObject *myarray;
     int device;
+    char *array_buffer;
 } VideoCapture;
-*/
-extern "C"{
-class Camera {
-public:
-    Camera(int);
-    ~Camera();
-    void toString();
-    bool isOpened();
-    void release();
-    void addTrigger(int, bool);
-    bool set(int, double);
-    double get(int);
-    pair<bool,void*> xiread();
-    int device;
-    
-private:
-    bool open(int device);
-    bool grab();
-    void retrieve();
-    void getMeta();
-    CaptureCAM_XIMEA* capt;
-};
 
+PyObject* VideoCapture_open(int device);
+PyObject* VideoCapture_isOpened();
+PyObject* VideoCapture_release();
+PyObject* VideoCapture_addTrigger(VideoCapture *self, PyObject *args);
+bool VideoCapture_grab();
+PyObject* VideoCapture_retrieve(VideoCapture *self);
+PyObject* VideoCapture_getMeta();
+PyObject* VideoCapture_xiread(VideoCapture *self);
+PyObject* VideoCapture_set(VideoCapture *self, PyObject *args);
+PyObject* VideoCapture_get(VideoCapture *self, PyObject *args);
+#ifdef __cplusplus
+}
+#endif
 
 // Properties of cameras available through XIMEA SDK interface
 enum { CAP_PROP_XI_DOWNSAMPLING  = 400, // Change image resolution by binning or skipping.
@@ -109,7 +111,7 @@ enum { CAP_PROP_XI_DOWNSAMPLING  = 400, // Change image resolution by binning or
     CAP_PROP_XI_AG_MAX_LIMIT  = 418, // Maximum limit of gain in AEAG procedure
     CAP_PROP_XI_AEAG_LEVEL    = 419, // Average intensity of output signal AEAG should achieve(in %)
     CAP_PROP_XI_TIMEOUT       = 420,  // Image capture timeout in milliseconds
-    CAP_PROP_XI_TIMESTAMP    = 421,      // Time the image has been taken in second accurate at microsecond
+    CAP_PROP_XI_TIMESTAMP	 = 421,	     // Time the image has been taken in second accurate at microsecond
     CAP_PROP_XI_FRAME_NUMBER  = 422,      // Frame number (reset by exposure, gain, downsampling change, auto exposure (AEAG)) 
     CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH = 423, // Number of byte of the camera (mandatory for data packing)
     CAP_PROP_XI_DATA_PACKING  = 424,     // Data packing allow to transfert efficiently image with depth over 8 bits
@@ -145,5 +147,5 @@ enum { CAP_ANY          = 0,     // autodetect
     CAP_INTELPERC    = 1500,   // Intel Perceptual Computing SDK
     CAP_OPENNI2      = 1600   // OpenNI2 (for Kinect)
     };
-}
+
 #endif
