@@ -98,8 +98,8 @@ external_trigger : Default=None
 				self.out_.send(value)
 			else:
 				try:
-					for i in range(len(self.condition)):
-						value=self.condition[i].evaluate(copy.copy(value))
+					for cond in self.condition:
+						value=cond.evaluate(copy.copy(value))
 				except TypeError: # if only one condition
 					value=self.condition.evaluate(copy.copy(value))
 				if not value is None:
