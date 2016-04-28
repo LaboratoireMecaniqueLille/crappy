@@ -1,8 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+<<<<<<< HEAD
 import serial
 import time
+=======
+#import serial
+
+>>>>>>> 9c6bf0960d5c900850ad3981eeaef6cacc9a10c6
 class VariateurTriboSensor(object):
 	def __init__(self,ser):
 		self.ser_servostar=ser

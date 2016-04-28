@@ -1,14 +1,14 @@
+# coding: utf-8
 from _meta import MasterBlock
-import pandas as pd
+#import pandas as pd
 import os
-import gc
+from ..links._link import TimeoutError
+from collections import OrderedDict
 
 class Compacter(MasterBlock):
 	"""Many to one block. Compactate several data streams into arrays."""
 	def __init__(self,acquisition_step):
 		"""
-Compacter(acquisition_step)
-
 Read data inputs and save them in a panda dataframe of length acquisition_step.
 This block must be used to send data to the Saver or the Grapher.
 Input values sent by the Links must be array (1D).
@@ -20,11 +20,11 @@ Parameters
 ----------
 acquisition_step : int
 	Number of values to save in each data-stream before returning the array.
-	
-Returns:
---------
-Panda Dataframe of shape (number_of_values_in_input,acquisition_step)
 
+
+Returns
+-------
+dict : OrderedDict(shape (number_of_values_in_input,acquisition_step))
 		"""
 		print "compacter!"
 		self.acquisition_step=acquisition_step
@@ -42,15 +42,29 @@ Panda Dataframe of shape (number_of_values_in_input,acquisition_step)
 					if len(self.inputs)!=1:
 						for k in range(1,len(self.inputs)):
 							data_recv=self.inputs[k].recv()
+							#try:
+								#if i ==0:
+									#Data=pd.concat([Data,data_recv],axis=1)
+								#else:
+									#Data1=pd.concat([Data1,data_recv],axis=1)
+							#except AttributeError:
 							if i ==0:
-								Data=pd.concat([Data,data_recv],axis=1)
+								Data.update(data_recv)
 							else:
-								Data1=pd.concat([Data1,data_recv],axis=1)
+								Data1.update(data_recv)
 					if i!=0:
-						Data=pd.concat([Data,Data1])
-				for j in range(len(self.outputs)):
-					self.outputs[j].send(Data)
-				gc.collect()
+						try:
+							Data=OrderedDict(zip(Data.keys(),[Data.values()[t]+(Data1.values()[t],) for t in range(len(Data.keys()))]))
+						except TypeError:
+							Data=OrderedDict(zip(Data.keys(),[(Data.values()[t],)+(Data1.values()[t],) for t in range(len(Data.keys()))]))
+				try:
+					for j in range(len(self.outputs)):
+						self.outputs[j].send(Data)
+						#print "compacted data : ",Data
+				except TimeoutError:
+					raise
+				except AttributeError: #if no outputs
+					pass
 		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in Compacter : ", e
-			raise
+			print "Exception in Compacter %s: %s" %(os.getpid(),e)
+			#raise

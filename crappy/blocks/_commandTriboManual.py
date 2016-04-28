@@ -1,7 +1,12 @@
+# coding: utf-8
 from _meta import MasterBlock
 
 class CommandTriboMaintien(MasterBlock):
+<<<<<<< HEAD
 	def __init__(self, VariateurTribo, comediDigital):
+=======
+	def __init__(self, VariateurTribo, comediOut):
+>>>>>>> 9c6bf0960d5c900850ad3981eeaef6cacc9a10c6
 		self.VariateurTribo=VariateurTribo
 		self.comediDigital=comediDigital
 	def main(self):
@@ -26,7 +31,7 @@ class CommandTriboMaintien(MasterBlock):
 				self.comediDigital.Off()
 				self.VariateurTribo.read_position()
 				
-			elif input_='stop':
+			elif input_=='stop':
 				self.VariateurTribo.stop_motor()
 			elif self.VariateurTribo.mode=='effort' and self.VariateurTribo.init:
 				try:
