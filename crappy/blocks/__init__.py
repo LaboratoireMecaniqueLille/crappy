@@ -23,10 +23,10 @@ from ._streamerCamera import StreamerCamera
 from ._streamerComedi import StreamerComedi
 from ._streamer import Streamer
 from ._videoExtenso import VideoExtenso
-<<<<<<< HEAD
-from dat_fucking_inertia import fuckingInertia
+
+
 from _interfaceTribo import Interface
-=======
+
 from _lal300Command import CommandLal300
 #from _interpolation import Interpolation
->>>>>>> 9c6bf0960d5c900850ad3981eeaef6cacc9a10c6
+
