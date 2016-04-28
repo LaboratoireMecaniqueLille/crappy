@@ -1,9 +1,9 @@
 from _meta import MasterBlock
 
 class CommandTriboMaintien(MasterBlock):
-	def __init__(self, VariateurTribo, comediDigital, comediOut):
+	def __init__(self, VariateurTribo, comediDigital):
 		self.VariateurTribo=VariateurTribo
-		
+		self.comediDigital=comediDigital
 	def main(self):
 		t_0=time.time()
 		print "t0 = ", t_0
@@ -22,7 +22,7 @@ class CommandTriboMaintien(MasterBlock):
 				self.comediDigital.On()
 			
 			elif input_=='position' and self.VariateurTribo.mode!='effort' and self.VariateurTribo.init:
-				self.VariateurTribo.set_mode_position()
+				self.VarœiateurTribo.set_mode_position()
 				self.comediDigital.Off()
 				self.VariateurTribo.read_position()
 				

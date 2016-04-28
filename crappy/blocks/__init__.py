@@ -22,3 +22,5 @@ from ._streamerCamera import StreamerCamera
 from ._streamerComedi import StreamerComedi
 from ._streamer import Streamer
 from ._videoExtenso import VideoExtenso
+from dat_fucking_inertia import fuckingInertia
+from _interfaceTribo import Interface
