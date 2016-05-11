@@ -27,7 +27,7 @@ try:
 	#stream=crappy.blocks.MeasureByStep(sensor,labels=['t(s)','signal'])
 	#stream=crappy.blocks.Streamer(sensor,labels=['t(s)','signal','signal2'])
 	#stream=crappy.blocks.MeasureComediByStep(instronSensor, labels=['t(s)','V'], freq=1000.)
-	traction=crappy.blocks.SignalGenerator(path=[{"waveform":"square","time":100,"phase":0,"amplitude":1,"offset":0,"freq":1}],
+	traction=crappy.blocks.SignalGenerator(path=[{"waveform":"sinus","time":100,"phase":0,"amplitude":1,"offset":0,"freq":1}],
 												send_freq=400,repeat=True)
 	#torsion=crappy.blocks.SignalGenerator(path=[{"waveform":"triangle","time":50,"phase":0,"amplitude":5,"offset":-0.5,"freq":1}]
 											#,send_freq=400,repeat=False,labels=['t(s)','signal'])
@@ -46,7 +46,7 @@ try:
 	#condition=[crappy.links.Filter(labels=['V'],mode="median",size=50),crappy.links.Filter(labels=['t(s)'],mode="mean",size=50)]
 	link1=crappy.links.Link()
 	link4=crappy.links.Link()
-	link2=crappy.links.Link(condition=crappy.links.PID(1.01,0.00,0,'signal','signal_mesure',outMin=-8,outMax=8))
+	link2=crappy.links.Link(condition=crappy.links.PID(1.01,0.00,0,label_consigne='signal',label_retour='signal_mesure',outMin=-8,outMax=8))
 	link2.add_external_trigger(link4)
 	link3=crappy.links.Link()
 	
@@ -58,7 +58,6 @@ try:
 	stream.add_output(link1)
 	stream.add_output(link4)
 	traction.add_output(link2)
-	#traction.add_output(link1)
 	#torsion.add_output(link5)
 	
 	compacter.add_input(link1)
