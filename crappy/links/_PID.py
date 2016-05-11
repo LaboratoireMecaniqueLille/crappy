@@ -5,11 +5,14 @@ import time
 
 class PID(MetaCondition):
 	"""WIP, not working yet."""
-	def __init__(self,P,I,D,label_consigne,label_retour,consigne=None,outMin=-10,outMax=10,add_current_value=True):
+	def __init__(self,P,I,D,label_consigne,label_retour,label_consigne_sortie=None,consigne=None,outMin=-10,outMax=10,add_current_value=True):
 		self.P=P
 		self.I=I
 		self.D=D
 		self.label_consigne=label_consigne
+		self.label_consigne_sortie=label_consigne_sortie
+		if self.label_consigne_sortie==None:
+			self.label_consigne_sortie=label_consigne
 		self.label_retour=label_retour
 		self.outMin=outMin
 		self.outMax=outMax
@@ -31,7 +34,7 @@ class PID(MetaCondition):
 			self.last_retour=self.retour
 			self.first=False
 			self.lastTimeChange=10**118 # for initialization
-		#print "recv : ",value
+		#print "recv : ",self.retour
 		self.compute()
 		#print "output : ", self.output
 		if self.add_current_value:
@@ -46,8 +49,8 @@ class PID(MetaCondition):
 			value.pop(self.label_consigne)
 		except KeyError:
 			pass
-		value[self.label_consigne]=val
-		#print "send : ",value
+		value[self.label_consigne_sortie]=val
+		#print "send : ",val
 		return value
 	
 	#def initialize(self):

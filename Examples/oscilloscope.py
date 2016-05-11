@@ -8,7 +8,7 @@ crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 try:
 ########################################### Creating objects
 	#instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10])
-	sensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1,2,3],gain=[0.02,100000,0.01*2.,500]) # dist is multiplied by 2 to be correct
+	sensor=crappy.sensor.ComediSensor(device='/dev/comedi1',channels=[0,1,2,3],gain=[0.02,100000,0.01*2.,500]) # dist is multiplied by 2 to be correct
 	#sensor=crappy.sensor.LabJackSensor(channels=[0],gain=[1],chan_range=10,mode="streamer",scanRate=10,scansPerRead=5) # dist is multiplied by 2 to be correct
 	#instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10000]) # 10 times the gain on the machine if you go through an usb dux sigma
 	#cmd_traction=crappy.actuator.LabJackActuator(channel="TDAC2", gain=1, offset=0)

@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 class LabJackSensor(object):
 	"""Sensor class for LabJack devices."""
-	def __init__(self,channels=0,chan_range=10,gain=1,offset=0,mode="single",scanRate=100,scansPerRead=1): 
+	def __init__(self,channels=0,chan_range=10,gain=1,offset=0,resolution=0,mode="single",scanRate=100,scansPerRead=1): 
 		"""
 Convert tension value into digital values, on several channels.
 
@@ -48,6 +48,7 @@ scanPerRead : int
 		self.mode=mode
 		self.scanRate = scanRate
 		self.scansPerRead = scansPerRead
+		self.resolution=resolution
 		
 		if type(self.channels)==str or len(self.channels)==1:	# for getData
 			self.nchans=1
@@ -59,7 +60,7 @@ scanPerRead : int
 				self.gain=[self.gain]*self.nchans
 			if type(self.offset)==int:
 				self.offset=[self.offset]*self.nchans
-			if type(self.chan_range)==int:
+			if type(self.chan_range)==int or type(self.chan_range)==float:
 				self.chan_range=[self.chan_range]*self.nchans
 			if mode=="single": # if mode "streamer", the new() must be called in the right process
 				self.new()
@@ -78,7 +79,7 @@ scanPerRead : int
 			suffixes = ["_RANGE"]
 			aNames = aName_prefix+[chan+s for chan in self.channels for s in suffixes]
 			temp_values=[[self.chan_range[chan]] for chan,a in enumerate(self.channels)]
-			aValues = [ljm.constants.GND, 0, 0]+[item for sublist in temp_values for item in sublist] 
+			aValues = [ljm.constants.GND, 0, self.resolution]+[item for sublist in temp_values for item in sublist] 
 			#print aValues
 			#print "----------------------"
 			#print aNames
@@ -93,7 +94,7 @@ scanPerRead : int
 			suffixes = ["_NEGATIVE_CH", "_RANGE", "_RESOLUTION_INDEX"]
 			aNames = [chan+s for chan in self.channels for s in suffixes]
 			#aValues = [[1,ljm.constants.GND, self.chan_range[chan],0,self.gain[chan],self.offset[chan]] for chan,a in enumerate(self.channels)] 
-			aValues = [[ljm.constants.GND, self.chan_range[chan],0] for chan,_ in enumerate(self.channels)] 
+			aValues = [[ljm.constants.GND, self.chan_range[chan],self.resolution] for chan,_ in enumerate(self.channels)] 
 			aValues=[item for sublist in aValues for item in sublist] #flatten
 			#print aValues
 			#print "----------------------"
