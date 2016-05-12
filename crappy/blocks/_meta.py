@@ -1,8 +1,9 @@
 # coding: utf-8
 from multiprocessing import Process, Pipe
-#import os
+import os
 import platform
 import ctypes, time
+from ..links._link import TimeoutError
 if(platform.system()=="Linux"):
 	libc = ctypes.CDLL('libc.so.6')
 
@@ -29,9 +30,6 @@ stop()
 		instance.instances.append(instance)
 		return instance
 	
-	def main(b):
-		b.main()
-	
 	def add_output(self,link):
 		try: # test if the outputs list exist
 			a_=self.outputs[0]
@@ -45,17 +43,17 @@ stop()
 		except AttributeError: # if it doesn't exist, create it
 			self.inputs=[]
 		self.inputs.append(link)
-	
+                    
 	def start(self):
 		try:
-			self.proc=Process(target=main,args=(self))
+			self.proc=Process(target=self.main,args=())
 			self.proc.start()
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in MasterBlock: ", e
 			if(platform.system()=="Linux"):
 				self.proc.terminate()
 
-			#raise #raise the error to the next level for global shutdown
+			raise #raise the error to the next level for global shutdown
 		
 	#def join(self):
 		#self.proc.join()
@@ -64,7 +62,7 @@ stop()
 		
 	def set_t0(self,t0):
 		self.t0=t0
-
+		
 
 def delay(ms):
   """Delay in milliseconds with libc usleep() using ctypes.

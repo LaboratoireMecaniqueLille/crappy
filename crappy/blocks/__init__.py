@@ -20,6 +20,8 @@ from ._multiPath import MultiPath
 from ._pid import PID
 from ._reader import Reader
 from ._saver import Saver
+from ._server import Server
+from ._client import Client
 #from ._signalAdapter import SignalAdapter
 from ._signalGenerator import SignalGenerator
 try:
