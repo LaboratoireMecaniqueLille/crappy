@@ -68,7 +68,7 @@ class Link(object):
 	"""
 Link class. All connection between Blocks should be made with this.
 	"""
-	def __init__(self,condition=None,timeout=0.1,action="warn"):
+	def __init__(self,condition=None,timeout=0.1,action="warn", name="link"):
 		"""
 Creates a pipe and is used to transfer information between Blocks using a pipe.
 You can add one or multiple conditions to modify the value transfered.
@@ -101,7 +101,7 @@ external_trigger : Default=None
 	Can be add through "add_external_trigger" instance
 
 		"""
-		
+		self.name = name
 		self.in_,self.out_=Pipe(duplex=False)
 		self.external_trigger=None
 		self.condition=condition
@@ -123,10 +123,10 @@ external_trigger : Default=None
 				print "WARNING : Timeout error in pipe send!"
 			elif self.action=="kill":
 				print "Killing Link : ", e
-				raise
+				raise Exception('killing link')
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in link : ", e
-			raise
+			raise Exception(e)
 			
 			
 	@win_timeout(1)
@@ -142,10 +142,13 @@ external_trigger : Default=None
 					value=self.condition.evaluate(copy.copy(value))
 				if not value is None:
 					self.out_.send(value)
-		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in link : ", e
-			raise
-	
+		except (Exception, KeyboardInterrupt) as e:
+                    print "Exception in link : ", e
+                    if(not self.out_.closed):
+                        self.out_.send('close')
+                        self.out_.close()
+                    raise Exception(e)
+                        
 	def recv(self,blocking=True):
 		"""Receive data. If blocking=False, return None if there is no data"""
 		try:
@@ -156,6 +159,15 @@ external_trigger : Default=None
 					return self.in_.recv()
 				else:
 				  return None
-		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in link : ", e
-			raise
+		except Exception as e:
+			print "EXCEPTION in link : ", e
+			if(not self.in_.closed):
+                            self.in_.close()
+			raise Exception(e)
+                except KeyboardInterrupt:
+                        if(not self.in_.closed):
+                            self.in_.close()
+                        raise KeyboardInterrupt
+                except:
+                    print "Unexpected exception."
+                    raise

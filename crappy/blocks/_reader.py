@@ -1,6 +1,7 @@
 # coding: utf-8
 from _meta import MasterBlock
 import time
+import os
 class Reader(MasterBlock):
 	"""
 Children class of MasterBlock. Read and print the input Link.
@@ -16,9 +17,14 @@ k : printable
 		"""
 		self.k=k  
 		
+                
 	def main(self):
-		while True:
-			for input_ in self.inputs:
-				time.sleep(10)
-				self.data=input_.recv()
-			print self.k,self.data
+                try:
+                    while True:
+                                print "Received by {0}: {1}.".format(input_.name,self.data)
+                except Exception as e:
+                    print "Exception in reader (pid:{0}): {1}".format(os.getpid(), e)
+                except KeyboardInterrupt:
+                    pass
+                except:
+                    print "Unexpected exception."
