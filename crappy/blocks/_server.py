@@ -55,9 +55,12 @@ class Server(MasterBlock):
             try:
                 conn.send('close')
             except:
+                print 'error'
                 pass
             finally:
+                print 'closing connection...'
                 conn.close()
+                
         except KeyboardInterrupt:
             print "KeyboardInterrupt received, link name: {0} (process n°{1}).".format(input_.name, os.getpid())
             conn.send('close')
@@ -84,8 +87,11 @@ class Server(MasterBlock):
         except:
             print "Unexpected exception."
         finally:
-            for i in range(len(conn)):
-                for i in range(len(procs)):
-                    procs[i].join()
-                if not conn[i].closed:
-                    conn[i].close()
+            try:
+                for i in range(len(conn)):
+                    for i in range(len(procs)):
+                        procs[i].join()
+                    if not conn[i].closed:
+                        conn[i].close()
+            except Exception as e:
+                print "On exit: ", e
