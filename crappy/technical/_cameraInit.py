@@ -235,14 +235,21 @@ class _CameraInit():
 		"""
 		# The median filter helps a lot for real life images ...
 		#print "5"
-		#print image.shape
+		# print image.shape
 		#self.thresh=threshold_otsu(image)
+		# plt.imsave("test1.tiff", image)
 		bw=cv2.medianBlur(image,5)>self.thresh
 		if not (self.videoextenso['white_spot']):
 			bw=1-bw
 		M = cv2.moments(bw*255.)
-		Px=M['m01']/M['m00']
-		Py=M['m10']/M['m00'] 
+		try:
+			Px=M['m01']/M['m00']
+			Py=M['m10']/M['m00'] 
+		except Exception as e:
+			print "ERROR: ", e
+			import time
+			time.sleep(0.1)
+			return self.barycenter_opencv(image, minx, miny)
 		if self.NumOfReg==1:
 			a=M['mu20']/M['m00']
 			b=-M['mu11']/M['m00']

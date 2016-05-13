@@ -48,7 +48,7 @@ stop()
 	
 	def start(self):
 		try:
-			self.proc=Process(target=main,args=(self))
+			self.proc=Process(target=self.main,args=())
 			self.proc.start()
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in MasterBlock: ", e

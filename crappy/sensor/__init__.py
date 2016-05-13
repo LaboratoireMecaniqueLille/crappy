@@ -13,7 +13,12 @@ try:
     from ._ximeaSensor import Ximea
 except Exception as e:
     print "WARNING: ", e
-            
+
+try:
+    import pyFgenModule as pyFgen 
+except Exception as e:
+    print "WARNING: ", e
+     
 import platform as _platform
 if(_platform.system()=="Linux"):
         try:

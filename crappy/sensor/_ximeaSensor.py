@@ -7,12 +7,6 @@ from numpy.ctypeslib import ndpointer
 from os import path
 here = path.abspath(path.dirname(__file__))
 import ximeaModule as xi
-
-
-#try :
-#import cv2 as xi
-#except ImportError: 
-	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
 import time
 import platform
 from sys import stdout
@@ -21,20 +15,15 @@ def resettable(f, *args, **kwargs):
     """
     Decorator for resetting the camera device. Not working yet.
     """
-    if(platform.system()=="Linux"):
+    import copy
+    def __init_and_copy__(self, *args, **kwargs):
+        f(self, **kwargs)
+        self.__original_dict__ = copy.deepcopy(self.__dict__)
+        def reset(o = self):
+            o.__dict__ = o.__original_dict__
 
-        import copy
-        def __init_and_copy__(self, *args, **kwargs):
-            f(self, **kwargs)
-            self.__original_dict__ = copy.deepcopy(self.__dict__)
-            def reset(o = self):
-                o.__dict__ = o.__original_dict__
-
-            self.reset = reset
-        return __init_and_copy__
-	
-    else:
-        pass
+        self.reset = reset
+    return __init_and_copy__
     
 class Ximea(cameraSensor.CameraSensor):
 	"""
@@ -54,7 +43,7 @@ class Ximea(cameraSensor.CameraSensor):
 	data_format : int, default = 0
 		Value must be in [0:7]. See documentation for more informations.
 	"""
-	@resettable
+	# @resettable
 	def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):
 		self.quit=False
 		self.FPS=framespersec
@@ -107,7 +96,10 @@ class Ximea(cameraSensor.CameraSensor):
 		self.yoffset = yoffset
 		self.exposure = exposure
 		self.gain=gain
-		
+		print "\n\n\n\n\n"
+		print "EXPOSURE: "
+		print self.ximea.get(xi.CAP_PROP_EXPOSURE), self.exposure
+		print "\n\n\n\n\n"
 	def getImage(self):
 		"""
 		This method get a frame on the selected camera and return a ndarray 
@@ -123,10 +115,8 @@ class Ximea(cameraSensor.CameraSensor):
 			self.quit=True
 
 		try:
-                        data = frame.get('data')
-                        stdout.write("\rimage n°: {0} ret: {1}, type frame: {2}".format(self.nbi, ret, type(data)))
-                        stdout.flush()
-			if ret == 1:
+			data = frame.get('data')
+			if ret:
 				return data
 			elif not(self.quit):
 				print "restarting camera..."

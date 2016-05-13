@@ -49,9 +49,12 @@ if(platform.system()=="Linux") :
     else:
         print "libm3api not installed, ximeaModule will not be compiled"
     extentions.append(ximeaModule)
+
 if(platform.system()=="Windows"):
-    execfile(".\crappy\__version__.py") # read the current version in version.py
-    ximeaModule = Extension('sensor.ximeaModule', include_dirs = ["c:\\XIMEA\\API","c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyximea.cpp'], libraries=["m3apiX64"], library_dirs=["c:\\XIMEA\\API", "c:\\XIMEA\\API\\x64"], extra_compile_args=["/EHsc"])
+    execfile(".\crappy\__version__.py") # read the current version in version.py , , "C:\\Program Files\\IVI Foundation\\IVI\\Include", , 
+    pyFgenModule = Extension('sensor.pyFgenModule', include_dirs = [ "c:\\python27\\Lib\\site-packages\\numpy\\core\\include", "C:\\Program Files (x86)\\IVI Foundation\\VISA\\WinNT\\include", "C:\\Program Files\\IVI Foundation\\IVI\\Include"],  sources = ['sources/niFgen/pyFgen.cpp'], libraries=["niFgen"], library_dirs=["C:\\Program Files\\IVI Foundation\\IVI\\Lib_x64\\msc"], extra_compile_args=["/EHsc", "/WX"])
+    extentions.append(pyFgenModule)
+    ximeaModule = Extension('sensor.ximeaModule', include_dirs = ["c:\\XIMEA\\API","c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyximea.cpp'], libraries=["m3apiX64"], library_dirs=["c:\\XIMEA\\API", "c:\\XIMEA\\API\\x64"], extra_compile_args=["/EHsc", "/WX"])
     # ximeaModule = Extension('sensor.ximeaModule', include_dirs = ["c:\\XIMEA\\API", "C:\Users\ECOLE\Downloads\opencv\\build\include", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/XimeaLib/old/ximea.cpp', 'sources/XimeaLib/old/pyximea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-Lc:\\XIMEA\\API", "-Lc:\\XIMEA\\API\\x64", "-lm3apiX64"])
     clModule = Extension('sensor.clModule', include_dirs = ["C:\Program Files\SiliconSoftware\Runtime5.2.1\include", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], libraries=["clsersis", "fglib5"], library_dirs=["C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\lib\\visualc"], extra_compile_args = ["/EHsc", "/WX"])
     # clModule = Extension('sensor.clModule', include_dirs = ["C:\Program Files\SiliconSoftware\Runtime5.2.1\include", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"], sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-LC:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\bin" ,"-lclsersis", "-lfglib5"])
@@ -276,3 +279,9 @@ if(clModule in extentions):
         system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\clModule.pyd crappy\\sensor\\')
     if(platform.system()=="Linux"):
         system('cp build/lib.linux-x86_64-2.7/crappy/sensor/clModule.so crappy/sensor/')
+
+if(pyFgenModule in extentions):
+    if(platform.system()=="Windows"):
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\pyFgenModule.pyd crappy\\sensor\\')
+    if(platform.system()=="Linux"):
+        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/pyFgenModule.so crappy/sensor/')

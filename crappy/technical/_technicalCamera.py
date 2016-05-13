@@ -54,7 +54,7 @@ videoextenso : dict
 		except Exception as e:
 			print "{0}".format(e)
 			self.serial = None
-		#print "module, cameraclass, serial : ", module, CameraClass, self.serial
+		print "module, cameraclass, serial : ", module, CameraClass, self.serial
         #initialisation:
 		self.sensor = CameraClass(numdevice=numdevice) #, serial= self.serial)
 		self.videoextenso = videoextenso

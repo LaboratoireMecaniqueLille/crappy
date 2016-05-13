@@ -1,0 +1,283 @@
+Can't find microEnable4 Device driver, clModule will not be compiled
+running install
+running bdist_egg
+running egg_info
+writing requirements to crappy.egg-info\requires.txt
+writing crappy.egg-info\PKG-INFO
+writing top-level names to crappy.egg-info\top_level.txt
+writing dependency_links to crappy.egg-info\dependency_links.txt
+reading manifest file 'crappy.egg-info\SOURCES.txt'
+writing manifest file 'crappy.egg-info\SOURCES.txt'
+installing library code to build\bdist.win-amd64\egg
+running install_lib
+running build_py
+creating build
+creating build\lib.win-amd64-2.7
+creating build\lib.win-amd64-2.7\crappy
+copying crappy\__init__.py -> build\lib.win-amd64-2.7\crappy
+copying crappy\__version__.py -> build\lib.win-amd64-2.7\crappy
+creating build\lib.win-amd64-2.7\crappy\actuator
+copying crappy\actuator\_biaxeActuator.py -> build\lib.win-amd64-2.7\crappy\actuator
+copying crappy\actuator\_biotensActuator.py -> build\lib.win-amd64-2.7\crappy\actuator
+copying crappy\actuator\_comediActuator.py -> build\lib.win-amd64-2.7\crappy\actuator
+copying crappy\actuator\_lal300Actuator.py -> build\lib.win-amd64-2.7\crappy\actuator
+copying crappy\actuator\_variateurTriboActuator.py -> build\lib.win-amd64-2.7\crappy\actuator
+copying crappy\actuator\__init__.py -> build\lib.win-amd64-2.7\crappy\actuator
+creating build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_cameraDisplayer.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_commandBiaxe.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_commandBiotens.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_commandComedi.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_commandTriboCumul.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_commandTriboInterface.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_commandTriboManual.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_compacter.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_fakeCommandBiaxe.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_grapher.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_interpolation.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_lal300Command.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_measureAgilent34420A.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_measureComediByStep.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_meta.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_multiPath.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_pid.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_reader.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_saver.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_signalAdapter.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_signalGenerator.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_streamer.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_streamerCamera.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_streamerComedi.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\_videoExtenso.py -> build\lib.win-amd64-2.7\crappy\blocks
+copying crappy\blocks\__init__.py -> build\lib.win-amd64-2.7\crappy\blocks
+creating build\lib.win-amd64-2.7\crappy\links
+copying crappy\links\_bouncer.py -> build\lib.win-amd64-2.7\crappy\links
+copying crappy\links\_filter.py -> build\lib.win-amd64-2.7\crappy\links
+copying crappy\links\_link.py -> build\lib.win-amd64-2.7\crappy\links
+copying crappy\links\_metaCondition.py -> build\lib.win-amd64-2.7\crappy\links
+copying crappy\links\_PID.py -> build\lib.win-amd64-2.7\crappy\links
+copying crappy\links\_trigger.py -> build\lib.win-amd64-2.7\crappy\links
+copying crappy\links\__init__.py -> build\lib.win-amd64-2.7\crappy\links
+creating build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\ximeaExport.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_Agilent34420ASensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_biotensSensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_comediSensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_dummySensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_fakeCameraSensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_jaiSensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_lal300Sensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_niusb6008.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_old_jaiSensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_variateurTriboSensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\_ximeaSensor.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\__init__.py -> build\lib.win-amd64-2.7\crappy\sensor
+copying crappy\sensor\__ximeaSensor_old.py -> build\lib.win-amd64-2.7\crappy\sensor
+creating build\lib.win-amd64-2.7\crappy\technical
+copying crappy\technical\_biaxeTechnical.py -> build\lib.win-amd64-2.7\crappy\technical
+copying crappy\technical\_biotensTechnical.py -> build\lib.win-amd64-2.7\crappy\technical
+copying crappy\technical\_cameraInit.py -> build\lib.win-amd64-2.7\crappy\technical
+copying crappy\technical\_fakeCameraTechnical.py -> build\lib.win-amd64-2.7\crappy\technical
+copying crappy\technical\_lal300Technical.py -> build\lib.win-amd64-2.7\crappy\technical
+copying crappy\technical\_technicalCamera.py -> build\lib.win-amd64-2.7\crappy\technical
+copying crappy\technical\_variateurTribo.py -> build\lib.win-amd64-2.7\crappy\technical
+copying crappy\technical\_ximeaTechnical.py -> build\lib.win-amd64-2.7\crappy\technical
+copying crappy\technical\__init__.py -> build\lib.win-amd64-2.7\crappy\technical
+creating build\lib.win-amd64-2.7\crappy\actuator\_meta
+copying crappy\actuator\_meta\__init__.py -> build\lib.win-amd64-2.7\crappy\actuator\_meta
+creating build\lib.win-amd64-2.7\crappy\sensor\clserial
+copying crappy\sensor\clserial\_clSerial.py -> build\lib.win-amd64-2.7\crappy\sensor\clserial
+copying crappy\sensor\clserial\_jaiSerial.py -> build\lib.win-amd64-2.7\crappy\sensor\clserial
+copying crappy\sensor\clserial\__init__.py -> build\lib.win-amd64-2.7\crappy\sensor\clserial
+creating build\lib.win-amd64-2.7\crappy\sensor\_meta
+copying crappy\sensor\_meta\acqSensor.py -> build\lib.win-amd64-2.7\crappy\sensor\_meta
+copying crappy\sensor\_meta\cameraSensor.py -> build\lib.win-amd64-2.7\crappy\sensor\_meta
+copying crappy\sensor\_meta\__init__.py -> build\lib.win-amd64-2.7\crappy\sensor\_meta
+running build_ext
+building 'sensor.ximeaModule' extension
+creating build\temp.win-amd64-2.7
+creating build\temp.win-amd64-2.7\Release
+creating build\temp.win-amd64-2.7\Release\sources
+creating build\temp.win-amd64-2.7\Release\sources\XimeaLib
+C:\Users\PC-Essais\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\Bin\amd64\cl.exe /c /nologo /Ox /MD /W3 /GS- /DNDEBUG -Ic:\XIMEA\API -Ic:\python27\Lib\site-packages\numpy\core\include -IC:\Python27\include -IC:\Python27\PC /Tpsources/XimeaLib/ximea.cpp /Fobuild\temp.win-amd64-2.7\Release\sources/XimeaLib/ximea.obj /EHsc /WX
+ximea.cpp
+C:\Users\PC-Essais\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\Bin\amd64\cl.exe /c /nologo /Ox /MD /W3 /GS- /DNDEBUG -Ic:\XIMEA\API -Ic:\python27\Lib\site-packages\numpy\core\include -IC:\Python27\include -IC:\Python27\PC /Tpsources/XimeaLib/pyximea.cpp /Fobuild\temp.win-amd64-2.7\Release\sources/XimeaLib/pyximea.obj /EHsc /WX
+pyximea.cpp
+C:\Users\PC-Essais\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\Bin\amd64\link.exe /DLL /nologo /INCREMENTAL:NO /LIBPATH:c:\XIMEA\API /LIBPATH:c:\XIMEA\API\x64 /LIBPATH:C:\Python27\libs /LIBPATH:C:\Python27\PCbuild\amd64 /LIBPATH:C:\Python27\PC\VS9.0\amd64 m3apiX64.lib /EXPORT:initximeaModule build\temp.win-amd64-2.7\Release\sources/XimeaLib/ximea.obj build\temp.win-amd64-2.7\Release\sources/XimeaLib/pyximea.obj /OUT:build\lib.win-amd64-2.7\crappy\sensor\ximeaModule.pyd /IMPLIB:build\temp.win-amd64-2.7\Release\sources/XimeaLib\ximeaModule.lib /MANIFESTFILE:build\temp.win-amd64-2.7\Release\sources/XimeaLib\ximeaModule.pyd.manifest
+pyximea.obj : warning LNK4197: export 'initximeaModule' specified multiple times; using first specification
+   Creating library build\temp.win-amd64-2.7\Release\sources/XimeaLib\ximeaModule.lib and object build\temp.win-amd64-2.7\Release\sources/XimeaLib\ximeaModule.exp
+creating build\bdist.win-amd64
+creating build\bdist.win-amd64\egg
+creating build\bdist.win-amd64\egg\crappy
+creating build\bdist.win-amd64\egg\crappy\actuator
+copying build\lib.win-amd64-2.7\crappy\actuator\_biaxeActuator.py -> build\bdist.win-amd64\egg\crappy\actuator
+copying build\lib.win-amd64-2.7\crappy\actuator\_biotensActuator.py -> build\bdist.win-amd64\egg\crappy\actuator
+copying build\lib.win-amd64-2.7\crappy\actuator\_comediActuator.py -> build\bdist.win-amd64\egg\crappy\actuator
+copying build\lib.win-amd64-2.7\crappy\actuator\_lal300Actuator.py -> build\bdist.win-amd64\egg\crappy\actuator
+creating build\bdist.win-amd64\egg\crappy\actuator\_meta
+copying build\lib.win-amd64-2.7\crappy\actuator\_meta\__init__.py -> build\bdist.win-amd64\egg\crappy\actuator\_meta
+copying build\lib.win-amd64-2.7\crappy\actuator\_variateurTriboActuator.py -> build\bdist.win-amd64\egg\crappy\actuator
+copying build\lib.win-amd64-2.7\crappy\actuator\__init__.py -> build\bdist.win-amd64\egg\crappy\actuator
+creating build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_cameraDisplayer.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_commandBiaxe.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_commandBiotens.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_commandComedi.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_commandTriboCumul.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_commandTriboInterface.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_commandTriboManual.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_compacter.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_fakeCommandBiaxe.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_grapher.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_interpolation.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_lal300Command.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_measureAgilent34420A.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_measureComediByStep.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_meta.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_multiPath.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_pid.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_reader.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_saver.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_signalAdapter.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_signalGenerator.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_streamer.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_streamerCamera.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_streamerComedi.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\_videoExtenso.py -> build\bdist.win-amd64\egg\crappy\blocks
+copying build\lib.win-amd64-2.7\crappy\blocks\__init__.py -> build\bdist.win-amd64\egg\crappy\blocks
+creating build\bdist.win-amd64\egg\crappy\links
+copying build\lib.win-amd64-2.7\crappy\links\_bouncer.py -> build\bdist.win-amd64\egg\crappy\links
+copying build\lib.win-amd64-2.7\crappy\links\_filter.py -> build\bdist.win-amd64\egg\crappy\links
+copying build\lib.win-amd64-2.7\crappy\links\_link.py -> build\bdist.win-amd64\egg\crappy\links
+copying build\lib.win-amd64-2.7\crappy\links\_metaCondition.py -> build\bdist.win-amd64\egg\crappy\links
+copying build\lib.win-amd64-2.7\crappy\links\_PID.py -> build\bdist.win-amd64\egg\crappy\links
+copying build\lib.win-amd64-2.7\crappy\links\_trigger.py -> build\bdist.win-amd64\egg\crappy\links
+copying build\lib.win-amd64-2.7\crappy\links\__init__.py -> build\bdist.win-amd64\egg\crappy\links
+creating build\bdist.win-amd64\egg\crappy\sensor
+creating build\bdist.win-amd64\egg\crappy\sensor\clserial
+copying build\lib.win-amd64-2.7\crappy\sensor\clserial\_clSerial.py -> build\bdist.win-amd64\egg\crappy\sensor\clserial
+copying build\lib.win-amd64-2.7\crappy\sensor\clserial\_jaiSerial.py -> build\bdist.win-amd64\egg\crappy\sensor\clserial
+copying build\lib.win-amd64-2.7\crappy\sensor\clserial\__init__.py -> build\bdist.win-amd64\egg\crappy\sensor\clserial
+copying build\lib.win-amd64-2.7\crappy\sensor\ximeaExport.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\ximeaModule.pyd -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_Agilent34420ASensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_biotensSensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_comediSensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_dummySensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_fakeCameraSensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_jaiSensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_lal300Sensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+creating build\bdist.win-amd64\egg\crappy\sensor\_meta
+copying build\lib.win-amd64-2.7\crappy\sensor\_meta\acqSensor.py -> build\bdist.win-amd64\egg\crappy\sensor\_meta
+copying build\lib.win-amd64-2.7\crappy\sensor\_meta\cameraSensor.py -> build\bdist.win-amd64\egg\crappy\sensor\_meta
+copying build\lib.win-amd64-2.7\crappy\sensor\_meta\__init__.py -> build\bdist.win-amd64\egg\crappy\sensor\_meta
+copying build\lib.win-amd64-2.7\crappy\sensor\_niusb6008.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_old_jaiSensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_variateurTriboSensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\_ximeaSensor.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\__init__.py -> build\bdist.win-amd64\egg\crappy\sensor
+copying build\lib.win-amd64-2.7\crappy\sensor\__ximeaSensor_old.py -> build\bdist.win-amd64\egg\crappy\sensor
+creating build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\technical\_biaxeTechnical.py -> build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\technical\_biotensTechnical.py -> build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\technical\_cameraInit.py -> build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\technical\_fakeCameraTechnical.py -> build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\technical\_lal300Technical.py -> build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\technical\_technicalCamera.py -> build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\technical\_variateurTribo.py -> build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\technical\_ximeaTechnical.py -> build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\technical\__init__.py -> build\bdist.win-amd64\egg\crappy\technical
+copying build\lib.win-amd64-2.7\crappy\__init__.py -> build\bdist.win-amd64\egg\crappy
+copying build\lib.win-amd64-2.7\crappy\__version__.py -> build\bdist.win-amd64\egg\crappy
+byte-compiling build\bdist.win-amd64\egg\crappy\actuator\_biaxeActuator.py to _biaxeActuator.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\actuator\_biotensActuator.py to _biotensActuator.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\actuator\_comediActuator.py to _comediActuator.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\actuator\_lal300Actuator.py to _lal300Actuator.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\actuator\_meta\__init__.py to __init__.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\actuator\_variateurTriboActuator.py to _variateurTriboActuator.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\actuator\__init__.py to __init__.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_cameraDisplayer.py to _cameraDisplayer.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_commandBiaxe.py to _commandBiaxe.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_commandBiotens.py to _commandBiotens.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_commandComedi.py to _commandComedi.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_commandTriboCumul.py to _commandTriboCumul.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_commandTriboInterface.py to _commandTriboInterface.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_commandTriboManual.py to _commandTriboManual.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_compacter.py to _compacter.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_fakeCommandBiaxe.py to _fakeCommandBiaxe.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_grapher.py to _grapher.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_interpolation.py to _interpolation.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_lal300Command.py to _lal300Command.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_measureAgilent34420A.py to _measureAgilent34420A.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_measureComediByStep.py to _measureComediByStep.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_meta.py to _meta.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_multiPath.py to _multiPath.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_pid.py to _pid.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_reader.py to _reader.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_saver.py to _saver.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_signalAdapter.py to _signalAdapter.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_signalGenerator.py to _signalGenerator.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_streamer.py to _streamer.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_streamerCamera.py to _streamerCamera.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_streamerComedi.py to _streamerComedi.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\_videoExtenso.py to _videoExtenso.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\blocks\__init__.py to __init__.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\links\_bouncer.py to _bouncer.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\links\_filter.py to _filter.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\links\_link.py to _link.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\links\_metaCondition.py to _metaCondition.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\links\_PID.py to _PID.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\links\_trigger.py to _trigger.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\links\__init__.py to __init__.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\clserial\_clSerial.py to _clSerial.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\clserial\_jaiSerial.py to _jaiSerial.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\clserial\__init__.py to __init__.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\ximeaExport.py to ximeaExport.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_Agilent34420ASensor.py to _Agilent34420ASensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_biotensSensor.py to _biotensSensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_comediSensor.py to _comediSensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_dummySensor.py to _dummySensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_fakeCameraSensor.py to _fakeCameraSensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_jaiSensor.py to _jaiSensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_lal300Sensor.py to _lal300Sensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_meta\acqSensor.py to acqSensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_meta\cameraSensor.py to cameraSensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_meta\__init__.py to __init__.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_niusb6008.py to _niusb6008.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_old_jaiSensor.py to _old_jaiSensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_variateurTriboSensor.py to _variateurTriboSensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\_ximeaSensor.py to _ximeaSensor.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\__init__.py to __init__.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\__ximeaSensor_old.py to __ximeaSensor_old.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\technical\_biaxeTechnical.py to _biaxeTechnical.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\technical\_biotensTechnical.py to _biotensTechnical.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\technical\_cameraInit.py to _cameraInit.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\technical\_fakeCameraTechnical.py to _fakeCameraTechnical.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\technical\_lal300Technical.py to _lal300Technical.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\technical\_technicalCamera.py to _technicalCamera.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\technical\_variateurTribo.py to _variateurTribo.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\technical\_ximeaTechnical.py to _ximeaTechnical.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\technical\__init__.py to __init__.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\__init__.py to __init__.pyc
+byte-compiling build\bdist.win-amd64\egg\crappy\__version__.py to __version__.pyc
+creating stub loader for crappy\sensor\ximeaModule.pyd
+byte-compiling build\bdist.win-amd64\egg\crappy\sensor\ximeaModule.py to ximeaModule.pyc
+creating build\bdist.win-amd64\egg\EGG-INFO
+copying crappy.egg-info\PKG-INFO -> build\bdist.win-amd64\egg\EGG-INFO
+copying crappy.egg-info\SOURCES.txt -> build\bdist.win-amd64\egg\EGG-INFO
+copying crappy.egg-info\dependency_links.txt -> build\bdist.win-amd64\egg\EGG-INFO
+copying crappy.egg-info\requires.txt -> build\bdist.win-amd64\egg\EGG-INFO
+copying crappy.egg-info\top_level.txt -> build\bdist.win-amd64\egg\EGG-INFO
+writing build\bdist.win-amd64\egg\EGG-INFO\native_libs.txt
+creating 'dist\crappy-1.1.2-py2.7-win-amd64.egg' and adding 'build\bdist.win-amd64\egg' to it
+removing 'build\bdist.win-amd64\egg' (and everything under it)
+Processing crappy-1.1.2-py2.7-win-amd64.egg
+removing 'c:\python27\lib\site-packages\crappy-1.1.2-py2.7-win-amd64.egg' (and everything under it)
+creating c:\python27\lib\site-packages\crappy-1.1.2-py2.7-win-amd64.egg
+Extracting crappy-1.1.2-py2.7-win-amd64.egg to c:\python27\lib\site-packages
+crappy 1.1.2 is already the active version in easy-install.pth
+
+Installed c:\python27\lib\site-packages\crappy-1.1.2-py2.7-win-amd64.egg
+Processing dependencies for crappy==1.1.2
+Finished processing dependencies for crappy==1.1.2
+        1 fichier(s) copi‚(s).
