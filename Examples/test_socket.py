@@ -13,7 +13,7 @@ if __name__ == '__main__':
             #streamer2 = crappy.blocks.Streamer()
             #streamer3 = crappy.blocks.Streamer()
             #streamer4 = crappy.blocks.Streamer()
-            server = crappy.blocks.Server(port=9999, time_sync=True)
+            server = crappy.blocks.Server(port=9998, time_sync=True)
             
             link1=crappy.links.Link(name="link1")
             #link2=crappy.links.Link(name="link2")

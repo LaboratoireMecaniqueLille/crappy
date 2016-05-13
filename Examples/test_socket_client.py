@@ -13,7 +13,7 @@ if __name__ == '__main__':
             #reader2 = crappy.blocks.Reader("Reader2")
             #reader3 = crappy.blocks.Reader("Reader3")
             #reader4 = crappy.blocks.Reader("Reader4")
-            client = crappy.blocks.Client(port=9999, time_sync=True)
+            client = crappy.blocks.Client(port=9998, time_sync=True)
             
             link1=crappy.links.Link(name="link1")
             #link2=crappy.links.Link(name="link2")

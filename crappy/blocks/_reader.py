@@ -17,10 +17,11 @@ k : printable
 		"""
 		self.k=k  
 		
-                
 	def main(self):
                 try:
                     while True:
+			for input_ in self.inputs:
+				self.data=input_.recv()
                                 print "Received by {0}: {1}.".format(input_.name,self.data)
                 except Exception as e:
                     print "Exception in reader (pid:{0}): {1}".format(os.getpid(), e)

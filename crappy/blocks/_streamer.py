@@ -21,20 +21,20 @@ labels : list of str, default = ['t(s)','signal']
 		self.labels=labels
 		
 	def main(self):
-            while True:
-                try:
+            try:
+                while True:
                     self.i=0
-			time.sleep(2)
-                        for output in self.outputs:
-                            output.send(output.name) #OrderedDict(zip( output.name,[time.time()-self.t0,self.i])))
+                    time.sleep(2)
+                    for output in self.outputs:
+                        output.send(output.name) #OrderedDict(zip( output.name,[time.time()-self.t0,self.i])))
                     self.i+=1     
-                except TimeoutError:
-                    raise
-                except AttributeError: #if no outputs
-                    pass
-                except Exception as e:
-                    print "Exception in streamer (pid:{0}).".format(os.getpid(), e)
-                except KeyboardInterrupt:
-                    pass
-                except:
-                    print "Unexpected exception."
+            except TimeoutError:
+                raise
+            except AttributeError: #if no outputs
+                pass
+            except Exception as e:
+                print "Exception in streamer (pid:{0}).".format(os.getpid(), e)
+            except KeyboardInterrupt:
+                pass
+            except:
+                print "Unexpected exception."

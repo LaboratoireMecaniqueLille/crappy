@@ -83,14 +83,22 @@ class Client(MasterBlock):
                 i=i+1
             for i in range(len(procs)):
                 procs[i].join()
-            print("Done")
+            for i in range(len(conn)):
+                if not conn[i].closed:
+                    conn[i].close()       
+                
         except Exception as e:
-            print "Exception in Client: ", e
+            print "Exception in server: ", e
         except KeyboardInterrupt:
             pass
         except:
             print "Unexpected exception."
         finally:
-             for i in range(len(conn)):
+            try:
+                for i in range(len(procs)):
+                    procs[i].join()
+                for i in range(len(conn)):
                     if not conn[i].closed:
                         conn[i].close()
+            except Exception as e:
+                print "On exit: ", e
