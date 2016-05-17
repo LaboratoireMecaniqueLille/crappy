@@ -125,7 +125,7 @@ external_trigger : Default=None
 			self.send_timeout(value)
 		except TimeoutError as e:
 			if self.action=="warn":
-				print "WARNING : Timeout error in pipe send! Value : ", value
+				print "WARNING : Timeout error in pipe send! Value : "
 			elif self.action=="kill":
 				print "Killing Link : ", e
 				raise

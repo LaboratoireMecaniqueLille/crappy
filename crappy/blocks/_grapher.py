@@ -94,7 +94,8 @@ Examples
 					ax.relim()
 					#print "4"
 					ax.autoscale_view(True,True,True)
-					fig.canvas.draw() 
+					fig.canvas.draw()
+					plt.pause(0.001)
 					if save_number <=10 :
 						save_number+=1
 						

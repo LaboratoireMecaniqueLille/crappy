@@ -8,8 +8,8 @@ import cv2
 ximea = xi.VideoCapture(0)
 ximea.set(xi.CAP_PROP_XI_DATA_FORMAT,0) #0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW  
 ximea.set(xi.CAP_PROP_XI_AEAG,0)#auto gain auto exposure
-ximea.set(xi.CAP_PROP_FRAME_HEIGHT,1024)
-ximea.set(xi.CAP_PROP_FRAME_WIDTH,1024)
+ximea.set(xi.CAP_PROP_FRAME_HEIGHT,2048)
+ximea.set(xi.CAP_PROP_FRAME_WIDTH,2048)
 ximea.set(xi.CAP_PROP_XI_OFFSET_Y,0)
 ximea.set(xi.CAP_PROP_XI_OFFSET_X,0)
 
@@ -19,7 +19,9 @@ def stop():
 
 def start():
   try:
+    ximea.addTrigger(10000000, True)
     ret, buf = ximea.read()
+    print time.time()
     if(ret):
       plt.ion()
       plt.imshow(buf.get('data'),cmap='gray')

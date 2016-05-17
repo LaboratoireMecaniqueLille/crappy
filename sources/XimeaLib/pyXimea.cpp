@@ -29,8 +29,10 @@ VideoCapture_addTrigger(VideoCapture *self, PyObject *args)
 {
     int timeout;
     bool triggered;
-    if (!PyArg_ParseTuple(args, "ib", &timeout, &triggered))
-            exit(0);
+    if (!PyArg_ParseTuple(args, "ib", &timeout, &triggered)){
+    	cout << "arg must be (int, bool). " << endl;
+        return Py_None;
+    }
     capt->addTrigger(timeout, triggered);
     return Py_None;
 }

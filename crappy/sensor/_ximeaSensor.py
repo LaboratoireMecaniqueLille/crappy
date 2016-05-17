@@ -89,7 +89,7 @@ class Ximea(cameraSensor.CameraSensor):
 		GLOBAL_ENABLE_FLAG = True
 		
 		#self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
-		self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 		if self.external_trigger==True:	# this condition activate the trigger mode
                     self.ximea.addTrigger(1000000, True)
 		self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT,self.data_format) #0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW
@@ -111,10 +111,7 @@ class Ximea(cameraSensor.CameraSensor):
 		self.yoffset = yoffset
 		self.exposure = exposure
 		self.gain=gain
-		print "\n\n\n\n\n"
-		print "EXPOSURE: "
-		print self.ximea.get(xi.CAP_PROP_EXPOSURE), self.exposure
-		print "\n\n\n\n\n"
+
 	def getImage(self):
 		"""
 		This method get a frame on the selected camera and return a ndarray 
@@ -123,7 +120,6 @@ class Ximea(cameraSensor.CameraSensor):
 		self.nbi = self.nbi+1
 		try:
 			ret, frame = self.ximea.read()
-			#print "return : ", ret
 		except KeyboardInterrupt:
 			print "KeyboardInterrupt, closing camera ..."
 			self.close()
