@@ -4,10 +4,12 @@
     #print("Call your main application code here")
 
 #from . import technical
+from _autoDrive import AutoDrive
 from ._cameraDisplayer  import CameraDisplayer 
 from ._commandBiaxe import CommandBiaxe
 from ._commandBiotens import CommandBiotens
 from ._commandComedi import CommandComedi
+from ._commandPI import CommandPI
 from ._compacter  import Compacter
 from ._grapher import Grapher
 from ._measureAgilent34420A import MeasureAgilent34420A
@@ -23,5 +25,10 @@ from ._streamerCamera import StreamerCamera
 from ._streamerComedi import StreamerComedi
 from ._streamer import Streamer
 from ._videoExtenso import VideoExtenso
+
+
+from _interfaceTribo import Interface
+
 from _lal300Command import CommandLal300
 #from _interpolation import Interpolation
+

@@ -29,8 +29,10 @@ class LabJackActuator(object):
 		self.channel=channel
 		self.gain=gain
 		self.offset=offset
-		self.handle=ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, "ANY")
+		self.open_handle()
 		
+	def open_handle(self):
+		self.handle=ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, "ANY")
 		
 	def set_cmd(self,cmd):
 		"""Convert the tension value to a digital value and send it to the output."""
@@ -43,7 +45,7 @@ class LabJackActuator(object):
 	def close(self):
 		"""close the output."""
 		#c.comedi_cancel(self.device,self.subdevice)
-		ljm.close(handle)
+		ljm.close(self.handle)
 		print "output handle closed"
 	
       
