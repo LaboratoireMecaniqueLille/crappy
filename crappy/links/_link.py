@@ -84,9 +84,10 @@ condition : Children class of links.MetaCondition, optionnal
 timeout : int or float, default = 0.1
 	Timeout for the send method.
 	
-action : {'warn','kill'}, default = "warn"
-	Action in case of TimeoutError in the send method. You can warn only or 
-	choose to kill the link.
+action : {'warn','kill','NoWarn',str}, default = "warn"
+	Action in case of TimeoutError in the send method. You can warn only, not
+	warn or choose to kill the link. If any other string, will be printed in 
+	case of error to debug.
 
 
 Attributes
@@ -111,8 +112,12 @@ external_trigger : Default=None
 	def add_external_trigger(self,link_instance):
 		"""Add an external trigger Link."""
 		self.external_trigger=link_instance
-		self.condition.external_trigger=link_instance
-	
+		try:
+			for cond in self.condition:
+				cond.external_trigger=link_instance
+		except TypeError: # if only one condition
+			self.condition.external_trigger=link_instance
+		
 	def send(self,value):
 		"""Send the value, or a modified value if you pass it through a 
 		condition."""
@@ -120,13 +125,19 @@ external_trigger : Default=None
 			self.send_timeout(value)
 		except TimeoutError as e:
 			if self.action=="warn":
-				print "WARNING : Timeout error in pipe send!"
+				print "WARNING : Timeout error in pipe send! Value : ", value
 			elif self.action=="kill":
 				print "Killing Link : ", e
-				raise Exception('killing link')
+				raise
+			elif self.action=="NoWarn":
+				pass
+			else : # for debugging !!
+				print self.action
+				pass
 		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in link : ", e
-			raise Exception(e)
+			print "Exception in link send: ", e, value
+			#pass
+			#raise
 			
 			
 	@win_timeout(1)
@@ -136,12 +147,13 @@ external_trigger : Default=None
 				self.out_.send(value)
 			else:
 				try:
-					for i in range(len(self.condition)):
-						value=self.condition[i].evaluate(copy.copy(value))
+					for cond in self.condition:
+						value=cond.evaluate(copy.copy(value))
 				except TypeError: # if only one condition
 					value=self.condition.evaluate(copy.copy(value))
 				if not value is None:
 					self.out_.send(value)
+<<<<<<< HEAD
 		except (Exception, KeyboardInterrupt) as e:
                     print "Exception in link : ", e
                     if(not self.out_.closed):
@@ -149,6 +161,24 @@ external_trigger : Default=None
                         self.out_.close()
                     raise Exception(e)
                         
+=======
+		except TimeoutError as e:
+			if self.action=="warn":
+				print "WARNING : Timeout error in pipe send! Value : ", value
+			elif self.action=="kill":
+				print "Killing Link : ", e
+				raise
+			elif self.action=="NoWarn":
+				pass
+			else : # for debugging !!
+				print self.action
+				#pass
+		except (Exception,KeyboardInterrupt) as e:
+			pass
+			#print "Exception in link : ", e, value
+
+	
+>>>>>>> master
 	def recv(self,blocking=True):
 		"""Receive data. If blocking=False, return None if there is no data"""
 		try:
@@ -159,6 +189,7 @@ external_trigger : Default=None
 					return self.in_.recv()
 				else:
 				  return None
+<<<<<<< HEAD
 		except Exception as e:
 			print "EXCEPTION in link : ", e
 			if(not self.in_.closed):
@@ -171,3 +202,18 @@ external_trigger : Default=None
                 except:
                     print "Unexpected exception."
                     raise
+=======
+		except TimeoutError as e:
+			if self.action=="warn":
+				print "WARNING : Timeout error in pipe send! Value : ", value
+			elif self.action=="kill":
+				print "Killing Link : ", e
+				raise
+			elif self.action=="NoWarn":
+				pass
+			else : # for debugging !!
+				print self.action
+				#pass
+		except (Exception,KeyboardInterrupt) as e:
+			print "Exception in link : ", e
+>>>>>>> master

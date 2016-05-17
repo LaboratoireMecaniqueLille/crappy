@@ -7,8 +7,6 @@
 *.o
 *~
 *.bat
-*.sublime-project
-*.sublime-workspace
 # ignorer tous les fichiers dans le répertoire build
 Examples/alerte_jerome.py
 build/
@@ -16,4 +14,4 @@ dist/
 crappy.egg-info/
 data/
 Examples/open_log.py
-
+*.sublime-*

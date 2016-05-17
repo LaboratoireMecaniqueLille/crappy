@@ -4,6 +4,7 @@
     #print("Call your main application code here")
 
 #from . import technical
+<<<<<<< HEAD
 import platform
 if(platform.system()=="Linux"):
 	from ._commandComedi import CommandComedi
@@ -13,6 +14,8 @@ if(platform.system()=="Linux"):
 from ._cameraDisplayer  import CameraDisplayer 
 from ._commandBiaxe import CommandBiaxe
 from ._commandBiotens import CommandBiotens
+from _autoDrive import AutoDrive
+from ._commandPI import CommandPI
 from ._compacter  import Compacter
 from ._grapher import Grapher
 from ._measureAgilent34420A import MeasureAgilent34420A
@@ -36,5 +39,7 @@ try:
 except Exception as e:
     print "WARNING: ", e
     
+from _interfaceTribo import Interface
 from _lal300Command import CommandLal300
 #from _interpolation import Interpolation
+
