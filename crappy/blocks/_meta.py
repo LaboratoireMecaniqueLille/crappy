@@ -4,8 +4,13 @@ import os
 import platform
 import ctypes, time
 from ..links._link import TimeoutError
+import pickle
 if(platform.system()=="Linux"):
 	libc = ctypes.CDLL('libc.so.6')
+
+
+def main_wrapper(b):
+	b()
 
 class MasterBlock(object):
 	"""
@@ -43,18 +48,23 @@ stop()
 		except AttributeError: # if it doesn't exist, create it
 			self.inputs=[]
 		self.inputs.append(link)
-                    
+
+	def main(self):
+		raise NotImplementedError("Must override method main")
+
 	def start(self):
 		try:
-			self.proc=Process(target=self.main,args=())
+			self.proc=Process(target=main_wrapper, args=(self.main,))
 			self.proc.start()
-		except (Exception,KeyboardInterrupt) as e:
+		except Exception as e:
 			print "Exception in MasterBlock: ", e
 			if(platform.system()=="Linux"):
 				self.proc.terminate()
 
 			raise #raise the error to the next level for global shutdown
-		
+		except KeyboardInterrupt:
+			print 'KeyboardInterrupt'
+			pass
 	#def join(self):
 		#self.proc.join()
 	def stop(self):

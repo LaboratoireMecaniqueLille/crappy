@@ -36,13 +36,15 @@ if __name__ == '__main__':
 
             for instance in crappy.blocks._meta.MasterBlock.instances:
                     instance.start()
-            
-	except (Exception,KeyboardInterrupt) as e:
-		print "Exception in main :", e
-		for instance in crappy.blocks._meta.MasterBlock.instances:
-			try:
-				instance.stop()
-			except Exception as e:
-                                print "ee:", e
-				pass
+        except Exception as e:
+            print "Exception in main :", e
+            for instance in crappy.blocks._meta.MasterBlock.instances:
+                try:
+                    instance.stop()
+                except Exception as e:
+                    print "ee:", e
+                    pass
+        except KeyboardInterrupt:
+            print 'KeyboardInterrupt'
+            pass
 		
