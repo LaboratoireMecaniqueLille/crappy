@@ -2,13 +2,13 @@
 from _meta import MasterBlock
 import numpy as np
 import time
-import pandas as pd
+#import pandas as pd
 from scipy import stats
 from collections import OrderedDict
-import copy
+#import copy
 #import pickle
 from ..links._link import TimeoutError
-import multiprocessing
+#import multiprocessing
 from sys import stdout
 
 class MultiPath(MasterBlock):

@@ -1,5 +1,5 @@
 # coding: utf-8
-import time
+#import time
 import serial
 from serial import SerialException
 from ..sensor import SensorLal300

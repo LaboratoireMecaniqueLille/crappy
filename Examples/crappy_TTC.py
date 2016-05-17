@@ -55,8 +55,12 @@ if __name__ == '__main__':
 		offset*=-1
 	# end of the offset measure
 		instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1,2,3],gain=[0.01998,99660,0.0099856*2.,499.5],offset=offset) # 10 times the gain on the machine if you go through an usb dux sigma
-		cmd_traction=crappy.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=1, range_num=0, gain=8*100, offset=0)
-		cmd_torsion=crappy.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=2, range_num=0, gain=8*100/2., offset=0) # divide dist by 2 for the testing machine
+		#cmd_traction=crappy.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=1, range_num=0, gain=8*100, offset=0)
+		#cmd_torsion=crappy.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=2, range_num=0, gain=8*100/2., offset=0) # divide dist by 2 for the testing machine
+		
+		#with Labjack:
+		cmd_traction=crappy.actuator.LabJackActuator(channel="TDAC2", gain=8*100, offset=0)
+		cmd_torsion=crappy.actuator.LabJackActuator(channel="TDAC3", gain=8*100/2., offset=0)
 
 	########################################### Initialising the outputs
 
@@ -70,7 +74,7 @@ if __name__ == '__main__':
 	########################################### Creating blocks
 		#comedi_output=crappy.blocks.CommandComedi([comedi_actuator])
 		
-		stream=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','def(%)','F(N)','dist(deg)','C(Nm)'])
+		stream=crappy.blocks.MeasureByStep(instronSensor,labels=['t(s)','def(%)','F(N)','dist(deg)','C(Nm)'])
 		#stream=crappy.blocks.StreamerComedi(instronSensor, labels=['t(s)','def(%)','F(N)','dist(deg)','C(Nm)'], freq=200.)
 
 		#{"waveform":"detection","cycles":2}
@@ -78,25 +82,24 @@ if __name__ == '__main__':
 												#{"waveform":"sablier","gain":0.0005,"cycles":1,"offset":[-0.0002,0.0002]},
 												#{"waveform":"sablier","gain":0.0005,"cycles":1,"offset":[-0.0002,0.0002]},
 												#{"waveform":"goto","position":[0,0]}
-		multipath=crappy.blocks.MultiPath(path=[{"waveform":"detection","cycles":1},
-												{"waveform":"traction","gain":-0.001,"cycles":0.5,"offset":[-0.001,0]},
-												{"waveform":"goto","mode":"plastic_def","target":0.002,"position":[-10,0]}
-												{"waveform":"detection","cycles":3}],
+		multipath=crappy.blocks.MultiPath(path=[{"waveform":"circle","gain":0.0006,"cycles":200,"offset":[-0.0006,0]},
+												#{"waveform":"goto","mode":"plastic_def","target":0.002,"position":[-10,0]}
+												{"waveform":"detection","cycles":1}],
 												send_freq=200,dmin=22,dmax=25,repeat=False)
 		
-		traction=crappy.blocks.CommandComedi([cmd_traction])
-		torsion=crappy.blocks.CommandComedi([cmd_torsion])
+		ttc=crappy.blocks.CommandComedi([cmd_traction,cmd_torsion],signal_label=['def(%)','dist(deg)'])
+		#torsion=crappy.blocks.CommandComedi([cmd_torsion])
 		
 		
 		
 		compacter_data=crappy.blocks.Compacter(200)
-		save=crappy.blocks.Saver("/home/corentin/Bureau/data_comedi_rail_1_compression.txt")
+		save=crappy.blocks.Saver("/home/corentin/Bureau/data_labjack_200_cycles.txt")
 		graph_traction=crappy.blocks.Grapher("static",('sigma(Pa)','tau(Pa)'))
 		graph_torsion=crappy.blocks.Grapher("static",('def(%)','dist(deg)'))
 		#graph_torsion=crappy.blocks.Grapher("static",('t(s)','def(%)'))
 		
 		compacter_path=crappy.blocks.Compacter(200)
-		save_path=crappy.blocks.Saver("/home/corentin/Bureau/data_out_rail_1_compression.txt")
+		save_path=crappy.blocks.Saver("/home/corentin/Bureau/data_out_labjack_200_cycles.txt")
 		graph_path=crappy.blocks.Grapher("dynamic",('t(s)','def(%)'))
 		graph_path2=crappy.blocks.Grapher("dynamic",('t(s)','dist(deg)'))
 		#graph_torsion=crappy.blocks.Grapher("dynamic",('t(s)','C(Nm)'))
@@ -113,8 +116,8 @@ if __name__ == '__main__':
 		link5=crappy.links.Link()
 		link6=crappy.links.Link()
 		link7=crappy.links.Link()
-		link8=crappy.links.Link(condition_signal('def(%)'))
-		link9=crappy.links.Link(condition_signal('dist(deg)'))
+		link8=crappy.links.Link()
+		link9=crappy.links.Link()
 		link10=crappy.links.Link()
 		link11=crappy.links.Link()
 		
@@ -137,7 +140,7 @@ if __name__ == '__main__':
 		multipath.add_input(link4)
 		multipath.add_output(link5)
 		multipath.add_output(link8)
-		multipath.add_output(link9)
+		#multipath.add_output(link9)
 		
 		
 		compacter_path.add_input(link5)
@@ -150,8 +153,8 @@ if __name__ == '__main__':
 		graph_path.add_input(link6)
 		graph_path2.add_input(link7)
 		
-		traction.add_input(link8)
-		torsion.add_input(link9)
+		ttc.add_input(link8)
+		#torsion.add_input(link9)
 
 	########################################### Starting objects
 	

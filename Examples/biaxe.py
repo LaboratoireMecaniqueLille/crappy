@@ -5,6 +5,7 @@ import crappy
 import numpy as np
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
+# conversion : 1 speed = 0.002 mm/s
 
 t0=time.time()
 if __name__ == '__main__':
@@ -27,7 +28,7 @@ if __name__ == '__main__':
 		save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Annie/effort.txt")
 		graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
 		
-		compacter_extenso=crappy.blocks.Compacter(150)
+		compacter_extenso=crappy.blocks.Compacter(90)
 		save_extenso=crappy.blocks.Saver("/home/biaxe/Bureau/Annie/extenso.txt")
 		graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 		

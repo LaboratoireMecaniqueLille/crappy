@@ -5,7 +5,7 @@ import numpy as np
 import time
 import struct
 np.set_printoptions(threshold='nan', linewidth=500)
-import pandas as pd
+#import pandas as pd
 from collections import OrderedDict
 from ..links._link import TimeoutError
 
@@ -16,7 +16,7 @@ Stream comedi values at high frequency.
 	"""
 	def __init__(self,comediSensor,labels=None,freq=8000,buffsize=10000):
 		"""
-WARNING :DOES NOT WORK AT THE MOMENT, USE measureComediByStep INSTEAD.
+WARNING : Only works in USB 2.0
 
 This streamer read the value on all channels at the same time and send the 
 values through a Link object. It can be very fast, but needs need an USB 2.0
@@ -38,6 +38,8 @@ buffsize : int, default = 10000
 		self.labels=labels
 		self.c=c
 		self.comediSensor=comediSensor
+		self.gain=self.comediSensor.gain
+		self.offset=self.comediSensor.offset
 		
 		self.fd = self.c.comedi_fileno(self.comediSensor.device)	# get a file-descriptor
 
@@ -96,27 +98,30 @@ buffsize : int, default = 10000
 		try:
 			while True:
 				#print "4"
-				array=np.zeros(self.nchans+1)
+				#array=np.zeros(self.nchans+1)
 				data = os.read(self.fd,self.BUFSZ) # read buffer and returns binary
 				if len(data)==self.data_length:
 					datastr = struct.unpack(self.format,data)
 					if len(datastr)==self.nchans: #if data not corrupted
 						#print "5"
-						array[0]=time.time()-self.t0
+						array=[time.time()-self.t0]
 						for i in range(self.nchans):
-							array[i+1]=self.c.comedi_to_phys((datastr[i]),
+							array.append((self.c.comedi_to_phys((datastr[i]),
 												self.range_ds[i],
-												self.maxdata[i])
+												self.maxdata[i]))*self.gain[i]+self.offset[i])
 						if self.labels==None:
 							self.Labels=[i for i in range(self.nchans+1)]
 						#Array=pd.DataFrame([array],columns=self.labels)
 						Array=OrderedDict(zip(self.labels,array))
+						#print Array
 						try:
 							for output in self.outputs:
 								output.send(Array)
+								#print "sent"
 						except TimeoutError:
 							raise
 						except AttributeError: #if no outputs
+							#print "error"
 							pass
 
 		except (Exception,KeyboardInterrupt) as e:	

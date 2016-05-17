@@ -3,7 +3,7 @@ from _meta import MasterBlock, delay
 import time
 #import pandas as pd
 import os
-import numpy as np
+#import numpy as np
 from collections import OrderedDict
 from ..links._link import TimeoutError
 

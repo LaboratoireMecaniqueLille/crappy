@@ -4,11 +4,11 @@ from multiprocessing import Process, Pipe
 import numpy as np
 np.set_printoptions(threshold='nan', linewidth=500)
 import time
-import pandas as pd
+#import pandas as pd
 import cv2
 from ..links._link import TimeoutError
 from ..technical import TechnicalCamera as tc
-import SimpleITK as sitk # only for testing
+#import SimpleITK as sitk # only for testing
 from skimage.filter import threshold_otsu, rank
 from skimage.measure import regionprops
 from skimage.morphology import label,erosion, square,dilation
@@ -27,7 +27,7 @@ class VideoExtenso(MasterBlock):
 	"""
 Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
 	"""
-	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,update_tresh=False,labels=['t(s)','Lx','Ly','Exx(%)','Eyy(%)']):
+	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,update_tresh=False,labels=['t(s)','Px','Py','Exx(%)','Eyy(%)'],security=False):
 		"""
 Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. Can display the 
 image with the center of the spots.
@@ -95,6 +95,7 @@ dict : OrderedDict
 		self.border=4
 		self.numdevice=numdevice
 		self.update_tresh=update_tresh
+		self.security=security
 		while go==False:
 		# the following is to initialise the spot detection
 			self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
@@ -160,16 +161,16 @@ dict : OrderedDict
 					else:
 						theta=0.5*np.arctan2(2*b,(a-c))
 					#print "min,maj,theta :" ,minor_axis,major_axis,theta
-					Dx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
-					Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
-					Px=Dx
-					Py=Dy
+					Lx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
+					Ly=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
+					#Px=Dx
+					#Py=Dy
 					#print "Dx,Dy : ", Dx,Dy
 
-				else: #if 2 or 4 spots
+				#else: #if 2 or 4 spots
 					# we add minx and miny to go back to global coordinate:
-					Px+=minx
-					Py+=miny
+				Px+=minx
+				Py+=miny
 				miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
 				maxy_=miny_+h
 				maxx_=minx_+w
@@ -177,11 +178,14 @@ dict : OrderedDict
 				miny=miny-self.border+miny_
 				maxx=minx+self.border+maxx_
 				maxy=miny+self.border+maxy_
-				recv_.send([Px,Py,minx,miny,maxx,maxy])
+				if self.NumOfReg==1:
+					recv_.send([Px,Py,minx,miny,maxx,maxy,Lx,Ly])
+				else:
+					recv_.send([Px,Py,minx,miny,maxx,maxy])
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in barycenter : ",e
-				try:
-					recv_.send(["Error"]) # kill pill
+				try:				
+					recv_.send("error") # kill pill
 				except:
 					pass
 				raise
@@ -199,16 +203,16 @@ dict : OrderedDict
 		#ret, frame = self.cap.read()
 		#ret, frame = self.cap.read()
 		#Array=pd.DataFrame([[time.time()-self.t0,self.L0x,self.L0y,0,0]],columns=self.labels)
-		Array=OrderedDict(zip(self.labels,[time.time()-self.t0,self.L0x,self.L0y,0,0]))
+		#Array=OrderedDict(zip(self.labels,[time.time()-self.t0,self.Points_coordinates[:,0],self.Points_coordinates[:,1],0,0]))
 		#t3_=time.time()
 		#t3+=t3_-t2_
-		try:
-			for output in self.outputs:
-				output.send(Array)
-		except TimeoutError:
-			raise
-		except AttributeError: #if no outputs
-			pass
+		#try:
+			#for output in self.outputs:
+				#output.send(Array)
+		#except TimeoutError:
+			#raise
+		#except AttributeError: #if no outputs
+			#pass
 			
 		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
 		
@@ -250,8 +254,11 @@ dict : OrderedDict
 						#print "i : ",i
 						#print np.shape(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]]),self.minx[i],self.miny[i]
 					send_[i].send([image[int(self.minx[i])-1:int(self.maxx[i])+1,int(self.miny[i])-1:int(self.maxy[i])+1],self.minx[i]-1,self.miny[i]-1])
-				for i in range(0,self.NumOfReg):
-					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:] #self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]
+				if self.NumOfReg==1:
+					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i],Lx,Ly=send_[i].recv()[:]
+				else:
+					for i in range(0,self.NumOfReg):
+						self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:] #self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]
 					#self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=self.barycenter_opencv(image[self.minx[i]:self.maxx[i],self.miny[i]:self.maxy[i]],self.minx[i],self.miny[i])
 				
 				minx_=self.minx.min()
@@ -265,15 +272,16 @@ dict : OrderedDict
 					Dy=100.*((Ly)/self.L0y-1.)
 				elif self.NumOfReg ==1:
 					#print self.Points_coordinates
-					Ly=self.Points_coordinates[0,0]
-					Lx=self.Points_coordinates[0,1]
+					#Ly=self.Points_coordinates[0,0]
+					#Lx=self.Points_coordinates[0,1]
 					Dy=100.*((Ly)/self.L0y-1.)
 					Dx=100.*((Lx)/self.L0x-1.)
-				self.Points_coordinates[:,1]-=miny_
-				self.Points_coordinates[:,0]-=minx_
+				#self.Points_coordinates[:,1]-=miny_
+				#self.Points_coordinates[:,0]-=minx_
 				
 				#Array=pd.DataFrame([[time.time()-self.t0,Lx,Ly,Dx,Dy]],columns=self.labels)
-				Array=OrderedDict(zip(self.labels,[time.time()-self.t0,Lx,Ly,Dx,Dy]))
+				#Array=OrderedDict(zip(self.labels,[time.time()-self.t0,Lx,Ly,Dx,Dy]))
+				Array=OrderedDict(zip(self.labels,[time.time()-self.t0,str(self.Points_coordinates[:,0]),str(self.Points_coordinates[:,1]),Dx,Dy]))
 				#print Array
 				try:
 					for output in self.outputs:
@@ -282,6 +290,8 @@ dict : OrderedDict
 					raise
 				except AttributeError: #if no outputs
 					pass	
+				self.Points_coordinates[:,1]-=miny_ # go back to local repere 
+				self.Points_coordinates[:,0]-=minx_
 				if self.display:
 					if first_display:
 						self.plot_pipe_recv,self.plot_pipe_send=Pipe()
@@ -304,7 +314,6 @@ dict : OrderedDict
 					#image2=sitk.GetImageFromArray(frame)
 					#sitk.WriteImage(image2,self.save_directory+"img_mouchetis%.5d_t%3.3f_Exx%2.2d_Eyy%2.2f.tiff" %(j,(t2-self.t0),Lx,Ly))
 					last_ttimer=t_now
-				
 				j+=1
 			except ValueError: # if lost spots in barycenter
 				try:
@@ -313,14 +322,33 @@ dict : OrderedDict
 					song.play()
 					pyglet.clock.schedule_once(lambda x:pyglet.app.exit(), 10) # stop music after 10 sec
 					pyglet.app.run()
-				except:
-					pass
+				except Exception as e:
+					print "No music because : ", e
+				if self.security:
+					print 'Exception Video Extenso Security'					
+					try:
+						for output in self.outputs:
+							output.send("error")
+					except TimeoutError:
+						raise
+					except AttributeError: #if no outputs
+						pass
 				raise Exception("Spots lost")
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in videoextenso : ",e
-				proc.terminate()
+				if self.display:
+					proc.terminate()
 				for i in range(0,self.NumOfReg):
 					proc_bary[i].terminate()
+				if self.security:
+					print 'Exception Video Extenso Security PAS OK'					
+					try:
+						for output in self.outputs:
+							output.send("error")
+					except TimeoutError:
+						raise
+					except AttributeError: #if no outputs
+						pass
 				raise
 
 	def plotter(self):

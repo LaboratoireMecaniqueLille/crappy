@@ -116,6 +116,12 @@ The requiered informations depend on the type of waveform you need.
 						self.value=current_step["value"]
 						self.offset=current_step["offset"]
 						#print "goto 1"
+					elif self.waveform=='protection':
+						self.gain=current_step["gain"]
+						#self.cycles=current_step["cycles"]
+						#self.phase=current_step["phase"]
+						self.lower_limit=current_step["lower_limit"]
+						self.upper_limit=current_step["upper_limit"]
 					else:
 						#print "test"
 						self.time=current_step["time"]
@@ -239,18 +245,66 @@ The requiered informations depend on the type of waveform you need.
 					#if self.repeat and self.step==self.nb_step:
 						#self.step=0
 					t_step=time.time()
-				elif self.waveform=="hold":
-					#print "holding"
-					while self.time is None or (time.time()-t_step)<self.time:
-						while time.time()-last_t<1./self.send_freq:
+				elif self.waveform=="protection": #	 signal defined by a lower and upper limit
+					while True:
+						while time.time()-last_t<1./self.send_freq or first:
 							for input_ in self.inputs:
 								if input_.in_.poll() or first: # if there is data waiting
 									recv=input_.recv()
+									#print recv
 									df=pd.DataFrame([recv.values()],columns=recv.keys())
 									Data=pd.concat([Data,df],ignore_index=True)
 							first=False
 							delay(1./(100*1000*self.send_freq))
+						#print "here" , df, Data
+						last_t=time.time()					
+						last_upper = (Data[self.upper_limit[1]]).last_valid_index()
+						last_lower=(Data[self.lower_limit[1]]).last_valid_index()
+						first_lower=(Data[self.lower_limit[1]]).first_valid_index()
+						first_upper=(Data[self.upper_limit[1]]).first_valid_index()
+							
+						if Data[self.upper_limit[1]][last_upper]>self.upper_limit[0]: # if value > high_limit
+							alpha=-1
+						elif Data[self.lower_limit[1]][last_lower]<self.lower_limit[0]: # if value < low_limit
+							alpha=1
+						else: #if in between the values
+							alpha=0
+						cycle=-1
+						if last_upper!=first_upper and last_lower!=first_lower: # clean old data
+							Data=Data[min(last_upper,last_lower):]
+						#Array=pd.DataFrame([[last_t-self.t0,alpha*self.gain,cycle]],columns=self.labels)
+						Array=OrderedDict(zip(self.labels,[last_t-self.t0,alpha*self.gain,cycle]))
+						try:
+							for output in self.outputs:
+								output.send(Array)
+						except TimeoutError:
+							raise
+						except AttributeError: #if no outputs
+							pass
+					self.step+=1
+					first=True
+					first_of_step=True
+					cycle=0
+					#if self.repeat and self.step==self.nb_step:
+						#self.step=0
+					t_step=time.time()
+				elif self.waveform=="hold":
+					#print "holding"
+					while self.time is None or (time.time()-t_step)<self.time:
+						while time.time()-last_t<1./self.send_freq:
+							try:
+								for input_ in self.inputs:
+									recv=input_.recv(blocking=False)
+								#first=False
+							except AttributeError: #if no inputs
+								pass
+							#first=False
+							delay(1./(100*1000*self.send_freq))
 						last_t=time.time()
+						#last_upper = (Data[self.upper_limit[1]]).last_valid_index()
+						#last_lower=(Data[self.lower_limit[1]]).last_valid_index()
+						#first_lower=(Data[self.lower_limit[1]]).first_valid_index()
+						#first_upper=(Data[self.upper_limit[1]]).first_valid_index()
 						if self.step==0:
 							self.alpha=0
 						else:
@@ -260,6 +314,8 @@ The requiered informations depend on the type of waveform you need.
 								self.alpha=0
 							else:
 								pass
+						#if last_upper!=first_upper and last_lower!=first_lower: # clean old data
+							#Data=Data[min(last_upper,last_lower):]
 						#Array=pd.DataFrame([[last_t-self.t0,self.alpha,0]],columns=self.labels)
 						Array=OrderedDict(zip(self.labels,[last_t-self.t0,self.alpha,0]))
 						try:
@@ -272,6 +328,7 @@ The requiered informations depend on the type of waveform you need.
 					self.step+=1
 					first_of_step=True
 					cycle=0
+					first=True
 					#if self.repeat and self.step==self.nb_step:
 						#self.step=0
 					t_step=time.time()
@@ -295,7 +352,7 @@ The requiered informations depend on the type of waveform you need.
 							try:
 								for input_ in self.inputs:
 									recv=input_.recv(blocking=False)
-								first=False
+								#first=False
 							except AttributeError:
 								pass
 							delay(1./(100*1000*self.send_freq))
@@ -339,6 +396,8 @@ The requiered informations depend on the type of waveform you need.
 						#j+=1
 					self.step+=1
 					t_step=time.time()
+					first=True
+					first_of_step=True
 				if self.repeat and self.step==self.nb_step:
 					self.step=0
 			raise Exception("Completed !")

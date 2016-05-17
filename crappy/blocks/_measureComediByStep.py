@@ -13,6 +13,7 @@ Streams value measure on a comedi card through a Link object.
 	"""
 	def __init__(self,comediSensor,labels=None,freq=None):
 		"""
+DEPRECATED : This block is to be replaced by MeasureByStep
 This streamer read the value on all channels ONE BY ONE and send the 
 values through a Link object. it is slower than StreamerComedi, but works on 
 every USB driver. 
@@ -32,6 +33,7 @@ freq : float or int, optional
 		self.comediSensor=comediSensor
 		self.labels=labels
 		self.freq=freq
+		print "DEPRECATED : Please use the MeasureByStep block"
 
 	def main(self):
 		try:

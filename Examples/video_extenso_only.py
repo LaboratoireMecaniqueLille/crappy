@@ -25,7 +25,7 @@ if __name__ == '__main__':
 		#graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
 		
 		compacter_extenso=crappy.blocks.Compacter(100)
-		save_extenso=crappy.blocks.Saver("/home/corentin/Bureau/extenso_big_spots_non_binarise.txt")
+		save_extenso=crappy.blocks.Saver("/home/corentin/Bureau/delete2.txt")
 		graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 		
 		#effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)

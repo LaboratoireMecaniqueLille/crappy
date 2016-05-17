@@ -1,9 +1,9 @@
 # coding: utf-8
 from ..sensor import _fakeCameraSensor
 #from ..actuator import ximeaActuator
-import numpy as np
-import cv2
-import time
+#import numpy as np
+#import cv2
+#import time
 
 class FakeCamera(object):
 	"""
