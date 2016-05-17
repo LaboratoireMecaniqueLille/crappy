@@ -5,7 +5,7 @@ import numpy as np
 import time
 import struct
 np.set_printoptions(threshold='nan', linewidth=500)
-import pandas as pd
+#import pandas as pd
 from collections import OrderedDict
 from ..links._link import TimeoutError
 

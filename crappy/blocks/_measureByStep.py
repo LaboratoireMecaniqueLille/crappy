@@ -7,38 +7,37 @@ from collections import OrderedDict
 from ..links._link import TimeoutError
 
 
-class MeasureComediByStep(MasterBlock):
+class MeasureByStep(MasterBlock):
 	"""
-Streams value measure on a comedi card through a Link object.
+Streams value measured on a card through a Link object.
 	"""
-	def __init__(self,comediSensor,labels=None,freq=None):
+	def __init__(self,sensor,labels=None,freq=None):
 		"""
-DEPRECATED : This block is to be replaced by MeasureByStep
 This streamer read the value on all channels ONE BY ONE and send the 
 values through a Link object. it is slower than StreamerComedi, but works on 
 every USB driver. 
+It also works on LabJack devices.
 
 It can be triggered by a Link sending boolean (through "add_input" method),
 or internally by defining the frequency.
 
 Parameters
 ----------
-comediSensor : comediSensor object
-	See sensor.ComediSensor documentation.
+sensor : sensor object
+	See sensor.sensor documentation. Tested for LabJackSensor and ComediSensor.
 labels : list
 	The labels you want on your output data.
 freq : float or int, optional
 	Wanted acquisition frequency. Cannot exceed acquisition card capability.
 		"""
-		self.comediSensor=comediSensor
+		self.sensor=sensor
 		self.labels=labels
 		self.freq=freq
-		print "DEPRECATED : Please use the MeasureByStep block"
 
 	def main(self):
 		try:
 			try:
-				print "measurecomedi : ", os.getpid()
+				print "measureByStep : ", os.getpid()
 				_a=self.inputs[:]
 				trigger="external"
 			except AttributeError:
@@ -50,21 +49,24 @@ freq : float or int, optional
 						while time.time()-timer< 1./self.freq:
 							time.sleep(1./(100*self.freq))
 						timer=time.time()
-					data=[time.time()-self.t0]
-					for channel_number in range(self.comediSensor.nchans):
-						t,value=self.comediSensor.getData(channel_number)
-						data.append(value)
+					#data=[time.time()-self.t0]
+					#for channel_number in range(self.sensor.nchans):
+					t,value=self.sensor.getData("all")
+					data=t-self.t0
+					value.insert(0,data)
 				if trigger=="external":
 					if self.inputs.input_.recv(): # wait for a signal
-						data=[time.time()-self.t0]
-					for channel_number in range(self.comediSensor.nchans):
-						t,value=self.comediSensor.getData(channel_number)
-						data.append(value)
+						pass
+						#data=[time.time()-self.t0]
+					#for channel_number in range(self.sensor.nchans):
+					t,value=self.sensor.getData("all")
+					data=t-self.t0
+					value.insert(0,data)
 				if self.labels==None:
-					self.Labels=[i for i in range(self.comediSensor.nchans+1)]
+					self.Labels=[i for i in range(self.sensor.nchans+1)]
 				#Array=pd.DataFrame([data],columns=self.labels)
-				#print data, self.labels
-				Array=OrderedDict(zip(self.labels,data))
+				#print value, self.labels
+				Array=OrderedDict(zip(self.labels,value))
 				try:
 					for output in self.outputs:
 						output.send(Array)
@@ -75,5 +77,5 @@ freq : float or int, optional
 
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in measureComediByStep : ", e
-			self.comediSensor.close()
+			self.sensor.close()
 			#raise

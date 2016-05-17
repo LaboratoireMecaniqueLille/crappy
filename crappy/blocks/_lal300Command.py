@@ -2,10 +2,10 @@
 
 from _meta import MasterBlock
 import time
-import pandas as pd
+#import pandas as pd
 from serial import SerialException
 from collections import OrderedDict
-import numpy as np
+#import numpy as np
 #from time import *
 
 class CommandLal300(MasterBlock):

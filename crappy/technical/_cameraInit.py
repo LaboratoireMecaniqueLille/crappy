@@ -149,35 +149,37 @@ class _CameraInit():
 			regions=[region for region in regions if region.area>200]
 			self.NumOfReg=len(regions)
 			print " Spots detected in camerainit: ", self.NumOfReg
-			smoothing=1
-			self.minx=np.empty([self.NumOfReg,1,smoothing])
-			self.miny=np.empty([self.NumOfReg,1,smoothing])
-			self.maxx=np.empty([self.NumOfReg,1,smoothing])
-			self.maxy=np.empty([self.NumOfReg,1,smoothing])
-			self.Points_coordinates=np.empty([self.NumOfReg,2,smoothing])
+			#smoothing=1
+			self.minx=np.empty([self.NumOfReg,1])
+			self.miny=np.empty([self.NumOfReg,1])
+			self.maxx=np.empty([self.NumOfReg,1])
+			self.maxy=np.empty([self.NumOfReg,1])
+			self.Points_coordinates=np.empty([self.NumOfReg,2])
 			# Definition of the ZOI and initialisation of the regions border
 			i=0
 			for i,region in enumerate(regions): # skip small regions
 				#if region.area > 100:
 				self.minx[i], self.miny[i], self.maxx[i], self.maxy[i]= region.bbox
 				
-			for k in range(smoothing):
+			#for k in range(smoothing):
 				#print k
-				image=self.cam.getImage()
-				#plt.imsave("/home/corentin/Bureau/image_originale.tiff",image)
-				croped_image = image[self.yoffset:self.height+self.yoffset,self.xoffset:self.xoffset+self.width]
-				image = croped_image
-				self.thresh = threshold_otsu(image) # you have to re-evaluate the threashold here to have the same as you will after
-				
+			image=self.cam.getImage()
+			#plt.imsave("/home/corentin/Bureau/image_originale.tiff",image)
+			croped_image = image[self.yoffset:self.height+self.yoffset,self.xoffset:self.xoffset+self.width]
+			image = croped_image
+			self.thresh = threshold_otsu(image) # you have to re-evaluate the threashold here to have the same as you will after
+			if self.NumOfReg==1:
+				self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i,0],self.miny[i,0],self.maxx[i,0],self.maxy[i,0],self.L0x,self.L0y=self.barycenter_opencv(image[self.minx[i,0]-1:self.maxx[i,0]+1,self.miny[i,0]-1:self.maxy[i,0]+1],self.minx[i,0]-1,self.miny[i,0]-1)
+			else:
 				for i in range(0,self.NumOfReg): # find the center of every region
-					self.Points_coordinates[i,0,k],self.Points_coordinates[i,1,k],self.minx[i,0,k],self.miny[i,0,k],self.maxx[i,0,k],self.maxy[i,0,k]=self.barycenter_opencv(image[self.minx[i,0,k]-1:self.maxx[i,0,k]+1,self.miny[i,0,k]-1:self.maxy[i,0,k]+1],self.minx[i,0,k]-1,self.miny[i,0,k]-1)
+					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i,0],self.miny[i,0],self.maxx[i,0],self.maxy[i,0]=self.barycenter_opencv(image[self.minx[i,0]-1:self.maxx[i,0]+1,self.miny[i,0]-1:self.maxy[i,0]+1],self.minx[i,0]-1,self.miny[i,0]-1)
 			
 			
-			self.Points_coordinates=np.mean(self.Points_coordinates,axis=2)
-			self.minx=np.mean(self.minx,axis=2)
-			self.miny=np.mean(self.miny,axis=2)
-			self.maxx=np.mean(self.maxx,axis=2)
-			self.maxy=np.mean(self.maxy,axis=2)
+			#self.Points_coordinates=np.mean(self.Points_coordinates,axis=2)
+			#self.minx=np.mean(self.minx,axis=2)
+			#self.miny=np.mean(self.miny,axis=2)
+			#self.maxx=np.mean(self.maxx,axis=2)
+			#self.maxy=np.mean(self.maxy,axis=2)
 			#print "new image"
 			#image=self.cam.getImage()
 			#for i in range(0,self.NumOfReg): # find the center of every region
@@ -266,16 +268,16 @@ class _CameraInit():
 			else:
 				theta=0.5*np.arctan2(2*b,(a-c))
 			#print "min,maj,theta :" ,minor_axis,major_axis,theta
-			Dx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
-			Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
+			Lx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
+			Ly=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
 			#print Dx, Dy, Px,Py
-			Px=Dx
-			Py=Dy
+			#Px=Dx
+			#Py=Dy
 			#print "Dx0,Dy0 : ", Dx,Dy
 		# we add minx and miny to go back to global coordinate:
-		else:
-			Px+=minx
-			Py+=miny
+		#else:
+		Px+=minx
+		Py+=miny
 		miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
 		maxy_=miny_+h
 		maxx_=minx_+w
@@ -285,7 +287,10 @@ class _CameraInit():
 		miny=miny-border+miny_
 		maxx=minx+border+maxx_
 		maxy=miny+border+maxy_
-		return Px,Py,minx,miny,maxx,maxy
+		if self.NumOfReg==1:
+			return Px,Py,minx,miny,maxx,maxy,Lx,Ly
+		else:
+			return Px,Py,minx,miny,maxx,maxy
 
 
 	def updateExposure(self, val): # this function updates the exposure
@@ -304,14 +309,14 @@ class _CameraInit():
 				if self.NumOfReg ==4 or self.NumOfReg ==2:
 					self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
 					self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
-				elif self.NumOfReg ==1:
+				#elif self.NumOfReg ==1:
 					#minx_=self.Points_coordinates[0,0]
 					#miny_=self.miny.min()
 					#maxx_=self.maxx.max()
 					#maxy_=self.maxy.max()
-					self.L0x=self.Points_coordinates[0,1]
-					self.L0y=self.Points_coordinates[0,0]
-				print "L0 saved! : ", self.L0x, self.L0y
+					#self.L0x=self.Points_coordinates[0,1]
+					#self.L0y=self.Points_coordinates[0,0]
+				print "L0 saved! : ", self.L0y, self.L0x
 			#self.cam.close()
 		except AttributeError: #if no selected Points_coordinates
 			print "no points selected"

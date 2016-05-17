@@ -1,9 +1,9 @@
 # coding: utf-8
 from ..sensor import _ximeaSensor
 #from ..actuator import ximeaActuator
-import numpy as np
-import cv2
-import time
+#import numpy as np
+#import cv2
+#import time
 
 class Ximea(object):
 	"""

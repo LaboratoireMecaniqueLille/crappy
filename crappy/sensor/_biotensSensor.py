@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
-import time
+#import time
 from struct import *
 import serial
 

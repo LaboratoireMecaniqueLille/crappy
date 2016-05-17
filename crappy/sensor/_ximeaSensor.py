@@ -1,5 +1,6 @@
 # coding: utf-8
 from ._meta import cameraSensor
+<<<<<<< HEAD
 import numpy as np
 import ctypes
 import numpy as np
@@ -7,6 +8,21 @@ from numpy.ctypeslib import ndpointer
 from os import path
 here = path.abspath(path.dirname(__file__))
 import ximeaModule as xi
+# =======
+# #import numpy as np
+# #import ctypes
+# #import numpy as np
+# #from numpy.ctypeslib import ndpointer
+# #from os import path
+# #here = path.abspath(path.dirname(__file__))
+# #import ximeaModule as xi
+
+
+# #try :
+# import cv2 as xi
+# #except ImportError: 
+# 	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
+# >>>>>>> master
 import time
 import platform
 from sys import stdout
@@ -73,8 +89,8 @@ class Ximea(cameraSensor.CameraSensor):
 		
 		GLOBAL_ENABLE_FLAG = True
 		
-		self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
-		#self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		#self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		self.ximea = xi.VideoCapture(xi.CAP_XIAPI+ self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
 		if self.external_trigger==True:	# this condition activate the trigger mode
                     self.ximea.addTrigger(1000000, True)
 		self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT,self.data_format) #0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW
@@ -108,7 +124,7 @@ class Ximea(cameraSensor.CameraSensor):
 		self.nbi = self.nbi+1
 		try:
 			ret, frame = self.ximea.read()
-
+			#print "return : ", ret
 		except KeyboardInterrupt:
 			print "KeyboardInterrupt, closing camera ..."
 			self.close()
@@ -116,8 +132,14 @@ class Ximea(cameraSensor.CameraSensor):
 
 		try:
 			data = frame.get('data')
-			if ret:
+			if ret==1:
 				return data
+
+			# if ret==1:
+			# 	#print "sending frame"
+			# 	#return frame.get('data')
+			# 	return frame
+
 			elif not(self.quit):
 				print "restarting camera..."
 				time.sleep(0.5)
@@ -128,6 +150,7 @@ class Ximea(cameraSensor.CameraSensor):
 				self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
 				return self.getImage()
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
+			print "ximea quitting, probably because of KeyBoardInterrupt"
 			pass
 		
 	def close(self):

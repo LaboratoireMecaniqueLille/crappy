@@ -16,6 +16,7 @@ from ._commandBiotens import CommandBiotens
 from ._compacter  import Compacter
 from ._grapher import Grapher
 from ._measureAgilent34420A import MeasureAgilent34420A
+from ._measureByStep import MeasureByStep
 from ._multiPath import MultiPath
 from ._pid import PID
 from ._reader import Reader

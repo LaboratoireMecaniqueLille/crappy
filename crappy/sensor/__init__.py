@@ -21,11 +21,11 @@ except Exception as e:
      
 import platform as _platform
 if(_platform.system()=="Linux"):
-        try:
-            from ._comediSensor import ComediSensor
-            import comediModule as comediModule
-        except Exception as e:
-            print "WARNING: ", e
+    try:
+        from ._comediSensor import ComediSensor
+        import comediModule as comediModule
+    except Exception as e:
+        print "WARNING: ", e
                 
 from ._biotensSensor import BiotensSensor
 from ._Agilent34420ASensor import Agilent34420ASensor
@@ -36,6 +36,10 @@ from _lal300Sensor import SensorLal300
 try:
 	from _niusb6008 import DaqmxSensor
 except Exception as e:
-        print "WARNING: ", e
+    print "WARNING: ", e
 
 from . import clserial
+try:
+    from _labJackSensor import LabJackSensor
+except Exception as e:
+    print "WARNING: ", e

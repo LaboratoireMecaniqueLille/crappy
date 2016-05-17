@@ -1,8 +1,8 @@
 # coding: utf-8
-import numpy as np
+#import numpy as np
 import serial
-import time
-import os
+#import time
+#import os
 
 ### Parameters
 #limit = 0.0005 # limit for the eprouvette protection

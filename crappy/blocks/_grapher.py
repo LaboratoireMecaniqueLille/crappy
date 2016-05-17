@@ -3,7 +3,7 @@ from _meta import MasterBlock
 import numpy as np
 import matplotlib.pyplot as plt
 np.set_printoptions(threshold='nan', linewidth=500)
-import pandas as pd
+#import pandas as pd
 import os
 from collections import OrderedDict
 

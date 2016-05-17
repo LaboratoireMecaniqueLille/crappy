@@ -9,6 +9,7 @@ Welcome to crappy's documentation!
 .. toctree::
    :maxdepth: 1
 
+   user_guide
    crappy
 
 
