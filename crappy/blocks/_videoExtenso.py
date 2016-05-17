@@ -27,7 +27,7 @@ class VideoExtenso(MasterBlock):
 	"""
 Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
 	"""
-	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,update_tresh=False,labels=['t(s)','Px','Py','Exx(%)','Eyy(%)']):
+	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,update_tresh=False,labels=['t(s)','Px','Py','Exx(%)','Eyy(%)'],security=False):
 		"""
 Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. Can display the 
 image with the center of the spots.
@@ -95,6 +95,7 @@ dict : OrderedDict
 		self.border=4
 		self.numdevice=numdevice
 		self.update_tresh=update_tresh
+		self.security=security
 		while go==False:
 		# the following is to initialise the spot detection
 			self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
@@ -183,8 +184,8 @@ dict : OrderedDict
 					recv_.send([Px,Py,minx,miny,maxx,maxy])
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in barycenter : ",e
-				try:
-					recv_.send(["Error"]) # kill pill
+				try:				
+					recv_.send("error") # kill pill
 				except:
 					pass
 				raise
@@ -313,7 +314,6 @@ dict : OrderedDict
 					#image2=sitk.GetImageFromArray(frame)
 					#sitk.WriteImage(image2,self.save_directory+"img_mouchetis%.5d_t%3.3f_Exx%2.2d_Eyy%2.2f.tiff" %(j,(t2-self.t0),Lx,Ly))
 					last_ttimer=t_now
-				
 				j+=1
 			except ValueError: # if lost spots in barycenter
 				try:
@@ -324,7 +324,15 @@ dict : OrderedDict
 					pyglet.app.run()
 				except Exception as e:
 					print "No music because : ", e
-					pass
+				if self.security:
+					print 'Exception Video Extenso Security'					
+					try:
+						for output in self.outputs:
+							output.send("error")
+					except TimeoutError:
+						raise
+					except AttributeError: #if no outputs
+						pass
 				raise Exception("Spots lost")
 			except (Exception,KeyboardInterrupt) as e:
 				print "Exception in videoextenso : ",e
@@ -332,6 +340,15 @@ dict : OrderedDict
 					proc.terminate()
 				for i in range(0,self.NumOfReg):
 					proc_bary[i].terminate()
+				if self.security:
+					print 'Exception Video Extenso Security PAS OK'					
+					try:
+						for output in self.outputs:
+							output.send("error")
+					except TimeoutError:
+						raise
+					except AttributeError: #if no outputs
+						pass
 				raise
 
 	def plotter(self):

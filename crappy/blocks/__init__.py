@@ -4,6 +4,7 @@
     #print("Call your main application code here")
 
 #from . import technical
+from _autoDrive import AutoDrive
 from ._cameraDisplayer  import CameraDisplayer 
 from ._commandBiaxe import CommandBiaxe
 from ._commandBiotens import CommandBiotens
