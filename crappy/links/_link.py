@@ -13,24 +13,24 @@ class TimeoutError(Exception):
 
 
 class MethodThread(Thread):
-    "ThreadMethodThread, daemonic descendant class of threading.Thread which " \
-    "simply runs the specified target method with the specified arguments."
+	"ThreadMethodThread, daemonic descendant class of threading.Thread which " \
+	"simply runs the specified target method with the specified arguments."
 
-    def __init__(self, target, args, kwargs):
-        Thread.__init__(self)
-        self.setDaemon(True)
-        self.target, self.args, self.kwargs = target, args, kwargs
-        self.start()
+	def __init__(self, target, args, kwargs):
+		Thread.__init__(self)
+		self.setDaemon(True)
+		self.target, self.args, self.kwargs = target, args, kwargs
+		self.start()
 
-    def run(self):
-        try:
-            self.result = self.target(*self.args, **self.kwargs)
-        except Exception, e:
-            self.exception = e
-        except:
-            self.exception = Exception()
-        else:
-            self.exception = None
+	def run(self):
+		try:
+			self.result = self.target(*self.args, **self.kwargs)
+		except Exception, e:
+			self.exception = e
+		except:
+			self.exception = Exception()
+		else:
+			self.exception = None
 
 # def timeout_func(f):
 # 	"""Decorator for adding a timeout to a link send."""
@@ -153,32 +153,30 @@ external_trigger : Default=None
 					value=self.condition.evaluate(copy.copy(value))
 				if not value is None:
 					self.out_.send(value)
-<<<<<<< HEAD
 		except (Exception, KeyboardInterrupt) as e:
-                    print "Exception in link : ", e
-                    if(not self.out_.closed):
-                        self.out_.send('close')
-                        self.out_.close()
-                    raise Exception(e)
-                        
-=======
-		except TimeoutError as e:
-			if self.action=="warn":
-				print "WARNING : Timeout error in pipe send! Value : ", value
-			elif self.action=="kill":
-				print "Killing Link : ", e
-				raise
-			elif self.action=="NoWarn":
-				pass
-			else : # for debugging !!
-				print self.action
-				#pass
-		except (Exception,KeyboardInterrupt) as e:
-			pass
-			#print "Exception in link : ", e, value
+			print "Exception in link : ", e
+			if(not self.out_.closed):
+				self.out_.send('close')
+				self.out_.close()
+			raise Exception(e)
+				
+# =======
+# 		except TimeoutError as e:
+# 			if self.action=="warn":
+# 				print "WARNING : Timeout error in pipe send! Value : ", value
+# 			elif self.action=="kill":
+# 				print "Killing Link : ", e
+# 				raise
+# 			elif self.action=="NoWarn":
+# 				pass
+# 			else : # for debugging !!
+# 				print self.action
+# 				#pass
+# 		except (Exception,KeyboardInterrupt) as e:
+# 			pass
+# 			#print "Exception in link : ", e, value
 
-	
->>>>>>> master
+
 	def recv(self,blocking=True):
 		"""Receive data. If blocking=False, return None if there is no data"""
 		try:
@@ -189,20 +187,7 @@ external_trigger : Default=None
 					return self.in_.recv()
 				else:
 				  return None
-<<<<<<< HEAD
-		except Exception as e:
-			print "EXCEPTION in link : ", e
-			if(not self.in_.closed):
-                            self.in_.close()
-			raise Exception(e)
-                except KeyboardInterrupt:
-                        if(not self.in_.closed):
-                            self.in_.close()
-                        raise KeyboardInterrupt
-                except:
-                    print "Unexpected exception."
-                    raise
-=======
+
 		except TimeoutError as e:
 			if self.action=="warn":
 				print "WARNING : Timeout error in pipe send! Value : ", value
@@ -214,6 +199,13 @@ external_trigger : Default=None
 			else : # for debugging !!
 				print self.action
 				#pass
-		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in link : ", e
->>>>>>> master
+		except KeyboardInterrupt:
+			if(not self.in_.closed):
+				self.in_.close()
+			raise KeyboardInterrupt
+		except Exception as e:
+			print "EXCEPTION in link : ", e
+			if not self.in_.closed:
+				self.in_.close()
+			raise Exception(e)
+

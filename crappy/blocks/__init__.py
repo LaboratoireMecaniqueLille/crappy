@@ -4,7 +4,6 @@
     #print("Call your main application code here")
 
 #from . import technical
-<<<<<<< HEAD
 import platform
 if(platform.system()=="Linux"):
 	from ._commandComedi import CommandComedi

@@ -1,6 +1,5 @@
 # coding: utf-8
 from ._meta import cameraSensor
-<<<<<<< HEAD
 import numpy as np
 import ctypes
 import numpy as np
