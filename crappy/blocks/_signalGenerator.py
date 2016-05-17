@@ -153,7 +153,7 @@ The requiered informations depend on the type of waveform you need.
 						first_upper=(Data[self.value[1]]).first_valid_index()
 						alpha=self.direction
 						#print Data,self.value
-						print abs(Data[self.value[1]][last_upper]-self.value[0])
+						#print abs(Data[self.value[1]][last_upper]-self.value[0])
 						if abs(Data[self.value[1]][last_upper]-self.value[0])<self.offset: # if value > high_limit
 							alpha=0
 							cycle=1
