@@ -1,3 +1,6 @@
+# DEPRECATED, use v2.1 instead
+
+
 import time
 #import matplotlib
 #matplotlib.use('Agg')
