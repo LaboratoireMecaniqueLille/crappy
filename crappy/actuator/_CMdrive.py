@@ -7,7 +7,7 @@ class CmDrive():
 	""" Open a new default serial port for communication with Servostar"""
 	def __init__(self):	 
 		self.myPort = '/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0' 
-			self.baudrate = 9600
+		self.baudrate = 9600
 		self.ser = serial.Serial(self.myPort, self.baudrate)
 		pass
    
