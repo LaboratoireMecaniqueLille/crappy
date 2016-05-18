@@ -1,4 +1,4 @@
-*.pyc
+﻿*.pyc
 *.egg-info
 *.kate-swp
 *.so
@@ -10,4 +10,5 @@ dist/
 crappy.egg-info/
 data/
 Examples/open_log.py
-
+*.pyd
+*.sublime-*

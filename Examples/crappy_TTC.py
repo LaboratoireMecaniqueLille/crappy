@@ -1,18 +1,20 @@
+#This file should be used to run monotonous testing on traction-torsion -compression machine.
+
 import time
 import numpy as np
 import crappy
 import pandas as pd
-#crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
+crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
 
 
-class condition_signal(crappy.links.MetaCondition):
-	def __init__(self,input_value_label):
-		self.input_value_label=input_value_label
+#class condition_signal(crappy.links.MetaCondition):
+	#def __init__(self,input_value_label):
+		#self.input_value_label=input_value_label
 		
-	def evaluate(self,value):
-		value['signal']=value.pop(self.input_value_label)
-		return value
+	#def evaluate(self,value):
+		#value['signal']=value.pop(self.input_value_label)
+		#return value
 
 class eval_strain(crappy.links.MetaCondition):
 	def __init__(self,k):
@@ -25,7 +27,7 @@ class eval_strain(crappy.links.MetaCondition):
 		self.k=k #for testing
 		
 	def evaluate(self,value):
-		#if self.k==1:
+		#if self.k==1: # for testing
 			#print value
 		for i,label in enumerate(self.labels):
 			#print self.FIFO[i]
@@ -55,14 +57,16 @@ if __name__ == '__main__':
 		offset*=-1
 	# end of the offset measure
 		instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1,2,3],gain=[0.01998,99660,0.0099856*2.,499.5],offset=offset) # 10 times the gain on the machine if you go through an usb dux sigma
+		
+		# with comedi as output:
 		#cmd_traction=crappy.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=1, range_num=0, gain=8*100, offset=0)
 		#cmd_torsion=crappy.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=2, range_num=0, gain=8*100/2., offset=0) # divide dist by 2 for the testing machine
 		
-		#with Labjack:
+		# with Labjack as output:
 		cmd_traction=crappy.actuator.LabJackActuator(channel="TDAC2", gain=8*100, offset=0)
 		cmd_torsion=crappy.actuator.LabJackActuator(channel="TDAC3", gain=8*100/2., offset=0)
 
-	########################################### Initialising the outputs
+	########################################### Initialising the outputs 
 
 		cmd_torsion.set_cmd(0)
 		cmd_traction.set_cmd(0)
@@ -71,9 +75,7 @@ if __name__ == '__main__':
 		cmd_traction.set_cmd(0)
 		print "ready ?"
 		raw_input()
-	########################################### Creating blocks
-		#comedi_output=crappy.blocks.CommandComedi([comedi_actuator])
-		
+	########################################### Creating blocks		
 		stream=crappy.blocks.MeasureByStep(instronSensor,labels=['t(s)','def(%)','F(N)','dist(deg)','C(Nm)'])
 		#stream=crappy.blocks.StreamerComedi(instronSensor, labels=['t(s)','def(%)','F(N)','dist(deg)','C(Nm)'], freq=200.)
 

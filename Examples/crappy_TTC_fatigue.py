@@ -1,3 +1,5 @@
+#This file should be used to run cyclic testing on traction-torsion -compression machine.
+
 import time
 import numpy as np
 import crappy

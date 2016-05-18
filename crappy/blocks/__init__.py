@@ -4,10 +4,12 @@
     #print("Call your main application code here")
 
 #from . import technical
+from _autoDrive import AutoDrive
 from ._cameraDisplayer  import CameraDisplayer 
 from ._commandBiaxe import CommandBiaxe
 from ._commandBiotens import CommandBiotens
 from ._commandComedi import CommandComedi
+from ._commandPI import CommandPI
 from ._compacter  import Compacter
 from ._grapher import Grapher
 from ._measureAgilent34420A import MeasureAgilent34420A
