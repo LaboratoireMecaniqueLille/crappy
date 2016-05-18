@@ -5,6 +5,7 @@ import numpy as np
 np.set_printoptions(threshold='nan', linewidth=500)
 import time
 #import pandas as pd
+import os
 import cv2
 from ..links._link import TimeoutError
 from ..technical import TechnicalCamera as tc
@@ -27,7 +28,7 @@ class VideoExtenso(MasterBlock):
 	"""
 Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
 	"""
-	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,update_tresh=False,labels=['t(s)','Px','Py','Exx(%)','Eyy(%)'],security=False):
+	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,update_tresh=False,labels=['t(s)','Px','Py','Exx(%)','Eyy(%)'],security=False,save_folder=None):
 		"""
 Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. Can display the 
 image with the center of the spots.
@@ -70,6 +71,10 @@ update_tresh : Boolean, default=False
 	configuration.
 labels : list of string, default = ['t(s)','Lx','Ly','Exx(%)','Eyy(%)']
 	Labels of your output. Order is important.
+security : bool, default = False
+	If True, send a kill pill for other processes to stop when spots are losts.
+save_folder : str or None (default)
+	If a path is definied, will save the images in this folder. If None, no saving
 
 Returns
 -------
@@ -96,6 +101,10 @@ dict : OrderedDict
 		self.numdevice=numdevice
 		self.update_tresh=update_tresh
 		self.security=security
+		self.save_folder=save_folder
+		if not os.path.exists(os.path.dirname(self.save_folder)):
+			# check if the directory exists, otherwise create it
+			os.makedirs(os.path.dirname(self.save_folder))
 		while go==False:
 		# the following is to initialise the spot detection
 			self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
@@ -237,8 +246,9 @@ dict : OrderedDict
 					#ret, frame = self.cap.read()
 					#t2=time.time()
 					#print "time diff : ", t2-t1
-				#image1=sitk.GetImageFromArray(image)
-				#sitk.WriteImage(image1,"/home/corentin/Bureau/img_to_delete/img_videoExtenso%.5d.tiff" %j)
+				if self.save_folder!=None:
+					image1=sitk.GetImageFromArray(image)
+					sitk.WriteImage(image1,self.save_folder+"img_videoExtenso%.5d.tiff" %j)
 				
 					#image2=sitk.GetImageFromArray(frame)
 					#sitk.WriteImage(image2,self.save_directory+"img_mouchetis%.5d.tiff" %j)
