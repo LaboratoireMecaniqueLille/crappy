@@ -48,7 +48,7 @@ if __name__ == '__main__':
 															send_freq=100,repeat=True)
 		
 		signalGenerator_horizontal=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F4(N)'],"upper_limit":[1,'F4(N)']}],
-																		send_freq=50,repeat=True)
+																		send_freq=100,repeat=True)
 		
 		biotens=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1,biaxeTech2],speed=-5000) # vertical
 		biotens_horizontal=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3,biaxeTech4],speed=-5000)
