@@ -1,7 +1,4 @@
-﻿# This file provide a way to open the files saved by crappy videoxtenso. Please don't modify this file directly but make a copy for your own usage.
-# Note that there is a special file in this folder for other data, as they have a specific format.
-
-import numpy as np
+﻿import numpy as np
 import scipy.ndimage as nd
 import scipy.optimize as optimization
 import matplotlib.pyplot as plt
