@@ -75,7 +75,8 @@ Examples
 {'waveform':'sinus','time':10,'phase':0,'amplitude':2,'offset':0.5,'freq':2.5},
 {'waveform':'triangle','time':10,'phase':np.pi,'amplitude':2,'offset':0.5,'freq':2.5},
 {'waveform':'square','time':10,'phase':0,'amplitude':2,'offset':0.5,'freq':2.5}
-{'waveform':'limit','cycles':3,'phase':0,'lower_limit':[-3,'signal'],'upper_limit':[2,'signal']}],
+{'waveform':'limit','cycles':3,'phase':0,'lower_limit':[-3,'signal'],'upper_limit':[2,'signal']}
+{"waveform":"protection","gain":1,"lower_limit":[-1,'F2(N)'],"upper_limit":[1,'F2(N)']}],
 send_freq=400,repeat=True,labels=['t(s)','signal'])
 
 In this example we displayed every possibility or waveform.
