@@ -73,7 +73,7 @@ if __name__ == '__main__':
 		time.sleep(0.5)
 		cmd_torsion.set_cmd(0)
 		cmd_traction.set_cmd(0)
-		print "ready ?"
+		print "ready ?" # Wait for you to start the test on the machine
 		raw_input()
 	########################################### Creating blocks		
 		stream=crappy.blocks.MeasureByStep(instronSensor,labels=['t(s)','def(%)','F(N)','dist(deg)','C(Nm)'])
