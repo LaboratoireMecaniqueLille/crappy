@@ -69,7 +69,7 @@ update_tresh : Boolean, default=False
 	shape of the spots, wich may inscrease the noise on the deformation and 
 	artificially change its value. This is especially true with a single spot 
 	configuration.
-labels : list of string, default = ['t(s)','Lx','Ly','Exx(%)','Eyy(%)']
+labels : list of string, default = ['t(s)','Px','Py','Exx(%)','Eyy(%)']
 	Labels of your output. Order is important.
 security : bool, default = False
 	If True, send a kill pill for other processes to stop when spots are losts.
