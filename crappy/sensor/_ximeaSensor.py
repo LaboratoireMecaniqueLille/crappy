@@ -32,6 +32,8 @@ def resettable(f, *args, **kwargs):
     """
     import copy
     def __init_and_copy__(self, *args, **kwargs):
+        if(not platform.system()=="Linux"):
+            return f(self, **kwargs)
         f(self, **kwargs)
         self.__original_dict__ = copy.deepcopy(self.__dict__)
         def reset(o = self):
@@ -58,7 +60,7 @@ class Ximea(cameraSensor.CameraSensor):
 	data_format : int, default = 0
 		Value must be in [0:7]. See documentation for more informations.
 	"""
-	# @resettable
+	@resettable
 	def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):
 		self.quit=False
 		self.FPS=framespersec

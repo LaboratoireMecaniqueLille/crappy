@@ -1,8 +1,8 @@
 # coding: utf-8
 import serial
-from ._meta import acquisition
+from ._meta import command
 
-class Agilent34420ASensor(acquisition.Acquisition):
+class Agilent34420AActuator(command.Command):
     """Sensor class for Agilent34420A devices."""
     def __init__(self,mode="VOLT",device='/dev/ttyUSB0',baudrate=9600,timeout=10):
         """This class contains method to measure values of resistance or \
@@ -38,25 +38,12 @@ class Agilent34420ASensor(acquisition.Acquisition):
         self.ser.write("SYST:REM\n")
         self.getData()
         
-    def getData(self):
+    def set_cmd(self):
         """
-        Read the signal, return False if error and print 'bad serial'.
+        TODO
         """
-        try:
-                self.ser.write("READ?  \n")
-                #tmp = self.ser.readline()
-                tmp = self.ser.read(self.ser.in_waiting)
-                self.ser.flush()
-                #print tmp
-                return float(tmp)
-        except:
-                print "bad serial"
-                #self.ser.read(self.ser.inWaiting())
-                #print self.ser.inWaiting()
-                #self.ser.flush()
-                #time.sleep(0.5)
-                return False
-                                
+        pass
+
     def close(self):
         """
         Close the serial port.

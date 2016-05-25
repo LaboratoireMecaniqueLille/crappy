@@ -165,7 +165,6 @@ class Jai(cameraSensor.CameraSensor):
     @property
     def exposure(self):
         """Property. Set / get the current exposure
-        
         Return a status (0 if it succed, -1 if it failed).
         """
         return self._exposure

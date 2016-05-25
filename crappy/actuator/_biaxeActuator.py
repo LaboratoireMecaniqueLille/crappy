@@ -1,9 +1,8 @@
 # coding: utf-8
 #import numpy as np
 import serial
-#import time
-#import os
-
+from ._meta import motion
+from .._deprecated  import _deprecated as deprecated
 ### Parameters
 #limit = 0.0005 # limit for the eprouvette protection
 ##offset_=-0.0056
@@ -11,48 +10,75 @@ import serial
 #frequency=500. # refreshing frequency (Hz)
 ##alpha = 1.05
 
-class BiaxeActuator(object):
-	"""Declare a new axis for the Biaxe"""
-	def __init__(self,port_number,baud_rate=38400, timeout=1):
-		"""This class create an axis and opens the corresponding serial port.
-		
-		Parameters
-		----------
-		port_number : str
-			Path to the corresponding serial port, e.g '/dev/ttyS4'
-		baud_rate : int, default = 38400
-			Set the corresponding baud rate.
-		timeout : int or float, default = 1
-			Serial timeout.
-		"""
-		self.port_number=port_number
-		self.baud_rate=baud_rate
-		self.timeout=timeout
-		self.ser=None
-		self.new()
-			
-	def new(self):
-		"""No arguments, open port, set speed mode and engage"""
-		self.ser=serial.Serial(self.port_number,self.baud_rate,
-						 serial.EIGHTBITS,serial.PARITY_EVEN
-						 ,serial.STOPBITS_ONE,self.timeout)
-		self.ser.write("OPMODE 0\r\n EN\r\n")
+class BiaxeActuator(motion.MotionActuator):
+    """Declare a new axis for the Biaxe"""
+    def __init__(self, port='/dev/ttyUSB0', baudrate=38400, timeout=1, ser=None, **kwargs):
+        """This class create an axis and opens the corresponding serial port.
+        
+        Parameters
+        ----------
+        port : str
+                Path to the corresponding serial port, e.g '/dev/ttyS4'
+        baudrate : int, default = 38400
+                Set the corresponding baud rate.
+        timeout : int or float, default = 1
+                Serial timeout.
+        """
+        self.port = port
+        self.baudrate= baudrate
+        self.timeout=timeout
+        if 'baud_rate' in kwargs:
+            print 'WARNING: "baud_rate" keyword is deprecated, use "baudrate" instead'
+            self.baudrate = baud_rate
+            
+        if ser != None:
+            self.ser = ser
+        else:
+            self.ser=serial.Serial(self.port,self.baudrate,
+                                        serial.EIGHTBITS,serial.PARITY_EVEN
+                                        ,serial.STOPBITS_ONE,self.timeout)
+            self.ser.write("OPMODE 0\r\n EN\r\n")
+        
     
-	def set_speed(self,speed):
-		"""Re-define the speed of the motor. 1 = 0.002 mm/s"""
-		# here we should add the physical conversion for the speed
-		self.ser.write("J "+str(speed)+"\r\n")
+    def set_speed(self,speed):
+        """Re-define the speed of the motor. 1 = 0.002 mm/s"""
+        # here we should add the physical conversion for the speed
+        self.ser.write("J "+str(speed)+"\r\n")
 
-	def close_port(self):
-		"""Close the designated port"""
-		self.ser.close()
-	
-	def CLRFAULT(self):
-		"""Reset errors"""
-		self.ser.write("CLRFAULT\r\n")
-		self.ser.write("OPMODE 0\r\n EN\r\n")
-
-
+    def set_position(self,position,speed, motion_type='relative'): 
+        #TODO
+        pass
+    
+    """Reset the position to zero"""
+    def move_home(self):
+        #TODO
+        pass
+    
+    @deprecated(None, "serial port is now initialized in __init__")
+    def new(self):
+        """
+        DEPRECATED: serial port is now initialized in __init__
+        No arguments, open port, set speed mode and engage
+        """
+        #self.ser=serial.Serial(self.port_number,self.baud_rate,
+                                            #serial.EIGHTBITS,serial.PARITY_EVEN
+                                            #,serial.STOPBITS_ONE,self.timeout)
+        #self.ser.write("OPMODE 0\r\n EN\r\n")
+        pass
+            
+    @deprecated(None, "replaced by close method in _biaxeTechnical")
+    def close_port(self):
+        """
+        DEPRECATED: replaced by close method in _biaxeTechnical.
+        Close the designated port
+        """
+        self.ser.close()
+            
+    @deprecated(None)
+    def CLRFAULT(self):
+        """Reset errors"""
+        self.ser.write("CLRFAULT\r\n")
+        self.ser.write("OPMODE 0\r\n EN\r\n")
 
 
 

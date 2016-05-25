@@ -33,8 +33,6 @@ speed: int, default = 500
 				if cmd!= last_cmd:
 					self.PI_actuators.set_absolute_disp(cmd)
 					last_cmd=cmd
-				self.PI_actuators.ser.write("%c%cTP\r"%(1,'0')) #connaitre la position
-				#print "position platine : ", self.PI_actuators.ser.readline()
 				#print "commande platine : ", cmd
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in CommandPI : ", e

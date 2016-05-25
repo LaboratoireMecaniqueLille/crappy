@@ -50,6 +50,9 @@ log_file : str
 				data_to_save=str(data)+"\n"
 				fo.write(data_to_save)
 				fo.close()
-			except (Exception,KeyboardInterrupt) as e:
+                        except KeyboardInterrupt:
+                            print 'KeyboardInterrupt received in saver'
+                            break
+			except Exception as e:
 				print "Exception in saver %s: %s" %(os.getpid(),e)
 				#raise

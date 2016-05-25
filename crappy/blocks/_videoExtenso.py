@@ -23,10 +23,8 @@ try:
 	import pyglet
 	import glob
 	import random
-except ImportError:
-	print "no sound module installed"
-
-
+except ImportError as i:
+	print "WARNING: ", i
 
 def plotter(plot_pipe_recv):
 	data=plot_pipe_recv.recv() # receiving data
@@ -50,84 +48,87 @@ def plotter(plot_pipe_recv):
 		frame = cv2.circle(frame,(int(Points_coordinates[i,1]),int(Points_coordinates[i,0])),1,(255-color,0,0),-1)
 	cv2.imshow('frame',frame)
 	cv2.waitKey(1)
-	try:
-		while True: # for every round, receive data, correct the positions of the rectangles/centers and the values of Lx/Ly , and refresh the plot.
-			data=plot_pipe_recv.recv()
-			NumOfReg=data[0]
-			minx=data[1]
-			maxx=data[2]
-			miny=data[3]
-			maxy=data[4]
-			Points_coordinates=data[5]
-			frame=data[8]
-			for i in range(0,NumOfReg): # For each region, plots the rectangle around the spot and a cross at the center
-				frame = cv2.rectangle(frame,(miny[i],minx[i]),(maxy[i]-1,maxx[i]-1),(color,0,0),1)
-				frame = cv2.circle(frame,(int(Points_coordinates[i,1]),int(Points_coordinates[i,0])),1,(255-color,0,0),-1)
-			cv2.imshow('frame',frame)
-			cv2.waitKey(1)
-	except KeyboardInterrupt:
-		pass
-	except Exception as e:
-		print "Exception in plotter:", e
+        while True: # for every round, receive data, correct the positions of the rectangles/centers and the values of Lx/Ly , and refresh the plot.
+            try:
+                data=plot_pipe_recv.recv()
+                NumOfReg=data[0]
+                minx=data[1]
+                maxx=data[2]
+                miny=data[3]
+                maxy=data[4]
+                Points_coordinates=data[5]
+                frame=data[8]
+                for i in range(0,NumOfReg): # For each region, plots the rectangle around the spot and a cross at the center
+                        frame = cv2.rectangle(frame,(miny[i],minx[i]),(maxy[i]-1,maxx[i]-1),(color,0,0),1)
+                        frame = cv2.circle(frame,(int(Points_coordinates[i,1]),int(Points_coordinates[i,0])),1,(255-color,0,0),-1)
+                cv2.imshow('frame',frame)
+                cv2.waitKey(1)
+            except KeyboardInterrupt:
+                    break
+            except Exception as e:
+                    print "Exception in plotter:", e
 
 def barycenter_opencv(recv_):
 	#computation of the barycenter (moment 1 of image) on ZOI using OpenCV
 	#white_spot must be True if spots are white on a dark material
 	# The median filter helps a lot for real life images ...
-	while True:
-		try:
-			image,minx,miny, update_tresh, thresh, NumOfReg, border, white_spot =recv_.recv()[:]
-			# image1=sitk.GetImageFromArray(image)
-			# sitk.WriteImage(image1,"img_videoExtenso%i.tiff"%os.getpid())
-			if update_tresh:
-				thresh=threshold_otsu(image)
-			bw=cv2.medianBlur(image,5)>thresh
-			if not (white_spot):
-				bw=1-bw
-			M = cv2.moments(bw*255.)
+        while True:
+            try:
+                image,minx,miny, update_tresh, thresh, NumOfReg, border, white_spot =recv_.recv()[:]
+                # image1=sitk.GetImageFromArray(image)
+                # sitk.WriteImage(image1,"img_videoExtenso%i.tiff"%os.getpid())
+                if update_tresh:
+                        thresh=threshold_otsu(image)
+                bw=cv2.medianBlur(image,5)>thresh
+                if not (white_spot):
+                        bw=1-bw
+                M = cv2.moments(bw*255.)
 
-			Px=M['m01']/M['m00']
-			Py=M['m10']/M['m00']
-			if NumOfReg==1:
-				a=M['mu20']/M['m00']
-				b=-M['mu11']/M['m00']
-				c=M['mu02']/M['m00']
-				#print "a,c : ", a,c
-				l1=0.5*((a+c)+np.sqrt(4*b**2+(a-c)**2))
-				l2=0.5*((a+c)-np.sqrt(4*b**2+(a-c)**2))
-				minor_axis=4*np.sqrt(l2)
-				major_axis=4*np.sqrt(l1)
-				if (a-c)==0:
-					if b>0:
-						theta=-np.pi/4
-					else:
-						theta=np.pi/4
-				else:
-					theta=0.5*np.arctan2(2*b,(a-c))
-				Dx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
-				Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
-				Px=Dx
-				Py=Dy
+                Px=M['m01']/M['m00']
+                Py=M['m10']/M['m00']
+                if NumOfReg==1:
+                        a=M['mu20']/M['m00']
+                        b=-M['mu11']/M['m00']
+                        c=M['mu02']/M['m00']
+                        #print "a,c : ", a,c
+                        l1=0.5*((a+c)+np.sqrt(4*b**2+(a-c)**2))
+                        l2=0.5*((a+c)-np.sqrt(4*b**2+(a-c)**2))
+                        minor_axis=4*np.sqrt(l2)
+                        major_axis=4*np.sqrt(l1)
+                        if (a-c)==0:
+                                if b>0:
+                                        theta=-np.pi/4
+                                else:
+                                        theta=np.pi/4
+                        else:
+                                theta=0.5*np.arctan2(2*b,(a-c))
+                        Dx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
+                        Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
+                        Px=Dx
+                        Py=Dy
 
-			else: #if 2 or 4 spots
-				# we add minx and miny to go back to global coordinate:
-				Px+=minx
-				Py+=miny
-			miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
-			maxy_=miny_+h
-			maxx_=minx_+w
-			minx=minx-border+minx_
-			miny=miny-border+miny_
-			maxx=minx+border+maxx_
-			maxy=miny+border+maxy_
-			recv_.send([Px,Py,minx,miny,maxx,maxy])
-		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in barycenter : ",e
-			try:
-				recv_.send(["Error"]) # kill pill
-			except:
-				pass
-			raise
+                else: #if 2 or 4 spots
+                        # we add minx and miny to go back to global coordinate:
+                        Px+=minx
+                        Py+=miny
+                miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
+                maxy_=miny_+h
+                maxx_=minx_+w
+                minx=minx-border+minx_
+                miny=miny-border+miny_
+                maxx=minx+border+maxx_
+                maxy=miny+border+maxy_
+                recv_.send([Px,Py,minx,miny,maxx,maxy])
+            except KeyboardInterrupt:
+                print 'KeyboardInterrupt received in barycenter'
+                break
+            except Exception as e:
+                    print "Exception in barycenter : ",e
+                    try:
+                            recv_.send(["Error"]) # kill pill
+                    except:
+                            pass
+                    raise
 
 
 class VideoExtenso(MasterBlock): 
@@ -198,28 +199,33 @@ class VideoExtenso(MasterBlock):
 		self.update_tresh=update_tresh
 		self.security=security
 		while go==False:
-		# the following is to initialise the spot detection
-			self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
-			self.minx=self.camera.minx
-			self.maxx=self.camera.maxx
-			self.miny=self.camera.miny
-			self.maxy=self.camera.maxy
-			self.NumOfReg=self.camera.NumOfReg
-			self.L0x = self.camera.L0x
-			self.L0y = self.camera.L0y
-			self.thresh=self.camera.thresh
-			#print "tresh initial :", self.thresh
-			self.Points_coordinates=self.camera.Points_coordinates
-			self.width=self.camera.width
-			self.height=self.camera.height
-			self.xoffset=self.camera.xoffset
-			self.yoffset=self.camera.yoffset
-			self.exposure=self.camera.exposure
-			self.gain=self.camera.gain
-			if self.NumOfReg==4 or self.NumOfReg==2 or self.NumOfReg==1: 
-				go=True
-			else:	#	If detection goes wrong, start again, may not be usefull now ?
-				print " Spots detected : ", self.NumOfReg	
+                    try:
+                        # the following is to initialise the spot detection
+                        self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
+                        self.minx=self.camera.minx
+                        self.maxx=self.camera.maxx
+                        self.miny=self.camera.miny
+                        self.maxy=self.camera.maxy
+                        self.NumOfReg=self.camera.NumOfReg
+                        self.L0x = self.camera.L0x
+                        self.L0y = self.camera.L0y
+                        self.thresh=self.camera.thresh
+                        #print "tresh initial :", self.thresh
+                        self.Points_coordinates=self.camera.Points_coordinates
+                        self.width=self.camera.width
+                        self.height=self.camera.height
+                        self.xoffset=self.camera.xoffset
+                        self.yoffset=self.camera.yoffset
+                        self.exposure=self.camera.exposure
+                        self.gain=self.camera.gain
+                        if self.NumOfReg==4 or self.NumOfReg==2 or self.NumOfReg==1: 
+                            go=True
+                        else:	#	If detection goes wrong, start again, may not be usefull now ?
+                            print " Spots detected : ", self.NumOfReg	
+                    except KeyboardInterrupt:
+                        raise
+                    except Exception:
+                        raise
 		print "initialisation done, starting acquisition"
 			# following is for tests only
 			#self.save_directory="/home/biaxe/Bureau/Publi/"
@@ -316,7 +322,10 @@ class VideoExtenso(MasterBlock):
 					except AttributeError: #if no outputs
 						pass
 				raise Exception("Spots lost")
-			except (Exception,KeyboardInterrupt) as e:
+                        except KeyboardInterrupt:
+                            print 'KeyboardInterrupt\n'
+                            break
+			except (Exception) as e:
 				print "Exception in videoextenso : ",e
 				if self.display:
 					proc.terminate()

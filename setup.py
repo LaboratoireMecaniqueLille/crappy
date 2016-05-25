@@ -37,18 +37,23 @@ if(platform.system()=="Linux") :
     execfile("./crappy/__version__.py") # read the current version in version.py
     ximeaModule = Extension('sensor.ximeaModule', sources = ['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-Werror", "-L", "../bin", "-L", "../bin/X64", "-L" , "../bin/ARM",  "-l", "m3api", "-l", "python2.7"])
     clModule = Extension('sensor.clModule', sources = ['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp', 'sources/Jai_lib/clSerial.cpp'], extra_compile_args = ["-std=c++11"], extra_link_args=["-l", "python2.7", "-L", "/opt/SiliconSoftware/Runtime5.4.1.2/lib64/", "-l", "display", "-l", "clsersis", "-l", "fglib5"])
-    #extentions.append(comediModule)
+    try:
+        import comedi
+        extentions.append(comediModule)
+    except:
+        print "WARNING: Cannot find comedi driver.\n"
     p = popen("lsmod |grep menable")
     if(len(p.read())!=0) :
         extentions.append(clModule)
     else:
-        print "Wrong Kernel version, Jai library will not be compiled.\n"
+        print "WARNING: cannot find menable kernel module, CameraLink module won't be available.\n"
     p = popen("lsmod |grep m3api")
     if(len(p.read()) != 0) :
         extentions.append(ximeaModule)
     else:
-        print "libm3api not installed, ximeaModule will not be compiled"
+        print "WARNING: cannot find m3api kernel module, ximea module won't be available.\n"
     extentions.append(ximeaModule)
+    pyFgenModule = None
 
 if(platform.system()=="Windows"):
     execfile(".\crappy\__version__.py") # read the current version in version.py , , "C:\\Program Files\\IVI Foundation\\IVI\\Include", , 
@@ -82,72 +87,6 @@ if(platform.system()=="Windows"):
 # if(ximeaModule in extentions):
 #     if(platform.system()=="Windows"):
 #         ext_lib.append(("sensor\\", ["build\\lib.win-amd64-2.7\\crappy\\sensor\\ximeaModule.pyd"]))
-
-
-"""
-class LibBuild(build):
-  
-    def run(self):
-        # run original build code
-        build.run(self)
-        #self.run_command("build_ext ../crappy/")
-        jai_build_path = path.join(here, 'sources/Jai_lib/old')
-        jai_cmd = [
-            'make',
-            'OUT=' + jai_build_path,
-            'V=' + str(self.verbose),
-            ]
-        try:
-            jai_cmd.append('-j%d' % cpu_count())
-        except NotImplementedError:
-            print 'Unable to determine number of CPUs. Using single threaded make.'
-        
-        def compile():
-                p = popen("lsmod |grep menable")
-                if(len(p.read())!=0):
-                    call(jai_cmd, cwd=jai_build_path)
-                else:
-                    print "Wrong Kernel version, Jai library not compiled.\n"
-            
-        self.execute(compile, [], 'Compiling libraries')
-
-class LibClean(build):
-  
-    def run(self):
-        # run original build code
-        build.run(self)
-        jai_build_path = path.join(here, 'sources/Jai_lib/old')
-        jai_cmd = [
-            'make clean',
-            'OUT=' + jai_build_path,
-            'V=' + str(self.verbose),
-            ]
-        def clean():
-            p = popen("lsmod |grep menable")
-            if(len(p.read())!=0)
-                call(jai_cmd, cwd=jai_build_path)
-            else:
-                print "Wrong Kernel version, unable to find Jai library\n"
-            
-        self.execute(clean, [], 'Deleting shared objects.')
-"""
-
-class LibBuild(build):
-  
-    def run(self):
-        # run original build code
-        build.run(self)
-        # self.run_command("build_ext ../crappy/")
-        ximea_build_path = path.join(here, 'sources\\XimeaLib\\')
-        ximea_cmd = [
-        	'mingw32-make',
-            'OUT=' + ximea_build_path,
-            'V=' + str(self.verbose),
-        	]
-        def compile():
-            print "test"
-            call(ximea_cmd, cwd=ximea_build_path)
-        self.execute(compile, [], 'Compiling libraries')
 
 setup(
     name='crappy',
@@ -221,10 +160,6 @@ setup(
         'dev': ['check-manifest'],
         'test': ['coverage'],
     },
-    
-    cmdclass={
-       'build': LibBuild
-    },
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
@@ -283,5 +218,3 @@ if(clModule in extentions):
 if(pyFgenModule in extentions):
     if(platform.system()=="Windows"):
         system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\pyFgenModule.pyd crappy\\sensor\\')
-    if(platform.system()=="Linux"):
-        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/pyFgenModule.so crappy/sensor/')

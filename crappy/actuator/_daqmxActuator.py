@@ -5,8 +5,16 @@ except ImportError:
 	print "WARNING : no module PyDAQmx installed, sensor won't work!"
 import numpy
 import time
+from ._meta import acquisition
 
-class DaqmxSensor(object):
+def getDAQmxDevicesNames():
+    buffer_size = 4096
+    buffer = ctypes.create_string_buffer(buffer_size)
+    DAQmxGetSysDevNames(buffer, buffer_size)
+    print len(buffer.value.split(",")), " devices detected: ", buffer.value
+    return buffer.value.split(",")
+
+class DaqmxActuator(acquisition.Acquisition):
     """Sensor class for Daqmx devices.""" 
     """PXI1Slot2, PXI1Slot3"""
     
@@ -38,6 +46,7 @@ class DaqmxSensor(object):
         self.channel = self._channels_tab[channels]
         self.device = "%s/%s"%(device,self.channel)
 
+    def new(self):
         DAQmxResetDevice(device)
         
         self.taskHandle = TaskHandle()
@@ -61,44 +70,10 @@ class DaqmxSensor(object):
         DAQmxCreateAIVoltageChan(self.taskHandle,self.device,"",DAQmx_Val_Cfg_Default,
                                  self._ranges_tab[self.range_num][0],self._ranges_tab[self.range_num][1],
                                  DAQmx_Val_Volts,None)
-    
-    def getDevicesNames():
-        buffer_size = 4096
-        buffer = ctypes.create_string_buffer(buffer_size)
-        DAQmxGetSysDevNames(buffer, buffer_size)
-        print len(buffer.value.split(",")), " devices detected: ", buffer.value
-        return buffer.value.split(",")
 
-    def getData(self,nbPoints=1):
-        """Read the signal"""
-        try:
-            DAQmxCfgSampClkTiming(self.taskHandle, "", 
-                                  10000.0, DAQmx_Val_Rising, DAQmx_Val_FiniteSamps, 
-                                  nbPoints+1)
-            ## DAQmx Start Code
-            DAQmxStartTask(self.taskHandle)
-            
-            data = numpy.zeros((nbPoints+1,), dtype=numpy.float64)
-            t0 = time.time()
-            DAQmxReadAnalogF64(self.taskHandle, nbPoints+1, 10.0, 
-                               DAQmx_Val_GroupByChannel, data, 
-                               nbPoints+1, byref(self.read), None) # DAQmx Read Code
-            t=time.time()
-            # DAQmx Stop Code
-            DAQmxStopTask(self.taskHandle)
-            delta = (t-t0)/float(nbPoints+1)
-            print delta
-            temps = [0]
-            for x in xrange(1,nbPoints+1):
-                temps.append(float(x)*delta)
-
-            if(nbPoints==1):
-                return (t, data[0])
-            else:
-                return (temps, data)
-            
-        except DAQError as err:
-            raise Exception("DAQmx Error: %s"%err)
+    def set_cmd(self,cmd):
+        """write signal to the output."""
+        #TODO
 
 
     def close(self):

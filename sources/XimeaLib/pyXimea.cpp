@@ -31,6 +31,7 @@ VideoCapture_addTrigger(VideoCapture *self, PyObject *args)
     bool triggered;
     if (!PyArg_ParseTuple(args, "ib", &timeout, &triggered)){
     	cout << "arg must be (int, bool). " << endl;
+        Py_INCREF(Py_None);
         return Py_None;
     }
     capt->addTrigger(timeout, triggered);
@@ -42,18 +43,24 @@ VideoCapture_addTrigger(VideoCapture *self, PyObject *args)
 PyObject*
 VideoCapture_isOpened()
 {
+    PyObject* ret = Py_False;
     if(capt->isopened) {
-		return Py_True;
-	}else{
-		return Py_False;
-	}
+        ret=Py_True;
+        Py_INCREF(ret);
+        return ret;
+    }else{
+        Py_INCREF(ret);
+        return ret;
+    }
 }
 
 PyObject*
 VideoCapture_release()
 {
     capt->close();
-	return Py_None;
+    PyObject* ret = Py_None;
+    Py_INCREF(ret);
+    return ret;
 }
 
 bool VideoCapture_grab()
