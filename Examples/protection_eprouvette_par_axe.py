@@ -33,15 +33,15 @@ if __name__ == '__main__':
 		
 		effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F1(N)','F2(N)','F3(N)','F4(N)'],freq=100)
 
-		signalGenerator1=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F1(N)'],"upper_limit":[1,'F1(N)']}],
+		signalGenerator1=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-10,'F1(N)'],"upper_limit":[10,'F1(N)']}],
 															send_freq=100,repeat=True)
 		
-		signalGenerator2=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F2(N)'],"upper_limit":[1,'F2(N)']}],
+		signalGenerator2=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-10,'F2(N)'],"upper_limit":[10,'F2(N)']}],
 																		send_freq=100,repeat=True)
-		signalGenerator3=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F3(N)'],"upper_limit":[1,'F3(N)']}],
+		signalGenerator3=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-10,'F3(N)'],"upper_limit":[10,'F3(N)']}],
 															send_freq=100,repeat=True)
 		
-		signalGenerator4=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-1,'F4(N)'],"upper_limit":[1,'F4(N)']}],
+		signalGenerator4=crappy.blocks.SignalGenerator(path=[{"waveform":"protection","gain":1,"lower_limit":[-10,'F4(N)'],"upper_limit":[10,'F4(N)']}],
 																		send_freq=100,repeat=True)
 		
 		biotens1=crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1],speed=-5000) # vertical

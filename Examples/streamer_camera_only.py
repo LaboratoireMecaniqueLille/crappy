@@ -11,19 +11,19 @@ if __name__ == '__main__':
 	try:
 	########################################### Creating objects
 		
-		#instronSensor=crappy.sensor.ComediSensor(channels=[1,3],gain=[-3749.3,-3198.9*1.18],offset=[24,13])
-		#biaxeTech1=crappy.technical.Biaxe(port='/dev/ttyS4')
-		#biaxeTech2=crappy.technical.Biaxe(port='/dev/ttyS5')
-		#biaxeTech3=crappy.technical.Biaxe(port='/dev/ttyS6')
-		#biaxeTech4=crappy.technical.Biaxe(port='/dev/ttyS7')
-		#axes=[biaxeTech1,biaxeTech2,biaxeTech3,biaxeTech4]
+		instronSensor=crappy.sensor.ComediSensor(channels=[1,3],gain=[-3749.3,-3198.9*1.18],offset=[24,13])
+		biaxeTech1=crappy.technical.Biaxe(port='/dev/ttyS4')
+		biaxeTech2=crappy.technical.Biaxe(port='/dev/ttyS5')
+		biaxeTech3=crappy.technical.Biaxe(port='/dev/ttyS6')
+		biaxeTech4=crappy.technical.Biaxe(port='/dev/ttyS7')
+		axes=[biaxeTech1,biaxeTech2,biaxeTech3,biaxeTech4]
 
 	########################################### Creating blocks
-		camera=crappy.blocks.StreamerCamera("Ximea",freq=1,save=True,save_directory="/home/biotens/Bureau/ximea/",xoffset=0,yoffset=0,width=1024,height=500)
+		camera=crappy.blocks.StreamerCamera("Ximea",numdevice=0,freq=10,save=True,save_directory="/media/biaxe/SSD1To/Essais_biface_caoutchouc/cam_pc/",xoffset=0,yoffset=0,width=2048,height=2048)
 		#compacter_effort=crappy.blocks.Compacter(200)
 		#save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Publi/effort.txt")
 		#graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
-		
+		camera2=crappy.blocks.StreamerCamera("Ximea",numdevice=1,freq=10,save=True,save_directory="/media/biaxe/SSD1To/Essais_biface_caoutchouc/cam_arriere/",xoffset=0,yoffset=0,width=2048,height=2048)
 		#compacter_extenso=crappy.blocks.Compacter(100)
 		#save_extenso=crappy.blocks.Saver("/home/corentin/Bureau/extenso_big_spots_non_binarise.txt")
 		#graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 		#save_extenso2=crappy.blocks.Saver("/home/corentin/Bureau/extenso_1_spot.txt")
 		#graph_extenso2=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 		
-		##effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
+		effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
 		#extenso2=crappy.blocks.VideoExtenso(camera="Ximea",numdevice=1,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,labels=['t(s)','Exx(%)', 'Eyy(%)'],display=True)
 		
 		#signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},

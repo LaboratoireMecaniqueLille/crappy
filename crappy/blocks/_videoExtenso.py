@@ -102,9 +102,10 @@ dict : OrderedDict
 		self.update_tresh=update_tresh
 		self.security=security
 		self.save_folder=save_folder
-		if not os.path.exists(os.path.dirname(self.save_folder)):
-			# check if the directory exists, otherwise create it
-			os.makedirs(os.path.dirname(self.save_folder))
+		if self.save_folder!=None:
+			if not os.path.exists(os.path.dirname(self.save_folder)):
+				# check if the directory exists, otherwise create it
+				os.makedirs(os.path.dirname(self.save_folder))
 		while go==False:
 		# the following is to initialise the spot detection
 			self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
