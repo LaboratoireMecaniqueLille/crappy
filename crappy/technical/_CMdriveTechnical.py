@@ -19,7 +19,7 @@ class CmDrive(motion.Motion):
             self.ser.close()#close serial connection before to avoid errors
             self.ser.open()
             self.ser.write('SL 0\r')
-            self.ser.readline()
+            #self.ser.readline()
             self.ser.close()
     
     """Reset the serial communication, before reopen it to set displacement to zero"""

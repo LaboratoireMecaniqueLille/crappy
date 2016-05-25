@@ -27,7 +27,7 @@ class Motion(motion.Motion):
 
         self.port = port
         self.baudrate = baudrate
-        self.technical = Motor(port=self.port, baudrate=self.baudrate, args, kwargs)
+        self.technical = Motor(port=self.port, baudrate=self.baudrate, *args, **kwargs)
 
     """Stop the motor motion"""
     def stop(self):

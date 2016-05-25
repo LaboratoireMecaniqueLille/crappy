@@ -102,15 +102,14 @@ def barycenter_opencv(recv_):
                                         theta=np.pi/4
                         else:
                                 theta=0.5*np.arctan2(2*b,(a-c))
-                        Dx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
-                        Dy=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
-                        Px=Dx
-                        Py=Dy
+                        Lx=max(np.abs(major_axis*np.cos(theta)),np.abs(minor_axis*np.sin(theta)))
+                        Ly=max(np.abs(major_axis*np.sin(theta)),np.abs(minor_axis*np.cos(theta)))
+                        #Px=Dx
+                        #Py=Dy
 
-                else: #if 2 or 4 spots
-                        # we add minx and miny to go back to global coordinate:
-                        Px+=minx
-                        Py+=miny
+                # we add minx and miny to go back to global coordinate:
+                Px+=minx
+                Py+=miny
                 miny_, minx_, h, w= cv2.boundingRect((bw*255).astype(np.uint8)) # cv2 returns x,y,w,h but x and y are inverted
                 maxy_=miny_+h
                 maxx_=minx_+w
@@ -118,7 +117,11 @@ def barycenter_opencv(recv_):
                 miny=miny-border+miny_
                 maxx=minx+border+maxx_
                 maxy=miny+border+maxy_
-                recv_.send([Px,Py,minx,miny,maxx,maxy])
+                
+                if NumOfReg==1:
+                        recv_.send([Px,Py,minx,miny,maxx,maxy,Lx,Ly])
+                else:
+                        recv_.send([Px,Py,minx,miny,maxx,maxy])
             except KeyboardInterrupt:
                 print 'KeyboardInterrupt received in barycenter'
                 break
@@ -258,16 +261,19 @@ class VideoExtenso(MasterBlock):
 						first[i]=False
 
 					send_[i].send([image[int(self.minx[i])-1:int(self.maxx[i])+1,int(self.miny[i])-1:int(self.maxy[i])+1],self.minx[i]-1,self.miny[i]-1, self.update_tresh, self.thresh, self.NumOfReg, self.border, self.white_spot])
- 				if self.NumOfReg==1:
-					self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i],Lx,Ly=send_[i].recv()[:]
-				else:
-					for i in range(0,self.NumOfReg):
-						self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:] #self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]
-				
+				try:
+                                    if self.NumOfReg==1:
+                                            self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i],Lx,Ly=send_[i].recv()[:]
+                                    else:
+                                            for i in range(0,self.NumOfReg):
+                                                    self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:] #self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]
+                                except Exception as e:
+                                    print e
+                                    raise
 				minx_=self.minx.min()
 				miny_=self.miny.min()
 				maxx_=self.maxx.max()
-				maxy_=self.maxy.max()		
+				maxy_=self.maxy.max()
 				if self.NumOfReg ==4 or self.NumOfReg ==2:
 					Lx=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
 					Ly=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
@@ -276,7 +282,6 @@ class VideoExtenso(MasterBlock):
 				elif self.NumOfReg ==1:
 					Dy=100.*((Ly)/self.L0y-1.)
 					Dx=100.*((Lx)/self.L0x-1.)
-
 				Array=OrderedDict(zip(self.labels,[time.time()-self.t0,str(self.Points_coordinates[:,0]),str(self.Points_coordinates[:,1]),Dx,Dy]))
 				try:
 					for output in self.outputs:

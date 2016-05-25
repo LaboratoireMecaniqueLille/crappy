@@ -12,7 +12,7 @@ from .._deprecated  import _deprecated as deprecated
 
 class ComediSensor(acquisition.Acquisition):
     """Sensor class for Comedi devices."""
-    def __init__(self,device='/dev/comedi0',subdevice=0,channels=0,
+    def __init__(self,device='/dev/comedi0',subdevice=0,channels=[0],
                         range_num=0,gain=1,offset=0):
         """
         Convert tension value into digital values, on several channels.

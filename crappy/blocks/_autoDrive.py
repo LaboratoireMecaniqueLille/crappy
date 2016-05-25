@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from _meta import MasterBlock
 import time
+from sys import stdout
 
 class AutoDrive(MasterBlock):
     """Recieve position information and send motor commands calculated by the PID, via actuator CMdrive"""
-    def __init__(self, actuator):
-        self.actuator = actuator
+    def __init__(self, technical):
+        self.technical = technical
 
     def main(self):
         try:
@@ -15,11 +16,12 @@ class AutoDrive(MasterBlock):
                         raise Exception("Exception received from videoExtenso")
                 self.coef = self.K['K']
                 self.center = self.K['center']
-                print "K in autodrive :",(self.coef), 'Center : ', self.center
-                self.actuator.applyAbsoluteSpeed(int(self.coef))
+                stdout.write("\rK in autodrive :{}, Center : {}".format(self.coef, self.center))
+                stdout.flush()
+                self.technical.actuator.set_speed(int(self.coef))
         except (Exception,KeyboardInterrupt) as e:
             print "Exception in Autodrive : ", e
             try:
-                self.actuator.applyAbsoluteSpeed(0)
+                self.technical.actuator.set_speed(0)
             except:
                 pass

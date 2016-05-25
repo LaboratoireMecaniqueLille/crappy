@@ -24,7 +24,7 @@ speed: int, default = 5
 		self.speed=speed
 		self.signal_label=signal_label
 		for biotens_technical in self.biotens_technicals:
-			biotens_technical.actuator.clear_errors()
+			biotens_technical.clear_errors()
 	
 	def main(self):
 		try:
@@ -39,14 +39,14 @@ speed: int, default = 5
 				cmd=Data[self.signal_label]
 				if cmd!= last_cmd:
 					for biotens_technical in self.biotens_technicals:
-						biotens_technical.actuator.setmode_speed(cmd*self.speed)
+						biotens_technical.actuator.set_speed(cmd*self.speed)
 					last_cmd=cmd
 				t=time.time()
 				if (t-self.last_time)>=0.2:
 					#print "top command3"
 					self.last_time=t
 					for biotens_technical in self.biotens_technicals:
-						position=biotens_technical.sensor.read_position()
+						position=biotens_technical.sensor.get_position()
 					#Array=pd.DataFrame([[t-self.t0,position]],columns=['t(s)','position'])
 					Array=OrderedDict(zip(['t(s)','position'],[t-self.t0,position]))
 					try:

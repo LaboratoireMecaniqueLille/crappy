@@ -56,7 +56,7 @@ if __name__ == '__main__':
 		#effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
 
 		extenso=crappy.blocks.VideoExtenso(camera="Ximea",numdevice=0,xoffset=0,yoffset=200,width=2048,height=512,white_spot=True,display=True,security=True)
-		autoDrive=crappy.blocks.AutoDrive(crappy.actuator.CmDrive())
+		autoDrive=crappy.blocks.AutoDrive(crappy.technical.CmDrive(port="/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0"))
 		comediActuator=crappy.blocks.CommandComedi([comedi_actuator])
   
 

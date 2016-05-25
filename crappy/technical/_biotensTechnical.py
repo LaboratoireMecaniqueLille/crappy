@@ -1,8 +1,8 @@
 ﻿# coding: utf-8
 import serial
 import time
-from ..sensor import BiotensSensor
-from ..actuator import BiotensActuator
+from ..sensor import _biotensSensor
+from ..actuator import _biotensActuator
 from ._meta import motion
 
 class Biotens(motion.Motion):
@@ -25,14 +25,15 @@ class Biotens(motion.Motion):
         self.port=port
         self.baudrate = baudrate
         self.ser=serial.Serial(self.port, baudrate=19200, timeout=0.1)
+        self.actuator = _biotensActuator.BiotensActuator(self.ser, self.size)
+        self.sensor = _biotensSensor.BiotensSensor(self.ser)
+        self.clear_errors()
         self.initialisation()
         self.mise_position()
-        self.actuator = BiotensActuator(self.ser)
-        self.sensor = BiotensSensor(self.ser)
 
     def mise_position(self):
         """Set motor into position for sample's placement"""
-        self.set_position(self.size+0.3,70) # add 0.2 to ensure going to the wanted position
+        self.actuator.set_position(self.size+0.3,70) # add 0.2 to ensure going to the wanted position
         startposition='\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(10,'B')+_biotensSensor.convert_to_byte(4,'B')+_biotensSensor.convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(10,'B')+ '\xAA\xAA'
         self.ser.write(startposition)	
         try:
@@ -43,7 +44,7 @@ class Biotens(motion.Motion):
         position_SI=99
         while position_SI!=last_position_SI:
                 last_position_SI=position_SI
-                position_SI=self.get_position()
+                position_SI=self.sensor.get_position()
                 print "position : ", position_SI
         print "Fin"
         self.stop()	
@@ -64,7 +65,7 @@ class Biotens(motion.Motion):
         time.sleep(1)
         while position_SI!=last_position_SI:
                 last_position_SI=position_SI
-                position_SI=self.get_position()
+                position_SI=self.sensor.get_position()
                 print "position : ", position_SI
         print "init done"
         self.stop()	
@@ -84,7 +85,7 @@ class Biotens(motion.Motion):
     
     def stop(self): 
         """Stop the motor. Amazing."""
-        command='\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(2,'B')+convert_to_byte(0,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(2,'B')+ '\xAA\xAA'
+        command='\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(0,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(2,'B')+ '\xAA\xAA'
         self.ser.write(command)
         #return command
         

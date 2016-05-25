@@ -14,7 +14,7 @@ from ._biotensTechnical import Biotens
 from ._lal300Technical import Lal300
 from ._PITechnical import PI
 
-__motors__ = ['Biotens', 'Biaxe', 'Lal300', 'PI', 'VariateurTribo']
+__motors__ = ['Biotens', 'Biaxe', 'Lal300', 'PI', 'VariateurTribo', 'CmDrive']
 __boardnames__ = ['Comedi', 'Daqmx', 'LabJack', 'Agilent34420A', 'fgen']
 __cameras__ = ['Ximea', 'Jai']
 

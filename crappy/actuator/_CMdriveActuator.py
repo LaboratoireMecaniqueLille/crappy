@@ -41,7 +41,7 @@ class CmDriveActuator(motion.MotionActuator):
         """Reset the position to zero"""
         self.ser.open() # open serial port
         self.ser.write('MA 0\r')# send 'MH' ASCII characters for requesting to the motor to return at zero position
-        self.ser.readline()
+        #self.ser.readline()
         self.ser.close()#close serial connection
     
     

@@ -31,7 +31,7 @@ class BiotensActuator(motion.MotionActuator):
         """
         self.ser=ser
         self.size=size
-        self.clear_errors()
+        #self.clear_errors()
 
     def set_speed(self,speed):
         """Pilot in speed mode, requires speed in mm/min"""

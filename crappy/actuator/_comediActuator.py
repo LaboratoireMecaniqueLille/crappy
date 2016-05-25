@@ -11,7 +11,7 @@ import comedi as c
 
 class ComediActuator(command.Command):
     """Comedi actuator object, commands the output of comedi cards"""
-    def __init__(self,device='/dev/comedi0',output_subdevice=1,output_channel=0,output_range_num=0,output_gain=1,output_offset=0): 
+    def __init__(self,device='/dev/comedi0',subdevice=1,channel=0,range_num=0,gain=1,offset=0): 
         """Convert wanted tension value into digital values and send it to the 
         output of some Comedi-controlled card.
         
@@ -32,12 +32,15 @@ class ComediActuator(command.Command):
         offset : float, default = 0
                 Add this value to your output.
         """
-        self.output_subdevice= output_subdevice
-        self.output_channel=output_channel
-        self.output_range_num=output_range_num
-        self.output_gain=output_gain
-        self.output_offset= output_offset
+        self.subdevice= subdevice
+        self.channel=channel
+        self.range_num=range_num
+        self.gain=gain
+        self.offset= offset
         self.device=c.comedi_open(device)
+        self.new()
+        
+    def new(self):
         self.maxdata=c.comedi_get_maxdata(self.device,self.subdevice,self.channel)
         self.range_ds=c.comedi_get_range(self.device,self.subdevice,self.channel,self.range_num)
         c.comedi_dio_config(self.device,2,self.channel,1)

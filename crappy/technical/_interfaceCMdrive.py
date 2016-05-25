@@ -160,6 +160,7 @@ class Interface(Frame):
                 return
 			
 	    self.motor = Motor(self.myPortCombo.get(), self.baudCombo.get())
+	    self.motorName = self.motorNameCombo.get()
 #	    self.vm = videoInstron(self.ser)
 	    print 'connection'
 	    self.location.config(state='normal')
@@ -175,23 +176,24 @@ class Interface(Frame):
 	   print ' Connection error:', e
 	
     def defineZero(self):
-      self.ser.close()
-      self.ser.open()
-      self.ser.write('P=0\r')
-      self.ser.readline()
-      self.ser.close()
+        if(self.motorName == "CmDrive"):
+            self.motor.ser.close()
+            self.motor.ser.open()
+            self.motor.ser.write('P=0\r')
+            #self.motor.ser.readline()
+            self.motor.ser.close()
       
     def reset_servostar(self):
         self.motor.reset()
       
     # function to examine the location of the motor
     def examineLocation(self):
-      location=self.motor.get_position()
+      location=self.motor.sensor.get_position()
       self.Resultat.set(location)
     
     # function to move home
     def moveZero(self):
-      self.motor.move_home()
+      self.motor.actuator.move_home()
       print 'moving home'
     
     # function to apply a motion task 
@@ -200,10 +202,10 @@ class Interface(Frame):
 	print "one of the entry is empty"  
       else:
 	if self.motionType.get() == '1':
-	    self.motor.set_position(int(self.position.get()), None, 'absolute')
+	    self.motor.actuator.set_position(int(self.position.get()), None, 'absolute')
 	    print 'MA mode'
 	else:
-	    self.motor.set_position(int(self.position.get()), None, 'relative')
+	    self.motor.actuator.set_position(int(self.position.get()), None, 'relative')
 	    print 'MR mode'
     
       
@@ -212,7 +214,7 @@ class Interface(Frame):
       if self.speedVar.get() == "":
 	print 'choose velocity'
       else:
-	self.motor.set_speed(int(self.speedVar.get()))
+	self.motor.actuator.set_speed(int(self.speedVar.get()))
 	print('the motor goes up with speed=%i' % int(self.speedVar.get()))
     
     #function to recoil the motor on velocity mode
@@ -220,7 +222,7 @@ class Interface(Frame):
       if self.speedVar.get() == "":
 	print 'choose velocity'
       else:
-	self.motor.set_speed(-int(self.speedVar.get()))
+	self.motor.actuator.set_speed(-int(self.speedVar.get()))
 	print('the motor goes down with speed=%i' % int(self.speedVar.get()))
     
     # function to stop a motion
