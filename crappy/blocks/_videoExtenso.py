@@ -136,223 +136,233 @@ def barycenter_opencv(recv_):
 
 
 class VideoExtenso(MasterBlock): 
-	"""
-	Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
-	"""
-	def __init__(self,camera="ximea",numdevice=0,xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True,update_tresh=False,labels=['t(s)','Px','Py','Exx(%)','Eyy(%)'],security=False):
-		"""
-	Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. Can display the 
-	image with the center of the spots.
-	4 spots mode : deformations are evaluated on the distance between centers of spots.
-	2 spots mode : same, but deformation is only reliable on 1 axis.
-	1 spot : deformation is evaluated on the major/minor axis of a theorical ellipse 
-	around the spot, projected over axis x and y. Results are less precise if your
-	spot isn't big enough, but it is easier on smaller sample to only have 1 spot.
-	Note that if this block lose the spots, it will play a song in the '/home/' 
-	repository. You need a .wav sound, python-pyglet and python-glob. This can be 
-	usefull if you have a long test to do, as the script doesn't stop when losing 
-	spots. Not to mention it is fun.
-	Parameters
-	----------
-	camera : string, {"Ximea","Jai"},default=Ximea
-		See sensor.cameraSensor documentation.
-	numdevice : int, default=0
-		If you have multiple camera plugged, select the correct one.
-	xoffset: int, default =0
-		Offset on the x axis.
-	yoffset: int, default =0
-		Offset on the y axis.
-	width: int, default = 2048
-		Width of the image.
-	height: int, default = 2048
-		Height of the image.
-	white_spot : Boolean, default=True
-		Set to False if you have dark spots on a light surface.
-	display : Boolean, default=True
-		Set to False if you don't want to see the image with the spot detected.
-	update_tresh : Boolean, default=False
-		Set to True if you want to re-evaluate the threshold for every new image.
-		Updside is that it allows you to follow more easily your spots even if your 
-		light changes. Downside is that it will change the area and possibly the 
-		shape of the spots, wich may inscrease the noise on the deformation and 
-		artificially change its value. This is especially true with a single spot 
-		configuration.
-	labels : list of string, default = ['t(s)','Lx','Ly','Exx(%)','Eyy(%)']
-		Labels of your output. Order is important.
-	Returns
-	-------
-	dict : OrderedDict
-	time : float
-		Time of the measure, relative to t0.
-	Lx : float
-		Lenght (in pixels) of the spot.
-	Ly : float
-		Width (in pixels) of the spot.
-	Exx : float
-		Deformation = Lx/L0x
-	Eyy : float
-		Deformation = Lxy/L0y
-		"""
-		go=False
-		###################################################################### camera INIT with ZOI selection
-		self.white_spot=white_spot
-		self.labels=labels
-		self.display=display
-		self.border=4
-		self.numdevice=numdevice
-		self.update_tresh=update_tresh
-		self.security=security
-		self.save_folder=save_folder
-		if self.save_folder!=None:
-			if not os.path.exists(os.path.dirname(self.save_folder)):
-				# check if the directory exists, otherwise create it
-				os.makedirs(os.path.dirname(self.save_folder))
-		while go==False:
-                    try:
-                        # the following is to initialise the spot detection
-                        self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
-                        self.minx=self.camera.minx
-                        self.maxx=self.camera.maxx
-                        self.miny=self.camera.miny
-                        self.maxy=self.camera.maxy
-                        self.NumOfReg=self.camera.NumOfReg
-                        self.L0x = self.camera.L0x
-                        self.L0y = self.camera.L0y
-                        self.thresh=self.camera.thresh
-                        #print "tresh initial :", self.thresh
-                        self.Points_coordinates=self.camera.Points_coordinates
-                        self.width=self.camera.width
-                        self.height=self.camera.height
-                        self.xoffset=self.camera.xoffset
-                        self.yoffset=self.camera.yoffset
-                        self.exposure=self.camera.exposure
-                        self.gain=self.camera.gain
-                        if self.NumOfReg==4 or self.NumOfReg==2 or self.NumOfReg==1: 
-                            go=True
-                        else:	#	If detection goes wrong, start again, may not be usefull now ?
-                            print " Spots detected : ", self.NumOfReg	
-                    except KeyboardInterrupt:
-                        raise
-                    except Exception:
-                        raise
-		print "initialisation done, starting acquisition"
-			# following is for tests only
-			#self.save_directory="/home/biaxe/Bureau/Publi/"
-			#fo=open(self.save_directory+"L0.txt","a")		# "a" for appending
-			#fo.seek(0,2)		#place the "cursor" at the end of the file
-			#data_to_save="L0x : "+str(self.L0x)+"\n"+"Loy : "+str(self.L0y)
-			#fo.write(data_to_save)
-			#fo.close()
+    """
+    Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
+    """
+    def __init__(self, camera="ximea", numdevice=0, xoffset=0, yoffset=0, width=2048, height=2048, white_spot=True, display=True, update_tresh=False, labels=['t(s)','Px','Py','Exx(%)','Eyy(%)'], security=False, save_folder=None):
+        """
+        Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. Can display the 
+        image with the center of the spots.
 
-	def main(self):	
-		self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
-		
-		j=0
-		last_ttimer=time.time()
-		first_display=True
-		first=[True,True,True,True]
-		proc_bary={}
-		recv_={}
-		send_={}
-		image = self.camera.sensor.getImage() # eliminate the first frame, most likely corrupted
-		while True:
-			try:	
-				t2=time.time()
-				image = self.camera.sensor.getImage() # read a frame
-				if self.save_folder!=None:
-					image1=sitk.GetImageFromArray(image)
-					sitk.WriteImage(image1,self.save_folder+"img_videoExtenso%.5d.tiff" %j)
-				
-				for i in range(0,self.NumOfReg): # for each spot, calulate the news coordinates of the center, based on previous coordinate and border.
-					if first[i]:
-						recv_[i],send_[i]=Pipe()
-						proc_bary[i]=Process(target=barycenter_opencv,args=(recv_[i],))
-						proc_bary[i].start()
-						first[i]=False
+        4 spots mode : deformations are evaluated on the distance between centers of spots.
+        2 spots mode : same, but deformation is only reliable on 1 axis.
+        1 spot : deformation is evaluated on the major/minor axis of a theorical ellipse 
+        around the spot, projected over axis x and y. Results are less precise if your
+        spot isn't big enough, but it is easier on smaller sample to only have 1 spot.
 
-					send_[i].send([image[int(self.minx[i])-1:int(self.maxx[i])+1,int(self.miny[i])-1:int(self.maxy[i])+1],self.minx[i]-1,self.miny[i]-1, self.update_tresh, self.thresh, self.NumOfReg, self.border, self.white_spot])
-				try:
-                                    if self.NumOfReg==1:
-                                            self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i],Lx,Ly=send_[i].recv()[:]
-                                    else:
-                                            for i in range(0,self.NumOfReg):
-                                                    self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:] #self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]
-                                except Exception as e:
-                                    print e
-                                    raise
-				minx_=self.minx.min()
-				miny_=self.miny.min()
-				maxx_=self.maxx.max()
-				maxy_=self.maxy.max()
-				if self.NumOfReg ==4 or self.NumOfReg ==2:
-					Lx=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
-					Ly=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
-					Dx=100.*((Lx)/self.L0x-1.)
-					Dy=100.*((Ly)/self.L0y-1.)
-				elif self.NumOfReg ==1:
-					Dy=100.*((Ly)/self.L0y-1.)
-					Dx=100.*((Lx)/self.L0x-1.)
-				Array=OrderedDict(zip(self.labels,[time.time()-self.t0,str(self.Points_coordinates[:,0]),str(self.Points_coordinates[:,1]),Dx,Dy]))
-				try:
-					for output in self.outputs:
-						output.send(Array)
-				except TimeoutError:
-					raise
-				except AttributeError: #if no outputs
-					pass	
-				self.Points_coordinates[:,1]-=miny_ # go back to local repere 
-				self.Points_coordinates[:,0]-=minx_
-				if self.display:
-					if first_display:
-						plot_pipe_recv,self.plot_pipe_send=Pipe()
-						proc=Process(target=plotter,args=(plot_pipe_recv,))
-						proc.start()
-						first_display=False
-                                                self.plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_], self.white_spot])
-					if j%90==0 and j>0: # every 80 round, send an image to the plot function below, that display the cropped image, LX, Ly and the position of the area around the spots
-						self.plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_], self.white_spot])
-				
-				if j%100==0 and j>0:
-					t_now=time.time()
-					stdout.write("\rFPS: %2.2f" % (100/(t_now-last_ttimer)))
-					stdout.flush()
-					last_ttimer=t_now
-				j+=1
-			except ValueError: # if lost spots in barycenter
-				try:
-					song_list=glob.glob('/home/*.wav')
-					song = pyglet.media.load(random.choice(song_list))
-					song.play()
-					pyglet.clock.schedule_once(lambda x:pyglet.app.exit(), 10) # stop music after 10 sec
-					pyglet.app.run()
-				except Exception as e:
-					print "No music because : ", e
-				if self.security:
-					print 'Exception Video Extenso Security'					
-					try:
-						for output in self.outputs:
-							output.send("error")
-					except TimeoutError:
-						raise
-					except AttributeError: #if no outputs
-						pass
-				raise Exception("Spots lost")
-                        except KeyboardInterrupt:
-                            print 'KeyboardInterrupt\n'
-                            break
-			except (Exception) as e:
-				print "Exception in videoextenso : ",e
-				if self.display:
-					proc.terminate()
-				for i in range(0,self.NumOfReg):
-					proc_bary[i].terminate()
-				if self.security:
-					print 'Exception Video Extenso Security PAS OK'					
-					try:
-						for output in self.outputs:
-							output.send("error")
-					except TimeoutError:
-						raise
-					except AttributeError: #if no outputs
-						pass
-				raise
+        Note that if this block lose the spots, it will play a song in the '/home/' 
+        repository. You need a .wav sound, python-pyglet and python-glob. This can be 
+        usefull if you have a long test to do, as the script doesn't stop when losing 
+        spots. Not to mention it is fun.
+
+        Parameters
+        ----------
+        camera : string, {"Ximea","Jai"},default=Ximea
+                See sensor.cameraSensor documentation.
+        numdevice : int, default=0
+                If you have multiple camera plugged, select the correct one.
+        xoffset: int, default =0
+                Offset on the x axis.
+        yoffset: int, default =0
+                Offset on the y axis.
+        width: int, default = 2048
+                Width of the image.
+        height: int, default = 2048
+                Height of the image.
+        white_spot : Boolean, default=True
+                Set to False if you have dark spots on a light surface.
+        display : Boolean, default=True
+                Set to False if you don't want to see the image with the spot detected.
+        update_tresh : Boolean, default=False
+                Set to True if you want to re-evaluate the threshold for every new image.
+                Updside is that it allows you to follow more easily your spots even if your 
+                light changes. Downside is that it will change the area and possibly the 
+                shape of the spots, wich may inscrease the noise on the deformation and 
+                artificially change its value. This is especially true with a single spot 
+                configuration.
+        labels : list of string, default = ['t(s)','Px','Py','Exx(%)','Eyy(%)']
+                Labels of your output. Order is important.
+        security : bool, default = False
+                If True, send a kill pill for other processes to stop when spots are losts.
+        save_folder : str or None (default)
+                If a path is definied, will save the images in this folder. If None, no saving
+
+        Returns
+        -------
+        dict : OrderedDict
+
+
+                time : float
+                        Time of the measure, relative to t0.
+                Lx : float
+                        Lenght (in pixels) of the spot.
+                Ly : float
+                        Width (in pixels) of the spot.
+                Exx : float
+                        Deformation = Lx/L0x
+                Eyy : float
+                        Deformation = Lxy/L0y
+        """
+        go=False
+        ###################################################################### camera INIT with ZOI selection
+        self.white_spot=white_spot
+        self.labels=labels
+        self.display=display
+        self.border=4
+        self.numdevice=numdevice
+        self.update_tresh=update_tresh
+        self.security=security
+        self.save_folder=save_folder
+        if self.save_folder!=None:
+                if not os.path.exists(os.path.dirname(self.save_folder)):
+                        # check if the directory exists, otherwise create it
+                        os.makedirs(os.path.dirname(self.save_folder))
+        while go==False:
+            try:
+                # the following is to initialise the spot detection
+                self.camera=tc(camera,self.numdevice,{'enabled':True, 'white_spot':white_spot, 'border':self.border,'xoffset':xoffset,'yoffset':yoffset,'width':width,'height':height})
+                self.minx=self.camera.minx
+                self.maxx=self.camera.maxx
+                self.miny=self.camera.miny
+                self.maxy=self.camera.maxy
+                self.NumOfReg=self.camera.NumOfReg
+                self.L0x = self.camera.L0x
+                self.L0y = self.camera.L0y
+                self.thresh=self.camera.thresh
+                #print "tresh initial :", self.thresh
+                self.Points_coordinates=self.camera.Points_coordinates
+                self.width=self.camera.width
+                self.height=self.camera.height
+                self.xoffset=self.camera.xoffset
+                self.yoffset=self.camera.yoffset
+                self.exposure=self.camera.exposure
+                self.gain=self.camera.gain
+                if self.NumOfReg==4 or self.NumOfReg==2 or self.NumOfReg==1: 
+                    go=True
+                else: #If detection goes wrong, start again, may not be usefull now ?
+                    print " Spots detected : ", self.NumOfReg	
+            except KeyboardInterrupt:
+                raise
+            except Exception:
+                raise
+        print "initialisation done, starting acquisition"
+                # following is for tests only
+                #self.save_directory="/home/biaxe/Bureau/Publi/"
+                #fo=open(self.save_directory+"L0.txt","a")		# "a" for appending
+                #fo.seek(0,2)		#place the "cursor" at the end of the file
+                #data_to_save="L0x : "+str(self.L0x)+"\n"+"Loy : "+str(self.L0y)
+                #fo.write(data_to_save)
+                #fo.close()
+
+    def main(self):	
+        self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
+
+        j=0
+        last_ttimer=time.time()
+        first_display=True
+        first=[True,True,True,True]
+        proc_bary={}
+        recv_={}
+        send_={}
+        image = self.camera.sensor.getImage() # eliminate the first frame, most likely corrupted
+        while True:
+            try:	
+                t2=time.time()
+                image = self.camera.sensor.getImage() # read a frame
+                if self.save_folder!=None:
+                        image1=sitk.GetImageFromArray(image)
+                        sitk.WriteImage(image1,self.save_folder+"img_videoExtenso%.5d.tiff" %j)
+                
+                for i in range(0,self.NumOfReg): # for each spot, calulate the news coordinates of the center, based on previous coordinate and border.
+                        if first[i]:
+                                recv_[i],send_[i]=Pipe()
+                                proc_bary[i]=Process(target=barycenter_opencv,args=(recv_[i],))
+                                proc_bary[i].start()
+                                first[i]=False
+
+                        send_[i].send([image[int(self.minx[i])-1:int(self.maxx[i])+1,int(self.miny[i])-1:int(self.maxy[i])+1],self.minx[i]-1,self.miny[i]-1, self.update_tresh, self.thresh, self.NumOfReg, self.border, self.white_spot])
+                try:
+                    if self.NumOfReg==1:
+                            self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i],Lx,Ly=send_[i].recv()[:]
+                    else:
+                            for i in range(0,self.NumOfReg):
+                                    self.Points_coordinates[i,0],self.Points_coordinates[i,1],self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]=send_[i].recv()[:] #self.minx[i],self.miny[i],self.maxx[i],self.maxy[i]
+                except Exception as e:
+                    print e
+                    raise
+                minx_=self.minx.min()
+                miny_=self.miny.min()
+                maxx_=self.maxx.max()
+                maxy_=self.maxy.max()
+                if self.NumOfReg ==4 or self.NumOfReg ==2:
+                        Lx=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
+                        Ly=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
+                        Dx=100.*((Lx)/self.L0x-1.)
+                        Dy=100.*((Ly)/self.L0y-1.)
+                elif self.NumOfReg ==1:
+                        Dy=100.*((Ly)/self.L0y-1.)
+                        Dx=100.*((Lx)/self.L0x-1.)
+                Array=OrderedDict(zip(self.labels,[time.time()-self.t0,str(self.Points_coordinates[:,0]),str(self.Points_coordinates[:,1]),Dx,Dy]))
+                try:
+                        for output in self.outputs:
+                                output.send(Array)
+                except TimeoutError:
+                        raise
+                except AttributeError: #if no outputs
+                        pass	
+                self.Points_coordinates[:,1]-=miny_ # go back to local repere 
+                self.Points_coordinates[:,0]-=minx_
+                if self.display:
+                        if first_display:
+                                plot_pipe_recv,self.plot_pipe_send=Pipe()
+                                proc=Process(target=plotter,args=(plot_pipe_recv,))
+                                proc.start()
+                                first_display=False
+                                self.plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_], self.white_spot])
+                        if j%90==0 and j>0: # every 80 round, send an image to the plot function below, that display the cropped image, LX, Ly and the position of the area around the spots
+                                self.plot_pipe_send.send([self.NumOfReg,self.minx-minx_,self.maxx-minx_,self.miny-miny_,self.maxy-miny_,self.Points_coordinates,self.L0x,self.L0y,image[minx_:maxx_,miny_:maxy_], self.white_spot])
+                
+                if j%100==0 and j>0:
+                        t_now=time.time()
+                        stdout.write("\rFPS: %2.2f" % (100/(t_now-last_ttimer)))
+                        stdout.flush()
+                        last_ttimer=t_now
+                j+=1
+            except ValueError: # if lost spots in barycenter
+                try:
+                        song_list=glob.glob('/home/*.wav')
+                        song = pyglet.media.load(random.choice(song_list))
+                        song.play()
+                        pyglet.clock.schedule_once(lambda x:pyglet.app.exit(), 10) # stop music after 10 sec
+                        pyglet.app.run()
+                except Exception as e:
+                        print "No music because : ", e
+                if self.security:
+                        print 'Exception Video Extenso Security'					
+                        try:
+                                for output in self.outputs:
+                                        output.send("error")
+                        except TimeoutError:
+                                raise
+                        except AttributeError: #if no outputs
+                                pass
+                raise Exception("Spots lost")
+            except KeyboardInterrupt:
+                print 'KeyboardInterrupt\n'
+                break
+            except (Exception) as e:
+                print "Exception in videoextenso : ",e
+                if self.display:
+                        proc.terminate()
+                for i in range(0,self.NumOfReg):
+                        proc_bary[i].terminate()
+                if self.security:
+                        print 'Exception Video Extenso Security PAS OK'					
+                        try:
+                                for output in self.outputs:
+                                        output.send("error")
+                        except TimeoutError:
+                                raise
+                        except AttributeError: #if no outputs
+                                pass
+                raise
