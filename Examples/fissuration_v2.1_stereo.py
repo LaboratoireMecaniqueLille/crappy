@@ -177,7 +177,7 @@ try:
 	compacter_tension=crappy.blocks.Compacter(5)
 	graph_tension=crappy.blocks.Grapher("dynamic",('t_agilent(s)','tension(V)')) #,('t(s)','tension(V)')
 	save_tension=crappy.blocks.Saver("/home/essais-2015-3/Bureau/Jerome/stereo/tension_coeff.txt")
-	pi=crappy.blocks.CommandPI(pi_actuator, signal_label='disp', initial_command=position_initiale)
+	pi=crappy.blocks.CommandPI(pi_actuator, signal_label='disp')
 
 	#print "2"
 	effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','dep(mm)','F(N)'],freq=200)

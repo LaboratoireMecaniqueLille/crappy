@@ -5,6 +5,7 @@ import numpy as np
 np.set_printoptions(threshold='nan', linewidth=500)
 import time
 #import pandas as pd
+import os
 import cv2
 from ..links._link import TimeoutError
 from ..technical import TechnicalCamera as tc
@@ -25,7 +26,7 @@ try:
 	import random
 except ImportError as i:
 	print "WARNING: ", i
-
+	
 def plotter(plot_pipe_recv):
 	data=plot_pipe_recv.recv() # receiving data
 	NumOfReg=data[0]
@@ -201,6 +202,11 @@ class VideoExtenso(MasterBlock):
 		self.numdevice=numdevice
 		self.update_tresh=update_tresh
 		self.security=security
+		self.save_folder=save_folder
+		if self.save_folder!=None:
+			if not os.path.exists(os.path.dirname(self.save_folder)):
+				# check if the directory exists, otherwise create it
+				os.makedirs(os.path.dirname(self.save_folder))
 		while go==False:
                     try:
                         # the following is to initialise the spot detection
@@ -253,6 +259,10 @@ class VideoExtenso(MasterBlock):
 			try:	
 				t2=time.time()
 				image = self.camera.sensor.getImage() # read a frame
+				if self.save_folder!=None:
+					image1=sitk.GetImageFromArray(image)
+					sitk.WriteImage(image1,self.save_folder+"img_videoExtenso%.5d.tiff" %j)
+				
 				for i in range(0,self.NumOfReg): # for each spot, calulate the news coordinates of the center, based on previous coordinate and border.
 					if first[i]:
 						recv_[i],send_[i]=Pipe()

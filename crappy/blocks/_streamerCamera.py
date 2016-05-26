@@ -71,6 +71,7 @@ height: int, default = 2048
 			trigger="internal"
 		timer=time.time()
 		try:
+			print "start :", time.time()-self.t0
 			while True:
 				if trigger=="internal":
 					if self.freq!=None:

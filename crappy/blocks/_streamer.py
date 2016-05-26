@@ -8,7 +8,7 @@ import os
 
 class Streamer(MasterBlock):
 	"""
-Send a fake stream of data.
+Send a stream of data.
 	"""
 	def __init__(self,sensor=None,labels=['t(s)','signal']):
 		"""
@@ -40,7 +40,7 @@ labels : list of str, default = ['t(s)','signal']
 			print "device openend"
 		try:
 			while True:
-				if self.sensor==None:
+				if self.sensor==None: # for testing
 					time.sleep(0.001)
 					try:
 						for output in self.outputs:
@@ -73,5 +73,6 @@ labels : list of str, default = ['t(s)','signal']
 					except AttributeError: #if no outputs
 						pass
 		except (Exception,KeyboardInterrupt) as e:
-			print "Exception in streamer: ",
-			self.sensor.close()
+			print "Exception in streamer: ", e
+			if self.sensor!=None:
+				self.sensor.close()

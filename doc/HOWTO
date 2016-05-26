@@ -1,0 +1,4 @@
+make clean & sphinx-apidoc -eP -o /media/corentin/data/Git/crappy/doc/source/ /media/corentin/data/Git/crappy/crappy & make html
+
+cd  /media/corentin/data/Git/crappy/ && sudo python setup.py install && cd /media/corentin/data/Git/crappy/doc/ && make clean && make html
+
