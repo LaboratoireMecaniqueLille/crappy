@@ -128,8 +128,10 @@ class Ximea(cameraSensor.CameraSensor):
 			self.quit=True
 
 		try:
-			data = frame.get('data')
-			if ret==1:
+			#stdout.write("\rret = {}".format(ret))
+			#stdout.flush()
+			if ret==True:
+                                data = frame.get('data')
 				return data
 
 			# if ret==1:
@@ -139,7 +141,7 @@ class Ximea(cameraSensor.CameraSensor):
 
 			elif not(self.quit):
 				print "restarting camera..."
-				time.sleep(0.5)
+				time.sleep(2)
 				#expo, wi, he, xoff,yoff,ga=self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain
 				#self.reset()
 				#self.__init__()

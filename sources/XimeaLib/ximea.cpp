@@ -113,6 +113,19 @@ bool CaptureCAM_XIMEA::open( int wIndex )
 
     if(numDevices == 0)
         return false;
+    
+    DWORD value_size = 1024;
+    char value[value_size] = "";
+    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_SN, value, value_size);
+    cout << "XI_PRM_DEVICE_SN: " << value << endl;
+    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_NAME, value, value_size);
+    cout << "XI_PRM_DEVICE_NAME: " << value << endl;
+    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_INSTANCE_PATH, value, value_size);
+    cout << "XI_PRM_DEVICE_INSTANCE_PATH: " << value << endl;
+    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_LOCATION_PATH, value, value_size);
+    cout << "XI_PRM_DEVICE_LOCATION_PATH: " << value << endl;
+    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_TYPE, value, value_size);
+    cout << "XI_PRM_DEVICE_TYPE: " << value << endl;
 
     if((mvret = xiOpenDevice( wIndex, &hmv)) != XI_OK)
     {
