@@ -1,21 +1,21 @@
 #The file is to be used for self-heating measurement. As the control off the machine is not set, you can use it on any test (traction, torsion, TTC).
 # For the Labjack, it is recommended to either wait 3-4H before strating the test, or use some hardware to remove the cold-junction-issue.
 # it is also recommended on the Labjck to use a resolution adapted to yur measure : up to 12 if you need precision, 8/9 if you need speed.
-# WARNING : This should also be modified to keep (and not replace) the tension value aside the evaluated temperature, so you can modify the calibration law in post-treatement. (in condition_calib class)
+
 
 import time
 import numpy as np
 import crappy
 crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
-class condition_sub(crappy.links.MetaCondition):
-	def __init__(self):
-		pass
+#class condition_sub(crappy.links.MetaCondition):
+	#def __init__(self):
+		#pass
 	
-	def evaluate(self,value):
-		calc=value['T']-(value['T3']+value['T2'])/2.
-		value.update({'T_mean':calc})
-		return value
+	#def evaluate(self,value):
+		#calc=value['T']-(value['T3']+value['T2'])/2.
+		#value.update({'T_mean':calc})
+		#return value
 	
 class condition_calib(crappy.links.MetaCondition):
 	def __init__(self):
@@ -28,9 +28,9 @@ class condition_calib(crappy.links.MetaCondition):
 		self.T3_init_FIFO=[]
 		self.i=0
 	def evaluate(self,value):
-		T=np.polyval(self.coeff_T2,value.pop('T'))
-		T2=np.polyval(self.coeff_T2,value.pop('T2'))
-		T3=np.polyval(self.coeff_T3,value.pop('T3'))
+		T=np.polyval(self.coeff_T2,value['T'])
+		T2=np.polyval(self.coeff_T2,value['T2'])
+		T3=np.polyval(self.coeff_T3,value['T3'])
 		#try:
 			#T_filtered=np.polyval(self.coeff_T,value.pop('T_filtered'))
 		#except:
@@ -46,7 +46,7 @@ class condition_calib(crappy.links.MetaCondition):
 			#self.T_filtered_init=np.mean(self.T_filtered_init_FIFO)
 			self.i+=1
 		calc=(T-self.T_init)-((T3-self.T3_init)+(T2-self.T2_init))/2.
-		value.update({'T_mean':calc,'T':T-self.T_init,'T2':T2-self.T2_init,'T3':T3-self.T3_init})
+		value.update({'T_mean':calc,'T_cal':T-self.T_init,'T2_cal':T2-self.T2_init,'T3_cal':T3-self.T3_init})
 		return value
 
 
@@ -87,7 +87,7 @@ try:
 	#t,T1=sensor.getData(1)
 	#t,T2=sensor.getData(2)
 	#sensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1,2],gain=[1,1,1],offset=[-T,-T1,-T2]) 
-	sensor=crappy.sensor.LabJackSensor(channels=[0,1,2],gain=[1,1,1],resolution=9,chan_range=0.01,mode="single",scanRate=100,scansPerRead=1) # dist is multiplied by 2 to be correct
+	sensor=crappy.sensor.LabJackSensor(channels=[0,1,2],gain=[1,1,1],resolution=12,chan_range=0.01,mode="single") # dist is multiplied by 2 to be correct
 	#instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10000]) # 10 times the gain on the machine if you go through an usb dux sigma
 	#cmd_traction=crappy.actuator.LabJackActuator(channel="TDAC2", gain=1, offset=0)
 	#cmd_traction2=crappy.actuator.LabJackActuator(channel="TDAC3", gain=1, offset=0)
@@ -112,13 +112,13 @@ try:
 											#,send_freq=400,repeat=False,labels=['t(s)','signal'])
 	
 	#send_output=crappy.blocks.CommandComedi([cmd_traction,cmd_traction2])
-	compacter=crappy.blocks.Compacter(100)
+	compacter=crappy.blocks.Compacter(2)
 	compacter_effort=crappy.blocks.Compacter(2000)
-	save=crappy.blocks.Saver("/home/corentin/Bureau/thermocouples/torsion_2.txt")
-	graph=crappy.blocks.Grapher("dynamic",('t(s)','T'),('t(s)','T2'),('t(s)','T3')) #,('t(s)','T_mean')
+	save=crappy.blocks.Saver("/home/corentin/Bureau/torsion_2.txt")
+	graph=crappy.blocks.Grapher("dynamic",('t(s)','T_cal'),('t(s)','T2_cal'),('t(s)','T3_cal'),('t(s)','T_mean')) #,('t(s)','T_mean')
 	graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','C(Nm)'))
 	graph_effort2=crappy.blocks.Grapher("dynamic",('t(s)','tau(Pa)'))
-	save_effort=crappy.blocks.Saver("/home/corentin/Bureau/thermocouples/torsion_2_effort.txt")
+	save_effort=crappy.blocks.Saver("/home/corentin/Bureau/torsion_2_effort.txt")
 	#graph2=crappy.blocks.Grapher("dynamic",('t(s)','ang(deg)'),('t(s)','dep(mm)'))
 	#graph3=crappy.blocks.Grapher("dynamic",(0,4))
 	
