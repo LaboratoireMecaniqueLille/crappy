@@ -16,7 +16,7 @@ class MultiPath(MasterBlock):
 	Children class of MasterBlock. Use it for traction-torsion testing.
 	"""
 	def __init__(self,path=None,send_freq=400,dmin=22,dmax=25,\
-			  default_G=71*10**9,default_E=196*10**9,repeat=False):
+			  default_G=71*10**9,default_E=196*10**9,repeat=False,normal_speed=6.6*10**(-4)):
 		"""
 This block is specific for use in traction-torsion testing. You need 
 to define a path to follow, with the available waveform. Unlike the 
@@ -139,7 +139,7 @@ The requiered informations depend on the type of waveform you need.
 		self.offset=5*10**-6#5*10**(-6)
 		self.R_eps=0.0001 # in (0.00005)
 		self.D_eps=0.0005 # in  (0.00055)
-		self.normal_speed=6.6*10**(-4) #in /s
+		self.normal_speed=normal_speed #in /s
 		self.detection_speed=6.6*10**(-5) # in /s
 		self.speed=self.normal_speed
 		self.plastic_offset=2*10**(-5)

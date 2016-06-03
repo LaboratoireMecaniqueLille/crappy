@@ -85,9 +85,11 @@ if __name__ == '__main__':
 												#{"waveform":"sablier","gain":0.0005,"cycles":1,"offset":[-0.0002,0.0002]},
 												#{"waveform":"goto","position":[0,0]}
 		multipath=crappy.blocks.MultiPath(path=[{"waveform":"circle","gain":0.0006,"cycles":200,"offset":[-0.0006,0]},
+												{"waveform":"detection","cycles":1},
+												{"waveform":"circle","gain":0.0008,"cycles":200,"offset":[-0.0006,0]},
 												#{"waveform":"goto","mode":"plastic_def","target":0.002,"position":[-10,0]}
 												{"waveform":"detection","cycles":1}],
-												send_freq=200,dmin=22,dmax=25,repeat=False)
+												send_freq=200,dmin=22,dmax=25,repeat=False,normal_speed=6.6*10**(-4))
 		
 		ttc=crappy.blocks.CommandComedi([cmd_traction,cmd_torsion],signal_label=['def(%)','dist(deg)'])
 		#torsion=crappy.blocks.CommandComedi([cmd_torsion])
