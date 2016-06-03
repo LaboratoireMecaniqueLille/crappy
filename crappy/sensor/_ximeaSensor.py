@@ -7,28 +7,14 @@ from numpy.ctypeslib import ndpointer
 from os import path
 here = path.abspath(path.dirname(__file__))
 import ximeaModule as xi
-# =======
-# #import numpy as np
-# #import ctypes
-# #import numpy as np
-# #from numpy.ctypeslib import ndpointer
-# #from os import path
-# #here = path.abspath(path.dirname(__file__))
-# #import ximeaModule as xi
 
-
-# #try :
-# import cv2 as xi
-# #except ImportError: 
-# 	#print "WARNING : OpenCV2 is not installed, some functionalities may crash"
-# >>>>>>> master
 import time
 import platform
 from sys import stdout
     
 def resettable(f, *args, **kwargs):
     """
-    Decorator for resetting the camera device. Not working yet.
+    Decorator for resetting the camera device. Not working yet on Windows.
     """
     import copy
     def __init_and_copy__(self, *args, **kwargs):
@@ -51,7 +37,7 @@ class Ximea(cameraSensor.CameraSensor):
 	
 	Parameters
 	----------
-	numdevice : int, default = 0
+	numdevice : int or string (device path), default = 0
 		Number of your device.
 	framespersec : int or float or None, default = None
 		The wanted frequency for grabbing frame. DOESN'T WORK at the moment.
@@ -81,8 +67,6 @@ class Ximea(cameraSensor.CameraSensor):
 		"""
 		This method opens the ximea device and return a camera object.
 		"""
-		#Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
-		#self.sensor=_ximeaSensor.XimeaSensor(self.numdevice, self.exposure, self.gain, self.width, self.height, self.xoffset, self.yoffset, self.framespersec, self.external_trigger, self.data_format)
 		if(platform.system()=="Linux"):
 			nd, fps, et, df = self.numdevice,self.FPS,self.external_trigger,self.data_format
 			self.reset()
@@ -90,8 +74,10 @@ class Ximea(cameraSensor.CameraSensor):
 		
 		GLOBAL_ENABLE_FLAG = True
 		
-		#self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
-		self.ximea = xi.VideoCapture(self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+		if type(self.numdevice) == str:
+                    self.ximea = xi.VideoCapture(device_path=self.numdevice) # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1 
+                else:
+                    self.ximea = xi.VideoCapture(device=self.numdevice) 
 		if self.external_trigger==True:	# this condition activate the trigger mode
                     self.ximea.addTrigger(1000000, True)
 		self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT,self.data_format) #0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW
@@ -101,12 +87,6 @@ class Ximea(cameraSensor.CameraSensor):
 			self.ximea.set(xi.CAP_PROP_XI_DATA_PACKING,1)
 		
 		self.ximea.set(xi.CAP_PROP_XI_AEAG,0)#auto gain auto exposure
-		#self.cam.set(cv2.CAP_PROP_FRAME_WIDTH,self.width);	# doesn't work for this one
-		#self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT,self.height); # reducing this one allows one to increase the FPS
-		
-		#self.cam.set(cv2.CAP_PROP_EXPOSURE,self.exposure) # setting up exposure
-		#self.cam.set(cv2.CAP_PROP_GAIN,self.gain) #setting up gain
-		#ret, frame= self.cam.read()
 		self.width = width
 		self.height = height
 		self.xoffset = xoffset
@@ -121,6 +101,7 @@ class Ximea(cameraSensor.CameraSensor):
 		"""
 		self.nbi = self.nbi+1
 		try:
+			#print self.nbi
 			ret, frame = self.ximea.read()
 		except KeyboardInterrupt:
 			print "KeyboardInterrupt, closing camera ..."
@@ -128,30 +109,19 @@ class Ximea(cameraSensor.CameraSensor):
 			self.quit=True
 
 		try:
-			#stdout.write("\rret = {}".format(ret))
-			#stdout.flush()
 			if ret==True:
                                 data = frame.get('data')
 				return data
 
-			# if ret==1:
-			# 	#print "sending frame"
-			# 	#return frame.get('data')
-			# 	return frame
-
 			elif not(self.quit):
 				print "restarting camera..."
 				time.sleep(2)
-				#expo, wi, he, xoff,yoff,ga=self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain
-				#self.reset()
-				#self.__init__()
-				#self.new(expo, wi, he, xoff,yoff,ga) # Reset the camera instance
 				self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain) # Reset the camera instance
 				return self.getImage()
 		except UnboundLocalError: # if ret doesn't exist, because of KeyboardInterrupt
 			print "ximea quitting, probably because of KeyBoardInterrupt"
 			pass
-		
+           
 	def close(self):
 		"""
 		This method close properly the frame grabber.

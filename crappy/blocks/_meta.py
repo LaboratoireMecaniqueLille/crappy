@@ -56,15 +56,18 @@ stop()
 		try:
 			self.proc=Process(target=main_wrapper, args=(self.main,))
 			self.proc.start()
+		
+		except KeyboardInterrupt:
+			print 'KeyboardInterrupt'
+			self.proc.terminate()
+			self.proc.join()
+		
 		except Exception as e:
 			print "Exception in MasterBlock: ", e
 			if(platform.system()=="Linux"):
 				self.proc.terminate()
 
 			raise #raise the error to the next level for global shutdown
-		except KeyboardInterrupt:
-			print 'KeyboardInterrupt'
-			pass
 	#def join(self):
 		#self.proc.join()
 	def stop(self):

@@ -22,7 +22,7 @@ struct parsed_options
 	int verbose;
 	int n_chan;
 	int n_scan;
-	double freq;
+	float freq;
 };
 
 extern void init_parsed_options(struct parsed_options *options);

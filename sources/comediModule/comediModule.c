@@ -4,154 +4,164 @@
 static PyObject*
 comediModule(PyObject* self, PyObject* args)
 {
-	char *device;
-	int subdevice;
-	int channel;
-	int range;
-	int aref;
-	int n_chan;
-	int n_scan;
-	float freq;
+    char *device;
+    int subdevice;
+    int channel;
+    int range;
+    int aref;
+    int n_chan;
+    int n_scan;
+    float freq;
     if (!PyArg_ParseTuple(args, "siiiiiif", &device, &subdevice, &channel, &range, &aref, &n_chan, &n_scan, &freq))
         return NULL;
     
-	comedi_t *dev;
-	comedi_cmd c,*cmd=&c;
-	int ret;
-	int total=0;
-	int i;
-	struct timeval start,end;
-	int subdev_flags;
-	lsampl_t raw;
-	struct parsed_options options;
-
-	init_parsed_options(&options);
-	options.filename = device;
-	options.subdevice = subdevice;
-	options.channel = channel;
-	options.range = range;
-	options.aref = aref;
-	options.n_chan = n_chan;
-	options.n_scan = n_scan;
-	options.freq = freq;
-
-	/* open the device */
-	dev = comedi_open(options.filename);
-	if(!dev){
-		comedi_perror(options.filename);
-		exit(1);
-	}
-
-	// Print numbers for clipped inputs
-	comedi_set_global_oor_behavior(COMEDI_OOR_NUMBER);
-
-	/* Set up channel list */
-	for(i = 0; i < options.n_chan; i++){
-		chanlist[i] = CR_PACK(options.channel + i, options.range, options.aref);
-		range_info[i] = comedi_get_range(dev, options.subdevice, options.channel, options.range);
-		maxdata[i] = comedi_get_maxdata(dev, options.subdevice, options.channel);
-	}
-	prepare_cmd_lib(dev, options.subdevice, options.n_scan, options.n_chan, 1e9 / options.freq, cmd);
-
-	fprintf(stderr, "command before testing:\n");
-	dump_cmd(stderr, cmd);
-
-	ret = comedi_command_test(dev, cmd);
-	if(ret < 0){
-		comedi_perror("comedi_command_test");
-		if(errno == EIO){
-			fprintf(stderr,"Ummm... this subdevice doesn't support commands\n");
-		}
-		exit(1);
-	}
-	fprintf(stderr,"first test returned %d (%s)\n", ret,
-			cmdtest_messages[ret]);
-	dump_cmd(stderr, cmd);
-
-	ret = comedi_command_test(dev, cmd);
-	if(ret < 0){
-		comedi_perror("comedi_command_test");
-		exit(1);
-	}
-	fprintf(stderr,"second test returned %d (%s)\n", ret,
-			cmdtest_messages[ret]);
-	if(ret!=0){
-		dump_cmd(stderr, cmd);
-		fprintf(stderr, "Error preparing command\n");
-		exit(1);
-	}
-
-	/* this is only for informational purposes */
-	gettimeofday(&start, NULL);
-	fprintf(stderr,"start time: %ld.%06ld\n", start.tv_sec, start.tv_usec);
-
-	/* start the command */
-	ret = comedi_command(dev, cmd);
-	if(ret < 0){
-		comedi_perror("comedi_command");
-		exit(1);
-	}
-	subdev_flags = comedi_get_subdevice_flags(dev, options.subdevice);
-
-	const int ndim = 2;
-	npy_intp nd[2] = {n_scan, n_chan};
-	
-	PyObject *myarray;
-	double *array_buffer;
-	myarray = PyArray_SimpleNew(ndim, nd, NPY_DOUBLE);
-	Py_INCREF(myarray);
-	array_buffer = (double *)PyArray_DATA(myarray);
-	
-	while(1){
-		ret = read(comedi_fileno(dev),buf,BUFSZ);
-		if(ret < 0){
-			/* some error occurred */
-			perror("read");
-			break;
-		}else if(ret == 0){
-			/* reached stop condition */
-			break;
-		}else{
-			static int col = 0;
-			double j = 0.0;
-			
-			int bytes_per_sample;
-			total += ret;
-			if(options.verbose)fprintf(stderr, "read %d %d\n", ret, total);
-			if(subdev_flags & SDF_LSAMPL)
-				bytes_per_sample = sizeof(lsampl_t);
-			else
-				bytes_per_sample = sizeof(sampl_t);
-			for(i = 0; i < ret / bytes_per_sample; i++){
-				if(subdev_flags & SDF_LSAMPL) {
-					raw = ((lsampl_t *)buf)[i];
-				} else {
-					raw = ((sampl_t *)buf)[i];
-				}
-				*array_buffer++ = print_datum(raw, col, 1);
-				col++;
-				if(col == options.n_chan){
-					col=0;
-					j++;
-					printf("\n");
-				}
-			}
-		}
-	}
-
-	/* this is only for informational purposes */
-	gettimeofday(&end,NULL);
-	fprintf(stderr,"end time: %ld.%06ld\n", end.tv_sec, end.tv_usec);
-
-	end.tv_sec -= start.tv_sec;
-	if(end.tv_usec < start.tv_usec){
-		end.tv_sec--;
-		end.tv_usec += 1000000;
-	}
-	end.tv_usec -= start.tv_usec;
-	fprintf(stderr,"time: %ld.%06ld\n", end.tv_sec, end.tv_usec);
+    comedi_t *dev;
+    comedi_cmd c,*cmd=&c;
+    int ret;
+    int total=0;
+    int i;
+    struct timeval start,end;
+    int subdev_flags;
+    lsampl_t raw;
+    struct parsed_options options;
+    printf("TEST\n");
+    printf("filename: %s, subdevice: %i, channel: %i, range: %i, aref: %i, n_chan: %i, n_scan: %i, freq: %f. \n", device, subdevice, channel, range, aref, n_chan, n_scan, freq);   
     
-	return myarray;
+    
+    
+    printf("filename: %s, value: %d, subdevice: %i, channel: %i, aref: %i, range: %i, physical: %i, verbose: %i, n_chan: %i, n_scan: %i, freq: %d. \n", options.filename, options.value, options.subdevice, options.channel, options.aref, options.range, options.physical, options.verbose, options.n_chan, options.n_scan, options.freq);   
+    init_parsed_options(&options);
+    
+    options.filename = device;
+    options.subdevice = subdevice;
+    options.channel = channel;
+    options.range = range;
+    options.aref = aref;
+    options.n_chan = n_chan;
+    options.n_scan = n_scan;
+    options.freq = freq;
+    
+    printf("filename: %s, value: %d, subdevice: %i, channel: %i, aref: %i, range: %i, physical: %i, verbose: %i, n_chan: %i, n_scan: %i, freq: %d. \n", options.filename, options.value, options.subdevice, options.channel, options.aref, options.range, options.physical, options.verbose, options.n_chan, options.n_scan, options.freq);
+    
+//         printf("TEST");
+    /* open the device */
+    dev = comedi_open(options.filename);
+    if(!dev){
+            comedi_perror(options.filename);
+            exit(1);
+    }
+
+    // Print numbers for clipped inputs
+    comedi_set_global_oor_behavior(COMEDI_OOR_NUMBER);
+
+    /* Set up channel list */
+    for(i = 0; i < options.n_chan; i++){
+            chanlist[i] = CR_PACK(options.channel + i, options.range, options.aref);
+            range_info[i] = comedi_get_range(dev, options.subdevice, options.channel, options.range);
+            maxdata[i] = comedi_get_maxdata(dev, options.subdevice, options.channel);
+    }
+    prepare_cmd_lib(dev, options.subdevice, n_scan, options.n_chan, 1e9 / freq, cmd);
+
+    fprintf(stderr, "command before testing:\n");
+    dump_cmd(stderr, cmd);
+
+    ret = comedi_command_test(dev, cmd);
+    if(ret < 0){
+            comedi_perror("comedi_command_test");
+            if(errno == EIO){
+                    fprintf(stderr,"Ummm... this subdevice doesn't support commands\n");
+            }
+            exit(1);
+    }
+    fprintf(stderr,"first test returned %d (%s)\n", ret,
+                    cmdtest_messages[ret]);
+    dump_cmd(stderr, cmd);
+
+    ret = comedi_command_test(dev, cmd);
+    if(ret < 0){
+            comedi_perror("comedi_command_test");
+            exit(1);
+    }
+    fprintf(stderr,"second test returned %d (%s)\n", ret,
+                    cmdtest_messages[ret]);
+    if(ret!=0){
+            dump_cmd(stderr, cmd);
+            fprintf(stderr, "Error preparing command\n");
+            exit(1);
+    }
+
+    /* this is only for informational purposes */
+    gettimeofday(&start, NULL);
+    fprintf(stderr,"start time: %ld.%06ld\n", start.tv_sec, start.tv_usec);
+
+    /* start the command */
+    ret = comedi_command(dev, cmd);
+    if(ret < 0){
+            comedi_perror("comedi_command");
+// 		exit(1);
+    }
+    subdev_flags = comedi_get_subdevice_flags(dev, options.subdevice);
+
+    const int ndim = 2;
+    npy_intp nd[2] = {n_scan, n_chan};
+    
+    PyObject *myarray;
+    double *array_buffer;
+    myarray = PyArray_SimpleNew(ndim, nd, NPY_DOUBLE);
+    Py_INCREF(myarray);
+    array_buffer = (double *)PyArray_DATA(myarray);
+    
+    while(1){
+            ret = read(comedi_fileno(dev),buf,BUFSZ);
+            if(ret < 0){
+                    /* some error occurred */
+                    printf("ERROR: read\n");
+                    perror("read");
+                    break;
+            }else if(ret == 0){
+                    /* reached stop condition */
+                    break;
+            }else{
+                    static int col = 0;
+                    double j = 0.0;
+                    
+                    int bytes_per_sample;
+                    total += ret;
+                    if(options.verbose)fprintf(stderr, "read %d %d\n", ret, total);
+                    if(subdev_flags & SDF_LSAMPL)
+                            bytes_per_sample = sizeof(lsampl_t);
+                    else
+                            bytes_per_sample = sizeof(sampl_t);
+                    for(i = 0; i < ret / bytes_per_sample; i++){
+                            if(subdev_flags & SDF_LSAMPL) {
+                                    raw = ((lsampl_t *)buf)[i];
+                            } else {
+                                    raw = ((sampl_t *)buf)[i];
+                            }
+                            *array_buffer++ = print_datum(raw, col, 1);
+                            col++;
+                            if(col == options.n_chan){
+                                    col=0;
+                                    j++;
+                                    printf("\n");
+                            }
+                    }
+            }
+    }
+
+    /* this is only for informational purposes */
+    gettimeofday(&end,NULL);
+    fprintf(stderr,"end time: %ld.%06ld\n", end.tv_sec, end.tv_usec);
+
+    end.tv_sec -= start.tv_sec;
+    if(end.tv_usec < start.tv_usec){
+            end.tv_sec--;
+            end.tv_usec += 1000000;
+    }
+    end.tv_usec -= start.tv_usec;
+    fprintf(stderr,"time: %ld.%06ld\n", end.tv_sec, end.tv_usec);
+
+    return myarray;
 }
 
 static PyMethodDef readMethods[] =
@@ -296,12 +306,12 @@ int prepare_cmd(comedi_t *dev, int subdevice, int n_scan, int n_chan, unsigned p
 
 double print_datum(lsampl_t raw, int channel_index, short physical) {
 	double physical_value;
-// 	if(!physical) {
-// 		printf("%d ",raw);
-// 	} else {
+	if(!physical) {
+		printf("%d ",raw);
+	} else {
 	physical_value = comedi_to_phys(raw, range_info[channel_index], maxdata[channel_index]);
 	printf("%f ",physical_value);
-// 	printf("%f(f) ", physical_value);
+	printf("%f(f) ", physical_value);
 	return physical_value;
-// 	}
+	}
 }

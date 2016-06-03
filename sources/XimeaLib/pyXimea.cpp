@@ -12,7 +12,9 @@ extern "C" {
 CaptureCAM_XIMEA* capt;
 PyObject *myDict = PyDict_New();
 PyObject *rslt = PyTuple_New(2);
+PyObject *rslt_data = PyTuple_New(2);
 char *array_buffer;
+sem_t mutex, read_mutex;
 
 PyObject*
 VideoCapture_open(int device)
@@ -21,6 +23,16 @@ VideoCapture_open(int device)
 		VideoCapture_release();
 	}
 	capt->open(device);
+    return VideoCapture_isOpened();
+}
+
+PyObject*
+VideoCapture_openByName(char * device_path)
+{
+    if (VideoCapture_isOpened() == Py_True) {
+		VideoCapture_release();
+	}
+	capt->open(device_path);
     return VideoCapture_isOpened();
 }
 
@@ -70,16 +82,21 @@ bool VideoCapture_grab()
 
 
 PyObject* VideoCapture_retrieve(VideoCapture *self)
-{		
+{
 		switch(capt->image.frm)
 		{
 		case XI_MONO8: {
-			const int ndim = 2;
-			npy_intp nd[2] = {capt->height, capt->width};
-			Py_XDECREF(self->myarray);
-			self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
-			Py_XDECREF(nd);
-			break;
+			
+                    const int ndim = 2;
+//                     fprintf(stderr, "test: %i\n", 42);
+                    npy_intp nd[2] = {capt->height, capt->width};
+//                     fprintf(stderr, "test: %i\n", 43);
+                    Py_XDECREF(self->myarray);
+//                     fprintf(stderr, "test: %i\n", 44);
+                    self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
+//                     fprintf(stderr, "test: %i\n", 45);
+                    Py_XDECREF(nd);
+                    break;
 		}
 		case XI_MONO16:{ 
 			const int ndim = 2;
@@ -171,19 +188,21 @@ VideoCapture_getMeta()
 PyObject*
 VideoCapture_xiread(VideoCapture *self)
 {
-	rslt = PyTuple_New(2);
-        PyObject* ret = Py_False;
-	if(!VideoCapture_grab()){
+    rslt = PyTuple_New(2);
+    PyObject* ret = Py_False;
+    if(!VideoCapture_grab()){
                 Py_INCREF(ret);
-		PyTuple_SetItem(rslt, 0, ret);
-		PyTuple_SetItem(rslt, 1, Py_None);
+                PyTuple_SetItem(rslt, 0, ret);
+                PyTuple_SetItem(rslt, 1, Py_None);
     }else{
                 ret = Py_True;
                 Py_INCREF(ret);
                 PyTuple_SetItem(rslt, 0, ret);
-		PyTuple_SetItem(rslt, 1, VideoCapture_retrieve(self));
+                PyTuple_SetItem(rslt, 1, VideoCapture_retrieve(self));
     }
-    return rslt;
+    rslt_data = PyTuple_New(2);
+    rslt_data = rslt;
+    return rslt_data;
 }
 
 PyObject*
@@ -191,7 +210,6 @@ VideoCapture_set(VideoCapture *self, PyObject *args)
 {
 	int propId;
 	double value;
-        rslt = PyTuple_New(2);
         PyObject* ret = Py_False;
 	if (!PyArg_ParseTuple(args, "id", &propId, &value))
 		exit(0);
@@ -227,12 +245,13 @@ static PyObject *
 VideoCapture_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     VideoCapture *self;
-
     self = (VideoCapture *)type->tp_alloc(type, 0);
+    self->first_read = true;
+    static char *kwlist[] = {"device", "device_path", NULL};
     if (self != NULL) {
-		if (!PyArg_ParseTuple(args, "i:call", &self->device)) {
-			return NULL;
-		}
+        if (! PyArg_ParseTupleAndKeywords(args, kwds, "|is", kwlist, &self->device, &self->device_path)){
+                return NULL;
+        }
     }
 
     return (PyObject *)self;
@@ -241,13 +260,20 @@ VideoCapture_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static int
 VideoCapture_init(VideoCapture *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"device", NULL};
-
-    if (! PyArg_ParseTupleAndKeywords(args, kwds, "|i", kwlist,  
-                                      &self->device))
-        return -1; 
-	capt = new CaptureCAM_XIMEA();
-	VideoCapture_open(self->device);
+    static char *kwlist[] = {"device", "device_path", NULL};
+    
+    self->device = -1;
+    self->device_path = "";
+    if (! PyArg_ParseTupleAndKeywords(args, kwds, "|is", kwlist, &self->device, &self->device_path)){
+            return NULL;
+    }
+    capt = new CaptureCAM_XIMEA();
+    
+    if(self->device != -1){
+        VideoCapture_open(self->device);
+    }else{
+        VideoCapture_openByName(self->device_path);
+    }
     return 0;
 }
 
@@ -258,7 +284,7 @@ static PyMemberDef VideoCapture_members[] = {
 
 
 static PyMethodDef VideoCapture_methods[] = {
-    {"read", (PyCFunction)VideoCapture_xiread, METH_NOARGS,
+        {"read", (PyCFunction)VideoCapture_xiread, METH_NOARGS,
 	 "read a frame from ximea device, return a tuple containing a bool (true= success, false= fail) and a dictionnary with a ndarray and meta."},
 	 {"set", (PyCFunction)VideoCapture_set, METH_VARARGS,
 	 "set the configuration parameter specified of a ximea device"},
@@ -352,28 +378,6 @@ void set_map_to_export(){
 	my_map.insert(make_pair("CAP_PROP_FRAME_WIDTH",3));
 	my_map.insert(make_pair("CAP_PROP_FRAME_HEIGHT",4));
 	my_map.insert(make_pair("CAP_PROP_FPS",5));
-	my_map.insert(make_pair("CAP_ANY", 0)); // autodetect
-	my_map.insert(make_pair("CAP_VFW", 200)); // platform native
-	my_map.insert(make_pair("CAP_V4L", 200));
-	my_map.insert(make_pair("CAP_V4L2", CAP_V4L));
-	my_map.insert(make_pair("CAP_FIREWARE", 300));// IEEE 1394 drivers
-	my_map.insert(make_pair("CAP_FIREWIRE", CAP_FIREWARE));
-	my_map.insert(make_pair("CAP_IEEE1394", CAP_FIREWARE));
-	my_map.insert(make_pair("CAP_DC1394", CAP_FIREWARE));
-	my_map.insert(make_pair("CAP_CMU1394", CAP_FIREWARE));
-	my_map.insert(make_pair("CAP_QT", 500));// QuickTime
-	my_map.insert(make_pair("CAP_UNICAP", 600));  // Unicap drivers
-	my_map.insert(make_pair("CAP_DSHOW", 700)); // DirectShow (via videoInput)
-	my_map.insert(make_pair("CAP_PVAPI", 800)); // PvAPI, Prosilica GigE SDK
-	my_map.insert(make_pair("CAP_OPENNI", 900));   // OpenNI (for Kinect)
-	my_map.insert(make_pair("CAP_OPENNI_ASUS", 910));   // OpenNI (for Asus Xtion)
-	my_map.insert(make_pair("CAP_ANDROID", 1000));  // Android
-	my_map.insert(make_pair("CAP_XIAPI", 1100));// XIMEA Camera API
-	my_map.insert(make_pair("CAP_AVFOUNDATION", 1200));  // AVFoundation framework for iOS (OS X Lion will have the same API)
-	my_map.insert(make_pair("CAP_GIGANETIX", 1300));  // Smartek Giganetix GigEVisionSDK
-	my_map.insert(make_pair("CAP_MSMF", 1400));  // Microsoft Media Foundation (via videoInput)
-	my_map.insert(make_pair("CAP_INTELPERC", 1500));  // Intel Perceptual Computing SDK
-	my_map.insert(make_pair("CAP_OPENNI2", 1600 )); // OpenNI2 (for Kinect) 
 }
 
 PyMODINIT_FUNC

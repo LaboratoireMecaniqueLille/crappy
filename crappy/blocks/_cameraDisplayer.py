@@ -17,14 +17,12 @@ class CameraDisplayer(MasterBlock):
 			while True:
 				#print "top loop"
 				frame=self.inputs[0].recv()
-				if frame != None:
+				#print frame.shape
+				#if frame None:
 					#print frame[0][0]
-					if first_loop:
-						im = plt.imshow(frame,cmap='gray')
-						first_loop=False
-					else:
-						im.set_array(frame)
-					plt.draw()
+                                im = plt.imshow(frame,cmap='gray')
+                                plt.pause(0.001)
+                                plt.show()
 		except (Exception,KeyboardInterrupt) as e:
 			print "Exception in CameraDisplayer : ", e
 			plt.close('all')

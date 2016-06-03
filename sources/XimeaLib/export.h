@@ -36,28 +36,6 @@ map< string, int > my_map=
 	{"CAP_PROP_POS_FRAMES",1},
 	{"CAP_PROP_FRAME_WIDTH",3},
 	{"CAP_PROP_FRAME_HEIGHT",4},
-	{"CAP_PROP_FPS",5},
-	{"CAP_ANY", 0}, // autodetect
-	{"CAP_VFW", 200}, // platform native
-	{"CAP_V4L", 200},
-	{"CAP_V4L2", CAP_V4L},
-	{"CAP_FIREWARE", 300},// IEEE 1394 drivers
-	{"CAP_FIREWIRE", CAP_FIREWARE},
-	{"CAP_IEEE1394", CAP_FIREWARE},
-	{"CAP_DC1394", CAP_FIREWARE},
-	{"CAP_CMU1394", CAP_FIREWARE},
-	{"CAP_QT", 500},// QuickTime
-	{"CAP_UNICAP", 600},  // Unicap drivers
-	{"CAP_DSHOW", 700}, // DirectShow (via videoInput)
-	{"CAP_PVAPI", 800}, // PvAPI, Prosilica GigE SDK
-	{"CAP_OPENNI", 900},   // OpenNI (for Kinect)
-	{"CAP_OPENNI_ASUS", 910},   // OpenNI (for Asus Xtion)
-	{"CAP_ANDROID", 1000},  // Android
-	{"CAP_XIAPI", 1100},// XIMEA Camera API
-	{"CAP_AVFOUNDATION", 1200},  // AVFoundation framework for iOS (OS X Lion will have the same API)
-	{"CAP_GIGANETIX", 1300},  // Smartek Giganetix GigEVisionSDK
-	{"CAP_MSMF", 1400},  // Microsoft Media Foundation (via videoInput)
-	{"CAP_INTELPERC", 1500},  // Intel Perceptual Computing SDK
-	{"CAP_OPENNI2", 1600 }  // OpenNI2 (for Kinect) 
+	{"CAP_PROP_FPS",5}
 };
 #endif

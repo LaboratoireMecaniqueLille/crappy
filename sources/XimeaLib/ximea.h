@@ -27,7 +27,8 @@
 #include <string>
 #include <typeinfo>
 #include <map>
-
+#include <pthread.h>
+#include <semaphore.h>
 
 #define HandleResult(res,place) if (res!=XI_OK) {printf(" An error occured: %s (%d)\n",place,res);close();}
 
@@ -39,6 +40,7 @@ public:
     CaptureCAM_XIMEA();
     virtual ~CaptureCAM_XIMEA();
     virtual bool open( int index );
+    virtual bool open(char * device_path);
     virtual void close();
     virtual bool grabFrame();
     virtual void addTrigger(int timout, bool triggered);
@@ -72,9 +74,16 @@ typedef struct {
     PyObject_HEAD
     PyObject *myarray;
     int device;
+    char *device_path;
     char *array_buffer;
+    bool first_read;
 } VideoCapture;
 
+struct thread_data{
+   VideoCapture *self;
+};
+
+PyObject* VideoCapture_openByName(char * device_path);
 PyObject* VideoCapture_open(int device);
 PyObject* VideoCapture_isOpened();
 PyObject* VideoCapture_release();
@@ -85,6 +94,7 @@ PyObject* VideoCapture_getMeta();
 PyObject* VideoCapture_xiread(VideoCapture *self);
 PyObject* VideoCapture_set(VideoCapture *self, PyObject *args);
 PyObject* VideoCapture_get(VideoCapture *self, PyObject *args);
+void *read_thread(void *threadarg);
 #ifdef __cplusplus
 }
 #endif
@@ -121,31 +131,6 @@ enum { CAP_PROP_XI_DOWNSAMPLING  = 400, // Change image resolution by binning or
     CAP_PROP_FRAME_WIDTH    =3,
     CAP_PROP_FRAME_HEIGHT   =4,
     CAP_PROP_FPS            =5
-    };
-
-// Camera API
-enum { CAP_ANY          = 0,     // autodetect
-    CAP_VFW          = 200,   // platform native
-    CAP_V4L          = 200,
-    CAP_V4L2         = CAP_V4L,
-    CAP_FIREWARE     = 300,   // IEEE 1394 drivers
-    CAP_FIREWIRE     = CAP_FIREWARE,
-    CAP_IEEE1394     = CAP_FIREWARE,
-    CAP_DC1394       = CAP_FIREWARE,
-    CAP_CMU1394      = CAP_FIREWARE,
-    CAP_QT           = 500,   // QuickTime
-    CAP_UNICAP       = 600,   // Unicap drivers
-    CAP_DSHOW        = 700,   // DirectShow (via videoInput)
-    CAP_PVAPI        = 800,   // PvAPI, Prosilica GigE SDK
-    CAP_OPENNI       = 900,   // OpenNI (for Kinect)
-    CAP_OPENNI_ASUS  = 910,   // OpenNI (for Asus Xtion)
-    CAP_ANDROID      = 1000,  // Android
-    CAP_XIAPI        = 1100,  // XIMEA Camera API
-    CAP_AVFOUNDATION = 1200,  // AVFoundation framework for iOS (OS X Lion will have the same API)
-    CAP_GIGANETIX    = 1300,  // Smartek Giganetix GigEVisionSDK
-    CAP_MSMF         = 1400,  // Microsoft Media Foundation (via videoInput)
-    CAP_INTELPERC    = 1500,   // Intel Perceptual Computing SDK
-    CAP_OPENNI2      = 1600   // OpenNI2 (for Kinect)
     };
 
 #endif

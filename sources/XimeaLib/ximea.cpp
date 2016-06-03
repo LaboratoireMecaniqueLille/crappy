@@ -40,6 +40,10 @@ void CaptureCAM_XIMEA::addTrigger(int timout, bool triggered)
         HandleResult(mvret, "Error while setting digital ouput");
         mvret = xiSetParamInt(hmv, XI_PRM_GPO_MODE,  XI_GPO_EXPOSURE_ACTIVE);
         HandleResult(mvret, "Error while setting digital output mode");
+        
+        mvret = xiSetParamInt(hmv, XI_PRM_ACQ_TIMING_MODE, XI_ACQ_TIMING_MODE_FREE_RUN);
+        HandleResult(mvret, "Error while setting timing mode.");
+        
     }else{
         mvret = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE,  XI_TRG_OFF);
         HandleResult(mvret, "Error while disabling external trigger source");
@@ -57,6 +61,7 @@ void CaptureCAM_XIMEA::addTrigger(int timout, bool triggered)
 void CaptureCAM_XIMEA::init()
 {
     stat = xiGetNumberDevices(&numDevices);
+//     cout << "Number of connected devices: " << numDevices << endl;
     HandleResult(stat,"xiGetNumberDevices (no camera found)");
     try{
         if (!numDevices)
@@ -75,58 +80,96 @@ void CaptureCAM_XIMEA::init()
 
 
 // Initialize camera input
-bool CaptureCAM_XIMEA::open( int wIndex )
+bool CaptureCAM_XIMEA::open( char * device_path )
 {
-//     int       isColor;
-//     int mvret = XI_OK;
-//     if(numDevices == 0)
-//         return false;
-//     stat = xiOpenDevice(wIndex, &hmv);
-//     HandleResult(stat,"Open XI_DEVICE failed");
-//     stat = xiSetParamInt(hmv, XI_PRM_EXPOSURE, 10000);
-//     HandleResult(stat,"xiSetParam (exposure set)");
-//     // always use auto exposure/gain
-//     mvret = xiSetParamInt( hmv, XI_PRM_AEAG, 1);
-//     HandleResult(mvret, "error while setting exposure and gain auto\n");
-//     mvret = xiGetParamInt( hmv, XI_PRM_WIDTH, &width);
-//     HandleResult(mvret, "error while setting width");
-//     mvret = xiGetParamInt( hmv, XI_PRM_HEIGHT, &height);
-//     HandleResult(mvret, "error while setting height");
-//     mvret = xiGetParamInt(hmv, XI_PRM_IMAGE_IS_COLOR, &isColor);
-//     HandleResult(mvret, "error while setting color parameter ");
-//     mvret = xiGetParamInt(hmv,  XI_PRM_IMAGE_DATA_FORMAT, &format);
-//     // xiSetParamInt(hmv, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
-//     // HandleResult(mvret, "error while setting data format");
-// 
-//     
-//     
-//     timeout = 10000;
-//     mvret = xiStartAcquisition(hmv);
-//     if(mvret != XI_OK)
-//     {
-//         errMsg("StartAcquisition XI_DEVICE failed", mvret);
-//         close();
-//     }
+    cout << "OPEN DEVICE BY NAME" << endl;
     #define HandleXiResult(res) if (res!=XI_OK)  goto error;
-
     int mvret = XI_OK;
 
     if(numDevices == 0)
         return false;
     
-    DWORD value_size = 1024;
-    char value[value_size] = "";
-    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_SN, value, value_size);
-    cout << "XI_PRM_DEVICE_SN: " << value << endl;
-    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_NAME, value, value_size);
-    cout << "XI_PRM_DEVICE_NAME: " << value << endl;
-    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_INSTANCE_PATH, value, value_size);
-    cout << "XI_PRM_DEVICE_INSTANCE_PATH: " << value << endl;
-    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_LOCATION_PATH, value, value_size);
-    cout << "XI_PRM_DEVICE_LOCATION_PATH: " << value << endl;
-    xiGetDeviceInfoString(wIndex, XI_PRM_DEVICE_TYPE, value, value_size);
-    cout << "XI_PRM_DEVICE_TYPE: " << value << endl;
+    if(xiOpenDeviceBy(XI_OPEN_BY_INST_PATH, device_path, &hmv) != XI_OK)
+    {
+#if defined WIN32 || defined _WIN32
+        errMsg("Open XI_DEVICE failed", mvret);
+        return false;
+#else
+        // try opening second time if first fails
+        if(xiOpenDeviceBy(XI_OPEN_BY_INST_PATH, device_path, &hmv)  != XI_OK)
+        {
+            errMsg("Open XI_DEVICE failed", mvret);
+            return false;
+        }
+#endif
+    }
+    int width   = 0;
+    int height  = 0;
+    int isColor = 0;
 
+    // always use auto exposure/gain
+    mvret = xiSetParamInt( hmv, XI_PRM_AEAG, 1);
+    HandleXiResult(mvret);
+
+    mvret = xiGetParamInt( hmv, XI_PRM_WIDTH, &width);
+    HandleXiResult(mvret);
+
+    mvret = xiGetParamInt( hmv, XI_PRM_HEIGHT, &height);
+    HandleXiResult(mvret);
+
+    mvret = xiGetParamInt(hmv, XI_PRM_IMAGE_IS_COLOR, &isColor);
+    HandleXiResult(mvret);
+    
+    mvret = xiSetParamInt(hmv, XI_PRM_ACQ_TIMING_MODE, XI_ACQ_TIMING_MODE_FREE_RUN);
+    HandleXiResult(mvret);
+    
+    if(isColor) // for color cameras
+    {
+        // default image format RGB24
+        mvret = xiSetParamInt( hmv, XI_PRM_IMAGE_DATA_FORMAT, XI_RGB24);
+        HandleXiResult(mvret);
+
+        // always use auto white balance for color cameras
+        mvret = xiSetParamInt( hmv, XI_PRM_AUTO_WB, 1);
+        HandleXiResult(mvret);
+    }
+    else // for mono cameras
+    {
+        // default image format MONO8
+        mvret = xiSetParamInt( hmv, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
+        HandleXiResult(mvret);
+    }
+
+    //default capture timeout 10s
+    timeout = 10000;
+
+    mvret = xiStartAcquisition(hmv);
+    if(mvret != XI_OK)
+    {
+        errMsg("StartAcquisition XI_DEVICE failed", mvret);
+        goto error;
+    }
+    isopened=true;
+    return true;
+
+error:
+    errMsg("Open XI_DEVICE failed", mvret);
+    xiCloseDevice(hmv);
+    hmv = NULL;
+    return false;
+}
+
+// Initialize camera input
+bool CaptureCAM_XIMEA::open( int wIndex )
+{
+    #define HandleXiResult(res) if (res!=XI_OK)  goto error;
+    cout << "OPEN DEVICE BY ID" << endl;
+    int mvret = XI_OK;
+
+    if(numDevices == 0)
+        return false;
+    
+    
     if((mvret = xiOpenDevice( wIndex, &hmv)) != XI_OK)
     {
 #if defined WIN32 || defined _WIN32
@@ -145,15 +188,15 @@ bool CaptureCAM_XIMEA::open( int wIndex )
     int width   = 0;
     int height  = 0;
     int isColor = 0;
-
+    
     // always use auto exposure/gain
-    mvret = xiSetParamInt( hmv, XI_PRM_AEAG, 1);
+    mvret = xiSetParamInt(hmv, XI_PRM_AEAG, 1);
     HandleXiResult(mvret);
 
-    mvret = xiGetParamInt( hmv, XI_PRM_WIDTH, &width);
+    mvret = xiGetParamInt(hmv, XI_PRM_WIDTH, &width);
     HandleXiResult(mvret);
 
-    mvret = xiGetParamInt( hmv, XI_PRM_HEIGHT, &height);
+    mvret = xiGetParamInt(hmv, XI_PRM_HEIGHT, &height);
     HandleXiResult(mvret);
 
     mvret = xiGetParamInt(hmv, XI_PRM_IMAGE_IS_COLOR, &isColor);
@@ -168,29 +211,32 @@ bool CaptureCAM_XIMEA::open( int wIndex )
         // always use auto white balance for color cameras
         mvret = xiSetParamInt( hmv, XI_PRM_AUTO_WB, 1);
         HandleXiResult(mvret);
-
-        // allocate frame buffer for RGB24 image
-//         frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
     }
     else // for mono cameras
     {
         // default image format MONO8
         mvret = xiSetParamInt( hmv, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
         HandleXiResult(mvret);
-
-        // allocate frame buffer for MONO8 image
-//         frame = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 1);
     }
 
     //default capture timeout 10s
     timeout = 10000;
-
+    
+    /* NOT WORKING IF XI_PRM_BUFFERS_QUEUE_SIZE is set to a value < 3*/
+    mvret = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 3);
+    if( mvret != XI_OK)
+        errMsg("Set parameter error", mvret);
+    mvret = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
+    if( mvret != XI_OK)
+        errMsg("Set parameter error", mvret);
+       
     mvret = xiStartAcquisition(hmv);
     if(mvret != XI_OK)
     {
         errMsg("StartAcquisition XI_DEVICE failed", mvret);
         goto error;
     }
+    
     isopened=true;
     return true;
 

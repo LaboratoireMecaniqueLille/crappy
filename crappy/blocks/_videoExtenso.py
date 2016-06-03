@@ -348,6 +348,7 @@ class VideoExtenso(MasterBlock):
                                 pass
                 raise Exception("Spots lost")
             except KeyboardInterrupt:
+                self.camera.sensor.close()
                 print 'KeyboardInterrupt\n'
                 break
             except (Exception) as e:

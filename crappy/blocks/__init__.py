@@ -31,6 +31,12 @@ try:
     from ._streamerCamera import StreamerCamera
 except Exception as e:
     print "WARNING: ", e
+
+try:
+    from ._streamerCameraGerome import StreamerCameraG
+except Exception as e:
+    print "WARNING: ", e
+    
     
 from ._streamer import Streamer
 try:
