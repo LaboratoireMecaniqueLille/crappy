@@ -10,12 +10,22 @@ from collections import OrderedDict
 #print a
 ##UNDEF = -99.0
 ##np.interp(3.14, xp, fp, right=UNDEF)
+from crappy.blocks import MasterBlock
 
-class Interpolation (object):
-    def __init__(self):#Recuperation des donnees en entree.
-        self.inputs[0].recv()=data
+
+class Interpolation(MasterBlock):
+
+    def main(self):
+        pass
+
+    def __init__(self):
+        """
+        Recuperation des donnees en entree.
+        """
+        super(Interpolation, self).__init__()
+        self.data = self.inputs[0].recv()
         
-    def interp(self, 'var1','var2','var3','var4','var5','var6'): ## t(s) t1(s) cycle resistance(ohm) dep(mm) F(N)
+    def interp(self): ## t(s) t1(s) cycle resistance(ohm) dep(mm) F(N)
         tpetit=self.data['var1'] # temps avec la plus petite base
         tgrand=self.data['var2'] # temps avec la plus grande base
         cycle=self.data['var3'] # variables a interpoler
@@ -33,8 +43,8 @@ class Interpolation (object):
             for output in self.outputs:
                 output.send(Array)
                                     
-        except :
-            print "Erreur envoi Array interpolation"
+        except Exception as e:
+            print "Erreur envoi Array interpolation: ", e
             
 
         

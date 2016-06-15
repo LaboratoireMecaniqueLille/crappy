@@ -13,7 +13,7 @@ signal. It can be an acquisition card, but also a camera, a thermocouple...
 
 Actuators
 ---------
-On the other hand, actuators represent all the objects that can **interact on 
+on the other hand, actuators represent all the objects that can **interact on
 the other part of the test**, and can be controled. The most common example are 
 motors.
 

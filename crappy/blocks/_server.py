@@ -1,53 +1,50 @@
 # coding: utf-8
-from _meta import MasterBlock
-import time
-from multiprocessing import connection, Pipe, Process
-from ..links._link import TimeoutError
 import os
-import sys
+import time
+from multiprocessing import connection, Process
+
+from _meta import MasterBlock
+
 
 # def send_wrapper(f, input_, conn):
 #     f(input_, conn)
 
 def send(input_, conn):
-    from multiprocessing import Pipe
     try:
         while True:
-            if(not input_.in_.closed):
-                if(input_.in_.poll()):
+            if not input_.in_.closed:
+                if input_.in_.poll():
                     data = input_.recv()
                     if data == 'close':
                         raise Exception("close instruction received from pipe")
-                        break
                     else:
                         conn.send(data)
-                if(conn.poll()):
+                if conn.poll():
                     data = conn.recv()
-                    if data== 'close':
+                    if data == 'close':
                         raise Exception("close instruction received from client")
-                        break
             else:
                 raise Exception("closed pipe")
-                break
         conn.close()
     except Exception as e:
         print "Exception in process n°{0}: {1}".format(os.getpid(), e)
         try:
             conn.send('close')
-        except:
-            print 'error'
+        except Exception as e:
+            print e
             pass
         finally:
             print 'closing connection...'
             conn.close()
-            
+
     except KeyboardInterrupt:
         print "KeyboardInterrupt received, link name: {0} (process n°{1}).".format(input_.name, os.getpid())
         conn.send('close')
         conn.close()
         pass
-    except:
+    except Exception as e:
         print 'Unexpected exception'
+
 
 class Server(MasterBlock):
     """
@@ -59,15 +56,18 @@ class Server(MasterBlock):
         
         Parameters
         ----------
-        ip: IP address of the 
+        port
+        time_sync
+        ip: IP address
         """
+        super(Server, self).__init__()
         self.ip = ip
         self.port = port
         self.time_sync = time_sync
         self.sock = connection.Listener(address=(self.ip, self.port))
         if self.time_sync:
             try:
-                c= self.sock.accept()
+                c = self.sock.accept()
                 c.recv()
                 self.t0 = time.time()
                 c.send(self.t0)
@@ -75,20 +75,20 @@ class Server(MasterBlock):
                 c.close()
                 self.sock.close()
             except Exception as e:
-                raise Exception("Cannot synchronize time with client: %s"%e)
+                raise Exception("Cannot synchronize time with client: %s" % e)
 
     def main(self):
         try:
-            self.sock=connection.Listener(address=(self.ip, self.port))
-            conn=[]
-            procs={}
+            self.sock = connection.Listener(address=(self.ip, self.port))
+            conn = []
+            procs = {}
             for input_ in self.inputs:
                 conn.append(self.sock.accept())
             for i in range(len(conn)):
                 name = conn[i].recv()
                 for input_ in self.inputs:
-                    if(input_.name == name):
-                        procs[i]=Process(target=send,args=(input_, conn[i],))
+                    if (input_.name == name):
+                        procs[i] = Process(target=send, args=(input_, conn[i],))
                         procs[i].start()
             for i in range(len(procs)):
                 procs[i].join()
@@ -109,4 +109,4 @@ class Server(MasterBlock):
                     if not conn[i].closed:
                         conn[i].close()
             except Exception as e:
-                print "On exit: ", e
+                print "on exit: ", e

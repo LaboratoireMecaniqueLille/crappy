@@ -12,7 +12,7 @@ crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 		#value.update({'T_mean':calc})
 		#return value
 	
-#class condition_calib(crappy.links.MetaCondition):
+#class ConditionCalib(crappy.links.MetaCondition):
 	#def __init__(self):
 		#self.coeff_T= [-1.14944097e+19,-6.22927505e+15,9.45905908e+12,3.20160146e+09,-1.81259800e+06,1.91565284e+04,2.77297727e+01]
 		#self.coeff_T2 = [-5.37671145e+18,-1.08133635e+16,6.54277247e+12,4.91194020e+09,-1.47818544e+06,1.91198815e+04,2.77679671e+01]
@@ -45,7 +45,7 @@ crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 		#return value
 
 
-#class eval_stress(crappy.links.MetaCondition):
+#class EvalStress(crappy.links.MetaCondition):
 	#def __init__(self):
 		#self.surface=110.74*10**(-6)
 		#self.I=np.pi*((25*10**-3)**4-(22*10**-3)**4)/32
@@ -78,9 +78,9 @@ try:
 	#sensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1,2,3],gain=[0.02,100000,0.01*2.,500]) # dist is multiplied by 2 to be correct
 	sensor_effort=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,500])
 	#sensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1,2],gain=[1,1,1],offset=[0,0,0]) #262*10**-6,180*10**-6,169*10**-6
-	#t,T=sensor.getData(0)
-	#t,T1=sensor.getData(1)
-	#t,T2=sensor.getData(2)
+	#t,T=sensor.get_data(0)
+	#t,T1=sensor.get_data(1)
+	#t,T2=sensor.get_data(2)
 	#sensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1,2],gain=[1,1,1],offset=[-T,-T1,-T2]) 
 	#sensor=crappy.sensor.LabJackSensor(channels=[0,1,2],gain=[1,1,1],resolution=9,chan_range=0.01,mode="single",scanRate=100,scansPerRead=1) # dist is multiplied by 2 to be correct
 	#instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10000]) # 10 times the gain on the machine if you go through an usb dux sigma
@@ -120,7 +120,7 @@ try:
 ########################################### Creating links
 	#crappy.links.Filter(labels=['dist(deg)'],mode="median",size=50)
 	#condition=[crappy.links.Filter(labels=['V'],mode="median",size=50),crappy.links.Filter(labels=['t(s)'],mode="mean",size=50)]
-	link1=crappy.links.Link()#crappy.links.Filter(labels=['T','T2','T3'], mode='mean', size=100),condition_calib(),condition_sub()
+	link1=crappy.links.Link()#crappy.links.Filter(labels=['T','T2','T3'], mode='mean', size=100),ConditionCalib(),condition_sub()
 	link2=crappy.links.Link()
 	link3=crappy.links.Link()
 	link4=crappy.links.Link()
@@ -158,7 +158,7 @@ try:
 ########################################### Starting objects
 	t0=time.time()
 	for instance in crappy.blocks._meta.MasterBlock.instances:
-		instance.set_t0(t0)
+		instance.t0(t0)
 		
 	for instance in crappy.blocks._meta.MasterBlock.instances:
 		instance.start()

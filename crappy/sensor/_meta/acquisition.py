@@ -1,5 +1,6 @@
 import abc
 
+
 class Acquisition:
 
     __metaclass__= abc.ABCMeta
@@ -17,6 +18,5 @@ class Acquisition:
         pass
     
     @abc.abstractmethod
-    def getData(self):
+    def get_data(self):
         pass
-    

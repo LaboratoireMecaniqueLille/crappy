@@ -65,7 +65,7 @@ if __name__ == '__main__':
 		#offset=np.array([0.,0.,0.,0.,0.,0.])
 		#for i in range(100):
 			#for j in range(0,4,2):
-				#offset[j]+=instronSensor.getData(j)[1]/100.
+				#offset[j]+=instronSensor.get_data(j)[1]/100.
 		##offset-=np.array([0,1806,0,0.175])
 		#offset*=-1
 	# end of the offset measure
@@ -167,7 +167,7 @@ if __name__ == '__main__':
 	
 		t0=time.time()
 		for instance in crappy.blocks._meta.MasterBlock.instances:
-			instance.set_t0(t0)
+			instance.t0(t0)
 			
 		for instance in crappy.blocks._meta.MasterBlock.instances:
 			instance.start()

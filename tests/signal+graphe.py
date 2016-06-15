@@ -39,7 +39,7 @@ class condition_coeff(crappy.links.MetaCondition):
 		return value
 
 
-#class condition_K(crappy.links.MetaCondition):
+#class ConditionK(crappy.links.MetaCondition):
 	#def __init__(self):
 		#self.K=0
 		#self.last_cycle=-1
@@ -96,12 +96,12 @@ if __name__ == '__main__':
 
 	########################################### Creating links
 		
-		#link1=crappy.links.Link(condition=condition_cycle_bool())
-		#link2=crappy.links.Link(condition=condition_cycle_bool())
-		#link3=crappy.links.Link(condition=condition_K())
+		#link1=crappy.links.Link(condition=ConditionCycleBool())
+		#link2=crappy.links.Link(condition=ConditionCycleBool())
+		#link3=crappy.links.Link(condition=ConditionK())
 		#link4=crappy.links.Link()
 		#link5=crappy.links.Link()
-		#link6=crappy.links.Link(condition=condition_K())
+		#link6=crappy.links.Link(condition=ConditionK())
 		link7=crappy.links.Link()
 		link8=crappy.links.Link()
 		#link9=crappy.links.Link()
@@ -161,7 +161,7 @@ if __name__ == '__main__':
 
 		t0=time.time()
 		for instance in crappy.blocks._meta.MasterBlock.instances:
-			instance.set_t0(t0)
+			instance.t0(t0)
 
 		for instance in crappy.blocks._meta.MasterBlock.instances:
 			instance.start()

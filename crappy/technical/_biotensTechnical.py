@@ -5,6 +5,7 @@ from ..sensor import _biotensSensor
 from ..actuator import _biotensActuator
 from ._meta import motion
 
+
 class Biotens(motion.Motion):
     def __init__(self, port='/dev/ttyUSB0', baudrate=19200, size=30):
         """
@@ -19,12 +20,13 @@ class Biotens(motion.Motion):
         size : int of float, default = 30
             Initial size of your test sample, in mm.
         """
-        self.size=size-7
-        if self.size<0:
-                self.size=0
-        self.port=port
+        super(Biotens, self).__init__(port, baudrate)
+        self.size = size - 7
+        if self.size < 0:
+            self.size = 0
+        self.port = port
         self.baudrate = baudrate
-        self.ser=serial.Serial(self.port, baudrate=19200, timeout=0.1)
+        self.ser = serial.Serial(self.port, baudrate=19200, timeout=0.1)
         self.actuator = _biotensActuator.BiotensActuator(self.ser, self.size)
         self.sensor = _biotensSensor.BiotensSensor(self.ser)
         self.clear_errors()
@@ -33,67 +35,89 @@ class Biotens(motion.Motion):
 
     def mise_position(self):
         """Set motor into position for sample's placement"""
-        self.actuator.set_position(self.size+0.3,70) # add 0.2 to ensure going to the wanted position
-        startposition='\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(10,'B')+_biotensSensor.convert_to_byte(4,'B')+_biotensSensor.convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(10,'B')+ '\xAA\xAA'
-        self.ser.write(startposition)	
+        self.actuator.set_position(self.size + 0.3, 70)  # add 0.2 to ensure going to the wanted position
+        startposition = '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(10,
+                                                                                'B') + _biotensSensor.convert_to_byte(4,
+                                                                                                                      'B') + _biotensSensor.convert_to_byte(
+            0, 'i') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(10, 'B') + '\xAA\xAA'
+        self.ser.write(startposition)
         try:
-                self.ser.readlines()
+            self.ser.readlines()
         except serial.SerialException:
-                pass
-        last_position_SI=0
-        position_SI=99
-        while position_SI!=last_position_SI:
-                last_position_SI=position_SI
-                position_SI=self.sensor.get_position()
-                print "position : ", position_SI
+            pass
+        last_position_si = 0
+        position_si = 99
+        while position_si != last_position_si:
+            last_position_si = position_si
+            position_si = self.sensor.get_position()
+            print "position : ", position_si
         print "Fin"
-        self.stop()	
-        
-        
+        self.stop()
+
     def initialisation(self):
         """Actuators goes out completely, in order to set the initial position"""
-        
-        initposition= '\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(38,'B')+_biotensSensor.convert_to_byte(4,'B')+_biotensSensor.convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(38,'B')+ '\xAA\xAA'
-        initspeed = '\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(40,'B')+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(-50,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(40,'B')+ '\xAA\xAA'
-        inittorque = '\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(41,'B')+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(1023,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(41,'B')+ '\xAA\xAA'	
-        toinit= '\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(37,'B')+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(0,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(37,'B')+ '\xAA\xAA'
-        
-        self.ser.writelines([initposition, initspeed, inittorque, toinit])
-        self.ser.write('\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(12,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(2,'B')+ '\xAA\xAA')
-        last_position_SI=0
-        position_SI=99
+
+        init_position = '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(38,
+                                                                               'B') + _biotensSensor.convert_to_byte(4,
+                                                                                                                     'B') + _biotensSensor.convert_to_byte(
+            0, 'i') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(38, 'B') + '\xAA\xAA'
+        init_speed = '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(40, 'B') + _biotensSensor.convert_to_byte(2,
+                                                                                                                      'B') + _biotensSensor.convert_to_byte(
+            -50, 'h') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(40, 'B') + '\xAA\xAA'
+        init_torque = '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(41, 'B') + _biotensSensor.convert_to_byte(
+            2, 'B') + _biotensSensor.convert_to_byte(1023,
+                                                     'i') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(
+            41, 'B') + '\xAA\xAA'
+        to_init = '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(37, 'B') + _biotensSensor.convert_to_byte(2,
+                                                                                                                   'B') + _biotensSensor.convert_to_byte(
+            0, 'h') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(37, 'B') + '\xAA\xAA'
+
+        self.ser.writelines([init_position, init_speed, init_torque, to_init])
+        self.ser.write(
+            '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(2, 'B') + _biotensSensor.convert_to_byte(2,
+                                                                                                             'B') + _biotensSensor.convert_to_byte(
+                12, 'h') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(2, 'B') + '\xAA\xAA')
+        last_position_si = 0
+        position_si = 99
         time.sleep(1)
-        while position_SI!=last_position_SI:
-                last_position_SI=position_SI
-                position_SI=self.sensor.get_position()
-                print "position : ", position_SI
+        while position_si != last_position_si:
+            last_position_si = position_si
+            position_si = self.sensor.get_position()
+            print "position : ", position_si
         print "init done"
-        self.stop()	
-        #time.sleep(1)
-        ### initializes the count when the motors is out.
-        startposition='\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(10,'B')+_biotensSensor.convert_to_byte(4,'B')+_biotensSensor.convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(10,'B')+ '\xAA\xAA'
-        self.ser.write(startposition)
-        #time.sleep(1)
+        self.stop()
+        # time.sleep(1)
+        # initializes the count when the motors is out.
+        start_position = '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(10,
+                                                                                'B') + _biotensSensor.convert_to_byte(4,
+                                                                                                                      'B') + _biotensSensor.convert_to_byte(
+            0, 'i') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(10, 'B') + '\xAA\xAA'
+        self.ser.write(start_position)
+        # time.sleep(1)
         try:
-                self.ser.readlines()
+            self.ser.readlines()
         except serial.SerialException:
-                pass
-    
+            pass
+
     def reset(self):
-        #TODO
+        # TODO
         pass
-    
-    def stop(self): 
+
+    def stop(self):
         """Stop the motor. Amazing."""
-        command='\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(2,'B')+_biotensSensor.convert_to_byte(0,'h')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(2,'B')+ '\xAA\xAA'
+        command = '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(2, 'B') + _biotensSensor.convert_to_byte(2,
+                                                                                                                   'B') + _biotensSensor.convert_to_byte(
+            0, 'h') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(2, 'B') + '\xAA\xAA'
         self.ser.write(command)
-        #return command
-        
+        # return command
+
     def close(self):
         self.stop()
         self.ser.close()
-        
-    def clear_errors(self): 
+
+    def clear_errors(self):
         """Clears error in motor registers. obviously."""
-        command='\x52\x52\x52\xFF\x00'+_biotensSensor.convert_to_byte(35,'B')+_biotensSensor.convert_to_byte(4,'B')+_biotensSensor.convert_to_byte(0,'i')+'\xAA\xAA\x50\x50\x50\xFF\x00' +_biotensSensor.convert_to_byte(35,'B')+ '\xAA\xAA'
+        command = '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(35, 'B') + _biotensSensor.convert_to_byte(4,
+                                                                                                                    'B') + _biotensSensor.convert_to_byte(
+            0, 'i') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(35, 'B') + '\xAA\xAA'
         self.ser.write(command)

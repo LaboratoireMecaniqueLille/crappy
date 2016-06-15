@@ -1,11 +1,11 @@
 import abc
 
-class Command(object):
 
-    __metaclass__= abc.ABCMeta
+class Command(object):
+    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def __init__(self,device,subdevice,channel,range_num,gain,offset):
+    def __init__(self):
         return
 
     @abc.abstractmethod

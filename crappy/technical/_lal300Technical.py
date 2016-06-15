@@ -1,28 +1,29 @@
 # coding: utf-8
-#import time
+# import time
 import serial
-from serial import SerialException
-from ..sensor import Lal300Sensor
-from ..actuator import Lal300Actuator
-from ._meta import motion
-from .._deprecated  import _deprecated as deprecated
 
+from ._meta import motion
+from .._deprecated import _deprecated as deprecated
+from ..actuator import Lal300Actuator
+from ..sensor import Lal300Sensor
+import time
 p = {}
-p['timeout'] = 0.#s
-n = 3 # modify with great caution
-p['PID_PROP'] = 8/n
-p['PID_INT'] = 30/n
-p['PID_DERIV'] = 200/n
-p['PID_INTLIM'] = 1000/n
+p['timeout'] = 0.  # s
+n = 3  # modify with great caution
+p['PID_PROP'] = 8 / n
+p['PID_INT'] = 30 / n
+p['PID_DERIV'] = 200 / n
+p['PID_INTLIM'] = 1000 / n
 p['ACC'] = 6000.
-p['ACconv'] = 26.22#conversion ACC values to mm/s/s
-p['FORCE'] =30000.
-p['SPEEDconv'] = 131072.#conversion SPEED values to mm/s
-p['ENTREE_VERIN']='DI1'
-p['SORTIE_VERIN']='DI0'
-    
+p['ACconv'] = 26.22  # conversion ACC values to mm/s/s
+p['FORCE'] = 30000.
+p['SPEEDconv'] = 131072.  # conversion SPEED values to mm/s
+p['ENTREE_VERIN'] = 'DI1'
+p['SORTIE_VERIN'] = 'DI0'
+
+
 class Lal300(motion.Motion):
-    def __init__(self,param=p, port='/dev/ttyUSB1', baudrate=19200):
+    def __init__(self, param=p, port='/dev/ttyUSB1', baudrate=19200):
         """
         Open the connection, and initialise the Lal300.
 
@@ -69,7 +70,7 @@ class Lal300(motion.Motion):
                         List of cycles, for each group.
         Examples
         --------
-        >>> param = {}
+        param = {}
         param['timeout'] = 0.#s
         n = 3 # modify with great caution
         param['PID_PROP'] = 8/n
@@ -88,52 +89,59 @@ class Lal300(motion.Motion):
         param['SPEED'] = [15000,15000,15000,16000,30000,45000,80000,110000,130000,150000,180000,210000,250000,300000,350000,400000,500000,550000,600000,650000]
         param['CYCLES']=[2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000]
         """
-        self.param=param
+        super(Lal300, self).__init__(port, baudrate)
+        self.param = param
         self.port = port
         self.baudrate = baudrate
-        self.ser=serial.Serial(port=self.port, #Configuration du port serie à l'aide de PySerial
-        baudrate=self.baudrate,
-        bytesize=serial.EIGHTBITS,
-        parity=serial.PARITY_NONE,
-        stopbits=serial.STOPBITS_ONE,
-        timeout=param['timeout'],
-        rtscts=False,
-        write_timeout=None,
-        dsrdtr=False,
-        inter_byte_timeout=None)
-        self.actuator=Lal300Actuator(self.param,self.ser) #Appel de la sous-classe ActuatorLal300 avec les parametres situes dans le programme lal300Main.py
-        self.sensor=Lal300Sensor(self.param,self.ser)  #Appel de la sous-classe SensorLal300 avec les parametres situes dans le programme lal300Main.py
+        self.ser = serial.Serial(port=self.port,  # Configuration du port serie à l'aide de PySerial
+                                 baudrate=self.baudrate,
+                                 bytesize=serial.EIGHTBITS,
+                                 parity=serial.PARITY_NONE,
+                                 stopbits=serial.STOPBITS_ONE,
+                                 timeout=param['timeout'],
+                                 rtscts=False,
+                                 write_timeout=None,
+                                 dsrdtr=False,
+                                 inter_byte_timeout=None)
+        self.actuator = Lal300Actuator(self.param,
+                                       self.ser)  # Appel de la sous-classe ActuatorLal300 avec les parametres situes dans le programme lal300Main.py
+        self.sensor = Lal300Sensor(self.param,
+                                   self.ser)  # Appel de la sous-classe SensorLal300 avec les parametres situes dans le programme lal300Main.py
 
-    def stop(self): #Arret du moteur
+    def stop(self):  # Arret du moteur
         """Stop the motor"""
-        self.ser.write("MF\r\n") #Envoi de la commande "Moteur OFF" via le port serie
+        self.ser.write("MF\r\n")  # Envoi de la commande "Moteur OFF" via le port serie
         time.sleep(0.005)
-        self.ser.read(self.ser.in_waiting) 
+        self.ser.read(self.ser.in_waiting)
 
-    def close(self):#Fermeture du port serie
+    def close(self):  # Fermeture du port serie
         """Close serial port"""
-        self.stoplal300()#Arret du moteur
-        self.ser.close()  #Fermeture du port serie
-        return self.ser.isOpen() #Verification de l'ouverture du port serie (True/False)
+        self.stoplal300()  # Arret du moteur
+        self.ser.close()  # Fermeture du port serie
+        return self.ser.isOpen()  # Verification de l'ouverture du port serie (True/False)
 
-    def reset(self): #Reinitialisation des parametres du correcteur PID du moteur et defintion de l'origine moteur"""
+    def reset(self):  # Reinitialisation des parametres du correcteur PID du moteur et defintion de l'origine moteur"""
         """Reset PID parameters and re-defined the motor origin"""
-        self.ser.write("MF,RM,SG%i,SI%i,SD%i,IL%i,DH\r\n"%(self.param['PID_PROP'],self.param['PID_INT'],self.param['PID_DERIV'],self.param['PID_INTLIM'])) #set PID values valeur DH modifiee
-        time.sleep(0.005) #Temporisation assurant la bonne ecriture de la ligne precedente dans le port serie
-        self.ser.read(self.ser.in_waiting) # Nettoyage du port serie
+        self.ser.write("MF,RM,SG%i,SI%i,SD%i,IL%i,DH\r\n" % (
+        self.param['PID_PROP'], self.param['PID_INT'], self.param['PID_DERIV'],
+        self.param['PID_INTLIM']))  # set PID values valeur DH modifiee
+        time.sleep(0.005)  # Temporisation assurant la bonne ecriture de la ligne precedente dans le port serie
+        self.ser.read(self.ser.in_waiting)  # Nettoyage du port serie
         time.sleep(0.005)
-        
+
     def clear_errors(self):
-        #TODO
+        # TODO
         pass
+
 
 class TechnicalLal300(Lal300):
     """
     DEPRECATED: use Lal300 class instead.
     Open both a Lal300Sensor and Lal300Actuator instances.
     """
+
     @deprecated(None, "Use Lal300 class instead.")
-    def __init__(self,param):
+    def __init__(self, param):
         """
         Open the connection, and initialise the Lal300.
         """

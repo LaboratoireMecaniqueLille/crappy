@@ -2,8 +2,10 @@
 import serial
 from ._meta import motion
 
+
 class BiaxeSensor(motion.MotionSensor):
     """Declare a new axis for the Biaxe"""
+
     def __init__(self, port='/dev/ttyUSB0', baudrate=38400, timeout=1, ser=None):
         """This class create an axis and opens the corresponding serial port.
         
@@ -16,17 +18,18 @@ class BiaxeSensor(motion.MotionSensor):
         timeout : int or float, default = 1
                 Serial timeout.
         """
+        super(BiaxeSensor, self).__init__(port, baudrate)
         self.port = port
-        self.baudrate= baudrate
-        self.timeout=timeout
-        if ser != None:
+        self.baudrate = baudrate
+        self.timeout = timeout
+        if ser is not None:
             self.ser = ser
         else:
-            self.ser=serial.Serial(self.port,self.baudrate,
-                                        serial.EIGHTBITS,serial.PARITY_EVEN
-                                        ,serial.STOPBITS_ONE,self.timeout)
+            self.ser = serial.Serial(self.port, self.baudrate,
+                                     serial.EIGHTBITS, serial.PARITY_EVEN
+                                     , serial.STOPBITS_ONE, self.timeout)
             self.ser.write("OPMODE 0\r\n EN\r\n")
-        
+
     def get_position(self):
         """
         TODO

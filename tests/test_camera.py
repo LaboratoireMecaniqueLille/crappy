@@ -14,7 +14,7 @@ from serial import SerialException
 		
 		t0=time.time() 
 		for instance in crappy.blocks._meta.MasterBlock.instances:
-			instance.set_t0(t0)
+			instance.t0(t0)
 
 		for instance in crappy.blocks._meta.MasterBlock.instances:
 			instance.start()

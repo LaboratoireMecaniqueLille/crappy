@@ -56,7 +56,7 @@ class Jai(cameraSensor.CameraSensor):
         jai.Camera_start(self.cam)
         
       
-    def getImage(self):
+    def get_image(self):
         """This method get a frame on the selected camera and return a ndarray """
         return jai.Camera_Buffer(self.cam)	
   

@@ -1,21 +1,20 @@
 import abc
 
-class MotionActuator(object):
 
-    __metaclass__= abc.ABCMeta
+class MotionActuator(object):
+    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def __init__(self, port, baudrate):
+    def __init__(self):
         return
-        
-    
+
     @abc.abstractmethod
     def set_speed(self, speed):
         """
         Re-define the speed of the motor.
         """
         pass
-    
+
     @abc.abstractmethod
     def set_position(self, position, speed):
         """
