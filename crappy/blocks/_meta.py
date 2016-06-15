@@ -89,7 +89,6 @@ class MasterBlock(object):
 
     @t0.setter
     def t0(self, t0):
-        print "call to t0 setter"
         self._t0 = t0
 
 

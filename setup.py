@@ -104,7 +104,7 @@ if platform.system() == "Windows":
 #         ext_lib.append(("sensor\\", ["build\\lib.win-amd64-2.7\\crappy\\sensor\\ximeaModule.pyd"]))
 
 setup(
-    name='crappy',
+    name='crappy2',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -159,7 +159,7 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
 
-    ext_package='crappy',
+    ext_package='crappy2',
     ext_modules=extentions,
 
     # List run-time dependencies here.  These will be installed by pip when

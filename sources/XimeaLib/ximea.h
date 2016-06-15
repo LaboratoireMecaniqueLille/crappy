@@ -27,8 +27,6 @@
 #include <string>
 #include <typeinfo>
 #include <map>
-#include <pthread.h>
-#include <semaphore.h>
 
 #define HandleResult(res,place) if (res!=XI_OK) {printf(" An error occured: %s (%d)\n",place,res);close();}
 

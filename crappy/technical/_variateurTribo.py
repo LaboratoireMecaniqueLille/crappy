@@ -7,8 +7,8 @@ from ._meta import motion
 
 class VariateurTribo(motion.Motion):
     def __init__(self, port='/dev/ttyS0', port_arduino='/dev/ttyACM0', baudrate=38400):
-        self.port = port
         self.baudrate = baudrate
+        self.port = port
         self.port_arduino = port_arduino
         self.ser = serial.Serial(self.port, baudrate=self.baudrate, parity=serial.PARITY_NONE,
                                  stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)

@@ -14,7 +14,6 @@ PyObject *myDict = PyDict_New();
 PyObject *rslt = PyTuple_New(2);
 PyObject *rslt_data = PyTuple_New(2);
 char *array_buffer;
-sem_t mutex, read_mutex;
 
 PyObject*
 VideoCapture_open(int device)
