@@ -37,16 +37,15 @@ class MeasureByStep(MasterBlock):
 
     def main(self):
         try:
-            try:
-                print "measureByStep : ", os.getpid()
-                _a = self.inputs[:]
+            print "measureByStep : ", os.getpid()
+            if len(self.inputs) != 0:
                 trigger = "external"
-            except AttributeError:
+            else:
                 trigger = "internal"
             timer = time.time()
             while True:
                 if trigger == "internal":
-                    if self.freq != None:
+                    if self.freq is not None:
                         while time.time() - timer < 1. / self.freq:
                             time.sleep(1. / (100 * self.freq))
                         timer = time.time()
@@ -56,14 +55,14 @@ class MeasureByStep(MasterBlock):
                     data = t - self.t0
                     value.insert(0, data)
                 if trigger == "external":
-                    if self.inputs.input_.recv():  # wait for a signal
+                    if self.inputs[0].recv():  # wait for a signal
                         pass
                     # data=[time.time()-self.t0]
                     # for channel_number in range(self.sensor.nchans):
                     t, value = self.sensor.get_data("all")
                     data = t - self.t0
                     value.insert(0, data)
-                if self.labels == None:
+                if self.labels is None:
                     self.Labels = [i for i in range(self.sensor.nchans + 1)]
                 # Array=pd.DataFrame([data],columns=self.labels)
                 # print value, self.labels
@@ -77,6 +76,5 @@ class MeasureByStep(MasterBlock):
                     pass
 
         except (Exception, KeyboardInterrupt) as e:
-            print "Exception in measureComediByStep : ", e
+            print "Exception in measureByStep : ", e
             self.sensor.close()
-        # raise

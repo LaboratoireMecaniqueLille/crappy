@@ -7,9 +7,11 @@ crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 try:
     # Creating objects
     # instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10])
-    sensor = crappy.sensor.ComediSensor(device='/dev/comedi1', channels=[0, 1, 2, 3],
-                                        gain=[0.02, 100000, 0.01 * 2., 500])  # dist is multiplied by 2 to be correct
-    # sensor=crappy.sensor.LabJackSensor(channels=[0],gain=[1],chan_range=10,mode="streamer",scanRate=10,scansPerRead=5) # dist is multiplied by 2 to be correct
+    # sensor = crappy.sensor.ComediSensor(device='/dev/comedi1', channels=[0, 1, 2, 3],
+    #                                     gain=[0.02, 100000, 0.01 * 2., 500])  # dist is multiplied by 2 to be correct
+    # sensor = crappy.sensor.LabJackSensor(channels=[0],gain=[1],chan_range=10,mode="streamer",scanRate=10,scansPerRead=5)
+    sensor = crappy.sensor.LabJackSensor(channels=[0], gain=1, resolution=12, chan_range=0.01, mode="single")  #
+    # dist is multiplied by 2 to be correct
     # instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10000]) # 10 times the gain on the machine if you go through an usb dux sigma
     # cmd_traction=crappy.actuator.LabJackActuator(channel="TDAC2", gain=1, offset=0)
     # cmd_traction2=crappy.actuator.LabJackActuator(channel="TDAC3", gain=1, offset=0)
@@ -24,7 +26,8 @@ try:
     # send_freq=400, actuator=cmd_traction, waveform=['sinus','sinus','sinus'], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[1,2,4], offset=[0,0,0], phase=[0,0,0], repeat=True
     # send_freq=400, actuator=cmd_torsion, waveform=['sinus','triangle','sinus'], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[0,0,0], offset=[0,0,0], phase=[np.pi,np.pi,np.pi], repeat=True
     # stream=crappy.blocks.MeasureByStep(instronSensor,labels=['t(s)','signal','signal2'],freq=200)
-    stream = crappy.blocks.MeasureByStep(sensor, labels=['t(s)', 'def(%)', 'F(N)', 'dist', 'C(Nm)'], freq=100)
+    # stream = crappy.blocks.MeasureByStep(sensor, labels=['t(s)', 'def(%)', 'F(N)', 'dist', 'C(Nm)'], freq=100)
+    stream = crappy.blocks.MeasureByStep(sensor, labels=['t(s)', 'T'], freq=100)
     # stream=crappy.blocks.Streamer(sensor,labels=['t(s)','signal','signal2'])
     # stream=crappy.blocks.MeasureComediByStep(instronSensor, labels=['t(s)','V'], freq=1000.)
     # traction=crappy.blocks.SignalGenerator(path=[{"waveform":"sinus","time":100,"phase":0,"amplitude":1,"offset":0,"freq":2}],
@@ -33,10 +36,10 @@ try:
     # ,send_freq=400,repeat=False,labels=['t(s)','signal'])
 
     # send_output=crappy.blocks.CommandComedi([cmd_traction,cmd_traction2])
-    compacter = crappy.blocks.Compacter(30)
+    compacter = crappy.blocks.Compacter(2)
     # compacter2=crappy.blocks.Compacter(400)
     # save=crappy.blocks.Saver("/home/ilyesse/Bureau/delete_me3.txt")
-    graph = crappy.blocks.Grapher("dynamic", ('t(s)', 'def(%)'), ('t(s)', 'dist'))
+    graph = crappy.blocks.Grapher("static", ('t(s)', 'T'))
     # graph_stat=crappy.blocks.Grapher("dynamic",(0,2))
     # graph2=crappy.blocks.Grapher("dynamic",('t(s)','ang(deg)'),('t(s)','dep(mm)'))
     # graph3=crappy.blocks.Grapher("dynamic",(0,4))
