@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1actuator" kind="namespace" language="Python">
+    <compoundname>crappy::actuator</compoundname>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__Agilent34420AActuator">crappy::actuator::_Agilent34420AActuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__biaxeActuator">crappy::actuator::_biaxeActuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__biotensActuator">crappy::actuator::_biotensActuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__CMdriveActuator">crappy::actuator::_CMdriveActuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__comediActuator">crappy::actuator::_comediActuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__daqmxActuator">crappy::actuator::_daqmxActuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__labJackActuator">crappy::actuator::_labJackActuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__lal300Actuator">crappy::actuator::_lal300Actuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__meta">crappy::actuator::_meta</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__orientalActuator">crappy::actuator::_orientalActuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__PIActuator">crappy::actuator::_PIActuator</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__variateurTriboActuator">crappy::actuator::_variateurTriboActuator</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>@package actuator
+</verbatim> </para>    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/__init__.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

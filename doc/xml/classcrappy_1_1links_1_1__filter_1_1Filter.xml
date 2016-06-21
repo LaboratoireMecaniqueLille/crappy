@@ -1,0 +1,249 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1links_1_1__filter_1_1Filter" kind="class" language="Python" prot="public">
+    <compoundname>crappy::links::_filter::Filter</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__filter_1_1Filter_1a57debbb2fe3bb0885130070314deeb6a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._filter.Filter::mode</definition>
+        <argsstring></argsstring>
+        <name>mode</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__filter_1_1Filter_1aaf9c3011f8907b3c0e2f5370f3d87a2a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._filter.Filter::size</definition>
+        <argsstring></argsstring>
+        <name>size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__filter_1_1Filter_1a4e3f7edc0d076d8a4452ef5b71f343df" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._filter.Filter::labels</definition>
+        <argsstring></argsstring>
+        <name>labels</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__filter_1_1Filter_1a27eab9ca9979014cb0c6f56ab97ea817" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._filter.Filter::FIFO</definition>
+        <argsstring></argsstring>
+        <name>FIFO</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__filter_1_1Filter_1af2e8dd7b25ad66d22298f40138a89dc0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._filter.Filter.__init__</definition>
+        <argsstring>(self, labels=[], mode=&quot;median&quot;, size=10)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>[]</defval>
+        </param>
+        <param>
+          <type>mode</type>
+          <defname>mode</defname>
+          <defval>&quot;median&quot;</defval>
+        </param>
+        <param>
+          <type>size</type>
+          <defname>size</defname>
+          <defval>10</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This condition filters the selected data with a mean or a median.
+
+Parameters
+----------
+labels : list of str
+    List of all the labels of the data you want to filter.
+mode : {&apos;median&apos;, &apos;mean&apos;}
+    You can either filter with a mean or a median.
+size : int, default = 10
+    Define on how many point you want to apply your filter.
+
+Returns
+-------
+dict : OrderedDict
+
+    The dict contains the same values as the input, plus the filtered value,
+    labeled as (name_of_the_input_label)_filtered.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" bodystart="9" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__filter_1_1Filter_1a724cdc3fff836500d1376cb5782e4426" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._filter.Filter.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" bodystart="36" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__filter_1_1Filter_1af2e8dd7b25ad66d22298f40138a89dc0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._filter.Filter.__init__</definition>
+        <argsstring>(self, labels=[], mode=&quot;median&quot;, size=10)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>[]</defval>
+        </param>
+        <param>
+          <type>mode</type>
+          <defname>mode</defname>
+          <defval>&quot;median&quot;</defval>
+        </param>
+        <param>
+          <type>size</type>
+          <defname>size</defname>
+          <defval>10</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This condition filters the selected data with a mean or a median.
+
+Parameters
+----------
+labels : list of str
+    List of all the labels of the data you want to filter.
+mode : {&apos;median&apos;, &apos;mean&apos;}
+    You can either filter with a mean or a median.
+size : int, default = 10
+    Define on how many point you want to apply your filter.
+
+Returns
+-------
+dict : OrderedDict
+
+    The dict contains the same values as the input, plus the filtered value,
+    labeled as (name_of_the_input_label)_filtered.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/links/_filter.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/links/_filter.py" bodystart="9" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__filter_1_1Filter_1a724cdc3fff836500d1376cb5782e4426" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._filter.Filter.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/links/_filter.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/links/_filter.py" bodystart="36" bodyend="48"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Filters the signal.</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="272">
+        <label>crappy.links._filter.Filter</label>
+        <link refid="classcrappy_1_1links_1_1__filter_1_1Filter"/>
+        <childnode refid="273" relation="public-inheritance">
+        </childnode>
+        <childnode refid="273" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="273">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="274">
+        <label>crappy.links._filter.Filter</label>
+        <link refid="classcrappy_1_1links_1_1__filter_1_1Filter"/>
+        <childnode refid="275" relation="public-inheritance">
+        </childnode>
+        <childnode refid="275" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="275">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" line="6" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py" bodystart="6" bodyend="48"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1links_1_1__filter_1_1Filter_1af2e8dd7b25ad66d22298f40138a89dc0" prot="public" virt="non-virtual"><scope>crappy::links::_filter::Filter</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__filter_1_1Filter_1af2e8dd7b25ad66d22298f40138a89dc0" prot="public" virt="non-virtual"><scope>crappy::links::_filter::Filter</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1a89c53120fc4612994d159fda9447d2c2" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy::links::_filter::Filter</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a724cdc3fff836500d1376cb5782e4426" prot="public" virt="non-virtual"><scope>crappy::links::_filter::Filter</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a724cdc3fff836500d1376cb5782e4426" prot="public" virt="non-virtual"><scope>crappy::links::_filter::Filter</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy::links::_filter::Filter</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a27eab9ca9979014cb0c6f56ab97ea817" prot="public" virt="non-virtual"><scope>crappy::links::_filter::Filter</scope><name>FIFO</name></member>
+      <member refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a4e3f7edc0d076d8a4452ef5b71f343df" prot="public" virt="non-virtual"><scope>crappy::links::_filter::Filter</scope><name>labels</name></member>
+      <member refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a57debbb2fe3bb0885130070314deeb6a" prot="public" virt="non-virtual"><scope>crappy::links::_filter::Filter</scope><name>mode</name></member>
+      <member refid="classcrappy_1_1links_1_1__filter_1_1Filter_1aaf9c3011f8907b3c0e2f5370f3d87a2a" prot="public" virt="non-virtual"><scope>crappy::links::_filter::Filter</scope><name>size</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

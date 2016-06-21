@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command" kind="class" language="Python" prot="public">
+    <compoundname>crappy::actuator::_meta::command::Command</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="private-static-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1af9397d4c6e274e134468fc79e5a1e833" prot="private" static="yes" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._meta.command.Command::__metaclass__</definition>
+        <argsstring></argsstring>
+        <name>__metaclass__</name>
+        <initializer>= abc.ABCMeta</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" bodystart="5" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1aa0db7c043a1c5659a5cff48c789c5b6a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.command.Command.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" bodystart="8" bodyend="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a200c659b0167017ec5c1a25ba5746dc4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.command.Command.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" bodystart="12" bodyend="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a9d010ea2b7c9e8fa0ae50d3e0d82e658" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.command.Command.set_cmd</definition>
+        <argsstring>(self)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Send a converted tension value the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" bodystart="16" bodyend="21"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a9da41a566507980223c6256c815c3844" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.command.Command.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" bodystart="23" bodyend="25"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1aa0db7c043a1c5659a5cff48c789c5b6a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.command.Command.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/command.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/command.py" bodystart="8" bodyend="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a200c659b0167017ec5c1a25ba5746dc4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.command.Command.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/command.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/command.py" bodystart="12" bodyend="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a9d010ea2b7c9e8fa0ae50d3e0d82e658" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.command.Command.set_cmd</definition>
+        <argsstring>(self)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Send a converted tension value the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/command.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/command.py" bodystart="16" bodyend="21"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a9da41a566507980223c6256c815c3844" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.command.Command.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/command.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/command.py" bodystart="23" bodyend="25"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="123">
+        <label>object</label>
+      </node>
+      <node id="122">
+        <label>crappy.actuator._meta.command.Command</label>
+        <link refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command"/>
+        <childnode refid="123" relation="public-inheritance">
+        </childnode>
+        <childnode refid="123" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="125">
+        <label>object</label>
+      </node>
+      <node id="124">
+        <label>crappy.actuator._meta.command.Command</label>
+        <link refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command"/>
+        <childnode refid="125" relation="public-inheritance">
+        </childnode>
+        <childnode refid="125" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/command.py" bodystart="4" bodyend="25"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1aa0db7c043a1c5659a5cff48c789c5b6a" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::command::Command</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1aa0db7c043a1c5659a5cff48c789c5b6a" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::command::Command</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1af9397d4c6e274e134468fc79e5a1e833" prot="private" virt="non-virtual"><scope>crappy::actuator::_meta::command::Command</scope><name>__metaclass__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a9da41a566507980223c6256c815c3844" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::command::Command</scope><name>close</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a9da41a566507980223c6256c815c3844" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::command::Command</scope><name>close</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a200c659b0167017ec5c1a25ba5746dc4" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::command::Command</scope><name>new</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a200c659b0167017ec5c1a25ba5746dc4" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::command::Command</scope><name>new</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a9d010ea2b7c9e8fa0ae50d3e0d82e658" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::command::Command</scope><name>set_cmd</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1command_1_1Command_1a9d010ea2b7c9e8fa0ae50d3e0d82e658" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::command::Command</scope><name>set_cmd</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

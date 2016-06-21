@@ -1,0 +1,520 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="group__videocapture" kind="group">
+    <compoundname>videocapture</compoundname>
+    <title>Videocapture</title>
+    <innerfile refid="pyCameraLink_8cpp">pyCameraLink.cpp</innerfile>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="group__videocapture_1ga995fe516cc30d63ee61d8ba8addae4bc" prot="public" static="no" mutable="no">
+        <type><ref refid="classCaptureCAM__CL" kindref="compound">CaptureCAM_CL</ref> *</type>
+        <definition>CaptureCAM_CL* capt</definition>
+        <argsstring></argsstring>
+        <name>capt</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="group__videocapture_1gac5efdaa19361d99c6aad5655b22f37d4" prot="public" static="no" mutable="no">
+        <type>PyObject *</type>
+        <definition>PyObject* myDict</definition>
+        <argsstring></argsstring>
+        <name>myDict</name>
+        <initializer>= PyDict_New()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="group__videocapture_1ga77544bdfcd720ea2b6f071b4a7a15a3f" prot="public" static="no" mutable="no">
+        <type>PyObject *</type>
+        <definition>PyObject* rslt</definition>
+        <argsstring></argsstring>
+        <name>rslt</name>
+        <initializer>= PyTuple_New(2)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="group__videocapture_1ga41628769fdff45ffe979265b06f8a648" prot="public" static="no" mutable="no">
+        <type>char *</type>
+        <definition>char* array_buffer</definition>
+        <argsstring></argsstring>
+        <name>array_buffer</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="group__videocapture_1gaafc96ff152ed42d3faf6972917aaaf96" prot="public" static="yes" mutable="no">
+        <type>PyMemberDef</type>
+        <definition>PyMemberDef VideoCapture_members[]</definition>
+        <argsstring>[]</argsstring>
+        <name>VideoCapture_members</name>
+        <initializer>= {
+    {NULL} 
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="475" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="475" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="group__videocapture_1ga507495110ffc7e89fc4b9c95fcfb74c8" prot="public" static="yes" mutable="no">
+        <type>PyMethodDef</type>
+        <definition>PyMethodDef VideoCapture_methods[]</definition>
+        <argsstring>[]</argsstring>
+        <name>VideoCapture_methods</name>
+        <initializer>= {
+	 {&quot;read&quot;, (PyCFunction)<ref refid="group__videocapture_1ga8d6345ea87da8d740282da893242e25f" kindref="member">VideoCapture_fgread</ref>, METH_NOARGS,
+	 &quot;read a frame from ximea device, return a tuple containing a bool (true= success, false= fail) and a dictionnary with a ndarray and meta data.&quot;},
+	 {&quot;set&quot;, (PyCFunction)<ref refid="group__videocapture_1ga9ffd6bd67eb9921066ca6290ceab7eaf" kindref="member">VideoCapture_set</ref>, METH_VARARGS,
+	 &quot;set the configuration parameter specified of a ximea device&quot;},
+	 {&quot;get&quot;, (PyCFunction)<ref refid="group__videocapture_1gae26ee5dffe8b0bd008f5f8900415acdc" kindref="member">VideoCapture_get</ref>, METH_VARARGS,
+	 &quot;get the configuration parameter specified of a ximea device&quot;},
+	 {&quot;isOpened&quot;, (PyCFunction)<ref refid="group__videocapture_1ga607e342cefc7fd26cf9ada03e6c63154" kindref="member">VideoCapture_isOpened</ref>, METH_NOARGS,
+	 &quot;return true if the ximea device is opened, false otherwise.&quot;},
+	 {&quot;release&quot;, (PyCFunction)<ref refid="group__videocapture_1ga1e1031f88074e6da641300fbfd3443b2" kindref="member">VideoCapture_release</ref>, METH_NOARGS,
+	 &quot;release the ximea device.&quot;},
+         {&quot;startAcq&quot;, (PyCFunction)<ref refid="group__videocapture_1ga3b3854c25d949c83d3abaf6d29234773" kindref="member">VideoCapture_startAcquisition</ref>, METH_NOARGS,
+	 &quot;Start the acquisition of a camera device&quot;},
+         {&quot;stopAcq&quot;, (PyCFunction)<ref refid="group__videocapture_1gadc5ffb2ba6fdf814ae327008b7e86259" kindref="member">VideoCapture_stopAcquisition</ref>, METH_NOARGS,
+	 &quot;Stop the acquisition of a camera device.&quot;},
+	 {&quot;serialWrite&quot;, (PyCFunction)<ref refid="group__videocapture_1ga8b4f160e2dd63025756c76b5cd55de0b" kindref="member">VideoCapture_serialSet</ref>, METH_VARARGS,
+	 &quot;Write data to the serial port of a camera device.&quot;},
+	 
+	 
+    {NULL}
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="568" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="568" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="group__videocapture_1gaa2a165a72d4dbe4fa7d77164193a8bc4" prot="public" static="yes" mutable="no">
+        <type>PyTypeObject</type>
+        <definition>PyTypeObject VideoCaptureType</definition>
+        <argsstring></argsstring>
+        <name>VideoCaptureType</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="590" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="590" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="group__videocapture_1gafcd2b5e08091d3973eb552badcfec160" prot="public" static="yes" mutable="no">
+        <type>PyMethodDef</type>
+        <definition>PyMethodDef module_methods[]</definition>
+        <argsstring>[]</argsstring>
+        <name>module_methods</name>
+        <initializer>= {
+    {NULL}
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="632" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="632" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="group__videocapture_1ga3c3565b6ebb457695ebbd5735b72951c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_open</definition>
+        <argsstring>(int device, const char *file)</argsstring>
+        <name>VideoCapture_open</name>
+        <param>
+          <type>int</type>
+          <declname>device</declname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>file</declname>
+        </param>
+        <briefdescription>
+<para>method to open a camera device through the cameraLink interface. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The number of the device to be openned. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>a call to <ref refid="group__videocapture_1ga607e342cefc7fd26cf9ada03e6c63154" kindref="member">VideoCapture_isOpened()</ref> </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="43" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="43" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga3b3854c25d949c83d3abaf6d29234773" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_startAcquisition</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_startAcquisition</name>
+        <briefdescription>
+<para>Start the acquisition of a camera device. The acquisition is started automaticaly after a call to the constructor of the <ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> class. If you want to change some parameters of the acquisition, you have to call stopAcq() first. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="80" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="80" bodyend="86"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1gadc5ffb2ba6fdf814ae327008b7e86259" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_stopAcquisition</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_stopAcquisition</name>
+        <briefdescription>
+<para>Stop the acquisition of a camera device. The acquisition is started automaticaly after a call to the constructor of the <ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> class. If you want to change some parameters of the acquisition, you have to call stopAcq() first. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="95" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="95" bodyend="101"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga607e342cefc7fd26cf9ada03e6c63154" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_isOpened</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_isOpened</name>
+        <briefdescription>
+<para>It check if te camera is running or it has been stopped. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><itemizedlist>
+<listitem><para>Py_True if the camera is openned.</para></listitem><listitem><para>Py_False if the camera is closed. </para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="111" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="111" bodyend="118"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga1e1031f88074e6da641300fbfd3443b2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_release</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_release</name>
+        <briefdescription>
+<para>Close the camera device: stop the acquisition and free the allocated memory. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="125" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="125" bodyend="129"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga8b4f160e2dd63025756c76b5cd55de0b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_serialSet</definition>
+        <argsstring>(VideoCapture *self, PyObject *args)</argsstring>
+        <name>VideoCapture_serialSet</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+<para>Setting the value of a parameter from the serial interface. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>buffer</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>will be written to the serial port. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="137" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="137" bodyend="145"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga0c09d99edd7283a79650234d342baae0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool VideoCapture_grab</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_grab</name>
+        <briefdescription>
+<para>Stop the acquisition and free the allocated memory. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>True if the frame grabber has successfully grabbed a frame. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="155" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="155" bodyend="158"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga01d0cc219778d02ad95b1bd6d905d4c7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_retrieve</definition>
+        <argsstring>(VideoCapture *self)</argsstring>
+        <name>VideoCapture_retrieve</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+<para>Method to retrieve a frame to Python understanding format. It get the pointer to previously grabbed frame, and convert it to a numpy array object. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><itemizedlist>
+<listitem><para>myDict, which contains the frame&apos;s data and the meta data of the grabbed frame.</para></listitem><listitem><para>Py_None if the current format has not been retrived. </para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="168" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="168" bodyend="249"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga3f01e3c0d5b206db9aa998dd43b7d50f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_getMeta</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_getMeta</name>
+        <briefdescription>
+<para>Method to get meta data of the grabbed frame. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><itemizedlist>
+<listitem><para>myDict, which contains the meta data of the grabbed frame:<orderedlist>
+<listitem><para>the width of the grabbed frame</para></listitem><listitem><para>the height of the grabbed frame </para></listitem></orderedlist>
+</para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="259" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="259" bodyend="285"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga8d6345ea87da8d740282da893242e25f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_fgread</definition>
+        <argsstring>(VideoCapture *self)</argsstring>
+        <name>VideoCapture_fgread</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+<para>Method to get the dictionnary containing the meta data, the frame data and the status of the grabbed frame. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>A PyTuple containing the status of the grabbing as first position:<itemizedlist>
+<listitem><para>Py_False if the grabbing has failled</para></listitem><listitem><para>Py_True if the grabbing has succeded and the disctionnary containing the data and meta data of the grabbed frame, or Py_None if the grabbing has failled. </para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="295" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="295" bodyend="308"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga9ffd6bd67eb9921066ca6290ceab7eaf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_set</definition>
+        <argsstring>(VideoCapture *self, PyObject *args)</argsstring>
+        <name>VideoCapture_set</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+<para>Setting the value of a parameter from a frame grabber. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>property_id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>As argument, a identification number is needed. If the identification number is unknown, the parameter name has to be given. It can be one of the following:<itemizedlist>
+<listitem><para>FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.</para></listitem><listitem><para>FG_WIDTH: Width of the clipping image.</para></listitem><listitem><para>FG_HEIGHT: Height of the clipping image.</para></listitem><listitem><para>FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).</para></listitem><listitem><para>FG_XOFFSET: X-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_YOFFSET: Y-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_FRAMESPERSEC: Number of images per second.</para></listitem><listitem><para>FG_EXPOSURE: Exposure time in µs.</para></listitem><listitem><para>FG_FORMAT: Color format of the transferred image<orderedlist>
+<listitem><para>8bit gray (FG_GRAY)</para></listitem><listitem><para>16bit color (FG_GRAY16)</para></listitem><listitem><para>24bit color (FG_COL24). See color management of the according frame grabber design.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_PORT: Logical number of the active CameraLink port.</para></listitem><listitem><para>FG_TRIGGERMODE: Trigger modes:<orderedlist>
+<listitem><para>FREE_RUN</para></listitem><listitem><para>GRABBER_CONTROLLED</para></listitem><listitem><para>GRABBER_CONTROLLED_SYNCRON</para></listitem><listitem><para>ASYNC_SOFTWARE_TRIGGER</para></listitem><listitem><para>ASYNC_TRIGGER.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.</para></listitem><listitem><para>FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.</para></listitem></itemizedlist>
+</para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Pointer to required value. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Py_True if the parameter was read correctly Py_False if an invalid parameter has been entered or if the entered value is besides valid ranges. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="344" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="344" bodyend="352"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1gae26ee5dffe8b0bd008f5f8900415acdc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_get</definition>
+        <argsstring>(VideoCapture *self, PyObject *args)</argsstring>
+        <name>VideoCapture_get</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+<para>Reading the current value of a parameter from a frame grabber. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>property_id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>As argument, a identification number is needed. If the identification number is unknown, the parameter name has to be given. It can be one of the following:<itemizedlist>
+<listitem><para>FG_CAMSTAUS: If a camera signal is on CameraLink port value is 1 else 0.</para></listitem><listitem><para>FG_REVNR: Current revision version of camera DLL.</para></listitem><listitem><para>FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.</para></listitem><listitem><para>FG_WIDTH: Width of the clipping image.</para></listitem><listitem><para>FG_MAXWIDTH: Maximum width of the clipping image.</para></listitem><listitem><para>FG_HEIGHT: Height of the clipping image.</para></listitem><listitem><para>FG_MAXHEIGHT: Maximum height of the clipping image.</para></listitem><listitem><para>FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).</para></listitem><listitem><para>FG_XOFFSET: X-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_YOFFSET: Y-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_FRAMESPERSEC: Number of images per second.</para></listitem><listitem><para>FG_EXPOSURE: Exposure time in µs.</para></listitem><listitem><para>FG_FORMAT: Color format of the transferred image<orderedlist>
+<listitem><para>8bit gray (FG_GRAY)</para></listitem><listitem><para>16bit color (FG_GRAY16)</para></listitem><listitem><para>24bit color (FG_COL24). See color management of the according frame grabber design.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_PORT: Logical number of the active CameraLink port.</para></listitem><listitem><para>FG_PIXELDEPTH: Returns the depth of color of the pixel.</para></listitem><listitem><para>FG_LINEALIGNMENT: Returns the alignment of a line (in bits).</para></listitem><listitem><para>FG_TRANSFER_LEN: Returns the length of the last DMA transfer.</para></listitem><listitem><para>FG_TRIGGERMODE: Trigger modes:<orderedlist>
+<listitem><para>FREE_RUN</para></listitem><listitem><para>GRABBER_CONTROLLED</para></listitem><listitem><para>GRABBER_CONTROLLED_SYNCRON</para></listitem><listitem><para>ASYNC_SOFTWARE_TRIGGER</para></listitem><listitem><para>ASYNC_TRIGGER.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.</para></listitem><listitem><para>FG_TWOCAMMODEL: Returns the value, if the loaded camera applet is a dual (1) or a single applet (0).</para></listitem><listitem><para>FG_HDSYNC: Returns the HDSYNC value.</para></listitem><listitem><para>FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.</para></listitem><listitem><para>FG_BOARD_INFORMATION: Information on the board type:<orderedlist>
+<listitem><para>BINFO_BOARD_TYPE:<itemizedlist>
+<listitem><para>0xa40 for microEnable IV-Base x1</para></listitem><listitem><para>0xa41 for microEnable IV-Full x1</para></listitem><listitem><para>0xa44 for microEnable IV-Full x4</para></listitem></itemizedlist>
+</para></listitem><listitem><para>BINFO_POCL:<itemizedlist>
+<listitem><para>0 for microEnable IV-Base x1</para></listitem><listitem><para>1 for microEnable IV-Base x1 PoCL </para></listitem></itemizedlist>
+</para></listitem></orderedlist>
+</para></listitem></itemizedlist>
+</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><itemizedlist>
+<listitem><para>Py_True if the parameter was read correctly</para></listitem><listitem><para>Py_False if an invalid parameter has been entered. </para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="405" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="405" bodyend="411"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga48861707a9306ad742ce71d49431ad46" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>static void VideoCapture_dealloc</definition>
+        <argsstring>(VideoCapture *self)</argsstring>
+        <name>VideoCapture_dealloc</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+<para>The destructor of the <ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> class It release the camera device, and free all the allocated memory. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="418" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="418" bodyend="423"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga1a96426fdf333651aab9656ae32ee2b0" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>static PyObject * VideoCapture_new</definition>
+        <argsstring>(PyTypeObject *type, PyObject *args, PyObject *kwds)</argsstring>
+        <name>VideoCapture_new</name>
+        <param>
+          <type>PyTypeObject *</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>kwds</declname>
+        </param>
+        <briefdescription>
+<para>The constructor of the <ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> class It create the self parameter to be use later in Python. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>self parameter, which represent an instance of the <ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> class. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="431" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="431" bodyend="442"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga0f80f3755e194457496f745dd527e684" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int VideoCapture_init</definition>
+        <argsstring>(VideoCapture *self, PyObject *args, PyObject *kwds)</argsstring>
+        <name>VideoCapture_init</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>kwds</declname>
+        </param>
+        <briefdescription>
+<para>This method is called after the constructor, it initialize the <ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> instance It opens the camera device and create a <ref refid="classCaptureCAM__CL" kindref="compound">CaptureCAM_CL</ref> instance. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>0 if the parsed argument are valable, -1 if not. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="450" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="450" bodyend="460"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1ga53a62040db1d78a3758d9d8e9ec33289" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void set_map_to_export</definition>
+        <argsstring>()</argsstring>
+        <name>set_map_to_export</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="481" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="481" bodyend="566"/>
+      </memberdef>
+      <memberdef kind="function" id="group__videocapture_1gadc29d363d02611463496f131a0b926ba" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyMODINIT_FUNC</type>
+        <definition>PyMODINIT_FUNC initclModule</definition>
+        <argsstring>(void)</argsstring>
+        <name>initclModule</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+<para>This function will create the clModule and export the references to the <ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> class and other exported variables. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" line="642" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/pyCameraLink.cpp" bodystart="642" bodyend="675"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

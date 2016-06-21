@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="build_2lib_8linux-x86__64-2_87_2crappy_2technical_2____init_____8py" kind="file" language="Python">
+    <compoundname>__init__.py</compoundname>
+    <innernamespace refid="namespacecrappy_1_1technical">crappy::technical</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">#<sp/>coding:<sp/>utf-8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="comment">#<sp/>def<sp/>main():</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="comment">#<sp/><sp/><sp/><sp/><sp/>&quot;&quot;&quot;Entry<sp/>point<sp/>for<sp/>the<sp/>application<sp/>script&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="comment">#<sp/><sp/><sp/><sp/><sp/>print(&quot;Call<sp/>your<sp/>main<sp/>application<sp/>code<sp/>here&quot;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="keywordflow">try</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._biotensTechnical<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Biotens</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="keywordflow">except</highlight><highlight class="normal"><sp/>Exception<sp/></highlight><highlight class="keyword">as</highlight><highlight class="normal"><sp/>_e:</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">print</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&apos;WARNING:<sp/>&apos;</highlight><highlight class="normal">,<sp/>_e</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"><sp/><sp/><sp/><sp/>del<sp/>(_e)</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._biaxeTechnical<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Biaxe</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._biotensTechnical<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Biotens</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._lal300Technical<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Lal300</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._PITechnical<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>PI</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal">__motors__<sp/>=<sp/>[</highlight><highlight class="stringliteral">&apos;Biotens&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;Biaxe&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;Lal300&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;PI&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;VariateurTribo&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;CmDrive&apos;</highlight><highlight class="normal">]</highlight></codeline>
+<codeline lineno="19"><highlight class="normal">__boardnames__<sp/>=<sp/>[</highlight><highlight class="stringliteral">&apos;Comedi&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;Daqmx&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;LabJack&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;Agilent34420A&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;fgen&apos;</highlight><highlight class="normal">]</highlight></codeline>
+<codeline lineno="20"><highlight class="normal">__cameras__<sp/>=<sp/>[</highlight><highlight class="stringliteral">&apos;Ximea&apos;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&apos;Jai&apos;</highlight><highlight class="normal">]</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._variateurTribo<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>VariateurTribo</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._acquisition<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Acquisition</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._command<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Command</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._motion<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Motion</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._CMdriveTechnical<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>CmDrive</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._interfaceCMdrive<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Interface</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="comment">#<sp/>from<sp/>._jaiTechnical<sp/>import<sp/>Jai</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._cameraInit<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>get_camera_config</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._technicalCamera<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>TechnicalCamera</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight><highlight class="comment">#<sp/>from<sp/>.<sp/>import<sp/>*</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="comment">#<sp/>__all__<sp/>=<sp/>[&apos;Ximea&apos;]</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/__init__.py"/>
+  </compounddef>
+</doxygen>

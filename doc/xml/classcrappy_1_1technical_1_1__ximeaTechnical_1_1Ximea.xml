@@ -1,0 +1,364 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea" kind="class" language="Python" prot="public">
+    <compoundname>crappy::technical::_ximeaTechnical::Ximea</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a3d3fefefbd13641a2ae2519987c583d1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::exposure</definition>
+        <argsstring></argsstring>
+        <name>exposure</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="17" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a3a7c20dfd92c1e09188b69679503d795" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::gain</definition>
+        <argsstring></argsstring>
+        <name>gain</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="18" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="18" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a10b144a0c89c69f38da742699b90f5a7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::FPS</definition>
+        <argsstring></argsstring>
+        <name>FPS</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="19" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a7c076e2dba259248aad157fd9c317a56" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::framespersec</definition>
+        <argsstring></argsstring>
+        <name>framespersec</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="20" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a92d50f14b35f2a3d29a97f0f195598ae" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::numdevice</definition>
+        <argsstring></argsstring>
+        <name>numdevice</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1ae24b8f45f99eb689b5074d2506823e6e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::width</definition>
+        <argsstring></argsstring>
+        <name>width</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="22" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a22172b82a109deed9b26ab61ffa8bcc3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::height</definition>
+        <argsstring></argsstring>
+        <name>height</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a1dea71ee566dc6610a73556d4ce8ebda" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::xoffset</definition>
+        <argsstring></argsstring>
+        <name>xoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a1282e6e22ba53e1f4773bf03bf49ac21" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::yoffset</definition>
+        <argsstring></argsstring>
+        <name>yoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a7f946a046e535484cb88b626b4037448" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::external_trigger</definition>
+        <argsstring></argsstring>
+        <name>external_trigger</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1ae0649d3eeb583b6502cfa25914d3d595" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::data_format</definition>
+        <argsstring></argsstring>
+        <name>data_format</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a23f93fcbf702ed7cc206e8ec9f0797d3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::sensor</definition>
+        <argsstring></argsstring>
+        <name>sensor</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a078cbe838dc754ef646d9d6ee8ef41fe" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._ximeaTechnical.Ximea::actuator</definition>
+        <argsstring></argsstring>
+        <name>actuator</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a171f5aefe84c941a2c4e0b7228817858" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._ximeaTechnical.Ximea.__init__</definition>
+        <argsstring>(self, numdevice=0, exposure=10000, gain=0, width=2048, height=2048, xoffset=0, yoffset=0, framespersec=None, external_trigger=False, data_format=0)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>numdevice</type>
+          <defname>numdevice</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>exposure</type>
+          <defname>exposure</defname>
+          <defval>10000</defval>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+          <defval>2048</defval>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+          <defval>2048</defval>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>framespersec</type>
+          <defname>framespersec</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>external_trigger</type>
+          <defname>external_trigger</defname>
+          <defval>False</defval>
+        </param>
+        <param>
+          <type>data_format</type>
+          <defname>data_format</defname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="16" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a171f5aefe84c941a2c4e0b7228817858" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._ximeaTechnical.Ximea.__init__</definition>
+        <argsstring>(self, numdevice=0, exposure=10000, gain=0, width=2048, height=2048, xoffset=0, yoffset=0, framespersec=None, external_trigger=False, data_format=0)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>numdevice</type>
+          <defname>numdevice</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>exposure</type>
+          <defname>exposure</defname>
+          <defval>10000</defval>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+          <defval>2048</defval>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+          <defval>2048</defval>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>framespersec</type>
+          <defname>framespersec</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>external_trigger</type>
+          <defname>external_trigger</defname>
+          <defval>False</defval>
+        </param>
+        <param>
+          <type>data_format</type>
+          <defname>data_format</defname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_ximeaTechnical.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_ximeaTechnical.py" bodystart="16" bodyend="32"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>DEPRECATED : use technicalCamera instead.
+</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="596">
+        <label>object</label>
+      </node>
+      <node id="595">
+        <label>crappy.technical._ximeaTechnical.Ximea</label>
+        <link refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea"/>
+        <childnode refid="596" relation="public-inheritance">
+        </childnode>
+        <childnode refid="596" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="598">
+        <label>object</label>
+      </node>
+      <node id="597">
+        <label>crappy.technical._ximeaTechnical.Ximea</label>
+        <link refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea"/>
+        <childnode refid="598" relation="public-inheritance">
+        </childnode>
+        <childnode refid="598" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_ximeaTechnical.py" bodystart="10" bodyend="32"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a171f5aefe84c941a2c4e0b7228817858" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a171f5aefe84c941a2c4e0b7228817858" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a078cbe838dc754ef646d9d6ee8ef41fe" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>actuator</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1ae0649d3eeb583b6502cfa25914d3d595" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>data_format</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a3d3fefefbd13641a2ae2519987c583d1" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>exposure</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a7f946a046e535484cb88b626b4037448" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>external_trigger</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a10b144a0c89c69f38da742699b90f5a7" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>FPS</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a7c076e2dba259248aad157fd9c317a56" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>framespersec</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a3a7c20dfd92c1e09188b69679503d795" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>gain</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a22172b82a109deed9b26ab61ffa8bcc3" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>height</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a92d50f14b35f2a3d29a97f0f195598ae" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>numdevice</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a23f93fcbf702ed7cc206e8ec9f0797d3" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>sensor</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1ae24b8f45f99eb689b5074d2506823e6e" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>width</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a1dea71ee566dc6610a73556d4ce8ebda" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>xoffset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea_1a1282e6e22ba53e1f4773bf03bf49ac21" prot="public" virt="non-virtual"><scope>crappy::technical::_ximeaTechnical::Ximea</scope><name>yoffset</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1links_1_1__bouncer_1_1Bouncer" kind="class" language="Python" prot="public">
+    <compoundname>crappy::links::_bouncer::Bouncer</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1a3bbe774838c573408573ea9e5c161b4f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._bouncer.Bouncer::labels</definition>
+        <argsstring></argsstring>
+        <name>labels</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_bouncer.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_bouncer.py" bodystart="9" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1abc80dc14a9ec18700187e6d7a3d9ebee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._bouncer.Bouncer.__init__</definition>
+        <argsstring>(self, labels=[])</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>[]</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_bouncer.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_bouncer.py" bodystart="8" bodyend="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1a415f93b5d914c2632567565b061a9bd4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._bouncer.Bouncer.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_bouncer.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_bouncer.py" bodystart="11" bodyend="13"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1abc80dc14a9ec18700187e6d7a3d9ebee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._bouncer.Bouncer.__init__</definition>
+        <argsstring>(self, labels=[])</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>[]</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/links/_bouncer.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/links/_bouncer.py" bodystart="8" bodyend="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1a415f93b5d914c2632567565b061a9bd4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._bouncer.Bouncer.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/links/_bouncer.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/links/_bouncer.py" bodystart="11" bodyend="13"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>DEPRECATED</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="73">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="72">
+        <label>crappy.links._bouncer.Bouncer</label>
+        <link refid="classcrappy_1_1links_1_1__bouncer_1_1Bouncer"/>
+        <childnode refid="73" relation="public-inheritance">
+        </childnode>
+        <childnode refid="73" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="75">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="74">
+        <label>crappy.links._bouncer.Bouncer</label>
+        <link refid="classcrappy_1_1links_1_1__bouncer_1_1Bouncer"/>
+        <childnode refid="75" relation="public-inheritance">
+        </childnode>
+        <childnode refid="75" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_bouncer.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_bouncer.py" bodystart="5" bodyend="13"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1abc80dc14a9ec18700187e6d7a3d9ebee" prot="public" virt="non-virtual"><scope>crappy::links::_bouncer::Bouncer</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1abc80dc14a9ec18700187e6d7a3d9ebee" prot="public" virt="non-virtual"><scope>crappy::links::_bouncer::Bouncer</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1a89c53120fc4612994d159fda9447d2c2" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy::links::_bouncer::Bouncer</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1a415f93b5d914c2632567565b061a9bd4" prot="public" virt="non-virtual"><scope>crappy::links::_bouncer::Bouncer</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1a415f93b5d914c2632567565b061a9bd4" prot="public" virt="non-virtual"><scope>crappy::links::_bouncer::Bouncer</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy::links::_bouncer::Bouncer</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__bouncer_1_1Bouncer_1a3bbe774838c573408573ea9e5c161b4f" prot="public" virt="non-virtual"><scope>crappy::links::_bouncer::Bouncer</scope><name>labels</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

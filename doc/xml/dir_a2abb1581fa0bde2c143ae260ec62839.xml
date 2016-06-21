@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_a2abb1581fa0bde2c143ae260ec62839" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/sources/niFgen</compoundname>
+    <innerfile refid="pyFgen_8cpp">pyFgen.cpp</innerfile>
+    <innerfile refid="pyFgen_8h">pyFgen.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/"/>
+  </compounddef>
+</doxygen>

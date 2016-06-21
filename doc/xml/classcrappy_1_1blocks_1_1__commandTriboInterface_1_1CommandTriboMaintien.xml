@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a8086245c255e5c568e28ea960c64aecb" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._commandTriboInterface.CommandTriboMaintien::VariateurTribo</definition>
+        <argsstring></argsstring>
+        <name>VariateurTribo</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandTriboInterface.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandTriboInterface.py" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a8a42b9ef5753201ed39cc8160b0c0703" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._commandTriboInterface.CommandTriboMaintien.__init__</definition>
+        <argsstring>(self, VariateurTribo, comediDigital, comediOut)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>VariateurTribo</type>
+          <defname>VariateurTribo</defname>
+        </param>
+        <param>
+          <type>comediDigital</type>
+          <defname>comediDigital</defname>
+        </param>
+        <param>
+          <type>comediOut</type>
+          <defname>comediOut</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandTriboInterface.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandTriboInterface.py" bodystart="9" bodyend="12"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a9db98f70eb3c93ea04d3e6d6345bb4c3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._commandTriboInterface.CommandTriboMaintien.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandTriboInterface.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandTriboInterface.py" bodystart="13" bodyend="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a8a42b9ef5753201ed39cc8160b0c0703" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._commandTriboInterface.CommandTriboMaintien.__init__</definition>
+        <argsstring>(self, VariateurTribo, comediDigital, comediOut)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>VariateurTribo</type>
+          <defname>VariateurTribo</defname>
+        </param>
+        <param>
+          <type>comediDigital</type>
+          <defname>comediDigital</defname>
+        </param>
+        <param>
+          <type>comediOut</type>
+          <defname>comediOut</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_commandTriboInterface.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_commandTriboInterface.py" bodystart="9" bodyend="12"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a9db98f70eb3c93ea04d3e6d6345bb4c3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._commandTriboInterface.CommandTriboMaintien.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_commandTriboInterface.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_commandTriboInterface.py" bodystart="13" bodyend="19"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="158">
+        <label>crappy.blocks._commandTriboInterface.CommandTriboMaintien</label>
+        <link refid="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien"/>
+        <childnode refid="159" relation="public-inheritance">
+        </childnode>
+        <childnode refid="159" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="159">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="160" relation="public-inheritance">
+        </childnode>
+        <childnode refid="160" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="160">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="161">
+        <label>crappy.blocks._commandTriboInterface.CommandTriboMaintien</label>
+        <link refid="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien"/>
+        <childnode refid="162" relation="public-inheritance">
+        </childnode>
+        <childnode refid="162" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="162">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="163" relation="public-inheritance">
+        </childnode>
+        <childnode refid="163" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="163">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandTriboInterface.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandTriboInterface.py" bodystart="7" bodyend="19"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a8a42b9ef5753201ed39cc8160b0c0703" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a8a42b9ef5753201ed39cc8160b0c0703" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a34cdcaba3da6e04e6de3b1cd763739f1" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a9db98f70eb3c93ea04d3e6d6345bb4c3" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a9db98f70eb3c93ea04d3e6d6345bb4c3" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__commandTriboInterface_1_1CommandTriboMaintien_1a8086245c255e5c568e28ea960c64aecb" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandTriboInterface::CommandTriboMaintien</scope><name>VariateurTribo</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

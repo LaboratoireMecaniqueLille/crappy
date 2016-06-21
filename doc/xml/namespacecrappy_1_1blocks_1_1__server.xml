@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1blocks_1_1__server" kind="namespace" language="Python">
+    <compoundname>crappy::blocks::_server</compoundname>
+    <innerclass refid="classcrappy_1_1blocks_1_1__server_1_1Server" prot="public">crappy::blocks::_server::Server</innerclass>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__server_8py_1a07db7c7efa617a9aefbb1461dec5f987" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy::blocks::_server::send</definition>
+        <argsstring>(input_, conn)</argsstring>
+        <name>send</name>
+        <param>
+          <type>input_</type>
+          <defname>input_</defname>
+        </param>
+        <param>
+          <type>conn</type>
+          <defname>conn</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" bodystart="12" bodyend="48"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

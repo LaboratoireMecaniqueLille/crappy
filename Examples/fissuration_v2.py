@@ -1,10 +1,10 @@
 # DEPRECATED, use v2.1 instead
 import time
-import crappy
+import crappy2
 import pandas as pd
 import numpy as np
 
-crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
+crappy2.blocks.MasterBlock.instances = []  # Init masterblock instances
 try:
     import sys
 
@@ -25,7 +25,7 @@ except Exception as e:
 # diff = summary.get_diff(sum1, sum2)
 # summary.print_(diff)
 
-class condition_coeff(crappy.links.MetaCondition):
+class condition_coeff(crappy2.links.MetaCondition):
     def __init__(self, test=False):
         initial_coeff = 0
         self.last_cycle = -1
@@ -65,7 +65,7 @@ class condition_coeff(crappy.links.MetaCondition):
             return value
 
 
-class condition_cycle_bool(crappy.links.MetaCondition):
+class condition_cycle_bool(crappy2.links.MetaCondition):
     def __init__(self, n=1, n_per_cycle=2):
         self.last_cycle = -1
         self.n = n
@@ -87,7 +87,7 @@ class condition_cycle_bool(crappy.links.MetaCondition):
             return None
 
 
-class condition_K(crappy.links.MetaCondition):
+class condition_K(crappy2.links.MetaCondition):
     def __init__(self):
         self.K = 0
         self.W = 18. * 10 ** (-3)  # largeur eprouvette
@@ -150,78 +150,78 @@ try:
     ########################################### Creating objects
 
 
-    instronSensor = crappy.sensor.ComediSensor(device='/dev/comedi0', channels=[0, 1], gain=[10, 10000], offset=[0, 0])
-    agilentSensor = crappy.sensor.Agilent34420ASensor(device='/dev/ttyUSB0', baudrate=9600, timeout=1)
-    # agilentSensor=crappy.sensor.DummySensor()
-    comedi_actuator = crappy.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=1, range_num=0, gain=1,
-                                                     offset=0)
+    instronSensor = crappy2.sensor.ComediSensor(device='/dev/comedi0', channels=[0, 1], gain=[10, 10000], offset=[0, 0])
+    agilentSensor = crappy2.sensor.Agilent34420ASensor(device='/dev/ttyUSB0', baudrate=9600, timeout=1)
+    # agilentSensor=crappy2.sensor.DummySensor()
+    comedi_actuator = crappy2.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=1, range_num=0, gain=1,
+                                                      offset=0)
 
     comedi_actuator.set_cmd(0)
     time.sleep(0.5)
     comedi_actuator.set_cmd(0)
     ########################################### Creating blocks
-    comedi_output = crappy.blocks.CommandComedi([comedi_actuator])
-    tension = crappy.blocks.MeasureAgilent34420A(agilentSensor, labels=['t_agilent(s)', 'tension(V)'])
-    camera = crappy.blocks.StreamerCamera("Ximea", freq=None, save=True,
-                                          save_directory="/home/essais-2015-3/Bureau/images_fissuration_21-12-15/")
+    comedi_output = crappy2.blocks.CommandComedi([comedi_actuator])
+    tension = crappy2.blocks.MeasureAgilent34420A(agilentSensor, labels=['t_agilent(s)', 'tension(V)'])
+    camera = crappy2.blocks.StreamerCamera("Ximea", freq=None, save=True,
+                                           save_directory="/home/essais-2015-3/Bureau/images_fissuration_21-12-15/")
 
-    compacter_tension = crappy.blocks.Compacter(5)
-    graph_tension = crappy.blocks.Grapher("dynamic", ('t_agilent(s)', 'tension(V)'))  # ,('t(s)','tension(V)')
-    save_tension = crappy.blocks.Saver("/home/essais-2015-3/Bureau/tension_coeff.txt")
+    compacter_tension = crappy2.blocks.Compacter(5)
+    graph_tension = crappy2.blocks.Grapher("dynamic", ('t_agilent(s)', 'tension(V)'))  # ,('t(s)','tension(V)')
+    save_tension = crappy2.blocks.Saver("/home/essais-2015-3/Bureau/tension_coeff.txt")
 
-    effort = crappy.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'dep(mm)', 'F(N)'], freq=500)
-    compacter_effort = crappy.blocks.Compacter(500)
-    graph_effort = crappy.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
-    save_effort = crappy.blocks.Saver("/home/essais-2015-3/Bureau/t_dep_F.txt")
+    effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'dep(mm)', 'F(N)'], freq=500)
+    compacter_effort = crappy2.blocks.Compacter(500)
+    graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
+    save_effort = crappy2.blocks.Saver("/home/essais-2015-3/Bureau/t_dep_F.txt")
 
-    ##compacter_signal=crappy.blocks.Compacter(500)
-    ##save_signal=crappy.blocks.Saver("/home/essais-2015-3/Bureau/signal_cycle.txt")
-    ##graph_signal=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
+    ##compacter_signal=crappy2.blocks.Compacter(500)
+    ##save_signal=crappy2.blocks.Saver("/home/essais-2015-3/Bureau/signal_cycle.txt")
+    ##graph_signal=crappy2.blocks.Grapher("dynamic",('t(s)','signal'))
 
 
 
-    # coeffGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"triangle","time":10,"phase":0,"amplitude":0,"offset":8000,"freq":0.02},
+    # coeffGenerator=crappy2.blocks.SignalGenerator(path=[{"waveform":"triangle","time":10,"phase":0,"amplitude":0,"offset":8000,"freq":0.02},
     # {"waveform":"triangle","time":10,"phase":0,"amplitude":0,"offset":7000,"freq":0.02},
     # {"waveform":"triangle","time":10,"phase":0,"amplitude":0,"offset":2000,"freq":0.02}],
     # send_freq=100,repeat=True,labels=['t(s)','coeff','cycle'])
 
-    signalGenerator = crappy.blocks.SignalGenerator(
+    signalGenerator = crappy2.blocks.SignalGenerator(
         path=[{"waveform": "sinus", "time": 1000000, "phase": 0, "amplitude": 0.45, "offset": 0.55, "freq": 2}],
         send_freq=500, repeat=True, labels=['t(s)', 'signal', 'cycle'])
 
     ####CommandComedi([comedi_actuator])
 
-    # adapter=crappy.blocks.SignalAdapter(initial_coeff=0,delay=10,send_freq=600,labels=['t(s)','signal'])
-    # compacter_adapter=crappy.blocks.Compacter(500)
-    # graph_adapter=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
-    # save_adapter=crappy.blocks.Saver("/home/corentin/Bureau/signal_adapted.txt")
+    # adapter=crappy2.blocks.SignalAdapter(initial_coeff=0,delay=10,send_freq=600,labels=['t(s)','signal'])
+    # compacter_adapter=crappy2.blocks.Compacter(500)
+    # graph_adapter=crappy2.blocks.Grapher("dynamic",('t(s)','signal'))
+    # save_adapter=crappy2.blocks.Saver("/home/corentin/Bureau/signal_adapted.txt")
 
 
 
     ########################################### Creating links
 
 
-    link1 = crappy.links.Link(condition=condition_cycle_bool(n=50))
-    link2 = crappy.links.Link(condition=condition_cycle_bool(n=1, n_per_cycle=1))
-    link3 = crappy.links.Link(condition=condition_K())
-    link4 = crappy.links.Link()
-    link5 = crappy.links.Link()
-    link6 = crappy.links.Link(condition=condition_K())
-    link7 = crappy.links.Link(condition=condition_coeff())
+    link1 = crappy2.links.Link(condition=condition_cycle_bool(n=50))
+    link2 = crappy2.links.Link(condition=condition_cycle_bool(n=1, n_per_cycle=1))
+    link3 = crappy2.links.Link(condition=condition_K())
+    link4 = crappy2.links.Link()
+    link5 = crappy2.links.Link()
+    link6 = crappy2.links.Link(condition=condition_K())
+    link7 = crappy2.links.Link(condition=condition_coeff())
     link7.add_external_trigger(link6)
-    # link8=crappy.links.Link(condition=ConditionCoeff(test=True))
-    # link14=crappy.links.Link()
+    # link8=crappy2.links.Link(condition=ConditionCoeff(test=True))
+    # link14=crappy2.links.Link()
     # link8.add_external_trigger(link14)
-    link9 = crappy.links.Link()
-    link10 = crappy.links.Link()
-    link11 = crappy.links.Link()
-    # link12=crappy.links.Link()
-    # link13=crappy.links.Link()
+    link9 = crappy2.links.Link()
+    link10 = crappy2.links.Link()
+    link11 = crappy2.links.Link()
+    # link12=crappy2.links.Link()
+    # link13=crappy2.links.Link()
 
-    # link15=crappy.links.Link()
-    # link16=crappy.links.Link()
+    # link15=crappy2.links.Link()
+    # link16=crappy2.links.Link()
 
-    # link_alert=crappy.links.Link(condition=alerte_jerome.Alert())
+    # link_alert=crappy2.links.Link(condition=alerte_jerome.Alert())
     ########################################### Linking objects
 
     camera.add_input(link1)
@@ -283,10 +283,10 @@ try:
 
     t0 = time.time()  # 1.445448736241215944e+09 ############################################################################################### modify t0 here if you restart your script
     np.savetxt('/home/essais-2015-3/Bureau/t0.txt', [t0])
-    for instance in crappy.blocks._meta.MasterBlock.instances:
+    for instance in crappy2.blocks._meta.MasterBlock.instances:
         instance.t0(t0)
 
-    for instance in crappy.blocks._meta.MasterBlock.instances:
+    for instance in crappy2.blocks._meta.MasterBlock.instances:
         instance.start()
 
     ########################################### Waiting for execution
@@ -302,9 +302,9 @@ try:
 
 except (Exception, KeyboardInterrupt) as e:
     print "Exception in main :", e
-    # for instance in crappy.blocks._meta.MasterBlock.instances:
+    # for instance in crappy2.blocks._meta.MasterBlock.instances:
     # instance.join()
-    for instance in crappy.blocks._meta.MasterBlock.instances:
+    for instance in crappy2.blocks._meta.MasterBlock.instances:
         try:
             instance.stop()
             print "instance stopped : ", instance

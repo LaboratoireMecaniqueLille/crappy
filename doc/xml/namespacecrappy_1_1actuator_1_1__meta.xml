@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1actuator_1_1__meta" kind="namespace" language="Python">
+    <compoundname>crappy::actuator::_meta</compoundname>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__meta_1_1command">crappy::actuator::_meta::command</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1actuator_1_1__meta_1_1motion">crappy::actuator::_meta::motion</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/__init__.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_a6fc8cb1ce16447499363d631ca11a40" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks</compoundname>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2____init_____8py">__init__.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__autoDrive_8py">_autoDrive.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__cameraDisplayer_8py">_cameraDisplayer.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__client_8py">_client.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__commandBiaxe_8py">_commandBiaxe.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__commandBiotens_8py">_commandBiotens.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__commandComedi_8py">_commandComedi.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__commandPI_8py">_commandPI.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__commandTriboCumul_8py">_commandTriboCumul.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__commandTriboInterface_8py">_commandTriboInterface.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__commandTriboManual_8py">_commandTriboManual.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__compacter_8py">_compacter.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__fakeCommandBiaxe_8py">_fakeCommandBiaxe.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__grapher_8py">_grapher.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__interfaceTribo_8py">_interfaceTribo.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__interpolation_8py">_interpolation.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__lal300Command_8py">_lal300Command.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__measureAgilent34420A_8py">_measureAgilent34420A.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__measureByStep_8py">_measureByStep.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__measureComediByStep_8py">_measureComediByStep.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__meta_8py">_meta.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__multiPath_8py">_multiPath.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__pid_8py">_pid.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__reader_8py">_reader.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__saver_8py">_saver.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__server_8py">_server.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__signalAdapter_8py">_signalAdapter.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__signalGenerator_8py">_signalGenerator.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__streamer_8py">_streamer.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__streamerCamera_8py">_streamerCamera.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__streamerCameraGerome_8py">_streamerCameraGerome.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__streamerComedi_8py">_streamerComedi.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__videoExtenso_8py">_videoExtenso.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/"/>
+  </compounddef>
+</doxygen>

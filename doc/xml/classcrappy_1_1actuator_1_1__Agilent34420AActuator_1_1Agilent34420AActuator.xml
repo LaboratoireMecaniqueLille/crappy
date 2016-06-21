@@ -1,0 +1,377 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator" kind="class" language="Python" prot="public">
+    <compoundname>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Command</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Command</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1acdd06fa6430bffc13d450f62b538456d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._Agilent34420AActuator.Agilent34420AActuator::device</definition>
+        <argsstring></argsstring>
+        <name>device</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a979a3fbf379beac5f64169e1486e31b0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._Agilent34420AActuator.Agilent34420AActuator::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1afdc4043ed2b8fe7fcb66df3f5241db69" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._Agilent34420AActuator.Agilent34420AActuator::timeout</definition>
+        <argsstring></argsstring>
+        <name>timeout</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="33" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1aa1fd22f15554a1df7f1856e3fa47686d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._Agilent34420AActuator.Agilent34420AActuator::mode</definition>
+        <argsstring></argsstring>
+        <name>mode</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="34" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a76c7b6cbb9f20f1a33ce7b6728eb4740" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._Agilent34420AActuator.Agilent34420AActuator::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="35" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a580cd23ec6080ac42354c7b5aa1ad588" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._Agilent34420AActuator.Agilent34420AActuator.__init__</definition>
+        <argsstring>(self, subdevice, channel, range_num, gain, offset, mode=&quot;VOLT&quot;, device=&apos;/dev/ttyUSB0&apos;, baudrate=9600, timeout=10)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>subdevice</type>
+          <defname>subdevice</defname>
+        </param>
+        <param>
+          <type>channel</type>
+          <defname>channel</defname>
+        </param>
+        <param>
+          <type>range_num</type>
+          <defname>range_num</defname>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+        </param>
+        <param>
+          <type>offset</type>
+          <defname>offset</defname>
+        </param>
+        <param>
+          <type>mode</type>
+          <defname>mode</defname>
+          <defval>&quot;VOLT&quot;</defval>
+        </param>
+        <param>
+          <type>device</type>
+          <defname>device</defname>
+          <defval>&apos;/dev/ttyUSB0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <param>
+          <type>timeout</type>
+          <defname>timeout</defname>
+          <defval>10</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This class contains method to measure values of resistance or \
+tension on Agilent34420A devices. May work for other devices too, but \
+not tested.
+
+If you have issues with this class returning a lot of &apos;bad serial&apos;, \
+make sure you have the last version of pySerial.
+
+Parameters
+----------
+mode : {&quot;VOLT&quot;,&quot;RES&quot;} , default = &quot;VOLT&quot;
+Desired value to measure.
+device : str, default = &apos;/dev/ttyUSB0&apos;
+Path to the device.
+baudrate : int, default = 9600
+Desired baudrate.
+timeout : int or float, default = 10
+Timeout for the serial connection.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="10" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1aa8f296545a8fceb898b29ba6d4b79e6b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._Agilent34420AActuator.Agilent34420AActuator.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="38" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a585ebb3a6e76eb8fa781e8ddf80566e8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._Agilent34420AActuator.Agilent34420AActuator.set_cmd</definition>
+        <argsstring>(self)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>TODO
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="46" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1af5cbf3b32da977d06ce3b5192797973f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._Agilent34420AActuator.Agilent34420AActuator.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Close the serial port.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="52" bodyend="57"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a580cd23ec6080ac42354c7b5aa1ad588" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._Agilent34420AActuator.Agilent34420AActuator.__init__</definition>
+        <argsstring>(self, subdevice, channel, range_num, gain, offset, mode=&quot;VOLT&quot;, device=&apos;/dev/ttyUSB0&apos;, baudrate=9600, timeout=10)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>subdevice</type>
+          <defname>subdevice</defname>
+        </param>
+        <param>
+          <type>channel</type>
+          <defname>channel</defname>
+        </param>
+        <param>
+          <type>range_num</type>
+          <defname>range_num</defname>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+        </param>
+        <param>
+          <type>offset</type>
+          <defname>offset</defname>
+        </param>
+        <param>
+          <type>mode</type>
+          <defname>mode</defname>
+          <defval>&quot;VOLT&quot;</defval>
+        </param>
+        <param>
+          <type>device</type>
+          <defname>device</defname>
+          <defval>&apos;/dev/ttyUSB0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <param>
+          <type>timeout</type>
+          <defname>timeout</defname>
+          <defval>10</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This class contains method to measure values of resistance or \
+tension on Agilent34420A devices. May work for other devices too, but \
+not tested.
+
+If you have issues with this class returning a lot of &apos;bad serial&apos;, \
+make sure you have the last version of pySerial.
+
+Parameters
+----------
+mode : {&quot;VOLT&quot;,&quot;RES&quot;} , default = &quot;VOLT&quot;
+Desired value to measure.
+device : str, default = &apos;/dev/ttyUSB0&apos;
+Path to the device.
+baudrate : int, default = 9600
+Desired baudrate.
+timeout : int or float, default = 10
+Timeout for the serial connection.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_Agilent34420AActuator.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_Agilent34420AActuator.py" bodystart="10" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1aa8f296545a8fceb898b29ba6d4b79e6b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._Agilent34420AActuator.Agilent34420AActuator.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_Agilent34420AActuator.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_Agilent34420AActuator.py" bodystart="38" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a585ebb3a6e76eb8fa781e8ddf80566e8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._Agilent34420AActuator.Agilent34420AActuator.set_cmd</definition>
+        <argsstring>(self)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>TODO
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_Agilent34420AActuator.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_Agilent34420AActuator.py" bodystart="46" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1af5cbf3b32da977d06ce3b5192797973f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._Agilent34420AActuator.Agilent34420AActuator.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Close the serial port.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_Agilent34420AActuator.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_Agilent34420AActuator.py" bodystart="52" bodyend="57"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Sensor class for Agilent34420A devices.</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="15">
+        <label>Command</label>
+      </node>
+      <node id="14">
+        <label>crappy.actuator._Agilent34420AActuator.Agilent34420AActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator"/>
+        <childnode refid="15" relation="public-inheritance">
+        </childnode>
+        <childnode refid="15" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="17">
+        <label>Command</label>
+      </node>
+      <node id="16">
+        <label>crappy.actuator._Agilent34420AActuator.Agilent34420AActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator"/>
+        <childnode refid="17" relation="public-inheritance">
+        </childnode>
+        <childnode refid="17" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" line="6" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_Agilent34420AActuator.py" bodystart="6" bodyend="57"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a580cd23ec6080ac42354c7b5aa1ad588" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a580cd23ec6080ac42354c7b5aa1ad588" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a979a3fbf379beac5f64169e1486e31b0" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1af5cbf3b32da977d06ce3b5192797973f" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>close</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1af5cbf3b32da977d06ce3b5192797973f" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>close</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1acdd06fa6430bffc13d450f62b538456d" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>device</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1aa1fd22f15554a1df7f1856e3fa47686d" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>mode</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1aa8f296545a8fceb898b29ba6d4b79e6b" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>new</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1aa8f296545a8fceb898b29ba6d4b79e6b" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>new</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a76c7b6cbb9f20f1a33ce7b6728eb4740" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>ser</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a585ebb3a6e76eb8fa781e8ddf80566e8" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>set_cmd</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1a585ebb3a6e76eb8fa781e8ddf80566e8" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>set_cmd</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__Agilent34420AActuator_1_1Agilent34420AActuator_1afdc4043ed2b8fe7fcb66df3f5241db69" prot="public" virt="non-virtual"><scope>crappy::actuator::_Agilent34420AActuator::Agilent34420AActuator</scope><name>timeout</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

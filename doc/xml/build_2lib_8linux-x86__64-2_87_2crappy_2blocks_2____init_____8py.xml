@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2____init_____8py" kind="file" language="Python">
+    <compoundname>__init__.py</compoundname>
+    <innernamespace refid="namespacecrappy_1_1blocks">crappy::blocks</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">#<sp/>coding:<sp/>utf-8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="comment">#<sp/>def<sp/>main():</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="comment">#<sp/>&quot;&quot;&quot;Entry<sp/>point<sp/>for<sp/>the<sp/>application<sp/>script&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="comment">#<sp/>print(&quot;Call<sp/>your<sp/>main<sp/>application<sp/>code<sp/>here&quot;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="comment">#<sp/>from<sp/>.<sp/>import<sp/>technical</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>platform</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>platform.system()<sp/>==<sp/></highlight><highlight class="stringliteral">&quot;Linux&quot;</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._commandComedi<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>CommandComedi</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._measureComediByStep<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>MeasureComediByStep</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._streamerComedi<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>StreamerComedi</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._cameraDisplayer<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>CameraDisplayer</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._commandBiaxe<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>CommandBiaxe</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._commandBiotens<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>CommandBiotens</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>_autoDrive<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>AutoDrive</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._commandPI<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>CommandPI</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._compacter<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Compacter</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._grapher<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Grapher</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._measureAgilent34420A<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>MeasureAgilent34420A</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._measureByStep<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>MeasureByStep</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._multiPath<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>MultiPath</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._pid<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>PID</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._reader<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Reader</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._saver<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Saver</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._server<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Server</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._client<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Client</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="comment">#<sp/>from<sp/>._signalAdapter<sp/>import<sp/>SignalAdapter</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._signalGenerator<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>SignalGenerator</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="keywordflow">try</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._streamerCamera<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>StreamerCamera</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight><highlight class="keywordflow">except</highlight><highlight class="normal"><sp/>Exception<sp/></highlight><highlight class="keyword">as</highlight><highlight class="normal"><sp/>e:</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">print</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;WARNING:<sp/>&quot;</highlight><highlight class="normal">,<sp/>e</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight><highlight class="keywordflow">try</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._streamerCameraGerome<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>StreamerCameraG</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight><highlight class="keywordflow">except</highlight><highlight class="normal"><sp/>Exception<sp/></highlight><highlight class="keyword">as</highlight><highlight class="normal"><sp/>e:</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">print</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;WARNING:<sp/>&quot;</highlight><highlight class="normal">,<sp/>e</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._streamer<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Streamer</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"></highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight><highlight class="keywordflow">try</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._videoExtenso<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>VideoExtenso</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"></highlight><highlight class="keywordflow">except</highlight><highlight class="normal"><sp/>Exception<sp/></highlight><highlight class="keyword">as</highlight><highlight class="normal"><sp/>e:</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">print</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;WARNING:<sp/>&quot;</highlight><highlight class="normal">,<sp/>e</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"></highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>_interfaceTribo<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>Interface</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>_lal300Command<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>CommandLal300</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._meta<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>MasterBlock</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal">del<sp/>platform</highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/__init__.py"/>
+  </compounddef>
+</doxygen>

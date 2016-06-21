@@ -1,0 +1,249 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor" kind="class" language="Python" prot="public">
+    <compoundname>crappy::sensor::_dummySensor::DummySensor</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Acquisition</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Acquisition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a562e2c777050d2b4e3100e47114d0702" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._dummySensor.DummySensor::args</definition>
+        <argsstring></argsstring>
+        <name>args</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" bodystart="12" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a4ad0a9bf986fd460725e7a8f1594910c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._dummySensor.DummySensor::kwargs</definition>
+        <argsstring></argsstring>
+        <name>kwargs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a8c3e313a8bb3060995789e59bceb5657" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._dummySensor.DummySensor.__init__</definition>
+        <argsstring>(self, args, kwargs)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <param>
+          <type>kwargs</type>
+          <defname>kwargs</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" bodystart="10" bodyend="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a7c75f0cf3bd6c200a4064a67bd407ea3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._dummySensor.DummySensor.get_data</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_data</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Return time.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" bodystart="15" bodyend="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1af1e5aa8de4acc7a13e82c921fbcc9453" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._dummySensor.DummySensor.new</definition>
+        <argsstring>(self, args)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Do nothing.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" line="20" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" bodystart="20" bodyend="23"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a1559f32a571a7ee23495fb50768004ae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._dummySensor.DummySensor.close</definition>
+        <argsstring>(self, args)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Do nothing.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" bodystart="24" bodyend="27"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a8c3e313a8bb3060995789e59bceb5657" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._dummySensor.DummySensor.__init__</definition>
+        <argsstring>(self, args, kwargs)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <param>
+          <type>kwargs</type>
+          <defname>kwargs</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_dummySensor.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_dummySensor.py" bodystart="10" bodyend="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a7c75f0cf3bd6c200a4064a67bd407ea3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._dummySensor.DummySensor.get_data</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_data</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Return time.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_dummySensor.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_dummySensor.py" bodystart="15" bodyend="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1af1e5aa8de4acc7a13e82c921fbcc9453" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._dummySensor.DummySensor.new</definition>
+        <argsstring>(self, args)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Do nothing.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_dummySensor.py" line="20" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_dummySensor.py" bodystart="20" bodyend="23"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a1559f32a571a7ee23495fb50768004ae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._dummySensor.DummySensor.close</definition>
+        <argsstring>(self, args)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Do nothing.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_dummySensor.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_dummySensor.py" bodystart="24" bodyend="27"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Mock a sensor and return the time. Use it for testing.</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="244">
+        <label>crappy.sensor._dummySensor.DummySensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor"/>
+        <childnode refid="245" relation="public-inheritance">
+        </childnode>
+        <childnode refid="245" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="245">
+        <label>Acquisition</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="246">
+        <label>crappy.sensor._dummySensor.DummySensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor"/>
+        <childnode refid="247" relation="public-inheritance">
+        </childnode>
+        <childnode refid="247" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="247">
+        <label>Acquisition</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_dummySensor.py" bodystart="7" bodyend="27"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a8c3e313a8bb3060995789e59bceb5657" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a8c3e313a8bb3060995789e59bceb5657" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a562e2c777050d2b4e3100e47114d0702" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>args</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a1559f32a571a7ee23495fb50768004ae" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>close</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a1559f32a571a7ee23495fb50768004ae" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>close</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a7c75f0cf3bd6c200a4064a67bd407ea3" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>get_data</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a7c75f0cf3bd6c200a4064a67bd407ea3" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>get_data</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1a4ad0a9bf986fd460725e7a8f1594910c" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>kwargs</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1af1e5aa8de4acc7a13e82c921fbcc9453" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>new</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__dummySensor_1_1DummySensor_1af1e5aa8de4acc7a13e82c921fbcc9453" prot="public" virt="non-virtual"><scope>crappy::sensor::_dummySensor::DummySensor</scope><name>new</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

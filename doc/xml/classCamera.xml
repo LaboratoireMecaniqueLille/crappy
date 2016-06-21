@@ -1,0 +1,700 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classCamera" kind="class" language="C++" prot="public">
+    <compoundname>Camera</compoundname>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classCamera_1aeb8ee64213b39c5552e65952e3d55326" prot="private" static="no" mutable="no">
+        <type>frameindex_t</type>
+        <definition>frameindex_t Camera::last_pic_nr</definition>
+        <argsstring></argsstring>
+        <name>last_pic_nr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="41" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a1ac5aa8f8719d07a0ece7ceb453c62bc" prot="private" static="no" mutable="no">
+        <type>frameindex_t</type>
+        <definition>frameindex_t Camera::cur_pic_nr</definition>
+        <argsstring></argsstring>
+        <name>cur_pic_nr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="42" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1ae445d25500cb88615d668e0b5727e5a3" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Camera::timeout</definition>
+        <argsstring></argsstring>
+        <name>timeout</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="43" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1ac3483f0d4c6682ffc1e678f98270b2ee" prot="private" static="no" mutable="no">
+        <type>Fg_Struct *</type>
+        <definition>Fg_Struct* Camera::fg</definition>
+        <argsstring></argsstring>
+        <name>fg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a161e440eb58b4791143ee26b7a03ba34" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Camera::m_boardNr</definition>
+        <argsstring></argsstring>
+        <name>m_boardNr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="45" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a1bd5cf10cc3a0c1895159312f0d5cd5e" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Camera::camPort</definition>
+        <argsstring></argsstring>
+        <name>camPort</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1aeff372f2f0afafe19021957f922a29e4" prot="private" static="no" mutable="no">
+        <type>frameindex_t</type>
+        <definition>frameindex_t Camera::nrOfPicturesToGrab</definition>
+        <argsstring></argsstring>
+        <name>nrOfPicturesToGrab</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="47" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1adb674e12170ab4289ab15888290e071a" prot="private" static="no" mutable="no">
+        <type>frameindex_t</type>
+        <definition>frameindex_t Camera::nbBuffers</definition>
+        <argsstring></argsstring>
+        <name>nbBuffers</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="48" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a25e0660d190bc3f9f0efe315b3524416" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Camera::samplePerPixel</definition>
+        <argsstring></argsstring>
+        <name>samplePerPixel</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1ac2f63f778b1648f2d6df0eb995119d23" prot="private" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t Camera::bytePerSample</definition>
+        <argsstring></argsstring>
+        <name>bytePerSample</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="50" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1ab01e420cd581f7607d248d9ac77ec9eb" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::TriggerMode</definition>
+        <argsstring></argsstring>
+        <name>TriggerMode</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="51" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a4dd1c224e67577569a9a1fe72eb81610" prot="private" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* Camera::applet</definition>
+        <argsstring></argsstring>
+        <name>applet</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1abe8e9e2f4a6be2ddcd51054fd2ed8f25" prot="private" static="no" mutable="no">
+        <type>dma_mem *</type>
+        <definition>dma_mem* Camera::memHandle</definition>
+        <argsstring></argsstring>
+        <name>memHandle</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a4039396a32afd356164108f6c0552173" prot="private" static="no" mutable="no">
+        <type>void *</type>
+        <definition>void* Camera::serialRefPtr</definition>
+        <argsstring></argsstring>
+        <name>serialRefPtr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="54" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a5aec7f642e6f8e293dd32df387a66070" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::m_width</definition>
+        <argsstring></argsstring>
+        <name>m_width</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="55" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a276173dc9968d558d89673b902e38b9d" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::m_height</definition>
+        <argsstring></argsstring>
+        <name>m_height</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="56" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a471512bff708fa59c5bbaab267abc977" prot="private" static="no" mutable="no">
+        <type>double</type>
+        <definition>double Camera::m_framespersec</definition>
+        <argsstring></argsstring>
+        <name>m_framespersec</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="57" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1ae618e90ba1d1f5c90f027109db7457e1" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::m_xoffset</definition>
+        <argsstring></argsstring>
+        <name>m_xoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="58" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="58" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a1df2536aa9c4d3e0e3b8007c99a6259b" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::m_yoffset</definition>
+        <argsstring></argsstring>
+        <name>m_yoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="59" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a5151f0e5d8d8643841929af24307bcfc" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::m_exposure</definition>
+        <argsstring></argsstring>
+        <name>m_exposure</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="60" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a24745981c5c3616603089ea8764a3846" prot="private" static="no" mutable="no">
+        <type>char</type>
+        <definition>char Camera::Data[255]</definition>
+        <argsstring>[255]</argsstring>
+        <name>Data</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="61" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1a5765296f5c90f762ad0d27341d924cf3" prot="private" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* Camera::m_file</definition>
+        <argsstring></argsstring>
+        <name>m_file</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="64" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCamera_1ab0da0f169da10dfde718af698b748217" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int Camera::ComNr</definition>
+        <argsstring></argsstring>
+        <name>ComNr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="65" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="classCamera_1ab3a514aa24d613c5b948de37a22d9ddc" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Camera::serialInit</definition>
+        <argsstring>(unsigned int)</argsstring>
+        <name>serialInit</name>
+        <param>
+          <type>unsigned</type>
+          <declname>int</declname>
+          <defname>serialIndex</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="62" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clSerial.cpp" bodystart="48" bodyend="80"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a5768bea9d2e099e6b1a0775324083574" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>void Camera::checkSerialCom</definition>
+        <argsstring>(int)</argsstring>
+        <name>checkSerialCom</name>
+        <param>
+          <type>int</type>
+          <defname>stat</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="63" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clSerial.cpp" bodystart="3" bodyend="46"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classCamera_1a26153d233b043e3b31fd31e1f383540a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Camera::Camera</definition>
+        <argsstring>(int, double)</argsstring>
+        <name>Camera</name>
+        <param>
+          <type>int</type>
+          <defname>boardNr</defname>
+        </param>
+        <param>
+          <type>double</type>
+          <defname>framespersec</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="69" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.cpp" bodystart="3" bodyend="23"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1ad1897942d0ccf91052386388a497349f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>Camera::~Camera</definition>
+        <argsstring>()</argsstring>
+        <name>~Camera</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="70" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.cpp" bodystart="25" bodyend="27"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1ad790a1dd4bc117c5f6344668e06b305f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Camera::toString</definition>
+        <argsstring>()</argsstring>
+        <name>toString</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="71" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.cpp" bodystart="29" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a4a867d4706c290dc0a4b443486f57495" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Camera::init</definition>
+        <argsstring>(const char *)</argsstring>
+        <name>init</name>
+        <param>
+          <type>const char *</type>
+          <defname>file</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="72" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.cpp" bodystart="40" bodyend="85"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a837dd8bcb5d8d9972828e05dd61247db" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Camera::startAcquire</definition>
+        <argsstring>()</argsstring>
+        <name>startAcquire</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="73" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.cpp" bodystart="87" bodyend="95"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a27514eef3ec5bf71386c5af07209ce84" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Camera::restart</definition>
+        <argsstring>()</argsstring>
+        <name>restart</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="74" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.cpp" bodystart="97" bodyend="106"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a19b8e56ddba3acc0f7f963360418bf44" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Camera::close</definition>
+        <argsstring>()</argsstring>
+        <name>close</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="75" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.cpp" bodystart="136" bodyend="141"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1ae6c6aeaf70ad261f3c188c50e8701b0b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Camera::stop</definition>
+        <argsstring>()</argsstring>
+        <name>stop</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="76" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.cpp" bodystart="132" bodyend="134"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a71ed36084940a1bded37588073224475" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Camera::setExposure</definition>
+        <argsstring>(unsigned int)</argsstring>
+        <name>setExposure</name>
+        <param>
+          <type>unsigned</type>
+          <declname>int</declname>
+          <defname>t_exposure</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="77" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clSetParameter.cpp" bodystart="4" bodyend="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a6f91891081a08103b596f17e6ba99ddc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Camera::setWidth</definition>
+        <argsstring>(unsigned int)</argsstring>
+        <name>setWidth</name>
+        <param>
+          <type>unsigned</type>
+          <declname>int</declname>
+          <defname>t_width</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="78" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clSetParameter.cpp" bodystart="19" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a0418d39bbfec1ff080ae6f86615a54e5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Camera::setHeight</definition>
+        <argsstring>(unsigned int)</argsstring>
+        <name>setHeight</name>
+        <param>
+          <type>unsigned</type>
+          <declname>int</declname>
+          <defname>t_height</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="79" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clSetParameter.cpp" bodystart="34" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a2fa6f71994e347d69bf80f30fdeca6ab" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Camera::setXoffset</definition>
+        <argsstring>(unsigned int)</argsstring>
+        <name>setXoffset</name>
+        <param>
+          <type>unsigned</type>
+          <declname>int</declname>
+          <defname>t_xoffset</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="80" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clSetParameter.cpp" bodystart="49" bodyend="62"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a6ba905a854ae657ab03882a6f878bec9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int Camera::setYoffset</definition>
+        <argsstring>(unsigned int)</argsstring>
+        <name>setYoffset</name>
+        <param>
+          <type>unsigned</type>
+          <declname>int</declname>
+          <defname>t_yoffset</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="81" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clSetParameter.cpp" bodystart="63" bodyend="76"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a2ae540f4541de8681039c8e25001837f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::getExposure</definition>
+        <argsstring>()</argsstring>
+        <name>getExposure</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="82" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clGetParameters.cpp" bodystart="3" bodyend="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a2dd688a37905b199dddb20e0e2c77824" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::getWidth</definition>
+        <argsstring>()</argsstring>
+        <name>getWidth</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="83" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clGetParameters.cpp" bodystart="7" bodyend="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a47fc3a96fc3e3dde31c03a8d932feb84" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::getHeight</definition>
+        <argsstring>()</argsstring>
+        <name>getHeight</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="84" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clGetParameters.cpp" bodystart="11" bodyend="13"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a35eb8604032bf6b1992dabaeabdfa31c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::getXoffset</definition>
+        <argsstring>()</argsstring>
+        <name>getXoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="85" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clGetParameters.cpp" bodystart="15" bodyend="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a410494191389d39173bf2755c122bc76" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int Camera::getYoffset</definition>
+        <argsstring>()</argsstring>
+        <name>getYoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="86" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clGetParameters.cpp" bodystart="19" bodyend="21"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1a10ba99c54b5af981f92dbfac9b8e83d9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void *</type>
+        <definition>void * Camera::getBuffer</definition>
+        <argsstring>()</argsstring>
+        <name>getBuffer</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="87" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.cpp" bodystart="108" bodyend="131"/>
+      </memberdef>
+      <memberdef kind="function" id="classCamera_1abc0a7092be2888ac712e2f53c0b02415" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Camera::serialWrite</definition>
+        <argsstring>(char buffer[])</argsstring>
+        <name>serialWrite</name>
+        <param>
+          <type>char</type>
+          <declname>buffer</declname>
+          <array>[]</array>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="88" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clSerial.cpp" bodystart="82" bodyend="108"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/CameraLink.h" bodystart="37" bodyend="89"/>
+    <listofallmembers>
+      <member refid="classCamera_1a4dd1c224e67577569a9a1fe72eb81610" prot="private" virt="non-virtual"><scope>Camera</scope><name>applet</name></member>
+      <member refid="classCamera_1ac2f63f778b1648f2d6df0eb995119d23" prot="private" virt="non-virtual"><scope>Camera</scope><name>bytePerSample</name></member>
+      <member refid="classCamera_1a26153d233b043e3b31fd31e1f383540a" prot="public" virt="non-virtual"><scope>Camera</scope><name>Camera</name></member>
+      <member refid="classCamera_1a1bd5cf10cc3a0c1895159312f0d5cd5e" prot="private" virt="non-virtual"><scope>Camera</scope><name>camPort</name></member>
+      <member refid="classCamera_1a5768bea9d2e099e6b1a0775324083574" prot="private" virt="non-virtual"><scope>Camera</scope><name>checkSerialCom</name></member>
+      <member refid="classCamera_1a19b8e56ddba3acc0f7f963360418bf44" prot="public" virt="non-virtual"><scope>Camera</scope><name>close</name></member>
+      <member refid="classCamera_1ab0da0f169da10dfde718af698b748217" prot="private" virt="non-virtual"><scope>Camera</scope><name>ComNr</name></member>
+      <member refid="classCamera_1a1ac5aa8f8719d07a0ece7ceb453c62bc" prot="private" virt="non-virtual"><scope>Camera</scope><name>cur_pic_nr</name></member>
+      <member refid="classCamera_1a24745981c5c3616603089ea8764a3846" prot="private" virt="non-virtual"><scope>Camera</scope><name>Data</name></member>
+      <member refid="classCamera_1ac3483f0d4c6682ffc1e678f98270b2ee" prot="private" virt="non-virtual"><scope>Camera</scope><name>fg</name></member>
+      <member refid="classCamera_1a10ba99c54b5af981f92dbfac9b8e83d9" prot="public" virt="non-virtual"><scope>Camera</scope><name>getBuffer</name></member>
+      <member refid="classCamera_1a2ae540f4541de8681039c8e25001837f" prot="public" virt="non-virtual"><scope>Camera</scope><name>getExposure</name></member>
+      <member refid="classCamera_1a47fc3a96fc3e3dde31c03a8d932feb84" prot="public" virt="non-virtual"><scope>Camera</scope><name>getHeight</name></member>
+      <member refid="classCamera_1a2dd688a37905b199dddb20e0e2c77824" prot="public" virt="non-virtual"><scope>Camera</scope><name>getWidth</name></member>
+      <member refid="classCamera_1a35eb8604032bf6b1992dabaeabdfa31c" prot="public" virt="non-virtual"><scope>Camera</scope><name>getXoffset</name></member>
+      <member refid="classCamera_1a410494191389d39173bf2755c122bc76" prot="public" virt="non-virtual"><scope>Camera</scope><name>getYoffset</name></member>
+      <member refid="classCamera_1a4a867d4706c290dc0a4b443486f57495" prot="public" virt="non-virtual"><scope>Camera</scope><name>init</name></member>
+      <member refid="classCamera_1aeb8ee64213b39c5552e65952e3d55326" prot="private" virt="non-virtual"><scope>Camera</scope><name>last_pic_nr</name></member>
+      <member refid="classCamera_1a161e440eb58b4791143ee26b7a03ba34" prot="private" virt="non-virtual"><scope>Camera</scope><name>m_boardNr</name></member>
+      <member refid="classCamera_1a5151f0e5d8d8643841929af24307bcfc" prot="private" virt="non-virtual"><scope>Camera</scope><name>m_exposure</name></member>
+      <member refid="classCamera_1a5765296f5c90f762ad0d27341d924cf3" prot="private" virt="non-virtual"><scope>Camera</scope><name>m_file</name></member>
+      <member refid="classCamera_1a471512bff708fa59c5bbaab267abc977" prot="private" virt="non-virtual"><scope>Camera</scope><name>m_framespersec</name></member>
+      <member refid="classCamera_1a276173dc9968d558d89673b902e38b9d" prot="private" virt="non-virtual"><scope>Camera</scope><name>m_height</name></member>
+      <member refid="classCamera_1a5aec7f642e6f8e293dd32df387a66070" prot="private" virt="non-virtual"><scope>Camera</scope><name>m_width</name></member>
+      <member refid="classCamera_1ae618e90ba1d1f5c90f027109db7457e1" prot="private" virt="non-virtual"><scope>Camera</scope><name>m_xoffset</name></member>
+      <member refid="classCamera_1a1df2536aa9c4d3e0e3b8007c99a6259b" prot="private" virt="non-virtual"><scope>Camera</scope><name>m_yoffset</name></member>
+      <member refid="classCamera_1abe8e9e2f4a6be2ddcd51054fd2ed8f25" prot="private" virt="non-virtual"><scope>Camera</scope><name>memHandle</name></member>
+      <member refid="classCamera_1adb674e12170ab4289ab15888290e071a" prot="private" virt="non-virtual"><scope>Camera</scope><name>nbBuffers</name></member>
+      <member refid="classCamera_1aeff372f2f0afafe19021957f922a29e4" prot="private" virt="non-virtual"><scope>Camera</scope><name>nrOfPicturesToGrab</name></member>
+      <member refid="classCamera_1a27514eef3ec5bf71386c5af07209ce84" prot="public" virt="non-virtual"><scope>Camera</scope><name>restart</name></member>
+      <member refid="classCamera_1a25e0660d190bc3f9f0efe315b3524416" prot="private" virt="non-virtual"><scope>Camera</scope><name>samplePerPixel</name></member>
+      <member refid="classCamera_1ab3a514aa24d613c5b948de37a22d9ddc" prot="private" virt="non-virtual"><scope>Camera</scope><name>serialInit</name></member>
+      <member refid="classCamera_1a4039396a32afd356164108f6c0552173" prot="private" virt="non-virtual"><scope>Camera</scope><name>serialRefPtr</name></member>
+      <member refid="classCamera_1abc0a7092be2888ac712e2f53c0b02415" prot="public" virt="non-virtual"><scope>Camera</scope><name>serialWrite</name></member>
+      <member refid="classCamera_1a71ed36084940a1bded37588073224475" prot="public" virt="non-virtual"><scope>Camera</scope><name>setExposure</name></member>
+      <member refid="classCamera_1a0418d39bbfec1ff080ae6f86615a54e5" prot="public" virt="non-virtual"><scope>Camera</scope><name>setHeight</name></member>
+      <member refid="classCamera_1a6f91891081a08103b596f17e6ba99ddc" prot="public" virt="non-virtual"><scope>Camera</scope><name>setWidth</name></member>
+      <member refid="classCamera_1a2fa6f71994e347d69bf80f30fdeca6ab" prot="public" virt="non-virtual"><scope>Camera</scope><name>setXoffset</name></member>
+      <member refid="classCamera_1a6ba905a854ae657ab03882a6f878bec9" prot="public" virt="non-virtual"><scope>Camera</scope><name>setYoffset</name></member>
+      <member refid="classCamera_1a837dd8bcb5d8d9972828e05dd61247db" prot="public" virt="non-virtual"><scope>Camera</scope><name>startAcquire</name></member>
+      <member refid="classCamera_1ae6c6aeaf70ad261f3c188c50e8701b0b" prot="public" virt="non-virtual"><scope>Camera</scope><name>stop</name></member>
+      <member refid="classCamera_1ae445d25500cb88615d668e0b5727e5a3" prot="private" virt="non-virtual"><scope>Camera</scope><name>timeout</name></member>
+      <member refid="classCamera_1ad790a1dd4bc117c5f6344668e06b305f" prot="public" virt="non-virtual"><scope>Camera</scope><name>toString</name></member>
+      <member refid="classCamera_1ab01e420cd581f7607d248d9ac77ec9eb" prot="private" virt="non-virtual"><scope>Camera</scope><name>TriggerMode</name></member>
+      <member refid="classCamera_1ad1897942d0ccf91052386388a497349f" prot="public" virt="non-virtual"><scope>Camera</scope><name>~Camera</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacetest__camera" kind="namespace" language="Python">
+    <compoundname>test_camera</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="test__camera_8py_1a9381b712a5b1e45eeda921c8985662d7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>test_camera.instances</definition>
+        <argsstring></argsstring>
+        <name>instances</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/test_camera.py" line="6" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/test_camera.py" bodystart="6" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="test__camera_8py_1a96395d0b617189ae9dc31b56f65b06e5" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>test_camera.camera</definition>
+        <argsstring></argsstring>
+        <name>camera</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__streamerCamera_1_1StreamerCamera" kindref="compound">crappy.blocks.StreamerCamera</ref>(&quot;Ximea&quot;,width=4242,height=2830,freq=None,save=False,save_directory=&quot;/home/ilyesse/Photos_Ilyesse/&quot;)</initializer>
+        <briefdescription>
+<para>Start instances #########. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/test_camera.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/test_camera.py" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="test__camera_8py_1a67c5819bc6c81b4c465fa8f771f658e1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>test_camera.t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/test_camera.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/test_camera.py" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/tests/test_camera.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

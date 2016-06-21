@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1technical_1_1__command" kind="namespace" language="Python">
+    <compoundname>crappy::technical::_command</compoundname>
+    <innerclass refid="classcrappy_1_1technical_1_1__command_1_1Command" prot="public">crappy::technical::_command::Command</innerclass>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

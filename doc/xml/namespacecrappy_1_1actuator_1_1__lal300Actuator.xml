@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1actuator_1_1__lal300Actuator" kind="namespace" language="Python">
+    <compoundname>crappy::actuator::_lal300Actuator</compoundname>
+    <innerclass refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1ActuatorLal300" prot="public">crappy::actuator::_lal300Actuator::ActuatorLal300</innerclass>
+    <innerclass refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator" prot="public">crappy::actuator::_lal300Actuator::Lal300Actuator</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2actuator_2__lal300Actuator_8py_1aa6423e38e5d8766121ab9098bf0ebc20" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int crappy::actuator::_lal300Actuator::n</definition>
+        <argsstring></argsstring>
+        <name>n</name>
+        <initializer>= 3</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2actuator_2__lal300Actuator_8py_1aa9a105fad0377552fbb85ed42d848ba4" prot="public" static="no" mutable="no">
+        <type>dictionary</type>
+        <definition>dictionary crappy::actuator::_lal300Actuator::p</definition>
+        <argsstring></argsstring>
+        <name>p</name>
+        <initializer>= {&apos;timeout&apos;: 0., &apos;PID_PROP&apos;: 8 / n, &apos;PID_INT&apos;: 30 / n, &apos;PID_DERIV&apos;: 200 / n, &apos;PID_INTLIM&apos;: 1000 / n, &apos;ACC&apos;: 6000.,
+     &apos;ACconv&apos;: 26.22, &apos;FORCE&apos;: 30000., &apos;SPEEDconv&apos;: 131072., &apos;ENTREE_VERIN&apos;: &apos;DI1&apos;, &apos;SORTIE_VERIN&apos;: &apos;DI0&apos;}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

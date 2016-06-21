@@ -1,0 +1,342 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="comediModule_8h" kind="file" language="C++">
+    <compoundname>comediModule.h</compoundname>
+    <includes local="no">Python.h</includes>
+    <includes local="no">comedi.h</includes>
+    <includes local="no">stdio.h</includes>
+    <includes local="no">comedilib.h</includes>
+    <includes local="no">fcntl.h</includes>
+    <includes local="no">unistd.h</includes>
+    <includes local="no">sys/time.h</includes>
+    <includes local="no">errno.h</includes>
+    <includes local="no">stdlib.h</includes>
+    <includes local="no">string.h</includes>
+    <includes refid="examples_8h" local="yes">examples.h</includes>
+    <includes local="no">numpy/arrayobject.h</includes>
+    <includedby refid="comediModule_8c" local="yes">/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.c</includedby>
+    <incdepgraph>
+      <node id="514">
+        <label>stdlib.h</label>
+      </node>
+      <node id="516">
+        <label>examples.h</label>
+        <link refid="examples_8h_source"/>
+        <childnode refid="508" relation="include">
+        </childnode>
+      </node>
+      <node id="513">
+        <label>errno.h</label>
+      </node>
+      <node id="510">
+        <label>fcntl.h</label>
+      </node>
+      <node id="517">
+        <label>numpy/arrayobject.h</label>
+      </node>
+      <node id="509">
+        <label>comedilib.h</label>
+      </node>
+      <node id="515">
+        <label>string.h</label>
+      </node>
+      <node id="505">
+        <label>/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h</label>
+        <link refid="comediModule_8h"/>
+        <childnode refid="506" relation="include">
+        </childnode>
+        <childnode refid="507" relation="include">
+        </childnode>
+        <childnode refid="508" relation="include">
+        </childnode>
+        <childnode refid="509" relation="include">
+        </childnode>
+        <childnode refid="510" relation="include">
+        </childnode>
+        <childnode refid="511" relation="include">
+        </childnode>
+        <childnode refid="512" relation="include">
+        </childnode>
+        <childnode refid="513" relation="include">
+        </childnode>
+        <childnode refid="514" relation="include">
+        </childnode>
+        <childnode refid="515" relation="include">
+        </childnode>
+        <childnode refid="516" relation="include">
+        </childnode>
+        <childnode refid="517" relation="include">
+        </childnode>
+      </node>
+      <node id="506">
+        <label>Python.h</label>
+      </node>
+      <node id="511">
+        <label>unistd.h</label>
+      </node>
+      <node id="512">
+        <label>sys/time.h</label>
+      </node>
+      <node id="507">
+        <label>comedi.h</label>
+      </node>
+      <node id="508">
+        <label>stdio.h</label>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="define">
+      <memberdef kind="define" id="comediModule_8h_1ab6e6ee86736f9ebb56e74ae21bf3ff8a" prot="public" static="no">
+        <name>NPY_NO_DEPRECATED_API</name>
+        <initializer>NPY_1_7_API_VERSION</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="3" column="17" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" bodystart="3" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="comediModule_8h_1ab26c26cbf7a0c97d8960c3cfb413f882" prot="public" static="no">
+        <name>BUFSZ</name>
+        <initializer>10000</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="6" column="11" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="comediModule_8h_1ab26c26cbf7a0c97d8960c3cfb413f882" prot="public" static="no">
+        <name>BUFSZ</name>
+        <initializer>10000</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="17" column="19" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="comediModule_8h_1ab699a96c0b201332ecbb2ecbba88127e" prot="public" static="no">
+        <name>N_CHANS</name>
+        <initializer>256</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="20" column="9" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="comediModule_8h_1a6d8aa5809fc463704493cee4c455227c" prot="public" static="no" mutable="no">
+        <type>char</type>
+        <definition>char buf[BUFSZ]</definition>
+        <argsstring>[BUFSZ]</argsstring>
+        <name>buf</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="18" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" bodystart="18" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="comediModule_8h_1a2add050dc18335956b10375eac268a39" prot="public" static="yes" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int chanlist[N_CHANS]</definition>
+        <argsstring>[N_CHANS]</argsstring>
+        <name>chanlist</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="comediModule_8h_1a8991ced06a16f11e117be24fed593f8b" prot="public" static="yes" mutable="no">
+        <type>comedi_range *</type>
+        <definition>comedi_range* range_info[N_CHANS]</definition>
+        <argsstring>[N_CHANS]</argsstring>
+        <name>range_info</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="22" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="comediModule_8h_1aa7b52e780006626a6d5d0cf0b7b1da1d" prot="public" static="yes" mutable="no">
+        <type>lsampl_t</type>
+        <definition>lsampl_t maxdata[N_CHANS]</definition>
+        <argsstring>[N_CHANS]</argsstring>
+        <name>maxdata</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="comediModule_8h_1a0cd13ecb4e53155437c39e485b6199c6" prot="public" static="no" mutable="no">
+        <type>char *</type>
+        <definition>char* cmdtest_messages[]</definition>
+        <argsstring>[]</argsstring>
+        <name>cmdtest_messages</name>
+        <initializer>={
+	&quot;success&quot;,
+	&quot;invalid source&quot;,
+	&quot;source conflict&quot;,
+	&quot;invalid argument&quot;,
+	&quot;argument conflict&quot;,
+	&quot;invalid chanlist&quot;,
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="comediModule_8h_1ac4863b58c341c1fb332b5b841468bc04" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int prepare_cmd_lib</definition>
+        <argsstring>(comedi_t *dev, int subdevice, int n_scan, int n_chan, unsigned period_nanosec, comedi_cmd *cmd)</argsstring>
+        <name>prepare_cmd_lib</name>
+        <param>
+          <type>comedi_t *</type>
+          <declname>dev</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>subdevice</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>n_scan</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>n_chan</declname>
+        </param>
+        <param>
+          <type>unsigned</type>
+          <declname>period_nanosec</declname>
+        </param>
+        <param>
+          <type>comedi_cmd *</type>
+          <declname>cmd</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.c" bodystart="185" bodyend="206"/>
+      </memberdef>
+      <memberdef kind="function" id="comediModule_8h_1abd52002101987e54aa728f91b02fbc9d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void do_cmd</definition>
+        <argsstring>(comedi_t *dev, comedi_cmd *cmd)</argsstring>
+        <name>do_cmd</name>
+        <param>
+          <type>comedi_t *</type>
+          <declname>dev</declname>
+        </param>
+        <param>
+          <type>comedi_cmd *</type>
+          <declname>cmd</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="28" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="comediModule_8h_1a12f913bc09e09eb13a2b05c5b9a6e392" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>double</type>
+        <definition>double print_datum</definition>
+        <argsstring>(lsampl_t raw, int channel_index, short physical)</argsstring>
+        <name>print_datum</name>
+        <param>
+          <type>lsampl_t</type>
+          <declname>raw</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>channel_index</declname>
+        </param>
+        <param>
+          <type>short</type>
+          <declname>physical</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.c" bodystart="307" bodyend="317"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#ifndef<sp/>_COMEDIMODULE</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>_COMEDIMODULE</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>NPY_NO_DEPRECATED_API<sp/>NPY_1_7_API_VERSION</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;Python.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;comedi.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>BUFSZ<sp/>10000</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdio.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;comedilib.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fcntl.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;unistd.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;sys/time.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;errno.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdlib.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;examples.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;numpy/arrayobject.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>BUFSZ<sp/>10000</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>buf[BUFSZ];</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>N_CHANS<sp/>256</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>chanlist[N_CHANS];</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>comedi_range<sp/>*<sp/>range_info[N_CHANS];</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>lsampl_t<sp/>maxdata[N_CHANS];</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>prepare_cmd_lib(comedi_t<sp/>*dev,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>subdevice,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>n_scan,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>n_chan,<sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/>period_nanosec,<sp/>comedi_cmd<sp/>*cmd);</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>do_cmd(comedi_t<sp/>*dev,comedi_cmd<sp/>*cmd);</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>print_datum(lsampl_t<sp/>raw,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>channel_index,<sp/></highlight><highlight class="keywordtype">short</highlight><highlight class="normal"><sp/>physical);</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*cmdtest_messages[]={</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;success&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;invalid<sp/>source&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;source<sp/>conflict&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;invalid<sp/>argument&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;argument<sp/>conflict&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;invalid<sp/>chanlist&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="39"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"></highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/comediModule.h"/>
+  </compounddef>
+</doxygen>

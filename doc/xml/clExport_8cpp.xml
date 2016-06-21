@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="clExport_8cpp" kind="file" language="C++">
+    <compoundname>clExport.cpp</compoundname>
+    <includes refid="old_2CameraLink_8h" local="yes">CameraLink.h</includes>
+    <incdepgraph>
+      <node id="650">
+        <label>/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clExport.cpp</label>
+        <link refid="clExport_8cpp"/>
+        <childnode refid="651" relation="include">
+        </childnode>
+      </node>
+      <node id="661">
+        <label>SisoDisplay.h</label>
+      </node>
+      <node id="658">
+        <label>map</label>
+      </node>
+      <node id="651">
+        <label>CameraLink.h</label>
+        <link refid="old_2CameraLink_8h_source"/>
+        <childnode refid="652" relation="include">
+        </childnode>
+        <childnode refid="653" relation="include">
+        </childnode>
+        <childnode refid="654" relation="include">
+        </childnode>
+        <childnode refid="655" relation="include">
+        </childnode>
+        <childnode refid="656" relation="include">
+        </childnode>
+        <childnode refid="657" relation="include">
+        </childnode>
+        <childnode refid="658" relation="include">
+        </childnode>
+        <childnode refid="659" relation="include">
+        </childnode>
+        <childnode refid="660" relation="include">
+        </childnode>
+        <childnode refid="661" relation="include">
+        </childnode>
+      </node>
+      <node id="655">
+        <label>memory.h</label>
+      </node>
+      <node id="656">
+        <label>string.h</label>
+      </node>
+      <node id="657">
+        <label>typeinfo</label>
+      </node>
+      <node id="652">
+        <label>unistd.h</label>
+      </node>
+      <node id="654">
+        <label>iostream</label>
+      </node>
+      <node id="659">
+        <label>fgrab_prototyp.h</label>
+      </node>
+      <node id="660">
+        <label>clser.h</label>
+      </node>
+      <node id="653">
+        <label>stdio.h</label>
+      </node>
+    </incdepgraph>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&quot;CameraLink.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal">DLLEXPORT<sp/>{</highlight></codeline>
+<codeline lineno="4"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCamera" kindref="compound">Camera</ref>*<sp/>Camera_new(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>e_boardNr,</highlight><highlight class="comment">/*<sp/>unsigned<sp/>int<sp/>e_exposure,<sp/>unsigned<sp/>int<sp/>e_width,<sp/>unsigned<sp/>int<sp/>e_height,<sp/>unsigned<sp/>int<sp/>e_xoffset,<sp/>unsigned<sp/>int<sp/>e_yoffset,*/</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>e_framespersec){<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">new</highlight><highlight class="normal"><sp/><ref refid="classCamera" kindref="compound">Camera</ref>(e_boardNr,<sp/></highlight><highlight class="comment">/*e_exposure,<sp/>e_width,<sp/>e_height,<sp/>e_xoffset,<sp/>e_yoffset,*/</highlight><highlight class="normal"><sp/>e_framespersec);<sp/>}</highlight></codeline>
+<codeline lineno="5"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>Camera_init(<ref refid="classCamera" kindref="compound">Camera</ref>*<sp/><ref refid="classCamera" kindref="compound">Camera</ref>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>file){<sp/>Camera-&gt;init(file);<sp/>}</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>*Camera_Buffer(Camera*<sp/>Camera){<sp/>Camera-&gt;getBuffer();<sp/>}</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_toString(Camera*<sp/>Camera){<sp/>Camera-&gt;toString();<sp/>}</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_start(Camera*<sp/>Camera){<sp/>Camera-&gt;startAcquire();<sp/>}</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_close(Camera*<sp/>Camera){<sp/>Camera-&gt;close();<sp/>}</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_stop(Camera*<sp/>Camera){<sp/>Camera-&gt;stop();<sp/>}</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_restart(Camera*<sp/>Camera){<sp/>Camera-&gt;restart();<sp/>}</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>Camera_getExposure(Camera*<sp/>Camera){Camera-&gt;getExposure();}</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_setExposure(Camera*<sp/>Camera,<sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>e_exposure){<sp/>Camera-&gt;setExposure(e_exposure);<sp/>}</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>Camera_getWidth(Camera*<sp/>Camera){Camera-&gt;getWidth();}</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_setWidth(Camera*<sp/>Camera,<sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>e_width){<sp/>Camera-&gt;setWidth(e_width);<sp/>}</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>Camera_getHeight(Camera*<sp/>Camera){Camera-&gt;getHeight();}</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_setHeight(Camera*<sp/>Camera,<sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>e_height){<sp/>Camera-&gt;setHeight(e_height);<sp/>}</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>Camera_getXoffset(Camera*<sp/>Camera){Camera-&gt;getXoffset();}</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_setXoffset(Camera*<sp/>Camera,<sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>e_xoffset){<sp/>Camera-&gt;setXoffset(e_xoffset);<sp/>}</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>Camera_getYoffset(Camera*<sp/>Camera){Camera-&gt;getYoffset();}</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Camera_setYoffset(Camera*<sp/>Camera,<sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>e_yoffset){<sp/>Camera-&gt;setYoffset(e_yoffset);<sp/>}</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/>void<sp/>Camera_serialWrite(Camera*<sp/>Camera,<sp/>char<sp/>e_buf[]){<sp/>Camera-&gt;<sp/>serialWrite(e_buf);<sp/>}</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/>void<sp/>Camera_serialInit(Camera*<sp/>Camera,<sp/>unsigned<sp/>int<sp/>serialIndex){<sp/>Camera-&gt;<sp/>serialInit(serialIndex);<sp/>}<sp/><sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal">}</highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/old/clExport.cpp"/>
+  </compounddef>
+</doxygen>

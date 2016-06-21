@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__orientalSensor_8py" kind="file" language="Python">
+    <compoundname>_orientalSensor.py</compoundname>
+    <innerclass refid="classcrappy_1_1sensor_1_1__orientalSensor_1_1BiotensSensor" prot="public">crappy::sensor::_orientalSensor::BiotensSensor</innerclass>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__orientalSensor">crappy::sensor::_orientalSensor</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">#!/usr/bin/python</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="comment">#<sp/>-*-<sp/>coding:<sp/>utf-8<sp/>-*-</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="comment">#<sp/>import<sp/>time</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>struct<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>*</highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>serial</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="comment">#<sp/>This<sp/>functions<sp/>converts<sp/>decimal<sp/>into<sp/>bytes<sp/>or<sp/>bytes<sp/>into<sp/>decimals.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="comment">#<sp/><sp/>Mandatory<sp/>in<sp/>order<sp/>to<sp/>send<sp/>or<sp/>read<sp/>anything<sp/>into/from<sp/>MAC<sp/>Motors<sp/>registers.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">convert_to_byte(number,<sp/>length):</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="13"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>functions<sp/>converts<sp/>decimal<sp/>into<sp/>bytes.<sp/><sp/>Mandatory<sp/>in<sp/>order<sp/>to<sp/>send</highlight></codeline>
+<codeline lineno="14"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>or<sp/>read<sp/>anything<sp/>into/from<sp/>MAC<sp/>Motors<sp/>registers.&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><sp/><sp/><sp/><sp/>encoded<sp/>=<sp/>pack(</highlight><highlight class="stringliteral">&apos;%s&apos;</highlight><highlight class="normal"><sp/>%<sp/>(length),<sp/>number)<sp/><sp/></highlight><highlight class="comment">#<sp/>get<sp/>hex<sp/>byte<sp/>sequence<sp/>in<sp/>required<sp/>&apos;\xXX\xXX&apos;,<sp/>big<sp/>endian<sp/>format.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/>b<sp/>=<sp/>bytearray(encoded,<sp/></highlight><highlight class="stringliteral">&apos;hex&apos;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/>i<sp/>=<sp/>0</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/><sp/>c<sp/>=<sp/></highlight><highlight class="stringliteral">&apos;&apos;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>i<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>range(0,<sp/>len(encoded)):</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>x<sp/>=<sp/>int(b[i])<sp/>^<sp/>0xff<sp/><sp/></highlight><highlight class="comment">#<sp/>get<sp/>the<sp/>complement<sp/>to<sp/>255</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>x<sp/>=<sp/>pack(</highlight><highlight class="stringliteral">&apos;B&apos;</highlight><highlight class="normal">,<sp/>x)<sp/><sp/></highlight><highlight class="comment">#<sp/>byte<sp/>formalism</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c<sp/>+=<sp/>encoded[i]<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;%s&apos;</highlight><highlight class="normal"><sp/>%<sp/>x<sp/><sp/></highlight><highlight class="comment">#<sp/>concatenate<sp/>byte<sp/>and<sp/>complement<sp/>and<sp/>add<sp/>it<sp/>to<sp/>the<sp/>sequece</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>c</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">convert_to_dec(sequence):</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="28"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>This<sp/>functions<sp/>converts<sp/>bytes<sp/>into<sp/>decimals.<sp/><sp/>Mandatory<sp/>in<sp/>order<sp/>to<sp/>send</highlight></codeline>
+<codeline lineno="29"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>or<sp/>read<sp/>anything<sp/>into/from<sp/>MAC<sp/>Motors<sp/>registers.&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>sequence=sequence[::2]<sp/>##<sp/>cut<sp/>off<sp/>&quot;complement<sp/>byte&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/>decim<sp/>=<sp/>unpack(</highlight><highlight class="stringliteral">&apos;i&apos;</highlight><highlight class="normal">,<sp/>sequence)<sp/><sp/></highlight><highlight class="comment">#<sp/>convert<sp/>to<sp/>signed<sp/>int<sp/>value</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>decim[0]</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="comment">#<sp/>-------------------------------------------------------------------------------------------</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight><highlight class="comment">#<sp/>This<sp/>function<sp/>allows<sp/>to<sp/>start<sp/>the<sp/>motor<sp/>in<sp/>desired<sp/>mode<sp/>(1=velocity,2=position)<sp/>or<sp/>stop<sp/>it<sp/>(mode<sp/>0).</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal"></highlight></codeline>
+<codeline lineno="39" refid="classcrappy_1_1sensor_1_1__orientalSensor_1_1BiotensSensor" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classcrappy_1_1sensor_1_1__orientalSensor_1_1BiotensSensor" kindref="compound">BiotensSensor</ref>(object):</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="classcrappy_1_1sensor_1_1__orientalSensor_1_1BiotensSensor_1ad037c483259e8e772dc81f6e9d8e8c6f" kindref="member">__init__</ref>(self,<sp/>ser):</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="42"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>class<sp/>contains<sp/>methods<sp/>to<sp/>get<sp/>info<sp/>from<sp/>the<sp/>motors<sp/>of<sp/>the<sp/>biotens</highlight></codeline>
+<codeline lineno="43"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>machine.<sp/>You<sp/>should<sp/>NOT<sp/>use<sp/>it<sp/>directly,<sp/>but<sp/>use<sp/>the<sp/>BiotensTechnical.</highlight></codeline>
+<codeline lineno="44"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1sensor_1_1__orientalSensor_1_1BiotensSensor_1adba882bca806dab8787d7ef1e4fd3ade" kindref="member">ser</ref><sp/>=<sp/>ser</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"></highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="classcrappy_1_1sensor_1_1__orientalSensor_1_1BiotensSensor_1a9188bc3ba2d088840d1c78f7236f27cf" kindref="member">read_position</ref>(self):</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;Reads<sp/>current<sp/>position&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>&quot;reading<sp/>position...&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>self.ser.inWaiting()</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.ser.readlines()</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">except</highlight><highlight class="normal"><sp/>serial.SerialException:</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>&quot;readlines<sp/>failed&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">pass</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>&quot;position<sp/>read&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>command<sp/>=<sp/></highlight><highlight class="stringliteral">&apos;\x50\x50\x50\xFF\x00&apos;</highlight><highlight class="normal"><sp/>+<sp/>convert_to_byte(10,<sp/></highlight><highlight class="stringliteral">&apos;B&apos;</highlight><highlight class="normal">)<sp/>+<sp/></highlight><highlight class="stringliteral">&apos;\xAA\xAA&apos;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.ser.write(command)</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>time.sleep(0.01)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>&quot;reading...&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>self.ser.inWaiting()</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>position_<sp/>=<sp/>self.ser.read(19)</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>&quot;read&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>position<sp/>=<sp/>position_[9:len(position_)<sp/>-<sp/>2:2]</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>position<sp/>=<sp/>convert_to_dec(position)<sp/>*<sp/>5<sp/>/<sp/>4096.</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>position</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"></highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>ajouter<sp/>d&apos;autre<sp/>fonctions<sp/>si<sp/>besoin<sp/>(Thanks<sp/>captain<sp/>obvious)</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_orientalSensor.py"/>
+  </compounddef>
+</doxygen>

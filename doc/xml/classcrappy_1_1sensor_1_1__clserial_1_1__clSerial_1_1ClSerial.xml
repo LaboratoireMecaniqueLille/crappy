@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial" kind="class" language="Python" prot="public">
+    <compoundname>crappy::sensor::_clserial::_clSerial::ClSerial</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1ac8a07767aa5b73c71c423496faa537d6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._clSerial.ClSerial::width_code</definition>
+        <argsstring></argsstring>
+        <name>width_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1abaa90464f230f8c6d11971e348a038d1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._clSerial.ClSerial::height_code</definition>
+        <argsstring></argsstring>
+        <name>height_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1afde7a9de717ae61834f1174cd571880e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._clSerial.ClSerial::offsetX_code</definition>
+        <argsstring></argsstring>
+        <name>offsetX_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" bodystart="9" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1af5a9a05859a98bdd3ad52af6361252bf" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._clSerial.ClSerial::exposure_code</definition>
+        <argsstring></argsstring>
+        <name>exposure_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a2966c8c8fc687d16efda4ae59ddc1224" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._clSerial.ClSerial::offsetY_code</definition>
+        <argsstring></argsstring>
+        <name>offsetY_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a39fed06d56c9ef0d5a2e7c7c81ce5dce" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._clserial._clSerial.ClSerial.__init__</definition>
+        <argsstring>(self, obj)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>obj</type>
+          <defname>obj</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" bodystart="5" bodyend="12"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a91346cb19f5311b59db8d21e9b64da44" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._clserial._clSerial.ClSerial.get_code</definition>
+        <argsstring>(self, property_id, value)</argsstring>
+        <name>get_code</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>property_id</type>
+          <defname>property_id</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" bodystart="13" bodyend="21"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a39fed06d56c9ef0d5a2e7c7c81ce5dce" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._clserial._clSerial.ClSerial.__init__</definition>
+        <argsstring>(self, obj)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>obj</type>
+          <defname>obj</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_clserial/_clSerial.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_clserial/_clSerial.py" bodystart="5" bodyend="12"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a91346cb19f5311b59db8d21e9b64da44" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._clserial._clSerial.ClSerial.get_code</definition>
+        <argsstring>(self, property_id, value)</argsstring>
+        <name>get_code</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>property_id</type>
+          <defname>property_id</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_clserial/_clSerial.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_clserial/_clSerial.py" bodystart="13" bodyend="21"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="98">
+        <label>crappy.sensor._clserial._clSerial.ClSerial</label>
+        <link refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial"/>
+        <childnode refid="99" relation="public-inheritance">
+        </childnode>
+        <childnode refid="99" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="99">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="100">
+        <label>crappy.sensor._clserial._clSerial.ClSerial</label>
+        <link refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial"/>
+        <childnode refid="101" relation="public-inheritance">
+        </childnode>
+        <childnode refid="101" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="101">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_clSerial.py" bodystart="4" bodyend="34"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a39fed06d56c9ef0d5a2e7c7c81ce5dce" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_clSerial::ClSerial</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a39fed06d56c9ef0d5a2e7c7c81ce5dce" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_clSerial::ClSerial</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1af5a9a05859a98bdd3ad52af6361252bf" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_clSerial::ClSerial</scope><name>exposure_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a91346cb19f5311b59db8d21e9b64da44" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_clSerial::ClSerial</scope><name>get_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a91346cb19f5311b59db8d21e9b64da44" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_clSerial::ClSerial</scope><name>get_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1abaa90464f230f8c6d11971e348a038d1" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_clSerial::ClSerial</scope><name>height_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1afde7a9de717ae61834f1174cd571880e" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_clSerial::ClSerial</scope><name>offsetX_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1a2966c8c8fc687d16efda4ae59ddc1224" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_clSerial::ClSerial</scope><name>offsetY_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__clSerial_1_1ClSerial_1ac8a07767aa5b73c71c423496faa537d6" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_clSerial::ClSerial</scope><name>width_code</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

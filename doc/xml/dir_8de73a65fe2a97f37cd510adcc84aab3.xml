@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_8de73a65fe2a97f37cd510adcc84aab3" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/sources/Jai_lib</compoundname>
+    <innerdir refid="dir_a73d768f5eed8e46c8a98c9b2395bbb7">/home/essais/Code/crappy_/crappy/sources/Jai_lib/old</innerdir>
+    <innerfile refid="CameraLink_8cpp">CameraLink.cpp</innerfile>
+    <innerfile refid="CameraLink_8h">CameraLink.h</innerfile>
+    <innerfile refid="clSerial_8cpp">clSerial.cpp</innerfile>
+    <innerfile refid="Jai__lib_2example_8py">example.py</innerfile>
+    <innerfile refid="Jai__lib_2export_8h">export.h</innerfile>
+    <innerfile refid="pyCameraLink_8cpp">pyCameraLink.cpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/"/>
+  </compounddef>
+</doxygen>

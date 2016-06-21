@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="crappy_2sensor_2__CMdriveSensor_8py" kind="file" language="Python">
+    <compoundname>_CMdriveSensor.py</compoundname>
+    <innerclass refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor" prot="public">crappy::sensor::_CMdriveSensor::CmDriveSensor</innerclass>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__CMdriveSensor">crappy::sensor::_CMdriveSensor</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">#<sp/>coding:<sp/>utf-8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>serial</highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._meta<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>motion</highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">CmDriveSensor(motion.MotionSensor):</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;<sp/>Open<sp/>a<sp/>new<sp/>default<sp/>serial<sp/>port<sp/>for<sp/>communication<sp/>with<sp/>Servostar&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">__init__(self,<sp/>ser=None,<sp/>port=&apos;/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0</highlight><highlight class="stringliteral">&apos;,<sp/>baudrate=9600):</highlight></codeline>
+<codeline lineno="10"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="11"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>super(CmDriveSensor,<sp/>self).__init__(port,<sp/>baudrate)</highlight></codeline>
+<codeline lineno="12"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.port<sp/>=<sp/>port</highlight></codeline>
+<codeline lineno="13"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.baudrate<sp/>=<sp/>baudrate</highlight></codeline>
+<codeline lineno="14"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>ser<sp/>!=<sp/></highlight><highlight class="keywordtype">None</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.ser<sp/>=<sp/>ser</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.ser<sp/>=<sp/>serial.Serial(self.port,<sp/>self.baudrate)</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;Methods<sp/>checking<sp/>&amp;<sp/>controlling<sp/>position</highlight></codeline>
+<codeline lineno="20"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>==========================================</highlight></codeline>
+<codeline lineno="21"><highlight class="stringliteral"><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;Search<sp/>for<sp/>the<sp/>physical<sp/>position<sp/>of<sp/>the<sp/>motor&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">get_position(self):</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.ser.close()</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>ser=self.setConnection(self.myPort,<sp/>self.baudrate)<sp/>#<sp/>initialise<sp/>serial<sp/>port</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.ser.open()</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.ser.write(</highlight><highlight class="stringliteral">&apos;PR<sp/>P<sp/>\r&apos;</highlight><highlight class="normal">)<sp/><sp/></highlight><highlight class="comment">#<sp/>send<sp/>&apos;PFB&apos;<sp/>ASCII<sp/>characters<sp/>to<sp/>request<sp/>the<sp/>location<sp/>of<sp/>the<sp/>motor</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pfb<sp/>=<sp/>self.ser.readline()<sp/><sp/></highlight><highlight class="comment">#<sp/>read<sp/>serial<sp/>data<sp/>from<sp/>the<sp/>buffer</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pfb1<sp/>=<sp/>self.ser.readline()<sp/><sp/></highlight><highlight class="comment">#<sp/>read<sp/>serial<sp/>data<sp/>from<sp/>the<sp/>buffer</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">print</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&apos;%s<sp/>%i&apos;</highlight><highlight class="normal"><sp/>%<sp/>(pfb,<sp/>(int(pfb1)))<sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>location</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">print</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&apos;\n&apos;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.ser.close()<sp/><sp/></highlight><highlight class="comment">#<sp/>close<sp/>serial<sp/>connection</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>int(pfb1)</highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_CMdriveSensor.py"/>
+  </compounddef>
+</doxygen>

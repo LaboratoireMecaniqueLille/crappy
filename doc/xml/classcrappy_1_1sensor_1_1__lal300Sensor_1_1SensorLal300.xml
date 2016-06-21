@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300" kind="class" language="Python" prot="public">
+    <compoundname>crappy::sensor::_lal300Sensor::SensorLal300</compoundname>
+    <basecompoundref refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor" prot="public" virt="non-virtual">crappy.sensor._lal300Sensor.Lal300Sensor</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor" prot="public" virt="non-virtual">crappy.sensor._lal300Sensor.Lal300Sensor</basecompoundref>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300_1aa5672be6e9c09f65caf671d92fd04baa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._lal300Sensor.SensorLal300.__init__</definition>
+        <argsstring>(self, param, ser)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This class contains methods to get info from the motors of the lal300
+machine. You should NOT use it directly, but use the Lal300Technical.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="112" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="112" bodyend="119"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300_1aa5672be6e9c09f65caf671d92fd04baa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._lal300Sensor.SensorLal300.__init__</definition>
+        <argsstring>(self, param, ser)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This class contains methods to get info from the motors of the lal300
+machine. You should NOT use it directly, but use the Lal300Technical.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_lal300Sensor.py" line="112" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_lal300Sensor.py" bodystart="112" bodyend="119"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="501">
+        <label>crappy.sensor._lal300Sensor.Lal300Sensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor"/>
+        <childnode refid="502" relation="public-inheritance">
+        </childnode>
+        <childnode refid="502" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="500">
+        <label>crappy.sensor._lal300Sensor.SensorLal300</label>
+        <link refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300"/>
+        <childnode refid="501" relation="public-inheritance">
+        </childnode>
+        <childnode refid="501" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="502">
+        <label>MotionSensor</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="504">
+        <label>crappy.sensor._lal300Sensor.Lal300Sensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor"/>
+        <childnode refid="505" relation="public-inheritance">
+        </childnode>
+        <childnode refid="505" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="503">
+        <label>crappy.sensor._lal300Sensor.SensorLal300</label>
+        <link refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300"/>
+        <childnode refid="504" relation="public-inheritance">
+        </childnode>
+        <childnode refid="504" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="505">
+        <label>MotionSensor</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="110" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="110" bodyend="119"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300_1aa5672be6e9c09f65caf671d92fd04baa" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300_1aa5672be6e9c09f65caf671d92fd04baa" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a40abc8ab3c61770d32a3ff46fbc25afc" prot="public" virt="non-virtual" ambiguityscope="crappy::sensor::_lal300Sensor::Lal300Sensor."><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a14914a0f08188a5200e4c08c903b3b2c" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1afaa817d53310f8f6f4d91056c3ded000" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>check_disp</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1afaa817d53310f8f6f4d91056c3ded000" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>check_disp</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1ac5caebb90b001949f00318627a84b868" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1ac5caebb90b001949f00318627a84b868" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a3f7adb24144668ae8dda590aff3dfb6c" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>param</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a7f29e250348c702c48c182c151333e59" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>port</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1ad830c011f7ae1816b8ee5467b1dd2ce7" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::SensorLal300</scope><name>ser</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

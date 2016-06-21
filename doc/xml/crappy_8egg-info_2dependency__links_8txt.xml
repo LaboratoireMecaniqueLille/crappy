@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="crappy_8egg-info_2dependency__links_8txt" kind="file" language="C++">
+    <compoundname>dependency_links.txt</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/crappy.egg-info/dependency_links.txt"/>
+  </compounddef>
+</doxygen>

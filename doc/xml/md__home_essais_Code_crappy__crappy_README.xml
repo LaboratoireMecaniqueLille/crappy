@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="md__home_essais_Code_crappy__crappy_README" kind="page">
+    <compoundname>md__home_essais_Code_crappy__crappy_README</compoundname>
+    <title>README</title>
+    <detaileddescription>
+<para>======================= </para><sect1 id="md__home_essais_Code_crappy__crappy_README_1mainpage">
+<title>Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)</title>
+<para>This package aims to provide easy-to-use tools for command and acquisition on complex experimental setups.</para><para>.. contents::</para><para><heading level="2">Description </heading>
+</para><para>See <computeroutput>DESCRIPTION.rst</computeroutput> for a more complete description.</para><para><heading level="2">Installation </heading>
+</para><para>Only tested on Ubuntu 14.04 / 15.1 : <verbatim>   git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
+
+   cd crappy
+
+   sudo python setup install
+</verbatim></para><para><heading level="2">Documentation </heading>
+</para><para>The documentation can be compiled by simply running in the doc folder : <verbatim>   make html
+</verbatim></para><para>Note that you will need to install sphinx and numpy-doc: <verbatim>   pip install -U Sphinx
+
+   apt-get install python-numpydoc
+</verbatim></para><para>We used the scipy-style for Sphinx, you can find the original on SciPy&apos;s Github:</para><para><ulink url="https://github.com/scipy/scipy">https://github.com/scipy/scipy</ulink></para><para><heading level="2">Bug reports </heading>
+</para><para>Please reports bugs at:</para><para><ulink url="https://github.com/LaboratoireMecaniqueLille/crappy/issues">https://github.com/LaboratoireMecaniqueLille/crappy/issues</ulink></para><para><heading level="2">License information </heading>
+</para><para>See the file <computeroutput>LICENSE.txt</computeroutput> for information on the history of this software, terms &amp; conditions for usage, and a DISCLAIMER OF ALL WARRANTIES. </para></sect1>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_9a6103b77cadfe53343c4358bb3d31aa" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/crappy/sensor</compoundname>
+    <innerdir refid="dir_309cfe76a41b674dfb468ed03baca8db">/home/essais/Code/crappy_/crappy/crappy/sensor/_clserial</innerdir>
+    <innerdir refid="dir_5b1ea5ec500d6ad0f87bc5275ea20b2e">/home/essais/Code/crappy_/crappy/crappy/sensor/_meta</innerdir>
+    <innerfile refid="crappy_2sensor_2____init_____8py">__init__.py</innerfile>
+    <innerfile refid="crappy_2sensor_2____ximeaSensor__old_8py">__ximeaSensor_old.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__Agilent34420ASensor_8py">_Agilent34420ASensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__biaxeSensor_8py">_biaxeSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__biotensSensor_8py">_biotensSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__CMdriveSensor_8py">_CMdriveSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__comediSensor_8py">_comediSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__daqmxSensor_8py">_daqmxSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__dummySensor_8py">_dummySensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__fakeCameraSensor_8py">_fakeCameraSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__jaiSensor_8py">_jaiSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__labJackSensor_8py">_labJackSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__lal300Sensor_8py">_lal300Sensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__old__jaiSensor_8py">_old_jaiSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__orientalSensor_8py">_orientalSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__PISensor_8py">_PISensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__variateurTriboSensor_8py">_variateurTriboSensor.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__ximeaExport_8py">_ximeaExport.py</innerfile>
+    <innerfile refid="crappy_2sensor_2__ximeaSensor_8py">_ximeaSensor.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/"/>
+  </compounddef>
+</doxygen>

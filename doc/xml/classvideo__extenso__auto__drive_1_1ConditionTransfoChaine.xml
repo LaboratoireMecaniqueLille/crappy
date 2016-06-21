@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classvideo__extenso__auto__drive_1_1ConditionTransfoChaine" kind="class" language="Python" prot="public">
+    <compoundname>video_extenso_auto_drive::ConditionTransfoChaine</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classvideo__extenso__auto__drive_1_1ConditionTransfoChaine_1a1fbeba607c283681c771e8f16c00ba7e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def video_extenso_auto_drive.ConditionTransfoChaine.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="9" bodyend="11"/>
+      </memberdef>
+      <memberdef kind="function" id="classvideo__extenso__auto__drive_1_1ConditionTransfoChaine_1afc6b97b0d3a192df6f01e90f5f8566c2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def video_extenso_auto_drive.ConditionTransfoChaine.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="12" bodyend="22"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="227">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="226">
+        <label>video_extenso_auto_drive.ConditionTransfoChaine</label>
+        <link refid="classvideo__extenso__auto__drive_1_1ConditionTransfoChaine"/>
+        <childnode refid="227" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="229">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="228">
+        <label>video_extenso_auto_drive.ConditionTransfoChaine</label>
+        <link refid="classvideo__extenso__auto__drive_1_1ConditionTransfoChaine"/>
+        <childnode refid="229" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="8" bodyend="23"/>
+    <listofallmembers>
+      <member refid="classvideo__extenso__auto__drive_1_1ConditionTransfoChaine_1a1fbeba607c283681c771e8f16c00ba7e" prot="public" virt="non-virtual"><scope>video_extenso_auto_drive::ConditionTransfoChaine</scope><name>__init__</name></member>
+      <member refid="classvideo__extenso__auto__drive_1_1ConditionTransfoChaine_1afc6b97b0d3a192df6f01e90f5f8566c2" prot="public" virt="non-virtual"><scope>video_extenso_auto_drive::ConditionTransfoChaine</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>video_extenso_auto_drive::ConditionTransfoChaine</scope><name>evaluate</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

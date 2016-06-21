@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcondition__alert__mail_1_1Alert" kind="class" language="Python" prot="public">
+    <compoundname>condition_alert_mail::Alert</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcondition__alert__mail_1_1Alert_1a1bbc845203f40c58e071e8b32cdf4f7d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>condition_alert_mail.Alert::broken</definition>
+        <argsstring></argsstring>
+        <name>broken</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" line="20" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcondition__alert__mail_1_1Alert_1a6ed2099a827021e6f1b7294f5167c47a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>condition_alert_mail.Alert::path</definition>
+        <argsstring></argsstring>
+        <name>path</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcondition__alert__mail_1_1Alert_1ada46ef4420a3ca70c43389c4d7708e8a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def condition_alert_mail.Alert.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" line="19" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" bodystart="19" bodyend="22"/>
+      </memberdef>
+      <memberdef kind="function" id="classcondition__alert__mail_1_1Alert_1ab025d348541b711e8ac3f3f3eb53156f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def condition_alert_mail.Alert.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" bodystart="23" bodyend="73"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="23">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="22">
+        <label>condition_alert_mail.Alert</label>
+        <link refid="classcondition__alert__mail_1_1Alert"/>
+        <childnode refid="23" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="25">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="24">
+        <label>condition_alert_mail.Alert</label>
+        <link refid="classcondition__alert__mail_1_1Alert"/>
+        <childnode refid="25" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" line="18" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/condition_alert_mail.py" bodystart="18" bodyend="73"/>
+    <listofallmembers>
+      <member refid="classcondition__alert__mail_1_1Alert_1ada46ef4420a3ca70c43389c4d7708e8a" prot="public" virt="non-virtual"><scope>condition_alert_mail::Alert</scope><name>__init__</name></member>
+      <member refid="classcondition__alert__mail_1_1Alert_1a1bbc845203f40c58e071e8b32cdf4f7d" prot="public" virt="non-virtual"><scope>condition_alert_mail::Alert</scope><name>broken</name></member>
+      <member refid="classcondition__alert__mail_1_1Alert_1ab025d348541b711e8ac3f3f3eb53156f" prot="public" virt="non-virtual"><scope>condition_alert_mail::Alert</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>condition_alert_mail::Alert</scope><name>evaluate</name></member>
+      <member refid="classcondition__alert__mail_1_1Alert_1a6ed2099a827021e6f1b7294f5167c47a" prot="public" virt="non-virtual"><scope>condition_alert_mail::Alert</scope><name>path</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

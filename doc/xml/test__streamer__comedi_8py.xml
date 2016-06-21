@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="test__streamer__comedi_8py" kind="file" language="Python">
+    <compoundname>test_streamer_comedi.py</compoundname>
+    <innernamespace refid="namespacetest__streamer__comedi">test_streamer_comedi</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="keyword">import</highlight><highlight class="normal"><sp/>time</highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>numpy<sp/></highlight><highlight class="keyword">as</highlight><highlight class="normal"><sp/>np</highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>crappy</highlight></codeline>
+<codeline lineno="4"><highlight class="normal">crappy.blocks._meta.MasterBlock.instances=[]<sp/></highlight><highlight class="comment">#<sp/>Init<sp/>masterblock<sp/>instances</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal">t0=time.time()</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="keywordflow">try</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="comment">###########################################<sp/>Creating<sp/>objects</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><sp/><sp/><sp/><sp/>instronSensor=<ref refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor" kindref="compound">crappy.sensor.ComediSensor</ref>(device=</highlight><highlight class="stringliteral">&apos;/dev/comedi0&apos;</highlight><highlight class="normal">,channels=[0,1,2,3,4,5],gain=[1,1,1,1,1,1])</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#instronSensor=crappy.sensor.ComediSensor(device=&apos;/dev/comedi0&apos;,channels=[0,1],gain=[10,10000])<sp/>#<sp/>10<sp/>times<sp/>the<sp/>gain<sp/>on<sp/>the<sp/>machine<sp/>if<sp/>you<sp/>go<sp/>through<sp/>an<sp/>usb<sp/>dux<sp/>sigma</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#cmd_traction=crappy.actuator.ComediActuator(device=&apos;/dev/comedi1&apos;,<sp/>subdevice=1,<sp/>channel=1,<sp/>range_num=0,<sp/>gain=1,<sp/>offset=0)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#cmd_torsion=crappy.actuator.ComediActuator(device=&apos;/dev/comedi1&apos;,<sp/>subdevice=1,<sp/>channel=2,<sp/>range_num=0,<sp/>gain=1,<sp/>offset=0)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="comment">###########################################<sp/>Initialising<sp/>the<sp/>outputs</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#cmd_torsion.set_cmd(0)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#cmd_traction.set_cmd(0)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="comment">###########################################<sp/>Creating<sp/>blocks</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#send_freq=400,<sp/>actuator=cmd_traction,<sp/>waveform=[&apos;sinus&apos;,&apos;sinus&apos;,&apos;sinus&apos;],<sp/>freq=[0.5,2,1],<sp/>time_cycles=[10,10,10],<sp/>amplitude=[1,2,4],<sp/>offset=[0,0,0],<sp/>phase=[0,0,0],<sp/>repeat=True</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#send_freq=400,<sp/>actuator=cmd_torsion,<sp/>waveform=[&apos;sinus&apos;,&apos;triangle&apos;,&apos;sinus&apos;],<sp/>freq=[0.5,2,1],<sp/>time_cycles=[10,10,10],<sp/>amplitude=[0,0,0],<sp/>offset=[0,0,0],<sp/>phase=[np.pi,np.pi,np.pi],<sp/>repeat=True</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#stream=crappy.blocks.MeasureComediByStep(instronSensor,labels=[&apos;t(s)&apos;,&apos;dep(mm)&apos;,&apos;f(N)&apos;],freq=100)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/>stream=<ref refid="classcrappy_1_1blocks_1_1__streamerComedi_1_1StreamerComedi" kindref="compound">crappy.blocks.StreamerComedi</ref>(instronSensor,<sp/>labels=[</highlight><highlight class="stringliteral">&apos;t(s)&apos;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&apos;def(%)&apos;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&apos;F(N)&apos;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&apos;dist(deg)&apos;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&apos;C(Nm)&apos;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&apos;dep(mm)&apos;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&apos;ang(deg)&apos;</highlight><highlight class="normal">],<sp/>freq=2000.)</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#traction=crappy.blocks.SignalGenerator(path=[{&quot;waveform&quot;:&quot;sinus&quot;,&quot;time&quot;:100,&quot;phase&quot;:0,&quot;amplitude&quot;:2,&quot;offset&quot;:0.5,&quot;freq&quot;:2.5}],</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#send_freq=400,repeat=True,labels=[&apos;t(s)&apos;,&apos;signal&apos;])</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#torsion=crappy.blocks.SignalGenerator(path=[{&quot;waveform&quot;:&quot;triangle&quot;,&quot;time&quot;:50,&quot;phase&quot;:0,&quot;amplitude&quot;:5,&quot;offset&quot;:-0.5,&quot;freq&quot;:1}]</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#,send_freq=400,repeat=False,labels=[&apos;t(s)&apos;,&apos;signal&apos;])</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/>compacter=<ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(5)</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#compacter2=crappy.blocks.Compacter(400)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/>save=<ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(</highlight><highlight class="stringliteral">&quot;/home/corentin/Bureau/streamer_delete.txt&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/>graph=<ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(</highlight><highlight class="stringliteral">&quot;dynamic&quot;</highlight><highlight class="normal">,(</highlight><highlight class="stringliteral">&apos;ang(deg)&apos;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&apos;dep(mm)&apos;</highlight><highlight class="normal">))</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#graph_stat=crappy.blocks.Grapher(&quot;dynamic&quot;,(0,2))</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/>graph2=<ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(</highlight><highlight class="stringliteral">&quot;dynamic&quot;</highlight><highlight class="normal">,(</highlight><highlight class="stringliteral">&apos;t(s)&apos;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&apos;ang(deg)&apos;</highlight><highlight class="normal">),(</highlight><highlight class="stringliteral">&apos;t(s)&apos;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&apos;dep(mm)&apos;</highlight><highlight class="normal">))</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#graph3=crappy.blocks.Grapher(&quot;dynamic&quot;,(0,4))</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight><highlight class="comment">###########################################<sp/>Creating<sp/>links</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/>link1=<ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter" kindref="compound">crappy.links.Filter</ref>(labels=[</highlight><highlight class="stringliteral">&apos;dist(deg)&apos;</highlight><highlight class="normal">],mode=</highlight><highlight class="stringliteral">&quot;median&quot;</highlight><highlight class="normal">,size=50))</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/>link2=<ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/>link3=<ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/>link4=<ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/>link5=<ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/>link6=<ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/>link7=<ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="47"><highlight class="normal"></highlight><highlight class="comment">###########################################<sp/>Linking<sp/>objects</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/>stream.add_output(link2)</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#traction.add_input(link5)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#torsion.add_output(link2)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#torsion.add_output(link5)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/>compacter.add_input(link2)</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#compacter2.add_input(link2)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/>compacter.add_output(link3)</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/>compacter.add_output(link4)</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/>compacter.add_output(link5)</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#compacter.add_output(link6)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#compacter.add_output(link7)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/>save.add_input(link5)</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/>graph.add_input(link3)</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#graph_stat.add_input(link5)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/>graph2.add_input(link4)</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#graph3.add_input(link7)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="69"><highlight class="normal"></highlight><highlight class="comment">###########################################<sp/>Starting<sp/>objects</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/>t0=time.time()</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>instance<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>crappy.blocks._meta.MasterBlock.instances:</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>instance.t0(t0)</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>instance<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>crappy.blocks._meta.MasterBlock.instances:</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>instance.start()</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"></highlight></codeline>
+<codeline lineno="77"><highlight class="normal"></highlight><highlight class="comment">###########################################<sp/>Waiting<sp/>for<sp/>execution</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="78"><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"></highlight></codeline>
+<codeline lineno="80"><highlight class="normal"></highlight><highlight class="comment">###########################################<sp/>Stopping<sp/>objects</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="81"><highlight class="normal"></highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#for<sp/>instance<sp/>in<sp/>crappy.blocks.MasterBlock.instances:</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#instance.stop()</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="84"><highlight class="normal"></highlight></codeline>
+<codeline lineno="85"><highlight class="normal"></highlight><highlight class="keywordflow">except</highlight><highlight class="normal"><sp/>KeyboardInterrupt:</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>instance<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>crappy.blocks._meta.MasterBlock.instances:</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>instance.stop()</highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/tests/test_streamer_comedi.py"/>
+  </compounddef>
+</doxygen>

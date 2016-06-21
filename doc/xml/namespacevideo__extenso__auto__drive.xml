@@ -1,0 +1,258 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacevideo__extenso__auto__drive" kind="namespace" language="Python">
+    <compoundname>video_extenso_auto_drive</compoundname>
+    <innerclass refid="classvideo__extenso__auto__drive_1_1ConditionComediInstron" prot="public">video_extenso_auto_drive::ConditionComediInstron</innerclass>
+    <innerclass refid="classvideo__extenso__auto__drive_1_1ConditionTransfoChaine" prot="public">video_extenso_auto_drive::ConditionTransfoChaine</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a15d7755634bdd8059d92ab9c4b873b4c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.instances</definition>
+        <argsstring></argsstring>
+        <name>instances</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="5" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a0b65f44c7076975a0aa879e60e33c1da" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.comedi_actuator</definition>
+        <argsstring></argsstring>
+        <name>comedi_actuator</name>
+        <initializer>= <ref refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator" kindref="compound">crappy.actuator.ComediActuator</ref>(device=&apos;/dev/comedi0&apos;, subdevice=0, channel=0, range_num=0,
+                                                         gain=1, offset=0)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a5ecf3e43ddea24abef20aeae75d5fa26" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.compacter_extenso</definition>
+        <argsstring></argsstring>
+        <name>compacter_extenso</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(100)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="56" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="56" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1aa58e505815b84539c91b7ae130e748d2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.save_extenso</definition>
+        <argsstring></argsstring>
+        <name>save_extenso</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(&quot;/home/erwan/Bureau/essai_relax.txt&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="57" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a8e3a64f231ac1caecf6ac6d64f0d1cec" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.graph_extenso</definition>
+        <argsstring></argsstring>
+        <name>graph_extenso</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;Eyy(%)&apos;, &apos;Px&apos;, &apos;Py&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="58" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="58" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1aa065f2851fb27d07c757342a61ccbc13" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.extenso</definition>
+        <argsstring></argsstring>
+        <name>extenso</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__videoExtenso_1_1VideoExtenso" kindref="compound">crappy.blocks.VideoExtenso</ref>(camera=&quot;Ximea&quot;, numdevice=0, xoffset=0, yoffset=200, width=2048,
+                                             height=512, white_spot=True, display=True, security=True)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="62" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1aaec2d1ee8afb95d9f414f2c5918a7c0c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.autoDrive</definition>
+        <argsstring></argsstring>
+        <name>autoDrive</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__autoDrive_1_1AutoDrive" kindref="compound">crappy.blocks.AutoDrive</ref>(<ref refid="classcrappy_1_1technical_1_1__CMdriveTechnical_1_1CmDrive" kindref="compound">crappy.technical.CmDrive</ref>(
+            port=&quot;/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0&quot;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="64" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a3e2e0450df5dd1075ebe92ce40108487" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.comediActuator</definition>
+        <argsstring></argsstring>
+        <name>comediActuator</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__commandComedi_1_1CommandComedi" kindref="compound">crappy.blocks.CommandComedi</ref>([comedi_actuator])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="66" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a34826dc6cb907dfdb81c2f6fdae5bb95" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.link1</definition>
+        <argsstring></argsstring>
+        <name>link1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="70" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="70" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a2d3c39e1b102c08430904361bb214b3d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.link2</definition>
+        <argsstring></argsstring>
+        <name>link2</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="71" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="71" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1adacb789eb211b7e69b31ce1cbfc63aac" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.link6</definition>
+        <argsstring></argsstring>
+        <name>link6</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="72" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1abb9b53b012127c7f8a1ad3caf2aa46cb" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.link3</definition>
+        <argsstring></argsstring>
+        <name>link3</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="74" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a6449fd08344c5f1fc06b289ec893512a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.link4</definition>
+        <argsstring></argsstring>
+        <name>link4</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="75" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a1cb927286481f5db6c249c625505aaf1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.link5</definition>
+        <argsstring></argsstring>
+        <name>link5</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="76" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1ab879bbc74ffe493488f95bb3eaf44060" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.linkAuto1</definition>
+        <argsstring></argsstring>
+        <name>linkAuto1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(condition=[<ref refid="classvideo__extenso__auto__drive_1_1ConditionTransfoChaine" kindref="compound">ConditionTransfoChaine</ref>(),
+                                                 <ref refid="classcrappy_1_1links_1_1__PID_1_1PID" kindref="compound">crappy.links.PID</ref>(P=3000., I=0, D=0, label_consigne=&apos;K&apos;,
+                                                                  label_retour=&apos;center&apos;, consigne=0., outMin=-90000,
+                                                                  outMax=90000, add_current_value=False)])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="78" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="78" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1abce1118e97a8ea3e26c948e51186f1fb" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.linkExx1</definition>
+        <argsstring></argsstring>
+        <name>linkExx1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(condition=<ref refid="classvideo__extenso__auto__drive_1_1ConditionComediInstron" kindref="compound">ConditionComediInstron</ref>())</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="82" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="video__extenso__auto__drive_8py_1a8d066a62fbd2eefd14d97e87e1e5b2fb" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>video_extenso_auto_drive.t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="132" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" bodystart="132" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/video_extenso_auto_drive.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

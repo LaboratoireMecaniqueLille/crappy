@@ -1,9 +1,9 @@
 # from _meta import MasterBlock
 import time
 
-import crappy
+import crappy2
 
-crappy.blocks.MasterBlock.instances = []
+crappy2.blocks.MasterBlock.instances = []
 
 """"
 Programme princpal gerant toutes les instances associees aux composants de la micromachine lies et a l'essai programme.
@@ -45,7 +45,7 @@ param = {'port': '/dev/ttyUSB1', 'baudrate': 19200, 'timeout': 0., 'PID_PROP': 8
 # Classe permettant de debloquer un lien sous condition
 
 # Si cycle multiple de 100 et cycle-0,5 mutlipe de 100 alors la classe renvoi une valeur debloquant le lien
-class ConditionAcquisition(crappy.links.MetaCondition):
+class ConditionAcquisition(crappy2.links.MetaCondition):
     def __init__(self, n=100):
         self.last_cycle = -1
         self.n = n
@@ -67,68 +67,68 @@ class ConditionAcquisition(crappy.links.MetaCondition):
 try:
     # Creating Instances
 
-    agilentSensor = crappy.sensor.Agilent34420ASensor(mode="RES", device='/dev/ttyUSB0', baudrate=9600, timeout=1)
-    lal300_technical = crappy.technical.TechnicalLal300(param)
+    agilentSensor = crappy2.sensor.Agilent34420ASensor(mode="RES", device='/dev/ttyUSB0', baudrate=9600, timeout=1)
+    lal300_technical = crappy2.technical.TechnicalLal300(param)
 
     # Reglage des offsets de le mesure d'effort de de la mesure du deplacement par le capteur LVDT
 
     # offset effort
-    effort = crappy.sensor.ComediSensor(device='/dev/comedi0', channels=[0], gain=[20], offset=[0])
+    effort = crappy2.sensor.ComediSensor(device='/dev/comedi0', channels=[0], gain=[20], offset=[0])
     t, offset_effort = effort.get_data(0)
     print 'offset effort =' + str(offset_effort)
 
     #  offset lvdt
-    lvdt = crappy.sensor.ComediSensor(device='/dev/comedi0', channels=[1], gain=[11.84], offset=[0])
+    lvdt = crappy2.sensor.ComediSensor(device='/dev/comedi0', channels=[1], gain=[11.84], offset=[0])
     t, offset_lvdt = lvdt.get_data(0)
     print 'offset lvdt =' + str(offset_lvdt)
 
-    effort_lvdt = crappy.sensor.ComediSensor(device='/dev/comedi0', channels=[0, 1], gain=[20, 11.84],
-                                             offset=[-offset_effort, -offset_lvdt])  ####### Reglage des offset a 0
+    effort_lvdt = crappy2.sensor.ComediSensor(device='/dev/comedi0', channels=[0, 1], gain=[20, 11.84],
+                                              offset=[-offset_effort, -offset_lvdt])  ####### Reglage des offset a 0
 
     # Creating Blocks
 
     # Bloc de commande principal du programme
-    block_lal300 = crappy.blocks.CommandLal300(TechnicalLal300=lal300_technical)
-    # camera=crappy.blocks.StreamerCamera("Ximea",width=4242,height=2830,freq=None,save=True,save_directory="/home/ilyesse/Photos_Ilyesse/")
-    resistance = crappy.blocks.MeasureAgilent34420A(agilentSensor, labels=['t_agilent(s)', 'resistance(ohm)'], freq=1.5)
-    effort_disp = crappy.blocks.MeasureComediByStep(effort_lvdt, labels=['t(s)', 'F(N)', 'dep(mm)'], freq=200)
+    block_lal300 = crappy2.blocks.CommandLal300(TechnicalLal300=lal300_technical)
+    # camera=crappy2.blocks.StreamerCamera("Ximea",width=4242,height=2830,freq=None,save=True,save_directory="/home/ilyesse/Photos_Ilyesse/")
+    resistance = crappy2.blocks.MeasureAgilent34420A(agilentSensor, labels=['t_agilent(s)', 'resistance(ohm)'], freq=1.5)
+    effort_disp = crappy2.blocks.MeasureComediByStep(effort_lvdt, labels=['t(s)', 'F(N)', 'dep(mm)'], freq=200)
 
     # Compactage des donnees servant aux traces des courbes et a la sauvegarde
 
-    compacter_pos_cycle_resistance = crappy.blocks.Compacter(5)
-    compacter_effort_disp = crappy.blocks.Compacter(50)
+    compacter_pos_cycle_resistance = crappy2.blocks.Compacter(5)
+    compacter_effort_disp = crappy2.blocks.Compacter(50)
 
     # Creation des fichiers de sauvegarde
 
-    save_effort_disp = crappy.blocks.Saver("/home/ilyesse/Documents/t_effort_disp.txt")
-    save_pos_cycle_resistance = crappy.blocks.Saver("/home/ilyesse/Documents/t_pos_cycle_resistance.txt")
-    # save_essai=crappy.blocks.Saver("/home/ilyesse/Documents/all_data.txt")
+    save_effort_disp = crappy2.blocks.Saver("/home/ilyesse/Documents/t_effort_disp.txt")
+    save_pos_cycle_resistance = crappy2.blocks.Saver("/home/ilyesse/Documents/t_pos_cycle_resistance.txt")
+    # save_essai=crappy2.blocks.Saver("/home/ilyesse/Documents/all_data.txt")
 
     # Creation des graphes
 
-    graph_effort = crappy.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
-    graph_disp = crappy.blocks.Grapher("dynamic", ('t(s)', 'dep(mm)'))
-    graph_pos = crappy.blocks.Grapher("dynamic", ('t(s)', 'position'))
-    graph_resistance = crappy.blocks.Grapher("dynamic", ('t_agilent(s)', 'resistance(ohm)'))
-    graph_effort_deplacement = crappy.blocks.Grapher("dynamic", ('dep(mm)', 'F(N)'))
+    graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
+    graph_disp = crappy2.blocks.Grapher("dynamic", ('t(s)', 'dep(mm)'))
+    graph_pos = crappy2.blocks.Grapher("dynamic", ('t(s)', 'position'))
+    graph_resistance = crappy2.blocks.Grapher("dynamic", ('t_agilent(s)', 'resistance(ohm)'))
+    graph_effort_deplacement = crappy2.blocks.Grapher("dynamic", ('dep(mm)', 'F(N)'))
 
     # Links
 
-    link1 = crappy.links.Link()
-    link2 = crappy.links.Link()
-    link3 = crappy.links.Link()
-    link4 = crappy.links.Link()
-    link5 = crappy.links.Link()
-    link6 = crappy.links.Link()
-    link7 = crappy.links.Link()
-    link8 = crappy.links.Link()
-    link9 = crappy.links.Link()
-    link10 = crappy.links.Link()
+    link1 = crappy2.links.Link()
+    link2 = crappy2.links.Link()
+    link3 = crappy2.links.Link()
+    link4 = crappy2.links.Link()
+    link5 = crappy2.links.Link()
+    link6 = crappy2.links.Link()
+    link7 = crappy2.links.Link()
+    link8 = crappy2.links.Link()
+    link9 = crappy2.links.Link()
+    link10 = crappy2.links.Link()
 
     # Links incluant la classe condition, debloques si condition vraie
 
-    # link20=crappy.links.Link(condition=ConditionAcquisition(n=100))
-    link21 = crappy.links.Link(condition=ConditionAcquisition(n=1))
+    # link20=crappy2.links.Link(condition=ConditionAcquisition(n=100))
+    link21 = crappy2.links.Link(condition=ConditionAcquisition(n=1))
 
     # Inputs/Outputs
 
@@ -182,10 +182,10 @@ try:
     # Start instances
 
     t0 = time.time()
-    for instance in crappy.blocks.MasterBlock.instances:
+    for instance in crappy2.blocks.MasterBlock.instances:
         instance.t0 = t0
 
-    for instance in crappy.blocks.MasterBlock.instances:
+    for instance in crappy2.blocks.MasterBlock.instances:
         instance.start()
 
         # Stopping objects
@@ -193,7 +193,7 @@ try:
 except KeyboardInterrupt as e:
     print "Exception in main :", e
 
-    for instance in crappy.blocks.MasterBlock.instances:
+    for instance in crappy2.blocks.MasterBlock.instances:
         try:
             instance.stop()
             print "instance stopped : ", instance

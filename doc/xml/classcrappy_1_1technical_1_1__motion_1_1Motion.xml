@@ -1,0 +1,461 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1technical_1_1__motion_1_1Motion" kind="class" language="Python" prot="public">
+    <compoundname>crappy::technical::_motion::Motion</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a5754127708c65fcef99db3e1ec5a910a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._motion.Motion::Motor</definition>
+        <argsstring></argsstring>
+        <name>Motor</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a9248ee1c6031b60f65eadc8f345d7bff" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._motion.Motion::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a333b08a5d83e8847897803329733adf2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._motion.Motion::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a677ed8f21e3b85118cc1bcb2aa861c6b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._motion.Motion::technical</definition>
+        <argsstring></argsstring>
+        <name>technical</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a1b765b353f9b7d5d62628f13ffee54a8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.__init__</definition>
+        <argsstring>(self, port=&apos;/dev/ttyS0&apos;, baudrate=9600, motor_name=&quot;servostar&quot;, args, kwargs)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyS0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <param>
+          <type>motor_name</type>
+          <defname>motor_name</defname>
+          <defval>&quot;servostar&quot;</defval>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <param>
+          <type>kwargs</type>
+          <defname>kwargs</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="9" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1af60acc2e28d93006c7319e441ace32d5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="35" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="35" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a816c9f47dc0edbbefae78ce1bed05252" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="40" bodyend="42"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a6d57561319ce141c57494647f02cd2c8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="43" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="43" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1afb67b61f507f3cd58bd6a95e20ad10eb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="46" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1aaef279a6bab4db1685f3b622f8b23937" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.set_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>set_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="49" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a42359607c906bc6d3f7e6c16f93016a0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.set_position</definition>
+        <argsstring>(self, position, speed=None)</argsstring>
+        <name>set_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="52" bodyend="54"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1aa2755329f1dd014faf00803f20b9affa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="55" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="55" bodyend="57"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a1b765b353f9b7d5d62628f13ffee54a8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.__init__</definition>
+        <argsstring>(self, port=&apos;/dev/ttyS0&apos;, baudrate=9600, motor_name=&quot;servostar&quot;, args, kwargs)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyS0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <param>
+          <type>motor_name</type>
+          <defname>motor_name</defname>
+          <defval>&quot;servostar&quot;</defval>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <param>
+          <type>kwargs</type>
+          <defname>kwargs</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" bodystart="9" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1af60acc2e28d93006c7319e441ace32d5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" line="35" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" bodystart="35" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a816c9f47dc0edbbefae78ce1bed05252" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" bodystart="40" bodyend="42"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a6d57561319ce141c57494647f02cd2c8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" line="43" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" bodystart="43" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1afb67b61f507f3cd58bd6a95e20ad10eb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" bodystart="46" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1aaef279a6bab4db1685f3b622f8b23937" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.set_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>set_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" bodystart="49" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1a42359607c906bc6d3f7e6c16f93016a0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.set_position</definition>
+        <argsstring>(self, position, speed=None)</argsstring>
+        <name>set_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" bodystart="52" bodyend="54"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__motion_1_1Motion_1aa2755329f1dd014faf00803f20b9affa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._motion.Motion.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" line="55" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_motion.py" bodystart="55" bodyend="57"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="423">
+        <label>Motion</label>
+      </node>
+      <node id="422">
+        <label>crappy.technical._motion.Motion</label>
+        <link refid="classcrappy_1_1technical_1_1__motion_1_1Motion"/>
+        <childnode refid="423" relation="public-inheritance">
+        </childnode>
+        <childnode refid="423" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="425">
+        <label>Motion</label>
+      </node>
+      <node id="424">
+        <label>crappy.technical._motion.Motion</label>
+        <link refid="classcrappy_1_1technical_1_1__motion_1_1Motion"/>
+        <childnode refid="425" relation="public-inheritance">
+        </childnode>
+        <childnode refid="425" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_motion.py" bodystart="8" bodyend="57"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a1b765b353f9b7d5d62628f13ffee54a8" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a1b765b353f9b7d5d62628f13ffee54a8" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a333b08a5d83e8847897803329733adf2" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1afb67b61f507f3cd58bd6a95e20ad10eb" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1afb67b61f507f3cd58bd6a95e20ad10eb" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a6d57561319ce141c57494647f02cd2c8" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a6d57561319ce141c57494647f02cd2c8" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1aa2755329f1dd014faf00803f20b9affa" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1aa2755329f1dd014faf00803f20b9affa" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a5754127708c65fcef99db3e1ec5a910a" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>Motor</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a9248ee1c6031b60f65eadc8f345d7bff" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>port</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a816c9f47dc0edbbefae78ce1bed05252" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a816c9f47dc0edbbefae78ce1bed05252" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a42359607c906bc6d3f7e6c16f93016a0" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>set_position</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a42359607c906bc6d3f7e6c16f93016a0" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>set_position</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1aaef279a6bab4db1685f3b622f8b23937" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>set_speed</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1aaef279a6bab4db1685f3b622f8b23937" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>set_speed</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1af60acc2e28d93006c7319e441ace32d5" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1af60acc2e28d93006c7319e441ace32d5" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1technical_1_1__motion_1_1Motion_1a677ed8f21e3b85118cc1bcb2aa861c6b" prot="public" virt="non-virtual"><scope>crappy::technical::_motion::Motion</scope><name>technical</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

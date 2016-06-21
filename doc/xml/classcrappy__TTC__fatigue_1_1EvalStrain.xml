@@ -1,0 +1,186 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy__TTC__fatigue_1_1EvalStrain" kind="class" language="Python" prot="public">
+    <compoundname>crappy_TTC_fatigue::EvalStrain</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy__TTC__fatigue_1_1EvalStrain_1afc379a497e1f8de8a0a0cd7aac5ded74" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC_fatigue.EvalStrain::surface</definition>
+        <argsstring></argsstring>
+        <name>surface</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC__fatigue_1_1EvalStrain_1a6c0786667c57c5f7323dfcf55afd4ac9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC_fatigue.EvalStrain::I</definition>
+        <argsstring></argsstring>
+        <name>I</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC__fatigue_1_1EvalStrain_1ab040c6967afec00abd00bf97bf156e3f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC_fatigue.EvalStrain::rmoy</definition>
+        <argsstring></argsstring>
+        <name>rmoy</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC__fatigue_1_1EvalStrain_1ab2b9208174fa9c6a4cf7bb716e2f3884" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC_fatigue.EvalStrain::size</definition>
+        <argsstring></argsstring>
+        <name>size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC__fatigue_1_1EvalStrain_1ad98d2d4255d28559094267e77836a688" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC_fatigue.EvalStrain::labels</definition>
+        <argsstring></argsstring>
+        <name>labels</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC__fatigue_1_1EvalStrain_1a0cb6377feef4976a5a38efbc26a159f8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC_fatigue.EvalStrain::FIFO</definition>
+        <argsstring></argsstring>
+        <name>FIFO</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC__fatigue_1_1EvalStrain_1afcc076f436b22458a7bd03621cf18629" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC_fatigue.EvalStrain::k</definition>
+        <argsstring></argsstring>
+        <name>k</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy__TTC__fatigue_1_1EvalStrain_1aeedc504840ed920842aff4dfae8613a8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy_TTC_fatigue.EvalStrain.__init__</definition>
+        <argsstring>(self, k)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>k</type>
+          <defname>k</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="25" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy__TTC__fatigue_1_1EvalStrain_1ac543dd191c23424875fdef53d07ae983" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy_TTC_fatigue.EvalStrain.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="34" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="34" bodyend="51"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="252">
+        <label>crappy_TTC_fatigue.EvalStrain</label>
+        <link refid="classcrappy__TTC__fatigue_1_1EvalStrain"/>
+        <childnode refid="253" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="253">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="254">
+        <label>crappy_TTC_fatigue.EvalStrain</label>
+        <link refid="classcrappy__TTC__fatigue_1_1EvalStrain"/>
+        <childnode refid="255" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="255">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="24" bodyend="52"/>
+    <listofallmembers>
+      <member refid="classcrappy__TTC__fatigue_1_1EvalStrain_1aeedc504840ed920842aff4dfae8613a8" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::EvalStrain</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1a89c53120fc4612994d159fda9447d2c2" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy_TTC_fatigue::EvalStrain</scope><name>__init__</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1EvalStrain_1ac543dd191c23424875fdef53d07ae983" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::EvalStrain</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy_TTC_fatigue::EvalStrain</scope><name>evaluate</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1EvalStrain_1a0cb6377feef4976a5a38efbc26a159f8" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::EvalStrain</scope><name>FIFO</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1EvalStrain_1a6c0786667c57c5f7323dfcf55afd4ac9" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::EvalStrain</scope><name>I</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1EvalStrain_1afcc076f436b22458a7bd03621cf18629" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::EvalStrain</scope><name>k</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1EvalStrain_1ad98d2d4255d28559094267e77836a688" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::EvalStrain</scope><name>labels</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1EvalStrain_1ab040c6967afec00abd00bf97bf156e3f" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::EvalStrain</scope><name>rmoy</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1EvalStrain_1ab2b9208174fa9c6a4cf7bb716e2f3884" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::EvalStrain</scope><name>size</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1EvalStrain_1afc379a497e1f8de8a0a0cd7aac5ded74" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::EvalStrain</scope><name>surface</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

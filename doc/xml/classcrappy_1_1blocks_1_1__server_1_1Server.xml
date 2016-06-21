@@ -1,0 +1,265 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__server_1_1Server" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_server::Server</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__server_1_1Server_1ab65771125c61a70339bb5ebecc6877ee" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._server.Server::ip</definition>
+        <argsstring></argsstring>
+        <name>ip</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="64" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__server_1_1Server_1ad4ecb0862c74168c03bd8badd685909b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._server.Server::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="65" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" bodystart="65" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__server_1_1Server_1ab721549097ed76ac1cde02cf91b1ab78" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._server.Server::time_sync</definition>
+        <argsstring></argsstring>
+        <name>time_sync</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="66" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__server_1_1Server_1a61af58b64f50f4c3c1f97ac3925c3ccd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._server.Server::sock</definition>
+        <argsstring></argsstring>
+        <name>sock</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="67" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" bodystart="67" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__server_1_1Server_1a3fd4a8dca9d33ac69a9945ec38bc81ea" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._server.Server::t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="72" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__server_1_1Server_1af429e56c2e2b2aad25dc9aad667e0ce9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._server.Server.__init__</definition>
+        <argsstring>(self, ip=&quot;localhost&quot;, port=8888, time_sync=False)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>ip</type>
+          <defname>ip</defname>
+          <defval>&quot;localhost&quot;</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>8888</defval>
+        </param>
+        <param>
+          <type>time_sync</type>
+          <defname>time_sync</defname>
+          <defval>False</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Use it for testing.
+
+Parameters
+----------
+port
+time_sync
+ip: IP address
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" bodystart="53" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__server_1_1Server_1ae04f240443bbadd40fd472cae3383fb6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._server.Server.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="80" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" bodystart="80" bodyend="113"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__server_1_1Server_1af429e56c2e2b2aad25dc9aad667e0ce9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._server.Server.__init__</definition>
+        <argsstring>(self, ip=&quot;localhost&quot;, port=8888, time_sync=False)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>ip</type>
+          <defname>ip</defname>
+          <defval>&quot;localhost&quot;</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>8888</defval>
+        </param>
+        <param>
+          <type>time_sync</type>
+          <defname>time_sync</defname>
+          <defval>False</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Use it for testing.
+
+Parameters
+----------
+port
+time_sync
+ip: IP address
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_server.py" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_server.py" bodystart="53" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__server_1_1Server_1ae04f240443bbadd40fd472cae3383fb6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._server.Server.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_server.py" line="80" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_server.py" bodystart="80" bodyend="113"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Send a fake stream of data.
+</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="507">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="508" relation="public-inheritance">
+        </childnode>
+        <childnode refid="508" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="508">
+        <label>object</label>
+      </node>
+      <node id="506">
+        <label>crappy.blocks._server.Server</label>
+        <link refid="classcrappy_1_1blocks_1_1__server_1_1Server"/>
+        <childnode refid="507" relation="public-inheritance">
+        </childnode>
+        <childnode refid="507" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="510">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="511" relation="public-inheritance">
+        </childnode>
+        <childnode refid="511" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="511">
+        <label>object</label>
+      </node>
+      <node id="509">
+        <label>crappy.blocks._server.Server</label>
+        <link refid="classcrappy_1_1blocks_1_1__server_1_1Server"/>
+        <childnode refid="510" relation="public-inheritance">
+        </childnode>
+        <childnode refid="510" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_server.py" bodystart="49" bodyend="113"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__server_1_1Server_1af429e56c2e2b2aad25dc9aad667e0ce9" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__server_1_1Server_1af429e56c2e2b2aad25dc9aad667e0ce9" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a34cdcaba3da6e04e6de3b1cd763739f1" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_server::Server</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__server_1_1Server_1ab65771125c61a70339bb5ebecc6877ee" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>ip</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__server_1_1Server_1ae04f240443bbadd40fd472cae3383fb6" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__server_1_1Server_1ae04f240443bbadd40fd472cae3383fb6" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__server_1_1Server_1ad4ecb0862c74168c03bd8badd685909b" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>port</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__server_1_1Server_1a61af58b64f50f4c3c1f97ac3925c3ccd" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>sock</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__server_1_1Server_1a3fd4a8dca9d33ac69a9945ec38bc81ea" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_server::Server</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_server::Server</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__server_1_1Server_1ab721549097ed76ac1cde02cf91b1ab78" prot="public" virt="non-virtual"><scope>crappy::blocks::_server::Server</scope><name>time_sync</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

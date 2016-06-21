@@ -1,0 +1,237 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacePID__test" kind="namespace" language="Python">
+    <compoundname>PID_test</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="PID__test_8py_1ad6cb1e213f61ddd108dbae0626d70570" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.instances</definition>
+        <argsstring></argsstring>
+        <name>instances</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="4" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a3667304195fb4ff71a2831987babe061" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.instronSensor</definition>
+        <argsstring></argsstring>
+        <name>instronSensor</name>
+        <initializer>= <ref refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor" kindref="compound">crappy.sensor.ComediSensor</ref>(device=&apos;/dev/comedi0&apos;,channels=[0],gain=[10])</initializer>
+        <briefdescription>
+<para>Creating objects. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1adbe4ea12db80b1b03e9a7185a916bf59" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.cmd_traction</definition>
+        <argsstring></argsstring>
+        <name>cmd_traction</name>
+        <initializer>= <ref refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator" kindref="compound">crappy.actuator.LabJackActuator</ref>(channel=&quot;TDAC2&quot;, gain=1, offset=0)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a49220a28769e577bcf3d687be37535c8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.stream</definition>
+        <argsstring></argsstring>
+        <name>stream</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep" kindref="compound">crappy.blocks.MeasureByStep</ref>(instronSensor,labels=[&apos;t(s)&apos;,&apos;signal_mesure&apos;],freq=400)</initializer>
+        <briefdescription>
+<para>Initialising the outputs. </para>        </briefdescription>
+        <detaileddescription>
+<para>Creating blocks send_freq=400, actuator=cmd_traction, waveform=[&apos;sinus&apos;,&apos;sinus&apos;,&apos;sinus&apos;], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[1,2,4], offset=[0,0,0], phase=[0,0,0], repeat=True send_freq=400, actuator=cmd_torsion, waveform=[&apos;sinus&apos;,&apos;triangle&apos;,&apos;sinus&apos;], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[0,0,0], offset=[0,0,0], phase=[np.pi,np.pi,np.pi], repeat=True </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a02960e127c606d267cd57e71f025f868" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.traction</definition>
+        <argsstring></argsstring>
+        <name>traction</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__signalGenerator_1_1SignalGenerator" kindref="compound">crappy.blocks.SignalGenerator</ref>(path=[{&quot;waveform&quot;:&quot;sinus&quot;,&quot;time&quot;:100,&quot;phase&quot;:0,&quot;amplitude&quot;:1,&quot;offset&quot;:0,&quot;freq&quot;:1}],
+												send_freq=400,repeat=True)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a2b5bdcb8d06290e82902c97c023930e9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.send_output</definition>
+        <argsstring></argsstring>
+        <name>send_output</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__commandComedi_1_1CommandComedi" kindref="compound">crappy.blocks.CommandComedi</ref>([cmd_traction])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="35" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a12fa4bbbd231800d9ab2f35730e262f9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.compacter</definition>
+        <argsstring></argsstring>
+        <name>compacter</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(200)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a1cb079b6fd860efce296a19f804e1fef" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.graph</definition>
+        <argsstring></argsstring>
+        <name>graph</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;,(&apos;t(s)&apos;,&apos;signal_mesure&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a1180b5c814a881532211e8568992eb76" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.link1</definition>
+        <argsstring></argsstring>
+        <name>link1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+<para>Creating links crappy.links.Filter(labels=[&apos;dist(deg)&apos;],mode=&quot;median&quot;,size=50) condition=[crappy.links.Filter(labels=[&apos;V&apos;],mode=&quot;median&quot;,size=50),crappy.links.Filter(labels=[&apos;t(s)&apos;],mode=&quot;mean&quot;,size=50)]. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="47" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a2b4c8f55270d818fa0f9c721a5d40a24" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.link4</definition>
+        <argsstring></argsstring>
+        <name>link4</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="48" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1ad4b6efce2947b2223c42e3d3f2eeb043" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.link2</definition>
+        <argsstring></argsstring>
+        <name>link2</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(condition=<ref refid="classcrappy_1_1links_1_1__PID_1_1PID" kindref="compound">crappy.links.PID</ref>(1.01,0.00,0,label_consigne=&apos;signal&apos;,label_retour=&apos;signal_mesure&apos;,outMin=-8,outMax=8))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1af9fda60853462543d6d88c5c828851c5" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.link3</definition>
+        <argsstring></argsstring>
+        <name>link3</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="51" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a09cc9f4ddfba0db81343583a162da94f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.link5</definition>
+        <argsstring></argsstring>
+        <name>link5</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1af91f6717d74ec8fb820c683ca7d38427" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.link6</definition>
+        <argsstring></argsstring>
+        <name>link6</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="54" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1a23eb05b8e9562ca83c966e1ed5fe288e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.link7</definition>
+        <argsstring></argsstring>
+        <name>link7</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="55" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="PID__test_8py_1aeb9ed6a62a490aa05d62ac34ea71dad3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>PID_test.t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+<para>Linking objects. </para>        </briefdescription>
+        <detaileddescription>
+<para>Starting objects </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="80" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/PID_test.py" bodystart="80" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/tests/PID_test.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

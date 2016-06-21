@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="structparsed__options" kind="struct" language="C++" prot="public">
+    <compoundname>parsed_options</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structparsed__options_1a734c6b8f78fc24b387af6c6e86beacab" prot="public" static="no" mutable="no">
+        <type>char *</type>
+        <definition>char* parsed_options::filename</definition>
+        <argsstring></argsstring>
+        <name>filename</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1a2a3a9c1b89095d4f07dca0f5c18ae8cb" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double parsed_options::value</definition>
+        <argsstring></argsstring>
+        <name>value</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1a5851031b8ba2d7bca699aea4b64b3b39" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int parsed_options::subdevice</definition>
+        <argsstring></argsstring>
+        <name>subdevice</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="17" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1ad8889fbf9668ed97d634247854b7059b" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int parsed_options::channel</definition>
+        <argsstring></argsstring>
+        <name>channel</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="18" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="18" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1a93a745695747bd7427895eaa196c1222" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int parsed_options::aref</definition>
+        <argsstring></argsstring>
+        <name>aref</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="19" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1a8ab84ad5ebbeee38c827741c6b44485f" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int parsed_options::range</definition>
+        <argsstring></argsstring>
+        <name>range</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="20" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1ab8f3f481b6369bb3c9237967f072b08d" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int parsed_options::physical</definition>
+        <argsstring></argsstring>
+        <name>physical</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1abf2fef4ee7db9faba65d20ec3e9fdf89" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int parsed_options::verbose</definition>
+        <argsstring></argsstring>
+        <name>verbose</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="22" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1aa5d27bbebdde8ebac76f026874462dc2" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int parsed_options::n_chan</definition>
+        <argsstring></argsstring>
+        <name>n_chan</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1aaef8ca52549410b4a3df0cb4d6053734" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int parsed_options::n_scan</definition>
+        <argsstring></argsstring>
+        <name>n_scan</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structparsed__options_1a4c84230a07402ac67b7879a9f77fe4b5" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float parsed_options::freq</definition>
+        <argsstring></argsstring>
+        <name>freq</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/comediModule/examples.h" bodystart="13" bodyend="26"/>
+    <listofallmembers>
+      <member refid="structparsed__options_1a93a745695747bd7427895eaa196c1222" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>aref</name></member>
+      <member refid="structparsed__options_1ad8889fbf9668ed97d634247854b7059b" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>channel</name></member>
+      <member refid="structparsed__options_1a734c6b8f78fc24b387af6c6e86beacab" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>filename</name></member>
+      <member refid="structparsed__options_1a4c84230a07402ac67b7879a9f77fe4b5" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>freq</name></member>
+      <member refid="structparsed__options_1aa5d27bbebdde8ebac76f026874462dc2" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>n_chan</name></member>
+      <member refid="structparsed__options_1aaef8ca52549410b4a3df0cb4d6053734" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>n_scan</name></member>
+      <member refid="structparsed__options_1ab8f3f481b6369bb3c9237967f072b08d" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>physical</name></member>
+      <member refid="structparsed__options_1a8ab84ad5ebbeee38c827741c6b44485f" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>range</name></member>
+      <member refid="structparsed__options_1a5851031b8ba2d7bca699aea4b64b3b39" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>subdevice</name></member>
+      <member refid="structparsed__options_1a2a3a9c1b89095d4f07dca0f5c18ae8cb" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>value</name></member>
+      <member refid="structparsed__options_1abf2fef4ee7db9faba65d20ec3e9fdf89" prot="public" virt="non-virtual"><scope>parsed_options</scope><name>verbose</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

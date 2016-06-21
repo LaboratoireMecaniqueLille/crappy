@@ -1,0 +1,413 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy__TTC" kind="namespace" language="Python">
+    <compoundname>crappy_TTC</compoundname>
+    <innerclass refid="classcrappy__TTC_1_1EvalStrain" prot="public">crappy_TTC::EvalStrain</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="crappy__TTC_8py_1adcb43e8ab8836529d1fd5133fd21e5a6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.instances</definition>
+        <argsstring></argsstring>
+        <name>instances</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a7460916ea30950561911cdc86a400e8e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.instronSensor</definition>
+        <argsstring></argsstring>
+        <name>instronSensor</name>
+        <initializer>= <ref refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor" kindref="compound">crappy.sensor.ComediSensor</ref>(device=&apos;/dev/comedi0&apos;, channels=[0, 1, 2, 3],
+                                                   gain=[0.01998, 99660, 0.0099856 * 2.,
+                                                         499.5])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1ae1d8676a3345a0339355c085e117342f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.offset</definition>
+        <argsstring></argsstring>
+        <name>offset</name>
+        <initializer>= np.array([0., 0., 0., 0.])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="55" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a5e74430ea76a92c9066b35d6e36db1f7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.cmd_traction</definition>
+        <argsstring></argsstring>
+        <name>cmd_traction</name>
+        <initializer>= <ref refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator" kindref="compound">crappy.actuator.LabJackActuator</ref>(channel=&quot;TDAC2&quot;, gain=8 * 100, offset=0)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="74" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a6817cad94ddf8f822967b72845ffc7e8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.cmd_torsion</definition>
+        <argsstring></argsstring>
+        <name>cmd_torsion</name>
+        <initializer>= <ref refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator" kindref="compound">crappy.actuator.LabJackActuator</ref>(channel=&quot;TDAC3&quot;, gain=8 * 100 / 2., offset=0)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="75" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a8607f26d139aa68c26ab89de95e046df" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.stream</definition>
+        <argsstring></argsstring>
+        <name>stream</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep" kindref="compound">crappy.blocks.MeasureByStep</ref>(instronSensor, labels=[&apos;t(s)&apos;, &apos;def(%)&apos;, &apos;F(N)&apos;, &apos;dist(deg)&apos;, &apos;C(Nm)&apos;])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="88" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="88" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a28fdab4fa1b7ec73e42bc803738bc298" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.multipath</definition>
+        <argsstring></argsstring>
+        <name>multipath</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath" kindref="compound">crappy.blocks.MultiPath</ref>(
+            path=[{&quot;waveform&quot;: &quot;circle&quot;, &quot;gain&quot;: 0.0006, &quot;cycles&quot;: 200, &quot;offset&quot;: [-0.0006, 0]},
+                  {&quot;waveform&quot;: &quot;detection&quot;, &quot;cycles&quot;: 1},
+                  {&quot;waveform&quot;: &quot;circle&quot;, &quot;gain&quot;: 0.0008, &quot;cycles&quot;: 200, &quot;offset&quot;: [-0.0006, 0]},
+                  # {&quot;waveform&quot;:&quot;goto&quot;,&quot;mode&quot;:&quot;plastic_def&quot;,&quot;target&quot;:0.002,&quot;position&quot;:[-10,0]}
+                  {&quot;waveform&quot;: &quot;detection&quot;, &quot;cycles&quot;: 1}],
+            send_freq=200, dmin=22, dmax=25, repeat=False, normal_speed=6.6 * 10 ** (-4))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="97" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="97" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1aa85dd3dc154ea474cb583cde379aae64" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.ttc</definition>
+        <argsstring></argsstring>
+        <name>ttc</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__commandComedi_1_1CommandComedi" kindref="compound">crappy.blocks.CommandComedi</ref>([cmd_traction, cmd_torsion], signal_label=[&apos;def(%)&apos;, &apos;dist(deg)&apos;])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="105" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="105" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1ac84550a75064af2881fce57c660f2d19" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.compacter_data</definition>
+        <argsstring></argsstring>
+        <name>compacter_data</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(200)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="108" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a326ab283095bf03881ee7f95ca827dd9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.save</definition>
+        <argsstring></argsstring>
+        <name>save</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(&quot;/home/corentin/Bureau/data_labjack_200_cycles.txt&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="109" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="109" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1ac2ccc80a611d9f3b0654a4839c21a8c2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.graph_traction</definition>
+        <argsstring></argsstring>
+        <name>graph_traction</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;static&quot;, (&apos;sigma(Pa)&apos;, &apos;tau(Pa)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="110" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="110" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1ad9c603fb4823eb360abce37230e77f48" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.graph_torsion</definition>
+        <argsstring></argsstring>
+        <name>graph_torsion</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;static&quot;, (&apos;def(%)&apos;, &apos;dist(deg)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="111" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="111" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1ac2561de1c1602db7a10ce1f46155a961" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.compacter_path</definition>
+        <argsstring></argsstring>
+        <name>compacter_path</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(200)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="114" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="114" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a808cbad51c1100aaabf2327d48bf0b6c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.save_path</definition>
+        <argsstring></argsstring>
+        <name>save_path</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(&quot;/home/corentin/Bureau/data_out_labjack_200_cycles.txt&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="115" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="115" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a08a7763716a78e6dbb3f3c931a81bf90" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.graph_path</definition>
+        <argsstring></argsstring>
+        <name>graph_path</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;def(%)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="116" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="116" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a2833dacc084df6bf71b0df3ef46e5a92" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.graph_path2</definition>
+        <argsstring></argsstring>
+        <name>graph_path2</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;dist(deg)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="117" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="117" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a2ddebc165913dfe2954db452a0ce707f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link1</definition>
+        <argsstring></argsstring>
+        <name>link1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(<ref refid="classcrappy__TTC_1_1EvalStrain" kindref="compound">EvalStrain</ref>(k=1))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="125" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="125" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1ae6bfbb303b566f7c55c3f5b04f2ccb37" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link2</definition>
+        <argsstring></argsstring>
+        <name>link2</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="126" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="126" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1abfcfc30f6d810bfe30c10a948adca1c4" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link3</definition>
+        <argsstring></argsstring>
+        <name>link3</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="127" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="127" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1aa01e60fba08846abaea83ad5c0bcc5c4" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link4</definition>
+        <argsstring></argsstring>
+        <name>link4</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(<ref refid="classcrappy__TTC_1_1EvalStrain" kindref="compound">EvalStrain</ref>(k=2))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="128" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="128" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1af47e4807de811c6948279a0069d9dcec" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link5</definition>
+        <argsstring></argsstring>
+        <name>link5</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="129" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="129" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1ab3e17ea31c37c349cb7aa08a99c0814f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link6</definition>
+        <argsstring></argsstring>
+        <name>link6</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="130" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="130" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a5862ee4e798a36321bdd3a28b5ef820c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link7</definition>
+        <argsstring></argsstring>
+        <name>link7</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="131" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="131" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1ac12e83124dcbd83fac6ccdbafd5ebb0b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link8</definition>
+        <argsstring></argsstring>
+        <name>link8</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="132" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="132" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a02c04e8dc3145a530d3ac8cfa22d02e1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link9</definition>
+        <argsstring></argsstring>
+        <name>link9</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="133" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="133" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a44866bda6370053de37b4220b37842e5" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link10</definition>
+        <argsstring></argsstring>
+        <name>link10</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="134" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="134" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1a3cb6396b5a73ad5798b49e2798331683" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.link11</definition>
+        <argsstring></argsstring>
+        <name>link11</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="135" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="135" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="crappy__TTC_8py_1aeab8c49e3b4c2db75c8b9c6c993cadfa" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="173" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="173" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

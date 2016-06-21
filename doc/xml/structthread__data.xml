@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="structthread__data" kind="struct" language="C++" prot="public">
+    <compoundname>thread_data</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structthread__data_1a1a53ba74c6786fa159ae25e8f835fcd8" prot="public" static="no" mutable="no">
+        <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+        <definition>VideoCapture* thread_data::self</definition>
+        <argsstring></argsstring>
+        <name>self</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="81" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="560">
+        <label>VideoCapture</label>
+        <link refid="structVideoCapture"/>
+      </node>
+      <node id="559">
+        <label>thread_data</label>
+        <link refid="structthread__data"/>
+        <childnode refid="560" relation="usage">
+          <edgelabel>self</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="80" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" bodystart="80" bodyend="82"/>
+    <listofallmembers>
+      <member refid="structthread__data_1a1a53ba74c6786fa159ae25e8f835fcd8" prot="public" virt="non-virtual"><scope>thread_data</scope><name>self</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

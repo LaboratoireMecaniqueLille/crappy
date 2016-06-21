@@ -1,0 +1,196 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacelink__timeout" kind="namespace" language="Python">
+    <compoundname>link_timeout</compoundname>
+    <innerclass refid="classlink__timeout_1_1timeout__condition" prot="public">link_timeout::timeout_condition</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="link__timeout_8py_1a4e00a847bb11303d8290cb924b5e9282" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.instances</definition>
+        <argsstring></argsstring>
+        <name>instances</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="4" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1ae7d3dbf4f487ea0d0a0ba4e8838c17e9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.traction</definition>
+        <argsstring></argsstring>
+        <name>traction</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__signalGenerator_1_1SignalGenerator" kindref="compound">crappy.blocks.SignalGenerator</ref>(path=[{&quot;waveform&quot;:&quot;sinus&quot;,&quot;time&quot;:1000000,&quot;phase&quot;:0,&quot;amplitude&quot;:0.45,&quot;offset&quot;:0.55,&quot;freq&quot;:2}],
+														send_freq=500,repeat=True,labels=[&apos;t(s)&apos;,&apos;signal&apos;,&apos;cycle&apos;])</initializer>
+        <briefdescription>
+<para>Creating objects. </para>        </briefdescription>
+        <detaileddescription>
+<para>Initialising the outputs Creating blocks send_freq=400, actuator=cmd_traction, waveform=[&apos;sinus&apos;,&apos;sinus&apos;,&apos;sinus&apos;], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[1,2,4], offset=[0,0,0], phase=[0,0,0], repeat=True send_freq=400, actuator=cmd_torsion, waveform=[&apos;sinus&apos;,&apos;triangle&apos;,&apos;sinus&apos;], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[0,0,0], offset=[0,0,0], phase=[np.pi,np.pi,np.pi], repeat=True stream=crappy.blocks.MeasureComediByStep(t0,instronSensor,labels=[&apos;t(s)&apos;,&apos;dep(mm)&apos;,&apos;f(N)&apos;,&apos;angle(deg)&apos;,&apos;C(Nm)&apos;]) </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1af83756380ba9980b84c1c114312c014e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.compacter</definition>
+        <argsstring></argsstring>
+        <name>compacter</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(100)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1a6473f2eea0e85f97cbc5cacb482f47bd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.save</definition>
+        <argsstring></argsstring>
+        <name>save</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(&quot;/home/corentin/Bureau/delete_me.txt&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1af8be656eabe182be359b0e1dd178be9a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.graph</definition>
+        <argsstring></argsstring>
+        <name>graph</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;,(&apos;t(s)&apos;,&apos;signal&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1aac5976adf679a148d0956b952678a8a0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.link1</definition>
+        <argsstring></argsstring>
+        <name>link1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(condition=<ref refid="classlink__timeout_1_1timeout__condition" kindref="compound">timeout_condition</ref>(0.01),action=&quot;kill&quot;)</initializer>
+        <briefdescription>
+<para>Creating links. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1a14e57f777f411013e36792020008a1b2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.link2</definition>
+        <argsstring></argsstring>
+        <name>link2</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="47" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1a8e4cd50f329f2086dcab74df3a14b1c4" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.link3</definition>
+        <argsstring></argsstring>
+        <name>link3</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="48" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1a00eb95e566399e061d2889e3938a7f2a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.link4</definition>
+        <argsstring></argsstring>
+        <name>link4</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1a36f2ddcdbfc2918cd5f6e91ce003780f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.link5</definition>
+        <argsstring></argsstring>
+        <name>link5</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="50" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1a86b7bd14325a6c720aa37d727e653ad8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.link6</definition>
+        <argsstring></argsstring>
+        <name>link6</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="51" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1a0f1dfd0814f54821f9201ddce54848fc" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.link7</definition>
+        <argsstring></argsstring>
+        <name>link7</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="link__timeout_8py_1addec8f9516a9680bb421ece34a30179a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+<para>Linking objects. </para>        </briefdescription>
+        <detaileddescription>
+<para>Starting objects </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="77" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="77" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

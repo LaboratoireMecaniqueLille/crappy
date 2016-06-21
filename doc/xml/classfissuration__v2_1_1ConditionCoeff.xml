@@ -1,0 +1,313 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classfissuration__v2_1_1ConditionCoeff" kind="class" language="Python" prot="public">
+    <compoundname>fissuration_v2::ConditionCoeff</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1a0062dd2720b78af0ceca04386573b565" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::last_cycle</definition>
+        <argsstring></argsstring>
+        <name>last_cycle</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1a4611ef66a97940f8e6b56345197c4c8f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::coeff</definition>
+        <argsstring></argsstring>
+        <name>coeff</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1ae2dc48b0512f75a3e75d698eccc181fa" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::last_coeff</definition>
+        <argsstring></argsstring>
+        <name>last_coeff</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1af364c0e8a71d6a7af32f8a222c5707f2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::delay</definition>
+        <argsstring></argsstring>
+        <name>delay</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1ad1bc36a0a5370636a32c642d48746ddd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::blocking</definition>
+        <argsstring></argsstring>
+        <name>blocking</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1a064a272a2095dd0eb92c4336085b1024" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::last_new_coeff</definition>
+        <argsstring></argsstring>
+        <name>last_new_coeff</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="33" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1a9f612f93eac1607f1f4df57f4deacb37" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::new_coeff</definition>
+        <argsstring></argsstring>
+        <name>new_coeff</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="34" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1aaf9aac21e7aa434ac314df7c005ee8ff" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::t_init</definition>
+        <argsstring></argsstring>
+        <name>t_init</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="51" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1afa8143e9632b6ae7ae749ab840312a85" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::t1</definition>
+        <argsstring></argsstring>
+        <name>t1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classfissuration__v2_1_1ConditionCoeff_1a5739c13e52d68158f96215c21e40e0b4" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>fissuration_v2.ConditionCoeff::t2</definition>
+        <argsstring></argsstring>
+        <name>t2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="55" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="55" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classfissuration__v2_1_1ConditionCoeff_1abf6757f441724a0c3e8651d556784f20" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def fissuration_v2.ConditionCoeff.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="26" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="function" id="classfissuration__v2_1_1ConditionCoeff_1a6211f345117e1c23a17829d526da9470" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def fissuration_v2.ConditionCoeff.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="38" bodyend="66"/>
+      </memberdef>
+      <memberdef kind="function" id="classfissuration__v2_1_1ConditionCoeff_1abf6757f441724a0c3e8651d556784f20" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def fissuration_v2.ConditionCoeff.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.11.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.11.py" bodystart="32" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="classfissuration__v2_1_1ConditionCoeff_1a6211f345117e1c23a17829d526da9470" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def fissuration_v2.ConditionCoeff.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.11.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.11.py" bodystart="44" bodyend="72"/>
+      </memberdef>
+      <memberdef kind="function" id="classfissuration__v2_1_1ConditionCoeff_1abf6757f441724a0c3e8651d556784f20" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def fissuration_v2.ConditionCoeff.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1_stereo.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1_stereo.py" bodystart="31" bodyend="40"/>
+      </memberdef>
+      <memberdef kind="function" id="classfissuration__v2_1_1ConditionCoeff_1a6211f345117e1c23a17829d526da9470" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def fissuration_v2.ConditionCoeff.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1_stereo.py" line="43" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1_stereo.py" bodystart="43" bodyend="71"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="199">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="198">
+        <label>fissuration_v2.ConditionCoeff</label>
+        <link refid="classfissuration__v2_1_1ConditionCoeff"/>
+        <childnode refid="199" relation="public-inheritance">
+        </childnode>
+        <childnode refid="199" relation="public-inheritance">
+        </childnode>
+        <childnode refid="199" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="201">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="200">
+        <label>fissuration_v2.ConditionCoeff</label>
+        <link refid="classfissuration__v2_1_1ConditionCoeff"/>
+        <childnode refid="201" relation="public-inheritance">
+        </childnode>
+        <childnode refid="201" relation="public-inheritance">
+        </childnode>
+        <childnode refid="201" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/fissuration_v2.1.py" bodystart="25" bodyend="67"/>
+    <listofallmembers>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1abf6757f441724a0c3e8651d556784f20" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>__init__</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1abf6757f441724a0c3e8651d556784f20" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>__init__</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1abf6757f441724a0c3e8651d556784f20" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>__init__</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1ad1bc36a0a5370636a32c642d48746ddd" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>blocking</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1a4611ef66a97940f8e6b56345197c4c8f" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>coeff</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1af364c0e8a71d6a7af32f8a222c5707f2" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>delay</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1a6211f345117e1c23a17829d526da9470" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>evaluate</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1a6211f345117e1c23a17829d526da9470" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>evaluate</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1a6211f345117e1c23a17829d526da9470" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>fissuration_v2::ConditionCoeff</scope><name>evaluate</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1ae2dc48b0512f75a3e75d698eccc181fa" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>last_coeff</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1a0062dd2720b78af0ceca04386573b565" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>last_cycle</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1a064a272a2095dd0eb92c4336085b1024" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>last_new_coeff</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1a9f612f93eac1607f1f4df57f4deacb37" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>new_coeff</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1afa8143e9632b6ae7ae749ab840312a85" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>t1</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1a5739c13e52d68158f96215c21e40e0b4" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>t2</name></member>
+      <member refid="classfissuration__v2_1_1ConditionCoeff_1aaf9aac21e7aa434ac314df7c005ee8ff" prot="public" virt="non-virtual"><scope>fissuration_v2::ConditionCoeff</scope><name>t_init</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,597 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classlal300Main_1_1ConditionAcquisition" kind="class" language="Python" prot="public">
+    <compoundname>lal300Main::ConditionAcquisition</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a16013ec9ff65300eef6b22faf6e45279" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::agilentSensor</definition>
+        <argsstring></argsstring>
+        <name>agilentSensor</name>
+        <initializer>= <ref refid="classcrappy_1_1sensor_1_1__Agilent34420ASensor_1_1Agilent34420ASensor" kindref="compound">crappy.sensor.Agilent34420ASensor</ref>(mode=&quot;RES&quot;, device=&apos;/dev/ttyUSB0&apos;, baudrate=9600, timeout=1)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="70" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="70" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a7e1a054ab6fd070099e3bf76fe17448c" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::lal300_technical</definition>
+        <argsstring></argsstring>
+        <name>lal300_technical</name>
+        <initializer>= crappy.technical.TechnicalLal300(param)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="71" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="71" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a26a0686b9e590c77791885908f62c501" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::effort</definition>
+        <argsstring></argsstring>
+        <name>effort</name>
+        <initializer>= <ref refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor" kindref="compound">crappy.sensor.ComediSensor</ref>(device=&apos;/dev/comedi0&apos;, channels=[0], gain=[20], offset=[0])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="76" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a38103062bfc08ad582549dd744e2e2d6" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::t</definition>
+        <argsstring></argsstring>
+        <name>t</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="77" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="77" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a8f0e99286b71dcb27af88c1e1441757e" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::offset_effort</definition>
+        <argsstring></argsstring>
+        <name>offset_effort</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="77" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="77" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1ae2d8ddea8a2c318369ae022370aa8d9b" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::lvdt</definition>
+        <argsstring></argsstring>
+        <name>lvdt</name>
+        <initializer>= <ref refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor" kindref="compound">crappy.sensor.ComediSensor</ref>(device=&apos;/dev/comedi0&apos;, channels=[1], gain=[11.84], offset=[0])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="81" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1ae9c1443c9b43a24a363750580423ab4e" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::offset_lvdt</definition>
+        <argsstring></argsstring>
+        <name>offset_lvdt</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="82" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1af58ed4a9bf4445b30b1b171112791904" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::effort_lvdt</definition>
+        <argsstring></argsstring>
+        <name>effort_lvdt</name>
+        <initializer>= <ref refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor" kindref="compound">crappy.sensor.ComediSensor</ref>(device=&apos;/dev/comedi0&apos;, channels=[0, 1], gain=[20, 11.84],
+                                             offset=[-offset_effort, -offset_lvdt])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="85" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="85" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a7b7fd70da57b6b9c8fd07ffb2fccd6c8" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::block_lal300</definition>
+        <argsstring></argsstring>
+        <name>block_lal300</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__lal300Command_1_1CommandLal300" kindref="compound">crappy.blocks.CommandLal300</ref>(TechnicalLal300=lal300_technical)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="91" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="91" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1abcb4c7e671d9723689ba718c2e4f1c9c" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::resistance</definition>
+        <argsstring></argsstring>
+        <name>resistance</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A" kindref="compound">crappy.blocks.MeasureAgilent34420A</ref>(agilentSensor, labels=[&apos;t_agilent(s)&apos;, &apos;resistance(ohm)&apos;], freq=1.5)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="93" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="93" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a68547360c68c6ccf24d15fc59603c36b" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::effort_disp</definition>
+        <argsstring></argsstring>
+        <name>effort_disp</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__measureComediByStep_1_1MeasureComediByStep" kindref="compound">crappy.blocks.MeasureComediByStep</ref>(effort_lvdt, labels=[&apos;t(s)&apos;, &apos;F(N)&apos;, &apos;dep(mm)&apos;], freq=200)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="94" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a90e273c2bee4527b92a8523294cbcb20" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::compacter_pos_cycle_resistance</definition>
+        <argsstring></argsstring>
+        <name>compacter_pos_cycle_resistance</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(5)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="98" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1ab2a3ca47daf224df5df6704b67385815" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::compacter_effort_disp</definition>
+        <argsstring></argsstring>
+        <name>compacter_effort_disp</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(50)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="99" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="99" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a6cde13e4576f1c3f00799f695fd8daf7" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::save_effort_disp</definition>
+        <argsstring></argsstring>
+        <name>save_effort_disp</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(&quot;/home/ilyesse/Documents/t_effort_disp.txt&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="103" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="103" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a5dda5854703a123fc725b0452f3cc052" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::save_pos_cycle_resistance</definition>
+        <argsstring></argsstring>
+        <name>save_pos_cycle_resistance</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(&quot;/home/ilyesse/Documents/t_pos_cycle_resistance.txt&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="104" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="104" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1ae98a6aa8d6d93abd96d94010ff7bc4bb" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::graph_effort</definition>
+        <argsstring></argsstring>
+        <name>graph_effort</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;F(N)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="109" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="109" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a9a3079ecc801c0150d9b51df5cc5ef66" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::graph_disp</definition>
+        <argsstring></argsstring>
+        <name>graph_disp</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;dep(mm)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="110" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="110" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a704b27a5e1689c8341464f87b6b18b2b" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::graph_pos</definition>
+        <argsstring></argsstring>
+        <name>graph_pos</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;position&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="111" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="111" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a5d96df582c3108e1dc3d724714898001" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::graph_resistance</definition>
+        <argsstring></argsstring>
+        <name>graph_resistance</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t_agilent(s)&apos;, &apos;resistance(ohm)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="112" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="112" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1ad9e996aeb50eed2ffa3ae21e5452ab2d" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::graph_effort_deplacement</definition>
+        <argsstring></argsstring>
+        <name>graph_effort_deplacement</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;dep(mm)&apos;, &apos;F(N)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="113" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="113" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a9d620b505d896863c704b1e4098888c6" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link1</definition>
+        <argsstring></argsstring>
+        <name>link1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="117" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="117" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1ae4d8f97f79185578b645ef24791ccdb6" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link2</definition>
+        <argsstring></argsstring>
+        <name>link2</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="118" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="118" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a557e21da31f2129efc5d072997fe0718" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link3</definition>
+        <argsstring></argsstring>
+        <name>link3</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="119" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="119" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a47419db71c762e2150f7b25fb2c22299" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link4</definition>
+        <argsstring></argsstring>
+        <name>link4</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="120" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="120" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1af3509d1ed24abd58d6dc71e9bbe9ec16" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link5</definition>
+        <argsstring></argsstring>
+        <name>link5</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="121" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="121" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1ae1e276463f0b8d578cdbfbf5d416c8c6" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link6</definition>
+        <argsstring></argsstring>
+        <name>link6</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="122" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="122" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a4c1b010f6166032af6e5e5815cb81f75" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link7</definition>
+        <argsstring></argsstring>
+        <name>link7</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="123" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="123" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a5fb1735231e1805e8fd0cb7d87b4368d" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link8</definition>
+        <argsstring></argsstring>
+        <name>link8</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="124" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="124" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a243b1cd631647243f57e593931df0807" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link9</definition>
+        <argsstring></argsstring>
+        <name>link9</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="125" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="125" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a90f4f6f48ed32629b1ba874eec277835" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link10</definition>
+        <argsstring></argsstring>
+        <name>link10</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="126" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="126" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1a15eabb39721544963243ce591b0f2c9d" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::link21</definition>
+        <argsstring></argsstring>
+        <name>link21</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(condition=<ref refid="classlal300Main_1_1ConditionAcquisition" kindref="compound">ConditionAcquisition</ref>(n=1))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="131" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="131" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1afa4f6b7e01015645a9238cb28f93de6e" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="184" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="184" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1aa48b2894408d9e2ca9108b240cb3ba3f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::last_cycle</definition>
+        <argsstring></argsstring>
+        <name>last_cycle</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="50" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classlal300Main_1_1ConditionAcquisition_1acb678d14f8eb9be9eaa38a0682ea33cd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>lal300Main.ConditionAcquisition::n</definition>
+        <argsstring></argsstring>
+        <name>n</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="51" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classlal300Main_1_1ConditionAcquisition_1a3852916205930c2583b06b9a10565fc2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def lal300Main.ConditionAcquisition.__init__</definition>
+        <argsstring>(self, n=100)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>n</type>
+          <defname>n</defname>
+          <defval>100</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="49" bodyend="52"/>
+      </memberdef>
+      <memberdef kind="function" id="classlal300Main_1_1ConditionAcquisition_1aa5c6c6df00d138ee9e2eff6bff448089" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def lal300Main.ConditionAcquisition.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="53" bodyend="67"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="191">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="190">
+        <label>lal300Main.ConditionAcquisition</label>
+        <link refid="classlal300Main_1_1ConditionAcquisition"/>
+        <childnode refid="191" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="193">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="192">
+        <label>lal300Main.ConditionAcquisition</label>
+        <link refid="classlal300Main_1_1ConditionAcquisition"/>
+        <childnode refid="193" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="48" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="48" bodyend="193"/>
+    <listofallmembers>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a3852916205930c2583b06b9a10565fc2" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1a89c53120fc4612994d159fda9447d2c2" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>lal300Main::ConditionAcquisition</scope><name>__init__</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a16013ec9ff65300eef6b22faf6e45279" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>agilentSensor</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a7b7fd70da57b6b9c8fd07ffb2fccd6c8" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>block_lal300</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1ab2a3ca47daf224df5df6704b67385815" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>compacter_effort_disp</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a90e273c2bee4527b92a8523294cbcb20" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>compacter_pos_cycle_resistance</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a26a0686b9e590c77791885908f62c501" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>effort</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a68547360c68c6ccf24d15fc59603c36b" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>effort_disp</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1af58ed4a9bf4445b30b1b171112791904" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>effort_lvdt</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1aa5c6c6df00d138ee9e2eff6bff448089" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>lal300Main::ConditionAcquisition</scope><name>evaluate</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a9a3079ecc801c0150d9b51df5cc5ef66" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>graph_disp</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1ae98a6aa8d6d93abd96d94010ff7bc4bb" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>graph_effort</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1ad9e996aeb50eed2ffa3ae21e5452ab2d" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>graph_effort_deplacement</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a704b27a5e1689c8341464f87b6b18b2b" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>graph_pos</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a5d96df582c3108e1dc3d724714898001" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>graph_resistance</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a7e1a054ab6fd070099e3bf76fe17448c" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>lal300_technical</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1aa48b2894408d9e2ca9108b240cb3ba3f" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>last_cycle</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a9d620b505d896863c704b1e4098888c6" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link1</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a90f4f6f48ed32629b1ba874eec277835" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link10</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1ae4d8f97f79185578b645ef24791ccdb6" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link2</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a15eabb39721544963243ce591b0f2c9d" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link21</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a557e21da31f2129efc5d072997fe0718" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link3</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a47419db71c762e2150f7b25fb2c22299" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link4</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1af3509d1ed24abd58d6dc71e9bbe9ec16" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link5</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1ae1e276463f0b8d578cdbfbf5d416c8c6" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link6</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a4c1b010f6166032af6e5e5815cb81f75" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link7</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a5fb1735231e1805e8fd0cb7d87b4368d" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link8</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a243b1cd631647243f57e593931df0807" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>link9</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1ae2d8ddea8a2c318369ae022370aa8d9b" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>lvdt</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1acb678d14f8eb9be9eaa38a0682ea33cd" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>n</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a8f0e99286b71dcb27af88c1e1441757e" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>offset_effort</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1ae9c1443c9b43a24a363750580423ab4e" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>offset_lvdt</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1abcb4c7e671d9723689ba718c2e4f1c9c" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>resistance</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a6cde13e4576f1c3f00799f695fd8daf7" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>save_effort_disp</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a5dda5854703a123fc725b0452f3cc052" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>save_pos_cycle_resistance</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1a38103062bfc08ad582549dd744e2e2d6" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>t</name></member>
+      <member refid="classlal300Main_1_1ConditionAcquisition_1afa4f6b7e01015645a9238cb28f93de6e" prot="public" virt="non-virtual"><scope>lal300Main::ConditionAcquisition</scope><name>t0</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

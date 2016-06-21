@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1technical_1_1__cameraInit" kind="namespace" language="Python">
+    <compoundname>crappy::technical::_cameraInit</compoundname>
+    <innerclass refid="classcrappy_1_1technical_1_1__cameraInit_1_1__CameraInit" prot="public">crappy::technical::_cameraInit::_CameraInit</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2technical_2__cameraInit_8py_1aa595dfbbc407fe98c9adb3868ea60178" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::technical::_cameraInit.rectprops</definition>
+        <argsstring></argsstring>
+        <name>rectprops</name>
+        <initializer>= dict(facecolor=&apos;red&apos;, edgecolor=&apos;red&apos;, alpha=0.5, fill=True)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_cameraInit.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_cameraInit.py" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="build_2lib_8linux-x86__64-2_87_2crappy_2technical_2__cameraInit_8py_1a6c50f2413c73e4a28b3fe151b5be6ac1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy::technical::_cameraInit::get_camera_config</definition>
+        <argsstring>(cam, videoExtenso, send_pipe=None)</argsstring>
+        <name>get_camera_config</name>
+        <param>
+          <type>cam</type>
+          <defname>cam</defname>
+        </param>
+        <param>
+          <type>videoExtenso</type>
+          <defname>videoExtenso</defname>
+        </param>
+        <param>
+          <type>send_pipe</type>
+          <defname>send_pipe</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_cameraInit.py" line="366" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_cameraInit.py" bodystart="366" bodyend="379"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_cameraInit.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

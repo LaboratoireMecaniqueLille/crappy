@@ -1,0 +1,475 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300" kind="class" language="Python" prot="public">
+    <compoundname>crappy::technical::_lal300Technical::Lal300</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+    <derivedcompoundref refid="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300" prot="public" virt="non-virtual">crappy.technical._lal300Technical.TechnicalLal300</derivedcompoundref>
+    <derivedcompoundref refid="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300" prot="public" virt="non-virtual">crappy.technical._lal300Technical.TechnicalLal300</derivedcompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a85e5b7b767dc4786d0692b8e9d10859c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._lal300Technical.Lal300::param</definition>
+        <argsstring></argsstring>
+        <name>param</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="93" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="93" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1add18bc3faf271692782886258c66bf58" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._lal300Technical.Lal300::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="94" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a346db482f4307421faafaf17be62c693" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._lal300Technical.Lal300::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="95" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="95" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a20ddec707860d9e01cf09030debd94b9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._lal300Technical.Lal300::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="96" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="96" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1afc9560ae94801ffb15f379befcfa15b0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._lal300Technical.Lal300::actuator</definition>
+        <argsstring></argsstring>
+        <name>actuator</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="106" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="106" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a1556328a87ed3854ceea9bb9efe53a5a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._lal300Technical.Lal300::sensor</definition>
+        <argsstring></argsstring>
+        <name>sensor</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="108" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a9c7a5db3f68938234770f67de838ffff" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.__init__</definition>
+        <argsstring>(self, param=p, port=&apos;/dev/ttyUSB1&apos;, baudrate=19200)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+          <defval>p</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyUSB1&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>19200</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Lal300.
+
+You should always use this Class to communicate with the Lal300.
+
+Parameters
+----------
+param : dict
+    Dict of parameters.
+
+* &apos;port&apos; : str
+        Path to the serial port.
+* &apos;baudrate&apos; : int
+        Corresponding baudrate.
+* &apos;timeout&apos; : float
+        Timeout of the serial connection.
+* &apos;PID_PROP&apos; : float
+        Proportionnal coefficient of the PID.
+* &apos;PID_INT&apos; : float
+        Integral coefficient for the PID.
+* &apos;PID_DERIV&apos; : float
+        Derivative coefficient for the PID.
+* &apos;PID_INTLIM&apos; : float
+        Limit of the integral coefficient.
+* &apos;ACC&apos; float
+        Acceleration of the motor.
+* &apos;ACconv&apos; : float 
+        Conversion ACC values to mm/s/s
+* &apos;FORCE&apos; : float 
+        Maximal force provided by the motor.
+* &apos;SPEEDconv&apos; : float 
+        Conversion SPEED values to mm/s
+* &apos;ENTREE_VERIN&apos; : str
+        &apos;DI1&apos;
+* &apos;SORTIE_VERIN&apos; : str 
+        &apos;DI0&apos;
+* &apos;ETIRE&apos;: list of int
+        List of extreme values for the position in traction.
+* &apos;COMPRIME&apos;: list of int
+        List of extreme values for the position in compression.
+* &apos;SPEED&apos; : list of int
+        List of speed, for each group of cycles.
+* &apos;CYCLES&apos; : list of int
+        List of cycles, for each group.
+Examples
+--------
+param = {}
+param[&apos;timeout&apos;] = 0.#s
+n = 3 # modify with great caution
+param[&apos;PID_PROP&apos;] = 8/n
+param[&apos;PID_INT&apos;] = 30/n
+param[&apos;PID_DERIV&apos;] = 200/n
+param[&apos;PID_INTLIM&apos;] = 1000/n
+param[&apos;ACC&apos;] = 6000.
+param[&apos;ACconv&apos;] = 26.22#conversion ACC values to mm/s/s
+param[&apos;FORCE&apos;] =30000.
+param[&apos;SPEEDconv&apos;] = 131072.#conversion SPEED values to mm/s
+param[&apos;ENTREE_VERIN&apos;]=&apos;DI1&apos;
+param[&apos;SORTIE_VERIN&apos;]=&apos;DI0&apos;
+##### modifiable values :
+param[&apos;ETIRE&apos;]=[-900,-1000,-1100,-1200,-2400,-3600,-4800,-6000,-7200,-8400,-9800,-11000,-12000,-18000,-24000,-36000,-48000,-60000,-72000,-84000]
+param[&apos;COMPRIME&apos;]=[-200,-300,-400,-500,-700,-800,-900,-900,-1500,-3000,-3000,-5000,-5000,-5000,-5000,-5000,-5000,-5000,-5000,-5000]
+param[&apos;SPEED&apos;] = [15000,15000,15000,16000,30000,45000,80000,110000,130000,150000,180000,210000,250000,300000,350000,400000,500000,550000,600000,650000]
+param[&apos;CYCLES&apos;]=[2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000]
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="26" bodyend="110"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a53bb5d2c2b7ce80f32bdb25f5dc5f19b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Stop the motor</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="111" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="111" bodyend="116"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a1d579a063aaee1accc5486f7bc0d392b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Close serial port</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="117" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="117" bodyend="122"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8980066b23a6e4d0afd61d9f1632a26b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Reset PID parameters and re-defined the motor origin</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="123" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="123" bodyend="131"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8be9a68bcdc96d68ffc74c1cb8491f34" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="132" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="132" bodyend="136"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a9c7a5db3f68938234770f67de838ffff" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.__init__</definition>
+        <argsstring>(self, param=p, port=&apos;/dev/ttyUSB1&apos;, baudrate=19200)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+          <defval>p</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyUSB1&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>19200</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Lal300.
+
+You should always use this Class to communicate with the Lal300.
+
+Parameters
+----------
+param : dict
+    Dict of parameters.
+
+* &apos;port&apos; : str
+        Path to the serial port.
+* &apos;baudrate&apos; : int
+        Corresponding baudrate.
+* &apos;timeout&apos; : float
+        Timeout of the serial connection.
+* &apos;PID_PROP&apos; : float
+        Proportionnal coefficient of the PID.
+* &apos;PID_INT&apos; : float
+        Integral coefficient for the PID.
+* &apos;PID_DERIV&apos; : float
+        Derivative coefficient for the PID.
+* &apos;PID_INTLIM&apos; : float
+        Limit of the integral coefficient.
+* &apos;ACC&apos; float
+        Acceleration of the motor.
+* &apos;ACconv&apos; : float 
+        Conversion ACC values to mm/s/s
+* &apos;FORCE&apos; : float 
+        Maximal force provided by the motor.
+* &apos;SPEEDconv&apos; : float 
+        Conversion SPEED values to mm/s
+* &apos;ENTREE_VERIN&apos; : str
+        &apos;DI1&apos;
+* &apos;SORTIE_VERIN&apos; : str 
+        &apos;DI0&apos;
+* &apos;ETIRE&apos;: list of int
+        List of extreme values for the position in traction.
+* &apos;COMPRIME&apos;: list of int
+        List of extreme values for the position in compression.
+* &apos;SPEED&apos; : list of int
+        List of speed, for each group of cycles.
+* &apos;CYCLES&apos; : list of int
+        List of cycles, for each group.
+Examples
+--------
+param = {}
+param[&apos;timeout&apos;] = 0.#s
+n = 3 # modify with great caution
+param[&apos;PID_PROP&apos;] = 8/n
+param[&apos;PID_INT&apos;] = 30/n
+param[&apos;PID_DERIV&apos;] = 200/n
+param[&apos;PID_INTLIM&apos;] = 1000/n
+param[&apos;ACC&apos;] = 6000.
+param[&apos;ACconv&apos;] = 26.22#conversion ACC values to mm/s/s
+param[&apos;FORCE&apos;] =30000.
+param[&apos;SPEEDconv&apos;] = 131072.#conversion SPEED values to mm/s
+param[&apos;ENTREE_VERIN&apos;]=&apos;DI1&apos;
+param[&apos;SORTIE_VERIN&apos;]=&apos;DI0&apos;
+##### modifiable values :
+param[&apos;ETIRE&apos;]=[-900,-1000,-1100,-1200,-2400,-3600,-4800,-6000,-7200,-8400,-9800,-11000,-12000,-18000,-24000,-36000,-48000,-60000,-72000,-84000]
+param[&apos;COMPRIME&apos;]=[-200,-300,-400,-500,-700,-800,-900,-900,-1500,-3000,-3000,-5000,-5000,-5000,-5000,-5000,-5000,-5000,-5000,-5000]
+param[&apos;SPEED&apos;] = [15000,15000,15000,16000,30000,45000,80000,110000,130000,150000,180000,210000,250000,300000,350000,400000,500000,550000,600000,650000]
+param[&apos;CYCLES&apos;]=[2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000,2000]
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" bodystart="26" bodyend="110"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a53bb5d2c2b7ce80f32bdb25f5dc5f19b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Stop the motor</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" line="111" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" bodystart="111" bodyend="116"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a1d579a063aaee1accc5486f7bc0d392b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Close serial port</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" line="117" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" bodystart="117" bodyend="122"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8980066b23a6e4d0afd61d9f1632a26b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Reset PID parameters and re-defined the motor origin</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" line="123" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" bodystart="123" bodyend="131"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8be9a68bcdc96d68ffc74c1cb8491f34" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.Lal300.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" line="132" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" bodystart="132" bodyend="136"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="322">
+        <label>crappy.technical._lal300Technical.Lal300</label>
+        <link refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300"/>
+        <childnode refid="323" relation="public-inheritance">
+        </childnode>
+        <childnode refid="323" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="323">
+        <label>Motion</label>
+      </node>
+      <node id="324">
+        <label>crappy.technical._lal300Technical.TechnicalLal300</label>
+        <link refid="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300"/>
+        <childnode refid="322" relation="public-inheritance">
+        </childnode>
+        <childnode refid="322" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="325">
+        <label>crappy.technical._lal300Technical.Lal300</label>
+        <link refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300"/>
+        <childnode refid="326" relation="public-inheritance">
+        </childnode>
+        <childnode refid="326" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="326">
+        <label>Motion</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="25" bodyend="137"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a9c7a5db3f68938234770f67de838ffff" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a9c7a5db3f68938234770f67de838ffff" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1afc9560ae94801ffb15f379befcfa15b0" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>actuator</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a346db482f4307421faafaf17be62c693" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8be9a68bcdc96d68ffc74c1cb8491f34" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8be9a68bcdc96d68ffc74c1cb8491f34" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a1d579a063aaee1accc5486f7bc0d392b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a1d579a063aaee1accc5486f7bc0d392b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a85e5b7b767dc4786d0692b8e9d10859c" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>param</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1add18bc3faf271692782886258c66bf58" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>port</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8980066b23a6e4d0afd61d9f1632a26b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8980066b23a6e4d0afd61d9f1632a26b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a1556328a87ed3854ceea9bb9efe53a5a" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>sensor</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a20ddec707860d9e01cf09030debd94b9" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>ser</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a53bb5d2c2b7ce80f32bdb25f5dc5f19b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a53bb5d2c2b7ce80f32bdb25f5dc5f19b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::Lal300</scope><name>stop</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

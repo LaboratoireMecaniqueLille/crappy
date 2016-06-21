@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classmemory__leak__pandas_1_1actuator" kind="class" language="Python" prot="public">
+    <compoundname>memory_leak_pandas::actuator</compoundname>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classmemory__leak__pandas_1_1actuator_1aecc20199eef01c3caeda4e9d5fa2260d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def memory_leak_pandas.actuator.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/memory_leak_pandas.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/memory_leak_pandas.py" bodystart="25" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="classmemory__leak__pandas_1_1actuator_1a163dbfd101cd847f567d76f27c7cac41" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def memory_leak_pandas.actuator.set_cmd</definition>
+        <argsstring>(self, val)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>val</type>
+          <defname>val</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/memory_leak_pandas.py" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/memory_leak_pandas.py" bodystart="27" bodyend="33"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+<para>result = df.ix[5000] </para>    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/tests/memory_leak_pandas.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/memory_leak_pandas.py" bodystart="24" bodyend="34"/>
+    <listofallmembers>
+      <member refid="classmemory__leak__pandas_1_1actuator_1aecc20199eef01c3caeda4e9d5fa2260d" prot="public" virt="non-virtual"><scope>memory_leak_pandas::actuator</scope><name>__init__</name></member>
+      <member refid="classmemory__leak__pandas_1_1actuator_1a163dbfd101cd847f567d76f27c7cac41" prot="public" virt="non-virtual"><scope>memory_leak_pandas::actuator</scope><name>set_cmd</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="crappy_8egg-info_2SOURCES_8txt" kind="file" language="C++">
+    <compoundname>SOURCES.txt</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="normal">README.rst</highlight></codeline>
+<codeline lineno="2"><highlight class="normal"><ref refid="namespacesetup" kindref="compound">setup</ref>.py</highlight></codeline>
+<codeline lineno="3"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/__init__.py</highlight></codeline>
+<codeline lineno="4"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/__version__.py</highlight></codeline>
+<codeline lineno="5"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/_deprecated.py</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>.egg-info/PKG-INFO</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>.egg-info/SOURCES.txt</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>.egg-info/dependency_links.txt</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>.egg-info/not-zip-safe</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>.egg-info/requires.txt</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>.egg-info/top_level.txt</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_Agilent34420AActuator.py</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_CMdriveActuator.py</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_PIActuator.py</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/__init__.py</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_biaxeActuator.py</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_biotensActuator.py</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_comediActuator.py</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_daqmxActuator.py</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_labJackActuator.py</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_lal300Actuator.py</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_orientalActuator.py</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_variateurTriboActuator.py</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_meta/__init__.py</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_meta/command.py</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/actuator/_meta/motion.py</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/__init__.py</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_autoDrive.py</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_cameraDisplayer.py</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_client.py</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_commandBiaxe.py</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_commandBiotens.py</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_commandComedi.py</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_commandPI.py</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_commandTriboCumul.py</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_commandTriboInterface.py</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_commandTriboManual.py</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_compacter.py</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_fakeCommandBiaxe.py</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_grapher.py</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_interfaceTribo.py</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_interpolation.py</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_lal300Command.py</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_measureAgilent34420A.py</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_measureByStep.py</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_measureComediByStep.py</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_meta.py</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_multiPath.py</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_pid.py</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_reader.py</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_saver.py</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_server.py</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_signalAdapter.py</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_signalGenerator.py</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_streamer.py</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_streamerCamera.py</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_streamerCameraGerome.py</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_streamerComedi.py</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/blocks/_videoExtenso.py</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/links/_PID.py</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/links/__init__.py</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/links/_bouncer.py</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/links/_filter.py</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/links/_link.py</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/links/_metaCondition.py</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/links/_trigger.py</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_Agilent34420ASensor.py</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_CMdriveSensor.py</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_PISensor.py</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/__init__.py</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/__ximeaSensor_old.py</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_biaxeSensor.py</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_biotensSensor.py</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_comediSensor.py</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_daqmxSensor.py</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_dummySensor.py</highlight></codeline>
+<codeline lineno="77"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_fakeCameraSensor.py</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_jaiSensor.py</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_labJackSensor.py</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_lal300Sensor.py</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_old_jaiSensor.py</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_orientalSensor.py</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_variateurTriboSensor.py</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_ximeaExport.py</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_ximeaSensor.py</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_clserial/__init__.py</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_clserial/_clSerial.py</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_clserial/_jaiSerial.py</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_meta/__init__.py</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_meta/acquisition.py</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_meta/cameraSensor.py</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/sensor/_meta/motion.py</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_CMdriveTechnical.py</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_PITechnical.py</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/__init__.py</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_acquisition.py</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_biaxeTechnical.py</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_biotensTechnical.py</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_cameraInit.py</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_command.py</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_fakeCameraTechnical.py</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_interfaceCMdrive.py</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_lal300Technical.py</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_motion.py</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_orientalTechnical.py</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_technicalCamera.py</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_variateurTribo.py</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_ximeaTechnical.py</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_meta/__init__.py</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_meta/io.py</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><ref refid="namespacecrappy" kindref="compound">crappy</ref>/technical/_meta/motion.py</highlight></codeline>
+<codeline lineno="112"><highlight class="normal">sources/XimeaLib/pyXimea.cpp</highlight></codeline>
+<codeline lineno="113"><highlight class="normal">sources/XimeaLib/ximea.cpp</highlight></codeline>
+<codeline lineno="114"><highlight class="normal">sources/comediModule/comediModule.c</highlight></codeline>
+<codeline lineno="115"><highlight class="normal">sources/comediModule/common.c</highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/crappy.egg-info/SOURCES.txt"/>
+  </compounddef>
+</doxygen>

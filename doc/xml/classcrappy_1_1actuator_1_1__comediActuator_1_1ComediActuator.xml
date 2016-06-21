@@ -1,0 +1,497 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator" kind="class" language="Python" prot="public">
+    <compoundname>crappy::actuator::_comediActuator::ComediActuator</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Command</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Command</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a05afa6d5aaad274cfef08ced54268161" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._comediActuator.ComediActuator::subdevice</definition>
+        <argsstring></argsstring>
+        <name>subdevice</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ae05411ec17343debce382685a33757e0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._comediActuator.ComediActuator::channel</definition>
+        <argsstring></argsstring>
+        <name>channel</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a47229f8c3f223307011e53f667cd9615" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._comediActuator.ComediActuator::range_num</definition>
+        <argsstring></argsstring>
+        <name>range_num</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="33" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ab4946a84317618661fd59c95b267a155" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._comediActuator.ComediActuator::gain</definition>
+        <argsstring></argsstring>
+        <name>gain</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="34" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1aa145ec9ba4604943259b3db06d9d31e8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._comediActuator.ComediActuator::offset</definition>
+        <argsstring></argsstring>
+        <name>offset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="35" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ad5e480ea898fe6dc4101432f44fe9207" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._comediActuator.ComediActuator::device</definition>
+        <argsstring></argsstring>
+        <name>device</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a2c255b530876edb10cf85e05b2662269" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._comediActuator.ComediActuator::maxdata</definition>
+        <argsstring></argsstring>
+        <name>maxdata</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a7250195099f9cc17b88420766b0cdf02" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._comediActuator.ComediActuator::range_ds</definition>
+        <argsstring></argsstring>
+        <name>range_ds</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="41" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a5461962525d897c5b087c77cd8907562" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._comediActuator.ComediActuator::out</definition>
+        <argsstring></argsstring>
+        <name>out</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="48" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ae0f636261983f046587228bd171f797c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.__init__</definition>
+        <argsstring>(self, device=&apos;/dev/comedi0&apos;, subdevice=1, channel=0, range_num=0, gain=1, offset=0)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>device</type>
+          <defname>device</defname>
+          <defval>&apos;/dev/comedi0&apos;</defval>
+        </param>
+        <param>
+          <type>subdevice</type>
+          <defname>subdevice</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>channel</type>
+          <defname>channel</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>range_num</type>
+          <defname>range_num</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>offset</type>
+          <defname>offset</defname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert wanted tension value into digital values and send it to the 
+output of some Comedi-controlled card.
+
+Output is (command * gain) + offset.
+
+Parameters
+----------
+device : str, default = &apos;/dev/comedi0&apos;
+Path to the device.
+subdevice : int, default = 1
+Subdevice 1 is the output.
+channel : int, default = 0
+The desired output channel.
+range_num : int, default = 0
+See the comedi documentation for different values.
+gain : float, default = 1
+Multiplication gain for the output.
+offset : float, default = 0
+Add this value to your output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="9" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a9b57798f40ace00b055a0d93d803bfe3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="39" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a12f9fe796b27b402d1268b2202a6f994" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.set_cmd</definition>
+        <argsstring>(self, cmd)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>cmd</type>
+          <defname>cmd</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert the tension value to a digital value and send it to the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="44" bodyend="52"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a6411ac722667ebe286b41e813efd5a96" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.on</definition>
+        <argsstring>(self)</argsstring>
+        <name>on</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="53" bodyend="55"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a21244348bb92e3fa9a57e9ade752c94f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.off</definition>
+        <argsstring>(self)</argsstring>
+        <name>off</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="56" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="56" bodyend="58"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1aea1f1abba852df48301dc93ca8eba824" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>close the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="59" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="59" bodyend="65"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ae0f636261983f046587228bd171f797c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.__init__</definition>
+        <argsstring>(self, device=&apos;/dev/comedi0&apos;, subdevice=1, channel=0, range_num=0, gain=1, offset=0)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>device</type>
+          <defname>device</defname>
+          <defval>&apos;/dev/comedi0&apos;</defval>
+        </param>
+        <param>
+          <type>subdevice</type>
+          <defname>subdevice</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>channel</type>
+          <defname>channel</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>range_num</type>
+          <defname>range_num</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>offset</type>
+          <defname>offset</defname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert wanted tension value into digital values and send it to the 
+output of some Comedi-controlled card.
+
+Output is (command * gain) + offset.
+
+Parameters
+----------
+device : str, default = &apos;/dev/comedi0&apos;
+Path to the device.
+subdevice : int, default = 1
+Subdevice 1 is the output.
+channel : int, default = 0
+The desired output channel.
+range_num : int, default = 0
+See the comedi documentation for different values.
+gain : float, default = 1
+Multiplication gain for the output.
+offset : float, default = 0
+Add this value to your output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" bodystart="9" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a9b57798f40ace00b055a0d93d803bfe3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" bodystart="39" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a12f9fe796b27b402d1268b2202a6f994" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.set_cmd</definition>
+        <argsstring>(self, cmd)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>cmd</type>
+          <defname>cmd</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert the tension value to a digital value and send it to the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" bodystart="44" bodyend="52"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a6411ac722667ebe286b41e813efd5a96" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.on</definition>
+        <argsstring>(self)</argsstring>
+        <name>on</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" bodystart="53" bodyend="55"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a21244348bb92e3fa9a57e9ade752c94f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.off</definition>
+        <argsstring>(self)</argsstring>
+        <name>off</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" line="56" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" bodystart="56" bodyend="58"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1aea1f1abba852df48301dc93ca8eba824" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._comediActuator.ComediActuator.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>close the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" line="59" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_comediActuator.py" bodystart="59" bodyend="65"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Comedi actuator object, commands the output of comedi cards</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="115">
+        <label>Command</label>
+      </node>
+      <node id="114">
+        <label>crappy.actuator._comediActuator.ComediActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator"/>
+        <childnode refid="115" relation="public-inheritance">
+        </childnode>
+        <childnode refid="115" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="117">
+        <label>Command</label>
+      </node>
+      <node id="116">
+        <label>crappy.actuator._comediActuator.ComediActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator"/>
+        <childnode refid="117" relation="public-inheritance">
+        </childnode>
+        <childnode refid="117" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" line="6" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_comediActuator.py" bodystart="6" bodyend="65"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ae0f636261983f046587228bd171f797c" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ae0f636261983f046587228bd171f797c" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ae05411ec17343debce382685a33757e0" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>channel</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1aea1f1abba852df48301dc93ca8eba824" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>close</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1aea1f1abba852df48301dc93ca8eba824" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>close</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ad5e480ea898fe6dc4101432f44fe9207" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>device</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1ab4946a84317618661fd59c95b267a155" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>gain</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a2c255b530876edb10cf85e05b2662269" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>maxdata</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a9b57798f40ace00b055a0d93d803bfe3" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>new</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a9b57798f40ace00b055a0d93d803bfe3" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>new</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a21244348bb92e3fa9a57e9ade752c94f" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>off</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a21244348bb92e3fa9a57e9ade752c94f" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>off</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1aa145ec9ba4604943259b3db06d9d31e8" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>offset</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a6411ac722667ebe286b41e813efd5a96" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>on</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a6411ac722667ebe286b41e813efd5a96" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>on</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a5461962525d897c5b087c77cd8907562" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>out</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a7250195099f9cc17b88420766b0cdf02" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>range_ds</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a47229f8c3f223307011e53f667cd9615" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>range_num</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a12f9fe796b27b402d1268b2202a6f994" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>set_cmd</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a12f9fe796b27b402d1268b2202a6f994" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>set_cmd</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__comediActuator_1_1ComediActuator_1a05afa6d5aaad274cfef08ced54268161" prot="public" virt="non-virtual"><scope>crappy::actuator::_comediActuator::ComediActuator</scope><name>subdevice</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

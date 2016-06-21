@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1blocks_1_1__saver" kind="namespace" language="Python">
+    <compoundname>crappy::blocks::_saver</compoundname>
+    <innerclass refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" prot="public">crappy::blocks::_saver::Saver</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__saver_8py_1ae495a7c9260cf48de1d5bc19de201d25" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::blocks::_saver.threshold</definition>
+        <argsstring></argsstring>
+        <name>threshold</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_saver.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_saver.py" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2blocks_2__saver_8py_1a55c3e211298d51132381d702be460e10" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::blocks::_saver.linewidth</definition>
+        <argsstring></argsstring>
+        <name>linewidth</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_saver.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_saver.py" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_saver.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

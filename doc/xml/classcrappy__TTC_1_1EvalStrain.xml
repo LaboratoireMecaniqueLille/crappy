@@ -1,0 +1,186 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy__TTC_1_1EvalStrain" kind="class" language="Python" prot="public">
+    <compoundname>crappy_TTC::EvalStrain</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy__TTC_1_1EvalStrain_1a0af061a9cc5053953208f27c12c1a642" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.EvalStrain::surface</definition>
+        <argsstring></argsstring>
+        <name>surface</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="22" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC_1_1EvalStrain_1a98a49456114bd7e9b2fd1eef73bdc936" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.EvalStrain::I</definition>
+        <argsstring></argsstring>
+        <name>I</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC_1_1EvalStrain_1abdd3a45e8334dc1339825271ad2644a2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.EvalStrain::rmoy</definition>
+        <argsstring></argsstring>
+        <name>rmoy</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC_1_1EvalStrain_1aebd6fd86dd380789e25588796411d798" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.EvalStrain::size</definition>
+        <argsstring></argsstring>
+        <name>size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC_1_1EvalStrain_1a16c401896a30f758c20be2a217ee5ec7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.EvalStrain::labels</definition>
+        <argsstring></argsstring>
+        <name>labels</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC_1_1EvalStrain_1a1be0894fa3e12716e42784680f8de916" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.EvalStrain::FIFO</definition>
+        <argsstring></argsstring>
+        <name>FIFO</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy__TTC_1_1EvalStrain_1a466872086234819f4fd24d376368c956" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC.EvalStrain::k</definition>
+        <argsstring></argsstring>
+        <name>k</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy__TTC_1_1EvalStrain_1a5901e24158897621414bc81f9c08687b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy_TTC.EvalStrain.__init__</definition>
+        <argsstring>(self, k)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>k</type>
+          <defname>k</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="21" bodyend="29"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy__TTC_1_1EvalStrain_1a054ce1ebe37a9bbfce15f9a0fe4af6cc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy_TTC.EvalStrain.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="30" bodyend="47"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="256">
+        <label>crappy_TTC.EvalStrain</label>
+        <link refid="classcrappy__TTC_1_1EvalStrain"/>
+        <childnode refid="257" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="257">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="258">
+        <label>crappy_TTC.EvalStrain</label>
+        <link refid="classcrappy__TTC_1_1EvalStrain"/>
+        <childnode refid="259" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="259">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" line="20" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC.py" bodystart="20" bodyend="48"/>
+    <listofallmembers>
+      <member refid="classcrappy__TTC_1_1EvalStrain_1a5901e24158897621414bc81f9c08687b" prot="public" virt="non-virtual"><scope>crappy_TTC::EvalStrain</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1a89c53120fc4612994d159fda9447d2c2" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy_TTC::EvalStrain</scope><name>__init__</name></member>
+      <member refid="classcrappy__TTC_1_1EvalStrain_1a054ce1ebe37a9bbfce15f9a0fe4af6cc" prot="public" virt="non-virtual"><scope>crappy_TTC::EvalStrain</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy_TTC::EvalStrain</scope><name>evaluate</name></member>
+      <member refid="classcrappy__TTC_1_1EvalStrain_1a1be0894fa3e12716e42784680f8de916" prot="public" virt="non-virtual"><scope>crappy_TTC::EvalStrain</scope><name>FIFO</name></member>
+      <member refid="classcrappy__TTC_1_1EvalStrain_1a98a49456114bd7e9b2fd1eef73bdc936" prot="public" virt="non-virtual"><scope>crappy_TTC::EvalStrain</scope><name>I</name></member>
+      <member refid="classcrappy__TTC_1_1EvalStrain_1a466872086234819f4fd24d376368c956" prot="public" virt="non-virtual"><scope>crappy_TTC::EvalStrain</scope><name>k</name></member>
+      <member refid="classcrappy__TTC_1_1EvalStrain_1a16c401896a30f758c20be2a217ee5ec7" prot="public" virt="non-virtual"><scope>crappy_TTC::EvalStrain</scope><name>labels</name></member>
+      <member refid="classcrappy__TTC_1_1EvalStrain_1abdd3a45e8334dc1339825271ad2644a2" prot="public" virt="non-virtual"><scope>crappy_TTC::EvalStrain</scope><name>rmoy</name></member>
+      <member refid="classcrappy__TTC_1_1EvalStrain_1aebd6fd86dd380789e25588796411d798" prot="public" virt="non-virtual"><scope>crappy_TTC::EvalStrain</scope><name>size</name></member>
+      <member refid="classcrappy__TTC_1_1EvalStrain_1a0af061a9cc5053953208f27c12c1a642" prot="public" virt="non-virtual"><scope>crappy_TTC::EvalStrain</scope><name>surface</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

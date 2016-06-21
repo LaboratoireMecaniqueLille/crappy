@@ -1,0 +1,747 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="pyFgen_8cpp" kind="file" language="C++">
+    <compoundname>pyFgen.cpp</compoundname>
+    <includes refid="pyFgen_8h" local="yes">pyFgen.h</includes>
+    <includes local="no">map</includes>
+    <incdepgraph>
+      <node id="708">
+        <label>pyFgen.h</label>
+        <link refid="pyFgen_8h_source"/>
+        <childnode refid="709" relation="include">
+        </childnode>
+        <childnode refid="710" relation="include">
+        </childnode>
+        <childnode refid="711" relation="include">
+        </childnode>
+        <childnode refid="712" relation="include">
+        </childnode>
+        <childnode refid="713" relation="include">
+        </childnode>
+        <childnode refid="714" relation="include">
+        </childnode>
+        <childnode refid="715" relation="include">
+        </childnode>
+        <childnode refid="716" relation="include">
+        </childnode>
+        <childnode refid="717" relation="include">
+        </childnode>
+        <childnode refid="718" relation="include">
+        </childnode>
+        <childnode refid="719" relation="include">
+        </childnode>
+        <childnode refid="720" relation="include">
+        </childnode>
+      </node>
+      <node id="719">
+        <label>structmember.h</label>
+      </node>
+      <node id="717">
+        <label>stdlib.h</label>
+      </node>
+      <node id="711">
+        <label>niFgen.h</label>
+      </node>
+      <node id="715">
+        <label>string</label>
+      </node>
+      <node id="721">
+        <label>map</label>
+      </node>
+      <node id="714">
+        <label>memory.h</label>
+      </node>
+      <node id="718">
+        <label>datetime.h</label>
+      </node>
+      <node id="716">
+        <label>typeinfo</label>
+      </node>
+      <node id="709">
+        <label>Python.h</label>
+      </node>
+      <node id="710">
+        <label>unistd.h</label>
+      </node>
+      <node id="720">
+        <label>utility</label>
+      </node>
+      <node id="713">
+        <label>iostream</label>
+      </node>
+      <node id="712">
+        <label>stdio.h</label>
+      </node>
+      <node id="707">
+        <label>/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp</label>
+        <link refid="pyFgen_8cpp"/>
+        <childnode refid="708" relation="include">
+        </childnode>
+        <childnode refid="721" relation="include">
+        </childnode>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="pyFgen_8cpp_1a9c9f981fcaed08e3eeb42ded9ec83264" prot="public" static="no" mutable="no">
+        <type>map&lt; string, long &gt;</type>
+        <definition>map&lt; string, long &gt; export_map</definition>
+        <argsstring></argsstring>
+        <name>export_map</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="4" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyFgen_8cpp_1afcc07802817f55bc4de61aa934172a31" prot="public" static="no" mutable="no">
+        <type>const ViChar *</type>
+        <definition>const ViChar* ChannelName</definition>
+        <argsstring></argsstring>
+        <name>ChannelName</name>
+        <initializer>= &quot;0&quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="5" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyFgen_8cpp_1a02036f8e95eaed1c87b59d78f5bec0a3" prot="public" static="yes" mutable="no">
+        <type>PyMemberDef</type>
+        <definition>PyMemberDef pyFgen_members[]</definition>
+        <argsstring>[]</argsstring>
+        <name>pyFgen_members</name>
+        <initializer>= {
+    {NULL} 
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="200" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="200" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyFgen_8cpp_1a077704b983ee4c17f15986d26cbbd4af" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* conf_doc</definition>
+        <argsstring></argsstring>
+        <name>conf_doc</name>
+        <initializer>= &quot;It configures the wave to generate, with keyword arguments: \n \
+      - outputMode: \n \
+                     - NIFGEN_VAL_OUTPUT_FUNC \n \
+                     - NIFGEN_VAL_OUTPUT_ARB \n \
+                     - NIFGEN_VAL_OUTPUT_SEQ \n \
+                     - NIFGEN_VAL_OUTPUT_FREQ_LIST \n \
+                     - NIFGEN_VAL_OUTPUT_SCRIPT \n \
+      - wfmType: \n \
+                     - NIFGEN_VAL_WFM_SINE \n \
+                     - NIFGEN_VAL_WFM_SQUARE \n \
+                     - NIFGEN_VAL_WFM_TRIANGLE \n \
+                     - NIFGEN_VAL_WFM_RAMP_UP \n \
+                     - NIFGEN_VAL_WFM_RAMP_DOWN \n \
+                     - NIFGEN_VAL_WFM_DC \n \
+                     - NIFGEN_VAL_WFM_NOISE \n \
+      - Amplitude \n \
+      - DCOffset \n \
+      - Frequency \n \
+      - StartPhase \n \
+   &quot;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="204" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="204" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyFgen_8cpp_1aa510e3114babf560f4fc4cc1275b1720" prot="public" static="yes" mutable="no">
+        <type>PyMethodDef</type>
+        <definition>PyMethodDef pyFgen_methods[]</definition>
+        <argsstring>[]</argsstring>
+        <name>pyFgen_methods</name>
+        <initializer>= {
+
+   {&quot;start&quot;, (PyCFunction)pyFgen_start, METH_NOARGS,
+    &quot;start method&quot;},
+   {&quot;Configure&quot;, (PyCFunction)pyFgen_Configure, METH_VARARGS|METH_KEYWORDS, conf_doc },
+   {&quot;stop&quot;, (PyCFunction)pyFgen_stop, METH_NOARGS,
+    &quot;stop method&quot;},
+   {&quot;release&quot;, (PyCFunction)pyFgen_release, METH_NOARGS,
+    &quot;release method&quot;},
+    {NULL, NULL}
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="224" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="224" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyFgen_8cpp_1ab19cea989f2fe65f328625ece8e7ca2d" prot="public" static="yes" mutable="no">
+        <type>PyTypeObject</type>
+        <definition>PyTypeObject pyFgenType</definition>
+        <argsstring></argsstring>
+        <name>pyFgenType</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="236" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="236" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyFgen_8cpp_1afcd2b5e08091d3973eb552badcfec160" prot="public" static="yes" mutable="no">
+        <type>PyMethodDef</type>
+        <definition>PyMethodDef module_methods[]</definition>
+        <argsstring>[]</argsstring>
+        <name>module_methods</name>
+        <initializer>= {
+    {NULL}
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="278" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="278" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="pyFgen_8cpp_1a35efb90780df5fcd93a20d5039bbbbe8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* pyFgen_Configure</definition>
+        <argsstring>(pyFgen *self, PyObject *args, PyObject *kwargs)</argsstring>
+        <name>pyFgen_Configure</name>
+        <param>
+          <type><ref refid="structpyFgen" kindref="compound">pyFgen</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>kwargs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="11" bodyend="75"/>
+      </memberdef>
+      <memberdef kind="function" id="pyFgen_8cpp_1ac10316e18fd5307529891e220f694b21" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* pyFgen_start</definition>
+        <argsstring>(pyFgen *self)</argsstring>
+        <name>pyFgen_start</name>
+        <param>
+          <type><ref refid="structpyFgen" kindref="compound">pyFgen</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="79" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="79" bodyend="110"/>
+      </memberdef>
+      <memberdef kind="function" id="pyFgen_8cpp_1a6ebb435fdd568a95326e2dbdd62e74c8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* pyFgen_open</definition>
+        <argsstring>(pyFgen *self)</argsstring>
+        <name>pyFgen_open</name>
+        <param>
+          <type><ref refid="structpyFgen" kindref="compound">pyFgen</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="112" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="112" bodyend="142"/>
+      </memberdef>
+      <memberdef kind="function" id="pyFgen_8cpp_1a49c3f257e6f107ae31929c6bcc27ff96" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* pyFgen_stop</definition>
+        <argsstring>(pyFgen *self)</argsstring>
+        <name>pyFgen_stop</name>
+        <param>
+          <type><ref refid="structpyFgen" kindref="compound">pyFgen</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="146" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="146" bodyend="153"/>
+      </memberdef>
+      <memberdef kind="function" id="pyFgen_8cpp_1a4e34ac6597ea4e9aea8eb635356566b9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* pyFgen_release</definition>
+        <argsstring>(pyFgen *self)</argsstring>
+        <name>pyFgen_release</name>
+        <param>
+          <type><ref refid="structpyFgen" kindref="compound">pyFgen</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="156" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="156" bodyend="164"/>
+      </memberdef>
+      <memberdef kind="function" id="pyFgen_8cpp_1a21248a91bb72b31cdf03017ab40f16de" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>static void pyFgen_dealloc</definition>
+        <argsstring>(pyFgen *self)</argsstring>
+        <name>pyFgen_dealloc</name>
+        <param>
+          <type><ref refid="structpyFgen" kindref="compound">pyFgen</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="167" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="167" bodyend="171"/>
+      </memberdef>
+      <memberdef kind="function" id="pyFgen_8cpp_1a3af964f0310cf02a59929fc662779ff9" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>static PyObject* pyFgen_new</definition>
+        <argsstring>(PyTypeObject *type, PyObject *args, PyObject *kwds)</argsstring>
+        <name>pyFgen_new</name>
+        <param>
+          <type>PyTypeObject *</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>kwds</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="174" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="174" bodyend="186"/>
+      </memberdef>
+      <memberdef kind="function" id="pyFgen_8cpp_1af71e517c1a1f9ec7b50cf39e43c3338a" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int pyFgen_init</definition>
+        <argsstring>(pyFgen *self, PyObject *args, PyObject *kwds)</argsstring>
+        <name>pyFgen_init</name>
+        <param>
+          <type><ref refid="structpyFgen" kindref="compound">pyFgen</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>kwds</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="189" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="189" bodyend="197"/>
+      </memberdef>
+      <memberdef kind="function" id="pyFgen_8cpp_1a53a62040db1d78a3758d9d8e9ec33289" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void set_map_to_export</definition>
+        <argsstring>()</argsstring>
+        <name>set_map_to_export</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="282" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="282" bodyend="298"/>
+      </memberdef>
+      <memberdef kind="function" id="pyFgen_8cpp_1a66ee4cc4256a422fa3d1f68cbc127bf4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyMODINIT_FUNC</type>
+        <definition>PyMODINIT_FUNC initpyFgenModule</definition>
+        <argsstring>(void)</argsstring>
+        <name>initpyFgenModule</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" line="301" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp" bodystart="301" bodyend="330"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&quot;pyFgen.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal">map&lt;<sp/>string,<sp/>long<sp/>&gt;<sp/>export_map;</highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>ViChar<sp/>*<sp/>ChannelName<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;0&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>__cplusplus</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="keyword">extern</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;C&quot;</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="11"><highlight class="normal">pyFgen_Configure(<ref refid="structpyFgen" kindref="compound">pyFgen</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">,<sp/>PyObject<sp/>*args,<sp/>PyObject<sp/>*kwargs)</highlight></codeline>
+<codeline lineno="12"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordtype">long</highlight><highlight class="normal"><sp/>outputMode,<sp/>waveType;</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>amp,<sp/>offset,<sp/>freq,<sp/>phase;</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/>waveType<sp/>=<sp/>NIFGEN_VAL_WFM_SINE;</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"><sp/><sp/><sp/>freq<sp/>=<sp/>1e+6;</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"><sp/><sp/><sp/>amp<sp/>=<sp/>1.0;</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><sp/><sp/><sp/>phase<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"><sp/><sp/><sp/>offset<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/>waveType<sp/>=<sp/>NIFGEN_VAL_WFM_SINE;</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/>outputMode<sp/>=<sp/>NIFGEN_VAL_OUTPUT_FUNC;</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*kwlist[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;outputMode&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="comment">/*<sp/>bytes<sp/>object.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;wfmType&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;Amplitude&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;DCOffset&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;Frequency&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;StartPhase&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>NULL</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<sp/>PyArg_ParseTupleAndKeywords(args,<sp/>kwargs,<sp/></highlight><highlight class="stringliteral">&quot;|llffff&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>kwlist,<sp/>&amp;outputMode,<sp/>&amp;waveType,<sp/>&amp;amp,<sp/>&amp;offset,<sp/>&amp;freq,<sp/>&amp;phase)){</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>NULL;</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"></highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;wfmType<sp/>=<sp/>waveType;</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;Amplitude<sp/>=<sp/>amp;</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;DCOffset<sp/>=<sp/>offset;</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;Frequency<sp/>=<sp/>freq;</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;StartPhase<sp/>=<sp/>phase;</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;outputMode:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>outputMode<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;waveType:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>waveType<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;amp:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>amp<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;offset:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>offset<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;freq:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>freq<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;phase:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>phase<sp/>&lt;&lt;<sp/>endl<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;outputMode:<sp/>&quot;</highlight><highlight class="normal"><sp/><sp/>&lt;&lt;<sp/>outputMode<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;wfmType:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;wfmType<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Amplitude:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;Amplitude<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;DCOffset:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;DCOffset<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Frequency:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;Frequency<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;StartPhase:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;StartPhase<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="comment">/*-<sp/>Configure<sp/>output<sp/>for<sp/>standard<sp/>function<sp/>mode<sp/>-------------------------*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/>ViStatus<sp/>error<sp/>=<sp/>VI_SUCCESS;</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/>checkErr(niFgen_ConfigureOutputMode(self-&gt;vi,outputMode));<sp/></highlight><highlight class="comment">//<sp/>NIFGEN_VAL_OUTPUT_FUNC));</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="61"><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="comment">/*-<sp/>Configure<sp/>the<sp/>standard<sp/>function<sp/>to<sp/>generate<sp/>-------------------------<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/>checkErr(niFgen_ConfigureStandardWaveform(self-&gt;vi,<sp/>ChannelName,<sp/>self-&gt;wfmType,</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self-&gt;Amplitude,<sp/>self-&gt;DCOffset,<sp/>self-&gt;Frequency,</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self-&gt;StartPhase));</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/>Error:</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*-<sp/>Process<sp/>any<sp/>errors<sp/>---------------------------------------------------*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(error<sp/>!=<sp/>VI_SUCCESS)<sp/>{</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ViChar<sp/>errMsg[256];</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>niFgen_ErrorHandler(self-&gt;vi,<sp/>error,<sp/>errMsg);</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>printf(</highlight><highlight class="stringliteral">&quot;Error<sp/>%x:<sp/>%s\n&quot;</highlight><highlight class="normal">,<sp/>error,<sp/>errMsg);</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Py_INCREF(Py_None);</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Py_None;</highlight></codeline>
+<codeline lineno="75"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"></highlight></codeline>
+<codeline lineno="77"><highlight class="normal"></highlight></codeline>
+<codeline lineno="78"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="79"><highlight class="normal">pyFgen_start(<ref refid="structpyFgen" kindref="compound">pyFgen</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="80"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="82"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>ViStatus<sp/>error<sp/>=<sp/>VI_SUCCESS;</highlight></codeline>
+<codeline lineno="83"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>checkErr(niFgen_ConfigureOutputEnabled(self-&gt;vi,<sp/>ChannelName,<sp/>VI_TRUE));</highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>checkErr(niFgen_InitiateGeneration(self-&gt;vi));</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*-<sp/>Convert<sp/>strings<sp/>to<sp/>constants<sp/>----------------------------------------*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>ViChar<sp/>Type[256]<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(self-&gt;wfmType<sp/>=<sp/>NIFGEN_VAL_WFM_SINE)<sp/>strcpy(Type,<sp/></highlight><highlight class="stringliteral">&quot;sine&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(self-&gt;wfmType<sp/>=<sp/>NIFGEN_VAL_WFM_SQUARE)<sp/>strcpy(Type,<sp/></highlight><highlight class="stringliteral">&quot;square&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(self-&gt;wfmType<sp/>=<sp/>NIFGEN_VAL_WFM_TRIANGLE)<sp/>strcpy(Type,<sp/></highlight><highlight class="stringliteral">&quot;triangle&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(self-&gt;wfmType<sp/>=<sp/>NIFGEN_VAL_WFM_RAMP_UP)<sp/>strcpy(Type,<sp/></highlight><highlight class="stringliteral">&quot;up&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(self-&gt;wfmType<sp/>=<sp/>NIFGEN_VAL_WFM_RAMP_DOWN)<sp/>strcpy(Type,<sp/></highlight><highlight class="stringliteral">&quot;down&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(self-&gt;wfmType<sp/>=<sp/>NIFGEN_VAL_WFM_DC)<sp/>strcpy(Type,<sp/></highlight><highlight class="stringliteral">&quot;dc&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(self-&gt;wfmType<sp/>=<sp/>NIFGEN_VAL_WFM_NOISE)<sp/>strcpy(Type,<sp/></highlight><highlight class="stringliteral">&quot;noise&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>strcpy(Type,<sp/></highlight><highlight class="stringliteral">&quot;None&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"></highlight></codeline>
+<codeline lineno="96"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>printf(</highlight><highlight class="stringliteral">&quot;Generating<sp/>a<sp/>%s<sp/>wave\n&quot;</highlight><highlight class="normal">,<sp/>Type);</highlight></codeline>
+<codeline lineno="97"><highlight class="normal"></highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Error:</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*-<sp/>Process<sp/>any<sp/>errors<sp/>---------------------------------------------------*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(error<sp/>!=<sp/>VI_SUCCESS)<sp/>{</highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ViChar<sp/>errMsg[256];</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>niFgen_ErrorHandler(self-&gt;vi,<sp/>error,<sp/>errMsg);</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>printf(</highlight><highlight class="stringliteral">&quot;Error<sp/>%x:<sp/>%s\n&quot;</highlight><highlight class="normal">,<sp/>error,<sp/>errMsg);</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal"><sp/>(...)<sp/>{</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Unexpected<sp/>exception.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/>Py_INCREF(Py_None);</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Py_None;</highlight></codeline>
+<codeline lineno="110"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="111"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="112"><highlight class="normal">pyFgen_open(<ref refid="structpyFgen" kindref="compound">pyFgen</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="113"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;vi=VI_NULL;</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/><sp/>ViChar<sp/>Resource[256]<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/><sp/>ViStatus<sp/>error<sp/>=<sp/>VI_SUCCESS;</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/></highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>set<sp/>default<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/>strcpy(Resource,<sp/>self-&gt;device);</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;wfmType<sp/>=<sp/>NIFGEN_VAL_WFM_SINE;</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;Frequency<sp/>=<sp/>1e+6;</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;Amplitude<sp/>=<sp/>1.0;</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;StartPhase<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;DCOffset<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"></highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="comment">/*-<sp/>Initialize<sp/>the<sp/>session<sp/>----------------------------------------------*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/>printf(</highlight><highlight class="stringliteral">&quot;Initializing<sp/>%s\n&quot;</highlight><highlight class="normal">,<sp/>Resource);</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/><sp/>checkErr(niFgen_init(Resource,<sp/>VI_TRUE,<sp/>VI_TRUE,<sp/>&amp;self-&gt;vi));</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="comment">/*-<sp/>Configure<sp/>the<sp/>active<sp/>channels<sp/>for<sp/>the<sp/>session<sp/>-----------------------*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/>checkErr(niFgen_ConfigureChannels(self-&gt;vi,<sp/></highlight><highlight class="stringliteral">&quot;0&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="comment">/*-<sp/>Enable<sp/>output<sp/>and<sp/>generate<sp/>------------------------------------------*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="132"><highlight class="normal"></highlight></codeline>
+<codeline lineno="133"><highlight class="normal">Error:</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="comment">/*-<sp/>Process<sp/>any<sp/>errors<sp/>---------------------------------------------------*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(error<sp/>!=<sp/>VI_SUCCESS)<sp/>{</highlight></codeline>
+<codeline lineno="136"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>ViChar<sp/>errMsg[256];</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>niFgen_ErrorHandler(self-&gt;vi,<sp/>error,<sp/>errMsg);</highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>printf(</highlight><highlight class="stringliteral">&quot;Error<sp/>%x:<sp/>%s\n&quot;</highlight><highlight class="normal">,<sp/>error,<sp/>errMsg);</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/>Py_INCREF(Py_None);</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Py_None;</highlight></codeline>
+<codeline lineno="142"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"></highlight></codeline>
+<codeline lineno="144"><highlight class="normal"></highlight></codeline>
+<codeline lineno="145"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="146"><highlight class="normal">pyFgen_stop(<ref refid="structpyFgen" kindref="compound">pyFgen</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="147"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="148"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(self-&gt;vi)<sp/>{</highlight></codeline>
+<codeline lineno="149"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>niFgen_AbortGeneration(self-&gt;vi);</highlight></codeline>
+<codeline lineno="150"><highlight class="normal"><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="151"><highlight class="normal"><sp/><sp/><sp/>Py_INCREF(Py_None);</highlight></codeline>
+<codeline lineno="152"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Py_None;</highlight></codeline>
+<codeline lineno="153"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="154"><highlight class="normal"></highlight></codeline>
+<codeline lineno="155"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="156"><highlight class="normal">pyFgen_release(<ref refid="structpyFgen" kindref="compound">pyFgen</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="157"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="158"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(self-&gt;vi)<sp/>{</highlight></codeline>
+<codeline lineno="159"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>niFgen_AbortGeneration(self-&gt;vi);</highlight></codeline>
+<codeline lineno="160"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>niFgen_close<sp/>(self-&gt;vi);</highlight></codeline>
+<codeline lineno="161"><highlight class="normal"><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="162"><highlight class="normal"><sp/><sp/><sp/>Py_INCREF(Py_None);</highlight></codeline>
+<codeline lineno="163"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Py_None;</highlight></codeline>
+<codeline lineno="164"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="165"><highlight class="normal"></highlight></codeline>
+<codeline lineno="166"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="167"><highlight class="normal">pyFgen_dealloc(<ref refid="structpyFgen" kindref="compound">pyFgen</ref>*<sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="168"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="169"><highlight class="normal"><sp/><sp/><sp/><sp/>pyFgen_release(</highlight><highlight class="keyword">self</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="170"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;ob_type-&gt;tp_free((PyObject*)</highlight><highlight class="keyword">self</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="171"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="172"><highlight class="normal"></highlight></codeline>
+<codeline lineno="173"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyObject<sp/>*</highlight></codeline>
+<codeline lineno="174"><highlight class="normal">pyFgen_new(PyTypeObject<sp/>*type,<sp/>PyObject<sp/>*args,<sp/>PyObject<sp/>*kwds)</highlight></codeline>
+<codeline lineno="175"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="176"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structpyFgen" kindref="compound">pyFgen</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="177"><highlight class="normal"></highlight></codeline>
+<codeline lineno="178"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal"><sp/>=<sp/>(<ref refid="structpyFgen" kindref="compound">pyFgen</ref><sp/>*)type-&gt;tp_alloc(type,<sp/>0);</highlight></codeline>
+<codeline lineno="179"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">self</highlight><highlight class="normal"><sp/>!=<sp/>NULL)<sp/>{</highlight></codeline>
+<codeline lineno="180"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!PyArg_ParseTuple(args,<sp/></highlight><highlight class="stringliteral">&quot;s:call&quot;</highlight><highlight class="normal">,<sp/>&amp;self-&gt;device))<sp/>{</highlight></codeline>
+<codeline lineno="181"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>NULL;</highlight></codeline>
+<codeline lineno="182"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="183"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="184"><highlight class="normal"></highlight></codeline>
+<codeline lineno="185"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(PyObject<sp/>*)</highlight><highlight class="keyword">self</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="186"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="187"><highlight class="normal"></highlight></codeline>
+<codeline lineno="188"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="189"><highlight class="normal">pyFgen_init(<ref refid="structpyFgen" kindref="compound">pyFgen</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">,<sp/>PyObject<sp/>*args,<sp/>PyObject<sp/>*kwds)</highlight></codeline>
+<codeline lineno="190"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="191"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*kwlist[]<sp/>=<sp/>{</highlight><highlight class="stringliteral">&quot;device&quot;</highlight><highlight class="normal">,<sp/>NULL};</highlight></codeline>
+<codeline lineno="192"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<sp/>PyArg_ParseTupleAndKeywords(args,<sp/>kwds,<sp/></highlight><highlight class="stringliteral">&quot;|s&quot;</highlight><highlight class="normal">,<sp/>kwlist,<sp/><sp/></highlight></codeline>
+<codeline lineno="193"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&amp;self-&gt;device))</highlight></codeline>
+<codeline lineno="194"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>-1;<sp/></highlight></codeline>
+<codeline lineno="195"><highlight class="normal"><sp/><sp/><sp/>pyFgen_open(</highlight><highlight class="keyword">self</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="196"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline lineno="197"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="198"><highlight class="normal"></highlight></codeline>
+<codeline lineno="199"><highlight class="normal"></highlight></codeline>
+<codeline lineno="200"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyMemberDef<sp/>pyFgen_members[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="201"><highlight class="normal"><sp/><sp/><sp/><sp/>{NULL}<sp/></highlight></codeline>
+<codeline lineno="202"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="203"><highlight class="normal"></highlight></codeline>
+<codeline lineno="204"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>conf_doc<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;It<sp/>configures<sp/>the<sp/>wave<sp/>to<sp/>generate,<sp/>with<sp/>keyword<sp/>arguments:<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="205"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>outputMode:<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="206"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_OUTPUT_FUNC<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="207"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_OUTPUT_ARB<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="208"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_OUTPUT_SEQ<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="209"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_OUTPUT_FREQ_LIST<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="210"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_OUTPUT_SCRIPT<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="211"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>wfmType:<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="212"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_WFM_SINE<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="213"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_WFM_SQUARE<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="214"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_WFM_TRIANGLE<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="215"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_WFM_RAMP_UP<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="216"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_WFM_RAMP_DOWN<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="217"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_WFM_DC<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="218"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>NIFGEN_VAL_WFM_NOISE<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="219"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>Amplitude<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="220"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>DCOffset<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="221"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>Frequency<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="222"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/>-<sp/>StartPhase<sp/>\n<sp/>\</highlight></codeline>
+<codeline lineno="223"><highlight class="stringliteral"><sp/><sp/><sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="224"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyMethodDef<sp/>pyFgen_methods[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="225"><highlight class="normal"></highlight></codeline>
+<codeline lineno="226"><highlight class="normal"><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;start&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)pyFgen_start,<sp/>METH_NOARGS,</highlight></codeline>
+<codeline lineno="227"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;start<sp/>method&quot;</highlight><highlight class="normal">},</highlight></codeline>
+<codeline lineno="228"><highlight class="normal"><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;Configure&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)pyFgen_Configure,<sp/>METH_VARARGS|METH_KEYWORDS,<sp/>conf_doc<sp/>},</highlight></codeline>
+<codeline lineno="229"><highlight class="normal"><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;stop&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)pyFgen_stop,<sp/>METH_NOARGS,</highlight></codeline>
+<codeline lineno="230"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;stop<sp/>method&quot;</highlight><highlight class="normal">},</highlight></codeline>
+<codeline lineno="231"><highlight class="normal"><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;release&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)pyFgen_release,<sp/>METH_NOARGS,</highlight></codeline>
+<codeline lineno="232"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;release<sp/>method&quot;</highlight><highlight class="normal">},</highlight></codeline>
+<codeline lineno="233"><highlight class="normal"><sp/><sp/><sp/><sp/>{NULL,<sp/>NULL}</highlight></codeline>
+<codeline lineno="234"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="235"><highlight class="normal"></highlight></codeline>
+<codeline lineno="236"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyTypeObject<sp/>pyFgenType<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="237"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject_HEAD_INIT(NULL)</highlight></codeline>
+<codeline lineno="238"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*ob_size*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="239"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;waveGenerator&quot;</highlight><highlight class="normal">,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_name*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="240"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="structpyFgen" kindref="compound">pyFgen</ref>),<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_basicsize*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="241"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_itemsize*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="242"><highlight class="normal"><sp/><sp/><sp/><sp/>(destructor)pyFgen_dealloc,<sp/></highlight><highlight class="comment">/*tp_dealloc*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="243"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_print*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="244"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_getattr*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="245"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_setattr*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="246"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_compare*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="247"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_repr*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="248"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_as_number*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="249"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_as_sequence*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="250"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_as_mapping*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="251"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_hash<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="252"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_call*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="253"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_str*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="254"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_getattro*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="255"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_setattro*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="256"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_as_buffer*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="257"><highlight class="normal"><sp/><sp/><sp/><sp/>Py_TPFLAGS_DEFAULT<sp/>|<sp/>Py_TPFLAGS_BASETYPE,<sp/></highlight><highlight class="comment">/*tp_flags*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="258"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;pyFgen<sp/>objects&quot;</highlight><highlight class="normal">,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_doc<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="259"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_traverse<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="260"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_clear<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="261"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_richcompare<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="262"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_weaklistoffset<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="263"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_iter<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="264"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_iternext<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="265"><highlight class="normal"><sp/><sp/><sp/><sp/>pyFgen_methods,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_methods<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="266"><highlight class="normal"><sp/><sp/><sp/><sp/>pyFgen_members,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_members<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="267"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_getset<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="268"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_base<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="269"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_dict<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="270"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_descr_get<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="271"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_descr_set<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="272"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_dictoffset<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="273"><highlight class="normal"><sp/><sp/><sp/><sp/>(initproc)pyFgen_init,<sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_init<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="274"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_alloc<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="275"><highlight class="normal"><sp/><sp/><sp/><sp/>pyFgen_new,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_new<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="276"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="277"><highlight class="normal"></highlight></codeline>
+<codeline lineno="278"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyMethodDef<sp/>module_methods[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="279"><highlight class="normal"><sp/><sp/><sp/><sp/>{NULL}</highlight></codeline>
+<codeline lineno="280"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="281"><highlight class="normal"></highlight></codeline>
+<codeline lineno="282"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_map_to_export(){</highlight></codeline>
+<codeline lineno="283"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_WFM_SINE&quot;</highlight><highlight class="normal"><sp/>,<sp/>NIFGEN_VAL_WFM_SINE));</highlight></codeline>
+<codeline lineno="284"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_WFM_SQUARE&quot;</highlight><highlight class="normal"><sp/>,<sp/>NIFGEN_VAL_WFM_SQUARE));</highlight></codeline>
+<codeline lineno="285"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_WFM_TRIANGLE&quot;</highlight><highlight class="normal"><sp/>,<sp/>NIFGEN_VAL_WFM_TRIANGLE));</highlight></codeline>
+<codeline lineno="286"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_WFM_RAMP_UP&quot;</highlight><highlight class="normal"><sp/>,<sp/>NIFGEN_VAL_WFM_RAMP_UP));</highlight></codeline>
+<codeline lineno="287"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_WFM_RAMP_DOWN&quot;</highlight><highlight class="normal"><sp/>,<sp/>NIFGEN_VAL_WFM_RAMP_DOWN));</highlight></codeline>
+<codeline lineno="288"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_WFM_DC&quot;</highlight><highlight class="normal"><sp/>,<sp/>NIFGEN_VAL_WFM_DC));</highlight></codeline>
+<codeline lineno="289"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_WFM_NOISE&quot;</highlight><highlight class="normal"><sp/>,<sp/>NIFGEN_VAL_WFM_NOISE));</highlight></codeline>
+<codeline lineno="290"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_OUTPUT_FUNC&quot;</highlight><highlight class="normal"><sp/>,<sp/>NIFGEN_VAL_OUTPUT_FUNC));</highlight></codeline>
+<codeline lineno="291"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_OUTPUT_ARB&quot;</highlight><highlight class="normal">,<sp/>NIFGEN_VAL_OUTPUT_ARB));</highlight></codeline>
+<codeline lineno="292"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_OUTPUT_SEQ&quot;</highlight><highlight class="normal">,<sp/>NIFGEN_VAL_OUTPUT_SEQ));</highlight></codeline>
+<codeline lineno="293"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_OUTPUT_FREQ_LIST&quot;</highlight><highlight class="normal">,<sp/>NIFGEN_VAL_OUTPUT_FREQ_LIST));</highlight></codeline>
+<codeline lineno="294"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;NIFGEN_VAL_OUTPUT_SCRIPT&quot;</highlight><highlight class="normal">,<sp/>NIFGEN_VAL_OUTPUT_SCRIPT));</highlight></codeline>
+<codeline lineno="295"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;VI_TRUE&quot;</highlight><highlight class="normal"><sp/>,<sp/>VI_TRUE));</highlight></codeline>
+<codeline lineno="296"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;VI_SUCCESS&quot;</highlight><highlight class="normal">,<sp/>VI_SUCCESS));</highlight></codeline>
+<codeline lineno="297"><highlight class="normal"><sp/><sp/><sp/>export_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;VI_NULL&quot;</highlight><highlight class="normal">,<sp/>VI_NULL));</highlight></codeline>
+<codeline lineno="298"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="299"><highlight class="normal"></highlight></codeline>
+<codeline lineno="300"><highlight class="normal">PyMODINIT_FUNC</highlight></codeline>
+<codeline lineno="301"><highlight class="normal">initpyFgenModule(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">)<sp/></highlight></codeline>
+<codeline lineno="302"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="303"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="304"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>PyObject*<sp/>m;</highlight></codeline>
+<codeline lineno="305"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>PyObject<sp/>*tmp,<sp/>*d;</highlight></codeline>
+<codeline lineno="306"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(PyType_Ready(&amp;pyFgenType)<sp/>&lt;<sp/>0)</highlight></codeline>
+<codeline lineno="307"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;unable<sp/>to<sp/>install<sp/>Fgen<sp/>module&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="308"><highlight class="normal"></highlight></codeline>
+<codeline lineno="309"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>m<sp/>=<sp/>Py_InitModule3(</highlight><highlight class="stringliteral">&quot;pyFgenModule&quot;</highlight><highlight class="normal">,<sp/>module_methods,</highlight></codeline>
+<codeline lineno="310"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;Generating<sp/>wave<sp/>with<sp/>National<sp/>Instrument<sp/>card<sp/>compatible<sp/>with<sp/>FGEN<sp/>Driver.&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="311"><highlight class="normal"></highlight></codeline>
+<codeline lineno="312"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(m<sp/>==<sp/>NULL)</highlight></codeline>
+<codeline lineno="313"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>(<sp/></highlight><highlight class="stringliteral">&quot;unable<sp/>to<sp/>install<sp/>Fgen<sp/>module&quot;</highlight><highlight class="normal"><sp/>)<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="314"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>set_map_to_export();</highlight></codeline>
+<codeline lineno="315"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>d<sp/>=<sp/>PyModule_GetDict(m);</highlight></codeline>
+<codeline lineno="316"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>map&lt;string,<sp/>long&gt;::iterator<sp/>p;</highlight></codeline>
+<codeline lineno="317"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(p<sp/>=<sp/>export_map.begin();<sp/>p<sp/>!=<sp/>export_map.end();<sp/>p++)</highlight></codeline>
+<codeline lineno="318"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="319"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>tmp<sp/>=<sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;l&quot;</highlight><highlight class="normal">,<sp/>p-&gt;second);</highlight></codeline>
+<codeline lineno="320"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PyDict_SetItemString(d,<sp/>(</highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*)p-&gt;first.c_str(),<sp/>tmp);</highlight></codeline>
+<codeline lineno="321"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_DECREF(tmp);</highlight></codeline>
+<codeline lineno="322"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="323"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Py_INCREF(&amp;pyFgenType);</highlight></codeline>
+<codeline lineno="324"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>PyModule_AddObject(m,<sp/></highlight><highlight class="stringliteral">&quot;waveGenerator&quot;</highlight><highlight class="normal">,<sp/>(PyObject<sp/>*)&amp;pyFgenType);</highlight></codeline>
+<codeline lineno="325"><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight></codeline>
+<codeline lineno="326"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal"><sp/>(<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::exception<sp/>&amp;<sp/>e<sp/>)<sp/></highlight></codeline>
+<codeline lineno="327"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight></codeline>
+<codeline lineno="328"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/>e.what();<sp/></highlight></codeline>
+<codeline lineno="329"><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight></codeline>
+<codeline lineno="330"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="331"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>__cplusplus</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="332"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="333"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/sources/niFgen/pyFgen.cpp"/>
+  </compounddef>
+</doxygen>

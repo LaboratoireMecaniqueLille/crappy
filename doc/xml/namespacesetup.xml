@@ -1,0 +1,358 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacesetup" kind="namespace" language="Python">
+    <compoundname>setup</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="namespacesetup_1a7dfad892808fe122750327c4c4ab295a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.comediModule</definition>
+        <argsstring></argsstring>
+        <name>comediModule</name>
+        <initializer>= Extension(&apos;sensor.comediModule&apos;,
+                         sources=[&apos;sources/comediModule/comediModule.c&apos;, &apos;sources/comediModule/common.c&apos;],
+                         extra_link_args=[&quot;-l&quot;, &quot;comedi&quot;, &quot;-l&quot;, &quot;python2.7&quot;])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a9c076537d899ffd8096e58c282bb7b02" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.here</definition>
+        <argsstring></argsstring>
+        <name>here</name>
+        <initializer>= path.abspath(path.dirname(__file__))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="19" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="19" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a443be2d01fd539bf6761aff70724d876" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.encoding</definition>
+        <argsstring></argsstring>
+        <name>encoding</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a4cda9dbfb952875376a0749fe08a5bde" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.long_description</definition>
+        <argsstring></argsstring>
+        <name>long_description</name>
+        <initializer>= f.read()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="22" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a0903581b09cb42b54fea54f70d48ea4f" prot="public" static="no" mutable="no">
+        <type>list</type>
+        <definition>list setup.extentions</definition>
+        <argsstring></argsstring>
+        <name>extentions</name>
+        <initializer>= []</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a5c4c5dba3569b5b9e880602f4493a23d" prot="public" static="no" mutable="no">
+        <type>list</type>
+        <definition>list setup.ext_lib</definition>
+        <argsstring></argsstring>
+        <name>ext_lib</name>
+        <initializer>= []</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1adb76d7a2751f640528d56669a4a4ba42" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.ximeaModule</definition>
+        <argsstring></argsstring>
+        <name>ximeaModule</name>
+        <initializer>= None</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a13c9476d78fd44a33832f28df9367d9a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.clModule</definition>
+        <argsstring></argsstring>
+        <name>clModule</name>
+        <initializer>= Extension(&apos;sensor.clModule&apos;,
+                         sources=[&apos;sources/Jai_lib/CameraLink.cpp&apos;, &apos;sources/Jai_lib/pyCameraLink.cpp&apos;,
+                                  &apos;sources/Jai_lib/clSerial.cpp&apos;], extra_compile_args=[&quot;-std=c++11&quot;],
+                         extra_link_args=[&quot;-l&quot;, &quot;python2.7&quot;, &quot;-L&quot;, &quot;/opt/SiliconSoftware/Runtime5.4.1.2/lib64/&quot;, &quot;-l&quot;,
+                                          &quot;display&quot;, &quot;-l&quot;, &quot;clsersis&quot;, &quot;-l&quot;, &quot;fglib5&quot;])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="35" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1abb1b326e9208f2787ab185f41a6d3bcd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.p</definition>
+        <argsstring></argsstring>
+        <name>p</name>
+        <initializer>= popen(&quot;lsmod |grep menable&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a8c56e65a4f8472f0f74af2100d8e7376" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.pyFgenModule</definition>
+        <argsstring></argsstring>
+        <name>pyFgenModule</name>
+        <initializer>= None</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="57" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="57" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1ab3a7a0638d76a01367c5bc3cc699447f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="107" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="107" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a2aa722b36a933088812b50ea79b97a5c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.version</definition>
+        <argsstring></argsstring>
+        <name>version</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="112" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="112" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1aedf461ec52a946bda975938ba0b93ec0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.description</definition>
+        <argsstring></argsstring>
+        <name>description</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="114" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="114" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1afc13124aa5c0124e84e1d965e3f4b0fb" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.url</definition>
+        <argsstring></argsstring>
+        <name>url</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="118" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="118" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a3a57a4772d418a06835249cbade0d86a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.author</definition>
+        <argsstring></argsstring>
+        <name>author</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="121" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="121" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a5b08034343aa2be607722a8b315f3625" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.author_email</definition>
+        <argsstring></argsstring>
+        <name>author_email</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="122" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="122" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a8ed6f50a28bd6a8794f8e1153baa6de9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.license</definition>
+        <argsstring></argsstring>
+        <name>license</name>
+        <briefdescription>
+<para>Create a mailing list! </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="125" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="125" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a13510753661cb74083a0c664db11dde9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.zip_safe</definition>
+        <argsstring></argsstring>
+        <name>zip_safe</name>
+        <briefdescription>
+<para>to confirm </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="127" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="127" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1abe96a9c38c1c61f9f0fdb002c482f785" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.classifiers</definition>
+        <argsstring></argsstring>
+        <name>classifiers</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="129" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="129" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a73ae9ecb109f0dcab6f0b6a89043c5c3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.keywords</definition>
+        <argsstring></argsstring>
+        <name>keywords</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="156" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="156" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1aff2375a361fd5865c77bd9aa093be747" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.packages</definition>
+        <argsstring></argsstring>
+        <name>packages</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="160" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="160" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a9dd5d588a1f07e1c32b6156209457e16" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.ext_package</definition>
+        <argsstring></argsstring>
+        <name>ext_package</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="162" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="162" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a1bf56ea61d1e9865f316116dca2fbfea" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.ext_modules</definition>
+        <argsstring></argsstring>
+        <name>ext_modules</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="163" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="163" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1a5081a5a3f9d0dee597ab99a7fdc362df" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.extras_require</definition>
+        <argsstring></argsstring>
+        <name>extras_require</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="175" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="175" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespacesetup_1ad027a8e9452da003dca32bf7467bd16e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>setup.data_files</definition>
+        <argsstring></argsstring>
+        <name>data_files</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/setup.py" line="182" column="1" bodyfile="/home/essais/Code/crappy_/crappy/setup.py" bodystart="182" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>A setuptools based setup module.
+
+See:
+https://packaging.python.org/en/latest/distributing.html
+https://github.com/pypa/sampleproject
+</verbatim> </para>    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/setup.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

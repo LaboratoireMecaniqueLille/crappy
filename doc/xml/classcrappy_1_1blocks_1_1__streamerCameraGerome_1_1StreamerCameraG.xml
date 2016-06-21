@@ -1,0 +1,503 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_streamerCameraGerome::StreamerCameraG</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a2959e3b1da63ba3d160f55bb93967e72" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::sitk</definition>
+        <argsstring></argsstring>
+        <name>sitk</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="84" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="84" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a5aac522fe4fb0b561bd687c6526dee08" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::numdevice</definition>
+        <argsstring></argsstring>
+        <name>numdevice</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="85" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="85" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a4f9b2d3018ffce93812063efa9b609e9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::camera</definition>
+        <argsstring></argsstring>
+        <name>camera</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="87" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="87" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a36b902066ff49658c4277b52577ce1b7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::freq</definition>
+        <argsstring></argsstring>
+        <name>freq</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="91" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="91" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1ae6d19258cb841b54c92cb0e5740261a1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::save</definition>
+        <argsstring></argsstring>
+        <name>save</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="92" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="92" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a4386f300c0f9f75b8d9276f16754ead0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::i</definition>
+        <argsstring></argsstring>
+        <name>i</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="93" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="93" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1af9d82cc39fd7301d7a56002dfe3ebbd5" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::save_directory</definition>
+        <argsstring></argsstring>
+        <name>save_directory</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="94" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a58930b13a879333f0b808d2a702a61a5" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::label</definition>
+        <argsstring></argsstring>
+        <name>label</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="95" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="95" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1aefce14c50ad882ebc801339b46afa266" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::width</definition>
+        <argsstring></argsstring>
+        <name>width</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="96" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="96" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1aaba94325875c761d08bbad31a7a78dbd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::height</definition>
+        <argsstring></argsstring>
+        <name>height</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="97" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="97" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a85740c22ef41a9693d14dcaedd3d4c7a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::xoffset</definition>
+        <argsstring></argsstring>
+        <name>xoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="98" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a0cef506eaf2bb0d071f799866f06aa20" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::yoffset</definition>
+        <argsstring></argsstring>
+        <name>yoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="99" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="99" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a0717e06dfbefbf21039624d7d20e99b6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::exposure</definition>
+        <argsstring></argsstring>
+        <name>exposure</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="100" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="100" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a78373323f49df8539174f4177cb859c6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._streamerCameraGerome.StreamerCameraG::gain</definition>
+        <argsstring></argsstring>
+        <name>gain</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="101" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="101" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1ad2f76572cf1bfc258ea80742009b29b3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._streamerCameraGerome.StreamerCameraG.__init__</definition>
+        <argsstring>(self, camera, numdevice=0, freq=None, save=False, save_directory=&quot;./images/&quot;, label=&quot;cycle&quot;, xoffset=0, yoffset=0, width=2048, height=2048)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>camera</type>
+          <defname>camera</defname>
+        </param>
+        <param>
+          <type>numdevice</type>
+          <defname>numdevice</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>freq</type>
+          <defname>freq</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>save</type>
+          <defname>save</defname>
+          <defval>False</defval>
+        </param>
+        <param>
+          <type>save_directory</type>
+          <defname>save_directory</defname>
+          <defval>&quot;./images/&quot;</defval>
+        </param>
+        <param>
+          <type>label</type>
+          <defname>label</defname>
+          <defval>&quot;cycle&quot;</defval>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+          <defval>2048</defval>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+          <defval>2048</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This block fetch images from a camera object, can save and/or transmit them to
+another block. It can be triggered by a Link or internally
+by defining the frequency.
+
+Parameters
+----------
+camera : {&quot;Ximea&quot;,&quot;Jai&quot;}
+    See sensor.cameraSensor documentation.
+numdevice : int, default = 0
+    If you have several camera plugged, choose the right one.
+freq : float or int or None, default=None
+    Wanted acquisition frequency. Cannot exceed acquisition device capability.
+    If None, will go as fast as possible.
+save : boolean, default =False
+    Set to True if you want to save images.
+save_directory : directory, default = &quot;./images/&quot;
+    directory to the saving folder. If inexistant, will be created.
+label : string, default=&quot;cycle&quot;
+    label of the input data you want to save in the name of the saved image, in
+    case of external trigger.
+xoffset: int, default = 0
+    Offset on the x axis.
+yoffset: int, default = 0
+    Offset on the y axis.
+width: int, default = 2048
+    Width of the image.
+height: int, default = 2048
+    Height of the image.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="50" bodyend="104"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1af4c8207b5a89f4616d209cdee1e2b57f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._streamerCameraGerome.StreamerCameraG.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="105" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="105" bodyend="157"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1ad2f76572cf1bfc258ea80742009b29b3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._streamerCameraGerome.StreamerCameraG.__init__</definition>
+        <argsstring>(self, camera, numdevice=0, freq=None, save=False, save_directory=&quot;./images/&quot;, label=&quot;cycle&quot;, xoffset=0, yoffset=0, width=2048, height=2048)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>camera</type>
+          <defname>camera</defname>
+        </param>
+        <param>
+          <type>numdevice</type>
+          <defname>numdevice</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>freq</type>
+          <defname>freq</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>save</type>
+          <defname>save</defname>
+          <defval>False</defval>
+        </param>
+        <param>
+          <type>save_directory</type>
+          <defname>save_directory</defname>
+          <defval>&quot;./images/&quot;</defval>
+        </param>
+        <param>
+          <type>label</type>
+          <defname>label</defname>
+          <defval>&quot;cycle&quot;</defval>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+          <defval>2048</defval>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+          <defval>2048</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This block fetch images from a camera object, can save and/or transmit them to
+another block. It can be triggered by a Link or internally
+by defining the frequency.
+
+Parameters
+----------
+camera : {&quot;Ximea&quot;,&quot;Jai&quot;}
+    See sensor.cameraSensor documentation.
+numdevice : int, default = 0
+    If you have several camera plugged, choose the right one.
+freq : float or int or None, default=None
+    Wanted acquisition frequency. Cannot exceed acquisition device capability.
+    If None, will go as fast as possible.
+save : boolean, default =False
+    Set to True if you want to save images.
+save_directory : directory, default = &quot;./images/&quot;
+    directory to the saving folder. If inexistant, will be created.
+label : string, default=&quot;cycle&quot;
+    label of the input data you want to save in the name of the saved image, in
+    case of external trigger.
+xoffset: int, default = 0
+    Offset on the x axis.
+yoffset: int, default = 0
+    Offset on the y axis.
+width: int, default = 2048
+    Width of the image.
+height: int, default = 2048
+    Height of the image.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_streamerCameraGerome.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_streamerCameraGerome.py" bodystart="50" bodyend="104"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1af4c8207b5a89f4616d209cdee1e2b57f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._streamerCameraGerome.StreamerCameraG.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_streamerCameraGerome.py" line="105" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_streamerCameraGerome.py" bodystart="105" bodyend="157"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Streams pictures.
+</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="537">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="538" relation="public-inheritance">
+        </childnode>
+        <childnode refid="538" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="536">
+        <label>crappy.blocks._streamerCameraGerome.StreamerCameraG</label>
+        <link refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG"/>
+        <childnode refid="537" relation="public-inheritance">
+        </childnode>
+        <childnode refid="537" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="538">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="540">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="541" relation="public-inheritance">
+        </childnode>
+        <childnode refid="541" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="539">
+        <label>crappy.blocks._streamerCameraGerome.StreamerCameraG</label>
+        <link refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG"/>
+        <childnode refid="540" relation="public-inheritance">
+        </childnode>
+        <childnode refid="540" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="541">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_streamerCameraGerome.py" bodystart="44" bodyend="157"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1ad2f76572cf1bfc258ea80742009b29b3" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1ad2f76572cf1bfc258ea80742009b29b3" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a34cdcaba3da6e04e6de3b1cd763739f1" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a4f9b2d3018ffce93812063efa9b609e9" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>camera</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a0717e06dfbefbf21039624d7d20e99b6" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>exposure</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a36b902066ff49658c4277b52577ce1b7" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>freq</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a78373323f49df8539174f4177cb859c6" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>gain</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1aaba94325875c761d08bbad31a7a78dbd" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>height</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a4386f300c0f9f75b8d9276f16754ead0" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>i</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a58930b13a879333f0b808d2a702a61a5" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>label</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1af4c8207b5a89f4616d209cdee1e2b57f" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1af4c8207b5a89f4616d209cdee1e2b57f" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a5aac522fe4fb0b561bd687c6526dee08" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>numdevice</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1ae6d19258cb841b54c92cb0e5740261a1" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>save</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1af9d82cc39fd7301d7a56002dfe3ebbd5" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>save_directory</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a2959e3b1da63ba3d160f55bb93967e72" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>sitk</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1aefce14c50ad882ebc801339b46afa266" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>width</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a85740c22ef41a9693d14dcaedd3d4c7a" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>xoffset</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__streamerCameraGerome_1_1StreamerCameraG_1a0cef506eaf2bb0d071f799866f06aa20" prot="public" virt="non-virtual"><scope>crappy::blocks::_streamerCameraGerome::StreamerCameraG</scope><name>yoffset</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

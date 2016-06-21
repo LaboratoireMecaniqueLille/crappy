@@ -1,0 +1,553 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator" kind="class" language="Python" prot="public">
+    <compoundname>crappy::actuator::_lal300Actuator::Lal300Actuator</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">MotionActuator</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">MotionActuator</basecompoundref>
+    <derivedcompoundref refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1ActuatorLal300" prot="public" virt="non-virtual">crappy.actuator._lal300Actuator.ActuatorLal300</derivedcompoundref>
+    <derivedcompoundref refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1ActuatorLal300" prot="public" virt="non-virtual">crappy.actuator._lal300Actuator.ActuatorLal300</derivedcompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1afa1f2d3ed3e5b983063aee49e96bcf90" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._lal300Actuator.Lal300Actuator::param</definition>
+        <argsstring></argsstring>
+        <name>param</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="58" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="58" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a4571f0639a0875d1c53cb8aee9b82ef3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._lal300Actuator.Lal300Actuator::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="59" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a057d01d593ff2bc8929c54b8263a32a3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._lal300Actuator.Lal300Actuator::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="60" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="60" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a9f3c9cd5fe1496392f602d79c4446c34" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._lal300Actuator.Lal300Actuator::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="62" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a7d2f242e9cf7bc26ded489986e1d108d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.__init__</definition>
+        <argsstring>(self, param=p, ser=None, port=&apos;/dev/ttyUSB1&apos;, baudrate=19200)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+          <defval>p</defval>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyUSB1&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>19200</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Lal300.
+
+Parameters
+----------
+param : dict
+    Dict of parameters.
+
+* &apos;port&apos; : str
+        Path to the serial port.
+* &apos;baudrate&apos; : int
+        Corresponding baudrate.
+* &apos;timeout&apos; : float
+        Timeout of the serial connection.
+* &apos;PID_PROP&apos; : float
+        Proportionnal coefficient of the PID.
+* &apos;PID_INT&apos; : float
+        Integral coefficient for the PID.
+* &apos;PID_DERIV&apos; : float
+        Derivative coefficient for the PID.
+* &apos;PID_INTLIM&apos; : float
+        Limit of the integral coefficient.
+* &apos;ACC&apos; float
+        Acceleration of the motor.
+* &apos;ACconv&apos; : float 
+        Conversion ACC values to mm/s/s
+* &apos;FORCE&apos; : float 
+        Maximal force provided by the motor.
+* &apos;SPEEDconv&apos; : float 
+        Conversion SPEED values to mm/s
+* &apos;ENTREE_VERIN&apos; : str
+        &apos;DI1&apos;
+* &apos;SORTIE_VERIN&apos; : str
+        &apos;DI0&apos;
+* &apos;ETIRE&apos;: list of int
+        List of extreme values for the position in traction.
+* &apos;COMPRIME&apos;: list of int
+        List of extreme values for the position in compression.
+* &apos;SPEED&apos; : list of int
+        List of speed, for each group of cycles.
+* &apos;CYCLES&apos; : list of int
+        List of cycles, for each group.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="13" bodyend="74"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ac28b483ca51f598b597653738fbf8b91" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.set_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>set_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="75" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="75" bodyend="78"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a1f0eb30ac351af0f47dd6bea311d6891" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.set_position</definition>
+        <argsstring>(self, consigne)</argsstring>
+        <name>set_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>consigne</type>
+          <defname>consigne</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Send a position command to the motor</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="79" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="79" bodyend="85"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1aa20433c415e67de28922b6d3025389bc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.move_home</definition>
+        <argsstring>(self)</argsstring>
+        <name>move_home</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Go back to the homing point</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="86" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="86" bodyend="92"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a9bb3a10cb1c870a0c0b1798bdc59fb6e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: Use reset method defined in Lal300Technical instead.
+Reset PID parameters and re-defined the motor origin
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="94" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="94" bodyend="106"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ad0dc07070d85c0d6f64b492b64111d63" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.homing</definition>
+        <argsstring>(self)</argsstring>
+        <name>homing</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use move_home instead.
+Go back to the homing point
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="108" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="108" bodyend="118"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ad1dd31d429c2a81f9f8f431d9598f2a2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.stoplal300</definition>
+        <argsstring>(self)</argsstring>
+        <name>stoplal300</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: Use stop method defined in Lal300Technical instead.
+Stop the motor
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="120" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="120" bodyend="129"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1af5d09beca879b3709c08bcd71cba5e18" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.closelal300</definition>
+        <argsstring>(self)</argsstring>
+        <name>closelal300</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: Use close method defined in Lal300Technical instead.
+Close serial port
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="131" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="131" bodyend="141"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a7d2f242e9cf7bc26ded489986e1d108d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.__init__</definition>
+        <argsstring>(self, param=p, ser=None, port=&apos;/dev/ttyUSB1&apos;, baudrate=19200)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+          <defval>p</defval>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyUSB1&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>19200</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Lal300.
+
+Parameters
+----------
+param : dict
+    Dict of parameters.
+
+* &apos;port&apos; : str
+        Path to the serial port.
+* &apos;baudrate&apos; : int
+        Corresponding baudrate.
+* &apos;timeout&apos; : float
+        Timeout of the serial connection.
+* &apos;PID_PROP&apos; : float
+        Proportionnal coefficient of the PID.
+* &apos;PID_INT&apos; : float
+        Integral coefficient for the PID.
+* &apos;PID_DERIV&apos; : float
+        Derivative coefficient for the PID.
+* &apos;PID_INTLIM&apos; : float
+        Limit of the integral coefficient.
+* &apos;ACC&apos; float
+        Acceleration of the motor.
+* &apos;ACconv&apos; : float 
+        Conversion ACC values to mm/s/s
+* &apos;FORCE&apos; : float 
+        Maximal force provided by the motor.
+* &apos;SPEEDconv&apos; : float 
+        Conversion SPEED values to mm/s
+* &apos;ENTREE_VERIN&apos; : str
+        &apos;DI1&apos;
+* &apos;SORTIE_VERIN&apos; : str
+        &apos;DI0&apos;
+* &apos;ETIRE&apos;: list of int
+        List of extreme values for the position in traction.
+* &apos;COMPRIME&apos;: list of int
+        List of extreme values for the position in compression.
+* &apos;SPEED&apos; : list of int
+        List of speed, for each group of cycles.
+* &apos;CYCLES&apos; : list of int
+        List of cycles, for each group.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" bodystart="13" bodyend="74"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ac28b483ca51f598b597653738fbf8b91" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.set_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>set_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" line="75" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" bodystart="75" bodyend="78"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a1f0eb30ac351af0f47dd6bea311d6891" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.set_position</definition>
+        <argsstring>(self, consigne)</argsstring>
+        <name>set_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>consigne</type>
+          <defname>consigne</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Send a position command to the motor</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" line="79" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" bodystart="79" bodyend="85"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1aa20433c415e67de28922b6d3025389bc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.move_home</definition>
+        <argsstring>(self)</argsstring>
+        <name>move_home</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Go back to the homing point</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" line="86" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" bodystart="86" bodyend="92"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a9bb3a10cb1c870a0c0b1798bdc59fb6e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: Use reset method defined in Lal300Technical instead.
+Reset PID parameters and re-defined the motor origin
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" line="94" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" bodystart="94" bodyend="106"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ad0dc07070d85c0d6f64b492b64111d63" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.homing</definition>
+        <argsstring>(self)</argsstring>
+        <name>homing</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use move_home instead.
+Go back to the homing point
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" line="108" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" bodystart="108" bodyend="118"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ad1dd31d429c2a81f9f8f431d9598f2a2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.stoplal300</definition>
+        <argsstring>(self)</argsstring>
+        <name>stoplal300</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: Use stop method defined in Lal300Technical instead.
+Stop the motor
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" line="120" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" bodystart="120" bodyend="129"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1af5d09beca879b3709c08bcd71cba5e18" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._lal300Actuator.Lal300Actuator.closelal300</definition>
+        <argsstring>(self)</argsstring>
+        <name>closelal300</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: Use close method defined in Lal300Technical instead.
+Close serial port
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" line="131" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_lal300Actuator.py" bodystart="131" bodyend="141"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="327">
+        <label>crappy.actuator._lal300Actuator.Lal300Actuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator"/>
+        <childnode refid="328" relation="public-inheritance">
+        </childnode>
+        <childnode refid="328" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="329">
+        <label>crappy.actuator._lal300Actuator.ActuatorLal300</label>
+        <link refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1ActuatorLal300"/>
+        <childnode refid="327" relation="public-inheritance">
+        </childnode>
+        <childnode refid="327" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="328">
+        <label>MotionActuator</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="330">
+        <label>crappy.actuator._lal300Actuator.Lal300Actuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator"/>
+        <childnode refid="331" relation="public-inheritance">
+        </childnode>
+        <childnode refid="331" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="331">
+        <label>MotionActuator</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_lal300Actuator.py" bodystart="12" bodyend="142"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a7d2f242e9cf7bc26ded489986e1d108d" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a7d2f242e9cf7bc26ded489986e1d108d" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a057d01d593ff2bc8929c54b8263a32a3" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1af5d09beca879b3709c08bcd71cba5e18" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>closelal300</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1af5d09beca879b3709c08bcd71cba5e18" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>closelal300</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ad0dc07070d85c0d6f64b492b64111d63" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>homing</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ad0dc07070d85c0d6f64b492b64111d63" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>homing</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1aa20433c415e67de28922b6d3025389bc" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>move_home</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1aa20433c415e67de28922b6d3025389bc" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>move_home</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1afa1f2d3ed3e5b983063aee49e96bcf90" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>param</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a4571f0639a0875d1c53cb8aee9b82ef3" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>port</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a9bb3a10cb1c870a0c0b1798bdc59fb6e" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a9bb3a10cb1c870a0c0b1798bdc59fb6e" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a9f3c9cd5fe1496392f602d79c4446c34" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>ser</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a1f0eb30ac351af0f47dd6bea311d6891" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>set_position</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1a1f0eb30ac351af0f47dd6bea311d6891" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>set_position</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ac28b483ca51f598b597653738fbf8b91" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>set_speed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ac28b483ca51f598b597653738fbf8b91" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>set_speed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ad1dd31d429c2a81f9f8f431d9598f2a2" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>stoplal300</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__lal300Actuator_1_1Lal300Actuator_1ad1dd31d429c2a81f9f8f431d9598f2a2" prot="public" virt="non-virtual"><scope>crappy::actuator::_lal300Actuator::Lal300Actuator</scope><name>stoplal300</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="structVideoCapture" kind="struct" language="C++" prot="public">
+    <compoundname>VideoCapture</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structVideoCapture_1acce8762cbffa24b223be7bd6ea0091fc" prot="public" static="no" mutable="no">
+        <type>PyObject_HEAD PyObject *</type>
+        <definition>PyObject_HEAD PyObject * VideoCapture::myarray</definition>
+        <argsstring></argsstring>
+        <name>myarray</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="115" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="115" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structVideoCapture_1adc0227d888de76f97eb606f829faba48" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int VideoCapture::device</definition>
+        <argsstring></argsstring>
+        <name>device</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="116" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="116" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structVideoCapture_1a2d3ccffb48d2ae506eb72f71c326ce81" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* VideoCapture::file</definition>
+        <argsstring></argsstring>
+        <name>file</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="117" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="117" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structVideoCapture_1aa61752d623c37c2ce6eb81e4fa7d5a0c" prot="public" static="no" mutable="no">
+        <type>char *</type>
+        <definition>char* VideoCapture::device_path</definition>
+        <argsstring></argsstring>
+        <name>device_path</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="75" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structVideoCapture_1a48c7393bcbcbe8f8b9b25dd3db2641ea" prot="public" static="no" mutable="no">
+        <type>char *</type>
+        <definition>char* VideoCapture::array_buffer</definition>
+        <argsstring></argsstring>
+        <name>array_buffer</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="76" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structVideoCapture_1a2acfb539f89ba9d674ceb516888afc4a" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool VideoCapture::first_read</definition>
+        <argsstring></argsstring>
+        <name>first_read</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="77" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" bodystart="77" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="113" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="113" bodyend="118"/>
+    <listofallmembers>
+      <member refid="structVideoCapture_1a48c7393bcbcbe8f8b9b25dd3db2641ea" prot="public" virt="non-virtual"><scope>VideoCapture</scope><name>array_buffer</name></member>
+      <member refid="structVideoCapture_1adc0227d888de76f97eb606f829faba48" prot="public" virt="non-virtual"><scope>VideoCapture</scope><name>device</name></member>
+      <member refid="structVideoCapture_1aa61752d623c37c2ce6eb81e4fa7d5a0c" prot="public" virt="non-virtual"><scope>VideoCapture</scope><name>device_path</name></member>
+      <member refid="structVideoCapture_1a2d3ccffb48d2ae506eb72f71c326ce81" prot="public" virt="non-virtual"><scope>VideoCapture</scope><name>file</name></member>
+      <member refid="structVideoCapture_1a2acfb539f89ba9d674ceb516888afc4a" prot="public" virt="non-virtual"><scope>VideoCapture</scope><name>first_read</name></member>
+      <member refid="structVideoCapture_1acce8762cbffa24b223be7bd6ea0091fc" prot="public" virt="non-virtual"><scope>VideoCapture</scope><name>myarray</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

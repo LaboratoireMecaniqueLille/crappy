@@ -1,0 +1,68 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__ximeaExport_8py" kind="file" language="Python">
+    <compoundname>_ximeaExport.py</compoundname>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__ximeaExport">crappy::sensor::_ximeaExport</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="normal">CAP_PROP_XI_DOWNSAMPLING<sp/>=<sp/>400<sp/><sp/></highlight><highlight class="comment">#<sp/>Change<sp/>image<sp/>resolution<sp/>by<sp/>binning<sp/>or<sp/>skipping.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal">CAP_PROP_XI_DATA_FORMAT<sp/>=<sp/>401<sp/><sp/></highlight><highlight class="comment">#<sp/>Output<sp/>data<sp/>format.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal">CAP_PROP_XI_OFFSET_X<sp/>=<sp/>402<sp/><sp/></highlight><highlight class="comment">#<sp/>Horizontal<sp/>offset<sp/>from<sp/>the<sp/>origin<sp/>to<sp/>the<sp/>area<sp/>of<sp/>interest<sp/>(in<sp/>pixels).</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal">CAP_PROP_XI_OFFSET_Y<sp/>=<sp/>403<sp/><sp/></highlight><highlight class="comment">#<sp/>Vertical<sp/>offset<sp/>from<sp/>the<sp/>origin<sp/>to<sp/>the<sp/>area<sp/>of<sp/>interest<sp/>(in<sp/>pixels).</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal">CAP_PROP_XI_TRG_SOURCE<sp/>=<sp/>404<sp/><sp/></highlight><highlight class="comment">#<sp/>Defines<sp/>source<sp/>of<sp/>trigger.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal">CAP_PROP_XI_TRG_SOFTWARE<sp/>=<sp/>405<sp/><sp/></highlight><highlight class="comment">#<sp/>Generates<sp/>an<sp/>internal<sp/>trigger.<sp/>PRM_TRG_SOURCE<sp/>must<sp/>be<sp/>set<sp/>to<sp/>TRG_SOFTWARE.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal">CAP_PROP_XI_GPI_SELECTOR<sp/>=<sp/>406<sp/><sp/></highlight><highlight class="comment">#<sp/>Selects<sp/>general<sp/>purpose<sp/>input</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal">CAP_PROP_XI_GPI_MODE<sp/>=<sp/>407<sp/><sp/></highlight><highlight class="comment">#<sp/>Set<sp/>general<sp/>purpose<sp/>input<sp/>mode</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal">CAP_PROP_XI_GPI_LEVEL<sp/>=<sp/>408<sp/><sp/></highlight><highlight class="comment">#<sp/>Get<sp/>general<sp/>purpose<sp/>level</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal">CAP_PROP_XI_GPO_SELECTOR<sp/>=<sp/>409<sp/><sp/></highlight><highlight class="comment">#<sp/>Selects<sp/>general<sp/>purpose<sp/>output</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal">CAP_PROP_XI_GPO_MODE<sp/>=<sp/>410<sp/><sp/></highlight><highlight class="comment">#<sp/>Set<sp/>general<sp/>purpose<sp/>output<sp/>mode</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal">CAP_PROP_XI_LED_SELECTOR<sp/>=<sp/>411<sp/><sp/></highlight><highlight class="comment">#<sp/>Selects<sp/>camera<sp/>signalling<sp/>LED</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal">CAP_PROP_XI_LED_MODE<sp/>=<sp/>412<sp/><sp/></highlight><highlight class="comment">#<sp/>Define<sp/>camera<sp/>signalling<sp/>LED<sp/>functionality</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal">CAP_PROP_XI_MANUAL_WB<sp/>=<sp/>413<sp/><sp/></highlight><highlight class="comment">#<sp/>Calculates<sp/>White<sp/>Balance(must<sp/>be<sp/>called<sp/>during<sp/>acquisition)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal">CAP_PROP_XI_AUTO_WB<sp/>=<sp/>414<sp/><sp/></highlight><highlight class="comment">#<sp/>Automatic<sp/>white<sp/>balance</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal">CAP_PROP_XI_AEAG<sp/>=<sp/>415<sp/><sp/></highlight><highlight class="comment">#<sp/>Automatic<sp/>exposure/gain</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal">CAP_PROP_XI_EXP_PRIORITY<sp/>=<sp/>416<sp/><sp/></highlight><highlight class="comment">#<sp/>Exposure<sp/>priority<sp/>(0.5<sp/>-<sp/>exposure<sp/>50%,<sp/>gain<sp/>50%).</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal">CAP_PROP_XI_AE_MAX_LIMIT<sp/>=<sp/>417<sp/><sp/></highlight><highlight class="comment">#<sp/>Maximum<sp/>limit<sp/>of<sp/>exposure<sp/>in<sp/>AEAG<sp/>procedure</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal">CAP_PROP_XI_AG_MAX_LIMIT<sp/>=<sp/>418<sp/><sp/></highlight><highlight class="comment">#<sp/>Maximum<sp/>limit<sp/>of<sp/>gain<sp/>in<sp/>AEAG<sp/>procedure</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal">CAP_PROP_XI_AEAG_LEVEL<sp/>=<sp/>419<sp/><sp/></highlight><highlight class="comment">#<sp/>Average<sp/>intensity<sp/>of<sp/>output<sp/>signal<sp/>AEAG<sp/>should<sp/>achieve(in<sp/>%)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal">CAP_PROP_XI_TIMEOUT<sp/>=<sp/>420<sp/><sp/></highlight><highlight class="comment">#<sp/>Image<sp/>capture<sp/>timeout<sp/>in<sp/>milliseconds</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal">CAP_PROP_XI_TIMESTAMP<sp/>=<sp/>421<sp/><sp/></highlight><highlight class="comment">#<sp/>Time<sp/>the<sp/>image<sp/>has<sp/>been<sp/>taken<sp/>in<sp/>second<sp/>accurate<sp/>at<sp/>microsecond</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal">CAP_PROP_XI_FRAME_NUMBER<sp/>=<sp/>422<sp/><sp/></highlight><highlight class="comment">#<sp/>Frame<sp/>number<sp/>(reset<sp/>by<sp/>exposure,<sp/>gain,<sp/>downsampling<sp/>change,<sp/>auto<sp/>exposure<sp/>(AEAG))</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal">CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH<sp/>=<sp/>423<sp/><sp/></highlight><highlight class="comment">#<sp/>Number<sp/>of<sp/>byte<sp/>of<sp/>the<sp/>camera<sp/>(mandatory<sp/>for<sp/>data<sp/>packing)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal">CAP_PROP_XI_DATA_PACKING<sp/>=<sp/>424<sp/><sp/></highlight><highlight class="comment">#<sp/>Data<sp/>packing<sp/>allow<sp/>to<sp/>transfert<sp/>efficiently<sp/>image<sp/>with<sp/>depth<sp/>over<sp/>8<sp/>bits</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal">CAP_PROP_GAIN<sp/>=<sp/>14</highlight></codeline>
+<codeline lineno="27"><highlight class="normal">CAP_PROP_EXPOSURE<sp/>=<sp/>15</highlight></codeline>
+<codeline lineno="28"><highlight class="normal">CAP_PROP_POS_FRAMES<sp/>=<sp/>1</highlight></codeline>
+<codeline lineno="29"><highlight class="normal">CAP_PROP_FRAME_WIDTH<sp/>=<sp/>3</highlight></codeline>
+<codeline lineno="30"><highlight class="normal">CAP_PROP_FRAME_HEIGHT<sp/>=<sp/>4</highlight></codeline>
+<codeline lineno="31"><highlight class="normal">CAP_PROP_FPS<sp/>=<sp/>5</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="comment">#<sp/>Camera<sp/>API</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal">CAP_ANY<sp/>=<sp/>0<sp/><sp/></highlight><highlight class="comment">#<sp/>autodetect</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal">CAP_VFW<sp/>=<sp/>200<sp/><sp/></highlight><highlight class="comment">#<sp/>platform<sp/>native</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal">CAP_V4L<sp/>=<sp/>200</highlight></codeline>
+<codeline lineno="36"><highlight class="normal">CAP_V4L2<sp/>=<sp/>CAP_V4L</highlight></codeline>
+<codeline lineno="37"><highlight class="normal">CAP_FIREWARE<sp/>=<sp/>300<sp/><sp/></highlight><highlight class="comment">#<sp/>IEEE<sp/>1394<sp/>drivers</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal">CAP_FIREWIRE<sp/>=<sp/>CAP_FIREWARE</highlight></codeline>
+<codeline lineno="39"><highlight class="normal">CAP_IEEE1394<sp/>=<sp/>CAP_FIREWARE</highlight></codeline>
+<codeline lineno="40"><highlight class="normal">CAP_DC1394<sp/>=<sp/>CAP_FIREWARE</highlight></codeline>
+<codeline lineno="41"><highlight class="normal">CAP_CMU1394<sp/>=<sp/>CAP_FIREWARE</highlight></codeline>
+<codeline lineno="42"><highlight class="normal">CAP_QT<sp/>=<sp/>500<sp/><sp/></highlight><highlight class="comment">#<sp/>QuickTime</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="43"><highlight class="normal">CAP_UNICAP<sp/>=<sp/>600<sp/><sp/></highlight><highlight class="comment">#<sp/>Unicap<sp/>drivers</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="44"><highlight class="normal">CAP_DSHOW<sp/>=<sp/>700<sp/><sp/></highlight><highlight class="comment">#<sp/>DirectShow<sp/>(via<sp/>videoInput)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal">CAP_PVAPI<sp/>=<sp/>800<sp/><sp/></highlight><highlight class="comment">#<sp/>PvAPI<sp/>Prosilica<sp/>GigE<sp/>SDK</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="46"><highlight class="normal">CAP_OPENNI<sp/>=<sp/>900<sp/><sp/></highlight><highlight class="comment">#<sp/>OpenNI<sp/>(for<sp/>Kinect)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="47"><highlight class="normal">CAP_OPENNI_ASUS<sp/>=<sp/>910<sp/><sp/></highlight><highlight class="comment">#<sp/>OpenNI<sp/>(for<sp/>Asus<sp/>Xtion)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="48"><highlight class="normal">CAP_ANDROID<sp/>=<sp/>1000<sp/><sp/></highlight><highlight class="comment">#<sp/>Android</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="49"><highlight class="normal">CAP_XIAPI<sp/>=<sp/>1100<sp/><sp/></highlight><highlight class="comment">#<sp/>XIMEA<sp/>Camera<sp/>API</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal">CAP_AVFOUNDATION<sp/>=<sp/>1200<sp/><sp/></highlight><highlight class="comment">#<sp/>AVFoundation<sp/>framework<sp/>for<sp/>iOS<sp/>(OS<sp/>X<sp/>Lion<sp/>will<sp/>have<sp/>the<sp/>same<sp/>API)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="51"><highlight class="normal">CAP_GIGANETIX<sp/>=<sp/>1300<sp/><sp/></highlight><highlight class="comment">#<sp/>Smartek<sp/>Giganetix<sp/>GigEVisionSDK</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="normal">CAP_MSMF<sp/>=<sp/>1400<sp/><sp/></highlight><highlight class="comment">#<sp/>Microsoft<sp/>Media<sp/>Foundation<sp/>(via<sp/>videoInput)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal">CAP_INTELPERC<sp/>=<sp/>1500<sp/><sp/></highlight><highlight class="comment">#<sp/>Intel<sp/>Perceptual<sp/>Computing<sp/>SDK</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal">CAP_OPENNI2<sp/>=<sp/>1600<sp/><sp/></highlight><highlight class="comment">#<sp/>OpenNI2<sp/>(for<sp/>Kinect)</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_ximeaExport.py"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1sensor" kind="namespace" language="Python">
+    <compoundname>crappy::sensor</compoundname>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1____ximeaSensor__old">crappy::sensor::__ximeaSensor_old</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__Agilent34420ASensor">crappy::sensor::_Agilent34420ASensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__biaxeSensor">crappy::sensor::_biaxeSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__biotensSensor">crappy::sensor::_biotensSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__clserial">crappy::sensor::_clserial</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__CMdriveSensor">crappy::sensor::_CMdriveSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__comediSensor">crappy::sensor::_comediSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__daqmxSensor">crappy::sensor::_daqmxSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__dummySensor">crappy::sensor::_dummySensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__fakeCameraSensor">crappy::sensor::_fakeCameraSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__jaiSensor">crappy::sensor::_jaiSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__labJackSensor">crappy::sensor::_labJackSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__lal300Sensor">crappy::sensor::_lal300Sensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__meta">crappy::sensor::_meta</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__old__jaiSensor">crappy::sensor::_old_jaiSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__orientalSensor">crappy::sensor::_orientalSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__PISensor">crappy::sensor::_PISensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__variateurTriboSensor">crappy::sensor::_variateurTriboSensor</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__ximeaExport">crappy::sensor::_ximeaExport</innernamespace>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__ximeaSensor">crappy::sensor::_ximeaSensor</innernamespace>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____init_____8py_1a3cb5b04fcc38e65d9bf31d34bd705fe8" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::sensor._p</definition>
+        <argsstring></argsstring>
+        <name>_p</name>
+        <initializer>= _popen(&quot;lsmod |grep menable&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__init__.py" line="22" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__init__.py" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____init_____8py_1a1e42050fa447aa3a373f58c91e9d48e9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::sensor.JaiSerial</definition>
+        <argsstring></argsstring>
+        <name>JaiSerial</name>
+        <initializer>= _jaiSerial.JaiSerial</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__init__.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__init__.py" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____init_____8py_1afef45105daa7300d78d10e16ab6716ff" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::sensor.ClSerial</definition>
+        <argsstring></argsstring>
+        <name>ClSerial</name>
+        <initializer>= _clSerial.ClSerial</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__init__.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__init__.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____init_____8py_1a9d79e8538ac42f0755d1fa0e7c47cc0c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::sensor.p</definition>
+        <argsstring></argsstring>
+        <name>p</name>
+        <initializer>= _popen(&apos;driverquery /NH |findstr &quot;me4&quot;&apos;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__init__.py" line="41" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__init__.py" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__init__.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

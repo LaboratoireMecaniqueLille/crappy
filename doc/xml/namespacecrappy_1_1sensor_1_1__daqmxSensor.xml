@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1sensor_1_1__daqmxSensor" kind="namespace" language="Python">
+    <compoundname>crappy::sensor::_daqmxSensor</compoundname>
+    <innerclass refid="classcrappy_1_1sensor_1_1__daqmxSensor_1_1DaqmxSensor" prot="public">crappy::sensor::_daqmxSensor::DaqmxSensor</innerclass>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__daqmxSensor_8py_1af0341a238c9b4691a909c2caa8a4d823" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy::sensor::_daqmxSensor::get_daqmx_devices_names</definition>
+        <argsstring>()</argsstring>
+        <name>get_daqmx_devices_names</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_daqmxSensor.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_daqmxSensor.py" bodystart="11" bodyend="18"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_daqmxSensor.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

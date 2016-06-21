@@ -1,11 +1,11 @@
 import time
 
-import crappy
+import crappy2
 
-crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
+crappy2.blocks.MasterBlock.instances = []  # Init masterblock instances
 
 
-class ConditionTransfoChaine(crappy.links.MetaCondition):
+class ConditionTransfoChaine(crappy2.links.MetaCondition):
     def __init__(self):
         data = "None"
 
@@ -20,7 +20,7 @@ class ConditionTransfoChaine(crappy.links.MetaCondition):
         return {'center': center}
 
 
-class ConditionComediInstron(crappy.links.MetaCondition):
+class ConditionComediInstron(crappy2.links.MetaCondition):
     def __init__(self):
         data = "None"
         i = 0
@@ -35,51 +35,51 @@ if __name__ == '__main__':
     try:
         # Creating objects
 
-        # instronSensor=crappy.sensor.ComediSensor(channels=[1,3],gain=[-3749.3,-3198.9*1.18],offset=[24,13])
-        # biaxeTech1=crappy.technical.Biaxe(port='/dev/ttyS4')
-        # biaxeTech2=crappy.technical.Biaxe(port='/dev/ttyS5')
-        # biaxeTech3=crappy.technical.Biaxe(port='/dev/ttyS6')
-        # biaxeTech4=crappy.technical.Biaxe(port='/dev/ttyS7')
+        # instronSensor=crappy2.sensor.ComediSensor(channels=[1,3],gain=[-3749.3,-3198.9*1.18],offset=[24,13])
+        # biaxeTech1=crappy2.technical.Biaxe(port='/dev/ttyS4')
+        # biaxeTech2=crappy2.technical.Biaxe(port='/dev/ttyS5')
+        # biaxeTech3=crappy2.technical.Biaxe(port='/dev/ttyS6')
+        # biaxeTech4=crappy2.technical.Biaxe(port='/dev/ttyS7')
         # axes=[biaxeTech1,biaxeTech2,biaxeTech3,biaxeTech4]
-        comedi_actuator = crappy.actuator.ComediActuator(device='/dev/comedi0', subdevice=0, channel=0, range_num=0,
-                                                         gain=1, offset=0)
+        comedi_actuator = crappy2.actuator.ComediActuator(device='/dev/comedi0', subdevice=0, channel=0, range_num=0,
+                                                          gain=1, offset=0)
         comedi_actuator.set_cmd(0)
         time.sleep(0.5)
         comedi_actuator.set_cmd(0)
 
         # Creating blocks
 
-        # compacter_effort=crappy.blocks.Compacter(200)
-        # save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Publi/effort.txt")
-        # graph_effort=crappy.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
+        # compacter_effort=crappy2.blocks.Compacter(200)
+        # save_effort=crappy2.blocks.Saver("/home/biaxe/Bureau/Publi/effort.txt")
+        # graph_effort=crappy2.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))
 
-        compacter_extenso = crappy.blocks.Compacter(100)
-        save_extenso = crappy.blocks.Saver("/home/erwan/Bureau/essai_relax.txt")
-        graph_extenso = crappy.blocks.Grapher("dynamic", ('t(s)', 'Eyy(%)', 'Px', 'Py'))
+        compacter_extenso = crappy2.blocks.Compacter(100)
+        save_extenso = crappy2.blocks.Saver("/home/erwan/Bureau/essai_relax.txt")
+        graph_extenso = crappy2.blocks.Grapher("dynamic", ('t(s)', 'Eyy(%)', 'Px', 'Py'))
 
-        # effort=crappy.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
+        # effort=crappy2.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
 
-        extenso = crappy.blocks.VideoExtenso(camera="Ximea", numdevice=0, xoffset=0, yoffset=200, width=2048,
-                                             height=512, white_spot=True, display=True, security=True)
-        autoDrive = crappy.blocks.AutoDrive(crappy.technical.CmDrive(
+        extenso = crappy2.blocks.VideoExtenso(camera="Ximea", numdevice=0, xoffset=0, yoffset=200, width=2048,
+                                              height=512, white_spot=True, display=True, security=True)
+        autoDrive = crappy2.blocks.AutoDrive(crappy2.technical.CmDrive(
             port="/dev/serial/by-id/usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0"))
-        comediActuator = crappy.blocks.CommandComedi([comedi_actuator])
+        comediActuator = crappy2.blocks.CommandComedi([comedi_actuator])
 
         # Creating links
 
-        link1 = crappy.links.Link()
-        link2 = crappy.links.Link()
-        link6 = crappy.links.Link()
+        link1 = crappy2.links.Link()
+        link2 = crappy2.links.Link()
+        link6 = crappy2.links.Link()
 
-        link3 = crappy.links.Link()
-        link4 = crappy.links.Link()
-        link5 = crappy.links.Link()
+        link3 = crappy2.links.Link()
+        link4 = crappy2.links.Link()
+        link5 = crappy2.links.Link()
 
-        linkAuto1 = crappy.links.Link(condition=[ConditionTransfoChaine(),
-                                                 crappy.links.PID(P=3000., I=0, D=0, label_consigne='K',
-                                                                  label_retour='center', consigne=0., outMin=-90000,
-                                                                  outMax=90000, add_current_value=False)])
-        linkExx1 = crappy.links.Link(condition=ConditionComediInstron())
+        linkAuto1 = crappy2.links.Link(condition=[ConditionTransfoChaine(),
+                                                  crappy2.links.PID(P=3000., I=0, D=0, label_consigne='K',
+                                                                    label_retour='center', consigne=0., outMin=-90000,
+                                                                    outMax=90000, add_current_value=False)])
+        linkExx1 = crappy2.links.Link(condition=ConditionComediInstron())
 
         # Linking objects
 
@@ -128,12 +128,12 @@ if __name__ == '__main__':
         # save_extenso2.add_input(link6)
 
         # Starting objects
-        # print "top :",crappy.blocks._meta.MasterBlock.instances
+        # print "top :",crappy2.blocks._meta.MasterBlock.instances
         t0 = time.time()
-        for instance in crappy.blocks.MasterBlock.instances:
+        for instance in crappy2.blocks.MasterBlock.instances:
             instance.t0 = t0
 
-        for instance in crappy.blocks.MasterBlock.instances:
+        for instance in crappy2.blocks.MasterBlock.instances:
             instance.start()
 
     # Waiting for execution
@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
     except (Exception, KeyboardInterrupt) as e:
         print "Exception in main :", e
-        for instance in crappy.blocks.MasterBlock.instances:
+        for instance in crappy2.blocks.MasterBlock.instances:
             try:
                 instance.stop()
             except Exception as e:

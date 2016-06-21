@@ -1,0 +1,8 @@
+var searchData=
+[
+  ['ximea',['Ximea',['../classcrappy_1_1technical_1_1__ximeaTechnical_1_1Ximea.html',1,'crappy::technical::_ximeaTechnical']]],
+  ['ximea',['Ximea',['../group__ximea.html',1,'']]],
+  ['ximea',['Ximea',['../classcrappy_1_1sensor_1_1__ximeaSensor_1_1Ximea.html',1,'crappy::sensor::_ximeaSensor']]],
+  ['ximea',['Ximea',['../classcrappy_1_1sensor_1_1____ximeaSensor__old_1_1Ximea.html',1,'crappy::sensor::__ximeaSensor_old']]],
+  ['xoffset',['xoffset',['../classCaptureCAM__CL.html#a2da5179b4ab5cea7cce3500426ddc5fa',1,'CaptureCAM_CL::xoffset()'],['../classcrappy_1_1sensor_1_1____ximeaSensor__old_1_1Ximea.html#a3fc85cfbb55e39e3c753c5ef58ac4ef1',1,'crappy.sensor.__ximeaSensor_old.Ximea.xoffset()'],['../classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai.html#aea515b6fadf22aeba3983e696405cbcc',1,'crappy.sensor._jaiSensor.Jai.xoffset()'],['../classcrappy_1_1sensor_1_1__old__jaiSensor_1_1Jai.html#a4306b9d4eea4822febd248d69c875712',1,'crappy.sensor._old_jaiSensor.Jai.xoffset()'],['../classcrappy_1_1sensor_1_1__ximeaSensor_1_1Ximea.html#ab4449b18af290d9c634121b46fed5b13',1,'crappy.sensor._ximeaSensor.Ximea.xoffset()'],['../classcrappy_1_1sensor_1_1____ximeaSensor__old_1_1Ximea.html#a3fc85cfbb55e39e3c753c5ef58ac4ef1',1,'crappy.sensor.__ximeaSensor_old.Ximea.xoffset()'],['../classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai.html#aea515b6fadf22aeba3983e696405cbcc',1,'crappy.sensor._jaiSensor.Jai.xoffset()'],['../classcrappy_1_1sensor_1_1__old__jaiSensor_1_1Jai.html#a4306b9d4eea4822febd248d69c875712',1,'crappy.sensor._old_jaiSensor.Jai.xoffset()'],['../classcrappy_1_1sensor_1_1__ximeaSensor_1_1Ximea.html#ab4449b18af290d9c634121b46fed5b13',1,'crappy.sensor._ximeaSensor.Ximea.xoffset()']]]
+];

@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_c5d4cde9fc8221f1fdc80ed569924eb8" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial</compoundname>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__clserial_2____init_____8py">__init__.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__clserial_2__clSerial_8py">_clSerial.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__clserial_2__jaiSerial_8py">_jaiSerial.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/"/>
+  </compounddef>
+</doxygen>

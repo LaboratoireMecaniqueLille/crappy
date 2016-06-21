@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1aa43f8feee09f0232b9fe5f16a0d230b8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._measureAgilent34420A.MeasureAgilent34420A::agilentSensor</definition>
+        <argsstring></argsstring>
+        <name>agilentSensor</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" line="33" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a0c5b79cadf3889bc2e7ee7e8f9d46ee1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._measureAgilent34420A.MeasureAgilent34420A::labels</definition>
+        <argsstring></argsstring>
+        <name>labels</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" line="34" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a18f4586fcb467c0f12c4af6f300bc09e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._measureAgilent34420A.MeasureAgilent34420A::freq</definition>
+        <argsstring></argsstring>
+        <name>freq</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" line="35" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a683804402bef4d283b4dcb9c7dccbfc4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._measureAgilent34420A.MeasureAgilent34420A.__init__</definition>
+        <argsstring>(self, agilentSensor, labels=[&apos;t_agilent(s)&apos;, R, freq=None)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>agilentSensor</type>
+          <defname>agilentSensor</defname>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>[&apos;t_agilent(s)&apos;</defval>
+        </param>
+        <param>
+          <type>R</type>
+          <defname>R</defname>
+        </param>
+        <param>
+          <type>freq</type>
+          <defname>freq</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This block read the value of the resistance measured by agilent34420A and send
+the values through a Link object.
+It can be triggered by a Link sending boolean (through &quot;add_input&quot; method),
+or internally by defining the frequency.
+
+Parameters
+----------
+agilentSensor : agilentSensor object
+    See sensor.agilentSensor documentation.
+labels : list
+    The labels you want on your output data.
+freq : float or int, optional
+    Wanted acquisition frequency. Cannot exceed acquisition device capability.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" bodystart="16" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a28d3f41dc1d911d1cb037204a4714c67" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._measureAgilent34420A.MeasureAgilent34420A.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" line="37" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" bodystart="37" bodyend="93"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a683804402bef4d283b4dcb9c7dccbfc4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._measureAgilent34420A.MeasureAgilent34420A.__init__</definition>
+        <argsstring>(self, agilentSensor, labels=[&apos;t_agilent(s)&apos;, R, freq=None)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>agilentSensor</type>
+          <defname>agilentSensor</defname>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>[&apos;t_agilent(s)&apos;</defval>
+        </param>
+        <param>
+          <type>R</type>
+          <defname>R</defname>
+        </param>
+        <param>
+          <type>freq</type>
+          <defname>freq</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This block read the value of the resistance measured by agilent34420A and send
+the values through a Link object.
+It can be triggered by a Link sending boolean (through &quot;add_input&quot; method),
+or internally by defining the frequency.
+
+Parameters
+----------
+agilentSensor : agilentSensor object
+    See sensor.agilentSensor documentation.
+labels : list
+    The labels you want on your output data.
+freq : float or int, optional
+    Wanted acquisition frequency. Cannot exceed acquisition device capability.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_measureAgilent34420A.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_measureAgilent34420A.py" bodystart="16" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a28d3f41dc1d911d1cb037204a4714c67" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._measureAgilent34420A.MeasureAgilent34420A.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_measureAgilent34420A.py" line="37" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_measureAgilent34420A.py" bodystart="37" bodyend="93"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Streams value of tension/resistance emasured on the Agilent34420A.
+</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="374">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="375" relation="public-inheritance">
+        </childnode>
+        <childnode refid="375" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="373">
+        <label>crappy.blocks._measureAgilent34420A.MeasureAgilent34420A</label>
+        <link refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A"/>
+        <childnode refid="374" relation="public-inheritance">
+        </childnode>
+        <childnode refid="374" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="375">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="377">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="378" relation="public-inheritance">
+        </childnode>
+        <childnode refid="378" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="376">
+        <label>crappy.blocks._measureAgilent34420A.MeasureAgilent34420A</label>
+        <link refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A"/>
+        <childnode refid="377" relation="public-inheritance">
+        </childnode>
+        <childnode refid="377" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="378">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureAgilent34420A.py" bodystart="11" bodyend="93"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a683804402bef4d283b4dcb9c7dccbfc4" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a683804402bef4d283b4dcb9c7dccbfc4" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a34cdcaba3da6e04e6de3b1cd763739f1" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1aa43f8feee09f0232b9fe5f16a0d230b8" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>agilentSensor</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a18f4586fcb467c0f12c4af6f300bc09e" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>freq</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a0c5b79cadf3889bc2e7ee7e8f9d46ee1" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>labels</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a28d3f41dc1d911d1cb037204a4714c67" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureAgilent34420A_1_1MeasureAgilent34420A_1a28d3f41dc1d911d1cb037204a4714c67" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureAgilent34420A::MeasureAgilent34420A</scope><name>t0</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

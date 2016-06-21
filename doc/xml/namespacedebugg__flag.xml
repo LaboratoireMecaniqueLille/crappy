@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacedebugg__flag" kind="namespace" language="Python">
+    <compoundname>debugg_flag</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="debugg__flag_8py_1a6c842b4e70706d98befdcd457bc3ad97" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>debugg_flag.a2</definition>
+        <argsstring></argsstring>
+        <name>a2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="debugg__flag_8py_1aa2a13a1eb59e4418a0e949f267fe19f7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>debugg_flag.b2</definition>
+        <argsstring></argsstring>
+        <name>b2</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="debugg__flag_8py_1abc03d8b0cf11c77e4493e74357158612" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool debugg_flag.DEBUG</definition>
+        <argsstring></argsstring>
+        <name>DEBUG</name>
+        <initializer>= True</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" bodystart="9" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="debugg__flag_8py_1aa035e2aa009cc543c5c4df7bc0560b2e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def debugg_flag.sender2</definition>
+        <argsstring>(a)</argsstring>
+        <name>sender2</name>
+        <param>
+          <type>a</type>
+          <defname>a</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" bodystart="11" bodyend="18"/>
+      </memberdef>
+      <memberdef kind="function" id="debugg__flag_8py_1af7ddc987c598a198b8238a81679407b2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def debugg_flag.main2</definition>
+        <argsstring>(b)</argsstring>
+        <name>main2</name>
+        <param>
+          <type>b</type>
+          <defname>b</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" line="19" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" bodystart="19" bodyend="47"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/tests/debugg_flag.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

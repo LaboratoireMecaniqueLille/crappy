@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1technical_1_1__interfaceCMdrive" kind="namespace" language="Python">
+    <compoundname>crappy::technical::_interfaceCMdrive</compoundname>
+    <innerclass refid="classcrappy_1_1technical_1_1__interfaceCMdrive_1_1Interface" prot="public">crappy::technical::_interfaceCMdrive::Interface</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2technical_2__interfaceCMdrive_8py_1ab54ba8f0af35e341cbb1c6097537bbb4" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::technical::_interfaceCMdrive.root</definition>
+        <argsstring></argsstring>
+        <name>root</name>
+        <initializer>= Tix.Tk()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_interfaceCMdrive.py" line="244" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_interfaceCMdrive.py" bodystart="244" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2technical_2__interfaceCMdrive_8py_1a2e43e2d426ab347ed5e306ca8bd457cd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::technical::_interfaceCMdrive.interface</definition>
+        <argsstring></argsstring>
+        <name>interface</name>
+        <initializer>= <ref refid="classcrappy_1_1technical_1_1__interfaceCMdrive_1_1Interface" kindref="compound">Interface</ref>(root)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_interfaceCMdrive.py" line="245" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_interfaceCMdrive.py" bodystart="245" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_interfaceCMdrive.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

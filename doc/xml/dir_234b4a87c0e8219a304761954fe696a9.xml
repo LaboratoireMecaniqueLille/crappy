@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_234b4a87c0e8219a304761954fe696a9" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/sources/XimeaLib</compoundname>
+    <innerfile refid="XimeaLib_2example_8py">example.py</innerfile>
+    <innerfile refid="XimeaLib_2export_8h">export.h</innerfile>
+    <innerfile refid="pyXimea_8cpp">pyXimea.cpp</innerfile>
+    <innerfile refid="ximea_8cpp">ximea.cpp</innerfile>
+    <innerfile refid="ximea_8h">ximea.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/"/>
+  </compounddef>
+</doxygen>

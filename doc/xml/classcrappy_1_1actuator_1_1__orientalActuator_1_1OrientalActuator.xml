@@ -1,0 +1,299 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator" kind="class" language="Python" prot="public">
+    <compoundname>crappy::actuator::_orientalActuator::OrientalActuator</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1a6065b8b7aa378059c71ac97ca0dca54e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._orientalActuator.OrientalActuator::size</definition>
+        <argsstring></argsstring>
+        <name>size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1aee5e88e2de5efa88a68c0cc8e9279f6b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._orientalActuator.OrientalActuator::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1a179f168d4ee53cb0081048eba62e6835" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.__init__</definition>
+        <argsstring>(self, ser, size)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+        </param>
+        <param>
+          <type>size</type>
+          <defname>size</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This class contains methods to command the motors of the biotens
+machine. You should NOT use it directly, but use the BiotensTechnical.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" bodystart="9" bodyend="16"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae3c1979169a5091b3504029bce548157" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.stop_motor</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop_motor</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Stop the motor. Amazing.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" line="17" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" bodystart="17" bodyend="21"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae4701cac05ef968f4632bd53254433fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.setmode_position</definition>
+        <argsstring>(self, position, speed)</argsstring>
+        <name>setmode_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Pilot in position mode, needs speed and final position to run (in mm/min and mm)
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" bodystart="24" bodyend="29"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ac1f55d07493caec560060a7c9c0a9650" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.setmode_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>setmode_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Pilot in speed mode, requires speed in mm/min</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" bodystart="30" bodyend="53"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae0738c4a2d9ddf1d73b017b5fc5d682d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Clears error in motor registers. obviously.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" line="71" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" bodystart="71" bodyend="76"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1a179f168d4ee53cb0081048eba62e6835" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.__init__</definition>
+        <argsstring>(self, ser, size)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+        </param>
+        <param>
+          <type>size</type>
+          <defname>size</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This class contains methods to command the motors of the biotens
+machine. You should NOT use it directly, but use the BiotensTechnical.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" bodystart="9" bodyend="16"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae3c1979169a5091b3504029bce548157" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.stop_motor</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop_motor</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Stop the motor. Amazing.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" line="17" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" bodystart="17" bodyend="21"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae4701cac05ef968f4632bd53254433fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.setmode_position</definition>
+        <argsstring>(self, position, speed)</argsstring>
+        <name>setmode_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Pilot in position mode, needs speed and final position to run (in mm/min and mm)
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" bodystart="24" bodyend="29"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ac1f55d07493caec560060a7c9c0a9650" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.setmode_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>setmode_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Pilot in speed mode, requires speed in mm/min</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" bodystart="30" bodyend="53"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae0738c4a2d9ddf1d73b017b5fc5d682d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._orientalActuator.OrientalActuator.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Clears error in motor registers. obviously.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" line="71" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_orientalActuator.py" bodystart="71" bodyend="76"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="444">
+        <label>crappy.actuator._orientalActuator.OrientalActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator"/>
+        <childnode refid="445" relation="public-inheritance">
+        </childnode>
+        <childnode refid="445" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="445">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="446">
+        <label>crappy.actuator._orientalActuator.OrientalActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator"/>
+        <childnode refid="447" relation="public-inheritance">
+        </childnode>
+        <childnode refid="447" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="447">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_orientalActuator.py" bodystart="8" bodyend="76"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1a179f168d4ee53cb0081048eba62e6835" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1a179f168d4ee53cb0081048eba62e6835" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae0738c4a2d9ddf1d73b017b5fc5d682d" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae0738c4a2d9ddf1d73b017b5fc5d682d" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1aee5e88e2de5efa88a68c0cc8e9279f6b" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>ser</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae4701cac05ef968f4632bd53254433fe" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>setmode_position</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae4701cac05ef968f4632bd53254433fe" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>setmode_position</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ac1f55d07493caec560060a7c9c0a9650" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>setmode_speed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ac1f55d07493caec560060a7c9c0a9650" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>setmode_speed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1a6065b8b7aa378059c71ac97ca0dca54e" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>size</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae3c1979169a5091b3504029bce548157" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>stop_motor</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__orientalActuator_1_1OrientalActuator_1ae3c1979169a5091b3504029bce548157" prot="public" virt="non-virtual"><scope>crappy::actuator::_orientalActuator::OrientalActuator</scope><name>stop_motor</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,175 @@
+/*! \mainpage  What is Crappy ?
+
+CRAPPY is an acronym and stands for Command and Real-time Acquisition in 
+Parallelized PYthon.
+
+Crappy was first developped in the "Laboratoire de Mécanique de Lille", a 
+mechanical research laboratory base in Lille,France, to provide a powerful 
+and easy-to-use framework for material testing.
+
+In order to better understand the mechanical behaviour of materials, we tend
+to setup tests, with more sensors, more precision and more complexity.
+As we are one step before industrials, the testing machines we can buy are not
+adapted to our objectives and we have to develop our own softwares to improve
+our tests.
+
+This is the original reason why we created Crappy : provide a framework to 
+control our tests and all of our hardware.
+
+To this end, we made some choice that are now the keys of the framework:
+
+- **open-source** : it is important for us that everyone can use our work, 
+and bring is own code to the world.
+    
+- **modular** : the hardware as to be, as much as possible, separated from the
+software, to provide re-usable code for different setup.
+    
+- **simple** : Python as been chosen for its good performance and its high 
+level. We are not developpers, and our users neither, so we can't afford
+a low level programming language. We work with typical loop time of more 
+than 1 millisecond (10ms most of the time), and Python is enough for this.
+It is also pretty easy to put a small piece of C/C++ in the Python if we 
+need a speedup.
+
+- **performance** : a great deal of work is made to ensure the performance of 
+the framework. Most tests requires a good repetablilty and a stability,
+and may become hazardous in case of not-handled issue.
+
+- **parallelization** : the key to a good test is the synchronisation between
+the different sensors. Thsi is why we chose to massively parallelize our
+framework, to ensure everything can run at the same time. This is also one
+of the major difficulties we have to deal with in Python.
+*/
+
+/*! \page install Installation
+
+<h2> Required Packages </h2>
+
+<ul>
+<li> Opencv </li>
+<li> SimpleITK </li>
+<li> matplotlib </li>
+<li> Python 2.7 or later and Numpy 1.5 or later with developer packages (python-dev, python-numpy) </li>
+<li> Scipy </li>
+<li> Skimage </li>
+</ul>
+
+Other packages should be installed to enable some functionalities:
+
+<ul>
+<li> xiApi </li>
+<li> Comedi (only avalaible on Linux)</li>
+<li> niFgen package from National Instrument (only avalaible on Windows)</li>
+<li> PyDaqmx </li>
+<li> labjack </li>
+</ul>
+
+<h2> Getting the Crappy Source Code </h2>
+
+The packages can be installed using a terminal and the following commands:
+
+<h2>Installation in Linux</h2>
+
+These steps have been tested for Ubuntu 14.04, 15.10 and 16.04 but should work with other distros as well.
+
+    git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
+    cd crappy
+    sudo python setup.py install
+
+<h2>Installation in Windows</h2>
+
+These steps have been tested for Windows 8.1 but should work with other distros as well.
+
+    git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
+    cd crappy
+    setup.py install
+
+
+*/
+
+/*! \page page2 Basics
+
+================
+
+\tableofcontents
+\subpage physical_objects
+\subpage blocks
+\subpage links
+\subpage condition
+
+*/
+
+
+/*! \page physical_objects Physical objects
+
+As Crappy is originaly designed to control tests, the core of our framework
+is the hardware we work with.
+
+We chose to divide it in three different categories.
+
+Sensors
+-------
+In Crappy, the sensors represent everything that can **acquire** a physical
+signal. It can be an acquisition card, but also a camera, a thermocouple...
+
+Actuators
+---------
+on the other hand, actuators represent all the objects that can **interact on
+the other part of the test**, and can be controled. The most common example are 
+motors.
+
+Technicals
+----------
+Some hardware is **both a sensor and an actuator** by our definitions. This is for 
+example the case of a variable-frequency drive : they can set the speed of the
+motor (the *actuator* part), but most of them can also read the position or the
+speed of the motor the *sensor* part).
+
+*/
+
+/*! \page blocks Blocks objects
+
+Crappy is based on a schematic architecture with single blocks linked between
+each others. Th blocks are the part that **do** and the *Links* are the parts 
+that carry informations between these blocks.
+
+This way, you can simply write down on a paper the architecture of your test,
+what functions you need in which order, and write your code by reading your 
+paper.
+
+## add a schema here
+
+Blocks are classes, running indefinitely in a single process. Some of them are
+already implemented (see the reference manual), but you can also implement your
+own.
+*/
+
+
+/*! \page links Links objects
+
+Links are simply the part that carry information between the different blocks.
+You just need to define the input and the output of a links, and it will 
+transfer all data from one block to the other.
+*/
+
+/*! \page  condition Condition objects
+
+With the Blocks and Links, we already have a working framework to design and 
+custom tests. But if you need to do something slightly different than what is 
+implemented in the Blocks, you have to re-write the whole thing.
+
+To bring some flexibility to the whole system, we added conditions. They are 
+small classes, implemented by the user, and they are added on the links.
+A link paired with a condition won't simply transfer data, but transfer the 
+result of the data passed by the condition.
+That mean almost infinite possibilites :
+
+- Modify the values you are passing
+- Evaluate a composition of the values
+- Decide wether you should transfer - or not - the data
+- Transfer something completely different from the input values
+
+This can be used to send a signal to another block (for example to synchronise 
+a camera), filter the signal with a mean, include numerical modelisation in 
+real-time in your test...
+*/

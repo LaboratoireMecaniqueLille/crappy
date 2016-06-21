@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor" kind="class" language="Python" prot="public">
+    <compoundname>crappy::sensor::_meta::motion::MotionSensor</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="private-static-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1aee6d4325575bd7c8e4d62fd380cd3f52" prot="private" static="yes" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._meta.motion.MotionSensor::__metaclass__</definition>
+        <argsstring></argsstring>
+        <name>__metaclass__</name>
+        <initializer>= abc.ABCMeta</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" line="6" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" bodystart="6" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1a5c338902216d40746080c2787a8cb987" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._meta.motion.MotionSensor::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1a1987cb2b9f5bb801efb0b4e16e55060e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._meta.motion.MotionSensor::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1aad045abbcc1a88c98fd2a9da4138a80e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._meta.motion.MotionSensor.__init__</definition>
+        <argsstring>(self, port, baudrate)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" bodystart="9" bodyend="13"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1a488af8b8f4d1c5364fff698636f2af34" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._meta.motion.MotionSensor.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" bodystart="15" bodyend="16"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1aad045abbcc1a88c98fd2a9da4138a80e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._meta.motion.MotionSensor.__init__</definition>
+        <argsstring>(self, port, baudrate)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_meta/motion.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_meta/motion.py" bodystart="9" bodyend="13"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1a488af8b8f4d1c5364fff698636f2af34" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._meta.motion.MotionSensor.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_meta/motion.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_meta/motion.py" bodystart="15" bodyend="16"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="435">
+        <label>object</label>
+      </node>
+      <node id="434">
+        <label>crappy.sensor._meta.motion.MotionSensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor"/>
+        <childnode refid="435" relation="public-inheritance">
+        </childnode>
+        <childnode refid="435" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="437">
+        <label>object</label>
+      </node>
+      <node id="436">
+        <label>crappy.sensor._meta.motion.MotionSensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor"/>
+        <childnode refid="437" relation="public-inheritance">
+        </childnode>
+        <childnode refid="437" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/motion.py" bodystart="4" bodyend="16"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1aad045abbcc1a88c98fd2a9da4138a80e" prot="public" virt="non-virtual"><scope>crappy::sensor::_meta::motion::MotionSensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1aad045abbcc1a88c98fd2a9da4138a80e" prot="public" virt="non-virtual"><scope>crappy::sensor::_meta::motion::MotionSensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1aee6d4325575bd7c8e4d62fd380cd3f52" prot="private" virt="non-virtual"><scope>crappy::sensor::_meta::motion::MotionSensor</scope><name>__metaclass__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1a5c338902216d40746080c2787a8cb987" prot="public" virt="non-virtual"><scope>crappy::sensor::_meta::motion::MotionSensor</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1a488af8b8f4d1c5364fff698636f2af34" prot="public" virt="non-virtual"><scope>crappy::sensor::_meta::motion::MotionSensor</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1a488af8b8f4d1c5364fff698636f2af34" prot="public" virt="non-virtual"><scope>crappy::sensor::_meta::motion::MotionSensor</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__meta_1_1motion_1_1MotionSensor_1a1987cb2b9f5bb801efb0b4e16e55060e" prot="public" virt="non-virtual"><scope>crappy::sensor::_meta::motion::MotionSensor</scope><name>port</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,307 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_signalAdapter::SignalAdapter</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1aa7f97406d66ce031452ffd5789ec7688" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._signalAdapter.SignalAdapter::coeff</definition>
+        <argsstring></argsstring>
+        <name>coeff</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1af52fcf21eaf983925590d32ca9327e37" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._signalAdapter.SignalAdapter::last_coeff</definition>
+        <argsstring></argsstring>
+        <name>last_coeff</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1a34a9fd77b5146b934c9e76267d3efe84" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._signalAdapter.SignalAdapter::delay</definition>
+        <argsstring></argsstring>
+        <name>delay</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1ae1c74d39e7377f0b5ab9db6b04dcaa87" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._signalAdapter.SignalAdapter::labels</definition>
+        <argsstring></argsstring>
+        <name>labels</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" line="41" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1a1ccd2f8b86a0999ec24afcc327ff62c7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._signalAdapter.SignalAdapter::send_freq</definition>
+        <argsstring></argsstring>
+        <name>send_freq</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" line="42" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1ac49ce06a746b7cc685967874049d4d68" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._signalAdapter.SignalAdapter.__init__</definition>
+        <argsstring>(self, initial_coeff=0, delay=5, send_freq=800, labels=[&apos;t(s)&apos;, signal)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>initial_coeff</type>
+          <defname>initial_coeff</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>delay</type>
+          <defname>delay</defname>
+          <defval>5</defval>
+        </param>
+        <param>
+          <type>send_freq</type>
+          <defname>send_freq</defname>
+          <defval>800</defval>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>[&apos;t(s)&apos;</defval>
+        </param>
+        <param>
+          <type>signal</type>
+          <defname>signal</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED : use a link condition instead. See Examples/fissuration_v2.py
+
+Multiply input signal by an input coefficient.
+
+Parameters
+----------
+acquisition_step : int
+    Number of values to save in each data-stream before returning the array.
+initial_coeff : float, default = 0
+    Initial multiplying coefficient.
+delay : float, default = 5
+    Duration of the transistions between 2 coefficients.
+labels : list of string, default = [&apos;t(s)&apos;,&apos;signal&apos;]
+    Labels of output signal, in a pandas.DataFrame() format.
+
+Returns
+-------
+Panda Dataframe.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" bodystart="14" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1a75caaecb49c1a6450be52753f4e4f004" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._signalAdapter.SignalAdapter.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" bodystart="44" bodyend="186"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1ac49ce06a746b7cc685967874049d4d68" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._signalAdapter.SignalAdapter.__init__</definition>
+        <argsstring>(self, initial_coeff=0, delay=5, send_freq=800, labels=[&apos;t(s)&apos;, signal)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>initial_coeff</type>
+          <defname>initial_coeff</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>delay</type>
+          <defname>delay</defname>
+          <defval>5</defval>
+        </param>
+        <param>
+          <type>send_freq</type>
+          <defname>send_freq</defname>
+          <defval>800</defval>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>[&apos;t(s)&apos;</defval>
+        </param>
+        <param>
+          <type>signal</type>
+          <defname>signal</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED : use a link condition instead. See Examples/fissuration_v2.py
+
+Multiply input signal by an input coefficient.
+
+Parameters
+----------
+acquisition_step : int
+    Number of values to save in each data-stream before returning the array.
+initial_coeff : float, default = 0
+    Initial multiplying coefficient.
+delay : float, default = 5
+    Duration of the transistions between 2 coefficients.
+labels : list of string, default = [&apos;t(s)&apos;,&apos;signal&apos;]
+    Labels of output signal, in a pandas.DataFrame() format.
+
+Returns
+-------
+Panda Dataframe.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_signalAdapter.py" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_signalAdapter.py" bodystart="14" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1a75caaecb49c1a6450be52753f4e4f004" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._signalAdapter.SignalAdapter.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_signalAdapter.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_signalAdapter.py" bodystart="44" bodyend="186"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>DEPRECATED. Multiply the signal by a coefficient
+</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="513">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="514" relation="public-inheritance">
+        </childnode>
+        <childnode refid="514" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="512">
+        <label>crappy.blocks._signalAdapter.SignalAdapter</label>
+        <link refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter"/>
+        <childnode refid="513" relation="public-inheritance">
+        </childnode>
+        <childnode refid="513" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="514">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="516">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="517" relation="public-inheritance">
+        </childnode>
+        <childnode refid="517" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="515">
+        <label>crappy.blocks._signalAdapter.SignalAdapter</label>
+        <link refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter"/>
+        <childnode refid="516" relation="public-inheritance">
+        </childnode>
+        <childnode refid="516" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="517">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_signalAdapter.py" bodystart="9" bodyend="186"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1ac49ce06a746b7cc685967874049d4d68" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1ac49ce06a746b7cc685967874049d4d68" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a34cdcaba3da6e04e6de3b1cd763739f1" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1aa7f97406d66ce031452ffd5789ec7688" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>coeff</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1a34a9fd77b5146b934c9e76267d3efe84" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>delay</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1ae1c74d39e7377f0b5ab9db6b04dcaa87" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>labels</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1af52fcf21eaf983925590d32ca9327e37" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>last_coeff</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1a75caaecb49c1a6450be52753f4e4f004" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1a75caaecb49c1a6450be52753f4e4f004" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__signalAdapter_1_1SignalAdapter_1a1ccd2f8b86a0999ec24afcc327ff62c7" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>send_freq</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_signalAdapter::SignalAdapter</scope><name>t0</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

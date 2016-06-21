@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy__TTC__fatigue_1_1ConditionSignal" kind="class" language="Python" prot="public">
+    <compoundname>crappy_TTC_fatigue::ConditionSignal</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy__TTC__fatigue_1_1ConditionSignal_1a0a0e103d3ad86974e3762c47c772e432" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy_TTC_fatigue.ConditionSignal::input_value_label</definition>
+        <argsstring></argsstring>
+        <name>input_value_label</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="17" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy__TTC__fatigue_1_1ConditionSignal_1afbd01f2aedefe87f06127ee77e8f12e5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy_TTC_fatigue.ConditionSignal.__init__</definition>
+        <argsstring>(self, input_value_label)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>input_value_label</type>
+          <defname>input_value_label</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="16" bodyend="18"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy__TTC__fatigue_1_1ConditionSignal_1a2f447dc7fdd71bf42cb830d0d012c144" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy_TTC_fatigue.ConditionSignal.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="19" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="19" bodyend="23"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="223">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="222">
+        <label>crappy_TTC_fatigue.ConditionSignal</label>
+        <link refid="classcrappy__TTC__fatigue_1_1ConditionSignal"/>
+        <childnode refid="223" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="225">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="224">
+        <label>crappy_TTC_fatigue.ConditionSignal</label>
+        <link refid="classcrappy__TTC__fatigue_1_1ConditionSignal"/>
+        <childnode refid="225" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/crappy_TTC_fatigue.py" bodystart="15" bodyend="24"/>
+    <listofallmembers>
+      <member refid="classcrappy__TTC__fatigue_1_1ConditionSignal_1afbd01f2aedefe87f06127ee77e8f12e5" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::ConditionSignal</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1a89c53120fc4612994d159fda9447d2c2" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy_TTC_fatigue::ConditionSignal</scope><name>__init__</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1ConditionSignal_1a2f447dc7fdd71bf42cb830d0d012c144" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::ConditionSignal</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>crappy_TTC_fatigue::ConditionSignal</scope><name>evaluate</name></member>
+      <member refid="classcrappy__TTC__fatigue_1_1ConditionSignal_1a0a0e103d3ad86974e3762c47c772e432" prot="public" virt="non-virtual"><scope>crappy_TTC_fatigue::ConditionSignal</scope><name>input_value_label</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

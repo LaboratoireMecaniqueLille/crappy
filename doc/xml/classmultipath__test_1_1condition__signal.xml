@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classmultipath__test_1_1condition__signal" kind="class" language="Python" prot="public">
+    <compoundname>multipath_test::condition_signal</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classmultipath__test_1_1condition__signal_1a248ba72420a417f90c3c426eafd4ae88" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>multipath_test.condition_signal::input_value_label</definition>
+        <argsstring></argsstring>
+        <name>input_value_label</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/multipath_test.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/multipath_test.py" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classmultipath__test_1_1condition__signal_1a6577a1d3b152d23b9576baefabeefd51" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def multipath_test.condition_signal.__init__</definition>
+        <argsstring>(self, input_value_label)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>input_value_label</type>
+          <defname>input_value_label</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/multipath_test.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/multipath_test.py" bodystart="10" bodyend="12"/>
+      </memberdef>
+      <memberdef kind="function" id="classmultipath__test_1_1condition__signal_1aa5674bcad0d422536f73059e549fbe25" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def multipath_test.condition_signal.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/multipath_test.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/multipath_test.py" bodystart="13" bodyend="19"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="187">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="186">
+        <label>multipath_test.condition_signal</label>
+        <link refid="classmultipath__test_1_1condition__signal"/>
+        <childnode refid="187" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="189">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="188">
+        <label>multipath_test.condition_signal</label>
+        <link refid="classmultipath__test_1_1condition__signal"/>
+        <childnode refid="189" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/tests/multipath_test.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/multipath_test.py" bodystart="9" bodyend="20"/>
+    <listofallmembers>
+      <member refid="classmultipath__test_1_1condition__signal_1a6577a1d3b152d23b9576baefabeefd51" prot="public" virt="non-virtual"><scope>multipath_test::condition_signal</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1a89c53120fc4612994d159fda9447d2c2" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>multipath_test::condition_signal</scope><name>__init__</name></member>
+      <member refid="classmultipath__test_1_1condition__signal_1aa5674bcad0d422536f73059e549fbe25" prot="public" virt="non-virtual"><scope>multipath_test::condition_signal</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>multipath_test::condition_signal</scope><name>evaluate</name></member>
+      <member refid="classmultipath__test_1_1condition__signal_1a248ba72420a417f90c3c426eafd4ae88" prot="public" virt="non-virtual"><scope>multipath_test::condition_signal</scope><name>input_value_label</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

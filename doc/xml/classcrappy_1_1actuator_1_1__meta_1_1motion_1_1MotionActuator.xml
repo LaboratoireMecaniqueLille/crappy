@@ -1,0 +1,196 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator" kind="class" language="Python" prot="public">
+    <compoundname>crappy::actuator::_meta::motion::MotionActuator</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="private-static-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a4ebb1c496dd0677e3bd74a344872a940" prot="private" static="yes" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._meta.motion.MotionActuator::__metaclass__</definition>
+        <argsstring></argsstring>
+        <name>__metaclass__</name>
+        <initializer>= abc.ABCMeta</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" bodystart="5" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1ad192544c3f70e1ef995167a135393a83" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.motion.MotionActuator.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" bodystart="8" bodyend="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a155df109169e84b92288b146ffa27d82" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.motion.MotionActuator.set_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>set_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Re-define the speed of the motor.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" bodystart="12" bodyend="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a44e1025df20be0b5162b16e584931c74" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.motion.MotionActuator.set_position</definition>
+        <argsstring>(self, position, speed)</argsstring>
+        <name>set_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Re-define the position of the motor.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" line="19" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" bodystart="19" bodyend="24"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1ad192544c3f70e1ef995167a135393a83" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.motion.MotionActuator.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/motion.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/motion.py" bodystart="8" bodyend="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a155df109169e84b92288b146ffa27d82" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.motion.MotionActuator.set_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>set_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Re-define the speed of the motor.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/motion.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/motion.py" bodystart="12" bodyend="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a44e1025df20be0b5162b16e584931c74" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._meta.motion.MotionActuator.set_position</definition>
+        <argsstring>(self, position, speed)</argsstring>
+        <name>set_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Re-define the position of the motor.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/motion.py" line="19" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_meta/motion.py" bodystart="19" bodyend="24"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="431">
+        <label>object</label>
+      </node>
+      <node id="430">
+        <label>crappy.actuator._meta.motion.MotionActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator"/>
+        <childnode refid="431" relation="public-inheritance">
+        </childnode>
+        <childnode refid="431" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="433">
+        <label>object</label>
+      </node>
+      <node id="432">
+        <label>crappy.actuator._meta.motion.MotionActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator"/>
+        <childnode refid="433" relation="public-inheritance">
+        </childnode>
+        <childnode refid="433" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_meta/motion.py" bodystart="4" bodyend="24"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1ad192544c3f70e1ef995167a135393a83" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::motion::MotionActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1ad192544c3f70e1ef995167a135393a83" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::motion::MotionActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a4ebb1c496dd0677e3bd74a344872a940" prot="private" virt="non-virtual"><scope>crappy::actuator::_meta::motion::MotionActuator</scope><name>__metaclass__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a44e1025df20be0b5162b16e584931c74" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::motion::MotionActuator</scope><name>set_position</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a44e1025df20be0b5162b16e584931c74" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::motion::MotionActuator</scope><name>set_position</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a155df109169e84b92288b146ffa27d82" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::motion::MotionActuator</scope><name>set_speed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__meta_1_1motion_1_1MotionActuator_1a155df109169e84b92288b146ffa27d82" prot="public" virt="non-virtual"><scope>crappy::actuator::_meta::motion::MotionActuator</scope><name>set_speed</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

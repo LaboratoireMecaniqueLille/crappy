@@ -1,0 +1,269 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_measureByStep::MeasureByStep</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a9690e752bf1186a54965ed055c79de56" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._measureByStep.MeasureByStep::sensor</definition>
+        <argsstring></argsstring>
+        <name>sensor</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" line="34" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a2b46d279de0517f3c3c029652a0f6270" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._measureByStep.MeasureByStep::labels</definition>
+        <argsstring></argsstring>
+        <name>labels</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" line="35" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" bodystart="35" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1af8614df971f25de71340d68c7ade5d64" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._measureByStep.MeasureByStep::freq</definition>
+        <argsstring></argsstring>
+        <name>freq</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a3a68eb5ed25398a1f9ee1c3e5dae6fb8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._measureByStep.MeasureByStep::Labels</definition>
+        <argsstring></argsstring>
+        <name>Labels</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" line="67" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" bodystart="67" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a060099ef022d4b5986b412589d53cd2b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._measureByStep.MeasureByStep.__init__</definition>
+        <argsstring>(self, sensor, labels=None, freq=None)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>sensor</type>
+          <defname>sensor</defname>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>freq</type>
+          <defname>freq</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This streamer read the value on all channels ONE BY ONE and send the
+values through a Link object. it is slower than StreamerComedi, but works on
+every USB driver.
+It also works on LabJack devices.
+
+It can be triggered by a Link sending boolean (through &quot;add_input&quot; method),
+or internally by defining the frequency.
+
+Parameters
+----------
+sensor : sensor object
+    See sensor.sensor documentation. Tested for LabJackSensor and ComediSensor.
+labels : list
+    The labels you want on your output data.
+freq : float or int, optional
+    Wanted acquisition frequency. Cannot exceed acquisition card capability.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" bodystart="14" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a37e48017a900f4628781cc9f5d7274af" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._measureByStep.MeasureByStep.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" bodystart="38" bodyend="83"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a060099ef022d4b5986b412589d53cd2b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._measureByStep.MeasureByStep.__init__</definition>
+        <argsstring>(self, sensor, labels=None, freq=None)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>sensor</type>
+          <defname>sensor</defname>
+        </param>
+        <param>
+          <type>labels</type>
+          <defname>labels</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>freq</type>
+          <defname>freq</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This streamer read the value on all channels ONE BY ONE and send the
+values through a Link object. it is slower than StreamerComedi, but works on
+every USB driver.
+It also works on LabJack devices.
+
+It can be triggered by a Link sending boolean (through &quot;add_input&quot; method),
+or internally by defining the frequency.
+
+Parameters
+----------
+sensor : sensor object
+    See sensor.sensor documentation. Tested for LabJackSensor and ComediSensor.
+labels : list
+    The labels you want on your output data.
+freq : float or int, optional
+    Wanted acquisition frequency. Cannot exceed acquisition card capability.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_measureByStep.py" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_measureByStep.py" bodystart="14" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a37e48017a900f4628781cc9f5d7274af" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._measureByStep.MeasureByStep.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_measureByStep.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_measureByStep.py" bodystart="38" bodyend="83"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Streams value measured on a card through a Link object.
+</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="379">
+        <label>crappy.blocks._measureByStep.MeasureByStep</label>
+        <link refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep"/>
+        <childnode refid="380" relation="public-inheritance">
+        </childnode>
+        <childnode refid="380" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="380">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="381" relation="public-inheritance">
+        </childnode>
+        <childnode refid="381" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="381">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="382">
+        <label>crappy.blocks._measureByStep.MeasureByStep</label>
+        <link refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep"/>
+        <childnode refid="383" relation="public-inheritance">
+        </childnode>
+        <childnode refid="383" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="383">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="384" relation="public-inheritance">
+        </childnode>
+        <childnode refid="384" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="384">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_measureByStep.py" bodystart="9" bodyend="83"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a060099ef022d4b5986b412589d53cd2b" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a060099ef022d4b5986b412589d53cd2b" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a34cdcaba3da6e04e6de3b1cd763739f1" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1af8614df971f25de71340d68c7ade5d64" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>freq</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a3a68eb5ed25398a1f9ee1c3e5dae6fb8" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>Labels</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a2b46d279de0517f3c3c029652a0f6270" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>labels</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a37e48017a900f4628781cc9f5d7274af" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a37e48017a900f4628781cc9f5d7274af" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep_1a9690e752bf1186a54965ed055c79de56" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>sensor</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_measureByStep::MeasureByStep</scope><name>t0</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

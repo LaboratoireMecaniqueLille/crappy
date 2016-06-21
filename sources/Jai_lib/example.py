@@ -3,8 +3,8 @@ import numpy as np
 #from numpy.ctypeslib import ndpointer
 from matplotlib import pyplot as plt
 import time
-#cl = ctypes.CDLL('/home/jai5000/Code/crappy/sources/Jai_lib/cameraLinkModule.so')
-#configFile= ctypes.c_char_p("/home/jai5000/Code/crappy/sources/Jai_lib/config.mcf")
+#cl = ctypes.CDLL('/home/jai5000/Code/crappy2/sources/Jai_lib/cameraLinkModule.so')
+#configFile= ctypes.c_char_p("/home/jai5000/Code/crappy2/sources/Jai_lib/config.mcf")
 #boardNr = 0	
 #exposure = 4000
 #width=2560
@@ -13,7 +13,7 @@ import time
 #yoffset=0
 #FPS=80
 #framespersec=ctypes.c_double(FPS)
-from crappy.sensor import clModule as cl
+from crappy2.sensor import clModule as cl
 cam = cl.VideoCapture(0, "c:\\Users\\ECOLE\\fullareagray8.mcf" )
 cam.set(cl.FG_HEIGHT, 2048)
 cam.set(cl.FG_WIDTH, 2048)

@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="crappy_2technical_2__meta_2____init_____8py" kind="file" language="Python">
+    <compoundname>__init__.py</compoundname>
+    <innernamespace refid="namespacecrappy_1_1technical_1_1__meta">crappy::technical::_meta</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_meta/__init__.py"/>
+  </compounddef>
+</doxygen>

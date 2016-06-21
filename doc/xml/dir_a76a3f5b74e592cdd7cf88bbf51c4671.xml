@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_a76a3f5b74e592cdd7cf88bbf51c4671" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta</compoundname>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__meta_2____init_____8py">__init__.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__meta_2acquisition_8py">acquisition.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__meta_2cameraSensor_8py">cameraSensor.py</innerfile>
+    <innerfile refid="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__meta_2motion_8py">motion.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_meta/"/>
+  </compounddef>
+</doxygen>

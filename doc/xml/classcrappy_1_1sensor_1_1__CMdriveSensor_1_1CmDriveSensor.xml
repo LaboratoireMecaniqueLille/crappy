@@ -1,0 +1,189 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor" kind="class" language="Python" prot="public">
+    <compoundname>crappy::sensor::_CMdriveSensor::CmDriveSensor</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">MotionSensor</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">MotionSensor</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1ab1323e62e7fbfbc297ab7a3c59b46a04" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._CMdriveSensor.CmDriveSensor::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" bodystart="12" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1a4092a3811673b2b2ecae0a5765a94a03" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._CMdriveSensor.CmDriveSensor::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1aa5593dc18b004f59cbb7b658b1ac8f5d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._CMdriveSensor.CmDriveSensor::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1afeb041ff03329dfd63dbae09fc090409" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._CMdriveSensor.CmDriveSensor.__init__</definition>
+        <argsstring>(self, ser=None, port=&apos;/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0&apos;, baudrate=9600)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" bodystart="9" bodyend="18"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1a5c11dbd6226653be84cd634cff0bbf58" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._CMdriveSensor.CmDriveSensor.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" bodystart="25" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1afeb041ff03329dfd63dbae09fc090409" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._CMdriveSensor.CmDriveSensor.__init__</definition>
+        <argsstring>(self, ser=None, port=&apos;/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0&apos;, baudrate=9600)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_CMdriveSensor.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_CMdriveSensor.py" bodystart="9" bodyend="18"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1a5c11dbd6226653be84cd634cff0bbf58" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._CMdriveSensor.CmDriveSensor.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_CMdriveSensor.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_CMdriveSensor.py" bodystart="25" bodyend="36"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Open a new default serial port for communication with Servostar</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="110">
+        <label>crappy.sensor._CMdriveSensor.CmDriveSensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor"/>
+        <childnode refid="111" relation="public-inheritance">
+        </childnode>
+        <childnode refid="111" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="111">
+        <label>MotionSensor</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="112">
+        <label>crappy.sensor._CMdriveSensor.CmDriveSensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor"/>
+        <childnode refid="113" relation="public-inheritance">
+        </childnode>
+        <childnode refid="113" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="113">
+        <label>MotionSensor</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" line="6" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_CMdriveSensor.py" bodystart="6" bodyend="36"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1afeb041ff03329dfd63dbae09fc090409" prot="public" virt="non-virtual"><scope>crappy::sensor::_CMdriveSensor::CmDriveSensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1afeb041ff03329dfd63dbae09fc090409" prot="public" virt="non-virtual"><scope>crappy::sensor::_CMdriveSensor::CmDriveSensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1a4092a3811673b2b2ecae0a5765a94a03" prot="public" virt="non-virtual"><scope>crappy::sensor::_CMdriveSensor::CmDriveSensor</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1a5c11dbd6226653be84cd634cff0bbf58" prot="public" virt="non-virtual"><scope>crappy::sensor::_CMdriveSensor::CmDriveSensor</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1a5c11dbd6226653be84cd634cff0bbf58" prot="public" virt="non-virtual"><scope>crappy::sensor::_CMdriveSensor::CmDriveSensor</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1ab1323e62e7fbfbc297ab7a3c59b46a04" prot="public" virt="non-virtual"><scope>crappy::sensor::_CMdriveSensor::CmDriveSensor</scope><name>port</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__CMdriveSensor_1_1CmDriveSensor_1aa5593dc18b004f59cbb7b658b1ac8f5d" prot="public" virt="non-virtual"><scope>crappy::sensor::_CMdriveSensor::CmDriveSensor</scope><name>ser</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

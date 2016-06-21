@@ -1,0 +1,214 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_commandPI::CommandPI</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1a09a0ed55edb104666481220cfcccc3d6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._commandPI.CommandPI::PI_actuators</definition>
+        <argsstring></argsstring>
+        <name>PI_actuators</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" line="20" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1a7695be3f0d6d02b0c3c761307413372f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._commandPI.CommandPI::signal_label</definition>
+        <argsstring></argsstring>
+        <name>signal_label</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1ae9897a689ef5e18cef795f4d2e52c27e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._commandPI.CommandPI.__init__</definition>
+        <argsstring>(self, PI_actuators, signal_label=&apos;signal&apos;)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>PI_actuators</type>
+          <defname>PI_actuators</defname>
+        </param>
+        <param>
+          <type>signal_label</type>
+          <defname>signal_label</defname>
+          <defval>&apos;signal&apos;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Receive a signal and translate it for the PI actuator.
+
+Parameters
+----------
+PI_actuators : crappy.actuators.PIactuators objects
+    Axe to control.
+signal_label : str, default = &apos;signal&apos;
+    Label of the data to be transfered.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" bodystart="8" bodyend="22"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1a5ac90090c892d6d9d1f20d4d7ecc239f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._commandPI.CommandPI.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" bodystart="23" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1ae9897a689ef5e18cef795f4d2e52c27e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._commandPI.CommandPI.__init__</definition>
+        <argsstring>(self, PI_actuators, signal_label=&apos;signal&apos;)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>PI_actuators</type>
+          <defname>PI_actuators</defname>
+        </param>
+        <param>
+          <type>signal_label</type>
+          <defname>signal_label</defname>
+          <defval>&apos;signal&apos;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Receive a signal and translate it for the PI actuator.
+
+Parameters
+----------
+PI_actuators : crappy.actuators.PIactuators objects
+    Axe to control.
+signal_label : str, default = &apos;signal&apos;
+    Label of the data to be transfered.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_commandPI.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_commandPI.py" bodystart="8" bodyend="22"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1a5ac90090c892d6d9d1f20d4d7ecc239f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._commandPI.CommandPI.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_commandPI.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_commandPI.py" bodystart="23" bodyend="43"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Receive a signal and send it for the PI actuator</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="152">
+        <label>crappy.blocks._commandPI.CommandPI</label>
+        <link refid="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI"/>
+        <childnode refid="153" relation="public-inheritance">
+        </childnode>
+        <childnode refid="153" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="153">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="154" relation="public-inheritance">
+        </childnode>
+        <childnode refid="154" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="154">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="155">
+        <label>crappy.blocks._commandPI.CommandPI</label>
+        <link refid="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI"/>
+        <childnode refid="156" relation="public-inheritance">
+        </childnode>
+        <childnode refid="156" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="156">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="157" relation="public-inheritance">
+        </childnode>
+        <childnode refid="157" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="157">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_commandPI.py" bodystart="5" bodyend="43"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1ae9897a689ef5e18cef795f4d2e52c27e" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1ae9897a689ef5e18cef795f4d2e52c27e" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a34cdcaba3da6e04e6de3b1cd763739f1" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_commandPI::CommandPI</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1a5ac90090c892d6d9d1f20d4d7ecc239f" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1a5ac90090c892d6d9d1f20d4d7ecc239f" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1a09a0ed55edb104666481220cfcccc3d6" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>PI_actuators</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__commandPI_1_1CommandPI_1a7695be3f0d6d02b0c3c761307413372f" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>signal_label</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_commandPI::CommandPI</scope><name>t0</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="install" kind="page">
+    <compoundname>install</compoundname>
+    <title>Installation</title>
+    <detaileddescription>
+<para><heading level="2">Required Packages </heading>
+</para><para><itemizedlist>
+<listitem>
+<para>Opencv  </para></listitem>
+<listitem>
+<para>SimpleITK  </para></listitem>
+<listitem>
+<para>matplotlib  </para></listitem>
+<listitem>
+<para>Python 2.7 or later and Numpy 1.5 or later with developer packages (python-dev, python-numpy)  </para></listitem>
+<listitem>
+<para>Scipy  </para></listitem>
+<listitem>
+<para>Skimage  </para></listitem>
+</itemizedlist>
+</para><para>Other packages should be installed to enable some functionalities:</para><para><itemizedlist>
+<listitem>
+<para>xiApi  </para></listitem>
+<listitem>
+<para>Comedi (only avalaible on Linux) </para></listitem>
+<listitem>
+<para>niFgen package from National Instrument (only avalaible on Windows) </para></listitem>
+<listitem>
+<para>PyDaqmx  </para></listitem>
+<listitem>
+<para>labjack  </para></listitem>
+</itemizedlist>
+</para><para><heading level="2">Getting the Crappy Source Code </heading>
+</para><para>The packages can be installed using a terminal and the following commands:</para><para><heading level="2">Installation in Linux</heading>
+</para><para>These steps have been tested for Ubuntu 14.04, 15.10 and 16.04 but should work with other distros as well. <verbatim>git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
+cd crappy
+sudo python setup.py install
+</verbatim></para><para><heading level="2">Installation in Windows</heading>
+</para><para>These steps have been tested for Windows 8.1 but should work with other distros as well. <verbatim>git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
+cd crappy
+setup.py install</verbatim> </para>    </detaileddescription>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecorrection" kind="namespace" language="Python">
+    <compoundname>correction</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="correction_8py_1a1b16cf31237c99485c98a17cd94d45cf" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>correction.file_list</definition>
+        <argsstring></argsstring>
+        <name>file_list</name>
+        <initializer>= glob.glob(&quot;./crappy.*.*.rst&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="source/correction.py" line="3" column="1" bodyfile="source/correction.py" bodystart="3" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="correction_8py_1aa8eead90520e330bd4095322d954233f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>correction.lines</definition>
+        <argsstring></argsstring>
+        <name>lines</name>
+        <initializer>= fin.readlines()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="source/correction.py" line="9" column="1" bodyfile="source/correction.py" bodystart="9" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="correction_8py_1ac1160dad2d7fc7b5e16d2fddd763890c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>correction.temp</definition>
+        <argsstring></argsstring>
+        <name>temp</name>
+        <initializer>= lines[0].split(&quot;_&quot;)[1]</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="source/correction.py" line="10" column="1" bodyfile="source/correction.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="correction_8py_1a0fb928b7424cb2181666868341100bf7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>correction.file_list_blocks</definition>
+        <argsstring></argsstring>
+        <name>file_list_blocks</name>
+        <initializer>= glob.glob(&quot;./crappy.blocks.*.rst&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="source/correction.py" line="20" column="1" bodyfile="source/correction.py" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="correction_8py_1a9122cc23ee2b79a678ec9ff119ac6a56" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>correction.modify_list</definition>
+        <argsstring></argsstring>
+        <name>modify_list</name>
+        <initializer>= set(file_list)-set(file_list_blocks)-set([&apos;./crappy.sensor._ximeaSensor.rst&apos;])-set([&apos;./crappy.sensor._jaiSensor.rst&apos;])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="source/correction.py" line="21" column="1" bodyfile="source/correction.py" bodystart="21" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="correction_8py_1aad80eccedbc93ff82f18556bd804311b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>correction.file_list_blocks_links</definition>
+        <argsstring></argsstring>
+        <name>file_list_blocks_links</name>
+        <initializer>= glob.glob(&quot;./crappy.blocks.*.rst&quot;)+glob.glob(&quot;./crappy.links.*.rst&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="source/correction.py" line="41" column="1" bodyfile="source/correction.py" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="source/correction.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

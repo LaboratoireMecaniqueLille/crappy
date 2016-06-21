@@ -1,0 +1,1009 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="pyXimea_8cpp" kind="file" language="C++">
+    <compoundname>pyXimea.cpp</compoundname>
+    <includes refid="ximea_8h" local="yes">ximea.h</includes>
+    <includes refid="XimeaLib_2export_8h" local="yes">export.h</includes>
+    <includes local="no">numpy/ndarrayobject.h</includes>
+    <includes local="no">datetime.h</includes>
+    <includes local="yes">structmember.h</includes>
+    <incdepgraph>
+      <node id="753">
+        <label>structmember.h</label>
+      </node>
+      <node id="749">
+        <label>export.h</label>
+        <link refid="XimeaLib_2export_8h_source"/>
+        <childnode refid="738" relation="include">
+        </childnode>
+        <childnode refid="750" relation="include">
+        </childnode>
+      </node>
+      <node id="741">
+        <label>m3api/m3Api.h</label>
+      </node>
+      <node id="746">
+        <label>string</label>
+      </node>
+      <node id="748">
+        <label>map</label>
+      </node>
+      <node id="745">
+        <label>memory.h</label>
+      </node>
+      <node id="752">
+        <label>datetime.h</label>
+      </node>
+      <node id="738">
+        <label>ximea.h</label>
+        <link refid="ximea_8h_source"/>
+        <childnode refid="739" relation="include">
+        </childnode>
+        <childnode refid="740" relation="include">
+        </childnode>
+        <childnode refid="741" relation="include">
+        </childnode>
+        <childnode refid="742" relation="include">
+        </childnode>
+        <childnode refid="743" relation="include">
+        </childnode>
+        <childnode refid="744" relation="include">
+        </childnode>
+        <childnode refid="745" relation="include">
+        </childnode>
+        <childnode refid="746" relation="include">
+        </childnode>
+        <childnode refid="747" relation="include">
+        </childnode>
+        <childnode refid="748" relation="include">
+        </childnode>
+      </node>
+      <node id="747">
+        <label>typeinfo</label>
+      </node>
+      <node id="739">
+        <label>Python.h</label>
+      </node>
+      <node id="742">
+        <label>unistd.h</label>
+      </node>
+      <node id="750">
+        <label>utility</label>
+      </node>
+      <node id="744">
+        <label>iostream</label>
+      </node>
+      <node id="737">
+        <label>/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp</label>
+        <link refid="pyXimea_8cpp"/>
+        <childnode refid="738" relation="include">
+        </childnode>
+        <childnode refid="749" relation="include">
+        </childnode>
+        <childnode refid="751" relation="include">
+        </childnode>
+        <childnode refid="752" relation="include">
+        </childnode>
+        <childnode refid="753" relation="include">
+        </childnode>
+      </node>
+      <node id="743">
+        <label>stdio.h</label>
+      </node>
+      <node id="751">
+        <label>numpy/ndarrayobject.h</label>
+      </node>
+      <node id="740">
+        <label>m3api/xiApi.h</label>
+      </node>
+    </incdepgraph>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="pyXimea_8cpp_1a7d802db23788e7dd385893dea5d1f2cb" prot="public" static="no" mutable="no">
+        <type><ref refid="classCaptureCAM__XIMEA" kindref="compound">CaptureCAM_XIMEA</ref> *</type>
+        <definition>CaptureCAM_XIMEA* capt</definition>
+        <argsstring></argsstring>
+        <name>capt</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="12" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyXimea_8cpp_1ac5efdaa19361d99c6aad5655b22f37d4" prot="public" static="no" mutable="no">
+        <type>PyObject *</type>
+        <definition>PyObject* myDict</definition>
+        <argsstring></argsstring>
+        <name>myDict</name>
+        <initializer>= PyDict_New()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyXimea_8cpp_1a77544bdfcd720ea2b6f071b4a7a15a3f" prot="public" static="no" mutable="no">
+        <type>PyObject *</type>
+        <definition>PyObject* rslt</definition>
+        <argsstring></argsstring>
+        <name>rslt</name>
+        <initializer>= PyTuple_New(2)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyXimea_8cpp_1aa31d852709a9770fddc5bc690be9123b" prot="public" static="no" mutable="no">
+        <type>PyObject *</type>
+        <definition>PyObject* rslt_data</definition>
+        <argsstring></argsstring>
+        <name>rslt_data</name>
+        <initializer>= PyTuple_New(2)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyXimea_8cpp_1a41628769fdff45ffe979265b06f8a648" prot="public" static="no" mutable="no">
+        <type>char *</type>
+        <definition>char* array_buffer</definition>
+        <argsstring></argsstring>
+        <name>array_buffer</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="16" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyXimea_8cpp_1aafc96ff152ed42d3faf6972917aaaf96" prot="public" static="yes" mutable="no">
+        <type>PyMemberDef</type>
+        <definition>PyMemberDef VideoCapture_members[]</definition>
+        <argsstring>[]</argsstring>
+        <name>VideoCapture_members</name>
+        <initializer>= {
+    {NULL} 
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="280" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="280" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyXimea_8cpp_1a507495110ffc7e89fc4b9c95fcfb74c8" prot="public" static="yes" mutable="no">
+        <type>PyMethodDef</type>
+        <definition>PyMethodDef VideoCapture_methods[]</definition>
+        <argsstring>[]</argsstring>
+        <name>VideoCapture_methods</name>
+        <initializer>= {
+        {&quot;read&quot;, (PyCFunction)VideoCapture_xiread, METH_NOARGS,
+	 &quot;read a frame from ximea device, return a tuple containing a bool (true= success, false= fail) and a dictionnary with a ndarray and meta.&quot;},
+	 {&quot;set&quot;, (PyCFunction)<ref refid="group__videocapture_1ga9ffd6bd67eb9921066ca6290ceab7eaf" kindref="member">VideoCapture_set</ref>, METH_VARARGS,
+	 &quot;set the configuration parameter specified of a ximea device&quot;},
+	 {&quot;get&quot;, (PyCFunction)<ref refid="group__videocapture_1gae26ee5dffe8b0bd008f5f8900415acdc" kindref="member">VideoCapture_get</ref>, METH_VARARGS,
+	 &quot;get the configuration parameter specified of a ximea device&quot;},
+	 {&quot;isOpened&quot;, (PyCFunction)<ref refid="group__videocapture_1ga607e342cefc7fd26cf9ada03e6c63154" kindref="member">VideoCapture_isOpened</ref>, METH_NOARGS,
+	 &quot;return true if the ximea device is opened, false otherwise.&quot;},
+	 {&quot;release&quot;, (PyCFunction)<ref refid="group__videocapture_1ga1e1031f88074e6da641300fbfd3443b2" kindref="member">VideoCapture_release</ref>, METH_NOARGS,
+	 &quot;release the ximea device.&quot;},
+         {&quot;addTrigger&quot;, (PyCFunction)VideoCapture_addTrigger, METH_VARARGS,
+	 &quot;add an external trigger to the camera, a frame will be taken on each rising edge of the trigger.&quot;},
+    {NULL}
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="285" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="285" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyXimea_8cpp_1aa2a165a72d4dbe4fa7d77164193a8bc4" prot="public" static="yes" mutable="no">
+        <type>PyTypeObject</type>
+        <definition>PyTypeObject VideoCaptureType</definition>
+        <argsstring></argsstring>
+        <name>VideoCaptureType</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="301" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="301" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="pyXimea_8cpp_1afcd2b5e08091d3973eb552badcfec160" prot="public" static="yes" mutable="no">
+        <type>PyMethodDef</type>
+        <definition>PyMethodDef module_methods[]</definition>
+        <argsstring>[]</argsstring>
+        <name>module_methods</name>
+        <initializer>= {
+    {NULL}
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="343" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="343" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="pyXimea_8cpp_1ac51bb61364981900ad84aab17f9425d6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_open</definition>
+        <argsstring>(int device)</argsstring>
+        <name>VideoCapture_open</name>
+        <param>
+          <type>int</type>
+          <declname>device</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="19" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="19" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="pyXimea_8cpp_1a23d790fa92378514624055d8a5b1b70e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_openByName</definition>
+        <argsstring>(char *device_path)</argsstring>
+        <name>VideoCapture_openByName</name>
+        <param>
+          <type>char *</type>
+          <declname>device_path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="29" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="function" id="pyXimea_8cpp_1a6387e51b21efc88b718f3b9d15e30116" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_addTrigger</definition>
+        <argsstring>(VideoCapture *self, PyObject *args)</argsstring>
+        <name>VideoCapture_addTrigger</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="39" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga4a42098fa43557947a08120ac6364b8b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_isOpened</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_isOpened</name>
+        <briefdescription>
+<para>It check if te camera is running or it has been stopped. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><itemizedlist>
+<listitem><para>Py_True if the camera is openned.</para></listitem><listitem><para>Py_False if the camera is closed. </para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="55" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="55" bodyend="66"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1gaf93b7c64209bd94d09ef2ae33f4ee605" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_release</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_release</name>
+        <briefdescription>
+<para>Close the camera device: stop the acquisition and free the allocated memory. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="69" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="69" bodyend="75"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga0c09d99edd7283a79650234d342baae0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool VideoCapture_grab</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_grab</name>
+        <briefdescription>
+<para>Stop the acquisition and free the allocated memory. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>True if the frame grabber has successfully grabbed a frame. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="77" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="77" bodyend="80"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga45ee1e6264cbc06e258e0695ad1d56c0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_retrieve</definition>
+        <argsstring>(VideoCapture *self)</argsstring>
+        <name>VideoCapture_retrieve</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+<para>Method to retrieve a frame to Python understanding format. It get the pointer to previously grabbed frame, and convert it to a numpy array object. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><itemizedlist>
+<listitem><para>myDict, which contains the frame&apos;s data and the meta data of the grabbed frame.</para></listitem><listitem><para>Py_None if the current format has not been retrived. </para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="83" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="83" bodyend="151"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga1f885a9d90ee5ef63534859dbd3e00cc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_getMeta</definition>
+        <argsstring>()</argsstring>
+        <name>VideoCapture_getMeta</name>
+        <briefdescription>
+<para>Method to get meta data of the grabbed frame. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><itemizedlist>
+<listitem><para>myDict, which contains the meta data of the grabbed frame:<orderedlist>
+<listitem><para>the width of the grabbed frame</para></listitem><listitem><para>the height of the grabbed frame </para></listitem></orderedlist>
+</para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="154" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="154" bodyend="185"/>
+      </memberdef>
+      <memberdef kind="function" id="pyXimea_8cpp_1a78747a7494c6b58bae46095386d21fc4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_xiread</definition>
+        <argsstring>(VideoCapture *self)</argsstring>
+        <name>VideoCapture_xiread</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="188" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="188" bodyend="205"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1gad08dea252aab9516c283b80bd5180418" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_set</definition>
+        <argsstring>(VideoCapture *self, PyObject *args)</argsstring>
+        <name>VideoCapture_set</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+<para>Setting the value of a parameter from a frame grabber. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>property_id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>As argument, a identification number is needed. If the identification number is unknown, the parameter name has to be given. It can be one of the following:<itemizedlist>
+<listitem><para>FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.</para></listitem><listitem><para>FG_WIDTH: Width of the clipping image.</para></listitem><listitem><para>FG_HEIGHT: Height of the clipping image.</para></listitem><listitem><para>FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).</para></listitem><listitem><para>FG_XOFFSET: X-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_YOFFSET: Y-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_FRAMESPERSEC: Number of images per second.</para></listitem><listitem><para>FG_EXPOSURE: Exposure time in µs.</para></listitem><listitem><para>FG_FORMAT: Color format of the transferred image<orderedlist>
+<listitem><para>8bit gray (FG_GRAY)</para></listitem><listitem><para>16bit color (FG_GRAY16)</para></listitem><listitem><para>24bit color (FG_COL24). See color management of the according frame grabber design.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_PORT: Logical number of the active CameraLink port.</para></listitem><listitem><para>FG_TRIGGERMODE: Trigger modes:<orderedlist>
+<listitem><para>FREE_RUN</para></listitem><listitem><para>GRABBER_CONTROLLED</para></listitem><listitem><para>GRABBER_CONTROLLED_SYNCRON</para></listitem><listitem><para>ASYNC_SOFTWARE_TRIGGER</para></listitem><listitem><para>ASYNC_TRIGGER.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.</para></listitem><listitem><para>FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.</para></listitem></itemizedlist>
+</para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Pointer to required value. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Py_True if the parameter was read correctly Py_False if an invalid parameter has been entered or if the entered value is besides valid ranges. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="208" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="208" bodyend="224"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga9f1fb4911cda27db7a62de2ed8aa0a33" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>PyObject* VideoCapture_get</definition>
+        <argsstring>(VideoCapture *self, PyObject *args)</argsstring>
+        <name>VideoCapture_get</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+<para>Reading the current value of a parameter from a frame grabber. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>property_id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>As argument, a identification number is needed. If the identification number is unknown, the parameter name has to be given. It can be one of the following:<itemizedlist>
+<listitem><para>FG_CAMSTAUS: If a camera signal is on CameraLink port value is 1 else 0.</para></listitem><listitem><para>FG_REVNR: Current revision version of camera DLL.</para></listitem><listitem><para>FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.</para></listitem><listitem><para>FG_WIDTH: Width of the clipping image.</para></listitem><listitem><para>FG_MAXWIDTH: Maximum width of the clipping image.</para></listitem><listitem><para>FG_HEIGHT: Height of the clipping image.</para></listitem><listitem><para>FG_MAXHEIGHT: Maximum height of the clipping image.</para></listitem><listitem><para>FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).</para></listitem><listitem><para>FG_XOFFSET: X-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_YOFFSET: Y-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_FRAMESPERSEC: Number of images per second.</para></listitem><listitem><para>FG_EXPOSURE: Exposure time in µs.</para></listitem><listitem><para>FG_FORMAT: Color format of the transferred image<orderedlist>
+<listitem><para>8bit gray (FG_GRAY)</para></listitem><listitem><para>16bit color (FG_GRAY16)</para></listitem><listitem><para>24bit color (FG_COL24). See color management of the according frame grabber design.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_PORT: Logical number of the active CameraLink port.</para></listitem><listitem><para>FG_PIXELDEPTH: Returns the depth of color of the pixel.</para></listitem><listitem><para>FG_LINEALIGNMENT: Returns the alignment of a line (in bits).</para></listitem><listitem><para>FG_TRANSFER_LEN: Returns the length of the last DMA transfer.</para></listitem><listitem><para>FG_TRIGGERMODE: Trigger modes:<orderedlist>
+<listitem><para>FREE_RUN</para></listitem><listitem><para>GRABBER_CONTROLLED</para></listitem><listitem><para>GRABBER_CONTROLLED_SYNCRON</para></listitem><listitem><para>ASYNC_SOFTWARE_TRIGGER</para></listitem><listitem><para>ASYNC_TRIGGER.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.</para></listitem><listitem><para>FG_TWOCAMMODEL: Returns the value, if the loaded camera applet is a dual (1) or a single applet (0).</para></listitem><listitem><para>FG_HDSYNC: Returns the HDSYNC value.</para></listitem><listitem><para>FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.</para></listitem><listitem><para>FG_BOARD_INFORMATION: Information on the board type:<orderedlist>
+<listitem><para>BINFO_BOARD_TYPE:<itemizedlist>
+<listitem><para>0xa40 for microEnable IV-Base x1</para></listitem><listitem><para>0xa41 for microEnable IV-Full x1</para></listitem><listitem><para>0xa44 for microEnable IV-Full x4</para></listitem></itemizedlist>
+</para></listitem><listitem><para>BINFO_POCL:<itemizedlist>
+<listitem><para>0 for microEnable IV-Base x1</para></listitem><listitem><para>1 for microEnable IV-Base x1 PoCL </para></listitem></itemizedlist>
+</para></listitem></orderedlist>
+</para></listitem></itemizedlist>
+</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><itemizedlist>
+<listitem><para>Py_True if the parameter was read correctly</para></listitem><listitem><para>Py_False if an invalid parameter has been entered. </para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="227" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="227" bodyend="233"/>
+      </memberdef>
+      <memberdef kind="function" id="pyXimea_8cpp_1a48861707a9306ad742ce71d49431ad46" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>static void VideoCapture_dealloc</definition>
+        <argsstring>(VideoCapture *self)</argsstring>
+        <name>VideoCapture_dealloc</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="236" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="236" bodyend="241"/>
+      </memberdef>
+      <memberdef kind="function" id="pyXimea_8cpp_1ac572099534fea16dc318f0cc8c2a84e7" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyObject *</type>
+        <definition>static PyObject* VideoCapture_new</definition>
+        <argsstring>(PyTypeObject *type, PyObject *args, PyObject *kwds)</argsstring>
+        <name>VideoCapture_new</name>
+        <param>
+          <type>PyTypeObject *</type>
+          <declname>type</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>kwds</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="244" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="244" bodyend="257"/>
+      </memberdef>
+      <memberdef kind="function" id="pyXimea_8cpp_1a0f80f3755e194457496f745dd527e684" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>static int VideoCapture_init</definition>
+        <argsstring>(VideoCapture *self, PyObject *args, PyObject *kwds)</argsstring>
+        <name>VideoCapture_init</name>
+        <param>
+          <type><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref> *</type>
+          <declname>self</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>args</declname>
+        </param>
+        <param>
+          <type>PyObject *</type>
+          <declname>kwds</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="260" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="260" bodyend="277"/>
+      </memberdef>
+      <memberdef kind="function" id="pyXimea_8cpp_1a53a62040db1d78a3758d9d8e9ec33289" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void set_map_to_export</definition>
+        <argsstring>()</argsstring>
+        <name>set_map_to_export</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="348" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="348" bodyend="380"/>
+      </memberdef>
+      <memberdef kind="function" id="pyXimea_8cpp_1afc2c5405782fb2c3fd0c6dd16c81b796" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>PyMODINIT_FUNC</type>
+        <definition>PyMODINIT_FUNC initximeaModule</definition>
+        <argsstring>(void)</argsstring>
+        <name>initximeaModule</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" line="383" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp" bodystart="383" bodyend="417"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="preprocessor">#include<sp/>&quot;ximea.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;export.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;numpy/ndarrayobject.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;datetime.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;structmember.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>__cplusplus</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="keyword">extern</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&quot;C&quot;</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"><ref refid="classCaptureCAM__XIMEA" kindref="compound">CaptureCAM_XIMEA</ref>*<sp/>capt;</highlight></codeline>
+<codeline lineno="13"><highlight class="normal">PyObject<sp/>*myDict<sp/>=<sp/>PyDict_New();</highlight></codeline>
+<codeline lineno="14"><highlight class="normal">PyObject<sp/>*rslt<sp/>=<sp/>PyTuple_New(2);</highlight></codeline>
+<codeline lineno="15"><highlight class="normal">PyObject<sp/>*rslt_data<sp/>=<sp/>PyTuple_New(2);</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*array_buffer;</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"><ref refid="group__capturecam_1ga27dd152656bae1341cc3f4e53a7f7f95" kindref="member">VideoCapture_open</ref>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>device)</highlight></codeline>
+<codeline lineno="20"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="group__capturecam_1ga4a42098fa43557947a08120ac6364b8b" kindref="member">VideoCapture_isOpened</ref>()<sp/>==<sp/>Py_True)<sp/>{</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="group__capturecam_1gaf93b7c64209bd94d09ef2ae33f4ee605" kindref="member">VideoCapture_release</ref>();</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/>capt-&gt;open(device);</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__capturecam_1ga4a42098fa43557947a08120ac6364b8b" kindref="member">VideoCapture_isOpened</ref>();</highlight></codeline>
+<codeline lineno="26"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="29"><highlight class="normal">VideoCapture_openByName(</highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*<sp/>device_path)</highlight></codeline>
+<codeline lineno="30"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="group__capturecam_1ga4a42098fa43557947a08120ac6364b8b" kindref="member">VideoCapture_isOpened</ref>()<sp/>==<sp/>Py_True)<sp/>{</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="group__capturecam_1gaf93b7c64209bd94d09ef2ae33f4ee605" kindref="member">VideoCapture_release</ref>();</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/>capt-&gt;open(device_path);</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__capturecam_1ga4a42098fa43557947a08120ac6364b8b" kindref="member">VideoCapture_isOpened</ref>();</highlight></codeline>
+<codeline lineno="36"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="39"><highlight class="normal">VideoCapture_addTrigger(<ref refid="structVideoCapture" kindref="compound">VideoCapture</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">,<sp/>PyObject<sp/>*args)</highlight></codeline>
+<codeline lineno="40"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>timeout;</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>triggered;</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!PyArg_ParseTuple(args,<sp/></highlight><highlight class="stringliteral">&quot;ib&quot;</highlight><highlight class="normal">,<sp/>&amp;timeout,<sp/>&amp;triggered)){</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;arg<sp/>must<sp/>be<sp/>(int,<sp/>bool).<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_INCREF(Py_None);</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Py_None;</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/>capt-&gt;addTrigger(timeout,<sp/>triggered);</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Py_None;</highlight></codeline>
+<codeline lineno="50"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"></highlight></codeline>
+<codeline lineno="52"><highlight class="normal"></highlight></codeline>
+<codeline lineno="53"><highlight class="normal"></highlight></codeline>
+<codeline lineno="54"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><ref refid="group__capturecam_1ga4a42098fa43557947a08120ac6364b8b" kindref="member">VideoCapture_isOpened</ref>()</highlight></codeline>
+<codeline lineno="56"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject*<sp/>ret<sp/>=<sp/>Py_False;</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(capt-&gt;isopened)<sp/>{</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ret=Py_True;</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_INCREF(ret);</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>ret;</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight><highlight class="keywordflow">else</highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_INCREF(ret);</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>ret;</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="66"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"></highlight></codeline>
+<codeline lineno="68"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><ref refid="group__capturecam_1gaf93b7c64209bd94d09ef2ae33f4ee605" kindref="member">VideoCapture_release</ref>()</highlight></codeline>
+<codeline lineno="70"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/>capt-&gt;close();</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject*<sp/>ret<sp/>=<sp/>Py_None;</highlight></codeline>
+<codeline lineno="73"><highlight class="normal"><sp/><sp/><sp/><sp/>Py_INCREF(ret);</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>ret;</highlight></codeline>
+<codeline lineno="75"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="76"><highlight class="normal"></highlight></codeline>
+<codeline lineno="77"><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="group__capturecam_1ga0c09d99edd7283a79650234d342baae0" kindref="member">VideoCapture_grab</ref>()</highlight></codeline>
+<codeline lineno="78"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>capt-&gt;grabFrame();</highlight></codeline>
+<codeline lineno="80"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="81"><highlight class="normal"></highlight></codeline>
+<codeline lineno="82"><highlight class="normal"></highlight></codeline>
+<codeline lineno="83"><highlight class="normal">PyObject*<sp/><ref refid="group__capturecam_1ga45ee1e6264cbc06e258e0695ad1d56c0" kindref="member">VideoCapture_retrieve</ref>(<ref refid="structVideoCapture" kindref="compound">VideoCapture</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="84"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">switch</highlight><highlight class="normal">(capt-&gt;image.frm)</highlight></codeline>
+<codeline lineno="86"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="87"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>XI_MONO8:<sp/>{</highlight></codeline>
+<codeline lineno="88"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ndim<sp/>=<sp/>2;</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>fprintf(stderr,<sp/>&quot;test:<sp/>%i\n&quot;,<sp/>42);</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="91"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>npy_intp<sp/>nd[2]<sp/>=<sp/>{capt-&gt;height,<sp/>capt-&gt;width};</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>fprintf(stderr,<sp/>&quot;test:<sp/>%i\n&quot;,<sp/>43);</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="93"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(self-&gt;myarray);</highlight></codeline>
+<codeline lineno="94"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>fprintf(stderr,<sp/>&quot;test:<sp/>%i\n&quot;,<sp/>44);</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="95"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;myarray<sp/>=<sp/>PyArray_SimpleNewFromData(ndim,<sp/>nd,<sp/>NPY_UINT8,<sp/>capt-&gt;image.bp);</highlight></codeline>
+<codeline lineno="96"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>fprintf(stderr,<sp/>&quot;test:<sp/>%i\n&quot;,<sp/>45);</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="97"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(nd);</highlight></codeline>
+<codeline lineno="98"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>XI_MONO16:{<sp/></highlight></codeline>
+<codeline lineno="101"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ndim<sp/>=<sp/>2;</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>npy_intp<sp/>nd[2]<sp/>=<sp/>{capt-&gt;height,<sp/>capt-&gt;width};</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(self-&gt;myarray);</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;myarray<sp/>=<sp/>PyArray_SimpleNewFromData(ndim,<sp/>nd,<sp/>NPY_UINT16,<sp/>capt-&gt;image.bp);</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(nd);</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>XI_RGB24<sp/><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>{</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ndim<sp/>=<sp/>3;</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>npy_intp<sp/>nd[3]<sp/>=<sp/>{capt-&gt;height,<sp/>capt-&gt;width,<sp/>3};</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(self-&gt;myarray);</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;myarray<sp/>=<sp/>PyArray_SimpleNewFromData(ndim,<sp/>nd,<sp/>NPY_UINT8,<sp/>capt-&gt;image.bp);</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(nd);</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;}</highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>XI_RGB32<sp/><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>{</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ndim<sp/>=<sp/>4;</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>npy_intp<sp/>nd[3]<sp/>=<sp/>{capt-&gt;height,<sp/>capt-&gt;width,<sp/>4};</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(self-&gt;myarray);</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;myarray<sp/>=<sp/>PyArray_SimpleNewFromData(ndim,<sp/>nd,<sp/>NPY_UINT8,<sp/>capt-&gt;image.bp);</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(nd);</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;}</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>XI_RGB_PLANAR<sp/><sp/>:<sp/>{</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ndim<sp/>=<sp/>3;</highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>npy_intp<sp/>nd[3]<sp/>=<sp/>{capt-&gt;height,<sp/>capt-&gt;width,<sp/>3};</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(self-&gt;myarray);</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;myarray<sp/>=<sp/>PyArray_SimpleNewFromData(ndim,<sp/>nd,<sp/>NPY_UINT8,<sp/>capt-&gt;image.bp);</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(nd);</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;}</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>XI_RAW8<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>{</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ndim<sp/>=<sp/>2;</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>npy_intp<sp/>nd[2]<sp/>=<sp/>{capt-&gt;height,<sp/>capt-&gt;width};</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(self-&gt;myarray);</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;myarray<sp/>=<sp/>PyArray_SimpleNewFromData(ndim,<sp/>nd,<sp/>NPY_UINT8,<sp/>capt-&gt;image.bp);</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(nd);</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;}</highlight></codeline>
+<codeline lineno="136"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>XI_RAW16<sp/><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>{</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ndim<sp/>=<sp/>3;</highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>npy_intp<sp/>nd[3]<sp/>=<sp/>{capt-&gt;height,<sp/>capt-&gt;width,<sp/>2};</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(self-&gt;myarray);</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;myarray<sp/>=<sp/>PyArray_SimpleNewFromData(ndim,<sp/>nd,<sp/>NPY_UINT16,<sp/>capt-&gt;image.bp);</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_XDECREF(nd);</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;}</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">default</highlight><highlight class="normal"><sp/>:<sp/></highlight></codeline>
+<codeline lineno="144"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Py_None;</highlight></codeline>
+<codeline lineno="145"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="146"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>capt-&gt;<sp/>resetCvImage();</highlight></codeline>
+<codeline lineno="147"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>myDict<sp/>=<sp/>PyDict_New();</highlight></codeline>
+<codeline lineno="148"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>myDict<sp/>=<sp/><ref refid="group__capturecam_1ga1f885a9d90ee5ef63534859dbd3e00cc" kindref="member">VideoCapture_getMeta</ref>();</highlight></codeline>
+<codeline lineno="149"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PyDict_SetItemString(myDict,<sp/></highlight><highlight class="stringliteral">&quot;data&quot;</highlight><highlight class="normal">,<sp/>self-&gt;myarray);</highlight></codeline>
+<codeline lineno="150"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>myDict;</highlight></codeline>
+<codeline lineno="151"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="152"><highlight class="normal"></highlight></codeline>
+<codeline lineno="153"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="154"><highlight class="normal"><ref refid="group__capturecam_1ga1f885a9d90ee5ef63534859dbd3e00cc" kindref="member">VideoCapture_getMeta</ref>()</highlight></codeline>
+<codeline lineno="155"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="156"><highlight class="normal"><sp/><sp/><sp/><sp/>PyDateTime_IMPORT;</highlight></codeline>
+<codeline lineno="157"><highlight class="normal"><sp/><sp/><sp/><sp/>PyDict_SetItemString(myDict,<sp/></highlight><highlight class="stringliteral">&quot;width&quot;</highlight><highlight class="normal">,<sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;I&quot;</highlight><highlight class="normal">,<sp/>capt-&gt;image.width));</highlight></codeline>
+<codeline lineno="158"><highlight class="normal"><sp/><sp/><sp/><sp/>PyDict_SetItemString(myDict,<sp/></highlight><highlight class="stringliteral">&quot;height&quot;</highlight><highlight class="normal">,<sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;I&quot;</highlight><highlight class="normal">,capt-&gt;image.height));</highlight></codeline>
+<codeline lineno="159"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/>PyDict_SetItemString(myDict,<sp/>&quot;bp_size&quot;,<sp/>Py_BuildValue(&quot;I&quot;,capt-&gt;image.bp_size));</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="160"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/>PyDict_SetItemString(myDict,<sp/>&quot;size&quot;,<sp/>Py_BuildValue(&quot;I&quot;,capt-&gt;image.size));</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="161"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/>PyDict_SetItemString(myDict,<sp/>&quot;GPI_level&quot;,<sp/>Py_BuildValue(&quot;I&quot;,capt-&gt;image.GPI_level));</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="162"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/>PyDict_SetItemString(myDict,<sp/>&quot;black_level&quot;,<sp/>Py_BuildValue(&quot;I&quot;,capt-&gt;image.black_level));</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="163"><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/>PyDict_SetItemString(myDict,<sp/>&quot;padding_x&quot;,<sp/>Py_BuildValue(&quot;I&quot;,capt-&gt;image.padding_x));</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="164"><highlight class="normal"><sp/><sp/><sp/><sp/>PyDict_SetItemString(myDict,<sp/></highlight><highlight class="stringliteral">&quot;nframe&quot;</highlight><highlight class="normal">,<sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;I&quot;</highlight><highlight class="normal">,capt-&gt;image.nframe));</highlight></codeline>
+<codeline lineno="165"><highlight class="normal"><sp/><sp/><sp/><sp/>PyDict_SetItemString(myDict,<sp/></highlight><highlight class="stringliteral">&quot;AbsoluteOffsetX&quot;</highlight><highlight class="normal">,<sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;I&quot;</highlight><highlight class="normal">,capt-&gt;image.AbsoluteOffsetX));</highlight></codeline>
+<codeline lineno="166"><highlight class="normal"><sp/><sp/><sp/><sp/>PyDict_SetItemString(myDict,<sp/></highlight><highlight class="stringliteral">&quot;AbsoluteOffsetY&quot;</highlight><highlight class="normal">,<sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;I&quot;</highlight><highlight class="normal">,capt-&gt;image.AbsoluteOffsetY));</highlight></codeline>
+<codeline lineno="167"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="168"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject<sp/>*floatObj<sp/>=<sp/>PyFloat_FromDouble(capt-&gt;image.tsSec);</highlight></codeline>
+<codeline lineno="169"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject<sp/>*timeTuple<sp/>=<sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;(O)&quot;</highlight><highlight class="normal">,<sp/>floatObj);<sp/><sp/></highlight></codeline>
+<codeline lineno="170"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject<sp/>*dateTime<sp/>=<sp/>PyDateTime_FromTimestamp(timeTuple);</highlight></codeline>
+<codeline lineno="171"><highlight class="normal"><sp/><sp/><sp/><sp/>PyDict_SetItemString(myDict,<sp/></highlight><highlight class="stringliteral">&quot;tsSec&quot;</highlight><highlight class="normal">,<sp/>dateTime);</highlight></codeline>
+<codeline lineno="172"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_CLEAR(floatObj);</highlight></codeline>
+<codeline lineno="173"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_CLEAR(timeTuple);</highlight></codeline>
+<codeline lineno="174"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_CLEAR(dateTime);</highlight></codeline>
+<codeline lineno="175"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="176"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject<sp/>*floatObj1<sp/>=<sp/>PyFloat_FromDouble(capt-&gt;image.tsUSec);</highlight></codeline>
+<codeline lineno="177"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject<sp/>*timeTuple1<sp/>=<sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;(O)&quot;</highlight><highlight class="normal">,<sp/>floatObj1);<sp/><sp/></highlight></codeline>
+<codeline lineno="178"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject<sp/>*dateTime1<sp/>=<sp/>PyDateTime_FromTimestamp(timeTuple1);</highlight></codeline>
+<codeline lineno="179"><highlight class="normal"><sp/><sp/><sp/><sp/>PyDict_SetItemString(myDict,<sp/></highlight><highlight class="stringliteral">&quot;tsUSec&quot;</highlight><highlight class="normal">,<sp/>dateTime1);</highlight></codeline>
+<codeline lineno="180"><highlight class="normal"><sp/><sp/><sp/><sp/>Py_CLEAR(floatObj1);</highlight></codeline>
+<codeline lineno="181"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_CLEAR(timeTuple1);</highlight></codeline>
+<codeline lineno="182"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_CLEAR(dateTime1);</highlight></codeline>
+<codeline lineno="183"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="184"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>myDict;</highlight></codeline>
+<codeline lineno="185"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="186"><highlight class="normal"></highlight></codeline>
+<codeline lineno="187"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="188"><highlight class="normal">VideoCapture_xiread(<ref refid="structVideoCapture" kindref="compound">VideoCapture</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="189"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="190"><highlight class="normal"><sp/><sp/><sp/><sp/>rslt<sp/>=<sp/>PyTuple_New(2);</highlight></codeline>
+<codeline lineno="191"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject*<sp/>ret<sp/>=<sp/>Py_False;</highlight></codeline>
+<codeline lineno="192"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__capturecam_1ga0c09d99edd7283a79650234d342baae0" kindref="member">VideoCapture_grab</ref>()){</highlight></codeline>
+<codeline lineno="193"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_INCREF(ret);</highlight></codeline>
+<codeline lineno="194"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PyTuple_SetItem(rslt,<sp/>0,<sp/>ret);</highlight></codeline>
+<codeline lineno="195"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PyTuple_SetItem(rslt,<sp/>1,<sp/>Py_None);</highlight></codeline>
+<codeline lineno="196"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight><highlight class="keywordflow">else</highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="197"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ret<sp/>=<sp/>Py_True;</highlight></codeline>
+<codeline lineno="198"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_INCREF(ret);</highlight></codeline>
+<codeline lineno="199"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PyTuple_SetItem(rslt,<sp/>0,<sp/>ret);</highlight></codeline>
+<codeline lineno="200"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PyTuple_SetItem(rslt,<sp/>1,<sp/><ref refid="group__capturecam_1ga45ee1e6264cbc06e258e0695ad1d56c0" kindref="member">VideoCapture_retrieve</ref>(</highlight><highlight class="keyword">self</highlight><highlight class="normal">));</highlight></codeline>
+<codeline lineno="201"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="202"><highlight class="normal"><sp/><sp/><sp/><sp/>rslt_data<sp/>=<sp/>PyTuple_New(2);</highlight></codeline>
+<codeline lineno="203"><highlight class="normal"><sp/><sp/><sp/><sp/>rslt_data<sp/>=<sp/>rslt;</highlight></codeline>
+<codeline lineno="204"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>rslt_data;</highlight></codeline>
+<codeline lineno="205"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="206"><highlight class="normal"></highlight></codeline>
+<codeline lineno="207"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="208"><highlight class="normal"><ref refid="group__capturecam_1gad08dea252aab9516c283b80bd5180418" kindref="member">VideoCapture_set</ref>(<ref refid="structVideoCapture" kindref="compound">VideoCapture</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">,<sp/>PyObject<sp/>*args)</highlight></codeline>
+<codeline lineno="209"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="210"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>propId;</highlight></codeline>
+<codeline lineno="211"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>value;</highlight></codeline>
+<codeline lineno="212"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PyObject*<sp/>ret<sp/>=<sp/>Py_False;</highlight></codeline>
+<codeline lineno="213"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!PyArg_ParseTuple(args,<sp/></highlight><highlight class="stringliteral">&quot;id&quot;</highlight><highlight class="normal">,<sp/>&amp;propId,<sp/>&amp;value))</highlight></codeline>
+<codeline lineno="214"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>exit(0);</highlight></codeline>
+<codeline lineno="215"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(capt-&gt;setProperty(propId,<sp/>value))<sp/>{</highlight></codeline>
+<codeline lineno="216"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ret<sp/>=<sp/>Py_True;</highlight></codeline>
+<codeline lineno="217"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_INCREF(ret);</highlight></codeline>
+<codeline lineno="218"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>ret;</highlight></codeline>
+<codeline lineno="219"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight><highlight class="keywordflow">else</highlight><highlight class="normal">{<sp/></highlight></codeline>
+<codeline lineno="220"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ret<sp/>=<sp/>Py_False;</highlight></codeline>
+<codeline lineno="221"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_INCREF(ret);</highlight></codeline>
+<codeline lineno="222"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>ret;</highlight></codeline>
+<codeline lineno="223"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="224"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="225"><highlight class="normal"></highlight></codeline>
+<codeline lineno="226"><highlight class="normal">PyObject*</highlight></codeline>
+<codeline lineno="227"><highlight class="normal"><ref refid="group__capturecam_1ga9f1fb4911cda27db7a62de2ed8aa0a33" kindref="member">VideoCapture_get</ref>(<ref refid="structVideoCapture" kindref="compound">VideoCapture</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">,<sp/>PyObject<sp/>*args)</highlight></codeline>
+<codeline lineno="228"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="229"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>propId;</highlight></codeline>
+<codeline lineno="230"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!PyArg_ParseTuple(args,<sp/></highlight><highlight class="stringliteral">&quot;i&quot;</highlight><highlight class="normal">,<sp/>&amp;propId))</highlight></codeline>
+<codeline lineno="231"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>exit(0);</highlight></codeline>
+<codeline lineno="232"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;d&quot;</highlight><highlight class="normal">,<sp/>capt-&gt;getProperty(propId));</highlight></codeline>
+<codeline lineno="233"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="234"><highlight class="normal"></highlight></codeline>
+<codeline lineno="235"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="236"><highlight class="normal">VideoCapture_dealloc(<ref refid="structVideoCapture" kindref="compound">VideoCapture</ref>*<sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="237"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="238"><highlight class="normal"><sp/><sp/><sp/><sp/>Py_XDECREF(self-&gt;myarray);</highlight></codeline>
+<codeline lineno="239"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__capturecam_1gaf93b7c64209bd94d09ef2ae33f4ee605" kindref="member">VideoCapture_release</ref>();</highlight></codeline>
+<codeline lineno="240"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;ob_type-&gt;tp_free((PyObject*)</highlight><highlight class="keyword">self</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="241"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="242"><highlight class="normal"></highlight></codeline>
+<codeline lineno="243"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyObject<sp/>*</highlight></codeline>
+<codeline lineno="244"><highlight class="normal">VideoCapture_new(PyTypeObject<sp/>*type,<sp/>PyObject<sp/>*args,<sp/>PyObject<sp/>*kwds)</highlight></codeline>
+<codeline lineno="245"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="246"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structVideoCapture" kindref="compound">VideoCapture</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="247"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal"><sp/>=<sp/>(<ref refid="structVideoCapture" kindref="compound">VideoCapture</ref><sp/>*)type-&gt;tp_alloc(type,<sp/>0);</highlight></codeline>
+<codeline lineno="248"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;first_read<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="249"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*kwlist[]<sp/>=<sp/>{</highlight><highlight class="stringliteral">&quot;device&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&quot;device_path&quot;</highlight><highlight class="normal">,<sp/>NULL};</highlight></codeline>
+<codeline lineno="250"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">self</highlight><highlight class="normal"><sp/>!=<sp/>NULL)<sp/>{</highlight></codeline>
+<codeline lineno="251"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<sp/>PyArg_ParseTupleAndKeywords(args,<sp/>kwds,<sp/></highlight><highlight class="stringliteral">&quot;|is&quot;</highlight><highlight class="normal">,<sp/>kwlist,<sp/>&amp;self-&gt;device,<sp/>&amp;self-&gt;device_path)){</highlight></codeline>
+<codeline lineno="252"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>NULL;</highlight></codeline>
+<codeline lineno="253"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="254"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="255"><highlight class="normal"></highlight></codeline>
+<codeline lineno="256"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(PyObject<sp/>*)</highlight><highlight class="keyword">self</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="257"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="258"><highlight class="normal"></highlight></codeline>
+<codeline lineno="259"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="260"><highlight class="normal">VideoCapture_init(<ref refid="structVideoCapture" kindref="compound">VideoCapture</ref><sp/>*</highlight><highlight class="keyword">self</highlight><highlight class="normal">,<sp/>PyObject<sp/>*args,<sp/>PyObject<sp/>*kwds)</highlight></codeline>
+<codeline lineno="261"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="262"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*kwlist[]<sp/>=<sp/>{</highlight><highlight class="stringliteral">&quot;device&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&quot;device_path&quot;</highlight><highlight class="normal">,<sp/>NULL};</highlight></codeline>
+<codeline lineno="263"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="264"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;device<sp/>=<sp/>-1;</highlight></codeline>
+<codeline lineno="265"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">self</highlight><highlight class="normal">-&gt;device_path<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="266"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<sp/>PyArg_ParseTupleAndKeywords(args,<sp/>kwds,<sp/></highlight><highlight class="stringliteral">&quot;|is&quot;</highlight><highlight class="normal">,<sp/>kwlist,<sp/>&amp;self-&gt;device,<sp/>&amp;self-&gt;device_path)){</highlight></codeline>
+<codeline lineno="267"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>NULL;</highlight></codeline>
+<codeline lineno="268"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="269"><highlight class="normal"><sp/><sp/><sp/><sp/>capt<sp/>=<sp/></highlight><highlight class="keyword">new</highlight><highlight class="normal"><sp/><ref refid="classCaptureCAM__XIMEA" kindref="compound">CaptureCAM_XIMEA</ref>();</highlight></codeline>
+<codeline lineno="270"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="271"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(self-&gt;device<sp/>!=<sp/>-1){</highlight></codeline>
+<codeline lineno="272"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="group__capturecam_1ga27dd152656bae1341cc3f4e53a7f7f95" kindref="member">VideoCapture_open</ref>(self-&gt;device);</highlight></codeline>
+<codeline lineno="273"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight><highlight class="keywordflow">else</highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="274"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>VideoCapture_openByName(self-&gt;device_path);</highlight></codeline>
+<codeline lineno="275"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="276"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline lineno="277"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="278"><highlight class="normal"></highlight></codeline>
+<codeline lineno="279"><highlight class="normal"></highlight></codeline>
+<codeline lineno="280"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyMemberDef<sp/>VideoCapture_members[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="281"><highlight class="normal"><sp/><sp/><sp/><sp/>{NULL}<sp/></highlight></codeline>
+<codeline lineno="282"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="283"><highlight class="normal"></highlight></codeline>
+<codeline lineno="284"><highlight class="normal"></highlight></codeline>
+<codeline lineno="285"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyMethodDef<sp/>VideoCapture_methods[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="286"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;read&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)VideoCapture_xiread,<sp/>METH_NOARGS,</highlight></codeline>
+<codeline lineno="287"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;read<sp/>a<sp/>frame<sp/>from<sp/>ximea<sp/>device,<sp/>return<sp/>a<sp/>tuple<sp/>containing<sp/>a<sp/>bool<sp/>(true=<sp/>success,<sp/>false=<sp/>fail)<sp/>and<sp/>a<sp/>dictionnary<sp/>with<sp/>a<sp/>ndarray<sp/>and<sp/>meta.&quot;</highlight><highlight class="normal">},</highlight></codeline>
+<codeline lineno="288"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;set&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)<ref refid="group__capturecam_1gad08dea252aab9516c283b80bd5180418" kindref="member">VideoCapture_set</ref>,<sp/>METH_VARARGS,</highlight></codeline>
+<codeline lineno="289"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;set<sp/>the<sp/>configuration<sp/>parameter<sp/>specified<sp/>of<sp/>a<sp/>ximea<sp/>device&quot;</highlight><highlight class="normal">},</highlight></codeline>
+<codeline lineno="290"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;get&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)<ref refid="group__capturecam_1ga9f1fb4911cda27db7a62de2ed8aa0a33" kindref="member">VideoCapture_get</ref>,<sp/>METH_VARARGS,</highlight></codeline>
+<codeline lineno="291"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;get<sp/>the<sp/>configuration<sp/>parameter<sp/>specified<sp/>of<sp/>a<sp/>ximea<sp/>device&quot;</highlight><highlight class="normal">},</highlight></codeline>
+<codeline lineno="292"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;isOpened&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)<ref refid="group__capturecam_1ga4a42098fa43557947a08120ac6364b8b" kindref="member">VideoCapture_isOpened</ref>,<sp/>METH_NOARGS,</highlight></codeline>
+<codeline lineno="293"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;return<sp/>true<sp/>if<sp/>the<sp/>ximea<sp/>device<sp/>is<sp/>opened,<sp/>false<sp/>otherwise.&quot;</highlight><highlight class="normal">},</highlight></codeline>
+<codeline lineno="294"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;release&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)<ref refid="group__capturecam_1gaf93b7c64209bd94d09ef2ae33f4ee605" kindref="member">VideoCapture_release</ref>,<sp/>METH_NOARGS,</highlight></codeline>
+<codeline lineno="295"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;release<sp/>the<sp/>ximea<sp/>device.&quot;</highlight><highlight class="normal">},</highlight></codeline>
+<codeline lineno="296"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight><highlight class="stringliteral">&quot;addTrigger&quot;</highlight><highlight class="normal">,<sp/>(PyCFunction)VideoCapture_addTrigger,<sp/>METH_VARARGS,</highlight></codeline>
+<codeline lineno="297"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;add<sp/>an<sp/>external<sp/>trigger<sp/>to<sp/>the<sp/>camera,<sp/>a<sp/>frame<sp/>will<sp/>be<sp/>taken<sp/>on<sp/>each<sp/>rising<sp/>edge<sp/>of<sp/>the<sp/>trigger.&quot;</highlight><highlight class="normal">},</highlight></codeline>
+<codeline lineno="298"><highlight class="normal"><sp/><sp/><sp/><sp/>{NULL}</highlight></codeline>
+<codeline lineno="299"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="300"><highlight class="normal"></highlight></codeline>
+<codeline lineno="301"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyTypeObject<sp/>VideoCaptureType<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="302"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject_HEAD_INIT(NULL)</highlight></codeline>
+<codeline lineno="303"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*ob_size*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="304"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;VideoCapture.VideoCapture&quot;</highlight><highlight class="normal">,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_name*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="305"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">sizeof</highlight><highlight class="normal">(<ref refid="structVideoCapture" kindref="compound">VideoCapture</ref>),<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_basicsize*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="306"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_itemsize*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="307"><highlight class="normal"><sp/><sp/><sp/><sp/>(destructor)VideoCapture_dealloc,<sp/></highlight><highlight class="comment">/*tp_dealloc*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="308"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_print*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="309"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_getattr*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="310"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_setattr*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="311"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_compare*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="312"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_repr*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="313"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_as_number*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="314"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_as_sequence*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="315"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_as_mapping*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="316"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_hash<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="317"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_call*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="318"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_str*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="319"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_getattro*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="320"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_setattro*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="321"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*tp_as_buffer*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="322"><highlight class="normal"><sp/><sp/><sp/><sp/>Py_TPFLAGS_DEFAULT<sp/>|<sp/>Py_TPFLAGS_BASETYPE,<sp/></highlight><highlight class="comment">/*tp_flags*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="323"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;VideoCapture<sp/>objects&quot;</highlight><highlight class="normal">,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_doc<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="324"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_traverse<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="325"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_clear<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="326"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_richcompare<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="327"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_weaklistoffset<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="328"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_iter<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="329"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_iternext<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="330"><highlight class="normal"><sp/><sp/><sp/><sp/>VideoCapture_methods,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_methods<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="331"><highlight class="normal"><sp/><sp/><sp/><sp/>VideoCapture_members,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_members<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="332"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_getset<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="333"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_base<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="334"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_dict<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="335"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_descr_get<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="336"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_descr_set<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="337"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_dictoffset<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="338"><highlight class="normal"><sp/><sp/><sp/><sp/>(initproc)VideoCapture_init,<sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_init<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="339"><highlight class="normal"><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_alloc<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="340"><highlight class="normal"><sp/><sp/><sp/><sp/>VideoCapture_new,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>tp_new<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="341"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="342"><highlight class="normal"></highlight></codeline>
+<codeline lineno="343"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>PyMethodDef<sp/>module_methods[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="344"><highlight class="normal"><sp/><sp/><sp/><sp/>{NULL}</highlight></codeline>
+<codeline lineno="345"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="346"><highlight class="normal"></highlight></codeline>
+<codeline lineno="347"><highlight class="normal"></highlight><highlight class="comment">//<sp/>only<sp/>for<sp/>windows</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="348"><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_map_to_export(){</highlight></codeline>
+<codeline lineno="349"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_DOWNSAMPLING&quot;</highlight><highlight class="normal">,<sp/>400));</highlight><highlight class="comment">//<sp/>Change<sp/>image<sp/>resolution<sp/>by<sp/>binning<sp/>or<sp/>skipping.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="350"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_DATA_FORMAT&quot;</highlight><highlight class="normal">,<sp/><sp/>401));</highlight><highlight class="comment">//<sp/>Output<sp/>data<sp/>format.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="351"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_OFFSET_X&quot;</highlight><highlight class="normal">,<sp/>402));</highlight><highlight class="comment">//<sp/>Horizontal<sp/>offset<sp/>from<sp/>the<sp/>origin<sp/>to<sp/>the<sp/>area<sp/>of<sp/>interest<sp/>(in<sp/>pixels).</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="352"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_OFFSET_Y&quot;</highlight><highlight class="normal"><sp/>,<sp/>403));</highlight><highlight class="comment">//<sp/>Vertical<sp/>offset<sp/>from<sp/>the<sp/>origin<sp/>to<sp/>the<sp/>area<sp/>of<sp/>interest<sp/>(in<sp/>pixels).</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="353"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_TRG_SOURCE&quot;</highlight><highlight class="normal">,<sp/>404));</highlight><highlight class="comment">//<sp/>Defines<sp/>source<sp/>of<sp/>trigger.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="354"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_TRG_SOFTWARE&quot;</highlight><highlight class="normal">,<sp/>405));</highlight><highlight class="comment">//<sp/>Generates<sp/>an<sp/>internal<sp/>trigger.<sp/>PRM_TRG_SOURCE<sp/>must<sp/>be<sp/>set<sp/>to<sp/>TRG_SOFTWARE.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="355"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_GPI_SELECTOR&quot;</highlight><highlight class="normal">,<sp/>406));</highlight><highlight class="comment">//<sp/>Selects<sp/>general<sp/>purpose<sp/>input</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="356"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_GPI_MODE&quot;</highlight><highlight class="normal">,<sp/>407));</highlight><highlight class="comment">//<sp/>Set<sp/>general<sp/>purpose<sp/>input<sp/>mode</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="357"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_GPI_LEVEL&quot;</highlight><highlight class="normal">,<sp/>408));</highlight><highlight class="comment">//<sp/>Get<sp/>general<sp/>purpose<sp/>level</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="358"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_GPO_SELECTOR&quot;</highlight><highlight class="normal">,<sp/>409));</highlight><highlight class="comment">//<sp/>Selects<sp/>general<sp/>purpose<sp/>output</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="359"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_GPO_MODE&quot;</highlight><highlight class="normal">,<sp/>410));</highlight><highlight class="comment">//<sp/>Set<sp/>general<sp/>purpose<sp/>output<sp/>mode</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="360"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_LED_SELECTOR&quot;</highlight><highlight class="normal">,<sp/>411));</highlight><highlight class="comment">//<sp/>Selects<sp/>camera<sp/>signalling<sp/>LED</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="361"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_LED_MODE&quot;</highlight><highlight class="normal">,<sp/>412));</highlight><highlight class="comment">//<sp/>Define<sp/>camera<sp/>signalling<sp/>LED<sp/>functionality</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="362"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_MANUAL_WB&quot;</highlight><highlight class="normal">,<sp/>413));</highlight><highlight class="comment">//<sp/>Calculates<sp/>White<sp/>Balance(must<sp/>be<sp/>called<sp/>during<sp/>acquisition)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="363"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_AUTO_WB&quot;</highlight><highlight class="normal">,<sp/>414));</highlight><highlight class="comment">//<sp/>Automatic<sp/>white<sp/>balance</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="364"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_AEAG&quot;</highlight><highlight class="normal">,<sp/>415));</highlight><highlight class="comment">//<sp/>Automatic<sp/>exposure/gain</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="365"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_EXP_PRIORITY&quot;</highlight><highlight class="normal">,<sp/>416));</highlight><highlight class="comment">//<sp/>Exposure<sp/>priority<sp/>(0.5<sp/>-<sp/>exposure<sp/>50%,<sp/>gain<sp/>50%).</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="366"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_AE_MAX_LIMIT&quot;</highlight><highlight class="normal">,<sp/>417));</highlight><highlight class="comment">//<sp/>Maximum<sp/>limit<sp/>of<sp/>exposure<sp/>in<sp/>AEAG<sp/>procedure</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="367"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_AG_MAX_LIMIT&quot;</highlight><highlight class="normal">,<sp/>418));</highlight><highlight class="comment">//<sp/>Maximum<sp/>limit<sp/>of<sp/>gain<sp/>in<sp/>AEAG<sp/>procedure</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="368"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_AEAG_LEVEL&quot;</highlight><highlight class="normal">,<sp/>419));</highlight><highlight class="comment">//<sp/>Average<sp/>intensity<sp/>of<sp/>output<sp/>signal<sp/>AEAG<sp/>should<sp/>achieve(in<sp/>%)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="369"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_TIMEOUT&quot;</highlight><highlight class="normal">,<sp/>420));</highlight><highlight class="comment">//<sp/>Image<sp/>capture<sp/>timeout<sp/>in<sp/>milliseconds</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="370"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_TIMESTAMP&quot;</highlight><highlight class="normal">,<sp/>421));<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Time<sp/>the<sp/>image<sp/>has<sp/>been<sp/>taken<sp/>in<sp/>second<sp/>accurate<sp/>at<sp/>microsecond</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="371"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_FRAME_NUMBER&quot;</highlight><highlight class="normal">,<sp/>422));</highlight><highlight class="comment">//<sp/>Frame<sp/>number<sp/>(reset<sp/>by<sp/>exposure,<sp/>gain,<sp/>downsampling<sp/>change,<sp/>auto<sp/>exposure<sp/>(AEAG))<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="372"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH&quot;</highlight><highlight class="normal">,<sp/>423));</highlight><highlight class="comment">//<sp/>Number<sp/>of<sp/>byte<sp/>of<sp/>the<sp/>camera<sp/>(mandatory<sp/>for<sp/>data<sp/>packing)</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="373"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_XI_DATA_PACKING&quot;</highlight><highlight class="normal">,<sp/>424));</highlight><highlight class="comment">//<sp/>Data<sp/>packing<sp/>allow<sp/>to<sp/>transfert<sp/>efficiently<sp/>image<sp/>with<sp/>depth<sp/>over<sp/>8<sp/>bits</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="374"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_GAIN&quot;</highlight><highlight class="normal">,14));</highlight></codeline>
+<codeline lineno="375"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_EXPOSURE&quot;</highlight><highlight class="normal">,15));</highlight></codeline>
+<codeline lineno="376"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_POS_FRAMES&quot;</highlight><highlight class="normal">,1));</highlight></codeline>
+<codeline lineno="377"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_FRAME_WIDTH&quot;</highlight><highlight class="normal">,3));</highlight></codeline>
+<codeline lineno="378"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_FRAME_HEIGHT&quot;</highlight><highlight class="normal">,4));</highlight></codeline>
+<codeline lineno="379"><highlight class="normal"><sp/><sp/><sp/><sp/>my_map.insert(make_pair(</highlight><highlight class="stringliteral">&quot;CAP_PROP_FPS&quot;</highlight><highlight class="normal">,5));</highlight></codeline>
+<codeline lineno="380"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="381"><highlight class="normal"></highlight></codeline>
+<codeline lineno="382"><highlight class="normal">PyMODINIT_FUNC</highlight></codeline>
+<codeline lineno="383"><highlight class="normal">initximeaModule(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">)<sp/></highlight></codeline>
+<codeline lineno="384"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="385"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="386"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject*<sp/>m;</highlight></codeline>
+<codeline lineno="387"><highlight class="normal"><sp/><sp/><sp/><sp/>PyObject<sp/>*tmp,<sp/>*d;</highlight></codeline>
+<codeline lineno="388"><highlight class="normal"><sp/><sp/><sp/><sp/>import_array();</highlight></codeline>
+<codeline lineno="389"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(PyType_Ready(&amp;VideoCaptureType)<sp/>&lt;<sp/>0)</highlight></codeline>
+<codeline lineno="390"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;unable<sp/>to<sp/>install<sp/>ximea<sp/>module&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="391"><highlight class="normal"></highlight></codeline>
+<codeline lineno="392"><highlight class="normal"><sp/><sp/><sp/><sp/>m<sp/>=<sp/>Py_InitModule3(</highlight><highlight class="stringliteral">&quot;ximeaModule&quot;</highlight><highlight class="normal">,<sp/>module_methods,</highlight></codeline>
+<codeline lineno="393"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;Module<sp/>that<sp/>allows<sp/>the<sp/>use<sp/>of<sp/>Ximea<sp/>camera&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline lineno="394"><highlight class="normal"></highlight></codeline>
+<codeline lineno="395"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(m<sp/>==<sp/>NULL)</highlight></codeline>
+<codeline lineno="396"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>(<sp/></highlight><highlight class="stringliteral">&quot;unable<sp/>to<sp/>install<sp/>ximea<sp/>module&quot;</highlight><highlight class="normal"><sp/>)<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+<codeline lineno="397"><highlight class="normal"></highlight></codeline>
+<codeline lineno="398"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#if<sp/>defined<sp/>WIN32<sp/>||<sp/>defined<sp/>_WIN32</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="399"><highlight class="normal"><sp/><sp/><sp/><sp/>set_map_to_export();</highlight></codeline>
+<codeline lineno="400"><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/><sp/><sp/>#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="401"><highlight class="normal"><sp/><sp/><sp/><sp/>d<sp/>=<sp/>PyModule_GetDict(m);</highlight></codeline>
+<codeline lineno="402"><highlight class="normal"><sp/><sp/><sp/><sp/>map&lt;string,<sp/>int&gt;::iterator<sp/>p;</highlight></codeline>
+<codeline lineno="403"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(p<sp/>=<sp/>my_map.begin();<sp/>p<sp/>!=<sp/>my_map.end();<sp/>p++)</highlight></codeline>
+<codeline lineno="404"><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="405"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>tmp<sp/>=<sp/>Py_BuildValue(</highlight><highlight class="stringliteral">&quot;i&quot;</highlight><highlight class="normal">,<sp/>p-&gt;second);</highlight></codeline>
+<codeline lineno="406"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PyDict_SetItemString(d,<sp/>(</highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*)p-&gt;first.c_str(),<sp/>tmp);</highlight></codeline>
+<codeline lineno="407"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Py_DECREF(tmp);</highlight></codeline>
+<codeline lineno="408"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="409"><highlight class="normal"></highlight></codeline>
+<codeline lineno="410"><highlight class="normal"><sp/><sp/><sp/><sp/>Py_INCREF(&amp;VideoCaptureType);</highlight></codeline>
+<codeline lineno="411"><highlight class="normal"><sp/><sp/><sp/><sp/>PyModule_AddObject(m,<sp/></highlight><highlight class="stringliteral">&quot;VideoCapture&quot;</highlight><highlight class="normal">,<sp/>(PyObject<sp/>*)&amp;VideoCaptureType);</highlight></codeline>
+<codeline lineno="412"><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight></codeline>
+<codeline lineno="413"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal"><sp/>(<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::exception<sp/>&amp;<sp/>e<sp/>)<sp/></highlight></codeline>
+<codeline lineno="414"><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/></highlight></codeline>
+<codeline lineno="415"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/>e.what();<sp/></highlight></codeline>
+<codeline lineno="416"><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight></codeline>
+<codeline lineno="417"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="418"><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>__cplusplus</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="419"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="420"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/pyXimea.cpp"/>
+  </compounddef>
+</doxygen>

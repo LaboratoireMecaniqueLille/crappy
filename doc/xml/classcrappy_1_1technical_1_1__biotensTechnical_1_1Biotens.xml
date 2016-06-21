@@ -1,0 +1,431 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens" kind="class" language="Python" prot="public">
+    <compoundname>crappy::technical::_biotensTechnical::Biotens</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a3aaac2404a2ef5ce0e97ed0448c210c1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._biotensTechnical.Biotens::size</definition>
+        <argsstring></argsstring>
+        <name>size</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a8ed40836758b13b9196208b9e7b94c82" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._biotensTechnical.Biotens::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a68154ee3b2c1b573652afd80980c966e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._biotensTechnical.Biotens::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1adc3af5ea2c5b2f5d0dfca920d4996126" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._biotensTechnical.Biotens::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a0f04cdf6ebde851442c215b38319d133" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._biotensTechnical.Biotens::actuator</definition>
+        <argsstring></argsstring>
+        <name>actuator</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ac1e71efcb2c4153c753eb9fbf07f8734" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._biotensTechnical.Biotens::sensor</definition>
+        <argsstring></argsstring>
+        <name>sensor</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ae1767ac1866cf5acb814ecb2fef7faac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.__init__</definition>
+        <argsstring>(self, port=&apos;/dev/ttyUSB0&apos;, baudrate=19200, size=30)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyUSB0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>19200</defval>
+        </param>
+        <param>
+          <type>size</type>
+          <defname>size</defname>
+          <defval>30</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Biotens.
+
+You should always use this Class to communicate with the Biotens.
+
+Parameters
+----------
+port : str, default = &apos;/dev/ttyUSB0&apos;
+    Path to the correct serial port.
+size : int of float, default = 30
+    Initial size of your test sample, in mm.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="10" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a1d1d293dade1398696cebdc38f58ab20" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.mise_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>mise_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Set motor into position for sample&apos;s placement</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="36" bodyend="56"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ae35608b001728bcbb6049dbc5d5c9bee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.initialisation</definition>
+        <argsstring>(self)</argsstring>
+        <name>initialisation</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Actuators goes out completely, in order to set the initial position</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="57" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="57" bodyend="101"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a18af997b7a8f57d75512711562fc3885" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="102" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="102" bodyend="105"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1abd8c3529e3a795d7fcc68f9876de2d4b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Stop the motor. Amazing.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="106" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="106" bodyend="113"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1aeec3354470fb64e2c63cf8ef2b1cb0a8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="114" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="114" bodyend="117"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a58aa1568669699fa3c17cd84eb40bd03" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Clears error in motor registers. obviously.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="118" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="118" bodyend="124"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ae1767ac1866cf5acb814ecb2fef7faac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.__init__</definition>
+        <argsstring>(self, port=&apos;/dev/ttyUSB0&apos;, baudrate=19200, size=30)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyUSB0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>19200</defval>
+        </param>
+        <param>
+          <type>size</type>
+          <defname>size</defname>
+          <defval>30</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Biotens.
+
+You should always use this Class to communicate with the Biotens.
+
+Parameters
+----------
+port : str, default = &apos;/dev/ttyUSB0&apos;
+    Path to the correct serial port.
+size : int of float, default = 30
+    Initial size of your test sample, in mm.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" bodystart="10" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a1d1d293dade1398696cebdc38f58ab20" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.mise_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>mise_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Set motor into position for sample&apos;s placement</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" bodystart="36" bodyend="56"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ae35608b001728bcbb6049dbc5d5c9bee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.initialisation</definition>
+        <argsstring>(self)</argsstring>
+        <name>initialisation</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Actuators goes out completely, in order to set the initial position</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" line="57" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" bodystart="57" bodyend="101"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a18af997b7a8f57d75512711562fc3885" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" line="102" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" bodystart="102" bodyend="105"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1abd8c3529e3a795d7fcc68f9876de2d4b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Stop the motor. Amazing.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" line="106" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" bodystart="106" bodyend="113"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1aeec3354470fb64e2c63cf8ef2b1cb0a8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" line="114" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" bodystart="114" bodyend="117"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a58aa1568669699fa3c17cd84eb40bd03" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._biotensTechnical.Biotens.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Clears error in motor registers. obviously.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" line="118" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_biotensTechnical.py" bodystart="118" bodyend="124"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="51">
+        <label>Motion</label>
+      </node>
+      <node id="50">
+        <label>crappy.technical._biotensTechnical.Biotens</label>
+        <link refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens"/>
+        <childnode refid="51" relation="public-inheritance">
+        </childnode>
+        <childnode refid="51" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="53">
+        <label>Motion</label>
+      </node>
+      <node id="52">
+        <label>crappy.technical._biotensTechnical.Biotens</label>
+        <link refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens"/>
+        <childnode refid="53" relation="public-inheritance">
+        </childnode>
+        <childnode refid="53" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_biotensTechnical.py" bodystart="9" bodyend="124"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ae1767ac1866cf5acb814ecb2fef7faac" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ae1767ac1866cf5acb814ecb2fef7faac" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a0f04cdf6ebde851442c215b38319d133" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>actuator</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a68154ee3b2c1b573652afd80980c966e" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a58aa1568669699fa3c17cd84eb40bd03" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a58aa1568669699fa3c17cd84eb40bd03" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1aeec3354470fb64e2c63cf8ef2b1cb0a8" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1aeec3354470fb64e2c63cf8ef2b1cb0a8" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ae35608b001728bcbb6049dbc5d5c9bee" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>initialisation</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ae35608b001728bcbb6049dbc5d5c9bee" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>initialisation</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a1d1d293dade1398696cebdc38f58ab20" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>mise_position</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a1d1d293dade1398696cebdc38f58ab20" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>mise_position</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a8ed40836758b13b9196208b9e7b94c82" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>port</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a18af997b7a8f57d75512711562fc3885" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a18af997b7a8f57d75512711562fc3885" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1ac1e71efcb2c4153c753eb9fbf07f8734" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>sensor</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1adc3af5ea2c5b2f5d0dfca920d4996126" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>ser</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1a3aaac2404a2ef5ce0e97ed0448c210c1" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>size</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1abd8c3529e3a795d7fcc68f9876de2d4b" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1technical_1_1__biotensTechnical_1_1Biotens_1abd8c3529e3a795d7fcc68f9876de2d4b" prot="public" virt="non-virtual"><scope>crappy::technical::_biotensTechnical::Biotens</scope><name>stop</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

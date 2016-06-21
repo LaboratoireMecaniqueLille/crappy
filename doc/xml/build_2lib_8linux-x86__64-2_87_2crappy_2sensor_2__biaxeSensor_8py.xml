@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2__biaxeSensor_8py" kind="file" language="Python">
+    <compoundname>_biaxeSensor.py</compoundname>
+    <innerclass refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor" prot="public">crappy::sensor::_biaxeSensor::BiaxeSensor</innerclass>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__biaxeSensor">crappy::sensor::_biaxeSensor</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">#<sp/>coding:<sp/>utf-8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>serial</highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._meta<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>motion</highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6" refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor" kindref="compound">BiaxeSensor</ref>(motion.MotionSensor):</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;Declare<sp/>a<sp/>new<sp/>axis<sp/>for<sp/>the<sp/>Biaxe&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a1c8d89d31d3c590a46e40eee71ac2374" kindref="member">__init__</ref>(self,<sp/>port=&apos;/dev/ttyUSB0&apos;,<sp/>baudrate=38400,<sp/>timeout=1,<sp/>ser=None):</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;This<sp/>class<sp/>create<sp/>an<sp/>axis<sp/>and<sp/>opens<sp/>the<sp/>corresponding<sp/>serial<sp/>port.</highlight></codeline>
+<codeline lineno="11"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="12"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Parameters</highlight></codeline>
+<codeline lineno="13"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>----------</highlight></codeline>
+<codeline lineno="14"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>port<sp/>:<sp/>str</highlight></codeline>
+<codeline lineno="15"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Path<sp/>to<sp/>the<sp/>corresponding<sp/>serial<sp/>port,<sp/>e.g<sp/>&apos;/dev/ttyS4&apos;</highlight></codeline>
+<codeline lineno="16"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>baudrate<sp/>:<sp/>int,<sp/>default<sp/>=<sp/>38400</highlight></codeline>
+<codeline lineno="17"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Set<sp/>the<sp/>corresponding<sp/>baud<sp/>rate.</highlight></codeline>
+<codeline lineno="18"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>timeout<sp/>:<sp/>int<sp/>or<sp/>float,<sp/>default<sp/>=<sp/>1</highlight></codeline>
+<codeline lineno="19"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Serial<sp/>timeout.</highlight></codeline>
+<codeline lineno="20"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>super(BiaxeSensor,<sp/>self).<ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a1c8d89d31d3c590a46e40eee71ac2374" kindref="member">__init__</ref>(port,<sp/>baudrate)</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a1077757b854ac2565baa6edde1a9ed76" kindref="member">port</ref><sp/>=<sp/>port</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a34a0408e5d0697c1ff9ca5125afbea62" kindref="member">baudrate</ref><sp/>=<sp/>baudrate</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a43099461d7dadc06ff95dd7e14bba9e1" kindref="member">timeout</ref><sp/>=<sp/>timeout</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>ser<sp/></highlight><highlight class="keywordflow">is</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">not</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">None</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="26"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a66cd4f423d80ca07937afbab1b5d7cc9" kindref="member">ser</ref><sp/>=<sp/>ser</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="28"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a66cd4f423d80ca07937afbab1b5d7cc9" kindref="member">ser</ref><sp/>=<sp/>serial.Serial(self.<ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a1077757b854ac2565baa6edde1a9ed76" kindref="member">port</ref>,<sp/>self.<ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a34a0408e5d0697c1ff9ca5125afbea62" kindref="member">baudrate</ref>,</highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>serial.EIGHTBITS,<sp/>serial.PARITY_EVEN</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/>serial.STOPBITS_ONE,<sp/>self.<ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1a43099461d7dadc06ff95dd7e14bba9e1" kindref="member">timeout</ref>)</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.ser.write(</highlight><highlight class="stringliteral">&quot;OPMODE<sp/>0\r\n<sp/>EN\r\n&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="classcrappy_1_1sensor_1_1__biaxeSensor_1_1BiaxeSensor_1ad753cef8bdb4b32f28b10f390dff7853" kindref="member">get_position</ref>(self):</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="35"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>TODO</highlight></codeline>
+<codeline lineno="36"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Search<sp/>for<sp/>the<sp/>physical<sp/>position<sp/>of<sp/>the<sp/>motor</highlight></codeline>
+<codeline lineno="37"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">pass</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_biaxeSensor.py"/>
+  </compounddef>
+</doxygen>

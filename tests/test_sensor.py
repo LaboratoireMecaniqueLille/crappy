@@ -1,21 +1,21 @@
 import time
 #import matplotlib
 #matplotlib.use('Agg')
-import crappy 
+import crappy2
 import pandas as pd
-crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
+crappy2.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
 if __name__ == '__main__':
-	agilentSensor=crappy.sensor.Agilent34420ASensor(device='/dev/ttyUSB0',baudrate=9600,timeout=1)
+	agilentSensor=crappy2.sensor.Agilent34420ASensor(device='/dev/ttyUSB0', baudrate=9600, timeout=1)
 
-	tension=crappy.blocks.MeasureAgilent34420A(agilentSensor,labels=['t(s)','tension(V)'],freq=1)
-	compacter_tension=crappy.blocks.Compacter(4)
-	save_tension=crappy.blocks.Saver("/home/essais-2015-3/Bureau/tension_coeff.txt")
-	graph_tension=crappy.blocks.Grapher("dynamic",('t(s)','tension(V)')) #,('t(s)','tension(V)')
+	tension=crappy2.blocks.MeasureAgilent34420A(agilentSensor, labels=['t(s)', 'tension(V)'], freq=1)
+	compacter_tension=crappy2.blocks.Compacter(4)
+	save_tension=crappy2.blocks.Saver("/home/essais-2015-3/Bureau/tension_coeff.txt")
+	graph_tension=crappy2.blocks.Grapher("dynamic", ('t(s)', 'tension(V)')) #,('t(s)','tension(V)')
 
-	link10=crappy.links.Link()
-	link11=crappy.links.Link()
-	link12=crappy.links.Link()
+	link10=crappy2.links.Link()
+	link11=crappy2.links.Link()
+	link12=crappy2.links.Link()
 
 
 	tension.add_output(link10)
@@ -27,10 +27,10 @@ if __name__ == '__main__':
 
 	try:
 		t0=time.time()
-		for instance in crappy.blocks._meta.MasterBlock.instances:
+		for instance in crappy2.blocks._meta.MasterBlock.instances:
 			instance.t0(t0)
 
-		for instance in crappy.blocks._meta.MasterBlock.instances:
+		for instance in crappy2.blocks._meta.MasterBlock.instances:
 			instance.start()
 
 	########################################### Waiting for execution
@@ -46,9 +46,9 @@ if __name__ == '__main__':
 
 	except (Exception,KeyboardInterrupt) as e:
 		print "Exception in main :", e
-		#for instance in crappy.blocks._meta.MasterBlock.instances:
+		#for instance in crappy2.blocks._meta.MasterBlock.instances:
 			#instance.join()
-		for instance in crappy.blocks._meta.MasterBlock.instances:
+		for instance in crappy2.blocks._meta.MasterBlock.instances:
 			try:
 				instance.stop()
 				print "instance stopped : ", instance

@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="page2" kind="page">
+    <compoundname>page2</compoundname>
+    <title>Basics</title>
+    <innerpage refid="physical_objects">Physical objects</innerpage>
+    <innerpage refid="blocks">Blocks objects</innerpage>
+    <innerpage refid="links">Links objects</innerpage>
+    <innerpage refid="condition">Condition objects</innerpage>
+    <detaileddescription>
+<para>================</para><para><ref refid="physical_objects" kindref="compound">Physical objects</ref> <ref refid="blocks" kindref="compound">Blocks objects</ref> <ref refid="links" kindref="compound">Links objects</ref> <ref refid="condition" kindref="compound">Condition objects</ref> </para>    </detaileddescription>
+  </compounddef>
+</doxygen>

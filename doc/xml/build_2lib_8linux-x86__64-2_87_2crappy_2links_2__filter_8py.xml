@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="build_2lib_8linux-x86__64-2_87_2crappy_2links_2__filter_8py" kind="file" language="Python">
+    <compoundname>_filter.py</compoundname>
+    <innerclass refid="classcrappy_1_1links_1_1__filter_1_1Filter" prot="public">crappy::links::_filter::Filter</innerclass>
+    <innernamespace refid="namespacecrappy_1_1links_1_1__filter">crappy::links::_filter</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">#<sp/>coding:<sp/>utf-8</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="keyword">from</highlight><highlight class="normal"><sp/>._metaCondition<sp/></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>MetaCondition</highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="keyword">import</highlight><highlight class="normal"><sp/>numpy<sp/></highlight><highlight class="keyword">as</highlight><highlight class="normal"><sp/>np</highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6" refid="classcrappy_1_1links_1_1__filter_1_1Filter" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classcrappy_1_1links_1_1__filter_1_1Filter" kindref="compound">Filter</ref>(<ref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" kindref="compound">MetaCondition</ref>):</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;Filters<sp/>the<sp/>signal.&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal"><ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1af2e8dd7b25ad66d22298f40138a89dc0" kindref="member">__init__</ref>(self,<sp/>labels=[],<sp/>mode=&quot;median&quot;,<sp/>size=10):</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;&quot;&quot;</highlight></codeline>
+<codeline lineno="11"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>This<sp/>condition<sp/>filters<sp/>the<sp/>selected<sp/>data<sp/>with<sp/>a<sp/>mean<sp/>or<sp/>a<sp/>median.</highlight></codeline>
+<codeline lineno="12"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="13"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Parameters</highlight></codeline>
+<codeline lineno="14"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>----------</highlight></codeline>
+<codeline lineno="15"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>labels<sp/>:<sp/>list<sp/>of<sp/>str</highlight></codeline>
+<codeline lineno="16"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>List<sp/>of<sp/>all<sp/>the<sp/>labels<sp/>of<sp/>the<sp/>data<sp/>you<sp/>want<sp/>to<sp/>filter.</highlight></codeline>
+<codeline lineno="17"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>mode<sp/>:<sp/>{&apos;median&apos;,<sp/>&apos;mean&apos;}</highlight></codeline>
+<codeline lineno="18"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>You<sp/>can<sp/>either<sp/>filter<sp/>with<sp/>a<sp/>mean<sp/>or<sp/>a<sp/>median.</highlight></codeline>
+<codeline lineno="19"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>size<sp/>:<sp/>int,<sp/>default<sp/>=<sp/>10</highlight></codeline>
+<codeline lineno="20"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Define<sp/>on<sp/>how<sp/>many<sp/>point<sp/>you<sp/>want<sp/>to<sp/>apply<sp/>your<sp/>filter.</highlight></codeline>
+<codeline lineno="21"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="22"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Returns</highlight></codeline>
+<codeline lineno="23"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-------</highlight></codeline>
+<codeline lineno="24"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>dict<sp/>:<sp/>OrderedDict</highlight></codeline>
+<codeline lineno="25"><highlight class="stringliteral"></highlight></codeline>
+<codeline lineno="26"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>The<sp/>dict<sp/>contains<sp/>the<sp/>same<sp/>values<sp/>as<sp/>the<sp/>input,<sp/>plus<sp/>the<sp/>filtered<sp/>value,</highlight></codeline>
+<codeline lineno="27"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>labeled<sp/>as<sp/>(name_of_the_input_label)_filtered.</highlight></codeline>
+<codeline lineno="28"><highlight class="stringliteral"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;&quot;&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a57debbb2fe3bb0885130070314deeb6a" kindref="member">mode</ref><sp/>=<sp/>mode</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1aaf9c3011f8907b3c0e2f5370f3d87a2a" kindref="member">size</ref><sp/>=<sp/>size</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a4e3f7edc0d076d8a4452ef5b71f343df" kindref="member">labels</ref><sp/>=<sp/>labels</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a27eab9ca9979014cb0c6f56ab97ea817" kindref="member">FIFO</ref><sp/>=<sp/>[[]<sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>label<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a4e3f7edc0d076d8a4452ef5b71f343df" kindref="member">labels</ref>]</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>self.FIFO</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">evaluate(self,<sp/>value):</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>i,<sp/>label<sp/></highlight><highlight class="keywordflow">in</highlight><highlight class="normal"><sp/>enumerate(self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a4e3f7edc0d076d8a4452ef5b71f343df" kindref="member">labels</ref>):</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">#<sp/>print<sp/>self.FIFO[i]</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a27eab9ca9979014cb0c6f56ab97ea817" kindref="member">FIFO</ref>[i].insert(0,<sp/>value[label])</highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>len(self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a27eab9ca9979014cb0c6f56ab97ea817" kindref="member">FIFO</ref>[i])<sp/>&gt;<sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1aaf9c3011f8907b3c0e2f5370f3d87a2a" kindref="member">size</ref>:</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a27eab9ca9979014cb0c6f56ab97ea817" kindref="member">FIFO</ref>[i].pop()</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a57debbb2fe3bb0885130070314deeb6a" kindref="member">mode</ref><sp/>==<sp/></highlight><highlight class="stringliteral">&quot;median&quot;</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>result<sp/>=<sp/>np.median(self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a27eab9ca9979014cb0c6f56ab97ea817" kindref="member">FIFO</ref>[i])</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">elif</highlight><highlight class="normal"><sp/>self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a57debbb2fe3bb0885130070314deeb6a" kindref="member">mode</ref><sp/>==<sp/></highlight><highlight class="stringliteral">&quot;mean&quot;</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>result<sp/>=<sp/>np.mean(self.<ref refid="classcrappy_1_1links_1_1__filter_1_1Filter_1a27eab9ca9979014cb0c6f56ab97ea817" kindref="member">FIFO</ref>[i])</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>value[label<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;_filtered&quot;</highlight><highlight class="normal">]<sp/>=<sp/>result</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>value</highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_filter.py"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,447 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor" kind="class" language="Python" prot="public">
+    <compoundname>crappy::sensor::_comediSensor::ComediSensor</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Acquisition</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Acquisition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a50d86e6a74b1570079a715d3859ea13e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::subdevice</definition>
+        <argsstring></argsstring>
+        <name>subdevice</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1ae484a0a71e8c655646e1fa3fb76a0193" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::channels</definition>
+        <argsstring></argsstring>
+        <name>channels</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="37" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1ade93166848bef98b28e11958eab1584b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::range_num</definition>
+        <argsstring></argsstring>
+        <name>range_num</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="38" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a7ee0509950084233f9a32eedd55a9d52" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::gain</definition>
+        <argsstring></argsstring>
+        <name>gain</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a4b5f37fcfe437cb457654c0cfd94977f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::offset</definition>
+        <argsstring></argsstring>
+        <name>offset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a1afa611664f539e284513b5413d830bb" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::device</definition>
+        <argsstring></argsstring>
+        <name>device</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="41" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a2ee6290ab83f68df9d3bf448095e081a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::nchans</definition>
+        <argsstring></argsstring>
+        <name>nchans</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="45" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1ab160095340d8a7115fed28a22f07849e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::position</definition>
+        <argsstring></argsstring>
+        <name>position</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="64" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a63fe893b316cbec18738431f636f9a9c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::maxdata</definition>
+        <argsstring></argsstring>
+        <name>maxdata</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="84" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="84" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a94bb4164925b04825cbdeb2113635f5d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._comediSensor.ComediSensor::range_ds</definition>
+        <argsstring></argsstring>
+        <name>range_ds</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="85" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="85" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a1504e19a58c34598694c950af4cb7eab" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._comediSensor.ComediSensor.__init__</definition>
+        <argsstring>(self, device=&apos;/dev/comedi0&apos;, subdevice=0, channels=[0], range_num=0, gain=1, offset=0)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>device</type>
+          <defname>device</defname>
+          <defval>&apos;/dev/comedi0&apos;</defval>
+        </param>
+        <param>
+          <type>subdevice</type>
+          <defname>subdevice</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>channels</type>
+          <defname>channels</defname>
+          <defval>[0]</defval>
+        </param>
+        <param>
+          <type>range_num</type>
+          <defname>range_num</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>offset</type>
+          <defname>offset</defname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert tension value into digital values, on several channels.
+
+Output is (measured_value * gain) + offset.
+
+Parameters
+----------
+device : str, default = &apos;/dev/comedi0&apos;
+Path to the device.
+subdevice : int, default = 0
+Subdevice 0 is the intput.
+channel : int or list of int, default = 0
+The desired output channel(s).
+range_num : int, default = 0
+See the comedi documentation for different values.
+gain : float or list of float, default = 1
+Multiplication gain for each channel. If there is multiple channels
+for a single gain, it will be applied to all.
+offset : float, default = 0
+Add this value for each channel. If there is multiple channels
+for a single offset, it will be applied to all.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="12" bodyend="54"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a73d92586ef2a717cd22bdeadc5023d62" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._comediSensor.ComediSensor.get_data</definition>
+        <argsstring>(self, channel_number=&quot;all&quot;)</argsstring>
+        <name>get_data</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>channel_number</type>
+          <defname>channel_number</defname>
+          <defval>&quot;all&quot;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Read the signal for desired channel
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="55" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="55" bodyend="78"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a90966d9e259f04797a81ea278c115613" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._comediSensor.ComediSensor.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Gather range and maxdata for all specified channels. This is only 
+called on init.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="79" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="79" bodyend="91"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1af182de6bc85861f12b7d44728e8f0100" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._comediSensor.ComediSensor.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Close the device.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="92" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="92" bodyend="99"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a1504e19a58c34598694c950af4cb7eab" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._comediSensor.ComediSensor.__init__</definition>
+        <argsstring>(self, device=&apos;/dev/comedi0&apos;, subdevice=0, channels=[0], range_num=0, gain=1, offset=0)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>device</type>
+          <defname>device</defname>
+          <defval>&apos;/dev/comedi0&apos;</defval>
+        </param>
+        <param>
+          <type>subdevice</type>
+          <defname>subdevice</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>channels</type>
+          <defname>channels</defname>
+          <defval>[0]</defval>
+        </param>
+        <param>
+          <type>range_num</type>
+          <defname>range_num</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>offset</type>
+          <defname>offset</defname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert tension value into digital values, on several channels.
+
+Output is (measured_value * gain) + offset.
+
+Parameters
+----------
+device : str, default = &apos;/dev/comedi0&apos;
+Path to the device.
+subdevice : int, default = 0
+Subdevice 0 is the intput.
+channel : int or list of int, default = 0
+The desired output channel(s).
+range_num : int, default = 0
+See the comedi documentation for different values.
+gain : float or list of float, default = 1
+Multiplication gain for each channel. If there is multiple channels
+for a single gain, it will be applied to all.
+offset : float, default = 0
+Add this value for each channel. If there is multiple channels
+for a single offset, it will be applied to all.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_comediSensor.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_comediSensor.py" bodystart="12" bodyend="54"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a73d92586ef2a717cd22bdeadc5023d62" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._comediSensor.ComediSensor.get_data</definition>
+        <argsstring>(self, channel_number=&quot;all&quot;)</argsstring>
+        <name>get_data</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>channel_number</type>
+          <defname>channel_number</defname>
+          <defval>&quot;all&quot;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Read the signal for desired channel
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_comediSensor.py" line="55" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_comediSensor.py" bodystart="55" bodyend="78"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a90966d9e259f04797a81ea278c115613" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._comediSensor.ComediSensor.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Gather range and maxdata for all specified channels. This is only 
+called on init.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_comediSensor.py" line="79" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_comediSensor.py" bodystart="79" bodyend="91"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1af182de6bc85861f12b7d44728e8f0100" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._comediSensor.ComediSensor.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Close the device.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_comediSensor.py" line="92" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_comediSensor.py" bodystart="92" bodyend="99"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Sensor class for Comedi devices.</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="118">
+        <label>crappy.sensor._comediSensor.ComediSensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor"/>
+        <childnode refid="119" relation="public-inheritance">
+        </childnode>
+        <childnode refid="119" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="119">
+        <label>Acquisition</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="120">
+        <label>crappy.sensor._comediSensor.ComediSensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor"/>
+        <childnode refid="121" relation="public-inheritance">
+        </childnode>
+        <childnode refid="121" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="121">
+        <label>Acquisition</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_comediSensor.py" bodystart="9" bodyend="99"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a1504e19a58c34598694c950af4cb7eab" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a1504e19a58c34598694c950af4cb7eab" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1ae484a0a71e8c655646e1fa3fb76a0193" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>channels</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1af182de6bc85861f12b7d44728e8f0100" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>close</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1af182de6bc85861f12b7d44728e8f0100" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>close</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a1afa611664f539e284513b5413d830bb" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>device</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a7ee0509950084233f9a32eedd55a9d52" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>gain</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a73d92586ef2a717cd22bdeadc5023d62" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>get_data</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a73d92586ef2a717cd22bdeadc5023d62" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>get_data</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a63fe893b316cbec18738431f636f9a9c" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>maxdata</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a2ee6290ab83f68df9d3bf448095e081a" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>nchans</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a90966d9e259f04797a81ea278c115613" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>new</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a90966d9e259f04797a81ea278c115613" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>new</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a4b5f37fcfe437cb457654c0cfd94977f" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>offset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1ab160095340d8a7115fed28a22f07849e" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>position</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a94bb4164925b04825cbdeb2113635f5d" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>range_ds</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1ade93166848bef98b28e11958eab1584b" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>range_num</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor_1a50d86e6a74b1570079a715d3859ea13e" prot="public" virt="non-virtual"><scope>crappy::sensor::_comediSensor::ComediSensor</scope><name>subdevice</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

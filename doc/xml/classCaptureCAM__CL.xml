@@ -1,0 +1,744 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classCaptureCAM__CL" kind="class" language="C++" prot="public">
+    <compoundname>CaptureCAM_CL</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a266e2b3ba3adccc6df770467550949ee" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::format</definition>
+        <argsstring></argsstring>
+        <name>format</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Image format data </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="75" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1ab4bfa7d4e0737be410f9a1bb2ee8a331" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::width</definition>
+        <argsstring></argsstring>
+        <name>width</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Image width </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="76" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1aa2c3b3b877b2be9060509eb74a746fbb" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::height</definition>
+        <argsstring></argsstring>
+        <name>height</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Image height </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="77" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="77" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a2da5179b4ab5cea7cce3500426ddc5fa" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::xoffset</definition>
+        <argsstring></argsstring>
+        <name>xoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Image x offset </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="78" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="78" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a1eb4328834bde84f1837c6033012be0d" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::yoffset</definition>
+        <argsstring></argsstring>
+        <name>yoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Image y offset </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="79" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="79" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a389bd2abcf59cbbc09356897508eec7b" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::boardNr</definition>
+        <argsstring></argsstring>
+        <name>boardNr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>The number of the device </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="80" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="80" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1ae7ac89be87ecb4da1ae3ca8dbf391f5b" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::timeout</definition>
+        <argsstring></argsstring>
+        <name>timeout</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Timeout in microsecond </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="81" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a63023c34ba9c4cb2c8ab517b8190f641" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::camPort</definition>
+        <argsstring></argsstring>
+        <name>camPort</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>The number of the port on the cameraLink interface, should be PORT_A or PORT_B. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="82" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1aac6834248bdede33c42d3ef3e3c7ae26" prot="public" static="no" mutable="no">
+        <type>double</type>
+        <definition>double CaptureCAM_CL::framespersec</definition>
+        <argsstring></argsstring>
+        <name>framespersec</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>The number of frames per sec wanted </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="83" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="83" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1aec279de1b4bf987a509af1b7b8aa0780" prot="public" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int CaptureCAM_CL::exposure</definition>
+        <argsstring></argsstring>
+        <name>exposure</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Exposure time in microsecond </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="84" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="84" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1ae4cbea3bd517918aca81243658cfe0d9" prot="public" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* CaptureCAM_CL::file</definition>
+        <argsstring></argsstring>
+        <name>file</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>path to the configuration file of the camera </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="85" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="85" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a9ed9c3ca83e9a37ba035b63085d436f0" prot="public" static="no" mutable="no">
+        <type>void *</type>
+        <definition>void* CaptureCAM_CL::ImgPtr</definition>
+        <argsstring></argsstring>
+        <name>ImgPtr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Pointer to image data </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="86" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="86" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1ab33aa6f1a3c040f04500bad5cb06f7df" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool CaptureCAM_CL::isopened</definition>
+        <argsstring></argsstring>
+        <name>isopened</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>State of the camera device </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="87" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="87" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a6466f27f7f76937b6f649a0751648fff" prot="private" static="no" mutable="no">
+        <type>frameindex_t</type>
+        <definition>frameindex_t CaptureCAM_CL::last_pic_nr</definition>
+        <argsstring></argsstring>
+        <name>last_pic_nr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="93" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="93" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1ad4408b11e89345eb11081e2cb484d6ec" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::nId</definition>
+        <argsstring></argsstring>
+        <name>nId</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="94" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a22612eddc9597ccc570dd9ce0b297df3" prot="private" static="no" mutable="no">
+        <type>frameindex_t</type>
+        <definition>frameindex_t CaptureCAM_CL::cur_pic_nr</definition>
+        <argsstring></argsstring>
+        <name>cur_pic_nr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="95" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="95" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a4c867bf9e775fc8630fe38c5144ee81a" prot="private" static="no" mutable="no">
+        <type>frameindex_t</type>
+        <definition>frameindex_t CaptureCAM_CL::nrOfPicturesToGrab</definition>
+        <argsstring></argsstring>
+        <name>nrOfPicturesToGrab</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="96" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="96" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a7abafb24af339ff611eae92e8d61a682" prot="private" static="no" mutable="no">
+        <type>frameindex_t</type>
+        <definition>frameindex_t CaptureCAM_CL::nbBuffers</definition>
+        <argsstring></argsstring>
+        <name>nbBuffers</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="97" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="97" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1ab123172f75641cb59f2b9ccceb0b140f" prot="private" static="no" mutable="no">
+        <type>Fg_Struct *</type>
+        <definition>Fg_Struct* CaptureCAM_CL::fg</definition>
+        <argsstring></argsstring>
+        <name>fg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="98" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a8f93408f3e5bd3d124e6cc256cd73bc4" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::samplePerPixel</definition>
+        <argsstring></argsstring>
+        <name>samplePerPixel</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="99" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="99" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1afa8638196399f0ffa001ad373b0abebf" prot="private" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t CaptureCAM_CL::bytePerSample</definition>
+        <argsstring></argsstring>
+        <name>bytePerSample</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="100" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="100" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1af038d0fc02cdfdd4008a8e7e58ae4d22" prot="private" static="no" mutable="no">
+        <type>unsigned int</type>
+        <definition>unsigned int CaptureCAM_CL::TriggerMode</definition>
+        <argsstring></argsstring>
+        <name>TriggerMode</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="101" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="101" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1ae1d0de740cb16b1feaa856056f8defe2" prot="private" static="no" mutable="no">
+        <type>const char *</type>
+        <definition>const char* CaptureCAM_CL::applet</definition>
+        <argsstring></argsstring>
+        <name>applet</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="102" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="102" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1ae801b07441ddefd61407fa7cba3dc1b9" prot="private" static="no" mutable="no">
+        <type>dma_mem *</type>
+        <definition>dma_mem* CaptureCAM_CL::memHandle</definition>
+        <argsstring></argsstring>
+        <name>memHandle</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="103" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="103" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a467ffd1b099575c812d3fb81441b459d" prot="private" static="no" mutable="no">
+        <type>char</type>
+        <definition>char CaptureCAM_CL::Data[255]</definition>
+        <argsstring>[255]</argsstring>
+        <name>Data</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="104" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="104" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1a82956d64b13a09748cbc9e8efd236a9f" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::ComNr</definition>
+        <argsstring></argsstring>
+        <name>ComNr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="105" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="105" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCaptureCAM__CL_1accc04190f8d3c5a958b0a35f08cd1f3f" prot="private" static="no" mutable="no">
+        <type>void *</type>
+        <definition>void* CaptureCAM_CL::serialRefPtr</definition>
+        <argsstring></argsstring>
+        <name>serialRefPtr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="108" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="group__capturecam_1gab72d29bf87d08bd6bc892b2820fd417a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>CaptureCAM_CL::CaptureCAM_CL</definition>
+        <argsstring>()</argsstring>
+        <name>CaptureCAM_CL</name>
+        <briefdescription>
+<para>Constructor of <ref refid="classCaptureCAM__CL" kindref="compound">CaptureCAM_CL</ref> Class It Initialize the camera class. </para>        </briefdescription>
+        <detaileddescription>
+<para>Constructor </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="63" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="31" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga14053466a32e92a11db0ac810cccb075" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>CaptureCAM_CL::~CaptureCAM_CL</definition>
+        <argsstring>()</argsstring>
+        <name>~CaptureCAM_CL</name>
+        <briefdescription>
+<para>Destructor of <ref refid="classCaptureCAM__CL" kindref="compound">CaptureCAM_CL</ref> Class. </para>        </briefdescription>
+        <detaileddescription>
+<para>Desctructor </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="64" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="40" bodyend="42"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga16b6491e0fe8caae23d169dacc87589e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool CaptureCAM_CL::open</definition>
+        <argsstring>(int index, const char *file)</argsstring>
+        <name>open</name>
+        <param>
+          <type>int</type>
+          <declname>index</declname>
+          <defname>wIndex</defname>
+        </param>
+        <param>
+          <type>const char *</type>
+          <declname>file</declname>
+        </param>
+        <briefdescription>
+<para>Initialize camera input. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>wIndex</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of the camera device, starts at 0. </para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>file</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>path to the configuration file of the camera, cannot be Null. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>True if the camera was correctly openned. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="65" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="96" bodyend="117"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga0de12aa713d189d122e945956ce18927" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_CL::close</definition>
+        <argsstring>()</argsstring>
+        <name>close</name>
+        <briefdescription>
+<para>Close the camera device: stop the acquisition and free the allocated memory. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="66" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="137" bodyend="143"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga0e323148cfd234d43a32918386d021d1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool CaptureCAM_CL::grabFrame</definition>
+        <argsstring>()</argsstring>
+        <name>grabFrame</name>
+        <briefdescription>
+<para>Grab a frame, the data pointer is stored in the ImgPtr attribute. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>True if the frame grabber has successfully grabbed a frame. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="67" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="151" bodyend="177"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga41cc34667ccf43936c6e2fa2fa0df9f0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::startAcquire</definition>
+        <argsstring>()</argsstring>
+        <name>startAcquire</name>
+        <briefdescription>
+<para>This function start a continuous grabbing. Having started, an infinite number of image will be grabbed. By default, the maximum image number is set to GRAB_INFINITE (nrOfPicturesToGrab) If a timeout occurs, the grabbing will be stopped. To manually stop the grabbing, use <ref refid="group__capturecam_1ga0de12aa713d189d122e945956ce18927" kindref="member">CaptureCAM_CL::close()</ref>. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>FG_OK if the acquisition has started, FG_ERROR if it has failed. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="68" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="375" bodyend="410"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1gaf39e3c68b693bdf10637923ef51ff1a2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::restart</definition>
+        <argsstring>()</argsstring>
+        <name>restart</name>
+        <briefdescription>
+<para>This function restart the device, and re-init the serial port communication. </para>        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>FG_OK if the acquisition ha restarted, FG_ERROR if it has failed. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="69" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="418" bodyend="434"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga3c0090ca5fa9fa481f1945cfd56b79b3" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int CaptureCAM_CL::stop</definition>
+        <argsstring>()</argsstring>
+        <name>stop</name>
+        <briefdescription>
+<para>Stop the acquisition of a camera device. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="70" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="124" bodyend="131"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1gaaeae6486152d120aba8122ac7957045f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>unsigned int</type>
+        <definition>unsigned int CaptureCAM_CL::getProperty</definition>
+        <argsstring>(int)</argsstring>
+        <name>getProperty</name>
+        <param>
+          <type>int</type>
+          <defname>property_id</defname>
+        </param>
+        <briefdescription>
+<para>Reading the current value of a parameter from a frame grabber. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>property_id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>As argument, a identification number is needed. If the identification number is unknown, the parameter name has to be given. It can be one of the following:<itemizedlist>
+<listitem><para>FG_CAMSTAUS: If a camera signal is on CameraLink port value is 1 else 0.</para></listitem><listitem><para>FG_REVNR: Current revision version of camera DLL.</para></listitem><listitem><para>FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.</para></listitem><listitem><para>FG_WIDTH: Width of the clipping image.</para></listitem><listitem><para>FG_MAXWIDTH: Maximum width of the clipping image.</para></listitem><listitem><para>FG_HEIGHT: Height of the clipping image.</para></listitem><listitem><para>FG_MAXHEIGHT: Maximum height of the clipping image.</para></listitem><listitem><para>FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).</para></listitem><listitem><para>FG_XOFFSET: X-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_YOFFSET: Y-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_FRAMESPERSEC: Number of images per second.</para></listitem><listitem><para>FG_EXPOSURE: Exposure time in µs.</para></listitem><listitem><para>FG_FORMAT: Color format of the transferred image<orderedlist>
+<listitem><para>8bit gray (FG_GRAY)</para></listitem><listitem><para>16bit color (FG_GRAY16)</para></listitem><listitem><para>24bit color (FG_COL24). See color management of the according frame grabber design.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_PORT: Logical number of the active CameraLink port.</para></listitem><listitem><para>FG_PIXELDEPTH: Returns the depth of color of the pixel.</para></listitem><listitem><para>FG_LINEALIGNMENT: Returns the alignment of a line (in bits).</para></listitem><listitem><para>FG_TRANSFER_LEN: Returns the length of the last DMA transfer.</para></listitem><listitem><para>FG_TRIGGERMODE: Trigger modes:<orderedlist>
+<listitem><para>FREE_RUN</para></listitem><listitem><para>GRABBER_CONTROLLED</para></listitem><listitem><para>GRABBER_CONTROLLED_SYNCRON</para></listitem><listitem><para>ASYNC_SOFTWARE_TRIGGER</para></listitem><listitem><para>ASYNC_TRIGGER.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.</para></listitem><listitem><para>FG_TWOCAMMODEL: Returns the value, if the loaded camera applet is a dual (1) or a single applet (0).</para></listitem><listitem><para>FG_HDSYNC: Returns the HDSYNC value.</para></listitem><listitem><para>FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.</para></listitem><listitem><para>FG_BOARD_INFORMATION: Information on the board type:<orderedlist>
+<listitem><para>BINFO_BOARD_TYPE:<itemizedlist>
+<listitem><para>0xa40 for microEnable IV-Base x1</para></listitem><listitem><para>0xa41 for microEnable IV-Full x1</para></listitem><listitem><para>0xa44 for microEnable IV-Full x4</para></listitem></itemizedlist>
+</para></listitem><listitem><para>BINFO_POCL:<itemizedlist>
+<listitem><para>0 for microEnable IV-Base x1</para></listitem><listitem><para>1 for microEnable IV-Base x1 PoCL </para></listitem></itemizedlist>
+</para></listitem></orderedlist>
+</para></listitem></itemizedlist>
+</para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><itemizedlist>
+<listitem><para>The value of the parameter. </para></listitem></itemizedlist>
+</para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="71" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="247" bodyend="295"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1gaabeb52911d3a8c016bffd9ac1602c985" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool CaptureCAM_CL::setProperty</definition>
+        <argsstring>(int, int)</argsstring>
+        <name>setProperty</name>
+        <param>
+          <type>int</type>
+          <defname>property_id</defname>
+        </param>
+        <param>
+          <type>int</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+<para>Setting the value of a parameter from a frame grabber. </para>        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>property_id</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>As argument, a identification number is needed. If the identification number is unknown, the parameter name has to be given. It can be one of the following:<itemizedlist>
+<listitem><para>FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.</para></listitem><listitem><para>FG_WIDTH: Width of the clipping image.</para></listitem><listitem><para>FG_HEIGHT: Height of the clipping image.</para></listitem><listitem><para>FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).</para></listitem><listitem><para>FG_XOFFSET: X-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_YOFFSET: Y-offset from the left top corner in pixel.</para></listitem><listitem><para>FG_FRAMESPERSEC: Number of images per second.</para></listitem><listitem><para>FG_EXPOSURE: Exposure time in µs.</para></listitem><listitem><para>FG_FORMAT: Color format of the transferred image<orderedlist>
+<listitem><para>8bit gray (FG_GRAY)</para></listitem><listitem><para>16bit color (FG_GRAY16)</para></listitem><listitem><para>24bit color (FG_COL24). See color management of the according frame grabber design.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_PORT: Logical number of the active CameraLink port.</para></listitem><listitem><para>FG_TRIGGERMODE: Trigger modes:<orderedlist>
+<listitem><para>FREE_RUN</para></listitem><listitem><para>GRABBER_CONTROLLED</para></listitem><listitem><para>GRABBER_CONTROLLED_SYNCRON</para></listitem><listitem><para>ASYNC_SOFTWARE_TRIGGER</para></listitem><listitem><para>ASYNC_TRIGGER.</para></listitem></orderedlist>
+</para></listitem><listitem><para>FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.</para></listitem><listitem><para>FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.</para></listitem></itemizedlist>
+</para></parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Pointer to required value. </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>FG_OK if the parameter was read correctly FG_INVALID_PARAMETER if an invalid parameter has been entered. FG_VALUE_OUT_OF_RANGE The entered value is besides valid ranges. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="72" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="333" bodyend="363"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1gad18ae6f1205062f91f2e113d5f93ea99" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_CL::resetCvImage</definition>
+        <argsstring>()</argsstring>
+        <name>resetCvImage</name>
+        <briefdescription>
+<para>reset the width, height and format attributes. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="73" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="185" bodyend="195"/>
+      </memberdef>
+      <memberdef kind="function" id="classCaptureCAM__CL_1a28a2495149b49e6f7bbd5c1845f11fc1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_CL::toString</definition>
+        <argsstring>()</argsstring>
+        <name>toString</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>print out the attributes values of the cameralink instance. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="74" column="1"/>
+      </memberdef>
+      <memberdef kind="function" id="classCaptureCAM__CL_1a9c5265dd295b17d26027e32a8dc6f45c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_CL::serialWrite</definition>
+        <argsstring>(char buffer[])</argsstring>
+        <name>serialWrite</name>
+        <param>
+          <type>char</type>
+          <declname>buffer</declname>
+          <array>[]</array>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="88" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/clSerial.cpp" bodystart="80" bodyend="109"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-func">
+      <memberdef kind="function" id="group__capturecam_1ga071845e2dd4415f7e5bbfd437c0d5e65" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_CL::init</definition>
+        <argsstring>()</argsstring>
+        <name>init</name>
+        <briefdescription>
+<para>This function initialize the <ref refid="classCaptureCAM__CL" kindref="compound">CaptureCAM_CL</ref> attributes. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="91" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="49" bodyend="71"/>
+      </memberdef>
+      <memberdef kind="function" id="group__capturecam_1ga922c7abcf4d56446959bf826f8b2ae95" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_CL::errMsg</definition>
+        <argsstring>(const char *msg, int errNum)</argsstring>
+        <name>errMsg</name>
+        <param>
+          <type>const char *</type>
+          <declname>msg</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>errNum</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="92" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.cpp" bodystart="436" bodyend="445"/>
+      </memberdef>
+      <memberdef kind="function" id="classCaptureCAM__CL_1aaa3d66f046d0893351b75cd264f8d888" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_CL::serialInit</definition>
+        <argsstring>(unsigned int)</argsstring>
+        <name>serialInit</name>
+        <param>
+          <type>unsigned</type>
+          <declname>int</declname>
+          <defname>serialIndex</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="106" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/clSerial.cpp" bodystart="49" bodyend="78"/>
+      </memberdef>
+      <memberdef kind="function" id="classCaptureCAM__CL_1a3a74081ed7a43df613b59ef45d358aca" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_CL::checkSerialCom</definition>
+        <argsstring>(int)</argsstring>
+        <name>checkSerialCom</name>
+        <param>
+          <type>int</type>
+          <defname>stat</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="107" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/clSerial.cpp" bodystart="4" bodyend="47"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" line="61" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/Jai_lib/CameraLink.h" bodystart="60" bodyend="109"/>
+    <listofallmembers>
+      <member refid="classCaptureCAM__CL_1ae1d0de740cb16b1feaa856056f8defe2" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>applet</name></member>
+      <member refid="classCaptureCAM__CL_1a389bd2abcf59cbbc09356897508eec7b" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>boardNr</name></member>
+      <member refid="classCaptureCAM__CL_1afa8638196399f0ffa001ad373b0abebf" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>bytePerSample</name></member>
+      <member refid="classCaptureCAM__CL_1a63023c34ba9c4cb2c8ab517b8190f641" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>camPort</name></member>
+      <member refid="group__capturecam_1gab72d29bf87d08bd6bc892b2820fd417a" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>CaptureCAM_CL</name></member>
+      <member refid="classCaptureCAM__CL_1a3a74081ed7a43df613b59ef45d358aca" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>checkSerialCom</name></member>
+      <member refid="group__capturecam_1ga0de12aa713d189d122e945956ce18927" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>close</name></member>
+      <member refid="classCaptureCAM__CL_1a82956d64b13a09748cbc9e8efd236a9f" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>ComNr</name></member>
+      <member refid="classCaptureCAM__CL_1a22612eddc9597ccc570dd9ce0b297df3" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>cur_pic_nr</name></member>
+      <member refid="classCaptureCAM__CL_1a467ffd1b099575c812d3fb81441b459d" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>Data</name></member>
+      <member refid="group__capturecam_1ga922c7abcf4d56446959bf826f8b2ae95" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>errMsg</name></member>
+      <member refid="classCaptureCAM__CL_1aec279de1b4bf987a509af1b7b8aa0780" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>exposure</name></member>
+      <member refid="classCaptureCAM__CL_1ab123172f75641cb59f2b9ccceb0b140f" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>fg</name></member>
+      <member refid="classCaptureCAM__CL_1ae4cbea3bd517918aca81243658cfe0d9" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>file</name></member>
+      <member refid="classCaptureCAM__CL_1a266e2b3ba3adccc6df770467550949ee" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>format</name></member>
+      <member refid="classCaptureCAM__CL_1aac6834248bdede33c42d3ef3e3c7ae26" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>framespersec</name></member>
+      <member refid="group__capturecam_1gaaeae6486152d120aba8122ac7957045f" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>getProperty</name></member>
+      <member refid="group__capturecam_1ga0e323148cfd234d43a32918386d021d1" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>grabFrame</name></member>
+      <member refid="classCaptureCAM__CL_1aa2c3b3b877b2be9060509eb74a746fbb" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>height</name></member>
+      <member refid="classCaptureCAM__CL_1a9ed9c3ca83e9a37ba035b63085d436f0" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>ImgPtr</name></member>
+      <member refid="group__capturecam_1ga071845e2dd4415f7e5bbfd437c0d5e65" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>init</name></member>
+      <member refid="classCaptureCAM__CL_1ab33aa6f1a3c040f04500bad5cb06f7df" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>isopened</name></member>
+      <member refid="classCaptureCAM__CL_1a6466f27f7f76937b6f649a0751648fff" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>last_pic_nr</name></member>
+      <member refid="classCaptureCAM__CL_1ae801b07441ddefd61407fa7cba3dc1b9" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>memHandle</name></member>
+      <member refid="classCaptureCAM__CL_1a7abafb24af339ff611eae92e8d61a682" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>nbBuffers</name></member>
+      <member refid="classCaptureCAM__CL_1ad4408b11e89345eb11081e2cb484d6ec" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>nId</name></member>
+      <member refid="classCaptureCAM__CL_1a4c867bf9e775fc8630fe38c5144ee81a" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>nrOfPicturesToGrab</name></member>
+      <member refid="group__capturecam_1ga16b6491e0fe8caae23d169dacc87589e" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>open</name></member>
+      <member refid="group__capturecam_1gad18ae6f1205062f91f2e113d5f93ea99" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>resetCvImage</name></member>
+      <member refid="group__capturecam_1gaf39e3c68b693bdf10637923ef51ff1a2" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>restart</name></member>
+      <member refid="classCaptureCAM__CL_1a8f93408f3e5bd3d124e6cc256cd73bc4" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>samplePerPixel</name></member>
+      <member refid="classCaptureCAM__CL_1aaa3d66f046d0893351b75cd264f8d888" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>serialInit</name></member>
+      <member refid="classCaptureCAM__CL_1accc04190f8d3c5a958b0a35f08cd1f3f" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>serialRefPtr</name></member>
+      <member refid="classCaptureCAM__CL_1a9c5265dd295b17d26027e32a8dc6f45c" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>serialWrite</name></member>
+      <member refid="group__capturecam_1gaabeb52911d3a8c016bffd9ac1602c985" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>setProperty</name></member>
+      <member refid="group__capturecam_1ga41cc34667ccf43936c6e2fa2fa0df9f0" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>startAcquire</name></member>
+      <member refid="group__capturecam_1ga3c0090ca5fa9fa481f1945cfd56b79b3" prot="public" virt="virtual"><scope>CaptureCAM_CL</scope><name>stop</name></member>
+      <member refid="classCaptureCAM__CL_1ae7ac89be87ecb4da1ae3ca8dbf391f5b" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>timeout</name></member>
+      <member refid="classCaptureCAM__CL_1a28a2495149b49e6f7bbd5c1845f11fc1" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>toString</name></member>
+      <member refid="classCaptureCAM__CL_1af038d0fc02cdfdd4008a8e7e58ae4d22" prot="private" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>TriggerMode</name></member>
+      <member refid="classCaptureCAM__CL_1ab4bfa7d4e0737be410f9a1bb2ee8a331" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>width</name></member>
+      <member refid="classCaptureCAM__CL_1a2da5179b4ab5cea7cce3500426ddc5fa" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>xoffset</name></member>
+      <member refid="classCaptureCAM__CL_1a1eb4328834bde84f1837c6033012be0d" prot="public" virt="non-virtual"><scope>CaptureCAM_CL</scope><name>yoffset</name></member>
+      <member refid="group__capturecam_1ga14053466a32e92a11db0ac810cccb075" prot="public" virt="virtual"><scope>CaptureCAM_CL</scope><name>~CaptureCAM_CL</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

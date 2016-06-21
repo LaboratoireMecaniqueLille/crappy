@@ -1,0 +1,357 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo" kind="class" language="Python" prot="public">
+    <compoundname>crappy::technical::_variateurTribo::VariateurTribo</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ae061f9225698d5d58658253d3e217f26" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._variateurTribo.VariateurTribo::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1adcc3bbc3892c59d2cf0df7d6ff06a10f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._variateurTribo.VariateurTribo::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a6a83a105edea9ba094e6580937251386" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._variateurTribo.VariateurTribo::port_arduino</definition>
+        <argsstring></argsstring>
+        <name>port_arduino</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="12" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a15c1f6f82bbb8976337d3a80b3c4429c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._variateurTribo.VariateurTribo::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a737df6620bb530032c322d5e7f02b4cf" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._variateurTribo.VariateurTribo::ser_arduino</definition>
+        <argsstring></argsstring>
+        <name>ser_arduino</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a1abeedc044c79ee31702e1877c2a61b4" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._variateurTribo.VariateurTribo::sensor</definition>
+        <argsstring></argsstring>
+        <name>sensor</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="17" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a57b7112d385fbd936ee22a7e9de54b37" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._variateurTribo.VariateurTribo::actuator</definition>
+        <argsstring></argsstring>
+        <name>actuator</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="18" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="18" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ace75b4e5aa7ca9b65e6c1828524b13fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.__init__</definition>
+        <argsstring>(self, port=&apos;/dev/ttyS0&apos;, port_arduino=&apos;/dev/ttyACM0&apos;, baudrate=38400)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyS0&apos;</defval>
+        </param>
+        <param>
+          <type>port_arduino</type>
+          <defname>port_arduino</defname>
+          <defval>&apos;/dev/ttyACM0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>38400</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="9" bodyend="20"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a719fd4e8d5381da93d0b67e4415b0917" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>TODO
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="21" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ae380baa2b38cc96706aad7b062bcc469" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>stop motor
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="27" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a5130b4e26d797f57ca8c3cac33195b9e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="33" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="33" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ab46802a999116bcc5f814f63130fc2bf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="37" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="37" bodyend="40"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ace75b4e5aa7ca9b65e6c1828524b13fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.__init__</definition>
+        <argsstring>(self, port=&apos;/dev/ttyS0&apos;, port_arduino=&apos;/dev/ttyACM0&apos;, baudrate=38400)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyS0&apos;</defval>
+        </param>
+        <param>
+          <type>port_arduino</type>
+          <defname>port_arduino</defname>
+          <defval>&apos;/dev/ttyACM0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>38400</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" bodystart="9" bodyend="20"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a719fd4e8d5381da93d0b67e4415b0917" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>TODO
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" bodystart="21" bodyend="26"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ae380baa2b38cc96706aad7b062bcc469" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>stop motor
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" bodystart="27" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a5130b4e26d797f57ca8c3cac33195b9e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" line="33" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" bodystart="33" bodyend="36"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ab46802a999116bcc5f814f63130fc2bf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._variateurTribo.VariateurTribo.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" line="37" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_variateurTribo.py" bodystart="37" bodyend="40"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="573">
+        <label>crappy.technical._variateurTribo.VariateurTribo</label>
+        <link refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo"/>
+        <childnode refid="574" relation="public-inheritance">
+        </childnode>
+        <childnode refid="574" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="574">
+        <label>Motion</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="575">
+        <label>crappy.technical._variateurTribo.VariateurTribo</label>
+        <link refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo"/>
+        <childnode refid="576" relation="public-inheritance">
+        </childnode>
+        <childnode refid="576" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="576">
+        <label>Motion</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_variateurTribo.py" bodystart="8" bodyend="40"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ace75b4e5aa7ca9b65e6c1828524b13fe" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ace75b4e5aa7ca9b65e6c1828524b13fe" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a57b7112d385fbd936ee22a7e9de54b37" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>actuator</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ae061f9225698d5d58658253d3e217f26" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ab46802a999116bcc5f814f63130fc2bf" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ab46802a999116bcc5f814f63130fc2bf" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a5130b4e26d797f57ca8c3cac33195b9e" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a5130b4e26d797f57ca8c3cac33195b9e" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1adcc3bbc3892c59d2cf0df7d6ff06a10f" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>port</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a6a83a105edea9ba094e6580937251386" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>port_arduino</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a719fd4e8d5381da93d0b67e4415b0917" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a719fd4e8d5381da93d0b67e4415b0917" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a1abeedc044c79ee31702e1877c2a61b4" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>sensor</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a15c1f6f82bbb8976337d3a80b3c4429c" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>ser</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1a737df6620bb530032c322d5e7f02b4cf" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>ser_arduino</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ae380baa2b38cc96706aad7b062bcc469" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1technical_1_1__variateurTribo_1_1VariateurTribo_1ae380baa2b38cc96706aad7b062bcc469" prot="public" virt="non-virtual"><scope>crappy::technical::_variateurTribo::VariateurTribo</scope><name>stop</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

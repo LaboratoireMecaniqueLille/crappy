@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacecrappy_1_1sensor_1_1____ximeaSensor__old" kind="namespace" language="Python">
+    <compoundname>crappy::sensor::__ximeaSensor_old</compoundname>
+    <innerclass refid="classcrappy_1_1sensor_1_1____ximeaSensor__old_1_1Ximea" prot="public">crappy::sensor::__ximeaSensor_old::Ximea</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____ximeaSensor__old_8py_1a83856851f53398feb96cf94ed5c0ac16" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::sensor::__ximeaSensor_old._here</definition>
+        <argsstring></argsstring>
+        <name>_here</name>
+        <initializer>= _path.abspath(_path.dirname(__file__))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" bodystart="9" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____ximeaSensor__old_8py_1a4159332c91628a7839d8bb7aa43f4a33" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::sensor::__ximeaSensor_old._build_path</definition>
+        <argsstring></argsstring>
+        <name>_build_path</name>
+        <initializer>= _path.join(_here, &apos;..\\..\\sources\\XimeaLib\\ximeaModule.dll&apos;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" bodystart="13" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____ximeaSensor__old_8py_1ad354adcf98bf6f563327b7e4c8531525" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::sensor::__ximeaSensor_old.lib</definition>
+        <argsstring></argsstring>
+        <name>lib</name>
+        <initializer>= ctypes.cdll.LoadLibrary(_build_path)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____ximeaSensor__old_8py_1a81ec967f2975e365c57adc274c69d508" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::sensor::__ximeaSensor_old.__original_dict__</definition>
+        <argsstring></argsstring>
+        <name>__original_dict__</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____ximeaSensor__old_8py_1a6df7c54b748d7982a3bbf8ccc6941b1e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy::sensor::__ximeaSensor_old.reset</definition>
+        <argsstring></argsstring>
+        <name>reset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="build_2lib_8linux-x86__64-2_87_2crappy_2sensor_2____ximeaSensor__old_8py_1a97608acd9c4c8d354de5f869cd9c350e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy::sensor::__ximeaSensor_old::resettable</definition>
+        <argsstring>(f, args, kwargs)</argsstring>
+        <name>resettable</name>
+        <param>
+          <type>f</type>
+          <defname>f</defname>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <param>
+          <type>kwargs</type>
+          <defname>kwargs</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Decorator for resetting the camera device. Not working yet.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" bodystart="24" bodyend="40"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/__ximeaSensor_old.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

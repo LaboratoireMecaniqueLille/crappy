@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespaceopen__log" kind="namespace" language="Python">
+    <compoundname>open_log</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="open__log_8py_1ab25e5fb16f4ac23dc59431b4b343787b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.threshold</definition>
+        <argsstring></argsstring>
+        <name>threshold</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="open__log_8py_1a4f57156566dc8a87d6f3394cc3a03c7f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.linewidth</definition>
+        <argsstring></argsstring>
+        <name>linewidth</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="open__log_8py_1ad1111a130d01465bda4033f3f5804057" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.suppress</definition>
+        <argsstring></argsstring>
+        <name>suppress</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="open__log_8py_1a608ebf437514c606efa7b9f7628fcda3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.data2</definition>
+        <argsstring></argsstring>
+        <name>data2</name>
+        <initializer>= get_data(&apos;/home/corentin/Bureau/test_TTC.txt&apos;, (1, 2, 3, 4, 5, 6, 7))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="28" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="open__log_8py_1a974ae2b6e3d6baa858b3cb809324da6c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.data</definition>
+        <argsstring></argsstring>
+        <name>data</name>
+        <initializer>= get_data(&apos;/home/corentin/Bureau/data_instron.txt&apos;, (1, 2, 3, 4, 5, 6, 7, 8))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="open__log_8py_1a26bc8e1ab8186b6d086529ad5a764871" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.total_stress</definition>
+        <argsstring></argsstring>
+        <name>total_stress</name>
+        <initializer>= np.sqrt(data[3] ** 2 + 3 * data[4] ** 2)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="45" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="open__log_8py_1a24244d9efa7261d72e47788438b8771c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.fig</definition>
+        <argsstring></argsstring>
+        <name>fig</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="open__log_8py_1ab419ed1fbb5b3d70357ad444b0d5b1fc" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.ax1</definition>
+        <argsstring></argsstring>
+        <name>ax1</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="open__log_8py_1ab0c17cdb135c810fb5ad555933535c5c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.ax2</definition>
+        <argsstring></argsstring>
+        <name>ax2</name>
+        <initializer>= ax1.twinx()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="47" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="open__log_8py_1a2a7d804ed5998b8655b71ab7367997a9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>open_log.label</definition>
+        <argsstring></argsstring>
+        <name>label</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="48" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="open__log_8py_1ae37d7318f3186889cbf6102ab15a5790" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def open_log.get_data</definition>
+        <argsstring>(file_path, columns)</argsstring>
+        <name>get_data</name>
+        <param>
+          <type>file_path</type>
+          <defname>file_path</defname>
+        </param>
+        <param>
+          <type>columns</type>
+          <defname>columns</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/open_log.py" bodystart="14" bodyend="25"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/open_log.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

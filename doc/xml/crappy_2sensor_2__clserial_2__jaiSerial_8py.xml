@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="crappy_2sensor_2__clserial_2__jaiSerial_8py" kind="file" language="Python">
+    <compoundname>_jaiSerial.py</compoundname>
+    <innerclass refid="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial" prot="public">crappy::sensor::_clserial::_jaiSerial::JaiSerial</innerclass>
+    <innernamespace refid="namespacecrappy_1_1sensor_1_1__clserial_1_1__jaiSerial">crappy::sensor::_clserial::_jaiSerial</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="keyword">class<sp/></highlight><highlight class="normal">JaiSerial:</highlight></codeline>
+<codeline lineno="2"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">def<sp/></highlight><highlight class="normal">__init__(self):</highlight></codeline>
+<codeline lineno="3"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">print</highlight><highlight class="normal"><sp/></highlight><highlight class="stringliteral">&apos;INIT<sp/>JaiSerial&apos;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.exposure_code<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;PE={0}(0x10)\r\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.width_code<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;WTC={0}(0x10)\r\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.height_code<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;HTL={0}(0x10)\r\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.offsetX_code<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;OFC={0}(0x10)\r\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>self.offsetY_code<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;OFL={0}(0x10)\r\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_clserial/_jaiSerial.py"/>
+  </compounddef>
+</doxygen>

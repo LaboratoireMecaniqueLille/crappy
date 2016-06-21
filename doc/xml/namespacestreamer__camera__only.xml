@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacestreamer__camera__only" kind="namespace" language="Python">
+    <compoundname>streamer_camera_only</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="streamer__camera__only_8py_1a1506f1265e80b75e80c584d356e17970" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>streamer_camera_only.instances</definition>
+        <argsstring></argsstring>
+        <name>instances</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/streamer_camera_only.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/streamer_camera_only.py" bodystart="4" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="streamer__camera__only_8py_1a9f3307d329cfffafbc45da2ba9d4f603" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>streamer_camera_only.t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/streamer_camera_only.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/streamer_camera_only.py" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="streamer__camera__only_8py_1a629ec012fe264c6dc83c81400b8bb036" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>streamer_camera_only.camera</definition>
+        <argsstring></argsstring>
+        <name>camera</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__streamerCamera_1_1StreamerCamera" kindref="compound">crappy.blocks.StreamerCamera</ref>(&quot;Ximea&quot;, numdevice=0, freq=10, save=True,
+                                              save_directory=&quot;/media/biaxe/SSD1To/Essais_biface_caoutchouc/cam_pc/&quot;,
+                                              xoffset=0, yoffset=0, width=2048, height=2048)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/streamer_camera_only.py" line="20" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/streamer_camera_only.py" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="streamer__camera__only_8py_1aaa34f607adaccf9647b0c8bf87b2d12e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>streamer_camera_only.link1</definition>
+        <argsstring></argsstring>
+        <name>link1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/streamer_camera_only.py" line="64" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/streamer_camera_only.py" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/streamer_camera_only.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

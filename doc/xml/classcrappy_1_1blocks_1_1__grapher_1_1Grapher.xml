@@ -1,0 +1,250 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_grapher::Grapher</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1adb4d73851a4098bcc91539b9fd47b03a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._grapher.Grapher::mode</definition>
+        <argsstring></argsstring>
+        <name>mode</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1a847d946a73b65e502657232955c3764a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._grapher.Grapher::args</definition>
+        <argsstring></argsstring>
+        <name>args</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" line="41" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1ab89563ef95eba89e8b453e2c39d5a2cd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._grapher.Grapher::nbr_graphs</definition>
+        <argsstring></argsstring>
+        <name>nbr_graphs</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" line="42" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1a954dce28049f9134e0e10b67865b0846" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._grapher.Grapher.__init__</definition>
+        <argsstring>(self, mode, args)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>mode</type>
+          <defname>mode</defname>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>The grapher receive data from the Compacter (via a Link) and plots it.
+
+Parameters
+----------
+mode : {&quot;dynamic&quot;,&quot;static&quot;}
+    * &quot;dynamic&quot; : create a dynamic graphe that updates in real time.
+
+    * &quot;static&quot; : create a graphe that add new values at every refresh. If there \
+    is too many data (&gt; 20000), delete one out of 2 to avoid memory overflow.
+
+args : tuple
+    tuples of the columns labels of input data for plotting. You can add as\
+    much as you want, depending on your computer performances.
+
+Examples
+--------
+    graph=Grapher(&quot;dynamic&quot;,(&apos;t(s)&apos;,&apos;F(N)&apos;),(&apos;t(s)&apos;,&apos;def(%)&apos;))
+plot a dynamic graph with two lines plot(F=f(t) and def=f(t)).
+    graph=Grapher(&quot;static&quot;,(&apos;def(%)&apos;,&apos;F(N)&apos;))
+plot a static graph.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" bodystart="15" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1abe5db63cde1dbc1bd9bccdbbbeec5800" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._grapher.Grapher.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" bodystart="44" bodyend="170"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1a954dce28049f9134e0e10b67865b0846" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._grapher.Grapher.__init__</definition>
+        <argsstring>(self, mode, args)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>mode</type>
+          <defname>mode</defname>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>The grapher receive data from the Compacter (via a Link) and plots it.
+
+Parameters
+----------
+mode : {&quot;dynamic&quot;,&quot;static&quot;}
+    * &quot;dynamic&quot; : create a dynamic graphe that updates in real time.
+
+    * &quot;static&quot; : create a graphe that add new values at every refresh. If there \
+    is too many data (&gt; 20000), delete one out of 2 to avoid memory overflow.
+
+args : tuple
+    tuples of the columns labels of input data for plotting. You can add as\
+    much as you want, depending on your computer performances.
+
+Examples
+--------
+    graph=Grapher(&quot;dynamic&quot;,(&apos;t(s)&apos;,&apos;F(N)&apos;),(&apos;t(s)&apos;,&apos;def(%)&apos;))
+plot a dynamic graph with two lines plot(F=f(t) and def=f(t)).
+    graph=Grapher(&quot;static&quot;,(&apos;def(%)&apos;,&apos;F(N)&apos;))
+plot a static graph.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_grapher.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_grapher.py" bodystart="15" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1abe5db63cde1dbc1bd9bccdbbbeec5800" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._grapher.Grapher.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_grapher.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_grapher.py" bodystart="44" bodyend="170"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Plot the input data</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="276">
+        <label>crappy.blocks._grapher.Grapher</label>
+        <link refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher"/>
+        <childnode refid="277" relation="public-inheritance">
+        </childnode>
+        <childnode refid="277" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="277">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="278" relation="public-inheritance">
+        </childnode>
+        <childnode refid="278" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="278">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="279">
+        <label>crappy.blocks._grapher.Grapher</label>
+        <link refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher"/>
+        <childnode refid="280" relation="public-inheritance">
+        </childnode>
+        <childnode refid="280" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="280">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="281" relation="public-inheritance">
+        </childnode>
+        <childnode refid="281" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="281">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_grapher.py" bodystart="12" bodyend="170"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1a954dce28049f9134e0e10b67865b0846" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1a954dce28049f9134e0e10b67865b0846" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a34cdcaba3da6e04e6de3b1cd763739f1" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_grapher::Grapher</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1a847d946a73b65e502657232955c3764a" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>args</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1abe5db63cde1dbc1bd9bccdbbbeec5800" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1abe5db63cde1dbc1bd9bccdbbbeec5800" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1adb4d73851a4098bcc91539b9fd47b03a" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>mode</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher_1ab89563ef95eba89e8b453e2c39d5a2cd" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>nbr_graphs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_grapher::Grapher</scope><name>t0</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

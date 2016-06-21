@@ -1,0 +1,341 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor" kind="class" language="Python" prot="public">
+    <compoundname>crappy::sensor::_lal300Sensor::Lal300Sensor</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">MotionSensor</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">MotionSensor</basecompoundref>
+    <derivedcompoundref refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300" prot="public" virt="non-virtual">crappy.sensor._lal300Sensor.SensorLal300</derivedcompoundref>
+    <derivedcompoundref refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300" prot="public" virt="non-virtual">crappy.sensor._lal300Sensor.SensorLal300</derivedcompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a3f7adb24144668ae8dda590aff3dfb6c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._lal300Sensor.Lal300Sensor::param</definition>
+        <argsstring></argsstring>
+        <name>param</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="69" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="69" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a7f29e250348c702c48c182c151333e59" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._lal300Sensor.Lal300Sensor::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="70" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="70" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a14914a0f08188a5200e4c08c903b3b2c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._lal300Sensor.Lal300Sensor::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="71" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="71" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1ad830c011f7ae1816b8ee5467b1dd2ce7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._lal300Sensor.Lal300Sensor::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="73" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a40abc8ab3c61770d32a3ff46fbc25afc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._lal300Sensor.Lal300Sensor.__init__</definition>
+        <argsstring>(self, param=p, ser=None, port=&apos;/dev/ttyUSB1&apos;, baudrate=19200)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+          <defval>p</defval>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyUSB1&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>19200</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Lal300.
+
+Parameters
+----------
+param : dict
+    Dict of parameters.
+
+* &apos;port&apos; : str
+        Path to the serial port.
+* &apos;baudrate&apos; : int
+        Corresponding baudrate.
+* &apos;timeout&apos; : float
+        Timeout of the serial connection.
+* &apos;PID_PROP&apos; : float
+        Proportionnal coefficient of the PID.
+* &apos;PID_INT&apos; : float
+        Integral coefficient for the PID.
+* &apos;PID_DERIV&apos; : float
+        Derivative coefficient for the PID.
+* &apos;PID_INTLIM&apos; : float
+        Limit of the integral coefficient.
+* &apos;ACC&apos; float
+        Acceleration of the motor.
+* &apos;ACconv&apos; : float 
+        Conversion ACC values to mm/s/s
+* &apos;FORCE&apos; : float 
+        Maximal force provided by the motor.
+* &apos;SPEEDconv&apos; : float 
+        Conversion SPEED values to mm/s
+* &apos;ENTREE_VERIN&apos; : str
+        &apos;DI1&apos;
+* &apos;SORTIE_VERIN&apos; : str 
+        &apos;DI0&apos;
+* &apos;ETIRE&apos;: list of int
+        List of extreme values for the position in traction.
+* &apos;COMPRIME&apos;: list of int
+        List of extreme values for the position in compression.
+* &apos;SPEED&apos; : list of int
+        List of speed, for each group of cycles.
+* &apos;CYCLES&apos; : list of int
+        List of cycles, for each group.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="24" bodyend="85"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1ac5caebb90b001949f00318627a84b868" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._lal300Sensor.Lal300Sensor.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Check current position.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="86" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="86" bodyend="101"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1afaa817d53310f8f6f4d91056c3ded000" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._lal300Sensor.Lal300Sensor.check_disp</definition>
+        <argsstring>(self)</argsstring>
+        <name>check_disp</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Check current position.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="103" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="103" bodyend="109"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a40abc8ab3c61770d32a3ff46fbc25afc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._lal300Sensor.Lal300Sensor.__init__</definition>
+        <argsstring>(self, param=p, ser=None, port=&apos;/dev/ttyUSB1&apos;, baudrate=19200)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+          <defval>p</defval>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyUSB1&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>19200</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Lal300.
+
+Parameters
+----------
+param : dict
+    Dict of parameters.
+
+* &apos;port&apos; : str
+        Path to the serial port.
+* &apos;baudrate&apos; : int
+        Corresponding baudrate.
+* &apos;timeout&apos; : float
+        Timeout of the serial connection.
+* &apos;PID_PROP&apos; : float
+        Proportionnal coefficient of the PID.
+* &apos;PID_INT&apos; : float
+        Integral coefficient for the PID.
+* &apos;PID_DERIV&apos; : float
+        Derivative coefficient for the PID.
+* &apos;PID_INTLIM&apos; : float
+        Limit of the integral coefficient.
+* &apos;ACC&apos; float
+        Acceleration of the motor.
+* &apos;ACconv&apos; : float 
+        Conversion ACC values to mm/s/s
+* &apos;FORCE&apos; : float 
+        Maximal force provided by the motor.
+* &apos;SPEEDconv&apos; : float 
+        Conversion SPEED values to mm/s
+* &apos;ENTREE_VERIN&apos; : str
+        &apos;DI1&apos;
+* &apos;SORTIE_VERIN&apos; : str 
+        &apos;DI0&apos;
+* &apos;ETIRE&apos;: list of int
+        List of extreme values for the position in traction.
+* &apos;COMPRIME&apos;: list of int
+        List of extreme values for the position in compression.
+* &apos;SPEED&apos; : list of int
+        List of speed, for each group of cycles.
+* &apos;CYCLES&apos; : list of int
+        List of cycles, for each group.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_lal300Sensor.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_lal300Sensor.py" bodystart="24" bodyend="85"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1ac5caebb90b001949f00318627a84b868" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._lal300Sensor.Lal300Sensor.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Check current position.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_lal300Sensor.py" line="86" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_lal300Sensor.py" bodystart="86" bodyend="101"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1afaa817d53310f8f6f4d91056c3ded000" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._lal300Sensor.Lal300Sensor.check_disp</definition>
+        <argsstring>(self)</argsstring>
+        <name>check_disp</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Check current position.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_lal300Sensor.py" line="103" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_lal300Sensor.py" bodystart="103" bodyend="109"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="332">
+        <label>crappy.sensor._lal300Sensor.Lal300Sensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor"/>
+        <childnode refid="333" relation="public-inheritance">
+        </childnode>
+        <childnode refid="333" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="334">
+        <label>crappy.sensor._lal300Sensor.SensorLal300</label>
+        <link refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1SensorLal300"/>
+        <childnode refid="332" relation="public-inheritance">
+        </childnode>
+        <childnode refid="332" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="333">
+        <label>MotionSensor</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="335">
+        <label>crappy.sensor._lal300Sensor.Lal300Sensor</label>
+        <link refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor"/>
+        <childnode refid="336" relation="public-inheritance">
+        </childnode>
+        <childnode refid="336" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="336">
+        <label>MotionSensor</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_lal300Sensor.py" bodystart="23" bodyend="110"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a40abc8ab3c61770d32a3ff46fbc25afc" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a40abc8ab3c61770d32a3ff46fbc25afc" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a14914a0f08188a5200e4c08c903b3b2c" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1afaa817d53310f8f6f4d91056c3ded000" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>check_disp</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1afaa817d53310f8f6f4d91056c3ded000" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>check_disp</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1ac5caebb90b001949f00318627a84b868" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1ac5caebb90b001949f00318627a84b868" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a3f7adb24144668ae8dda590aff3dfb6c" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>param</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1a7f29e250348c702c48c182c151333e59" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>port</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__lal300Sensor_1_1Lal300Sensor_1ad830c011f7ae1816b8ee5467b1dd2ce7" prot="public" virt="non-virtual"><scope>crappy::sensor::_lal300Sensor::Lal300Sensor</scope><name>ser</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

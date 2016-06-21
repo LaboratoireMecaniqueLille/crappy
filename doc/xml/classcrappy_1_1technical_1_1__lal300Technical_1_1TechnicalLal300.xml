@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300" kind="class" language="Python" prot="public">
+    <compoundname>crappy::technical::_lal300Technical::TechnicalLal300</compoundname>
+    <basecompoundref refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300" prot="public" virt="non-virtual">crappy.technical._lal300Technical.Lal300</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300" prot="public" virt="non-virtual">crappy.technical._lal300Technical.Lal300</basecompoundref>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300_1a0a50e244185c66e07a00107040ee73e1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.TechnicalLal300.__init__</definition>
+        <argsstring>(self, param)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Lal300.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="144" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="144" bodyend="149"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300_1a0a50e244185c66e07a00107040ee73e1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._lal300Technical.TechnicalLal300.__init__</definition>
+        <argsstring>(self, param)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>param</type>
+          <defname>param</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Open the connection, and initialise the Lal300.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" line="144" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_lal300Technical.py" bodystart="144" bodyend="149"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>DEPRECATED: use Lal300 class instead.
+Open both a Lal300Sensor and Lal300Actuator instances.
+</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="553">
+        <label>crappy.technical._lal300Technical.Lal300</label>
+        <link refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300"/>
+        <childnode refid="554" relation="public-inheritance">
+        </childnode>
+        <childnode refid="554" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="554">
+        <label>Motion</label>
+      </node>
+      <node id="552">
+        <label>crappy.technical._lal300Technical.TechnicalLal300</label>
+        <link refid="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300"/>
+        <childnode refid="553" relation="public-inheritance">
+        </childnode>
+        <childnode refid="553" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="556">
+        <label>crappy.technical._lal300Technical.Lal300</label>
+        <link refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300"/>
+        <childnode refid="557" relation="public-inheritance">
+        </childnode>
+        <childnode refid="557" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="557">
+        <label>Motion</label>
+      </node>
+      <node id="555">
+        <label>crappy.technical._lal300Technical.TechnicalLal300</label>
+        <link refid="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300"/>
+        <childnode refid="556" relation="public-inheritance">
+        </childnode>
+        <childnode refid="556" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" line="137" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_lal300Technical.py" bodystart="137" bodyend="149"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300_1a0a50e244185c66e07a00107040ee73e1" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1TechnicalLal300_1a0a50e244185c66e07a00107040ee73e1" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a9c7a5db3f68938234770f67de838ffff" prot="public" virt="non-virtual" ambiguityscope="crappy::technical::_lal300Technical::Lal300."><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1afc9560ae94801ffb15f379befcfa15b0" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>actuator</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a346db482f4307421faafaf17be62c693" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8be9a68bcdc96d68ffc74c1cb8491f34" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8be9a68bcdc96d68ffc74c1cb8491f34" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a1d579a063aaee1accc5486f7bc0d392b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a1d579a063aaee1accc5486f7bc0d392b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a85e5b7b767dc4786d0692b8e9d10859c" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>param</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1add18bc3faf271692782886258c66bf58" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>port</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8980066b23a6e4d0afd61d9f1632a26b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a8980066b23a6e4d0afd61d9f1632a26b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a1556328a87ed3854ceea9bb9efe53a5a" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>sensor</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a20ddec707860d9e01cf09030debd94b9" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>ser</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a53bb5d2c2b7ce80f32bdb25f5dc5f19b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1technical_1_1__lal300Technical_1_1Lal300_1a53bb5d2c2b7ce80f32bdb25f5dc5f19b" prot="public" virt="non-virtual"><scope>crappy::technical::_lal300Technical::TechnicalLal300</scope><name>stop</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

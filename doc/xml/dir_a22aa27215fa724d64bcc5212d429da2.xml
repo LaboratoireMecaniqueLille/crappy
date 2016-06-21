@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_a22aa27215fa724d64bcc5212d429da2" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/crappy/links</compoundname>
+    <innerfile refid="crappy_2links_2____init_____8py">__init__.py</innerfile>
+    <innerfile refid="crappy_2links_2__bouncer_8py">_bouncer.py</innerfile>
+    <innerfile refid="crappy_2links_2__filter_8py">_filter.py</innerfile>
+    <innerfile refid="crappy_2links_2__link_8py">_link.py</innerfile>
+    <innerfile refid="crappy_2links_2__metaCondition_8py">_metaCondition.py</innerfile>
+    <innerfile refid="crappy_2links_2__PID_8py">_PID.py</innerfile>
+    <innerfile refid="crappy_2links_2__trigger_8py">_trigger.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/crappy/links/"/>
+  </compounddef>
+</doxygen>

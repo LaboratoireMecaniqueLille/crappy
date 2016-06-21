@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacesignal__tester" kind="namespace" language="Python">
+    <compoundname>signal_tester</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="signal__tester_8py_1af9a039d956d78d546359294355f74d81" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.instances</definition>
+        <argsstring></argsstring>
+        <name>instances</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="4" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1ae4f513cf0e87aa53854ba5b06b992aeb" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+<para>Linking objects. </para>        </briefdescription>
+        <detaileddescription>
+<para>Starting objects </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1aeb94031b7ef54a47b9197ba700ab3ec5" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.traction</definition>
+        <argsstring></argsstring>
+        <name>traction</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__signalGenerator_1_1SignalGenerator" kindref="compound">crappy.blocks.SignalGenerator</ref>(path=[{&quot;waveform&quot;:&quot;sinus&quot;,&quot;time&quot;:100,&quot;phase&quot;:0,&quot;amplitude&quot;:2,&quot;offset&quot;:0.5,&quot;freq&quot;:2.5}],
+													send_freq=400,repeat=True,labels=[&apos;t(s)&apos;,&apos;signal&apos;])</initializer>
+        <briefdescription>
+<para>Creating objects. </para>        </briefdescription>
+        <detaileddescription>
+<para>Initialising the outputs Creating blocks send_freq=400, actuator=cmd_traction, waveform=[&apos;sinus&apos;,&apos;sinus&apos;,&apos;sinus&apos;], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[1,2,4], offset=[0,0,0], phase=[0,0,0], repeat=True send_freq=400, actuator=cmd_torsion, waveform=[&apos;sinus&apos;,&apos;triangle&apos;,&apos;sinus&apos;], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[0,0,0], offset=[0,0,0], phase=[np.pi,np.pi,np.pi], repeat=True stream=crappy.blocks.MeasureComediByStep(t0,instronSensor,labels=[&apos;t(s)&apos;,&apos;dep(mm)&apos;,&apos;f(N)&apos;,&apos;angle(deg)&apos;,&apos;C(Nm)&apos;]) </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1a32006d3e7c8f324c5e5a2ae8c8141569" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.compacter</definition>
+        <argsstring></argsstring>
+        <name>compacter</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(400)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1a0ce342cce266ce3d7829f4517bff6a18" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.save</definition>
+        <argsstring></argsstring>
+        <name>save</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(&quot;/home/essais-2015-1/Bureau/test.txt&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1a716ffe879c9dba0f5e3df2dcf36aa572" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.graph</definition>
+        <argsstring></argsstring>
+        <name>graph</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;,(&apos;t(s)&apos;,&apos;signal&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1a245f373be6d0597b8db79f1fd2bb075e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.link1</definition>
+        <argsstring></argsstring>
+        <name>link1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+<para>Creating links. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1aed463f65fce3aeae044b265d4a72a9a3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.link2</definition>
+        <argsstring></argsstring>
+        <name>link2</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1a5e10b14cd6fe7ec85f7c087d995ca981" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.link3</definition>
+        <argsstring></argsstring>
+        <name>link3</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="41" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1a5440ce9470ddd39b106af3d38f57b915" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.link4</definition>
+        <argsstring></argsstring>
+        <name>link4</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="42" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1a2fcebf7648d1579109eeed22eab73b88" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.link5</definition>
+        <argsstring></argsstring>
+        <name>link5</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="43" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1a11f4c352f197d03d831d9951f4145de8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.link6</definition>
+        <argsstring></argsstring>
+        <name>link6</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="signal__tester_8py_1a43f889f5f353ebef8f42e72b3a597624" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>signal_tester.link7</definition>
+        <argsstring></argsstring>
+        <name>link7</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="45" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/tests/signal_tester.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,1325 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai" kind="class" language="Python" prot="public">
+    <compoundname>crappy::sensor::_jaiSensor::Jai</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">CameraSensor</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">CameraSensor</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a8258c5e2dbc34336c5a05d3765a815bd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::FPS</definition>
+        <argsstring></argsstring>
+        <name>FPS</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="22" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1af85b82e9f14b621424be0c5b8a1cb367" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::framespersec</definition>
+        <argsstring></argsstring>
+        <name>framespersec</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a756340e1aa51d8b1f6fd772fc6cef11b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::numdevice</definition>
+        <argsstring></argsstring>
+        <name>numdevice</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ae567492e49353e4789199926e7d7de8d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::configFile</definition>
+        <argsstring></argsstring>
+        <name>configFile</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1afdca244709b1a786dfa87feb4133c844" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::serial</definition>
+        <argsstring></argsstring>
+        <name>serial</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="29" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a27fef390d17e0fccaa5f6c5b80ebfdac" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::jai</definition>
+        <argsstring></argsstring>
+        <name>jai</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="37" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a4a7ed550685beb36bc7848ca6816b8a0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::width</definition>
+        <argsstring></argsstring>
+        <name>width</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0f3a9300e9214027119078b05f1dffb8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::height</definition>
+        <argsstring></argsstring>
+        <name>height</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ad1f975d839dca29f302310b869a81f2b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::xoffset</definition>
+        <argsstring></argsstring>
+        <name>xoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="41" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="41" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa1c557d6e6ce12a428cda5795369e6c7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::yoffset</definition>
+        <argsstring></argsstring>
+        <name>yoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="42" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ae7b978f4140a55bac3e66337004c9fb1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::exposure</definition>
+        <argsstring></argsstring>
+        <name>exposure</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="43" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa334342ca9a47a3f6bfbda2d1ab733f0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::quit</definition>
+        <argsstring></argsstring>
+        <name>quit</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="62" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a98003e8151d48cb1fec9274a1298b160" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_init</definition>
+        <argsstring></argsstring>
+        <name>_init</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="30" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a6d1e2da7e380972fc97dcfcd2b959beb" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_defaultWidth</definition>
+        <argsstring></argsstring>
+        <name>_defaultWidth</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="45" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="45" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a8c58ba696cc3868db0fec826a962c3a2" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_defaultHeight</definition>
+        <argsstring></argsstring>
+        <name>_defaultHeight</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a760efbdaeeba0b3a07b284416007ca72" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_defaultXoffset</definition>
+        <argsstring></argsstring>
+        <name>_defaultXoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="47" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a55228c6293edfdd4c48590a2adde47ac" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_defaultYoffset</definition>
+        <argsstring></argsstring>
+        <name>_defaultYoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="48" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a30cef7ff269cded5ac74231e2a26fabf" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_defaultExposure</definition>
+        <argsstring></argsstring>
+        <name>_defaultExposure</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ad6d3bf8b8af5b0cfa38e21e453772f06" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_height</definition>
+        <argsstring></argsstring>
+        <name>_height</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="127" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="127" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa3a871728e348e598f2d6c3975d8671c" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_width</definition>
+        <argsstring></argsstring>
+        <name>_width</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="139" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="139" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa4daed6eb04345a853cb244311dedb1e" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_yoffset</definition>
+        <argsstring></argsstring>
+        <name>_yoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="151" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="151" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a9d2e76b87ef7e5de2f6903b80b01e009" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_xoffset</definition>
+        <argsstring></argsstring>
+        <name>_xoffset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="163" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="163" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a50ccc109a84cdf3f52e3cc51d8236728" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._jaiSensor.Jai::_exposure</definition>
+        <argsstring></argsstring>
+        <name>_exposure</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="182" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="182" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abdfd8ab7944b7dba3bff1b2c0f569d74" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.__init__</definition>
+        <argsstring>(self, numdevice=0, framespersec=99, serial=None)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>numdevice</type>
+          <defname>numdevice</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>framespersec</type>
+          <defname>framespersec</defname>
+          <defval>99</defval>
+        </param>
+        <param>
+          <type>serial</type>
+          <defname>serial</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Opens a Jai camera and allow to grab frame and set the various parameters.
+
+Parameters
+----------
+numdevice : int, dault = 0
+    Number of the wanted device.
+framepersec : int, default = 99
+    Wanted frame rate.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="12" bodyend="31"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abc9ee00aefe3c7147f94e063ddf70b2d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.new</definition>
+        <argsstring>(self, exposure=8000, width=2560, height=2048, xoffset=0, yoffset=0, gain=None)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>exposure</type>
+          <defname>exposure</defname>
+          <defval>8000</defval>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+          <defval>2560</defval>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+          <defval>2048</defval>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type><ref refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1afda03ea50bc189d8b26a9ff0663465f7" kindref="member">gain</ref></type>
+          <defname>gain</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This method create a new instance of the camera jai class with the class attributes (device number, exposure, width, height, x offset, y offset and FPS)
+Then it prints these settings and initialises the camera and load a configuration file
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="32" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a6cfbf06bebc4b015d3ed3d07c08cb0c2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.get_image</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_image</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This method get a frame on the selected camera and return a ndarray 
+If the camera breaks down, it reinitializes it, and tries again.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="52" bodyend="80"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a71509b6145c26c0dc2adbfbacfcd2b98" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This method stops the acquisition.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="81" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="81" bodyend="87"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a5197bc7c03029974320e2dcc88705dee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This method close properly the frame grabber. 
+It releases the allocated memory and stops the acquisition.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="88" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="88" bodyend="96"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a314c0b69028f7c7d74aa00f6d846f785" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.restart</definition>
+        <argsstring>(self)</argsstring>
+        <name>restart</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Restart the device.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="97" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="97" bodyend="100"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ae325ee09531c2e6f47c54567007688f9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.reset_zoi</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset_zoi</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Reset to initial dimensions.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="101" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="101" bodyend="109"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a9b8771392836ea35bcaca92c95d6c0a4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.set_zoi</definition>
+        <argsstring>(self, width, height, xoffset, yoffset)</argsstring>
+        <name>set_zoi</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Define the Zone Of Interest</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="110" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="110" bodyend="118"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0e16aa43072bdd63e539413da17fa477" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.height</definition>
+        <argsstring>(self)</argsstring>
+        <name>height</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current height</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="120" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="120" bodyend="123"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0225879f12be947e58c1168796f27cfa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.height</definition>
+        <argsstring>(self, height)</argsstring>
+        <name>height</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="125" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="125" bodyend="130"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa5e54097163a4989f75d4b70ebec948a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.width</definition>
+        <argsstring>(self)</argsstring>
+        <name>width</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current width</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="132" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="132" bodyend="135"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abf9529de629a5bb2bd88ed20d0d5e674" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.width</definition>
+        <argsstring>(self, width)</argsstring>
+        <name>width</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="137" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="137" bodyend="142"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ab95d3abe7b6669783fb7d13b0b27ce8b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.yoffset</definition>
+        <argsstring>(self)</argsstring>
+        <name>yoffset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current yoffset</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="144" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="144" bodyend="147"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aad5e5e8d71d6b492ec91fe325e74e113" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.yoffset</definition>
+        <argsstring>(self, yoffset)</argsstring>
+        <name>yoffset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="149" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="149" bodyend="154"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aea515b6fadf22aeba3983e696405cbcc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.xoffset</definition>
+        <argsstring>(self)</argsstring>
+        <name>xoffset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current xoffset</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="156" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="156" bodyend="159"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1af24cfb562b744ed20d585b8aaa0cb150" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.xoffset</definition>
+        <argsstring>(self, xoffset)</argsstring>
+        <name>xoffset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="161" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="161" bodyend="166"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a4665a6aef91d0922b7d242218153b1c5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.exposure</definition>
+        <argsstring>(self)</argsstring>
+        <name>exposure</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current exposure
+Return a status (0 if it succed, -1 if it failed).
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="168" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="168" bodyend="173"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1afda03ea50bc189d8b26a9ff0663465f7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.gain</definition>
+        <argsstring>(self)</argsstring>
+        <name>gain</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>No gain on Jai camera</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="175" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="175" bodyend="178"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a02b360459147963e2b709b1a20efa2ee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.exposure</definition>
+        <argsstring>(self, exposure)</argsstring>
+        <name>exposure</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>exposure</type>
+          <defname>exposure</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="180" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="180" bodyend="185"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a7bcb5654d9d67d6d4da7b1702623bc66" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.__str__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__str__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="186" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="186" bodyend="191"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a062f4306750effc304235eed8c847ce3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.name</definition>
+        <argsstring>(self)</argsstring>
+        <name>name</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="193" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="193" bodyend="195"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abdfd8ab7944b7dba3bff1b2c0f569d74" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.__init__</definition>
+        <argsstring>(self, numdevice=0, framespersec=99, serial=None)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>numdevice</type>
+          <defname>numdevice</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>framespersec</type>
+          <defname>framespersec</defname>
+          <defval>99</defval>
+        </param>
+        <param>
+          <type>serial</type>
+          <defname>serial</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Opens a Jai camera and allow to grab frame and set the various parameters.
+
+Parameters
+----------
+numdevice : int, dault = 0
+    Number of the wanted device.
+framepersec : int, default = 99
+    Wanted frame rate.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="12" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="12" bodyend="31"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abc9ee00aefe3c7147f94e063ddf70b2d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.new</definition>
+        <argsstring>(self, exposure=8000, width=2560, height=2048, xoffset=0, yoffset=0, gain=None)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>exposure</type>
+          <defname>exposure</defname>
+          <defval>8000</defval>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+          <defval>2560</defval>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+          <defval>2048</defval>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+          <defval>0</defval>
+        </param>
+        <param>
+          <type><ref refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1afda03ea50bc189d8b26a9ff0663465f7" kindref="member">gain</ref></type>
+          <defname>gain</defname>
+          <defval>None</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This method create a new instance of the camera jai class with the class attributes (device number, exposure, width, height, x offset, y offset and FPS)
+Then it prints these settings and initialises the camera and load a configuration file
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="32" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a6cfbf06bebc4b015d3ed3d07c08cb0c2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.get_image</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_image</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This method get a frame on the selected camera and return a ndarray 
+If the camera breaks down, it reinitializes it, and tries again.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="52" bodyend="80"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a71509b6145c26c0dc2adbfbacfcd2b98" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This method stops the acquisition.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="81" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="81" bodyend="87"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a5197bc7c03029974320e2dcc88705dee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This method close properly the frame grabber. 
+It releases the allocated memory and stops the acquisition.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="88" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="88" bodyend="96"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a314c0b69028f7c7d74aa00f6d846f785" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.restart</definition>
+        <argsstring>(self)</argsstring>
+        <name>restart</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Restart the device.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="97" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="97" bodyend="100"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ae325ee09531c2e6f47c54567007688f9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.reset_zoi</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset_zoi</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Reset to initial dimensions.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="101" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="101" bodyend="109"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a9b8771392836ea35bcaca92c95d6c0a4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.set_zoi</definition>
+        <argsstring>(self, width, height, xoffset, yoffset)</argsstring>
+        <name>set_zoi</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Define the Zone Of Interest</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="110" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="110" bodyend="118"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0e16aa43072bdd63e539413da17fa477" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.height</definition>
+        <argsstring>(self)</argsstring>
+        <name>height</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current height</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="120" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="120" bodyend="123"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0225879f12be947e58c1168796f27cfa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.height</definition>
+        <argsstring>(self, height)</argsstring>
+        <name>height</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>height</type>
+          <defname>height</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="125" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="125" bodyend="130"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa5e54097163a4989f75d4b70ebec948a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.width</definition>
+        <argsstring>(self)</argsstring>
+        <name>width</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current width</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="132" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="132" bodyend="135"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abf9529de629a5bb2bd88ed20d0d5e674" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.width</definition>
+        <argsstring>(self, width)</argsstring>
+        <name>width</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>width</type>
+          <defname>width</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="137" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="137" bodyend="142"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ab95d3abe7b6669783fb7d13b0b27ce8b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.yoffset</definition>
+        <argsstring>(self)</argsstring>
+        <name>yoffset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current yoffset</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="144" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="144" bodyend="147"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aad5e5e8d71d6b492ec91fe325e74e113" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.yoffset</definition>
+        <argsstring>(self, yoffset)</argsstring>
+        <name>yoffset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>yoffset</type>
+          <defname>yoffset</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="149" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="149" bodyend="154"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aea515b6fadf22aeba3983e696405cbcc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.xoffset</definition>
+        <argsstring>(self)</argsstring>
+        <name>xoffset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current xoffset</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="156" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="156" bodyend="159"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1af24cfb562b744ed20d585b8aaa0cb150" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.xoffset</definition>
+        <argsstring>(self, xoffset)</argsstring>
+        <name>xoffset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>xoffset</type>
+          <defname>xoffset</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="161" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="161" bodyend="166"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a4665a6aef91d0922b7d242218153b1c5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.exposure</definition>
+        <argsstring>(self)</argsstring>
+        <name>exposure</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Property. Set / get the current exposure
+Return a status (0 if it succed, -1 if it failed).
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="168" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="168" bodyend="173"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1afda03ea50bc189d8b26a9ff0663465f7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.gain</definition>
+        <argsstring>(self)</argsstring>
+        <name>gain</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>No gain on Jai camera</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="175" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="175" bodyend="178"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a02b360459147963e2b709b1a20efa2ee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.exposure</definition>
+        <argsstring>(self, exposure)</argsstring>
+        <name>exposure</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>exposure</type>
+          <defname>exposure</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="180" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="180" bodyend="185"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a7bcb5654d9d67d6d4da7b1702623bc66" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.__str__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__str__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="186" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="186" bodyend="191"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a062f4306750effc304235eed8c847ce3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._jaiSensor.Jai.name</definition>
+        <argsstring>(self)</argsstring>
+        <name>name</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" line="193" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_jaiSensor.py" bodystart="193" bodyend="195"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="302">
+        <label>CameraSensor</label>
+      </node>
+      <node id="301">
+        <label>cameraSensor::CameraSensor</label>
+      </node>
+      <node id="300">
+        <label>crappy.sensor._jaiSensor.Jai</label>
+        <link refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai"/>
+        <childnode refid="301" relation="public-inheritance">
+        </childnode>
+        <childnode refid="302" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="305">
+        <label>CameraSensor</label>
+      </node>
+      <node id="304">
+        <label>cameraSensor::CameraSensor</label>
+      </node>
+      <node id="303">
+        <label>crappy.sensor._jaiSensor.Jai</label>
+        <link refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai"/>
+        <childnode refid="304" relation="public-inheritance">
+        </childnode>
+        <childnode refid="305" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_jaiSensor.py" bodystart="11" bodyend="195"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abdfd8ab7944b7dba3bff1b2c0f569d74" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abdfd8ab7944b7dba3bff1b2c0f569d74" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a7bcb5654d9d67d6d4da7b1702623bc66" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>__str__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a7bcb5654d9d67d6d4da7b1702623bc66" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>__str__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a30cef7ff269cded5ac74231e2a26fabf" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_defaultExposure</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a8c58ba696cc3868db0fec826a962c3a2" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_defaultHeight</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a6d1e2da7e380972fc97dcfcd2b959beb" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_defaultWidth</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a760efbdaeeba0b3a07b284416007ca72" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_defaultXoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a55228c6293edfdd4c48590a2adde47ac" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_defaultYoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a50ccc109a84cdf3f52e3cc51d8236728" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_exposure</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ad6d3bf8b8af5b0cfa38e21e453772f06" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_height</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a98003e8151d48cb1fec9274a1298b160" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_init</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa3a871728e348e598f2d6c3975d8671c" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_width</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a9d2e76b87ef7e5de2f6903b80b01e009" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_xoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa4daed6eb04345a853cb244311dedb1e" prot="private" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>_yoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a5197bc7c03029974320e2dcc88705dee" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>close</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a5197bc7c03029974320e2dcc88705dee" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>close</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ae567492e49353e4789199926e7d7de8d" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>configFile</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ae7b978f4140a55bac3e66337004c9fb1" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>exposure</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a4665a6aef91d0922b7d242218153b1c5" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>exposure</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a02b360459147963e2b709b1a20efa2ee" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>exposure</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a4665a6aef91d0922b7d242218153b1c5" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>exposure</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a02b360459147963e2b709b1a20efa2ee" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>exposure</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a8258c5e2dbc34336c5a05d3765a815bd" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>FPS</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1af85b82e9f14b621424be0c5b8a1cb367" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>framespersec</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1afda03ea50bc189d8b26a9ff0663465f7" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>gain</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1afda03ea50bc189d8b26a9ff0663465f7" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>gain</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a6cfbf06bebc4b015d3ed3d07c08cb0c2" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>get_image</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a6cfbf06bebc4b015d3ed3d07c08cb0c2" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>get_image</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0f3a9300e9214027119078b05f1dffb8" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>height</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0e16aa43072bdd63e539413da17fa477" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>height</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0225879f12be947e58c1168796f27cfa" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>height</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0e16aa43072bdd63e539413da17fa477" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>height</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a0225879f12be947e58c1168796f27cfa" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>height</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a27fef390d17e0fccaa5f6c5b80ebfdac" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>jai</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a062f4306750effc304235eed8c847ce3" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>name</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a062f4306750effc304235eed8c847ce3" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>name</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abc9ee00aefe3c7147f94e063ddf70b2d" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>new</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abc9ee00aefe3c7147f94e063ddf70b2d" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>new</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a756340e1aa51d8b1f6fd772fc6cef11b" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>numdevice</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa334342ca9a47a3f6bfbda2d1ab733f0" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>quit</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ae325ee09531c2e6f47c54567007688f9" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>reset_zoi</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ae325ee09531c2e6f47c54567007688f9" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>reset_zoi</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a314c0b69028f7c7d74aa00f6d846f785" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>restart</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a314c0b69028f7c7d74aa00f6d846f785" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>restart</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1afdca244709b1a786dfa87feb4133c844" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>serial</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a9b8771392836ea35bcaca92c95d6c0a4" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>set_zoi</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a9b8771392836ea35bcaca92c95d6c0a4" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>set_zoi</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a71509b6145c26c0dc2adbfbacfcd2b98" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a71509b6145c26c0dc2adbfbacfcd2b98" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1a4a7ed550685beb36bc7848ca6816b8a0" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>width</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa5e54097163a4989f75d4b70ebec948a" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>width</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abf9529de629a5bb2bd88ed20d0d5e674" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>width</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa5e54097163a4989f75d4b70ebec948a" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>width</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1abf9529de629a5bb2bd88ed20d0d5e674" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>width</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ad1f975d839dca29f302310b869a81f2b" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>xoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aea515b6fadf22aeba3983e696405cbcc" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>xoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1af24cfb562b744ed20d585b8aaa0cb150" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>xoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aea515b6fadf22aeba3983e696405cbcc" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>xoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1af24cfb562b744ed20d585b8aaa0cb150" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>xoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aa1c557d6e6ce12a428cda5795369e6c7" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>yoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ab95d3abe7b6669783fb7d13b0b27ce8b" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>yoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aad5e5e8d71d6b492ec91fe325e74e113" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>yoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1ab95d3abe7b6669783fb7d13b0b27ce8b" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>yoffset</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__jaiSensor_1_1Jai_1aad5e5e8d71d6b492ec91fe325e74e113" prot="public" virt="non-virtual"><scope>crappy::sensor::_jaiSensor::Jai</scope><name>yoffset</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

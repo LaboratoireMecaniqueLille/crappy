@@ -1,0 +1,205 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="group__ximea" kind="group">
+    <compoundname>ximea</compoundname>
+    <title>Ximea</title>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="group__ximea_1ga9fceee2e992969c8d5b0ac96872b6ab4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>CaptureCAM_XIMEA::CaptureCAM_XIMEA</definition>
+        <argsstring>()</argsstring>
+        <name>CaptureCAM_XIMEA</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="13" bodyend="16"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1ga62c29195a903717e405c6ec8d71f272d" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>CaptureCAM_XIMEA::~CaptureCAM_XIMEA</definition>
+        <argsstring>()</argsstring>
+        <name>~CaptureCAM_XIMEA</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="18" bodyend="20"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1ga91744613f323e5aff228f8c1b34b062a" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_XIMEA::addTrigger</definition>
+        <argsstring>(int timout, bool triggered)</argsstring>
+        <name>addTrigger</name>
+        <param>
+          <type>int</type>
+          <declname>timout</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>triggered</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="23" bodyend="59"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1gac5f4ee512ede56fcbe4732bb26f3be39" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_XIMEA::init</definition>
+        <argsstring>()</argsstring>
+        <name>init</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="58" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="61" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1ga8a0e2ba3b89e108af7ad015a749ef4dc" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool CaptureCAM_XIMEA::open</definition>
+        <argsstring>(char *device_path)</argsstring>
+        <name>open</name>
+        <param>
+          <type>char *</type>
+          <declname>device_path</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="41" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="83" bodyend="160"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1ga7c99004802ec4e7455e2f7b09e905423" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool CaptureCAM_XIMEA::open</definition>
+        <argsstring>(int index)</argsstring>
+        <name>open</name>
+        <param>
+          <type>int</type>
+          <declname>index</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="163" bodyend="248"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1ga372defc25d2c006c6237d3050b4b3c61" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_XIMEA::close</definition>
+        <argsstring>()</argsstring>
+        <name>close</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="42" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="250" bodyend="259"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1gaccf29d0ae752b3b7f0c6fb794d60df80" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool CaptureCAM_XIMEA::grabFrame</definition>
+        <argsstring>()</argsstring>
+        <name>grabFrame</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="43" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="261" bodyend="281"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1gabf21d090b41ee807d4c671feadb187a6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_XIMEA::resetCvImage</definition>
+        <argsstring>()</argsstring>
+        <name>resetCvImage</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="54" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="283" bodyend="291"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1gacf62745bdb8c26967cb373007c01019e" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>double</type>
+        <definition>double CaptureCAM_XIMEA::getProperty</definition>
+        <argsstring>(int)</argsstring>
+        <name>getProperty</name>
+        <param>
+          <type>int</type>
+          <defname>property_id</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="45" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="293" bodyend="336"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1ga9b4112ef2403c40979036f6eddd1286f" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool CaptureCAM_XIMEA::setProperty</definition>
+        <argsstring>(int, double)</argsstring>
+        <name>setProperty</name>
+        <param>
+          <type>int</type>
+          <defname>property_id</defname>
+        </param>
+        <param>
+          <type>double</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="339" bodyend="388"/>
+      </memberdef>
+      <memberdef kind="function" id="group__ximea_1ga25ae8e330ec42525fcdd13ab087536b0" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CaptureCAM_XIMEA::errMsg</definition>
+        <argsstring>(const char *msg, int errNum)</argsstring>
+        <name>errMsg</name>
+        <param>
+          <type>const char *</type>
+          <declname>msg</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>errNum</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.h" line="59" column="1" bodyfile="/home/essais/Code/crappy_/crappy/sources/XimeaLib/ximea.cpp" bodystart="393" bodyend="488"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Ximea module to be interfaced with Python. </para>    </detaileddescription>
+  </compounddef>
+</doxygen>

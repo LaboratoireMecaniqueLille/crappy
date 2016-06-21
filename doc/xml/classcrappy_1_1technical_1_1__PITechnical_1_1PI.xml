@@ -1,0 +1,337 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1technical_1_1__PITechnical_1_1PI" kind="class" language="Python" prot="public">
+    <compoundname>crappy::technical::_PITechnical::PI</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Motion</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a58d5aabb580b632a88ec351366ae9612" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._PITechnical.PI::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="22" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="22" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a1fd836b0bb851e9bf50a4d1e4e85b625" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._PITechnical.PI::timeout</definition>
+        <argsstring></argsstring>
+        <name>timeout</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="23" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="23" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a2b7481cfdf68d5d2cfde8443d55ab722" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._PITechnical.PI::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="24" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="24" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1aae2839444e71a2a73603048f328d1626" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._PITechnical.PI::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="25" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a82895b6774a3b8d2a31b7dbdbfb76049" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.__init__</definition>
+        <argsstring>(self, port=&apos;/dev/ttyS0&apos;, timeout=1, baudrate=9600)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyS0&apos;</defval>
+        </param>
+        <param>
+          <type>timeout</type>
+          <defname>timeout</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This class create an axis and opens the corresponding serial port.
+
+Parameters
+----------
+port: str
+Path to the corresponding serial port, e.g &apos;/dev/ttyS4&apos;
+baud_rate : int, default = 38400
+Set the corresponding baud rate.
+timeout : int or float, default = 1
+Serial timeout.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="9" bodyend="29"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a699f43d8191254f624cdc53b718978a7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Close the designated port</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="30" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a870e69b4259882ff1eb72ae0a91fbb3b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="34" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="34" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a827365969e24b4e189c06ff6256932cd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="38" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1af0902c88e3d4989ebd59471da43a6d14" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="42" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="42" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a82895b6774a3b8d2a31b7dbdbfb76049" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.__init__</definition>
+        <argsstring>(self, port=&apos;/dev/ttyS0&apos;, timeout=1, baudrate=9600)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/ttyS0&apos;</defval>
+        </param>
+        <param>
+          <type>timeout</type>
+          <defname>timeout</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This class create an axis and opens the corresponding serial port.
+
+Parameters
+----------
+port: str
+Path to the corresponding serial port, e.g &apos;/dev/ttyS4&apos;
+baud_rate : int, default = 38400
+Set the corresponding baud rate.
+timeout : int or float, default = 1
+Serial timeout.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" line="9" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" bodystart="9" bodyend="29"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a699f43d8191254f624cdc53b718978a7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Close the designated port</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" line="30" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" bodystart="30" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a870e69b4259882ff1eb72ae0a91fbb3b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.stop</definition>
+        <argsstring>(self)</argsstring>
+        <name>stop</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" line="34" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" bodystart="34" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a827365969e24b4e189c06ff6256932cd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.clear_errors</definition>
+        <argsstring>(self)</argsstring>
+        <name>clear_errors</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" line="38" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" bodystart="38" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1af0902c88e3d4989ebd59471da43a6d14" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._PITechnical.PI.reset</definition>
+        <argsstring>(self)</argsstring>
+        <name>reset</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" line="42" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_PITechnical.py" bodystart="42" bodyend="45"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="450">
+        <label>crappy.technical._PITechnical.PI</label>
+        <link refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI"/>
+        <childnode refid="451" relation="public-inheritance">
+        </childnode>
+        <childnode refid="452" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="452">
+        <label>Motion</label>
+      </node>
+      <node id="451">
+        <label>motion::Motion</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="453">
+        <label>crappy.technical._PITechnical.PI</label>
+        <link refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI"/>
+        <childnode refid="454" relation="public-inheritance">
+        </childnode>
+        <childnode refid="455" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="455">
+        <label>Motion</label>
+      </node>
+      <node id="454">
+        <label>motion::Motion</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_PITechnical.py" bodystart="8" bodyend="45"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a82895b6774a3b8d2a31b7dbdbfb76049" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a82895b6774a3b8d2a31b7dbdbfb76049" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a2b7481cfdf68d5d2cfde8443d55ab722" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a827365969e24b4e189c06ff6256932cd" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a827365969e24b4e189c06ff6256932cd" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>clear_errors</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a699f43d8191254f624cdc53b718978a7" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a699f43d8191254f624cdc53b718978a7" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a58d5aabb580b632a88ec351366ae9612" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>port</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1af0902c88e3d4989ebd59471da43a6d14" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1af0902c88e3d4989ebd59471da43a6d14" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>reset</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1aae2839444e71a2a73603048f328d1626" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>ser</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a870e69b4259882ff1eb72ae0a91fbb3b" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a870e69b4259882ff1eb72ae0a91fbb3b" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1technical_1_1__PITechnical_1_1PI_1a1fd836b0bb851e9bf50a4d1e4e85b625" prot="public" virt="non-virtual"><scope>crappy::technical::_PITechnical::PI</scope><name>timeout</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

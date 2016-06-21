@@ -1,6 +1,6 @@
 import glob
 
-file_list=glob.glob("./crappy.*.*.rst")
+file_list=glob.glob("./crappy2.*.*.rst")
 
 for file_ in file_list:
 	try:
@@ -17,8 +17,8 @@ for file_ in file_list:
 		pass
 			
 			
-file_list_blocks=glob.glob("./crappy.blocks.*.rst")
-modify_list=set(file_list)-set(file_list_blocks)-set(['./crappy.sensor._ximeaSensor.rst'])-set(['./crappy.sensor._jaiSensor.rst'])
+file_list_blocks=glob.glob("./crappy2.blocks.*.rst")
+modify_list=set(file_list)-set(file_list_blocks)-set(['./crappy2.sensor._ximeaSensor.rst'])-set(['./crappy2.sensor._jaiSensor.rst'])
 for file_ in modify_list:
 	try:
 		with open(file_, 'r') as fout:
@@ -38,7 +38,7 @@ for file_ in modify_list:
 		print "exception : ", e
 		pass
 
-file_list_blocks_links=glob.glob("./crappy.blocks.*.rst")+glob.glob("./crappy.links.*.rst")
+file_list_blocks_links=glob.glob("./crappy2.blocks.*.rst")+glob.glob("./crappy2.links.*.rst")
 for file_ in file_list_blocks_links:
 	try:
 		with open(file_, 'r') as fout:

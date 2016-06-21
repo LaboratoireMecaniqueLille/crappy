@@ -1,0 +1,414 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classself-heating_1_1EvalStress" kind="class" language="Python" prot="public">
+    <compoundname>self-heating::EvalStress</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1aa8db732f81ca893497316476c60bdb24" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::sensor_effort</definition>
+        <argsstring></argsstring>
+        <name>sensor_effort</name>
+        <initializer>= <ref refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor" kindref="compound">crappy.sensor.ComediSensor</ref>(device=&apos;/dev/comedi0&apos;, channels=[0, 1], gain=[10, 500])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="97" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="97" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a4415fc6773e255fcac33a35ff8f814e6" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::sensor</definition>
+        <argsstring></argsstring>
+        <name>sensor</name>
+        <initializer>= <ref refid="classcrappy_1_1sensor_1_1__labJackSensor_1_1LabJackSensor" kindref="compound">crappy.sensor.LabJackSensor</ref>(channels=[0, 1, 2], gain=[1, 1, 1], resolution=12, chan_range=0.01,
+                                         mode=&quot;single&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="105" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="105" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1afc790d5cf663fb65e6200eebfc488139" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::stream_effort</definition>
+        <argsstring></argsstring>
+        <name>stream_effort</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__streamerComedi_1_1StreamerComedi" kindref="compound">crappy.blocks.StreamerComedi</ref>(sensor_effort, labels=[&apos;t(s)&apos;, &apos;angle&apos;, &apos;C(Nm)&apos;], freq=2000)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="123" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="123" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1aad4c9ac67e7dfd3fa4ac52113a8857d0" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::stream</definition>
+        <argsstring></argsstring>
+        <name>stream</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep" kindref="compound">crappy.blocks.MeasureByStep</ref>(sensor, labels=[&apos;t(s)&apos;, &apos;T&apos;, &apos;T2&apos;, &apos;T3&apos;], freq=100)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="124" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="124" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a4b01d07d72f173baa8e8855acfc60f3b" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::compacter</definition>
+        <argsstring></argsstring>
+        <name>compacter</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(2)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="133" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="133" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a6dc88d77b563e93b273eb507955de07b" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::compacter_effort</definition>
+        <argsstring></argsstring>
+        <name>compacter_effort</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(2000)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="134" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="134" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1aecdfb4fb026f3113ef7e0393ecd8b80a" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::save</definition>
+        <argsstring></argsstring>
+        <name>save</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(&quot;/home/corentin/Bureau/torsion_2.txt&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="135" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="135" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1aa9a477ef20e11a64df0d6eab53c78124" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::graph</definition>
+        <argsstring></argsstring>
+        <name>graph</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;T_cal&apos;), (&apos;t(s)&apos;, &apos;T2_cal&apos;), (&apos;t(s)&apos;, &apos;T3_cal&apos;),
+                                  (&apos;t(s)&apos;, &apos;T_mean&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="136" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="136" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a54373e0350eed3b60a84a984aaff5032" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::graph_effort</definition>
+        <argsstring></argsstring>
+        <name>graph_effort</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;C(Nm)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="138" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="138" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a669496dddf733a2a487b54609c68891b" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::graph_effort2</definition>
+        <argsstring></argsstring>
+        <name>graph_effort2</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;tau(Pa)&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="139" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="139" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1af8553d740030644625902b83f884fe8b" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::save_effort</definition>
+        <argsstring></argsstring>
+        <name>save_effort</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__saver_1_1Saver" kindref="compound">crappy.blocks.Saver</ref>(&quot;/home/corentin/Bureau/torsion_2_effort.txt&quot;)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="140" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="140" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a7b549edb373089a74757391bcce30cdb" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::link1</definition>
+        <argsstring></argsstring>
+        <name>link1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(condition=<ref refid="classself-heating_1_1ConditionCalib" kindref="compound">ConditionCalib</ref>())</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="148" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="148" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1ac368e79e0699369a31430aeec2aaaa9e" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::link2</definition>
+        <argsstring></argsstring>
+        <name>link2</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>(condition=<ref refid="classself-heating_1_1EvalStress" kindref="compound">EvalStress</ref>())</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="149" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="149" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a0595cd81817f009bce6f7f9e735fe632" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::link3</definition>
+        <argsstring></argsstring>
+        <name>link3</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="150" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="150" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1afacb3c9bd2ca671cf422b1032587c264" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::link4</definition>
+        <argsstring></argsstring>
+        <name>link4</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="151" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="151" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1af9a77460781a91bfbb7a1d42fae63d1f" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::link5</definition>
+        <argsstring></argsstring>
+        <name>link5</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="152" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="152" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a966b26ce4ab6f21e51346dde4e4fa0ff" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::link6</definition>
+        <argsstring></argsstring>
+        <name>link6</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="153" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="153" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a38c605c80c8d6c86430d78013b09fc5c" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::link7</definition>
+        <argsstring></argsstring>
+        <name>link7</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="154" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="154" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a2f65876647611eeefdc0175f42ae521e" prot="public" static="yes" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="185" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="185" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a5032639f9ffb39e7cd42d64343187837" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::surface</definition>
+        <argsstring></argsstring>
+        <name>surface</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="66" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="66" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1abb2006f88188fb7aba0c61831466e0fc" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::I</definition>
+        <argsstring></argsstring>
+        <name>I</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="67" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="67" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classself-heating_1_1EvalStress_1a85a446669ee0afb3263855b3c7aa6cf9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>self-heating.EvalStress::rmoy</definition>
+        <argsstring></argsstring>
+        <name>rmoy</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="68" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="68" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classself-heating_1_1EvalStress_1a264379fa49517e48b07bc2e5b4f2bc13" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def self-heating.EvalStress.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="65" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="65" bodyend="69"/>
+      </memberdef>
+      <memberdef kind="function" id="classself-heating_1_1EvalStress_1a35fad2a20a6234abb619e12c92e38bb9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def self-heating.EvalStress.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="74" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="74" bodyend="92"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="261">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="260">
+        <label>self-heating.EvalStress</label>
+        <link refid="classself-heating_1_1EvalStress"/>
+        <childnode refid="261" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="263">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="262">
+        <label>self-heating.EvalStress</label>
+        <link refid="classself-heating_1_1EvalStress"/>
+        <childnode refid="263" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" line="64" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/self-heating.py" bodystart="64" bodyend="199"/>
+    <listofallmembers>
+      <member refid="classself-heating_1_1EvalStress_1a264379fa49517e48b07bc2e5b4f2bc13" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>__init__</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a4b01d07d72f173baa8e8855acfc60f3b" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>compacter</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a6dc88d77b563e93b273eb507955de07b" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>compacter_effort</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a35fad2a20a6234abb619e12c92e38bb9" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>self-heating::EvalStress</scope><name>evaluate</name></member>
+      <member refid="classself-heating_1_1EvalStress_1aa9a477ef20e11a64df0d6eab53c78124" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>graph</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a54373e0350eed3b60a84a984aaff5032" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>graph_effort</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a669496dddf733a2a487b54609c68891b" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>graph_effort2</name></member>
+      <member refid="classself-heating_1_1EvalStress_1abb2006f88188fb7aba0c61831466e0fc" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>I</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a7b549edb373089a74757391bcce30cdb" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>link1</name></member>
+      <member refid="classself-heating_1_1EvalStress_1ac368e79e0699369a31430aeec2aaaa9e" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>link2</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a0595cd81817f009bce6f7f9e735fe632" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>link3</name></member>
+      <member refid="classself-heating_1_1EvalStress_1afacb3c9bd2ca671cf422b1032587c264" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>link4</name></member>
+      <member refid="classself-heating_1_1EvalStress_1af9a77460781a91bfbb7a1d42fae63d1f" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>link5</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a966b26ce4ab6f21e51346dde4e4fa0ff" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>link6</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a38c605c80c8d6c86430d78013b09fc5c" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>link7</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a85a446669ee0afb3263855b3c7aa6cf9" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>rmoy</name></member>
+      <member refid="classself-heating_1_1EvalStress_1aecdfb4fb026f3113ef7e0393ecd8b80a" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>save</name></member>
+      <member refid="classself-heating_1_1EvalStress_1af8553d740030644625902b83f884fe8b" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>save_effort</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a4415fc6773e255fcac33a35ff8f814e6" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>sensor</name></member>
+      <member refid="classself-heating_1_1EvalStress_1aa8db732f81ca893497316476c60bdb24" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>sensor_effort</name></member>
+      <member refid="classself-heating_1_1EvalStress_1aad4c9ac67e7dfd3fa4ac52113a8857d0" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>stream</name></member>
+      <member refid="classself-heating_1_1EvalStress_1afc790d5cf663fb65e6200eebfc488139" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>stream_effort</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a5032639f9ffb39e7cd42d64343187837" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>surface</name></member>
+      <member refid="classself-heating_1_1EvalStress_1a2f65876647611eeefdc0175f42ae521e" prot="public" virt="non-virtual"><scope>self-heating::EvalStress</scope><name>t0</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

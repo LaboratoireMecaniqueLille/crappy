@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_08d237fc27d4ecd563f71c5d52f2fecc" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/sources</compoundname>
+    <innerdir refid="dir_c8ed948632c6eac151435c53e1416f49">/home/essais/Code/crappy_/crappy/sources/comediModule</innerdir>
+    <innerdir refid="dir_8de73a65fe2a97f37cd510adcc84aab3">/home/essais/Code/crappy_/crappy/sources/Jai_lib</innerdir>
+    <innerdir refid="dir_a2abb1581fa0bde2c143ae260ec62839">/home/essais/Code/crappy_/crappy/sources/niFgen</innerdir>
+    <innerdir refid="dir_234b4a87c0e8219a304761954fe696a9">/home/essais/Code/crappy_/crappy/sources/XimeaLib</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/sources/"/>
+  </compounddef>
+</doxygen>

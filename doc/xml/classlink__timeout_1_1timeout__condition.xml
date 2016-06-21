@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classlink__timeout_1_1timeout__condition" kind="class" language="Python" prot="public">
+    <compoundname>link_timeout::timeout_condition</compoundname>
+    <basecompoundref refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition" prot="public" virt="non-virtual">crappy.links._metaCondition.MetaCondition</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classlink__timeout_1_1timeout__condition_1af31d69b0b544d4c2fc5ef42fef37211a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>link_timeout.timeout_condition::n</definition>
+        <argsstring></argsstring>
+        <name>n</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classlink__timeout_1_1timeout__condition_1a1ba87785b88d9366a9e8feb6d0e0f217" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def link_timeout.timeout_condition.__init__</definition>
+        <argsstring>(self, n=1)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>n</type>
+          <defname>n</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="7" bodyend="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classlink__timeout_1_1timeout__condition_1ac172cf9fcfcac65299b9ead866e7f463" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def link_timeout.timeout_condition.evaluate</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>evaluate</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="10" bodyend="14"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="562">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="561">
+        <label>link_timeout.timeout_condition</label>
+        <link refid="classlink__timeout_1_1timeout__condition"/>
+        <childnode refid="562" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="564">
+        <label>crappy.links._metaCondition.MetaCondition</label>
+        <link refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition"/>
+      </node>
+      <node id="563">
+        <label>link_timeout.timeout_condition</label>
+        <link refid="classlink__timeout_1_1timeout__condition"/>
+        <childnode refid="564" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" line="6" column="1" bodyfile="/home/essais/Code/crappy_/crappy/tests/link_timeout.py" bodystart="6" bodyend="15"/>
+    <listofallmembers>
+      <member refid="classlink__timeout_1_1timeout__condition_1a1ba87785b88d9366a9e8feb6d0e0f217" prot="public" virt="non-virtual"><scope>link_timeout::timeout_condition</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1a89c53120fc4612994d159fda9447d2c2" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>link_timeout::timeout_condition</scope><name>__init__</name></member>
+      <member refid="classlink__timeout_1_1timeout__condition_1ac172cf9fcfcac65299b9ead866e7f463" prot="public" virt="non-virtual"><scope>link_timeout::timeout_condition</scope><name>evaluate</name></member>
+      <member refid="classcrappy_1_1links_1_1__metaCondition_1_1MetaCondition_1aa0e5063eb940f0d480f478295818deb7" prot="public" virt="non-virtual" ambiguityscope="crappy::links::_metaCondition::MetaCondition."><scope>link_timeout::timeout_condition</scope><name>evaluate</name></member>
+      <member refid="classlink__timeout_1_1timeout__condition_1af31d69b0b544d4c2fc5ef42fef37211a" prot="public" virt="non-virtual"><scope>link_timeout::timeout_condition</scope><name>n</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

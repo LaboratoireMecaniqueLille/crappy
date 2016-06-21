@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial" kind="class" language="Python" prot="public">
+    <compoundname>crappy::sensor::_clserial::_jaiSerial::JaiSerial</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1a570554491fb2bda2baa86c887b87bc51" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._jaiSerial.JaiSerial::exposure_code</definition>
+        <argsstring></argsstring>
+        <name>exposure_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" bodystart="4" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1ad5982d5c3b988d11ee09848f58d70b79" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._jaiSerial.JaiSerial::width_code</definition>
+        <argsstring></argsstring>
+        <name>width_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" bodystart="5" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1a6c1aff534cdedc2b7e9decd5e8e7e099" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._jaiSerial.JaiSerial::height_code</definition>
+        <argsstring></argsstring>
+        <name>height_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" line="6" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" bodystart="6" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1aacbe3e130a3a816d02ddcefaea3efd29" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._jaiSerial.JaiSerial::offsetX_code</definition>
+        <argsstring></argsstring>
+        <name>offsetX_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" line="7" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" bodystart="7" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1ae4f181fe6e8ab6ecdca8f172917d3ff0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.sensor._clserial._jaiSerial.JaiSerial::offsetY_code</definition>
+        <argsstring></argsstring>
+        <name>offsetY_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" bodystart="8" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1a4c4af4e0a7ea6dd9006e2b636ab06bb4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._clserial._jaiSerial.JaiSerial.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" line="2" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" bodystart="2" bodyend="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1a4c4af4e0a7ea6dd9006e2b636ab06bb4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.sensor._clserial._jaiSerial.JaiSerial.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/sensor/_clserial/_jaiSerial.py" line="2" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/sensor/_clserial/_jaiSerial.py" bodystart="2" bodyend="9"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" line="1" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/sensor/_clserial/_jaiSerial.py" bodystart="1" bodyend="9"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1a4c4af4e0a7ea6dd9006e2b636ab06bb4" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_jaiSerial::JaiSerial</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1a4c4af4e0a7ea6dd9006e2b636ab06bb4" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_jaiSerial::JaiSerial</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1a570554491fb2bda2baa86c887b87bc51" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_jaiSerial::JaiSerial</scope><name>exposure_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1a6c1aff534cdedc2b7e9decd5e8e7e099" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_jaiSerial::JaiSerial</scope><name>height_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1aacbe3e130a3a816d02ddcefaea3efd29" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_jaiSerial::JaiSerial</scope><name>offsetX_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1ae4f181fe6e8ab6ecdca8f172917d3ff0" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_jaiSerial::JaiSerial</scope><name>offsetY_code</name></member>
+      <member refid="classcrappy_1_1sensor_1_1__clserial_1_1__jaiSerial_1_1JaiSerial_1ad5982d5c3b988d11ee09848f58d70b79" prot="public" virt="non-virtual"><scope>crappy::sensor::_clserial::_jaiSerial::JaiSerial</scope><name>width_code</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

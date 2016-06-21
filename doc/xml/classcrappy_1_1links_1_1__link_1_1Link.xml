@@ -1,0 +1,424 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1links_1_1__link_1_1Link" kind="class" language="Python" prot="public">
+    <compoundname>crappy::links::_link::Link</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__link_1_1Link_1a175e32e261792d857e95d9659d656aea" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._link.Link::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="104" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="104" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__link_1_1Link_1a92d9007f4ae749547e5d01f87f4a1ea2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._link.Link::out_</definition>
+        <argsstring></argsstring>
+        <name>out_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="105" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="105" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__link_1_1Link_1a04fc4438e19f8e8e2835d108e1feb86f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._link.Link::external_trigger</definition>
+        <argsstring></argsstring>
+        <name>external_trigger</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="106" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="106" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__link_1_1Link_1aca262f385772b9389d893fdcfc7c7dc6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._link.Link::condition</definition>
+        <argsstring></argsstring>
+        <name>condition</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="107" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="107" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__link_1_1Link_1a25b9a235a7d6e62cbc83d96b1491f8ed" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._link.Link::timeout</definition>
+        <argsstring></argsstring>
+        <name>timeout</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="108" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1links_1_1__link_1_1Link_1aa99b375d4a0baee66c1fdcea96224bc6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.links._link.Link::action</definition>
+        <argsstring></argsstring>
+        <name>action</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="109" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="109" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1afaa6c00bc9668cf01321a0267b03cb1a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.__init__</definition>
+        <argsstring>(self, condition=None, timeout=0.1, action=&quot;warn&quot;, name=&quot;link&quot;)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>condition</type>
+          <defname>condition</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>timeout</type>
+          <defname>timeout</defname>
+          <defval>0.1</defval>
+        </param>
+        <param>
+          <type>action</type>
+          <defname>action</defname>
+          <defval>&quot;warn&quot;</defval>
+        </param>
+        <param>
+          <type>name</type>
+          <defname>name</defname>
+          <defval>&quot;link&quot;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Creates a pipe and is used to transfer information between Blocks using a pipe.
+You can add one or multiple conditions to modify the value transfered.
+
+
+Parameters
+----------
+name
+condition : Children class of links.MetaCondition, optionnal
+    Each &quot;send&quot; call will pass through the condition.evaluate method and sends
+    the returned value.
+    You can pass a list of conditions, the link will execute them in order.
+
+timeout : int or float, default = 0.1
+    Timeout for the send method.
+
+action : {&apos;warn&apos;,&apos;kill&apos;,&apos;NoWarn&apos;,str}, default = &quot;warn&quot;
+    Action in case of TimeoutError in the send method. You can warn only, not
+    warn or choose to kill the link. If any other string, will be printed in
+    case of error to debug.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="81" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="81" bodyend="110"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1a05d57c38a9bab273cc8573f0f18fb043" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.add_external_trigger</definition>
+        <argsstring>(self, link_instance)</argsstring>
+        <name>add_external_trigger</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>link_instance</type>
+          <defname>link_instance</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Add an external trigger Link.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="111" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="111" bodyend="119"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1a813292b8a5750de882045664342f3d3c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.send</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>send</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Send the value, or a modified value if you pass it through a
+condition.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="120" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="120" bodyend="142"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1af2053c58091c8c26d0cfa8bbf6ed8a75" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.send_timeout</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>send_timeout</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="144" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="144" bodyend="178"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1a03e856650e8967a7eaf0793a3cf96239" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.recv</definition>
+        <argsstring>(self, blocking=True)</argsstring>
+        <name>recv</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>blocking</type>
+          <defname>blocking</defname>
+          <defval>True</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Receive data. If blocking=False, return None if there is no data</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="179" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="179" bodyend="210"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1afaa6c00bc9668cf01321a0267b03cb1a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.__init__</definition>
+        <argsstring>(self, condition=None, timeout=0.1, action=&quot;warn&quot;, name=&quot;link&quot;)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>condition</type>
+          <defname>condition</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>timeout</type>
+          <defname>timeout</defname>
+          <defval>0.1</defval>
+        </param>
+        <param>
+          <type>action</type>
+          <defname>action</defname>
+          <defval>&quot;warn&quot;</defval>
+        </param>
+        <param>
+          <type>name</type>
+          <defname>name</defname>
+          <defval>&quot;link&quot;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Creates a pipe and is used to transfer information between Blocks using a pipe.
+You can add one or multiple conditions to modify the value transfered.
+
+
+Parameters
+----------
+name
+condition : Children class of links.MetaCondition, optionnal
+    Each &quot;send&quot; call will pass through the condition.evaluate method and sends
+    the returned value.
+    You can pass a list of conditions, the link will execute them in order.
+
+timeout : int or float, default = 0.1
+    Timeout for the send method.
+
+action : {&apos;warn&apos;,&apos;kill&apos;,&apos;NoWarn&apos;,str}, default = &quot;warn&quot;
+    Action in case of TimeoutError in the send method. You can warn only, not
+    warn or choose to kill the link. If any other string, will be printed in
+    case of error to debug.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" line="81" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" bodystart="81" bodyend="110"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1a05d57c38a9bab273cc8573f0f18fb043" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.add_external_trigger</definition>
+        <argsstring>(self, link_instance)</argsstring>
+        <name>add_external_trigger</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>link_instance</type>
+          <defname>link_instance</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Add an external trigger Link.</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" line="111" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" bodystart="111" bodyend="119"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1a813292b8a5750de882045664342f3d3c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.send</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>send</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Send the value, or a modified value if you pass it through a
+condition.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" line="120" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" bodystart="120" bodyend="142"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1af2053c58091c8c26d0cfa8bbf6ed8a75" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.send_timeout</definition>
+        <argsstring>(self, value)</argsstring>
+        <name>send_timeout</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>value</type>
+          <defname>value</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" line="144" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" bodystart="144" bodyend="178"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1links_1_1__link_1_1Link_1a03e856650e8967a7eaf0793a3cf96239" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.links._link.Link.recv</definition>
+        <argsstring>(self, blocking=True)</argsstring>
+        <name>recv</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>blocking</type>
+          <defname>blocking</defname>
+          <defval>True</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Receive data. If blocking=False, return None if there is no data</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" line="179" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/links/_link.py" bodystart="179" bodyend="210"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Link class. All connection between Blocks should be made with this.
+</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="337">
+        <label>crappy.links._link.Link</label>
+        <link refid="classcrappy_1_1links_1_1__link_1_1Link"/>
+        <childnode refid="338" relation="public-inheritance">
+        </childnode>
+        <childnode refid="338" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="338">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="339">
+        <label>crappy.links._link.Link</label>
+        <link refid="classcrappy_1_1links_1_1__link_1_1Link"/>
+        <childnode refid="340" relation="public-inheritance">
+        </childnode>
+        <childnode refid="340" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="340">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" line="76" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/links/_link.py" bodystart="76" bodyend="210"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1afaa6c00bc9668cf01321a0267b03cb1a" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1afaa6c00bc9668cf01321a0267b03cb1a" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1aa99b375d4a0baee66c1fdcea96224bc6" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>action</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a05d57c38a9bab273cc8573f0f18fb043" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>add_external_trigger</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a05d57c38a9bab273cc8573f0f18fb043" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>add_external_trigger</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1aca262f385772b9389d893fdcfc7c7dc6" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>condition</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a04fc4438e19f8e8e2835d108e1feb86f" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>external_trigger</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a175e32e261792d857e95d9659d656aea" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>name</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a92d9007f4ae749547e5d01f87f4a1ea2" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>out_</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a03e856650e8967a7eaf0793a3cf96239" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>recv</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a03e856650e8967a7eaf0793a3cf96239" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>recv</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a813292b8a5750de882045664342f3d3c" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>send</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a813292b8a5750de882045664342f3d3c" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>send</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1af2053c58091c8c26d0cfa8bbf6ed8a75" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>send_timeout</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1af2053c58091c8c26d0cfa8bbf6ed8a75" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>send_timeout</name></member>
+      <member refid="classcrappy_1_1links_1_1__link_1_1Link_1a25b9a235a7d6e62cbc83d96b1491f8ed" prot="public" virt="non-virtual"><scope>crappy::links::_link::Link</scope><name>timeout</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

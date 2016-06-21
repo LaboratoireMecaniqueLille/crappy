@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespacelal300Main" kind="namespace" language="Python">
+    <compoundname>lal300Main</compoundname>
+    <innerclass refid="classlal300Main_1_1ConditionAcquisition" prot="public">lal300Main::ConditionAcquisition</innerclass>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="lal300Main_8py_1a11ecc93126f0671cc4df92c161d12da7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>lal300Main.instances</definition>
+        <argsstring></argsstring>
+        <name>instances</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="6" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="6" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="lal300Main_8py_1a09a3e75dea4ecc5a84bee525816e3243" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int lal300Main.n</definition>
+        <argsstring></argsstring>
+        <name>n</name>
+        <initializer>= 3</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="lal300Main_8py_1ae8892865f6a359aa93d7468ebea2cb8c" prot="public" static="no" mutable="no">
+        <type>dictionary</type>
+        <definition>dictionary lal300Main.param</definition>
+        <argsstring></argsstring>
+        <name>param</name>
+        <initializer>= {&apos;port&apos;: &apos;/dev/ttyUSB1&apos;, &apos;baudrate&apos;: 19200, &apos;timeout&apos;: 0., &apos;PID_PROP&apos;: 8 / n, &apos;PID_INT&apos;: 30 / n,
+         &apos;PID_DERIV&apos;: 200 / n, &apos;PID_INTLIM&apos;: 1000 / n, &apos;ACC&apos;: 6000., &apos;ACconv&apos;: 26.22, &apos;FORCE&apos;: 30000.,
+         &apos;SPEEDconv&apos;: 131072., &apos;ENTREE_VERIN&apos;: &apos;DI1&apos;, &apos;SORTIE_VERIN&apos;: &apos;DI0&apos;,
+         &apos;ETIRE&apos;: [-900, -1000, -1100, -1200, -2400, -3600, -4800, -6000, -7200, -8400, -9800, -11000, -12000, -18000,
+                   -24000, -36000, -48000, -60000, -72000, -84000],
+         &apos;COMPRIME&apos;: [-200, -300, -400, -500, -700, -800, -900, -900, -1500, -3000, -3000, -5000, -5000, -5000, -5000,
+                      -5000, -5000, -5000, -5000, -5000],
+         &apos;SPEED&apos;: [15000, 15000, 15000, 16000, 30000, 45000, 80000, 110000, 130000, 150000, 180000, 210000, 250000,
+                   300000, 350000, 400000, 500000, 550000, 600000, 650000],
+         &apos;CYCLES&apos;: [2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000,
+                    2000,
+                    2000, 2000, 2000]}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="17" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/lal300Main.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

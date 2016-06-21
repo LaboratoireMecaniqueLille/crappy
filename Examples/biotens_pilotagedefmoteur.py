@@ -4,14 +4,14 @@ import numpy as np
 # import matplotlib
 # matplotlib.use('Agg')
 import pandas as pd
-import crappy
+import crappy2
 
-crappy.blocks._meta.MasterBlock.instances = []  # Init masterblock instances
+crappy2.blocks._meta.MasterBlock.instances = []  # Init masterblock instances
 
 
 # class condition_def(
 # # cette condition sert a remettre a 0 la def du videoextenso une fois passe un certain seuil d'effort
-#     crappy.links.MetaCondition):
+#     crappy2.links.MetaCondition):
 #     def __init__(self, test=False):
 #         self.FIFO = []
 #         self.len_FIFO = 10.
@@ -36,7 +36,7 @@ crappy.blocks._meta.MasterBlock.instances = []  # Init masterblock instances
 #             return value
 
 
-class ConditionOffset(crappy.links.MetaCondition):
+class ConditionOffset(crappy2.links.MetaCondition):
     def __init__(self):
         self.offset = 0.06  # a remplir avant de lancer l'essai
         self.first = True
@@ -58,7 +58,7 @@ class ConditionOffset(crappy.links.MetaCondition):
             return None
 
 
-class ConditionDefPosition(crappy.links.MetaCondition):
+class ConditionDefPosition(crappy2.links.MetaCondition):
     def __init__(self):
         self.l0 = 7  # 7 mm au départ : je pense pas qu'on en ai besoin, c'est une def qu'on calcule??
         self.start = False
@@ -94,35 +94,35 @@ t0 = time.time()
 try:
     # Creating objects
 
-    instronSensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[0])
+    instronSensor = crappy2.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[0])
     t, F0 = instronSensor.get_data(0)
     print "offset=", F0
-    instronSensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[-F0])
-    biotensTech = crappy.technical.Biotens(port='/dev/ttyUSB0', size=30)
+    instronSensor = crappy2.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[-F0])
+    biotensTech = crappy2.technical.Biotens(port='/dev/ttyUSB0', size=30)
 
     # Creating blocks
 
-    compacter_effort = crappy.blocks.Compacter(150)
-    save_effort = crappy.blocks.Saver(
+    compacter_effort = crappy2.blocks.Compacter(150)
+    save_effort = crappy2.blocks.Saver(
         "/home/biotens/Bureau/Annie/essais_rupture_3-11/E2124_rat10_LB_rupture_effort_1.txt")
-    graph_effort = crappy.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
+    graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
 
-    compacter_extenso = crappy.blocks.Compacter(90)
-    save_extenso = crappy.blocks.Saver(
+    compacter_extenso = crappy2.blocks.Compacter(90)
+    save_extenso = crappy2.blocks.Saver(
         "/home/biotens/Bureau/Annie/essais_rupture_3-11/E2124_rat10_LB_rupture_extenso_1.txt")
-    graph_extenso = crappy.blocks.Grapher("dynamic", ('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
+    graph_extenso = crappy2.blocks.Grapher("dynamic", ('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
 
-    effort = crappy.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F(N)'], freq=150)
-    extenso = crappy.blocks.VideoExtenso(camera="Ximea", white_spot=False,
-                                         labels=['t(s)', 'Lx', 'Ly', 'Exx(%)', 'Eyy(%)'], display=True)
-    # biotens=crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
-    # signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":0},
+    effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F(N)'], freq=150)
+    extenso = crappy2.blocks.VideoExtenso(camera="Ximea", white_spot=False,
+                                          labels=['t(s)', 'Lx', 'Ly', 'Exx(%)', 'Eyy(%)'], display=True)
+    # biotens=crappy2.blocks.CommandBiotens(biotens_technicals=[biotensTech],speed=5)
+    # signalGenerator=crappy2.blocks.SignalGenerator(path=[{"waveform":"hold","time":0},
     # {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[90,'Eyy(%)']}],
     # send_freq=400,repeat=False,labels=['t(s)','signal'])
     # example of path:[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],
     # "upper_limit":[i,'Eyy(%)']} for i in range(10,90,10)]
 
-    signalGenerator = crappy.blocks.SignalGenerator(path=[
+    signalGenerator = crappy2.blocks.SignalGenerator(path=[
         {"waveform": "limit", "gain": 1, "cycles": 3, "phase": 0, "lower_limit": [0.09, 'F(N)'],
          "upper_limit": [5, 'Eyy(%)']},
         # {"waveform":"limit","gain":1,"cycles":3,"phase":0,"lower_limit":[0.09,'F(N)'],"upper_limit":[10,'Eyy(%)']},
@@ -131,31 +131,31 @@ try:
          "upper_limit": [90, 'F(N)']}],
         send_freq=5, repeat=False, labels=['t(s)', 'signal', 'cycle'])
 
-    biotens = crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5)
-    compacter_position = crappy.blocks.Compacter(5)
-    save_position = crappy.blocks.Saver(
+    biotens = crappy2.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5)
+    compacter_position = crappy2.blocks.Compacter(5)
+    save_position = crappy2.blocks.Saver(
         "/home/biotens/Bureau/Annie/essais_rupture_3-11/E2124_rat10_LB_rupture_position_1.txt")
-    graph_position = crappy.blocks.Grapher("dynamic", ('t(s)', 'Eyy(%)'))
+    graph_position = crappy2.blocks.Grapher("dynamic", ('t(s)', 'Eyy(%)'))
 
     # Creating links
 
-    link1 = crappy.links.Link()
-    # link2=crappy.links.Link()
-    link3 = crappy.links.Link()
-    link4 = crappy.links.Link()
-    link5 = crappy.links.Link()
-    link6 = crappy.links.Link()
-    link7 = crappy.links.Link()
-    link8 = crappy.links.Link()
-    link9 = crappy.links.Link()
-    link10 = crappy.links.Link(ConditionDefPosition())
-    link11 = crappy.links.Link()
-    link112 = crappy.links.Link()
-    link100 = crappy.links.Link(ConditionDefPosition())
+    link1 = crappy2.links.Link()
+    # link2=crappy2.links.Link()
+    link3 = crappy2.links.Link()
+    link4 = crappy2.links.Link()
+    link5 = crappy2.links.Link()
+    link6 = crappy2.links.Link()
+    link7 = crappy2.links.Link()
+    link8 = crappy2.links.Link()
+    link9 = crappy2.links.Link()
+    link10 = crappy2.links.Link(ConditionDefPosition())
+    link11 = crappy2.links.Link()
+    link112 = crappy2.links.Link()
+    link100 = crappy2.links.Link(ConditionDefPosition())
 
-    link12 = crappy.links.Link(ConditionOffset())
+    link12 = crappy2.links.Link(ConditionOffset())
     link10.add_external_trigger(link12)
-    link13 = crappy.links.Link(ConditionOffset())
+    link13 = crappy2.links.Link(ConditionOffset())
     link100.add_external_trigger(link13)
 
     # Linking objects
@@ -207,10 +207,10 @@ try:
     # Starting objects
 
     t0 = time.time()
-    for instance in crappy.blocks.MasterBlock.instances:
+    for instance in crappy2.blocks.MasterBlock.instances:
         instance.t0 = t0
 
-    for instance in crappy.blocks.MasterBlock.instances:
+    for instance in crappy2.blocks.MasterBlock.instances:
         instance.start()
 
 # Waiting for execution
@@ -220,9 +220,9 @@ try:
 
 except (Exception, KeyboardInterrupt) as e:
     print "Exception in main :", e
-    # for instance in crappy.blocks._meta.MasterBlock.instances:
+    # for instance in crappy2.blocks._meta.MasterBlock.instances:
     # instance.join()
-    for instance in crappy.blocks.MasterBlock.instances:
+    for instance in crappy2.blocks.MasterBlock.instances:
         try:
             instance.stop()
             print "instance stopped : ", instance

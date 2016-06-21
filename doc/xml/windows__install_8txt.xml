@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="windows__install_8txt" kind="file" language="C++">
+    <compoundname>windows_install.txt</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="windows__install_8txt_1a34f6002e2f8901230444bdad6bf76328" prot="public" static="no" mutable="no">
+        <type>set</type>
+        <definition>set HTTPS_PROXY</definition>
+        <argsstring></argsstring>
+        <name>HTTPS_PROXY</name>
+        <initializer>=http:
+
+pip install numpy
+pip install scipy
+
+if you have an error like &quot;cannot find laplack/blas&quot;: try to install numpy+MLK and scipy from python wheel: http:
+
+pip install pyserial
+pip install pandas
+
+- Download latest OpenCV release from sourceforge site and double-click to extract it.
+- Goto opencv/build/python/2.7 folder.
+- Copy cv2.pyd to C:/Python27/lib/site-packeges.
+
+- if you want ipython:
+	
+pip install pyreadline
+pip isntall ipython
+
+To compile C++ modules</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/windows_install.txt" line="1" column="1" bodyfile="/home/essais/Code/crappy_/crappy/windows_install.txt" bodystart="1" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="windows__install_8txt_1ac140959dc63343fb0b6805e9f4ac4d33" prot="public" static="no" mutable="no">
+        <type>set you need to install Visual C For Python2 After installing Ximea</type>
+        <definition>set you need to install Visual C For Python2 After installing Ximea driver</definition>
+        <argsstring></argsstring>
+        <name>driver</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/windows_install.txt" line="22" column="1" bodyfile="/home/essais/Code/crappy_/crappy/windows_install.txt" bodystart="1" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="keyword">set</highlight><highlight class="normal"><sp/>HTTPS_PROXY=http:</highlight><highlight class="comment">//yourproxyadresse.com:port<sp/>or<sp/>add<sp/>it<sp/>to<sp/>your<sp/>environnement<sp/>variable</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal">pip<sp/>install<sp/>numpy</highlight></codeline>
+<codeline lineno="4"><highlight class="normal">pip<sp/>install<sp/>scipy</highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>you<sp/>have<sp/>an<sp/>error<sp/>like<sp/></highlight><highlight class="stringliteral">&quot;cannot<sp/>find<sp/>laplack/blas&quot;</highlight><highlight class="normal">:<sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal"><sp/>to<sp/>install<sp/>numpy+MLK<sp/>and<sp/>scipy<sp/>from<sp/>python<sp/>wheel:<sp/>http:</highlight><highlight class="comment">//www.lfd.uci.edu/~gohlke/pythonlibs/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal">pip<sp/>install<sp/>pyserial</highlight></codeline>
+<codeline lineno="9"><highlight class="normal">pip<sp/>install<sp/>pandas</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal">-<sp/>Download<sp/>latest<sp/>OpenCV<sp/>release<sp/>from<sp/>sourceforge<sp/>site<sp/>and<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal">-click<sp/>to<sp/>extract<sp/>it.</highlight></codeline>
+<codeline lineno="12"><highlight class="normal">-<sp/>Goto<sp/>opencv/build/python/2.7<sp/>folder.</highlight></codeline>
+<codeline lineno="13"><highlight class="normal">-<sp/>Copy<sp/>cv2.pyd<sp/>to<sp/>C:/Python27/lib/site-packeges.</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal">-<sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>you<sp/>want<sp/>ipython:</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="17"><highlight class="normal">pip<sp/>install<sp/>pyreadline</highlight></codeline>
+<codeline lineno="18"><highlight class="normal">pip<sp/>isntall<sp/>ipython</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal">To<sp/>compile<sp/>C++<sp/>modules,<sp/>you<sp/>need<sp/>to<sp/>install<sp/>Visual<sp/>C++<sp/>For<sp/>Python2.7.</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal">After<sp/>installing<sp/>Ximea<sp/>driver,<sp/>you<sp/>may<sp/>need<sp/>to<sp/>add<sp/>c:\\XIMEA\\API\x64<sp/>to<sp/>your<sp/>PATH<sp/>environnement<sp/>variable.</highlight></codeline>
+    </programlisting>
+    <location file="/home/essais/Code/crappy_/crappy/windows_install.txt"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,1729 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_multiPath::MultiPath</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aad7bdfbf5f335aec83bb08534d1e5f94" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::path</definition>
+        <argsstring></argsstring>
+        <name>path</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="132" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="132" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a1cc5c2b64528a4035d7eb1b5bfea155d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::nb_step</definition>
+        <argsstring></argsstring>
+        <name>nb_step</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="133" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="133" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a11d9c48163678f71f635d338f36f94da" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::send_freq</definition>
+        <argsstring></argsstring>
+        <name>send_freq</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="134" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="134" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a00fa02282d476da5fd5ff84fe124615f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::repeat</definition>
+        <argsstring></argsstring>
+        <name>repeat</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="135" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="135" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a46cb3b3be7393a92cd2c4da241f1f668" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::step</definition>
+        <argsstring></argsstring>
+        <name>step</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="136" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="136" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a0317072b1ba01723a54250aa705609ae" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::surface</definition>
+        <argsstring></argsstring>
+        <name>surface</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="137" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="137" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a9c77cd2cfc0ca5e744c20c6974b07a84" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::offset</definition>
+        <argsstring></argsstring>
+        <name>offset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="138" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="138" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a103eb12c8eb05f45cf8ab6a80eb1d369" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::R_eps</definition>
+        <argsstring></argsstring>
+        <name>R_eps</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="139" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="139" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1af12a620aa350bed1450ef2c59d0d8ed7" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::D_eps</definition>
+        <argsstring></argsstring>
+        <name>D_eps</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="140" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="140" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a2d87ab3f2d5dd31076212d05c6227553" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::normal_speed</definition>
+        <argsstring></argsstring>
+        <name>normal_speed</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="141" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="141" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aff2255c02d7e02ca79c689496696f99d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::detection_speed</definition>
+        <argsstring></argsstring>
+        <name>detection_speed</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="142" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="142" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aa9d7c487176a9ee5595c0488ea6a33a6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::speed</definition>
+        <argsstring></argsstring>
+        <name>speed</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="143" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="143" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a63b72a4d2578385d05284fdca82e26d2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::plastic_offset</definition>
+        <argsstring></argsstring>
+        <name>plastic_offset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="144" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="144" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a29172d7ddd67586a0de8ea6413462d43" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::last_t_goto</definition>
+        <argsstring></argsstring>
+        <name>last_t_goto</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="145" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="145" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a4c381e8065947e6ac639ba5a441142fd" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::rmoy</definition>
+        <argsstring></argsstring>
+        <name>rmoy</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="146" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="146" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a23a52747d7e393fff251814dee82a7d3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::I</definition>
+        <argsstring></argsstring>
+        <name>I</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="147" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="147" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1acf723cd25ee1772457828dc7ed8c6c02" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::plastic_def</definition>
+        <argsstring></argsstring>
+        <name>plastic_def</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="148" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="148" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1adffe03d5778548bcebc16feff6c9740d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::status</definition>
+        <argsstring></argsstring>
+        <name>status</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="149" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="149" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a1d3898eb323db076ae17612bb2b74e7a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::default_G</definition>
+        <argsstring></argsstring>
+        <name>default_G</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="151" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="151" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ad945a50a94408c74937d747cd0ac0060" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::default_E</definition>
+        <argsstring></argsstring>
+        <name>default_E</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="153" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="153" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1af93b4e2d3934bf89346c00c0ce08ef2c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::G</definition>
+        <argsstring></argsstring>
+        <name>G</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="154" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="154" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1afd8217a41e75ac65c19f96ddb95cfe0e" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::E</definition>
+        <argsstring></argsstring>
+        <name>E</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="155" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="155" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ae28b3cebf3abf7a41e73e6bfa90319f4" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::initial_total_def</definition>
+        <argsstring></argsstring>
+        <name>initial_total_def</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="173" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="173" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a833d81f6f06ade8d5b2fd127be8e03ce" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::initial_position</definition>
+        <argsstring></argsstring>
+        <name>initial_position</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="174" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="174" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1adf49198245a631cf055bbabd8b462ae2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::detection_step</definition>
+        <argsstring></argsstring>
+        <name>detection_step</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="181" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="181" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ae6c558d123955aca99a3a4d566b00e2b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::first_step_of_detection</definition>
+        <argsstring></argsstring>
+        <name>first_step_of_detection</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="182" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="182" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a7d69e2b38ed3948a381615e524b1a25b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::denoiser</definition>
+        <argsstring></argsstring>
+        <name>denoiser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="185" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="185" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aabc5b1dfd94b581c56dc8ab99214594c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::FIFO</definition>
+        <argsstring></argsstring>
+        <name>FIFO</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="186" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="186" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a7d770263661d1d2ed312776bd8359eff" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::first_of_branch</definition>
+        <argsstring></argsstring>
+        <name>first_of_branch</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="187" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="187" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a27e6d22eaf2bf109b7d9cd63f823b0b1" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::central_position</definition>
+        <argsstring></argsstring>
+        <name>central_position</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="197" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="197" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a357585e1eb3abab57cf98468fbee4e3c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::central_effort</definition>
+        <argsstring></argsstring>
+        <name>central_effort</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="198" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="198" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aec8cf8c61ae6dd51d196e92939adfd55" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::target_positions</definition>
+        <argsstring></argsstring>
+        <name>target_positions</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="214" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="214" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a46879ddc312d3765264688ea63659b5f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::detection_substep</definition>
+        <argsstring></argsstring>
+        <name>detection_substep</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="217" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="217" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a4937c7d5e9534c3c38c9fce7c5f9706c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::eps0</definition>
+        <argsstring></argsstring>
+        <name>eps0</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="242" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="242" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a05ae558fcfadc00a3bd8bfb0b910eb2f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::F0</definition>
+        <argsstring></argsstring>
+        <name>F0</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="243" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="243" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a110401fbf564cd3d159e8d662a65c963" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::gam0</definition>
+        <argsstring></argsstring>
+        <name>gam0</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="244" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="244" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ad75eda3a554fd6b2c63c799c46ca54c2" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::C0</definition>
+        <argsstring></argsstring>
+        <name>C0</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="245" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="245" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ae17883afc45fa947839665802be291ba" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::eps</definition>
+        <argsstring></argsstring>
+        <name>eps</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="246" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="246" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a4ef141071e05ab9bf137afec68f786be" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::F</definition>
+        <argsstring></argsstring>
+        <name>F</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="247" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="247" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a381ed0c04087cee88abd9c7318bbe4f8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::gam</definition>
+        <argsstring></argsstring>
+        <name>gam</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="248" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="248" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a497094088d996d968aa74020a2042b8c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::C</definition>
+        <argsstring></argsstring>
+        <name>C</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="249" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="249" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a7f45c06ad717e36543d435cfa23593fe" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::Data</definition>
+        <argsstring></argsstring>
+        <name>Data</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="312" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="312" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ac7d074796820e0613ee3a4b9d84f9fb3" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::position</definition>
+        <argsstring></argsstring>
+        <name>position</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="313" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="313" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a52dfc409ca545ad730b18094369c5d5d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::effort</definition>
+        <argsstring></argsstring>
+        <name>effort</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="314" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="314" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a9eb56f674d407f6efcd1c66ff008cd04" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::total_def</definition>
+        <argsstring></argsstring>
+        <name>total_def</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="315" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="315" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a94713c0f02c82ba7998a4d8e2973ec53" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::vector</definition>
+        <argsstring></argsstring>
+        <name>vector</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="323" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="323" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ada29f475256d526cb5bc4bbc8a5a71c8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::traction</definition>
+        <argsstring></argsstring>
+        <name>traction</name>
+        <briefdescription>
+<para>coeff=[val if np.linalg.norm(val)&gt;self.offset/3. </para>        </briefdescription>
+        <detaileddescription>
+<para>else 0 for val in coeff] </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="346" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="346" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a71ed08b6a9bcad092cf14b10de139453" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::torsion</definition>
+        <argsstring></argsstring>
+        <name>torsion</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="347" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="347" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a99159f6b3e30b629a2f5cf5fc2e7cd33" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::theta</definition>
+        <argsstring></argsstring>
+        <name>theta</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="393" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="393" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a5480106131e693c0198330212d6abbe9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::t_init</definition>
+        <argsstring></argsstring>
+        <name>t_init</name>
+        <briefdescription>
+<para>WIP. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="449" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="449" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ab3783efa132969b4b18377a269291e24" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::cycles</definition>
+        <argsstring></argsstring>
+        <name>cycles</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="463" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="463" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1afe212b419de9785691eb24103bfc8f3b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::waveform</definition>
+        <argsstring></argsstring>
+        <name>waveform</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="506" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="506" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a814bec56c5eeb4fe507ce53b18936192" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::gain</definition>
+        <argsstring></argsstring>
+        <name>gain</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="507" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="507" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ae8112ba3c91ffd63df1e18f7618957cf" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::start_offset</definition>
+        <argsstring></argsstring>
+        <name>start_offset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="509" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="509" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a6e6807d5b974a97be6d3868d8ede79e9" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::f</definition>
+        <argsstring></argsstring>
+        <name>f</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="514" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="514" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a807ab44bff5a2c245d8084b7ef27f2c5" prot="private" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._multiPath.MultiPath::_relative_total_def</definition>
+        <argsstring></argsstring>
+        <name>_relative_total_def</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="152" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="152" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ac6e2b807734a124319725428d6c1501e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.__init__</definition>
+        <argsstring>(self, path=None, send_freq=400, dmin=22, dmax=25, default_G=71 *10 **9, default_E=196 *10 **9, repeat=False, normal_speed=6.6 *10 **(-4))</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>path</type>
+          <defname>path</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>send_freq</type>
+          <defname>send_freq</defname>
+          <defval>400</defval>
+        </param>
+        <param>
+          <type>dmin</type>
+          <defname>dmin</defname>
+          <defval>22</defval>
+        </param>
+        <param>
+          <type>dmax</type>
+          <defname>dmax</defname>
+          <defval>25</defval>
+        </param>
+        <param>
+          <type>default_G</type>
+          <defname>default_G</defname>
+          <defval>71 *10 **9</defval>
+        </param>
+        <param>
+          <type>default_E</type>
+          <defname>default_E</defname>
+          <defval>196 *10 **9</defval>
+        </param>
+        <param>
+          <type>repeat</type>
+          <defname>repeat</defname>
+          <defval>False</defval>
+        </param>
+        <param>
+          <type>normal_speed</type>
+          <defname>normal_speed</defname>
+          <defval>6.6 *10 **(-4)</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This block is specific for use in traction-torsion testing. You need
+to define a path to follow, with the available waveform. Unlike the
+SignalGenerator block, as we don&apos;t need time synchronisation in this
+case, the link beween one step and the next will be done smoothly and
+automatically, even if there is a gap.
+default_G and default_E will only be used for plasticity evaluation in
+case of &quot;goto&quot; waveform, and if the evaluated E and G are not good
+enough in plasticity detection. This can happend if your are close to
+the axis, e.g is the def or dist stay close to 0. To avoid this
+phenomenom, if the evaluated vectors are too close of the axis, they
+will be rotated.
+
+Parameters
+----------
+path : list of dict
+    Each dict must contain parameters for one step.
+
+    See Examples section below.
+
+waveform : {‘detection’,’goto’,’trefle’,’sablier’,’circle’,\
+    ‘traction’,’torsion’,’proportionnal’}
+    Shape of your signal, for every step. Possible values are :
+
+    **detection** is the plasticity surface detection.
+
+    **goto** get you to a certain point in the def-dist referentiel :
+    You can specify *mode* : *plastic_def* to apply a plastic load.
+    In this case, you will move in direction of **position** until
+    **target** def is reached.
+time : int or float or None.
+    Time before change of step, for every step. If None, means infinite.
+cycles : int or float or None (default).
+    Number of cycles before change of step, for every step. If None, means infinite.
+gain : int or float.
+    Amplitude of your signal. WARNING : a gain of 1 will result in 100% deformation.
+offset: tuple of int of tuple of float
+    Offset of your signal.
+
+send_freq : int or float , default = 400
+    Loop frequency. Use this parameter to avoid over-use of processor.
+
+dmin : int or float, default = 22
+    value of the internal diameter of the test specimen, in mm.
+
+dmax : int or float, default = 25
+    value of the external diameter of the test specimen, in mm.
+
+default_G : int or float, default = 71*10**9
+    value of the default shear modulus, in Pa.
+
+default_E : int or float, default = 196*10**9
+    value of the default Young modulus, in Pa.
+
+repeat : Boolean, default=False
+    Set True is you want to repeat your sequence forever.
+
+Returns
+-------
+dict : OrderedDict
+
+
+    def(%) :
+output signal for traction
+
+    dist(deg) :
+output signal for torsion
+
+    def_plast(%) :
+evaluated plastic def, if evaluated
+
+    E(Pa) :
+Young modulus
+
+    G(Pa) :
+shear modulus
+
+    status :
+Status of the plasticity detection, formated x.y
+
+- x : number of the current branch
+- y : substep
+
+    * 0 : just starting, eliminating the first points
+
+    * 1 : evaluating E and G
+
+    * 2 : detecting plasticity
+
+    * 3 : platicity detected
+
+    * -1 : plasticity surface detected
+
+
+    relative_eps_tot :
+total deformation, relative to the starting point. Used for
+plasticity detection.
+
+
+Examples
+--------
+SignalGenerator(path=[{&quot;waveform&quot;:&quot;detection&quot;,&quot;cycles&quot;:1},
+{&quot;waveform&quot;:&quot;goto&quot;,&quot;mode&quot;:&quot;total_def&quot;,&quot;position&quot;:[0,0]},
+{&quot;waveform&quot;:&quot;goto&quot;,&quot;mode&quot;:&quot;plastic_def&quot;,&quot;target&quot;:0.002,&quot;position&quot;:[-10,0]},
+{&quot;waveform&quot;:&quot;trefle&quot;,&quot;gain&quot;:0.001,&quot;cycles&quot;:1,&quot;offset&quot;:[0.001:-0.002]},
+{&quot;waveform&quot;:&quot;traction&quot;,&quot;gain&quot;:0.001,&quot;cycles&quot;:0.25,&quot;offset&quot;:[-0.001:0.002]}],
+send_freq=400,dmin=22,dmax=25,default_G=71*10**9,default_E=196*10**9,repeat=False)
+
+In this example we displayed some possibilities of waveform.
+Every dict contains informations for one step.
+The requiered informations depend on the type of waveform you need.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="17" bodyend="156"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a099257fb9c3fd8d9fc103b5b6561cee4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.send</definition>
+        <argsstring>(self, traction, torsion)</argsstring>
+        <name>send</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type><ref refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ada29f475256d526cb5bc4bbc8a5a71c8" kindref="member">traction</ref></type>
+          <defname>traction</defname>
+        </param>
+        <param>
+          <type>torsion</type>
+          <defname>torsion</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="157" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="157" bodyend="170"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a80e295b1e37bfdef596eb3944d63db68" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.return_elastic</definition>
+        <argsstring>(self)</argsstring>
+        <name>return_elastic</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="171" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="171" bodyend="179"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a5f84cbffc8ed1262a48f4ae48a745de6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.detection</definition>
+        <argsstring>(self)</argsstring>
+        <name>detection</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="180" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="180" bodyend="310"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a699681d43fb1e9acd66ff926bbae68bf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="311" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="311" bodyend="316"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1abe40d05f7d65686f46317bf2a759b5d7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.goto</definition>
+        <argsstring>(self, target, mode=&quot;towards&quot;)</argsstring>
+        <name>goto</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>target</type>
+          <defname>target</defname>
+        </param>
+        <param>
+          <type>mode</type>
+          <defname>mode</defname>
+          <defval>&quot;towards&quot;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="317" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="317" bodyend="391"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aecd5ffd0141f1835cc801d79b9e8f2cb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_trefle</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_trefle</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="392" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="392" bodyend="399"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a206a7ba01e8ca3bf4769d794bf4a4980" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_sablier</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_sablier</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="400" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="400" bodyend="407"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a608a3c58bd0dfb70302212d6ab1e7bac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_circle</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_circle</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="408" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="408" bodyend="415"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1af1ac1f4419ef59ae6c0ed37807be2278" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_traction</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_traction</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="416" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="416" bodyend="423"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a75fbef4445ac28f3fab6efc6ff7226ee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_torsion</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_torsion</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="424" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="424" bodyend="431"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aebef99b7686718b65b0aba35df94af24" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_proportionnal</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_proportionnal</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="432" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="432" bodyend="439"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a95839d69ad35c79956ba0104f2d5654e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="447" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="447" bodyend="665"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ac6e2b807734a124319725428d6c1501e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.__init__</definition>
+        <argsstring>(self, path=None, send_freq=400, dmin=22, dmax=25, default_G=71 *10 **9, default_E=196 *10 **9, repeat=False, normal_speed=6.6 *10 **(-4))</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>path</type>
+          <defname>path</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>send_freq</type>
+          <defname>send_freq</defname>
+          <defval>400</defval>
+        </param>
+        <param>
+          <type>dmin</type>
+          <defname>dmin</defname>
+          <defval>22</defval>
+        </param>
+        <param>
+          <type>dmax</type>
+          <defname>dmax</defname>
+          <defval>25</defval>
+        </param>
+        <param>
+          <type>default_G</type>
+          <defname>default_G</defname>
+          <defval>71 *10 **9</defval>
+        </param>
+        <param>
+          <type>default_E</type>
+          <defname>default_E</defname>
+          <defval>196 *10 **9</defval>
+        </param>
+        <param>
+          <type>repeat</type>
+          <defname>repeat</defname>
+          <defval>False</defval>
+        </param>
+        <param>
+          <type>normal_speed</type>
+          <defname>normal_speed</defname>
+          <defval>6.6 *10 **(-4)</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>This block is specific for use in traction-torsion testing. You need
+to define a path to follow, with the available waveform. Unlike the
+SignalGenerator block, as we don&apos;t need time synchronisation in this
+case, the link beween one step and the next will be done smoothly and
+automatically, even if there is a gap.
+default_G and default_E will only be used for plasticity evaluation in
+case of &quot;goto&quot; waveform, and if the evaluated E and G are not good
+enough in plasticity detection. This can happend if your are close to
+the axis, e.g is the def or dist stay close to 0. To avoid this
+phenomenom, if the evaluated vectors are too close of the axis, they
+will be rotated.
+
+Parameters
+----------
+path : list of dict
+    Each dict must contain parameters for one step.
+
+    See Examples section below.
+
+waveform : {‘detection’,’goto’,’trefle’,’sablier’,’circle’,\
+    ‘traction’,’torsion’,’proportionnal’}
+    Shape of your signal, for every step. Possible values are :
+
+    **detection** is the plasticity surface detection.
+
+    **goto** get you to a certain point in the def-dist referentiel :
+    You can specify *mode* : *plastic_def* to apply a plastic load.
+    In this case, you will move in direction of **position** until
+    **target** def is reached.
+time : int or float or None.
+    Time before change of step, for every step. If None, means infinite.
+cycles : int or float or None (default).
+    Number of cycles before change of step, for every step. If None, means infinite.
+gain : int or float.
+    Amplitude of your signal. WARNING : a gain of 1 will result in 100% deformation.
+offset: tuple of int of tuple of float
+    Offset of your signal.
+
+send_freq : int or float , default = 400
+    Loop frequency. Use this parameter to avoid over-use of processor.
+
+dmin : int or float, default = 22
+    value of the internal diameter of the test specimen, in mm.
+
+dmax : int or float, default = 25
+    value of the external diameter of the test specimen, in mm.
+
+default_G : int or float, default = 71*10**9
+    value of the default shear modulus, in Pa.
+
+default_E : int or float, default = 196*10**9
+    value of the default Young modulus, in Pa.
+
+repeat : Boolean, default=False
+    Set True is you want to repeat your sequence forever.
+
+Returns
+-------
+dict : OrderedDict
+
+
+    def(%) :
+output signal for traction
+
+    dist(deg) :
+output signal for torsion
+
+    def_plast(%) :
+evaluated plastic def, if evaluated
+
+    E(Pa) :
+Young modulus
+
+    G(Pa) :
+shear modulus
+
+    status :
+Status of the plasticity detection, formated x.y
+
+- x : number of the current branch
+- y : substep
+
+    * 0 : just starting, eliminating the first points
+
+    * 1 : evaluating E and G
+
+    * 2 : detecting plasticity
+
+    * 3 : platicity detected
+
+    * -1 : plasticity surface detected
+
+
+    relative_eps_tot :
+total deformation, relative to the starting point. Used for
+plasticity detection.
+
+
+Examples
+--------
+SignalGenerator(path=[{&quot;waveform&quot;:&quot;detection&quot;,&quot;cycles&quot;:1},
+{&quot;waveform&quot;:&quot;goto&quot;,&quot;mode&quot;:&quot;total_def&quot;,&quot;position&quot;:[0,0]},
+{&quot;waveform&quot;:&quot;goto&quot;,&quot;mode&quot;:&quot;plastic_def&quot;,&quot;target&quot;:0.002,&quot;position&quot;:[-10,0]},
+{&quot;waveform&quot;:&quot;trefle&quot;,&quot;gain&quot;:0.001,&quot;cycles&quot;:1,&quot;offset&quot;:[0.001:-0.002]},
+{&quot;waveform&quot;:&quot;traction&quot;,&quot;gain&quot;:0.001,&quot;cycles&quot;:0.25,&quot;offset&quot;:[-0.001:0.002]}],
+send_freq=400,dmin=22,dmax=25,default_G=71*10**9,default_E=196*10**9,repeat=False)
+
+In this example we displayed some possibilities of waveform.
+Every dict contains informations for one step.
+The requiered informations depend on the type of waveform you need.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="17" bodyend="156"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a099257fb9c3fd8d9fc103b5b6561cee4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.send</definition>
+        <argsstring>(self, traction, torsion)</argsstring>
+        <name>send</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type><ref refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ada29f475256d526cb5bc4bbc8a5a71c8" kindref="member">traction</ref></type>
+          <defname>traction</defname>
+        </param>
+        <param>
+          <type>torsion</type>
+          <defname>torsion</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="157" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="157" bodyend="170"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a80e295b1e37bfdef596eb3944d63db68" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.return_elastic</definition>
+        <argsstring>(self)</argsstring>
+        <name>return_elastic</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="171" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="171" bodyend="179"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a5f84cbffc8ed1262a48f4ae48a745de6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.detection</definition>
+        <argsstring>(self)</argsstring>
+        <name>detection</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="180" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="180" bodyend="310"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a699681d43fb1e9acd66ff926bbae68bf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.get_position</definition>
+        <argsstring>(self)</argsstring>
+        <name>get_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="311" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="311" bodyend="316"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1abe40d05f7d65686f46317bf2a759b5d7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.goto</definition>
+        <argsstring>(self, target, mode=&quot;towards&quot;)</argsstring>
+        <name>goto</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>target</type>
+          <defname>target</defname>
+        </param>
+        <param>
+          <type>mode</type>
+          <defname>mode</defname>
+          <defval>&quot;towards&quot;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="317" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="317" bodyend="391"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aecd5ffd0141f1835cc801d79b9e8f2cb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_trefle</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_trefle</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="392" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="392" bodyend="399"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a206a7ba01e8ca3bf4769d794bf4a4980" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_sablier</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_sablier</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="400" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="400" bodyend="407"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a608a3c58bd0dfb70302212d6ab1e7bac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_circle</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_circle</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="408" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="408" bodyend="415"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1af1ac1f4419ef59ae6c0ed37807be2278" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_traction</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_traction</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="416" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="416" bodyend="423"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a75fbef4445ac28f3fab6efc6ff7226ee" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_torsion</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_torsion</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="424" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="424" bodyend="431"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aebef99b7686718b65b0aba35df94af24" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.function_proportionnal</definition>
+        <argsstring>(self, i=1)</argsstring>
+        <name>function_proportionnal</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>i</type>
+          <defname>i</defname>
+          <defval>1</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="432" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="432" bodyend="439"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a95839d69ad35c79956ba0104f2d5654e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._multiPath.MultiPath.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" line="447" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_multiPath.py" bodystart="447" bodyend="665"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Children class of MasterBlock. Use it for traction-torsion testing.
+</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="439">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="440" relation="public-inheritance">
+        </childnode>
+        <childnode refid="440" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="440">
+        <label>object</label>
+      </node>
+      <node id="438">
+        <label>crappy.blocks._multiPath.MultiPath</label>
+        <link refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath"/>
+        <childnode refid="439" relation="public-inheritance">
+        </childnode>
+        <childnode refid="439" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="442">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="443" relation="public-inheritance">
+        </childnode>
+        <childnode refid="443" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="443">
+        <label>object</label>
+      </node>
+      <node id="441">
+        <label>crappy.blocks._multiPath.MultiPath</label>
+        <link refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath"/>
+        <childnode refid="442" relation="public-inheritance">
+        </childnode>
+        <childnode refid="442" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_multiPath.py" bodystart="11" bodyend="665"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ac6e2b807734a124319725428d6c1501e" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ac6e2b807734a124319725428d6c1501e" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a34cdcaba3da6e04e6de3b1cd763739f1" prot="public" virt="non-virtual" ambiguityscope="crappy::blocks::_meta::MasterBlock."><scope>crappy::blocks::_multiPath::MultiPath</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a807ab44bff5a2c245d8084b7ef27f2c5" prot="private" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>_relative_total_def</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a497094088d996d968aa74020a2042b8c" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>C</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ad75eda3a554fd6b2c63c799c46ca54c2" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>C0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a357585e1eb3abab57cf98468fbee4e3c" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>central_effort</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a27e6d22eaf2bf109b7d9cd63f823b0b1" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>central_position</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ab3783efa132969b4b18377a269291e24" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>cycles</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1af12a620aa350bed1450ef2c59d0d8ed7" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>D_eps</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a7f45c06ad717e36543d435cfa23593fe" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>Data</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ad945a50a94408c74937d747cd0ac0060" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>default_E</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a1d3898eb323db076ae17612bb2b74e7a" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>default_G</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a7d69e2b38ed3948a381615e524b1a25b" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>denoiser</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a5f84cbffc8ed1262a48f4ae48a745de6" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>detection</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a5f84cbffc8ed1262a48f4ae48a745de6" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>detection</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aff2255c02d7e02ca79c689496696f99d" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>detection_speed</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1adf49198245a631cf055bbabd8b462ae2" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>detection_step</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a46879ddc312d3765264688ea63659b5f" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>detection_substep</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1afd8217a41e75ac65c19f96ddb95cfe0e" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>E</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a52dfc409ca545ad730b18094369c5d5d" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>effort</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ae17883afc45fa947839665802be291ba" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>eps</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a4937c7d5e9534c3c38c9fce7c5f9706c" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>eps0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a4ef141071e05ab9bf137afec68f786be" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>F</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a6e6807d5b974a97be6d3868d8ede79e9" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>f</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a05ae558fcfadc00a3bd8bfb0b910eb2f" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>F0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aabc5b1dfd94b581c56dc8ab99214594c" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>FIFO</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a7d770263661d1d2ed312776bd8359eff" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>first_of_branch</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ae6c558d123955aca99a3a4d566b00e2b" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>first_step_of_detection</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a608a3c58bd0dfb70302212d6ab1e7bac" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_circle</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a608a3c58bd0dfb70302212d6ab1e7bac" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_circle</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aebef99b7686718b65b0aba35df94af24" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_proportionnal</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aebef99b7686718b65b0aba35df94af24" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_proportionnal</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a206a7ba01e8ca3bf4769d794bf4a4980" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_sablier</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a206a7ba01e8ca3bf4769d794bf4a4980" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_sablier</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a75fbef4445ac28f3fab6efc6ff7226ee" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_torsion</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a75fbef4445ac28f3fab6efc6ff7226ee" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_torsion</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1af1ac1f4419ef59ae6c0ed37807be2278" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_traction</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1af1ac1f4419ef59ae6c0ed37807be2278" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_traction</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aecd5ffd0141f1835cc801d79b9e8f2cb" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_trefle</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aecd5ffd0141f1835cc801d79b9e8f2cb" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>function_trefle</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1af93b4e2d3934bf89346c00c0ce08ef2c" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>G</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a814bec56c5eeb4fe507ce53b18936192" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>gain</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a381ed0c04087cee88abd9c7318bbe4f8" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>gam</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a110401fbf564cd3d159e8d662a65c963" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>gam0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a699681d43fb1e9acd66ff926bbae68bf" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a699681d43fb1e9acd66ff926bbae68bf" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>get_position</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1abe40d05f7d65686f46317bf2a759b5d7" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>goto</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1abe40d05f7d65686f46317bf2a759b5d7" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>goto</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a23a52747d7e393fff251814dee82a7d3" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>I</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a833d81f6f06ade8d5b2fd127be8e03ce" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>initial_position</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ae28b3cebf3abf7a41e73e6bfa90319f4" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>initial_total_def</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a29172d7ddd67586a0de8ea6413462d43" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>last_t_goto</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a95839d69ad35c79956ba0104f2d5654e" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a95839d69ad35c79956ba0104f2d5654e" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a1cc5c2b64528a4035d7eb1b5bfea155d" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>nb_step</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a2d87ab3f2d5dd31076212d05c6227553" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>normal_speed</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a9c77cd2cfc0ca5e744c20c6974b07a84" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>offset</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aad7bdfbf5f335aec83bb08534d1e5f94" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>path</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1acf723cd25ee1772457828dc7ed8c6c02" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>plastic_def</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a63b72a4d2578385d05284fdca82e26d2" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>plastic_offset</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ac7d074796820e0613ee3a4b9d84f9fb3" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>position</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a103eb12c8eb05f45cf8ab6a80eb1d369" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>R_eps</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a00fa02282d476da5fd5ff84fe124615f" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>repeat</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a80e295b1e37bfdef596eb3944d63db68" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>return_elastic</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a80e295b1e37bfdef596eb3944d63db68" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>return_elastic</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a4c381e8065947e6ac639ba5a441142fd" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>rmoy</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a099257fb9c3fd8d9fc103b5b6561cee4" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>send</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a099257fb9c3fd8d9fc103b5b6561cee4" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>send</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a11d9c48163678f71f635d338f36f94da" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>send_freq</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aa9d7c487176a9ee5595c0488ea6a33a6" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>speed</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ae8112ba3c91ffd63df1e18f7618957cf" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>start_offset</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1adffe03d5778548bcebc16feff6c9740d" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>status</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a46cb3b3be7393a92cd2c4da241f1f668" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>step</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a0317072b1ba01723a54250aa705609ae" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>surface</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a5480106131e693c0198330212d6abbe9" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>t_init</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1aec8cf8c61ae6dd51d196e92939adfd55" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>target_positions</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a99159f6b3e30b629a2f5cf5fc2e7cd33" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>theta</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a71ed08b6a9bcad092cf14b10de139453" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>torsion</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a9eb56f674d407f6efcd1c66ff008cd04" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>total_def</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1ada29f475256d526cb5bc4bbc8a5a71c8" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>traction</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1a94713c0f02c82ba7998a4d8e2973ec53" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>vector</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__multiPath_1_1MultiPath_1afe212b419de9785691eb24103bfc8f3b" prot="public" virt="non-virtual"><scope>crappy::blocks::_multiPath::MultiPath</scope><name>waveform</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

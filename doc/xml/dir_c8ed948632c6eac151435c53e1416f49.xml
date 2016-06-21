@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_c8ed948632c6eac151435c53e1416f49" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/sources/comediModule</compoundname>
+    <innerfile refid="comediModule_8c">comediModule.c</innerfile>
+    <innerfile refid="comediModule_8h">comediModule.h</innerfile>
+    <innerfile refid="common_8c">common.c</innerfile>
+    <innerfile refid="examples_8h">examples.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/sources/comediModule/"/>
+  </compounddef>
+</doxygen>

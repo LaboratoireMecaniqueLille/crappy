@@ -1,0 +1,371 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator" kind="class" language="Python" prot="public">
+    <compoundname>crappy::actuator::_labJackActuator::LabJackActuator</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Command</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">Command</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a6fae23df51f7ae3151b8ad9ead790d2d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._labJackActuator.LabJackActuator::channel</definition>
+        <argsstring></argsstring>
+        <name>channel</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="31" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a9c3408c1a11dc3a2659c73a18edb4a5a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._labJackActuator.LabJackActuator::gain</definition>
+        <argsstring></argsstring>
+        <name>gain</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="32" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a3f777b0c2d517f4a75bb081aeaf64739" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._labJackActuator.LabJackActuator::offset</definition>
+        <argsstring></argsstring>
+        <name>offset</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="33" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="33" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a69518ed8d7738a31191154fc8eb9046c" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._labJackActuator.LabJackActuator::handle</definition>
+        <argsstring></argsstring>
+        <name>handle</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="37" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a7ee57f6388d0fbb30beb9f807a738669" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._labJackActuator.LabJackActuator::out</definition>
+        <argsstring></argsstring>
+        <name>out</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="50" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1aa842c8d6a3d62e44c85c0b93322340ae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.__init__</definition>
+        <argsstring>(self, channel=&quot;TDAC2&quot;, gain=1, offset=0)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>channel</type>
+          <defname>channel</defname>
+          <defval>&quot;TDAC2&quot;</defval>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>offset</type>
+          <defname>offset</defname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert wanted tension value into digital values and send it to the 
+output of some LabJack card.
+
+Output is (command * gain) + offset.
+
+Parameters
+----------
+channel : str, default = &quot;TDAC2&quot;
+The desired output channel. See LabJack doc for possibilities.
+gain : float, default = 1
+Multiplication gain for the output.
+offset : float, default = 0
+Add this value to your output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="16" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a5f41378b22a79c341dde933c6fa67208" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="36" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1af3746bdb0dd34793d7849e00b47c8c8c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.open_handle</definition>
+        <argsstring>(self)</argsstring>
+        <name>open_handle</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: The handle is now initialized in the new method.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="40" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1afb917cd74c2486d9524ecb40612491ac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.set_cmd</definition>
+        <argsstring>(self, cmd)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>cmd</type>
+          <defname>cmd</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert the tension value to a digital value and send it to the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="46" bodyend="52"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1afd7c8c941ecbfde97d176e30bb9fccc0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>close the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="53" bodyend="59"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1aa842c8d6a3d62e44c85c0b93322340ae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.__init__</definition>
+        <argsstring>(self, channel=&quot;TDAC2&quot;, gain=1, offset=0)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>channel</type>
+          <defname>channel</defname>
+          <defval>&quot;TDAC2&quot;</defval>
+        </param>
+        <param>
+          <type>gain</type>
+          <defname>gain</defname>
+          <defval>1</defval>
+        </param>
+        <param>
+          <type>offset</type>
+          <defname>offset</defname>
+          <defval>0</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert wanted tension value into digital values and send it to the 
+output of some LabJack card.
+
+Output is (command * gain) + offset.
+
+Parameters
+----------
+channel : str, default = &quot;TDAC2&quot;
+The desired output channel. See LabJack doc for possibilities.
+gain : float, default = 1
+Multiplication gain for the output.
+offset : float, default = 0
+Add this value to your output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" bodystart="16" bodyend="35"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a5f41378b22a79c341dde933c6fa67208" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" bodystart="36" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1af3746bdb0dd34793d7849e00b47c8c8c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.open_handle</definition>
+        <argsstring>(self)</argsstring>
+        <name>open_handle</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: The handle is now initialized in the new method.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" line="40" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" bodystart="40" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1afb917cd74c2486d9524ecb40612491ac" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.set_cmd</definition>
+        <argsstring>(self, cmd)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>cmd</type>
+          <defname>cmd</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Convert the tension value to a digital value and send it to the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" line="46" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" bodystart="46" bodyend="52"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1afd7c8c941ecbfde97d176e30bb9fccc0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._labJackActuator.LabJackActuator.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>close the output.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_labJackActuator.py" bodystart="53" bodyend="59"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>LabJack actuator object, commands the output of LabJack cards</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="314">
+        <label>Command</label>
+      </node>
+      <node id="313">
+        <label>command::Command</label>
+      </node>
+      <node id="312">
+        <label>crappy.actuator._labJackActuator.LabJackActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator"/>
+        <childnode refid="313" relation="public-inheritance">
+        </childnode>
+        <childnode refid="314" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="317">
+        <label>Command</label>
+      </node>
+      <node id="316">
+        <label>command::Command</label>
+      </node>
+      <node id="315">
+        <label>crappy.actuator._labJackActuator.LabJackActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator"/>
+        <childnode refid="316" relation="public-inheritance">
+        </childnode>
+        <childnode refid="317" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" line="13" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_labJackActuator.py" bodystart="13" bodyend="59"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1aa842c8d6a3d62e44c85c0b93322340ae" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1aa842c8d6a3d62e44c85c0b93322340ae" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a6fae23df51f7ae3151b8ad9ead790d2d" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>channel</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1afd7c8c941ecbfde97d176e30bb9fccc0" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>close</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1afd7c8c941ecbfde97d176e30bb9fccc0" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>close</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a9c3408c1a11dc3a2659c73a18edb4a5a" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>gain</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a69518ed8d7738a31191154fc8eb9046c" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>handle</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a5f41378b22a79c341dde933c6fa67208" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>new</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a5f41378b22a79c341dde933c6fa67208" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>new</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a3f777b0c2d517f4a75bb081aeaf64739" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>offset</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1af3746bdb0dd34793d7849e00b47c8c8c" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>open_handle</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1af3746bdb0dd34793d7849e00b47c8c8c" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>open_handle</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1a7ee57f6388d0fbb30beb9f807a738669" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>out</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1afb917cd74c2486d9524ecb40612491ac" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>set_cmd</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__labJackActuator_1_1LabJackActuator_1afb917cd74c2486d9524ecb40612491ac" prot="public" virt="non-virtual"><scope>crappy::actuator::_labJackActuator::LabJackActuator</scope><name>set_cmd</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

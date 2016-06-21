@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1technical_1_1__command_1_1Command" kind="class" language="Python" prot="public">
+    <compoundname>crappy::technical::_command::Command</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1technical_1_1__command_1_1Command_1afe8889cef4839caf826ef9a655b54ad0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.technical._command.Command::actuator</definition>
+        <argsstring></argsstring>
+        <name>actuator</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" line="20" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" bodystart="20" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__command_1_1Command_1a0de2cf89001cc34857c65df6380ae20e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._command.Command.__init__</definition>
+        <argsstring>(self, board_name=&quot;comedi&quot;, args, kwargs)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>board_name</type>
+          <defname>board_name</defname>
+          <defval>&quot;comedi&quot;</defval>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <param>
+          <type>kwargs</type>
+          <defname>kwargs</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" bodystart="5" bodyend="24"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__command_1_1Command_1a39391d7ee5bc683d44320e80c6f65e33" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._command.Command.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" bodystart="25" bodyend="27"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__command_1_1Command_1a47f58343050ba67f60e55627cf5a95da" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._command.Command.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" bodystart="28" bodyend="31"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__command_1_1Command_1a3accfdf565a25cb2335b7b3383e3ea0e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._command.Command.set_cmd</definition>
+        <argsstring>(self)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" bodystart="32" bodyend="34"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__command_1_1Command_1a0de2cf89001cc34857c65df6380ae20e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._command.Command.__init__</definition>
+        <argsstring>(self, board_name=&quot;comedi&quot;, args, kwargs)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>board_name</type>
+          <defname>board_name</defname>
+          <defval>&quot;comedi&quot;</defval>
+        </param>
+        <param>
+          <type>args</type>
+          <defname>args</defname>
+        </param>
+        <param>
+          <type>kwargs</type>
+          <defname>kwargs</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_command.py" line="5" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_command.py" bodystart="5" bodyend="24"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__command_1_1Command_1a39391d7ee5bc683d44320e80c6f65e33" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._command.Command.close</definition>
+        <argsstring>(self)</argsstring>
+        <name>close</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_command.py" line="25" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_command.py" bodystart="25" bodyend="27"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__command_1_1Command_1a47f58343050ba67f60e55627cf5a95da" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._command.Command.new</definition>
+        <argsstring>(self)</argsstring>
+        <name>new</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_command.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_command.py" bodystart="28" bodyend="31"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1technical_1_1__command_1_1Command_1a3accfdf565a25cb2335b7b3383e3ea0e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.technical._command.Command.set_cmd</definition>
+        <argsstring>(self)</argsstring>
+        <name>set_cmd</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/technical/_command.py" line="32" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/technical/_command.py" bodystart="32" bodyend="34"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/technical/_command.py" bodystart="4" bodyend="34"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1technical_1_1__command_1_1Command_1a0de2cf89001cc34857c65df6380ae20e" prot="public" virt="non-virtual"><scope>crappy::technical::_command::Command</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__command_1_1Command_1a0de2cf89001cc34857c65df6380ae20e" prot="public" virt="non-virtual"><scope>crappy::technical::_command::Command</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1technical_1_1__command_1_1Command_1afe8889cef4839caf826ef9a655b54ad0" prot="public" virt="non-virtual"><scope>crappy::technical::_command::Command</scope><name>actuator</name></member>
+      <member refid="classcrappy_1_1technical_1_1__command_1_1Command_1a39391d7ee5bc683d44320e80c6f65e33" prot="public" virt="non-virtual"><scope>crappy::technical::_command::Command</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__command_1_1Command_1a39391d7ee5bc683d44320e80c6f65e33" prot="public" virt="non-virtual"><scope>crappy::technical::_command::Command</scope><name>close</name></member>
+      <member refid="classcrappy_1_1technical_1_1__command_1_1Command_1a47f58343050ba67f60e55627cf5a95da" prot="public" virt="non-virtual"><scope>crappy::technical::_command::Command</scope><name>new</name></member>
+      <member refid="classcrappy_1_1technical_1_1__command_1_1Command_1a47f58343050ba67f60e55627cf5a95da" prot="public" virt="non-virtual"><scope>crappy::technical::_command::Command</scope><name>new</name></member>
+      <member refid="classcrappy_1_1technical_1_1__command_1_1Command_1a3accfdf565a25cb2335b7b3383e3ea0e" prot="public" virt="non-virtual"><scope>crappy::technical::_command::Command</scope><name>set_cmd</name></member>
+      <member refid="classcrappy_1_1technical_1_1__command_1_1Command_1a3accfdf565a25cb2335b7b3383e3ea0e" prot="public" virt="non-virtual"><scope>crappy::technical::_command::Command</scope><name>set_cmd</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

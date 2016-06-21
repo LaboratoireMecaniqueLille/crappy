@@ -7,7 +7,7 @@
 # import time
 import SimpleITK as sitk
 import numpy as np
-import crappy
+import crappy2
 import smtplib
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
@@ -15,7 +15,7 @@ from email.MIMEBase import MIMEBase
 from email import encoders
 
 
-class Alert(crappy.links.MetaCondition):
+class Alert(crappy2.links.MetaCondition):
     def __init__(self):
         self.broken = False
         self.path = "/home/corentin/Bureau/"

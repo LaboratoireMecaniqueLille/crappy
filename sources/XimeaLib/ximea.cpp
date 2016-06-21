@@ -45,7 +45,11 @@ void CaptureCAM_XIMEA::addTrigger(int timout, bool triggered)
         HandleResult(mvret, "Error while setting timing mode.");
         
     }else{
-        mvret = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE,  XI_TRG_OFF);
+        stat = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 4);
+        HandleResult(stat,"xiSetParam (XI_PRM_BUFFERS_QUEUE_SIZE)");
+        stat = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
+        HandleResult(stat,"xiSetParam (recent frame)");
+        stat = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
         HandleResult(mvret, "Error while disabling external trigger source");
     }
     mvret = xiStartAcquisition(hmv);
@@ -143,12 +147,22 @@ bool CaptureCAM_XIMEA::open( char * device_path )
     //default capture timeout 10s
     timeout = 10000;
 
+    stat = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 4);
+    HandleResult(stat,"xiSetParam (XI_PRM_BUFFERS_QUEUE_SIZE)");
+    stat = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
+    HandleResult(stat,"xiSetParam (recent frame)");
+    stat = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
+    HandleResult(mvret, "Error while disabling external trigger source");
+
     mvret = xiStartAcquisition(hmv);
     if(mvret != XI_OK)
     {
         errMsg("StartAcquisition XI_DEVICE failed", mvret);
         goto error;
     }
+    xiSetParamInt(hmv, XI_PRM_TS_RST_MODE , XI_TS_RST_ARM_ONCE);
+	xiSetParamInt(hmv, XI_PRM_TS_RST_SOURCE , XI_TS_RST_SRC_SW);
+
     isopened=true;
     return true;
 
@@ -229,13 +243,23 @@ bool CaptureCAM_XIMEA::open( int wIndex )
     mvret = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
     if( mvret != XI_OK)
         errMsg("Set parameter error", mvret);
-       
+
+
+    stat = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 4);
+    HandleResult(stat,"xiSetParam (XI_PRM_BUFFERS_QUEUE_SIZE)");
+    stat = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
+    HandleResult(stat,"xiSetParam (recent frame)");
+    stat = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
+    HandleResult(mvret, "Error while disabling external trigger source");
+
     mvret = xiStartAcquisition(hmv);
     if(mvret != XI_OK)
     {
         errMsg("StartAcquisition XI_DEVICE failed", mvret);
         goto error;
     }
+    xiSetParamInt(hmv, XI_PRM_TS_RST_MODE , XI_TS_RST_ARM_ONCE);
+	xiSetParamInt(hmv, XI_PRM_TS_RST_SOURCE , XI_TS_RST_SRC_SW);
     
     isopened=true;
     return true;
@@ -266,6 +290,7 @@ bool CaptureCAM_XIMEA::grabFrame()
     // image.height = height;
     // image.AbsoluteOffsetX= xoffset;
     // image.AbsoluteOffsetY= yoffset;
+    xiSetParamInt(hmv, XI_PRM_TRG_SOFTWARE, 1);
     int stat = xiGetImage( hmv, timeout, &image);
     if(stat == MM40_ACQUISITION_STOPED)
     {

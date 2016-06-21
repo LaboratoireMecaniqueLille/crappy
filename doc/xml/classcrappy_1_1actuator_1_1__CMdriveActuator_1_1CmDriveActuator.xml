@@ -1,0 +1,831 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator" kind="class" language="Python" prot="public">
+    <compoundname>crappy::actuator::_CMdriveActuator::CmDriveActuator</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">MotionActuator</basecompoundref>
+    <basecompoundref prot="public" virt="non-virtual">MotionActuator</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a0245888639130522a7ac69d0647701f8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._CMdriveActuator.CmDriveActuator::port</definition>
+        <argsstring></argsstring>
+        <name>port</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="14" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="14" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a389972da94aa30ba747b1b84401a9ce6" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._CMdriveActuator.CmDriveActuator::baudrate</definition>
+        <argsstring></argsstring>
+        <name>baudrate</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="15" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="15" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ae12e538874b15e48d42e8cf4c00bdf50" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.actuator._CMdriveActuator.CmDriveActuator::ser</definition>
+        <argsstring></argsstring>
+        <name>ser</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="17" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="17" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac1bdd116f2950d0294b8872948e0ff12" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.__init__</definition>
+        <argsstring>(self, ser=None, port=&apos;/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0&apos;, baudrate=9600)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="11" bodyend="20"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ad32ad305a1745cd3770f2f9663b5465c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.set_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>set_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="21" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a933882c3d96f630cb692931276eda11c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.set_position</definition>
+        <argsstring>(self, position, speed, motion_type=&apos;relative&apos;)</argsstring>
+        <name>set_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <param>
+          <type>motion_type</type>
+          <defname>motion_type</defname>
+          <defval>&apos;relative&apos;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="33" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="33" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ad9221ab0cdaa2ed1c75932c84036af7e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.move_home</definition>
+        <argsstring>(self)</argsstring>
+        <name>move_home</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Reset the position to zero</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="44" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac3e670f8b234d23f71b47c7aa2ef9e97" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.setConnection</definition>
+        <argsstring>(self, port, baudrate)</argsstring>
+        <name>setConnection</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: connection is initialized in __init__.
+Open a new specified serial port for communication with Servostar
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="52" bodyend="63"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1aafa1c4e030ff5ca312ebb0f8554e2f18" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.stopMotion</definition>
+        <argsstring>(self)</argsstring>
+        <name>stopMotion</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: stop method is defined in _cmdriveTechnical.
+Stop the motor motion
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="70" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="70" bodyend="80"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a91acd170bd74d415ce4d84f05b3fee72" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyAbsoluteMotion</definition>
+        <argsstring>(self, position)</argsstring>
+        <name>applyAbsoluteMotion</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_position(position, None, motion_type=&apos;absolute&apos;) instead.
+Absolut displacement from zero
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="82" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="82" bodyend="92"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a3c17157295efb3b821e36361deba5ba7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyRelativeMotion</definition>
+        <argsstring>(self, num)</argsstring>
+        <name>applyRelativeMotion</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>num</type>
+          <defname>num</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_position(position, None, motion_type=&apos;relative&apos;) instead.
+Relative displacement from current position
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="94" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="94" bodyend="104"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a4f45d3de801825947b5d49fdf42a5f60" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyPositiveSpeed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>applyPositiveSpeed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_speed(speed) instead.
+Positive displacement at a setted speed
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="109" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="109" bodyend="123"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac11fdc54b29697daa67055be7870f8a7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyNegativeSpeed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>applyNegativeSpeed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_speed(-speed) instead.
+Negative displacement at a setted speed
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="125" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="125" bodyend="139"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ae32a6355dcc1b4976af9dd305dda4675" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyAbsoluteSpeed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>applyAbsoluteSpeed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_speed instead.
+Positive or Negative displacement at a setted speed
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="141" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="141" bodyend="156"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1add575db219a95efb2ff71fc1319f800d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.examineLocation</definition>
+        <argsstring>(self)</argsstring>
+        <name>examineLocation</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use get_position instead, defined in CmDriveSensor
+Search for the physical position of the motor
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="163" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="163" bodyend="178"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a91cd0bdf9d03e5bb821f7f576e15471b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.resetZero</definition>
+        <argsstring>(self)</argsstring>
+        <name>resetZero</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: Use reset instead, defined in CmDriveTechnical.
+Reset the serial communication, before reopen it to set displacement to zero
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="180" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="180" bodyend="206"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a7d5420d32c2bf93203975b8914aa5c0c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.moveZero</definition>
+        <argsstring>(self)</argsstring>
+        <name>moveZero</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use move_home instead.
+Reset the position to zero
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="208" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="208" bodyend="217"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a53bf5a5a1aaaa5bd32f59088e3092d26" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.close_port</definition>
+        <argsstring>(self)</argsstring>
+        <name>close_port</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use close method instead, defined in CmDriveTechnical.
+Close the designated port
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="219" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="219" bodyend="225"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1aa60623bed87a7a5901bac08e46a53e91" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.CLRFAULT</definition>
+        <argsstring>(self)</argsstring>
+        <name>CLRFAULT</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use clear_errors instead, defined in CmDriveTechnical.
+Reset errors
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="227" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="227" bodyend="234"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac1bdd116f2950d0294b8872948e0ff12" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.__init__</definition>
+        <argsstring>(self, ser=None, port=&apos;/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0&apos;, baudrate=9600)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>ser</type>
+          <defname>ser</defname>
+          <defval>None</defval>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+          <defval>&apos;/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0&apos;</defval>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+          <defval>9600</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="11" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="11" bodyend="20"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ad32ad305a1745cd3770f2f9663b5465c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.set_speed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>set_speed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="21" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a933882c3d96f630cb692931276eda11c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.set_position</definition>
+        <argsstring>(self, position, speed, motion_type=&apos;relative&apos;)</argsstring>
+        <name>set_position</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <param>
+          <type>motion_type</type>
+          <defname>motion_type</defname>
+          <defval>&apos;relative&apos;</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="33" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="33" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ad9221ab0cdaa2ed1c75932c84036af7e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.move_home</definition>
+        <argsstring>(self)</argsstring>
+        <name>move_home</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Reset the position to zero</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="44" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="44" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac3e670f8b234d23f71b47c7aa2ef9e97" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.setConnection</definition>
+        <argsstring>(self, port, baudrate)</argsstring>
+        <name>setConnection</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>port</type>
+          <defname>port</defname>
+        </param>
+        <param>
+          <type>baudrate</type>
+          <defname>baudrate</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: connection is initialized in __init__.
+Open a new specified serial port for communication with Servostar
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="52" bodyend="63"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1aafa1c4e030ff5ca312ebb0f8554e2f18" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.stopMotion</definition>
+        <argsstring>(self)</argsstring>
+        <name>stopMotion</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: stop method is defined in _cmdriveTechnical.
+Stop the motor motion
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="70" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="70" bodyend="80"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a91acd170bd74d415ce4d84f05b3fee72" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyAbsoluteMotion</definition>
+        <argsstring>(self, position)</argsstring>
+        <name>applyAbsoluteMotion</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>position</type>
+          <defname>position</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_position(position, None, motion_type=&apos;absolute&apos;) instead.
+Absolut displacement from zero
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="82" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="82" bodyend="92"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a3c17157295efb3b821e36361deba5ba7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyRelativeMotion</definition>
+        <argsstring>(self, num)</argsstring>
+        <name>applyRelativeMotion</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>num</type>
+          <defname>num</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_position(position, None, motion_type=&apos;relative&apos;) instead.
+Relative displacement from current position
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="94" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="94" bodyend="104"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a4f45d3de801825947b5d49fdf42a5f60" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyPositiveSpeed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>applyPositiveSpeed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_speed(speed) instead.
+Positive displacement at a setted speed
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="109" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="109" bodyend="123"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac11fdc54b29697daa67055be7870f8a7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyNegativeSpeed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>applyNegativeSpeed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_speed(-speed) instead.
+Negative displacement at a setted speed
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="125" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="125" bodyend="139"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ae32a6355dcc1b4976af9dd305dda4675" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.applyAbsoluteSpeed</definition>
+        <argsstring>(self, speed)</argsstring>
+        <name>applyAbsoluteSpeed</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>speed</type>
+          <defname>speed</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use set_speed instead.
+Positive or Negative displacement at a setted speed
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="141" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="141" bodyend="156"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1add575db219a95efb2ff71fc1319f800d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.examineLocation</definition>
+        <argsstring>(self)</argsstring>
+        <name>examineLocation</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use get_position instead, defined in CmDriveSensor
+Search for the physical position of the motor
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="163" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="163" bodyend="178"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a91cd0bdf9d03e5bb821f7f576e15471b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.resetZero</definition>
+        <argsstring>(self)</argsstring>
+        <name>resetZero</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: Use reset instead, defined in CmDriveTechnical.
+Reset the serial communication, before reopen it to set displacement to zero
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="180" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="180" bodyend="206"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a7d5420d32c2bf93203975b8914aa5c0c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.moveZero</definition>
+        <argsstring>(self)</argsstring>
+        <name>moveZero</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use move_home instead.
+Reset the position to zero
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="208" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="208" bodyend="217"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a53bf5a5a1aaaa5bd32f59088e3092d26" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.close_port</definition>
+        <argsstring>(self)</argsstring>
+        <name>close_port</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use close method instead, defined in CmDriveTechnical.
+Close the designated port
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="219" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="219" bodyend="225"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1aa60623bed87a7a5901bac08e46a53e91" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.actuator._CMdriveActuator.CmDriveActuator.CLRFAULT</definition>
+        <argsstring>(self)</argsstring>
+        <name>CLRFAULT</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>DEPRECATED: use clear_errors instead, defined in CmDriveTechnical.
+Reset errors
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" line="227" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/actuator/_CMdriveActuator.py" bodystart="227" bodyend="234"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>Open a new default serial port for communication with Servostar</verbatim> </para>    </detaileddescription>
+    <inheritancegraph>
+      <node id="106">
+        <label>crappy.actuator._CMdriveActuator.CmDriveActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator"/>
+        <childnode refid="107" relation="public-inheritance">
+        </childnode>
+        <childnode refid="107" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="107">
+        <label>MotionActuator</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="108">
+        <label>crappy.actuator._CMdriveActuator.CmDriveActuator</label>
+        <link refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator"/>
+        <childnode refid="109" relation="public-inheritance">
+        </childnode>
+        <childnode refid="109" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="109">
+        <label>MotionActuator</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" line="8" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/actuator/_CMdriveActuator.py" bodystart="8" bodyend="234"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac1bdd116f2950d0294b8872948e0ff12" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac1bdd116f2950d0294b8872948e0ff12" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a91acd170bd74d415ce4d84f05b3fee72" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyAbsoluteMotion</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a91acd170bd74d415ce4d84f05b3fee72" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyAbsoluteMotion</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ae32a6355dcc1b4976af9dd305dda4675" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyAbsoluteSpeed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ae32a6355dcc1b4976af9dd305dda4675" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyAbsoluteSpeed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac11fdc54b29697daa67055be7870f8a7" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyNegativeSpeed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac11fdc54b29697daa67055be7870f8a7" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyNegativeSpeed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a4f45d3de801825947b5d49fdf42a5f60" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyPositiveSpeed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a4f45d3de801825947b5d49fdf42a5f60" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyPositiveSpeed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a3c17157295efb3b821e36361deba5ba7" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyRelativeMotion</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a3c17157295efb3b821e36361deba5ba7" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>applyRelativeMotion</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a389972da94aa30ba747b1b84401a9ce6" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>baudrate</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a53bf5a5a1aaaa5bd32f59088e3092d26" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>close_port</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a53bf5a5a1aaaa5bd32f59088e3092d26" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>close_port</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1aa60623bed87a7a5901bac08e46a53e91" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>CLRFAULT</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1aa60623bed87a7a5901bac08e46a53e91" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>CLRFAULT</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1add575db219a95efb2ff71fc1319f800d" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>examineLocation</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1add575db219a95efb2ff71fc1319f800d" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>examineLocation</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ad9221ab0cdaa2ed1c75932c84036af7e" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>move_home</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ad9221ab0cdaa2ed1c75932c84036af7e" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>move_home</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a7d5420d32c2bf93203975b8914aa5c0c" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>moveZero</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a7d5420d32c2bf93203975b8914aa5c0c" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>moveZero</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a0245888639130522a7ac69d0647701f8" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>port</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a91cd0bdf9d03e5bb821f7f576e15471b" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>resetZero</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a91cd0bdf9d03e5bb821f7f576e15471b" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>resetZero</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ae12e538874b15e48d42e8cf4c00bdf50" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>ser</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a933882c3d96f630cb692931276eda11c" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>set_position</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1a933882c3d96f630cb692931276eda11c" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>set_position</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ad32ad305a1745cd3770f2f9663b5465c" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>set_speed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ad32ad305a1745cd3770f2f9663b5465c" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>set_speed</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac3e670f8b234d23f71b47c7aa2ef9e97" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>setConnection</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1ac3e670f8b234d23f71b47c7aa2ef9e97" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>setConnection</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1aafa1c4e030ff5ca312ebb0f8554e2f18" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>stopMotion</name></member>
+      <member refid="classcrappy_1_1actuator_1_1__CMdriveActuator_1_1CmDriveActuator_1aafa1c4e030ff5ca312ebb0f8554e2f18" prot="public" virt="non-virtual"><scope>crappy::actuator::_CMdriveActuator::CmDriveActuator</scope><name>stopMotion</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

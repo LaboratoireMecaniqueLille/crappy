@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="namespaceoscilloscope" kind="namespace" language="Python">
+    <compoundname>oscilloscope</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="oscilloscope_8py_1add54786505b7657982c6c06d759b1823" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.instances</definition>
+        <argsstring></argsstring>
+        <name>instances</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="4" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="4" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1aeffe4fb06132238fc49229937ecb5b8d" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.sensor</definition>
+        <argsstring></argsstring>
+        <name>sensor</name>
+        <initializer>= <ref refid="classcrappy_1_1sensor_1_1__comediSensor_1_1ComediSensor" kindref="compound">crappy.sensor.ComediSensor</ref>(device=&apos;/dev/comedi1&apos;, channels=[0, 1, 2, 3],
+                                        gain=[0.02, 100000, 0.01 * 2., 500])</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="10" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="10" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1a7eabb628548bd8ae38930a92e7750d0b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.stream</definition>
+        <argsstring></argsstring>
+        <name>stream</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__measureByStep_1_1MeasureByStep" kindref="compound">crappy.blocks.MeasureByStep</ref>(sensor, labels=[&apos;t(s)&apos;, &apos;def(%)&apos;, &apos;F(N)&apos;, &apos;dist&apos;, &apos;C(Nm)&apos;], freq=100)</initializer>
+        <briefdescription>
+<para>Creating blocks send_freq=400, actuator=cmd_traction, waveform=[&apos;sinus&apos;,&apos;sinus&apos;,&apos;sinus&apos;], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[1,2,4], offset=[0,0,0], phase=[0,0,0], repeat=True send_freq=400, actuator=cmd_torsion, waveform=[&apos;sinus&apos;,&apos;triangle&apos;,&apos;sinus&apos;], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[0,0,0], offset=[0,0,0], phase=[np.pi,np.pi,np.pi], repeat=True stream=crappy.blocks.MeasureByStep(instronSensor,labels=[&apos;t(s)&apos;,&apos;signal&apos;,&apos;signal2&apos;],freq=200) </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="27" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="27" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1ad5ea7f06ed8db9e574f1f4d36335e1d8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.compacter</definition>
+        <argsstring></argsstring>
+        <name>compacter</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__compacter_1_1Compacter" kindref="compound">crappy.blocks.Compacter</ref>(30)</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="36" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1a589be3d41eb5f10a929520274547008a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.graph</definition>
+        <argsstring></argsstring>
+        <name>graph</name>
+        <initializer>= <ref refid="classcrappy_1_1blocks_1_1__grapher_1_1Grapher" kindref="compound">crappy.blocks.Grapher</ref>(&quot;dynamic&quot;, (&apos;t(s)&apos;, &apos;def(%)&apos;), (&apos;t(s)&apos;, &apos;dist&apos;))</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="39" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="39" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1aa866452a6f3b48571dcdf60aaed5da71" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.link1</definition>
+        <argsstring></argsstring>
+        <name>link1</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="47" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1a0ce9b44265b34c369204acf1387e79aa" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.link2</definition>
+        <argsstring></argsstring>
+        <name>link2</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="48" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1afcb0dd4e65d81d2b6b1f308de66eaa09" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.link3</definition>
+        <argsstring></argsstring>
+        <name>link3</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="49" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1af4abaf0627d8b6ea5bec5871a520ac53" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.link4</definition>
+        <argsstring></argsstring>
+        <name>link4</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="50" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1ad22a69fe468b7267a8dd9d96ea57d697" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.link5</definition>
+        <argsstring></argsstring>
+        <name>link5</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="51" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1af5bb79215dd7c77891e260339ade908a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.link6</definition>
+        <argsstring></argsstring>
+        <name>link6</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="52" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1aa410d23481f1aba4c4d55f64542dbb36" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.link7</definition>
+        <argsstring></argsstring>
+        <name>link7</name>
+        <initializer>= <ref refid="classcrappy_1_1links_1_1__link_1_1Link" kindref="compound">crappy.links.Link</ref>()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="53" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="53" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="oscilloscope_8py_1a4d82334c46d5491c77c56091eda68686" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>oscilloscope.t0</definition>
+        <argsstring></argsstring>
+        <name>t0</name>
+        <initializer>= time.time()</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="78" column="1" bodyfile="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" bodystart="78" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/Examples/oscilloscope.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

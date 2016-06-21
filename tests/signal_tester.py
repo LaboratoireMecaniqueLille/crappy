@@ -1,7 +1,7 @@
 import time
 import numpy as np
-import crappy
-crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
+import crappy2
+crappy2.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
 
 
 t0=time.time()
@@ -9,9 +9,9 @@ if __name__ == '__main__':
 	try:
 	########################################### Creating objects
 		
-		#instronSensor=crappy.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1,2,3],gain=[50,10000,45,1000]) # 10 times the gain on the machine if you go through an usb dux sigma
-		#cmd_traction=crappy.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=1, range_num=0, gain=1, offset=0)
-		#cmd_torsion=crappy.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=2, range_num=0, gain=1, offset=0)
+		#instronSensor=crappy2.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1,2,3],gain=[50,10000,45,1000]) # 10 times the gain on the machine if you go through an usb dux sigma
+		#cmd_traction=crappy2.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=1, range_num=0, gain=1, offset=0)
+		#cmd_torsion=crappy2.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=2, range_num=0, gain=1, offset=0)
 
 	########################################### Initialising the outputs
 
@@ -21,28 +21,28 @@ if __name__ == '__main__':
 	########################################### Creating blocks
 		#send_freq=400, actuator=cmd_traction, waveform=['sinus','sinus','sinus'], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[1,2,4], offset=[0,0,0], phase=[0,0,0], repeat=True
 		#send_freq=400, actuator=cmd_torsion, waveform=['sinus','triangle','sinus'], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[0,0,0], offset=[0,0,0], phase=[np.pi,np.pi,np.pi], repeat=True
-		#stream=crappy.blocks.MeasureComediByStep(t0,instronSensor,labels=['t(s)','dep(mm)','f(N)','angle(deg)','C(Nm)'])
-		traction=crappy.blocks.SignalGenerator(path=[{"waveform":"sinus","time":100,"phase":0,"amplitude":2,"offset":0.5,"freq":2.5}],
-													send_freq=400,repeat=True,labels=['t(s)','signal'])
-		#torsion=crappy.blocks.SignalGenerator(path=[{"waveform":"triangle","time":50,"phase":0,"amplitude":5,"offset":-0.5,"freq":1}]
+		#stream=crappy2.blocks.MeasureComediByStep(t0,instronSensor,labels=['t(s)','dep(mm)','f(N)','angle(deg)','C(Nm)'])
+		traction=crappy2.blocks.SignalGenerator(path=[{"waveform": "sinus", "time":100, "phase":0, "amplitude":2, "offset":0.5, "freq":2.5}],
+												send_freq=400, repeat=True, labels=['t(s)','signal'])
+		#torsion=crappy2.blocks.SignalGenerator(path=[{"waveform":"triangle","time":50,"phase":0,"amplitude":5,"offset":-0.5,"freq":1}]
 												#,send_freq=400,repeat=False,labels=['t(s)','signal'])
-		compacter=crappy.blocks.Compacter(400)
-		#compacter2=crappy.blocks.Compacter(400)
-		save=crappy.blocks.Saver("/home/essais-2015-1/Bureau/test.txt")
-		graph=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
-		#graph_stat=crappy.blocks.Grapher("dynamic",(0,2))
-		#graph2=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
-		#graph3=crappy.blocks.Grapher("dynamic",(0,4))
+		compacter=crappy2.blocks.Compacter(400)
+		#compacter2=crappy2.blocks.Compacter(400)
+		save=crappy2.blocks.Saver("/home/essais-2015-1/Bureau/test.txt")
+		graph=crappy2.blocks.Grapher("dynamic", ('t(s)', 'signal'))
+		#graph_stat=crappy2.blocks.Grapher("dynamic",(0,2))
+		#graph2=crappy2.blocks.Grapher("dynamic",('t(s)','signal'))
+		#graph3=crappy2.blocks.Grapher("dynamic",(0,4))
 		
 	########################################### Creating links
 		
-		link1=crappy.links.Link()
-		link2=crappy.links.Link()
-		link3=crappy.links.Link()
-		link4=crappy.links.Link()
-		link5=crappy.links.Link()
-		link6=crappy.links.Link()
-		link7=crappy.links.Link()
+		link1=crappy2.links.Link()
+		link2=crappy2.links.Link()
+		link3=crappy2.links.Link()
+		link4=crappy2.links.Link()
+		link5=crappy2.links.Link()
+		link6=crappy2.links.Link()
+		link7=crappy2.links.Link()
 		
 	########################################### Linking objects
 		traction.add_output(link1)
@@ -68,10 +68,10 @@ if __name__ == '__main__':
 		#graph3.add_input(link7)
 	########################################### Starting objects
 		t0=time.time()
-		for instance in crappy.blocks._meta.MasterBlock.instances:
+		for instance in crappy2.blocks._meta.MasterBlock.instances:
 			instance.t0(t0)
 			
-		for instance in crappy.blocks._meta.MasterBlock.instances:
+		for instance in crappy2.blocks._meta.MasterBlock.instances:
 			instance.start()
 
 	########################################### Waiting for execution
@@ -79,9 +79,9 @@ if __name__ == '__main__':
 
 	########################################### Stopping objects
 
-		#for instance in crappy.blocks.MasterBlock.instances:
+		#for instance in crappy2.blocks.MasterBlock.instances:
 			#instance.stop()
 
 	except KeyboardInterrupt:
-		for instance in crappy.blocks._meta.MasterBlock.instances:
+		for instance in crappy2.blocks._meta.MasterBlock.instances:
 		instance.stop()

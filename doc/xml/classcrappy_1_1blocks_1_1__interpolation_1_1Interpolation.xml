@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation" kind="class" language="Python" prot="public">
+    <compoundname>crappy::blocks::_interpolation::Interpolation</compoundname>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+    <basecompoundref refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock" prot="public" virt="non-virtual">crappy.blocks._meta.MasterBlock</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1a76bc7fe1b33edbd3f142fd95b1648bf0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>crappy.blocks._interpolation.Interpolation::data</definition>
+        <argsstring></argsstring>
+        <name>data</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" line="26" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" bodystart="26" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1ab8d6e1c0130ccb6eea3465f0a2554035" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._interpolation.Interpolation.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" line="18" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" bodystart="18" bodyend="20"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1ab9dd675fdd341a820b59e60c396e233d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._interpolation.Interpolation.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Recuperation des donnees en entree.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" bodystart="21" bodyend="27"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1af8cf84a27aab78df8af63d8c806f3243" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._interpolation.Interpolation.interp</definition>
+        <argsstring>(self)</argsstring>
+        <name>interp</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" bodystart="28" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1ab8d6e1c0130ccb6eea3465f0a2554035" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._interpolation.Interpolation.main</definition>
+        <argsstring>(self)</argsstring>
+        <name>main</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_interpolation.py" line="18" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_interpolation.py" bodystart="18" bodyend="20"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1ab9dd675fdd341a820b59e60c396e233d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._interpolation.Interpolation.__init__</definition>
+        <argsstring>(self)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Recuperation des donnees en entree.
+</verbatim> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_interpolation.py" line="21" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_interpolation.py" bodystart="21" bodyend="27"/>
+      </memberdef>
+      <memberdef kind="function" id="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1af8cf84a27aab78df8af63d8c806f3243" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def crappy.blocks._interpolation.Interpolation.interp</definition>
+        <argsstring>(self)</argsstring>
+        <name>interp</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/essais/Code/crappy_/crappy/crappy/blocks/_interpolation.py" line="28" column="1" bodyfile="/home/essais/Code/crappy_/crappy/crappy/blocks/_interpolation.py" bodystart="28" bodyend="50"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="294">
+        <label>crappy.blocks._interpolation.Interpolation</label>
+        <link refid="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation"/>
+        <childnode refid="295" relation="public-inheritance">
+        </childnode>
+        <childnode refid="295" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="295">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="296" relation="public-inheritance">
+        </childnode>
+        <childnode refid="296" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="296">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="297">
+        <label>crappy.blocks._interpolation.Interpolation</label>
+        <link refid="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation"/>
+        <childnode refid="298" relation="public-inheritance">
+        </childnode>
+        <childnode refid="298" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="298">
+        <label>crappy.blocks._meta.MasterBlock</label>
+        <link refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock"/>
+        <childnode refid="299" relation="public-inheritance">
+        </childnode>
+        <childnode refid="299" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="299">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" line="16" column="1" bodyfile="/home/essais/Code/crappy_/crappy/build/lib.linux-x86_64-2.7/crappy/blocks/_interpolation.py" bodystart="16" bodyend="51"/>
+    <listofallmembers>
+      <member refid="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1ab9dd675fdd341a820b59e60c396e233d" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1ab9dd675fdd341a820b59e60c396e233d" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>__init__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1acba36c04ba28ab7afaa3048dd33af124" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>__new__</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1adcfe155ebfe9dae8914850e2b3e45a59" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>add_input</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1abe8955043d5743b108e24e3e1c992b36" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>add_output</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1a76bc7fe1b33edbd3f142fd95b1648bf0" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>data</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a9a2b310d834f8e2bd38474b09b9c9bb9" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>inputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3418c3d1dd49aa0f1051c2c62efed1b5" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>instances</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1af8cf84a27aab78df8af63d8c806f3243" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>interp</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1af8cf84a27aab78df8af63d8c806f3243" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>interp</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1ab8d6e1c0130ccb6eea3465f0a2554035" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__interpolation_1_1Interpolation_1ab8d6e1c0130ccb6eea3465f0a2554035" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>main</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a06232d492fa6fd547d521575c8242da8" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>outputs</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a67f6923f203781d0ecd9eff0a3bd4cc6" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>proc</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ad3686aab64e86afd83a9eb4989192bc1" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>start</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1ae1091eb7cbe7d9d341777f2436b0cef2" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>stop</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a3795b61c467b75b2351bd2df10e27cff" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>t0</name></member>
+      <member refid="classcrappy_1_1blocks_1_1__meta_1_1MasterBlock_1a66c2f4d93ccaaacae2d9d2061a730e80" prot="public" virt="non-virtual"><scope>crappy::blocks::_interpolation::Interpolation</scope><name>t0</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

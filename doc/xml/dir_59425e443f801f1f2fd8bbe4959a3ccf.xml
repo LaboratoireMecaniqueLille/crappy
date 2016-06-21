@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="dir_59425e443f801f1f2fd8bbe4959a3ccf" kind="dir">
+    <compoundname>/home/essais/Code/crappy_/crappy/tests</compoundname>
+    <innerfile refid="debugg__flag_8py">debugg_flag.py</innerfile>
+    <innerfile refid="dict__test_8py">dict_test.py</innerfile>
+    <innerfile refid="global__kill__pill_8py">global_kill_pill.py</innerfile>
+    <innerfile refid="link__timeout_8py">link_timeout.py</innerfile>
+    <innerfile refid="memory__leak__pandas_8py">memory_leak_pandas.py</innerfile>
+    <innerfile refid="multipath__test_8py">multipath_test.py</innerfile>
+    <innerfile refid="PID__test_8py">PID_test.py</innerfile>
+    <innerfile refid="reshape_8py">reshape.py</innerfile>
+    <innerfile refid="signal_09graphe_8py">signal+graphe.py</innerfile>
+    <innerfile refid="signal__tester_8py">signal_tester.py</innerfile>
+    <innerfile refid="streamer__labjack_8py">streamer_labjack.py</innerfile>
+    <innerfile refid="test__camera_8py">test_camera.py</innerfile>
+    <innerfile refid="test__freq__instron_8py">test_freq_instron.py</innerfile>
+    <innerfile refid="test__sensor_8py">test_sensor.py</innerfile>
+    <innerfile refid="test__streamer__comedi_8py">test_streamer_comedi.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/essais/Code/crappy_/crappy/tests/"/>
+  </compounddef>
+</doxygen>

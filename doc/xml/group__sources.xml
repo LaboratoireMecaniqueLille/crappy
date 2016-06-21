@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
+  <compounddef id="group__sources" kind="group">
+    <compoundname>sources</compoundname>
+    <title>Sources</title>
+    <innergroup refid="group__cameralink">CameraLink</innergroup>
+    <innergroup refid="group__ximea">Ximea</innergroup>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>This package contains source code for C or C++ libraries interfaced with Python.</para><para>More documentation for the first group. </para>    </detaileddescription>
+  </compounddef>
+</doxygen>
