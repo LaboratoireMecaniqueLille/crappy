@@ -68,11 +68,7 @@ class StreamerCamera(MasterBlock):
     def main(self):
         print "streamer camera!!", os.getpid()
         self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
-        try:
-            _a = self.inputs[:]
-            trigger = "external"
-        except AttributeError:
-            trigger = "internal"
+        trigger = "internal" if len(self.inputs) == 0 else "external"
         timer = time.time()
         try:
             print "start :", time.time() - self.t0
