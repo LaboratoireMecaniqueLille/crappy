@@ -1,12 +1,13 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
-# import time
 from struct import *
 import serial
 
 
 # This functions converts decimal into bytes or bytes into decimals.
 #  Mandatory in order to send or read anything into/from MAC Motors registers.
+from ._meta import motion
+
 
 def convert_to_byte(number, length):
     """
@@ -36,15 +37,15 @@ def convert_to_dec(sequence):
 # This function allows to start the motor in desired mode (1=velocity,2=position) or stop it (mode 0).
 
 
-class BiotensSensor(object):
+class OrientalSensor(motion.MotionSensor):
     def __init__(self, ser):
         """
         This class contains methods to get info from the motors of the biotens
-        machine. You should NOT use it directly, but use the BiotensTechnical.
+        machine. You should NOT use it directly, but use the OrientalTechnical.
         """
         self.ser = ser
 
-    def read_position(self):
+    def get_position(self):
         """Reads current position"""
         # print "reading position..."
         # print self.ser.inWaiting()
@@ -65,5 +66,3 @@ class BiotensSensor(object):
         position = position_[9:len(position_) - 2:2]
         position = convert_to_dec(position) * 5 / 4096.
         return position
-
-    # ajouter d'autre fonctions si besoin (Thanks captain obvious)

@@ -6,7 +6,7 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
-from setuptools import find_packages
+from setuptools import find_packages, __version__
 # To use a consistent encoding
 from codecs import open
 from os import path, system, popen
@@ -15,7 +15,8 @@ import platform
 
 comediModule = Extension('sensor.comediModule',
                          sources=['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'],
-                         extra_link_args=["-l", "comedi", "-l", "python2.7"],include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
+                         extra_link_args=["-l", "comedi", "-l", "python2.7"],
+                         include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
 here = path.abspath(path.dirname(__file__))
 # Get the long description from the relevant file
 with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
@@ -31,12 +32,14 @@ if platform.system() == "Linux":
                             sources=['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'],
                             extra_compile_args=["-std=c++11"],
                             extra_link_args=["-Werror", "-L", "../bin", "-L", "../bin/X64", "-L", "../bin/ARM", "-l",
-                                             "m3api", "-l", "python2.7"],include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
+                                             "m3api", "-l", "python2.7"],
+                            include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
     clModule = Extension('sensor.clModule',
                          sources=['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp',
                                   'sources/Jai_lib/clSerial.cpp'], extra_compile_args=["-std=c++11"],
                          extra_link_args=["-l", "python2.7", "-L", "/opt/SiliconSoftware/Runtime5.4.1.2/lib64/", "-l",
-                                          "display", "-l", "clsersis", "-l", "fglib5"],include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
+                                          "display", "-l", "clsersis", "-l", "fglib5"],
+                         include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
     try:
         import comedi
         extentions.append(comediModule)
@@ -46,17 +49,13 @@ if platform.system() == "Linux":
     if len(p.read()) != 0:
         extentions.append(clModule)
     else:
-        print "WARNING: cannot find menable kernel module, CameraLink module won't be available.\n"
-    p = popen("lsmod |grep m3api")
-    if len(p.read()) != 0:
+        print "WARNING: cannot find menable kernel module, CameraLink module won't be available."
+
+    if raw_input("would you like to install ximea module? ([y]/n)?") != "n":
         extentions.append(ximeaModule)
-    else:
-        print "WARNING: cannot find m3api kernel module, ximea module won't be available.\n"
-    extentions.append(ximeaModule)
-    pyFgenModule = None
 
 if platform.system() == "Windows":
-    execfile(".\crappy\__version__.py")  # read the current version in version.py
+    execfile(".\crappy2\__version__.py")  # read the current version in version.py
     pyFgenModule = Extension('sensor.pyFgenModule',
                              include_dirs=["c:\\python27\\Lib\\site-packages\\numpy\\core\\include",
                                            "C:\\Program Files (x86)\\IVI Foundation\\VISA\\WinNT\\include",
@@ -64,7 +63,8 @@ if platform.system() == "Windows":
                              sources=['sources/niFgen/pyFgen.cpp'], libraries=["niFgen"],
                              library_dirs=["C:\\Program Files\\IVI Foundation\\IVI\\Lib_x64\\msc"],
                              extra_compile_args=["/EHsc", "/WX"])
-    extentions.append(pyFgenModule)
+    if raw_input("would you like to install pyFgen module? ([y]/n)") != "n":
+        extentions.append(pyFgenModule)
     ximeaModule = Extension('sensor.ximeaModule',
                             include_dirs=["c:\\XIMEA\\API", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"],
                             sources=['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyximea.cpp'],
@@ -76,6 +76,7 @@ if platform.system() == "Windows":
                                   'sources/Jai_lib/clSerial.cpp'], libraries=["clsersis", "fglib5"],
                          library_dirs=["C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\lib\\visualc"],
                          extra_compile_args=["/EHsc", "/WX"])
+
     p = popen('driverquery /NH |findstr "mu3camX64"')
     if len(p.read()) != 0:
         extentions.append(ximeaModule)
@@ -102,7 +103,7 @@ if platform.system() == "Windows":
 #         ext_lib.append(("sensor\\", ["build\\lib.win-amd64-2.7\\crappy2\\sensor\\ximeaModule.pyd"]))
 
 setup(
-    name='crappy',
+    name='crappy2',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -117,10 +118,10 @@ setup(
 
     # Author details
     author='LML',
-    author_email='None',  ## Create a mailing list!
+    author_email='None',  # Create a mailing list!
 
     # Choose your license
-    license='GPL V2',  ### to confirm
+    license='GPL V2',  # to confirm
 
     zip_safe=False,
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -157,7 +158,7 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
 
-    ext_package='crappy',
+    ext_package='crappy2',
     ext_modules=extentions,
 
     # List run-time dependencies here.  These will be installed by pip when
@@ -197,17 +198,6 @@ setup(
     # ],
     # },
 )
-
-# if(platform.system()=="Linux"):
-#     system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/ximeaModule.so crappy2/sensor/')
-# if(comediModule in extentions):
-#     if(platform.system()=="Linux"):
-#         system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/comediModule.so crappy2/sensor/')
-# if(clModule in extentions):
-#     if(platform.system()=="Windows"):
-#         system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\clModule.pyd crappy2\\sensor\\')
-#     if(platform.system()=="Linux"):
-#         system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/clModule.so crappy2/sensor/')
 
 if ximeaModule in extentions:
     if platform.system() == "Windows":

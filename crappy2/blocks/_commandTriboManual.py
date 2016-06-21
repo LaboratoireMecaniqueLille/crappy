@@ -27,7 +27,7 @@
 #             elif input_ == 'position' and self.VariateurTribo.mode != 'effort' and self.VariateurTribo.init:
 #                 self.VarœiateurTribo.set_mode_position()
 #                 self.comediDigital.off()
-#                 self.VariateurTribo.read_position()
+#                 self.VariateurTribo.get_position()
 #
 #             elif input_ == 'stop':
 #                 self.VariateurTribo.stop_motor()

@@ -525,7 +525,7 @@ class Interface(Frame, MasterBlock):
     def ActuatorPosUpdate(self):
         try:
             self.VariateurTribo.sensor.clear()
-            self.ActuatorPosLabel.configure(text=self.VariateurTribo.sensor.read_position())
+            self.ActuatorPosLabel.configure(text=self.VariateurTribo.sensor.get_position())
             self.root.after(20, self.ActuatorPositionUpdate)
         except:
             self.ActuatorPosUpdate()
@@ -577,7 +577,7 @@ class Interface(Frame, MasterBlock):
             # self.ActuatorEffortLabel.grid_remove()
             self.VariateurTribo.actuator.set_mode_position()
             self.comediOut.off()
-            self.ActuatorPositionVar.set(self.VariateurTribo.sensor.read_position())
+            self.ActuatorPositionVar.set(self.VariateurTribo.sensor.get_position())
 
         self.ModeLabel.configure(text=self.mode)
 
@@ -592,7 +592,7 @@ class Interface(Frame, MasterBlock):
         self.VariateurTribo.sensor.clear()
         self.VariateurTribo.actuator.initialisation()
         # self.VariateurTribo.actuator.set_mode_position()
-        # self.ActuatorPosLabel.configure(text=str(self.VariateurTribo.sensor.read_position()))
+        # self.ActuatorPosLabel.configure(text=str(self.VariateurTribo.sensor.get_position()))
         time.sleep(1)
         self.VariateurTribo.sensor.clear()
         time.sleep(1)
