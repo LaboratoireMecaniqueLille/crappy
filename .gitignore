@@ -16,3 +16,4 @@ data/
 Examples/open_log.py
 *.sublime-*
 .idea/
+*.swp

@@ -15,7 +15,7 @@ import platform
 
 comediModule = Extension('sensor.comediModule',
                          sources=['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'],
-                         extra_link_args=["-l", "comedi", "-l", "python2.7"])
+                         extra_link_args=["-l", "comedi", "-l", "python2.7"],include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
 here = path.abspath(path.dirname(__file__))
 # Get the long description from the relevant file
 with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
@@ -31,12 +31,12 @@ if platform.system() == "Linux":
                             sources=['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'],
                             extra_compile_args=["-std=c++11"],
                             extra_link_args=["-Werror", "-L", "../bin", "-L", "../bin/X64", "-L", "../bin/ARM", "-l",
-                                             "m3api", "-l", "python2.7"])
+                                             "m3api", "-l", "python2.7"],include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
     clModule = Extension('sensor.clModule',
                          sources=['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp',
                                   'sources/Jai_lib/clSerial.cpp'], extra_compile_args=["-std=c++11"],
                          extra_link_args=["-l", "python2.7", "-L", "/opt/SiliconSoftware/Runtime5.4.1.2/lib64/", "-l",
-                                          "display", "-l", "clsersis", "-l", "fglib5"])
+                                          "display", "-l", "clsersis", "-l", "fglib5"],include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
     try:
         import comedi
         extentions.append(comediModule)
@@ -102,7 +102,7 @@ if platform.system() == "Windows":
 #         ext_lib.append(("sensor\\", ["build\\lib.win-amd64-2.7\\crappy2\\sensor\\ximeaModule.pyd"]))
 
 setup(
-    name='crappy2',
+    name='crappy',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -157,7 +157,7 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
 
-    ext_package='crappy2',
+    ext_package='crappy',
     ext_modules=extentions,
 
     # List run-time dependencies here.  These will be installed by pip when

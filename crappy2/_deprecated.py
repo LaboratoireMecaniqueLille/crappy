@@ -26,5 +26,3 @@ def _deprecated(replacement=None, warn_msg=""):
         return inner
 
     return outer
-
-

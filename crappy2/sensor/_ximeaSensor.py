@@ -82,7 +82,7 @@ class Ximea(cameraSensor.CameraSensor):
             # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
             self.ximea = xi.VideoCapture(device_path=self.numdevice)
         else:
-            self.ximea = xi.VideoCapture(device=self.numdevice)
+            self.ximea = xi.VideoCapture(self.numdevice)
         if self.external_trigger:  # this condition activate the trigger mode
             self.ximea.addTrigger(1000000, True)
         self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT,
