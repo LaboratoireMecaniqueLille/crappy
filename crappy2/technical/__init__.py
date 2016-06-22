@@ -30,3 +30,4 @@ from ._cameraInit import get_camera_config
 from ._technicalCamera import TechnicalCamera
 # from . import *
 # __all__ = ['Ximea']
+from ._correl import TechCorrel

@@ -43,6 +43,7 @@ except Exception as e:
 
 from _interfaceTribo import Interface
 from _lal300Command import CommandLal300
+from ._correl import Correl
 from ._meta import MasterBlock
 
 del platform

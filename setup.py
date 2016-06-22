@@ -23,7 +23,6 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 extentions = []
-ext_lib = []
 ximeaModule = pyFgenModule = clModule = None
 
 if platform.system() == "Linux":
@@ -178,7 +177,7 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    data_files=ext_lib,
+    data_files=[('crappy2/data',['data/kernels.cu'])]
     # package_data={
     # 'sample': ['package_data.dat'],
     # },
@@ -198,7 +197,6 @@ setup(
     # ],
     # },
 )
-
 if ximeaModule in extentions:
     if platform.system() == "Windows":
         system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\ximeaModule.pyd crappy2\\sensor\\')
