@@ -1,14 +1,11 @@
 # coding: utf-8
-# def main():
-#     """Entry point for the application script"""
-#     print("Call your main application code here")
-
-
+import warnings
+e = None
+# warnings.simplefilter("once", ImportWarning)
 try:
     from ._biotensTechnical import Biotens
-except Exception as _e:
-    print 'WARNING: ', _e
-    del (_e)
+except Exception as e:
+    warnings.warn(e.message, ImportWarning)
 
 from ._biaxeTechnical import Biaxe
 from ._biotensTechnical import Biotens
@@ -28,5 +25,12 @@ from ._interfaceCMdrive import Interface
 # from ._jaiTechnical import Jai
 from ._cameraInit import get_camera_config
 from ._technicalCamera import TechnicalCamera
+
 # from . import *
 # __all__ = ['Ximea']
+try:
+    from ._correl import TechCorrel
+except Exception as e:
+    warnings.warn(e.message, ImportWarning)
+
+del e, warnings

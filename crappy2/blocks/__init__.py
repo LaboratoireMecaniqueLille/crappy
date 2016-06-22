@@ -1,10 +1,8 @@
 # coding: utf-8
-# def main():
-# """Entry point for the application script"""
-# print("Call your main application code here")
-
-# from . import technical
 import platform
+import warnings
+
+e = None
 
 if platform.system() == "Linux":
     from ._commandComedi import CommandComedi
@@ -32,17 +30,23 @@ from ._signalGenerator import SignalGenerator
 try:
     from ._streamerCamera import StreamerCamera
 except Exception as e:
-    print "WARNING: ", e
+    warnings.warn(e.message, ImportWarning)
 
 from ._streamer import Streamer
 
 try:
     from ._videoExtenso import VideoExtenso
 except Exception as e:
-    print "WARNING: ", e
+    warnings.warn(e.message, ImportWarning)
 
 from _interfaceTribo import Interface
 from _lal300Command import CommandLal300
+
+try:
+    from ._correl import Correl
+except Exception as e:
+    warnings.warn(e.message, ImportWarning)
+
 from ._meta import MasterBlock
 
-del platform
+del e, platform

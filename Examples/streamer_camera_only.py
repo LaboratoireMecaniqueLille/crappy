@@ -1,5 +1,7 @@
 import time
+
 import crappy2
+from crappy2.links import Link
 
 crappy2.blocks.MasterBlock.instances = []  # Init masterblock instances
 # import alerte_jerome
@@ -20,6 +22,12 @@ if __name__ == '__main__':
         camera = crappy2.blocks.StreamerCamera("Ximea", numdevice=0, freq=10, save=True,
                                                save_directory="/media/biaxe/SSD1To/Essais_biface_caoutchouc/cam_pc/",
                                                xoffset=0, yoffset=0, width=2048, height=2048)
+        displayer = crappy2.blocks.CameraDisplayer()
+
+        link_camera_to_displayer = Link()
+
+        camera.add_output(link_camera_to_displayer)
+        displayer.add_input(link_camera_to_displayer)
         # compacter_effort=crappy2.blocks.Compacter(200)
         # save_effort=crappy2.blocks.Saver("/home/biaxe/Bureau/Publi/effort.txt")
         # graph_effort=crappy2.blocks.Grapher("dynamic",('t(s)','F2(N)'),('t(s)','F4(N)'))

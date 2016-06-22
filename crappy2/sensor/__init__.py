@@ -14,14 +14,18 @@
 # \author Robin Siemiatkowski
 # \version 0.1
 # \date 29/02/2016
-
+import warnings
 from os import popen as _popen
+
+
+_p = e = None
+# warnings.simplefilter("once", ImportWarning)
 
 try:
     import ximeaModule as ximeaModule
     from ._ximeaSensor import Ximea
-except Exception as _e:
-    print "WARNING: ", _e
+except Exception as e:
+    warnings.warn(e.message, ImportWarning)
 
 import platform as _platform
 
@@ -29,8 +33,8 @@ if _platform.system() == "Linux":
     try:
         from ._comediSensor import ComediSensor
         import comediModule as comediModule
-    except Exception as _e:
-        print "WARNING: ", _e
+    except Exception as e:
+        warnings.warn(e.message, ImportWarning)
 
     _p = _popen("lsmod |grep menable")
     if len(_p.read()) != 0:
@@ -42,27 +46,29 @@ if _platform.system() == "Linux":
 
             JaiSerial = _jaiSerial.JaiSerial
             ClSerial = _clSerial.ClSerial
-        except Exception as _e:
-            print "WARNING: ", _e
+        except Exception as e:
+            warnings.warn(e.message, ImportWarning)
 
 if _platform.system() == "Windows":
     try:
         import pyFgenModule as pyFgen
-    except Exception as _e:
-        print "WARNING: ", _e
+    except Exception as e:
+        warnings.warn(e.message, ImportWarning)
 
     p = _popen('driverquery /NH |findstr "me4"')
     if len(p.read()) != 0:
         try:
             import clModule as clModule
             from ._jaiSensor import Jai
+
+            JaiSerial
             from ._clserial import _clSerial
             from ._clserial import _jaiSerial
 
             JaiSerial = _jaiSerial.JaiSerial
             ClSerial = _clSerial.ClSerial
-        except Exception as _e:
-            print "WARNING: ", _e
+        except Exception as e:
+            warnings.warn(e.message, ImportWarning)
 
 from ._biotensSensor import BiotensSensor
 from _biaxeSensor import BiaxeSensor
@@ -75,24 +81,16 @@ from ._PISensor import PISensor
 
 try:
     from _daqmxSensor import DaqmxSensor
-except Exception as _e:
-    print "WARNING: ", _e, ". DaqmxSensor and DaqmxActuator won't be available."
+except Exception as e:
+    warnings.warn(e.message, ImportWarning)
 
 try:
     from _labJackSensor import LabJackSensor
-except Exception as _e:
-    print "WARNING: ", _e
+except Exception as e:
+    warnings.warn(e.message, ImportWarning)
 
-del _popen
-del _platform
-try:
-    del _e
-except:
-    pass
-try:
-    del _p
-except:
-    pass
+del _popen, _platform, _p, e
+
 
 # @}
 # @}

@@ -34,7 +34,6 @@ class MasterBlock(object):
     instances = []
 
     def __init__(self):
-        print 'INIT METHOD OF MASTERBLOCK'
         self.inputs = []
         self.proc = Process(target=main_wrapper, args=(self.main,))
         self.outputs = []

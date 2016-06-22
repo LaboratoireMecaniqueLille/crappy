@@ -12,7 +12,7 @@ from collections import OrderedDict
 class Grapher(MasterBlock):
     """Plot the input data"""
 
-    def __init__(self, mode, *args):
+    def __init__(self, mode, test, *args):
         """
         The grapher receive data from the Compacter (via a Link) and plots it.
 
@@ -86,7 +86,7 @@ class Grapher(MasterBlock):
                             except TypeError:
                                 var = OrderedDict(zip(var.keys(), [(var.values()[t],) + (Data.values()[t],) for t in
                                                                    range(len(var.keys()))]))
-                            # print var
+                                # print var
                         else:  # delete old value and add new ones
                             # try:
                             # pass
@@ -130,11 +130,11 @@ class Grapher(MasterBlock):
                                 li.extend(ax.plot(
                                     Data[self.args[i][0]], Data[self.args[i][1]],
                                     label='line ' + str(i)))
-                            # box = ax.get_position()
-                            # ax.set_position([box.x0, box.y0 + box.height * 0.1,
-                            # box.width, box.height * 0.9])
-                            # plt.legend(legend_,bbox_to_anchor=(0, -0.14, 1., .102),
-                            # loc=3, ncol=len(legend_), mode="expand", borderaxespad=0.)
+                                # box = ax.get_position()
+                                # ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                                # box.width, box.height * 0.9])
+                                # plt.legend(legend_,bbox_to_anchor=(0, -0.14, 1., .102),
+                                # loc=3, ncol=len(legend_), mode="expand", borderaxespad=0.)
                         plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
                                    loc=3, ncol=len(legend_), mode="expand",
                                    borderaxespad=1.)
@@ -160,6 +160,7 @@ class Grapher(MasterBlock):
                     ax.relim()
                     ax.autoscale_view(True, True, True)
                     fig.canvas.draw()
+                    print test
 
         except (Exception, KeyboardInterrupt) as e:
             print "Exception in grapher %s: %s" % (os.getpid(), e)
