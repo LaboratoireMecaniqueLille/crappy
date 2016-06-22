@@ -16,7 +16,7 @@ mvY = (zeros,ones)
 
 sq = .5**.5
 
-Zoom = np.meshgrid(np.arange(-sq,sq,sq/1024,dtype=np.float32),np.arange(-sq,sq,sq/1024,dtype=np.float32))
+Zoom = np.meshgrid(np.arange(-sq,sq,2*sq/x,dtype=np.float32),np.arange(-sq,sq,2*sq/y,dtype=np.float32))
 
 Zoom = (Zoom[0].astype(np.float32),Zoom[1].astype(np.float32))
 Rot = (Zoom[1],-Zoom[0])
@@ -24,10 +24,10 @@ Rot = (Zoom[1],-Zoom[0])
 
 
 
-camera = crappy.blocks.StreamerCamera("Ximea", numdevice=0, freq=20, save=False,save_directory="/home/vic/outTest/",xoffset=0, yoffset=0, width=2048, height=2048)
+camera = crappy.blocks.StreamerCamera("Ximea", numdevice=0, freq=30, save=False,save_directory="/home/vic/outTest/",xoffset=0, yoffset=0, width=x, height=y)
 graph = crappy.blocks.Grapher("dynamic",('t','x'),('t','y'),('t','R'))
-correl = crappy.blocks.Correl((2048,2048),fields=(mvX,mvY,Rot),verbose=2,levels=6,labels=('x','y','R'))
-compacter = crappy.blocks.Compacter(2)
+correl = crappy.blocks.Correl((x,y),fields=(mvX,mvY,Rot),verbose=2,levels=6,labels=('x','y','R'))
+compacter = crappy.blocks.Compacter(5)
 
 lCam2Correl = crappy.links.Link()
 camera.add_output(lCam2Correl)

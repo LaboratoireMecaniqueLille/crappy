@@ -29,7 +29,7 @@ class Correl(MasterBlock):
 
   def start(self):
     if self.ready == False:
-      print "[Correl] WARNING ! This block takes time to init, you must call .init() before .start() JUST before starting all the blocks to do initialize it properly."
+      print "[Correl block] WARNING ! This block takes time to init, you must call .init() before .start() JUST before starting all the blocks to do initialize it properly."
       self.init()
     self.pipeClass.send(0) # Notify the process to let it start
 
@@ -40,13 +40,18 @@ class Correl(MasterBlock):
   def main(self,pipe,img_size,**kwargs):
     correl = TechCorrel(img_size,**kwargs)
     pipe.send(0) # Sending signal to let init return
+    nLoops = 120 # For testing: resets the original images every nLoops loop
     try:
       pipe.recv() # Waiting for the actual start
       print "[Correl block] Got start signal !"
+      t2 = time()
       while True:
+        t1 = time()
+        print "[Correl block] processed",nLoops/(t1-t2),"ips"
+        t2 = t1
         correl.setOrig(self.inputs[0].recv())
         correl.prepare()
-        for i in range(50):
+        for i in range(nLoops):
           data = self.inputs[0].recv()
           correl.setImage(data.astype(np.float32))
           t = time()-self.t0
