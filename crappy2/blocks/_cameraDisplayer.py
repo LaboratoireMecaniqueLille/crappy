@@ -10,7 +10,7 @@ class CameraDisplayer(MasterBlock):
 
     def __init__(self,framerate=5,cv=True):
         super(CameraDisplayer, self).__init__()
-        self.delay = 1./framerate
+        self.delay = 1./framerate # Framerate (fps)
         self.cv = cv
         print "cameraDisplayer!"
 
@@ -46,7 +46,7 @@ class CameraDisplayer(MasterBlock):
                             cv2.imshow('Displayer '+str(i+1),last)
                             cv2.waitKey(1)
                     elapsed = time() - t1
-                    print "[Displayer] Working {}% of the time".format(100*elapsed/self.delay)
+                    #print "[Displayer] Working {}% of the time".format(100*elapsed/self.delay)
                     if elapsed < self.delay:
                         sleep(self.delay-elapsed)
 
