@@ -9,7 +9,7 @@ https://github.com/pypa/sampleproject
 from setuptools import find_packages, __version__
 # To use a consistent encoding
 from codecs import open
-from os import path, system, popen
+from os import path, popen
 from distutils.core import setup, Extension
 import platform
 
@@ -88,19 +88,6 @@ if platform.system() == "Windows":
         extentions.append(clModule)
     else:
         print "Can't find microEnable4 Device driver, clModule will not be compiled"
-
-# try: 
-#     if(platform.system()=="Windows"):
-#         ext_lib.append(("sources\\XimeaLib\\", ["sources\\XimeaLib\\ximeaModule.dll"]))
-#         # system('copy /Y sources\\XimeaLib\\ximeaModule.dll crappy2\\sensor\\')
-#     if(platform.system()=="Linux"):
-#         system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/ximeaModule.so crappy2/sensor/')
-# except:
-#     print "use setup.py build to build ximeaModule.dll"
-
-# if(ximeaModule in extentions):
-#     if(platform.system()=="Windows"):
-#         ext_lib.append(("sensor\\", ["build\\lib.win-amd64-2.7\\crappy2\\sensor\\ximeaModule.pyd"]))
 
 setup(
     name='crappy2',
@@ -199,22 +186,22 @@ setup(
     # },
 )
 
-if ximeaModule in extentions:
-    if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\ximeaModule.pyd crappy2\\sensor\\')
-    if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/ximeaModule.so crappy2/sensor/')
-
-if comediModule in extentions:
-    if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/comediModule.so crappy2/sensor/')
-
-if clModule in extentions:
-    if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\clModule.pyd crappy2\\sensor\\')
-    if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/clModule.so crappy2/sensor/')
-
-if pyFgenModule in extentions:
-    if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\pyFgenModule.pyd crappy2\\sensor\\')
+# if ximeaModule in extentions:
+#     if platform.system() == "Windows":
+#         system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\ximeaModule.pyd crappy2\\sensor\\')
+#     if platform.system() == "Linux":
+#         system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/ximeaModule.so crappy2/sensor/')
+#
+# if comediModule in extentions:
+#     if platform.system() == "Linux":
+#         system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/comediModule.so crappy2/sensor/')
+#
+# if clModule in extentions:
+#     if platform.system() == "Windows":
+#         system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\clModule.pyd crappy2\\sensor\\')
+#     if platform.system() == "Linux":
+#         system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/clModule.so crappy2/sensor/')
+#
+# if pyFgenModule in extentions:
+#     if platform.system() == "Windows":
+#         system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\pyFgenModule.pyd crappy2\\sensor\\')

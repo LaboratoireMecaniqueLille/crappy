@@ -243,14 +243,15 @@ bool CaptureCAM_XIMEA::open( int wIndex )
     mvret = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
     if( mvret != XI_OK)
         errMsg("Set parameter error", mvret);
-
+    mvret = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
+    if( mvret != XI_OK){
+        errMsg("Error while disabling external trigger source", mvret);
+    }
 
     stat = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 4);
     HandleResult(stat,"xiSetParam (XI_PRM_BUFFERS_QUEUE_SIZE)");
     stat = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
     HandleResult(stat,"xiSetParam (recent frame)");
-    stat = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
-    HandleResult(mvret, "Error while disabling external trigger source");
 
     mvret = xiStartAcquisition(hmv);
     if(mvret != XI_OK)

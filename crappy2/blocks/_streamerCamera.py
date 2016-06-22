@@ -74,7 +74,7 @@ class StreamerCamera(MasterBlock):
             print "start :", time.time() - self.t0
             while True:
                 if trigger == "internal":
-                    if self.freq != None:
+                    if self.freq is not None:
                         while time.time() - timer < 1. / self.freq:
                             pass
                     timer = time.time()
@@ -94,7 +94,7 @@ class StreamerCamera(MasterBlock):
                             try:
                                 self.sitk.WriteImage(image,
                                                      self.save_directory + "img_%.6d_cycle%09.1f.tiff" % (
-                                                     self.i, Data[self.label]))
+                                                         self.i, Data[self.label]))
                             except KeyError:
                                 self.sitk.WriteImage(image,
                                                      self.save_directory + "img_%.6d.tiff" % (self.i))
@@ -111,4 +111,4 @@ class StreamerCamera(MasterBlock):
         except (Exception, KeyboardInterrupt) as e:
             print "Exception in streamerCamera : ",
             self.camera.sensor.close()
-        # raise
+            # raise

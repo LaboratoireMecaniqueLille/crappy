@@ -1,5 +1,20 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+
+## @addtogroup sensor
+# @{
+
+##  @defgroup biotens BiotensSensor
+# @{
+
+## @file _biotensSensor.cpp
+# @brief   Get info from biotens sensor
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 21/06/2016
+
 from struct import *
 import serial
 from ._meta import motion

@@ -1,9 +1,0 @@
-<?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.8.12">
-  <compounddef id="links" kind="page">
-    <compoundname>links</compoundname>
-    <title>Links objects</title>
-    <detaileddescription>
-<para>Links are simply the part that carry information between the different blocks. You just need to define the input and the output of a links, and it will transfer all data from one block to the other. </para>    </detaileddescription>
-  </compounddef>
-</doxygen>
