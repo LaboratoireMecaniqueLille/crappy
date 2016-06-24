@@ -440,22 +440,48 @@ If it is not desired, consider lowering the verbosity: \
 
   def setFields(self,fields):
     assert self.Nfields == len(fields),"Cannot change the number of fields on the go!"
-    if isinstance(fields[0][0], gpuarray.GPUArray): # Choosing the right function to copy
-      toArray = cuda.gpuarray_to_array
-    elif isinstance(fields[0][0], np.ndarray):
+    if isinstance(fields[0], str) or isinstance(fields[0][0], np.ndarray):
       toArray = cuda.matrix_to_array
+    elif isinstance(fields[0][0], gpuarray.GPUArray): # Choosing the right function to copy
+      toArray = cuda.gpuarray_to_array
     else:
-      print("[Error] Incorrect fields argument. See docstring of Correl")
+      print("[Correl] Eroor: Incorrect fields argument. See docstring of Correl")
+      raise ValueError
     self.fieldsXArray = [] # These list store the arrays for the fields texture (to be interpolated quickly for each stage)
     self.fieldsYArray = []
     for i in range(self.Nfields):
+      if isinstance(fields[i],str):
+        c = fields[i].lower()
+        if c in ['x','mx','tx']:  #Movement along X
+          fields[i] = (np.ones((self.w[0],self.h[0]),dtype=np.float32),np.zeros((self.w[0],self.h[0]),dtype=np.float32))
+        elif c in ['y','my','ty']:  #..along Y
+          fields[i] = (np.zeros((self.w[0],self.h[0]),dtype=np.float32),np.ones((self.w[0],self.h[0]),dtype=np.float32))
+        elif c[0] == 'r': # Rotation
+          sq = .5**.5
+          z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
+          fields[i] = (z[1].astype(np.float32),-z[0].astype(np.float32))
+        elif c in ['ex','exx']:  # Stretch along X
+          fields[i] = np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[:,np.newaxis],)*self.h[0],axis=1)
+        elif c in ['ey','eyy']: # Stretch along Y
+          fields[i] = np.concatenate((np.arange(-1,1,2./self.w,dtype=np.float32)[np.newaxis,:],)*self.h,axis=0)
+        elif c in ['exy','tau']: # Shear
+          sq = .5**.5
+          z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
+          fields[i] = (z[1].astype(np.float32),z[0].astype(np.float32))
+        elif c[0] == 'z' or c in ['mz','tz']: # Shrinking/Zooming
+          sq = .5**.5
+          z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
+          fields[i] = (z[0].astype(np.float32),z[1].astype(np.float32))
+        else:
+          print("[Correl] Error: Unrecognized field parameter:",fields[i])
+          raise ValueError
+
       self.fieldsXArray.append(toArray(fields[i][0],"C"))
       self.texFx[i].set_array(self.fieldsXArray[i])
       self.fieldsYArray.append(toArray(fields[i][1],"C"))
       self.texFy[i].set_array(self.fieldsYArray[i])
     for i in range(self.levels):
       self.correl[i].setFields(*self.getFields(self.w[i],self.h[i]))
-
 
   def prepare(self):
     for c in self.correl:
