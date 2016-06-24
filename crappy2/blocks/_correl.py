@@ -17,7 +17,18 @@ class Correl(MasterBlock):
       except TypeError:
         print "Error: Correl needs to know the number of fields at init with fields=(.,.) or Nfields=k"
         raise NameError('Missing fields')
-    self.labels = ('t',)+kwargs.get("labels",tuple([str(i+1) for i in range(self.Nfields)])) # If no labels are provided, name them '1', '2', ...
+    #self.labels = ('t',)+kwargs.get("labels",tuple([str(i+1) for i in range(self.Nfields)])) # If no labels are provided, name them '1', '2', ...
+
+    # Creating the tuple of labels (to name the outputs)
+    self.labels = ('t',)
+    for i in range(self.Nfields): # If explicitly named with labels=(...)
+      if kwargs.get("labels") is not None:
+        self.labels += (kwargs.get("labels")[i],)
+      elif kwargs.get("fields") is not None and isinstance(kwargs.get("fields")[i],str): # Else if we got a default field as a string, use this string (ex: fields=('x','y','r','exx','eyy'))
+        self.labels += (kwargs.get("fields")[i],)
+      else: # Custom field and no label given: name it by its position...
+        self.labels += (str(i),)
+
     pipeProcess,self.pipeClass = Pipe()
     self.process = Process(target=self.main,args=(pipeProcess,img_size),kwargs=kwargs)
 
@@ -40,7 +51,7 @@ class Correl(MasterBlock):
   def main(self,pipe,img_size,**kwargs):
     correl = TechCorrel(img_size,**kwargs)
     pipe.send(0) # Sending signal to let init return
-    nLoops = 120 # For testing: resets the original images every nLoops loop
+    nLoops = 100 # For testing: resets the original images every nLoops loop
     try:
       pipe.recv() # Waiting for the actual start
       print "[Correl block] Got start signal !"
