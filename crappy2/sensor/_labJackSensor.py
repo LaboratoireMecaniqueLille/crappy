@@ -5,7 +5,7 @@ import time
 import sys
 from collections import OrderedDict
 from ._meta import acquisition
-from .._deprecated import _deprecated as deprecated
+from .._warnings import deprecated as deprecated
 
 
 # from multiprocessing import Array
@@ -16,7 +16,7 @@ from .._deprecated import _deprecated as deprecated
 class LabJackSensor(acquisition.Acquisition):
     """Sensor class for LabJack devices."""
 
-    def __init__(self, channels=0, chan_range=10, gain=1, offset=0, resolution=0, mode="single", scanRate=100,
+    def __init__(self, channels=[0], chan_range=10, gain=1, offset=0, resolution=0, mode="single", scanRate=100,
                  scansPerRead=1):
         """
         Convert tension value into digital values, on several channels.

@@ -18,7 +18,7 @@
 from struct import *
 import serial
 from ._meta import motion
-from .._deprecated import _deprecated as deprecated
+from .._warnings import deprecated as deprecated
 
 
 # This functions converts decimal into bytes or bytes into decimals.

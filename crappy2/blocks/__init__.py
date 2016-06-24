@@ -1,6 +1,6 @@
 # coding: utf-8
 import platform
-import warnings
+from .._warnings import import_error
 
 e = None
 
@@ -30,14 +30,14 @@ from ._signalGenerator import SignalGenerator
 try:
     from ._streamerCamera import StreamerCamera
 except Exception as e:
-    warnings.warn(e.message, ImportWarning)
+    import_error(e.message)
 
 from ._streamer import Streamer
 
 try:
     from ._videoExtenso import VideoExtenso
 except Exception as e:
-    warnings.warn(e.message, ImportWarning)
+    import_error(e.message)
 
 from _interfaceTribo import Interface
 from _lal300Command import CommandLal300
@@ -45,8 +45,8 @@ from _lal300Command import CommandLal300
 try:
     from ._correl import Correl
 except Exception as e:
-    warnings.warn(e.message, ImportWarning)
+    import_error(e.message)
 
 from ._meta import MasterBlock
 
-del e, platform
+del e, platform, import_error

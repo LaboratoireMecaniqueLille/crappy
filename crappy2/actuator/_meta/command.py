@@ -13,7 +13,7 @@ class Command(object):
         pass
 
     @abc.abstractmethod
-    def set_cmd(self):
+    def set_cmd(self, cmd):
         """
         Send a converted tension value the output.
         """

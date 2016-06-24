@@ -17,24 +17,23 @@
 import warnings
 from os import popen as _popen
 
-
+import platform as _platform
+from .._warnings import import_error
 _p = e = None
-# warnings.simplefilter("once", ImportWarning)
 
 try:
     import ximeaModule as ximeaModule
     from ._ximeaSensor import Ximea
 except Exception as e:
-    warnings.warn(e.message, ImportWarning)
+    import_error(e.message)
 
-import platform as _platform
 
 if _platform.system() == "Linux":
     try:
         from ._comediSensor import ComediSensor
         import comediModule as comediModule
     except Exception as e:
-        warnings.warn(e.message, ImportWarning)
+        import_error(e.message)
 
     _p = _popen("lsmod |grep menable")
     if len(_p.read()) != 0:
@@ -47,13 +46,13 @@ if _platform.system() == "Linux":
             JaiSerial = _jaiSerial.JaiSerial
             ClSerial = _clSerial.ClSerial
         except Exception as e:
-            warnings.warn(e.message, ImportWarning)
+            import_error(e.message)
 
 if _platform.system() == "Windows":
     try:
         import pyFgenModule as pyFgen
     except Exception as e:
-        warnings.warn(e.message, ImportWarning)
+        import_error(e.message)
 
     p = _popen('driverquery /NH |findstr "me4"')
     if len(p.read()) != 0:
@@ -61,14 +60,13 @@ if _platform.system() == "Windows":
             import clModule as clModule
             from ._jaiSensor import Jai
 
-            JaiSerial
             from ._clserial import _clSerial
             from ._clserial import _jaiSerial
 
             JaiSerial = _jaiSerial.JaiSerial
             ClSerial = _clSerial.ClSerial
         except Exception as e:
-            warnings.warn(e.message, ImportWarning)
+            import_error(e.message)
 
 from ._biotensSensor import BiotensSensor
 from _biaxeSensor import BiaxeSensor
@@ -82,14 +80,14 @@ from ._PISensor import PISensor
 try:
     from _daqmxSensor import DaqmxSensor
 except Exception as e:
-    warnings.warn(e.message, ImportWarning)
+    import_error(e.message)
 
 try:
     from _labJackSensor import LabJackSensor
 except Exception as e:
-    warnings.warn(e.message, ImportWarning)
+    import_error(e.message)
 
-del _popen, _platform, _p, e
+del _popen, _platform, _p, e, import_error
 
 
 # @}

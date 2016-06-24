@@ -4,7 +4,7 @@
 import serial
 import time
 from ._meta import motion
-from .._deprecated import _deprecated as deprecated
+from .._warnings import deprecated as deprecated
 
 
 class VariateurTriboActuator(motion.MotionActuator):

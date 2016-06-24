@@ -5,7 +5,7 @@ from struct import *
 import serial
 import time
 from ._meta import motion
-from .._deprecated import _deprecated as deprecated
+from .._warnings import deprecated as deprecated
 
 
 def convert_to_byte(number, length):

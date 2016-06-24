@@ -1,11 +1,11 @@
 # coding: utf-8
-import warnings
+from .._warnings import import_error
 e = None
 # warnings.simplefilter("once", ImportWarning)
 try:
     from ._biotensTechnical import Biotens
 except Exception as e:
-    warnings.warn(e.message, ImportWarning)
+    import_error(e.message)
 
 from ._biaxeTechnical import Biaxe
 from ._biotensTechnical import Biotens
@@ -31,6 +31,6 @@ from ._technicalCamera import TechnicalCamera
 try:
     from ._correl import TechCorrel
 except Exception as e:
-    warnings.warn(e.message, ImportWarning)
+    import_error(e.message)
 
-del e, warnings
+del e, import_error

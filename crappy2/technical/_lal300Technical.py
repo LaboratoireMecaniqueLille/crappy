@@ -3,23 +3,14 @@
 import serial
 
 from ._meta import motion
-from .._deprecated import _deprecated as deprecated
+from .._warnings import deprecated
 from ..actuator import Lal300Actuator
 from ..sensor import Lal300Sensor
 import time
-p = {}
-p['timeout'] = 0.  # s
+
 n = 3  # modify with great caution
-p['PID_PROP'] = 8 / n
-p['PID_INT'] = 30 / n
-p['PID_DERIV'] = 200 / n
-p['PID_INTLIM'] = 1000 / n
-p['ACC'] = 6000.
-p['ACconv'] = 26.22  # conversion ACC values to mm/s/s
-p['FORCE'] = 30000.
-p['SPEEDconv'] = 131072.  # conversion SPEED values to mm/s
-p['ENTREE_VERIN'] = 'DI1'
-p['SORTIE_VERIN'] = 'DI0'
+p = {'timeout': 0., 'PID_PROP': 8 / n, 'PID_INT': 30 / n, 'PID_DERIV': 200 / n, 'PID_INTLIM': 1000 / n, 'ACC': 6000.,
+     'ACconv': 26.22, 'FORCE': 30000., 'SPEEDconv': 131072., 'ENTREE_VERIN': 'DI1', 'SORTIE_VERIN': 'DI0'}
 
 
 class Lal300(motion.Motion):
@@ -116,15 +107,15 @@ class Lal300(motion.Motion):
 
     def close(self):  # Fermeture du port serie
         """Close serial port"""
-        self.stoplal300()  # Arret du moteur
+        self.stop()  # Arret du moteur
         self.ser.close()  # Fermeture du port serie
         return self.ser.isOpen()  # Verification de l'ouverture du port serie (True/False)
 
     def reset(self):  # Reinitialisation des parametres du correcteur PID du moteur et defintion de l'origine moteur"""
         """Reset PID parameters and re-defined the motor origin"""
         self.ser.write("MF,RM,SG%i,SI%i,SD%i,IL%i,DH\r\n" % (
-        self.param['PID_PROP'], self.param['PID_INT'], self.param['PID_DERIV'],
-        self.param['PID_INTLIM']))  # set PID values valeur DH modifiee
+            self.param['PID_PROP'], self.param['PID_INT'], self.param['PID_DERIV'],
+            self.param['PID_INTLIM']))  # set PID values valeur DH modifiee
         time.sleep(0.005)  # Temporisation assurant la bonne ecriture de la ligne precedente dans le port serie
         self.ser.read(self.ser.in_waiting)  # Nettoyage du port serie
         time.sleep(0.005)

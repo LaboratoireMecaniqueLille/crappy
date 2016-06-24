@@ -3,7 +3,7 @@ import types
 import warnings
 
 
-def _deprecated(replacement=None, warn_msg=""):
+def deprecated(replacement=None, warn_msg=""):
     """A decorator which can be used to mark functions as deprecated.
     replacement is a callable that replace the deprecated function.
     """
@@ -27,3 +27,14 @@ def _deprecated(replacement=None, warn_msg=""):
         return inner
 
     return outer
+
+
+# messages = []
+
+
+def import_error(warn_msg=""):
+    warnings.simplefilter("once", ImportWarning)
+    mess = '\033[93m' + warn_msg + '\033[0m'
+    # messages.append(mess)
+    warnings.warn(mess, ImportWarning, stacklevel=2)
+    # print messages

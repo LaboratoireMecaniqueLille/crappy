@@ -17,7 +17,7 @@ class Command:
             module = __import__("crappy2.actuator", fromlist=["%sActuator" % board_names[0]])
             board_name = board_names[[x.capitalize() for x in board_names].index(board_name.capitalize())]
             actuator = getattr(module, "%sActuator" % board_name)
-            self.actuator = actuator(args, kwargs)
+            self.actuator = actuator(*args, **kwargs)
         except Exception as e:
             print "{0}".format(e), " : Unreconized io board name, leaving program...\n"
             return
@@ -29,5 +29,5 @@ class Command:
         self.actuator.new()
         pass
 
-    def set_cmd(self):
-        return self.actuator.set_cmd()
+    def set_cmd(self, cmd):
+        return self.actuator.set_cmd(cmd)

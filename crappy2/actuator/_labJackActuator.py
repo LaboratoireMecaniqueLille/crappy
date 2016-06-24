@@ -7,13 +7,13 @@
 # import sys, string, struct
 from ._meta import command
 from labjack import ljm
-from .._deprecated import _deprecated as deprecated
+from .._warnings import deprecated as deprecated
 
 
 class LabJackActuator(command.Command):
     """LabJack actuator object, commands the output of LabJack cards"""
 
-    def __init__(self, channel="TDAC2", gain=1, offset=0):
+    def __init__(self, channel="DAC0", gain=1, offset=0):
         """Convert wanted tension value into digital values and send it to the 
         output of some LabJack card.
         
@@ -28,10 +28,11 @@ class LabJackActuator(command.Command):
         offset : float, default = 0
                 Add this value to your output.
         """
+        super(LabJackActuator, self).__init__()
         self.channel = channel
         self.gain = gain
         self.offset = offset
-        self.open_handle()
+        self.new()
 
     def new(self):
         self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, "ANY")
@@ -47,8 +48,8 @@ class LabJackActuator(command.Command):
         """
         Convert the tension value to a digital value and send it to the output.
         """
-        self.out = (cmd * self.gain) + self.offset
-        ljm.eWriteName(self.handle, self.channel, self.out)
+        out = (cmd * self.gain) + self.offset
+        ljm.eWriteName(self.handle, self.channel, out)
 
     def close(self):
         """

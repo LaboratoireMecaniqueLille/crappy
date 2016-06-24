@@ -1,7 +1,7 @@
 # coding: utf-8
 import serial
 import time
-from .._deprecated import _deprecated as deprecated
+from .._warnings import deprecated as deprecated
 from ._meta import motion
 
 n = 3  # modify with great caution

@@ -1,7 +1,7 @@
 # coding: utf-8
 import serial
 from ._meta import motion
-from .._deprecated import _deprecated as deprecated
+from .._warnings import deprecated as deprecated
 
 
 # Parameters
