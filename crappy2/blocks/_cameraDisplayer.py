@@ -8,10 +8,11 @@ class CameraDisplayer(MasterBlock):
     Simple images displayer. Can be paired with StreamerCamera
     """
 
-    def __init__(self,framerate=5,cv=True):
+    def __init__(self,framerate=5,cv=True,title='Displayer'):
         super(CameraDisplayer, self).__init__()
         self.delay = 1./framerate # Framerate (fps)
         self.cv = cv
+        self.title = title
         print "cameraDisplayer!"
 
     def main(self):
@@ -33,22 +34,19 @@ class CameraDisplayer(MasterBlock):
                     plt.show()
             else:
                 import cv2
-                for i in range(len(self.inputs)):
-                    cv2.namedWindow('Displayer '+str(i+1),cv2.WINDOW_NORMAL)
+                data = 0
+                cv2.namedWindow(self.title,cv2.WINDOW_NORMAL)
                 while True:
                     t1 = time()
-                    for i in range(len(self.inputs)):
-                        data = 0
-                        while data is not None: # To flush the pipe...
-                            last = data
-                            data = self.inputs[i].recv(False)
-                        if last is not 0:
-                            cv2.imshow('Displayer '+str(i+1),last)
-                            cv2.waitKey(1)
-                    elapsed = time() - t1
-                    #print "[Displayer] Working {}% of the time".format(100*elapsed/self.delay)
-                    if elapsed < self.delay:
-                        sleep(self.delay-elapsed)
+                    while data is not None: # To flush the pipe...
+                        last = data
+                        data = self.inputs[0].recv(False)
+                    if last is not 0:
+                        cv2.imshow('Displayer',last)
+                        cv2.waitKey(1)
+                    data = 0
+                    while time()-t1 < self.delay:
+                        data = self.inputs[0].recv()
 
         except (Exception, KeyboardInterrupt) as e:
             if self.cv:

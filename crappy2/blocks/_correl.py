@@ -44,7 +44,7 @@ class Correl(MasterBlock):
     try:
       pipe.recv() # Waiting for the actual start
       print "[Correl block] Got start signal !"
-      t2 = time()
+      t2 = time()-1
       while True:
         t1 = time()
         print "[Correl block] processed",nLoops/(t1-t2),"ips"
