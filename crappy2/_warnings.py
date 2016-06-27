@@ -29,12 +29,12 @@ def deprecated(replacement=None, warn_msg=""):
     return outer
 
 
-# messages = []
+warning_log = []
 
 
 def import_error(warn_msg=""):
     warnings.simplefilter("once", ImportWarning)
     mess = '\033[93m' + warn_msg + '\033[0m'
-    # messages.append(mess)
-    warnings.warn(mess, ImportWarning, stacklevel=2)
-    # print messages
+    if warn_msg not in warning_log:
+        warning_log.append(warn_msg)
+        warnings.warn(mess, ImportWarning, stacklevel=3)
