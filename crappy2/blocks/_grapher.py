@@ -12,7 +12,7 @@ from collections import OrderedDict
 class Grapher(MasterBlock):
     """Plot the input data"""
 
-    def __init__(self, mode, test, *args):
+    def __init__(self, mode, *args):
         """
         The grapher receive data from the Compacter (via a Link) and plots it.
 
@@ -61,7 +61,6 @@ class Grapher(MasterBlock):
                 while True:
                     # print "3"
                     Data = self.inputs[0].recv()  # recv data
-                    # print "Data: ", Data
                     if type(Data) is not OrderedDict:
                         Data = OrderedDict(zip(Data.columns, Data.values[0]))
                     # legend_=Data.columns[1:]
@@ -160,7 +159,6 @@ class Grapher(MasterBlock):
                     ax.relim()
                     ax.autoscale_view(True, True, True)
                     fig.canvas.draw()
-                    print test
 
         except (Exception, KeyboardInterrupt) as e:
             print "Exception in grapher %s: %s" % (os.getpid(), e)
