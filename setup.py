@@ -9,7 +9,7 @@ https://github.com/pypa/sampleproject
 from setuptools import find_packages, __version__
 # To use a consistent encoding
 from codecs import open
-from os import path, popen
+from os import path, popen, system
 from distutils.core import setup, Extension
 import platform
 
@@ -184,3 +184,26 @@ setup(
     # ],
     # },
 )
+
+# this lines above copy extensions modules to the crappy folder (allows you to import crappy from crappy directory)
+# in fact, when you are located in the crappy directory, import crappy2 doesn't import crappy2 from dist-package.
+
+if ximeaModule in extentions:
+    if platform.system() == "Windows":
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\ximeaModule.pyd crappy2\\sensor\\')
+    if platform.system() == "Linux":
+        system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/ximeaModule.so crappy2/sensor/')
+
+if comediModule in extentions:
+    if platform.system() == "Linux":
+        system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/comediModule.so crappy2/sensor/')
+
+if clModule in extentions:
+    if platform.system() == "Windows":
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\clModule.pyd crappy2\\sensor\\')
+    if platform.system() == "Linux":
+        system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/clModule.so crappy2/sensor/')
+
+if pyFgenModule in extentions:
+    if platform.system() == "Windows":
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\pyFgenModule.pyd crappy2\\sensor\\')
