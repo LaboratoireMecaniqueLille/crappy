@@ -9,6 +9,7 @@
  *  @{
  */
 #include "ximea.h"
+bool trigger;
 
 CaptureCAM_XIMEA::CaptureCAM_XIMEA() {
 	isopened=false;
@@ -43,14 +44,23 @@ void CaptureCAM_XIMEA::addTrigger(int timout, bool triggered)
         
         mvret = xiSetParamInt(hmv, XI_PRM_ACQ_TIMING_MODE, XI_ACQ_TIMING_MODE_FREE_RUN);
         HandleResult(mvret, "Error while setting timing mode.");
-        
+
+        trigger = true;
+        printf("External trigger is on");
     }else{
-        stat = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 4);
-        HandleResult(stat,"xiSetParam (XI_PRM_BUFFERS_QUEUE_SIZE)");
-        stat = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
-        HandleResult(stat,"xiSetParam (recent frame)");
-        stat = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
-        HandleResult(mvret, "Error while disabling external trigger source");
+        /* NOT WORKING IF XI_PRM_BUFFERS_QUEUE_SIZE is set to a value < 3*/
+        mvret = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 3);
+        if( mvret != XI_OK)
+            errMsg("Set parameter error", mvret);
+        mvret = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
+        if( mvret != XI_OK)
+            errMsg("Set parameter error", mvret);
+        mvret = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
+        if( mvret != XI_OK){
+            errMsg("Error while disabling external trigger source", mvret);
+        }
+        trigger = false;
+        printf("External trigger is off");
     }
     mvret = xiStartAcquisition(hmv);
     if(mvret != XI_OK)
@@ -92,7 +102,7 @@ bool CaptureCAM_XIMEA::open( char * device_path )
 
     if(numDevices == 0)
         return false;
-    
+    trigger = false;
     if(xiOpenDeviceBy(XI_OPEN_BY_INST_PATH, device_path, &hmv) != XI_OK)
     {
 #if defined WIN32 || defined _WIN32
@@ -147,12 +157,17 @@ bool CaptureCAM_XIMEA::open( char * device_path )
     //default capture timeout 10s
     timeout = 10000;
 
-    stat = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 4);
-    HandleResult(stat,"xiSetParam (XI_PRM_BUFFERS_QUEUE_SIZE)");
-    stat = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
-    HandleResult(stat,"xiSetParam (recent frame)");
-    stat = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
-    HandleResult(mvret, "Error while disabling external trigger source");
+    /* NOT WORKING IF XI_PRM_BUFFERS_QUEUE_SIZE is set to a value < 3*/
+    mvret = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 3);
+    if( mvret != XI_OK)
+        errMsg("Set parameter error", mvret);
+    mvret = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
+    if( mvret != XI_OK)
+        errMsg("Set parameter error", mvret);
+    mvret = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
+    if( mvret != XI_OK){
+        errMsg("Error while disabling external trigger source", mvret);
+    }
 
     mvret = xiStartAcquisition(hmv);
     if(mvret != XI_OK)
@@ -183,7 +198,7 @@ bool CaptureCAM_XIMEA::open( int wIndex )
     if(numDevices == 0)
         return false;
     
-    
+    trigger = false;
     if((mvret = xiOpenDevice( wIndex, &hmv)) != XI_OK)
     {
 #if defined WIN32 || defined _WIN32
@@ -237,21 +252,16 @@ bool CaptureCAM_XIMEA::open( int wIndex )
     timeout = 10000;
     
     /* NOT WORKING IF XI_PRM_BUFFERS_QUEUE_SIZE is set to a value < 3*/
-//    mvret = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 3);
-//    if( mvret != XI_OK)
-//        errMsg("Set parameter error", mvret);
-//    mvret = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
-//    if( mvret != XI_OK)
-//        errMsg("Set parameter error", mvret);
-//    mvret = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
-//    if( mvret != XI_OK){
-//        errMsg("Error while disabling external trigger source", mvret);
-//    }
-//
-//    stat = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 4);
-//    HandleResult(stat,"xiSetParam (XI_PRM_BUFFERS_QUEUE_SIZE)");
-//    stat = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
-//    HandleResult(stat,"xiSetParam (recent frame)");
+    mvret = xiSetParamInt(hmv, XI_PRM_BUFFERS_QUEUE_SIZE, 3);
+    if( mvret != XI_OK)
+        errMsg("Set parameter error", mvret);
+    mvret = xiSetParamInt(hmv, XI_PRM_RECENT_FRAME, 1);
+    if( mvret != XI_OK)
+        errMsg("Set parameter error", mvret);
+    mvret = xiSetParamInt(hmv, XI_PRM_TRG_SOURCE, XI_TRG_SOFTWARE);
+    if( mvret != XI_OK){
+        errMsg("Error while disabling external trigger source", mvret);
+    }
 
     mvret = xiStartAcquisition(hmv);
     if(mvret != XI_OK)
@@ -291,7 +301,9 @@ bool CaptureCAM_XIMEA::grabFrame()
     // image.height = height;
     // image.AbsoluteOffsetX= xoffset;
     // image.AbsoluteOffsetY= yoffset;
-//    xiSetParamInt(hmv, XI_PRM_TRG_SOFTWARE, 1);
+    if(trigger == false){
+        xiSetParamInt(hmv, XI_PRM_TRG_SOFTWARE, 1);
+    }
     int stat = xiGetImage( hmv, timeout, &image);
     if(stat == MM40_ACQUISITION_STOPED)
     {
@@ -514,4 +526,4 @@ void CaptureCAM_XIMEA::errMsg(const char* msg, int errNum)
 }
 
 /** @} */ 
-/** @} */ 
+/** @} */

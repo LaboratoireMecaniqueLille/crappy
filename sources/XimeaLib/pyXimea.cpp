@@ -85,17 +85,12 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 		switch(capt->image.frm)
 		{
 		case XI_MONO8: {
-			
-                    const int ndim = 2;
-//                     fprintf(stderr, "test: %i\n", 42);
-                    npy_intp nd[2] = {capt->height, capt->width};
-//                     fprintf(stderr, "test: %i\n", 43);
-                    Py_XDECREF(self->myarray);
-//                     fprintf(stderr, "test: %i\n", 44);
-                    self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
-//                     fprintf(stderr, "test: %i\n", 45);
-                    Py_XDECREF(nd);
-                    break;
+            const int ndim = 2;
+            npy_intp nd[2] = {capt->height, capt->width};
+            Py_XDECREF(self->myarray);
+            self->myarray = PyArray_SimpleNewFromData(ndim, nd, NPY_UINT8, capt->image.bp);
+            Py_XDECREF(nd);
+            break;
 		}
 		case XI_MONO16:{ 
 			const int ndim = 2;
