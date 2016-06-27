@@ -38,16 +38,11 @@ class MeasureComediByStep(MasterBlock):
 
     def main(self):
         try:
-            try:
-                print "measurecomedi : ", os.getpid()
-                _a = self.inputs[:]
-                trigger = "external"
-            except AttributeError:
-                trigger = "internal"
+            trigger = "internal" if len(self.inputs) == 0 else "external"
             timer = time.time()
             while True:
                 if trigger == "internal":
-                    if self.freq != None:
+                    if self.freq is not None:
                         while time.time() - timer < 1. / self.freq:
                             time.sleep(1. / (100 * self.freq))
                         timer = time.time()
@@ -61,7 +56,7 @@ class MeasureComediByStep(MasterBlock):
                     for channel_number in range(self.comediSensor.nchans):
                         t, value = self.comediSensor.get_data(channel_number)
                         data.append(value)
-                if self.labels == None:
+                if self.labels is None:
                     self.Labels = [i for i in range(self.comediSensor.nchans + 1)]
                 # Array=pd.DataFrame([data],columns=self.labels)
                 # print data, self.labels
@@ -77,4 +72,4 @@ class MeasureComediByStep(MasterBlock):
         except (Exception, KeyboardInterrupt) as e:
             print "Exception in measureComediByStep : ", e
             self.comediSensor.close()
-        # raise
+            # raise

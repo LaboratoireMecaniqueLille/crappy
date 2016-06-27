@@ -113,6 +113,7 @@ class Ximea(cameraSensor.CameraSensor):
             print "KeyboardInterrupt, closing camera ..."
             self.close()
             self.quit = True
+            raise KeyboardInterrupt
 
         try:
             if ret:

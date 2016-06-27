@@ -78,11 +78,15 @@ class StreamerCamera(MasterBlock):
                         while time.time() - timer < 1. / self.freq:
                             pass
                     timer = time.time()
-                    img = self.camera.sensor.get_image()
+                    try:
+                        img = self.camera.sensor.get_image()
+                    except Exception as e:
+                        print e
+                        raise
                     if self.save:
                         image = self.sitk.GetImageFromArray(img)
                         self.sitk.WriteImage(image,
-                                             self.save_directory + "img_%.6d.tiff" % (self.i))
+                                             self.save_directory + "img_%.6d.tiff" % self.i)
                         self.i += 1
                 elif trigger == "external":
                     Data = self.inputs[0].recv()  # wait for a signal
@@ -97,7 +101,7 @@ class StreamerCamera(MasterBlock):
                                                          self.i, Data[self.label]))
                             except KeyError:
                                 self.sitk.WriteImage(image,
-                                                     self.save_directory + "img_%.6d.tiff" % (self.i))
+                                                     self.save_directory + "img_%.6d.tiff" % self.i)
                             self.i += 1
                 try:
                     if trigger == "internal" or Data is not None:
@@ -107,8 +111,10 @@ class StreamerCamera(MasterBlock):
                     raise
                 except AttributeError:  # if no outputs
                     pass
-
-        except (Exception, KeyboardInterrupt) as e:
-            print "Exception in streamerCamera : ",
+        except KeyboardInterrupt:
+            self.camera.sensor.close()
+            # raise
+        except Exception as e:
+            print "Exception in streamerCamera : ", e
             self.camera.sensor.close()
             # raise

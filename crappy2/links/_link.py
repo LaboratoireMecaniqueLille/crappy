@@ -126,7 +126,7 @@ class Link(object):
             self.send_timeout(value)
         except TimeoutError as e:
             if self.action == "warn":
-                print "WARNING : Timeout error in pipe send! Value : "
+                print "WARNING : Timeout error in pipe send! Link name: %s " % self.name
             elif self.action == "kill":
                 print "Killing Link : ", e
                 raise
@@ -135,10 +135,14 @@ class Link(object):
             else:  # for debugging !!
                 print self.action
                 pass
-        except (Exception, KeyboardInterrupt) as e:
-            print "Exception in link send: ", e, value
-            # pass
-            # raise
+        except KeyboardInterrupt:
+            print "KEYBAORD INTERRUPT RECEIVED IN LINK: " % self.name
+            if not self.out_.closed:
+                self.out_.send('close')
+                self.out_.close()
+            raise KeyboardInterrupt
+        except Exception as e:
+            print "Exception in link send %s : %s " % self.name, e.message
 
     @win_timeout(1)
     def send_timeout(self, value):
@@ -153,8 +157,14 @@ class Link(object):
                     value = self.condition.evaluate(copy.copy(value))
                 if value is not None:
                     self.out_.send(value)
-        except (Exception, KeyboardInterrupt) as e:
-            print "Exception in link : ", e
+        except KeyboardInterrupt:
+            print "KEYBAORD INTERRUPT RECEIVED IN LINK: " % self.name
+            if not self.out_.closed:
+                self.out_.send('close')
+                self.out_.close()
+            raise KeyboardInterrupt
+        except Exception as e:
+            print "Exception in link %s : %s " % self.name, e.message
             if not self.out_.closed:
                 self.out_.send('close')
                 self.out_.close()
@@ -189,9 +199,9 @@ class Link(object):
 
         except TimeoutError as e:
             if self.action == "warn":
-                print "WARNING : Timeout error in pipe send! Value : ", value
+                print "WARNING : Timeout error in pipe send! Link name: %s" % self.name
             elif self.action == "kill":
-                print "Killing Link : ", e
+                print "Killing Link %s : %s" % self.name, e.message
                 raise
             elif self.action == "NoWarn":
                 pass
@@ -199,11 +209,12 @@ class Link(object):
                 print self.action
                 # pass
         except KeyboardInterrupt:
+            print "KEYBAORD INTERRUPT RECEIVED IN LINK: %s" % self.name
             if not self.in_.closed:
                 self.in_.close()
             raise KeyboardInterrupt
         except Exception as e:
-            print "EXCEPTION in link : ", e
+            print "EXCEPTION in link %s : %s " % self.name, e.message
             if not self.in_.closed:
                 self.in_.close()
             raise Exception(e)

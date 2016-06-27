@@ -48,7 +48,12 @@ class CameraDisplayer(MasterBlock):
                     while time()-t1 < self.delay:
                         data = self.inputs[0].recv()
 
-        except (Exception, KeyboardInterrupt) as e:
+        except KeyboardInterrupt:
+            if self.cv:
+                cv2.destroyAllWindows()
+            else:
+                plt.close('all')
+        except Exception as e:
             if self.cv:
                 cv2.destroyAllWindows()
             else:

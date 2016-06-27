@@ -38,10 +38,7 @@ class MeasureByStep(MasterBlock):
     def main(self):
         try:
             print "measureByStep : ", os.getpid()
-            if len(self.inputs) != 0:
-                trigger = "external"
-            else:
-                trigger = "internal"
+            trigger = "internal" if len(self.inputs) == 0 else "external"
             timer = time.time()
             while True:
                 if trigger == "internal":

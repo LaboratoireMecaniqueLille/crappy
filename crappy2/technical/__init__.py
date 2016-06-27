@@ -1,7 +1,6 @@
 # coding: utf-8
 from .._warnings import import_error
 e = None
-# warnings.simplefilter("once", ImportWarning)
 try:
     from ._biotensTechnical import Biotens
 except Exception as e:

@@ -19,12 +19,12 @@ if __name__ == '__main__':
         # axes=[biaxeTech1,biaxeTech2,biaxeTech3,biaxeTech4]
 
         # Creating blocks
-        camera = crappy2.blocks.StreamerCamera("Ximea", numdevice=0, freq=10, save=True,
+        camera = crappy2.blocks.StreamerCamera("Ximea", numdevice=0, freq=None, save=False,
                                                save_directory="/media/biaxe/SSD1To/Essais_biface_caoutchouc/cam_pc/",
                                                xoffset=0, yoffset=0, width=2048, height=2048)
-        displayer = crappy2.blocks.CameraDisplayer()
+        displayer = crappy2.blocks.CameraDisplayer(framerate=10)
 
-        link_camera_to_displayer = Link()
+        link_camera_to_displayer = Link(name="link_camera_to_displayer")
 
         camera.add_output(link_camera_to_displayer)
         displayer.add_input(link_camera_to_displayer)
@@ -134,8 +134,15 @@ if __name__ == '__main__':
     # Waiting for execution
 
     # Stopping objects
+    except KeyboardInterrupt:
+        print "KEYBOARD INTERRUP RECEIVED IN MAIN"
+        for instance in crappy2.blocks.MasterBlock.instances:
+            try:
+                instance.stop()
+            except Exception as e:
+                print e
 
-    except (Exception, KeyboardInterrupt) as e:
+    except Exception as e:
         print "Exception in main :", e
         for instance in crappy2.blocks.MasterBlock.instances:
             try:
