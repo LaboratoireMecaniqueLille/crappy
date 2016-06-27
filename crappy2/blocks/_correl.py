@@ -29,6 +29,7 @@ class Correl(MasterBlock):
       else: # Custom field and no label given: name it by its position...
         self.labels += (str(i),)
 
+    print "labels:",self.labels
     pipeProcess,self.pipeClass = Pipe()
     self.process = Process(target=self.main,args=(pipeProcess,img_size),kwargs=kwargs)
 
@@ -56,12 +57,14 @@ class Correl(MasterBlock):
       pipe.recv() # Waiting for the actual start
       print "[Correl block] Got start signal !"
       t2 = time()-1
+      correl.setOrig(self.inputs[0].recv()) # This is the only time the original picture is set, so the residual may increase if lightning vary or large displacements are reached
+      correl.prepare()
       while True:
         t1 = time()
         print "[Correl block] processed",nLoops/(t1-t2),"ips"
         t2 = t1
-        correl.setOrig(self.inputs[0].recv())
-        correl.prepare()
+        #correl.setOrig(self.inputs[0].recv())
+        #correl.prepare()
         for i in range(nLoops):
           data = self.inputs[0].recv()
           correl.setImage(data.astype(np.float32))

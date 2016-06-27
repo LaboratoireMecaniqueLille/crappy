@@ -13,6 +13,8 @@ from scipy import interpolate
 from crappy2 import __path__ as crappyPath
 kernelFile = crappyPath[0]+"/data/kernels.cu"
 
+context = None
+
 #########################################################################
 #=======================================================================#
 #=                                                                     =#
@@ -265,8 +267,9 @@ class CorrelStage:
       self.setImage(img_d)
 
     #self.devX.set(np.array([0]*self.Nfields,dtype=np.float32)) #Already done in setImage()
+    assert hasattr(self,'array_d'), "Did not set the image, use setImage() before calling getDisp or give the image as parameter !"
     self.debug(3,"Computing first diff table")
-    self.__makeDiff.prepared_call(self.grid,self.block,self.devOut.gpudata,self.devX.gpudata,self.devFieldsX.gpudata,self.devFieldsY.gpudata)
+    self.__makeDiff.prepared_call(self.grid,self.block,self.devOut.gpudata,self.devX.gpudata,self.devFieldsX.gpudata,self.devFieldsY.gpudata) # 
     self.res = self.__leastSquare(self.devOut).get()
     self.debug(3,"res:",self.res/1e6)
 
@@ -328,7 +331,10 @@ class TechCorrel:
    - fields[i][j].shape = (w,h) : it is a numpy.ndarray with the same size as the image, it contains the value of the displacement for the i-th fields along x or y in pixel. Note: dtype must be numpy.float32
   """
   def __init__(self,img_size,**kwargs):
-    import pycuda.autoinit
+    cuda.init()
+    from pycuda.tools import make_default_context
+    global context
+    context = make_default_context()
     self.verbose = kwargs.get("verbose",0)
     self.debug(3,"You set the verbose level to the maximum. \
 It may help finding bugs or tracking errors but it may also impact the program performance \
@@ -445,7 +451,7 @@ If it is not desired, consider lowering the verbosity: \
     elif isinstance(fields[0][0], gpuarray.GPUArray): # Choosing the right function to copy
       toArray = cuda.gpuarray_to_array
     else:
-      print("[Correl] Eroor: Incorrect fields argument. See docstring of Correl")
+      print("[Correl] Error: Incorrect fields argument. See docstring of Correl")
       raise ValueError
     self.fieldsXArray = [] # These list store the arrays for the fields texture (to be interpolated quickly for each stage)
     self.fieldsYArray = []
@@ -456,19 +462,19 @@ If it is not desired, consider lowering the verbosity: \
           fields[i] = (np.ones((self.w[0],self.h[0]),dtype=np.float32),np.zeros((self.w[0],self.h[0]),dtype=np.float32))
         elif c in ['y','my','ty']:  #..along Y
           fields[i] = (np.zeros((self.w[0],self.h[0]),dtype=np.float32),np.ones((self.w[0],self.h[0]),dtype=np.float32))
-        elif c[0] == 'r': # Rotation
+        elif c == 'r': # Rotation
           sq = .5**.5
           z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
           fields[i] = (z[1].astype(np.float32),-z[0].astype(np.float32))
         elif c in ['ex','exx']:  # Stretch along X
-          fields[i] = np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[:,np.newaxis],)*self.h[0],axis=1)
+          fields[i] = (np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[:,np.newaxis],)*self.h[0],axis=1),np.zeros((self.w[0],self.h[0]),dtype=np.float32))
         elif c in ['ey','eyy']: # Stretch along Y
-          fields[i] = np.concatenate((np.arange(-1,1,2./self.w,dtype=np.float32)[np.newaxis,:],)*self.h,axis=0)
+          fields[i] = (np.zeros((self.w[0],self.h[0]),dtype=np.float32),np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[np.newaxis,:],)*self.h[0],axis=0))
         elif c in ['exy','tau']: # Shear
           sq = .5**.5
           z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
           fields[i] = (z[1].astype(np.float32),z[0].astype(np.float32))
-        elif c[0] == 'z' or c in ['mz','tz']: # Shrinking/Zooming
+        elif c == 'z' or c in ['mz','tz']: # Shrinking/Zooming
           sq = .5**.5
           z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
           fields[i] = (z[0].astype(np.float32),z[1].astype(np.float32))
