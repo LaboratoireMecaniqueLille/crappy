@@ -30,5 +30,5 @@ class Acquisition:
         self.sensor.new()
         pass
 
-    def getData(self):
-        return self.sensor.get_data()
+    def get_data(self, *args, **kwargs):
+        return self.sensor.get_data(*args, **kwargs)
