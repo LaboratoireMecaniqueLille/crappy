@@ -61,6 +61,7 @@ class Grapher(MasterBlock):
                 while True:
                     # print "3"
                     Data = self.inputs[0].recv()  # recv data
+
                     if type(Data) is not OrderedDict:
                         Data = OrderedDict(zip(Data.columns, Data.values[0]))
                     # legend_=Data.columns[1:]
