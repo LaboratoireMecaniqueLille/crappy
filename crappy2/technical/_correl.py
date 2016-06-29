@@ -494,10 +494,12 @@ If it is not desired, consider lowering the verbosity: \
       self.texFx[i].set_array(self.fieldsXArray[i])
       self.fieldsYArray.append(toArray(fields[i][1],"C"))
       self.texFy[i].set_array(self.fieldsYArray[i])
+    """
     print("FIELDS:")
     for f in fields:
       print("X\n",f[0][::256,::256],"\n\n\n")
       print("Y\n",f[1][::256,::256],"\n\n\n")
+    """
     for i in range(self.levels):
       self.correl[i].setFields(*self.getFields(self.w[i],self.h[i]))
 
