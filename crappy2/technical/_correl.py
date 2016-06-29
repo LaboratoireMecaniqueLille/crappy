@@ -9,6 +9,7 @@ import pycuda.gpuarray as gpuarray
 from pycuda.reduction import ReductionKernel
 from math import ceil
 from scipy import interpolate
+import cv2
 
 from crappy2 import __path__ as crappyPath
 kernelFile = crappyPath[0]+"/data/kernels.cu"
@@ -37,6 +38,11 @@ class CorrelStage:
     self.w,self.h = img_size
     self.__ready = False
     self.nbIter = kwargs.get("iterations",5)
+    self.showDiff=kwargs.get("showDiff",False)
+    if self.showDiff:
+      import cv2
+      cv2.namedWindow("Correlation",cv2.WINDOW_NORMAL)
+
     self.rX,self.rY = -1,-1
     self.loop = 0
 
@@ -101,8 +107,8 @@ class CorrelStage:
     for t in [self.tex,self.tex_d]:
       t.set_flags(cuda.TRSF_NORMALIZED_COORDINATES)
       t.set_filter_mode(cuda.filter_mode.LINEAR)
-      t.set_address_mode(0,cuda.address_mode.CLAMP)
-      t.set_address_mode(1,cuda.address_mode.CLAMP)
+      t.set_address_mode(0,cuda.address_mode.BORDER)
+      t.set_address_mode(1,cuda.address_mode.BORDER)
 
     ### Reading original image if provided ###
     if kwargs.get("img") is not None:
@@ -247,7 +253,6 @@ class CorrelStage:
       raise ValueError
 
   def writeDiffFile(self):
-      import cv2
       self.__makeDiff.prepared_call(self.grid,self.block,self.devOut.gpudata,self.devX.gpudata,self.devFieldsX.gpudata,self.devFieldsY.gpudata)
       diff = (self.devOut.get()+128).astype(np.uint8)
       cv2.imwrite("/home/vic/diff/diff{}-{}.png".format(self.num,self.loop),diff)
@@ -302,6 +307,9 @@ class CorrelStage:
 
       self.debug(3,"res:",self.res/1e6)
     #self.writeDiffFile()
+    if self.showDiff:
+      cv2.imshow("Correlation",(self.devOut.get()+128).astype(np.uint8))
+      cv2.waitKey(1)
     return self.devX.get()
 
 
@@ -366,7 +374,7 @@ If it is not desired, consider lowering the verbosity: \
     ### Creating a new instance of CorrelStage for each stage ###
     self.correl=[]
     for i in range(self.levels):
-      self.correl.append(CorrelStage((self.w[i],self.h[i]),verbose=self.verbose,Nfields=self.Nfields,iterations=self.nbIter))
+      self.correl.append(CorrelStage((self.w[i],self.h[i]),verbose=self.verbose,Nfields=self.Nfields,iterations=self.nbIter,showDiff=(i==0 and kwargs.get("showDiff",False))))
 
     ### Set original image if provided ###
     if kwargs.get("img") is not None:
@@ -467,9 +475,9 @@ If it is not desired, consider lowering the verbosity: \
           z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
           fields[i] = (z[1].astype(np.float32),-z[0].astype(np.float32))
         elif c in ['ex','exx']:  # Stretch along X
-          fields[i] = (np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[:,np.newaxis],)*self.h[0],axis=1),np.zeros((self.w[0],self.h[0]),dtype=np.float32))
+          fields[i] = (np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[np.newaxis,:],)*self.h[0],axis=0),np.zeros((self.w[0],self.h[0]),dtype=np.float32))
         elif c in ['ey','eyy']: # Stretch along Y
-          fields[i] = (np.zeros((self.w[0],self.h[0]),dtype=np.float32),np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[np.newaxis,:],)*self.h[0],axis=0))
+          fields[i] = (np.zeros((self.w[0],self.h[0]),dtype=np.float32),np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[:,np.newaxis],)*self.h[0],axis=1))
         elif c in ['exy','tau']: # Shear
           sq = .5**.5
           z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
@@ -486,6 +494,10 @@ If it is not desired, consider lowering the verbosity: \
       self.texFx[i].set_array(self.fieldsXArray[i])
       self.fieldsYArray.append(toArray(fields[i][1],"C"))
       self.texFy[i].set_array(self.fieldsYArray[i])
+    print("FIELDS:")
+    for f in fields:
+      print("X\n",f[0][::256,::256],"\n\n\n")
+      print("Y\n",f[1][::256,::256],"\n\n\n")
     for i in range(self.levels):
       self.correl[i].setFields(*self.getFields(self.w[i],self.h[i]))
 
@@ -510,11 +522,15 @@ If it is not desired, consider lowering the verbosity: \
     self.loop += 1
     if img_d is not None:
       self.setImage(img_d)
-    disp = np.array([0]*self.Nfields,dtype=np.float32)
+    try:
+      disp = self.last/(self.resamplingFactor**self.levels)
+    except:
+      disp = np.array([0]*self.Nfields,dtype=np.float32)
     for i in reversed(range(self.levels)):
       disp *= self.resamplingFactor
       self.correl[i].setDisp(disp)
       disp = self.correl[i].getDisp()
+      self.last = disp
     if self.loop % 10 == 0:
       self.debug(2,"Loop",self.loop,", values:",self.correl[0].devX.get(),", res:",self.correl[0].res/1e6)
     return disp

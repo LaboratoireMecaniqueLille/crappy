@@ -57,6 +57,8 @@ class Correl(MasterBlock):
       pipe.recv() # Waiting for the actual start
       print "[Correl block] Got start signal !"
       t2 = time()-1
+      for i in range(2): # Drop the first images
+        self.inputs[0].recv()
       correl.setOrig(self.inputs[0].recv()) # This is the only time the original picture is set, so the residual may increase if lightning vary or large displacements are reached
       correl.prepare()
       while True:
