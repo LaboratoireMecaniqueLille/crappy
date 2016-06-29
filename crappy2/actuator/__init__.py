@@ -18,7 +18,6 @@ try:
     from ._labJackActuator import LabJackActuator
 except Exception as e:
     import_error(e.message)
-    pass
 from _lal300Actuator import Lal300Actuator, ActuatorLal300
 
 from ._variateurTriboActuator import VariateurTriboActuator

@@ -21,7 +21,7 @@ def deprecated(replacement=None, warn_msg=""):
 
         @functools.wraps(fun)
         def inner(*args, **kwargs):
-            warnings.warn(msg, PendingDeprecationWarning, stacklevel=2)
+            warnings.warn(msg, PendingDeprecationWarning, stacklevel=3)
             return fun(*args, **kwargs)
 
         return inner
@@ -37,4 +37,4 @@ def import_error(warn_msg=""):
     mess = '\033[93m' + warn_msg + '\033[0m'
     if warn_msg not in warning_log:
         warning_log.append(warn_msg)
-        warnings.warn(mess, ImportWarning, stacklevel=3)
+        warnings.warn(mess, ImportWarning, stacklevel=2)

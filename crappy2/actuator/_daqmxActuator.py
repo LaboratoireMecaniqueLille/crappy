@@ -5,7 +5,7 @@ except ImportError:
     print "WARNING : no module PyDAQmx installed, sensor won't work!"
 import numpy
 import time
-from ._meta import acquisition
+from ._meta import command
 
 
 def get_daqmx_devices_names():
@@ -16,13 +16,13 @@ def get_daqmx_devices_names():
     return buffer.value.split(",")
 
 
-class DaqmxActuator(acquisition.Acquisition):
+class DaqmxActuator(command.Command):
     """Sensor class for Daqmx devices."""
     """PXI1Slot2, PXI1Slot3"""
 
-    def __init__(self, device='Dev1', channels=0,
-                 range_num=0, mode="single"):
+    def __init__(self, device='Dev1', channels=0, range_num=0, mode="single"):
 
+        super(DaqmxActuator, self).__init__()
         self._ranges_tab = [[0.0, 0.5], [0.0, 1.0], [0.0, 2.5], [0.0, 5.0], [0.0, 7.5], [0.0, 10.0],
                             [-0.5, 0.5], [-1.0, 1.0], [-2.5, 2.5], [-5.0, 5.5], [-7.5, 7.5], [-10.0, 10.0]]
         self._channels_tab = ["ai0", "ai1", "ai2", "ai3", "ai4", "ai5", "ai6", "ai7", "ai8", "ai9", "ai10", "ai11",

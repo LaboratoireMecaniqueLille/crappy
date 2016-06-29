@@ -1,5 +1,6 @@
 # coding: utf-8
 from .._warnings import import_error
+
 e = None
 try:
     from ._biotensTechnical import Biotens
@@ -21,10 +22,16 @@ from ._command import Command
 from ._motion import Motion
 from ._CMdriveTechnical import CmDrive
 from ._interfaceCMdrive import Interface
-# from ._jaiTechnical import Jai
-from ._cameraInit import get_camera_config
-from ._technicalCamera import TechnicalCamera
 
+# from ._jaiTechnical import Jai
+try:
+    from ._cameraInit import get_camera_config
+except Exception as e:
+    import_error(e.message)
+try:
+    from ._technicalCamera import TechnicalCamera
+except Exception as e:
+    import_error(e.message)
 # from . import *
 # __all__ = ['Ximea']
 try:
