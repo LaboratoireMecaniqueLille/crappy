@@ -324,19 +324,94 @@ class CorrelStage:
 
 class TechCorrel:
   """
-  This class is meant to identify efficiently the displacement fields in an image compared to the "non deformed" version.
+  This class is the core of the Correl block.
+  It is meant to identify efficiently the displacement between two images.
 
-  This class will resample the images and perform identification on a lower resolution, use the result to initialize the next stage, and again util it reaches the last stage. It will then return the computed parameters.
-  The fields should be given as a tuple of tuples (or lists if you wish) of numpy.ndarrays OR gpuarray.GPUArray of the size of the image, each array corresponds to the displacement in pixel along one direction
+  REQUIREMENTS:
+    - The computer must have a Nvidia video card with compute capability 3.0 or higher
+    - CUDA 5.0 or higher (only tested with CUDA 7.5)
+    - pycuda 2014.1 or higher (only tested with pycuda 2016.1.1)
 
-  There are multiple reasons for this data pattern: 
-    - It is easy and clear to write MyField = (aryX,aryY) and then fields=(myfield1,myfield2,...)
-    - For a faster transfer to the GPU, data for each field needs to be contiguous. This class will create a texture to interpolate each field for the the different levels, so 3 or 4 dimension arrays are a terrible choice
+  PRESENTATION:
+    At initialization, TechCorrel needs only one unammed argument: the working resolution (as a tuple of ints), which is the resolution of the images it will be given. All the images must have exactly these dimensions. 
+    At initialization or after, this class takes a reference image. The deformations on this image are supposed to be all equal to 0.
+    It also needs a number of deformation fields (technically limited to 508 fields, probably less depending on the resolution and the amount of memory on the graphics card).
+    Finally, you need to provide the deformed image you want to process
+    It will then identify parameters of the sum of fields that lowers the square sum of differences between the original image and the second one displaced with the resulting field.
+    This class will resample the images and perform identification on a lower resolution, use the result to initialize the next stage, and again util it reaches the last stage. It will then return the computed parameters. The number of levels can be set with levels=x (see USAGE)
+    The latest parameters returned (if any) are used to initialize computation when called again, to help identify large displacement. It is particularly adapted to slow deformations.
+    To lower the residual, this program computes the gradient of each parameter and uses Newton method to converge as fast as possible. The number of iterations for the resolution can also be set (see USAGE).
 
-  To recap:
-   - len(fields)=Nfields : The global list is as long as the number of fields you want to identify (technically limited to 508 but the first limit will probably be the GPU memory)
-   - len(fields[i]) = 2 : One for x, one for y
-   - fields[i][j].shape = (w,h) : it is a numpy.ndarray with the same size as the image, it contains the value of the displacement for the i-th fields along x or y in pixel. Note: dtype must be numpy.float32
+
+  USAGE:
+    The constructor can take a variety of arguments:
+    verbose=x with x in [0,1,2,3] is used to choose the amount of information output to the console.
+    0: Nothing except for errors
+    1: Only important infos and warnings
+    2: Major info and a few values periodacally (at a bearable rate)
+    3: Tons of info including details of each iteration /!\ Really slows the program down. To be used only for debug.
+
+    ## Fields ##
+      Use fields=['x','y',(MyFieldX,MyFieldY),...] To set the fields. Can also be done later with .setFields(...)
+      In case where the fields are set later, you need to add Nfields=x to specifiy at init the number of expected fields because it allocates all the necessary memory on the device.
+      The fields should be given as a list of tuples (or lists if you wish) of 2 numpy.ndarrays OR gpuarray.GPUArray of the size of the image, each array corresponds to the displacement in pixel along respectively X and Y
+    You can also use a string instead of the tuple for common fields:
+      - 'x': Movement along X
+      - 'y': Movement along Y
+      - 'r': Rotation (in the trigonometric direction)
+      - 'exx': Stretch along X
+      - 'eyy': Stretch along Y
+      - 'exy': Shear
+      - 'z': Zoom (dilatation)
+      Note that you should not try to identify r,exy AND z at the same time (one of them is redundant)
+      All of these default fields are normalized to have a max displacement of 1 pixel and are centered in the middle of the image. They are generated to have the correct size for your image.
+
+      For example, to have the stretch in %, simply divide the value by HALF the dimension in pixel along this axis (because it goes from -1 to 1)
+
+    ## Original image ##
+      It must be given as a 2D numpy.ndarray. This block works with dtype=np.float32. If the dtype of the given image is different, it will print a warning and the image will be converted.
+      It can be given at init with img=MyImage or later with setOrig(MyImage). Note that you can reset it whenever you want, even multiple times but it will reset the def parameters to 0.
+
+      Once fields and original image are set, there is a short preparation time before correlation can append. You can do this preparation yourself by using .prepare().
+      If .prepare() is not called, it will be done automatically when necessary, inducing a slight overhead at the first call of .getDisp() after setting/updating the fields or original image
+
+    ## Compared image ##
+      It can be given directly when querying the displacement parameters with .getDisp(MyImage) or before calling .getDisp() with setImage(MyImage)
+      You can provide it as a np.ndarray just like orig, or as a pycuda.gpuarray.GPUArray.
+
+    ## Editing the behavior ##
+      list of kwargs:
+        - levels=x (int, x>= 1, default: 5)
+          Number of levels of the pyramid (will create x stages)
+          More levels can help converging with large and quick deformations/movements but may fail on images without low spatial frequency
+          Less levels: program will run faster
+
+        - Resampling_factor=x (float, 1<x, default: 2)
+          The resolution will be divided by x between each stage of the pyramid
+          Low: Can allow coherence between stages but is more expensive
+          High: Reach small resolutions in less levels -> faster but be careful not to loose consistency between stages
+
+        - iterations=x (int, x>=1, default: 4)
+          The MAXIMUM number of iteration to be run before returning the values. Note that if the residual increases before reaching x iterations, the block will return anyways.
+
+        - img=x (numpy.ndarray, x.shape=img_size, default: None)
+          If you want to set the original image at init.
+
+
+##################### TO COMPLETE
+
+
+
+  TODO:
+    This section lists all the considered improvements for this program. These features may NOT all be implemented in the future. They are sorted by priority.
+    - Add square deformations to the default fields
+    - Add a parameter to return values in %
+    - Add a drop parameter to drop images in the link if correlation is not fast enough
+    - Add a res parameter to add the residual to the output values
+    - Add a filter to smooth/ignore incorrect values
+    - Allow faster execution by executing the reduction only on a part of the images (random or chosen)
+    - Allow a reset of the reference picture for simple deformations (to enhance robustness in case of large deformations or lightning changes)
+    - Restart iterating from 0 once in a while to see if the residual is lower. Can be useful to recover when diverged critically due to an incorrect image (Shadow, obstruction, flash, camera failure, ...)
   """
   def __init__(self,img_size,**kwargs):
     cuda.init()
@@ -542,6 +617,7 @@ If it is not desired, consider lowering the verbosity: \
     Returns the last residual of the sepcified level (0 by default)
     Usually, the correlation is correct when res < ~1e9-10 but it really depends on the images: you need to find the value that suit your own images, depending on the resolution, contrast, correlation method etc... You can use writeDiffFile to visualize the difference between the two images after correlation.
     """
+    return self.correl[lvl].res
 
 
   def writeDiffFile(self,level=0):
@@ -552,6 +628,9 @@ If it is not desired, consider lowering the verbosity: \
 
 
 if __name__ == "__main__":
+  """
+  This section is for testing with images from the drive
+  """
 
   import cv2
   from time import sleep,time
