@@ -40,6 +40,7 @@ except Exception as e:
     import_error(e.message)
 
 from _interfaceTribo import Interface
+from _tribo_manual_interface import Interface
 from _lal300Command import CommandLal300
 
 try:

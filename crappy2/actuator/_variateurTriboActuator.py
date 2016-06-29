@@ -8,11 +8,10 @@ from .._warnings import deprecated as deprecated
 
 
 class VariateurTriboActuator(motion.MotionActuator):
-    def __init__(self, ser_servostar=None, ser_arduino=None):
+    def __init__(self, ser_servostar=None):
         super(VariateurTriboActuator, self).__init__()
         self.ser_servostar = ser_servostar  # [Deprecated]
         self.ser = self.ser_servostar
-        self.ser_arduino = ser_arduino
         self.init = False
 
     @deprecated(None, "Use stop method defined in VariateurTribo instead.")
@@ -45,9 +44,6 @@ class VariateurTriboActuator(motion.MotionActuator):
         self.mode = 'effort'
         print self.mode
 
-    def go_effort(self, effort):
-        print str(effort)
-        self.ser_arduino.write(str(effort))
 
     def initialisation(self):
         self.ser.write('opmode 8\r\n')

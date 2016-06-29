@@ -50,7 +50,11 @@ class LabJackActuator(command.Command):
         """
         out = (cmd * self.gain) + self.offset
         ljm.eWriteName(self.handle, self.channel, out)
-
+    
+    def set_cmd_ram(self, cmd, address):
+	dataType = ljm.constants.FLOAT32
+	ljm.eWriteAddress(self.handle, address, data_type, cmd)
+    
     def close(self):
         """
         close the output.
