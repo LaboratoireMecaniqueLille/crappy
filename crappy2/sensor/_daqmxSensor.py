@@ -1,4 +1,17 @@
 # coding: utf-8
+## @addtogroup sensor
+# @{
+
+##  @defgroup daqmxsensor DaqmxSensor
+# @{
+
+## @file _daqmxSensor.py
+# @brief  Sensor class for Daqmx devices.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 try:
     from PyDAQmx import *
 except ImportError:

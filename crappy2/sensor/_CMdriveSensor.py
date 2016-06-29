@@ -1,4 +1,16 @@
 # coding: utf-8
+## @addtogroup sensor
+# @{
+
+##  @defgroup cmdrive CmDriveSensor
+# @{
+
+## @file _CMdriveSensor.py
+# @brief  Open a new default serial port for communication with Servostar
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 21/06/2016
 import serial
 from ._meta import motion
 
@@ -33,3 +45,6 @@ class CmDriveSensor(motion.MotionSensor):
         print '\n'
         self.ser.close()  # close serial connection
         return int(pfb1)
+
+# @}
+# @}

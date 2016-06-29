@@ -1,16 +1,22 @@
 # coding: utf-8
-# import numpy as np
+## @addtogroup sensor
+# @{
+
+##  @defgroup labjacksensor LabJackSensor
+# @{
+
+## @file _labJackSensor.py
+## @brief  Sensor class for LabJack devices.
+## @author Robin Siemiatkowski
+## @version 0.1
+## @date 21/06/2016
+
 from labjack import ljm
 import time
 import sys
 from collections import OrderedDict
 from ._meta import acquisition
 from .._warnings import deprecated as deprecated
-
-
-# from multiprocessing import Array
-# import os
-# import sys, string, struct
 
 
 class LabJackSensor(acquisition.Acquisition):

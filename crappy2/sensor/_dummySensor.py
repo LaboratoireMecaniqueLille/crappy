@@ -1,4 +1,17 @@
 # coding: utf-8
+## @addtogroup sensor
+# @{
+
+##  @defgroup dummysensor DummySensor
+# @{
+
+## @file _dummySensor.py
+# @brief  Mock a sensor and return the time. Use it for testing.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 import time
 
 from ._meta import acquisition

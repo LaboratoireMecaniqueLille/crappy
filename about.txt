@@ -89,14 +89,14 @@ These steps have been tested for Windows 8.1 but should work with other distros 
 
 /*! \page page2 Basics
 
-================
 
 \tableofcontents
-\subpage physical_objects
-\subpage blocks
-\subpage links
-\subpage condition
-
+<ul>
+<li> \subpage physical_objects </li>
+<li> \subpage blocks </li>
+<li> \subpage links </li>
+<li> \subpage condition </li>
+</ul>
 */
 
 

@@ -1,9 +1,20 @@
 # coding: utf-8
+## @addtogroup sensor
+# @{
+
+##  @defgroup comedisensor ComediSensor
+# @{
+
+## @file _comediSensor.py
+# @brief  Sensor class for Comedi devices.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
 import comedi as c
 import time
 
 from ._meta import acquisition
-
 
 class ComediSensor(acquisition.Acquisition):
     """Sensor class for Comedi devices."""

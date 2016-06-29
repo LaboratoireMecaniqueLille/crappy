@@ -1,4 +1,17 @@
 # coding: utf-8
+## @addtogroup sensor
+# @{
+
+##  @defgroup fakecamerasensor FakeCameraSensor
+# @{
+
+## @file _fakeCameraSensor.py
+# @brief  WIP. Fake camera sensor object
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 from ._meta import cameraSensor
 import numpy as np
 import os

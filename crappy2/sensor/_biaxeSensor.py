@@ -1,6 +1,6 @@
 # coding: utf-8
 #
-##  @defgroup sensor Sensor
+##  @addtogroup sensor
 # The sensors represent everything that can acquire a physical signal. It can be an acquisition card,
 # but also a camera, a thermocouple...
 # @{
@@ -42,10 +42,9 @@ class BiaxeSensor(motion.MotionSensor):
             self.ser.write("OPMODE 0\r\n EN\r\n")
 
     def get_position(self):
-        """
-        TODO
-        Search for the physical position of the motor
-        """
+        ##
+        # TODO
+        # Search for the physical position of the motor
         pass
 # @}
 # @}

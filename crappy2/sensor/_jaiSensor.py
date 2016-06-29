@@ -1,4 +1,17 @@
 # coding: utf-8
+## @addtogroup sensor
+# @{
+
+##  @defgroup jaisensor Jai
+# @{
+
+## @file _jaiSensor.py
+# @brief  Opens a Jai camera and allow to grab frame and set the various parameters.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 from os import path
 import clModule as cl
 import time

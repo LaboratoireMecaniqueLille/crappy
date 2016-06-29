@@ -1,23 +1,24 @@
 # coding: utf-8
-# import serial
+## @addtogroup sensor
+# @{
+
+##  @defgroup lal300sensor Lal300Sensor
+# @{
+
+## @file _lal300Sensor.py
+## @brief  Open the connection, and initialise the Lal300.
+## @author Robin Siemiatkowski
+## @version 0.1
+## @date 29/06/2016
+
 import serial
 import time
 from ._meta import motion
 from .._warnings import deprecated as deprecated
 
-p = {}
-p['timeout'] = 0.  # s
 n = 3  # modify with great caution
-p['PID_PROP'] = 8 / n
-p['PID_INT'] = 30 / n
-p['PID_DERIV'] = 200 / n
-p['PID_INTLIM'] = 1000 / n
-p['ACC'] = 6000.
-p['ACconv'] = 26.22  # conversion ACC values to mm/s/s
-p['FORCE'] = 30000.
-p['SPEEDconv'] = 131072.  # conversion SPEED values to mm/s
-p['ENTREE_VERIN'] = 'DI1'
-p['SORTIE_VERIN'] = 'DI0'
+p = {'timeout': 0., 'PID_PROP': 8 / n, 'PID_INT': 30 / n, 'PID_DERIV': 200 / n, 'PID_INTLIM': 1000 / n, 'ACC': 6000.,
+     'ACconv': 26.22, 'FORCE': 30000., 'SPEEDconv': 131072., 'ENTREE_VERIN': 'DI1', 'SORTIE_VERIN': 'DI0'}
 
 
 class Lal300Sensor(motion.MotionSensor):

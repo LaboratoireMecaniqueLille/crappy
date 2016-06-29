@@ -1,14 +1,12 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-
 ## @addtogroup sensor
 # @{
 
 ##  @defgroup biotens BiotensSensor
 # @{
 
-## @file _biotensSensor.cpp
+## @file _biotensSensor.py
 # @brief   Get info from biotens sensor
 #
 # @author Robin Siemiatkowski
@@ -92,3 +90,5 @@ class BiotensSensor(motion.MotionSensor):
         DEPRECATED: Use get_position instead.
         """
         self.get_position()
+# @}
+# @}
