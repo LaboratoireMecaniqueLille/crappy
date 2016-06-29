@@ -34,10 +34,11 @@ class MeasureComediByStep(MasterBlock):
         self.comediSensor = comediSensor
         self.labels = labels
         self.freq = freq
-        print "DEPRECATED : Please use the MeasureByStep block"
+        print "[MeasureComediByStep] DEPRECATED : Please use the MeasureByStep block"
 
     def main(self):
         try:
+            print "measurecomedi : ", os.getpid()
             trigger = "internal" if len(self.inputs) == 0 else "external"
             timer = time.time()
             while True:
@@ -51,7 +52,7 @@ class MeasureComediByStep(MasterBlock):
                         t, value = self.comediSensor.get_data(channel_number)
                         data.append(value)
                 if trigger == "external":
-                    if self.inputs.input_.recv():  # wait for a signal
+                    if self.inputs[0].recv():  # wait for a signal
                         data = [time.time() - self.t0]
                     for channel_number in range(self.comediSensor.nchans):
                         t, value = self.comediSensor.get_data(channel_number)
