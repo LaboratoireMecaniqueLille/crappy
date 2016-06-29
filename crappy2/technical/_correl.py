@@ -397,10 +397,8 @@ class TechCorrel:
         - img=x (numpy.ndarray, x.shape=img_size, default: None)
           If you want to set the original image at init.
 
-
-##################### TO COMPLETE
-
-
+        - showDiff=x (Boolean, ,default = False)
+          Will open a cv2 window and print the difference between the original and the displaced image after correlation. 128 Gray means no difference, lighter means positive and darker negative.
 
   TODO:
     This section lists all the considered improvements for this program. These features may NOT all be implemented in the future. They are sorted by priority.
