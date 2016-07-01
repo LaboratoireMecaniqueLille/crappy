@@ -8,7 +8,7 @@ from multiprocessing import Process,Pipe
 
 class Correl(MasterBlock):
   def __init__(self,img_size,**kwargs):
-    super(Correl, self).__init__()
+    MasterBlock.__init__(self)
     self.ready = False
     self.Nfields = kwargs.get("Nfields")
     if self.Nfields is None:
@@ -30,6 +30,9 @@ class Correl(MasterBlock):
         self.labels += (str(i),)
 
     print "labels:",self.labels
+    invert = kwargs.get('invert',True)
+    if invert:
+      img_size = (img_size[1],img_size[0])
     pipeProcess,self.pipeClass = Pipe()
     self.process = Process(target=self.main,args=(pipeProcess,img_size),kwargs=kwargs)
 
