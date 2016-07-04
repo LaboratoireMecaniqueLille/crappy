@@ -30,9 +30,6 @@ class Correl(MasterBlock):
         self.labels += (str(i),)
 
     print "labels:",self.labels
-    invert = kwargs.get('invert',True)
-    if invert:
-      img_size = (img_size[1],img_size[0])
     pipeProcess,self.pipeClass = Pipe()
     self.process = Process(target=self.main,args=(pipeProcess,img_size),kwargs=kwargs)
 
