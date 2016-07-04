@@ -11,8 +11,6 @@ from math import ceil
 from scipy import interpolate
 import cv2
 
-from crappy2 import __path__ as crappyPath
-kernelFile = crappyPath[0]+"/data/kernels.cu"
 
 context = None
 
@@ -35,10 +33,10 @@ class CorrelStage:
     CorrelStage.num+=1
     self.verbose = kwargs.get("verbose",0)
     self.debug(2,"Initializing with resolution",img_size)
-    self.w,self.h = img_size
+    self.h,self.w = img_size
     self.__ready = False
     self.nbIter = kwargs.get("iterations",5)
-    self.showDiff=kwargs.get("showDiff",False)
+    self.showDiff=kwargs.get("show_diff",False)
     if self.showDiff:
       import cv2
       cv2.namedWindow("Correlation",cv2.WINDOW_NORMAL)
@@ -49,7 +47,7 @@ class CorrelStage:
     ### Allocating stuff ###
 
     ### Grid and block for kernels called with the size of the image ##
-    self.grid = (int(ceil(self.w/32)),int(ceil(self.h/32)))
+    self.grid = (int(ceil(self.w/32)),int(ceil(self.h/32))) # All the images and arrays in the kernels will be in order (x,y) # All the images and arrays in the kernels will be in order (x,y)
     self.block = (int(ceil(self.w/self.grid[0])),int(ceil(self.h/self.grid[1])),1)
     self.debug(3,"Default grid:",self.grid,"block",self.block)
     
@@ -64,17 +62,24 @@ class CorrelStage:
     self.devFieldsY = []
     for i in range(self.Nfields):
       self.devG.append(gpuarray.empty(img_size,np.float32)) # To store the G arrays (to compute the research direction)
-      self.devFieldsX.append(gpuarray.empty((self.w,self.h),np.float32)) # To store the fields
-      self.devFieldsY.append(gpuarray.empty((self.w,self.h),np.float32))
+      self.devFieldsX.append(gpuarray.empty((self.h,self.w),np.float32)) # To store the fields
+      self.devFieldsY.append(gpuarray.empty((self.h,self.w),np.float32))
     self.H = np.zeros((self.Nfields, self.Nfields),np.float32)
     self.devHi = gpuarray.empty((self.Nfields,self.Nfields),np.float32)
-    self.devOut = gpuarray.empty((self.w,self.h),np.float32) # To store the diff table
+    self.devOut = gpuarray.empty((self.h,self.w),np.float32) # To store the diff table
     self.devX = gpuarray.empty((self.Nfields),np.float32) # To store the current value of the parameters
     self.devVec = gpuarray.empty((self.Nfields),np.float32) # to store the research direction
     self.devOrig = gpuarray.empty(img_size,np.float32) #gpuarray for original image
     self.devDiff = gpuarray.empty(img_size,np.float32) #gpuarray for the difference
     self.devGradX = gpuarray.empty(img_size,np.float32) #for the gradient along X
     self.devGradY = gpuarray.empty(img_size,np.float32) #...and along Y
+
+    ### Locating the kernel file ###
+    kernelFile = kwargs.get("kernel_file")
+    if kernelFile is None:
+      print("Kernel file not specified")
+      from crappy2 import __path__ as crappyPath
+      kernelFile = crappyPath[0]+"/data/kernels.cu"
 
     ### Reading kernels and compiling module ###
     with open(kernelFile,"r") as f:
@@ -107,8 +112,8 @@ class CorrelStage:
     for t in [self.tex,self.tex_d]:
       t.set_flags(cuda.TRSF_NORMALIZED_COORDINATES)
       t.set_filter_mode(cuda.filter_mode.LINEAR)
-      t.set_address_mode(0,cuda.address_mode.BORDER)
-      t.set_address_mode(1,cuda.address_mode.BORDER)
+      t.set_address_mode(0,cuda.address_mode.CLAMP)
+      t.set_address_mode(1,cuda.address_mode.CLAMP)
 
     ### Reading original image if provided ###
     if kwargs.get("img") is not None:
@@ -135,7 +140,7 @@ class CorrelStage:
     To set the original image from a given CPU or GPU array. If it is a GPU array, it will NOT be copied.
     Note that the most efficient method is to write directly over self.devOrig and then run self.updateOrig()
     """
-    assert img.shape == (self.w,self.h),"Got a {} image in a {} correlation routine!".format(img.shape,(self.w,self.h))
+    assert img.shape == (self.h,self.w),"Got a {} image in a {} correlation routine!".format(img.shape,(self.h,self.w))
     if isinstance(img,np.ndarray):
       self.debug(3,"Setting original image from ndarray")
       self.devOrig.set(img)
@@ -152,7 +157,7 @@ class CorrelStage:
     Needs to be called after self.img_d has been written directly (without using setOrig)
     """
     self.debug(3,"Updating original image")
-    self.array = cuda.gpuarray_to_array(self.devOrig,"C")
+    self.array = cuda.gpuarray_to_array(self.devOrig,"C") # "C" order implies tex2D(x,y) will fetch matrix(y,x): this is where x and y are inverted to comlpy with the kernels
     self.tex.set_array(self.array)
     self.__computeGradients()
     self.__ready = False
@@ -190,7 +195,7 @@ class CorrelStage:
     if self.verbose >= 3: # Looks stupid but prevents a useless devHi copy if nothing is printed
       self.debug(3,"Inverted Hessian:\n",self.devHi.get())
 
-  def resampleOrig(self,newX,newY,devOut):
+  def resampleOrig(self,newY,newX,devOut):
     """
     Reads orig.texture and writes to the devOut array the interpolated newX*newY image
     """
@@ -198,8 +203,9 @@ class CorrelStage:
     block = (int(ceil(newX/grid[0])),int(ceil(newY/grid[1])),1)
     self.debug(3,"Resampling Orig texture, grid:",grid,"block:",block)
     self.__resampleOrigKrnl.prepared_call(self.grid,self.block,devOut.gpudata,np.int32(newX),np.int32(newY))
+    self.debug(3,"Resampled original texture to",devOut.shape)
 
-  def resampleD(self, newX,newY):
+  def resampleD(self, newY,newX):
     """
     Resamples tex_d and returns it in a gpuarray 
     """
@@ -207,8 +213,8 @@ class CorrelStage:
       self.rGrid = (int(ceil(newX/32)),int(ceil(newY/32)))
       self.rBlock = (int(ceil(newX/self.rGrid[0])),int(ceil(newY/self.rGrid[1])),1)
       self.rX,self.rY = np.int32(newX),np.int32(newY)
-      self.devROut = gpuarray.empty((newX,newY),np.float32)
-    self.debug(3,"Resampling img_d texture, grid:",self.rGrid,"block:",self.rBlock)
+      self.devROut = gpuarray.empty((newY,newX),np.float32)
+    self.debug(3,"Resampling img_d texture to",(newY,newX)," grid:",self.rGrid,"block:",self.rBlock)
     self.__resampleKrnl.prepared_call(self.rGrid,self.rBlock,self.devROut.gpudata,self.rX,self.rY)
     return self.devROut
 
@@ -229,7 +235,7 @@ class CorrelStage:
     """
     Set the image to compare with the original
     """
-    assert img_d.shape == (self.w,self.h),"Got a {} image in a {} correlation routine!".format(img_d.shape,(self.w,self.h))
+    assert img_d.shape == (self.h,self.w),"Got a {} image in a {} correlation routine!".format(img_d.shape,(self.h,self.w))
     if isinstance(img_d,np.ndarray):
       self.debug(3,"Creating texture from numpy array")
       self.array_d = cuda.matrix_to_array(img_d,"C")
@@ -283,10 +289,9 @@ class CorrelStage:
     for i in range(self.nbIter):
       self.debug(3,"Iteration",i)
       for i in range(self.Nfields): # Computing the gradient of each parameter
-        self.devVec[i] = self.__mulRedKrnl(self.devG[i],self.devOut)
+        self.devVec[i] = self.__mulRedKrnl(self.devG[i],self.devOut) # Computing the direction of the gradient of the parameters
 
       self.__dotKrnl(self.devHi,self.devVec,grid=(1,1),block=(self.Nfields,1,1)) # Newton method: we multiply the gradient vector by the pre-inverted Hessian, devVec now contains the actual research direction.
-
       #This line simply adds k times the research direction to devX with a really simple kernel (does self.devX += k*self.devVec)
       self.__addKrnl.prepared_call((1,1),(self.Nfields,1,1),self.devX.gpudata,self.mul,self.devVec.gpudata) 
 
@@ -300,9 +305,10 @@ class CorrelStage:
       oldres = self.res
       self.res = self.__leastSquare(self.devOut).get()
       if self.res >= oldres: # If we moved away, revert changes and stop iterating
-        self.debug(3,"Diverting from the solution ! Undoing...")
+        self.debug(3,"Diverting from the solution (new res={} >= {}! Undoing...".format(self.res/1e6,oldres/1e6))
         self.__addKrnl.prepared_call((1,1),(self.Nfields,1,1),self.devX.gpudata,-self.mul,self.devVec.gpudata) 
         self.res = oldres
+        self.debug(3,"Undone: X=",self.devX.get())
         break;
 
       self.debug(3,"res:",self.res/1e6)
@@ -333,7 +339,7 @@ class TechCorrel:
     - pycuda 2014.1 or higher (only tested with pycuda 2016.1.1)
 
   PRESENTATION:
-    At initialization, TechCorrel needs only one unammed argument: the working resolution (as a tuple of ints), which is the resolution of the images it will be given. All the images must have exactly these dimensions. 
+    At initialization, TechCorrel needs only one unammed argument: the working resolution (as a tuple of ints), which is the resolution of the images it will be given. All the images must have exactly these dimensions. NOTE: it must be given in this order: (y,x) (like openCV images)
     At initialization or after, this class takes a reference image. The deformations on this image are supposed to be all equal to 0.
     It also needs a number of deformation fields (technically limited to 508 fields, probably less depending on the resolution and the amount of memory on the graphics card).
     Finally, you need to provide the deformed image you want to process
@@ -362,9 +368,18 @@ class TechCorrel:
       - 'exx': Stretch along X
       - 'eyy': Stretch along Y
       - 'exy': Shear
-      - 'z': Zoom (dilatation)
-      Note that you should not try to identify r,exy AND z at the same time (one of them is redundant)
-      All of these default fields are normalized to have a max displacement of 1 pixel and are centered in the middle of the image. They are generated to have the correct size for your image.
+      - 'z': Zoom (dilatation) (=exx+eyy)
+      Note that you should not try to identify exx,eyy AND z at the same time (one of them is redundant)
+      QUADRATIIC DEFORMATIONS:
+      These fields are more complicated to represent and interpret but can be useful for complicated sollicitations such as biaxial stretch
+      U and V represent the displacement along respectively x and y
+      - 'uxx': U(x,y) = x²
+      - 'uyy': U(x,y) = y²
+      - 'uxy': U(x,y) = xy
+      - 'vxx': V(x,y) = x²
+      - 'vyy': V(x,y) = y²
+      - 'vxy': V(x,y) = xy
+      All of these default fields are normalized to have a max displacement of 1 pixel and are centered in the middle of the image. They are generated to have the size of your image.
 
       For example, to have the stretch in %, simply divide the value by HALF the dimension in pixel along this axis (because it goes from -1 to 1)
 
@@ -386,7 +401,7 @@ class TechCorrel:
           More levels can help converging with large and quick deformations/movements but may fail on images without low spatial frequency
           Less levels: program will run faster
 
-        - Resampling_factor=x (float, 1<x, default: 2)
+        - resampling_factor=x (float, 1<x, default: 2)
           The resolution will be divided by x between each stage of the pyramid
           Low: Can allow coherence between stages but is more expensive
           High: Reach small resolutions in less levels -> faster but be careful not to loose consistency between stages
@@ -397,14 +412,21 @@ class TechCorrel:
         - img=x (numpy.ndarray, x.shape=img_size, default: None)
           If you want to set the original image at init.
 
-        - showDiff=x (Boolean, ,default = False)
+        - show_diff=x (Boolean, ,default = False)
           Will open a cv2 window and print the difference between the original and the displaced image after correlation. 128 Gray means no difference, lighter means positive and darker negative.
+
+        - kernel_file=x (String, UNIX path, default: *crappy install dir*/data/kernels.cu) Where *crappy install dir* is the root directory of the installation of crappy (crappy.__path__)
+
+        - invert=x (Boolean, ,default: True) Inverts x and y (equivalent to passing img_size=(y,x), nothing more!)
 
   TODO:
     This section lists all the considered improvements for this program. These features may NOT all be implemented in the future. They are sorted by priority.
     - Add square deformations to the default fields
     - Add a parameter to return values in %
-    - Add a drop parameter to drop images in the link if correlation is not fast enough
+    - Allow to set self.mul (cf line ~272)
+    - Add a ZOI (zone of interest) to limit the effect of the borders of the image and focus on a particular area
+    - Add a drop parameter to drop images in the link if correlation is not fast enough    |
+    - OR skip the last iteration when running out of time ?                                |=> Parameter drop='no'/'skip'/'drop' (or else...)
     - Add a res parameter to add the residual to the output values
     - Add a filter to smooth/ignore incorrect values
     - Allow faster execution by executing the reduction only on a part of the images (random or chosen)
@@ -416,10 +438,16 @@ class TechCorrel:
     from pycuda.tools import make_default_context
     global context
     context = make_default_context()
+    unknown = []
+    for k in kwargs.keys():
+      if k not in ['verbose','levels','resampling_factor','kernel_file','iterations','show_diff','Nfields','img','fields']:
+        unknown.append(k)
+    if len(unknown) != 0:
+      warnings.warn("Unrecognized parameter"+('s: '+str(unknown) if len(unknown) > 1 else ': '+unknown[0]),SyntaxWarning)
     self.verbose = kwargs.get("verbose",0)
-    self.debug(3,"You set the verbose level to the maximum. \
+    self.debug(3,"You set the verbose level to the maximum. \n\
 It may help finding bugs or tracking errors but it may also impact the program performance \
-as it will print A LOT of output and add GPU->CPU copies only to print information. \
+as it will print A LOT of output and add GPU->CPU copies only to print information. \n\
 If it is not desired, consider lowering the verbosity: \
 1 or 2 is a reasonable choice, 0 won't show anything except for errors.")
     self.levels = kwargs.get("levels",5)
@@ -430,10 +458,10 @@ If it is not desired, consider lowering the verbosity: \
     self.debug(1,"Initializing... Master resolution:",img_size,"levels:",self.levels,"verbosity:",self.verbose)
 
     ### Computing dimensions of the different levels ###
-    self.w,self.h = [],[]
+    self.h,self.w = [],[]
     for i in range(self.levels):
-      self.w.append(int(round(w/(self.resamplingFactor**i))))
-      self.h.append(int(round(h/(self.resamplingFactor**i))))
+      self.h.append(int(round(w/(self.resamplingFactor**i))))
+      self.w.append(int(round(h/(self.resamplingFactor**i))))
 
     if kwargs.get("Nfields") is not None:
       self.Nfields = kwargs.get("Nfields")
@@ -444,10 +472,16 @@ If it is not desired, consider lowering the verbosity: \
         print("[Error] Correl needs to know the number of fields at init. Add Nfields=x or directly set fields with fields=array")
         raise ValueError
 
+    kernelFile = kwargs.get("kernel_file")
+    if kernelFile is None:
+      print("Kernel file not specified")
+      from crappy2 import __path__ as crappyPath
+      kernelFile = crappyPath[0]+"/data/kernels.cu"
+
     ### Creating a new instance of CorrelStage for each stage ###
     self.correl=[]
     for i in range(self.levels):
-      self.correl.append(CorrelStage((self.w[i],self.h[i]),verbose=self.verbose,Nfields=self.Nfields,iterations=self.nbIter,showDiff=(i==0 and kwargs.get("showDiff",False))))
+      self.correl.append(CorrelStage((self.h[i],self.w[i]),verbose=self.verbose,Nfields=self.Nfields,iterations=self.nbIter,show_diff=(i==0 and kwargs.get("show_diff",False)),kernel_file=kernelFile))
 
     ### Set original image if provided ###
     if kwargs.get("img") is not None:
@@ -492,9 +526,12 @@ If it is not desired, consider lowering the verbosity: \
     if kwargs.get("fields") is not None:
       self.setFields(kwargs.get("fields"))
 
-  def getFields(self,x,y):
-    outX = gpuarray.empty((self.Nfields,x,y),np.float32)
-    outY = gpuarray.empty((self.Nfields,x,y),np.float32)
+  def getFields(self,y,x):
+    """
+    Returns the fields, reampled to size (y,x)
+    """
+    outX = gpuarray.empty((self.Nfields,y,x),np.float32)
+    outY = gpuarray.empty((self.Nfields,y,x),np.float32)
     grid = (int(ceil(x/32)),int(ceil(y/32)))
     block = (int(ceil(x/grid[0])),int(ceil(y/grid[1])),1)
     for i in range(self.Nfields):
@@ -515,14 +552,14 @@ If it is not desired, consider lowering the verbosity: \
     self.debug(2,"updating original image")
     assert isinstance(img,np.ndarray),"Image must be a numpy array"
     assert len(img.shape) == 2,"Image must have 2 dimensions (got {})".format(len(img.shape))
-    assert img.shape == (self.w[0],self.h[0]),"Wrong size!"
+    assert img.shape == (self.h[0],self.w[0]),"Wrong size!"
     if img.dtype != np.float32:
       warnings.warn("Correl() takes arrays with dtype np.float32 to allow GPU computing (got {}). Converting to float32.".format(img.dtype),RuntimeWarning)
       img=img.astype(np.float32)
 
     self.correl[0].setOrig(img)
     for i in range(1,self.levels):
-      self.correl[i-1].resampleOrig(self.w[i],self.h[i],self.correl[i].devOrig)
+      self.correl[i-1].resampleOrig(self.h[i],self.w[i],self.correl[i].devOrig)
       self.correl[i].updateOrig()
 
   def setFields(self,fields):
@@ -539,26 +576,48 @@ If it is not desired, consider lowering the verbosity: \
     for i in range(self.Nfields):
       if isinstance(fields[i],str):
         c = fields[i].lower()
+        # Rigid body
         if c in ['x','mx','tx']:  #Movement along X
-          fields[i] = (np.ones((self.w[0],self.h[0]),dtype=np.float32),np.zeros((self.w[0],self.h[0]),dtype=np.float32))
+          fields[i] = (np.ones((self.h[0],self.w[0]),dtype=np.float32),np.zeros((self.h[0],self.w[0]),dtype=np.float32))
         elif c in ['y','my','ty']:  #..along Y
-          fields[i] = (np.zeros((self.w[0],self.h[0]),dtype=np.float32),np.ones((self.w[0],self.h[0]),dtype=np.float32))
-        elif c == 'r': # Rotation
+          fields[i] = (np.zeros((self.h[0],self.w[0]),dtype=np.float32),np.ones((self.h[0],self.w[0]),dtype=np.float32))
+        elif c in  ['r','rz','rot']: # Rotation
           sq = .5**.5
-          z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
-          fields[i] = (z[1].astype(np.float32),-z[0].astype(np.float32))
+          s = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
+          fields[i] = (s[0].astype(np.float32),-s[1].astype(np.float32))
+
+        # Uniform deformations
         elif c in ['ex','exx']:  # Stretch along X
-          fields[i] = (np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[np.newaxis,:],)*self.h[0],axis=0),np.zeros((self.w[0],self.h[0]),dtype=np.float32))
+          fields[i] = (np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[np.newaxis,:],)*self.h[0],axis=0),np.zeros((self.h[0],self.w[0]),dtype=np.float32))
         elif c in ['ey','eyy']: # Stretch along Y
-          fields[i] = (np.zeros((self.w[0],self.h[0]),dtype=np.float32),np.concatenate((np.arange(-1,1,2./self.w[0],dtype=np.float32)[:,np.newaxis],)*self.h[0],axis=1))
-        elif c in ['exy','tau']: # Shear
+          fields[i] = (np.zeros((self.h[0],self.w[0]),dtype=np.float32),np.concatenate((np.arange(-1,1,2./self.h[0],dtype=np.float32)[:,np.newaxis],)*self.w[0],axis=1))
+        elif c in ['exy','tau','s']: # Shear
           sq = .5**.5
-          z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
-          fields[i] = (z[1].astype(np.float32),z[0].astype(np.float32))
+          s = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
+          fields[i] = (s[0].astype(np.float32),s[1].astype(np.float32))
+
+        # Bonus (Is equivalent to exx+eyy, don't use them together!)
         elif c == 'z' or c in ['mz','tz']: # Shrinking/Zooming
           sq = .5**.5
-          z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
-          fields[i] = (z[0].astype(np.float32),z[1].astype(np.float32))
+          s = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
+          fields[i] = (s[1].astype(np.float32),s[0].astype(np.float32))
+
+        # Quadratic fields
+        elif c == 'uxx': # U(x,y) = x², V = 0
+          fields[i] = (np.concatenate(((np.arange(-1,1,2./self.w[0],dtype=np.float32)**2)[np.newaxis,:],)*self.h[0],axis=0),np.zeros((self.h[0],self.w[0]),dtype=np.float32))
+        elif c == 'uyy': # U(x,y) = y², V = 0
+          fields[i] = (np.concatenate(((np.arange(-1,1,2./self.h[0],dtype=np.float32)**2)[:,np.newaxis],)*self.w[0],axis=1),np.zeros((self.h[0],self.w[0]),dtype=np.float32))
+        elif c == 'uxy': # U(x,y) = xy, V = 0
+          fields[i] = (np.array([[k*j for j in np.arange(-1,1,2./self.w[0])] for k in np.arange(-1,1,2./self.h[0])],dtype=np.float32),np.zeros((self.h[0],self.w[0]),np.float32))
+        elif c == 'vxx': # U = 0, V(x,y) = x²
+          fields[i] = (np.zeros((self.h[0],self.w[0]),dtype=np.float32),np.concatenate(((np.arange(-1,1,2./self.w[0],dtype=np.float32)**2)[np.newaxis,:],)*self.h[0],axis=0))
+        elif c == 'vyy': # U = 0, V(x,y) = y²
+          fields[i] = (np.zeros((self.h[0],self.w[0]),dtype=np.float32),np.concatenate(((np.arange(-1,1,2./self.h[0],dtype=np.float32)**2)[:,np.newaxis],)*self.w[0],axis=1))
+        elif c == 'vxy': # U = 0, V(x,y) = xy
+          fields[i] = (np.zeros((self.h[0],self.w[0]),np.float32),np.array([[k*j for j in np.arange(-1,1,2./self.w[0])] for k in np.arange(-1,1,2./self.h[0])],dtype=np.float32))
+        ###
+
+
         else:
           print("[Correl] Error: Unrecognized field parameter:",fields[i])
           raise ValueError
@@ -574,7 +633,7 @@ If it is not desired, consider lowering the verbosity: \
       print("Y\n",f[1][::256,::256],"\n\n\n")
     """
     for i in range(self.levels):
-      self.correl[i].setFields(*self.getFields(self.w[i],self.h[i]))
+      self.correl[i].setFields(*self.getFields(self.h[i],self.w[i]))
 
   def prepare(self):
     for c in self.correl:
@@ -589,9 +648,12 @@ If it is not desired, consider lowering the verbosity: \
       cv2.imwrite(name+str(i)+".png",out)
 
   def setImage(self,img_d):
+    if img_d.dtype != np.float32:
+      warnings.warn("Correl() takes arrays with dtype np.float32 to allow GPU computing (got {}). Converting to float32.".format(img_d.dtype),RuntimeWarning)
+      img_d=img_d.astype(np.float32)
     self.correl[0].setImage(img_d)
     for i in range(1,self.levels):
-      self.correl[i].setImage(self.correl[i-1].resampleD(self.correl[i].w,self.correl[i].h))
+      self.correl[i].setImage(self.correl[i-1].resampleD(self.correl[i].h,self.correl[i].w))
 
   def getDisp(self,img_d=None):
     self.loop += 1
@@ -623,6 +685,13 @@ If it is not desired, consider lowering the verbosity: \
     To see the difference between the two images with the computed parameters. It writes a single channel picture named "diff.png" where 128 gray is exact equality, lighter pixels show positive difference and darker pixels a negative difference. Useful to see if correlation succeded and to identify the origin of non convergence
     """
     self.correl[level].writeDiffFile()
+
+
+  def clean(self):
+    """
+    Needs to be called at the end, to destroy the context properly
+    """
+    context.pop()
 
 
 if __name__ == "__main__":
