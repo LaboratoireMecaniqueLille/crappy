@@ -49,10 +49,11 @@ class LabJackActuator(command.Command):
         Convert the tension value to a digital value and send it to the output.
         """
         out = (cmd * self.gain) + self.offset
+        #print out
         ljm.eWriteName(self.handle, self.channel, out)
     
     def set_cmd_ram(self, cmd, address):
-	dataType = ljm.constants.FLOAT32
+	data_type = ljm.constants.FLOAT32
 	ljm.eWriteAddress(self.handle, address, data_type, cmd)
     
     def close(self):

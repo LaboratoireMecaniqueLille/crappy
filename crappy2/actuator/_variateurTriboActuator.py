@@ -50,3 +50,6 @@ class VariateurTriboActuator(motion.MotionActuator):
         self.ser.write('en\r\n')
         self.ser.write('mh\r\n')
         self.init = True
+    
+    def set_speed(self):
+	pass

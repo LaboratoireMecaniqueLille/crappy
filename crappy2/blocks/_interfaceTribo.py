@@ -6,11 +6,13 @@ import time
 import tkFont
 import tkFileDialog
 from _meta import MasterBlock
+import Tkinter
+import tkMessageBox
 
-
-class Interface(Frame, MasterBlock):
-    def __init__(self, root, VariateurTribo, comediOut):  # ,link1,link2):
-        super(Interface, self).__init__()
+class InterfaceTribo(Frame, MasterBlock):
+    def __init__(self, root, VariateurTribo, labjack):  # ,link1,link2):
+        #super(Interface, self).__init__()
+        MasterBlock.__init__(self)
         try:
             Frame.__init__(self, root, width=1000, height=1000)  # ,**kwargs)
             self.root = root
@@ -22,16 +24,20 @@ class Interface(Frame, MasterBlock):
             self.filepath = os.getcwd()
             self.mode = 'Mode Position'
             self.VariateurTribo = VariateurTribo
-            self.comediOut = comediOut
-            self.comediOut.off()
-            self.comediOut.set_cmd(0)
+            self.labjack = labjack
+            self.labjack.set_cmd_ram(0,46002) #sets the pid off
+            self.labjack.set_cmd_ram(-41,46000) #sets the setpoint at 0 newton
+            
+            #self.comediOut = comediOut
+            #self.comediOut.off()
+            #self.comediOut.set_cmd(0)
             self.manualAuto = 'MANUEL'
 
             self.SpeedMin = 0
             self.SpeedMax = 1000
 
             self.ForceMin = 0
-            self.ForceMax = 1000
+            self.ForceMax = 4000
 
             self.PositionMin = -6000
             self.PositionMax = 80000
@@ -93,7 +99,7 @@ class Interface(Frame, MasterBlock):
 
             self.ActuatorPosLabel = Label(self.frameForcePos, text="0", width=8)
 
-            # self.ActuatorPositionActualisationGhostButton = Button(self.root,text="+1",bg="yellow",command=self.ActuatorPosUpdate())
+            self.ActuatorPositionActualisationGhostButton = Button(self.root,text="+1",bg="yellow",command=self.ActuatorPosUpdate())
 
             def ActuatorSpeedUpdate(var):
                 if var < self.SpeedMin:
@@ -103,7 +109,8 @@ class Interface(Frame, MasterBlock):
                     var = self.SpeedMax
                     self.ActuatorSpeedVar.set(self.SpeedMax)
                 elif self.SpeedMin <= var <= self.SpeedMax:
-                    self.comediOut.set_cmd(float(var))
+                    #self.comediOut.set_cmd(float(var))   
+                    self.labjack.set_cmd(float(var))  
                     print 'Vitesse demandée = ' + str(var)
 
             def ActuatorPositionUpdate(var):
@@ -125,7 +132,8 @@ class Interface(Frame, MasterBlock):
                     self.ActuatorForceVar.set(self.ForceMax)
                     var = self.ForceMax
                 elif self.ForceMin <= var <= self.ForceMax:
-                    self.VariateurTribo.actuator.go_effort(int(var) * 7.94)
+                    #self.VariateurTribo.actuator.go_effort(int(var) * 7.94) #TODO
+                    self.labjack.set_cmd_ram(int(var)-41,46000)
                     print 'Force demandée = ' + str(var)
 
             # CONTROLS OF SETPOINT WITH SPINBOX
@@ -179,6 +187,11 @@ class Interface(Frame, MasterBlock):
             self.cycleNumber.set(1)
             self.CycleNumberLabel = Label(self.frameProperties, text='Nombre de cycles')
             self.CycleNumberEntry = Entry(self.frameProperties, textvariable=self.cycleNumber)
+            
+            self.stabilisationTime = Tix.IntVar()
+            self.stabilisationTime.set(2)
+            self.StabilisationTimeLabel = Label(self.frameProperties, text='Temps de stabilisation de la vitesse (s)')
+            self.StabilisationTimeEntry = Entry(self.frameProperties, textvariable=self.stabilisationTime)            
 
             self.StartExperimentButton = Button(self.frameProperties, text="Démarrer l'essai",
                                                 command=self.startExperiment)
@@ -259,6 +272,9 @@ class Interface(Frame, MasterBlock):
             self.CycleNumberLabel.grid(row=5, column=0, sticky="w", padx=10, pady=10)
             self.CycleNumberEntry.grid(row=5, column=1, sticky="w", padx=10, pady=10)
 
+            self.StabilisationTimeLabel.grid(row=5, column=0, sticky="w", padx=10, pady=10)
+            self.StabilisationTimeEntry.grid(row=5, column=1, sticky="w", padx=10, pady=10)
+            
             self.StartExperimentButton.grid(row=3, column=2, sticky="w", padx=10, pady=10)
 
             self.frameInformations.grid(row=4, column=1, sticky="w", padx=10, pady=10)
@@ -281,6 +297,9 @@ class Interface(Frame, MasterBlock):
 
             self.CycleNumberLabel.grid_remove()
             self.CycleNumberEntry.grid_remove()
+            
+            self.StabilisationTimeLabel.grid_remove()
+            self.StabilisationTimeEntry.grid_remove()
 
             self.StartExperimentButton.grid_remove()
 
@@ -352,6 +371,9 @@ class Interface(Frame, MasterBlock):
             self.CycleNumberLabel.grid()
             self.CycleNumberEntry.grid()
 
+            self.StabilisationTimeLabel.grid()
+            self.StabilisationTimeEntry.grid()
+
             self.StartExperimentButton.grid()
 
             self.frameInformations.grid()
@@ -378,6 +400,9 @@ class Interface(Frame, MasterBlock):
 
             self.CycleNumberLabel.grid_remove()
             self.CycleNumberEntry.grid_remove()
+
+            self.StabilisationTimeLabel.grid_remove()
+            self.StabilisationTimeEntry.grid_remove()
 
             self.StartExperimentButton.grid_remove()
 
@@ -422,66 +447,72 @@ class Interface(Frame, MasterBlock):
         else:
             print "Initialisez d'abord"
 
-    def startExperiment(self):
-        print 'top'
+    def startExperiment(self):  
         try:
             cycle = self.cycleNumber.get()
             while cycle > 0:
                 self.outputs[0].send(1)
                 tStart = time.time()
                 tAfter = time.time()
-                print tAfter - tStart
+                #print tAfter - tStart
                 while tAfter - tStart < 0.5:
-                    # print 'top2bis'
+                    #print 'top2bis'
                     value = self.inputs[0].recv()
-                    # print 'top2ter'
+                    #print 'top2ter'
                     tAfter = time.time()
 
-                print value['Vit']
-                while float(value['Vit']) <= self.MaxSpeedVar.get() * 9.0 / 10.0:
-                    self.comediOut.set_cmd(self.MaxSpeedVar.get())
+                #print value['Vit']
+                while float(value['Vit']) <= self.MaxSpeedVar.get() * 95. / 100.:
+                    self.labjack.set_cmd(self.MaxSpeedVar.get())
                     value = self.inputs[0].recv()
 
                 tStart = time.time()
                 tAfter = time.time()
 
-                while tAfter - tStart < 2:
+                while tAfter - tStart < 2 + self.stabilisationTime.get():
                     value = self.inputs[0].recv()
                     tAfter = time.time()
 
                 tStart = time.time()
                 tAfter = time.time()
-                print 'top3'
+                #print 'top3'
                 C0 = float(value['Couple'])
                 V0 = float(value['Vit'])
                 V1 = V0
-                print 'top4'
-                self.comediOut.on()
+                #print 'top4'
+                self.labjack.set_cmd_ram(1,46002)
+                #self.comediOut.on()
                 self.VariateurTribo.actuator.set_mode_analog()
-                print 'force demandée=', int(self.ForceVar.get())
-                self.VariateurTribo.actuator.go_effort(int(self.ForceVar.get()) * 10)
-                # self.VariateurTribo.actuator.set_mode_position()
-                # self.VariateurTribo.actuator.go_position(-18000)
+                #print 'force demandée=', int(self.ForceVar.get())
+                self.labjack.set_cmd_ram(int(self.ForceVar.get())-41,46000)
+                #self.VariateurTribo.actuator.go_effort(int(self.ForceVar.get()) * 10)
+                ## self.VariateurTribo.actuator.set_mode_position()
+                ## self.VariateurTribo.actuator.go_position(-18000)
 
 
                 while V1 > self.MinSpeedVar.get():  # Freinage
                     tStart = tAfter
                     tAfter = time.time()
                     deltaVit = (tAfter - tStart) * (float(value['Couple']) - C0) / float(self.SimulatedInertia.get())
+                    #print 'delta', deltaVit
                     V1 = V1 - deltaVit
-
-                    self.comediOut.set_cmd(V1)
+		    self.labjack.set_cmd(V1)
+                    #self.comediOut.set_cmd(V1)
                     value = self.inputs[0].recv()
 
                 self.VariateurTribo.actuator.set_mode_position()
                 self.VariateurTribo.actuator.go_position(0)
-                self.comediOut.set_cmd(0)
+                self.labjack.set_cmd_ram(0,46002)
+                self.labjack.set_cmd_ram(-41,46000)
+                #self.comediOut.set_cmd(0)
                 self.outputs[0].send(0)
 
                 cycle -= 1
 
         except NameError:
-            self.comediOut.set_cmd(0)
+            #self.comediOut.set_cmd(0)
+            self.labjack.set_cmd_ram(-41,46000)
+            self.labjack.set_cmd_ram(0,46002)
         # pass
         # if self.EnESSAI is False:
         # self.EnESSAI=True
@@ -524,9 +555,9 @@ class Interface(Frame, MasterBlock):
 
     def ActuatorPosUpdate(self):
         try:
-            self.VariateurTribo.sensor.clear()
-            self.ActuatorPosLabel.configure(text=self.VariateurTribo.sensor.get_position())
-            self.root.after(20, self.ActuatorPositionUpdate)
+            self.VariateurTribo.clear_errors()
+            self.ActuatorPosLabel.configure(text=-self.VariateurTribo.sensor.get_position())
+            self.root.after(20, self.ActuatorPosUpdate)
         except:
             self.ActuatorPosUpdate()
             print'error reading position'
@@ -553,15 +584,17 @@ class Interface(Frame, MasterBlock):
     def changeMode(self):
         if self.mode == 'Mode Position' and self.init:  # let's go to force mode
             self.mode = 'Mode Effort'
+            self.labjack.set_cmd_ram(1,46002)
             self.ActuatorPosition.grid_remove()
             self.ActuatorPositionSpinbox.grid_remove()
             self.ActuatorPos.grid_remove()
             self.ActuatorPosLabel.grid_remove()
             self.ActuatorForce.grid()
             self.ActuatorForceSpinbox.grid()
+
             # self.ActuatorEffort.grid()
             # self.ActuatorEffortLabel.grid()
-            self.comediOut.on()
+            #self.comediOut.on()
             self.VariateurTribo.actuator.set_mode_analog()
 
 
@@ -576,8 +609,9 @@ class Interface(Frame, MasterBlock):
             # self.ActuatorEffort.grid_remove()
             # self.ActuatorEffortLabel.grid_remove()
             self.VariateurTribo.actuator.set_mode_position()
-            self.comediOut.off()
-            self.ActuatorPositionVar.set(self.VariateurTribo.sensor.get_position())
+            self.labjack.set_cmd_ram(0,46002)
+            #self.comediOut.off()
+            self.ActuatorPositionVar.set(-self.VariateurTribo.sensor.get_position())
 
         self.ModeLabel.configure(text=self.mode)
 
@@ -589,11 +623,24 @@ class Interface(Frame, MasterBlock):
             self.ActuatorPositionSpinbox.grid()
             self.ActuatorPos.grid()
             self.ActuatorPosLabel.grid()
-        self.VariateurTribo.sensor.clear()
+        self.VariateurTribo.clear_errors()
         self.VariateurTribo.actuator.initialisation()
-        # self.VariateurTribo.actuator.set_mode_position()
+        self.VariateurTribo.actuator.set_mode_position()
         # self.ActuatorPosLabel.configure(text=str(self.VariateurTribo.sensor.get_position()))
         time.sleep(1)
-        self.VariateurTribo.sensor.clear()
+        self.VariateurTribo.clear_errors()
         time.sleep(1)
         self.InitStatus.configure(text='Initialisé')
+    
+    
+    def on_closing(self):
+      if tkMessageBox.askokcancel("Quit", "Do you want to quit?"):
+	self.VariateurTribo.actuator.set_mode_position()
+	self.VariateurTribo.actuator.stop_motor()
+	self.labjack.set_cmd(0)
+	self.labjack.set_cmd_ram(-41,46000)
+	self.labjack.set_cmd_ram(0,46002)
+	self.labjack.close()
+	self.VariateurTribo.close()
+	self.root.destroy()
+    

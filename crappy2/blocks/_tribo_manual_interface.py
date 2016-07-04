@@ -1,7 +1,13 @@
+# -*- coding:utf-8 -*-
+import Tix
+from Tkinter import *
 import os
 import time
+import tkFont
+import tkFileDialog
+from _meta import MasterBlock
 
-class Interface(Frame, MasterBlock):
+class InterfaceManual(Frame, MasterBlock):
     def __init__(self, root, VariateurTribo):  # ,link1,link2):
         super(Interface, self).__init__()
         try:
@@ -51,15 +57,17 @@ class Interface(Frame, MasterBlock):
 
 
             # Speed Force and position of actuator
-            self.ActuatorSpeed = Label(self.frameSpeed, text="Vitesse Broche (tr/min)")
+            #self.ActuatorSpeed = Label(self.frameSpeed, text="Vitesse Broche (tr/min)")
 
-            self.ActuatorForce = Label(self.frameForcePos, text="Effort Patin (N)")
+            #self.ActuatorForce = Label(self.frameForcePos, text="Effort Patin (N)")
 
             self.ActuatorPosition = Label(self.frameForcePos, text="Position platine (mm)")
 
             self.ActuatorPos = Label(self.frameForcePos, text="Position platine (mm)")
 
             self.ActuatorPosLabel = Label(self.frameForcePos, text="0", width=8)
+            
+            self.ActuatorPositionActualisationGhostButton = Button(self.root,text="+1",bg="yellow",command=self.ActuatorPosUpdate())
             
             #def ActuatorSpeedUpdate(var):
                 #if var < self.SpeedMin:
@@ -73,6 +81,7 @@ class Interface(Frame, MasterBlock):
                     #print 'Vitesse demandée = ' + str(var)
                     
             def ActuatorPositionUpdate(var):
+		print str(var)
                 if var < self.PositionMin:
                     var = self.PositionMin
                     self.ActuatorPositionVar.set(self.PositionMin)
@@ -117,7 +126,7 @@ class Interface(Frame, MasterBlock):
             self.InitStatus = Label(self.frameInitialisation, text='Non initialisé')
 
             # Mode Declaration
-            self.ModeButton = Button(self.frameMode, text='Changer Mode', command=self.changeMode)
+            #self.ModeButton = Button(self.frameMode, text='Changer Mode', command=self.changeMode)
             self.ModeLabel = Label(self.frameMode, text=self.mode)
 
 
@@ -128,10 +137,10 @@ class Interface(Frame, MasterBlock):
             ####
             frameSave.grid(row=2, column=1, sticky="w", padx=10, pady=10)
             # Inside FrameSave
-            self.pathSelectButton.grid(row=1, column=0, sticky="w", padx=10, pady=10)
-            self.dirEntry.grid(row=1, column=1, sticky="w", padx=10, pady=10)
-            self.StartRecordDataButton.grid(row=2, column=0, sticky="w", padx=10, pady=10)
-            self.StopRecordDataButton.grid(row=2, column=1, sticky="w", padx=10, pady=10)
+            #self.pathSelectButton.grid(row=1, column=0, sticky="w", padx=10, pady=10)
+            #self.dirEntry.grid(row=1, column=1, sticky="w", padx=10, pady=10)
+            #self.StartRecordDataButton.grid(row=2, column=0, sticky="w", padx=10, pady=10)
+            #self.StopRecordDataButton.grid(row=2, column=1, sticky="w", padx=10, pady=10)
 
             ####
             self.frameSpeedForcePosition.grid(row=3, column=1, sticky="w", padx=10, pady=10)
@@ -168,59 +177,59 @@ class Interface(Frame, MasterBlock):
 
             self.frameMode.grid(row=1, column=2, sticky="w", padx=10, pady=10)
             # Inside frameMode
-            self.ModeButton.grid(row=1, column=0, sticky="w", padx=10, pady=10)
+            #self.ModeButton.grid(row=1, column=0, sticky="w", padx=10, pady=10)
             self.ModeLabel.grid(row=1, column=1, sticky="w", padx=10, pady=10)
 
             ####
             frameManualAuto.grid(row=5, column=1, sticky="w", padx=10, pady=10)
             # Inside frameManualAuto
-            self.ChangeModeButton.grid(row=1, column=0, sticky="w", padx=10, pady=10)
+            #self.ChangeModeButton.grid(row=1, column=0, sticky="w", padx=10, pady=10)
 
-            self.frameProperties.grid(row=3, column=1, sticky="w", padx=10, pady=10)
+            #self.frameProperties.grid(row=3, column=1, sticky="w", padx=10, pady=10)
             # Inside frameProperties
-            self.MaxSpeedPropertyLabel.grid(row=1, column=0, sticky="w", padx=10, pady=10)
-            self.MaxSpeedPropertyEntry.grid(row=1, column=1, sticky="w", padx=10, pady=10)
+            #self.MaxSpeedPropertyLabel.grid(row=1, column=0, sticky="w", padx=10, pady=10)
+            #self.MaxSpeedPropertyEntry.grid(row=1, column=1, sticky="w", padx=10, pady=10)
 
-            self.MinSpeedPropertyLabel.grid(row=2, column=0, sticky="w", padx=10, pady=10)
-            self.MinSpeedPropertyEntry.grid(row=2, column=1, sticky="w", padx=10, pady=10)
+            #self.MinSpeedPropertyLabel.grid(row=2, column=0, sticky="w", padx=10, pady=10)
+            #self.MinSpeedPropertyEntry.grid(row=2, column=1, sticky="w", padx=10, pady=10)
 
-            self.ForcePropertyLabel.grid(row=3, column=0, sticky="w", padx=10, pady=10)
-            self.ForcePropertyEntry.grid(row=3, column=1, sticky="w", padx=10, pady=10)
+            #self.ForcePropertyLabel.grid(row=3, column=0, sticky="w", padx=10, pady=10)
+            #self.ForcePropertyEntry.grid(row=3, column=1, sticky="w", padx=10, pady=10)
 
-            self.SimulatedInertiaLabel.grid(row=4, column=0, sticky="w", padx=10, pady=10)
-            self.SimulatedInertiaEntry.grid(row=4, column=1, sticky="w", padx=10, pady=10)
+            #self.SimulatedInertiaLabel.grid(row=4, column=0, sticky="w", padx=10, pady=10)
+            #self.SimulatedInertiaEntry.grid(row=4, column=1, sticky="w", padx=10, pady=10)
 
-            self.CycleNumberLabel.grid(row=5, column=0, sticky="w", padx=10, pady=10)
-            self.CycleNumberEntry.grid(row=5, column=1, sticky="w", padx=10, pady=10)
+            #self.CycleNumberLabel.grid(row=5, column=0, sticky="w", padx=10, pady=10)
+            #self.CycleNumberEntry.grid(row=5, column=1, sticky="w", padx=10, pady=10)
 
-            self.StartExperimentButton.grid(row=3, column=2, sticky="w", padx=10, pady=10)
+            #self.StartExperimentButton.grid(row=3, column=2, sticky="w", padx=10, pady=10)
 
-            self.frameInformations.grid(row=4, column=1, sticky="w", padx=10, pady=10)
+            #self.frameInformations.grid(row=4, column=1, sticky="w", padx=10, pady=10)
             # Inside frameInformations
-            self.Informations.grid(row=1, column=0, sticky="w", padx=10, pady=10)
+            #self.Informations.grid(row=1, column=0, sticky="w", padx=10, pady=10)
 
-            self.frameProperties.grid_remove()
+            #self.frameProperties.grid_remove()
             # Inside frameProperties
-            self.MaxSpeedPropertyLabel.grid_remove()
-            self.MaxSpeedPropertyEntry.grid_remove()
+            #self.MaxSpeedPropertyLabel.grid_remove()
+            #self.MaxSpeedPropertyEntry.grid_remove()
 
-            self.MinSpeedPropertyLabel.grid_remove()
-            self.MinSpeedPropertyEntry.grid_remove()
+            #self.MinSpeedPropertyLabel.grid_remove()
+            #self.MinSpeedPropertyEntry.grid_remove()
 
-            self.ForcePropertyLabel.grid_remove()
-            self.ForcePropertyEntry.grid_remove()
+            #self.ForcePropertyLabel.grid_remove()
+            #self.ForcePropertyEntry.grid_remove()
 
-            self.SimulatedInertiaLabel.grid_remove()
-            self.SimulatedInertiaEntry.grid_remove()
+            #self.SimulatedInertiaLabel.grid_remove()
+            #self.SimulatedInertiaEntry.grid_remove()
 
-            self.CycleNumberLabel.grid_remove()
-            self.CycleNumberEntry.grid_remove()
+            #self.CycleNumberLabel.grid_remove()
+            #self.CycleNumberEntry.grid_remove()
 
-            self.StartExperimentButton.grid_remove()
+            #self.StartExperimentButton.grid_remove()
 
-            self.frameInformations.grid_remove()
+            #self.frameInformations.grid_remove()
             # Inside frameInformations
-            self.Informations.grid_remove()
+            #self.Informations.grid_remove()
 
         # self.add_input(link1)
         # self.add_output(link2)
@@ -263,48 +272,48 @@ class Interface(Frame, MasterBlock):
 
             self.frameMode.grid_remove()
             # Inside frameMode
-            self.ModeButton.grid_remove()
+            #self.ModeButton.grid_remove()
             self.ModeLabel.grid_remove()
 
-            self.ChangeModeButton.configure(text="MANUEL")
+            #self.ChangeModeButton.configure(text="MANUEL")
             self.TitleModeLabel.configure(text="MODE AUTO")
             self.manualAuto = "AUTO"
 
-            self.frameProperties.grid()
-            self.MaxSpeedPropertyLabel.grid()
-            self.MaxSpeedPropertyEntry.grid()
+            #self.frameProperties.grid()
+            #self.MaxSpeedPropertyLabel.grid()
+            #self.MaxSpeedPropertyEntry.grid()
 
-            self.MinSpeedPropertyLabel.grid()
-            self.MinSpeedPropertyEntry.grid()
+            #self.MinSpeedPropertyLabel.grid()
+            #self.MinSpeedPropertyEntry.grid()
 
-            self.ForcePropertyLabel.grid()
-            self.ForcePropertyEntry.grid()
+            #self.ForcePropertyLabel.grid()
+            #self.ForcePropertyEntry.grid()
 
-            self.SimulatedInertiaLabel.grid()
-            self.SimulatedInertiaEntry.grid()
+            #self.SimulatedInertiaLabel.grid()
+            #self.SimulatedInertiaEntry.grid()
 
-            self.CycleNumberLabel.grid()
-            self.CycleNumberEntry.grid()
+            #self.CycleNumberLabel.grid()
+            #self.CycleNumberEntry.grid()
 
-            self.StartExperimentButton.grid()
+            #self.StartExperimentButton.grid()
 
-            self.frameInformations.grid()
-            self.Informations.grid()
+            #self.frameInformations.grid()
+            #self.Informations.grid()
             
 	else:
             print "Initialisez d'abord"
             
     def ActuatorPosUpdate(self):
         try:
-            self.VariateurTribo.sensor.clear()
-            self.ActuatorPosLabel.configure(text=self.VariateurTribo.sensor.get_position())
-            self.root.after(20, self.ActuatorPositionUpdate)
+            self.VariateurTribo.clear_errors()
+            self.ActuatorPosLabel.configure(text=-self.VariateurTribo.sensor.get_position())
+            self.root.after(20, self.ActuatorPosUpdate)
         except:
             self.ActuatorPosUpdate()
             print'error reading position'
        
     def initialisation(self):
-        self.outputs[0].send(0)
+        #self.outputs[0].send(0)
         self.init = True
         if self.mode == 'Mode Position':
             self.ActuatorPosition.grid()
@@ -313,9 +322,9 @@ class Interface(Frame, MasterBlock):
             self.ActuatorPosLabel.grid()
         self.VariateurTribo.sensor.clear()
         self.VariateurTribo.actuator.initialisation()
-        # self.VariateurTribo.actuator.set_mode_position()
-        # self.ActuatorPosLabel.configure(text=str(self.VariateurTribo.sensor.get_position()))
+        self.VariateurTribo.actuator.set_mode_position()
+        #self.ActuatorPosLabel.configure(text=str(self.VariateurTribo.sensor.get_position()))
         time.sleep(1)
-        self.VariateurTribo.sensor.clear()
+        self.VariateurTribo.clear_errors()
         time.sleep(1)
         self.InitStatus.configure(text='Initialisé')

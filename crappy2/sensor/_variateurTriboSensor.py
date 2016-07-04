@@ -45,11 +45,13 @@ class VariateurTriboSensor(motion.MotionSensor):
         out = ''
         while self.ser.inWaiting() > 0:
             out += self.ser.read(1)
+        #print out
         if out != '':
             datastring = out.split('\r')
             if 'PFB' in datastring[0]:
                 datastring2 = datastring[1].split('\n')
                 position = int(datastring2[1])
+                #print position
                 datastring = ''
                 datastring2 = ''
                 return position
