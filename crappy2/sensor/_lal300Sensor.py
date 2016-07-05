@@ -6,10 +6,10 @@
 # @{
 
 ## @file _lal300Sensor.py
-## @brief  Open the connection, and initialise the Lal300.
-## @author Robin Siemiatkowski
-## @version 0.1
-## @date 29/06/2016
+# @brief  Open the connection, and initialise the Lal300.
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
 
 import serial
 import time

@@ -1,3 +1,18 @@
+##  @defgroup actuator Actuator
+# The actuators represent all the objects that can interact on the other part of the test, and can be controled.
+# The most common example are motors.
+# @{
+
+##  @defgroup init Init
+# @{
+
+## @file __init__.py
+# @brief  Import classes to put them in the current namespace.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 04/07/2016
+
 import platform
 from .._warnings import import_error
 

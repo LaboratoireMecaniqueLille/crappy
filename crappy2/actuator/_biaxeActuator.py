@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup actuator
+# @{
+
+##  @defgroup BiaxeActuator BiaxeActuator
+# @{
+
+## @file _biaxeActuator.py
+# @brief  Declare a new axis for the Biaxe.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 04/07/2016
+
 import serial
 from ._meta import motion
 from .._warnings import deprecated as deprecated
@@ -13,19 +26,16 @@ from .._warnings import deprecated as deprecated
 
 class BiaxeActuator(motion.MotionActuator):
     """Declare a new axis for the Biaxe"""
-
     def __init__(self, port='/dev/ttyUSB0', baudrate=38400, timeout=1, ser=None, **kwargs):
-        """This class create an axis and opens the corresponding serial port.
-        
-        Parameters
-        ----------
-        port : str
-                Path to the corresponding serial port, e.g '/dev/ttyS4'
-        baudrate : int, default = 38400
-                Set the corresponding baud rate.
-        timeout : int or float, default = 1
-                Serial timeout.
-        """
+        ## @fn __init__()
+        # @brief This class create an axis and opens the corresponding serial port.
+        #
+        # @param port : str
+        #         Path to the corresponding serial port, e.g '/dev/ttyS4'
+        # @param baudrate : int, default = 38400
+        #         Set the corresponding baud rate.
+        # @param timeout : int or float, default = 1
+        #         Serial timeout.
         super(BiaxeActuator, self).__init__()
         self.port = port
         self.baudrate = baudrate
@@ -59,22 +69,18 @@ class BiaxeActuator(motion.MotionActuator):
 
     @deprecated(None, "serial port is now initialized in __init__")
     def new(self):
-        """
-        DEPRECATED: serial port is now initialized in __init__
-        No arguments, open port, set speed mode and engage
-        """
-        # self.ser=serial.Serial(self.port_number,self.baud_rate,
-        # serial.EIGHTBITS,serial.PARITY_EVEN
-        # ,serial.STOPBITS_ONE,self.timeout)
-        # self.ser.write("OPMODE 0\r\n EN\r\n")
+        ## @fn new()
+        # @brief DEPRECATED: serial port is now initialized in __init__
+        # No arguments, open port, set speed mode and engage
+        #
         pass
 
     @deprecated(None, "replaced by close method in _biaxeTechnical")
     def close_port(self):
-        """
-        DEPRECATED: replaced by close method in _biaxeTechnical.
-        Close the designated port
-        """
+        #
+        # DEPRECATED: replaced by close method in _biaxeTechnical.
+        # Close the designated port
+        #
         self.ser.close()
 
     @deprecated(None)

@@ -1,5 +1,6 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 import time
 
 from crappy2.sensor._orientalSensor import convert_to_byte

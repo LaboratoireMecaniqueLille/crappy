@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup actuator
+# @{
+
+##  @defgroup CmDriveActuator CmDriveActuator
+# @{
+
+## @file _CmdriveActuator.py
+# @brief  Open a new default serial port for communication with Servostar
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 04/07/2016
+
 import serial
 import time
 from ._meta import motion

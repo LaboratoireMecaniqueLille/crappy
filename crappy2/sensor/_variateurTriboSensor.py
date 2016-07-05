@@ -1,5 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+##  @addtogroup sensor
+# @{
+
+##  @defgroup VariateurTriboSensor VariateurTriboSensor
+# @{
+
+## @file _variateurTriboSensor.py
+# @brief  Allows to get information from the tribo variator.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 import serial
 import time
 from ._meta import motion

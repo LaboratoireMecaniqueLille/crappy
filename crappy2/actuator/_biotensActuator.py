@@ -1,5 +1,18 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
+##  @addtogroup actuator
+# @{
+
+##  @defgroup BiotensActuator BiotensActuator
+# @{
+
+## @file _biotensActuator.py
+# @brief  This class contains methods to command the motors of the biotens
+#         machine. You should NOT use it directly, but use the BiotensTechnical.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 04/07/2016
 
 from struct import *
 import serial
@@ -28,9 +41,12 @@ def convert_to_byte(number, length):
 
 class BiotensActuator(motion.MotionActuator):
     def __init__(self, ser, size):
-        """This class contains methods to command the motors of the biotens 
-        machine. You should NOT use it directly, but use the BiotensTechnical.
-        """
+        # @fn __init__()
+        # @brief This class contains methods to command the motors of the biotens
+        # machine. You should NOT use it directly, but use the BiotensTechnical.
+        # @param ser serial instance
+        # @param size ???
+
         super(BiotensActuator, self).__init__()
         self.ser = ser
         self.size = size

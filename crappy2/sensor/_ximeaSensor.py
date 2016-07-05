@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup sensor
+# @{
+
+##  @defgroup Ximea Ximea
+# @{
+
+## @file _ximeaSensor.py
+# @brief  Camera class for ximea devices, this class should inherit from CameraSensor
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 from os import path
 
 from ._meta import cameraSensor
@@ -31,23 +44,21 @@ def resettable(f, *args, **kwargs):
 
 
 class Ximea(cameraSensor.CameraSensor):
-    """
-    Camera class for ximea devices, this class should inherit from CameraObject
-
-    Contains all the methods to open a device, resize the Zone Of Interest, and
-    grab frames.
-
-    Parameters
-    ----------
-    numdevice : int or string (device path), default = 0
-        Number of your device.
-    framespersec : int or float or None, default = None
-        The wanted frequency for grabbing frame. DOESN'T WORK at the moment.
-    external_trigger : bool, default = False
-        Define to True if you want to trigg the acquyisition of a frame externally.
-    data_format : int, default = 0
-        Value must be in [0:7]. See documentation for more informations.
-    """
+    ## @fn __init__()
+    # @brief Camera class for ximea devices, this class should inherit from CameraSensor
+    #
+    # Contains all the methods to open a device, resize the Zone Of Interest, and
+    # grab frames.
+    #
+    # @param numdevice : int or string (device path), default = 0
+    #     Number of your device.
+    # @param framespersec : int or float or None, default = None
+    #     The wanted frequency for grabbing frame. DOESN'T WORK at the moment.
+    # @param external_trigger : bool, default = False
+    #     Define to True if you want to trigg the acquyisition of a frame externally.
+    # @param data_format : int, default = 0
+    #     Value must be in [0:7]. See documentation for more informations.
+    #
 
     @resettable
     def __init__(self, numdevice=0, framespersec=None,
@@ -68,9 +79,9 @@ class Ximea(cameraSensor.CameraSensor):
         self.nbi = 0
 
     def new(self, exposure=10000, width=2048, height=2048, xoffset=0, yoffset=0, gain=0):
-        """
-        This method opens the ximea device and return a camera object.
-        """
+        ## @fn new()
+        # @brief This method opens the ximea device and return a camera object.
+        #
         if platform.system() == "Linux":
             nd, fps, et, df = self.numdevice, self.FPS, self.external_trigger, self.data_format
             self.reset()
@@ -101,10 +112,9 @@ class Ximea(cameraSensor.CameraSensor):
         self.gain = gain
 
     def get_image(self):
-        """
-        This method get a frame on the selected camera and return a ndarray
-        If the camera breaks down, it reinitializes it, and tries again.
-        """
+        ## @fn get_image()
+        # @brief This method get a frame on the selected camera and return a ndarray
+        # If the camera breaks down, it reinitializes it, and tries again.
         self.nbi += 1
         try:
             # print self.nbi
@@ -131,10 +141,9 @@ class Ximea(cameraSensor.CameraSensor):
             pass
 
     def close(self):
-        """
-        This method close properly the frame grabber.
-        It releases the allocated memory and stops the acquisition.
-        """
+        ## @fn close()
+        # @brief This method close properly the frame grabber.
+        # It releases the allocated memory and stops the acquisition.
         print "closing camera..."
         if self.ximea.isOpened():
             self.ximea.release()

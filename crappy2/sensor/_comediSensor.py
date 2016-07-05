@@ -11,6 +11,7 @@
 # @author Robin Siemiatkowski
 # @version 0.1
 # @date 29/06/2016
+
 import comedi as c
 import time
 

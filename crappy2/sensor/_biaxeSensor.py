@@ -1,19 +1,17 @@
 # coding: utf-8
 #
 ##  @addtogroup sensor
-# The sensors represent everything that can acquire a physical signal. It can be an acquisition card,
-# but also a camera, a thermocouple...
 # @{
 
 ##  @defgroup biaxe BiaxeSensor
 # @{
 
-## \file _biaxeSensor.py
-# \brief  Declare a new axis for the Biaxe
+## @file _biaxeSensor.py
+# @brief  Declare a new axis for the Biaxe
 #
-# \author Robin Siemiatkowski
-# \version 0.1
-# \date 21/06/2016
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 21/06/2016
 
 import serial
 from ._meta import motion

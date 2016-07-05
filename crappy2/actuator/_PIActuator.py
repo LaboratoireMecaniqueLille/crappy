@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup actuator
+# @{
+
+##  @defgroup PIActuator PIActuator
+# @{
+
+## @file _PIActuator.py
+# @brief This class create an axis and opens the corresponding serial port.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 04/07/2016
+
 import numpy as np
 import serial
 import time
@@ -15,20 +28,17 @@ from .._warnings import deprecated as deprecated
 # alpha = 1.05
 
 class PIActuator(motion.MotionActuator):
-    """Declare a new axis for the Biaxe"""
 
     def __init__(self, port='/dev/ttyS0', timeout=1, baudrate=9600, ser=None):
-        """This class create an axis and opens the corresponding serial port.
-
-        Parameters
-        ----------
-        port : str
-                Path to the corresponding serial port, e.g '/dev/ttyS4'
-        baudrate : int, default = 38400
-                Set the corresponding baud rate.
-        timeout : int or float, default = 1
-                Serial timeout.
-        """
+        # This class create an axis and opens the corresponding serial port.
+        #
+        # @param port : str
+        #         Path to the corresponding serial port, e.g '/dev/ttyS4'
+        # @param baudrate : int, default = 38400
+        #         Set the corresponding baud rate.
+        # @param timeout : int or float, default = 1
+        #         Serial timeout.
+        #
         super(PIActuator, self).__init__()
         self.port = port
         self.baudrate = baudrate
@@ -56,11 +66,11 @@ class PIActuator(motion.MotionActuator):
 
     @deprecated(set_position)
     def set_absolute_disp(self, disp):
-        # DEPRECATED: use set_position instead.
+        ## DEPRECATED: use set_position instead.
         self.set_position(disp)
 
     @deprecated(None, "Use close function defined in PITechnical instead.")
     def close_port(self):
-        # DEPRECATED: Use close function defined in PITechnical instead.
-        """Close the designated port"""
+        ## DEPRECATED: Use close function defined in PITechnical instead.
+        # Close the designated port
         self.ser.close()

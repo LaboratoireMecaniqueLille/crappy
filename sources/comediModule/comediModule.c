@@ -24,12 +24,11 @@ comediModule(PyObject* self, PyObject* args)
     int subdev_flags;
     lsampl_t raw;
     struct parsed_options options;
-    printf("TEST\n");
-    printf("filename: %s, subdevice: %i, channel: %i, range: %i, aref: %i, n_chan: %i, n_scan: %i, freq: %f. \n", device, subdevice, channel, range, aref, n_chan, n_scan, freq);   
+//    printf("filename: %s, subdevice: %i, channel: %i, range: %i, aref: %i, n_chan: %i, n_scan: %i, freq: %f. \n", device, subdevice, channel, range, aref, n_chan, n_scan, freq);
     
     
     
-    printf("filename: %s, value: %d, subdevice: %i, channel: %i, aref: %i, range: %i, physical: %i, verbose: %i, n_chan: %i, n_scan: %i, freq: %d. \n", options.filename, options.value, options.subdevice, options.channel, options.aref, options.range, options.physical, options.verbose, options.n_chan, options.n_scan, options.freq);   
+//    printf("filename: %s, value: %d, subdevice: %i, channel: %i, aref: %i, range: %i, physical: %i, verbose: %i, n_chan: %i, n_scan: %i, freq: %d. \n", options.filename, options.value, options.subdevice, options.channel, options.aref, options.range, options.physical, options.verbose, options.n_chan, options.n_scan, options.freq);
     init_parsed_options(&options);
     
     options.filename = device;
@@ -41,9 +40,8 @@ comediModule(PyObject* self, PyObject* args)
     options.n_scan = n_scan;
     options.freq = freq;
     
-    printf("filename: %s, value: %d, subdevice: %i, channel: %i, aref: %i, range: %i, physical: %i, verbose: %i, n_chan: %i, n_scan: %i, freq: %d. \n", options.filename, options.value, options.subdevice, options.channel, options.aref, options.range, options.physical, options.verbose, options.n_chan, options.n_scan, options.freq);
-    
-//         printf("TEST");
+//    printf("filename: %s, value: %d, subdevice: %i, channel: %i, aref: %i, range: %i, physical: %i, verbose: %i, n_chan: %i, n_scan: %i, freq: %d. \n", options.filename, options.value, options.subdevice, options.channel, options.aref, options.range, options.physical, options.verbose, options.n_chan, options.n_scan, options.freq);
+
     /* open the device */
     dev = comedi_open(options.filename);
     if(!dev){
