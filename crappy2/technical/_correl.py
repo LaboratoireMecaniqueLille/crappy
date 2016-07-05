@@ -8,11 +8,29 @@ from pycuda.compiler import SourceModule
 import pycuda.gpuarray as gpuarray
 from pycuda.reduction import ReductionKernel
 from math import ceil
-from scipy import interpolate
+#from scipy import interpolate
 import cv2
 
 
 context = None
+
+
+
+def interpNearest(ary,ny,nx):
+  """
+  Used to interpolate the mask for each stage
+  """
+  if ary.shape == (ny,nx):
+    return ary
+  y,x = ary.shape
+  rx = x/nx
+  ry = y/ny
+  out = np.empty((ny,nx),dtype=np.float32)
+  for j in range(ny):
+    for i in range(nx):
+      out[j,i] = ary[int(ry*j+.5),int(rx*i+.5)]
+  return out
+    
 
 #########################################################################
 #=======================================================================#
@@ -100,6 +118,19 @@ class CorrelStage:
     ### Getting texture references ###
     self.tex = self.mod.get_texref('tex')
     self.tex_d = self.mod.get_texref('tex_d')
+    self.texMask = self.mod.get_texref('texMask')
+
+    ### Setting proper flags ###
+    for t in [self.tex,self.tex_d]:
+      t.set_flags(cuda.TRSF_NORMALIZED_COORDINATES) #Not for the mask
+      t.set_filter_mode(cuda.filter_mode.LINEAR)
+      t.set_address_mode(0,cuda.address_mode.BORDER)
+      t.set_address_mode(1,cuda.address_mode.BORDER)
+
+    self.texMask = self.mod.get_texref("texMask")
+    self.texMask.set_filter_mode(cuda.filter_mode.LINEAR)
+    self.texMask.set_address_mode(0,cuda.address_mode.BORDER)
+    self.texMask.set_address_mode(1,cuda.address_mode.BORDER)
 
     ### Preparing kernels for less overhead when called ###
     self.__resampleOrigKrnl.prepare("Pii",texrefs=[self.tex])
@@ -108,20 +139,15 @@ class CorrelStage:
     self.__makeDiff.prepare("PPPP",texrefs=[self.tex,self.tex_d])
     self.__addKrnl.prepare("PfP")
 
-    ### Setting proper flags ###
-    for t in [self.tex,self.tex_d]:
-      t.set_flags(cuda.TRSF_NORMALIZED_COORDINATES)
-      t.set_filter_mode(cuda.filter_mode.LINEAR)
-      t.set_address_mode(0,cuda.address_mode.CLAMP)
-      t.set_address_mode(1,cuda.address_mode.CLAMP)
-
     ### Reading original image if provided ###
     if kwargs.get("img") is not None:
       self.setOrig(kwargs.get("img"))
     ### Reading fields if provided ###
     if kwargs.get("fields") is not None:
       self.setFields(kwargs.get("fields"))
-
+    ### Reading mask if provided ###
+    if kwargs.get("mask") is not None:
+      self.setMask(kwargs.get("mask"))
 
   def debug(self,n,*s):
     """
@@ -134,7 +160,6 @@ class CorrelStage:
         s2 += (str(s[i]).replace("\n","\n"+(10+n)*" "),)
       print("  "*(n-1)+"[Stage "+str(self.num)+"]",*s2)
     
-
   def setOrig(self,img):
     """
     To set the original image from a given CPU or GPU array. If it is a GPU array, it will NOT be copied.
@@ -167,6 +192,12 @@ class CorrelStage:
 
 
   def prepare(self):
+    if not hasattr(self,'maskArray'):
+      self.debug(2,"No mask set when preparing, using a basic one, with a border of 5% the dimension")
+      mask = np.zeros((self.h,self.w),np.float32)
+      mask[self.h//20:-self.h//20,self.w//20:-self.w//20] = 1
+      self.setMask(mask)
+      
     if not self.__ready:
       if not hasattr(self,'array'):
         self.debug(1,"Tried to prepare but original texture is not set !")
@@ -180,7 +211,6 @@ class CorrelStage:
     else:
       self.debug(1,"Tried to prepare when unnecessary, doing nothing...")
         
-
   def __makeG(self):
     for i in range(self.Nfields):
       self.__makeGKrnl(self.devG[i].gpudata, self.devGradX.gpudata, self.devGradY.gpudata, self.devFieldsX[i],self.devFieldsY[i],block=self.block,grid=self.grid) # Use prepared call ?
@@ -248,6 +278,21 @@ class CorrelStage:
     self.tex_d.set_array(self.array_d)
     self.devX.set(np.zeros(self.Nfields,dtype=np.float32))
 
+  def setMask(self,mask):
+    self.debug(3,"Setting the mask")
+    assert mask.shape == (self.h,self.w),"Got a {} mask in a {} routine.".format(mask.shape,(self.h,self.w))
+    if not mask.dtype is np.float32:
+      self.debug(2,"Converting the mask to float32")
+      mask = mask.astype(np.float32)
+    if isinstance(mask,np.ndarray):
+      self.maskArray = cuda.matrix_to_array(mask,'C')
+    elif isinstance(mask,gpuarray.GPUArray):
+      self.maskArray = gpuarray_to_array(mask,'C')
+    else:
+      self.debug(0,"Error! Mask data type not understood")
+      raise ValueError
+    self.texMask.set_array(self.maskArray)
+
   def setDisp(self,X):
     assert X.shape == (self.Nfields,),"Incorrect initialization of the parameters"
     if isinstance(X,gpuarray.GPUArray):
@@ -255,7 +300,7 @@ class CorrelStage:
     elif isinstance(X,np.ndarray):
       self.devX.set(X)
     else:
-      print("[Error] Unknown type of data given to CorrelStage.setDisp()")
+      self.debug(0,"Error! Unknown type of data given to CorrelStage.setDisp()")
       raise ValueError
 
   def writeDiffFile(self):
@@ -438,7 +483,7 @@ class TechCorrel:
     context = make_default_context()
     unknown = []
     for k in kwargs.keys():
-      if k not in ['verbose','levels','resampling_factor','kernel_file','iterations','show_diff','Nfields','img','fields']:
+      if k not in ['verbose','levels','resampling_factor','kernel_file','iterations','show_diff','Nfields','img','fields','mask']:
         unknown.append(k)
     if len(unknown) != 0:
       warnings.warn("Unrecognized parameter"+('s: '+str(unknown) if len(unknown) > 1 else ': '+unknown[0]),SyntaxWarning)
@@ -518,12 +563,15 @@ If it is not desired, consider lowering the verbosity: \
     for t in self.texFx+self.texFy:
       t.set_flags(cuda.TRSF_NORMALIZED_COORDINATES)
       t.set_filter_mode(cuda.filter_mode.LINEAR)
-      t.set_address_mode(0,cuda.address_mode.CLAMP)
-      t.set_address_mode(1,cuda.address_mode.CLAMP)
+      t.set_address_mode(0,cuda.address_mode.BORDER)
+      t.set_address_mode(1,cuda.address_mode.BORDER)
 
     ### Set fields if provided ###
     if kwargs.get("fields") is not None:
       self.setFields(kwargs.get("fields"))
+
+    if kwargs.get("mask") is not None:
+      self.setMask(kwargs.get("mask"))
 
   def getFields(self,y,x):
     """
@@ -654,6 +702,11 @@ If it is not desired, consider lowering the verbosity: \
     for i in range(1,self.levels):
       self.correl[i].setImage(self.correl[i-1].resampleD(self.correl[i].h,self.correl[i].w))
 
+
+  def setMask(self,mask):
+    for l in range(self.levels):
+      self.correl[l].setMask(interpNearest(mask,self.h[l],self.w[l]))
+
   def getDisp(self,img_d=None):
     self.loop += 1
     if img_d is not None:
@@ -670,6 +723,7 @@ If it is not desired, consider lowering the verbosity: \
     if self.loop % 10 == 0: # Every 10 images, print the values (if debug >=2)
       self.debug(2,"Loop",self.loop,", values:",self.correl[0].devX.get(),", res:",self.correl[0].res/1e6)
     return disp
+
 
   def getRes(self,lvl=0):
     """

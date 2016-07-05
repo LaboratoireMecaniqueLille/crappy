@@ -5,6 +5,7 @@
 
 texture<float, cudaTextureType2D, cudaReadModeElementType> tex;
 texture<float, cudaTextureType2D, cudaReadModeElementType> tex_d;
+texture<float, cudaTextureType2D, cudaReadModeElementType> texMask;
 
 __global__ void gradient(float* gradX, float* gradY)
 {
@@ -56,7 +57,7 @@ __global__ void makeDiff(float *out, float *param, float *fieldsX, float *fields
       ox += param[i]*fieldsX[WIDTH*HEIGHT*i+id];
       oy += param[i]*fieldsY[WIDTH*HEIGHT*i+id];
     }
-    out[id] = tex2D(tex,(idx+.5f)/WIDTH,(idy+.5f)/HEIGHT)-tex2D(tex_d,(idx+ox)/WIDTH,(idy+oy)/HEIGHT);
+    out[id] = (tex2D(tex,(idx+.5f)/WIDTH,(idy+.5f)/HEIGHT)-tex2D(tex_d,(idx+ox)/WIDTH,(idy+oy)/HEIGHT))*tex2D(texMask,idx+.5f,idy+.5f);
   }
 }
 
