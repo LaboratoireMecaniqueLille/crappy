@@ -12,7 +12,7 @@ y=2048
 
 camera = crappy.blocks.StreamerCamera("Ximea", numdevice=0, freq=10, save=False,save_directory="/home/vic/outTest/",xoffset=0, yoffset=0, width=x, height=y)
 graph = crappy.blocks.Grapher("dynamic",('t','x'),('t','y'),('t','z'))
-correl = crappy.blocks.Correl((x,y),fields=['x','y','z'],verbose=2)
+correl = crappy.blocks.Correl((y,x),fields=['x','y','z'],verbose=2)
 compacter = crappy.blocks.Compacter(5)
 
 lCam2Correl = crappy.links.Link()
