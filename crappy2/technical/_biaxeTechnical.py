@@ -29,8 +29,8 @@ class Biaxe(motion.Motion):
                                  serial.EIGHTBITS, serial.PARITY_EVEN
                                  , serial.STOPBITS_ONE, self.timeout)
         self.ser.write("OPMODE 0\r\n EN\r\n")
-        self.sensor = BiaxeSensor(self.ser)
-        self.actuator = BiaxeActuator(self.ser)
+        self.sensor = BiaxeSensor(ser=self.ser)
+        self.actuator = BiaxeActuator(ser=self.ser)
 
     def stop(self):
         self.ser.write("J 0\r\n")

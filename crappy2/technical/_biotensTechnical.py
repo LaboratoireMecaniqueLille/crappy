@@ -28,7 +28,7 @@ class Biotens(motion.Motion):
         self.baudrate = baudrate
         self.ser = serial.Serial(self.port, baudrate=19200, timeout=0.1)
         self.actuator = _biotensActuator.BiotensActuator(self.ser, self.size)
-        self.sensor = _biotensSensor.BiotensSensor(self.ser)
+        self.sensor = _biotensSensor.BiotensSensor(ser=self.ser)
         self.clear_errors()
         self.initialisation()
         self.mise_position()
