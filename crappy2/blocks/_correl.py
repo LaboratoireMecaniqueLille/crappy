@@ -7,6 +7,18 @@ from multiprocessing import Process,Pipe
 
 
 class Correl(MasterBlock):
+  """
+    This block uses the TechCorrel class (found in crappy[2]/technicals/_correl.py)\
+    The first argument is the (y,x) resolution of the image, and you must specify the fields with fields=(...)
+    See the docstring of TechCorrel to have more informations about the arguments specific to TechCorrel
+    It will try to identify the deformation parameters for each fields. If you use custom fields, use labels=(...) to name the data sent through the link.\
+    If no labels are specified, custom fields will be named by their position.
+    Note that the reference image is only taken once, when the .start() method is called (after dropping the first image).
+    IMPORTANT: This block has an extra method: .init()
+    It is meant to compile all the necessary kernels and should be done before starting all the blocks, but AFTER creating, initializing and LINKING them. 
+    In short, you simply have to add YourCorrelBlock.init() just before starting all the blocks
+    You can omit this but the delay before processing the first images can be long enough to fill a link and crash. Also, the correl block will not send any value before this init is over.
+  """
   def __init__(self,img_size,**kwargs):
     MasterBlock.__init__(self)
     self.ready = False
@@ -29,7 +41,9 @@ class Correl(MasterBlock):
       else: # Custom field and no label given: name it by its position...
         self.labels += (str(i),)
 
-    print "labels:",self.labels
+    #print "[Correl Block] output labels:",self.labels
+    if kwargs.get("labels") is not None:
+      del kwargs["labels"] # We don't need to pass this arg to the TechCorrel class
     pipeProcess,self.pipeClass = Pipe()
     self.process = Process(target=self.main,args=(pipeProcess,img_size),kwargs=kwargs)
 
@@ -41,7 +55,7 @@ class Correl(MasterBlock):
 
   def start(self):
     if self.ready == False:
-      print "[Correl block] WARNING ! This block takes time to init, you must call .init() before .start() JUST before starting all the blocks to do initialize it properly."
+      print "[Correl block] WARNING ! This block takes time to init, you must call .init() before .start() JUST before starting all the blocks to do initialize it properly. This way, the program only starts when correl is ready to process incoming data."
       self.init()
     self.pipeClass.send(0) # Notify the process to let it start
 
@@ -55,7 +69,7 @@ class Correl(MasterBlock):
     nLoops = 100 # For testing: resets the original images every nLoops loop
     try:
       pipe.recv() # Waiting for the actual start
-      print "[Correl block] Got start signal !"
+      #print "[Correl block] Got start signal !"
       t2 = time()-1
       for i in range(2): # Drop the first images
         self.inputs[0].recv()

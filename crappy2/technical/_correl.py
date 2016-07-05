@@ -417,14 +417,12 @@ class TechCorrel:
 
         - kernel_file=x (String, UNIX path, default: *crappy install dir*/data/kernels.cu) Where *crappy install dir* is the root directory of the installation of crappy (crappy.__path__)
 
-        - invert=x (Boolean, ,default: True) Inverts x and y (equivalent to passing img_size=(y,x), nothing more!)
-
   TODO:
     This section lists all the considered improvements for this program. These features may NOT all be implemented in the future. They are sorted by priority.
-    - Add square deformations to the default fields
-    - Add a parameter to return values in %
-    - Allow to set self.mul (cf line ~272)
     - Add a ZOI (zone of interest) to limit the effect of the borders of the image and focus on a particular area
+    - Add a parameter to return values in %
+    - Add the possibility to return the value of the deformation Exx andd Eyy in a specific point
+    - Allow to set self.mul (cf line ~272)
     - Add a drop parameter to drop images in the link if correlation is not fast enough    |
     - OR skip the last iteration when running out of time ?                                |=> Parameter drop='no'/'skip'/'drop' (or else...)
     - Add a res parameter to add the residual to the output values
@@ -474,9 +472,10 @@ If it is not desired, consider lowering the verbosity: \
 
     kernelFile = kwargs.get("kernel_file")
     if kernelFile is None:
-      print("Kernel file not specified")
+      self.debug(3,"Kernel file not specified, using the one in crappy install")
       from crappy2 import __path__ as crappyPath
       kernelFile = crappyPath[0]+"/data/kernels.cu"
+    self.debug(3,"Kernel file:",kernelFile)
 
     ### Creating a new instance of CorrelStage for each stage ###
     self.correl=[]
@@ -668,7 +667,7 @@ If it is not desired, consider lowering the verbosity: \
       self.correl[i].setDisp(disp)
       disp = self.correl[i].getDisp()
       self.last = disp
-    if self.loop % 10 == 0:
+    if self.loop % 10 == 0: # Every 10 images, print the values (if debug >=2)
       self.debug(2,"Loop",self.loop,", values:",self.correl[0].devX.get(),", res:",self.correl[0].res/1e6)
     return disp
 
