@@ -40,6 +40,8 @@ try:
 except Exception as e:
     import_error(e.message)
 
+from _sendPath import InterfaceSendPath
+from _saverTriggered import SaverTriggered
 from _interfaceTribo import InterfaceTribo
 from _tribo_manual_interface import InterfaceManual
 from _lal300Command import CommandLal300

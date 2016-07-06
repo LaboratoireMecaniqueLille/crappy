@@ -63,23 +63,23 @@ try:
 	t,C0=comediSensor.get_data(0)
 	print "offset couple=", C0
 	
-	comediSensor=crappy.sensor.ComediSensor(channels=[0,1,2,3],gain=[20613,4125,-500,1],offset=[-F0,-V0,C0,0])
+	comediSensor=crappy.sensor.ComediSensor(channels=[0,1,2],gain=[20613,4125,-500],offset=[-F0,-V0,C0])
 	
-	effort=crappy.blocks.MeasureByStep(comediSensor,labels=['t(s)','F(N)','Vit','Couple','signal'],freq=500)
+	effort=crappy.blocks.MeasureByStep(comediSensor,labels=['t(s)','F(N)','Vit','Couple'],freq=500)
 	VariateurTribo=crappy.technical.VariateurTribo(port='/dev/ttyS4')#,port_arduino='/dev/ttyACM0')
 	labjack = crappy.actuator.LabJackActuator(channel = "TDAC0", gain = 1./399.32, offset = -17.73/399.32)
 	labjack.set_cmd(0)
 	labjack.set_cmd_ram(0,46002) #sets the pid off
         labjack.set_cmd_ram(0,46000) #sets the setpoint at 0 newton
 
-	saver=crappy.blocks.Saver("/home/tribo/save_dir/openlog.txt")
+	saver=crappy.blocks.SaverTriggered("/home/tribo/save_dir/openlog.txt")
 
 	compacter=crappy.blocks.Compacter(100)
 
-	graph=crappy.blocks.Grapher("dynamic",(('t(s)','F(N)'),))
-	graph2=crappy.blocks.Grapher("dynamic",(('t(s)','Vit'),))
-	graph3=crappy.blocks.Grapher("dynamic",(('t(s)','Couple'),))
-	graph4=crappy.blocks.Grapher("dynamic",(('t(s)','signal'),))
+	graph=crappy.blocks.Grapher("dynamic",(('t(s)','F(N)'),),len_graph = 50)
+	graph2=crappy.blocks.Grapher("dynamic",(('t(s)','Vit'),),len_graph = 50)
+	graph3=crappy.blocks.Grapher("dynamic",(('t(s)','Couple'),),len_graph = 50)
+	#graph4=crappy.blocks.Grapher("dynamic",(('t(s)','signal'),))
 	link1=crappy.links.Link()
 	link2=crappy.links.Link()
 	link3=crappy.links.Link()
@@ -87,8 +87,12 @@ try:
 	link6=crappy.links.Link()
 	link5=crappy.links.Link(condition=conditionfiltree())
 	link5.add_external_trigger(link6)
-	link7=crappy.links.Link()
+	link7=crappy.links.Link(condition=conditionfiltree())
+	linkRecordData=crappy.links.Link()
+	link7.add_external_trigger(linkRecordData)
 	link8=crappy.links.Link()
+	linkRecordDataPath=crappy.links.Link()
+	
 	
 	#links
 	effort.add_output(link1)
@@ -98,12 +102,13 @@ try:
 	compacter.add_output(link3)
 	compacter.add_output(link4)
 	compacter.add_output(link7)
-	compacter.add_output(link8)
+	#compacter.add_output(link8)
 	graph.add_input(link2)
 	graph2.add_input(link3)
 	graph3.add_input(link4)
-	graph4.add_input(link8)
+	#graph4.add_input(link8)
 	saver.add_input(link7)
+	saver.add_input(linkRecordDataPath)
 
 	
 	for instance in crappy.blocks._meta.MasterBlock.instances:
@@ -116,6 +121,10 @@ try:
 	interface.root.protocol("WM_DELETE_WINDOW", interface.on_closing)
 	interface.add_input(link5)
 	interface.add_output(link6)
+	interface.add_output(linkRecordDataPath)
+	interface.add_output(linkRecordData)
+	
+	
 	#print 'top1'
 	interface.mainloop()	
 

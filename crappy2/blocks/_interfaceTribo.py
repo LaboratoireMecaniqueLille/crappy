@@ -44,7 +44,7 @@ class InterfaceTribo(Frame, MasterBlock):
             self.t0 = 0
             self.init = False
             self.EnESSAI = False
-            self.filepath = os.getcwd()
+            self.filepath = "/home/tribo/save_dir/openlog.txt"
             self.mode = 'Mode Position'
             self.VariateurTribo = VariateurTribo
             self.labjack = labjack
@@ -68,7 +68,7 @@ class InterfaceTribo(Frame, MasterBlock):
             self.PositionMax = 15000
 
             #### FRAME DECLARATION ####
-            #frameSave = Frame(self.root, width=400, borderwidth=2, relief=GROOVE)
+            frameSave = Frame(self.root, width=400, borderwidth=2, relief=GROOVE)
             frameManualAuto = Frame(self.root, width=400, borderwidth=2, relief=GROOVE)
             frameTitleMode = Frame(self.root, width=400, borderwidth=2, relief=GROOVE)
 
@@ -89,9 +89,23 @@ class InterfaceTribo(Frame, MasterBlock):
 
             #### TITLE MODE DECLARATION ####
 
-            self.TitleModeLabel = Label(frameTitleMode, text="MODE MANUEL", width=15)
+            self.TitleModeLabel = Label(frameTitleMode, text="MODE MANUEL", width=30)
 
-
+		    #### DATA RECORD DECLARATION ####
+	    #DataRecording
+	    self.pathSelectButton = Button(frameSave, text="Browse...", command=self.askdirectory)
+	    
+	    self.StartRecordDataButton = Button(frameSave, text="StartRecordData", command=self.recordData)
+	    self.StopRecordDataButton = Button(frameSave, text="StopRecordData", command=self.stopRecord) 
+	    self.filepathVar = Tix.StringVar()
+	    self.dirEntry = Entry(frameSave, textvariable=self.filepathVar,width=55)
+	    self.filepathVar.set(self.filepath)
+		    # defining options for opening a directory
+	    self.dir_opt = options = {}
+	    options['mustexist'] = True
+	    options['parent'] = self.root
+	    
+	    
             #### CHANGING MANUAL AUTO DECLARATION ####
 
             self.ChangeModeButton = Button(frameManualAuto, text="SIMULATION D'INERTIE", command=self.changeManualAuto)
@@ -225,6 +239,13 @@ class InterfaceTribo(Frame, MasterBlock):
             frameTitleMode.grid(row=1, column=1, sticky="w", padx=10, pady=10)
             self.TitleModeLabel.grid(row=1, column=1, sticky="w", padx=10, pady=10)
 
+	    ####
+	    frameSave.grid(row=2, column=1,sticky= "w", padx=10,pady=10)
+	    #Inside FrameSave
+	    self.pathSelectButton.grid(row=1, column=0, sticky= "w",padx=10,pady=10)
+	    self.dirEntry.grid(row=1, column=1, sticky= "w",padx=10,pady=10)
+	    self.StartRecordDataButton.grid(row=2, column=0, sticky= "w",padx=10,pady=10)
+	    self.StopRecordDataButton.grid(row=2, column=1, sticky= "w",padx=10,pady=10)
 
             ####
             self.frameSpeedForcePosition.grid(row=3, column=1, sticky="w", padx=10, pady=10)
@@ -338,6 +359,7 @@ class InterfaceTribo(Frame, MasterBlock):
     def main(self):
         self.mainloop()
         self.outputs[0].send(0)
+        self.outputs[2].send(0)
 
     def changeManualAuto(self):
 
@@ -404,7 +426,7 @@ class InterfaceTribo(Frame, MasterBlock):
             self.Informations.grid()
             
             self.StopExperimentButton['state'] = 'disabled'
-
+	    self.outputs[2].send(0)
 
 
 
@@ -488,7 +510,7 @@ class InterfaceTribo(Frame, MasterBlock):
 	self.ChangeModeButton['state'] = 'disabled'
     
     def startExperiment(self):  
-
+	self.outputs[2].send(1)
         try:
             cycle = self.cycleNumber.get()
             while cycle > 0:
@@ -565,6 +587,7 @@ class InterfaceTribo(Frame, MasterBlock):
 	    self.ChangeModeButton['state'] = 'normal'
 	    self.Informations.configure(text = "Pret")
 	    self.Informations.configure(bg="light grey")
+	    self.outputs[2].send(0)
 	    
         except NameError:
 
@@ -620,25 +643,36 @@ class InterfaceTribo(Frame, MasterBlock):
             self.ActuatorPosUpdate()
             #print'error reading position'
 
-    def StartRecordData(self):
-        self.t = str(time.time() - self.t0)
-        RecordData(self.t, self.ActuatorPositionValue, self.LoadValue, self.filepath)
-        self.cpt += 1
-        self.RecordDataNumberLabel.configure(text=self.cpt)
-        if self.flag == 1:
-            self.root.after(1000, self.StartRecordData)
 
-    def go(self):
-        if self.flag == 0:
-            self.flag = 1
-            self.t0 = time.time()  # Initialisation du temps
-            self.StartRecordData()
+    def recordData(self):
+
+        self.t0 = time.time()  # Initialisation du temps
         print "RecordDataStart"
+        self.outputs[2].send(1)
 
-    def stop(self):
+    def stopRecord(self):
         self.flag = 0
-        print "RecordDataStop"
-
+        print "RecordDataStop"  #TODO
+        self.outputs[2].send(0)
+        
+    def askdirectory(self):
+	"""
+	Returns a selected directoryname.
+	"""
+	self.filepath = tkFileDialog.asksaveasfilename()
+	self.filepathVar.set(self.filepath)
+	self.outputs[1].send(self.filepath)
+	self.outputs[1].send(self.filepath)    
+        
+        
+    def pathSelect(self):
+	d = Tix.DirSelectBox(master=self.root, command=self.print_selected)
+	d.popup()
+    
+    def getInfo(self):
+	return self.filepath
+      
+      
     def changeMode(self):
         if self.mode == 'Mode Position' and self.init:  # let's go to force mode
             self.mode = 'Mode Effort'
