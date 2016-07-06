@@ -57,7 +57,7 @@ class CorrelStage:
     self.showDiff=kwargs.get("show_diff",False)
     if self.showDiff:
       import cv2
-      cv2.namedWindow("Correlation",cv2.WINDOW_NORMAL)
+      cv2.namedWindow("Residual",cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
 
     self.rX,self.rY = -1,-1
     self.loop = 0
@@ -136,7 +136,7 @@ class CorrelStage:
     self.__resampleOrigKrnl.prepare("Pii",texrefs=[self.tex])
     self.__resampleKrnl.prepare("Pii",texrefs=[self.tex_d])
     self.__gradientKrnl.prepare("PP",texrefs=[self.tex])
-    self.__makeDiff.prepare("PPPP",texrefs=[self.tex,self.tex_d])
+    self.__makeDiff.prepare("PPPP",texrefs=[self.tex,self.tex_d,self.texMask])
     self.__addKrnl.prepare("PfP")
 
     ### Reading original image if provided ###
@@ -359,7 +359,7 @@ class CorrelStage:
       self.debug(3,"res:",self.res/1e6)
     #self.writeDiffFile()
     if self.showDiff:
-      cv2.imshow("Correlation",(self.devOut.get()+128).astype(np.uint8))
+      cv2.imshow("Residual",(self.devOut.get()+128).astype(np.uint8))
       cv2.waitKey(1)
     return self.devX.get()
 
@@ -464,9 +464,8 @@ class TechCorrel:
 
   TODO:
     This section lists all the considered improvements for this program. These features may NOT all be implemented in the future. They are sorted by priority.
-    - Add a ZOI (zone of interest) to limit the effect of the borders of the image and focus on a particular area
-    - Add a parameter to return values in %
     - Add the possibility to return the value of the deformation Exx andd Eyy in a specific point
+    - Add a parameter to return values in %
     - Allow to set self.mul (cf line ~272)
     - Add a drop parameter to drop images in the link if correlation is not fast enough    |
     - OR skip the last iteration when running out of time ?                                |=> Parameter drop='no'/'skip'/'drop' (or else...)

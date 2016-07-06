@@ -12,42 +12,60 @@ from collections import OrderedDict
 class Grapher(MasterBlock):
     """Plot the input data"""
 
-    def __init__(self, mode, keys,len_graph=10):
+    def __init__(self, *args, **kwargs):
         """
         The grapher receive data from the Compacter (via a Link) and plots it.
 
         Parameters
         ----------
-        mode : {"dynamic","static"}
-            * "dynamic" : create a dynamic graphe that updates in real time.
-
-            * "static" : create a graphe that add new values at every refresh. If there \
-            is too many data (> 20000), delete one out of 2 to avoid memory overflow.
-
         args : tuple
             tuples of the columns labels of input data for plotting. You can add as\
             much as you want, depending on your computer performances.
 
+        optional: length=x (int) 
+            number of chunks to data to be kept on the graph (default: 10)
+
+            length=0 will create a static graph:
+            add new values at every refresh. If there \
+            is too many data (> 20000), delete one out of 2 to avoid memory overflow.
+
         Examples
         --------
-            graph=Grapher("dynamic",('t(s)','F(N)'),('t(s)','def(%)'))
+            graph=Grapher(('t(s)','F(N)'),('t(s)','def(%)'))
                 plot a dynamic graph with two lines plot(F=f(t) and def=f(t)).
-            graph=Grapher("static",('def(%)','F(N)'))
+            graph=Grapher(('def(%)','F(N)'),length=0)
                 plot a static graph.
+            graph=Grapher(('t(s)','F(N)'),length=30)
+                plot a dynamic graph that will display the last 30 chunks of data sent by the compacter
         """
         super(Grapher, self).__init__()
         print "grapher!"
-        self.len_graph = len_graph
-        self.mode = mode
-        self.args = keys
-        print keys
-        self.nbr_graphs = len(keys)
+        self.len_graph = kwargs.get("length",10)
+        self.mode = "dynamic" if self.len_graph > 0 else "static"
+        self.args = args
+        self.nbr_graphs = len(args)
+
+        if args[0] in ["static", "dynamic"]: ### Support old syntax to avoid generalized incontrollable panic (to be deleted in the future) ---
+          redWarn = '[\033[31m\033[1mWARNING!\033[0m] ' # Red warning, for persuasion
+          print redWarn+"The grapher syntax is evolving! You must remove \"{}\", you can use length=x (default: 10) if you want to specify the width of the window (0 means a static graph)".format(args[0])
+          print "Note: The deprecated syntax is still supported for now but you MUST change your graphers NOW! You cannot ignore this forever or your programs will crash in an incoming update, also  a kitten suddenly dies somewhere in the world everytime you see this message :("
+          print """
+ /\\_/\\
+( o.o )
+ > ^ <
+ MEOW!
+          """
+          print "Save the cats, change your grapher." # Drama, for extra-persuasion
+          import warnings
+          warnings.warn("Deprecated syntax for Grapher",DeprecationWarning)
+          self.mode = args[0]
+          self.args = args[1:]
+          self.nbr_graphs -= 1 ### End of the part to delete  ---
 
     def main(self):
         try:
             print "main grapher", os.getpid()
             if self.mode == "dynamic":
-                # print "1"
                 save_number = 0
                 fig = plt.figure(figsize=(8, 8))
                 ax = fig.add_subplot(111)
@@ -57,44 +75,28 @@ class Grapher(MasterBlock):
                     else:
                         li.extend(ax.plot(np.arange(1), np.zeros(1)))
                 plt.grid()
-                # print "2"
                 fig.canvas.draw()  # draw and show it
                 plt.show(block=False)
                 while True:
-                    # print "3"
                     Data = self.inputs[0].recv()  # recv data
 
                     if type(Data) is not OrderedDict:
                         Data = OrderedDict(zip(Data.columns, Data.values[0]))
-                    # legend_=Data.columns[1:]
                     legend_ = [self.args[i][1] for i in range(self.nbr_graphs)]
                     if save_number > 0:  # lose the first round of data
                         if save_number == 1:  # init
                             var = Data
-                            # box = ax.get_position()
-                            # ax.set_position([box.x0, box.y0 + box.height * 0.1,
-                            # box.width, box.height * 0.9])
-                            # plt.legend(legend_,bbox_to_anchor=(0, -0.14, 1., .102),
-                            # loc=3, ncol=len(legend_), mode="expand", borderaxespad=-2.)
                             plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
                                        loc=3, ncol=len(legend_), mode="expand",
                                        borderaxespad=1)
                         elif save_number <= self.len_graph:  # stack values
-                            # var=pd.concat([var,Data])
-                            # var=OrderedDict(zip(var.keys(),zip(var.values(),Data.values())))
                             try:
                                 var = OrderedDict(zip(var.keys(), [var.values()[t] + Data.values()[t] for t in
                                                                    range(len(var.keys()))]))
                             except TypeError:
                                 var = OrderedDict(zip(var.keys(), [(var.values()[t],) + (Data.values()[t],) for t in
                                                                    range(len(var.keys()))]))
-                                # print var
                         else:  # delete old value and add new ones
-                            # try:
-                            # pass
-                            # var=pd.concat([var[np.shape(Data)[0]:],Data])
-                            # except AttributeError:
-                            # var=OrderedDict(zip(var.keys(),zip(tuple(np.asarray(var.values())[np.shape(Data.values())[1]:]),Data.values())))
                             var = OrderedDict(zip(var.keys(),
                                                   [var.values()[t][np.shape(Data.values())[1]:] + Data.values()[t] for t
                                                    in range(len(var.keys()))]))
@@ -102,7 +104,6 @@ class Grapher(MasterBlock):
                             li[i].set_xdata(var[self.args[i][0]])
                             li[i].set_ydata(var[self.args[i][1]])
                     ax.relim()
-                    # print "4"
                     ax.autoscale_view(True, True, True)
                     fig.canvas.draw()
                     plt.pause(0.001)
@@ -119,12 +120,10 @@ class Grapher(MasterBlock):
                     Data = self.inputs[0].recv()  # recv data
                     if type(Data) is not OrderedDict:
                         Data = OrderedDict(zip(Data.columns, Data.values[0]))
-                    # legend_=Data.columns[1:]
                     legend_ = [self.args[i][1] for i in range(self.nbr_graphs)]
                     if first_round:  # init at first round
                         for i in range(self.nbr_graphs):
                             if i == 0:
-                                # print Data,Data[self.args[i][0]]
                                 li = ax.plot(
                                     Data[self.args[i][0]], Data[self.args[i][1]],
                                     label='line ' + str(i))
@@ -132,11 +131,6 @@ class Grapher(MasterBlock):
                                 li.extend(ax.plot(
                                     Data[self.args[i][0]], Data[self.args[i][1]],
                                     label='line ' + str(i)))
-                                # box = ax.get_position()
-                                # ax.set_position([box.x0, box.y0 + box.height * 0.1,
-                                # box.width, box.height * 0.9])
-                                # plt.legend(legend_,bbox_to_anchor=(0, -0.14, 1., .102),
-                                # loc=3, ncol=len(legend_), mode="expand", borderaxespad=0.)
                         plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
                                    loc=3, ncol=len(legend_), mode="expand",
                                    borderaxespad=1.)
@@ -166,6 +160,5 @@ class Grapher(MasterBlock):
         except (Exception, KeyboardInterrupt) as e:
             print "Exception in grapher %s: %s" % (os.getpid(), e)
             plt.close('all')
-        # raise
         finally:
             plt.close('all')
