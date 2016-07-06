@@ -38,7 +38,7 @@ class VariateurTriboActuator(motion.MotionActuator):
         self.ser.write('opmode 8\r\n')
         self.mode = 'position'
         time.sleep(0.1)
-        print self.mode
+        #print self.mode
 
     def set_position(self, position, speed=20000, acc=200, dec=200):
         ## creating the order for the motor example ORDER 0 1000 20000 8192 200 200 0 0 0 0\r\n
@@ -58,7 +58,7 @@ class VariateurTriboActuator(motion.MotionActuator):
         self.ser.write('ancnfg 0\r\n')
         time.sleep(0.1)
         self.mode = 'effort'
-        print self.mode
+        #print self.mode
 
     def initialisation(self):
         self.ser.write('opmode 8\r\n')

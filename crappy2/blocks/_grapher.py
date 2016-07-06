@@ -12,7 +12,7 @@ from collections import OrderedDict
 class Grapher(MasterBlock):
     """Plot the input data"""
 
-    def __init__(self, mode, *args):
+    def __init__(self, mode, keys,len_graph=10):
         """
         The grapher receive data from the Compacter (via a Link) and plots it.
 
@@ -37,9 +37,11 @@ class Grapher(MasterBlock):
         """
         super(Grapher, self).__init__()
         print "grapher!"
+        self.len_graph = len_graph
         self.mode = mode
-        self.args = args
-        self.nbr_graphs = len(args)
+        self.args = keys
+        print keys
+        self.nbr_graphs = len(keys)
 
     def main(self):
         try:
@@ -77,7 +79,7 @@ class Grapher(MasterBlock):
                             plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
                                        loc=3, ncol=len(legend_), mode="expand",
                                        borderaxespad=1)
-                        elif save_number <= 10:  # stack values
+                        elif save_number <= self.len_graph:  # stack values
                             # var=pd.concat([var,Data])
                             # var=OrderedDict(zip(var.keys(),zip(var.values(),Data.values())))
                             try:
@@ -104,7 +106,7 @@ class Grapher(MasterBlock):
                     ax.autoscale_view(True, True, True)
                     fig.canvas.draw()
                     plt.pause(0.001)
-                    if save_number <= 10:
+                    if save_number <= self.len_graph:
                         save_number += 1
 
             if self.mode == "static":

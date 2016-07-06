@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import crappy2 as crappy 
 import numpy as np
 import time
@@ -25,11 +26,11 @@ class conditionfiltree(crappy.links.MetaCondition):
 		recv=self.external_trigger.recv(blocking=self.blocking) # first run is blocking, others are not
 		self.blocking=False
 		if recv == 1:
-			print 'EUREKA'
+			#print 'EUREKA'
 			self.test=True
 			
 		elif recv == 0:
-			print 'je recois rien'
+			#print 'je recois rien'
 			self.test=False
 		
 		for i,label in enumerate(self.labels):
@@ -62,25 +63,23 @@ try:
 	t,C0=comediSensor.get_data(0)
 	print "offset couple=", C0
 	
-	comediSensor=crappy.sensor.ComediSensor(channels=[0,1,2],gain=[20613,4125,-500],offset=[-F0,-V0,C0])
+	comediSensor=crappy.sensor.ComediSensor(channels=[0,1,2,3],gain=[20613,4125,-500,1],offset=[-F0,-V0,C0,0])
 	
-	effort=crappy.blocks.MeasureByStep(comediSensor,labels=['t(s)','F(N)','Vit','Couple'],freq=500)
+	effort=crappy.blocks.MeasureByStep(comediSensor,labels=['t(s)','F(N)','Vit','Couple','signal'],freq=500)
 	VariateurTribo=crappy.technical.VariateurTribo(port='/dev/ttyS4')#,port_arduino='/dev/ttyACM0')
 	labjack = crappy.actuator.LabJackActuator(channel = "TDAC0", gain = 1./399.32, offset = -17.73/399.32)
 	labjack.set_cmd(0)
 	labjack.set_cmd_ram(0,46002) #sets the pid off
         labjack.set_cmd_ram(0,46000) #sets the setpoint at 0 newton
-	#comediOut=crappy.actuator.ComediActuator(device='/dev/comedi0',subdevice=1,channel=0,range_num=0,gain=1.0/1600.0,offset=0)
-	#comediOut.set_cmd(0)
-	#VariateurTribo.actuator.go_effort(0)
+
 	saver=crappy.blocks.Saver("/home/tribo/save_dir/openlog.txt")
-	  
+
 	compacter=crappy.blocks.Compacter(100)
 
-	graph=crappy.blocks.Grapher("dynamic",('t(s)','F(N)'))
-	graph2=crappy.blocks.Grapher("dynamic",('t(s)','Vit'))
-	graph3=crappy.blocks.Grapher("dynamic",('t(s)','Couple'))
-	#graph4=crappy.blocks.Grapher("dynamic",('t(s)','signal'))
+	graph=crappy.blocks.Grapher("dynamic",(('t(s)','F(N)'),))
+	graph2=crappy.blocks.Grapher("dynamic",(('t(s)','Vit'),))
+	graph3=crappy.blocks.Grapher("dynamic",(('t(s)','Couple'),))
+	graph4=crappy.blocks.Grapher("dynamic",(('t(s)','signal'),))
 	link1=crappy.links.Link()
 	link2=crappy.links.Link()
 	link3=crappy.links.Link()
@@ -99,17 +98,12 @@ try:
 	compacter.add_output(link3)
 	compacter.add_output(link4)
 	compacter.add_output(link7)
-	#compacter.add_output(link8)
+	compacter.add_output(link8)
 	graph.add_input(link2)
 	graph2.add_input(link3)
 	graph3.add_input(link4)
-	#graph4.add_input(link8)
+	graph4.add_input(link8)
 	saver.add_input(link7)
-
-	
-
-	
-
 
 	
 	for instance in crappy.blocks._meta.MasterBlock.instances:
@@ -122,18 +116,17 @@ try:
 	interface.root.protocol("WM_DELETE_WINDOW", interface.on_closing)
 	interface.add_input(link5)
 	interface.add_output(link6)
-	print 'top1'
+	#print 'top1'
 	interface.mainloop()	
 
 	
 	try:
 		var = interface.getInfo()
 		root.destroy()
-		print var
+		#print var
 	except Exception as e:
 		print "Error: ", e
 		sys.exit(0)
-	#GI_Cegitab(VariateurTribo,comediOut)
 	
 except KeyboardInterrupt:
 	VariateurTribo.actuator.stop_motor()
@@ -149,9 +142,6 @@ except KeyboardInterrupt:
 except Exception as e:
 	print e
 finally:
-	#labjack.set_cmd(0)
-	#labjack.set_cmd_ram(0,46000)
-	#labjack.set_cmd_ram(0,46002)
 	time.sleep(0.1)
 	VariateurTribo.close()
 	print "Hasta la vista Baby"

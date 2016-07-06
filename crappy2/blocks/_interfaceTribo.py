@@ -8,6 +8,28 @@ import tkFileDialog
 from _meta import MasterBlock
 import Tkinter
 import tkMessageBox
+import threading
+import math
+
+
+class ThreadedTask(threading.Thread):
+    def __init__(self,function):
+        threading.Thread.__init__(self)
+        self.function = function
+	self._stopevent = threading.Event( )
+	
+    def join(self,timeout=None):
+	#self.join()
+        #self._Thread__stop()
+        #raise NameError
+        self._stopevent.set( )
+        #threading.Thread.join(self, timeout)
+        #raise NameError
+      
+    def run(self):    
+        self.function()
+
+
 
 
 class InterfaceTribo(Frame, MasterBlock):
@@ -33,18 +55,20 @@ class InterfaceTribo(Frame, MasterBlock):
             # self.comediOut.off()
             # self.comediOut.set_cmd(0)
             self.manualAuto = 'MANUEL'
-
+	    
+	    
+	    
             self.SpeedMin = 0
-            self.SpeedMax = 1000
+            self.SpeedMax = 4000
 
             self.ForceMin = 0
             self.ForceMax = 4000
 
             self.PositionMin = -6000
-            self.PositionMax = 80000
+            self.PositionMax = 15000
 
             #### FRAME DECLARATION ####
-            frameSave = Frame(self.root, width=400, borderwidth=2, relief=GROOVE)
+            #frameSave = Frame(self.root, width=400, borderwidth=2, relief=GROOVE)
             frameManualAuto = Frame(self.root, width=400, borderwidth=2, relief=GROOVE)
             frameTitleMode = Frame(self.root, width=400, borderwidth=2, relief=GROOVE)
 
@@ -67,24 +91,10 @@ class InterfaceTribo(Frame, MasterBlock):
 
             self.TitleModeLabel = Label(frameTitleMode, text="MODE MANUEL", width=15)
 
-            #### DATA RECORD DECLARATION ####
-            # DataRecording
-            self.pathSelectButton = Button(frameSave, text="Browse...", command=self.askdirectory)
-
-            self.StartRecordDataButton = Button(frameSave, text="StartRecordData", command=self.go)
-            self.StopRecordDataButton = Button(frameSave, text="StopRecordData", command=self.stop)
-            self.filepathVar = Tix.StringVar()
-            self.dirEntry = Entry(frameSave, textvariable=self.filepathVar, width=55)
-            self.filepathVar.set(self.filepath)
-
-            # defining options for opening a directory
-            self.dir_opt = options = {}
-            options['mustexist'] = True
-            options['parent'] = self.root
 
             #### CHANGING MANUAL AUTO DECLARATION ####
 
-            self.ChangeModeButton = Button(frameManualAuto, text='AUTO', command=self.changeManualAuto)
+            self.ChangeModeButton = Button(frameManualAuto, text="SIMULATION D'INERTIE", command=self.changeManualAuto)
 
             #### MANUAL MODE DECLARATION ####
 
@@ -193,26 +203,28 @@ class InterfaceTribo(Frame, MasterBlock):
             self.stabilisationTime = Tix.IntVar()
             self.stabilisationTime.set(2)
             self.StabilisationTimeLabel = Label(self.frameProperties, text='Temps de stabilisation de la vitesse (s)')
-            self.StabilisationTimeEntry = Entry(self.frameProperties, textvariable=self.stabilisationTime)
+
+            self.StabilisationTimeEntry = Entry(self.frameProperties, textvariable=self.stabilisationTime)   
+            
+            self.betweenBrakingsTime = Tix.IntVar()
+            self.betweenBrakingsTime.set(1)
+            self.betweenBrakingsTimeLabel = Label(self.frameProperties, text='Temps entre chaque freinage (s)')
+            self.betweenBrakingsTimeEntry = Entry(self.frameProperties, textvariable=self.betweenBrakingsTime) 
+
 
             self.StartExperimentButton = Button(self.frameProperties, text="Démarrer l'essai",
-                                                command=self.startExperiment)
-            self.AbortExperimentButton = Button(self.frameProperties, text="Arrêter l'essai",
+                                                command=self.startExperimentThreaded)
+            self.StopExperimentButton = Button(self.frameProperties, text="Arrêter l'essai",
                                                 command=self.stopExperiment)
 
             self.Informations = Label(self.frameInformations, text='Pret')
-
+	    self.Informations.configure(bg="light grey")
+	    
             #### POSITIONNING
 
             frameTitleMode.grid(row=1, column=1, sticky="w", padx=10, pady=10)
             self.TitleModeLabel.grid(row=1, column=1, sticky="w", padx=10, pady=10)
-            ####
-            frameSave.grid(row=2, column=1, sticky="w", padx=10, pady=10)
-            # Inside FrameSave
-            self.pathSelectButton.grid(row=1, column=0, sticky="w", padx=10, pady=10)
-            self.dirEntry.grid(row=1, column=1, sticky="w", padx=10, pady=10)
-            self.StartRecordDataButton.grid(row=2, column=0, sticky="w", padx=10, pady=10)
-            self.StopRecordDataButton.grid(row=2, column=1, sticky="w", padx=10, pady=10)
+
 
             ####
             self.frameSpeedForcePosition.grid(row=3, column=1, sticky="w", padx=10, pady=10)
@@ -274,11 +286,18 @@ class InterfaceTribo(Frame, MasterBlock):
             self.CycleNumberLabel.grid(row=5, column=0, sticky="w", padx=10, pady=10)
             self.CycleNumberEntry.grid(row=5, column=1, sticky="w", padx=10, pady=10)
 
-            self.StabilisationTimeLabel.grid(row=5, column=0, sticky="w", padx=10, pady=10)
-            self.StabilisationTimeEntry.grid(row=5, column=1, sticky="w", padx=10, pady=10)
 
-            self.StartExperimentButton.grid(row=3, column=2, sticky="w", padx=10, pady=10)
+            self.StabilisationTimeLabel.grid(row=6, column=0, sticky="w", padx=10, pady=10)
+            self.StabilisationTimeEntry.grid(row=6, column=1, sticky="w", padx=10, pady=10)
 
+
+            self.betweenBrakingsTimeLabel.grid(row=7, column=0, sticky="w", padx=10, pady=10)
+            self.betweenBrakingsTimeEntry.grid(row=7, column=1, sticky="w", padx=10, pady=10)
+            
+            self.StartExperimentButton.grid(row=2, column=2, sticky="w", padx=10, pady=10)
+	    self.StopExperimentButton.grid(row=4, column=2, sticky="w", padx=10, pady=10)
+	    
+	    
             self.frameInformations.grid(row=4, column=1, sticky="w", padx=10, pady=10)
             # Inside frameInformations
             self.Informations.grid(row=1, column=0, sticky="w", padx=10, pady=10)
@@ -308,9 +327,11 @@ class InterfaceTribo(Frame, MasterBlock):
             self.frameInformations.grid_remove()
             # Inside frameInformations
             self.Informations.grid_remove()
+	    
+	    self.ModeLabel.grid_remove()
+	    self.ModeButton.grid_remove()
 
-        # self.add_input(link1)
-        # self.add_output(link2)
+
         except Exception as e:
             print e
 
@@ -354,8 +375,8 @@ class InterfaceTribo(Frame, MasterBlock):
             self.ModeLabel.grid_remove()
 
             self.ChangeModeButton.configure(text="MANUEL")
-            self.TitleModeLabel.configure(text="MODE AUTO")
-            self.manualAuto = "AUTO"
+            self.TitleModeLabel.configure(text="MODE SIMULATION D'INERTIE")
+            self.manualAuto = "SIMULATION D'INERTIE"
 
             self.frameProperties.grid()
             self.MaxSpeedPropertyLabel.grid()
@@ -377,14 +398,17 @@ class InterfaceTribo(Frame, MasterBlock):
             self.StabilisationTimeEntry.grid()
 
             self.StartExperimentButton.grid()
-
+	    self.StopExperimentButton.grid()
+	    
             self.frameInformations.grid()
             self.Informations.grid()
+            
+            self.StopExperimentButton['state'] = 'disabled'
 
 
 
 
-        elif self.manualAuto == "AUTO" and self.EnESSAI is False:  # passage au mode MANUEL
+        elif self.manualAuto == "SIMULATION D'INERTIE" and self.EnESSAI is False:  # passage au mode MANUEL
 
             self.frameProperties.grid_remove()
             # Inside frameProperties
@@ -407,12 +431,13 @@ class InterfaceTribo(Frame, MasterBlock):
             self.StabilisationTimeEntry.grid_remove()
 
             self.StartExperimentButton.grid_remove()
-
+	    self.StopExperimentButton.grid_remove()
+	    
             self.frameInformations.grid_remove()
             # Inside frameInformations
             self.Informations.grid_remove()
 
-            self.ChangeModeButton.configure(text="AUTO")
+            self.ChangeModeButton.configure(text="SIMULATION D'INERTIE")
             self.TitleModeLabel.configure(text="MODE MANUEL")
             self.manualAuto = "MANUEL"
 
@@ -449,54 +474,71 @@ class InterfaceTribo(Frame, MasterBlock):
         else:
             print "Initialisez d'abord"
 
-    def startExperiment(self):
+            self.InitStatus.configure(text="Initialisez d'abord")
+            self.InitStatus.configure(bg="red")
+            
+	    
+    def startExperimentThreaded(self):
+	
+	
+	self.experiment = ThreadedTask(self.startExperiment)
+	self.experiment.start()
+	self.StartExperimentButton['state'] = 'disabled'
+	self.StopExperimentButton['state'] = 'normal'
+	self.ChangeModeButton['state'] = 'disabled'
+    
+    def startExperiment(self):  
+
         try:
             cycle = self.cycleNumber.get()
             while cycle > 0:
                 self.outputs[0].send(1)
                 tStart = time.time()
                 tAfter = time.time()
-                # print tAfter - tStart
-                while tAfter - tStart < 0.5:
-                    # print 'top2bis'
+
+
+                while tAfter - tStart < 0.5 and not self.experiment._stopevent.isSet():
+
                     value = self.inputs[0].recv()
-                    # print 'top2ter'
+
                     tAfter = time.time()
 
-                # print value['Vit']
-                while float(value['Vit']) <= self.MaxSpeedVar.get() * 95. / 100.:
+		self.Informations.configure(text = "Acceleration")
+		self.Informations.configure(bg="light green")
+                while float(value['Vit']) <= self.MaxSpeedVar.get() * 95. / 100. and not self.experiment._stopevent.isSet():
+
                     self.labjack.set_cmd(self.MaxSpeedVar.get())
                     value = self.inputs[0].recv()
 
                 tStart = time.time()
                 tAfter = time.time()
-
-                while tAfter - tStart < 2 + self.stabilisationTime.get():
+		
+		self.Informations.configure(text = "Stabilisation")
+                while tAfter - tStart < 2 + self.stabilisationTime.get() and not self.experiment._stopevent.isSet():
                     value = self.inputs[0].recv()
                     tAfter = time.time()
 
                 tStart = time.time()
                 tAfter = time.time()
-                # print 'top3'
+
+
                 C0 = float(value['Couple'])
                 V0 = float(value['Vit'])
                 V1 = V0
-                # print 'top4'
-                self.labjack.set_cmd_ram(1, 46002)
-                # self.comediOut.on()
+
+                self.labjack.set_cmd_ram(1,46002)
+
                 self.VariateurTribo.actuator.set_mode_analog()
-                # print 'force demandée=', int(self.ForceVar.get())
-                self.labjack.set_cmd_ram(int(self.ForceVar.get()) - 41, 46000)
-                # self.VariateurTribo.actuator.go_effort(int(self.ForceVar.get()) * 10)
-                ## self.VariateurTribo.actuator.set_mode_position()
-                ## self.VariateurTribo.actuator.go_position(-18000)
-
-
-                while V1 > self.MinSpeedVar.get():  # Freinage
+                self.labjack.set_cmd_ram(int(self.ForceVar.get())-41,46000)
+		
+		self.Informations.configure(text = "Freinage")
+		self.Informations.configure(bg="red")
+                while V1 > self.MinSpeedVar.get() and not self.experiment._stopevent.isSet():  # Freinage
                     tStart = tAfter
                     tAfter = time.time()
-                    deltaVit = (tAfter - tStart) * (float(value['Couple']) - C0) / float(self.SimulatedInertia.get())
-                    # print 'delta', deltaVit
+                    deltaVit = (tAfter - tStart)*60 * (float(value['Couple']) - C0) /(2*math.pi *float(self.SimulatedInertia.get()))
+                    #print 'delta', deltaVit
+
                     V1 = V1 - deltaVit
                     self.labjack.set_cmd(V1)
                     # self.comediOut.set_cmd(V1)
@@ -510,30 +552,44 @@ class InterfaceTribo(Frame, MasterBlock):
                 self.outputs[0].send(0)
 
                 cycle -= 1
+                if cycle>0:
+		  tStart = time.time()
+		  tAfter = time.time()
 
+		  while tAfter - tStart < self.betweenBrakingsTime.get() and not self.experiment._stopevent.isSet():
+		      tAfter = time.time()
+		      
+	    self.labjack.set_cmd(0)
+	    self.StartExperimentButton['state'] = 'normal'
+	    self.StopExperimentButton['state'] = 'disabled'
+	    self.ChangeModeButton['state'] = 'normal'
+	    self.Informations.configure(text = "Pret")
+	    self.Informations.configure(bg="light grey")
+	    
         except NameError:
-            # self.comediOut.set_cmd(0)
-            self.labjack.set_cmd_ram(-41, 46000)
-            self.labjack.set_cmd_ram(0, 46002)
-            # pass
-            # if self.EnESSAI is False:
-            # self.EnESSAI=True
-            # try:
-            # while int(self.inputs.recv()['Vit'])<= int(self.MaxSpeedVar.get()):
-            # self.comediOut.set_cmd(float(self.MaxSpeedVar))
-            # pass
-            # time.sleep(1)
-            # self.comediOut.set_cmd(0)
 
-            # except:
-            # pass
+	    print "the end"
+	    self.labjack.set_cmd(0)
+	    self.labjack.set_cmd_ram(0,46002)
+            self.labjack.set_cmd_ram(-41,46000)
+            self.VariateurTribo.actuator.set_mode_position()
+            self.VariateurTribo.actuator.go_position(0)
+	    self.StartExperimentButton['state'] = 'normal'
+	    
 
-            # self.EnESSAI=False
-            # else:
-            # pass
+
 
     def stopExperiment(self):
-        raise NameError
+        #raise NameError
+        self.experiment.join()
+        print "the end"
+        self.labjack.set_cmd(0)
+	self.labjack.set_cmd_ram(0,46002)
+        self.labjack.set_cmd_ram(-41,46000)
+        self.VariateurTribo.actuator.set_mode_position()
+        self.VariateurTribo.actuator.go_position(0)
+        self.outputs[0].send(0)
+	self.StartExperimentButton['state'] = 'normal'
 
     # pass
     # raise une exception pour le startexperiment et arrete la broche et fait un homing
@@ -562,7 +618,7 @@ class InterfaceTribo(Frame, MasterBlock):
             self.root.after(20, self.ActuatorPosUpdate)
         except:
             self.ActuatorPosUpdate()
-            print'error reading position'
+            #print'error reading position'
 
     def StartRecordData(self):
         self.t = str(time.time() - self.t0)
@@ -619,6 +675,8 @@ class InterfaceTribo(Frame, MasterBlock):
     def initialisation(self):
         self.outputs[0].send(0)
         self.init = True
+        self.ModeLabel.grid()
+        self.ModeButton.grid()
         if self.mode == 'Mode Position':
             self.ActuatorPosition.grid()
             self.ActuatorPositionSpinbox.grid()
@@ -632,6 +690,9 @@ class InterfaceTribo(Frame, MasterBlock):
         self.VariateurTribo.clear_errors()
         time.sleep(1)
         self.InitStatus.configure(text='Initialisé')
+
+	self.InitStatus.configure(bg="light grey")
+	
 
     def on_closing(self):
         if tkMessageBox.askokcancel("Quit", "Do you want to quit?"):
