@@ -6,6 +6,8 @@ from time import sleep,time
 class CameraDisplayer(MasterBlock):
     """
     Simple images displayer. Can be paired with StreamerCamera
+    Use cv=False to use the old, inefficient and deprecated version
+    NOTE: You need to use one displayer block per window (in other words, you can only attach one input to the diplayer)
     """
 
     def __init__(self,framerate=5,cv=True,title='Displayer'):
@@ -35,16 +37,16 @@ class CameraDisplayer(MasterBlock):
             else:
                 import cv2
                 data = 0
-                cv2.namedWindow(self.title,cv2.WINDOW_NORMAL)
+                cv2.namedWindow(self.title,cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
                 while True:
                     t1 = time()
                     while data is not None: # To flush the pipe...
-                        last = data
-                        data = self.inputs[0].recv(False)
-                    if last is not 0:
+                        last = data # Save the latest non-None value
+                        data = self.inputs[0].recv(False) # ... use non-blocking recv until pipe is empty
+                    if last is not 0: # If we received something (ie the last non-None value is not 0)
                         cv2.imshow('Displayer',last)
                         cv2.waitKey(1)
-                    data = 0
+                    data = 0 # A default value to check if we received something
                     while time()-t1 < self.delay:
                         data = self.inputs[0].recv()
 
