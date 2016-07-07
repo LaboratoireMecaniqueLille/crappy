@@ -32,10 +32,11 @@ class MasterBlock(object):
         Stops the process.
     """
     instances = []
-
+    first_call = True
+    
     def __init__(self):
         self.inputs = []
-        self.proc = Process(target=main_wrapper, args=(self.main,))
+        self.proc = Process(target=main_wrapper, args=(self.loop,))
         self.outputs = []
         self._t0 = time.time()
 
@@ -43,7 +44,22 @@ class MasterBlock(object):
         instance = super(MasterBlock, cls).__new__(cls, *args, **kwargs)
         instance.instances.append(instance)
         return instance
-
+      
+    def close_all_instances(self):
+	if MasterBlock.first_call:
+	  MasterBlock.first_call = False
+	  for instance in MasterBlock.instances:
+	    try:
+	      instance.stop()
+	    except Exception:
+	      pass
+	  for instance in MasterBlock.instances:
+	    for input_ in instance.inputs:
+	      input_.close()
+	    for output_ in instance.outputs:
+	      output_.close()
+	    MasterBlock.instances.remove(instance)
+	  
     def add_output(self, link):
         # try:  # test if the outputs list exist
         #     a_ = self.outputs[0]
@@ -60,13 +76,20 @@ class MasterBlock(object):
 
     def main(self):
         raise NotImplementedError("Must override method main")
-
+  
+    def loop(self):
+      try:
+	self.main()
+      except KeyboardInterrupt:
+	self.close_all_instances()
+      except Exception as e:
+	print e
+	self.close_all_instances()
     def start(self):
         try:
             self.proc.start()
 
         except KeyboardInterrupt:
-            print 'KeyboardInterrupt'
             self.proc.terminate()
             self.proc.join()
 
@@ -78,9 +101,9 @@ class MasterBlock(object):
             raise  # raise the error to the next level for global shutdown
             # def join(self):
             # self.proc.join()
-
     def stop(self):
-        self.proc.terminate()
+      self.proc.terminate()
+      #self.proc.join()
 
     @property
     def t0(self):

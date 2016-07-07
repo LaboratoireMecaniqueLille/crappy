@@ -52,5 +52,7 @@ except Exception as e:
     import_error(e.message)
 
 from ._meta import MasterBlock
-
+from ._commandCegitab import SerialPortActuator, SerialPortCaptor, PipeCegitab
+from ._savergui import SaverGUI
+from ._gui import InterfaceTomo4D
 del e, platform, import_error

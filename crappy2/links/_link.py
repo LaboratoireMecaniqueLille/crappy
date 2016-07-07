@@ -116,7 +116,11 @@ class Link(object):
                 cond.external_trigger = link_instance
         except TypeError:  # if only one condition
             self.condition.external_trigger = link_instance
-
+            
+    def close(self):
+      self.in_.close()
+      self.out_.close()
+      
     def send(self, value):
         """
         Send the value, or a modified value if you pass it through a
@@ -142,7 +146,7 @@ class Link(object):
                 self.out_.close()
             raise KeyboardInterrupt
         except Exception as e:
-            print "Exception in link send %s : %s " % self.name, e.message
+            print "Exception in link send %s : %s " % (self.name, e.message)
 
     @win_timeout(1)
     def send_timeout(self, value):
