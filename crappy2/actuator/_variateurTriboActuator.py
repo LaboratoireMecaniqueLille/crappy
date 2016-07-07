@@ -13,8 +13,8 @@
 # @version 0.1
 # @date 04/07/2016
 
-import serial
 import time
+
 from ._meta import motion
 from .._warnings import deprecated as deprecated
 

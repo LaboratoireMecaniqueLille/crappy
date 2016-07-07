@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup CameraDisplayer CameraDisplayer
+# @{
+
+## @file _autoDrive.py
+# @brief Recieve position information and send motor commands calculated by the PID, via actuator CMdrive.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 05/07/2016
+
 from _meta import MasterBlock
 from time import sleep,time
 
