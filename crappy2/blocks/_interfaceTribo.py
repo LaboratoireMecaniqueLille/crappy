@@ -95,10 +95,16 @@ class InterfaceTribo(Frame, MasterBlock):
 	    #DataRecording
 	    self.pathSelectButton = Button(frameSave, text="Browse...", command=self.askdirectory)
 	    
+	    def filePathUpdate(var):
+		self.outputs[1].send(var)
+		self.outputs[1].send(var) 
+		
+	    
 	    self.StartRecordDataButton = Button(frameSave, text="StartRecordData", command=self.recordData)
 	    self.StopRecordDataButton = Button(frameSave, text="StopRecordData", command=self.stopRecord) 
 	    self.filepathVar = Tix.StringVar()
 	    self.dirEntry = Entry(frameSave, textvariable=self.filepathVar,width=55)
+	    self.dirEntry.bind('<Return>',lambda event: filePathUpdate(self.filepathVar.get()))
 	    self.filepathVar.set(self.filepath)
 		    # defining options for opening a directory
 	    self.dir_opt = options = {}
@@ -161,6 +167,8 @@ class InterfaceTribo(Frame, MasterBlock):
                     # self.VariateurTribo.actuator.go_effort(int(var) * 7.94) #TODO
                     self.labjack.set_cmd_ram(int(var) - 41, 46000)
                     print 'Force demandée = ' + str(var)
+            
+            
 
             # CONTROLS OF SETPOINT WITH SPINBOX
             self.ActuatorSpeedVar = Tix.IntVar()
@@ -508,6 +516,8 @@ class InterfaceTribo(Frame, MasterBlock):
 	self.StartExperimentButton['state'] = 'disabled'
 	self.StopExperimentButton['state'] = 'normal'
 	self.ChangeModeButton['state'] = 'disabled'
+	self.StartRecordDataButton['state'] = 'disabled'
+	self.StopRecordDataButton['state'] = 'disabled'
     
     def startExperiment(self):  
 	self.outputs[2].send(1)
@@ -580,13 +590,18 @@ class InterfaceTribo(Frame, MasterBlock):
 
 		  while tAfter - tStart < self.betweenBrakingsTime.get() and not self.experiment._stopevent.isSet():
 		      tAfter = time.time()
-		      
+	    while tAfter - tStart < 1.0 and not self.experiment._stopevent.isSet():
+                value = self.inputs[0].recv()
+                tAfter = time.time()
+            
 	    self.labjack.set_cmd(0)
 	    self.StartExperimentButton['state'] = 'normal'
 	    self.StopExperimentButton['state'] = 'disabled'
 	    self.ChangeModeButton['state'] = 'normal'
 	    self.Informations.configure(text = "Pret")
 	    self.Informations.configure(bg="light grey")
+	    self.StartRecordDataButton['state'] = 'disabled'
+	    self.StopRecordDataButton['state'] = 'disabled'
 	    self.outputs[2].send(0)
 	    
         except NameError:
@@ -614,19 +629,7 @@ class InterfaceTribo(Frame, MasterBlock):
         self.outputs[0].send(0)
 	self.StartExperimentButton['state'] = 'normal'
 
-    # pass
-    # raise une exception pour le startexperiment et arrete la broche et fait un homing
 
-    def pathSelect(self):
-        d = Tix.DirSelectBox(master=self.root, command=self.print_selected)
-        d.popup()
-
-    def askdirectory(self):
-        """
-        Returns a selected directoryname.
-        """
-        self.filepath = tkFileDialog.asksaveasfilename()
-        self.filepathVar.set(self.filepath)
 
     def __str__(self):
         return "RecordDataFile: {0}\n".format(self.filepath)
@@ -645,7 +648,7 @@ class InterfaceTribo(Frame, MasterBlock):
 
 
     def recordData(self):
-
+	self.StartRecordDataButton.configure(bg = "light green")
         self.t0 = time.time()  # Initialisation du temps
         print "RecordDataStart"
         self.outputs[2].send(1)
@@ -654,6 +657,7 @@ class InterfaceTribo(Frame, MasterBlock):
         self.flag = 0
         print "RecordDataStop"  #TODO
         self.outputs[2].send(0)
+        self.StartRecordDataButton.configure(bg = "light grey")
         
     def askdirectory(self):
 	"""
@@ -664,7 +668,8 @@ class InterfaceTribo(Frame, MasterBlock):
 	self.outputs[1].send(self.filepath)
 	self.outputs[1].send(self.filepath)    
         
-        
+
+    
     def pathSelect(self):
 	d = Tix.DirSelectBox(master=self.root, command=self.print_selected)
 	d.popup()

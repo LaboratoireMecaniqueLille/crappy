@@ -76,10 +76,10 @@ try:
 
 	compacter=crappy.blocks.Compacter(100)
 
-	graph=crappy.blocks.Grapher("dynamic",(('t(s)','F(N)'),),len_graph = 50)
-	graph2=crappy.blocks.Grapher("dynamic",(('t(s)','Vit'),),len_graph = 50)
-	graph3=crappy.blocks.Grapher("dynamic",(('t(s)','Couple'),),len_graph = 50)
-	#graph4=crappy.blocks.Grapher("dynamic",(('t(s)','signal'),))
+	graph=crappy.blocks.Grapher(('t(s)','F(N)'),length = 50)
+	graph2=crappy.blocks.Grapher(('t(s)','Vit'),length = 50)
+	graph3=crappy.blocks.Grapher(('t(s)','Couple'),length = 50)
+
 	link1=crappy.links.Link()
 	link2=crappy.links.Link()
 	link3=crappy.links.Link()
