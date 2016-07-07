@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
         compacter_extenso = crappy2.blocks.Compacter(100)
         save_extenso = crappy2.blocks.Saver("/home/erwan/Bureau/essai_relax.txt")
-        graph_extenso = crappy2.blocks.Grapher("dynamic", ('t(s)', 'Eyy(%)', 'Px', 'Py'))
+        graph_extenso = crappy2.blocks.Grapher(('t(s)', 'Eyy(%)', 'Px', 'Py'))
 
         # effort=crappy2.blocks.MeasureComediByStep(instronSensor,labels=['t(s)','F2(N)','F4(N)'],freq=200)
 

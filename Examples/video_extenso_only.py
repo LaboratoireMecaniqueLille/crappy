@@ -10,7 +10,7 @@ if __name__ == '__main__':
         # Creating blocks
         compacter_extenso = crappy2.blocks.Compacter(100)
         save_extenso = crappy2.blocks.Saver("/home/corentin/Bureau/delete2.txt")
-        graph_extenso = crappy2.blocks.Grapher("dynamic", ('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
+        graph_extenso = crappy2.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
 
         extenso = crappy2.blocks.VideoExtenso(camera="ximea", numdevice=0, xoffset=0, yoffset=0, width=2048, height=2048,
                                               white_spot=False, display=True)

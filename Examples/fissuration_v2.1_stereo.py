@@ -188,14 +188,14 @@ try:
                                             save_directory="/home/essais-2015-3/Bureau/Jerome/stereo/images_fissuration_13-05-16/cam2/")
     # print "1"
     compacter_tension = crappy2.blocks.Compacter(5)
-    graph_tension = crappy2.blocks.Grapher("dynamic", ('t_agilent(s)', 'tension(V)'))  # ,('t(s)','tension(V)')
+    graph_tension = crappy2.blocks.Grapher(('t_agilent(s)', 'tension(V)'))  # ,('t(s)','tension(V)')
     save_tension = crappy2.blocks.Saver("/home/essais-2015-3/Bureau/Jerome/stereo/tension_coeff.txt")
     pi = crappy2.blocks.CommandPI(pi_actuator, signal_label='disp')
 
     # print "2"
     effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'dep(mm)', 'F(N)'], freq=200)
     compacter_effort = crappy2.blocks.Compacter(100)
-    graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
+    graph_effort = crappy2.blocks.Grapher(('t(s)', 'F(N)'))
     save_effort = crappy2.blocks.Saver("/home/essais-2015-3/Bureau/Jerome/stereo/t_dep_F.txt")
     # print "3"
     # compacter_signal=crappy2.blocks.Compacter(500)

@@ -118,8 +118,8 @@ if __name__ == '__main__':
 
         compacter_data = crappy2.blocks.Compacter(100)
         save = crappy2.blocks.Saver("/home/corentin/Bureau/data_labjack_contrainte_instron1000_cycles.txt")
-        graph_traction = crappy2.blocks.Grapher("dynamic", ('sigma(Pa)', 'tau(Pa)'))  # ('sigma(Pa)','tau(Pa)')
-        graph_torsion = crappy2.blocks.Grapher("dynamic", ('def(%)', 'dist(deg)'))  # ('def(%)','dist(deg)')
+        graph_traction = crappy2.blocks.Grapher(('sigma(Pa)', 'tau(Pa)'))  # ('sigma(Pa)','tau(Pa)')
+        graph_torsion = crappy2.blocks.Grapher(('def(%)', 'dist(deg)'))  # ('def(%)','dist(deg)')
         # graph_torsion=crappy2.blocks.Grapher("static",('t(s)','def(%)'))
 
         # compacter_path=crappy2.blocks.Compacter(200)

@@ -44,12 +44,8 @@ try:
     # save=crappy2.blocks.Saver("/home/ilyesse/Bureau/delete_me3.txt")
 
 
-    graph = crappy2.blocks.Grapher("dynamic", (('t(s)', 'AIN0'),))
+    graph = crappy2.blocks.Grapher(('t(s)', 'AIN0'))
 
-
-    # graph_stat=crappy2.blocks.Grapher("dynamic",(0,2))
-    # graph2=crappy2.blocks.Grapher("dynamic",('t(s)','ang(deg)'),('t(s)','dep(mm)'))
-    # graph3=crappy2.blocks.Grapher("dynamic",(0,4))
 
     # Creating links
     # crappy2.links.Filter(labels=['dist(deg)'],mode="median",size=50)

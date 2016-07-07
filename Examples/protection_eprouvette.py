@@ -25,7 +25,7 @@ if __name__ == '__main__':
         compacter_effort = crappy2.blocks.Compacter(100)
         # save_effort=crappy2.blocks.Saver("/home/biaxe/Bureau/Annie/effort.txt")
         # Init : Declaration of The graph
-        graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'))
+        graph_effort = crappy2.blocks.Grapher(('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'))
 
         # compacter_extenso=crappy2.blocks.Compacter(150)
         # save_extenso=crappy2.blocks.Saver("/home/biaxe/Bureau/Annie/extenso.txt")

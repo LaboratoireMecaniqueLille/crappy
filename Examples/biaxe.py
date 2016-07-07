@@ -25,11 +25,11 @@ if __name__ == '__main__':
 
         compacter_effort = crappy2.blocks.Compacter(200)
         save_effort = crappy2.blocks.Saver("/home/biaxe/Bureau/Annie/effort.txt")
-        graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'))
+        graph_effort = crappy2.blocks.Grapher(('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'))
 
         compacter_extenso = crappy2.blocks.Compacter(90)
         save_extenso = crappy2.blocks.Saver("/home/biaxe/Bureau/Annie/extenso.txt")
-        graph_extenso = crappy2.blocks.Grapher("dynamic", ('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
+        graph_extenso = crappy2.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
 
         effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F2(N)', 'F4(N)'], freq=200)
         extenso = crappy2.blocks.VideoExtenso(camera="Ximea", xoffset=0, yoffset=0, width=2048, height=2048,
