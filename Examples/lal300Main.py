@@ -106,11 +106,11 @@ try:
 
     # Creation des graphes
 
-    graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
-    graph_disp = crappy2.blocks.Grapher("dynamic", ('t(s)', 'dep(mm)'))
-    graph_pos = crappy2.blocks.Grapher("dynamic", ('t(s)', 'position'))
-    graph_resistance = crappy2.blocks.Grapher("dynamic", ('t_agilent(s)', 'resistance(ohm)'))
-    graph_effort_deplacement = crappy2.blocks.Grapher("dynamic", ('dep(mm)', 'F(N)'))
+    graph_effort = crappy2.blocks.Grapher(('t(s)', 'F(N)'))
+    graph_disp = crappy2.blocks.Grapher(('t(s)', 'dep(mm)'))
+    graph_pos = crappy2.blocks.Grapher(('t(s)', 'position'))
+    graph_resistance = crappy2.blocks.Grapher(('t_agilent(s)', 'resistance(ohm)'))
+    graph_effort_deplacement = crappy2.blocks.Grapher(('dep(mm)', 'F(N)'))
 
     # Links
 

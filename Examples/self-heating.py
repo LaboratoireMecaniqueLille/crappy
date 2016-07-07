@@ -133,10 +133,10 @@ try:
     compacter = crappy2.blocks.Compacter(2)
     compacter_effort = crappy2.blocks.Compacter(2000)
     save = crappy2.blocks.Saver("/home/corentin/Bureau/torsion_2.txt")
-    graph = crappy2.blocks.Grapher("dynamic", ('t(s)', 'T_cal'), ('t(s)', 'T2_cal'), ('t(s)', 'T3_cal'),
+    graph = crappy2.blocks.Grapher(('t(s)', 'T_cal'), ('t(s)', 'T2_cal'), ('t(s)', 'T3_cal'),
                                    ('t(s)', 'T_mean'))  # ,('t(s)','T_mean')
-    graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'C(Nm)'))
-    graph_effort2 = crappy2.blocks.Grapher("dynamic", ('t(s)', 'tau(Pa)'))
+    graph_effort = crappy2.blocks.Grapher(('t(s)', 'C(Nm)'))
+    graph_effort2 = crappy2.blocks.Grapher(('t(s)', 'tau(Pa)'))
     save_effort = crappy2.blocks.Saver("/home/corentin/Bureau/torsion_2_effort.txt")
     # graph2=crappy2.blocks.Grapher("dynamic",('t(s)','ang(deg)'),('t(s)','dep(mm)'))
     # graph3=crappy2.blocks.Grapher("dynamic",(0,4))

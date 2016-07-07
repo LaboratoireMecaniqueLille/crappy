@@ -2,7 +2,7 @@
 from _meta import MasterBlock, delay
 import numpy as np
 import time
-import pandas as pd
+#import pandas as pd
 import os
 import sys
 from collections import OrderedDict

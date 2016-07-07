@@ -166,12 +166,12 @@ try:
                                            save_directory="/home/essais-2015-3/Bureau/images_fissuration_21-12-15/")
 
     compacter_tension = crappy2.blocks.Compacter(5)
-    graph_tension = crappy2.blocks.Grapher("dynamic", ('t_agilent(s)', 'tension(V)'))  # ,('t(s)','tension(V)')
+    graph_tension = crappy2.blocks.Grapher(('t_agilent(s)', 'tension(V)'))  # ,('t(s)','tension(V)')
     save_tension = crappy2.blocks.Saver("/home/essais-2015-3/Bureau/tension_coeff.txt")
 
     effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'dep(mm)', 'F(N)'], freq=500)
     compacter_effort = crappy2.blocks.Compacter(500)
-    graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
+    graph_effort = crappy2.blocks.Grapher(('t(s)', 'F(N)'))
     save_effort = crappy2.blocks.Saver("/home/essais-2015-3/Bureau/t_dep_F.txt")
 
     ##compacter_signal=crappy2.blocks.Compacter(500)

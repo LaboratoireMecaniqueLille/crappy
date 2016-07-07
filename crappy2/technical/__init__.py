@@ -38,5 +38,5 @@ try:
     from ._correl import TechCorrel
 except Exception as e:
     import_error(e.message)
-
+from ._datapicker import DataPicker
 del e, import_error

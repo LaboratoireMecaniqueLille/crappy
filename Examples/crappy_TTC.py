@@ -107,14 +107,14 @@ if __name__ == '__main__':
 
         compacter_data = crappy2.blocks.Compacter(200)
         save = crappy2.blocks.Saver("/home/corentin/Bureau/data_labjack_200_cycles.txt")
-        graph_traction = crappy2.blocks.Grapher("static", ('sigma(Pa)', 'tau(Pa)'))
-        graph_torsion = crappy2.blocks.Grapher("static", ('def(%)', 'dist(deg)'))
+        graph_traction = crappy2.blocks.Grapher(('sigma(Pa)', 'tau(Pa)'),length=0)
+        graph_torsion = crappy2.blocks.Grapher(('def(%)', 'dist(deg)'),length=0)
         # graph_torsion=crappy2.blocks.Grapher("static",('t(s)','def(%)'))
 
         compacter_path = crappy2.blocks.Compacter(200)
         save_path = crappy2.blocks.Saver("/home/corentin/Bureau/data_out_labjack_200_cycles.txt")
-        graph_path = crappy2.blocks.Grapher("dynamic", ('t(s)', 'def(%)'))
-        graph_path2 = crappy2.blocks.Grapher("dynamic", ('t(s)', 'dist(deg)'))
+        graph_path = crappy2.blocks.Grapher(('t(s)', 'def(%)'))
+        graph_path2 = crappy2.blocks.Grapher(('t(s)', 'dist(deg)'))
         # graph_torsion=crappy2.blocks.Grapher("dynamic",('t(s)','C(Nm)'))
         # graph_stat=crappy2.blocks.Grapher("dynamic",(0,2))
         # graph2=crappy2.blocks.Grapher("dynamic",(0,3))

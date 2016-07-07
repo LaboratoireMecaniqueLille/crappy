@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
         compacter_effort = crappy2.blocks.Compacter(100)
 
-        graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'), ('t(s)', 'F3(N)'),
+        graph_effort = crappy2.blocks.Grapher(('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'), ('t(s)', 'F3(N)'),
                                               ('t(s)', 'F1(N)'))
 
         effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F1(N)', 'F2(N)', 'F3(N)', 'F4(N)'],

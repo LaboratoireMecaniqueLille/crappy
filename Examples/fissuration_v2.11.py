@@ -195,7 +195,7 @@ try:
 
     # print "1"
     compacter_tension = crappy2.blocks.Compacter(5)
-    graph_tension = crappy2.blocks.Grapher("dynamic", ('t_agilent(s)', 'tension(V)'))  # ,('t(s)','tension(V)')
+    graph_tension = crappy2.blocks.Grapher(('t_agilent(s)', 'tension(V)'))  # ,('t(s)','tension(V)')
     save_tension = crappy2.blocks.Saver(
         "/home/essais-2015-3/Bureau/EssaiGS_26_05_16/images_fissuration_26_05_16/tension_coeff.txt")
     # pi=crappy2.blocks.CommandPI(pi_actuator, signal_label='disp', initial_command=position_initiale)
@@ -203,7 +203,7 @@ try:
     # print "2"
     effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'dep(mm)', 'F(N)'], freq=200)
     compacter_effort = crappy2.blocks.Compacter(100)
-    graph_effort = crappy2.blocks.Grapher("dynamic", ('t(s)', 'F(N)'))
+    graph_effort = crappy2.blocks.Grapher(('t(s)', 'F(N)'))
     save_effort = crappy2.blocks.Saver(
         "/home/essais-2015-3/Bureau/EssaiGS_26_05_16/images_fissuration_26_05_16/t_dep_F.txt")
     # print "3"
