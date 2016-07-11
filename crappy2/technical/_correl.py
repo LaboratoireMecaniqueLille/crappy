@@ -663,6 +663,7 @@ If it is not desired, consider lowering the verbosity: \
     ### Computing dimensions of the different levels ###
     self.h,self.w = [],[]
     for i in range(self.levels):
+##### WTF! TODO: Check h,w inversion !!
       self.h.append(int(round(w/(self.resamplingFactor**i))))
       self.w.append(int(round(h/(self.resamplingFactor**i))))
 
@@ -762,8 +763,8 @@ Add Nfields=x or directly set fields with fields=array")
 
   def setOrig(self,img):
     """
-    To set the original image 
-    
+    To set the original image
+   
     (This is the reference with which the deformed image will be compared)
     """
     self.debug(2,"updating original image")
@@ -788,15 +789,15 @@ to allow GPU computing (got {}). Converting to float32."\
     # Choosing the right function to copy
     if isinstance(fields[0], str) or isinstance(fields[0][0], np.ndarray):
       toArray = cuda.matrix_to_array
-    elif isinstance(fields[0][0], gpuarray.GPUArray): 
+    elif isinstance(fields[0][0], gpuarray.GPUArray):
       toArray = cuda.gpuarray_to_array
     else:
       print("[Correl] Error: Incorrect fields argument. \
 See docstring of Correl")
       raise ValueError
-    # These list store the arrays for the fields texture 
+    # These list store the arrays for the fields texture
     #(to be interpolated quickly for each stage)
-    self.fieldsXArray = [] 
+    self.fieldsXArray = []
     self.fieldsYArray = []
     for i in range(self.Nfields):
       if isinstance(fields[i],str):
@@ -848,7 +849,7 @@ np.concatenate(((np.arange(-1,1,2./self.h[0],dtype=np.float32)**2)
 [:,np.newaxis],)*self.w[0],axis=1),
 np.zeros((self.h[0],self.w[0]),dtype=np.float32))
         elif c == 'uxy': # U(x,y) = xy, V = 0
-          fields[i] = (np.array([[k*j for j in np.arange(-1,1,2./self.w[0])] 
+          fields[i] = (np.array([[k*j for j in np.arange(-1,1,2./self.w[0])]
 for k in np.arange(-1,1,2./self.h[0])],dtype=np.float32),
 np.zeros((self.h[0],self.w[0]),np.float32))
         elif c == 'vxx': # U = 0, V(x,y) = x²
@@ -861,7 +862,7 @@ np.concatenate(((np.arange(-1,1,2./self.h[0],dtype=np.float32)**2)
 [:,np.newaxis],)*self.w[0],axis=1))
         elif c == 'vxy': # U = 0, V(x,y) = xy
           fields[i] = (np.zeros((self.h[0],self.w[0]),np.float32),
-np.array([[k*j for j in np.arange(-1,1,2./self.w[0])] 
+np.array([[k*j for j in np.arange(-1,1,2./self.w[0])]
 for k in np.arange(-1,1,2./self.h[0])],dtype=np.float32))
         ###
 
@@ -907,7 +908,7 @@ to allow GPU computing (got {}). Converting to float32."\
     """
     To get the displacement
 
-    This will perform the correlation routine on each stage, initializing with 
+    This will perform the correlation routine on each stage, initializing with
     the previous values every time it will return the computed parameters
     as a list
     """
@@ -924,7 +925,7 @@ to allow GPU computing (got {}). Converting to float32."\
       disp = self.correl[i].getDisp()
       self.last = disp
     # Every 10 images, print the values (if debug >=2)
-    if self.loop % 10 == 0: 
+    if self.loop % 10 == 0:
       self.debug(2,"Loop",self.loop,", values:",self.correl[0].devX.get(),
                    ", res:",self.correl[0].res/1e6)
     return disp
@@ -933,21 +934,21 @@ to allow GPU computing (got {}). Converting to float32."\
     """
     Returns the last residual of the sepcified level (0 by default)
 
-    Usually, the correlation is correct when res < ~1e9-10 but it really 
-    depends on the images: you need to find the value that suit your own 
-    images, depending on the resolution, contrast, correlation method etc... 
-    You can use writeDiffFile to visualize the difference between the 
+    Usually, the correlation is correct when res < ~1e9-10 but it really
+    depends on the images: you need to find the value that suit your own
+    images, depending on the resolution, contrast, correlation method etc...
+    You can use writeDiffFile to visualize the difference between the
     two images after correlation.
     """
     return self.correl[lvl].res
 
   def writeDiffFile(self,level=0):
     """
-    To see the difference between the two images with the computed parameters. 
-    
-    It writes a single channel picture named "diff.png" where 128 gray is 
-    exact equality, lighter pixels show positive difference and darker pixels 
-    a negative difference. Useful to see if correlation succeded and to 
+    To see the difference between the two images with the computed parameters.
+   
+    It writes a single channel picture named "diff.png" where 128 gray is
+    exact equality, lighter pixels show positive difference and darker pixels
+    a negative difference. Useful to see if correlation succeded and to
     identify the origin of non convergence
     """
     self.correl[level].writeDiffFile()
