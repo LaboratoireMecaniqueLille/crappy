@@ -655,7 +655,7 @@ If it is not desired, consider lowering the verbosity: \
     self.levels = kwargs.get("levels",5)
     self.loop = 0
     self.resamplingFactor = kwargs.get("resampling_factor",2)
-    w,h = img_size
+    h,w = img_size
     self.nbIter = kwargs.get("iterations",4)
     self.debug(1,"Initializing... Master resolution:",img_size,
                  "levels:",self.levels,"verbosity:",self.verbose)
@@ -663,9 +663,8 @@ If it is not desired, consider lowering the verbosity: \
     ### Computing dimensions of the different levels ###
     self.h,self.w = [],[]
     for i in range(self.levels):
-##### WTF! TODO: Check h,w inversion !!
-      self.h.append(int(round(w/(self.resamplingFactor**i))))
-      self.w.append(int(round(h/(self.resamplingFactor**i))))
+      self.h.append(int(round(h/(self.resamplingFactor**i))))
+      self.w.append(int(round(w/(self.resamplingFactor**i))))
 
     if kwargs.get("Nfields") is not None:
       self.Nfields = kwargs.get("Nfields")
