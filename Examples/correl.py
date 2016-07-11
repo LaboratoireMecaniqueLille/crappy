@@ -10,9 +10,13 @@ y=2048
 
 
 
-camera = crappy.blocks.StreamerCamera("Ximea", numdevice=0, freq=50, save=False,save_directory="/home/vic/outTest/",xoffset=0, yoffset=0, width=x, height=y)
+camera = crappy.blocks.StreamerCamera("Ximea", numdevice=0, freq=20,
+                                save=False,save_directory="/home/vic/outTest/",
+                                xoffset=0, yoffset=0, width=x, height=y)
 graph = crappy.blocks.Grapher(('t','x'),('t','y'),('t','r'),length=30)
-correl = crappy.blocks.Correl((y,x),fields=['x','y','r'],verbose=2,show_diff=True)
+correl = crappy.blocks.Correl((y,x),fields=['x','y','r'],verbose=2,
+                                    show_diff=True)
+
 compacter = crappy.blocks.Compacter(5)
 
 lCam2Correl = crappy.links.Link()
@@ -27,7 +31,7 @@ lComp2Graph = crappy.links.Link()
 compacter.add_output(lComp2Graph)
 graph.add_input(lComp2Graph)
 #"""
-display = crappy.blocks.CameraDisplayer(framerate=10)
+display = crappy.blocks.CameraDisplayer()
 lCam2Disp = crappy.links.Link()
 camera.add_output(lCam2Disp)
 display.add_input(lCam2Disp)
