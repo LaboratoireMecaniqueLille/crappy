@@ -1,5 +1,6 @@
 from ._meta import MasterBlock
 from ..technical._correl import TechCorrel
+from ..technical import DataPicker
 from collections import OrderedDict
 from time import time,sleep
 import numpy as np
@@ -89,6 +90,8 @@ ready to process incoming data."
 
 
   def main(self,pipe,img_size,**kwargs):
+    if self.drop:
+      datapicker = DataPicker(self.inputs[0])
     correl = TechCorrel(img_size,**kwargs)
     pipe.send(0) # Sending signal to let init return
     nLoops = 100 # For testing: resets the original images every nLoops loop
@@ -96,13 +99,17 @@ ready to process incoming data."
       pipe.recv() # Waiting for the actual start
       #print "[Correl block] Got start signal !"
       t2 = time()-1
-      for i in range(2): # Drop the first images
+      if self.drop:
+        datapicker.get_data()
+        data = datapicker.get_data().astype(np.float32)
+      else:
+        # Drop the first image
         self.inputs[0].recv()
-      # This is the only time the original picture is set, so the residual may
-      # increase if lightning vary or large displacements are reached
-      correl.setOrig(self.inputs[0].recv().astype(np.float32))
+        # This is the only time the original picture is set, so the residual may
+        # increase if lightning vary or large displacements are reached
+        data = self.inputs[0].recv().astype(np.float32)
+      correl.setOrig(data)
       correl.prepare()
-      dropped = 0
       tr1 = tr2 = time()
       while True:
         t1 = time()
@@ -110,24 +117,13 @@ ready to process incoming data."
           print "[Correl block] processed",nLoops/(t1-t2),"ips"
           print "[Correl block] Receiving images took",\
                  (tr2-tr1)/(t1-t2)*100,"% of the time"
-          if dropped:
-            print "[Correl block] Dropped",dropped,"images !",\
-            "(%.2f%%)"%dropped*100./nLoops
         t2 = t1
-        dropped = 0
         tr1 = 0
         tr2 = 0
         for i in range(nLoops):
           tr1 += time()
           if self.drop:
-            d = 0
-            recv = 0
-            while recv is not None or data is 0 or data is None:
-              data = recv
-              recv = self.inputs[0].recv(False)
-              if recv is not None:
-                d+=1
-            dropped += d-1
+            data = datapicker.get_data()
           else:
             data = self.inputs[0].recv()
           tr2 += time()
@@ -139,6 +135,7 @@ ready to process incoming data."
             o.send(Dout)
     except Exception as e:
       print "Error in Correl",e
+      raise e
 
   def __repr__(self):
     return "Correl block with"+str(self.levels)+"levels"
