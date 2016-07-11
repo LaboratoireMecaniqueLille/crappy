@@ -168,7 +168,7 @@ class Link(object):
                 self.out_.close()
             raise KeyboardInterrupt
         except Exception as e:
-            print "Exception in link %s : %s " % self.name, e.message
+            print "Exception in link %s : %s " % (self.name, e.message)
             if not self.out_.closed:
                 self.out_.send('close')
                 self.out_.close()
@@ -205,7 +205,7 @@ class Link(object):
             if self.action == "warn":
                 print "WARNING : Timeout error in pipe send! Link name: %s" % self.name
             elif self.action == "kill":
-                print "Killing Link %s : %s" % self.name, e.message
+                print "Killing Link %s : %s" % (self.name, e.message)
                 raise
             elif self.action == "NoWarn":
                 pass
@@ -218,7 +218,7 @@ class Link(object):
                 self.in_.close()
             raise KeyboardInterrupt
         except Exception as e:
-            print "EXCEPTION in link %s : %s " % self.name, e.message
+            print "EXCEPTION in link %s : %s " % (self.name, e.message)
             if not self.in_.closed:
                 self.in_.close()
             raise Exception(e)
