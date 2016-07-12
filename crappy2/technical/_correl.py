@@ -810,9 +810,9 @@ See docstring of Correl")
                        np.ones((self.h[0],self.w[0]),dtype=np.float32))
         elif c in  ['r','rz','rot']: # Rotation
           sq = .5**.5
-          s = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),
+          z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),
                           np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
-          fields[i] = (s[0].astype(np.float32),-s[1].astype(np.float32))
+          fields[i] = (z[1].astype(np.float32),-z[0].astype(np.float32))
 
         # Uniform deformations
         elif c in ['ex','exx']:  # Stretch along X
@@ -825,16 +825,16 @@ np.concatenate((
 np.arange(-1,1,2./self.h[0],dtype=np.float32)[:,np.newaxis],)*self.w[0],axis=1))
         elif c in ['exy','tau','s']: # Shear
           sq = .5**.5
-          s = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),
+          z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),
           np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
-          fields[i] = (s[0].astype(np.float32),s[1].astype(np.float32))
+          fields[i] = (z[1].astype(np.float32),z[0].astype(np.float32))
 
         # Bonus (Is equivalent to exx+eyy, don't use them together!)
         elif c == 'z' or c in ['mz','tz']: # Shrinking/Zooming
           sq = .5**.5
-          s = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),
+          z = np.meshgrid(np.arange(-sq,sq,2*sq/self.w[0],dtype=np.float32),
           np.arange(-sq,sq,2*sq/self.h[0],dtype=np.float32))
-          fields[i] = (s[1].astype(np.float32),s[0].astype(np.float32))
+          fields[i] = (z[0].astype(np.float32),z[1].astype(np.float32))
 
         # Quadratic fields
         elif c == 'uxx': # U(x,y) = x², V = 0
