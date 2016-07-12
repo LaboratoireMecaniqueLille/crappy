@@ -64,7 +64,7 @@ class CorrelStage:
     if self.showDiff:
       import cv2
       cv2.namedWindow("Residual",cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
-
+    self.mul = kwargs.get("mul",3)
     # These two store the values of the last resampled array
     # It is meant to allocate output array only once (see resampleD)
     self.rX,self.rY = -1,-1
@@ -379,16 +379,7 @@ with a border of 5% the dimension")
     """ The method that actually computes the weight of the fields."""
     self.debug(3,"Calling main routine")
     self.loop += 1
-    # This parameter is ESSENTIAL.
-    # It defines how "fast" we move towards the solution.
-    # High value => Fast convergence but risk to go past the solution
-    # and diverge (the program does not try to handle this:
-    # if the residual rises, iterations stop immediatly).
-    # Low value => Probably more precise but slower and may require
-    # more iterations. After multiple tests, 3 was found to be a pretty
-    # acceptable value. Don't hesitate to adapt it to your case:
-    # use verbose=3 and see if the convergence is too slow or too fast.
-    self.mul = 3
+    #self.mul = 3
     if not self._ready:
       self.debug(2,"Wasn't ready ! Preparing...")
       self.prepare()
@@ -610,20 +601,29 @@ class TechCorrel:
         Where *crappy install dir* is the root directory
         of the installation of crappy (crappy.__path__)
 
+        - mul=x (float, >0, default:3)
+          This parameter is ESSENTIAL.
+          The direction will be multiplied by this scalar before being added
+          to the solution.
+          It defines how "fast" we move towards the solution.
+          High value => Fast convergence but risk to go past the solution
+          and diverge (the program does not try to handle this:
+          if the residual rises, iterations stop immediatly).
+          Low value => Probably more precise but slower and may require
+          more iterations. After multiple tests, 3 was found to be a pretty
+          acceptable value. Don't hesitate to adapt it to your case:
+          use verbose=3 and see if the convergence is too slow or too fast.
+
   TODO:
     This section lists all the considered improvements for this program.
     These features may NOT all be implemented in the future.
     They are sorted by priority.
-    - Add a drop parameter to drop images if correlation is too slow
-    - OR skip the last iteration when running out of time ?
-    - Add a res parameter to add the residual to the output values
+    - Allow faster execution by executing the reduction only on a part
+         of the images (random or chosen)
     - Add the possibility to return the value of the deformation
         Exx andd Eyy in a specific point
     - Add a parameter to return values in %
-    - Allow to set self.mul (cf line ~391)
     - Add a filter to smooth/ignore incorrect values
-    - Allow faster execution by executing the reduction only on a part
-         of the images (random or chosen)
     - Allow a reset of the reference picture for simple deformations
      (to enhance robustness in case of large deformations or lightning changes)
     - Restart iterating from 0 once in a while to see if the residual is lower.
@@ -639,7 +639,8 @@ class TechCorrel:
     unknown = []
     for k in kwargs.keys():
       if k not in ['verbose','levels','resampling_factor','kernel_file',
-                   'iterations','show_diff','Nfields','img','fields','mask']:
+                   'iterations','show_diff','Nfields','img',
+                   'fields','mask','mul']:
         unknown.append(k)
     if len(unknown) != 0:
       warnings.warn("Unrecognized parameter"+('s: '+str(unknown) if
@@ -690,6 +691,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
                             verbose=self.verbose,Nfields=self.Nfields,
                             iterations=self.nbIter,
                             show_diff=(i==0 and kwargs.get("show_diff",False)),
+                            mul=kwargs.get("mul",3),
                             kernel_file=kernelFile))
 
     ### Set original image if provided ###

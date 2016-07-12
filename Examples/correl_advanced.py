@@ -52,6 +52,7 @@ correl = crappy.blocks.Correl((y,x),fields=[myX,'y','r', # Rigid body
                               'x','y','r','Exx','Eyy','Exy',
                               'Ux2','Uy2','Uxy',
                               'Vx2','Vy2','Vxy'),
+                              mul=3.2, # Scalar to multiply the direction
                               res=True)# Ask to return the residual
 
 compacter = crappy.blocks.Compacter(3)

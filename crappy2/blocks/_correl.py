@@ -87,7 +87,7 @@ with fields=(.,.) or Nfields=k"
   def start(self):
     if self.ready == False:
       print "[Correl block] WARNING ! This block takes time to init, you must \
-call .init() before .start() JUST before starting all the blocks to do \
+call .init() before .start() JUST before starting all the blocks to \
 initialize it properly. This way, the program only starts when correl is \
 ready to process incoming data."
       self.init()
