@@ -205,7 +205,7 @@ class CorrelStage:
       self.debug(3,"Setting original image from GPUArray")
       self.devOrig = img
     else:
-      print("[Error] Unknown type of data given to CorrelStage.setOrig()")
+      print("[CorrelStage] Error:  Unknown type of data given to setOrig()")
       raise ValueError
     self.updateOrig()
 
@@ -334,7 +334,7 @@ with a border of 5% the dimension")
       self.debug(3,"Creating texture from gpuarray")
       self.array_d = cuda.gpuarray_to_array(img_d,"C")
     else:
-      print("[Error] Unknown type of data given to CorrelStage.setImage()")
+      print("[CorrelStage] Error: Unknown type of data given to .setImage()")
       raise ValueError
     self.tex_d.set_array(self.array_d)
     self.devX.set(np.zeros(self.Nfields,dtype=np.float32))
@@ -343,7 +343,7 @@ with a border of 5% the dimension")
     self.debug(3,"Setting the mask")
     assert mask.shape == (self.h,self.w),\
             "Got a {} mask in a {} routine.".format(mask.shape,(self.h,self.w))
-    if not mask.dtype is np.float32:
+    if not mask.dtype == np.float32:
       self.debug(2,"Converting the mask to float32")
       mask = mask.astype(np.float32)
     if isinstance(mask,np.ndarray):
@@ -672,8 +672,8 @@ If it is not desired, consider lowering the verbosity: \
       try:
         self.Nfields = len(kwargs["fields"])
       except KeyError:
-        print("[Error] Correl needs to know the number of fields at init. \
-Add Nfields=x or directly set fields with fields=array")
+        print("[Correl] Error: You must provide the number of fields at init. \
+Add Nfields=x or directly set fields with fields=list/tuple")
         raise ValueError
 
     kernelFile = kwargs.get("kernel_file")

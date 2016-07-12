@@ -62,11 +62,19 @@ with fields=(.,.) or Nfields=k"
     # We don't need to pass these arg to the TechCorrel class
     if kwargs.get("labels") is not None:
       del kwargs["labels"]
+    # Handle drop parameter: if True, use DataPicker
     if kwargs.get("drop") is not None:
       self.drop = kwargs["drop"]
       del kwargs["drop"]
     else:
       self.drop = True
+    # Handle res parameters: if true, also return the residual
+    if kwargs.get("res") is not None:
+      self.res = kwargs["res"]
+      del kwargs["res"]
+      self.labels += ("res",)
+    else:
+      self.res = False
     pipeProcess,self.pipeClass = Pipe()
     self.process = Process(target=self.main,
                            args=(pipeProcess,img_size),kwargs=kwargs)
@@ -130,6 +138,8 @@ ready to process incoming data."
           t = time()-self.t0
           correl.setImage(data.astype(np.float32))
           out = [t]+correl.getDisp().tolist()
+          if self.res:
+            out += [correl.getRes()]
           Dout = OrderedDict(zip(self.labels,out))
           for o in self.outputs:
             o.send(Dout)
