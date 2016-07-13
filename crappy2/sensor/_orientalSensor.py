@@ -16,10 +16,10 @@
 from struct import *
 import serial
 
-
 # This functions converts decimal into bytes or bytes into decimals.
 #  Mandatory in order to send or read anything into/from MAC Motors registers.
 from ._meta import motion
+
 
 #
 # def convert_to_byte(number, length):
@@ -51,34 +51,54 @@ from ._meta import motion
 
 
 class OrientalSensor(motion.MotionSensor):
-    def __init__(self, ser, port, baudrate):
-        ## TODO
-        # """
-        # This class contains methods to get info from oriental motor.
-        # You should NOT use it directly, but use the OrientalTechnical.
-        # """
-        # self.ser = ser
+    def __init__(self, baudrate=115200, port='/dev/ttyUSB0', num_device=1, conversion_factor=1, ser=None):
         super(OrientalSensor, self).__init__(port, baudrate)
+        self.num_device = num_device
+        self.baudrate = baudrate
+        self.port = port
+        # Actuator _ Declaration
+        try:
+            if ser is not None:
+                self.ser = ser
+            else:
+                self.ser = serial.Serial(self.port)
+                self.ser.timeout = 0.01
+                self.ser.baudrate = self.baudrate
+                self.ser.bytesize = 8
+                self.ser.stopbits = 1
+                self.ser.parity = 'N'
+                self.ser.xonxoff = False
+                self.ser.rtscts = False
+                self.ser.dsrdtr = False
+                self.ser.close()
+                self.ser.open()
+                self.ser.write("TALK{0}\n".format(self.num_device))
+        except Exception as e:
+            print e
+        self.conversion_factor = conversion_factor
+
+    def write_cmd(self, cmd):
+        self.ser.write("{0}\n".format(cmd))
+        ret = self.ser.readline()
+        # while ret != '{0}>'.format(self.num_device):
+        while ret != '' and ret != '{0}>'.format(self.num_device):
+            print ret
+            ret = self.ser.readline()
 
     def get_position(self):
-        ## @fn get_position
-        # @brief Reads current position
-        # TODO
-        pass
-        # try:
-        #     self.ser.readlines()
-        # except serial.SerialException:
-        #     # print "readlines failed"
-        #     pass
-        # # print "position read"
-        # command = '\x50\x50\x50\xFF\x00' + convert_to_byte(10, 'B') + '\xAA\xAA'
-
-        # self.ser.write(command)
-        # # time.sleep(0.01)
-        # # print "reading..."
-        # # print self.ser.inWaiting()
-        # position_ = self.ser.read(19)
-        # # print "read"
-        # position = position_[9:len(position_) - 2:2]
-        # position = convert_to_dec(position) * 5 / 4096.
-        # return position
+        # self.ser.open()
+        self.ser.flushInput()
+        self.ser.write('PC\n')
+        a_jeter = self.ser.readline()
+        ActuatorPos = self.ser.readline()
+        # self.ser.close()
+        ActuatorPos = str(ActuatorPos)
+        ActuatorPos = ActuatorPos[4::]
+        ActuatorPos = ActuatorPos[::-1]
+        ActuatorPos = ActuatorPos[3::]
+        ActuatorPos = ActuatorPos[::-1]
+        try:
+            ActuatorPos = float(ActuatorPos) * self.conversion_factor
+            return ActuatorPos
+        except ValueError:
+            print "PositionReadingError"

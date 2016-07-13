@@ -5,8 +5,10 @@
 ##  @defgroup CameraDisplayer CameraDisplayer
 # @{
 
-## @file _autoDrive.py
-# @brief Recieve position information and send motor commands calculated by the PID, via actuator CMdrive.
+## @file _cameraDisplayer.py
+# @brief Simple images displayer. Can be paired with StreamerCamera
+#   Use cv=False to use the old, inefficient and deprecated version
+#   NOTE: You need to use one displayer block per window (in other words, you can only attach one input to the diplayer)
 #
 # @author Robin Siemiatkowski
 # @version 0.1

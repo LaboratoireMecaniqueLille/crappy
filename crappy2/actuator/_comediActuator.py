@@ -20,25 +20,25 @@ class ComediActuator(command.Command):
     """Comedi actuator object, commands the output of comedi cards"""
 
     def __init__(self, device='/dev/comedi0', subdevice=1, channel=0, range_num=0, gain=1, offset=0):
-        ## @fn __init__()
-        # @brief Convert wanted tension value into digital values and send it to the
-        # output of some Comedi-controlled card.
-        #
-        # @param Output is (command * gain) + offset.
-        #
-        # @param device : str, default = '/dev/comedi0'
-        #         Path to the device.
-        # @param subdevice : int, default = 1
-        #         Subdevice 1 is the output.
-        # @param channel : int, default = 0
-        #         The desired output channel.
-        # @param range_num : int, default = 0
-        #         See the comedi documentation for different values.
-        # @param gain : float, default = 1
-        #         Multiplication gain for the output.
-        # @param offset : float, default = 0
-        #         Add this value to your output.
-        #
+        """
+        Convert wanted tension value into digital values and send it to the output of some Comedi-controlled card.
+
+        Output is (command * gain) + offset.
+
+        Args:
+        device : str, default = '/dev/comedi0'
+                Path to the device.
+        subdevice : int, default = 1
+                Subdevice 1 is the output.
+        channel : int, default = 0
+                The desired output channel.
+        range_num : int, default = 0
+                See the comedi documentation for different values.
+        gain : float, default = 1
+                Multiplication gain for the output.
+        offset : float, default = 0
+                Add this value to your output.
+        """
         super(ComediActuator, self).__init__()
         self.subdevice = subdevice
         self.channel = channel

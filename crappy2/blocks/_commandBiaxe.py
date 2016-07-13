@@ -1,5 +1,17 @@
 # coding: utf-8
 from _meta import MasterBlock
+##  @addtogroup blocks
+# @{
+
+##  @defgroup CommandBiaxe CommandBiaxess
+# @{
+
+## @file _autoDrive.py
+# @brief Receive a signal and translate it for the Biaxe actuator.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
 
 
 class CommandBiaxe(MasterBlock):
@@ -9,14 +21,13 @@ class CommandBiaxe(MasterBlock):
         """
         Receive a signal and translate it for the Biaxe actuator.
 
-        Parameters
-        ----------
-        biaxe_technicals : list of crappy2.technical.Biaxe objects
-            List of all the axes to control.
-        signal_label : str, default = 'signal'
-            Label of the data to be transfered.
-        speed: int, default = 500
-            Wanted speed. 1 is equivalent to a speed of 0.002 mm/s.
+        Args:
+            biaxe_technicals : list of crappy2.technical.Biaxe objects
+                List of all the axes to control.
+            signal_label : str, default = 'signal'
+                Label of the data to be transfered.
+            speed: int, default = 500
+                Wanted speed. 1 is equivalent to a speed of 0.002 mm/s.
         """
         super(CommandBiaxe, self).__init__()
         self.biaxe_technicals = biaxe_technicals

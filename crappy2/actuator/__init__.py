@@ -17,6 +17,7 @@ import platform
 from .._warnings import import_error
 
 
+from ._meta import command, motion
 e = None
 if platform.system() == "Linux":
     try:
@@ -28,7 +29,7 @@ from ._biaxeActuator import BiaxeActuator
 from ._biotensActuator import BiotensActuator
 from ._PIActuator import PIActuator
 from ._CMdriveActuator import CmDriveActuator
-
+from ._dummyActuator import DummyActuator
 try:
     from ._labJackActuator import LabJackActuator
 except Exception as e:
@@ -41,7 +42,11 @@ try:
     from _daqmxActuator import DaqmxActuator
 except Exception as e:
     import_error(e.message)
+try:
+    from _orientalActuator import OrientalActuator
+except Exception as e:
+    import_error(e.message)
 
-from ._meta import command, motion
+
 
 del platform, e, import_error

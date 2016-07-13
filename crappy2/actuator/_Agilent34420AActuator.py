@@ -21,18 +21,17 @@ class Agilent34420AActuator(command.Command):
 
     def __init__(self, subdevice, channel, range_num, gain, offset, mode="VOLT", device='/dev/ttyUSB0', baudrate=9600,
                  timeout=10):
-        ## @fn __init__()
-        # @brief If you have issues with this class returning a lot of 'bad serial', \
-        # make sure you have the last version of pySerial.
-        #
-        # @param mode : {"VOLT","RES"} , default = "VOLT"
-        #         Desired value to measure.
-        # @param device : str, default = '/dev/ttyUSB0'
-        #         Path to the device.
-        # @param baudrate : int, default = 9600
-        #         Desired baudrate.
-        # @param timeout : int or float, default = 10
-        #         Timeout for the serial connection.
+        """
+        If you have issues with this class returning a lot of 'bad serial'
+
+        make sure you have the last version of pySerial.
+
+        Args:
+        mode : {"VOLT","RES"} , default = "VOLT".  Desired value to measure.
+        device : str, default = '/dev/ttyUSB0'. Path to the device.
+        baudrate : int, default = 9600. Desired baudrate.
+        timeout : int or float, default = 10. Timeout for the serial connection.
+        """
         super(Agilent34420AActuator, self).__init__(device, subdevice, channel, range_num, gain, offset)
         self.device = device
         self.baudrate = baudrate

@@ -1,4 +1,16 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup Saver Saver
+# @{
+
+## @file _saver.py
+# @brief Saves data in a file.
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock
 import os
 import numpy as np
@@ -7,7 +19,12 @@ import time
 np.set_printoptions(threshold='nan', linewidth=500)
 
 
-# import pandas as pd
+## Be aware that the log file needs to be cleaned before starting this function,
+# otherwise it just keep writing a the end of the file.
+# First line of the file will be meta-data. If file already exists, skips the
+# meta-data writing.
+#
+# If the folder doesn't exists, creates it.
 
 class Saver(MasterBlock):
     """Saves data in a file"""

@@ -11,9 +11,10 @@ from ._biaxeTechnical import Biaxe
 from ._biotensTechnical import Biotens
 from ._lal300Technical import Lal300
 from ._PITechnical import PI
+from ._dummyTechnical import DummyTechnical
 
-__motors__ = ['Biotens', 'Biaxe', 'Lal300', 'PI', 'VariateurTribo', 'CmDrive']
-__boardnames__ = ['Comedi', 'Daqmx', 'LabJack', 'Agilent34420A', 'fgen']
+__motors__ = ['Biotens', 'Biaxe', 'Lal300', 'PI', 'VariateurTribo', 'CmDrive', 'Oriental', 'DummyTechnical']
+__boardnames__ = ['Comedi', 'Daqmx', 'LabJack', 'Agilent34420A', 'fgen', 'DummySensor']
 __cameras__ = ['Ximea', 'Jai']
 
 from ._variateurTribo import VariateurTribo
@@ -22,7 +23,7 @@ from ._command import Command
 from ._motion import Motion
 from ._CMdriveTechnical import CmDrive
 from ._interfaceCMdrive import Interface
-
+from ._orientalTechnical import Oriental
 # from ._jaiTechnical import Jai
 try:
     from ._cameraInit import get_camera_config

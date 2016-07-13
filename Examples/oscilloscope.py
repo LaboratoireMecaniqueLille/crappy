@@ -7,8 +7,8 @@ crappy2.blocks.MasterBlock.instances = []  # Init masterblock instances
 try:
     # Creating objects
     # instronSensor=crappy2.sensor.ComediSensor(device='/dev/comedi0',channels=[0,1],gain=[10,10])
-    sensor = crappy2.sensor.ComediSensor(device='/dev/comedi0', channels=[0],
-                                        gain=[1])  # dist is multiplied by 2 to be correct
+    sensor = crappy2.sensor.ComediSensor(device='/dev/comedi0', channels=[0, 1, 2, 3],
+                                         gain=[1, 1, 1, 1], offset=[0.1723, 0.155, -0.005, 0.005])
     # sensor = crappy2.sensor.LabJackSensor(channels=[0], gain=[1], chan_range=10, mode="streamer", scanRate=10,
     #                                       scansPerRead=5)
     # sensor = crappy2.sensor.LabJackSensor(channels=[0], gain=1, resolution=12, chan_range=10, mode="single")  #
@@ -30,7 +30,7 @@ try:
     # send_freq=400, actuator=cmd_torsion, waveform=['sinus','triangle','sinus'], freq=[0.5,2,1], time_cycles=[10,10,10], amplitude=[0,0,0], offset=[0,0,0], phase=[np.pi,np.pi,np.pi], repeat=True
     # stream=crappy2.blocks.MeasureByStep(instronSensor,labels=['t(s)','signal','signal2'],freq=200)
     # stream = crappy2.blocks.MeasureByStep(sensor, labels=['t(s)', 'def(%)', 'F(N)', 'dist', 'C(Nm)'], freq=100)
-    stream = crappy2.blocks.MeasureByStep(sensor, labels=['t(s)', 'AIN0'], freq=100)
+    stream = crappy2.blocks.MeasureByStep(sensor, labels=['t(s)', 'AIN0', 'AIN1', 'AIN2', 'AIN3'], freq=100)
     # stream=crappy2.blocks.Streamer(sensor,labels=['t(s)','signal','signal2'])
     # stream=crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)','V'], freq=1000.)
     # traction=crappy2.blocks.SignalGenerator(path=[{"waveform":"sinus","time":100,"phase":0,"amplitude":1,"offset":0,"freq":2}],
@@ -43,14 +43,14 @@ try:
     # compacter2=crappy2.blocks.Compacter(400)
     # save=crappy2.blocks.Saver("/home/ilyesse/Bureau/delete_me3.txt")
 
+    # graph = crappy2.blocks.Grapher(('t(s)', 'AIN0'))
 
-    graph = crappy2.blocks.Grapher(('t(s)', 'AIN0'))
-
+    graph = crappy2.blocks.Grapher(('t(s)', 'AIN0'), ('t(s)', 'AIN1'), ('t(s)', 'AIN2'), ('t(s)', 'AIN3'), length=50)
 
     # Creating links
     # crappy2.links.Filter(labels=['dist(deg)'],mode="median",size=50)
     # condition=[crappy2.links.Filter(labels=['V'],mode="median",size=50),crappy2.links.Filter(labels=['t(s)'],mode="mean",size=50)]
-    link1 = crappy2.links.Link(name="link1")
+    link1 = crappy2.links.Link(name="stream_to_signalGenerator")
 
     link3 = crappy2.links.Link(name="link3")
 
@@ -61,7 +61,7 @@ try:
     # Linking objects
     stream.add_output(link1)
     # traction.add_output(link2)
-    # traction.add_output(link1)
+    # traction.add_output(stream_to_signalGenerator)
     # torsion.add_output(link5)
 
     compacter.add_input(link1)

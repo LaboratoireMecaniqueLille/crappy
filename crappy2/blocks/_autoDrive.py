@@ -23,9 +23,10 @@ class AutoDrive(MasterBlock):
     """
 
     def __init__(self, technical):
-        ## @fn __init__()
-        # @param technical: technical object (Motion) which received the command.
-        #
+        """
+        Args:
+            technical: technical object (Motion) which received the command.
+        """
         super(AutoDrive, self).__init__()
         self.technical = technical
         self.K = None
@@ -33,9 +34,9 @@ class AutoDrive(MasterBlock):
         self.center = None
 
     def main(self):
-        ## @fn __init__()
-        # @brief Apply the command received by a link to the technical object.
-        #
+        """
+        Apply the command received by a link to the technical object.
+        """
         try:
             while True:
                 self.K = self.inputs[0].recv()

@@ -1,76 +1,180 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
+import serial
 
-import time
+from crappy2.actuator import motion
 
-from crappy2.sensor._orientalSensor import convert_to_byte
+class SerialPortActuator:
+    def __init__(self, port, num_device, ConversionFactor):
+        self.num_device = num_device
+        print "commandcegitab !"
+        # Actuator _ Declaration
+        try:
+            self.port = serial.Serial(port)
+            self.port.timeout = 0.01
+            self.port.baudrate = 115200
+            self.port.bytesize = 8
+            self.port.stopbits = 1
+            self.port.parity = 'N'
+            self.port.xonxoff = False
+            self.port.rtscts = False
+            self.port.dsrdtr = False
+            self.port.close()
+            self.port.open()
+            self.port.write("TALK{0}\n".format(self.num_device))
+            print(self.port)
+            # self.ser.close()
+        except Exception as e:
+            print e
+        self.ConversionFactor = ConversionFactor
+
+    def write_cmd(self, cmd):
+        self.port.write("{0}\n".format(cmd))
+        ret = self.port.readline()
+        while ret != '{0}>'.format(self.num_device):
+            print ret
+            ret = self.port.readline()
+
+    # Declaration
+    def OM_Command(self, Commande):
+        Commande += chr(10)
+        return Commande
+
+    # ClearAlarm
+    def ClearAlarm(self):
+        # self.ser.open()
+        print('ALMCLR')
+        self.write_cmd('ALMCLR')
+        # self.ser.close()
+
+    # MoveUp
+    def MoveUp(self):
+        # self.ser.open()
+        print('UP')
+        self.write_cmd('MCN')
+        # self.ser.close()
+
+    # MoveDown
+    def MoveDown(self):
+        # self.ser.open()
+        print('DOWN')
+        self.write_cmd('MCP')
+        # self.ser.close()
+
+    # MoveStop
+    def MoveStop(self):
+        # self.ser.open()
+        print('STOP')
+        self.write_cmd('SSTOP')
+        # self.ser.close()
+
+    # Speed (conversion from step/s to mm/s)
+    def Speed(self, Speed):
+        SpeedInc = float(Speed) / self.ConversionFactor
+        Commande = 'VR ' + str(SpeedInc)
+        # self.ser.open()
+        print('ActuatorRealSpeed', Speed)
+        self.write_cmd(Commande)
+        # self.ser.close()
+
+    # Position (conversion from step/s to mm/s)
+    def Position(self):
+        # self.ser.open()
+        self.port.flushInput()
+        self.port.write('PC\n')
+        a_jeter = self.port.readline()
+        ActuatorPos = self.port.readline()
+        # self.ser.close()
+        ActuatorPos = str(ActuatorPos)
+        ActuatorPos = ActuatorPos[4::]
+        ActuatorPos = ActuatorPos[::-1]
+        ActuatorPos = ActuatorPos[3::]
+        ActuatorPos = ActuatorPos[::-1]
+        try:
+            ActuatorPos = float(ActuatorPos) * self.ConversionFactor
+            return ActuatorPos
+        except ValueError:
+            print "PositionReadingError"  # Se prévenir des erreur de lecture quand la readline fait de la merde
+
+    def TarePosition(self):
+        # self.ser.open()
+        print('TarePosition')
+        self.write_cmd('preset')
+        # self.ser.close()
 
 
-class OrientalActuator(object):
-    def __init__(self, ser, size):
-        """This class contains methods to command the motors of the biotens
-        machine. You should NOT use it directly, but use the BiotensTechnical.
-        """
-        self.size = size
-        self.ser = ser
-        self.clear_errors()
+class OrientalActuator(motion.MotionActuator):
+    def __init__(self, port='/dev/ttyUSB0', baudrate=115200, num_device=1, conversion_factor=1, ser=None):
+        super(OrientalActuator, self).__init__()
+        self.baudrate = baudrate
+        self.num_device = num_device
+        self.port = port
+        # Actuator _ Declaration
+        try:
+            if ser is not None:
+                self.ser = ser
+            else:
+                self.ser = serial.Serial(self.port)
+                self.ser.timeout = 0.01
+                self.ser.baudrate = self.baudrate
+                self.ser.bytesize = 8
+                self.ser.stopbits = 1
+                self.ser.parity = 'N'
+                self.ser.xonxoff = False
+                self.ser.rtscts = False
+                self.ser.dsrdtr = False
+                self.ser.close()
+                self.ser.open()
+                self.ser.write("TALK{0}\n".format(self.num_device))
+        except Exception as e:
+            print e
+        self.conversion_factor = conversion_factor
 
-    def stop_motor(self):
-        """Stop the motor. Amazing."""
-        command = 'SSTOP\n'
-        self.ser.write(command)
+    def new(self):
+        pass
 
-    # return command
+    def write_cmd(self, cmd):
+        self.ser.write("{0}\n".format(cmd))
+        ret = self.ser.readline()
+        # while ret != '{0}>'.format(self.num_device):
+        while ret != '' and ret != '{0}>'.format(self.num_device):
+            print ret
+            ret = self.ser.readline()
 
-    def setmode_position(self, position, speed):
-        """
-        Pilot in position mode, needs speed and final position to run (in mm/min and mm)
-        """
-        # conversion of position from mm into encoder's count
+    def set_speed(self, speed):
+        if speed < 0:
+            self.write_cmd("VR {0}".format(abs(speed)))
+            self.write_cmd("MCP")
+        if speed > 0:
+            self.write_cmd("VR {0}".format(abs(speed)))
+            self.write_cmd("MCN")
+        if speed == 0:
+            self.write_cmd("SSTOP")
 
-    def setmode_speed(self, speed):
-        """Pilot in speed mode, requires speed in mm/min"""
-        # converts speed in motors value
-        # displacement rate in mm/min, V_SOll in 1/16 encoder counts/sample.
-        # 4096 encounder counts/revolution, sampling frequency = 520.8Hz, screw thread=5.
-        speed_soll = int(round(16 * 4096 * speed / (520.8 * 60 * 5)))
-        set_speed = '\x52\x52\x52\xFF\x00' + convert_to_byte(5, 'B') + convert_to_byte(2, 'B') + convert_to_byte(
-            speed_soll, 'h') + '\xAA\xAA\x50\x50\x50\xFF\x00' + convert_to_byte(5, 'B') + '\xAA\xAA'
+    def set_home(self):
+        self.write_cmd('preset')
 
-        # set torque to default value 1023
-        set_torque = '\x52\x52\x52\xFF\x00' + convert_to_byte(7, 'B') + convert_to_byte(2, 'B') + \
-                     convert_to_byte(1023, 'h') + '\xAA\xAA\x50\x50\x50\xFF\x00' + convert_to_byte(7, 'B') + '\xAA\xAA'
+    def move_home(self):
+        self.write_cmd('EHOME')
 
-        # set acceleration to 10000 mm/s² (default value, arbitrarily chosen, works great so far)
-        asoll = int(round(16 * 4096 * 10000 / (520.8 * 520.8 * 5)))
-        set_acceleration = '\x52\x52\x52\xFF\x00' + convert_to_byte(6, 'B') + convert_to_byte(2, 'B') + convert_to_byte(
-            asoll, 'h') + '\xAA\xAA\x50\x50\x50\xFF\x00' + convert_to_byte(6, 'B') + '\xAA\xAA'
+    def set_position(self, position, speed):
+        self.write_cmd("VR {0}".format(abs(speed)))
+        self.write_cmd("MA {0}".format(position/self.conversion_factor))
 
-        command = '\x52\x52\x52\xFF\x00' + convert_to_byte(2, 'B') + convert_to_byte(2, 'B') + \
-                  convert_to_byte(1, 'h') + '\xAA\xAA\x50\x50\x50\xFF\x00' + convert_to_byte(2, 'B') + '\xAA\xAA'
-
-        # write every parameters in motor's registers
-        self.ser.writelines([set_speed, set_torque, set_acceleration, command])
-
-    # def mise_position(self): # set motor into position for sample's placement
-    # self.setmode_position(self.size,70)
-    # startposition = '\x52\x52\x52\xFF\x00' + convert_to_byte(10, 'B') + convert_to_byte(4, 'B') + \
-    #                 convert_to_byte(0,'i') + '\xAA\xAA\x50\x50\x50\xFF\x00' + convert_to_byte(10, 'B') + '\xAA\xAA'
-    # self.ser.write(startposition)
-    # self.ser.readlines()
-    # position_SI=0.
-    # while position_SI-self.size-1.<=0.:
-    # position_= Out(10).get_command() #command sequence for reading register 10 = actual position
-    # position=ser.write(position_)
-    # position2=ser.read(19)
-    # position_=GetAnswer(position2).get_answer()
-
-    # position_SI=Conversion(position_).displacement_SI()
-
-    # self.stop_motor()
-
-    def clear_errors(self):
-        """Clears error in motor registers. obviously."""
-        command = '\x52\x52\x52\xFF\x00' + convert_to_byte(35, 'B') + convert_to_byte(4, 'B') + \
-                  convert_to_byte(0,'i') + '\xAA\xAA\x50\x50\x50\xFF\x00' + convert_to_byte(35, 'B') + '\xAA\xAA'
-        self.ser.write(command)
+    def get_position(self):
+        # self.ser.open()
+        self.ser.flushInput()
+        self.ser.write('PC\n')
+        a_jeter = self.ser.readline()
+        ActuatorPos = self.ser.readline()
+        # self.ser.close()
+        ActuatorPos = str(ActuatorPos)
+        ActuatorPos = ActuatorPos[4::]
+        ActuatorPos = ActuatorPos[::-1]
+        ActuatorPos = ActuatorPos[3::]
+        ActuatorPos = ActuatorPos[::-1]
+        try:
+            ActuatorPos = float(ActuatorPos) * self.conversion_factor
+            return ActuatorPos
+        except ValueError:
+            print "PositionReadingError"

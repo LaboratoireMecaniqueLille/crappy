@@ -1,21 +1,21 @@
 # -*- coding:utf-8 -*-
 import Tix
 from Tkinter import *
+import Tkinter
 # from serial.tools import list_ports
-import serial
 from crappy2.technical import __motors__ as motors
 
 
 class Interface(Frame):
     """
-    Creat a graphic interface that permit to connect the motor via a serial port,
+    Creat a graphic interface that permit to connect the motor via a serial ser,
     and to send command in terms of speed or position
     """
 
     def __init__(self, root, **kwargs):
 
         Frame.__init__(self, root, width=1000, height=1000, **kwargs)
-        root.geometry("395x230")
+        root.geometry("395x320")
         root.title("Pilotage")
 
         # Création des onglets
@@ -39,8 +39,8 @@ class Interface(Frame):
 
         # Début onglet 1
         sous_fra = Frame(fra1, width=400, borderwidth=2, relief=GROOVE)  # create a frame in canvas(p1)
-        self.portLabel = Label(sous_fra, text="Serial port:")  # create a label
-        self.myPortCombo = Tix.StringVar()  # create a variable, it will contain port selection
+        self.portLabel = Label(sous_fra, text="Serial ser:")  # create a label
+        self.myPortCombo = Tix.StringVar()  # create a variable, it will contain ser selection
 
         self.motorNameCombo = Tix.StringVar()
         self.motorCombo = Tix.ComboBox(sous_fra, editable=1, dropdown=1,
@@ -54,6 +54,10 @@ class Interface(Frame):
         self.baudrateLabel = Label(sous_fra, text="Baudrate:")  # create a label
         self.baudCombo = Tix.StringVar()  # create a variable, it will contain baudrate selection
         self.baudrateCombo = Entry(sous_fra, textvariable=self.baudCombo)
+        self.num_device = Tix.IntVar()
+        self.num_device_label = Label(sous_fra, text="Device number:")  # create a label
+        self.num_device_entry = Spinbox(sous_fra, from_=1, to=10, textvariable=self.num_device)
+        self.motorNameCombo.trace('w', self.callback)
         self.connection = Button(sous_fra, text="Connect", command=self.connection)  # create connect Button
         sous_fra1 = Frame(fra1, width=400)  # create a second frame in canvas(p1)
         self.location = Button(sous_fra1, text="Examine location", command=self.examineLocation,
@@ -63,7 +67,7 @@ class Interface(Frame):
         self.Resultat = StringVar()  # create a variable, it will contain the result of examineLocation method
         self.Resultat.set("0")  # set the variable to zero
         resultatLabel = Label(sous_fra1, textvariable=self.Resultat)  # create a label, it will show the variable
-        self.resetZero = Button(sous_fra1, text=" resetZero CMdrive", command=self.reset_servostar)
+        self.resetZero = Button(sous_fra1, text=" Reset ", command=self.reset_servostar)
         self.quit = Button(sous_fra1, text="Cancel", command=root.quit)  # create cancel button
         # Fin onglet 1
 
@@ -95,6 +99,12 @@ class Interface(Frame):
                             textvariable=self.position)  # create an entry, it will contain the positon choose by the user
         self.entry2.focus_set()  # pick out the widget that will receive keyboard events
 
+        speed_label = Label(sous_fra3_2, text="speed:")  # create 'position:' label
+        self.speed = StringVar()  # create a variable, it will contain the value of entry2
+        self.entry3 = Entry(sous_fra3_2,
+                            textvariable=self.speed)  # create an entry, it will contain the positon choose by the user
+        self.entry3.focus_set()  # pick out the widget that will receive keyboard events
+
         motionTypeLabel = Label(sous_fra3_2, text="motion type :")  # create 'motionType:' label
         self.motionType = StringVar()  # create a variable, it will contain the value of entry4
 
@@ -112,19 +122,21 @@ class Interface(Frame):
         self.portCombo.grid(row=1, column=1, sticky="sw", padx=10, pady=10)
         self.baudrateLabel.grid(row=2, column=0, sticky="sw", padx=10, pady=10)
         self.baudrateCombo.grid(row=2, column=1, sticky="sw", padx=10, pady=10)
+        # self.num_device_label.grid(row=4, column=0, sticky="sw", padx=10, pady=10)
+        # self.num_device_entry.grid(row=4, column=1, width=2, sticky="sw", padx=10, pady=10)
         self.motorLabel.grid(row=3, column=0, sticky="sw", padx=10, pady=10)
         self.motorCombo.grid(row=3, column=1, sticky="sw", padx=10, pady=10)
-        self.connection.grid(row=4, column=1, sticky="se")
+        self.connection.grid(row=5, column=1, sticky="se")
         # placement widget sous frame onglet 1
         # show widgets on frame canvas(p1)
         sous_fra1.grid()
         # self.enable.grid(row=1, column=0,sticky= "sw", padx=10,pady=10)
         # self.disable.grid(row=2, column=0,sticky= "sw", padx=10,pady=10)
         # self.resetZero.grid(row=3, column=0,sticky= "sw", padx=10,pady=10)
-        self.location.grid(row=4, column=0, sticky="s", padx=10, pady=10)
-        locationLabel.grid(row=4, column=1)
-        resultatLabel.grid(row=4, column=2)
-        self.resetZero.grid(row=4, column=4)
+        self.location.grid(row=5, column=0, sticky="s", padx=10, pady=10)
+        locationLabel.grid(row=5, column=1)
+        resultatLabel.grid(row=5, column=2)
+        self.resetZero.grid(row=5, column=4)
         # self.quit.grid(row=4, column=4, sticky= "e")
 
         # placement des widgets onglet 2
@@ -144,8 +156,10 @@ class Interface(Frame):
         sous_fra3_2.grid(padx=10, pady=10)
         self.moveZeroButton.grid(row=0, column=0, padx=10, pady=10)
         positionLabel.grid(row=1, column=0, sticky='w')
-        motionTypeLabel.grid(row=2, column=0, sticky='w')
+        speed_label.grid(row=2, column=0, sticky='w')
+        motionTypeLabel.grid(row=3, column=0, sticky='w')
         self.entry2.grid(row=1, column=1, sticky='w')
+        self.entry3.grid(row=2, column=1, sticky='w')
         Radiobutton(sous_fra3_2, text="absolute", variable=self.motionType, value=True).grid()
         Radiobutton(sous_fra3_2, text="relative", variable=self.motionType, value=False).grid()
         sous_fra3.grid(row=3, column=0)
@@ -169,8 +183,12 @@ class Interface(Frame):
                     print "{0}".format(e), " : Unreconized motor\n"
                     return
 
-                self.motor = Motor(self.myPortCombo.get(), self.baudCombo.get())
-                self.motorName = self.motorNameCombo.get()
+                if self.motorNameCombo.get().capitalize() == "Oriental":
+                    self.motor = Motor(port=self.myPortCombo.get(), num_device= int(self.num_device_entry.get()), baudrate=self.baudCombo.get())
+                    self.motorName = self.motorNameCombo.get()
+                else:
+                    self.motor = Motor(port=self.myPortCombo.get(), baudrate=self.baudCombo.get())
+                    self.motorName = self.motorNameCombo.get()
                 #	    self.vm = videoInstron(self.ser)
                 print 'connection'
                 self.location.config(state='normal')
@@ -185,6 +203,16 @@ class Interface(Frame):
             except Exception as e:
                 print ' Connection error:', e
 
+    def callback(self, *args):
+        print args
+        print 'test: ', self.motorNameCombo.get().capitalize()
+        if self.motorNameCombo.get().capitalize() == "Oriental":
+            self.num_device_label.grid(row=4, column=0, sticky="sw", padx=10, pady=10)
+            self.num_device_entry.grid(row=4, column=1, sticky="sw", padx=10, pady=10)
+        else:
+            self.num_device_entry.grid_forget()
+            self.num_device_label.grid_forget()
+
     def defineZero(self):
         if self.motorName == "CmDrive":
             self.motor.ser.close()
@@ -192,6 +220,11 @@ class Interface(Frame):
             self.motor.ser.write('P=0\r')
             # self.motor.ser.readline()
             self.motor.ser.close()
+        else:
+            try:
+                self.motor.actuator.set_home()
+            except NotImplementedError:
+                print "Not implemented yet."
 
     def reset_servostar(self):
         self.motor.reset()
@@ -211,14 +244,16 @@ class Interface(Frame):
         if self.motionType.get() == "" or self.position.get() == "":
             print "one of the entry is empty"
         else:
-            if self.motionType.get() == '1':
-                self.motor.actuator.set_position(int(self.position.get()), None, 'absolute')
-                print 'MA mode'
+            if self.motorName == "CmDrive":
+                if self.motionType.get() == '1':
+                    self.motor.actuator.set_position(int(self.position.get()), None, 'absolute')
+                    print 'MA mode'
+                else:
+                    self.motor.actuator.set_position(int(self.position.get()), None, 'relative')
+                    print 'MR mode'
             else:
-                self.motor.actuator.set_position(int(self.position.get()), None, 'relative')
-                print 'MR mode'
-
-    # function to advance the motor on velocity mode  
+                self.motor.actuator.set_position(int(self.position.get()), int(self.speed.get()))
+    # function to advance the motor on velocity mode
     def advance(self):
         if self.speedVar.get() == "":
             print 'choose velocity'
