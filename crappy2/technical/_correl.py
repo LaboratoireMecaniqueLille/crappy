@@ -117,7 +117,7 @@ class CorrelStage:
     ### Locating the kernel file ###
     kernelFile = kwargs.get("kernel_file")
     if kernelFile is None:
-      print("Kernel file not specified")
+      self.debug(2,"Kernel file not specified")
       from crappy2 import __path__ as crappyPath
       kernelFile = crappyPath[0]+"/data/kernels.cu"
     ### Reading kernels and compiling module ###
@@ -205,7 +205,7 @@ class CorrelStage:
       self.debug(3,"Setting original image from GPUArray")
       self.devOrig = img
     else:
-      print("[CorrelStage] Error:  Unknown type of data given to setOrig()")
+      self.debug(0,"Error ! Unknown type of data given to setOrig()")
       raise ValueError
     self.updateOrig()
 
@@ -334,7 +334,7 @@ with a border of 5% the dimension")
       self.debug(3,"Creating texture from gpuarray")
       self.array_d = cuda.gpuarray_to_array(img_d,"C")
     else:
-      print("[CorrelStage] Error: Unknown type of data given to .setImage()")
+      self.debug(0,"Error ! Unknown type of data given to .setImage()")
       raise ValueError
     self.tex_d.set_array(self.array_d)
     self.devX.set(np.zeros(self.Nfields,dtype=np.float32))
@@ -673,7 +673,7 @@ If it is not desired, consider lowering the verbosity: \
       try:
         self.Nfields = len(kwargs["fields"])
       except KeyError:
-        print("[Correl] Error: You must provide the number of fields at init. \
+        self.debug(0,"Error! You must provide the number of fields at init. \
 Add Nfields=x or directly set fields with fields=list/tuple")
         raise ValueError
 
@@ -793,7 +793,7 @@ to allow GPU computing (got {}). Converting to float32."\
     elif isinstance(fields[0][0], gpuarray.GPUArray):
       toArray = cuda.gpuarray_to_array
     else:
-      print("[Correl] Error: Incorrect fields argument. \
+      self.debug(0,"Error ! Incorrect fields argument. \
 See docstring of Correl")
       raise ValueError
     # These list store the arrays for the fields texture
@@ -868,7 +868,7 @@ for k in np.arange(-1,1,2./self.h[0])],dtype=np.float32))
         ###
 
         else:
-          print("[Correl] Error: Unrecognized field parameter:",fields[i])
+          self.debug(0,"Error ! Unrecognized field parameter:",fields[i])
           raise ValueError
 
       self.fieldsXArray.append(toArray(fields[i][0],"C"))
