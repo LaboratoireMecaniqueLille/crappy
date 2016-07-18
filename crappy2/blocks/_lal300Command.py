@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup CommandLal300 CommandLal300
+# @{
+
+## @file _lal300Command.py
+# @brief Programme permettant de realiser des essais cycliques avec parametres de deplacement,
+#        de cycles et de vitesse variables
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
 
 from _meta import MasterBlock
 import time
@@ -13,9 +26,8 @@ class CommandLal300(MasterBlock):
 
     def __init__(self, TechnicalLal300):  # Initialisation de la classe CommandLal300 avec la classe TechnicalLal300
         """
-        Parameters
-        ----------
-        TechnicalLal300 : crappy2.technical.TechnicalLal300 object.
+        Args:
+            TechnicalLal300 : crappy2.technical.TechnicalLal300 object.
         """
         super(CommandLal300, self).__init__()
         self.technical = TechnicalLal300

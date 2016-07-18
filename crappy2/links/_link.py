@@ -1,4 +1,17 @@
-# coding: utf-8
+##  @defgroup links Links
+# Link class. All connection between Blocks should be made with this.
+# @{
+
+##  @defgroup init Init
+# @{
+
+## @file __init__.py
+# @brief  Link class. All connection between Blocks should be made with this.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 from multiprocessing import Pipe
 import copy
 from functools import wraps
@@ -6,8 +19,6 @@ from functools import wraps
 # import os
 from threading import Thread
 
-
-# import signal
 
 class TimeoutError(Exception):
     """Custom error to raise in case of timeout."""
@@ -84,22 +95,20 @@ class Link(object):
         You can add one or multiple conditions to modify the value transfered.
 
 
-        Parameters
-        ----------
-        name
-        condition : Children class of links.MetaCondition, optionnal
-            Each "send" call will pass through the condition.evaluate method and sends
-            the returned value.
-            You can pass a list of conditions, the link will execute them in order.
+        Args:
+            name: name of a link to recognize it on timeout or between a Client and a Server.
+            condition : Children class of links.MetaCondition, optionnal
+                Each "send" call will pass through the condition.evaluate method and sends
+                the returned value.
+                You can pass a list of conditions, the link will execute them in order.
 
-        timeout : int or float, default = 0.1
-            Timeout for the send method.
+            timeout : int or float, default = 0.1
+                Timeout for the send method.
 
-        action : {'warn','kill','NoWarn',str}, default = "warn"
-            Action in case of TimeoutError in the send method. You can warn only, not
-            warn or choose to kill the link. If any other string, will be printed in
-            case of error to debug.
-
+            action : {'warn','kill','NoWarn',str}, default = "warn"
+                Action in case of TimeoutError in the send method. You can warn only, not
+                warn or choose to kill the link. If any other string, will be printed in
+                case of error to debug.
         """
         self.name = name
         self.in_, self.out_ = Pipe(duplex=False)
@@ -174,7 +183,7 @@ class Link(object):
                 self.out_.close()
             raise Exception(e)
 
-            # =======
+            #
             # 		except TimeoutError as e:
             # 			if self.action=="warn":
             # 				print "WARNING : Timeout error in pipe send! Value : ", value

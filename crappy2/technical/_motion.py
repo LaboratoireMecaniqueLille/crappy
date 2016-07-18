@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup technical
+# @{
+
+##  @defgroup Motion Motion
+# @{
+
+## @file _motion.py
+# @brief Class to control a motor defined in crappy.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 import serial
 import time
 from ._meta import motion

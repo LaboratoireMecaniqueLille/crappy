@@ -1,4 +1,17 @@
 ﻿# coding: utf-8
+##  @addtogroup technical
+# @{
+
+##  @defgroup Biotens Biotens
+# @{
+
+## @file _biotensTechnical.py
+# @brief  Open the connection, and initialise the Biotens.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 import serial
 import time
 from ..sensor import _biotensSensor
@@ -13,12 +26,11 @@ class Biotens(motion.Motion):
 
         You should always use this Class to communicate with the Biotens.
 
-        Parameters
-        ----------
-        port : str, default = '/dev/ttyUSB0'
-            Path to the correct serial port.
-        size : int of float, default = 30
-            Initial size of your test sample, in mm.
+        Args:
+            port : str, default = '/dev/ttyUSB0'
+                Path to the correct serial port.
+            size : int of float, default = 30
+                Initial size of your test sample, in mm.
         """
         super(Biotens, self).__init__(port, baudrate)
         self.size = size - 7
@@ -116,7 +128,9 @@ class Biotens(motion.Motion):
         self.ser.close()
 
     def clear_errors(self):
-        """Clears error in motor registers. obviously."""
+        """
+        Clears error in motor registers. obviously.
+        """
         command = '\x52\x52\x52\xFF\x00' + _biotensSensor.convert_to_byte(35, 'B') + _biotensSensor.convert_to_byte(4,
                                                                                                                     'B') + _biotensSensor.convert_to_byte(
             0, 'i') + '\xAA\xAA\x50\x50\x50\xFF\x00' + _biotensSensor.convert_to_byte(35, 'B') + '\xAA\xAA'

@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup technical
+# @{
+
+##  @defgroup CmDrive CmDrive
+# @{
+
+## @file _dataPicker.py
+# @brief Dummy technical
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 import serial
 import time
 

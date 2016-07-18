@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup MasterBlock MasterBlock
+# @{
+
+## @file _meta.py
+# @brief Main class for block architecture. All blocks should inherit this class.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from multiprocessing import Process, Pipe
 import os
 import platform
@@ -18,22 +31,21 @@ class MasterBlock(object):
     """
     Main class for block architecture. All blocks should inherit this class.
 
-    Methods
-    -------
-    main()
-         Override it to define the main function of this block.
-    add_input(Link object)
-        Add a Link object as input.
-    add_output(Link object)
-        Add a Link as output.
-    start()
-        Start the main() method as a Process.
-    stop()
-        Stops the process.
+    Methods:
+        main()
+             Override it to define the main function of this block.
+        add_input(Link object)
+            Add a Link object as input.
+        add_output(Link object)
+            Add a Link as output.
+        start()
+            Start the main() method as a Process.
+        stop()
+            Stops the process.
     """
     instances = []
     first_call = True
-    
+
     def __init__(self):
         self.inputs = []
         self.proc = Process(target=main_wrapper, args=(self.loop,))
@@ -44,48 +56,58 @@ class MasterBlock(object):
         instance = super(MasterBlock, cls).__new__(cls, *args, **kwargs)
         instance.instances.append(instance)
         return instance
-      
-    def close_all_instances(self):
-	if MasterBlock.first_call:
-	  MasterBlock.first_call = False
-	  for instance in MasterBlock.instances:
-	    try:
-	      instance.stop()
-	    except Exception:
-	      pass
-	  for instance in MasterBlock.instances:
-	    for input_ in instance.inputs:
-	      input_.close()
-	    for output_ in instance.outputs:
-	      output_.close()
-	    MasterBlock.instances.remove(instance)
-	  
+
+    @staticmethod
+    def close_all_instances():
+        if MasterBlock.first_call:
+            MasterBlock.first_call = False
+            for instance in MasterBlock.instances:
+                try:
+                    instance.stop()
+                except Exception:
+                    pass
+            for instance in MasterBlock.instances:
+                for input_ in instance.inputs:
+                    input_.close()
+                for output_ in instance.outputs:
+                    output_.close()
+                MasterBlock.instances.remove(instance)
+
     def add_output(self, link):
-        # try:  # test if the outputs list exist
-        #     a_ = self.outputs[0]
-        # except AttributeError:  # if it doesn't exist, create it
-        #     pass
+        """
+        Add a Link as output.
+        Args:
+            link: link instance
+        """
         self.outputs.append(link)
 
     def add_input(self, link):
-        # try:  # test if the outputs list exist
-        #     a_ = self.inputs[0]
-        # except AttributeError:  # if it doesn't exist, create it
-        #     pass
+        """
+        Add a Link object as input.
+        Args:
+            link: link instance
+        """
         self.inputs.append(link)
 
     def main(self):
+        """
+        Override it to define the main function of this block.
+        """
         raise NotImplementedError("Must override method main")
-  
+
     def loop(self):
-      try:
-	self.main()
-      except KeyboardInterrupt:
-	self.close_all_instances()
-      except Exception as e:
-	print e
-	self.close_all_instances()
+        try:
+            self.main()
+        except KeyboardInterrupt:
+            self.close_all_instances()
+        except Exception as e:
+            print e
+            self.close_all_instances()
+
     def start(self):
+        """
+        Start the main() method as a Process.
+        """
         try:
             self.proc.start()
 
@@ -101,9 +123,13 @@ class MasterBlock(object):
             raise  # raise the error to the next level for global shutdown
             # def join(self):
             # self.proc.join()
+
     def stop(self):
-      self.proc.terminate()
-      #self.proc.join()
+        """
+        Stops the process.
+        """
+        self.proc.terminate()
+        # self.proc.join()
 
     @property
     def t0(self):
@@ -115,8 +141,10 @@ class MasterBlock(object):
 
 
 def delay(ms):
-    """Delay in milliseconds with libc usleep() using ctypes.
-  It has a better repeatability than time.sleep()"""
+    """
+    Delay in milliseconds with libc usleep() using ctypes.
+    It has a better repeatability than time.sleep()
+    """
     ms = int(ms * 1000)
     if platform.system() == "Linux":
         libc.usleep(ms)

@@ -1,4 +1,16 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup Streamer Streamer
+# @{
+
+## @file _streamer.py
+# @brief Send a stream of data.
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 from _meta import MasterBlock
 import time
 # import pandas as pd
@@ -16,17 +28,16 @@ class Streamer(MasterBlock):
         """
         Use it for testing and LabJack streaming.
 
-        Parameters
-        ----------
-        sensor: None or LabJack sensor instance
-            If None, will stream an incremented integer.
-            If Labjack sensor instance, will stream the LabJack Values as definied at
-            the instance creation. Be aware that if this block loops slowler than the
-            LabJack streams, it will crash the LabJack when buffer is full.
-            If scansPerRead !=1, you can directly link output data to a graph/save without
-            going through a compacter.
-        labels : list of str, default = ['t(s)','signal']
-            Output labels.
+        Args:
+            sensor: None or LabJack sensor instance
+                If None, will stream an incremented integer.
+                If Labjack sensor instance, will stream the LabJack Values as definied at
+                the instance creation. Be aware that if this block loops slowler than the
+                LabJack streams, it will crash the LabJack when buffer is full.
+                If scansPerRead !=1, you can directly link output data to a graph/save without
+                going through a compacter.
+            labels : list of str, default = ['t(s)','signal']
+                Output labels.
         """
         super(Streamer, self).__init__()
         self.i = 0

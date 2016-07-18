@@ -37,12 +37,11 @@ class DaqmxSensor(acquisition.Acquisition):
 
         """
 
-        Parameters
-        ----------
-        device
-        channels
-        range_num
-        mode
+        Args:
+            device: device name
+            channels: channel number
+            range_num: range number
+            mode: mode (default = "single")
         """
         super(DaqmxSensor, self).__init__()
         self._ranges_tab = [[0.0, 0.5], [0.0, 1.0], [0.0, 2.5], [0.0, 5.0], [0.0, 7.5], [0.0, 10.0],
@@ -98,13 +97,12 @@ class DaqmxSensor(acquisition.Acquisition):
     def get_data(self, nb_points=1):
         """Read the signal
 
-        Parameters
-        ----------
-        nb_points
+        Args:
+            nb_points: number of values to read.
 
-        Returns
-        -------
-        time, data
+        Returns:
+            time: current time
+            data: value read
         """
         try:
             DAQmxCfgSampClkTiming(self.taskHandle, "",

@@ -1,4 +1,17 @@
 # -*- coding:utf-8 -*-
+##  @addtogroup technical
+# @{
+
+##  @defgroup interface Interface
+# @{
+
+## @file _interfaceCMdrive.py
+# @brief Creat a graphic interface that permit to connect the motor via a serial ser,
+#        and to send command in terms of speed or position
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
 import Tix
 from Tkinter import *
 import Tkinter

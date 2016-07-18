@@ -25,12 +25,11 @@ class Jai(cameraSensor.CameraSensor):
     def __init__(self, numdevice=0, framespersec=99, serial=None):
         """Opens a Jai camera and allow to grab frame and set the various parameters.
         
-        Parameters
-        ----------
-        numdevice : int, dault = 0
-            Number of the wanted device.
-        framepersec : int, default = 99
-            Wanted frame rate.
+        Args:
+            numdevice : int, dault = 0
+                Number of the wanted device.
+            framepersec : int, default = 99
+                Wanted frame rate.
         """
         self.FPS = framespersec
         self.framespersec = framespersec

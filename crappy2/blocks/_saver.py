@@ -9,7 +9,7 @@
 # @brief Saves data in a file.
 # @author Robin Siemiatkowski
 # @version 0.1
-# @date 11/07/2016
+# @date 13/07/2016
 
 from _meta import MasterBlock
 import os
@@ -19,18 +19,13 @@ import time
 np.set_printoptions(threshold='nan', linewidth=500)
 
 
-## Be aware that the log file needs to be cleaned before starting this function,
-# otherwise it just keep writing a the end of the file.
-# First line of the file will be meta-data. If file already exists, skips the
-# meta-data writing.
-#
-# If the folder doesn't exists, creates it.
-
 class Saver(MasterBlock):
     """Saves data in a file"""
 
     def __init__(self, log_file):
         """
+        Constructor of Saver class.
+
         Be aware that the log file needs to be cleaned before starting this function,
         otherwise it just keep writing a the end of the file.
         First line of the file will be meta-data. If file already exists, skips the
@@ -38,10 +33,9 @@ class Saver(MasterBlock):
 
         If the folder doesn't exists, creates it.
 
-        Parameters
-        ----------
-        log_file : str
-        Path to the log file. If non-existant, will be created.
+        Args:
+            log_file : str
+            Path to the log file. If non-existant, will be created.
         """
         super(Saver, self).__init__()
         print "saver! : ", os.getpid()

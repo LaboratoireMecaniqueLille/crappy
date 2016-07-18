@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup MeasureComediByStep MeasureComediByStep
+# @{
+
+## @file _measureComediByStep.py
+# @brief Streams value measure on a comedi card through a Link object.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock
 import time
 import os
@@ -13,7 +26,8 @@ class MeasureComediByStep(MasterBlock):
 
     def __init__(self, comediSensor, labels=None, freq=None):
         """
-        DEPRECATED : This block is to be replaced by MeasureByStep
+        DEPRECATED : This block is to be replaced by MeasureByStep.
+
         This streamer read the value on all channels ONE BY ONE and send the
         values through a Link object. it is slower than StreamerComedi, but works on
         every USB driver.
@@ -21,14 +35,13 @@ class MeasureComediByStep(MasterBlock):
         It can be triggered by a Link sending boolean (through "add_input" method),
         or internally by defining the frequency.
 
-        Parameters
-        ----------
-        comediSensor : comediSensor object
-            See sensor.ComediSensor documentation.
-        labels : list
-            The labels you want on your output data.
-        freq : float or int, optional
-            Wanted acquisition frequency. Cannot exceed acquisition card capability.
+        Args:
+            comediSensor : comediSensor object
+                See sensor.ComediSensor documentation.
+            labels : list
+                The labels you want on your output data.
+            freq : float or int, optional
+                Wanted acquisition frequency. Cannot exceed acquisition card capability.
         """
         super(MeasureComediByStep, self).__init__()
         self.comediSensor = comediSensor

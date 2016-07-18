@@ -1,4 +1,22 @@
+#!/usr/bin/python
 # coding: utf-8
+
+##  @defgroup technical Technical
+# @brief Some hardware is both a sensor and an actuator by our definitions.
+# This is for example the case of a variable-frequency drive : they can set the speed of the motor (the actuator part),
+# but most of them can also read the position or the speed of the motor the sensor part).
+# @{
+
+##  @defgroup init Init
+# @{
+
+## @file __init__.py
+# @brief  Import classes to put them in the current namespace.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 21/06/2016
+
 from .._warnings import import_error
 
 e = None

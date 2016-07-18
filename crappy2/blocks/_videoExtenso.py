@@ -1,4 +1,16 @@
 ﻿# coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup VideoExtenso VideoExtenso
+# @{
+
+## @file _videoExtenso.py
+# @brief Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 import numpy as np
 import time
 import cv2
@@ -76,9 +88,11 @@ def plotter(plot_pipe_recv):
 
 
 def barycenter_opencv(recv_):
-    # computation of the barycenter (moment 1 of image) on ZOI using OpenCV
-    # white_spot must be True if spots are white on a dark material
-    # The median filter helps a lot for real life images ...
+    """
+    computation of the barycenter (moment 1 of image) on ZOI using OpenCV
+    white_spot must be True if spots are white on a dark material
+    The median filter helps a lot for real life images ...
+    """
     while True:
         try:
             image, minx, miny, update_tresh, thresh, NumOfReg, border, white_spot = recv_.recv()[:]
@@ -151,8 +165,7 @@ class VideoExtenso(MasterBlock):
                  display=True, update_tresh=False, labels=['t(s)', 'Px', 'Py', 'Exx(%)', 'Eyy(%)'], security=False,
                  save_folder=None):
         """
-        Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. Can display the 
-        image with the center of the spots.
+        Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. display the image with the center of the spots.
 
         4 spots mode : deformations are evaluated on the distance between centers of spots.
         2 spots mode : same, but deformation is only reliable on 1 axis.
@@ -165,53 +178,47 @@ class VideoExtenso(MasterBlock):
         usefull if you have a long test to do, as the script doesn't stop when losing 
         spots. Not to mention it is fun.
 
-        Parameters
-        ----------
-        camera : string, {"Ximea","Jai"},default=Ximea
-                See sensor.cameraSensor documentation.
-        numdevice : int, default=0
-                If you have multiple camera plugged, select the correct one.
-        xoffset: int, default =0
-                Offset on the x axis.
-        yoffset: int, default =0
-                Offset on the y axis.
-        width: int, default = 2048
-                Width of the image.
-        height: int, default = 2048
-                Height of the image.
-        white_spot : Boolean, default=True
-                Set to False if you have dark spots on a light surface.
-        display : Boolean, default=True
-                Set to False if you don't want to see the image with the spot detected.
-        update_tresh : Boolean, default=False
-                Set to True if you want to re-evaluate the threshold for every new image.
-                Updside is that it allows you to follow more easily your spots even if your 
-                light changes. Downside is that it will change the area and possibly the 
-                shape of the spots, wich may inscrease the noise on the deformation and 
-                artificially change its value. This is especially true with a single spot 
-                configuration.
-        labels : list of string, default = ['t(s)','Px','Py','Exx(%)','Eyy(%)']
-                Labels of your output. Order is important.
-        security : bool, default = False
-                If True, send a kill pill for other processes to stop when spots are losts.
-        save_folder : str or None (default)
-                If a path is definied, will save the images in this folder. If None, no saving
+        Args:
+            camera : string, {"Ximea","Jai"},default=Ximea
+                    See sensor.cameraSensor documentation.
+            numdevice : int, default=0
+                    If you have multiple camera plugged, select the correct one.
+            xoffset: int, default =0
+                    Offset on the x axis.
+            yoffset: int, default =0
+                    Offset on the y axis.
+            width: int, default = 2048
+                    Width of the image.
+            height: int, default = 2048
+                    Height of the image.
+            white_spot : Boolean, default=True
+                    Set to False if you have dark spots on a light surface.
+            display : Boolean, default=True
+                    Set to False if you don't want to see the image with the spot detected.
+            update_tresh : Boolean, default=False
+                    Set to True if you want to re-evaluate the threshold for every new image.
+                    Updside is that it allows you to follow more easily your spots even if your
+                    light changes. Downside is that it will change the area and possibly the
+                    shape of the spots, wich may inscrease the noise on the deformation and
+                    artificially change its value. This is especially true with a single spot
+                    configuration.
+            labels : list of string, default = ['t(s)','Px','Py','Exx(%)','Eyy(%)']
+                    Labels of your output. Order is important.
+            security : bool, default = False
+                    If True, send a kill pill for other processes to stop when spots are losts.
+            save_folder : str or None (default)
+                    If a path is definied, will save the images in this folder. If None, no saving
 
-        Returns
-        -------
-        dict : OrderedDict
-
-
-                time : float
-                        Time of the measure, relative to t0.
-                Lx : float
-                        Lenght (in pixels) of the spot.
-                Ly : float
-                        Width (in pixels) of the spot.
-                Exx : float
-                        Deformation = Lx/L0x
-                Eyy : float
-                        Deformation = Lxy/L0y
+        Returns:
+            dict :
+                    time : float
+                            Time of the measure, relative to t0.
+                    Lx : float
+                            Lenght (in pixels) of the spot.
+                    Ly : float
+                            Width (in pixels) of the spot.
+                    Exx : float. Deformation = Lx/L0x
+                    Eyy : float. Deformation = Lxy/L0y
         """
         super(VideoExtenso, self).__init__()
         go = False

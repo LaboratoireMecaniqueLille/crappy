@@ -44,21 +44,22 @@ def resettable(f, *args, **kwargs):
 
 
 class Ximea(cameraSensor.CameraSensor):
-    ## @fn __init__()
-    # @brief Camera class for ximea devices, this class should inherit from CameraSensor
-    #
-    # Contains all the methods to open a device, resize the Zone Of Interest, and
-    # grab frames.
-    #
-    # @param numdevice : int or string (device path), default = 0
-    #     Number of your device.
-    # @param framespersec : int or float or None, default = None
-    #     The wanted frequency for grabbing frame. DOESN'T WORK at the moment.
-    # @param external_trigger : bool, default = False
-    #     Define to True if you want to trigg the acquyisition of a frame externally.
-    # @param data_format : int, default = 0
-    #     Value must be in [0:7]. See documentation for more informations.
-    #
+    """
+    Camera class for ximea devices, this class should inherit from CameraSensor
+
+    Contains all the methods to open a device, resize the Zone Of Interest, and
+    grab frames.
+
+    Args:
+        numdevice : int or string (device path), default = 0
+            Number of your device.
+        framespersec : int or float or None, default = None
+            The wanted frequency for grabbing frame. DOESN'T WORK at the moment.
+        external_trigger : bool, default = False
+            Define to True if you want to trigg the acquyisition of a frame externally.
+        data_format : int, default = 0
+            Value must be in [0:7]. See documentation for more informations.
+    """
 
     @resettable
     def __init__(self, numdevice=0, framespersec=None,

@@ -1,3 +1,16 @@
+# coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup SaverGUI SaverGUI
+# @{
+
+## @file _savergui.py
+# @brief Saves data in a file.
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 from . import MasterBlock
 import os
 import numpy as np
@@ -12,18 +25,16 @@ class SaverGUI(MasterBlock):
 
     def __init__(self):
         """
-Saver(log_file)
+        Saver(log_file) Saves data in a file.
 
-Saves data in a file. Be aware that the log file needs to be cleaned before 
-starting this function, otherwise it just keep writing a the end of the file.
-First line of the file will be meta-data. If file already exists, skips the
-meta-data writing.
+        Be aware that the log file needs to be cleaned before
+        starting this function, otherwise it just keep writing a the end of the file.
+        First line of the file will be meta-data. If file already exists, skips the
+        meta-data writing.
 
-Parameters
-----------
-log_file : string
-    Path to the log file. If non-existant, will be created.
-
+        Args:
+            log_file : string
+                Path to the log file. If non-existant, will be created.
         """
         super(SaverGUI, self).__init__()
         print "saver! : ", os.getpid()

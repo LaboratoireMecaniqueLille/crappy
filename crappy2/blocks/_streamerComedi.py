@@ -1,4 +1,16 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup StreamerComedi StreamerComedi
+# @{
+
+## @file _streamerComedi.py
+# @brief Stream comedi values at high frequency.
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 from _meta import MasterBlock
 import os
 import numpy as np
@@ -17,23 +29,22 @@ class StreamerComedi(MasterBlock):
 
     def __init__(self, comediSensor, labels=None, freq=8000, buffsize=10000):
         """
-        WARNING : Only works in USB 2.0
+        This streamer read the value on all channels at the same time and send the values through a Link object.
 
-        This streamer read the value on all channels at the same time and send the
-        values through a Link object. It can be very fast, but needs need an USB 2.0
+        WARNING : Only works in USB 2.0
+        It can be very fast, but needs need an USB 2.0
         port drove by ehci-driver to work properly.
         xhci driver DOES NOT work (for now).
 
-        Parameters
-        ----------
-        comediSensor : comediSensor object
-            See sensor.ComediSensor documentation.
-        labels : list of str
-            The labels you want with your data.
-        freq : int (default = 8000)
-            the frequency you need.
-        buffsize : int, default = 10000
-            Only use for testing purpose.
+        Args:
+            comediSensor : comediSensor object
+                See sensor.ComediSensor documentation.
+            labels : list of str
+                The labels you want with your data.
+            freq : int (default = 8000)
+                the frequency you need.
+            buffsize : int, default = 10000
+                Only use for testing purpose.
         """
         super(StreamerComedi, self).__init__()
         import comedi as c

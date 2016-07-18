@@ -1,3 +1,17 @@
+# coding: utf-8
+##  @addtogroup technical
+# @{
+
+##  @defgroup Acquisition Acquisition
+# @{
+
+## @file _acquisition.py
+# @brief  Acquisition class to use all implemented sensors.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 from crappy2.technical import __boardnames__ as board_names
 
 

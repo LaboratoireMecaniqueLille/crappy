@@ -28,15 +28,17 @@ from ._meta import motion
 
 class PISensor(motion.MotionSensor):
     def __init__(self, port='/dev/ttyS0', timeout=1, baudrate=9600, ser=None):
-        ## @fn __init__()
-        # @brief This class create an axis and opens the corresponding serial port.
-        #
-        # @param port_number : str
-        #         Path to the corresponding serial port, e.g '/dev/ttyS4'
-        # @param baud_rate : int, default = 38400
-        #         Set the corresponding baud rate.
-        # @param timeout : int or float, default = 1
-        #         Serial timeout.
+        """
+        This class create an axis and opens the corresponding serial port.
+
+        Args:
+            port_number : str
+                    Path to the corresponding serial port, e.g '/dev/ttyS4'
+            baud_rate : int, default = 38400
+                    Set the corresponding baud rate.
+            timeout : int or float, default = 1
+                    Serial timeout
+        """
         super(PISensor, self).__init__(port, baudrate)
         self.port = port
         self.timeout = timeout

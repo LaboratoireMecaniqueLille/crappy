@@ -1,4 +1,17 @@
 ﻿# coding: utf-8
+##  @addtogroup technical
+# @{
+
+##  @defgroup Oriental Oriental
+# @{
+
+## @file _orientalTechnical.py
+# @brief Class to control a motor defined in crappy.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 import serial
 import time
 
@@ -8,19 +21,20 @@ from ..actuator import OrientalActuator
 
 
 class Oriental(motion.Motion):
-    """Open both a BiotensSensor and BiotensActuator instances."""
+    """
+    Open both a BiotensSensor and BiotensActuator instances.
+    """
     def __init__(self, baudrate=115200, port='/dev/ttyUSB0', num_device=1):
         """
         Open the connection, and initialise the Biotens.
 
         You should always use this Class to communicate with the Biotens.
 
-        Parameters
-        ----------
-        port : str, default = '/dev/ttyUSB0'
-            Path to the correct serial ser.
-        size : int of float, default = 30
-            Initial size of your test sample, in mm.
+        Argrs:
+            port : str, default = '/dev/ttyUSB0'
+                Path to the correct serial ser.
+            size : int of float, default = 30
+                Initial size of your test sample, in mm.
         """
         super(Oriental, self).__init__(port, baudrate)
         self.baudrate = baudrate

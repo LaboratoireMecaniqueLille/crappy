@@ -19,12 +19,11 @@ from ._meta import motion
 from .._warnings import deprecated as deprecated
 
 
-# This functions converts decimal into bytes or bytes into decimals.
-# Mandatory in order to send or read anything into/from MAC Motors registers.
-
 def convert_to_byte(number, length):
-    """This functions converts decimal into bytes.  Mandatory in order to send
-    or read anything into/from MAC Motors registers."""
+    """
+    This functions converts decimal into bytes.  Mandatory in order to send
+    or read anything into/from MAC Motors registers.
+    """
     encoded = pack('%s' % (length), number)  # get hex byte sequence in required '\xXX\xXX', big endian format.
     b = bytearray(encoded, 'hex')
     i = 0
@@ -37,8 +36,10 @@ def convert_to_byte(number, length):
 
 
 def convert_to_dec(sequence):
-    """This functions converts bytes into decimals.  Mandatory in order to send
-    or read anything into/from MAC Motors registers."""
+    """
+    This functions converts bytes into decimals.  Mandatory in order to send
+    or read anything into/from MAC Motors registers.
+    """
     # sequence=sequence[::2] ## cut off "complement byte"
     decim = unpack('i', sequence)  # convert to signed int value
     return decim[0]
@@ -50,7 +51,8 @@ def convert_to_dec(sequence):
 
 class BiotensSensor(motion.MotionSensor):
     def __init__(self, ser=None, port='/dev/ttyUSB0', baudrate=19200):
-        """This class contains methods to get info from the motors of the biotens
+        """
+        This class contains methods to get info from the motors of the biotens
         machine. You should NOT use it directly, but use the BiotensTechnical.
         """
 

@@ -29,18 +29,17 @@ class Grapher(MasterBlock):
         """
         The grapher receive data from the Compacter (via a Link) and plots it.
 
-        Parameters
-        ----------
-        args : tuple
-            tuples of the columns labels of input data for plotting. You can add as\
-            much as you want, depending on your computer performances.
+        Args:
+            args : tuple
+                tuples of the columns labels of input data for plotting. You can add as\
+                much as you want, depending on your computer performances.
 
-        optional: length=x (int) 
-            number of chunks to data to be kept on the graph (default: 10)
+            optional: length=x (int)
+                number of chunks to data to be kept on the graph (default: 10)
 
-            length=0 will create a static graph:
-            add new values at every refresh. If there \
-            is too many data (> 20000), delete one out of 2 to avoid memory overflow.
+                length=0 will create a static graph:
+                add new values at every refresh. If there \
+                is too many data (> 20000), delete one out of 2 to avoid memory overflow.
 
         Examples
         --------
