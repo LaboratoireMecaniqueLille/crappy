@@ -1,12 +1,15 @@
 #coding:utf-8
 from __future__ import division,print_function
 
-"""
-Defines TechCorrel, which is the class used for real-time correlation.
+## @addtogroup technical
+# @{
 
-This class relies on CorrelStage, the single-stage correlation routine.
-It is used in the Correl block.
-"""
+## @defgroup techCorrel techCorrel
+# @{
+# @brief The class used for real-time correlation.
+# @author Victor Couty
+# @version 0.1
+# @date 18/07/2016
 
 import warnings
 from math import ceil
@@ -35,13 +38,11 @@ def interpNearest(ary,ny,nx):
   return out
 
 
-#########################################################################
 #=======================================================================#
 #=                                                                     =#
 #=                        Class CorrelStage:                           =#
 #=                                                                     =#
 #=======================================================================#
-#########################################################################
 
 class CorrelStage:
   """
@@ -72,9 +73,9 @@ class CorrelStage:
     # It will be used to measure performance and output some info
     self.loop = 0
 
-    ### Allocating stuff ###
+    # Allocating stuff #
 
-    ### Grid and block for kernels called with the size of the image ###
+    # Grid and block for kernels called with the size of the image #
     # All the images and arrays in the kernels will be in order (x,y)
     self.grid = (int(ceil(self.w/32)),
                  int(ceil(self.h/32)))
@@ -82,12 +83,12 @@ class CorrelStage:
                   int(ceil(self.h/self.grid[1])),1)
     self.debug(3,"Default grid:",self.grid,"block",self.block)
 
-    ### We need the number of fields to allocate the G tables ###
+    # We need the number of fields to allocate the G tables #
     self.Nfields = kwargs.get("Nfields")
     if self.Nfields is None:
       self.Nfields = len(kwargs.get("fields")[0])
 
-    ### Allocating everything we need ###
+    # Allocating everything we need #
     self.devG = []
     self.devFieldsX = []
     self.devFieldsY = []
@@ -114,17 +115,17 @@ class CorrelStage:
     # And along Y
     self.devGradY = gpuarray.empty(img_size,np.float32)
 
-    ### Locating the kernel file ###
+    # Locating the kernel file #
     kernelFile = kwargs.get("kernel_file")
     if kernelFile is None:
       self.debug(2,"Kernel file not specified")
       from crappy2 import __path__ as crappyPath
       kernelFile = crappyPath[0]+"/data/kernels.cu"
-    ### Reading kernels and compiling module ###
+    # Reading kernels and compiling module #
     with open(kernelFile,"r") as f:
       self.debug(3,"Sourcing module")
       self.mod = SourceModule(f.read()%(self.w,self.h,self.Nfields))
-    ### Assigning functions to the kernels ###
+    # Assigning functions to the kernels #
     # These kernels are defined in data/kernels.cu
     self._resampleOrigKrnl = self.mod.get_function('resampleO')
     self._resampleKrnl = self.mod.get_function('resample')
@@ -142,11 +143,11 @@ class CorrelStage:
                           arguments = "float *x")
     # We could have used use mulRedKrnl(x,x), but this is probably faster ?
 
-    ### Getting texture references ###
+    # Getting texture references #
     self.tex = self.mod.get_texref('tex')
     self.tex_d = self.mod.get_texref('tex_d')
     self.texMask = self.mod.get_texref('texMask')
-    ### Setting proper flags ###
+    # Setting proper flags #
     # All textures use normalized coordinates except for the mask
     for t in [self.tex,self.tex_d]:
       t.set_flags(cuda.TRSF_NORMALIZED_COORDINATES)
@@ -155,19 +156,19 @@ class CorrelStage:
       t.set_address_mode(0,cuda.address_mode.BORDER)
       t.set_address_mode(1,cuda.address_mode.BORDER)
 
-    ### Preparing kernels for less overhead when called ###
+    # Preparing kernels for less overhead when called #
     self._resampleOrigKrnl.prepare("Pii",texrefs=[self.tex])
     self._resampleKrnl.prepare("Pii",texrefs=[self.tex_d])
     self._gradientKrnl.prepare("PP",texrefs=[self.tex])
     self._makeDiff.prepare("PPPP",texrefs=[self.tex,self.tex_d,self.texMask])
     self._addKrnl.prepare("PfP")
-    ### Reading original image if provided ###
+    # Reading original image if provided #
     if kwargs.get("img") is not None:
       self.setOrig(kwargs.get("img"))
-    ### Reading fields if provided ###
+    # Reading fields if provided #
     if kwargs.get("fields") is not None:
       self.setFields(kwargs.get("fields"))
-    ### Reading mask if provided ###
+    # Reading mask if provided #
     if kwargs.get("mask") is not None:
       self.setMask(kwargs.get("mask"))
 
@@ -396,7 +397,7 @@ or give the image as parameter."
     self.res = self._leastSquare(self.devOut).get()
     self.debug(3,"res:",self.res/1e6)
 
-    ### Iterating ###
+    # Iterating #
     # Note: I know this section is dense and wrappers for kernel calls could
     # have made things clearer, but function calls in python cause a
     # non-negligeable overhead and this is the critical part.
@@ -447,80 +448,101 @@ or give the image as parameter."
     return self.devX.get()
 
 
-#########################################################################
 #=======================================================================#
 #=                                                                     =#
-#=                          Class Correl:                              =#
+#=                         Class TechCorrel:                           =#
 #=                                                                     =#
 #=======================================================================#
-#########################################################################
 
 
 class TechCorrel:
   """
-  This class is the core of the Correl block.
-  It is meant to identify efficiently the displacement between two images.
+  Identify the displacement between two images
 
-  REQUIREMENTS:
+  This class is the core of the Correl block.
+  It is meant to be efficient enough to run in real-time.
+
+  It relies on CorrelStage to perform correlation on different scales.
+
+  # Requirements #
     - The computer must have a Nvidia video card with compute capability >= 3.0
     - CUDA 5.0 or higher (only tested with CUDA 7.5)
     - pycuda 2014.1 or higher (only tested with pycuda 2016.1.1)
 
-  PRESENTATION:
+  # Presentation #
+    This class takes a list of fields. These fields will be the base
+      of deformation in which the displacement will be identified.
+      When given two images, it will identify the displacement between
+      the original and the second image in this base as closely as possible
+      lowering square-residual using provided displacements.
+
+    This class is highly flexible and performs on GPU for
+    faster operation.
+
+  # Usage #
     At initialization, TechCorrel needs only one unammed argument:
-        the working resolution (as a tuple of ints), which is the resolution
-        of the images it will be given.
-        All the images must have exactly these dimensions.
-        NOTE: it must be given in this order: (y,x) (like openCV images)
+      the working resolution (as a tuple of ints), which is the resolution
+      of the images it will be given.
+      All the images must have exactly these dimensions.
+    NOTE: The dimensions must be given in this order:
+      (y,x) (like openCV images)
 
     At initialization or after, this class takes a reference image.
-        The deformations on this image are supposed to be all equal to 0.
+      The deformations on this image are supposed to be all equal to 0.
 
     It also needs a number of deformation fields (technically limited
-        to ~500 fields, probably much less depending on the resolution
-        and the amount of memory on the graphics card).
+      to ~500 fields, probably much less depending on the resolution
+      and the amount of memory on the graphics card).
 
     Finally, you need to provide the deformed image you want to process
-    It will then identify parameters of the sum of fields that lowers the
-        square sum of differences between the original image and the
-        second one displaced with the resulting field.
+      It will then identify parameters of the sum of fields that lowers the
+      square sum of differences between the original image and the
+      second one displaced with the resulting field.
 
     This class will resample the images and perform identification on a
-        lower resolution, use the result to initialize the next stage,
-        and again util it reaches the last stage. It will then return
-        the computed parameters. The number of levels can be set with
-        levels=x (see USAGE)
+      lower resolution, use the result to initialize the next stage,
+      and again util it reaches the last stage. It will then return
+      the computed parameters. The number of levels can be set with
+      levels=x (see USAGE)
 
     The latest parameters returned (if any) are used to initialize
-    computation when called again, to help identify large displacement.
-    It is particularly adapted to slow deformations.
+      computation when called again, to help identify large displacement.
+      It is particularly adapted to slow deformations.
 
     To lower the residual, this program computes the gradient of each
-    parameter and uses Newton method to converge as fast as possible.
-    The number of iterations for the resolution can also be set (see USAGE).
+      parameter and uses Newton method to converge as fast as possible.
+      The number of iterations for the resolution can also be set (see USAGE).
 
+    # Parameters #
+    ## Single positional arg ##
+    - img_size: tuple of 2 ints, (y,x), the working resolution
 
-  USAGE:
-    The constructor can take a variety of arguments:
-    verbose=x with x in [0,1,2,3] is used to choose the amount of information
-    printed to the console.
-    0: Nothing except for errors
-    1: Only important infos and warnings
-    2: Major info and a few values periodacally (at a bearable rate)
-    3: Tons of info including details of each iteration
-    Note that debug=3 Really slows the program down. To be used only for debug.
+    The constructor can take a variety of keyword arguments:
+    ## Verbose ##
+      Use verbose=x to choose the amount of information printed to the console:
+    - 0: Nothing except for errors
+    - 1: Only important infos and warnings
+    - 2: Major info and a few values periodacally (at a bearable rate)
+    - 3: Tons of info including details of each iteration
+
+    Note that verbose=3 REALLY slows the program down.
+    To be used only for debug.
 
     ## Fields ##
-      Use fields=['x','y',(MyFieldX,MyFieldY),...] to set the fields.
-      Can also be done later with .setFields(...)
-      In case when the fields are set later, you need to add Nfields=x
-      to specifiy at init the number of expected fields to allow allocation of
-       all the necessary memory on the device.
-      The fields should be given as a list of tuples (or lists if you wish)
-      of 2 numpy.ndarrays OR gpuarray.GPUArray of the size of the image,
-      each array corresponds to the displacement in pixel along
-      respectively X and Y
-    You can also use a string instead of the tuple for common fields:
+      Use fields=[...] to set the fields.
+        This can be done later with setFields(), however
+        in case when the fields are set later, you need to add Nfields=x
+        to specifiy at init the number of expected fields in order to allocate
+        all the necessary memory on the device.
+
+      The fields should be given as a list of tuples
+        of 2 numpy.ndarrays or gpuarray.GPUArray of the size of the image,
+        each array corresponds to the displacement in pixel along
+        respectively X and Y
+
+    You can also use a string instead of the tuple for the common fields:
+
+      Rigid body and linear deformations:
       - 'x': Movement along X
       - 'y': Movement along Y
       - 'r': Rotation (in the trigonometric direction)
@@ -528,93 +550,121 @@ class TechCorrel:
       - 'eyy': Stretch along Y
       - 'exy': Shear
       - 'z': Zoom (dilatation) (=exx+eyy)
+
       Note that you should not try to identify exx,eyy AND z at the same time
       (one of them is redundant)
-      QUADRATIIC DEFORMATIONS:
+
+      Quadratic deformations:
+
       These fields are more complicated to interpret but can be useful
-      for complicated sollicitations such as biaxial stretch
-      U and V represent the displacement along respectively x and y
+        for complicated sollicitations such as biaxial stretch.\n
+        U and V represent the displacement along respectively x and y.
       - 'uxx': U(x,y) = x²
       - 'uyy': U(x,y) = y²
       - 'uxy': U(x,y) = xy
       - 'vxx': V(x,y) = x²
       - 'vyy': V(x,y) = y²
       - 'vxy': V(x,y) = xy
-      All of these default fields are normalized to have a max displacement
-      of 1 pixel and are centered in the middle of the image.
-      They are generated to have the size of your image.
 
-      For example, to have the stretch in %, simply divide the value by HALF
-      the dimension in pixel along this axis (because it goes from -1 to 1)
+      All of these default fields are normalized to have a max displacement
+        of 1 pixel and are centered in the middle of the image.
+        They are generated to have the size of your image.
+
+      To have the stretch in % for exx and eyy, simply divide the value by HALF
+        the dimension in pixel along this axis (because it goes from -1 to 1)
+
+      You can mix strings and tuples at your convenience to perform 
+        your identification.
+
+      Example:
+          fields=['x','y',(MyFieldX,MyFieldY)] \endcode
+
+      where MyfieldX and MyfieldY are numpy arrays with the same shape
+      as the images
+
+      Example of memory usage: On a 2048x2048 image, 
+      count roughly 180 + 100*Nfields MB of VRAM
 
     ## Original image ##
-      It must be given as a 2D numpy.ndarray. This block works with
+    It must be given as a 2D numpy.ndarray. This block works with
       dtype=np.float32. If the dtype of the given image is different,
       it will print a warning and the image will be converted.
-      It can be given at init with img=MyImage or later with setOrig(MyImage).
-      Note that you can reset it whenever you want, even multiple times but
+      It can be given at init with the kwarg img=MyImage
+      or later with setOrig(MyImage).
+      Note: You can reset it whenever you want, even multiple times but
       it will reset the def parameters to 0.
 
-      Once fields and original image are set, there is a short
+    Once fields and original image are set, there is a short
       preparation time before correlation can be performed.
       You can do this preparation yourself by using .prepare().
-      If .prepare() is not called, it will be done automatically
+      If not called, it will be done automatically
       when necessary, inducing a slight overhead at the first
       call of .getDisp() after setting/updating the fields or original image
 
     ## Compared image ##
-      It can be given directly when querying the displacement parameters with
-      .getDisp(MyImage) or before calling .getDisp() with setImage(MyImage)
+    It can be given directly when querying the displacement as a parameter to
+      getDisp() or before, with setImage().
       You can provide it as a np.ndarray just like orig,
       or as a pycuda.gpuarray.GPUArray.
 
     ## Editing the behavior ##
-      list of kwargs:
-        - levels=x (int, x>= 1, default: 5)
-          Number of levels of the pyramid (will create x stages)
+    Kwargs:
+      levels: <b>int, >= 1, default=5</b>\n
+        Number of levels of the pyramid\n
           More levels can help converging with large and quick deformations
-          but may fail on images without low spatial frequency
-          Less levels: program will run faster
+          but may fail on images without low spatial frequency.\n
+          Less levels -> program will run faster
 
-        - resampling_factor=x (float, x > 1, default: 2)
-          The resolution will be divided by x between each stage of the pyramid
-          Low: Can allow coherence between stages but is more expensive
-          High: Reach small resolutions in less levels -> faster but be
-            careful not to loose consistency between stages
+      resampling_factor: <b>float, > 1, default=2</b>\n
+        The resolution will be divided by this parameter between each stage of
+          the pyramid.\n
+          Low -> Can allow coherence between stages but is more expensive\n
+          High -> Reach small resolutions in less levels -> faster but be
+          careful not to loose consistency between stages
 
-        - iterations=x (int, x>=1, default: 4)
+      iterations: <b>int, x>=1, default=4</b>\n
           The MAXIMUM number of iteration to be run before returning the
-          values. Note that if the residual increases before
+          values.\n
+          Note that if the residual increases before
           reaching x iterations, the block will return anyways.
 
-        - img=x (numpy.ndarray, x.shape=img_size, default: None)
+      img: <b>numpy.ndarray, img.shape=img_size, default: None</b>\n
           If you want to set the original image at init.
 
-        - show_diff=x (Boolean, ,default = False)
+      mask: <b>numpy.ndarray, mask.shape=img_size, default: None</b>\n
+        To set the mask, to weight the zone of interest on the images.
+        It is particularly useful to prevent undesired effects on the border
+        of the images.\n
+        If no mask is given, a rectangular mask will be used, with border
+        of 5% the size of the image.
+
+      show_diff: <b>Boolean, ,default=False</b>\n
           Will open a cv2 window and print the difference between the
-          original and the displaced image after correlation.
+          original and the displaced image after correlation.\n
           128 Gray means no difference,
           lighter means positive and darker negative.
 
-        - kernel_file=x (String, path,
-            default: *crappy install dir*/data/kernels.cu)
-        Where *crappy install dir* is the root directory
+      kernel_file: <b>string, path,
+       default=crappy_install_dir/data/kernels.cu</b>\n
+        Where crappy_install_dir is the root directory
         of the installation of crappy (crappy.__path__)
 
-        - mul=x (float, >0, default:3)
-          This parameter is ESSENTIAL.
-          The direction will be multiplied by this scalar before being added
-          to the solution.
-          It defines how "fast" we move towards the solution.
-          High value => Fast convergence but risk to go past the solution
-          and diverge (the program does not try to handle this:
-          if the residual rises, iterations stop immediatly).
-          Low value => Probably more precise but slower and may require
-          more iterations. After multiple tests, 3 was found to be a pretty
-          acceptable value. Don't hesitate to adapt it to your case:
-          use verbose=3 and see if the convergence is too slow or too fast.
+      mul: <b>float, > 0, default=3</b>\n
+        This parameter is critical.\n
+        The direction will be multiplied by this scalar before being added
+        to the solution.\n
+        It defines how "fast" we move towards the solution.\n
+        High value -> Fast convergence but risk to go past the solution
+        and diverge (the program does not try to handle this and
+        if the residual rises, iterations will stop immediately).\n
+        Low value -> Probably more precise but slower and may require
+        more iterations.\n
+        After multiple tests, 3 was found to be a pretty
+        acceptable value. Don't hesitate to adapt it to your case.
+        Use verbose=3 and see if the convergence is too slow or too fast.
 
-  TODO:
+
+  \todo
     This section lists all the considered improvements for this program.
     These features may NOT all be implemented in the future.
     They are sorted by priority.
@@ -661,7 +711,7 @@ If it is not desired, consider lowering the verbosity: \
     self.debug(1,"Initializing... Master resolution:",img_size,
                  "levels:",self.levels,"verbosity:",self.verbose)
 
-    ### Computing dimensions of the different levels ###
+    # Computing dimensions of the different levels #
     self.h,self.w = [],[]
     for i in range(self.levels):
       self.h.append(int(round(h/(self.resamplingFactor**i))))
@@ -684,7 +734,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
       kernelFile = crappyPath[0]+"/data/kernels.cu"
     self.debug(3,"Kernel file:",kernelFile)
 
-    ### Creating a new instance of CorrelStage for each stage ###
+    # Creating a new instance of CorrelStage for each stage #
     self.correl=[]
     for i in range(self.levels):
       self.correl.append(CorrelStage((self.h[i],self.w[i]),
@@ -694,7 +744,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
                             mul=kwargs.get("mul",3),
                             kernel_file=kernelFile))
 
-    ### Set original image if provided ###
+    # Set original image if provided #
     if kwargs.get("img") is not None:
       self.setOrig(kwargs.get("img"))
 
@@ -733,7 +783,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
       t.set_address_mode(0,cuda.address_mode.BORDER)
       t.set_address_mode(1,cuda.address_mode.BORDER)
 
-    ### Set fields if provided ###
+    # Set fields if provided #
     if kwargs.get("fields") is not None:
       self.setFields(kwargs.get("fields"))
 
@@ -765,8 +815,8 @@ Add Nfields=x or directly set fields with fields=list/tuple")
   def setOrig(self,img):
     """
     To set the original image
-   
-    (This is the reference with which the deformed image will be compared)
+
+    This is the reference with which the second image will be compared
     """
     self.debug(2,"updating original image")
     assert isinstance(img,np.ndarray),"Image must be a numpy array"
@@ -865,7 +915,6 @@ np.concatenate(((np.arange(-1,1,2./self.h[0],dtype=np.float32)**2)
           fields[i] = (np.zeros((self.h[0],self.w[0]),np.float32),
 np.array([[k*j for j in np.arange(-1,1,2./self.w[0])]
 for k in np.arange(-1,1,2./self.h[0])],dtype=np.float32))
-        ###
 
         else:
           self.debug(0,"Error ! Unrecognized field parameter:",fields[i])
@@ -946,7 +995,7 @@ to allow GPU computing (got {}). Converting to float32."\
   def writeDiffFile(self,level=0):
     """
     To see the difference between the two images with the computed parameters.
-   
+
     It writes a single channel picture named "diff.png" where 128 gray is
     exact equality, lighter pixels show positive difference and darker pixels
     a negative difference. Useful to see if correlation succeded and to
@@ -957,3 +1006,6 @@ to allow GPU computing (got {}). Converting to float32."\
   def clean(self):
     """Needs to be called at the end, to destroy the context properly"""
     context.pop()
+
+#@}
+#@}
