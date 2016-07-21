@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup commandBiotens commandBiotens
+# @{
+
+## @file _commandBiotens.py
+# @brief Receive a signal and send it for the Biotens actuator.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock
 import time
 # import pandas as pd
@@ -13,14 +26,13 @@ class CommandBiotens(MasterBlock):
         """
         Receive a signal and translate it for the Biotens actuator.
 
-        Parameters
-        ----------
-        biotens_technicals : list of crappy2.technical.Biotens objects.
-            List of all the axes to control.
-        signal_label : str, default = 'signal'
-            Label of the data to be transfered.
-        speed: int, default = 5
-            Wanted speed, in mm/min.
+        Args:
+            biotens_technicals : list of crappy2.technical.Biotens objects.
+                List of all the axes to control.
+            signal_label : str, default = 'signal'
+                Label of the data to be transfered.
+            speed: int, default = 5
+                Wanted speed, in mm/min.
         """
         super(CommandBiotens, self).__init__()
         self.biotens_technicals = biotens_technicals

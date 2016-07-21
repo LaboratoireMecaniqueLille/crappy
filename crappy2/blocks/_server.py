@@ -1,4 +1,16 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup Server Server
+# @{
+
+## @file _server.py
+# @brief This block allows to create a server to send data over network with sockets.
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 import os
 import time
 from multiprocessing import connection, Process
@@ -43,12 +55,12 @@ def send(input_, conn):
         conn.close()
         pass
     except Exception as e:
-        print 'Unexpected exception'
+        print 'Unexpected exception: ', e
 
 
 class Server(MasterBlock):
     """
-    Send a fake stream of data.
+    Send data over network with sockets.
     """
     def __init__(self, ip="localhost", port=8888, time_sync=False):
         """

@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup technical
+# @{
+
+##  @defgroup CmDrive CmDrive
+# @{
+
+## @file _CmDriveTechnical.py
+# @brief Open a new default serial port for communication with Servostar.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 import serial
 
 from ._meta import motion
@@ -7,7 +20,9 @@ from ..sensor import CmDriveSensor
 
 
 class CmDrive(motion.Motion):
-    """ Open a new default serial port for communication with Servostar"""
+    """
+    Open a new default serial port for communication with Servostar
+    """
 
     def __init__(self, port='/dev/serial/by-path/pci-0000:00:14.0-usb-0:6:1.0-port0', baudrate=9600):
         super(CmDrive, self).__init__(port, baudrate)

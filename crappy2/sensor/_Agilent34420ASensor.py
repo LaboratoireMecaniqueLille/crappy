@@ -20,23 +20,23 @@ class Agilent34420ASensor(acquisition.Acquisition):
     """Sensor class for Agilent34420A devices."""
 
     def __init__(self, mode="VOLT", device='/dev/ttyUSB0', baudrate=9600, timeout=10):
-        ## @fn __init__()
-        # @brief This class contains method to measure values of resistance or \
-        # tension on Agilent34420A devices. May work for other devices too, but \
-        # not tested.
-        #
-        # If you have issues with this class returning a lot of 'bad serial', \
-        # make sure you have the last version of pySerial.
-        #
-        # @param mode : {"VOLT","RES"} , default = "VOLT"
-        #         Desired value to measure.
-        # @param device : str, default = '/dev/ttyUSB0'
-        #         Path to the device.
-        # @param baudrate : int, default = 9600
-        #         Desired baudrate.
-        # @param timeout : int or float, default = 10
-        #         Timeout for the serial connection.
-        #
+        """
+        This class contains method to measure values of resistance or tension on Agilent34420A devices.
+
+        May work for other devices too, but not tested.
+        If you have issues with this class returning a lot of 'bad serial', \
+        make sure you have the last version of pySerial.
+
+        Args:
+            mode : {"VOLT","RES"} , default = "VOLT"
+                    Desired value to measure.
+            device : str, default = '/dev/ttyUSB0'
+                    Path to the device.
+            baudrate : int, default = 9600
+                    Desired baudrate.
+            timeout : int or float, default = 10
+                    Timeout for the serial connection.
+        """
         super(Agilent34420ASensor, self).__init__()
         ## path to the device
         self.device = device
@@ -58,9 +58,9 @@ class Agilent34420ASensor(acquisition.Acquisition):
         self.get_data()
 
     def get_data(self):
-        ## @fn get_data()
-        # @brief Read the signal, return False if error and print 'bad serial'.
-        #
+        """
+        Read the signal, return False if error and print 'bad serial'.
+        """
         try:
             self.ser.write("READ?  \n")
             # tmp = self.ser.readline()
@@ -77,9 +77,9 @@ class Agilent34420ASensor(acquisition.Acquisition):
             return False
 
     def close(self):
-        ## @fn close()
-        # @brief Close the serial port.
-        #
+        """
+        Close the serial port.
+        """
         self.ser.close()
 # @}
 # @}

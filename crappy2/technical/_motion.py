@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup technical
+# @{
+
+##  @defgroup Motion Motion
+# @{
+
+## @file _motion.py
+# @brief Class to control a motor defined in crappy.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 import serial
 import time
 from ._meta import motion
@@ -6,7 +19,7 @@ from crappy2.technical import __motors__ as motors
 
 
 class Motion(motion.Motion):
-    def __init__(self, port='/dev/ttyS0', baudrate=9600, motor_name="servostar", *args, **kwargs):
+    def __init__(self, port='/dev/ttyUSB0', baudrate=9600, motor_name="servostar", *args, **kwargs):
 
         if not motor_name.capitalize() in [x.capitalize() for x in motors]:
             while not motor_name.capitalize() in [x.capitalize() for x in motors]:
@@ -28,7 +41,9 @@ class Motion(motion.Motion):
 
         self.port = port
         self.baudrate = baudrate
-        self.technical = self.Motor(port=self.port, baudrate=self.baudrate, *args, **kwargs)
+        self.technical = self.Motor(port=port, baudrate=self.baudrate, *args, **kwargs)
+        self.actuator = self.technical.actuator
+        self.sensor = self.technical.sensor
 
     """Stop the motor motion"""
 
@@ -53,4 +68,6 @@ class Motion(motion.Motion):
         self.technical.actuator.set_position(position, speed)
 
     def get_position(self):
-        return self.technical.sensor.get_position()
+        self.technical.sensor.get_position()
+
+

@@ -74,6 +74,11 @@ if _platform.system() == "Windows":
             import_error(e.message)
 
 try:
+    from _orientalSensor import OrientalSensor
+except Exception as e:
+    import_error(e.message)
+
+try:
     from _daqmxSensor import DaqmxSensor
 except Exception as e:
     import_error(e.message)

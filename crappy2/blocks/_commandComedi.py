@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup CommandComedi CommandComedi
+# @{
+
+## @file _commandComedi.py
+# @brief Receive a signal and send it to a Comedi card.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock
 import time
 import os
@@ -15,12 +28,11 @@ class CommandComedi(MasterBlock):
 
         CommandComedi(comedi_actuators)
 
-        Parameters
-        ----------
-        comedi_actuators : list of crappy2.actuators.ComediActuator objects.
-            List of all the outputs to control.
-        signal_label : str, default = 'signal'
-            Label of the data to be transfered.
+        Args:
+            comedi_actuators : list of crappy2.actuators.ComediActuator objects.
+                List of all the outputs to control.
+            signal_label : str, default = 'signal'
+                Label of the data to be transfered.
         """
         super(CommandComedi, self).__init__()
         self.signal_label = signal_label

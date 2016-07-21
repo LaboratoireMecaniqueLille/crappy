@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup MeasureByStep MeasureByStep
+# @{
+
+## @file _measureByStep.py
+# @brief Streams value measured on a card through a Link object.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock
 import time
 import os
@@ -13,22 +26,21 @@ class MeasureByStep(MasterBlock):
 
     def __init__(self, sensor, labels=None, freq=None):
         """
-        This streamer read the value on all channels ONE BY ONE and send the
-        values through a Link object. it is slower than StreamerComedi, but works on
-        every USB driver.
+        This streamer read the value on all channels ONE BY ONE and send the values through a Link object.
+
+        It is slower than StreamerComedi, but works on every USB driver.
         It also works on LabJack devices.
 
         It can be triggered by a Link sending boolean (through "add_input" method),
         or internally by defining the frequency.
 
-        Parameters
-        ----------
-        sensor : sensor object
-            See sensor.sensor documentation. Tested for LabJackSensor and ComediSensor.
-        labels : list
-            The labels you want on your output data.
-        freq : float or int, optional
-            Wanted acquisition frequency. Cannot exceed acquisition card capability.
+        Args:
+            sensor : sensor object
+                See sensor.sensor documentation. Tested for LabJackSensor and ComediSensor.
+            labels : list
+                The labels you want on your output data.
+            freq : float or int, optional
+                Wanted acquisition frequency. Cannot exceed acquisition card capability.
         """
         super(MeasureByStep, self).__init__()
         self.sensor = sensor

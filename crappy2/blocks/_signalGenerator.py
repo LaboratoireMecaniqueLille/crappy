@@ -2,7 +2,7 @@
 from _meta import MasterBlock, delay
 import numpy as np
 import time
-#import pandas as pd
+import pandas as pd
 import os
 import sys
 from collections import OrderedDict
@@ -409,5 +409,5 @@ class SignalGenerator(MasterBlock):
         except (Exception, KeyboardInterrupt) as e:
             exc_type, exc_obj, tb = sys.exc_info()
             lineno = tb.tb_lineno
-            print "Exception in PathGenerator %s: %s line %s" % (os.getpid(), e, lineno)
+            print "Exception in SignalGenerator %s: %s line %s" % (os.getpid(), e, lineno)
         # raise

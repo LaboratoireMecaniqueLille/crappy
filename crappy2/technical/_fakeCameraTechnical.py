@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup technical
+# @{
+
+##  @defgroup FakeCamera FakeCamera
+# @{
+
+## @file _fakeCameraTechnical.py
+# @brief fake camera technical. Not working yet.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 from ..sensor import _fakeCameraSensor
 
 

@@ -1,4 +1,16 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup client Client
+# @{
+
+## @file _client.py
+# @brief this block allows to connect to a server, in order to receive data.
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 import os
 import time
 from multiprocessing import connection, Process
@@ -50,16 +62,15 @@ def recv(output_, conn):
 
 class Client(MasterBlock):
     """
-    Send a fake stream of data.
+    This block allows to connect to a server, in order to receive data.
+    When using a client block, the number of outputs (links) have to be equal to the number of outputs of the server.
+    In fact, each outputs from the server is connected to an output of the client.
+    Furthermore, an output of client block must have the same name as link on the server to be connected to it.
     """
-
     def __init__(self, ip="localhost", port=8888, time_sync=False):
         """
-        Use it for testing.
-        
-        Parameters
-        ----------
-        ip: IP address of the 
+        Args:
+            ip: IP address of the
         """
         super(Client, self).__init__()
         self.ip = ip
@@ -79,10 +90,10 @@ class Client(MasterBlock):
             raise Exception("Cannot synchronize time with server: %s" % e)
 
     def main(self):
+        conn = []
+        procs = {}
+        i = 0
         try:
-            conn = []
-            procs = {}
-            i = 0
             for output_ in self.outputs:
                 conn.append(connection.Client((self.ip, self.port)))
                 procs[i] = Process(target=recv, args=(output_, conn[i],))

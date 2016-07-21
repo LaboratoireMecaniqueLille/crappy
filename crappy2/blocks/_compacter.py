@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup Compacter Compacter
+# @{
+
+## @file _compacter.py
+# @brief This block must be used to send data to the Saver or the Grapher.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock
 # import pandas as pd
 import os
@@ -12,21 +25,19 @@ class Compacter(MasterBlock):
     def __init__(self, acquisition_step):
         """
         Read data inputs and save them in a panda dataframe of length acquisition_step.
+
         This block must be used to send data to the Saver or the Grapher.
         Input values sent by the Links must be array (1D).
         If you have multiple data input from several streamers, use multiple Compacter.
         You should use several input only if you know that they have the same frequency.
         You can have multiple outputs.
 
-        Parameters
-        ----------
-        acquisition_step : int
-            Number of values to save in each data-stream before returning the array.
+        Args:
+            acquisition_step : int
+                Number of values to save in each data-stream before returning the array.
 
-
-        Returns
-        -------
-        dict : OrderedDict(shape (number_of_values_in_input,acquisition_step))
+        Returns:
+            dict : OrderedDict(shape (number_of_values_in_input,acquisition_step))
         """
         super(Compacter, self).__init__()
         print "compacter!"

@@ -1,5 +1,17 @@
 # coding: utf-8
-# from ._meta import cameraSensor
+##  @addtogroup technical
+# @{
+
+##  @defgroup camerainit CameraInit
+# @{
+
+## @file _cameraInit.py
+# @brief Gui to open and initialize a camera device.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 import numpy as np
 # import time
 from matplotlib.widgets import RectangleSelector
@@ -364,6 +376,15 @@ class _CameraInit:
 
 
 def get_camera_config(cam, videoExtenso, send_pipe=None):
+    """
+    Function to open and configure a camera device.
+    Args:
+        cam: instance of a camera class.
+        videoExtenso: dictionnary to enable or disable the videoExtenso initialization.
+        send_pipe:
+
+    """
+
     d = _CameraInit(cam, videoExtenso)
     d.start()
     try:

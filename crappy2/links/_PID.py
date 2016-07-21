@@ -1,4 +1,16 @@
 # coding: utf-8
+##  @addtogroup links
+# @{
+
+##  @defgroup PID PID
+# @{
+
+## @file _PID.py
+# @brief WIP, not working yet.
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 from ._metaCondition import MetaCondition
 import time
 

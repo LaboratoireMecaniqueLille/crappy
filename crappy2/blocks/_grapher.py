@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup Grapher Grapher
+# @{
+
+## @file _grapher.py
+# @brief The grapher plots data received from the Compacter (via a Link).
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,18 +29,17 @@ class Grapher(MasterBlock):
         """
         The grapher receive data from the Compacter (via a Link) and plots it.
 
-        Parameters
-        ----------
-        args : tuple
-            tuples of the columns labels of input data for plotting. You can add as\
-            much as you want, depending on your computer performances.
+        Args:
+            args : tuple
+                tuples of the columns labels of input data for plotting. You can add as\
+                much as you want, depending on your computer performances.
 
-        optional: length=x (int) 
-            number of chunks to data to be kept on the graph (default: 10)
+            optional: length=x (int)
+                number of chunks to data to be kept on the graph (default: 10)
 
-            length=0 will create a static graph:
-            add new values at every refresh. If there \
-            is too many data (> 20000), delete one out of 2 to avoid memory overflow.
+                length=0 will create a static graph:
+                add new values at every refresh. If there \
+                is too many data (> 20000), delete one out of 2 to avoid memory overflow.
 
         Examples
         --------
@@ -40,27 +52,32 @@ class Grapher(MasterBlock):
         """
         super(Grapher, self).__init__()
         print "grapher!"
-        self.len_graph = kwargs.get("length",10)
+        self.len_graph = kwargs.get("length", 10)
         self.mode = "dynamic" if self.len_graph > 0 else "static"
         self.args = args
         self.nbr_graphs = len(args)
 
-        if args[0] in ["static", "dynamic"]: ### Support old syntax to avoid generalized incontrollable panic (to be deleted in the future) ---
-          redWarn = '[\033[31m\033[1mWARNING!\033[0m] ' # Red warning, for persuasion
-          print redWarn+"The grapher syntax is evolving! You must remove \"{}\", you can use length=x (default: 10) if you want to specify the width of the window (0 means a static graph)".format(args[0])
-          print "Note: The deprecated syntax is still supported for now but you MUST change your graphers NOW! You cannot ignore this forever or your programs will crash in an incoming update, also  a kitten suddenly dies somewhere in the world everytime you see this message :("
-          print """
+        if args[0] in ["static",
+                       "dynamic"]:  ### Support old syntax to avoid generalized incontrollable panic (to be deleted in the future) ---
+            redWarn = '[\033[31m\033[1mWARNING!\033[0m] '  # Red warning, for persuasion
+            print redWarn + "The grapher syntax is evolving! You must remove \"{}\", " \
+                            "you can use length=x (default: 10) " \
+                            "if you want to specify the width of the window (0 means a static graph)".format(args[0])
+            print "Note: The deprecated syntax is still supported for now but you MUST change your graphers NOW! " \
+                  "You cannot ignore this forever or your programs will crash in an incoming update, " \
+                  "also  a kitten suddenly dies somewhere in the world everytime you see this message :("
+            print """
  /\\_/\\
 ( o.o )
  > ^ <
  MEOW!
           """
-          print "Save the cats, change your grapher." # Drama, for extra-persuasion
-          import warnings
-          warnings.warn("Deprecated syntax for Grapher",DeprecationWarning)
-          self.mode = args[0]
-          self.args = args[1:]
-          self.nbr_graphs -= 1 ### End of the part to delete  ---
+            print "Save the cats, change your grapher."  # Drama, for extra-persuasion
+            import warnings
+            warnings.warn("Deprecated syntax for Grapher", DeprecationWarning)
+            self.mode = args[0]
+            self.args = args[1:]
+            self.nbr_graphs -= 1  ### End of the part to delete  ---
 
     def main(self):
         try:

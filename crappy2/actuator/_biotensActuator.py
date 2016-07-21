@@ -41,12 +41,12 @@ def convert_to_byte(number, length):
 
 class BiotensActuator(motion.MotionActuator):
     def __init__(self, ser, size):
-        # @fn __init__()
-        # @brief This class contains methods to command the motors of the biotens
-        # machine. You should NOT use it directly, but use the BiotensTechnical.
-        # @param ser serial instance
-        # @param size ???
-
+        """
+        This class contains methods to command the motors of the biotens machine. You should NOT use it directly, but use the BiotensTechnical.
+        Args:
+        ser : serial instance
+        size : ???
+        """
         super(BiotensActuator, self).__init__()
         self.ser = ser
         self.size = size

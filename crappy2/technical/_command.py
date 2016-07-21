@@ -1,3 +1,17 @@
+# coding: utf-8
+##  @addtogroup technical
+# @{
+
+##  @defgroup Command Command
+# @{
+
+## @file _command.py
+# @brief Command class to control all board defined in crappy.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 29/06/2016
+
 from crappy2.technical import __boardnames__ as board_names
 
 

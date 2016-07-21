@@ -30,15 +30,17 @@ from .._warnings import deprecated as deprecated
 class PIActuator(motion.MotionActuator):
 
     def __init__(self, port='/dev/ttyS0', timeout=1, baudrate=9600, ser=None):
-        # This class create an axis and opens the corresponding serial port.
-        #
-        # @param port : str
-        #         Path to the corresponding serial port, e.g '/dev/ttyS4'
-        # @param baudrate : int, default = 38400
-        #         Set the corresponding baud rate.
-        # @param timeout : int or float, default = 1
-        #         Serial timeout.
-        #
+        """
+        This class create an axis and opens the corresponding serial port.
+
+        Args:
+            port : str
+                    Path to the corresponding serial port, e.g '/dev/ttyS4'
+            baudrate : int, default = 38400
+                    Set the corresponding baud rate.
+            timeout : int or float, default = 1
+                    Serial timeout.
+        """
         super(PIActuator, self).__init__()
         self.port = port
         self.baudrate = baudrate

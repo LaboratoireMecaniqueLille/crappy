@@ -17,6 +17,7 @@ import time
 
 from ._meta import acquisition
 
+
 class ComediSensor(acquisition.Acquisition):
     """Sensor class for Comedi devices."""
 
@@ -26,22 +27,21 @@ class ComediSensor(acquisition.Acquisition):
 
         Output is (measured_value * gain) + offset.
 
-        Parameters
-        ----------
-        device : str, default = '/dev/comedi0'
-        Path to the device.
-        subdevice : int, default = 0
-        Subdevice 0 is the intput.
-        channel : int or list of int, default = 0
-        The desired output channel(s).
-        range_num : int, default = 0
-        See the comedi documentation for different values.
-        gain : float or list of float, default = 1
-        Multiplication gain for each channel. If there is multiple channels
-        for a single gain, it will be applied to all.
-        offset : float, default = 0
-        Add this value for each channel. If there is multiple channels
-        for a single offset, it will be applied to all.
+        Args:
+            device : str, default = '/dev/comedi0'
+            Path to the device.
+            subdevice : int, default = 0
+            Subdevice 0 is the intput.
+            channel : int or list of int, default = 0
+            The desired output channel(s).
+            range_num : int, default = 0
+            See the comedi documentation for different values.
+            gain : float or list of float, default = 1
+            Multiplication gain for each channel. If there is multiple channels
+            for a single gain, it will be applied to all.
+            offset : float, default = 0
+            Add this value for each channel. If there is multiple channels
+            for a single offset, it will be applied to all.
         """
         super(ComediSensor, self).__init__()
         self.subdevice = subdevice

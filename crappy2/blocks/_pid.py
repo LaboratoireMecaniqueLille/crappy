@@ -1,11 +1,27 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup PID PID
+# @{
+
+## @file _pid.py
+# @brief A proportional–integral–derivative controller (PID controller) is a control loop feedback mechanism.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock
 import time
 
 
 class PID(MasterBlock):
     """
-    Work In Progress
+    A proportional–integral–derivative controller (PID controller) is a control loop feedback mechanism.
+    PID controller continuously calculates an error value as the difference between a desired setpoint
+    and a measured process variable.
+    WORK IN PROGRESS.
     """
 
     def __init__(self, P, I, D, outMin=-10, outMax=10):

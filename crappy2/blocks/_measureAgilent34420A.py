@@ -1,9 +1,20 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup MeasureAgilent34420A MeasureAgilent34420A
+# @{
+
+## @file _measureAgilent34420A.py
+# @brief Streams value of tension/resistance measured on the Agilent34420A.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock, delay
 import time
-# import pandas as pd
 import os
-# import numpy as np
 from collections import OrderedDict
 from ..links._link import TimeoutError
 
@@ -15,19 +26,18 @@ class MeasureAgilent34420A(MasterBlock):
 
     def __init__(self, agilentSensor, labels=['t_agilent(s)', 'R'], freq=None):
         """
-        This block read the value of the resistance measured by agilent34420A and send
-        the values through a Link object.
+        This block read the value of the resistance measured by agilent34420A and send the values through a Link object.
+
         It can be triggered by a Link sending boolean (through "add_input" method),
         or internally by defining the frequency.
 
-        Parameters
-        ----------
-        agilentSensor : agilentSensor object
-            See sensor.agilentSensor documentation.
-        labels : list
-            The labels you want on your output data.
-        freq : float or int, optional
-            Wanted acquisition frequency. Cannot exceed acquisition device capability.
+        Args:
+            agilentSensor : agilentSensor object
+                See sensor.agilentSensor documentation.
+            labels : list
+                The labels you want on your output data.
+            freq : float or int, optional
+                Wanted acquisition frequency. Cannot exceed acquisition device capability.
         """
         super(MeasureAgilent34420A, self).__init__()
         self.agilentSensor = agilentSensor

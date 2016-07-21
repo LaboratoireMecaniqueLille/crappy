@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup Reader Reader
+# @{
+
+## @file _reader.py
+# @brief Children class of MasterBlock. Read and print the input Link.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 13/07/2016
+
 from _meta import MasterBlock
 import time
 import os
@@ -13,10 +26,9 @@ class Reader(MasterBlock):
         """
         Create a reader that prints k and the input data in continuous.
 
-        Parameters
-        ----------
-        k : printable
-            Some identifier for this particular instance of Reader
+        Args:
+            k : printable
+                Some identifier for this particular instance of Reader
         """
         super(Reader, self).__init__()
         self.k = k

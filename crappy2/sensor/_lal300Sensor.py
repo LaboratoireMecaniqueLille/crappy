@@ -26,45 +26,42 @@ class Lal300Sensor(motion.MotionSensor):
         """
         Open the connection, and initialise the Lal300.
 
-        Parameters
-        ----------
-        param : dict
-            Dict of parameters.
-
-                * 'port' : str
-                        Path to the serial port.
-                * 'baudrate' : int
-                        Corresponding baudrate.
-                * 'timeout' : float
-                        Timeout of the serial connection.
-                * 'PID_PROP' : float
-                        Proportionnal coefficient of the PID.
-                * 'PID_INT' : float
-                        Integral coefficient for the PID.
-                * 'PID_DERIV' : float
-                        Derivative coefficient for the PID.
-                * 'PID_INTLIM' : float
-                        Limit of the integral coefficient.
-                * 'ACC' float
-                        Acceleration of the motor.
-                * 'ACconv' : float 
-                        Conversion ACC values to mm/s/s
-                * 'FORCE' : float 
-                        Maximal force provided by the motor.
-                * 'SPEEDconv' : float 
-                        Conversion SPEED values to mm/s
-                * 'ENTREE_VERIN' : str
-                        'DI1'
-                * 'SORTIE_VERIN' : str 
-                        'DI0'
-                * 'ETIRE': list of int
-                        List of extreme values for the position in traction.
-                * 'COMPRIME': list of int
-                        List of extreme values for the position in compression.
-                * 'SPEED' : list of int
-                        List of speed, for each group of cycles.
-                * 'CYCLES' : list of int
-                        List of cycles, for each group.
+        Args:
+            param : Dict of parameters.
+                    * 'port' : str
+                            Path to the serial port.
+                    * 'baudrate' : int
+                            Corresponding baudrate.
+                    * 'timeout' : float
+                            Timeout of the serial connection.
+                    * 'PID_PROP' : float
+                            Proportionnal coefficient of the PID.
+                    * 'PID_INT' : float
+                            Integral coefficient for the PID.
+                    * 'PID_DERIV' : float
+                            Derivative coefficient for the PID.
+                    * 'PID_INTLIM' : float
+                            Limit of the integral coefficient.
+                    * 'ACC' float
+                            Acceleration of the motor.
+                    * 'ACconv' : float
+                            Conversion ACC values to mm/s/s
+                    * 'FORCE' : float
+                            Maximal force provided by the motor.
+                    * 'SPEEDconv' : float
+                            Conversion SPEED values to mm/s
+                    * 'ENTREE_VERIN' : str
+                            'DI1'
+                    * 'SORTIE_VERIN' : str
+                            'DI0'
+                    * 'ETIRE': list of int
+                            List of extreme values for the position in traction.
+                    * 'COMPRIME': list of int
+                            List of extreme values for the position in compression.
+                    * 'SPEED' : list of int
+                            List of speed, for each group of cycles.
+                    * 'CYCLES' : list of int
+                            List of cycles, for each group.
         """
         super(Lal300Sensor, self).__init__(port, baudrate)
         self.param = param

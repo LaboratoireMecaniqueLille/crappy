@@ -1,4 +1,17 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup CommandPI CommandPI
+# @{
+
+## @file _commandPI.py
+# @brief Receive a signal and send it for the PI actuator.
+#
+# @author Robin Siemiatkowski
+# @version 0.1
+# @date 11/07/2016
+
 from _meta import MasterBlock
 
 
@@ -9,12 +22,9 @@ class CommandPI(MasterBlock):
         """
         Receive a signal and translate it for the PI actuator.
 
-        Parameters
-        ----------
-        PI_actuators : crappy2.actuators.PIactuators objects
-            Axe to control.
-        signal_label : str, default = 'signal'
-            Label of the data to be transfered.
+        Args:
+            PI_actuators : crappy2.actuators.PIactuators objects Axe to control.
+            signal_label : str, default = 'signal'. Label of the data to be transfered.
         """
         super(CommandPI, self).__init__()
         self.PI_actuators = PI_actuators
