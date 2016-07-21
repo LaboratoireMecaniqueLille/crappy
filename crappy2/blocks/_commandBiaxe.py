@@ -46,12 +46,15 @@ class CommandBiaxe(MasterBlock):
                 # except AttributeError:
                 cmd = Data[self.signal_label]
                 if cmd != last_cmd:
+                    if last_cmd*cmd < 0:
+                        for biaxe_technical in self.biaxe_technicals:
+                            biaxe_technical.actuator.set_speed(0)
                     for biaxe_technical in self.biaxe_technicals:
                         biaxe_technical.actuator.set_speed(cmd * self.speed)
                     last_cmd = cmd
         except (Exception, KeyboardInterrupt) as e:
-            print "Exception in measureComediByStep : ", e
+            print "Exception in CommandBiaxe : ", e
             for biaxe_technical in self.biaxe_technicals:
                 biaxe_technical.actuator.set_speed(0)
-                biaxe_technical.actuator.close_port()
+                biaxe_technical.close()
                 # raise
