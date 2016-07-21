@@ -72,7 +72,14 @@ class OrientalSensor(motion.MotionSensor):
                 self.ser.dsrdtr = False
                 self.ser.close()
                 self.ser.open()
-                self.ser.write("TALK{0}\n".format(self.num_device))
+                for i in range(4):
+                    self.ser.write("TALK{0}\n".format(i+1))
+                    ret=self.ser.readlines()
+                    if "{0}>".format(i+1) in ret:
+                        self.num_device = i+1
+                        motors = ['A', 'B', 'C', 'D']
+                        print "Motor connected to port {0} is {1}".format(self.port, motors[i])
+                        break
         except Exception as e:
             print e
         self.conversion_factor = conversion_factor

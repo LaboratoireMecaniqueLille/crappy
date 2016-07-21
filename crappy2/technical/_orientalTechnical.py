@@ -24,7 +24,7 @@ class Oriental(motion.Motion):
     """
     Open both a BiotensSensor and BiotensActuator instances.
     """
-    def __init__(self, baudrate=115200, port='/dev/ttyUSB0', num_device=1):
+    def __init__(self, baudrate=115200, port='/dev/ttyUSB0'):
         """
         Open the connection, and initialise the Biotens.
 
@@ -38,19 +38,29 @@ class Oriental(motion.Motion):
         """
         super(Oriental, self).__init__(port, baudrate)
         self.baudrate = baudrate
-        self.num_device = num_device
+        #self.num_device = num_device
         self.port = port
         self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=0.1)
+        for i in range(4):
+            self.ser.write("TALK{0}\n".format(i+1))
+            ret=self.ser.readlines()
+            if "{0}>".format(i+1) in ret:
+                self.num_device = i+1
+                motors = ['A', 'B', 'C', 'D']
+                print "Motor connected to port {0} is {1}".format(self.port, motors[i])
+                break
         self.sensor = OrientalSensor(ser=self.ser, num_device=self.num_device)
         self.actuator = OrientalActuator(ser=self.ser, num_device=self.num_device)
 
     def write_cmd(self, cmd):
         self.ser.write("{0}\n".format(cmd))
-        ret = self.ser.readline()
+        #ret = self.ser.readline()
         # while ret != '{0}>'.format(self.num_device):
-        while ret != '' and ret != '{0}>'.format(self.num_device):
-            print ret
-            ret = self.ser.readline()
+        #while ret != '' and ret != '{0}>'.format(self.num_device):
+            #print ret
+        ret = self.ser.readlines()
+        for r in ret:
+            print r
 
     def clear_errors(self):
         self.write_cmd("ALMCLR")
