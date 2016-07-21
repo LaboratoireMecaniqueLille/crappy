@@ -98,7 +98,7 @@ class StreamerCamera(MasterBlock):
                     if self.save:
                         image = self.sitk.GetImageFromArray(img)
                         self.sitk.WriteImage(image,
-                                             self.save_directory + "img_%.6d.tiff" % self.i)
+                                             self.save_directory + "img_%.6d_%.5f.tiff" % (self.i,time.time()-self.t0))
                         self.i += 1
                 elif trigger == "external":
                     Data = self.inputs[0].recv()  # wait for a signal
@@ -109,11 +109,11 @@ class StreamerCamera(MasterBlock):
                             image = self.sitk.GetImageFromArray(img)
                             try:
                                 self.sitk.WriteImage(image,
-                                                     self.save_directory + "img_%.6d_cycle%09.1f.tiff" % (
-                                                         self.i, Data[self.label]))
+                                                     self.save_directory + "img_%.6d_cycle%09.1f_%.5f.tiff" % (
+                                                         self.i, Data[self.label],time.time()-self.t0))
                             except KeyError:
                                 self.sitk.WriteImage(image,
-                                                     self.save_directory + "img_%.6d.tiff" % self.i)
+                                                     self.save_directory + "img_%.6d_%.5f.tiff" % (self.i,time.time()-self.t0))
                             self.i += 1
                 try:
                     if trigger == "internal" or Data is not None:
