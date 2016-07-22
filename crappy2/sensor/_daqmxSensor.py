@@ -22,6 +22,12 @@ from ._meta import acquisition
 
 
 def get_daqmx_devices_names():
+    """
+    Get all connected daqmx devices.
+    Returns:
+        a list of all connected daqmx devices.
+
+    """
     buffer_size = 4096
     buffer = ctypes.create_string_buffer(buffer_size)
     DAQmxGetSysDevNames(buffer, buffer_size)
@@ -30,12 +36,14 @@ def get_daqmx_devices_names():
 
 
 class DaqmxSensor(acquisition.Acquisition):
-    """Sensor class for Daqmx devices."""
+    """
+    Sensor class for Daqmx devices.
+    """
     """PXI1Slot2, PXI1Slot3"""
 
     def __init__(self, device='Dev1', channels=0, range_num=0, mode="single"):
-
         """
+        Sensor class for Daqmx devices.
 
         Args:
             device: device name
@@ -101,8 +109,7 @@ class DaqmxSensor(acquisition.Acquisition):
             nb_points: number of values to read.
 
         Returns:
-            time: current time
-            data: value read
+            a tuple with the current time and the values read.
         """
         try:
             DAQmxCfgSampClkTiming(self.taskHandle, "",

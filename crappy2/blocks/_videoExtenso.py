@@ -7,7 +7,7 @@
 
 ## @file _videoExtenso.py
 # @brief Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
-# @author Robin Siemiatkowski
+# @authors Robin Siemiatkowski, Corentin Martel
 # @version 0.1
 # @date 13/07/2016
 
@@ -40,6 +40,16 @@ except ImportError as i:
 
 
 def plotter(plot_pipe_recv):
+    """
+    Wait for data an plot a frame in an opencv window.
+
+    Args:
+        plot_pipe_recv: Pipe which receive data to plot (numpy.ndarray).
+
+    Returns:
+        void return function, first it opens a new opencv windows which plot the picture.
+
+    """
     data = plot_pipe_recv.recv()  # receiving data
     NumOfReg = data[0]
     minx = data[1]
@@ -92,6 +102,17 @@ def barycenter_opencv(recv_):
     computation of the barycenter (moment 1 of image) on ZOI using OpenCV
     white_spot must be True if spots are white on a dark material
     The median filter helps a lot for real life images ...
+
+    Args:
+        recv_: Pipe which should receive data to calculate the barycenter of on or multiple spots.
+                Received data is a tuple composed by:
+                    - the picture where the spots are (numpy.ndarray)
+                    - the min coordinate in x
+                    - the min coordinate in y
+                    - a boolean: True to update the threshold False otherwise.
+                    - the current threshold
+                    - border
+                    - a boolean that is true if the spot are white, false otherwise.
     """
     while True:
         try:

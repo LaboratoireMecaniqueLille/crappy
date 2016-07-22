@@ -54,20 +54,35 @@ class BiotensSensor(motion.MotionSensor):
         """
         This class contains methods to get info from the motors of the biotens
         machine. You should NOT use it directly, but use the BiotensTechnical.
+
+        Args:
+            ser : serial instance, use it in case you have already initialized the serial port with this motor,
+                for example, if you use the the BiotensSensor and the BiotensActuator (in this case you should use
+                BiotensTechnical).
+            port : Path to the corresponding serial port, e.g '/dev/ttyUSB0'
+            baudrate : Set the corresponding baud rate.
+
         """
 
         super(BiotensSensor, self).__init__(port, baudrate)
+        ## Path to the corresponding serial port, e.g '/dev/ttyUSB0'
         self.port = port
+        ## Set the corresponding baudrate.
         self.baudrate = baudrate
         if ser is not None:
+            ## serial instance
             self.ser = ser
         else:
+            ## serial instance
             self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=0.1)
 
     def get_position(self):
-        """Reads current position"""
-        # print "reading position..."
-        # print self.ser.inWaiting()
+        """
+        Reads current position
+
+        Returns:
+            current position of the motor.
+        """
         try:
             self.ser.readlines()
         except serial.SerialException:
@@ -89,7 +104,10 @@ class BiotensSensor(motion.MotionSensor):
     @deprecated(get_position)
     def read_position(self):
         """
-        DEPRECATED: Use get_position instead.
+        This method is deprecated, it returns a call to the get_position method.
+
+        \deprecated
+            Use get_position instead.
         """
         self.get_position()
 # @}

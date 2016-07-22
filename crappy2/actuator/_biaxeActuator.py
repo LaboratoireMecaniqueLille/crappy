@@ -31,12 +31,12 @@ class BiaxeActuator(motion.MotionActuator):
         This class create an axis and opens the corresponding serial port.
 
         Args:
-        port : str
-                Path to the corresponding serial port, e.g '/dev/ttyS4'
-        baudrate : int, default = 38400
-                Set the corresponding baud rate.
-        timeout : int or float, default = 1
-                Serial timeout.
+            port : str
+                    Path to the corresponding serial port, e.g '/dev/ttyS4'
+            baudrate : int, default = 38400
+                    Set the corresponding baud rate.
+            timeout : int or float, default = 1
+                    Serial timeout.
         """
         super(BiaxeActuator, self).__init__()
         self.port = port
@@ -60,34 +60,51 @@ class BiaxeActuator(motion.MotionActuator):
         self.ser.write("J " + str(speed) + "\r\n")
 
     def set_position(self, position, speed, motion_type='relative'):
-        # TODO
+        """
+        Go to a defined position with a defined speed.
+
+        \todo
+            - implement set_position, with eventually a motion_type mode
+              which can be 'relative' or 'absolute'. (from actual position or from zero).
+        """
         pass
 
-    """Reset the position to zero"""
-
     def move_home(self):
-        # TODO
+        """
+        Go to position zero.
+
+        \todo
+            - implement move_home method: Go to the position zero.
+        """
         pass
 
     @deprecated(None, "serial port is now initialized in __init__")
     def new(self):
         """
-        DEPRECATED: serial port is now initialized in __init__
-        No arguments, open port, set speed mode and engage
+        Do nothing. Hold deprecated function, still here to assure compatibility.
+
+        \deprecated: serial port is now initialized in \_\_init\_\_
         """
         pass
 
     @deprecated(None, "replaced by close method in _biaxeTechnical")
     def close_port(self):
         """
-        DEPRECATED: replaced by close method in _biaxeTechnical.
+        Release the serial port.
+
+        \deprecated: replaced by close method in _biaxeTechnical.
         Close the designated port
         """
         self.ser.close()
 
     @deprecated(None)
     def CLRFAULT(self):
-        """Reset errors"""
+        """
+        Reset errors
+
+        \deprecated
+            This method is replaced by clear_errors defined in Biaxe (found in crappy2.technical._biaxeTechnical)
+        """
         self.ser.write("CLRFAULT\r\n")
         self.ser.write("OPMODE 0\r\n EN\r\n")
 

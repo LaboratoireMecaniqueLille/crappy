@@ -19,7 +19,9 @@ from ._meta import acquisition
 
 
 class ComediSensor(acquisition.Acquisition):
-    """Sensor class for Comedi devices."""
+    """
+    Sensor class for Comedi devices.
+    """
 
     def __init__(self, device='/dev/comedi0', subdevice=0, channels=[0], range_num=0, gain=1, offset=0):
         """
@@ -29,35 +31,45 @@ class ComediSensor(acquisition.Acquisition):
 
         Args:
             device : str, default = '/dev/comedi0'
-            Path to the device.
+                    Path to the device.
             subdevice : int, default = 0
             Subdevice 0 is the intput.
             channel : int or list of int, default = 0
-            The desired output channel(s).
+                    The desired output channel(s).
             range_num : int, default = 0
-            See the comedi documentation for different values.
+                        See the comedi documentation for different values.
             gain : float or list of float, default = 1
-            Multiplication gain for each channel. If there is multiple channels
-            for a single gain, it will be applied to all.
+                    Multiplication gain for each channel. If there is multiple channels
+                    for a single gain, it will be applied to all.
             offset : float, default = 0
-            Add this value for each channel. If there is multiple channels
-            for a single offset, it will be applied to all.
+                    Add this value for each channel. If there is multiple channels
+                    for a single offset, it will be applied to all.
         """
         super(ComediSensor, self).__init__()
+        ## input subdevice number
         self.subdevice = subdevice
+        ## channel number
         self.channels = channels
+        ## range number
         self.range_num = range_num
+        ## gain to be applied to the input
         self.gain = gain
+        ## offset
         self.offset = offset
+        ## device instance
         self.device = c.comedi_open(device)
         # if type(self.channels)==int or len(self.channels)==1:	# for get_data
         # self.nchans=1
         if type(self.channels) == list:  # if multiple channels
+            ## number of channels
             self.nchans = len(self.channels)
+            ## range number or list of range numbers
             self.range_num = [self.range_num] * self.nchans
             if type(self.gain) == int:
+                ## gain or list of gain (for each output)
                 self.gain = [self.gain] * self.nchans
             if type(self.offset) == int:
+                ## offset or list of offset (for each output)
                 self.offset = [self.offset] * self.nchans
             self.new()
         else:
@@ -89,8 +101,9 @@ class ComediSensor(acquisition.Acquisition):
 
     def new(self):
         """ 
-        Gather range and maxdata for all specified channels. This is only 
-        called on init.
+        Gather range and maxdata for all specified channels.
+
+        This is only called on init.
         """
         self.maxdata = [0] * self.nchans
         self.range_ds = [0] * self.nchans

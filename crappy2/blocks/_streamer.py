@@ -7,7 +7,7 @@
 
 ## @file _streamer.py
 # @brief Send a stream of data.
-# @author Robin Siemiatkowski
+# @author Corentin Martel
 # @version 0.1
 # @date 13/07/2016
 

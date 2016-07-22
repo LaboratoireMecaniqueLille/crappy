@@ -8,7 +8,7 @@
 ## @file _meta.py
 # @brief Main class for block architecture. All blocks should inherit this class.
 #
-# @author Robin Siemiatkowski
+# @authors Corentin Martel, Robin Siemiatkowski
 # @version 0.1
 # @date 11/07/2016
 

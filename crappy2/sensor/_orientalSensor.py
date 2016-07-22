@@ -13,54 +13,42 @@
 # @version 0.1
 # @date 29/06/2016
 
-from struct import *
 import serial
-
-# This functions converts decimal into bytes or bytes into decimals.
-#  Mandatory in order to send or read anything into/from MAC Motors registers.
 from ._meta import motion
-
-
-#
-# def convert_to_byte(number, length):
-#     """
-#     This functions converts decimal into bytes.  Mandatory in order to send
-#     or read anything into/from MAC Motors registers."""
-#     encoded = pack('%s' % (length), number)  # get hex byte sequence in required '\xXX\xXX', big endian format.
-#     b = bytearray(encoded, 'hex')
-#     i = 0
-#     c = ''
-#     for i in range(0, len(encoded)):
-#         x = int(b[i]) ^ 0xff  # get the complement to 255
-#         x = pack('B', x)  # byte formalism
-#         c += encoded[i] + '%s' % x  # concatenate byte and complement and add it to the sequece
-#     return c
-#
-#
-# def convert_to_dec(sequence):
-#     """
-#     This functions converts bytes into decimals.  Mandatory in order to send
-#     or read anything into/from MAC Motors registers."""
-#     # sequence=sequence[::2] ## cut off "complement byte"
-#     decim = unpack('i', sequence)  # convert to signed int value
-#     return decim[0]
-#
-#
-# # -------------------------------------------------------------------------------------------
-# # This function allows to start the motor in desired mode (1=velocity,2=position) or stop it (mode 0).
 
 
 class OrientalSensor(motion.MotionSensor):
     def __init__(self, baudrate=115200, port='/dev/ttyUSB0', num_device=1, conversion_factor=1, ser=None):
+        """
+
+        Args:
+            baudrate: wanted baudrate to configure port communication
+            port: Path to the corresponding serial port, e.g '/dev/ttyUSB0'
+            num_device: number of the device
+            conversion_factor: factor to convert received data to a more physical value.
+            ser: serial instance, use it in case you have already initialized the serial port with this motor,
+                for example, if you use the the OrientalSensor and the OrientalActuator (in this case you should use
+                OrientalTechnical).
+        Returns:
+            OrientalSensor instance.
+        """
         super(OrientalSensor, self).__init__(port, baudrate)
+        ## wanted baudrate to configure port communication
         self.num_device = num_device
+        ## number of the device
         self.baudrate = baudrate
+        ## Path to the corresponding serial port, e.g '/dev/ttyUSB0'
         self.port = port
+        ## factor to convert received data to a more physical value.
+        self.conversion_factor = conversion_factor
+
         # Actuator _ Declaration
         try:
             if ser is not None:
+                ## serial instance
                 self.ser = ser
             else:
+                ## serial instance
                 self.ser = serial.Serial(self.port)
                 self.ser.timeout = 0.01
                 self.ser.baudrate = self.baudrate
@@ -82,9 +70,20 @@ class OrientalSensor(motion.MotionSensor):
                         break
         except Exception as e:
             print e
-        self.conversion_factor = conversion_factor
 
     def write_cmd(self, cmd):
+        """
+        Format a command and write it to the serial port communication.
+
+        Prints out the output until there is no data
+        available.
+
+        Args:
+            cmd: ASCII command to write on the serial port.
+
+        Returns:
+            void return function, it just prints out data read on the serial port.
+        """
         self.ser.write("{0}\n".format(cmd))
         ret = self.ser.readline()
         # while ret != '{0}>'.format(self.num_device):
@@ -93,19 +92,24 @@ class OrientalSensor(motion.MotionSensor):
             ret = self.ser.readline()
 
     def get_position(self):
-        # self.ser.open()
+        """
+        Return the current position of the motor.
+
+        Returns:
+            current position of the motor (float).
+        """
         self.ser.flushInput()
         self.ser.write('PC\n')
         a_jeter = self.ser.readline()
-        ActuatorPos = self.ser.readline()
+        actuator_position = self.ser.readline()
         # self.ser.close()
-        ActuatorPos = str(ActuatorPos)
-        ActuatorPos = ActuatorPos[4::]
-        ActuatorPos = ActuatorPos[::-1]
-        ActuatorPos = ActuatorPos[3::]
-        ActuatorPos = ActuatorPos[::-1]
+        actuator_position = str(actuator_position)
+        actuator_position = actuator_position[4::]
+        actuator_position = actuator_position[::-1]
+        actuator_position = actuator_position[3::]
+        actuator_position = actuator_position[::-1]
         try:
-            ActuatorPos = float(ActuatorPos) * self.conversion_factor
-            return ActuatorPos
+            actuator_position = float(actuator_position) * self.conversion_factor
+            return actuator_position
         except ValueError:
             print "PositionReadingError"

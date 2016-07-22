@@ -1,4 +1,16 @@
 # coding: utf-8
+##  @addtogroup blocks
+# @{
+
+##  @defgroup SignalGenerator SignalGenerator
+# @{
+
+## @file _signalGenerator.py
+# @brief Generate a signal.
+# @author Corentin Martel
+# @version 0.1
+# @date 18/07/2016
+
 from _meta import MasterBlock, delay
 import numpy as np
 import time
@@ -16,68 +28,65 @@ class SignalGenerator(MasterBlock):
 
     def __init__(self, path=None, send_freq=800, repeat=False, labels=['t(s)', 'signal', 'cycle']):
         """
-        Calculate a signal, based on the time (from t0). There is several configurations,
-        see the examples section for more details.
+        Calculate a signal, based on the time (from t0).
 
+        See the examples section for more details.
         As t0 is used for evaluating the signal, multiple instances of this block will
         be synchronised.
 
-        Parameters
-        ----------
-        path : list of dict
-            Each dict must contain parameters for one step. See Examples section below.
-            Available parameters are :
+        Args:
+            path : list of dict
+                Each dict must contain parameters for one step. See Examples section below.
+                Available parameters are :
 
-            * waveform : {'sinus','square','triangle','limit','hold'}
-                Shape of your signal, for every step.
-            * freq : int or float
-                Frequency of your signal.
-            * time : int or float or None
-                Time before change of step, for every step. If None, means infinite.
-            * cycles : int or float or None (default)
-                Number of cycles before change of step, for every step. If None, means infinite.
-            * amplitude : int or float
-                Amplitude of your signal.
-            * offset: int or float
-                Offset of your signal.
-            * phase: int or float
-                Phase of your signal (in radians). If waveform='limit', phase will be
-                the direction of the signal (up or down).
-            * lower_limit : [int or float,sting]
-                Only for 'limit' mode. Define the lower limit as a value of the
-                labeled signal : [value,'label']
-            * upper_limit : [int or float,sting]
-                Only for 'limit' mode. Define the upper limit as a value of the
-                labeled signal : [value,'label']
-        send_freq : int or float , default = 800
-            Loop frequency. Use this parameter to avoid over-use of processor and avoid
-            filling the link too fast.
-        repeat : Boolean, default=False
-            Set True is you want to repeat your sequence forever.
-        labels : list of strings, default =['t(s)','signal','cycle']
-            Allows you to set the labels of output data.
+                * waveform : {'sinus','square','triangle','limit','hold'}
+                    Shape of your signal, for every step.
+                * freq : int or float
+                    Frequency of your signal.
+                * time : int or float or None
+                    Time before change of step, for every step. If None, means infinite.
+                * cycles : int or float or None (default)
+                    Number of cycles before change of step, for every step. If None, means infinite.
+                * amplitude : int or float
+                    Amplitude of your signal.
+                * offset: int or float
+                    Offset of your signal.
+                * phase: int or float
+                    Phase of your signal (in radians). If waveform='limit', phase will be
+                    the direction of the signal (up or down).
+                * lower_limit : [int or float,sting]
+                    Only for 'limit' mode. Define the lower limit as a value of the
+                    labeled signal : [value,'label']
+                * upper_limit : [int or float,sting]
+                    Only for 'limit' mode. Define the upper limit as a value of the
+                    labeled signal : [value,'label']
+            send_freq : int or float , default = 800
+                Loop frequency. Use this parameter to avoid over-use of processor and avoid
+                filling the link too fast.
+            repeat : Boolean, default=False
+                Set True is you want to repeat your sequence forever.
+            labels : list of strings, default =['t(s)','signal','cycle']
+                Allows you to set the labels of output data.
 
-        Returns
-        -------
-        dict : OrderedDict
+        Returns:
+            dict :
+                time : float
+                    Relative time to t0.
+                signal : float
+                    Generated signal. If waveform='limit', signal can be -1/0/1.
+                cycle number : float
+                    Number of the current cycle.
 
-
-            time : float
-                Relative time to t0.
-            signal : float
-                Generated signal. If waveform='limit', signal can be -1/0/1.
-            cycle number : float
-                Number of the current cycle.
-
-        Examples
-        --------
-        SignalGenerator(path=[{'waveform':'hold','time':3},
-        {'waveform':'sinus','time':10,'phase':0,'amplitude':2,'offset':0.5,'freq':2.5},
-        {'waveform':'triangle','time':10,'phase':np.pi,'amplitude':2,'offset':0.5,'freq':2.5},
-        {'waveform':'square','time':10,'phase':0,'amplitude':2,'offset':0.5,'freq':2.5}
-        {'waveform':'limit','cycles':3,'phase':0,'lower_limit':[-3,'signal'],'upper_limit':[2,'signal']}
-        {"waveform":"protection","gain":1,"lower_limit":[-1,'F2(N)'],"upper_limit":[1,'F2(N)']}],
-        send_freq=400,repeat=True,labels=['t(s)','signal'])
+        Examples:
+            \code
+            SignalGenerator(path=[{'waveform':'hold','time':3},
+            {'waveform':'sinus','time':10,'phase':0,'amplitude':2,'offset':0.5,'freq':2.5},
+            {'waveform':'triangle','time':10,'phase':np.pi,'amplitude':2,'offset':0.5,'freq':2.5},
+            {'waveform':'square','time':10,'phase':0,'amplitude':2,'offset':0.5,'freq':2.5}
+            {'waveform':'limit','cycles':3,'phase':0,'lower_limit':[-3,'signal'],'upper_limit':[2,'signal']}
+            {"waveform":"protection","gain":1,"lower_limit":[-1,'F2(N)'],"upper_limit":[1,'F2(N)']}],
+            send_freq=400,repeat=True,labels=['t(s)','signal'])
+            \endcode
 
         In this example we displayed every possibility or waveform.
         Every dict contains informations for one step.

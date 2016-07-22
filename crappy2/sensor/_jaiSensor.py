@@ -23,10 +23,11 @@ from Tkinter import *
 
 class Jai(cameraSensor.CameraSensor):
     def __init__(self, numdevice=0, framespersec=99, serial=None):
-        """Opens a Jai camera and allow to grab frame and set the various parameters.
+        """
+        Opens a Jai camera and allow to grab frame and set the various parameters.
         
         Args:
-            numdevice : int, dault = 0
+            numdevice : int, default = 0
                 Number of the wanted device.
             framepersec : int, default = 99
                 Wanted frame rate.
@@ -63,7 +64,8 @@ class Jai(cameraSensor.CameraSensor):
 
     def get_image(self):
         """
-        This method get a frame on the selected camera and return a ndarray 
+        This method get a frame on the selected camera and return a ndarray.
+
         If the camera breaks down, it reinitializes it, and tries again.
         """
         try:
@@ -98,7 +100,9 @@ class Jai(cameraSensor.CameraSensor):
             print "cannot stop acquisition\n"
 
     def close(self):
-        """This method close properly the frame grabber. 
+        """
+        This method close properly the frame grabber.
+
         It releases the allocated memory and stops the acquisition.
         """
         try:

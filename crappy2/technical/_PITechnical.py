@@ -39,6 +39,8 @@ class PI(motion.Motion):
         a = self.ser.write(
             "%c%cSA%d\r" % (1, '0', 10000))  # fixer acceleration de 10 000 a 100 000 microsteps par seconde au carre
         a = self.ser.write("%c%cSV%d\r" % (1, '0', 10000))  # fixer vitesse
+        self.sensor = PISensor(ser=self.ser)
+        self.actuator = PIActuator(ser=self.ser)
 
     def close(self):
         """Close the designated port"""

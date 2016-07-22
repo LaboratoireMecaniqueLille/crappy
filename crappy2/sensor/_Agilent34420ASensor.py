@@ -46,6 +46,7 @@ class Agilent34420ASensor(acquisition.Acquisition):
         self.timeout = timeout
         ## desired value to measure
         self.mode = mode
+        ## Serial instance
         self.ser = serial.Serial(port=self.device, baudrate=self.baudrate, timeout=self.timeout)
         self.new()
 

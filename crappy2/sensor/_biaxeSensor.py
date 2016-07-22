@@ -29,8 +29,11 @@ class BiaxeSensor(motion.MotionSensor):
             timeout : Serial timeout.
         """
         super(BiaxeSensor, self).__init__(port, baudrate)
+        ## Path to the corresponding serial port, e.g '/dev/ttyS4'
         self.port = port
+        ## Set the corresponding baud rate.
         self.baudrate = baudrate
+        ## serial timeout
         self.timeout = timeout
         if ser is not None:
             self.ser = ser
@@ -42,8 +45,10 @@ class BiaxeSensor(motion.MotionSensor):
 
     def get_position(self):
         """
-        TODO
-        Search for the physical position of the motor
+        return the position of the motor.
+
+        \todo
+            - implement get_position: search for the physical position of the motor.
         """
         pass
 # @}

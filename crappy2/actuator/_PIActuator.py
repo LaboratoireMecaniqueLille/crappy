@@ -57,22 +57,26 @@ class PIActuator(motion.MotionActuator):
         # TODO
         pass
 
-    def set_position(self, disp):
-        # print self.ser
-        # """Re-define the speed of the motor. 1 = 0.002 mm/s"""
-        # here we should add the physical conversion for the speed
-        # self.ser=serial.Serial(self.port_number,self.timeout)
-        a = self.ser.write("%c%cMA%d\r" % (1, '0', int(disp)))
-        # print a
-        # self.ser.close()
+    def set_position(self, disp, position_mode="absolute"):
+        if position_mode == "absolute":
+            a = self.ser.write("%c%cMA%d\r" % (1, '0', int(disp)))
+        else:
+            a = self.ser.write("%c%cMR%d\r" % (1, '0', int(disp)))
 
     @deprecated(set_position)
     def set_absolute_disp(self, disp):
-        ## DEPRECATED: use set_position instead.
+        """
+        DEPRECATED: use set_position instead.
+        \deprecated use set_position instead.
+        """
         self.set_position(disp)
 
     @deprecated(None, "Use close function defined in PITechnical instead.")
     def close_port(self):
-        ## DEPRECATED: Use close function defined in PITechnical instead.
-        # Close the designated port
+        """
+        Close the designated port
+
+        \deprecated
+            Use close function defined in PITechnical instead.
+        """
         self.ser.close()

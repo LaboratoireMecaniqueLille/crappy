@@ -52,7 +52,7 @@ class DummySensor(acquisition.Acquisition, motion.MotionSensor):
         if channel_number == "all":
             result = []
             for i in range(len(self.channels)):
-                result.append((round(random.random() * random.random() * 10, 3)) * self.gain[i] + self.offset[i])
+                result.append((round(random.random() * random.random() * (10 + i), 3)) * self.gain[i] + self.offset[i])
             t = time.time()
             return t, result
         else:

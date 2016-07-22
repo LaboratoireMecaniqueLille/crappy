@@ -49,7 +49,10 @@ class Agilent34420AActuator(command.Command):
 
     def set_cmd(self):
         """
-        TODO
+        write a command to the output of Agilent devices.
+
+        \todo
+            - implement set_cmd.
         """
         pass
 

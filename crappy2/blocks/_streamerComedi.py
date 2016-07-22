@@ -7,7 +7,7 @@
 
 ## @file _streamerComedi.py
 # @brief Stream comedi values at high frequency.
-# @author Robin Siemiatkowski
+# @author Robin Siemiatkowski, Corentin Martel
 # @version 0.1
 # @date 13/07/2016
 

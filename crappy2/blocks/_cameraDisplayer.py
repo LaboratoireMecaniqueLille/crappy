@@ -10,7 +10,7 @@
 #   Use cv=False to use the old, inefficient and deprecated version
 #   NOTE: You need to use one displayer block per window (in other words, you can only attach one input to the diplayer)
 #
-# @author Robin Siemiatkowski
+# @author Corentin Martel, Robin Siemiatkowski
 # @version 0.1
 # @date 05/07/2016
 

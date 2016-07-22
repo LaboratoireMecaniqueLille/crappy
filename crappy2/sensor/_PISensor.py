@@ -32,18 +32,21 @@ class PISensor(motion.MotionSensor):
         This class create an axis and opens the corresponding serial port.
 
         Args:
-            port_number : str
-                    Path to the corresponding serial port, e.g '/dev/ttyS4'
-            baud_rate : int, default = 38400
+            port : str
+                    Path to the corresponding serial port, e.g '/dev/ttyS0'
+            baudrate : int, default = 38400
                     Set the corresponding baud rate.
             timeout : int or float, default = 1
                     Serial timeout
         """
         super(PISensor, self).__init__(port, baudrate)
+        ## Path to the corresponding serial port, e.g '/dev/ttyS0'
         self.port = port
+        ## Serial timeout
         self.timeout = timeout
 
         if ser is not None:
+            ## serial instance
             self.ser = ser
         else:
             self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=self.timeout)
@@ -52,5 +55,11 @@ class PISensor(motion.MotionSensor):
             a = self.ser.write("%c%cSV%d\r" % (1, '0', 10000))  # fixer vitesse
 
     def get_position(self):
+        """
+        Get the current position of the motor.
+
+        Returns:
+            Current position of the motor.
+        """
         self.ser.write("%c%cTP\r" % (1, '0'))
         return self.ser.readline()

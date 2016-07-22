@@ -122,19 +122,18 @@ class MultiPath(MasterBlock):
                     total deformation, relative to the starting point. Used for
                     plasticity detection.
 
-
         Examples:
-
+            \code
             SignalGenerator(path=[{"waveform":"detection","cycles":1},
             {"waveform":"goto","mode":"total_def","position":[0,0]},
             {"waveform":"goto","mode":"plastic_def","target":0.002,"position":[-10,0]},
             {"waveform":"trefle","gain":0.001,"cycles":1,"offset":[0.001:-0.002]},
             {"waveform":"traction","gain":0.001,"cycles":0.25,"offset":[-0.001:0.002]}],
             send_freq=400,dmin=22,dmax=25,default_G=71*10**9,default_E=196*10**9,repeat=False)
-
-            In this example we displayed some possibilities of waveform.
-            Every dict contains informations for one step.
-            The requiered informations depend on the type of waveform you need.
+            \endcode
+        In this example we displayed some possibilities of waveform.
+        Every dict contains informations for one step.
+        The requiered informations depend on the type of waveform you need.
         """
         super(MultiPath, self).__init__()
         print "MultiPath!"

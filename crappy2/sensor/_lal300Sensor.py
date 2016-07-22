@@ -28,48 +28,56 @@ class Lal300Sensor(motion.MotionSensor):
 
         Args:
             param : Dict of parameters.
-                    * 'port' : str
+                    * 'port' : (str)
                             Path to the serial port.
-                    * 'baudrate' : int
+                    * 'baudrate' : (int)
                             Corresponding baudrate.
-                    * 'timeout' : float
+                    * 'timeout' : (float)
                             Timeout of the serial connection.
-                    * 'PID_PROP' : float
+                    * 'PID_PROP' : (float)
                             Proportionnal coefficient of the PID.
-                    * 'PID_INT' : float
+                    * 'PID_INT' : (float)
                             Integral coefficient for the PID.
-                    * 'PID_DERIV' : float
+                    * 'PID_DERIV' : (float)
                             Derivative coefficient for the PID.
-                    * 'PID_INTLIM' : float
+                    * 'PID_INTLIM' : (float)
                             Limit of the integral coefficient.
-                    * 'ACC' float
+                    * 'ACC' : (float)
                             Acceleration of the motor.
-                    * 'ACconv' : float
+                    * 'ACconv' : (float)
                             Conversion ACC values to mm/s/s
-                    * 'FORCE' : float
+                    * 'FORCE' : (float)
                             Maximal force provided by the motor.
                     * 'SPEEDconv' : float
                             Conversion SPEED values to mm/s
-                    * 'ENTREE_VERIN' : str
-                            'DI1'
-                    * 'SORTIE_VERIN' : str
-                            'DI0'
-                    * 'ETIRE': list of int
+                    * 'ENTREE_VERIN' : (str) 'DI1'
+                    * 'SORTIE_VERIN' : (str) 'DI0'
+                    * 'ETIRE': (list of int)
                             List of extreme values for the position in traction.
-                    * 'COMPRIME': list of int
+                    * 'COMPRIME': (list of int)
                             List of extreme values for the position in compression.
-                    * 'SPEED' : list of int
+                    * 'SPEED' : (list of int)
                             List of speed, for each group of cycles.
-                    * 'CYCLES' : list of int
+                    * 'CYCLES' : (list of int)
                             List of cycles, for each group.
+            ser : serial instance, use it in case you have already initialized the serial port with this motor,
+                for example, if you use the the BiotensSensor and the BiotensActuator (in this case you should use
+                BiotensTechnical).
+            port : Path to the corresponding serial port, e.g '/dev/ttyUSB0'
+            baudrate : Set the corresponding baud rate.
         """
         super(Lal300Sensor, self).__init__(port, baudrate)
+        ## dictionnary of parameters.
         self.param = param
+        ## Path to the corresponding serial port, e.g '/dev/ttyUSB0'
         self.port = port
+        ## Corresponding baudrate to configure the serial port.
         self.baudrate = baudrate
         if ser is not None:
+            ## serial instance
             self.ser = ser
         else:
+            ## serial instance
             self.ser = serial.Serial(port=self.port,  # Configuration du port serie à l'aide de PySerial
                                      baudrate=self.baudrate,
                                      bytesize=serial.EIGHTBITS,
@@ -82,7 +90,9 @@ class Lal300Sensor(motion.MotionSensor):
                                      inter_byte_timeout=None)
 
     def get_position(self):  # Releve de la position du moteur via le port serie
-        """Check current position."""
+        """
+        Check current position.
+        """
         self.ser.read(self.ser.in_waiting)  # Nettoyage du port serie
         time.sleep(0.015)
         self.ser.write('TP\r\n')  # Ecriture de l'instruction "Tell Position" pour indiquer la position moteur
@@ -99,18 +109,27 @@ class Lal300Sensor(motion.MotionSensor):
 
     @deprecated(get_position)
     def check_disp(self):
-        # DEPRECATED: use get_position instead.
-        # Releve de la position du moteur via le port serie
-        """Check current position."""
+        """
+        Check current position.
+
+        \deprecated
+            use get_position instead.
+
+        Releve de la position du moteur via le port serie
+        """
         return self.get_position()
 
 
 class SensorLal300(Lal300Sensor):
     @deprecated(None, "Use Lal300Sensor class instead.")
     def __init__(self, param, ser):
-        # DEPRECATED: Use Lal300Sensor class instead.
-        # Arguments param et ser indiques dans la classe TechnicalLal300
-        """This class contains methods to get info from the motors of the lal300
+        """
+        Arguments param et ser indiques dans la classe TechnicalLal300
+
+        This class contains methods to get info from the motors of the lal300
         machine. You should NOT use it directly, but use the Lal300Technical.
+
+        \deprecated
+            Use Lal300Sensor class instead.
         """
         super(SensorLal300, self).__init__(ser=ser, param=param)

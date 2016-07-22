@@ -8,7 +8,7 @@
 ## @file __init__.py
 # @brief  Link class. All connection between Blocks should be made with this.
 #
-# @author Robin Siemiatkowski
+# @authors Corentin Martel, Robin Siemiatkowski
 # @version 0.1
 # @date 13/07/2016
 
@@ -200,7 +200,17 @@ class Link(object):
             # 			#print "Exception in link : ", e, value
 
     def recv(self, blocking=True):
-        """Receive data. If blocking=False, return None if there is no data"""
+        """
+        Receive data. If blocking=False, return None if there is no data
+
+        Args:
+            blocking: Enable (True) or disable (False) blocking mode.
+
+        Returns:
+            If blocking is True, recv() method will wait
+            until data is available on the pipe and return the received data, otherwise, it will check if there is
+            data available to return, or return None if the pipe is empty.
+        """
         try:
             if blocking:
                 return self.in_.recv()
