@@ -20,7 +20,11 @@ np.set_printoptions(threshold='nan', linewidth=500)
 
 
 class Saver(MasterBlock):
-    """Saves data in a file"""
+    """Saves data in a file
+    \todo
+      Add an option to create a timestamp, instead of append only one file.
+    """
+
 
     def __init__(self, log_file):
         """
