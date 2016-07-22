@@ -54,9 +54,11 @@ class Grapher(MasterBlock):
         print "grapher!"
         self.len_graph = kwargs.get("length", 10)
         self.mode = "dynamic" if self.len_graph > 0 else "static"
-        self.args = args
-        self.nbr_graphs = len(args)
-
+        if isinstance(args[0], list):
+            self.args = args[0]
+        else:
+            self.args = args
+        self.nbr_graphs = len(self.args)
         if args[0] in ["static",
                        "dynamic"]:  ### Support old syntax to avoid generalized incontrollable panic (to be deleted in the future) ---
             redWarn = '[\033[31m\033[1mWARNING!\033[0m] '  # Red warning, for persuasion
