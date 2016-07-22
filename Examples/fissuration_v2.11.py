@@ -168,13 +168,19 @@ class ConditionK(crappy2.links.MetaCondition):
 
 try:
     # Creating objects
-
     instronSensor = crappy2.sensor.ComediSensor(device='/dev/comedi0', channels=[0, 1], gain=[10, 15000], offset=[0, 0])
     agilentSensor = crappy2.sensor.Agilent34420ASensor(device='/dev/ttyUSB0', baudrate=9600, timeout=1)
     # print "13"
     # agilentSensor=crappy2.sensor.DummySensor()
     comedi_actuator = crappy2.actuator.ComediActuator(device='/dev/comedi1', subdevice=1, channel=1, range_num=0, gain=1,
                                                       offset=0)
+    ######
+    ## Pour Jerome!
+    ## Si tu veux utiliser ton actionneur PI:
+    ##   pi_technical = crappy2.technical.PI('/dev/ttyUSB0', timeout=1)
+    ##   pi_technical.actuator.set_position(position_initiale)
+    ######
+    #
     # pi_actuator=crappy2.actuator.PIActuator('/dev/ttyUSB0', timeout=1)
     # pi_actuator.set_absolute_disp(position_initiale)
     # print "21"
