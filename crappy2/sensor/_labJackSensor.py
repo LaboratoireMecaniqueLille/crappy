@@ -11,18 +11,19 @@
 # @version 0.2
 # @date 08/07/2016
 
-
 from labjack import ljm
 import time
 import sys
 from ._meta import acquisition
-import collections
+from collections import OrderedDict
+
 
 
 class LabJackSensor(acquisition.Acquisition):
     """Sensor class for LabJack devices."""
 
-    def __init__(self, mode="single", channels="AIN0", gain=1, offset=0, chan_range=10, resolution=0, handle=None):
+    def __init__(self, mode="single", channels="AIN0", gain=1, offset=0, chan_range=10, resolution=0, scanRate=100,
+                 handle=None):
         """
         Convert tension value into digital values, on several channels.
 
@@ -72,6 +73,7 @@ class LabJackSensor(acquisition.Acquisition):
         self.resolution = var_tester(resolution, self.nb_channels)
 
         self.mode = mode.lower()
+        self.scanRate = scanRate
 
         if not handle:
             self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, "ANY")  # open first found labjack
@@ -92,45 +94,62 @@ class LabJackSensor(acquisition.Acquisition):
         assert False not in [0 <= self.resolution[chan] <= res_max for chan in range(self.nb_channels)], \
             "Wrong definition of resolution index. INDEX_MAX for T7: 8, for T7PRO: 12"
 
-        aValues = []
-        aNames = []
-
         if self.mode == "single":
             suffixes = (("_RANGE", self.chan_range),
                         ("_RESOLUTION_INDEX", self.resolution),
-                        ("_EF_INDEX", 1),
-                        ("_EF_CONFIG_D", self.gain),
-                        ("_EF_CONFIG_E", self.offset))
+                        ("_EF_INDEX", 1),  # for applying a slope and offset
+                        ("_EF_CONFIG_D", self.gain),  # index to set the gain
+                        ("_EF_CONFIG_E", self.offset))  # index to set the offset
 
         elif self.mode == "thermocouple":
             suffixes = (("_EF_INDEX", 22),  # for thermocouple measures
                         ("_EF_CONFIG_A", 1),  # for degrees C
                         ("_EF_CONFIG_B", 60052))  # for type K
 
+        elif self.mode == "streamer":
+            self.aScanList = ljm.namesToAddresses(self.nb_channels, self.channels)[0]
+
+            aNames = ["AIN_ALL_NEGATIVE_CH", "AIN_ALL_RANGE", "STREAM_SETTLING_US",
+                      "STREAM_RESOLUTION_INDEX"]
+            aValues = [ljm.constants.GND, 10.0, 0, 0]
+            self.scansPerRead = int(self.scanRate / 10.)
         else:
             raise Exception("Unrecognized mode. Check documentation for details.")
 
-        suffixes = collections.OrderedDict(suffixes)
-
-        for chan in range(self.nb_channels):
-            for count, key in enumerate(suffixes):
-                aNames.append(self.channels[chan] + suffixes.keys()[count])
-                if isinstance(suffixes.get(key), list):
-                    aValues.append(suffixes.get(key)[chan])
-                else:
-                    aValues.append(suffixes.get(key))
-
+        if not self.mode == "streamer":
+            aValues = []
+            aNames = []
+            suffixes = OrderedDict(suffixes)
+            for chan in range(self.nb_channels):
+                for count, key in enumerate(suffixes):
+                    aNames.append(self.channels[chan] + suffixes.keys()[count])
+                    if isinstance(suffixes.get(key), list):
+                        aValues.append(suffixes.get(key)[chan])
+                    else:
+                        aValues.append(suffixes.get(key))
         ljm.eWriteNames(self.handle, len(aNames), aNames, aValues)
+
+    def start_stream(self):
+            ljm.eStreamStart(self.handle, self.scansPerRead, self.nb_channels, self.aScanList, self.scanRate)
 
     def get_data(self, mock=None):
         """
         Read the signal on all pre-defined channels, one by one.
+            \todo
+              Make the acquisition more efficient. Add an option to stream more than 1 channel.
         """
         try:
-            results = ljm.eReadNames(self.handle, self.nb_channels, self.channels_index_read)
-            return time.time(), results
+            if not self.mode == "streamer":
+                results = ljm.eReadNames(self.handle, self.nb_channels, self.channels_index_read)
+                return time.time(), results
+            else:
+                retrieved_from_buffer = ljm.eStreamRead(self.handle)
+                results = retrieved_from_buffer[0]
+                print "Left on Device Buffer: %i " % retrieved_from_buffer[1]
+                print "Left on LJM Buffer: %i " % retrieved_from_buffer[2]
+                return time.time(), results
         except KeyboardInterrupt:
-            # self.close()
+            self.close()
             pass
         except Exception:
             print(sys.exc_info()[1])
