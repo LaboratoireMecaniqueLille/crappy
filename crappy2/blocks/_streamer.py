@@ -40,7 +40,7 @@ class Streamer(MasterBlock):
         """
         super(Streamer, self).__init__()
         self.sensor = sensor
-        self.freq = self.sensor.scanRate
+        self.freq = self.sensor.scan_rate
         if labels:
             self.labels = labels
         else:
@@ -51,7 +51,7 @@ class Streamer(MasterBlock):
     def main(self):
         print "Streamer : ", os.getpid()
         self.sensor.start_stream()
-        self.freq = self.sensor.scansPerRead
+        self.freq = self.sensor.scans_per_read
         self.t0 = time.time()
         try:
             while True:
@@ -61,7 +61,7 @@ class Streamer(MasterBlock):
                 t, value = self.sensor.get_data()
                 data = [t - self.t0]
                 for index_freq in range(1, self.freq):
-                    data.append(data[-1] + 1. / (self.sensor.scansPerRead * self.sensor.scanRate))
+                    data.append(data[-1] + 1. / (self.sensor.scans_per_read * self.sensor.scan_rate))
                 value = (data, value)
                 array = OrderedDict(zip(self.labels, value))
                 try:

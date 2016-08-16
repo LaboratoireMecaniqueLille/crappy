@@ -16,21 +16,22 @@ import time
 import sys
 from ._meta import acquisition
 from collections import OrderedDict
-
+import Tkinter
 
 
 class LabJackSensor(acquisition.Acquisition):
     """Sensor class for LabJack devices."""
 
-    def __init__(self, mode="single", channels="AIN0", gain=1, offset=0, chan_range=10, resolution=0, scanRate=100,
-                 handle=None):
+    def __init__(self, mode="single", channels="AIN0", gain=1, offset=0, chan_range=10, resolution=0, scan_rate=100,
+                 handle=None, identifier=None):
         """
         Convert tension value into digital values, on several channels.
 
         Available modes at the moment :
 
-        - Single : Output is (measured_value * gain) + offset.
+        - Single : Output is (measured_value * gain) + offset, can acquire at 1 kHz max.
         - Thermocouple : Output is a temperature in degree celsius.
+        - Streamer : Output is (measured_value * gain) + offset, can acquire at 100 kHz max.
 
         Args:
             channels : int/str or list of int/str, default = 0
@@ -67,70 +68,79 @@ class LabJackSensor(acquisition.Acquisition):
         self.nb_channels = len(self.channels)
         self.channels_index_read = [self.channels[chan] + "_EF_READ_A" for chan in range(self.nb_channels)]
 
-        self.gain = var_tester(gain, self.nb_channels)
-        self.offset = var_tester(offset, self.nb_channels)
         self.chan_range = var_tester(chan_range, self.nb_channels)
         self.resolution = var_tester(resolution, self.nb_channels)
 
-        self.mode = mode.lower()
-        self.scanRate = scanRate
+        self.gain = var_tester(gain, self.nb_channels)
+        self.offset = var_tester(offset, self.nb_channels)
 
-        if not handle:
-            self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, "ANY")  # open first found labjack
-        else:
-            self.handle = handle
+        self.mode = mode.lower()
+
+        if self.mode == "streamer":
+            self.a_scan_list = ljm.namesToAddresses(self.nb_channels, self.channels)[0]
+            self.scan_rate = scan_rate
+            self.scans_per_read = int(scan_rate / 10.)
+
+        self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, str(identifier) if identifier else "ANY") \
+            if not handle else handle  # open first found labjack OR labjack identified
+
         self.new()
 
     def new(self):
         """
         Initialise the device and create the handle
         """
-        if ljm.eReadName(self.handle,
-                         "WIFI_VERSION") > 0:  # Test if LabJack is a pro or not. Then verifies index values.
-            res_max = 12
-        else:
-            res_max = 8
-
+        res_max = 12 if ljm.eReadName(self.handle, "WIFI_VERSION") > 0 else 8  # Test if LabJack is pro or not
         assert False not in [0 <= self.resolution[chan] <= res_max for chan in range(self.nb_channels)], \
             "Wrong definition of resolution index. INDEX_MAX for T7: 8, for T7PRO: 12"
 
         if self.mode == "single":
-            suffixes = (("_RANGE", self.chan_range),
-                        ("_RESOLUTION_INDEX", self.resolution),
-                        ("_EF_INDEX", 1),  # for applying a slope and offset
-                        ("_EF_CONFIG_D", self.gain),  # index to set the gain
-                        ("_EF_CONFIG_E", self.offset))  # index to set the offset
+
+            suffixes = OrderedDict(("_RANGE", self.chan_range),
+                                   ("_RESOLUTION_INDEX", self.resolution),
+                                   ("_EF_INDEX", 1),                        # for applying a slope and offset
+                                   ("_EF_CONFIG_D", self.gain),             # index to set the gain
+                                   ("_EF_CONFIG_E", self.offset))           # index to set the offset
 
         elif self.mode == "thermocouple":
-            suffixes = (("_EF_INDEX", 22),  # for thermocouple measures
-                        ("_EF_CONFIG_A", 1),  # for degrees C
-                        ("_EF_CONFIG_B", 60052))  # for type K
+            suffixes = OrderedDict(("_EF_INDEX", 22),                       # for thermocouple measures
+                                   ("_EF_CONFIG_A", 1),                     # for degrees C
+                                   ("_EF_CONFIG_B", 60052))                 # for type K
 
         elif self.mode == "streamer":
-            self.aScanList = ljm.namesToAddresses(self.nb_channels, self.channels)[0]
+            a_names = ["AIN_ALL_RANGE", "STREAM_SETTLING_US", "STREAM_RESOLUTION_INDEX"]
+            a_values = [int(self.chan_range[0]), 0, int(self.resolution[0])]
+      #     a_names = ["AIN_ALL_NEGATIVE_CH", "AIN_ALL_RANGE", "STREAM_SETTLING_US",
+      #                 "STREAM_RESOLUTION_INDEX"]
+      #     a_values = [ljm.constants.GND, self.chan_range, 0, 0]
 
-            aNames = ["AIN_ALL_NEGATIVE_CH", "AIN_ALL_RANGE", "STREAM_SETTLING_US",
-                      "STREAM_RESOLUTION_INDEX"]
-            aValues = [ljm.constants.GND, 10.0, 0, 0]
-            self.scansPerRead = int(self.scanRate / 10.)
         else:
-            raise Exception("Unrecognized mode. Check documentation for details.")
+            raise Exception("Unrecognized mode. Check documentation.")
 
-        if not self.mode == "streamer":
-            aValues = []
-            aNames = []
-            suffixes = OrderedDict(suffixes)
-            for chan in range(self.nb_channels):
+        if self.mode == "single" or self.mode == "thermocouple":
+            a_values = []
+            a_names = []
+            for chan_iteration in range(self.nb_channels):
                 for count, key in enumerate(suffixes):
-                    aNames.append(self.channels[chan] + suffixes.keys()[count])
+                    a_names.append(self.channels[chan_iteration] + suffixes.keys()[count])
                     if isinstance(suffixes.get(key), list):
-                        aValues.append(suffixes.get(key)[chan])
+                        a_values.append(suffixes.get(key)[chan_iteration])
                     else:
-                        aValues.append(suffixes.get(key))
-        ljm.eWriteNames(self.handle, len(aNames), aNames, aValues)
+                        a_values.append(suffixes.get(key))
+        ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
 
     def start_stream(self):
-            ljm.eStreamStart(self.handle, self.scansPerRead, self.nb_channels, self.aScanList, self.scanRate)
+        # self.root = Tkinter.Tk()
+        # self.rows = ['Chronometer', 'Device Buffer', 'Software Buffer']
+        #
+        # self.root.title('LabJack Streamer')
+        #
+        # for row_index, row in enumerate(self.rows):
+        #     Tkinter.Label(self.root, text=row, borderwidth=10).grid(row=row_index, column=0)
+        #
+        # self.root.resizable(width=False, height=False)
+        # self.root.mainloop()
+        ljm.eStreamStart(self.handle, self.scans_per_read, self.nb_channels, self.a_scan_list, self.scan_rate)
 
     def get_data(self, mock=None):
         """
@@ -145,9 +155,14 @@ class LabJackSensor(acquisition.Acquisition):
             else:
                 retrieved_from_buffer = ljm.eStreamRead(self.handle)
                 results = retrieved_from_buffer[0]
+                timer = time.time()
+                # Tkinter.Label(self.root, text=timer, borderwidth=10).grid(row=0, column=1)
+                # Tkinter.Label(self.root, text=retrieved_from_buffer[1], borderwidth=10).grid(row=1, column=1)
+                # Tkinter.Label(self.root, text=retrieved_from_buffer[2], borderwidth=10).grid(row=2, column=1)
+                # self.root.update()
                 print "Left on Device Buffer: %i " % retrieved_from_buffer[1]
                 print "Left on LJM Buffer: %i " % retrieved_from_buffer[2]
-                return time.time(), results
+                return timer, results
         except KeyboardInterrupt:
             self.close()
             pass
