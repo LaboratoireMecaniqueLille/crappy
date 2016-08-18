@@ -97,10 +97,10 @@ class LabJackSensor(acquisition.Acquisition):
         self.mode = mode.lower()
 
         if self.mode == "streamer":
-            """Additionnal variables for streamer function only."""
+            # Additional variables used in streamer mode only.
             self.a_scan_list = ljm.namesToAddresses(self.nb_channels, self.channels)[0]
             self.scan_rate = scan_rate
-            self.scans_per_read = scans_per_read if not None else int(self.scan_rate / 5.)
+            self.scans_per_read = scans_per_read if scans_per_read else int(self.scan_rate / 5.)
             global queue
             queue = Queue()
         self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, str(identifier) if identifier else "ANY") \
@@ -118,7 +118,7 @@ class LabJackSensor(acquisition.Acquisition):
             self.first_column = \
                 ['Set Scan Rate', 'Samples Collecting Rate', 'Chronometer', 'Device Buffer', 'Software Buffer']
             self.second_column = \
-                ['%.1f kHz' % (scan_rate / 1000), '%.1f kScans' % (scans_per_sample / 1000), 0.0, 0, 0]
+                ['%.1f kHz' % (scan_rate / 1000.), '%.1f kScans' % (scans_per_sample / 1000.), 0.0, 0, 0]
             for row_index, first_column in enumerate(self.first_column):
                 Label(self.root, text=first_column, borderwidth=10).grid(row=row_index, column=0)
                 Label(self.root, text=self.second_column[row_index], borderwidth=10).grid(row=row_index, column=1)
@@ -193,7 +193,6 @@ class LabJackSensor(acquisition.Acquisition):
         try:
             ljm.eStreamStart(self.handle, self.scans_per_read, self.nb_channels, self.a_scan_list, self.scan_rate)
             Process(target=self.DialogBox, args=(self.scan_rate, self.scans_per_read)).start()
-
         except KeyboardInterrupt:
             self.close()
             pass
