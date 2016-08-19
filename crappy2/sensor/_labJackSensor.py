@@ -14,6 +14,7 @@
 from labjack import ljm
 from time import time
 from sys import exc_info
+from os import getpid
 from ._meta import acquisition
 from collections import OrderedDict
 from multiprocessing import Process, Queue
@@ -69,22 +70,19 @@ class LabJackSensor(acquisition.Acquisition):
 
         def var_tester(var, nb_channels):
             """Used to check if the user entered correct parameters."""
-            if isinstance(var, (int, float)):
-                var = [var] * nb_channels
-            elif isinstance(var, list) and len(var) == nb_channels and False not in [isinstance(var[i], (int, float))
-                                                                                     for i in range(nb_channels)]:
-                pass
-            else:
-                raise Exception(str(var) + " LabJack error: Wrong parameter definition. "
-                                           "Parameters should be either int, float or a list of such")
+            var = [var] * nb_channels if isinstance(var, (int, float)) else var
+            assert isinstance(var, list) and len(var) == nb_channels, \
+                str(var) + "Parameters definition Error: list is not the same length as nb_channels."
+            assert False not in [isinstance(var[i], (int, float)) for i in range(nb_channels)], \
+                str(var) + "Error: parameters should be int or float."
             return var
 
         if not isinstance(channels, list):
             self.channels = [channels]
         else:
             self.channels = channels
-
         self.channels = ["AIN" + str(chan) if type(chan) is not str else chan for chan in self.channels]
+
         self.nb_channels = len(self.channels)
         self.channels_index_read = [self.channels[chan] + "_EF_READ_A" for chan in range(self.nb_channels)]
 
@@ -100,16 +98,19 @@ class LabJackSensor(acquisition.Acquisition):
             # Additional variables used in streamer mode only.
             self.a_scan_list = ljm.namesToAddresses(self.nb_channels, self.channels)[0]
             self.scan_rate = scan_rate
-            self.scans_per_read = scans_per_read if scans_per_read else int(self.scan_rate / 5.)
-            global queue
+            self.scans_per_read = scans_per_read if scans_per_read else int(self.scan_rate / 10.)
+            global queue  # Used to run a dialog box in parallel
             queue = Queue()
+
         self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, str(identifier) if identifier else "ANY") \
             if not handle else handle  # open first found labjack OR identified labjack
 
         self.new()
 
     class DialogBox:
-        """Dialog box that pops when using streamer function."""
+        """
+        Dialog box that pops when using streamer function.
+        """
         def __init__(self, scan_rate, scans_per_sample):
             self.root = Tk()
             self.root.title('LabJack Streamer Information')
@@ -126,8 +127,8 @@ class LabJackSensor(acquisition.Acquisition):
 
         def update(self):
             """Method to update data inside the dialog box. The window is updated every time data in queue occurs."""
+            print "LabJack Sensor / Streamer Dialog Box PID:", getpid()
             try:
-                global queue
                 array = queue.get()
                 t0 = array[0]
                 while True:
@@ -189,7 +190,9 @@ class LabJackSensor(acquisition.Acquisition):
             raise
 
     def start_stream(self):
-        """Method to initialize a streaming data."""
+        """
+        Method to initialize a streaming data.
+        """
         try:
             ljm.eStreamStart(self.handle, self.scans_per_read, self.nb_channels, self.a_scan_list, self.scan_rate)
             Process(target=self.DialogBox, args=(self.scan_rate, self.scans_per_read)).start()
@@ -220,7 +223,6 @@ class LabJackSensor(acquisition.Acquisition):
         """
         Read the device buffer if scan_mode is set.
         """
-        global queue
         try:
             retrieved_from_buffer = ljm.eStreamRead(self.handle)
             results = retrieved_from_buffer[0]
@@ -229,13 +231,11 @@ class LabJackSensor(acquisition.Acquisition):
             return timer, results
 
         except KeyboardInterrupt:
-            ljm.eStreamStop(self.handle)
             self.close()
             pass
 
         except Exception:
             print(exc_info()[1])
-            ljm.eStreamStop(self.handle)
             self.close()
             raise
 
@@ -245,6 +245,9 @@ class LabJackSensor(acquisition.Acquisition):
         """
         if ljm.eReadName(self.handle, "STREAM_ENABLE"):
             ljm.eStreamStop(self.handle)
+            while not queue.empty():
+                queue.get_nowait()
+            queue.close()
         ljm.close(self.handle)
         print "LabJack device closed"
         # try:
