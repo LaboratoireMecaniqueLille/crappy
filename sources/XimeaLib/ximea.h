@@ -77,9 +77,6 @@ typedef struct {
     bool first_read;
 } VideoCapture;
 
-struct thread_data{
-   VideoCapture *self;
-};
 
 PyObject* VideoCapture_openByName(char * device_path);
 PyObject* VideoCapture_open(int device);
@@ -92,7 +89,6 @@ PyObject* VideoCapture_getMeta();
 PyObject* VideoCapture_xiread(VideoCapture *self);
 PyObject* VideoCapture_set(VideoCapture *self, PyObject *args);
 PyObject* VideoCapture_get(VideoCapture *self, PyObject *args);
-void *read_thread(void *threadarg);
 #ifdef __cplusplus
 }
 #endif

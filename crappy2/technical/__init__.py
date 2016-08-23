@@ -59,3 +59,9 @@ except Exception as e:
     import_error(e.message)
 from ._datapicker import DataPicker
 del e, import_error
+
+# Uncomment the following lines for testing please see the documentation ("how to bind C/C++ with Python")
+try:
+    import helloModule as helloModule
+except Exception as e:
+    print e

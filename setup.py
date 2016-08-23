@@ -25,6 +25,13 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 extentions = []
 ximeaModule = pyFgenModule = clModule = None
 
+# uncomment folowing lines for testing extension module (see documentation "How to bin C/C++ with Crappy")
+helloModule = Extension('technical.helloModule',
+                         sources=['sources/hello/hello_class.cpp'],
+                         extra_compile_args=["-l", "python2.7"])
+
+extentions.append(helloModule)
+
 if platform.system() == "Linux":
     execfile("./crappy2/__version__.py")  # read the current version in version.py
     ximeaModule = Extension('sensor.ximeaModule',
@@ -207,3 +214,9 @@ if clModule in extentions:
 if pyFgenModule in extentions:
     if platform.system() == "Windows":
         system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\pyFgenModule.pyd crappy2\\sensor\\')
+
+if helloModule in extentions:
+    if platform.system() == "Windows":
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\technical\\helloModule.pyd crappy2\\technical\\')
+    if platform.system() == "Linux":
+        system('cp build/lib.linux-x86_64-2.7/crappy2/technical/helloModule.so crappy2/technical/')

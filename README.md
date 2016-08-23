@@ -28,19 +28,20 @@ Only tested on Ubuntu 14.04 / 15.1 :
 Documentation
 -------------
 
-The documentation can be compiled by simply running in the doc folder :
+The documentation is generated with doxywizard:
 
-       make html
+Please install doxygen and pluggins as follow:
 
-Note that you will need to install sphinx and numpy-doc:
-       
-       pip install -U Sphinx
-       
-       apt-get install python-numpydoc
-        
-We used the scipy-style for Sphinx, you can find the original on SciPy's Github:
+sudo apt-get install doxygen doxyge-gui
+sudo apt-get instal doxypy
 
-https://github.com/scipy/scipy
+Then, download and install the doxypypy project.
+
+then, load the Doxyfile located in doc with doxywizard:
+
+    doxywizard doc/Doxyfile
+
+Finally, run doxygen from the run tab, and show html output.
 
 
 Bug reports
