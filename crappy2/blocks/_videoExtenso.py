@@ -183,7 +183,7 @@ class VideoExtenso(MasterBlock):
     """
 
     def __init__(self, camera="ximea", numdevice=0, xoffset=0, yoffset=0, width=2048, height=2048, white_spot=True,
-                 display=True, update_tresh=False, labels=['t(s)', 'Px', 'Py', 'Exx(%)', 'Eyy(%)'], security=False,
+                 display=True, update_tresh=False, labels=None, security=False,
                  save_folder=None):
         """
         Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. display the image with the center of the spots.
@@ -242,6 +242,8 @@ class VideoExtenso(MasterBlock):
                     Eyy : float. Deformation = Lxy/L0y
         """
         super(VideoExtenso, self).__init__()
+        if labels is None:
+            labels = ['t(s)', 'Px', 'Py', 'Exx(%)', 'Eyy(%)']
         go = False
         # camera INIT with ZOI selection
         self.white_spot = white_spot

@@ -174,10 +174,29 @@ a camera), filter the signal with a mean, include numerical modelisation in
 real-time in your test...
 */
 
-/*! \page tuto1 how to bind C/C++ with Crappy?
+/*! \page tuto1 How to use C++ designed hardware drivers with Crappy ?
 
-This gives a complete exemple on how to bind C and C++ language with Python and add it to the Crappy package.
+There is lot of hardware only available for C++ or C platforms, but it can be easily bound with Python.
+Here we will give you an example on how to bind C language to make it object oriented (as we use to in Python).
+
+<h1> how to bind C/C++ with Crappy? </h1>
+
+This gives a complete example on how to bind C and C++ language with Python and add it to the Crappy package.
 Linux and Windows are both used for building.
+
+\warning
+    This is not a C++ tutorial, some notion are used here, please refer to the tutorials below if you are not a C or C++
+    developer. /n
+    C++ tutorials:
+    <ul>
+        <li> <a  href= "https://openclassrooms.com/courses/programmez-avec-le-langage-c" > openclassrooms (fr) </a> </li>
+        <li> <a  href= "http://www.cplusplus.com/doc/tutorial/" > cplusplus (en) </a> </li>
+    </ul>
+    C tutorials:
+    <ul>
+        <li> <a  href= "https://openclassrooms.com/courses/apprenez-a-programmer-en-c" > openclassroom (fr) </a> </li>
+        <li> <a  href= "http://www.cprogramming.com/tutorial/c-tutorial.html" > cprogramming (en) </a> </li>
+    </ul>
 
 Under Linux, you must install the python-dev package to ensure that you can use the Python.h library in the C or C++
 code.
@@ -193,22 +212,33 @@ which contains the Python.h.
 
 <h2> First example </h2>
 
-##The C++ code (hello.cpp)##
+<h3>The C++ code (hello.cpp)</h3>
 \code
+// Python header contains all the functions definitions to handle python object in C/C++.
 #include <Python.h>
+// Header that defines the standard input/output stream objects.
 #include <iostream>
 
+// define the namespace to use.
 using namespace std;
 
+// The functions bound with python have to return a PyObject understandable in Python.
 static PyObject* hello(PyObject* self, PyObject* args){
     const char* name;
+    // it parse the args argument and look for a string
+    // and set the name var with the parsed value.
+    // if it fails, PyArg_ParseTuple return False, True otherwise.
+    // returning NULL directly allows to raise an exception in Python.
     if(!PyArg_ParseTuple(args, "s", &name))
         return NULL;
     cout << "Hello " << name << endl;
 
+    // This should be a void function, so we return the Python None.
     Py_RETURN_NONE;
 }
 
+// definition of a PyMethodDef object (defined in the python library)
+// contains the functions definition to be bound with python.
 static PyMethodDef HelloMethods[] =
 {
     {"hello", hello, METH_VARARGS, "Say hello to somebody."},
@@ -331,6 +361,7 @@ The second element represent our attribute 'name'.
 
 \code
 
+// define a struct to build our Python module, this is similar to the dict of a Python class.
 typedef struct {
     PyObject_HEAD
     char *name;
@@ -343,8 +374,9 @@ as first argument for each method (similar to the python self).
 
 \code
 
-static PyObject *
-Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+// This function will be called at the creation of our Python class, it allocates memory, parse the arguments and return
+// the self struct.
+static PyObject *Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     Hello *self;
     self = (Hello *)type->tp_alloc(type, 0);

@@ -34,6 +34,8 @@ try:
 except Exception as e:
     import_error(e.message)
 
+from ._fakeCameraSensor import FakeCameraSensor as Dummy
+
 if _platform.system() == "Linux":
     try:
         from ._comediSensor import ComediSensor

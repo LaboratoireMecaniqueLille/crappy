@@ -11,11 +11,12 @@
 # @author Robin Siemiatkowski
 # @version 0.1
 # @date 29/06/2016
+import random
+import time
 
 from ._meta import cameraSensor
-import numpy as np
-import os
 import matplotlib.pyplot as plt
+import numpy as np
 
 try:
     import cv2
@@ -26,9 +27,7 @@ except ImportError:
 class FakeCameraSensor(cameraSensor.CameraSensor):
     """WIP. Fake camera sensor object"""
 
-    def __init__(self, exposure, width, height, xoffset, yoffset, numdevice=0, framespersec=None,
-                 external_trigger=False, data_format=0):
-        super(FakeCameraSensor, self).__init__(numdevice, exposure, width, height, xoffset, yoffset, framespersec)
+    def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):
         self.quit = False
         self.FPS = framespersec
         self.framespersec = self.FPS
@@ -42,6 +41,7 @@ class FakeCameraSensor(cameraSensor.CameraSensor):
         self._defaultYoffset = 0
         self._defaultExposure = 10000
         self._defaultGain = 0
+        self.it = self.frange(0, 10000, 1)
 
     def new(self, exposure=10000, width=2048, height=2048, xoffset=0, yoffset=0, gain=0):
         """
@@ -54,6 +54,30 @@ class FakeCameraSensor(cameraSensor.CameraSensor):
         self.yoffset = yoffset
         self.exposure = exposure
         self.gain = gain
+        # self.frame = plt.imread("/home/essais/Bureau/img_videoExtenso1.tiff")
+
+    # @staticmethod
+    # def frange(x, y, jump):
+    #     a = x
+    #     b = y
+    #     while 1:
+    #         if x < y:
+    #             yield x
+    #             x += jump
+    #         else:
+    #             if round(y) == float(a):
+    #                 # yield y
+    #                 x = a
+    #                 y = b
+    #             else:
+    #                 yield y
+    #                 y -= jump
+    @staticmethod
+    def frange(x, y, jump):
+       for i in range(y):
+           if x < y:
+               yield x
+               x += jump
 
     def get_image(self):
         """
@@ -61,12 +85,28 @@ class FakeCameraSensor(cameraSensor.CameraSensor):
         If the camera breaks down, it reinitializes it, and tries again.
         """
         try:
-            frame = plt.imread(os.path.expanduser("~/Bureau/fake_camera_sensor_img.tiff"))
-        except IOError:
+            n, m = self.height, self.width
+            Img = np.ones((n, m))
+            [Y, X] = np.meshgrid(range(0, m), range(0, n))
+            Y -= Y.max() / 2
+            X -= X.max() / 2
             try:
-                frame = plt.imread(os.path.expanduser("~/Desktop/fake_camera_sensor_img.tiff"))
-            except IOError:
-                raise Exception("Path not found")
+                l0 = 100 + self.it.next() + random.randrange(-10, 10, 1) * random.random()
+            except StopIteration:
+                return Img.astype(np.uint8)
+            r = 40
+            Img[np.sqrt((X + l0 / 2) ** 2 + Y ** 2) < r] = 0
+            Img[np.sqrt((X - l0 / 2) ** 2 + Y ** 2) < r] = 0
+            return Img.astype(np.uint8)
+
+        except Exception as e:
+            print e
+            #     frame = plt.imread(os.path.expanduser("~/Bureau/fake_camera_sensor_img.tiff"))
+            # except IOError:
+            #     try:
+            #         frame = plt.imread(os.path.expanduser("~/Desktop/fake_camera_sensor_img.tiff"))
+            #     except IOError:
+            #         raise Exception("Path not found")
 
     def close(self):
         """
@@ -153,6 +193,10 @@ class FakeCameraSensor(cameraSensor.CameraSensor):
         """
         print "gain setter : ", gain
         self._gain = gain
+
+    @property
+    def name(self):
+        return "Dummy"
 
     def __str__(self):
         return " Exposure: {0} \n FPS: {1} \n Numdevice: {2} \n Width: {3} \n Height: {4} \n X offset: {5} \n Y offset: {6}".format(

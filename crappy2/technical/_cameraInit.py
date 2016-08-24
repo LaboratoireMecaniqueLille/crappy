@@ -164,95 +164,100 @@ class _CameraInit:
         # mean_area=np.mean[region.area for region in regions]
         regions = [region for region in regions if region.area > 200]
         self.NumOfReg = len(regions)
-        print " Spots detected in camerainit: ", self.NumOfReg
-        # smoothing=1
-        self.minx = np.empty([self.NumOfReg, 1])
-        self.miny = np.empty([self.NumOfReg, 1])
-        self.maxx = np.empty([self.NumOfReg, 1])
-        self.maxy = np.empty([self.NumOfReg, 1])
-        self.Points_coordinates = np.empty([self.NumOfReg, 2])
-        # Definition of the ZOI and initialisation of the regions border
-        i = 0
-        for i, region in enumerate(regions):  # skip small regions
-            # if region.area > 100:
-            self.minx[i], self.miny[i], self.maxx[i], self.maxy[i] = region.bbox
+        if self.NumOfReg:
+            print " Spots detected in camerainit: ", self.NumOfReg
+            # smoothing=1
+            self.minx = np.empty([self.NumOfReg, 1])
+            self.miny = np.empty([self.NumOfReg, 1])
+            self.maxx = np.empty([self.NumOfReg, 1])
+            self.maxy = np.empty([self.NumOfReg, 1])
+            self.Points_coordinates = np.empty([self.NumOfReg, 2])
+            # Definition of the ZOI and initialisation of the regions border
+            i = 0
+            for i, region in enumerate(regions):  # skip small regions
+                # if region.area > 100:
+                self.minx[i], self.miny[i], self.maxx[i], self.maxy[i] = region.bbox
 
-            # for k in range(smoothing):
-            # print k
-        image = self.cam.get_image()
-        # plt.imsave("/home/corentin/Bureau/image_originale.tiff",image)
-        croped_image = image[self.yoffset:self.height + self.yoffset, self.xoffset:self.xoffset + self.width]
-        image = croped_image
-        self.thresh = threshold_otsu(
-            image)  # you have to re-evaluate the threashold here to have the same as you will after
-        if self.NumOfReg == 1:
-            self.Points_coordinates[i, 0], self.Points_coordinates[i, 1], self.minx[i, 0], self.miny[i, 0], self.maxx[
-                i, 0], self.maxy[i, 0], self.L0x, self.L0y = self.barycenter_opencv(
-                image[self.minx[i, 0] - 1:self.maxx[i, 0] + 1, self.miny[i, 0] - 1:self.maxy[i, 0] + 1],
-                self.minx[i, 0] - 1, self.miny[i, 0] - 1)
-        else:
-            for i in range(0, self.NumOfReg):  # find the center of every region
-                self.Points_coordinates[i, 0], self.Points_coordinates[i, 1], self.minx[i, 0], self.miny[i, 0], \
-                self.maxx[i, 0], self.maxy[i, 0] = self.barycenter_opencv(
+                # for k in range(smoothing):
+                # print k
+            image = self.cam.get_image()
+            # plt.imsave("/home/corentin/Bureau/image_originale.tiff",image)
+            croped_image = image[self.yoffset:self.height + self.yoffset, self.xoffset:self.xoffset + self.width]
+            image = croped_image
+            self.thresh = threshold_otsu(
+                image)  # you have to re-evaluate the threashold here to have the same as you will after
+            if self.NumOfReg == 1:
+                self.Points_coordinates[i, 0], self.Points_coordinates[i, 1], self.minx[i, 0], self.miny[i, 0], self.maxx[
+                    i, 0], self.maxy[i, 0], self.L0x, self.L0y = self.barycenter_opencv(
                     image[self.minx[i, 0] - 1:self.maxx[i, 0] + 1, self.miny[i, 0] - 1:self.maxy[i, 0] + 1],
                     self.minx[i, 0] - 1, self.miny[i, 0] - 1)
+            else:
+                for i in range(0, self.NumOfReg):  # find the center of every region
+                    self.Points_coordinates[i, 0], self.Points_coordinates[i, 1], self.minx[i, 0], self.miny[i, 0], \
+                    self.maxx[i, 0], self.maxy[i, 0] = self.barycenter_opencv(
+                        image[self.minx[i, 0] - 1:self.maxx[i, 0] + 1, self.miny[i, 0] - 1:self.maxy[i, 0] + 1],
+                        self.minx[i, 0] - 1, self.miny[i, 0] - 1)
 
 
-                # self.Points_coordinates=np.mean(self.Points_coordinates,axis=2)
-                # self.minx=np.mean(self.minx,axis=2)
-                # self.miny=np.mean(self.miny,axis=2)
-                # self.maxx=np.mean(self.maxx,axis=2)
-                # self.maxy=np.mean(self.maxy,axis=2)
-                # print "new image"
-                # image=self.cam.get_image()
-                # for i in range(0,self.NumOfReg): # find the center of every region
-                # print "round 2"
-                # self.Points_coordinates[i,0],self.Points_coordinates[i,1],a_,b_,c_,d_=self.barycenter_opencv(image[self.minx[i]-1:self.maxx[i]+1,self.miny[i]-1:self.maxy[i]+1],self.minx[i]-1,self.miny[i]-1)
-        # Evaluating initial distance bewteen 2 spots
-        # self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
-        # self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
+                    # self.Points_coordinates=np.mean(self.Points_coordinates,axis=2)
+                    # self.minx=np.mean(self.minx,axis=2)
+                    # self.miny=np.mean(self.miny,axis=2)
+                    # self.maxx=np.mean(self.maxx,axis=2)
+                    # self.maxy=np.mean(self.maxy,axis=2)
+                    # print "new image"
+                    # image=self.cam.get_image()
+                    # for i in range(0,self.NumOfReg): # find the center of every region
+                    # print "round 2"
+                    # self.Points_coordinates[i,0],self.Points_coordinates[i,1],a_,b_,c_,d_=self.barycenter_opencv(image[self.minx[i]-1:self.maxx[i]+1,self.miny[i]-1:self.maxy[i]+1],self.minx[i]-1,self.miny[i]-1)
+            # Evaluating initial distance bewteen 2 spots
+            # self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
+            # self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
 
-        self.minx += self.yoffset
-        self.maxx += self.yoffset
-        self.miny += self.xoffset
-        self.maxy += self.xoffset
+            self.minx += self.yoffset
+            self.maxx += self.yoffset
+            self.miny += self.xoffset
+            self.maxy += self.xoffset
 
-        # print "2"
-        image = self.cam.get_image()  # read a frame
+            # print "2"
+            image = self.cam.get_image()  # read a frame
+            print "type of frame: ", type(image)
 
-        minx_ = self.minx.min()
-        miny_ = self.miny.min()
-        maxx_ = self.maxx.max()
-        maxy_ = self.maxy.max()
+            minx_ = self.minx.min()
+            miny_ = self.miny.min()
+            maxx_ = self.maxx.max()
+            maxy_ = self.maxy.max()
 
-        minx = self.minx - minx_
-        maxx = self.maxx - minx_
-        miny = self.miny - miny_
-        maxy = self.maxy - miny_
+            minx = self.minx - minx_
+            maxx = self.maxx - minx_
+            miny = self.miny - miny_
+            maxy = self.maxy - miny_
 
-        # print "3"
-        frame = image[minx_:maxx_, miny_:maxy_]
-        self.rec = {}
-        center = {}
-        if self.videoextenso['white_spot']:
-            color = 255
+            # print "3"
+            frame = image[minx_:maxx_, miny_:maxy_]
+            self.rec = {}
+            center = {}
+            if self.videoextenso['white_spot']:
+                color = 255
+            else:
+                color = 0
+
+            if len(self.rect) > 0:
+                for i in range(0, len(self.rect)):
+                    # print 'test'
+                    self.rect[i].remove()
+                self.rect = {}
+            # evaluating the reduction ratio to enlarge the rectangles
+            ratx = self.videoextenso['height'] * 1. / self.cam.height
+            raty = self.videoextenso['width'] * 1. / self.cam.width
+            for i in range(0,
+                           self.NumOfReg):  # For each region, plots the rectangle around the spot and a cross at the center
+                print self.maxx[i], self.maxy[i]
+                self.rect[i] = mpatches.Rectangle((self.miny[i] * raty, self.minx[i] * ratx), (maxy[i] - miny[i]) * raty,
+                                                  (maxx[i] - minx[i]) * ratx, fill=False, edgecolor='red', linewidth=1)
+                self.rec[i] = self._axim.get_axes().add_patch(self.rect[i])
+            # print "TEST111111"
         else:
-            color = 0
-
-        if len(self.rect) > 0:
-            for i in range(0, len(self.rect)):
-                # print 'test'
-                self.rect[i].remove()
-            self.rect = {}
-        # evaluating the reduction ratio to enlarge the rectangles
-        ratx = self.videoextenso['height'] * 1. / self.cam.height
-        raty = self.videoextenso['width'] * 1. / self.cam.width
-        for i in range(0,
-                       self.NumOfReg):  # For each region, plots the rectangle around the spot and a cross at the center
-            print self.maxx[i], self.maxy[i]
-            self.rect[i] = mpatches.Rectangle((self.miny[i] * raty, self.minx[i] * ratx), (maxy[i] - miny[i]) * raty,
-                                              (maxx[i] - minx[i]) * ratx, fill=False, edgecolor='red', linewidth=1)
-            self.rec[i] = self._axim.get_axes().add_patch(self.rect[i])
+            print "No spot detected."
 
     def barycenter_opencv(self, image, minx, miny):
         """
@@ -382,7 +387,6 @@ def get_camera_config(cam, videoExtenso, send_pipe=None):
         cam: instance of a camera class.
         videoExtenso: dictionnary to enable or disable the videoExtenso initialization.
         send_pipe:
-
     """
 
     d = _CameraInit(cam, videoExtenso)
@@ -396,4 +400,3 @@ def get_camera_config(cam, videoExtenso, send_pipe=None):
         print "error : ", e
         d.cam.close()
         plt.close()
-        pass
