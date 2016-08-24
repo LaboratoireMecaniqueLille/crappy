@@ -1,46 +1,65 @@
-import time
-import crappy2 as crappy
+from time import time, sleep
+from crappy2.blocks import MasterBlock, Grapher, Saver, MeasureByStep, Streamer, Compacter
+from crappy2.sensor import LabJackSensor
+from crappy2.links import Link
+import random
+from crappy2.technical import DataPicker
+import crappy2
 
-crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
+import signal
+import os
 
-stream = 1
-try:
-	graph = crappy.blocks.Grapher(('t(s)', 'T'), length=20)
-	if stream:
-		sensor = crappy.sensor.LabJackSensor(channels=["AIN0"], mode="streamer", scan_rate=100000)
-		# sensor_args = {"channels": [0, 1], "mode": "thermocouple"}
-		# labjack = crappy.technical.LabJack(channels=[0, 1], mode="single")
-		stream = crappy.blocks.Streamer(sensor, labels=['t(s)', 'T'])
+def loop1(scan_rate, scan_per_read):
+    MasterBlock.instances = []  # Init masterblock instances
 
-		# save = crappy.blocks.Saver("/home/francois/Code/Tests_Python/test_streaming.txt")
-		#
-		# Links
-		Link_StreamToCompacter = crappy.links.Link()  # Link_StreamToCompacter = crappy.links.Link()  #
-		stream.add_output(Link_StreamToCompacter)
-		graph.add_input(Link_StreamToCompacter)
+    stream = 0
+    try:
+        graph = Grapher(('t(s)', 'AIN0'), ('t(s)', 'AIN1'), ('t(s)', 'AIN2'), length=20)
+        if stream:
+            sensor = LabJackSensor(mode="streamer", scan_rate_per_channel=scan_rate, scans_per_read=scan_per_read,
+                                   channels=[0, 1, 2])
+            stream = Streamer(sensor=sensor)
+            compacter = Compacter(50)
 
-	# #
-	else:
-		sensor = crappy.sensor.LabJackSensor(channels=["AIN0"], mode="single")
-		stream = crappy.blocks.MeasureByStep(sensor, labels=['t(s)', 'T'], freq=100)
-		compacter = crappy.blocks.Compacter(200)
-		Link_StreamToCompacter = crappy.links.Link()  # Link_StreamToCompacter = crappy.links.Link()  #
-		stream.add_output(Link_StreamToCompacter)
-		compacter.add_input(Link_StreamToCompacter)
-		#
-		Link_CompacterToGraph = crappy.links.Link()
-		compacter.add_output(Link_CompacterToGraph)
-		graph.add_input(Link_CompacterToGraph)
-	# Starting objects
-	t0 = time.time()
+            Link_to_DataPicker = Link()
+            Link_to_compacter = Link()
 
-	for instance in crappy.blocks.MasterBlock.instances:
-		instance.t0 = t0
+            stream.add_output(Link_to_DataPicker)
+            # # save = DataPicker(Link_to_DataPicker)
+            # compacter.add_input(Link_to_DataPicker)
+            #
+            # compacter.add_output(Link_to_compacter)
 
-	for instance in crappy.blocks.MasterBlock.instances:
-		instance.start()
+            graph.add_input(Link_to_DataPicker)
 
-except KeyboardInterrupt:
-	sensor.close()
-	for instance in crappy.blocks.MasterBlock.instances:
-		instance.stop()
+        else:
+            sensor = LabJackSensor(mode="single", channels=['AIN0', 'AIN1', 'AIN2'])
+            stream = MeasureByStep(sensor=sensor, labels=['t(s)', 'AIN0', 'AIN1', 'AIN2'])
+
+            Link_to_MeasureByStep = Link()
+            Link_to_Grapher = Link()
+            stream.add_output(Link_to_MeasureByStep)
+            compacter = Compacter(50)
+
+            compacter.add_input(Link_to_MeasureByStep)
+            compacter.add_output(Link_to_Grapher)
+            graph.add_input(Link_to_Grapher)
+
+        t0 = time()
+
+        for instance in MasterBlock.instances:
+            instance.t0 = t0
+
+        for instance in MasterBlock.instances:
+            instance.start()
+
+    except KeyboardInterrupt:
+        sensor.close()
+
+        for instance in MasterBlock.instances:
+            instance.stop()
+
+rate1 = 33333
+rate2 = int(rate1 / 10.)
+loop1(rate1, rate2)
+

@@ -17,7 +17,7 @@ import time
 from collections import OrderedDict
 from ..links._link import TimeoutError
 from os import getpid
-from numpy import arange
+import numpy as np
 from multiprocessing import Process, Queue
 
 
@@ -44,7 +44,6 @@ class Streamer(MasterBlock):
         super(Streamer, self).__init__()
         assert sensor, "No input sensor defined."
         self.sensor = sensor
-        self.nb_samples = self.sensor.scans_per_read
         self.labels = labels if labels else ['t(s)'] + self.sensor.channels
         global queue
         queue = Queue(2)
@@ -58,14 +57,15 @@ class Streamer(MasterBlock):
         print "Streamer / time vector reconstruction: PID", getpid()
         try:
             while True:
-                ratio = sample_number * self.nb_samples
-                time_vector = (arange(ratio, ratio + self.nb_samples) / float(self.sensor.scan_rate)).tolist()
+                ratio = self.sensor.scans_per_read / float(self.sensor.scan_rate_per_channel)
+                time_vector = np.asarray(np.linspace(sample_number * ratio, (sample_number + 1) * ratio, self.sensor.scans_per_read))
+                time_vector = np.around(time_vector, 5).tolist()
                 queue.put(time_vector)
                 sample_number += 1
         except:
-            while not queue.empty():  # flush the queue and ?close it
+            while not queue.empty():  # flush the queue after leaving the loop
                 queue.get_nowait()
-            # queue.close()
+                raise
 
     def main(self):
         """
@@ -73,21 +73,27 @@ class Streamer(MasterBlock):
         """
         print "Streamer / main loop: PID", getpid()
         time_vector_process = Process(target=self.time_vector)
+
         try:
             self.sensor.start_stream()
             time_vector_process.start()
             while True:
-                value = (queue.get(), self.sensor.get_stream()[1])
-                array = OrderedDict(zip(self.labels, value))
+                results = []
+                retrieved = self.sensor.get_stream()[1]
+                deinterlaced = np.array([retrieved[each::self.sensor.nb_channels]
+                                         for each in xrange(self.sensor.nb_channels)])
+                for each in xrange(self.sensor.nb_channels):
+                    liste_temp = self.sensor.gain[each] * deinterlaced[each] + self.sensor.offset[each]
+                    results.append(liste_temp.tolist())
+                results.insert(0, queue.get())
+                array = OrderedDict(zip(self.labels, results))
+                # print "Exit of the streamer:", array
                 try:
                     for output in self.outputs:
                         output.send(array)
-                        print "test1"
                 except TimeoutError:
-                    print "test2"
                     raise
                 except AttributeError:  # if no outputs
-                    print "test3"
                     raise
         except KeyboardInterrupt:
             pass
