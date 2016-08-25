@@ -46,7 +46,6 @@ class MeasureByStep(MasterBlock):
         super(MeasureByStep, self).__init__()
         self.sensor = sensor
         self.labels = labels if labels else ["time(sec)"] + self.sensor.channels
-        print self.labels
         self.freq = freq
 
     def main(self):

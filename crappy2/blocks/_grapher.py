@@ -83,7 +83,7 @@ class Grapher(MasterBlock):
 
     def main(self):
         try:
-            print "main grapher", os.getpid()
+            print "Grapher / main loop: PID", os.getpid()
             if self.mode == "dynamic":
                 save_number = 0
                 fig = plt.figure(figsize=(8, 8))
