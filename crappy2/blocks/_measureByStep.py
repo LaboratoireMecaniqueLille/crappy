@@ -35,50 +35,49 @@ class MeasureByStep(MasterBlock):
         or internally by defining the frequency.
 
         Args:
-            sensor : sensor object
-                See sensor.sensor documentation. Tested for LabJackSensor and ComediSensor.
-            labels : list
-                The labels you want on your output data.
-            freq : float or int, optional
-                Wanted acquisition frequency. Cannot exceed acquisition card capability.
+            sensor:     sensor object
+                        See sensor.sensor documentation. Tested for LabJackSensor and ComediSensor.
+            labels:     list, optional
+                        The labels you want on your output data. If None, will be time(sec) as first arg, and the
+                        channel number as additional args.
+            freq :      float or int, optional
+                        Wanted acquisition frequency. If none, will be at the software looping speed.
         """
         super(MeasureByStep, self).__init__()
         self.sensor = sensor
-        self.labels = labels
+        self.labels = labels if labels else ["time(sec)"] + self.sensor.channels
+        print self.labels
         self.freq = freq
 
     def main(self):
+        """
+        Main loop for MeasureByStep. Retrieves data at specified frequency (or software looping speed) from specified
+        sensor, and sends it to a crappy link.
+        """
         try:
-            print "measureByStep : ", os.getpid()
+            print "measureByStep / main loop: PID", os.getpid()
             trigger = "internal" if len(self.inputs) == 0 else "external"
             timer = time.time()
             while True:
                 if trigger == "internal":
-                    if self.freq is not None:
+                    if self.freq:  # timing loop
                         while time.time() - timer < 1. / self.freq:
                             time.sleep(1. / (100 * self.freq))
                         timer = time.time()
-                    # data=[time.time()-self.t0]
-                    # for channel_number in range(self.sensor.nchans):
-                    t, value = self.sensor.get_data("all")
-                    data = t - self.t0
-                    value.insert(0, data)
+                    sensor_epoch, sensor_values = self.sensor.get_data("all")
+                    chronometer = sensor_epoch - self.t0
+                    sensor_values.insert(0, chronometer)
                 if trigger == "external":
                     if self.inputs[0].recv():  # wait for a signal
                         pass
-                    # data=[time.time()-self.t0]
-                    # for channel_number in range(self.sensor.nchans):
-                    t, value = self.sensor.get_data("all")
-                    data = t - self.t0
-                    value.insert(0, data)
-                if self.labels is None:
-                    self.Labels = [i for i in range(self.sensor.nchans + 1)]
-                # Array=pd.DataFrame([data],columns=self.labels)
-                # print value, self.labels
-                Array = OrderedDict(zip(self.labels, value))
+                    sensor_epoch, sensor_values = self.sensor.get_data("all")
+                    chronometer = sensor_epoch - self.t0
+                    sensor_values.insert(0, chronometer)
+
+                results = OrderedDict(zip(self.labels, sensor_values))
                 try:
                     for output in self.outputs:
-                        output.send(Array)
+                        output.send(results)
                 except TimeoutError:
                     raise
                 except AttributeError:  # if no outputs
