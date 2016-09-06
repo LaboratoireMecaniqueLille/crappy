@@ -45,6 +45,7 @@ from ._server import Server
 from ._client import Client
 # from ._signalAdapter import SignalAdapter
 from ._signalGenerator import SignalGenerator
+from ._padplot import PadPlot
 
 try:
     from ._streamerCamera import StreamerCamera
@@ -73,4 +74,5 @@ from ._meta import MasterBlock
 from ._commandCegitab import SerialPortActuator, SerialPortCaptor, PipeCegitab
 from ._savergui import SaverGUI
 from ._gui import InterfaceTomo4D
+
 del e, platform, import_error
