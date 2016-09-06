@@ -41,10 +41,10 @@ class PadPlot(MasterBlock):
         super(PadPlot, self).__init__()
         # 9 thermocouples, 9 circles
         self.coordinates_circles = (
-            (110, 330), (92, 265), (68, 192), (507, 267), (507, 195), (507, 123), (900, 323), (920, 261), (940, 193))
-        self.thermocouples_list = ['T' + str(count) for count in xrange(1, 10)]  # Names of each thermocouple
+            (110, 330), (92, 265), (68, 192), (507, 267), (507, 195), (507, 123), (900, 323), (920, 261), (940, 193), (160, 600), (760, 600))
+        self.thermocouples_list = ['T' + str(count) for count in xrange(1, 10)] + ['Tdisc1', 'Tdisc2']# Names of each thermocouple
         self.coordinates_text_circles = (
-            (150, 330), (132, 265), (108, 192), (547, 267), (547, 195), (547, 123), (940, 323), (960, 261), (980, 193))
+            (150, 330), (132, 265), (108, 192), (547, 267), (547, 195), (547, 123), (940, 323), (960, 261), (980, 193), (200, 600), (800, 600))
         self.range = colormap_range
         self.bg_image = bg_image
         self.colormap = colormap
