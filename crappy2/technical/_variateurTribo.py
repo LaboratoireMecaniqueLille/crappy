@@ -6,7 +6,7 @@ from ._meta import motion
 
 
 class VariateurTribo(motion.Motion):
-    def __init__(self, port='/dev/ttyS0',baudrate=38400, actuator=None):
+    def __init__(self, port='/dev/ttyS4',baudrate=38400, actuator=None):
         self.baudrate = baudrate
         self.port = port
         self.actuator =  actuator

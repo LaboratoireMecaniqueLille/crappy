@@ -42,7 +42,9 @@ from ._motion import Motion
 from ._CMdriveTechnical import CmDrive
 from ._interfaceCMdrive import Interface
 from ._orientalTechnical import Oriental
+from ._conditionneur_5018 import Conditionner_5018
 # from ._jaiTechnical import Jai
+
 try:
     from ._cameraInit import get_camera_config
 except Exception as e:

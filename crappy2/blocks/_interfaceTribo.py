@@ -33,7 +33,7 @@ class ThreadedTask(threading.Thread):
 
 
 class InterfaceTribo(Frame, MasterBlock):
-    def __init__(self, root, VariateurTribo, labjack):  # ,link1,link2):
+    def __init__(self, root, VariateurTribo, labjack,labjack_hydrau,conditioner):  # ,link1,link2):
         # super(Interface, self).__init__()
         MasterBlock.__init__(self)
         try:
@@ -48,9 +48,12 @@ class InterfaceTribo(Frame, MasterBlock):
             self.mode = 'Mode Position'
             self.VariateurTribo = VariateurTribo
             self.labjack = labjack
+            self.labjack_hydrau=labjack_hydrau
+            self.labjack_hydrau.set_cmd(0)
             self.labjack.set_cmd_ram(0, 46002)  # sets the pid off
             self.labjack.set_cmd_ram(-41, 46000)  # sets the setpoint at 0 newton
-
+	    self.conditioner = conditioner
+	    
             # self.comediOut = comediOut
             # self.comediOut.off()
             # self.comediOut.set_cmd(0)
@@ -435,6 +438,7 @@ class InterfaceTribo(Frame, MasterBlock):
             
             self.StopExperimentButton['state'] = 'disabled'
 	    self.outputs[2].send(0)
+	    self.StartRecordDataButton.configure(bg = "light grey")
 
 
 
@@ -519,7 +523,10 @@ class InterfaceTribo(Frame, MasterBlock):
 	self.StartRecordDataButton['state'] = 'disabled'
 	self.StopRecordDataButton['state'] = 'disabled'
     
-    def startExperiment(self):  
+    def startExperiment(self): 
+	for i in range(len(self.conditioner)):
+	    self.conditioner[i].reset()
+
 	self.outputs[2].send(1)
         try:
             cycle = self.cycleNumber.get()
@@ -559,7 +566,7 @@ class InterfaceTribo(Frame, MasterBlock):
                 V1 = V0
 
                 self.labjack.set_cmd_ram(1,46002)
-
+		self.labjack_hydrau.set_cmd(10)
                 self.VariateurTribo.actuator.set_mode_analog()
                 self.labjack.set_cmd_ram(int(self.ForceVar.get())-41,46000)
 		
@@ -575,7 +582,8 @@ class InterfaceTribo(Frame, MasterBlock):
                     self.labjack.set_cmd(V1)
                     # self.comediOut.set_cmd(V1)
                     value = self.inputs[0].recv()
-
+		
+		self.labjack_hydrau.set_cmd(0)
                 self.VariateurTribo.actuator.set_mode_position()
                 self.VariateurTribo.actuator.go_position(0)
                 self.labjack.set_cmd_ram(0, 46002)
@@ -590,18 +598,19 @@ class InterfaceTribo(Frame, MasterBlock):
 
 		  while tAfter - tStart < self.betweenBrakingsTime.get() and not self.experiment._stopevent.isSet():
 		      tAfter = time.time()
+	    tStart = time.time()
+	    tAfter = time.time()
 	    while tAfter - tStart < 1.0 and not self.experiment._stopevent.isSet():
-                value = self.inputs[0].recv()
                 tAfter = time.time()
-            
+            self.labjack_hydrau.set_cmd(0)
 	    self.labjack.set_cmd(0)
 	    self.StartExperimentButton['state'] = 'normal'
 	    self.StopExperimentButton['state'] = 'disabled'
 	    self.ChangeModeButton['state'] = 'normal'
 	    self.Informations.configure(text = "Pret")
 	    self.Informations.configure(bg="light grey")
-	    self.StartRecordDataButton['state'] = 'disabled'
-	    self.StopRecordDataButton['state'] = 'disabled'
+	    self.StartRecordDataButton['state'] = 'normal'
+	    self.StopRecordDataButton['state'] = 'normal'
 	    self.outputs[2].send(0)
 	    
         except NameError:

@@ -29,6 +29,7 @@ class SaverTriggered(MasterBlock):
                 if self.inputs[1].recv(blocking = False) != None:
 		    self.log_file = self.inputs[1].recv()
 		    print self.log_file
+		    self.existing = False
 		    if not os.path.exists(os.path.dirname(self.log_file)):
 			# check if the directory exists, otherwise create it
 			os.makedirs(os.path.dirname(self.log_file))
@@ -45,6 +46,7 @@ class SaverTriggered(MasterBlock):
                     legend_ = Data.keys()
                     fo.write(str([legend_[i] for i in range(len(legend_))]) + "\n")
                     first = False
+                    
                 data_to_save = str(data) + "\n"
                 fo.write(data_to_save)
                 fo.close()

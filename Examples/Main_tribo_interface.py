@@ -52,22 +52,36 @@ class conditionfiltree(crappy.links.MetaCondition):
 
 
 try:
-	#creating objects
+	##creating objects
 	comediSensor=crappy.sensor.ComediSensor(channels=[0],gain=[20613],offset=[0])
 	t,F0=comediSensor.get_data(0)
-	print "offset effort=", F0
+	##print "offset effort=", F0
 	comediSensor=crappy.sensor.ComediSensor(channels=[1],gain=[4125],offset=[0]) #5100
 	t,V0=comediSensor.get_data(0)
-	print "offset vitesse=", V0
+	##print "offset vitesse=", V0
 	comediSensor=crappy.sensor.ComediSensor(channels=[2],gain=[500],offset=[0])
 	t,C0=comediSensor.get_data(0)
-	print "offset couple=", C0
+	##print "offset couple=", C0
+	##comediSensor=crappy.sensor.ComediSensor(channels=[3],gain=[10],offset=[0]) #trigg essai )
+	##t,T0=comediSensor.get_data(0)
+	##comediSensor=crappy.sensor.ComediSensor(channels=[4],gain=[10],offset=[0]) #depart essai 
+	##t,S0=comediSensor.get_data(0)
+	##comediSensor=crappy.sensor.ComediSensor(channels=[5],gain=[10],offset=[0]) #depart essai 
+	##t,TT0=comediSensor.get_data(0)
 	
+	##comediSensor=crappy.sensor.ComediSensor(channels=[0,1,2,3,4,5],gain=[20613,4125,-500,10,10,10],offset=[-F0,-V0,C0,-T0,-S0,-TT0])
 	comediSensor=crappy.sensor.ComediSensor(channels=[0,1,2],gain=[20613,4125,-500],offset=[-F0,-V0,C0])
 	
-	effort=crappy.blocks.MeasureByStep(comediSensor,labels=['t(s)','F(N)','Vit','Couple'],freq=500)
+	conditioners = []
+	conditioners.append(crappy.technical.Conditionner_5018(port='/dev/ttyS5'))
+	conditioners.append(crappy.technical.Conditionner_5018(port='/dev/ttyS6'))
+	conditioners.append(crappy.technical.Conditionner_5018(port='/dev/ttyS7'))
+
+	##effort=crappy.blocks.MeasureByStep(comediSensor,labels=['t(s)','F(N)','Vitesse','Couple','Trigg','Start','Toptour'],freq=500)
+	effort=crappy.blocks.MeasureByStep(comediSensor,labels=['t(s)','F(N)','Vitesse','Couple'],freq=500)
 	VariateurTribo=crappy.technical.VariateurTribo(port='/dev/ttyS4')#,port_arduino='/dev/ttyACM0')
 	labjack = crappy.actuator.LabJackActuator(channel = "TDAC0", gain = 1./399.32, offset = -17.73/399.32)
+	labjack_hydrau = crappy.actuator.LabJackActuator(channel = "DAC0", gain = 1., offset = 0)
 	labjack.set_cmd(0)
 	labjack.set_cmd_ram(0,46002) #sets the pid off
         labjack.set_cmd_ram(0,46000) #sets the setpoint at 0 newton
@@ -77,7 +91,7 @@ try:
 	compacter=crappy.blocks.Compacter(100)
 
 	graph=crappy.blocks.Grapher(('t(s)','F(N)'),length = 50)
-	graph2=crappy.blocks.Grapher(('t(s)','Vit'),length = 50)
+	graph2=crappy.blocks.Grapher(('t(s)','Vitesse'),length = 50)
 	graph3=crappy.blocks.Grapher(('t(s)','Couple'),length = 50)
 
 	link1=crappy.links.Link()
@@ -117,7 +131,7 @@ try:
 	for instance in crappy.blocks._meta.MasterBlock.instances:
 		instance.start()
 	root = Tix.Tk()
-	interface=crappy.blocks.InterfaceTribo(root,VariateurTribo,labjack)#,link5,link6)
+	interface=crappy.blocks.InterfaceTribo(root,VariateurTribo,labjack,labjack_hydrau,conditioners)#,link5,link6)
 	interface.root.protocol("WM_DELETE_WINDOW", interface.on_closing)
 	interface.add_input(link5)
 	interface.add_output(link6)
