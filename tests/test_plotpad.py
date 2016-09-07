@@ -12,8 +12,8 @@ if __name__ == '__main__':
     labels = ['t(s)', 'Trigg'] + ['T' + str(i) for i in xrange(1, 12)] + ['Tdisc1', 'Tdisc2', 'Fn', 'Ft']
     measurebystep = crappy2.blocks.MeasureByStep(sensor, labels=labels, freq=20)
     compacter = crappy2.blocks.Compacter(2)
-    grapher = crappy2.blocks.Grapher(('t(s)', 'T1'), length=120)
-    padplot = crappy2.blocks.PadPlot(colormap_range=[20, 200])
+    grapher = crappy2.blocks.Grapher(('t(s)', 'T1'), window_pos=(800, 0), window_size=(8, 8))
+    padplot = crappy2.blocks.PadPlot(colormap_range=[20, 200], window_pos=(0, 0))
 
     link1 = crappy2.links.Link(name='link to compacter')
     link2 = crappy2.links.Link(name='link to grapher')

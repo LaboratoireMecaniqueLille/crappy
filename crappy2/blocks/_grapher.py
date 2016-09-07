@@ -41,6 +41,17 @@ class Grapher(MasterBlock):
                 add new values at every refresh. If there \
                 is too many data (> 20000), delete one out of 2 to avoid memory overflow.
 
+            optional: window_pos (tuple: (x, y) in PIXELS.)
+                Window position when poping. The origin is in top left corner of screen.
+                For instance, on a 1920x1080 screen, to have the window:
+                    in the top left corner: window_pos = (0, 0)
+                    in the top right corner: window_pos = (1920, 0)
+                    in the bottom left corner: window_pos  = (0, 1080)
+                Be aware of the fact that a dual screen is considered as a surface with double the number of pixels, so
+                the area of screen is (1920 + 1920, 1080 + 1080) for 2 screens of 1920x1080 definition.
+            optional: window_size (tuple: (width, height), in INCHES).
+                Self explanatory ?
+
         Examples
         --------
             graph=Grapher(('t(s)','F(N)'),('t(s)','def(%)'))
@@ -53,12 +64,15 @@ class Grapher(MasterBlock):
         super(Grapher, self).__init__()
         print "grapher!"
         self.len_graph = kwargs.get("length", 10)
+        self.window_pos = kwargs.get("window_pos")
+        self.window_size = kwargs.get("window_size", (8, 8))
         self.mode = "dynamic" if self.len_graph > 0 else "static"
         if isinstance(args[0], list):
             self.args = args[0]
         else:
             self.args = args
         self.nbr_graphs = len(self.args)
+
         if args[0] in ["static",
                        "dynamic"]:  ### Support old syntax to avoid generalized incontrollable panic (to be deleted in the future) ---
             redWarn = '[\033[31m\033[1mWARNING!\033[0m] '  # Red warning, for persuasion
@@ -86,7 +100,7 @@ class Grapher(MasterBlock):
             print "Grapher / main loop: PID", os.getpid()
             if self.mode == "dynamic":
                 save_number = 0
-                fig = plt.figure(figsize=(8, 8))
+                fig = plt.figure(figsize=self.window_size)
                 ax = fig.add_subplot(111)
                 for i in range(self.nbr_graphs):  # init lines
                     if i == 0:
@@ -94,6 +108,9 @@ class Grapher(MasterBlock):
                     else:
                         li.extend(ax.plot(np.arange(1), np.zeros(1)))
                 plt.grid()
+                if self.window_pos:
+                    mng = plt.get_current_fig_manager()
+                    mng.window.wm_geometry("+%s+%s" % self.window_pos)
                 fig.canvas.draw()  # draw and show it
                 plt.show(block=False)
                 while True:

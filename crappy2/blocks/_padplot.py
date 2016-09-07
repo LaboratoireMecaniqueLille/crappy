@@ -15,6 +15,7 @@
 from _meta import MasterBlock
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 import os
 from collections import OrderedDict
@@ -36,7 +37,7 @@ class PadPlot(MasterBlock):
     """
 
     def __init__(self, bg_image='./Pad2.png', colormap='coolwarm',
-                 figure_title='Pad Temperature', colormap_range=[20, 30]):
+                 figure_title='Pad Temperature', colormap_range=[20, 30], *args, **kwargs):
 
         super(PadPlot, self).__init__()
         # 9 thermocouples, 9 circles
@@ -49,6 +50,8 @@ class PadPlot(MasterBlock):
         self.bg_image = bg_image
         self.colormap = colormap
         self.figure_title = figure_title
+        self.window_pos = kwargs.get("window_pos")
+        self.window_size = kwargs.get("window_size")
 
     def get_data(self):
         """
@@ -79,16 +82,20 @@ class PadPlot(MasterBlock):
         maximum_txt.set_text('Global Tmax = %.1f' % temp_max)
 
         for i in xrange(len(circles)):
-            circles[i].set_color(plt.cm.coolwarm(np.mean(temp_normalized[i])))
+            circles[i].set_color(cm.coolwarm(np.mean(temp_normalized[i])))
             texts[i].set_text(self.thermocouples_list[i] + '= %.1f' % np.mean(data[i]))
-            texts[i].set_color(plt.cm.coolwarm(np.mean(temp_normalized[i])))
+            texts[i].set_color(cm.coolwarm(np.mean(temp_normalized[i])))
 
     def main(self):
         print "Padplot / main loop: PID", os.getpid()
         try:
-            fig, ax = plt.subplots()  # note we must use plt.subplots, not plt.subplot
-            image = ax.imshow(plt.imread(self.bg_image), cmap=self.colormap)
+            fig, ax = plt.subplots(figsize=self.window_size)  # note we must use plt.subplots, not plt.subplot
+            image = ax.imshow(plt.imread(self.bg_image), cmap='coolwarm')
+            if self.window_pos:
+                plt.get_current_fig_manager().window.wm_geometry("+%s+%s" % self.window_pos)
             image.set_clim(-0.5, 1)
+            # mngr = plt.get_current_fig_manager()
+            # mngr.window.wm_geometry(coord_window)
             ax.set_title(self.figure_title)
             ax.set_axis_off()
             # Now show the initial window
@@ -113,11 +120,13 @@ class PadPlot(MasterBlock):
             ax.add_artist(time_elapsed_txt)
             fig.canvas.draw()
             fig.show()
+
             # list to update
             update_list = [time_elapsed_txt, minimum_txt, maximum_txt, circles, texts]
             while True:
                 t, data = self.get_data()
                 self.update_figure(data, t, *update_list)
+                ax.autoscale_view(True, True, True)
                 fig.canvas.draw()
         except (Exception, KeyboardInterrupt) as e:
             print "Exception in PadPlot %s: %s" % (os.getpid(), e)
