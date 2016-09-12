@@ -9,11 +9,11 @@ if __name__ == '__main__':
     gain = [10] + [1350 for i in xrange(14)] + [5000, -5000]
     sensor = crappy2.sensor.ComediSensor(device='/dev/comedi0', channels=[i for i in xrange(16)], gain=gain,
                                          offset=0)
-    labels = ['t(s)', 'Trigg'] + ['T' + str(i) for i in xrange(1, 12)] + ['Tdisc1', 'Tdisc2', 'Fn', 'Ft']
+    labels = ['t(s)', 'Trigg'] + ['T' + str(i) for i in xrange(1, 12)] + ['T_disc', 'T_pad', 'Tdisc2', 'Fn', 'Ft']
     measurebystep = crappy2.blocks.MeasureByStep(sensor, labels=labels, freq=20)
     compacter = crappy2.blocks.Compacter(2)
     grapher = crappy2.blocks.Grapher(('t(s)', 'T1'), window_pos=(800, 0), window_size=(8, 8))
-    padplot = crappy2.blocks.PadPlot(colormap_range=[20, 200], window_pos=(0, 0))
+    padplot = crappy2.blocks.CanvasDrawing(bg_image='Pad2_v2.png', colormap_range=[20, 200], window_pos=(0, 0))
 
     link1 = crappy2.links.Link(name='link to compacter')
     link2 = crappy2.links.Link(name='link to grapher')
@@ -27,7 +27,6 @@ if __name__ == '__main__':
 
     padplot.add_input(link3)
     grapher.add_input(link2)
-
     try:
         t0 = time.time()
         for instance in crappy2.blocks.MasterBlock.instances:

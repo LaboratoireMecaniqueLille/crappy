@@ -45,7 +45,7 @@ from ._server import Server
 from ._client import Client
 # from ._signalAdapter import SignalAdapter
 from ._signalGenerator import SignalGenerator
-from ._padplot import PadPlot
+from ._canvasdrawing import CanvasDrawing
 
 try:
     from ._streamerCamera import StreamerCamera
