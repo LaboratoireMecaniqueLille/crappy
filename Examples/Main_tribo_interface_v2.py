@@ -7,17 +7,15 @@ from Tkinter import *
 
 crappy.blocks.MasterBlock.instances = []
 
-t0 = time.time()
-
-
 class ConditionFiltree(crappy.links.MetaCondition):
     """
-    Used to ?
+    Used to filter received data (instead of update the window at every increment, we update it by the mean or
+    median value of measures.
     """
 
-    def __init__(self, labels=[], mode="mean", size=10):
+    def __init__(self, labels=[], mode="mean", array_size=10):
         self.mode = mode
-        self.size = size
+        self.array_size = array_size
         self.labels = labels
         self.FIFO = [[] for label in self.labels]
         self.test = False
@@ -25,35 +23,27 @@ class ConditionFiltree(crappy.links.MetaCondition):
 
     def evaluate(self, value):
         """Used to what ? """
-        # print "1"
         recv = self.external_trigger.recv(blocking=self.blocking)  # first run is blocking, others are not
         self.blocking = False
-        if recv == 1:
-            self.test = True
-        elif recv == 0:
-            self.test = False
+        self.test = True if recv else False
 
         for i, label in enumerate(self.labels):
-            # print self.FIFO[i]
             self.FIFO[i].insert(0, value[label])
-            if len(self.FIFO[i]) > self.size:
+            if len(self.FIFO[i]) > self.array_size:
                 self.FIFO[i].pop()
             if self.mode == "median":
                 result = np.median(self.FIFO[i])
             elif self.mode == "mean":
                 result = np.mean(self.FIFO[i])
             value[label + "_filtered"] = result
-
-        if self.test:
-            return value
-        else:
-            return None
+            return value if self.test else None
 
 
 def eval_offset(device, duration):
-    timeout = time.time() + duration  # 60 secs from now
+    """Method to evaluate offset of comedi at initialization."""
+    timeout = time.time() + duration  # duration secs from now
     print 'Measuring offset (%d sec), please be patient...' % duration
-    offsets = [[] for chan in xrange(len(device.channels))]
+    offsets = [[] for chan in device.channels]
     while True:
         offsets = device.get_data('all')[1]
         if time.time() > timeout:
@@ -64,19 +54,19 @@ def eval_offset(device, duration):
 try:
     # Defining COMEDI: acquire force, velocity, torque
     comediSensor = crappy.sensor.ComediSensor(channels=[0, 1, 2], gain=[20613, 4125, -500], offset=[0, 0, 0])
-    [F0, V0, C0] = eval_offset(comediSensor, 3)
+    [F0, V0, C0] = eval_offset(comediSensor, 2)
     comediSensor = crappy.sensor.ComediSensor(channels=[0, 1, 2], gain=[20613, 4125, -500], offset=[-F0, -V0, C0])
     measurebystep_effort = crappy.blocks.MeasureByStep(comediSensor, labels=['t(s)', 'F(N)', 'Vitesse', 'Couple'],
                                                        freq=500)
 
     # Defining CONDITIONERS: acquire gauges on pad
-    conditioners = [crappy.technical.Conditionner_5018(port=port) for port in
-                    ['/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7']]
+    conditioners = [crappy.technical.Conditionner_5018(port=prt) for prt in ['/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7']]
 
-    # Defining VARIATEUR_TRIBO : ?
+    # Defining VARIATEUR_TRIBO :
+    # is an actuator because motor position can be set, but also a sensor because can send back its position.
     VariateurTribo = crappy.technical.VariateurTribo(port='/dev/ttyS4')
 
-    # Defining LABJACK : to set_cmd on PID
+    # Defining LABJACK : to set_cmd on PID. There is also the labjack_hydrau already set, although not used.
     labjack = crappy.actuator.LabJackActuator(channel="TDAC0", gain=1. / 399.32, offset=-17.73 / 399.32)
     labjack_hydrau = crappy.actuator.LabJackActuator(channel="DAC0", gain=1., offset=0)  # for future usages ?
 
@@ -103,8 +93,8 @@ try:
     link_to_saver = crappy.links.Link(condition=ConditionFiltree())
 
     # Linkin (park)
-    measurebystep_effort.add_output(
-        link_effort_to_compacter)  # To send to graphs and saver (triggered by the interface)
+    measurebystep_effort.add_output(link_effort_to_compacter)  # To send to graphs and saver
+    # (triggered by the interface)
 
     compacter.add_input(link_effort_to_compacter)
     compacter.add_output(link_to_graph_force)
@@ -120,13 +110,15 @@ try:
     # Defining the window, and linking objects outside the window inside the window (combo window)
     root = Tix.Tk()  # To initialize the window
     interface = crappy.blocks.InterfaceTribo(root, VariateurTribo, labjack, labjack_hydrau,
-                                             conditioners)  # ,link5,link6)
+                                             conditioners)
     interface.root.protocol("WM_DELETE_WINDOW", interface.on_closing)
 
+    # Linking to the interface
     measurebystep_effort.add_output(link_effort_to_interface)  # For displaying?
     interface.add_input(link_effort_to_interface)
 
-    trigger_save = crappy.links.Link()  # ???
+    # Linking from the interface
+    trigger_save = crappy.links.Link()  # Boolean to start recording on hard_disk
     interface.add_output(trigger_save)
     link_effort_to_interface.add_external_trigger(trigger_save)
 

@@ -128,10 +128,10 @@ class InterfaceTribo(Frame, MasterBlock):
 
             # DATA RECORD DECLARATION #
             # DataRecording
-            self.pathSelectButton = Button(frameSave, text="Browse...", command=self.askdirectory)
+            self.pathSelectButton = Button(frameSave, text="Browse...", command=self.ask_directory)
 
-            self.StartRecordDataButton = Button(frameSave, text="START Record", command=self.recordData)
-            self.StopRecordDataButton = Button(frameSave, text="STOP Record", command=self.stopRecord)
+            self.StartRecordDataButton = Button(frameSave, text="START Record", command=self.record_data)
+            self.StopRecordDataButton = Button(frameSave, text="STOP Record", command=self.stop_record)
             self.filepathVar = Tix.StringVar()
             self.dirEntry = Entry(frameSave, textvariable=self.filepathVar, width=55)
             self.dirEntry.bind('<Return>', lambda event: file_path_update(self.filepathVar.get()))
@@ -157,7 +157,7 @@ class InterfaceTribo(Frame, MasterBlock):
             self.ActuatorPosLabel = Label(self.frameForcePos, text="0", width=8)
 
             self.ActuatorPositionActualisationGhostButton = Button(self.root, text="+1", bg="yellow",
-                                                                   command=self.ActuatorPosUpdate())
+                                                                   command=self.actuator_pos_update())
 
             # CONTROLS OF SETPOINT WITH SPINBOX
             self.ActuatorSpeedVar = Tix.IntVar()
@@ -182,7 +182,7 @@ class InterfaceTribo(Frame, MasterBlock):
             self.InitStatus = Label(self.frameInitialisation, text='Non initialisé')
 
             # Mode Declaration
-            self.ModeButton = Button(self.frameMode, text='Changer Mode', command=self.changeMode)
+            self.ModeButton = Button(self.frameMode, text='Changer Mode', command=self.change_mode)
             self.ModeLabel = Label(self.frameMode, text=self.mode)
 
             #### AUTO MODE DECLARATION ####
@@ -225,7 +225,7 @@ class InterfaceTribo(Frame, MasterBlock):
             self.StartExperimentButton = Button(self.frameProperties, text="Démarrer l'essai",
                                                 command=self.start_experiment_threaded)
             self.StopExperimentButton = Button(self.frameProperties, text="Arrêter l'essai",
-                                               command=self.stopExperiment)
+                                               command=self.stop_experiment)
 
             self.Informations = Label(self.frameInformations, text='Pret')
             self.Informations.configure(bg="light grey")
@@ -345,17 +345,19 @@ class InterfaceTribo(Frame, MasterBlock):
             self.ModeLabel.grid_remove()
             self.ModeButton.grid_remove()
 
-
         except Exception as e:
             print e
 
     def main(self):
+        """Main loop, to be executed at instance start"""
         self.mainloop()
         self.outputs[0].send(0)
         self.outputs[2].send(0)
 
     def change_manual_auto(self):
-
+        """
+        Cosmetics adjustments when switching modes
+        """
         if self.manualAuto == "MANUEL" and self.init:  # passage mode AUTO
             ####
             self.frameSpeedForcePosition.grid_remove()
@@ -485,6 +487,7 @@ class InterfaceTribo(Frame, MasterBlock):
             # Inside frameMode
             self.ModeButton.grid()
             self.ModeLabel.grid()
+
         else:
             print "Initialisez d'abord"
 
@@ -492,9 +495,12 @@ class InterfaceTribo(Frame, MasterBlock):
             self.InitStatus.configure(bg="red")
 
     def start_experiment_threaded(self):
-
+        """
+        Method to initialize (?)
+        """
         self.experiment = ThreadedTask(self.start_experiment)
         self.experiment.start()
+
         self.StartExperimentButton['state'] = 'disabled'
         self.StopExperimentButton['state'] = 'normal'
         self.ChangeModeButton['state'] = 'disabled'
@@ -502,9 +508,11 @@ class InterfaceTribo(Frame, MasterBlock):
         self.StopRecordDataButton['state'] = 'disabled'
     
     def start_experiment(self):
+        """
+        Method to start experiment.
+        """
         for i in range(len(self.conditioner)):
             self.conditioner[i].reset()
-
         self.outputs[2].send(1)
         try:
             cycle = self.cycleNumber.get()
@@ -515,13 +523,13 @@ class InterfaceTribo(Frame, MasterBlock):
 
                 while tAfter - tStart < 0.5 and not self.experiment._stopevent.isSet():
                     value = self.inputs[0].recv()
-
                     tAfter = time.time()
 
                 self.Informations.configure(text="Acceleration")
                 self.Informations.configure(bg="light green")
                 while float(
-                        value['Vitesse']) <= self.MaxSpeedVar.get() * 95. / 100. and not self.experiment._stopevent.isSet():
+                        value[
+                            'Vitesse']) <= self.MaxSpeedVar.get() * 95. / 100. and not self.experiment._stopevent.isSet():
                     self.labjack.set_cmd(self.MaxSpeedVar.get())
                     value = self.inputs[0].recv()
 
@@ -599,7 +607,7 @@ class InterfaceTribo(Frame, MasterBlock):
             self.variateur_tribo.actuator.go_position(0)
             self.StartExperimentButton['state'] = 'normal'
 
-    def stopExperiment(self):
+    def stop_experiment(self):
         # raise NameError
         self.experiment.join()
         print "the end"
@@ -614,31 +622,31 @@ class InterfaceTribo(Frame, MasterBlock):
     def __str__(self):
         return "RecordDataFile: {0}\n".format(self.filepath)
 
-    def getInfo(self):
+    def get_info(self):
         return self.filepath
 
-    def ActuatorPosUpdate(self):
+    def actuator_pos_update(self):
         try:
             self.variateur_tribo.clear_errors()
             self.ActuatorPosLabel.configure(text=-self.variateur_tribo.sensor.get_position())
-            self.root.after(20, self.ActuatorPosUpdate)
+            self.root.after(20, self.actuator_pos_update)
         except:
-            self.ActuatorPosUpdate()
-            # print'error reading position'
+            self.actuator_pos_update()
+            raise
 
-    def recordData(self):
+    def record_data(self):
         self.StartRecordDataButton.configure(bg="light green")
         self.t0 = time.time()  # Initialisation du temps
         print "RecordDataStart"
         self.outputs[2].send(1)
 
-    def stopRecord(self):
+    def stop_record(self):
         self.flag = 0
         print "RecordDataStop"  # TODO
         self.outputs[2].send(0)
         self.StartRecordDataButton.configure(bg="light grey")
 
-    def askdirectory(self):
+    def ask_directory(self):
         """
         Returns a selected directoryname.
         """
@@ -647,14 +655,11 @@ class InterfaceTribo(Frame, MasterBlock):
         self.outputs[1].send(self.filepath)
         self.outputs[1].send(self.filepath)
     
-    def pathSelect(self):
+    def path_select(self):
         d = Tix.DirSelectBox(master=self.root, command=self.print_selected)
         d.popup()
     
-    def getInfo(self):
-        return self.filepath
-
-    def changeMode(self):
+    def change_mode(self):
         if self.mode == 'Mode Position' and self.init:  # let's go to force mode
             self.mode = 'Mode Effort'
             self.labjack.set_cmd_ram(1, 46002)
@@ -664,10 +669,6 @@ class InterfaceTribo(Frame, MasterBlock):
             self.ActuatorPosLabel.grid_remove()
             self.ActuatorForce.grid()
             self.ActuatorForceSpinbox.grid()
-
-            # self.ActuatorEffort.grid()
-            # self.ActuatorEffortLabel.grid()
-            # self.comediOut.on()
             self.variateur_tribo.actuator.set_mode_analog()
 
         elif self.mode == 'Mode Effort' and self.init:  # let's go to position mode
@@ -678,11 +679,8 @@ class InterfaceTribo(Frame, MasterBlock):
             self.ActuatorPosLabel.grid()
             self.ActuatorForce.grid_remove()
             self.ActuatorForceSpinbox.grid_remove()
-            # self.ActuatorEffort.grid_remove()
-            # self.ActuatorEffortLabel.grid_remove()
             self.variateur_tribo.actuator.set_mode_position()
             self.labjack.set_cmd_ram(0, 46002)
-            # self.comediOut.off()
             self.ActuatorPositionVar.set(-self.variateur_tribo.sensor.get_position())
 
         self.ModeLabel.configure(text=self.mode)
@@ -702,7 +700,6 @@ class InterfaceTribo(Frame, MasterBlock):
         self.variateur_tribo.clear_errors()
         self.variateur_tribo.actuator.initialisation()
         self.variateur_tribo.actuator.set_mode_position()
-        # self.ActuatorPosLabel.configure(text=str(self.VariateurTribo.sensor.get_position()))
         time.sleep(1)
         self.variateur_tribo.clear_errors()
         time.sleep(1)
