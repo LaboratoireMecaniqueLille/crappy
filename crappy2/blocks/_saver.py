@@ -81,7 +81,6 @@ class Saver(MasterBlock):
                     fo.close()
 
                 elif self.output_format == 'csv':
-                    print 'np shape data:', np.shape(data)
                     for column in xrange(np.shape(data)[0]):
                         for line in xrange(np.shape(data)[1] - 1):
                             fo.write(str(data[column][line]) + ',')
