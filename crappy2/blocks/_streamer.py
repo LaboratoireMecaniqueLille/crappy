@@ -25,7 +25,8 @@ class Streamer(MasterBlock):
     """
     Send a stream of data.
     """
-    def __init__(self, sensor=None, labels=None):
+
+    def __init__(self, sensor=None, labels=None, *args, **kwargs):
         """
         Use it for LabJack streaming.
         You can directly link output data to a graph/save without going through a compacter.
@@ -34,17 +35,18 @@ class Streamer(MasterBlock):
                     Will read the streaming buffer of the LabJack device as defined at
                     the instance creation.
             labels : list of str, default = name of used sensor channels output labels.
-
-        PERFORMANCE CONSIDERATIONS
+            mean : int, number to shrink data. For instance, if 10 000 value are in input, averaging = 10 will send
+            in output 1000 values.
 
         This block does the time vector reconstruction, then assemble it with the results matrix read from the
-        LJM Buffer. You have to make sure the computer you run the program on has enough computing power to create
-        the time vector of length = scan_rate in less than 1 second. Otherwise the LJM_Buffer will fill endlessly...
+        LJM Buffer.
         """
         super(Streamer, self).__init__()
         assert sensor, "No input sensor defined."
         self.sensor = sensor
         self.labels = labels if labels else ['time(sec)'] + self.sensor.channels
+        self.averaging = kwargs.get('mean', None)
+
         global queue
         queue = Queue(2)
 
@@ -58,7 +60,9 @@ class Streamer(MasterBlock):
         while True:
             try:
                 ratio = self.sensor.scans_per_read / float(self.sensor.scan_rate_per_channel)
-                time_vector = np.asarray(np.linspace(sample_number * ratio, (sample_number + 1) * ratio, self.sensor.scans_per_read))
+                nb_points = self.sensor.scans_per_read if not self.averaging else self.sensor.scans_per_read / self.averaging
+                time_vector = np.linspace(sample_number * ratio, (sample_number + 1 - 1 / float(nb_points)) * ratio,
+                                          nb_points)
                 time_vector = np.around(time_vector, 5).tolist()
                 queue.put(time_vector)
                 sample_number += 1
@@ -72,6 +76,13 @@ class Streamer(MasterBlock):
         Main loop of the streamer program.
         """
         print "Streamer / main loop: PID", getpid()
+
+        def reshape(nparray, n):
+            reshaped = []
+            for length in xrange(np.shape(nparray)[1] / n):
+                reshaped.append(np.mean(nparray[:, length * n: int((length + 1 - 1 / float(n)) * n)], axis=1).tolist())
+            return np.array(reshaped).transpose()
+
         time_vector_process = Process(target=self.time_vector)
         try:
             self.sensor.start_stream()
@@ -81,12 +92,14 @@ class Streamer(MasterBlock):
                 retrieved = self.sensor.get_stream()[1]
                 deinterlaced = np.array([retrieved[each::self.sensor.nb_channels]
                                          for each in xrange(self.sensor.nb_channels)])
+                if self.averaging:
+                    deinterlaced = reshape(deinterlaced, self.averaging)
+
                 for each in xrange(self.sensor.nb_channels):
                     liste_temp = self.sensor.gain[each] * deinterlaced[each] + self.sensor.offset[each]
                     results.append(liste_temp.tolist())
                 results.insert(0, queue.get())
                 array = OrderedDict(zip(self.labels, results))
-                # print "Exit of the streamer:", array
                 try:
                     for output in self.outputs:
                         output.send(array)
