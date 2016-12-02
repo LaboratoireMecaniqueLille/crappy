@@ -119,7 +119,7 @@ class CorrelStage:
     kernelFile = kwargs.get("kernel_file")
     if kernelFile is None:
       self.debug(2,"Kernel file not specified")
-      from crappy2 import __path__ as crappyPath
+      from crappy import __path__ as crappyPath
       kernelFile = crappyPath[0]+"/data/kernels.cu"
     # Reading kernels and compiling module #
     with open(kernelFile,"r") as f:
@@ -730,7 +730,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     kernelFile = kwargs.get("kernel_file")
     if kernelFile is None:
       self.debug(3,"Kernel file not specified, using the one in crappy dir")
-      from crappy2 import __path__ as crappyPath
+      from crappy import __path__ as crappyPath
       kernelFile = crappyPath[0]+"/data/kernels.cu"
     self.debug(3,"Kernel file:",kernelFile)
 

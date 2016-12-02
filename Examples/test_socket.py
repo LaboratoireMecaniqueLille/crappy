@@ -1,21 +1,21 @@
 import time
-import crappy2
+import crappy
 
-crappy2.blocks.MasterBlock.instances = []  # Init masterblock instances
+crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 
 t0 = time.time()
 if __name__ == '__main__':
     try:
-        streamer1 = crappy2.blocks.Streamer()
-        # streamer2 = crappy2.blocks.Streamer()
-        # streamer3 = crappy2.blocks.Streamer()
-        # streamer4 = crappy2.blocks.Streamer()
-        server = crappy2.blocks.Server(port=9998, time_sync=True)
+        streamer1 = crappy.blocks.Streamer()
+        # streamer2 = crappy.blocks.Streamer()
+        # streamer3 = crappy.blocks.Streamer()
+        # streamer4 = crappy.blocks.Streamer()
+        server = crappy.blocks.Server(port=9998, time_sync=True)
 
-        link1 = crappy2.links.Link(name="link1")
-        # link2=crappy2.links.Link(name="link2")
-        # link3=crappy2.links.Link(name="link3")
-        # link4=crappy2.links.Link(name="link4")
+        link1 = crappy.links.Link(name="link1")
+        # link2=crappy.links.Link(name="link2")
+        # link3=crappy.links.Link(name="link3")
+        # link4=crappy.links.Link(name="link4")
 
         streamer1.add_output(link1)
         # streamer2.add_output(link2)
@@ -28,14 +28,14 @@ if __name__ == '__main__':
         # server.add_input(link4)
 
         t0 = time.time()
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             instance.t0 = t0
 
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             instance.start()
     except Exception as e:
         print "Exception in main :", e
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             try:
                 instance.stop()
             except Exception as e:

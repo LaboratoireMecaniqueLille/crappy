@@ -16,7 +16,7 @@ import time
 
 import math
 
-from crappy2.sensor._meta import motion
+from crappy.sensor._meta import motion
 from ._meta import acquisition
 
 

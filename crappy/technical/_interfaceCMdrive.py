@@ -16,7 +16,7 @@ import Tix
 from Tkinter import *
 import Tkinter
 # from serial.tools import list_ports
-from crappy2.technical import __motors__ as motors
+from crappy.technical import __motors__ as motors
 
 
 class Interface(Frame):
@@ -190,7 +190,7 @@ class Interface(Frame):
         else:
             try:
                 try:
-                    module = __import__("crappy2.technical", fromlist=[self.motorNameCombo.get()])
+                    module = __import__("crappy.technical", fromlist=[self.motorNameCombo.get()])
                     Motor = getattr(module, self.motorNameCombo.get())
                 except Exception as e:
                     print "{0}".format(e), " : Unreconized motor\n"

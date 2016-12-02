@@ -1,73 +1,73 @@
 import time
 
-import crappy2
+import crappy
 
-crappy2.blocks.MasterBlock.instances = []  # Init masterblock instances
+crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 
 # t0=time.time()
 if __name__ == '__main__':
     try:
         # Creating objects
         # Init : Offset determination (gain is kept as usual)
-        instronSensor = crappy2.sensor.ComediSensor(channels=[1, 3], gain=[-3749.3, -3198.9 * 1.18], offset=[0, 0])
+        instronSensor = crappy.sensor.ComediSensor(channels=[1, 3], gain=[-3749.3, -3198.9 * 1.18], offset=[0, 0])
         t, F2 = instronSensor.get_data(0)
         t, F4 = instronSensor.get_data(1)
-        instronSensor = crappy2.sensor.ComediSensor(channels=[1, 3], gain=[-3749.3, -3198.9 * 1.18], offset=[-F2, -F4])
-        biaxeTech1 = crappy2.technical.Biaxe(port='/dev/ttyS4')
-        biaxeTech2 = crappy2.technical.Biaxe(port='/dev/ttyS5')
-        biaxeTech3 = crappy2.technical.Biaxe(port='/dev/ttyS6')
-        biaxeTech4 = crappy2.technical.Biaxe(port='/dev/ttyS7')
+        instronSensor = crappy.sensor.ComediSensor(channels=[1, 3], gain=[-3749.3, -3198.9 * 1.18], offset=[-F2, -F4])
+        biaxeTech1 = crappy.technical.Biaxe(port='/dev/ttyS4')
+        biaxeTech2 = crappy.technical.Biaxe(port='/dev/ttyS5')
+        biaxeTech3 = crappy.technical.Biaxe(port='/dev/ttyS6')
+        biaxeTech4 = crappy.technical.Biaxe(port='/dev/ttyS7')
 
         axes = [biaxeTech1, biaxeTech2, biaxeTech3, biaxeTech4]
 
         # Creating blocks
         # Declare the compacter that allows to transfer by block of a given length
-        compacter_effort = crappy2.blocks.Compacter(100)
-        # save_effort=crappy2.blocks.Saver("/home/biaxe/Bureau/Annie/effort.txt")
+        compacter_effort = crappy.blocks.Compacter(100)
+        # save_effort=crappy.blocks.Saver("/home/biaxe/Bureau/Annie/effort.txt")
         # Init : Declaration of The graph
-        graph_effort = crappy2.blocks.Grapher(('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'))
+        graph_effort = crappy.blocks.Grapher(('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'))
 
-        # compacter_extenso=crappy2.blocks.Compacter(150)
-        # save_extenso=crappy2.blocks.Saver("/home/biaxe/Bureau/Annie/extenso.txt")
-        # graph_extenso=crappy2.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
+        # compacter_extenso=crappy.blocks.Compacter(150)
+        # save_extenso=crappy.blocks.Saver("/home/biaxe/Bureau/Annie/extenso.txt")
+        # graph_extenso=crappy.blocks.Grapher("dynamic",('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
 
-        effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F2(N)', 'F4(N)'], freq=100)
-        # extenso=crappy2.blocks.VideoExtenso(camera="Ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True)
+        effort = crappy.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F2(N)', 'F4(N)'], freq=100)
+        # extenso=crappy.blocks.VideoExtenso(camera="Ximea",xoffset=0,yoffset=0,width=2048,height=2048,white_spot=True,display=True)
 
-        # signalGenerator=crappy2.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},
+        # signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":3},
         # {"waveform":"limit","cycles":3,"phase":0,"lower_limit":[50,'F(N)'],"upper_limit":[5,'Exx(%)']}],
         # send_freq=400,repeat=True,labels=['t(s)','signal'])
 
-        # signalGenerator=crappy2.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']},
+        # signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']},
         # {"waveform":"limit","gain":0,"cycles":0.5,"phase":0,"lower_limit":[50,'F4(N)'],"upper_limit":[9.7,'Eyy(%)']},
         # {"waveform":"limit","gain":1,"cycles":0.5,"phase":-np.pi,"lower_limit":[50,'F2(N)'],"upper_limit":[10,'Exx(%)']}],
         # send_freq=400,repeat=True,labels=['t(s)','signal'])
-        signalGenerator = crappy2.blocks.SignalGenerator(
+        signalGenerator = crappy.blocks.SignalGenerator(
             path=[{"waveform": "protection", "gain": 1, "lower_limit": [-1, 'F2(N)'], "upper_limit": [10, 'F2(N)']}],
             send_freq=100, repeat=True)
 
-        signalGenerator_horizontal = crappy2.blocks.SignalGenerator(
+        signalGenerator_horizontal = crappy.blocks.SignalGenerator(
             path=[{"waveform": "protection", "gain": 1, "lower_limit": [-1, 'F4(N)'], "upper_limit": [10, 'F4(N)']}],
             send_freq=100, repeat=True)
 
-        biotens = crappy2.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1, biaxeTech2], speed=-5000)  # vertical
-        biotens_horizontal = crappy2.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3, biaxeTech4], speed=-5000)
+        biotens = crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1, biaxeTech2], speed=-5000)  # vertical
+        biotens_horizontal = crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3, biaxeTech4], speed=-5000)
         # horizontal # speed must be <0 for traction
 
         # Creating links
 
-        link1 = crappy2.links.Link()
-        link2 = crappy2.links.Link()
-        link12 = crappy2.links.Link()
-        link22 = crappy2.links.Link()
-        link3 = crappy2.links.Link()
-        link4 = crappy2.links.Link()
-        link5 = crappy2.links.Link()
-        link6 = crappy2.links.Link()
-        link7 = crappy2.links.Link()
-        link8 = crappy2.links.Link()
-        link9 = crappy2.links.Link()
-        link92 = crappy2.links.Link()
+        link1 = crappy.links.Link()
+        link2 = crappy.links.Link()
+        link12 = crappy.links.Link()
+        link22 = crappy.links.Link()
+        link3 = crappy.links.Link()
+        link4 = crappy.links.Link()
+        link5 = crappy.links.Link()
+        link6 = crappy.links.Link()
+        link7 = crappy.links.Link()
+        link8 = crappy.links.Link()
+        link9 = crappy.links.Link()
+        link92 = crappy.links.Link()
 
         # Linking objects
 
@@ -107,12 +107,12 @@ if __name__ == '__main__':
         # graph_extenso.add_input(link5)
 
         # Starting objects
-        # print "top :",crappy2.blocks._meta.MasterBlock.instances
+        # print "top :",crappy.blocks._meta.MasterBlock.instances
         t0 = time.time()
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             instance.t0 = t0
 
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             instance.start()
 
     # Waiting for execution
@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
     except (Exception, KeyboardInterrupt) as e:
         print "Exception in main :", e
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             try:
                 instance.stop()
             except Exception as e:

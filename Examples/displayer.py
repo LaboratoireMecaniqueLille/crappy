@@ -1,6 +1,6 @@
 #coding: utf-8
 
-import crappy2 as crappy
+import crappy
 import time
 
 """

@@ -22,7 +22,7 @@ class CommandBiaxe(MasterBlock):
         Receive a signal and translate it for the Biaxe actuator.
 
         Args:
-            biaxe_technicals : list of crappy2.technical.Biaxe objects
+            biaxe_technicals : list of crappy.technical.Biaxe objects
                 List of all the axes to control.
             signal_label : str, default = 'signal'
                 Label of the data to be transfered.

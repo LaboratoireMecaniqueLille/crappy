@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Cegitab serial ports
 
-from crappy2.blocks import MasterBlock
+from crappy.blocks import MasterBlock
 import sys
 import glob
 import serial

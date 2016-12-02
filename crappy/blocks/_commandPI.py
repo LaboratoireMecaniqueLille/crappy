@@ -23,7 +23,7 @@ class CommandPI(MasterBlock):
         Receive a signal and translate it for the PI actuator.
 
         Args:
-            PI_actuators : crappy2.actuators.PIactuators objects Axe to control.
+            PI_actuators : crappy.actuators.PIactuators objects Axe to control.
             signal_label : str, default = 'signal'. Label of the data to be transfered.
         """
         super(CommandPI, self).__init__()

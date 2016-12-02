@@ -1,4 +1,4 @@
-from crappy2.sensor import clModule as cl
+from crappy.sensor import clModule as cl
 
 
 class ClSerial(object):

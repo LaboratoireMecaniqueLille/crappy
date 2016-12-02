@@ -27,7 +27,7 @@ class CommandBiotens(MasterBlock):
         Receive a signal and translate it for the Biotens actuator.
 
         Args:
-            biotens_technicals : list of crappy2.technical.Biotens objects.
+            biotens_technicals : list of crappy.technical.Biotens objects.
                 List of all the axes to control.
             signal_label : str, default = 'signal'
                 Label of the data to be transfered.

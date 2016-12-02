@@ -33,7 +33,7 @@ helloModule = Extension('technical.helloModule',
 extentions.append(helloModule)
 
 if platform.system() == "Linux":
-    execfile("./crappy2/__version__.py")  # read the current version in version.py
+    execfile("./crappy/__version__.py")  # read the current version in version.py
     ximeaModule = Extension('sensor.ximeaModule',
                             sources=['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'],
                             extra_compile_args=["-std=c++11"],
@@ -61,7 +61,7 @@ if platform.system() == "Linux":
         extentions.append(ximeaModule)
 
 if platform.system() == "Windows":
-    execfile(".\crappy2\__version__.py")  # read the current version in version.py
+    execfile(".\crappy\__version__.py")  # read the current version in version.py
     pyFgenModule = Extension('sensor.pyFgenModule',
                              include_dirs=["c:\\python27\\Lib\\site-packages\\numpy\\core\\include",
                                            "C:\\Program Files (x86)\\IVI Foundation\\VISA\\WinNT\\include",
@@ -96,7 +96,7 @@ if platform.system() == "Windows":
         print "Can't find microEnable4 Device driver, clModule will not be compiled"
 
 setup(
-    name='crappy2',
+    name='crappy',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
@@ -151,7 +151,7 @@ setup(
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
 
-    ext_package='crappy2',
+    ext_package='crappy',
     ext_modules=extentions,
 
     # List run-time dependencies here.  These will be installed by pip when
@@ -171,7 +171,7 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    data_files=[('crappy2/data',['data/kernels.cu'])]
+    data_files=[('crappy/data',['data/kernels.cu'])]
     # package_data={
     # 'sample': ['package_data.dat'],
     # },
@@ -197,26 +197,26 @@ setup(
 
 if ximeaModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\ximeaModule.pyd crappy2\\sensor\\')
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\ximeaModule.pyd crappy\\sensor\\')
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/ximeaModule.so crappy2/sensor/')
+        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
 
 if comediModule in extentions:
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/comediModule.so crappy2/sensor/')
+        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')
 
 if clModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\clModule.pyd crappy2\\sensor\\')
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\clModule.pyd crappy\\sensor\\')
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy2/sensor/clModule.so crappy2/sensor/')
+        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/clModule.so crappy/sensor/')
 
 if pyFgenModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\sensor\\pyFgenModule.pyd crappy2\\sensor\\')
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\pyFgenModule.pyd crappy\\sensor\\')
 
 if helloModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy2\\technical\\helloModule.pyd crappy2\\technical\\')
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\technical\\helloModule.pyd crappy\\technical\\')
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy2/technical/helloModule.so crappy2/technical/')
+        system('cp build/lib.linux-x86_64-2.7/crappy/technical/helloModule.so crappy/technical/')

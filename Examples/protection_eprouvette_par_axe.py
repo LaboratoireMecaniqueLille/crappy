@@ -1,74 +1,74 @@
 import time
-import crappy2
+import crappy
 
-crappy2.blocks.MasterBlock.instances = []  # Init masterblock instances
+crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 
 # t0=time.time()
 if __name__ == '__main__':
     try:
         # Creating objects
         # Init : Offset determination (gain is kept as usual)
-        instronSensor = crappy2.sensor.ComediSensor(channels=[1, 2, 3, 4],
+        instronSensor = crappy.sensor.ComediSensor(channels=[1, 2, 3, 4],
                                                     gain=[-3749.3, -3749.3, -3198.9 * 1.18, -3749.3],
                                                     offset=[0, 0, 0, 0])
         t, F1 = instronSensor.get_data(0)
         t, F2 = instronSensor.get_data(1)
         t, F3 = instronSensor.get_data(2)
         t, F4 = instronSensor.get_data(3)
-        instronSensor = crappy2.sensor.ComediSensor(channels=[1, 2, 3, 4],
+        instronSensor = crappy.sensor.ComediSensor(channels=[1, 2, 3, 4],
                                                     gain=[-3749.3, -3749.3, -3198.9 * 1.18, -3749.3],
                                                     offset=[-F1, -F2, -F3, -F4])
-        biaxeTech1 = crappy2.technical.Biaxe(port='/dev/ttyS4')
-        biaxeTech2 = crappy2.technical.Biaxe(port='/dev/ttyS5')
-        biaxeTech3 = crappy2.technical.Biaxe(port='/dev/ttyS6')
-        biaxeTech4 = crappy2.technical.Biaxe(port='/dev/ttyS7')
+        biaxeTech1 = crappy.technical.Biaxe(port='/dev/ttyS4')
+        biaxeTech2 = crappy.technical.Biaxe(port='/dev/ttyS5')
+        biaxeTech3 = crappy.technical.Biaxe(port='/dev/ttyS6')
+        biaxeTech4 = crappy.technical.Biaxe(port='/dev/ttyS7')
 
         axes = [biaxeTech1, biaxeTech2, biaxeTech3, biaxeTech4]
 
         # Creating blocks
 
-        compacter_effort = crappy2.blocks.Compacter(100)
+        compacter_effort = crappy.blocks.Compacter(100)
 
-        graph_effort = crappy2.blocks.Grapher(('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'), ('t(s)', 'F3(N)'),
+        graph_effort = crappy.blocks.Grapher(('t(s)', 'F2(N)'), ('t(s)', 'F4(N)'), ('t(s)', 'F3(N)'),
                                               ('t(s)', 'F1(N)'))
 
-        effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F1(N)', 'F2(N)', 'F3(N)', 'F4(N)'],
+        effort = crappy.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F1(N)', 'F2(N)', 'F3(N)', 'F4(N)'],
                                                     freq=100)
 
-        signalGenerator1 = crappy2.blocks.SignalGenerator(
+        signalGenerator1 = crappy.blocks.SignalGenerator(
             path=[{"waveform": "protection", "gain": 1, "lower_limit": [-10, 'F1(N)'], "upper_limit": [10, 'F1(N)']}],
             send_freq=100, repeat=True)
 
-        signalGenerator2 = crappy2.blocks.SignalGenerator(
+        signalGenerator2 = crappy.blocks.SignalGenerator(
             path=[{"waveform": "protection", "gain": 1, "lower_limit": [-10, 'F2(N)'], "upper_limit": [10, 'F2(N)']}],
             send_freq=100, repeat=True)
-        signalGenerator3 = crappy2.blocks.SignalGenerator(
+        signalGenerator3 = crappy.blocks.SignalGenerator(
             path=[{"waveform": "protection", "gain": 1, "lower_limit": [-10, 'F3(N)'], "upper_limit": [10, 'F3(N)']}],
             send_freq=100, repeat=True)
 
-        signalGenerator4 = crappy2.blocks.SignalGenerator(
+        signalGenerator4 = crappy.blocks.SignalGenerator(
             path=[{"waveform": "protection", "gain": 1, "lower_limit": [-10, 'F4(N)'], "upper_limit": [10, 'F4(N)']}],
             send_freq=100, repeat=True)
 
-        biotens1 = crappy2.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1], speed=-5000)  # vertical
-        biotens2 = crappy2.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech2], speed=-5000)  # vertical
-        biotens3 = crappy2.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3], speed=-5000)  # vertical
-        biotens4 = crappy2.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech4], speed=-5000)
+        biotens1 = crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech1], speed=-5000)  # vertical
+        biotens2 = crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech2], speed=-5000)  # vertical
+        biotens3 = crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech3], speed=-5000)  # vertical
+        biotens4 = crappy.blocks.CommandBiaxe(biaxe_technicals=[biaxeTech4], speed=-5000)
         # horizontal # speed must be <0 for traction
 
         # Creating links
 
-        link1 = crappy2.links.Link()
-        link2 = crappy2.links.Link()
-        link3 = crappy2.links.Link()
-        link4 = crappy2.links.Link()
-        link5 = crappy2.links.Link()
-        link6 = crappy2.links.Link()
+        link1 = crappy.links.Link()
+        link2 = crappy.links.Link()
+        link3 = crappy.links.Link()
+        link4 = crappy.links.Link()
+        link5 = crappy.links.Link()
+        link6 = crappy.links.Link()
 
-        link11 = crappy2.links.Link()
-        link21 = crappy2.links.Link()
-        link31 = crappy2.links.Link()
-        link41 = crappy2.links.Link()
+        link11 = crappy.links.Link()
+        link21 = crappy.links.Link()
+        link31 = crappy.links.Link()
+        link41 = crappy.links.Link()
 
         # Linking objects
 
@@ -102,12 +102,12 @@ if __name__ == '__main__':
         graph_effort.add_input(link6)
 
         # Starting objects
-        # print "top :",crappy2.blocks._meta.MasterBlock.instances
+        # print "top :",crappy.blocks._meta.MasterBlock.instances
         t0 = time.time()
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             instance.t0 = t0
 
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             instance.start()
 
     # Waiting for execution
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     except (Exception, KeyboardInterrupt) as e:
         print "Exception in main :", e
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             try:
                 instance.stop()
             except Exception as e:

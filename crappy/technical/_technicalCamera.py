@@ -52,16 +52,16 @@ class TechnicalCamera(object):
         if videoextenso is None:
             videoextenso = {}
         try:
-            module = __import__("crappy2.sensor", fromlist=[camera.capitalize()])
+            module = __import__("crappy.sensor", fromlist=[camera.capitalize()])
             camera_class = getattr(module, camera.capitalize())
         except Exception as e:
             print "{0}".format(e), " : Unreconized camera\n"
             import sys
             sys.exit()
         try:
-            module = __import__("crappy2.sensor.clserial", fromlist=[camera.capitalize() + "Serial"])
+            module = __import__("crappy.sensor.clserial", fromlist=[camera.capitalize() + "Serial"])
             code_class = getattr(module, camera.capitalize() + "Serial")
-            from crappy2.sensor.clserial import ClSerial as cl
+            from crappy.sensor.clserial import ClSerial as cl
             ser = code_class()
             self.serial = cl(ser)
         except ImportError:

@@ -103,7 +103,7 @@ class BiaxeActuator(motion.MotionActuator):
         Reset errors
 
         \deprecated
-            This method is replaced by clear_errors defined in Biaxe (found in crappy2.technical._biaxeTechnical)
+            This method is replaced by clear_errors defined in Biaxe (found in crappy.technical._biaxeTechnical)
         """
         self.ser.write("CLRFAULT\r\n")
         self.ser.write("OPMODE 0\r\n EN\r\n")

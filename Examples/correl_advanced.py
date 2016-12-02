@@ -1,4 +1,4 @@
-import crappy2 as crappy
+import crappy
 #import crappy
 from time import time
 import numpy as np

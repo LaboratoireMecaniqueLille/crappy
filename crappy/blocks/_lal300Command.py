@@ -27,7 +27,7 @@ class CommandLal300(MasterBlock):
     def __init__(self, TechnicalLal300):  # Initialisation de la classe CommandLal300 avec la classe TechnicalLal300
         """
         Args:
-            TechnicalLal300 : crappy2.technical.TechnicalLal300 object.
+            TechnicalLal300 : crappy.technical.TechnicalLal300 object.
         """
         super(CommandLal300, self).__init__()
         self.technical = TechnicalLal300

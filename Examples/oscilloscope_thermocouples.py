@@ -1,6 +1,6 @@
 import time
 import numpy as np
-import crappy2 as crappy
+import crappy
 
 crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 

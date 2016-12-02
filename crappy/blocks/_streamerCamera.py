@@ -14,7 +14,7 @@
 from _meta import MasterBlock
 import os
 import time
-from crappy2.technical import TechnicalCamera as tc
+from crappy.technical import TechnicalCamera as tc
 from ..links._link import TimeoutError
 
 

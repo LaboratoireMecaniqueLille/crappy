@@ -15,7 +15,7 @@
 import serial
 import time
 
-from crappy2.technical._meta import motion
+from crappy.technical._meta import motion
 from ..sensor import OrientalSensor
 from ..actuator import OrientalActuator
 

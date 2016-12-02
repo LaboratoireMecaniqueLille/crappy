@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import crappy2 as crappy
+import crappy
 import numpy as np
 import time
 import Tix

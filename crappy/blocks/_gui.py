@@ -6,7 +6,7 @@ import os
 import time
 import tkFont
 import tkFileDialog
-import crappy2 as crappy
+import crappy as crappy
 import multiprocessing
 import pandas as pd
 from collections import OrderedDict

@@ -11,7 +11,7 @@ from collections import OrderedDict
 # print a
 # UNDEF = -99.0
 # np.interp(3.14, xp, fp, right=UNDEF)
-from crappy2.blocks import MasterBlock
+from crappy.blocks import MasterBlock
 
 
 class Interpolation(MasterBlock):

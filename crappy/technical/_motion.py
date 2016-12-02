@@ -15,7 +15,7 @@
 import serial
 import time
 from ._meta import motion
-from crappy2.technical import __motors__ as motors
+from crappy.technical import __motors__ as motors
 
 
 class Motion(motion.Motion):
@@ -32,7 +32,7 @@ class Motion(motion.Motion):
                     print "Unreconized motor name, leaving program..."
                     return
         try:
-            module = __import__("crappy2.technical", fromlist=["%sTechnical" % motors[0]])
+            module = __import__("crappy.technical", fromlist=["%sTechnical" % motors[0]])
             motor_name = motors[[x.capitalize() for x in motors].index(motor_name.capitalize())]
             self.Motor = getattr(module, "%s" % motor_name)
         except Exception as e:

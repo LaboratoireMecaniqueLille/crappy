@@ -15,10 +15,10 @@
 import serial
 import time
 
-from crappy2.actuator._dummyActuator import DummyActuator
-from crappy2.sensor._dummySensor import DummySensor
+from crappy.actuator._dummyActuator import DummyActuator
+from crappy.sensor._dummySensor import DummySensor
 
-from crappy2.technical._meta import motion
+from crappy.technical._meta import motion
 from ..sensor import OrientalSensor
 from ..actuator import OrientalActuator
 

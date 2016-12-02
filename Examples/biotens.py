@@ -1,40 +1,40 @@
 ﻿import time
 
-import crappy2
+import crappy
 
-crappy2.blocks.MasterBlock.instances = []  # Init masterblock instances
+crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 
 if __name__ == '__main__':
     try:
         # Creating objects
 
-        instronSensor = crappy2.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[0])
+        instronSensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[0])
         t, F0 = instronSensor.get_data(0)
         print "offset=", F0
-        instronSensor = crappy2.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[-F0])
-        biotensTech = crappy2.technical.Biotens(port='/dev/ttyUSB0', size=25)
+        instronSensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[-F0])
+        biotensTech = crappy.technical.Biotens(port='/dev/ttyUSB0', size=25)
 
         # Creating blocks
 
-        compacter_effort = crappy2.blocks.Compacter(150)
-        save_effort = crappy2.blocks.Saver("/home/biotens/Bureau/Annie/test_lampe/rat_effort_1.txt")
-        graph_effort = crappy2.blocks.Grapher(('t(s)', 'F(N)'))
+        compacter_effort = crappy.blocks.Compacter(150)
+        save_effort = crappy.blocks.Saver("/home/biotens/Bureau/Annie/test_lampe/rat_effort_1.txt")
+        graph_effort = crappy.blocks.Grapher(('t(s)', 'F(N)'))
 
-        compacter_extenso = crappy2.blocks.Compacter(90)
-        save_extenso = crappy2.blocks.Saver("/home/biotens/Bureau/Annie/test_lampe/rat_extenso_1.txt")
-        graph_extenso = crappy2.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
+        compacter_extenso = crappy.blocks.Compacter(90)
+        save_extenso = crappy.blocks.Saver("/home/biotens/Bureau/Annie/test_lampe/rat_extenso_1.txt")
+        graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
 
-        effort = crappy2.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F(N)'], freq=150)
-        extenso = crappy2.blocks.VideoExtenso(camera="Ximea", white_spot=False,
+        effort = crappy.blocks.MeasureComediByStep(instronSensor, labels=['t(s)', 'F(N)'], freq=150)
+        extenso = crappy.blocks.VideoExtenso(camera="Ximea", white_spot=False,
                                               labels=['t(s)', 'Lx', 'Ly', 'Exx(%)', 'Eyy(%)'], display=True)
 
-        # signalGenerator=crappy2.blocks.SignalGenerator(path=[{"waveform":"hold","time":0},
+        # signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":0},
         # {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[90,'Eyy(%)']}],
         # send_freq=400,repeat=False,labels=['t(s)','signal'])
         # example of path:[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],
         # "upper_limit":[i,'Eyy(%)']} for i in range(10,90,10)]
 
-        signalGenerator = crappy2.blocks.SignalGenerator(path=[
+        signalGenerator = crappy.blocks.SignalGenerator(path=[
             {"waveform": "limit", "gain": 1, "cycles": 2, "phase": 0, "lower_limit": [0.02, 'F(N)'],
              "upper_limit": [90, 'F(N)']}],
             # {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[10,'Eyy(%)']},
@@ -50,23 +50,23 @@ if __name__ == '__main__':
             # {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[90,'F(N)']}],
             send_freq=5, repeat=False, labels=['t(s)', 'signal', 'cycle'])
 
-        biotens = crappy2.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5)
-        compacter_position = crappy2.blocks.Compacter(5)
-        save_position = crappy2.blocks.Saver("/home/biotens/Bureau/Annie/test_lampe/rat_position_1.txt")
+        biotens = crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5)
+        compacter_position = crappy.blocks.Compacter(5)
+        save_position = crappy.blocks.Saver("/home/biotens/Bureau/Annie/test_lampe/rat_position_1.txt")
 
         # Creating links
 
-        link1 = crappy2.links.Link()
-        link2 = crappy2.links.Link()
-        link3 = crappy2.links.Link()
-        link4 = crappy2.links.Link()
-        link5 = crappy2.links.Link()
-        link6 = crappy2.links.Link()
-        link7 = crappy2.links.Link()
-        link8 = crappy2.links.Link()
-        link9 = crappy2.links.Link()
-        link10 = crappy2.links.Link()
-        link11 = crappy2.links.Link()
+        link1 = crappy.links.Link()
+        link2 = crappy.links.Link()
+        link3 = crappy.links.Link()
+        link4 = crappy.links.Link()
+        link5 = crappy.links.Link()
+        link6 = crappy.links.Link()
+        link7 = crappy.links.Link()
+        link8 = crappy.links.Link()
+        link9 = crappy.links.Link()
+        link10 = crappy.links.Link()
+        link11 = crappy.links.Link()
 
         # Linking objects
 
@@ -106,10 +106,10 @@ if __name__ == '__main__':
         # Starting objects
 
         t0 = time.time()
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             instance.t0 = t0
 
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             instance.start()
 
     # Waiting for execution
@@ -118,9 +118,9 @@ if __name__ == '__main__':
 
     except (Exception, KeyboardInterrupt) as e:
         print "Exception in main :", e
-        # for instance in crappy2.blocks._meta.MasterBlock.instances:
+        # for instance in crappy.blocks._meta.MasterBlock.instances:
         # instance.join()
-        for instance in crappy2.blocks.MasterBlock.instances:
+        for instance in crappy.blocks.MasterBlock.instances:
             try:
                 instance.stop()
                 print "instance stopped : ", instance

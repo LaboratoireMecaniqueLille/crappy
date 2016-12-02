@@ -29,7 +29,7 @@ class CommandComedi(MasterBlock):
         CommandComedi(comedi_actuators)
 
         Args:
-            comedi_actuators : list of crappy2.actuators.ComediActuator objects.
+            comedi_actuators : list of crappy.actuators.ComediActuator objects.
                 List of all the outputs to control.
             signal_label : str, default = 'signal'
                 Label of the data to be transfered.

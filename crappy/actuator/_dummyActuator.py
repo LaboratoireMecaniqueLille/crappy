@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import serial
 
-from crappy2.actuator import motion
+from crappy.actuator import motion
 
 
 class DummyActuator(motion.MotionActuator):

@@ -1,6 +1,6 @@
 import numpy
 
-from crappy2.sensor._meta.acquisition import Acquisition
+from crappy.sensor._meta.acquisition import Acquisition
 
 
 class TestSensor(Acquisition):
