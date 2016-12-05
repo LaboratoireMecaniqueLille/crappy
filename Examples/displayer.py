@@ -4,7 +4,7 @@ import crappy
 import time
 
 """
-Very simple program that 
+Very simple program that displays the output of a camera
 """
 camera = crappy.blocks.StreamerCamera("Ximea", numdevice=0, freq=20, save=False,save_directory="CHANGEME",xoffset=0, yoffset=0, width=2048, height=2048)
 
