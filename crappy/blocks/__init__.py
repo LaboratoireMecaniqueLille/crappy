@@ -46,6 +46,7 @@ from ._client import Client
 # from ._signalAdapter import SignalAdapter
 from ._signalGenerator import SignalGenerator
 from ._canvasdrawing import CanvasDrawing
+from ._fakeCamera import FakeCamera
 
 try:
     from ._streamerCamera import StreamerCamera
