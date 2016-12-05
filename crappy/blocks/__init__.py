@@ -47,6 +47,7 @@ from ._client import Client
 from ._signalGenerator import SignalGenerator
 from ._canvasdrawing import CanvasDrawing
 from ._fakeCamera import FakeCamera
+from ._sink import Sink
 
 try:
     from ._streamerCamera import StreamerCamera
