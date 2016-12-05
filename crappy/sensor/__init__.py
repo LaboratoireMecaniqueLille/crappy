@@ -27,6 +27,7 @@ from ._dummySensor import DummySensor
 from ._variateurTriboSensor import VariateurTriboSensor
 from ._lal300Sensor import Lal300Sensor, SensorLal300
 from ._PISensor import PISensor
+from ._webcamSensor import Webcam
 
 try:
     import ximeaModule as ximeaModule
