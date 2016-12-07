@@ -10,7 +10,7 @@
 #   Use cv=False to use the old, inefficient and deprecated version
 #   NOTE: You need to use one displayer block per window (in other words, you can only attach one input to the diplayer)
 #
-# @author Corentin Martel, Robin Siemiatkowski
+# @author Corentin Martel, Robin Siemiatkowski, Victor Couty
 # @version 0.1
 # @date 05/07/2016
 
@@ -52,7 +52,11 @@ class CameraDisplayer(MasterBlock):
             else:
                 import cv2
                 data = 0
-                cv2.namedWindow(self.title,cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
+                try:
+                  flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
+                except AttributeError: #WINDOW_KEEPRATIO is not implemented in all opencv versions...
+                  flags = cv2.WINDOW_NORMAL
+                cv2.namedWindow(self.title,flags)
                 while True:
                     t1 = time()
                     while data is not None: # To flush the pipe...
