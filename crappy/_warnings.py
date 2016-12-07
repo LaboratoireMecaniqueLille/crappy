@@ -1,6 +1,7 @@
 import functools
 import types
 import warnings
+import platform as _platform
 
 
 def deprecated(replacement=None, warn_msg=""):
@@ -34,7 +35,10 @@ warning_log = []
 
 def import_error(warn_msg=""):
     warnings.simplefilter("once", ImportWarning)
-    mess = '\033[93m' + warn_msg + '\033[0m'
+    if _platform.system() == 'Linux':
+        mess = '\033[93m' + warn_msg + '\033[0m'
+    else:
+        mess = warn_msg
     if warn_msg not in warning_log:
         warning_log.append(warn_msg)
         warnings.warn(mess, ImportWarning, stacklevel=2)
