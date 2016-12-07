@@ -139,6 +139,10 @@ class MasterBlock(object):
     def t0(self, t0):
         self._t0 = t0
 
+    @property
+    def pid(self):
+      return self.proc.pid
+
 
 def delay(ms):
     """
