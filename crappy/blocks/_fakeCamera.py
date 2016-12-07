@@ -19,7 +19,7 @@ class FakeCamera(MasterBlock):
   """
   Streams a static picture to fake a camera
   """
-  def __init__(self,width=1024,height=1024,timer=True):
+  def __init__(self,width=1024,height=1024,timer=True,animated=True):
     MasterBlock.__init__(self)
     self.w = width
     self.h = height
@@ -28,6 +28,7 @@ class FakeCamera(MasterBlock):
     self.img = np.arange(width)*255./width
     self.img = np.repeat(self.img.reshape(width,1),height,axis=1).astype(np.uint8)
     self.loops = 0
+    self.animated = animated
     
   def main(self):
     #If timer is true, will print debug info every "skip" frame
@@ -40,6 +41,9 @@ class FakeCamera(MasterBlock):
         t1 = t0
         t0 = time.time()
         print "[FakeCamera] running at",skip/(t0-t1),"fps (avg:",self.loops/(t0-self.t0),")"
+      i = self.loops%self.h
       for o in self.outputs:
-        o.send(self.img)
-
+        if self.animated:
+          o.send(np.concatenate((self.img[i:,:],self.img[:i,:]),axis=0))
+        else:
+          o.send(self.img)
