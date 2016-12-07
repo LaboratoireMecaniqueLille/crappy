@@ -8,7 +8,7 @@ import tkFont
 import tkFileDialog
 import crappy as crappy
 import multiprocessing
-import pandas as pd
+#import pandas as pd
 from collections import OrderedDict
 import threading
 ########INTEGRATION DU GRAPHE DANS L'INTERFACE (putain, j'en ai chié)
