@@ -1,22 +1,27 @@
-set HTTPS_PROXY=http://yourproxyadresse.com:port or add it to your environnement variable
+set HTTPS_PROXY=http://yourproxyadress.com:port or add it to your environnement variable
 
 pip install numpy
-pip install scipy
 
-if you have an error like "cannot find laplack/blas": try to install numpy+MLK and scipy from python wheel: http://www.lfd.uci.edu/~gohlke/pythonlibs/
+pip raises an error about lapack/blas when installing scipy and scikit-image cannot be installed with pip using Windows.
+Download scipy and scikit-image python wheel and then:
+pip install *package-name*.whl
+You can get both .whl files from this address: 
+http://www.lfd.uci.edu/~gohlke/pythonlibs/ (make sure to select the correct version)
 
+pip install matplotlib
+pip install SimpleITK
 pip install pyserial
 pip install pandas
 
-- Download latest OpenCV release from sourceforge site and double-click to extract it.
-- Goto opencv/build/python/2.7 folder.
-- Copy cv2.pyd to C:/Python27/lib/site-packeges.
+Download latest OpenCV release for Windows from sourceforge site and double-click to extract it.
+Goto opencv/build/python/2.7 folder.
+Copy cv2.pyd to C:/Python27/lib/site-packeges.
+
+To compile C++ modules, you need to install Visual C++ For Python2.7.
+
+After installing Ximea driver, you may need to add c:\\XIMEA\\API\x64 to your PATH environnement variable.
 
 - if you want ipython:
 	
 pip install pyreadline
 pip isntall ipython
-
-To compile C++ modules, you need to install Visual C++ For Python2.7.
-
-After installing Ximea driver, you may need to add c:\\XIMEA\\API\x64 to your PATH environnement variable.
