@@ -89,7 +89,7 @@ class Link(object):
     Link class. All connection between Blocks should be made with this.
     """
 
-    def __init__(self, condition=None, timeout=0.1, action="warn", name="link"):
+    def __init__(self, input_block=None, output_block=None, condition=None, timeout=0.1, action="warn", name="link"):
         """
         Creates a pipe and is used to transfer information between Blocks using a pipe.
         You can add one or multiple conditions to modify the value transfered.
@@ -116,6 +116,9 @@ class Link(object):
         self.condition = condition
         self.timeout = timeout
         self.action = action
+        if not None in [input_block,output_block]:
+          input_block.add_output(self)
+          output_block.add_input(self)
 
     def add_external_trigger(self, link_instance):
         """Add an external trigger Link."""
