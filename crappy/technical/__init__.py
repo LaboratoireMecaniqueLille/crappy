@@ -43,6 +43,15 @@ from ._CMdriveTechnical import CmDrive
 from ._interfaceCMdrive import Interface
 from ._orientalTechnical import Oriental
 from ._conditionneur_5018 import Conditionner_5018
+
+try:
+    from ._labjack import LabJack
+except Exception as e:
+    print e
+try:
+    from ._OpenDAQ import OpenDAQ
+except Exception as e:
+    print e
 # from ._jaiTechnical import Jai
 
 try:
@@ -67,3 +76,4 @@ try:
     import helloModule as helloModule
 except Exception as e:
     print e
+
