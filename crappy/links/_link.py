@@ -244,3 +244,9 @@ class Link(object):
             if not self.in_.closed:
                 self.in_.close()
             raise Exception(e)
+def link(in_block,out_block,**kwargs):
+    """
+    Function that links two blocks
+    For the object, see Link
+    """
+    Link(input_block=in_block,output_block=out_block,**kwargs)

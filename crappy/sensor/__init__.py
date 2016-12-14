@@ -19,27 +19,27 @@
 from os import popen as _popen
 import platform as _platform
 from .._warnings import import_error
-from ._biotensSensor import BiotensSensor
+from _biotensSensor import BiotensSensor
 from _biaxeSensor import BiaxeSensor
-from ._Agilent34420ASensor import Agilent34420ASensor
-from ._CMdriveSensor import CmDriveSensor
-from ._dummySensor import DummySensor
-from ._variateurTriboSensor import VariateurTriboSensor
-from ._lal300Sensor import Lal300Sensor, SensorLal300
-from ._PISensor import PISensor
-from ._webcamSensor import Webcam
+from _Agilent34420ASensor import Agilent34420ASensor
+from _CMdriveSensor import CmDriveSensor
+from _dummySensor import DummySensor
+from _variateurTriboSensor import VariateurTriboSensor
+from _lal300Sensor import Lal300Sensor, SensorLal300
+from _PISensor import PISensor
+from _webcamSensor import Webcam
 
 try:
     import ximeaModule as ximeaModule
-    from ._ximeaSensor import Ximea
+    from _ximeaSensor import Ximea
 except Exception as e:
     import_error(e.message)
 
-from ._fakeCameraSensor import FakeCameraSensor as Dummy
+from _fakeCameraSensor import FakeCameraSensor as Dummy
 
 if _platform.system() == "Linux":
     try:
-        from ._comediSensor import ComediSensor
+        from _comediSensor import ComediSensor
         import comediModule as comediModule
     except Exception as e:
         import_error(e.message)
@@ -48,9 +48,9 @@ if _platform.system() == "Linux":
     if len(_p.read()) != 0:
         try:
             import clModule as clModule
-            from ._jaiSensor import Jai
-            from ._clserial import _clSerial
-            from ._clserial import _jaiSerial
+            from _jaiSensor import Jai
+            from _clserial import _clSerial
+            from _clserial import _jaiSerial
 
             JaiSerial = _jaiSerial.JaiSerial
             ClSerial = _clSerial.ClSerial
@@ -66,10 +66,10 @@ if _platform.system() == "Windows":
     if len(_popen('driverquery /NH |findstr "me4"').read()) != 0:
         try:
             import clModule as clModule
-            from ._jaiSensor import Jai
+            from _jaiSensor import Jai
 
-            from ._clserial import _clSerial
-            from ._clserial import _jaiSerial
+            from _clserial import _clSerial
+            from _clserial import _jaiSerial
 
             JaiSerial = _jaiSerial.JaiSerial
             ClSerial = _clSerial.ClSerial

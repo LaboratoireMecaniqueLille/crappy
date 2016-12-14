@@ -4,7 +4,7 @@
 # print("Call your main application code here")
 
 # from . import technical
-from ._link import Link
-from ._metaCondition import MetaCondition
-from ._filter import Filter
-from ._PID import PID
+from _link import Link, link
+from _metaCondition import MetaCondition
+from _filter import Filter
+from _PID import PID

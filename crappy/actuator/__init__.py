@@ -25,18 +25,18 @@ if platform.system() == "Linux":
     except Exception as e:
         import_error(e.message)
 
-from ._biaxeActuator import BiaxeActuator
-from ._biotensActuator import BiotensActuator
-from ._PIActuator import PIActuator
-from ._CMdriveActuator import CmDriveActuator
-from ._dummyActuator import DummyActuator
+from _biaxeActuator import BiaxeActuator
+from _biotensActuator import BiotensActuator
+from _PIActuator import PIActuator
+from _CMdriveActuator import CmDriveActuator
+from _dummyActuator import DummyActuator
 try:
     from ._labJackActuator import LabJackActuator
 except Exception as e:
     import_error(e.message)
 from _lal300Actuator import Lal300Actuator, ActuatorLal300
 
-from ._variateurTriboActuator import VariateurTriboActuator
+from _variateurTriboActuator import VariateurTriboActuator
 
 try:
     from _daqmxActuator import DaqmxActuator
