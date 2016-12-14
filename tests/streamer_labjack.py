@@ -1,10 +1,11 @@
 from time import time, sleep
-from crappy2.blocks import MasterBlock, Grapher, Saver, MeasureByStep, Streamer, Compacter, StreamerComedi
-from crappy2.sensor import LabJackSensor, ComediSensor
-from crappy2.links import Link
+from crappy.blocks import MasterBlock, Grapher, Saver, MeasureByStep, Streamer, Compacter, StreamerComedi
+from crappy.sensor import LabJackSensor, ComediSensor
+from crappy.links import Link
+import crappy
 import random
-from crappy2.technical import DataPicker
-import crappy2
+from crappy.technical import DataPicker
+import crappy
 
 import signal
 import os
@@ -12,17 +13,17 @@ import os
 def loop1(scan_rate, scan_per_read):
     MasterBlock.instances = []  # Init masterblock instances
 
-    stream = 0
+    stream = 1
     try:
         # graph = Grapher(zip(4 * ['time(sec)'], stream.labels, length=0)
+        dico = {'mode': "streamer", 'scan_rate_per_channel': scan_rate, 'scans_per_read': scan_per_read, 'channels': [0, 1]}
         if stream:
-            # sensor = LabJackSensor(mode="streamer", scan_rate_per_channel=scan_rate, scans_per_read=scan_per_read,
-            #                        channels=[0])
-            sensor = crappy2.sensor.DummySensor(channels=[0, 1])
-            stream = Streamer(sensor=sensor)
+            # sensor = crappy.technical.LabJack(sensor=dico)
+            sensor = crappy.sensor.LabJackSensor(mode="streamer", gain=1, offset=0)
+            # sensor = crappy.sensor.DummySensor(channels=[0, 1])
+            stream = Streamer(sensor=sensor, labels=['t', 'toto'])
             # graph = Grapher(zip(['time(sec)'], stream.labels[1:]), length=1)
             # compacter = Compacter(50)
-
             link1 = Link()
             # Link_to_compacter = Link()
             # save = Saver()

@@ -12,8 +12,6 @@
 # @date 13/07/2016
 
 from _meta import MasterBlock
-import time
-# import pandas as pd
 from collections import OrderedDict
 from ..links._link import TimeoutError
 from os import getpid
