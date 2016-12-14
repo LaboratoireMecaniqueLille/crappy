@@ -6,7 +6,7 @@
 # @{
 
 ## @file _padplt.py
-# @brief The padplot receives data from thermocouples then plots it on a drawing.
+# @brief The canvas receives data from thermocouples then plots it on a drawing.
 #
 # @author François Bari
 # @version 0.1
@@ -40,26 +40,38 @@ class CanvasDrawing(MasterBlock):
     def __init__(self, colormap='coolwarm', *args, **kwargs):
 
         super(CanvasDrawing, self).__init__()
+        self.mode = kwargs.get('mode', 'tribo')
         space_list = [0, 40]
-        self.pad = {
-            'T1': [(185 + space, 430) for space in space_list],  # T1
-            'T2': [(145 + space, 320) for space in space_list],  # T2
-            'T3': [(105 + space, 220) for space in space_list],  # T4
-            'T4': [(720 + space, 370) for space in space_list],  # T5
-            'T5': [(720 + space, 250) for space in space_list],  # T6
-            'T6': [(720 + space, 125) for space in space_list],  # T7
-            'T7': [(1220 + space, 410) for space in space_list],  # T8
-            'T8': [(1260 + space, 320) for space in space_list],  # T9
-            'T9': [(1300 + space, 230) for space in space_list],
-            'T_disc': [(85 + space, 800) for space in space_list],
-            'T_pad': [(85 + space, 880) for space in space_list],
-        }
+        if self.mode == 'tribo':
+            self.pad = {
+                'T1': [(185 + space, 430) for space in space_list],  # T1
+                'T2': [(145 + space, 320) for space in space_list],  # T2
+                'T3': [(105 + space, 220) for space in space_list],  # T4
+                'T4': [(720 + space, 370) for space in space_list],  # T5
+                'T5': [(720 + space, 250) for space in space_list],  # T6
+                'T6': [(720 + space, 125) for space in space_list],  # T7
+                'T7': [(1220 + space, 410) for space in space_list],  # T8
+                'T8': [(1260 + space, 320) for space in space_list],  # T9
+                'T9': [(1300 + space, 230) for space in space_list],
+                'T_disc': [(85 + space, 800) for space in space_list],
+                'T_pad': [(85 + space, 880) for space in space_list],
+            }
+
+        if self.mode == 'selfheating':
+            self.pad = {
+                'Tup': [(250 + space, 190) for space in space_list],  # T1
+                'Tdown': [(250 + space, 470) for space in space_list],  # T2
+                'Tspecimen': [(250 + space, 337) for space in space_list],  # T4
+                'Tair': [(500 + space, 400) for space in space_list],  # T5
+                'Tdowner': [(250 + space, 590) for space in space_list],  # T5
+                'Tupper': [(250 + space, 60) for space in space_list]  # T5
+            }
         self.thermocouples_list = self.pad.keys()
-        print self.thermocouples_list
+
         # Optional parameters
         self.cmap_color = kwargs.get("cmap_color", 'coolwarm')
         self.bg_image = kwargs.get("bg_image")
-        self.colormap_range = kwargs.get("colormap_range", [20, 100])
+        self.colormap_range = kwargs.get("colormap_range", [20, 40])
         self.figure_title = kwargs.get("figure_title", 'Canvas')
         self.window_pos = kwargs.get("window_pos")
         self.window_size = kwargs.get("window_size")
@@ -103,7 +115,7 @@ class CanvasDrawing(MasterBlock):
             texts[i].set_color(cm.coolwarm(np.mean(temp_normalized[i])))
 
     def main(self):
-        print "Padplot / main loop: PID", os.getpid()
+        print "Canvas / main loop: PID", os.getpid()
         try:
             fig, ax = plt.subplots(figsize=self.window_size)  # note we must use plt.subplots, not plt.subplot
             image = ax.imshow(plt.imread(self.bg_image), cmap=cm.coolwarm)
