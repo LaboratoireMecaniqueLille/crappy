@@ -83,7 +83,7 @@ class _CameraInit:
                     xi.CAP_PROP_XI_DATA_FORMAT) == 6:
                 self.x = np.arange(0, 1024, 4)
         else:
-            self.x = np.arange(0, 1024, 4)
+            self.x = np.arange(0, 256, 4)
 
         hist = np.ones(np.shape(self.x))
         frame = self.cam.get_image()

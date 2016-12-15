@@ -27,7 +27,10 @@ class CameraDisplayer(MasterBlock):
 
     def __init__(self,framerate=5,cv=True,title='Displayer'):
         super(CameraDisplayer, self).__init__()
-        self.delay = 1./framerate # Framerate (fps)
+        if framerate is None:
+            self.delay = 0
+        else:
+            self.delay = 1./framerate # Framerate (fps)
         self.cv = cv
         self.title = title
         print "cameraDisplayer!"
