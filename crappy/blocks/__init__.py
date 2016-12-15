@@ -21,6 +21,8 @@ import platform
 from .._warnings import import_error
 
 e = None
+not_imported = []
+
 
 if platform.system() == "Linux":
     from _commandComedi import CommandComedi
@@ -43,24 +45,13 @@ from _reader import Reader
 from _saver import Saver
 from _server import Server
 from _client import Client
-# from _signalAdapter import SignalAdapter
 from _signalGenerator import SignalGenerator
 from _canvasdrawing import CanvasDrawing
 from _fakeCamera import FakeCamera
 from _sink import Sink
-
-try:
-    from _streamerCamera import StreamerCamera
-except Exception as e:
-    import_error(e.message)
-
+from _videoExtenso import VideoExtenso
+from _streamerCamera import StreamerCamera
 from _streamer import Streamer
-
-try:
-    from _videoExtenso import VideoExtenso
-except Exception as e:
-    import_error(e.message)
-
 from _sendPath import InterfaceSendPath
 from _saverTriggered import SaverTriggered
 from _interfaceTribo import InterfaceTribo
