@@ -15,7 +15,7 @@ import os
 import time
 from multiprocessing import connection, Process
 
-from _meta import MasterBlock
+from _masterblock import MasterBlock
 
 
 # def recv_wrapper(f, output_, conn):

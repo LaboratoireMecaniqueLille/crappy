@@ -11,7 +11,7 @@
 # @version 0.2
 # @date 13/08/2016
 
-from _meta import MasterBlock
+from _masterblock import MasterBlock
 import os
 import numpy as np
 import datetime

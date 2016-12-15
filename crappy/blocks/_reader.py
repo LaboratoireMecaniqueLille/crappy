@@ -12,7 +12,7 @@
 # @version 0.1
 # @date 13/07/2016
 
-from _meta import MasterBlock
+from _masterblock import MasterBlock
 import time
 import os
 

@@ -12,7 +12,7 @@
 # @version 0.1
 # @date 11/07/2016
 
-from _meta import MasterBlock, delay
+from _masterblock import MasterBlock, delay
 import time
 import os
 from collections import OrderedDict

@@ -5,7 +5,7 @@ import numpy as np
 import crappy
 import pandas as pd
 
-# crappy.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
+# crappy.blocks._masterblock.MasterBlock.instances=[] # Init masterblock instances
 
 surface = 110.74 * 10 ** (-6)
 rmoy = ((25 + 22) * 10 ** (-3)) / 2

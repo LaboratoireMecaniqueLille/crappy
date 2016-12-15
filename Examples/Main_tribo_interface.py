@@ -125,10 +125,10 @@ try:
 	saver.add_input(linkRecordDataPath)
 
 	
-	for instance in crappy.blocks._meta.MasterBlock.instances:
+	for instance in crappy.blocks._masterblock.MasterBlock.instances:
 		instance.t0 = t0
 		
-	for instance in crappy.blocks._meta.MasterBlock.instances:
+	for instance in crappy.blocks._masterblock.MasterBlock.instances:
 		instance.start()
 	root = Tix.Tk()
 	interface=crappy.blocks.InterfaceTribo(root,VariateurTribo,labjack,labjack_hydrau,conditioners)#,link5,link6)
@@ -160,7 +160,7 @@ except KeyboardInterrupt:
 	labjack.close()
 	time.sleep(0.1)
 	VariateurTribo.close()
-	for instance in crappy.blocks._meta.MasterBlock.instances:
+	for instance in crappy.blocks._masterblock.MasterBlock.instances:
 		instance.stop()
 except Exception as e:
 	print e

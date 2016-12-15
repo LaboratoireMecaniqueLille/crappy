@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 import time
-from blocks._meta import MasterBlock
+from blocks._masterblock import MasterBlock
 
 def start(verbose=True):
   if verbose:

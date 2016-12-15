@@ -286,7 +286,7 @@ try:
 
 except (Exception, KeyboardInterrupt) as e:
     print "Exception in main :", e
-    # for instance in crappy.blocks._meta.MasterBlock.instances:
+    # for instance in crappy.blocks._masterblock.MasterBlock.instances:
     # instance.join()
     for instance in crappy.blocks.MasterBlock.instances:
         try:

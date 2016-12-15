@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import crappy
 
-crappy.blocks._meta.MasterBlock.instances = []  # Init masterblock instances
+crappy.blocks._masterblock.MasterBlock.instances = []  # Init masterblock instances
 
 
 # class condition_def(
@@ -220,7 +220,7 @@ try:
 
 except (Exception, KeyboardInterrupt) as e:
     print "Exception in main :", e
-    # for instance in crappy.blocks._meta.MasterBlock.instances:
+    # for instance in crappy.blocks._masterblock.MasterBlock.instances:
     # instance.join()
     for instance in crappy.blocks.MasterBlock.instances:
         try:

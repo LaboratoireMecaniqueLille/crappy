@@ -64,7 +64,7 @@ def eval_offset(device, duration):
 # TEMPERATURES
 
 sensor_thermocouples = crappy.technical.LabJack(sensor={'channels': [0, 1, 2, 3, 4, 5], 'mode': 'thermocouple',
-                                                        'resolution': 12, 'identifier': '470012790'})
+                                                        'resolution': 8}) # 'identifier': '470012790'
 
 labels = ['t(s)', 'Tdown', 'Tup', 'Tspecimen', 'Tair', 'Tdowner', 'Tupper']
 measures_temperatures = crappy.blocks.MeasureByStep(sensor_thermocouples,
@@ -78,22 +78,11 @@ saver_temperatures = crappy.blocks.Saver(directory + 'Temperatures.csv', stamp='
 grapher_temperatures = crappy.blocks.Grapher([('t(s)', x) for x in labels[1:]], length=100)
 canvas = crappy.blocks.CanvasDrawing(mode='selfheating', bg_image=os.path.realpath('../data/mors_ttc.png'), colormap_range=[25, 40])
 # Links
-out_measurebystep_temperatures = crappy.links.Link(name='from_measurebystep_temperatures', condition=ConditionCalib())
 
-out_compacter_temperatures1 = crappy.links.Link(name='from_compacter_temperatures1')
-out_compacter_temperatures2 = crappy.links.Link(name='from_compacter_temperatures2')
-out_compacter_temperatures3 = crappy.links.Link(name='from_compacter_temperatures3')
-
-measures_temperatures.add_output(out_measurebystep_temperatures)
-compacter_temperatures.add_input(out_measurebystep_temperatures)
-
-compacter_temperatures.add_output(out_compacter_temperatures1)
-compacter_temperatures.add_output(out_compacter_temperatures2)
-compacter_temperatures.add_output(out_compacter_temperatures3)
-
-saver_temperatures.add_input(out_compacter_temperatures1)
-grapher_temperatures.add_input(out_compacter_temperatures2)
-canvas.add_input(out_compacter_temperatures3)
+crappy.link(measures_temperatures, compacter_temperatures, condition=ConditionCalib())
+crappy.link(compacter_temperatures, saver_temperatures)
+crappy.link(compacter_temperatures, grapher_temperatures)
+crappy.link(compacter_temperatures, canvas)
 
 # INSTRON
 
@@ -128,20 +117,4 @@ canvas.add_input(out_compacter_temperatures3)
 
 # Starting objects
 
-t0 = time.time()
-try:
-
-    for instance in crappy.blocks.MasterBlock.instances:
-        instance.t0 = t0
-
-    for instance in crappy.blocks.MasterBlock.instances:
-        instance.start()
-
-except KeyboardInterrupt:
-    for instance in crappy.blocks.MasterBlock.instances:
-        instance.stop()
-
-# except Exception:
-#     for instance in crappy.blocks.MasterBlock.instances:
-#         instance.stop()
-#     raise
+crappy.start()

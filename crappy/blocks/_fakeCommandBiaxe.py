@@ -1,5 +1,5 @@
 # coding: utf-8
-#from _meta import MasterBlock
+#from _masterblock import MasterBlock
 #import numpy as np
 #import cv2
 #import SimpleITK as sitk

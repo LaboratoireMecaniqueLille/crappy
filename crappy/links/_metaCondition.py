@@ -21,7 +21,7 @@ class MetaCondition:
     def __init__(self):
         pass
 
-    __metaclass__ = abc.ABCMeta
+    __masterblockclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def evaluate(self):

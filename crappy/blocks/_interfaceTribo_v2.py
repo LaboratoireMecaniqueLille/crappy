@@ -3,7 +3,7 @@ import Tix
 from Tkinter import *
 import time
 import tkFileDialog
-from _meta import MasterBlock
+from _masterblock import MasterBlock
 import tkMessageBox
 import threading
 import math

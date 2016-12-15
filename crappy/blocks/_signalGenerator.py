@@ -11,7 +11,7 @@
 # @version 0.1
 # @date 18/07/2016
 
-from _meta import MasterBlock, delay
+from _masterblock import MasterBlock, delay
 import numpy as np
 import time
 import pandas as pd

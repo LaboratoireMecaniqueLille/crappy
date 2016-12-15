@@ -5,7 +5,7 @@ import os
 import time
 import tkFont
 import tkFileDialog
-from _meta import MasterBlock
+from _masterblock import MasterBlock
 import Tkinter
 import tkMessageBox
 import threading

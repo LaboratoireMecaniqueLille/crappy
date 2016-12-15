@@ -1,5 +1,5 @@
 # coding: utf-8
-from _meta import MasterBlock
+from _masterblock import MasterBlock
 import os
 import numpy as np
 import time
@@ -25,7 +25,6 @@ class SaverTriggered(MasterBlock):
         first = True
         while True:
             try:
-                # data=self.inputs[0].recv()
                 if self.inputs[1].recv(blocking = False) != None:
 		    self.log_file = self.inputs[1].recv()
 		    print self.log_file

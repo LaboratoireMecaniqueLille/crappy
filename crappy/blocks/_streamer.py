@@ -11,7 +11,7 @@
 # @version 0.1
 # @date 13/07/2016
 
-from _meta import MasterBlock
+from _masterblock import MasterBlock
 from collections import OrderedDict
 from ..links._link import TimeoutError
 from os import getpid

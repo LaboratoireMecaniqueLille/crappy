@@ -18,7 +18,7 @@ import SimpleITK as sitk  # only for testing
 import os
 from multiprocessing import Process, Pipe
 
-from ._meta import MasterBlock
+from ._masterblock import MasterBlock
 
 np.set_printoptions(threshold='nan', linewidth=500)
 from ..links._link import TimeoutError

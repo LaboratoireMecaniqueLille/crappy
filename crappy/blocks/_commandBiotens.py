@@ -12,7 +12,7 @@
 # @version 0.1
 # @date 11/07/2016
 
-from _meta import MasterBlock
+from _masterblock import MasterBlock
 import time
 # import pandas as pd
 from collections import OrderedDict

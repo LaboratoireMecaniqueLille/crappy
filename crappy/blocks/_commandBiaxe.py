@@ -1,5 +1,5 @@
 # coding: utf-8
-from _meta import MasterBlock
+from _masterblock import MasterBlock
 ##  @addtogroup blocks
 # @{
 

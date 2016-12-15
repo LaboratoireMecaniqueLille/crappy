@@ -107,7 +107,7 @@ if __name__ == '__main__':
         # graph_extenso.add_input(link5)
 
         # Starting objects
-        # print "top :",crappy.blocks._meta.MasterBlock.instances
+        # print "top :",crappy.blocks._masterblock.MasterBlock.instances
         t0 = time.time()
         for instance in crappy.blocks.MasterBlock.instances:
             instance.t0 = t0

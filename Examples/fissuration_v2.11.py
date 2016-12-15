@@ -347,7 +347,7 @@ except (Exception, KeyboardInterrupt) as e:
     lineno = tb.tb_lineno
     print exc_type, exc_obj, tb
     print "Exception in PathGenerator %s: %s line %s" % (os.getpid(), e, lineno)
-    # for instance in crappy.blocks._meta.MasterBlock.instances:
+    # for instance in crappy.blocks._masterblock.MasterBlock.instances:
     # instance.join()
     for instance in crappy.blocks.MasterBlock.instances:
         try:

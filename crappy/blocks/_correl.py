@@ -1,4 +1,4 @@
-from ._meta import MasterBlock
+from ._masterblock import MasterBlock
 from ..technical._correl import TechCorrel
 from ..technical import DataPicker
 from collections import OrderedDict
