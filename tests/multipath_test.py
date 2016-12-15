@@ -2,7 +2,7 @@ import time
 import numpy as np
 import crappy2
 import pandas as pd
-crappy2.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
+crappy2.blocks._masterblock.MasterBlock.instances=[] # Init masterblock instances
 
 
 
@@ -166,10 +166,10 @@ if __name__ == '__main__':
 	########################################### Starting objects
 	
 		t0=time.time()
-		for instance in crappy2.blocks._meta.MasterBlock.instances:
+		for instance in crappy2.blocks._masterblock.MasterBlock.instances:
 			instance.t0(t0)
 			
-		for instance in crappy2.blocks._meta.MasterBlock.instances:
+		for instance in crappy2.blocks._masterblock.MasterBlock.instances:
 			instance.start()
 
 	########################################### Waiting for execution
@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
 	except (Exception,KeyboardInterrupt) as e:
 		print "Exception in main :", e
-		for instance in crappy2.blocks._meta.MasterBlock.instances:
+		for instance in crappy2.blocks._masterblock.MasterBlock.instances:
 			try:
 				instance.stop()
 				print "instance stopped : ", instance

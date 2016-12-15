@@ -1,7 +1,7 @@
 import time
 import numpy as np
 import crappy2
-crappy2.blocks._meta.MasterBlock.instances=[] # Init masterblock instances
+crappy2.blocks._masterblock.MasterBlock.instances=[] # Init masterblock instances
 
 #class condition_sub(crappy2.links.MetaCondition):
 	#def __init__(self):
@@ -157,10 +157,10 @@ try:
 	#graph3.add_input(link7)
 ########################################### Starting objects
 	t0=time.time()
-	for instance in crappy2.blocks._meta.MasterBlock.instances:
+	for instance in crappy2.blocks._masterblock.MasterBlock.instances:
 		instance.t0(t0)
 		
-	for instance in crappy2.blocks._meta.MasterBlock.instances:
+	for instance in crappy2.blocks._masterblock.MasterBlock.instances:
 		instance.start()
 
 ########################################### Waiting for execution
@@ -172,5 +172,5 @@ try:
 		#instance.stop()
 
 except KeyboardInterrupt:
-	for instance in crappy2.blocks._meta.MasterBlock.instances:
+	for instance in crappy2.blocks._masterblock.MasterBlock.instances:
 		instance.stop()
