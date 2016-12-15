@@ -110,7 +110,6 @@ class MasterBlock(object):
         """
         try:
             self.proc.start()
-
         except KeyboardInterrupt:
             self.proc.terminate()
             self.proc.join()
@@ -128,8 +127,11 @@ class MasterBlock(object):
         """
         Stops the process.
         """
-        self.proc.terminate()
-        # self.proc.join()
+        try:
+            self.proc.terminate()
+            self.proc.join()
+        except:
+            pass
 
     @property
     def t0(self):
