@@ -9,7 +9,7 @@ https://github.com/pypa/sampleproject
 from setuptools import find_packages, __version__
 # To use a consistent encoding
 from codecs import open
-from os import path, popen, system
+from os import path, popen, system, listdir
 from distutils.core import setup, Extension
 import platform
 
@@ -171,7 +171,8 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    data_files=[('crappy/data',['data/kernels.cu'])]
+    #data_files=[('crappy/data',['data/kernels.cu'])]
+    data_files = [('crappy/data',['data/'+s for s in listdir('data')])]
     # package_data={
     # 'sample': ['package_data.dat'],
     # },
