@@ -25,7 +25,7 @@ def start(verbose=True):
     vprint("All blocks are started.")
   except (Exception, KeyboardInterrupt) as e:
     print("Exception in main :", e)
-    for instance in crappy.blocks.MasterBlock.instances:
+    for instance in MasterBlock.instances:
       try:
         instance.stop()
       except Exception as e:
