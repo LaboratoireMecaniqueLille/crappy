@@ -16,7 +16,7 @@ See ``DESCRIPTION.rst`` for a more complete description.
 Installation
 ------------
 
-Only tested on Ubuntu 14.04 / 15.1 :
+Only tested on Ubuntu 14.04 / 15.10 / 16.04:
 
        git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
        
@@ -32,7 +32,7 @@ The documentation is generated with doxywizard:
 
 Please install doxygen and pluggins as follow:
 
-sudo apt-get install doxygen doxyge-gui
+sudo apt-get install doxygen doxygen-gui
 sudo apt-get instal doxypy
 
 Then, download and install the doxypypy project.
