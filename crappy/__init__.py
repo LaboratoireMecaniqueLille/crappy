@@ -9,3 +9,4 @@ link = links.link
 from _warnings import deprecated, import_error
 from __version__ import __version__
 from _start import start
+from _stop import stop

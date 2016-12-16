@@ -129,7 +129,7 @@ class MasterBlock(object):
         Stops the process.
         """
         self.proc.terminate()
-        # self.proc.join()
+        self.proc.join()
 
     @property
     def t0(self):
