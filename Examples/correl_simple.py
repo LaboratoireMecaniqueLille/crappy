@@ -1,18 +1,19 @@
 import crappy
 #import crappy
-from time import time
+from time import time,sleep
 import numpy as np
 
 
-x=2048
-y=2048
 
 
 
-
+"""
 camera = crappy.blocks.StreamerCamera("Ximea", numdevice=0, freq=20,
                                 save=False,save_directory="/home/vic/outTest/",
                                 xoffset=0, yoffset=0, width=x, height=y)
+"""
+camera = crappy.blocks.StreamerCamera("webcam")
+x,y = 640,480
 graph = crappy.blocks.Grapher(('t','x'),('t','y'),('t','r'),length=50)
 # Creating the correl block
 correl = crappy.blocks.Correl((y,x),fields=['x','y','r']) # Rigid body
@@ -35,15 +36,6 @@ graph.add_input(lComp2Graph)
 correl.init() # < -- DO NOT FORGET THIS !
 print "[Main program] Ready to go !"
 
-t0 = time()
-for i in crappy.blocks.MasterBlock.instances:
-  i.t0 = t0
-try:
-  for i in crappy.blocks.MasterBlock.instances:
-    i.start()
-except Exception as e:
-  print "[Main program] Caught an exception:",e
-  for i in crappy.blocks.MasterBlock.instances:
-    print i
-    i.stop()
-  raise
+crappy.start()
+sleep(10)
+crappy.stop()
