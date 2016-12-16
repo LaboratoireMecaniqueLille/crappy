@@ -24,7 +24,7 @@ class StreamerCamera(MasterBlock):
     """
 
     def __init__(self, camera, numdevice=0, freq=None, save=False, save_directory="./images/", label="cycle", xoffset=0,
-                 yoffset=0, width=2048, height=2048):
+                 yoffset=0, width=2048, height=2048,show_fps=False):
         """
         This block fetch images from a camera object, can save and/or transmit them to another block.
 
@@ -74,6 +74,7 @@ class StreamerCamera(MasterBlock):
         self.yoffset = self.camera.y_offset
         self.exposure = self.camera.exposure
         self.gain = self.camera.gain
+        self.show_fps = show_fps
         if not os.path.exists(self.save_directory) and self.save:
             os.makedirs(self.save_directory)
 
@@ -82,9 +83,16 @@ class StreamerCamera(MasterBlock):
         self.camera.sensor.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset, self.gain)
         trigger = "internal" if len(self.inputs) == 0 else "external"
         timer = time.time()
+        fps_timer = timer
+        loops = 0
         try:
             print "start :", time.time() - self.t0
             while True:
+                loops += 1
+                if self.show_fps and timer-fps_timer > 2:
+                    print "[StreamerCamera] FPS:",loops/(timer-fps_timer)
+                    fps_timer = timer
+                    loops = 0
                 if trigger == "internal":
                     if self.freq is not None:
                         while time.time() - timer < 1. / self.freq:
