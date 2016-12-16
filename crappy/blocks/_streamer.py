@@ -45,8 +45,9 @@ class Streamer(MasterBlock):
     self.labels = labels if labels else ['time(sec)'] + self.sensor.channels
     self.averaging = kwargs.get('mean', None)
 
-    global queue
-    queue = Queue(2)
+    if type(self.sensor).__name__ == 'LabJack':
+      global queue
+      queue = Queue(2)
 
   def time_vector(self):
     """
@@ -69,42 +70,46 @@ class Streamer(MasterBlock):
           queue.get_nowait()
         break
 
+  def reshape(self, nparray, n):
+    reshaped = []
+    for length in xrange(np.shape(nparray)[1] / n):
+      reshaped.append(np.mean(nparray[:, length * n: int((length + 1 - 1 / float(n)) * n)], axis=1).tolist())
+    return np.array(reshaped).transpose()
+
+  def get_stream_from_labjack(self):
+    results = []
+    retrieved = self.sensor.get_stream()[1]
+    deinterlaced = np.array([retrieved[each::self.sensor.nb_channels]
+                             for each in xrange(self.sensor.nb_channels)])
+    if self.averaging:
+      deinterlaced = self.reshape(deinterlaced, self.averaging)
+
+    for each in xrange(self.sensor.nb_channels):
+      liste_temp = self.sensor.gain[each] * deinterlaced[each] + self.sensor.offset[each]
+      results.append(liste_temp.tolist())
+    results.insert(0, queue.get())
+    return results
+
   def main(self):
     """
     Main loop of the streamer program.
     """
-    print "Streamer / main loop: PID", getpid()
 
-    def reshape(nparray, n):
-      reshaped = []
-      for length in xrange(np.shape(nparray)[1] / n):
-        reshaped.append(np.mean(nparray[:, length * n: int((length + 1 - 1 / float(n)) * n)], axis=1).tolist())
-      return np.array(reshaped).transpose()
-
-    time_vector_process = Process(target=self.time_vector)
     try:
       self.sensor.start_stream()
-      time_vector_process.start()
-      while True:
-        results = []
-        retrieved = self.sensor.get_stream()[1]
-        deinterlaced = np.array([retrieved[each::self.sensor.nb_channels]
-                                 for each in xrange(self.sensor.nb_channels)])
-        if self.averaging:
-          deinterlaced = reshape(deinterlaced, self.averaging)
-
-        for each in xrange(self.sensor.nb_channels):
-          liste_temp = self.sensor.gain[each] * deinterlaced[each] + self.sensor.offset[each]
-          results.append(liste_temp.tolist())
-        results.insert(0, queue.get())
-        array = OrderedDict(zip(self.labels, results))
-        try:
-          for output in self.outputs:
-            output.send(array)
-        except TimeoutError:
-          raise
-        except AttributeError:  # if no outputs
-          raise
+      if type(self.sensor).__name__ == 'LabJack':
+        time_vector_process = Process(target=self.time_vector)
+        time_vector_process.start()
+        while True:
+          results = self.get_stream_from_labjack()
+          array = OrderedDict(zip(self.labels, results))
+          try:
+            for output in self.outputs:
+              output.send(array)
+          except TimeoutError:
+            raise
+          except AttributeError:  # if no outputs
+            raise
     except KeyboardInterrupt:
       pass
     except Exception:
