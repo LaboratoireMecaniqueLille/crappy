@@ -17,6 +17,7 @@ from ..links._link import TimeoutError
 from os import getpid
 import numpy as np
 from multiprocessing import Process, Queue
+from time import sleep
 
 
 class Streamer(MasterBlock):
@@ -48,6 +49,8 @@ class Streamer(MasterBlock):
     if type(self.sensor).__name__ == 'LabJack':
       global queue
       queue = Queue(2)
+    elif type(self.sensor).__name__ == 'OpenDAQ':
+      self.current_length = 0.
 
   def time_vector(self):
     """
@@ -90,6 +93,28 @@ class Streamer(MasterBlock):
     results.insert(0, queue.get())
     return results
 
+  def get_stream_from_opendaq(self):
+    retrieved = self.sensor.get_stream()
+    if self.averaging:
+      retrieved = self.reshape(retrieved, self.averaging)
+    nb_points = len(retrieved) if not self.averaging else len(retrieved) / self.averaging
+    time_vector = np.linspace(start=self.current_length, stop=self.current_length + nb_points / 1000., num=nb_points,
+                              endpoint=False)
+    self.current_length += nb_points / 1000.
+    time_vector = np.around(time_vector, 5).tolist()
+    # print 'time vector:', time_vector[:5], time_vector[-5:]
+    # print 'length time vector: %d length retrieved: %d', len(time_vector), len(retrieved)
+    return [time_vector[:5], retrieved[:5]]
+
+  def send(self, array):
+    try:
+      for output in self.outputs:
+        output.send(array)
+    except TimeoutError:
+      raise
+    except AttributeError:  # if no outputs
+      raise
+
   def main(self):
     """
     Main loop of the streamer program.
@@ -103,13 +128,15 @@ class Streamer(MasterBlock):
         while True:
           results = self.get_stream_from_labjack()
           array = OrderedDict(zip(self.labels, results))
-          try:
-            for output in self.outputs:
-              output.send(array)
-          except TimeoutError:
-            raise
-          except AttributeError:  # if no outputs
-            raise
+          self.send(array)
+      elif type(self.sensor).__name__ == 'OpenDAQ':
+        while True:
+          sleep(0.1)
+          results = self.get_stream_from_opendaq()
+          array = OrderedDict(zip(self.labels, results))
+          self.send(array)
+
+
     except KeyboardInterrupt:
       pass
     except Exception:
