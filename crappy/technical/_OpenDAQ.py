@@ -1,5 +1,5 @@
 from opendaq import DAQ
-from time import time
+from time import time, sleep
 from ._meta import io
 from operator import itemgetter
 
@@ -26,6 +26,7 @@ class OpenDAQ(io.Control_Command):
     self.input_nsamples_per_read = kwargs.get('nsamples', 20)  # possible values : 0..254
     self.negative_channel = kwargs.get('negative_channel', 0)
     self.mode = kwargs.get('mode', 'single')
+    self.sample_rate = kwargs.get('sample_rate', 100)
     self.new()
     if self.mode == 'streamer':
       self.init_stream()
@@ -34,7 +35,10 @@ class OpenDAQ(io.Control_Command):
       self.getter = itemgetter(*self.channels)
 
   def new(self):
-    self.handle = DAQ("/dev/ttyUSB0")
+    try:
+      self.handle = DAQ("/dev/ttyUSB0")
+    except:
+      self.handle = DAQ("/dev/ttyUSB1")
     if self.nchannels == 1 and self.mode == 'single':
       self.handle.conf_adc(pinput=self.channels, ninput=self.negative_channel, gain=self.input_gain,
                            nsamples=self.input_nsamples_per_read)
@@ -42,27 +46,43 @@ class OpenDAQ(io.Control_Command):
   def init_stream(self):
     # self.stream_exp_list = []
     # for index in self.channels:
+    # Modes 0:ANALOG_INPUT 1:ANALOG_OUTPUT 2:DIGITAL_INPUT 3:DIGITAL_OUTPUT 4:COUNTER_INPUT 5:CAPTURE_INPUT
     self.stream_exp = self.handle.create_stream(mode=0,
-                                                # 0:ANALOG_INPUT 1:ANALOG_OUTPUT 2:DIGITAL_INPUT 3:DIGITAL_OUTPUT 4:COUNTER_INPUT 5:CAPTURE_INPUT
                                                 period=1,
                                                 # 0:65536
-                                                npoints=0,
+                                                npoints=1,
                                                 # 0:65536
                                                 continuous=True,
                                                 buffersize=1000)
 
     self.stream_exp.analog_setup(pinput=self.channels, ninput=self.negative_channel, gain=self.input_gain,
-                                 nsamples=254)
+                                 nsamples=self.input_nsamples_per_read)
     # self.stream_exp_list.append(self.stream_exp)
+    self.generator = self.stream_grabber()
 
   def start_stream(self):
     self.handle.start()
 
+  def stream_grabber(self):
+    filling = []
+    while True:
+      try:
+        while len(filling) < self.sample_rate:
+          filling.extend(self.stream_exp.read())
+          sleep(0.001)
+        yield filling[:self.sample_rate]
+        del filling[:self.sample_rate]
+        print 'filling taille out:', len(filling)
+      except:
+        self.handle.close()
+        break
+
   def get_stream(self):
+    return self.generator.next()
+    # return self.stream_exp.read()
     # data = []
     # for index in xrange(self.nchannels):
     #   data[index] = self.stream_exp[index].read()
-    return self.stream_exp.read()
 
   def get_data(self, mock=None):
     if self.nchannels == 1:

@@ -17,7 +17,7 @@ from ..links._link import TimeoutError
 from os import getpid
 import numpy as np
 from multiprocessing import Process, Queue
-from time import sleep
+from time import sleep, time
 
 
 class Streamer(MasterBlock):
@@ -89,9 +89,10 @@ class Streamer(MasterBlock):
     Method to average data.
     """
     reshaped = []
+    print 'np shape nparray:', np.shape(nparray)
     for length in xrange(np.shape(nparray)[1] / n):
       reshaped.append(np.mean(nparray[:, length * n: int((length + 1 - 1 / float(n)) * n)], axis=1).tolist())
-    return np.array(reshaped).transpose()
+    return np.array(reshaped)
 
   def get_stream_from_labjack(self):
     """
@@ -104,7 +105,6 @@ class Streamer(MasterBlock):
     deinterlaced = np.array([retrieved[each::self.sensor.nb_channels] for each in xrange(self.sensor.nb_channels)])
     if self.mean:
       deinterlaced = self.reshape(deinterlaced, self.mean)
-
     for each in xrange(self.sensor.nb_channels):
       liste_temp = self.sensor.gain[each] * deinterlaced[each] + self.sensor.offset[each]  # Applying gain and offset
       results.append(liste_temp.tolist())
@@ -120,14 +120,18 @@ class Streamer(MasterBlock):
     Due to this behavior, we cannot predict the length of the list. Thus, the time_vector is reconstructed in serial
     after collecting the results.
     """
+    tinit = time()
     retrieved = self.sensor.get_stream()
-    if self.mean:
-      retrieved = self.reshape(retrieved, self.mean)
+    tfinal = 1 / 100.
 
-    nb_points = len(retrieved) if not self.mean else len(retrieved) / self.mean
-    time_vector = np.linspace(start=self.current_length, stop=self.current_length + nb_points / 1000., num=nb_points,
-                              endpoint=False)
-    self.current_length += nb_points / 1000.
+    if self.mean:
+      print 'before mean'
+      retrieved = self.reshape(retrieved, self.mean)
+      print 'after mean'
+
+    nb_points = len(retrieved) if not self.mean else len(retrieved) / float(self.mean)
+    time_vector = np.linspace(start=self.current_length, stop=self.current_length + tfinal, num=nb_points, endpoint=False)
+    self.current_length += tfinal
     time_vector = np.around(time_vector, 5).tolist()
     return [time_vector, retrieved]
 
@@ -156,7 +160,7 @@ class Streamer(MasterBlock):
 
       elif type(self.sensor).__name__ == 'OpenDAQ':
         while True:
-          sleep(0.1)
+          sleep(0.01)
           results = self.get_stream_from_opendaq()
           array = OrderedDict(zip(self.labels, results))
           self.send(array)
