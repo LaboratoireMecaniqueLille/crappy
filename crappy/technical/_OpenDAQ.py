@@ -72,7 +72,7 @@ class OpenDAQ(io.Control_Command):
           sleep(0.001)
         yield filling[:self.sample_rate]
         del filling[:self.sample_rate]
-        print 'filling taille out:', len(filling)
+        # print 'filling taille out:', len(filling)
       except:
         self.handle.close()
         break
