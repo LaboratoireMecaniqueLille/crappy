@@ -122,7 +122,6 @@ class Streamer(MasterBlock):
     """
     tinit = time()
     retrieved = self.sensor.get_stream()
-    tfinal = 1 / 100.
 
     if self.mean:
       print 'before mean'
@@ -130,8 +129,8 @@ class Streamer(MasterBlock):
       print 'after mean'
 
     nb_points = len(retrieved) if not self.mean else len(retrieved) / float(self.mean)
-    time_vector = np.linspace(start=self.current_length, stop=self.current_length + tfinal, num=nb_points, endpoint=False)
-    self.current_length += tfinal
+    time_vector = np.linspace(start=self.current_length, stop=self.current_length + 0.2, num=nb_points, endpoint=False)
+    self.current_length += 0.2
     time_vector = np.around(time_vector, 5).tolist()
     return [time_vector, retrieved]
 

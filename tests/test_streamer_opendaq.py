@@ -57,7 +57,7 @@ import numpy as np
 opendaq = crappy.technical.OpenDAQ(mode='streamer', channels=2, negative_channel=5, nsamples=254, sample_rate=200)
 streamer = crappy.blocks.Streamer(sensor=opendaq, labels=['time(sec)', '2'])
 grapher = crappy.blocks.Grapher(('time(sec)', '2'), length=50)
-saver = crappy.blocks.Saver('/home/francois/Code/A_Projects/015_tests/toto.csv')
+saver = crappy.blocks.Saver('/home/francois/Code/A_Projects/016_tests/fuka/oiureogy.csv', stamp='ouimonsieur')
 labjack = crappy.technical.LabJack(actuator={'channel': 'TDAC0'})
 
 crappy.link(in_block=streamer, out_block=grapher)
