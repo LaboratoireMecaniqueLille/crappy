@@ -380,7 +380,7 @@ class _CameraInit:
         self.cam.xoffset), int(self.cam.yoffset)
 
 
-def get_camera_config(cam, videoExtenso, send_pipe=None):
+def get_camera_config(cam, videoExtenso):
   """
   Function to open and configure a camera device.
   Args:
@@ -395,7 +395,7 @@ def get_camera_config(cam, videoExtenso, send_pipe=None):
     d.cam.close()
     print "data sent"
     plt.close()
-    send_pipe.send(d.get_configuration())
+    return d.get_configuration()
   except Exception as e:
     print "error : ", e
     d.cam.close()
