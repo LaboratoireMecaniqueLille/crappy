@@ -25,88 +25,89 @@ from .._warnings import deprecated as deprecated
 # alpha = 1.05
 
 class BiaxeActuator(motion.MotionActuator):
-    """Declare a new axis for the Biaxe"""
-    def __init__(self, port='/dev/ttyUSB0', baudrate=38400, timeout=1, ser=None, **kwargs):
-        """
-        This class create an axis and opens the corresponding serial port.
+  """Declare a new axis for the Biaxe"""
 
-        Args:
-            port : str
-                    Path to the corresponding serial port, e.g '/dev/ttyS4'
-            baudrate : int, default = 38400
-                    Set the corresponding baud rate.
-            timeout : int or float, default = 1
-                    Serial timeout.
-        """
-        super(BiaxeActuator, self).__init__()
-        self.port = port
-        self.baudrate = baudrate
-        self.timeout = timeout
-        if 'baud_rate' in kwargs:
-            print 'WARNING: "baud_rate" keyword is deprecated, use "baudrate" instead'
-            self.baudrate = baudrate
+  def __init__(self, port='/dev/ttyUSB0', baudrate=38400, timeout=1, ser=None, **kwargs):
+    """
+    This class create an axis and opens the corresponding serial port.
 
-        if ser != None:
-            self.ser = ser
-        else:
-            self.ser = serial.Serial(self.port, self.baudrate,
-                                     serial.EIGHTBITS, serial.PARITY_EVEN
-                                     , serial.STOPBITS_ONE, self.timeout)
-            self.ser.write("OPMODE 0\r\n EN\r\n")
+    Args:
+        port : str
+                Path to the corresponding serial port, e.g '/dev/ttyS4'
+        baudrate : int, default = 38400
+                Set the corresponding baud rate.
+        timeout : int or float, default = 1
+                Serial timeout.
+    """
+    super(BiaxeActuator, self).__init__()
+    self.port = port
+    self.baudrate = baudrate
+    self.timeout = timeout
+    if 'baud_rate' in kwargs:
+      print 'WARNING: "baud_rate" keyword is deprecated, use "baudrate" instead'
+      self.baudrate = baudrate
 
-    def set_speed(self, speed):
-        """Re-define the speed of the motor. 1 = 0.002 mm/s"""
-        # here we should add the physical conversion for the speed
-        self.ser.write("J " + str(speed) + "\r\n")
+    if ser != None:
+      self.ser = ser
+    else:
+      self.ser = serial.Serial(self.port, self.baudrate,
+                               serial.EIGHTBITS, serial.PARITY_EVEN
+                               , serial.STOPBITS_ONE, self.timeout)
+      self.ser.write("OPMODE 0\r\n EN\r\n")
 
-    def set_position(self, position, speed, motion_type='relative'):
-        """
-        Go to a defined position with a defined speed.
+  def set_speed(self, speed):
+    """Re-define the speed of the motor. 1 = 0.002 mm/s"""
+    # here we should add the physical conversion for the speed
+    self.ser.write("J " + str(speed) + "\r\n")
 
-        \todo
-            - implement set_position, with eventually a motion_type mode
-              which can be 'relative' or 'absolute'. (from actual position or from zero).
-        """
-        pass
+  def set_position(self, position, speed, motion_type='relative'):
+    """
+    Go to a defined position with a defined speed.
 
-    def move_home(self):
-        """
-        Go to position zero.
+    \todo
+        - implement set_position, with eventually a motion_type mode
+          which can be 'relative' or 'absolute'. (from actual position or from zero).
+    """
+    pass
 
-        \todo
-            - implement move_home method: Go to the position zero.
-        """
-        pass
+  def move_home(self):
+    """
+    Go to position zero.
 
-    @deprecated(None, "serial port is now initialized in __init__")
-    def new(self):
-        """
-        Do nothing. Hold deprecated function, still here to assure compatibility.
+    \todo
+        - implement move_home method: Go to the position zero.
+    """
+    pass
 
-        \deprecated: serial port is now initialized in \_\_init\_\_
-        """
-        pass
+  @deprecated(None, "serial port is now initialized in __init__")
+  def new(self):
+    """
+    Do nothing. Hold deprecated function, still here to assure compatibility.
 
-    @deprecated(None, "replaced by close method in _biaxeTechnical")
-    def close_port(self):
-        """
-        Release the serial port.
+    \deprecated: serial port is now initialized in \_\_init\_\_
+    """
+    pass
 
-        \deprecated: replaced by close method in _biaxeTechnical.
-        Close the designated port
-        """
-        self.ser.close()
+  @deprecated(None, "replaced by close method in _biaxeTechnical")
+  def close_port(self):
+    """
+    Release the serial port.
 
-    @deprecated(None)
-    def CLRFAULT(self):
-        """
-        Reset errors
+    \deprecated: replaced by close method in _biaxeTechnical.
+    Close the designated port
+    """
+    self.ser.close()
 
-        \deprecated
-            This method is replaced by clear_errors defined in Biaxe (found in crappy.technical._biaxeTechnical)
-        """
-        self.ser.write("CLRFAULT\r\n")
-        self.ser.write("OPMODE 0\r\n EN\r\n")
+  @deprecated(None)
+  def CLRFAULT(self):
+    """
+    Reset errors
+
+    \deprecated
+        This method is replaced by clear_errors defined in Biaxe (found in crappy.technical._biaxeTechnical)
+    """
+    self.ser.write("CLRFAULT\r\n")
+    self.ser.write("OPMODE 0\r\n EN\r\n")
 
     # def protection_eprouvette(Vmax,*args):
     # This function aim to keep the sensor value at the same level as the initial level,

@@ -15,17 +15,18 @@ import abc
 
 
 class MetaCondition:
-    """
-    Metaclass for all Links conditions. Must implement the evaluate method.
-    """
-    def __init__(self):
-        pass
+  """
+  Metaclass for all Links conditions. Must implement the evaluate method.
+  """
 
-    __masterblockclass__ = abc.ABCMeta
+  def __init__(self):
+    pass
 
-    @abc.abstractmethod
-    def evaluate(self):
-        """
-        This method is called by the Links and must always be implemented.
-        """
-        pass
+  __masterblockclass__ = abc.ABCMeta
+
+  @abc.abstractmethod
+  def evaluate(self):
+    """
+    This method is called by the Links and must always be implemented.
+    """
+    pass

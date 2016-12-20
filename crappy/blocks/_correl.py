@@ -2,9 +2,9 @@ from ._masterblock import MasterBlock
 from ..technical._correl import TechCorrel
 from ..technical import DataPicker
 from collections import OrderedDict
-from time import time,sleep
+from time import time, sleep
 import numpy as np
-from multiprocessing import Process,Pipe
+from multiprocessing import Process, Pipe
 
 
 class Correl(MasterBlock):
@@ -30,11 +30,12 @@ class Correl(MasterBlock):
         can be long enough to fill a link and crash.
         Also, the correl block will not send any value before this init is over.
   """
-  def __init__(self,img_size,**kwargs):
+
+  def __init__(self, img_size, **kwargs):
     MasterBlock.__init__(self)
     self.ready = False
     self.Nfields = kwargs.get("Nfields")
-    self.verbose = kwargs.get("verbose",0)
+    self.verbose = kwargs.get("verbose", 0)
     if self.Nfields is None:
       try:
         self.Nfields = len(kwargs.get("fields"))
@@ -51,14 +52,14 @@ with fields=(.,.) or Nfields=k"
         self.labels += (kwargs.get("labels")[i],)
       # Else if we got a default field as a string,
       # use this string (ex: fields=('x','y','r','exx','eyy'))
-      elif kwargs.get("fields") is not None and\
-                                isinstance(kwargs.get("fields")[i],str):
+      elif kwargs.get("fields") is not None and \
+          isinstance(kwargs.get("fields")[i], str):
         self.labels += (kwargs.get("fields")[i],)
       # Custom field and no label given: name it by its position...
       else:
         self.labels += (str(i),)
 
-    #print "[Correl Block] output labels:",self.labels
+    # print "[Correl Block] output labels:",self.labels
     # We don't need to pass these arg to the TechCorrel class
     if kwargs.get("labels") is not None:
       del kwargs["labels"]
@@ -75,13 +76,13 @@ with fields=(.,.) or Nfields=k"
       self.labels += ("res",)
     else:
       self.res = False
-    pipeProcess,self.pipeClass = Pipe()
+    pipeProcess, self.pipeClass = Pipe()
     self.process = Process(target=self.main,
-                           args=(pipeProcess,img_size),kwargs=kwargs)
+                           args=(pipeProcess, img_size), kwargs=kwargs)
 
   def init(self):
     self.process.start()
-    self.pipeClass.recv() # Waiting for init to be over
+    self.pipeClass.recv()  # Waiting for init to be over
     self.ready = True
 
   def start(self):
@@ -91,22 +92,21 @@ call .init() before .start() JUST before starting all the blocks to \
 initialize it properly. This way, the program only starts when correl is \
 ready to process incoming data."
       self.init()
-    self.pipeClass.send(0) # Notify the process to let it start
+    self.pipeClass.send(0)  # Notify the process to let it start
 
   def stop(self):
     self.process.terminate()
 
-
-  def main(self,pipe,img_size,**kwargs):
+  def main(self, pipe, img_size, **kwargs):
     if self.drop:
       datapicker = DataPicker(self.inputs[0])
-    correl = TechCorrel(img_size,**kwargs)
-    pipe.send(0) # Sending signal to let init return
-    nLoops = 100 # For testing: resets the original images every nLoops loop
+    correl = TechCorrel(img_size, **kwargs)
+    pipe.send(0)  # Sending signal to let init return
+    nLoops = 100  # For testing: resets the original images every nLoops loop
     try:
-      pipe.recv() # Waiting for the actual start
-      #print "[Correl block] Got start signal !"
-      t2 = time()-1
+      pipe.recv()  # Waiting for the actual start
+      # print "[Correl block] Got start signal !"
+      t2 = time() - 1
       if self.drop:
         datapicker.get_data()
         data = datapicker.get_data().astype(np.float32)
@@ -122,9 +122,9 @@ ready to process incoming data."
       while True:
         t1 = time()
         if self.verbose:
-          print "[Correl block] processed",nLoops/(t1-t2),"ips"
-          print "[Correl block] Receiving images took",\
-                 (tr2-tr1)/(t1-t2)*100,"% of the time"
+          print "[Correl block] processed", nLoops / (t1 - t2), "ips"
+          print "[Correl block] Receiving images took", \
+            (tr2 - tr1) / (t1 - t2) * 100, "% of the time"
         t2 = t1
         tr1 = 0
         tr2 = 0
@@ -135,17 +135,17 @@ ready to process incoming data."
           else:
             data = self.inputs[0].recv()
           tr2 += time()
-          t = time()-self.t0
+          t = time() - self.t0
           correl.setImage(data.astype(np.float32))
-          out = [t]+correl.getDisp().tolist()
+          out = [t] + correl.getDisp().tolist()
           if self.res:
             out += [correl.getRes()]
-          Dout = OrderedDict(zip(self.labels,out))
+          Dout = OrderedDict(zip(self.labels, out))
           for o in self.outputs:
             o.send(Dout)
     except Exception as e:
-      print "Error in Correl",e
+      print "Error in Correl", e
       raise e
 
   def __repr__(self):
-    return "Correl block with"+str(self.levels)+"levels"
+    return "Correl block with" + str(self.levels) + "levels"

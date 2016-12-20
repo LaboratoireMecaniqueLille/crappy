@@ -23,10 +23,8 @@ from .._warnings import import_error
 e = None
 not_imported = []
 
-
 if platform.system() == "Linux":
-    from _commandComedi import CommandComedi
-
+  from _commandComedi import CommandComedi
 
 from _cameraDisplayer import CameraDisplayer
 from _commandBiaxe import CommandBiaxe
@@ -52,18 +50,18 @@ from _streamerCamera import StreamerCamera
 from _streamer import Streamer
 
 try:
-    from _videoExtenso import VideoExtenso
+  from _videoExtenso import VideoExtenso
 except Exception as e:
-    import_error(e.message)
+  import_error(e.message)
 
 from _saverTriggered import SaverTriggered
 from _interfaceTribo import InterfaceTribo
 from _lal300Command import CommandLal300
 
 try:
-    from ._correl import Correl
+  from ._correl import Correl
 except Exception as e:
-    import_error(e.message)
+  import_error(e.message)
 
 from _masterblock import MasterBlock
 from _commandCegitab import SerialPortActuator, SerialPortCaptor, PipeCegitab

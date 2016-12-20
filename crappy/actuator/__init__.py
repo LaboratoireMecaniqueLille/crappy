@@ -16,37 +16,36 @@
 import platform
 from .._warnings import import_error
 
-
 from ._meta import command, motion
+
 e = None
 if platform.system() == "Linux":
-    try:
-        from ._comediActuator import ComediActuator
-    except Exception as e:
-        import_error(e.message)
+  try:
+    from ._comediActuator import ComediActuator
+  except Exception as e:
+    import_error(e.message)
 
 from _biaxeActuator import BiaxeActuator
 from _biotensActuator import BiotensActuator
 from _PIActuator import PIActuator
 from _CMdriveActuator import CmDriveActuator
 from _dummyActuator import DummyActuator
+
 try:
-    from ._labJackActuator import LabJackActuator
+  from ._labJackActuator import LabJackActuator
 except Exception as e:
-    import_error(e.message)
+  import_error(e.message)
 from _lal300Actuator import Lal300Actuator, ActuatorLal300
 
 from _variateurTriboActuator import VariateurTriboActuator
 
 try:
-    from _daqmxActuator import DaqmxActuator
+  from _daqmxActuator import DaqmxActuator
 except Exception as e:
-    import_error(e.message)
+  import_error(e.message)
 try:
-    from _orientalActuator import OrientalActuator
+  from _orientalActuator import OrientalActuator
 except Exception as e:
-    import_error(e.message)
-
-
+  import_error(e.message)
 
 del platform, e, import_error

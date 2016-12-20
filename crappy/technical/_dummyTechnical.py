@@ -24,24 +24,24 @@ from ..actuator import OrientalActuator
 
 
 class DummyTechnical(motion.Motion):
-    """Dummy technical"""
+  """Dummy technical"""
 
-    def __init__(self, baudrate=115200, port='/dev/ttyUSB0', num_device=1):
-        super(DummyTechnical, self).__init__(port, baudrate)
-        self.baudrate = baudrate
-        self.num_device = num_device
-        self.port = port
-        self.sensor = DummySensor()
-        self.actuator = DummyActuator()
+  def __init__(self, baudrate=115200, port='/dev/ttyUSB0', num_device=1):
+    super(DummyTechnical, self).__init__(port, baudrate)
+    self.baudrate = baudrate
+    self.num_device = num_device
+    self.port = port
+    self.sensor = DummySensor()
+    self.actuator = DummyActuator()
 
-    def clear_errors(self):
-        print 'clear errors'
+  def clear_errors(self):
+    print 'clear errors'
 
-    def close(self):
-        print 'close'
+  def close(self):
+    print 'close'
 
-    def stop(self):
-        print 'STOP'
+  def stop(self):
+    print 'STOP'
 
-    def reset(self):
-        print 'Reset'
+  def reset(self):
+    print 'Reset'

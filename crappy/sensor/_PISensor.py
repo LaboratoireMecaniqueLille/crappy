@@ -27,39 +27,39 @@ from ._meta import motion
 # alpha = 1.05
 
 class PISensor(motion.MotionSensor):
-    def __init__(self, port='/dev/ttyS0', timeout=1, baudrate=9600, ser=None):
-        """
-        This class create an axis and opens the corresponding serial port.
+  def __init__(self, port='/dev/ttyS0', timeout=1, baudrate=9600, ser=None):
+    """
+    This class create an axis and opens the corresponding serial port.
 
-        Args:
-            port : str
-                    Path to the corresponding serial port, e.g '/dev/ttyS0'
-            baudrate : int, default = 38400
-                    Set the corresponding baud rate.
-            timeout : int or float, default = 1
-                    Serial timeout
-        """
-        super(PISensor, self).__init__(port, baudrate)
-        ## Path to the corresponding serial port, e.g '/dev/ttyS0'
-        self.port = port
-        ## Serial timeout
-        self.timeout = timeout
+    Args:
+        port : str
+                Path to the corresponding serial port, e.g '/dev/ttyS0'
+        baudrate : int, default = 38400
+                Set the corresponding baud rate.
+        timeout : int or float, default = 1
+                Serial timeout
+    """
+    super(PISensor, self).__init__(port, baudrate)
+    ## Path to the corresponding serial port, e.g '/dev/ttyS0'
+    self.port = port
+    ## Serial timeout
+    self.timeout = timeout
 
-        if ser is not None:
-            ## serial instance
-            self.ser = ser
-        else:
-            self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=self.timeout)
-            a = self.ser.write("%c%cSA%d\r" % (
-            1, '0', 10000))  # fixer acceleration de 10 000 a 100 000 microsteps par seconde au carre
-            a = self.ser.write("%c%cSV%d\r" % (1, '0', 10000))  # fixer vitesse
+    if ser is not None:
+      ## serial instance
+      self.ser = ser
+    else:
+      self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=self.timeout)
+      a = self.ser.write("%c%cSA%d\r" % (
+        1, '0', 10000))  # fixer acceleration de 10 000 a 100 000 microsteps par seconde au carre
+      a = self.ser.write("%c%cSV%d\r" % (1, '0', 10000))  # fixer vitesse
 
-    def get_position(self):
-        """
-        Get the current position of the motor.
+  def get_position(self):
+    """
+    Get the current position of the motor.
 
-        Returns:
-            Current position of the motor.
-        """
-        self.ser.write("%c%cTP\r" % (1, '0'))
-        return self.ser.readline()
+    Returns:
+        Current position of the motor.
+    """
+    self.ser.write("%c%cTP\r" % (1, '0'))
+    return self.ser.readline()

@@ -30,71 +30,71 @@ from _PISensor import PISensor
 from _webcamSensor import Webcam
 
 try:
-    import ximeaModule as ximeaModule
-    from _ximeaSensor import Ximea
+  import ximeaModule as ximeaModule
+  from _ximeaSensor import Ximea
 except Exception as e:
-    import_error(e.message)
+  import_error(e.message)
 
 from _fakeCameraSensor import FakeCameraSensor as Dummy
 
 if _platform.system() == "Linux":
+  try:
+    from _comediSensor import ComediSensor
+    import comediModule as comediModule
+  except Exception as e:
+    import_error(e.message)
+
+  _p = _popen("lsmod |grep menable")
+  if len(_p.read()) != 0:
     try:
-        from _comediSensor import ComediSensor
-        import comediModule as comediModule
+      import clModule as clModule
+      from _jaiSensor import Jai
+      from _clserial import _clSerial
+      from _clserial import _jaiSerial
+
+      JaiSerial = _jaiSerial.JaiSerial
+      ClSerial = _clSerial.ClSerial
     except Exception as e:
-        import_error(e.message)
-
-    _p = _popen("lsmod |grep menable")
-    if len(_p.read()) != 0:
-        try:
-            import clModule as clModule
-            from _jaiSensor import Jai
-            from _clserial import _clSerial
-            from _clserial import _jaiSerial
-
-            JaiSerial = _jaiSerial.JaiSerial
-            ClSerial = _clSerial.ClSerial
-        except Exception as e:
-            import_error(e.message)
+      import_error(e.message)
 
 if _platform.system() == "Windows":
+  try:
+    import pyFgenModule as pyFgen
+  except Exception as e:
+    import_error(e.message)
+
+  if len(_popen('driverquery /NH |findstr "me4"').read()) != 0:
     try:
-        import pyFgenModule as pyFgen
+      import clModule as clModule
+      from _jaiSensor import Jai
+
+      from _clserial import _clSerial
+      from _clserial import _jaiSerial
+
+      JaiSerial = _jaiSerial.JaiSerial
+      ClSerial = _clSerial.ClSerial
     except Exception as e:
-        import_error(e.message)
-
-    if len(_popen('driverquery /NH |findstr "me4"').read()) != 0:
-        try:
-            import clModule as clModule
-            from _jaiSensor import Jai
-
-            from _clserial import _clSerial
-            from _clserial import _jaiSerial
-
-            JaiSerial = _jaiSerial.JaiSerial
-            ClSerial = _clSerial.ClSerial
-        except Exception as e:
-            import_error(e.message)
+      import_error(e.message)
 
 try:
-    from _orientalSensor import OrientalSensor
+  from _orientalSensor import OrientalSensor
 except Exception as e:
-    import_error(e.message)
+  import_error(e.message)
 
 try:
-    from _daqmxSensor import DaqmxSensor
+  from _daqmxSensor import DaqmxSensor
 except Exception as e:
-    import_error(e.message)
+  import_error(e.message)
 
 try:
-    from _labJackSensor import LabJackSensor
+  from _labJackSensor import LabJackSensor
 except Exception as e:
-    import_error(e.message)
+  import_error(e.message)
 
 try:
-    del e
+  del e
 except NameError:
-    pass
+  pass
 del _popen, _platform, import_error
 
 # @}

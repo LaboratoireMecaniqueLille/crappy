@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 ##  @addtogroup blocks
 # @{
 
@@ -13,11 +13,13 @@
 
 from _masterblock import MasterBlock
 
+
 class Sink(MasterBlock):
   """
   Test block used to get data and do nothing
   """
-  def __init__(self,*args,**kwargs):
+
+  def __init__(self, *args, **kwargs):
     MasterBlock.__init__(self)
 
   def main(self):
