@@ -43,7 +43,6 @@ class Compacter(MasterBlock):
 
   def main(self):
     try:
-      print "Compacter / Main loop: PID", os.getpid()
       while True:
         for i in xrange(self.acquisition_step):
           if i == 0:

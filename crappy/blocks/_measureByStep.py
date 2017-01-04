@@ -54,7 +54,6 @@ class MeasureByStep(MasterBlock):
     sensor, and sends it to a crappy link.
     """
     try:
-      print "measureByStep / main loop: PID", os.getpid()
       trigger = "internal" if len(self.inputs) == 0 else "external"
       timer = time.time()
       while True:
