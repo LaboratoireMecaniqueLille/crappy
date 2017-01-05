@@ -1,106 +1,81 @@
-﻿import time
+#coding: utf-8
+from __future__ import print_function
 
+import time
+import numpy as np
 import crappy
 
-if __name__ == '__main__':
-	# Creating objects
+def eval_offset(device, duration):
+    """
+    Method to evaluate offset. Returns an average of measurements made during specified time.
+    """
+    timeout = time.time() + duration  # secs from now
+    print('Measuring offset (%d sec), please wait...'%duration)
+    offset = []
+    while True:
+      chan1 = device.get_data('all')[1]
+      offset.append(chan1)
+      if time.time() > timeout:
+        offsets = -np.mean(offset)
+        print('offset:', offsets)
+        break
+    return offsets
 
-	instronSensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[0])
-	t, F0 = instronSensor.get_data(0)
-	print "offset=", F0
-	instronSensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[-F0])
-	biotensTech = crappy.technical.Biotens(port='/dev/ttyUSB0', size=25)
+if __name__ == "__main__":
+    save_path = "biotens_data/"
+    timestamp = time.ctime()[:-5].replace(" ","_")
+    save_path += timestamp+"/"
+    # Creating F sensor
+    F_sensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[0])
+    F_offset = eval_offset(F_sensor,1)
+    F_sensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[F_offset])
+    # Creating F block
+    effort = crappy.blocks.MeasureByStep(F_sensor, labels=['t(s)', 'F(N)'], freq=100)
+    # Associated compacter
+    comp_effort = crappy.blocks.Compacter(100)
+    crappy.link(effort,comp_effort)
+    # grapher
+    graph_effort = crappy.blocks.Grapher(('t(s)','F(N)'),length=30)
+    crappy.link(comp_effort,graph_effort)
+    # and saver
+    save_effort = crappy.blocks.Saver(save_path+"effort.csv")
+    crappy.link(comp_effort,save_effort)
+    
+    # Creating biotens technical
+    biotensTech = crappy.technical.Biotens(port='/dev/ttyUSB0', size=10)  # Used to initialize motor.
+    # Biotens block
+    biotens = crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5)
+    # Position compacter
+    comp_pos= crappy.blocks.Compacter(5)
+    crappy.link(biotens,comp_pos)
+    # grapher
+    graph_pos= crappy.blocks.Grapher(('t(s)', 'position'), length=10)
+    crappy.link(comp_pos,graph_pos)
+    # And saver
+    save_pos= crappy.blocks.Saver(save_path+'pos.csv')
+    crappy.link(comp_pos,save_pos)
 
-	# Creating blocks
+    # To pilot the biotens
+    signal_generator = crappy.blocks.SignalGenerator(path=[
+      {"waveform": "limit", "gain": 1, "cycles": 2, "phase": 0, "lower_limit": [0.02, 'F(N)'],
+       "upper_limit": [30, 'F(N)']}],
+      send_freq=5, repeat=False, labels=['t(s)', 'signal', 'cycle']) 
+    crappy.link(effort,signal_generator)
+    crappy.link(signal_generator,biotens)
 
-	compacter_effort = crappy.blocks.Compacter(150)
-	save_effort = crappy.blocks.Saver("/home/biotens/Bureau/Annie/test_lampe/rat_effort_1.txt")
-	graph_effort = crappy.blocks.Grapher(('t(s)', 'F(N)'))
 
-	compacter_extenso = crappy.blocks.Compacter(90)
-	save_extenso = crappy.blocks.Saver("/home/biotens/Bureau/Annie/test_lampe/rat_extenso_1.txt")
-	graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
 
-	effort = crappy.blocks.MeasureByStep(instronSensor, labels=['t(s)', 'F(N)'], freq=150)
-	extenso = crappy.blocks.VideoExtenso(camera="Ximea", white_spot=False,
-											labels=['t(s)', 'Lx', 'Ly', 'Exx(%)', 'Eyy(%)'], display=True)
+    # VideoExtenso
+    extenso = crappy.blocks.VideoExtenso(camera="Ximea", white_spot=False, display=True)
+    # Compacter
+    comp_extenso = crappy.blocks.Compacter(90)
+    crappy.link(extenso,comp_extenso)
+    # Saver
+    save_extenso = crappy.blocks.Saver(save_path+'extenso.csv')
+    crappy.link(comp_extenso, save_extenso)
+    # And grapher
+    graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
+    crappy.link(comp_extenso, graph_extenso)
 
-	# signalGenerator=crappy.blocks.SignalGenerator(path=[{"waveform":"hold","time":0},
-	# {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],"upper_limit":[90,'Eyy(%)']}],
-	# send_freq=400,repeat=False,labels=['t(s)','signal'])
-	# example of path:[{"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.05,'F(N)'],
-	# "upper_limit":[i,'Eyy(%)']} for i in range(10,90,10)]
-
-	signalGenerator = crappy.blocks.SignalGenerator(path=[
-		{"waveform": "limit", "gain": 1, "cycles": 2, "phase": 0, "lower_limit": [0.02, 'F(N)'],
-			"upper_limit": [90, 'F(N)']}],
-		# {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[10,'Eyy(%)']},
-		# {"waveform":"hold","time":120},
-		# {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[20,'Eyy(%)']},
-		# {"waveform":"hold","time":120},
-		# {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[30,'Eyy(%)']},
-		# {"waveform":"hold","time":120},
-		# {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[40,'Eyy(%)']},
-		# {"waveform":"hold","time":120},
-		# {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[50,'Eyy(%)']},
-		# {"waveform":"hold","time":120},
-		# {"waveform":"limit","gain":1,"cycles":0.5,"phase":0,"lower_limit":[0.02,'F(N)'],"upper_limit":[90,'F(N)']}],
-		send_freq=5, repeat=False, labels=['t(s)', 'signal', 'cycle'])
-
-	biotens = crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5)
-	compacter_position = crappy.blocks.Compacter(5)
-	save_position = crappy.blocks.Saver("/home/biotens/Bureau/Annie/test_lampe/rat_position_1.txt")
-
-	# Creating links
-
-	link1 = crappy.links.Link()
-	link2 = crappy.links.Link()
-	link3 = crappy.links.Link()
-	link4 = crappy.links.Link()
-	link5 = crappy.links.Link()
-	link6 = crappy.links.Link()
-	link7 = crappy.links.Link()
-	link8 = crappy.links.Link()
-	link9 = crappy.links.Link()
-	link10 = crappy.links.Link()
-	link11 = crappy.links.Link()
-
-	# Linking objects
-
-	effort.add_output(link1)
-	effort.add_output(link6)
-
-	extenso.add_output(link2)
-	extenso.add_output(link3)
-
-	signalGenerator.add_input(link1)
-	signalGenerator.add_input(link2)
-	signalGenerator.add_output(link9)
-
-	biotens.add_input(link9)
-	biotens.add_output(link10)
-
-	compacter_effort.add_input(link6)
-	compacter_effort.add_output(link7)
-	compacter_effort.add_output(link8)
-
-	save_effort.add_input(link7)
-
-	graph_effort.add_input(link8)
-
-	compacter_extenso.add_input(link3)
-	compacter_extenso.add_output(link4)
-	compacter_extenso.add_output(link5)
-
-	save_extenso.add_input(link4)
-
-	graph_extenso.add_input(link5)
-
-	compacter_position.add_input(link10)
-	compacter_position.add_output(link11)
-
-	save_position.add_input(link11)
-	# Starting objects
-
-	crappy.start()
-
+    #And here we go !
+    crappy.start()
