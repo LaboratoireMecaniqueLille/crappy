@@ -21,7 +21,7 @@ class TechnicalCamera(object):
   Opens a camera device and initialise it.
   """
 
-  def __init__(self, camera="ximea", num_device=0, videoextenso=None, config=True):
+  def __init__(self, camera="ximea", num_device=0, videoextenso=None):
     """
     This Class opens a device and runs the initialisation sequence (CameraInit).
 
@@ -70,16 +70,30 @@ class TechnicalCamera(object):
       print "{0}".format(e)
       self.serial = None
     # print "module, camera_class, serial : ", module, camera_class, self.serial
+    # initialisation:
     self.sensor = camera_class(numdevice=num_device)
     self.video_extenso = videoextenso
-    if config:
-      print "lauching camera config..."
-      data = get_camera_config(self.sensor,self.video_extenso)
-      if self.video_extenso['enabled']:
-        self.exposure, self.gain, self.width, self.height, self.x_offset, self.y_offset, self.minx, self.max_x, \
-        self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh, self.Points_coordinates = data[:]
-      else:
-        self.exposure, self.gain, self.width, self.height, self.x_offset, self.y_offset = data[:]
+    recv_pipe, send_pipe = Pipe()
+    print "lauching camera config..."
+    proc_test = Process(target=get_camera_config, args=(self.sensor, self.video_extenso, send_pipe))
+    proc_test.start()
+    data = recv_pipe.recv()
+    print "data received, config done."
+    if self.video_extenso['enabled']:
+      self.exposure, self.gain, self.width, self.height, self.x_offset, self.y_offset, self.minx, self.max_x, \
+      self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh, self.Points_coordinates = data[:]
+    else:
+      self.exposure, self.gain, self.width, self.height, self.x_offset, self.y_offset = data[:]
+
+    # here we should modify height, width and others in camera_class().sensor #WIP
+    # self.sensor.exposure=self.exposure
+    # self.sensor.gain=self.gain
+    proc_test.terminate()
+    # self.cam.new(exposure=exposure, gain=gain, y_offset=y_offset, x_offset=x_offset, height=height, width=width)
+
+    # def _interface(self, send_pipe, camera):
+    # settings = getCameraConfig(camera, self.videoextenso)
+    # send_pipe.send(settings)
 
   def __str__(self):
     return self.sensor.__str__()
