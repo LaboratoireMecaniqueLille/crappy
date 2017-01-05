@@ -3,7 +3,7 @@ import numpy as np
 import crappy2
 crappy2.blocks._masterblock.MasterBlock.instances=[] # Init masterblock instances
 
-#class condition_sub(crappy2.links.MetaCondition):
+#class condition_sub(crappy2.links.Condition):
 	#def __init__(self):
 		#pass
 	
@@ -12,7 +12,7 @@ crappy2.blocks._masterblock.MasterBlock.instances=[] # Init masterblock instance
 		#value.update({'T_mean':calc})
 		#return value
 	
-#class ConditionCalib(crappy2.links.MetaCondition):
+#class ConditionCalib(crappy2.links.Condition):
 	#def __init__(self):
 		#self.coeff_T= [-1.14944097e+19,-6.22927505e+15,9.45905908e+12,3.20160146e+09,-1.81259800e+06,1.91565284e+04,2.77297727e+01]
 		#self.coeff_T2 = [-5.37671145e+18,-1.08133635e+16,6.54277247e+12,4.91194020e+09,-1.47818544e+06,1.91198815e+04,2.77679671e+01]
@@ -45,7 +45,7 @@ crappy2.blocks._masterblock.MasterBlock.instances=[] # Init masterblock instance
 		#return value
 
 
-#class EvalStress(crappy2.links.MetaCondition):
+#class EvalStress(crappy2.links.Condition):
 	#def __init__(self):
 		#self.surface=110.74*10**(-6)
 		#self.I=np.pi*((25*10**-3)**4-(22*10**-3)**4)/32

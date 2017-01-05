@@ -7,7 +7,7 @@ from Tkinter import *
 
 crappy.blocks.MasterBlock.instances = []
 
-class ConditionFiltree(crappy.links.MetaCondition):
+class ConditionFiltree(crappy.links.Condition):
     """
     Used to filter received data (instead of update the window at every increment, we update it by the mean or
     median value of measures.

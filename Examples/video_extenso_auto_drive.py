@@ -5,7 +5,7 @@ import crappy
 crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 
 
-class ConditionTransfoChaine(crappy.links.MetaCondition):
+class ConditionTransfoChaine(crappy.links.Condition):
     def __init__(self):
         data = "None"
 
@@ -20,7 +20,7 @@ class ConditionTransfoChaine(crappy.links.MetaCondition):
         return {'center': center}
 
 
-class ConditionComediInstron(crappy.links.MetaCondition):
+class ConditionComediInstron(crappy.links.Condition):
     def __init__(self):
         data = "None"
         i = 0

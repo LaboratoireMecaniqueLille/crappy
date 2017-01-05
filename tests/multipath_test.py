@@ -6,7 +6,7 @@ crappy2.blocks._masterblock.MasterBlock.instances=[] # Init masterblock instance
 
 
 
-class condition_signal(crappy2.links.MetaCondition):
+class condition_signal(crappy2.links.Condition):
 	def __init__(self,input_value_label):
 		self.input_value_label=input_value_label
 		
@@ -17,7 +17,7 @@ class condition_signal(crappy2.links.MetaCondition):
 		#print value[self.input_value_label]
 		return value
 
-class eval_strain(crappy2.links.MetaCondition):
+class eval_strain(crappy2.links.Condition):
 	def __init__(self):
 		self.surface=110.74*10**(-6)
 		self.I=np.pi*((25*10**-3)**4-(22*10**-3)**4)/32

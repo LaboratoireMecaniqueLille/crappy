@@ -13,7 +13,7 @@ directory = '/home/francois/Essais/007_self_heating_prise2/Resultats_derive_ndet
 crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 
 
-class ConditionCalib(crappy.links.MetaCondition):
+class ConditionCalib(crappy.links.Condition):
     """
     This class is used to acquire temperatures from 3 thermocouples
     """
@@ -30,7 +30,7 @@ class ConditionCalib(crappy.links.MetaCondition):
         return value
 #
 #
-# class EvalStress(crappy.links.MetaCondition):
+# class EvalStress(crappy.links.Condition):
 #     """
 #     This class returns strain stress related to torque applied by the instron.
 #     """

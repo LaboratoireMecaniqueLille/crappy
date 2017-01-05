@@ -11,11 +11,11 @@
 # @version 0.1
 # @date 13/07/2016
 
-from ._metaCondition import MetaCondition
+from _condition import Condition
 import time
 
 
-class PID(MetaCondition):
+class PID(Condition):
   """WIP, not working yet."""
 
   def __init__(self, P, I, D, label_consigne, label_retour, label_consigne_sortie=None, consigne=None, outMin=-10,

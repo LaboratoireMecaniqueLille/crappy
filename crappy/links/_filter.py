@@ -1,9 +1,9 @@
 # coding: utf-8
-from ._metaCondition import MetaCondition
+from _condition import Condition
 import numpy as np
 
 
-class Filter(MetaCondition):
+class Filter(Condition):
   """Filters the signal."""
 
   def __init__(self, labels=[], mode="median", size=10):

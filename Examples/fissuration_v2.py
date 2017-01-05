@@ -25,7 +25,7 @@ except Exception as e:
 # diff = summary.get_diff(sum1, sum2)
 # summary.print_(diff)
 
-class condition_coeff(crappy.links.MetaCondition):
+class condition_coeff(crappy.links.Condition):
     def __init__(self, test=False):
         initial_coeff = 0
         self.last_cycle = -1
@@ -65,7 +65,7 @@ class condition_coeff(crappy.links.MetaCondition):
             return value
 
 
-class condition_cycle_bool(crappy.links.MetaCondition):
+class condition_cycle_bool(crappy.links.Condition):
     def __init__(self, n=1, n_per_cycle=2):
         self.last_cycle = -1
         self.n = n
@@ -87,7 +87,7 @@ class condition_cycle_bool(crappy.links.MetaCondition):
             return None
 
 
-class condition_K(crappy.links.MetaCondition):
+class condition_K(crappy.links.Condition):
     def __init__(self):
         self.K = 0
         self.W = 18. * 10 ** (-3)  # largeur eprouvette

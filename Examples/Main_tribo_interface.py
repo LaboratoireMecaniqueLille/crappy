@@ -12,7 +12,7 @@ crappy.blocks.MasterBlock.instances=[]
 
 t0=time.time()
 
-class conditionfiltree(crappy.links.MetaCondition):
+class conditionfiltree(crappy.links.Condition):
 	def __init__(self,labels=[],mode="mean",size=10):
 		self.mode=mode
 		self.size=size

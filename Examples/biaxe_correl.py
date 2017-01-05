@@ -4,7 +4,7 @@ import crappy
 from datetime import datetime
 from collections import OrderedDict
 
-class CropCondition(crappy.links.MetaCondition):
+class CropCondition(crappy.links.Condition):
     def __init__(self,cropped_size,offset=None):
         self.sliceY = slice(offset[0],cropped_size[0]+offset[0])
         self.sliceX = slice(offset[1],cropped_size[1]+offset[1])
@@ -12,7 +12,7 @@ class CropCondition(crappy.links.MetaCondition):
     def evaluate(self, value):
         return value[self.sliceY, self.sliceX]
 
-class AvgCondition(crappy.links.MetaCondition):
+class AvgCondition(crappy.links.Condition):
     def __init__(self,n=10):
         self.n = 10
         self.values = {}

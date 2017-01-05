@@ -97,7 +97,7 @@ class Link(object):
 
     Args:
         name: name of a link to recognize it on timeout or between a Client and a Server.
-        condition : Children class of links.MetaCondition, optionnal
+        condition : Children class of links.Condition, optionnal
             Each "send" call will pass through the condition.evaluate method and sends
             the returned value.
             You can pass a list of conditions, the link will execute them in order.

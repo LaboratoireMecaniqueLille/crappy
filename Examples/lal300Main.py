@@ -45,7 +45,7 @@ param = {'port': '/dev/ttyUSB1', 'baudrate': 19200, 'timeout': 0., 'PID_PROP': 8
 # Classe permettant de debloquer un lien sous condition
 
 # Si cycle multiple de 100 et cycle-0,5 mutlipe de 100 alors la classe renvoi une valeur debloquant le lien
-class ConditionAcquisition(crappy.links.MetaCondition):
+class ConditionAcquisition(crappy.links.Condition):
     def __init__(self, n=100):
         self.last_cycle = -1
         self.n = n

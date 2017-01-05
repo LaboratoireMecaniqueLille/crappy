@@ -3,7 +3,7 @@ import numpy as np
 import crappy2
 crappy2.blocks._masterblock.MasterBlock.instances=[] # Init masterblock instances
 
-class timeout_condition(crappy2.links.MetaCondition):
+class timeout_condition(crappy2.links.Condition):
 	def __init__(self,n=1):
 		self.n=n
 		

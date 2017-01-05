@@ -11,7 +11,7 @@ crappy.blocks._masterblock.MasterBlock.instances = []  # Init masterblock instan
 
 # class condition_def(
 # # cette condition sert a remettre a 0 la def du videoextenso une fois passe un certain seuil d'effort
-#     crappy.links.MetaCondition):
+#     crappy.links.Condition):
 #     def __init__(self, test=False):
 #         self.FIFO = []
 #         self.len_FIFO = 10.
@@ -36,7 +36,7 @@ crappy.blocks._masterblock.MasterBlock.instances = []  # Init masterblock instan
 #             return value
 
 
-class ConditionOffset(crappy.links.MetaCondition):
+class ConditionOffset(crappy.links.Condition):
     def __init__(self):
         self.offset = 0.06  # a remplir avant de lancer l'essai
         self.first = True
@@ -58,7 +58,7 @@ class ConditionOffset(crappy.links.MetaCondition):
             return None
 
 
-class ConditionDefPosition(crappy.links.MetaCondition):
+class ConditionDefPosition(crappy.links.Condition):
     def __init__(self):
         self.l0 = 7  # 7 mm au départ : je pense pas qu'on en ai besoin, c'est une def qu'on calcule??
         self.start = False

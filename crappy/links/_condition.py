@@ -2,10 +2,10 @@
 ##  @addtogroup links
 # @{
 
-##  @defgroup MetaCondition MetaCondition
+##  @defgroup Condition Condition
 # @{
 
-## @file _metaCondition.py
+## @file _condition.py
 # @brief Metaclass for all Links conditions. Must implement the evaluate method.
 # @author Robin Siemiatkowski
 # @version 0.1
@@ -14,7 +14,7 @@
 import abc
 
 
-class MetaCondition:
+class Condition:
   """
   Metaclass for all Links conditions. Must implement the evaluate method.
   """

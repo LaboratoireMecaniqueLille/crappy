@@ -27,7 +27,7 @@ import sys
 position_initiale = 15000
 
 
-class ConditionCoeff(crappy.links.MetaCondition):
+class ConditionCoeff(crappy.links.Condition):
     def __init__(self):
         initial_coeff = 0
         self.last_cycle = -1
@@ -69,7 +69,7 @@ class ConditionCoeff(crappy.links.MetaCondition):
         return value
 
 
-class ConditionCycleBool(crappy.links.MetaCondition):
+class ConditionCycleBool(crappy.links.Condition):
     def __init__(self, n=1, n_per_cycle=2):
         self.last_cycle = -1
         self.n = n
@@ -90,7 +90,7 @@ class ConditionCycleBool(crappy.links.MetaCondition):
             return None
 
 
-class ConditionK(crappy.links.MetaCondition):
+class ConditionK(crappy.links.Condition):
     def __init__(self):
         self.K = 0
         self.W = 18. * 10 ** (-3)  # largeur eprouvette

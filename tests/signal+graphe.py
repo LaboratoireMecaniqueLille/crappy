@@ -6,7 +6,7 @@ import pandas as pd
 crappy2.blocks._masterblock.MasterBlock.instances=[] # Init masterblock instances
 
 
-class condition_coeff(crappy2.links.MetaCondition):
+class condition_coeff(crappy2.links.Condition):
 	def __init__(self):
 		initial_coeff=0
 		self.last_cycle=-1
@@ -39,7 +39,7 @@ class condition_coeff(crappy2.links.MetaCondition):
 		return value
 
 
-#class ConditionK(crappy2.links.MetaCondition):
+#class ConditionK(crappy2.links.Condition):
 	#def __init__(self):
 		#self.K=0
 		#self.last_cycle=-1

@@ -8,7 +8,7 @@ import pandas as pd
 crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 
 
-# class condition_signal(crappy.links.MetaCondition):
+# class condition_signal(crappy.links.Condition):
 #     def __init__(self, input_value_label):
 #         self.input_value_label = input_value_label
 #
@@ -17,7 +17,7 @@ crappy.blocks.MasterBlock.instances = []  # Init masterblock instances
 #         return value
 
 
-class EvalStrain(crappy.links.MetaCondition):
+class EvalStrain(crappy.links.Condition):
     def __init__(self, k):
         self.surface = 110.74 * 10 ** (-6)
         self.I = np.pi * ((25 * 10 ** -3) ** 4 - (22 * 10 ** -3) ** 4) / 32

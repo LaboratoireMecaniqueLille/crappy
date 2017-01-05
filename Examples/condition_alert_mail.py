@@ -15,7 +15,7 @@ from email.MIMEBase import MIMEBase
 from email import encoders
 
 
-class Alert(crappy.links.MetaCondition):
+class Alert(crappy.links.Condition):
     def __init__(self):
         self.broken = False
         self.path = "/home/corentin/Bureau/"
