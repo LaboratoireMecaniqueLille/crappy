@@ -92,31 +92,27 @@ class MeasureByStep(MasterBlock):
         printer = threading.Thread(target=self.print_time)
         printer.daemon = True
         printer.start()
-        elapsed = 5.
+      elapsed = 0.
       while True:
         if trigger == "internal":
-          if self.freq:  # timing loop
-            self.temporization(time.time())
-          sensor_epoch, sensor_values = self.sensor.get_data("all")
-          chronometer = sensor_epoch - self.t0
-          sensor_values.insert(0, chronometer)
-        if trigger == "external":
-          if self.inputs[0].recv():  # wait for a signal
+          pass
+        elif trigger == "external":
+          if self.inputs[0].recv(blocking=True):  # wait for a signal
             pass
-          sensor_epoch, sensor_values = self.sensor.get_data("all")
-          chronometer = sensor_epoch - self.t0
-          sensor_values.insert(0, chronometer)
-
+        sensor_epoch, sensor_values = self.sensor.get_data("all")
+        chronometer = sensor_epoch - self.t0
+        sensor_values.insert(0, chronometer)
         results = OrderedDict(zip(self.labels, sensor_values))
         try:
           for output in self.outputs:
             output.send(results)
           if self.verbose:
             self.nb_acquisitions += 1
-
-            if chronometer - elapsed > 1.:
+          if chronometer - elapsed >= 1.:
+            elapsed = chronometer
+            if self.verbose:
               queue.put(self.nb_acquisitions)
-              elapsed = chronometer
+
         except TimeoutError:
           raise
         except AttributeError:  # if no outputs
