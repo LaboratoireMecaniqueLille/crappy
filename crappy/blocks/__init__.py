@@ -32,7 +32,6 @@ if platform.system() == "Linux":
 from _cameraDisplayer import CameraDisplayer
 from _commandBiaxe import CommandBiaxe
 from _commandBiotens import CommandBiotens
-from _commandBiotens_v2 import CommandBiotens_v2
 from _autoDrive import AutoDrive
 from _commandPI import CommandPI
 from _compacter import Compacter
