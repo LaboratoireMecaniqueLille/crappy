@@ -8,149 +8,139 @@
 ## @file _masterblock.py
 # @brief Main class for block architecture. All blocks should inherit this class.
 #
-# @authors Corentin Martel, Robin Siemiatkowski
-# @version 0.1
-# @date 11/07/2016
+# @authors Victor Couty
+# @version 1.1
+# @date 07/01/2017
+from __future__ import print_function
 
 from multiprocessing import Process, Pipe
-import os
-import platform
-import ctypes, time
 from ..links._link import TimeoutError
-import pickle
 
-if platform.system() == "Linux":
-  libc = ctypes.CDLL('libc.so.6')
+import time
 
-
-def main_wrapper(b):
-  b()
-
-
-class MasterBlock(object):
+class MasterBlock(Process):
   """
-  Main class for block architecture. All blocks should inherit this class.
-
+  This represent a Crappy block, it must be parent of all the blocks.
   Methods:
-      main()
-           Override it to define the main function of this block.
-      add_input(Link object)
-          Add a Link object as input.
-      add_output(Link object)
-          Add a Link as output.
-      start()
-          Start the main() method as a Process.
-      stop()
-          Stops the process.
+    main()
+      It must not take any arg, it is where you define the main loop of the block
+      If not overriden, will raise an error
+
+    add_[in/out]put(Link object)
+      Add a link as [in/out]put
+
+    prepare()
+      This method will be called inside the new process but before actually starting the main loop of the program
+      Use it for all the tasks to be done before starting the main loop (can be empty)
+    start()
+      This is the same start method as Process.start: it starts the process, so the initialization (defined in prepare method) will be done, but NOT the main loop
+
+    loop(t0)
+      Once the process is started, calling loop will set the starting time and actually start the main method.
+      If the block was not started yet, it will be done automatically.
+      t0: time to set as starting time of the block (mandatory) (in seconds after epoch)
+
+    status
+      Property that can be accessed both in the process or from the parent
+        "idle": Block not started yet
+        "initializing": start was called and prepare is not over yet
+        "ready": prepare is over, waiting to start main by calling loop
+        "running": main is running
+        "done": main is over
+        NOTE: Once loop is called, the status as seen from the parent
+          will switch to "running", even if prepare is not over yet.
+          Then, the block will instantly start running when prepare
+          is over, ignoring "ready" state.
+
+          start and loop method will return instantly
+
   """
   instances = []
-  first_call = True
-
   def __init__(self):
-    self.inputs = []
-    self.proc = Process(target=main_wrapper, args=(self.loop,))
+    Process.__init__(self)
+    #MasterBlock.instances.append(self)
     self.outputs = []
-    self._t0 = time.time()
+    self.inputs = []
+    #This pipe allows to send 2 essential signals:
+    #p1->p2 is to start the main function and set t0
+    #p2->p1 to know when the prepartion is over
+    self.p1,self.p2 = Pipe()
+    self._status = "idle"
+    self.in_process = False # To know if we are in the process or not
 
-  def __new__(cls, *args, **kwargs):  # Keeps track of all instances
+  def __new__(cls,*args,**kwargs):
     instance = super(MasterBlock, cls).__new__(cls, *args, **kwargs)
-    instance.instances.append(instance)
+    MasterBlock.instances.append(instance)
     return instance
 
-  @staticmethod
-  def close_all_instances():
-    if MasterBlock.first_call:
-      MasterBlock.first_call = False
-      for instance in MasterBlock.instances:
-        try:
-          instance.stop()
-        except Exception:
-          pass
-      for instance in MasterBlock.instances:
-        for input_ in instance.inputs:
-          input_.close()
-        for output_ in instance.outputs:
-          output_.close()
-        MasterBlock.instances.remove(instance)
+  def __del__(self):
+    Masterblock.instances.remove(self)
 
-  def add_output(self, link):
-    """
-    Add a Link as output.
-    Args:
-        link: link instance
-    """
-    self.outputs.append(link)
-
-  def add_input(self, link):
-    """
-    Add a Link object as input.
-    Args:
-        link: link instance
-    """
-    self.inputs.append(link)
-
-  def main(self):
-    """
-    Override it to define the main function of this block.
-    """
-    raise NotImplementedError("Must override method main")
-
-  def loop(self):
-    try:
-      self.main()
-    except KeyboardInterrupt:
-      self.close_all_instances()
-    except Exception as e:
-      print e
-      self.close_all_instances()
+  def run(self):
+    self.in_process = True # we are in the process
+    self._status = "initializing" # Child only
+    self.prepare()
+    self._status = "ready" # Child only
+    self.p2.send(1) # Let the parent know we are ready
+    self.t0 = self.p2.recv() # Wait for parent to tell me to start the main
+    self._status = "running" # child only
+    self.main()
+    #self._status = "done" # child only, useless: process will end after this
 
   def start(self):
     """
-    Start the main() method as a Process.
+    This will NOT execute the main, only start the process
+    prepare will be called but not main !
     """
-    try:
-      self.proc.start()
+    self._status = "initializing"
+    Process.start(self)
 
-    except KeyboardInterrupt:
-      self.proc.terminate()
-      self.proc.join()
-
-    except Exception as e:
-      print "Exception in MasterBlock: ", e
-      if platform.system() == "Linux":
-        self.proc.terminate()
-
-      raise  # raise the error to the next level for global shutdown
-      # def join(self):
-      # self.proc.join()
-
-  def stop(self):
+  def loop(self,t0):
     """
-    Stops the process.
+    To start the main method, will call start if needed
     """
-    self.proc.terminate()
-    self.proc.join()
+    if self._status == "idle":
+      print(self,": Called loop on unprepared process!")
+      self.start()
+    self.p1.send(t0) # asking to start main in the process
+    self._status = "running" # Parent only
 
   @property
-  def t0(self):
-    return self._t0
+  def status(self):
+    """
+    Returns the status of the block, from the process itself or the parent
+    """
+    if self._status == "running" and not self.is_alive():
+      self._status = "done" # Parent only (duh, process is over >.<)
+    elif self.p1.poll(): # Got the signal, init is over \o/
+      if self.in_process: # Only clear the pipe if out of the process,
+                          # because the process already knows that...
+        self.p1.recv()
+      if self._status == "initializing":
+        self._status = "ready" # Parent only
+    return self._status
 
-  @t0.setter
-  def t0(self, t0):
-    self._t0 = t0
+  def main(self):
+    """The method that will be run when .loop() is called"""
+    raise NotImplementedError("Override me!")
 
-  @property
-  def pid(self):
-    return self.proc.pid
+  def prepare(self):
+    """The first code to be run in the new process, will only be called once and before the actual start of the main loop of the blocks
+    can do nothing"""
+    pass
 
+  def send(self,data):
+    for o in self.outputs:
+      o.send(data)
 
-def delay(ms):
-  """
-  Delay in milliseconds with libc usleep() using ctypes.
-  It has a better repeatability than time.sleep()
-  """
-  ms = int(ms * 1000)
-  if platform.system() == "Linux":
-    libc.usleep(ms)
-  else:
-    time.sleep(ms)
+  def recv(self,in_id=0):
+    return self.inputs[in_id].recv()
+
+  def add_output(self,o):
+    self.outputs.append(o)
+
+  def add_input(self,i):
+    self.inputs.append(i)
+
+def delay(s):
+  time.sleep(s)
