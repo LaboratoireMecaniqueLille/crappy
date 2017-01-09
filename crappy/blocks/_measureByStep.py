@@ -13,7 +13,7 @@
 # @date 11/07/2016
 
 from __future__ import print_function
-from _masterblock import MasterBlock
+from _compacterblock import CompacterBlock
 import time
 from collections import OrderedDict
 from ..links._link import TimeoutError
@@ -22,7 +22,7 @@ from Queue import Queue
 import sys
 
 
-class MeasureByStep(MasterBlock):
+class MeasureByStep(CompacterBlock):
   """
   Streams value measured on a card through a Link object.
   """
@@ -46,12 +46,13 @@ class MeasureByStep(MasterBlock):
         freq :      float or int, optional
                     Wanted acquisition frequency. If none, will be at the software looping speed.
     """
-    super(MeasureByStep, self).__init__()
     self.sensor = sensor
     assert sensor, 'ERROR in MeasureByStep: no sensor defined.'
     self.labels = kwargs.get('labels', ["time(sec)"] + [self.sensor.channels])
+    CompacterBlock.__init__(self,labels=self.labels,
+                                 compacter=kwargs.get("compacter",1))
     self.freq = kwargs.get('freq', None)
-    self.verbose = kwargs.get('verbose', None)
+    self.verbose = kwargs.get('verbose', False)
     if self.verbose:
       self.nb_acquisitions = 0.
       global queue, last_len
@@ -102,10 +103,11 @@ class MeasureByStep(MasterBlock):
         sensor_epoch, sensor_values = self.sensor.get_data("all")
         chronometer = sensor_epoch - self.t0
         sensor_values.insert(0, chronometer)
-        results = OrderedDict(zip(self.labels, sensor_values))
+        #print("MBS",sensor_values)
+
+        #results = OrderedDict(zip(self.labels, sensor_values))
         try:
-          for output in self.outputs:
-            output.send(results)
+          self.send(sensor_values)
           if self.verbose:
             self.nb_acquisitions += 1
           if chronometer - elapsed >= 1.:
@@ -121,3 +123,4 @@ class MeasureByStep(MasterBlock):
     except (Exception, KeyboardInterrupt) as e:
       print("Exception in measureByStep :", e)
       self.sensor.close()
+      raise

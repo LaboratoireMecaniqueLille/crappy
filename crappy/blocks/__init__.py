@@ -23,6 +23,9 @@ from .._warnings import import_error
 e = None
 not_imported = []
 
+from _masterblock import MasterBlock
+from _compacterblock import CompacterBlock
+
 if platform.system() == "Linux":
   from _commandComedi import CommandComedi
 
@@ -63,7 +66,6 @@ try:
 except Exception as e:
   import_error(e.message)
 
-from _masterblock import MasterBlock
 from _commandCegitab import SerialPortActuator, SerialPortCaptor, PipeCegitab
 from _savergui import SaverGUI
 from _gui import InterfaceTomo4D
