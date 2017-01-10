@@ -74,9 +74,9 @@ class LabJack(io.Control_Command):
     # super(LabJack, self).__init__()
 
     if sensor:
-      self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, sensor.get('identifier', 'ANY'))
+      self.open_handle(sensor)
     elif actuator:
-      self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, actuator.get('identifier', 'ANY'))
+      self.open_handle(actuator)
     else:
       print 'NONE'
     if sensor:
@@ -118,6 +118,13 @@ class LabJack(io.Control_Command):
       self.channel_command = actuator.get('channel', "DAC0")
       self.gain_command = actuator.get('gain', 1)
       self.offset_command = actuator.get('offset', 0)
+
+  def open_handle(self, dictionary):
+
+    try:
+      self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, dictionary.get('identifier', 'ANY'))
+    except:
+      self.open_handle(dictionary)
 
   class DialogBox:
     """
@@ -163,7 +170,6 @@ class LabJack(io.Control_Command):
       res_max = 12 if ljm.eReadName(self.handle, "WIFI_VERSION") > 0 else 8  # Test if LabJack is pro or not
       assert False not in [0 <= self.resolution[chan] <= res_max for chan in range(self.nb_channels)], \
         "Wrong definition of resolution index. INDEX_MAX for T7: 8, for T7PRO: 12"
-
       if self.mode == "single":
         to_write = OrderedDict([
           ("_RANGE", self.chan_range),
