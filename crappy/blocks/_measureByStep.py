@@ -55,13 +55,17 @@ class MeasureByStep(CompacterBlock):
     self.verbose = kwargs.get('verbose', False)
     if self.verbose:
       self.nb_acquisitions = 0.
-      global queue, last_len
+      global queue, last_len, time_interval
+      time_interval = 1.
       last_len = None
       queue = Queue()
 
   def print_time(self):
     def reprint(*args):
-      global last_len
+      """
+      Method to update printed value, instead of print a new one.
+      """
+      global last_len, time_interval
       s = " ".join([str(i) for i in args])
       s = s.split("\n")[0]
       l = len(s)
@@ -74,7 +78,7 @@ class MeasureByStep(CompacterBlock):
     nb_points0 = 0.
     while True:
       nb_points1 = queue.get()
-      reprint('Freq:', nb_points1 - nb_points0, 'Hz')
+      reprint('Freq:', '%.2f' % ((nb_points1 - nb_points0) / time_interval), 'Hz')
       nb_points0 = nb_points1
 
   def temporization(self, timer):
@@ -103,14 +107,14 @@ class MeasureByStep(CompacterBlock):
         sensor_epoch, sensor_values = self.sensor.get_data("all")
         chronometer = sensor_epoch - self.t0
         sensor_values.insert(0, chronometer)
-        #print("MBS",sensor_values)
 
-        #results = OrderedDict(zip(self.labels, sensor_values))
         try:
           self.send(sensor_values)
           if self.verbose:
             self.nb_acquisitions += 1
           if chronometer - elapsed >= 1.:
+            global time_interval
+            time_interval = chronometer - elapsed
             elapsed = chronometer
             if self.verbose:
               queue.put(self.nb_acquisitions)
