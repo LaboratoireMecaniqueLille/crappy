@@ -48,9 +48,8 @@ class MeasureByStep(CompacterBlock):
     """
     self.sensor = sensor
     assert sensor, 'ERROR in MeasureByStep: no sensor defined.'
-    self.labels = kwargs.get('labels', ["time(sec)"] + [self.sensor.channels])
-    CompacterBlock.__init__(self,labels=self.labels,
-                                 compacter=kwargs.get("compacter",1))
+    self.labels = kwargs.get('labels', ["time(sec)"] + self.sensor.channels)
+    CompacterBlock.__init__(self, labels=self.labels, compacter=kwargs.get("compacter", 1))
     self.freq = kwargs.get('freq', None)
     self.verbose = kwargs.get('verbose', False)
     if self.verbose:
@@ -65,7 +64,7 @@ class MeasureByStep(CompacterBlock):
       """
       Method to update printed value, instead of print a new one.
       """
-      global last_len, time_interval
+      global last_len
       s = " ".join([str(i) for i in args])
       s = s.split("\n")[0]
       l = len(s)
