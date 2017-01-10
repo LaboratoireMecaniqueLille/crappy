@@ -147,7 +147,6 @@ class LabJack(io.Control_Command):
 
     def update(self):
       """Method to update data inside the dialog box. The window is updated every time data in queue occurs."""
-      print "LabJack Sensor / Streamer Dialog Box PID:", getpid()
       try:
         array = queue.get()
         t0 = array[0]

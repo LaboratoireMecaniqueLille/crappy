@@ -115,7 +115,6 @@ class CanvasDrawing(MasterBlock):
       texts[i].set_color(cm.coolwarm(np.mean(temp_normalized[i])))
 
   def main(self):
-    print "Canvas / main loop: PID", os.getpid()
     try:
       fig, ax = plt.subplots(figsize=self.window_size)  # note we must use plt.subplots, not plt.subplot
       image = ax.imshow(plt.imread(self.bg_image), cmap=cm.coolwarm)
