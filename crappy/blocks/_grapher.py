@@ -93,6 +93,10 @@ class Grapher(MasterBlock):
           Data = self.inputs[0].recv()  # recv data
           if type(Data) is not OrderedDict:
             Data = OrderedDict(zip(Data.columns, Data.values[0]))
+          if type(Data[Data.keys()[0]]) != list:
+            #got uncompacted data
+            for k in Data:
+              Data[k] = [Data[k]]
           legend_ = [self.args[i][1] for i in range(self.nbr_graphs)]
           if save_number > 0:  # lose the first round of data
             if save_number == 1:  # init
@@ -171,5 +175,4 @@ class Grapher(MasterBlock):
     except (Exception, KeyboardInterrupt) as e:
       print "Exception in grapher %s: %s" % (os.getpid(), e)
       plt.close('all')
-    finally:
-      plt.close('all')
+      raise
