@@ -62,7 +62,6 @@ class Grapher(MasterBlock):
             plot a dynamic graph that will display the last 30 chunks of data sent by the compacter
     """
     super(Grapher, self).__init__()
-    print "grapher!"
     self.len_graph = kwargs.get("length", 10)
     self.window_pos = kwargs.get("window_pos")
     self.window_size = kwargs.get("window_size", (8, 8))
@@ -73,31 +72,8 @@ class Grapher(MasterBlock):
       self.args = args
     self.nbr_graphs = len(self.args)
 
-    if args[0] in ["static",
-                   "dynamic"]:  ### Support old syntax to avoid generalized incontrollable panic (to be deleted in the future) ---
-      redWarn = '[\033[31m\033[1mWARNING!\033[0m] '  # Red warning, for persuasion
-      print redWarn + "The grapher syntax is evolving! You must remove \"{}\", " \
-                      "you can use length=x (default: 10) " \
-                      "if you want to specify the width of the window (0 means a static graph)".format(args[0])
-      print "Note: The deprecated syntax is still supported for now but you MUST change your graphers NOW! " \
-            "You cannot ignore this forever or your programs will crash in an incoming update, " \
-            "also  a kitten suddenly dies somewhere in the world everytime you see this message :("
-      print """
- /\\_/\\
-( o.o )
- > ^ <
- MEOW!
-          """
-      print "Save the cats, change your grapher."  # Drama, for extra-persuasion
-      import warnings
-      warnings.warn("Deprecated syntax for Grapher", DeprecationWarning)
-      self.mode = args[0]
-      self.args = args[1:]
-      self.nbr_graphs -= 1  ### End of the part to delete  ---
-
   def main(self):
     try:
-      print "Grapher / main loop: PID", os.getpid()
       if self.mode == "dynamic":
         save_number = 0
         fig = plt.figure(figsize=self.window_size)
