@@ -50,6 +50,7 @@ from _sink import Sink
 from _videoExtenso import VideoExtenso
 from _streamerCamera import StreamerCamera
 from _streamer import Streamer
+from _dashboard import Dashboard
 
 try:
   from _videoExtenso import VideoExtenso
