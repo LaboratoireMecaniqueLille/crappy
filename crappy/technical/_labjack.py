@@ -14,7 +14,6 @@
 from labjack import ljm
 from time import time, sleep
 from sys import exc_info
-from os import getpid
 from ._meta import io
 from collections import OrderedDict
 from multiprocessing import Process, Queue
@@ -135,31 +134,26 @@ class LabJack(io.Control_Command):
       self.root = Tk()
       self.root.title('LabJack Streamer Information')
       self.root.resizable(width=False, height=False)
-
-      self.first_column = \
-        ['Scan Rate', 'Samples Collecting Rate', 'Chronometer', 'Device Buffer', 'Software Buffer']
-      self.second_column = \
-        ['%.1f kHz' % (scan_rate_per_channel / 1000.), '%.1f kSamples per read' % (scans_per_read / 1000.), 0.0, 0, 0]
+      self.c2 = []  # List to update
+      self.first_column = ['Scan Rate', 'Samples Collecting Rate', 'Chronometer', 'Device Buffer', 'Software Buffer']
+      self.second_column = ['%.1f kHz' % (scan_rate_per_channel / 1000.),
+                            '%.1f kSamples per read' % (scans_per_read / 1000.), 0.0, 0, 0]
       for row_index, first_column in enumerate(self.first_column):
         Label(self.root, text=first_column, borderwidth=10).grid(row=row_index, column=0)
-        Label(self.root, text=self.second_column[row_index], borderwidth=10).grid(row=row_index, column=1)
+        self.c2.append(Label(self.root, text=self.second_column[row_index], borderwidth=10))
+        self.c2[-1].grid(row=row_index, column=1)
       self.update()
 
     def update(self):
       """Method to update data inside the dialog box. The window is updated every time data in queue occurs."""
-      try:
+      array = queue.get()
+      t0 = array[0]
+      while True:
+        array[0] = '%.1f' % (array[0] - t0)
+        for row_index, value in enumerate(array):
+          self.c2[row_index + 2].configure(text=value, borderwidth=10)
+        self.root.update()
         array = queue.get()
-        t0 = array[0]
-        while True:
-          array[0] = '%.1f' % (array[0] - t0)
-          for row_index, value in enumerate(array):
-            Label(self.root, text=value, borderwidth=10).grid(row=row_index + 2, column=1)
-          self.root.update()
-          array = queue.get()
-      except KeyboardInterrupt:
-        pass
-      except Exception:
-        raise
 
   def new(self):
     """
