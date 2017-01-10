@@ -18,11 +18,18 @@ from Tkinter import Tk, Label
 import threading
 from Queue import Queue
 import numpy as np
-import time
 
 class Dashboard(MasterBlock):
-
+  """
+  The Dashboard receives data from a link, and plots it on a new poped window. It can receive either a single point,
+  or a list of points. In this case, the displayed value corresponds to the average of points.
+  """
   def __init__(self, *args, **kwargs):
+    """
+    Args:
+      labels: list, values to plot on the output window. If undefined, will plot every data (with time in first)
+      nb_digits: int, number of decimals to show, for every value.
+    """
     super(Dashboard, self).__init__()
     self.labels = kwargs.get('labels', None)
     self.nb_display_values = len(self.labels) if self.labels else None
@@ -31,6 +38,9 @@ class Dashboard(MasterBlock):
     queue = Queue()
 
   class Dashboard:
+    """
+    Dashboard class created, is launched in a new thread.
+    """
     def __init__(self, labels, nb_digits):
       self.root = Tk()
       self.root.title('Dashboard')
@@ -46,6 +56,9 @@ class Dashboard(MasterBlock):
       self.update()
 
     def update(self):
+      """
+      Method to update the output window.
+      """
       values = queue.get()
       for row, text in enumerate(values):
         self.c2[row].configure(text='%.{}f'.format(self.nb_digits) % text)
@@ -53,6 +66,9 @@ class Dashboard(MasterBlock):
       self.root.after(10, func=self.update())
 
   def main(self):
+    """
+    Main loop.
+    """
     if not self.labels:
       self.labels = self.inputs[0].recv(blocking=True).keys()
       self.nb_display_values = len(self.labels)
