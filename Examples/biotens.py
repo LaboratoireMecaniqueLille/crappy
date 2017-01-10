@@ -30,30 +30,24 @@ if __name__ == "__main__":
     F_offset = eval_offset(F_sensor,1)
     F_sensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[F_offset])
     # Creating F block
-    effort = crappy.blocks.MeasureByStep(F_sensor, labels=['t(s)', 'F(N)'], freq=100)
-    # Associated compacter
-    comp_effort = crappy.blocks.Compacter(100)
-    crappy.link(effort,comp_effort)
+    effort = crappy.blocks.MeasureByStep(F_sensor, labels=['t(s)', 'F(N)'], freq=100,compacter=100)
     # grapher
     graph_effort = crappy.blocks.Grapher(('t(s)','F(N)'),length=30)
-    crappy.link(comp_effort,graph_effort)
+    crappy.link(effort,graph_effort)
     # and saver
     save_effort = crappy.blocks.Saver(save_path+"effort.csv")
-    crappy.link(comp_effort,save_effort)
+    crappy.link(effort,save_effort)
     
     # Creating biotens technical
     biotensTech = crappy.technical.Biotens(port='/dev/ttyUSB0', size=10)  # Used to initialize motor.
     # Biotens block
-    biotens = crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5)
-    # Position compacter
-    comp_pos= crappy.blocks.Compacter(5)
-    crappy.link(biotens,comp_pos)
+    biotens = crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5,compacter=5)
     # grapher
-    graph_pos= crappy.blocks.Grapher(('t(s)', 'position'), length=10)
-    crappy.link(comp_pos,graph_pos)
+    graph_pos= crappy.blocks.Grapher(('t(s)', 'position1'), length=10)
+    crappy.link(biotens,graph_pos)
     # And saver
     save_pos= crappy.blocks.Saver(save_path+'pos.csv')
-    crappy.link(comp_pos,save_pos)
+    crappy.link(biotens,save_pos)
 
     # To pilot the biotens
     signal_generator = crappy.blocks.SignalGenerator(path=[
@@ -67,7 +61,7 @@ if __name__ == "__main__":
 
     # VideoExtenso
     extenso = crappy.blocks.VideoExtenso(camera="Ximea", white_spot=False, display=True)
-    # Compacter
+    # Compacter (will soon be unnecessary)
     comp_extenso = crappy.blocks.Compacter(90)
     crappy.link(extenso,comp_extenso)
     # Saver
