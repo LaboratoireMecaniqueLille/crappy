@@ -12,17 +12,17 @@
 # @version 0.1
 # @date 11/07/2016
 
-from _masterblock import MasterBlock
+from _compacterblock import CompacterBlock
 import time
 # import pandas as pd
 from collections import OrderedDict
 from ..links._link import TimeoutError
 
 
-class CommandBiotens(MasterBlock):
+class CommandBiotens(CompacterBlock):
   """Receive a signal and send it for the Biotens actuator"""
 
-  def __init__(self, biotens_technicals, signal_label='signal', speed=5):
+  def __init__(self, biotens_technicals, signal_label='signal', speed=5, **kwargs):
     """
     Receive a signal and translate it for the Biotens actuator.
 
@@ -34,7 +34,13 @@ class CommandBiotens(MasterBlock):
         speed: int, default = 5
             Wanted speed, in mm/min.
     """
-    super(CommandBiotens, self).__init__()
+    labels = kwargs.get("labels")
+    if not labels:
+      labels = ['t(s)']
+      for i in range(len(biotens_technicals)):
+        labels.append('position%d'%(i+1))
+    compacter=kwargs.get('compacter',1)
+    CompacterBlock.__init__(self,labels=labels,compacter=compacter)
     self.biotens_technicals = biotens_technicals
     self.speed = speed
     self.signal_label = signal_label
@@ -60,18 +66,10 @@ class CommandBiotens(MasterBlock):
         if (t - self.last_time) >= 0.2:
           # print "top command3"
           self.last_time = t
+          data = [t-self.t0]
           for biotens_technical in self.biotens_technicals:
-            position = biotens_technical.sensor.get_position()
-          # Array=pd.DataFrame([[t-self.t0,position]],columns=['t(s)','position'])
-          Array = OrderedDict(zip(['t(s)', 'position'], [t - self.t0, position]))
-          try:
-            for output in self.outputs:
-              # print "sending position ..."
-              output.send(Array)
-          except TimeoutError:
-            raise
-          except AttributeError:  # if no outputs
-            pass
+            data.append(biotens_technical.sensor.get_position())
+          self.send(data)
 
     except (Exception, KeyboardInterrupt) as e:
       print "Exception in CommandBiotens : ", e
