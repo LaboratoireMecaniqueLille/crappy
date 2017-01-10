@@ -53,9 +53,9 @@ class Saver(MasterBlock):
       -1]  # To define if it's a CSV, or a simple TXT where lists are saved directly.
     self.log_name = log_file.rstrip(self.output_format).rsplit('/', 1)[-1]
     self.known_formats = ['.txt', '.csv']
-    assert self.output_format in self.known_formats, (
-      'Unknown output format. Possible formats are:', self.known_formats)
-
+    assert self.output_format in self.known_formats, \
+      ('Unknown output format. Possible formats are:', self.known_formats)
+    self.trigger = kwargs.get('trigger', False)
     self.existing = False
     if not os.path.exists(os.path.dirname(log_file)):
       # check if the directory exists, otherwise create it
@@ -76,9 +76,10 @@ class Saver(MasterBlock):
 
   def main(self):
     first = True
-    print "Saver: PID", os.getpid()
     while True:
       try:
+        if self.trigger and self.inputs[1].recv(blocking=False):  # In case of triggering event
+          pass
         Data = self.inputs[0].recv()  # recv data
         data = np.transpose(Data.values())
         fo = open(self.log_file, "a", buffering=3)  # "a" for appending, buffering to limit r/w disk access.
