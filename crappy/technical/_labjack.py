@@ -77,7 +77,7 @@ class LabJack(io.Control_Command):
     elif actuator:
       self.open_handle(actuator)
     else:
-      print 'NONE'
+      print 'Wrong labjack parameters definition.'
     if sensor:
       def var_tester(var, nb_channels):
         """Used to check if the user entered correct parameters."""
@@ -119,11 +119,7 @@ class LabJack(io.Control_Command):
       self.offset_command = actuator.get('offset', 0)
 
   def open_handle(self, dictionary):
-
-    try:
-      self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, dictionary.get('identifier', 'ANY'))
-    except:
-      self.open_handle(dictionary)
+    self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, dictionary.get('identifier', 'ANY'))
 
   class DialogBox:
     """
