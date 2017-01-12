@@ -119,7 +119,14 @@ class LabJack(io.Control_Command):
       self.offset_command = actuator.get('offset', 0)
 
   def open_handle(self, dictionary):
-    self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, dictionary.get('identifier', 'ANY'))
+    try:
+      self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, dictionary.get('identifier', 'ANY'))
+    except ljm.LJMError as e:
+      if e == 'LJM library error code 1239 LJME_RECONNECT_FAILED':
+        sleep(0.5)
+        self.open_handle(dictionary)
+      else:
+        raise
 
   class DialogBox:
     """
@@ -128,7 +135,7 @@ class LabJack(io.Control_Command):
 
     def __init__(self, scan_rate_per_channel, scans_per_read):
       self.root = Tk()
-      self.root.title('LabJack Streamer Information')
+      self.root.title('LabJack Streamer')
       self.root.resizable(width=False, height=False)
       self.c2 = []  # List to update
       self.first_column = ['Scan Rate', 'Samples Collecting Rate', 'Chronometer', 'Device Buffer', 'Software Buffer']
@@ -194,10 +201,13 @@ class LabJack(io.Control_Command):
             else:
               a_values.append(to_write.get(key))
       ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
-    except ljm.LJMError:
-      self.close()
-      raise exc_info()[1]
-    except:
+    except ljm.LJMError as e:
+      if e == 'LJM library error code 1239 LJME_RECONNECT_FAILED':
+        self.new()
+      else:
+        self.close()
+        raise exc_info()[1]
+    except Exception:
       self.close()
       raise
 
