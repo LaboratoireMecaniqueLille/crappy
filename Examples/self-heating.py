@@ -33,8 +33,8 @@ class EvalStress(crappy.links.Condition):
   """
 
   def __init__(self):
-    self.I = np.pi * ((25 * 10 ** -3) ** 4 - (22 * 10 ** -3) ** 4) / 32
-    self.rmax = 25 * 10 ** (-3) / 2
+    self.I = np.pi * (25e-3 ** 4 - 22e-3 ** 4) / 32
+    self.rmax = 25e-3 / 2
 
   def evaluate(self, value):
     value['tau(MPa)'] = (((np.array(value['C(Nm)']) / self.I) * self.rmax) * 10 ** -6).tolist()
@@ -71,8 +71,6 @@ def eval_offset(device, duration):
 #   sensor={'channels': ['AIN0', 'AIN1'], 'gain': [1, 1], 'offset': offsets, 'chan_range': 10,
 #           'resolution': 8, 'identifier': 470012991},
 #   actuator={'channel': 'TDAC0', 'gain': 1, 'offset': 0}, wait=2)
-
-
 
 
 sensor_thermocouples = crappy.technical.LabJack(sensor={'channels': [0, 1, 2, 3, 4, 5], 'mode': 'thermocouple',
