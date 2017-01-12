@@ -90,7 +90,7 @@ class Grapher(MasterBlock):
         fig.canvas.draw()  # draw and show it
         plt.show(block=False)
         while True:
-          Data = self.inputs[0].recv()  # recv data
+          Data = self.recv(0)  # recv data
           if type(Data) is not OrderedDict:
             Data = OrderedDict(zip(Data.columns, Data.values[0]))
           if type(Data[Data.keys()[0]]) != list:
@@ -132,7 +132,7 @@ class Grapher(MasterBlock):
         first_round = True
         k = [0] * self.nbr_graphs  # internal value for downsampling
         while True:
-          Data = self.inputs[0].recv()  # recv data
+          Data = self.recv(0)  # recv data
           if type(Data) is not OrderedDict:
             Data = OrderedDict(zip(Data.columns, Data.values[0]))
           legend_ = [self.args[i][1] for i in range(self.nbr_graphs)]
@@ -171,6 +171,7 @@ class Grapher(MasterBlock):
           ax.relim()
           ax.autoscale_view(True, True, True)
           fig.canvas.draw()
+          plt.pause(0.001)
 
     except (Exception, KeyboardInterrupt) as e:
       print "Exception in grapher %s: %s" % (os.getpid(), e)
