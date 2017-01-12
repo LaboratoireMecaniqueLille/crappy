@@ -16,9 +16,9 @@ class OpenDAQ(io.Control_Command):
   def __init__(self, *args, **kwargs):
 
     self.channels = kwargs.get('channels', 1)  # Possible values: 1..8
-    self.nchannels = 1 if not isinstance(self.channels, list) else len(self.channels)
+    self.nb_channels = 1 if not isinstance(self.channels, list) else len(self.channels)
 
-    if isinstance(self.channels, list) and self.nchannels == 1:  # To unpack and prevent errors
+    if isinstance(self.channels, list) and self.nb_channels == 1:  # To unpack and prevent errors
       self.channels = self.channels[0]
 
     self.input_gain = kwargs.get('gain', 0)  # Possible values: 0..4 (x1/3, x1, x2, x10, x100)
@@ -31,15 +31,16 @@ class OpenDAQ(io.Control_Command):
     if self.mode == 'streamer':
       self.init_stream()
 
-    if self.nchannels > 1:
+    if self.nb_channels > 1:
       self.getter = itemgetter(*self.channels)
 
   def new(self):
     try:
       self.handle = DAQ("/dev/ttyUSB0")
-    except:
+    except OSError:
       self.handle = DAQ("/dev/ttyUSB1")
-    if self.nchannels == 1 and self.mode == 'single':
+
+    if self.nb_channels == 1 and self.mode == 'single':
       self.handle.conf_adc(pinput=self.channels, ninput=self.negative_channel, gain=self.input_gain,
                            nsamples=self.input_nsamples_per_read)
 
@@ -81,11 +82,11 @@ class OpenDAQ(io.Control_Command):
     return self.generator.next()
     # return self.stream_exp.read()
     # data = []
-    # for index in xrange(self.nchannels):
+    # for index in xrange(self.nb_channels):
     #   data[index] = self.stream_exp[index].read()
 
   def get_data(self, mock=None):
-    if self.nchannels == 1:
+    if self.nb_channels == 1:
       data = [self.handle.read_analog()]
     else:
       data = list(self.getter(self.handle.read_all(self.input_nsamples_per_read)))
