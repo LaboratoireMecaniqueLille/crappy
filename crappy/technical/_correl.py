@@ -682,6 +682,7 @@ class TechCorrel:
   """
 
   def __init__(self, img_size, **kwargs):
+    print("ZBELELE")
     cuda.init()
     from pycuda.tools import make_default_context
     global context

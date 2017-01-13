@@ -34,6 +34,7 @@ class Correl(MasterBlock):
   def __init__(self, img_size, **kwargs):
     MasterBlock.__init__(self)
     self.ready = False
+    self.img_size = img_size
     self.Nfields = kwargs.get("Nfields")
     self.verbose = kwargs.get("verbose", 0)
     if self.Nfields is None:
@@ -68,7 +69,7 @@ with fields=(.,.) or Nfields=k"
       self.drop = kwargs["drop"]
       del kwargs["drop"]
     else:
-      self.drop = True
+      self.drop = False
     # Handle res parameters: if true, also return the residual
     if kwargs.get("res") is not None:
       self.res = kwargs["res"]
@@ -76,48 +77,29 @@ with fields=(.,.) or Nfields=k"
       self.labels += ("res",)
     else:
       self.res = False
-    pipeProcess, self.pipeClass = Pipe()
-    self.process = Process(target=self.main,
-                           args=(pipeProcess, img_size), kwargs=kwargs)
+    self.kwargs = kwargs
 
-  def init(self):
-    self.process.start()
-    self.pipeClass.recv()  # Waiting for init to be over
-    self.ready = True
-
-  def start(self):
-    if self.ready == False:
-      print "[Correl block] WARNING ! This block takes time to init, you must \
-call .init() before .start() JUST before starting all the blocks to \
-initialize it properly. This way, the program only starts when correl is \
-ready to process incoming data."
-      self.init()
-    self.pipeClass.send(0)  # Notify the process to let it start
-
-  def stop(self):
-    self.process.terminate()
-
-  def main(self, pipe, img_size, **kwargs):
+  def prepare(self):
     if self.drop:
-      datapicker = DataPicker(self.inputs[0])
-    correl = TechCorrel(img_size, **kwargs)
-    pipe.send(0)  # Sending signal to let init return
+      self.datapicker = DataPicker(self.inputs[0])
+    self.correl = TechCorrel(self.img_size, **self.kwargs)
+    print("CORREL READY")
+
+  def main(self):
     nLoops = 100  # For testing: resets the original images every nLoops loop
     try:
-      pipe.recv()  # Waiting for the actual start
-      # print "[Correl block] Got start signal !"
       t2 = time() - 1
       if self.drop:
-        datapicker.get_data()
-        data = datapicker.get_data().astype(np.float32)
+        self.datapicker.get_data() # Drop the first...
+        data = self.datapicker.get_data().astype(np.float32)
       else:
         # Drop the first image
-        self.inputs[0].recv()
+        self.recv(0)
         # This is the only time the original picture is set, so the residual may
         # increase if lightning vary or large displacements are reached
-        data = self.inputs[0].recv().astype(np.float32)
-      correl.setOrig(data)
-      correl.prepare()
+        data = self.recv(0).astype(np.float32)
+      self.correl.setOrig(data)
+      self.correl.prepare()
       tr1 = tr2 = time()
       while True:
         t1 = time()
@@ -136,16 +118,12 @@ ready to process incoming data."
             data = self.inputs[0].recv()
           tr2 += time()
           t = time() - self.t0
-          correl.setImage(data.astype(np.float32))
-          out = [t] + correl.getDisp().tolist()
+          self.correl.setImage(data.astype(np.float32))
+          out = [t] + self.correl.getDisp().tolist()
           if self.res:
-            out += [correl.getRes()]
+            out += [self.correl.getRes()]
           Dout = OrderedDict(zip(self.labels, out))
-          for o in self.outputs:
-            o.send(Dout)
+          self.send(Dout)
     except Exception as e:
       print "Error in Correl", e
       raise e
-
-  def __repr__(self):
-    return "Correl block with" + str(self.levels) + "levels"
