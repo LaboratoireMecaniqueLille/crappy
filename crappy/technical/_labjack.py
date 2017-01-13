@@ -10,54 +10,55 @@
 # @author Francois Bari
 # @version 0.9
 # @date 18/08/2016
-
+from __future__ import print_function
 from labjack import ljm
 from time import time, sleep
-from sys import exc_info
 from collections import OrderedDict
 from multiprocessing import Process, Queue
 from Tkinter import Tk, Label
 from inspect import ismethod, getmembers
+from os import getpid
+
 
 class LabJack_UE9(object):
   def __init__(self, *args, **kwargs):
     pass
 
   def open_handle(self, dictionary):
-    print 'open handle'
+    print('open handle')
     pass
 
   def new(self):
-    print 'new'
+    print('new')
     pass
 
   def start_stream(self):
-    print 'start stream'
+    print('start stream')
     pass
 
   def get_data(self, mock=None):
-    print 'get data'
+    print('get data')
     pass
 
   def get_stream(self):
-    print 'get stream'
+    print('get stream')
     pass
 
   def set_cmd(self, cmd, *args):
-    print 'set cmd'
+    print('set cmd')
     pass
 
   def close(self):
-    print 'close'
+    print('close')
     pass
 
   def close_streamer(self):
-    print 'close streamer'
+    print('close streamer')
     pass
 
 
 class LabJack_T7(object):
-  """Sensor class for LabJack devices."""
+  """Sensor class for LabJack T7 devices."""
 
   def __init__(self, **kwargs):
     """
@@ -105,20 +106,24 @@ class LabJack_T7(object):
         identifier:            str. Used if multiple labjacks are connected. The identifier could be anything
                                that could define the device : serial number, name, wifi version..
         """
+
     # super(LabJack, self).__init__()
+    def vprint(*args):
+      """
+      Function used in case of verbosity.
+      """
+      print('[crappy.technical.Labjack] T7 device, PID', getpid(), *args)
+
     def open_handle(dictionary):
+      """
+      Function used only to open handle. For better exception behavior handling.
+      """
       try:
         handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, dictionary.get('identifier', 'ANY'))
         return handle
-
-      except ljm.LJMError.errorCode as e:
-        print 'dis moi tout'
-        if e == '1239':
-          sleep(0.5)
-          print 'Reconnecting...'
-          raise
-
-
+      except ljm.LJMError as e:
+        self.vprint('open_handle exception:', e)
+        raise
 
     def var_tester(var, nb_channels):
       """Used to check if the user entered correct parameters."""
@@ -129,25 +134,30 @@ class LabJack_T7(object):
         str(var) + "Error: parameters should be int or float."
       return var
 
+    self.verbose = kwargs.get('verbose', False)
+    self.vprint = vprint if self.verbose else lambda *args: None
+
     self.sensor_args = kwargs.get('sensor', None)
     self.actuator_args = kwargs.get('actuator', None)
-    self.handle = False
+    self.handle = None
+
     while True:
       try:
         if self.sensor_args and not self.handle:
           self.handle = open_handle(self.sensor_args)
-
         elif self.actuator_args and not self.handle:
           self.handle = open_handle(self.actuator_args)
-
         elif self.handle:
           break
-
         else:
-          print 'Could not open handle.'
+          self.vprint('Could not open handle.')
           break
-      except ljm.LJMError:
-        pass
+      except ljm.LJMError.errorCode as error_code:
+        if error_code == 1239:
+          self.vprint('Reconnecting...')
+          pass
+        else:
+          raise
     if self.sensor_args:
 
       self.channels = self.sensor_args.get('channels', 'AIN0')
@@ -167,7 +177,6 @@ class LabJack_T7(object):
       self.mode = self.sensor_args.get('mode', 'single').lower()
 
       if self.mode == "streamer":
-
         # Additional variables used in streamer mode only.
         self.a_scan_list = ljm.namesToAddresses(self.nb_channels, self.channels)[0]
         self.scan_rate_per_channel = self.sensor_args.get('scan_rate_per_channel', 1000)
@@ -175,9 +184,20 @@ class LabJack_T7(object):
         if self.scan_rate_per_channel * self.nb_channels >= 100000:
           self.scan_rate_per_channel = int(100000 / self.nb_channels)
         self.scans_per_read = self.sensor_args.get('scans_per_read', int(self.scan_rate_per_channel / 10.))
-        global queue  # Used to run a dialog box in parallel
-        queue = Queue()
-      self.new()
+        if self.verbose:
+          global queue  # Used to run a dialog box in parallel
+          queue = Queue()
+      while True:
+        try:
+          self.new()
+          break
+        except ljm.LJMError as e:
+          if e.errorCode == 2605 or e.errorCode == 1239:
+            pass
+          else:
+            raise
+        except Exception:
+          raise
 
     if self.actuator_args:
       self.channel_command = self.actuator_args.get('channel', "DAC0")
@@ -186,7 +206,7 @@ class LabJack_T7(object):
 
   class DialogBox:
     """
-    Dialog box that pops when using streamer function.
+    Dialog box that pops when using streamer function with verbosity.
     """
 
     def __init__(self, scan_rate_per_channel, scans_per_read):
@@ -218,47 +238,50 @@ class LabJack_T7(object):
     """
     Initialize the device.single
     """
+    # res_max = 12 if ljm.eReadName(self.handle, "WIFI_VERSION") > 0 else 8  # Test if LabJack is pro or not
+    # assert False not in [0 <= self.resolution[chan] <= res_max for chan in range(self.nb_channels)], \
+    #   "Wrong definition of resolution index. INDEX_MAX for T7: 8, for T7PRO: 12"
+    if self.mode == "single":
+      to_write = OrderedDict([
+        ("_RANGE", self.chan_range),
+        ("_RESOLUTION_INDEX", self.resolution),
+        ("_EF_INDEX", 1),  # for applying a slope and offset
+        ("_EF_CONFIG_D", self.gain),  # index to set the gain
+        ("_EF_CONFIG_E", self.offset)  # index to set the offset
+      ])
+
+    elif self.mode == "thermocouple":
+      to_write = OrderedDict([
+        ("_EF_INDEX", 22),  # for thermocouple measures
+        ("_EF_CONFIG_A", 1),  # for degrees C
+        ("_EF_CONFIG_B", 60052),  # for type K
+        ("_RESOLUTION_INDEX", self.resolution)
+      ])
+
+    elif self.mode == "streamer":
+      a_names = ["AIN_ALL_RANGE", "STREAM_SETTLING_US", "STREAM_RESOLUTION_INDEX"]
+      a_values = [int(self.chan_range[0]), 0, int(self.resolution[0])]
+    else:
+      self.vprint('Error in new: unrecognized mode. Check documentation.')
+      raise
+
+    if self.mode == "single" or self.mode == "thermocouple":
+      a_values = []
+      a_names = []
+      for chan_iteration in range(self.nb_channels):
+        for count, key in enumerate(to_write):
+          a_names.append(self.channels[chan_iteration] + to_write.keys()[count])
+          if isinstance(to_write.get(key), list):
+            a_values.append(to_write.get(key)[chan_iteration])
+          else:
+            a_values.append(to_write.get(key))
+
     try:
-      res_max = 12 if ljm.eReadName(self.handle, "WIFI_VERSION") > 0 else 8  # Test if LabJack is pro or not
-      assert False not in [0 <= self.resolution[chan] <= res_max for chan in range(self.nb_channels)], \
-        "Wrong definition of resolution index. INDEX_MAX for T7: 8, for T7PRO: 12"
-      if self.mode == "single":
-        to_write = OrderedDict([
-          ("_RANGE", self.chan_range),
-          ("_RESOLUTION_INDEX", self.resolution),
-          ("_EF_INDEX", 1),  # for applying a slope and offset
-          ("_EF_CONFIG_D", self.gain),  # index to set the gain
-          ("_EF_CONFIG_E", self.offset)  # index to set the offset
-        ])
-
-      elif self.mode == "thermocouple":
-        to_write = OrderedDict([
-          ("_EF_INDEX", 22),  # for thermocouple measures
-          ("_EF_CONFIG_A", 1),  # for degrees C
-          ("_EF_CONFIG_B", 60052),  # for type K
-          ("_RESOLUTION_INDEX", self.resolution)
-        ])
-
-      elif self.mode == "streamer":
-        a_names = ["AIN_ALL_RANGE", "STREAM_SETTLING_US", "STREAM_RESOLUTION_INDEX"]
-        a_values = [int(self.chan_range[0]), 0, int(self.resolution[0])]
-
-      else:
-        raise Exception("Unrecognized mode. Check documentation.")
-
-      if self.mode == "single" or self.mode == "thermocouple":
-        a_values = []
-        a_names = []
-        for chan_iteration in range(self.nb_channels):
-          for count, key in enumerate(to_write):
-            a_names.append(self.channels[chan_iteration] + to_write.keys()[count])
-            if isinstance(to_write.get(key), list):
-              a_values.append(to_write.get(key)[chan_iteration])
-            else:
-              a_values.append(to_write.get(key))
       ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
-
-    except Exception:
+    except ljm.LJMError as e:
+      self.vprint('Exception in new creation:', e)
+      if e.errorCode == 2605:
+        self.close_streamer()
       self.close()
       raise
 
@@ -269,9 +292,11 @@ class LabJack_T7(object):
     try:
       ljm.eStreamStart(self.handle, self.scans_per_read, self.nb_channels,
                        self.a_scan_list, self.scan_rate_per_channel)
-      Process(target=self.DialogBox, args=(self.scan_rate_per_channel, self.scans_per_read)).start()
+      if self.verbose:
+        Process(target=self.DialogBox, args=(self.scan_rate_per_channel, self.scans_per_read)).start()
 
-    except Exception:
+    except ljm.LJMError as e:
+      self.vprint('Error in start_stream:', e)
       self.close_streamer()
       raise
 
@@ -282,7 +307,8 @@ class LabJack_T7(object):
     try:
       results = ljm.eReadNames(self.handle, self.nb_channels, self.channels_index_read)
       return time(), results
-    except Exception:
+    except ljm.LJMError as e:
+      self.vprint('Error in get_data:', e)
       self.close()
       raise
 
@@ -294,7 +320,8 @@ class LabJack_T7(object):
       retrieved_from_buffer = ljm.eStreamRead(self.handle)
       results = retrieved_from_buffer[0]
       timer = time()
-      queue.put([timer, retrieved_from_buffer[1], retrieved_from_buffer[2]])
+      if self.verbose:
+        queue.put([timer, retrieved_from_buffer[1], retrieved_from_buffer[2]])
       return timer, results
 
     except Exception:
@@ -312,23 +339,31 @@ class LabJack_T7(object):
     """
     Close the device.
     """
-    ljm.close(self.handle)
-    print "LabJack device closed"
+    try:
+      ljm.close(self.handle)
+    except ljm.LJMError as e:
+      if e.errorCode == 1224:
+        pass
+      else:
+        raise
+    self.vprint("LabJack device closed")
 
   def close_streamer(self):
     """
     Special method called if streamer is open.
     """
     while not queue.empty():
-    # Flushing the queue
+      # Flushing the queue
       queue.get_nowait()
     ljm.eStreamStop(self.handle)
     self.close()
+
 
 class LabJack(object):
   """
   Parent class that loads the one of the above class depending on the device connected.
   """
+
   def __init__(self, *args, **kwargs):
     """
     The parameters are the same as defined for each device. This class simply inherits from it.
@@ -354,7 +389,7 @@ class LabJack(object):
     elif self.type == 'ue9':
       self.sublabjack = LabJack_UE9(**kwargs)
     else:
-      print 'Error: LabJack not recognized.'
+      print('Error: LabJack not recognized.')
 
     methods = getmembers(self.sublabjack, predicate=ismethod)
     variables = vars(self.sublabjack)
