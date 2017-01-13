@@ -33,11 +33,11 @@ except:
 
 
 class _CameraInit:
-  def __init__(self, camera, videoextenso={}):
+  def __init__(self, camera, videoextenso):
     # videoextenso = {'enabled':True, 'white_spot':True, 'border':4,'xoffset':0,'yoffset':0,
     # 'width':2048,'height':2048}
-    self.cam = camera
     self.videoextenso = videoextenso
+    self.cam = camera
     self.rect = {}
     rat = 0.7
     Width = 7
@@ -103,7 +103,7 @@ class _CameraInit:
   # self.xoffset = self.cam.xoffset
 
   def start(self):
-    if self.videoextenso['enabled']:
+    if self.videoextenso and self.videoextenso['enabled']:
       def toggle_selector(self, event):
         toggle_selector.RS.set_active(False)
 
@@ -380,7 +380,7 @@ class _CameraInit:
         self.cam.xoffset), int(self.cam.yoffset)
 
 
-def get_camera_config(cam, videoExtenso, send_pipe=None):
+def get_camera_config(cam, videoExtenso=None, send_pipe=None):
   """
   Function to open and configure a camera device.
   Args:
@@ -388,15 +388,14 @@ def get_camera_config(cam, videoExtenso, send_pipe=None):
       videoExtenso: dictionnary to enable or disable the videoExtenso initialization.
       send_pipe:
   """
-
+  if videoExtenso == None:
+    videoExtenso = {"enabled": False, "width": cam.width, "height": cam.height,
+                    "xoffset": cam.xoffset, "yoffset": cam.yoffset}
   d = _CameraInit(cam, videoExtenso)
   d.start()
-  try:
-    d.cam.close()
-    print "data sent"
-    plt.close()
+  #d.cam.close()
+  plt.close()
+  if send_pipe:
     send_pipe.send(d.get_configuration())
-  except Exception as e:
-    print "error : ", e
-    d.cam.close()
-    plt.close()
+  else:
+    return d.get_configuration()
