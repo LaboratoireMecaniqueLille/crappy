@@ -53,17 +53,24 @@ class Dashboard(MasterBlock):
         Label(self.root, text=first_column, borderwidth=15, font=("Courier bold", 48)).grid(row=row_index, column=0)
         self.c2.append(Label(self.root, text='', borderwidth=15, font=("Courier bold", 48)))
         self.c2[row_index].grid(row=row_index, column=1)
-      self.update()
+      self.i = 0
+      while True:
+        self.update()
 
     def update(self):
       """
       Method to update the output window.
       """
+      # while True:
       values = queue.get()
       for row, text in enumerate(values):
         self.c2[row].configure(text='%.{}f'.format(self.nb_digits) % text)
       self.root.update()
-      self.root.after(10, func=self.update())
+      # self.update()
+      # self.i += 1
+      # print self.i
+      # self.root.after(10, func=self.update())
+
 
   def main(self):
     """
