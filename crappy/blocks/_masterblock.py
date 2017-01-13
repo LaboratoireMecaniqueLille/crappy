@@ -142,5 +142,11 @@ class MasterBlock(Process):
   def add_input(self,i):
     self.inputs.append(i)
 
+  def stop(self):
+    try:
+      self.terminate()
+    except Exception as e:
+      print(self,"Could not terminate:",e)
+
 def delay(s):
   time.sleep(s)
