@@ -124,6 +124,8 @@ class LabJack_T7(object):
       except ljm.LJMError as e:
         self.vprint('open_handle exception:', e)
         raise
+      except:
+        raise
 
     def var_tester(var, nb_channels):
       """Used to check if the user entered correct parameters."""
@@ -141,23 +143,23 @@ class LabJack_T7(object):
     self.actuator_args = kwargs.get('actuator', None)
     self.handle = None
 
-    while True:
-      try:
-        if self.sensor_args and not self.handle:
-          self.handle = open_handle(self.sensor_args)
-        elif self.actuator_args and not self.handle:
-          self.handle = open_handle(self.actuator_args)
-        elif self.handle:
-          break
-        else:
-          self.vprint('Could not open handle.')
-          break
-      except ljm.LJMError.errorCode as error_code:
-        if error_code == 1239:
-          self.vprint('Reconnecting...')
-          pass
-        else:
-          raise
+    # while True:
+    #   try:
+    if self.sensor_args: # and not self.handle:
+      self.handle = open_handle(self.sensor_args)
+    elif self.actuator_args:  # and not self.handle:
+      self.handle = open_handle(self.actuator_args)
+    # elif self.handle:
+    #   break
+    else:
+      self.vprint('Could not open handle.')
+      # break
+      # except ljm.LJMError.errorCode as error_code:
+      #   if error_code == 1239:
+      #     self.vprint('Reconnecting...')
+      #     pass
+      #   else:
+      #     raise
     if self.sensor_args:
 
       self.channels = self.sensor_args.get('channels', 'AIN0')
@@ -187,17 +189,17 @@ class LabJack_T7(object):
         if self.verbose:
           global queue  # Used to run a dialog box in parallel
           queue = Queue()
-      while True:
-        try:
-          self.new()
-          break
-        except ljm.LJMError as e:
-          if e.errorCode == 2605 or e.errorCode == 1239:
-            pass
-          else:
-            raise
-        except Exception:
-          raise
+      # while True:
+      #   try:
+        #   break
+        # except ljm.LJMError as e:
+        #   if e.errorCode == 2605 or e.errorCode == 1239:
+        #     pass
+        #   else:
+        #     raise
+        # except Exception:
+        #   raise
+    self.new()
 
     if self.actuator_args:
       self.channel_command = self.actuator_args.get('channel', "DAC0")
@@ -236,7 +238,7 @@ class LabJack_T7(object):
 
   def new(self):
     """
-    Initialize the device.single
+    Initialize the device.
     """
     # res_max = 12 if ljm.eReadName(self.handle, "WIFI_VERSION") > 0 else 8  # Test if LabJack is pro or not
     # assert False not in [0 <= self.resolution[chan] <= res_max for chan in range(self.nb_channels)], \
@@ -262,8 +264,9 @@ class LabJack_T7(object):
       a_names = ["AIN_ALL_RANGE", "STREAM_SETTLING_US", "STREAM_RESOLUTION_INDEX"]
       a_values = [int(self.chan_range[0]), 0, int(self.resolution[0])]
     else:
-      self.vprint('Error in new: unrecognized mode. Check documentation.')
-      raise
+      message = 'Error in new: unrecognized mode. Check documentation.'
+      self.vprint(message)
+      raise TypeError(message)
 
     if self.mode == "single" or self.mode == "thermocouple":
       a_values = []
@@ -307,6 +310,7 @@ class LabJack_T7(object):
     try:
       results = ljm.eReadNames(self.handle, self.nb_channels, self.channels_index_read)
       return time(), results
+
     except ljm.LJMError as e:
       self.vprint('Error in get_data:', e)
       self.close()
@@ -346,6 +350,8 @@ class LabJack_T7(object):
         pass
       else:
         raise
+    except:
+      raise
     self.vprint("LabJack device closed")
 
   def close_streamer(self):

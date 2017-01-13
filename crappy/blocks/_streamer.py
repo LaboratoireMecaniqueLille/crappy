@@ -165,6 +165,8 @@ class Streamer(MasterBlock):
           self.send(array)
 
     except KeyboardInterrupt:
+      self.sensor.close_streamer()
       pass
     except Exception:
+      self.sensor.close_streamer()
       raise
