@@ -5,7 +5,7 @@ class CameraSensor:
   __metaclass__ = abc.ABCMeta
 
   @abc.abstractmethod
-  def __init__(self, numdevice, exposure, width, height, xoffset, yoffset, framespersec):
+  def __init__(self):
     return
 
   @abc.abstractmethod

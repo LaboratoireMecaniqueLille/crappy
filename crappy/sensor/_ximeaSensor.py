@@ -22,27 +22,6 @@ import ximeaModule as xi
 import time
 import platform
 
-
-def resettable(f, *args, **kwargs):
-  """
-  Decorator for resetting the camera device. Not working yet on Windows.
-  """
-  import copy
-
-  def __init_and_copy__(self, *args, **kwargs):
-    if not platform.system() == "Linux":
-      return f(self, **kwargs)
-    f(self, **kwargs)
-    self.__original_dict__ = copy.deepcopy(self.__dict__)
-
-    def reset(o=self):
-      o.__dict__ = o.__original_dict__
-
-    self.reset = reset
-
-  return __init_and_copy__
-
-
 class Ximea(cameraSensor.CameraSensor):
   """
   Camera class for ximea devices, this class should inherit from CameraSensor
@@ -61,8 +40,7 @@ class Ximea(cameraSensor.CameraSensor):
           Value must be in [0:7]. See documentation for more informations.
   """
 
-  @resettable
-  def __init__(self, numdevice=0, framespersec=None, external_trigger=False, data_format=0):
+  def __init__(self,**kwargs):
     """
 
     Args:
@@ -71,30 +49,27 @@ class Ximea(cameraSensor.CameraSensor):
         external_trigger: Enable (True) or disable (False) the external trigger mode.
         data_format: wanted data format, please see the ximea documentation for more details.
     """
-    ## number of frame per second wanted
-    self.FPS = framespersec
-    ## Device number
-    self.numdevice = numdevice
-    ## if true the external trigger is enabled.
-    self.external_trigger = external_trigger
-    ## wanted data format, please see the ximea documentation for more details.
-    self.data_format = data_format
-    ## default width of the frame
+    self.numdevice = kwargs.get("numdevice",0)
+    self.external_trigger = kwargs.get("external_trigger",False)
+    self.data_format = kwargs.get("data_format",0)
     self._defaultWidth = 2048
-    ## default height of the frame
     self._defaultHeight = 2048
-    ## default offset x
     self._defaultXoffset = 0
-    ## default offset y
     self._defaultYoffset = 0
-    ## default exposure time (in ms)
-    self._defaultExposure = 10000
-    ## default gain
+    self._defaultExposure = 10000 # (in µs)
     self._defaultGain = 0
-    ## number of acquired frames.
-    self.nbi = 0
+    self.nbi = 0 # number of acquired frames.
 
-  def new(self, exposure=10000, width=2048, height=2048, xoffset=0, yoffset=0, gain=0):
+    self._width = self._defaultWidth
+    self._height = self._defaultHeight
+    self._xoffset = self._defaultXoffset
+    self._yoffset = self._defaultYoffset
+
+  def reset(self):
+    self.ximea=None
+
+  def new(self, exposure=10000, width=2048, height=2048, xoffset=0, yoffset=0,
+           gain=0):
     """
     This method opens the ximea device and return a camera object.
 
@@ -112,12 +87,7 @@ class Ximea(cameraSensor.CameraSensor):
         Ximea instance.
 
     """
-    if platform.system() == "Linux":
-      nd, fps, et, df = self.numdevice, self.FPS, self.external_trigger, self.data_format
-      self.reset()
-      self.__init__(numdevice=nd, framespersec=fps, external_trigger=et, data_format=df)
-
-    GLOBAL_ENABLE_FLAG = True
+    self.reset()
 
     if type(self.numdevice) == str:
       # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
@@ -174,8 +144,8 @@ class Ximea(cameraSensor.CameraSensor):
 
       print "restarting camera..."
       time.sleep(2)
-      self.new(self.exposure, self.width, self.height, self.xoffset, self.yoffset,
-               self.gain)  # Reset the camera instance
+      self.new(self.exposure, self.width, self.height, 
+               self.xoffset, self.yoffset, self.gain)
       return self.get_image()
     except UnboundLocalError:  # if ret doesn't exist, because of KeyboardInterrupt
       print "ximea quitting, probably because of KeyBoardInterrupt"
@@ -356,7 +326,6 @@ class Ximea(cameraSensor.CameraSensor):
     these lines will print out:
          \code
          Exposure: 10000
-         FPS: 99
          Numdevice: 0
          Width: 2048
          Height: 2048
@@ -364,8 +333,8 @@ class Ximea(cameraSensor.CameraSensor):
          Y offset: 0
          \endcode
     """
-    return " Exposure: {0} \n FPS: {1} \n Numdevice: {2} \n Width: {3} \n Height: {4} " \
-           "\n X offset: {5} \n Y offset: {6}".format(self.exposure, self.FPS, self.numdevice, self.width,
+    return " Exposure: {0} \n Numdevice: {2} \n Width: {3} \n Height: {4} " \
+           "\n X offset: {5} \n Y offset: {6}".format(self.exposure, self.numdevice, self.width,
                                                       self.height, self.xoffset, self.yoffset)
 
   @property
