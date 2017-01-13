@@ -72,7 +72,7 @@ class TechnicalCamera(object):
     self.video_extenso = videoextenso
     data = get_camera_config(self.sensor,self.video_extenso)
     if self.video_extenso and self.video_extenso['enabled']:
-      self.exposure, self.gain, self.width, self.height, self.x_offset, self.y_offset, self.minx, self.max_x, \
+      self.exposure, self.gain, self.width, self.height, self.x_offset, self.y_offset, self.minx, self.maxx, \
       self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh, self.Points_coordinates = data[:]
     else:
       self.exposure, self.gain, self.width, self.height, self.x_offset, self.y_offset = data[:]
