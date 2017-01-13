@@ -35,8 +35,8 @@ class MasterBlock(Process):
     start()
       This is the same start method as Process.start: it starts the process, so the initialization (defined in prepare method) will be done, but NOT the main loop
 
-    loop(t0)
-      Once the process is started, calling loop will set the starting time and actually start the main method.
+    launch(t0)
+      Once the process is started, calling launch will set the starting time and actually start the main method.
       If the block was not started yet, it will be done automatically.
       t0: time to set as starting time of the block (mandatory) (in seconds after epoch)
 
@@ -44,15 +44,15 @@ class MasterBlock(Process):
       Property that can be accessed both in the process or from the parent
         "idle": Block not started yet
         "initializing": start was called and prepare is not over yet
-        "ready": prepare is over, waiting to start main by calling loop
+        "ready": prepare is over, waiting to start main by calling launch
         "running": main is running
         "done": main is over
-        NOTE: Once loop is called, the status as seen from the parent
+        NOTE: Once launch is called, the status as seen from the parent
           will switch to "running", even if prepare is not over yet.
           Then, the block will instantly start running when prepare
           is over, ignoring "ready" state.
 
-          start and loop method will return instantly
+          start and launch method will return instantly
 
   """
   instances = []
@@ -95,12 +95,12 @@ class MasterBlock(Process):
     self._status = "initializing"
     Process.start(self)
 
-  def loop(self,t0):
+  def launch(self,t0):
     """
     To start the main method, will call start if needed
     """
     if self._status == "idle":
-      print(self,": Called loop on unprepared process!")
+      print(self,": Called launch on unprepared process!")
       self.start()
     self.p1.send(t0) # asking to start main in the process
     self._status = "running" # Parent only
@@ -121,11 +121,11 @@ class MasterBlock(Process):
     return self._status
 
   def main(self):
-    """The method that will be run when .loop() is called"""
+    """The method that will be run when .launch() is called"""
     raise NotImplementedError("Override me!")
 
   def prepare(self):
-    """The first code to be run in the new process, will only be called once and before the actual start of the main loop of the blocks
+    """The first code to be run in the new process, will only be called once and before the actual start of the main launch of the blocks
     can do nothing"""
     pass
 
