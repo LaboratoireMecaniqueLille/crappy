@@ -14,17 +14,52 @@
 from labjack import ljm
 from time import time, sleep
 from sys import exc_info
-from ._meta import io
 from collections import OrderedDict
 from multiprocessing import Process, Queue
 from Tkinter import Tk, Label
-from warnings import warn
+from inspect import ismethod, getmembers
+
+class LabJack_UE9(object):
+  def __init__(self, *args, **kwargs):
+    pass
+
+  def open_handle(self, dictionary):
+    print 'open handle'
+    pass
+
+  def new(self):
+    print 'new'
+    pass
+
+  def start_stream(self):
+    print 'start stream'
+    pass
+
+  def get_data(self, mock=None):
+    print 'get data'
+    pass
+
+  def get_stream(self):
+    print 'get stream'
+    pass
+
+  def set_cmd(self, cmd, *args):
+    print 'set cmd'
+    pass
+
+  def close(self):
+    print 'close'
+    pass
+
+  def close_streamer(self):
+    print 'close streamer'
+    pass
 
 
-class LabJack(io.Control_Command):
+class LabJack_T7(object):
   """Sensor class for LabJack devices."""
 
-  def __init__(self, sensor={}, actuator={}, **kwargs):
+  def __init__(self, **kwargs):
     """
     Convert tension value into digital values, on several channels, using LabJack Devices.
 
@@ -71,62 +106,83 @@ class LabJack(io.Control_Command):
                                that could define the device : serial number, name, wifi version..
         """
     # super(LabJack, self).__init__()
+    def open_handle(dictionary):
+      try:
+        handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, dictionary.get('identifier', 'ANY'))
+        return handle
 
-    if sensor:
-      self.open_handle(sensor)
-    elif actuator:
-      self.open_handle(actuator)
-    else:
-      print 'Wrong labjack parameters definition.'
-    if sensor:
-      def var_tester(var, nb_channels):
-        """Used to check if the user entered correct parameters."""
-        var = [var] * nb_channels if isinstance(var, (int, float)) else var
-        assert isinstance(var, list) and len(var) == nb_channels, \
-          str(var) + "Parameters definition Error: list is not the same length as nb_channels."
-        assert False not in [isinstance(var[i], (int, float)) for i in range(nb_channels)], \
-          str(var) + "Error: parameters should be int or float."
-        return var
+      except ljm.LJMError.errorCode as e:
+        print 'dis moi tout'
+        if e == '1239':
+          sleep(0.5)
+          print 'Reconnecting...'
+          raise
 
-      self.channels = sensor.get('channels', 'AIN0')
+
+
+    def var_tester(var, nb_channels):
+      """Used to check if the user entered correct parameters."""
+      var = [var] * nb_channels if isinstance(var, (int, float)) else var
+      assert isinstance(var, list) and len(var) == nb_channels, \
+        str(var) + "Parameters definition Error: list is not the same length as nb_channels."
+      assert False not in [isinstance(var[i], (int, float)) for i in range(nb_channels)], \
+        str(var) + "Error: parameters should be int or float."
+      return var
+
+    self.sensor_args = kwargs.get('sensor', None)
+    self.actuator_args = kwargs.get('actuator', None)
+    self.handle = False
+    while True:
+      try:
+        if self.sensor_args and not self.handle:
+          self.handle = open_handle(self.sensor_args)
+
+        elif self.actuator_args and not self.handle:
+          self.handle = open_handle(self.actuator_args)
+
+        elif self.handle:
+          break
+
+        else:
+          print 'Could not open handle.'
+          break
+      except ljm.LJMError:
+        pass
+    if self.sensor_args:
+
+      self.channels = self.sensor_args.get('channels', 'AIN0')
       self.channels = [self.channels] if not isinstance(self.channels, list) else self.channels
       self.channels = ["AIN" + str(chan) if type(chan) is not str else chan for chan in self.channels]
-
       self.nb_channels = len(self.channels)
+
+      # To use extended features of ljm libraries:
       self.channels_index_read = [self.channels[chan] + "_EF_READ_A" for chan in range(self.nb_channels)]
 
-      self.chan_range = var_tester(sensor.get('chan_range', 10), self.nb_channels)
-      self.resolution = var_tester(sensor.get('resolution', 0), self.nb_channels)
+      self.chan_range = var_tester(self.sensor_args.get('chan_range', 10), self.nb_channels)
+      self.resolution = var_tester(self.sensor_args.get('resolution', 0), self.nb_channels)
 
-      self.gain = var_tester(sensor.get('gain', 1), self.nb_channels)
-      self.offset = var_tester(sensor.get('offset', 0), self.nb_channels)
+      self.gain = var_tester(self.sensor_args.get('gain', 1), self.nb_channels)
+      self.offset = var_tester(self.sensor_args.get('offset', 0), self.nb_channels)
 
-      self.mode = sensor.get('mode', 'single').lower()
+      self.mode = self.sensor_args.get('mode', 'single').lower()
 
       if self.mode == "streamer":
+
         # Additional variables used in streamer mode only.
         self.a_scan_list = ljm.namesToAddresses(self.nb_channels, self.channels)[0]
-        self.scan_rate_per_channel = sensor.get('scan_rate_per_channel', 1000)
+        self.scan_rate_per_channel = self.sensor_args.get('scan_rate_per_channel', 1000)
+
         if self.scan_rate_per_channel * self.nb_channels >= 100000:
           self.scan_rate_per_channel = int(100000 / self.nb_channels)
-        self.scans_per_read = sensor.get('scans_per_read', int(self.scan_rate_per_channel / 10.))
+        self.scans_per_read = self.sensor_args.get('scans_per_read', int(self.scan_rate_per_channel / 10.))
         global queue  # Used to run a dialog box in parallel
         queue = Queue()
       self.new()
-    if actuator:
-      self.channel_command = actuator.get('channel', "DAC0")
-      self.gain_command = actuator.get('gain', 1)
-      self.offset_command = actuator.get('offset', 0)
 
-  def open_handle(self, dictionary):
-    try:
-      self.handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, dictionary.get('identifier', 'ANY'))
-    except ljm.LJMError as e:
-      if e == 'LJM library error code 1239 LJME_RECONNECT_FAILED':
-        sleep(0.5)
-        self.open_handle(dictionary)
-      else:
-        raise
+    if self.actuator_args:
+      self.channel_command = self.actuator_args.get('channel', "DAC0")
+      self.gain_command = self.actuator_args.get('gain', 1)
+      self.offset_command = self.actuator_args.get('offset', 0)
 
   class DialogBox:
     """
@@ -201,12 +257,7 @@ class LabJack(io.Control_Command):
             else:
               a_values.append(to_write.get(key))
       ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
-    except ljm.LJMError as e:
-      if e == 'LJM library error code 1239 LJME_RECONNECT_FAILED':
-        self.new()
-      else:
-        self.close()
-        raise exc_info()[1]
+
     except Exception:
       self.close()
       raise
@@ -219,11 +270,9 @@ class LabJack(io.Control_Command):
       ljm.eStreamStart(self.handle, self.scans_per_read, self.nb_channels,
                        self.a_scan_list, self.scan_rate_per_channel)
       Process(target=self.DialogBox, args=(self.scan_rate_per_channel, self.scans_per_read)).start()
-    except ljm.LJMError:
-      self.close()
-      raise exc_info()[1]
+
     except Exception:
-      self.close()
+      self.close_streamer()
       raise
 
   def get_data(self, mock=None):
@@ -233,13 +282,7 @@ class LabJack(io.Control_Command):
     try:
       results = ljm.eReadNames(self.handle, self.nb_channels, self.channels_index_read)
       return time(), results
-
-    except KeyboardInterrupt:
-      self.close()
-      pass
-
     except Exception:
-      print(exc_info()[1])
       self.close()
       raise
 
@@ -254,16 +297,9 @@ class LabJack(io.Control_Command):
       queue.put([timer, retrieved_from_buffer[1], retrieved_from_buffer[2]])
       return timer, results
 
-    except KeyboardInterrupt:
-      self.close()
-      pass
-    except ljm.LJMError:
-      ljm.eStreamStop(self.handle)
-      self.close()
-      raise exc_info()[1]
     except Exception:
-      self.close()
-      raise exc_info()[1]
+      self.close_streamer()
+      raise
 
   def set_cmd(self, cmd, *args):
     """
@@ -276,23 +312,54 @@ class LabJack(io.Control_Command):
     """
     Close the device.
     """
-    try:
-      self.close_streamer()
-    except:
-      pass
-    finally:
-      ljm.close(self.handle)
+    ljm.close(self.handle)
     print "LabJack device closed"
 
   def close_streamer(self):
     """
     Special method called if streamer is open.
     """
-    # Flushing the queue
     while not queue.empty():
+    # Flushing the queue
       queue.get_nowait()
     ljm.eStreamStop(self.handle)
-    # In order to assure the streamer is turned off.
-    while ljm.eReadName(self.handle, "STREAM_ENABLE"):
-      sleep(0.5)
-      ljm.eStreamStop(self.handle)
+    self.close()
+
+class LabJack(object):
+  """
+  Parent class that loads the one of the above class depending on the device connected.
+  """
+  def __init__(self, *args, **kwargs):
+    """
+    The parameters are the same as defined for each device. This class simply inherits from it.
+    """
+    # def identify_t7(id):
+    #   try:
+    #     ljm.openS("ANY", "ANY", id)
+    #   except ljm.LJMError.errorCode as e:
+    #     if e == '1249':
+    #       pass
+    #     else:
+    #       raise
+
+    self.type = kwargs.get('device', None)
+
+    # if not self.type:
+    #   identify_t7(kwargs.get('identifier', 'ANY'))
+    #
+
+    if self.type == 't7':
+      self.sublabjack = LabJack_T7(**kwargs)
+
+    elif self.type == 'ue9':
+      self.sublabjack = LabJack_UE9(**kwargs)
+    else:
+      print 'Error: LabJack not recognized.'
+
+    methods = getmembers(self.sublabjack, predicate=ismethod)
+    variables = vars(self.sublabjack)
+
+    for key, value in methods:
+      setattr(self, key, value)
+    for key, value in variables.iteritems():
+      setattr(self, key, value)
