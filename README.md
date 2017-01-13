@@ -12,6 +12,26 @@ Description
 
 See ``DESCRIPTION.rst`` for a more complete description.
 
+Requirements
+------------
+
+To install Crappy you will need:
+
+- Python 2 (2.6 or higher)
+- Numpy
+- Scipy
+- Matplotlib
+- openCV
+- Pandas
+- SimpleITK
+- scikit-image
+- pyserial
+
+These packages are not mandatory but will provide additionnal functions:
+- Ximea API (for ximea cameras)
+- Labjack LJM (for labjack support)
+- pycuda (for real-time correlation)
+- openDAQ (for opendaq board)
 
 Installation
 ------------
