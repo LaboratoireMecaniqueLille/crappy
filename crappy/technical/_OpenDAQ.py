@@ -18,8 +18,8 @@ class OpenDAQ(io.Control_Command):
     self.channels = kwargs.get('channels', 1)  # Possible values: 1..8
     self.nb_channels = 1 if not isinstance(self.channels, list) else len(self.channels)
 
-    if isinstance(self.channels, list) and self.nb_channels == 1:  # To unpack and prevent errors
-      self.channels = self.channels[0]
+    if not isinstance(self.channels, list) and self.nb_channels == 1:  # To unpack and prevent errors
+      self.channels = [self.channels]
 
     self.input_gain = kwargs.get('gain', 0)  # Possible values: 0..4 (x1/3, x1, x2, x10, x100)
     self.input_offset = kwargs.get('offset', 0)  # not a parameter. apply after reading it.
@@ -41,7 +41,7 @@ class OpenDAQ(io.Control_Command):
       self.handle = DAQ("/dev/ttyUSB1")
 
     if self.nb_channels == 1 and self.mode == 'single':
-      self.handle.conf_adc(pinput=self.channels, ninput=self.negative_channel, gain=self.input_gain,
+      self.handle.conf_adc(pinput=self.channels[0], ninput=self.negative_channel, gain=self.input_gain,
                            nsamples=self.input_nsamples_per_read)
 
   def init_stream(self):
