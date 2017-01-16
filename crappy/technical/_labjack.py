@@ -18,15 +18,59 @@ from multiprocessing import Process, Queue
 from Tkinter import Tk, Label
 from inspect import ismethod, getmembers
 from os import getpid
+from ue9 import UE9
 
 
 class LabJack_UE9(object):
   def __init__(self, *args, **kwargs):
-    pass
+    def get_channel_number(channels):
+      """
+      register needs to be called with the channel name as int.
+      """
+      if isinstance(channels[0], str):
+        formated_channel = []
+        for channel in channels:
+          formated_channel.append(int(channel[-1]))
+        return formated_channel
+      else:
+        return channels
+
+    def format_lists(list_to_format, *args):
+      """
+      In case the user only specifies one parameter, and wants it applied to all inputs.
+      """
+      list_to_format = [list_to_format] if not isinstance(list_to_format, list) else list_to_format
+      if args[0] is not 0:
+        if len(list_to_format) == 1:
+          return list_to_format * args[0]
+        elif len(list_to_format) == args[0]:
+          return list_to_format
+        else:
+          raise TypeError('Wrong Labjack Parameter definition.')
+      else:
+        return list_to_format
+    self.sensor_args = kwargs.get('sensor', None)
+    self.actuator_args = kwargs.get('actuator', None)
+    if self.sensor_args:
+      self.handle = self.open_handle(self.sensor_args)
+    elif self.actuator_args:
+      self.handle = self.open_handle(self.actuator_args)
+    else:
+      raise TypeError('Wrong LabJack Parameter definition.')
+
+    if self.sensor_args:
+      self.channels = format_lists(self.sensor_args.get('channels', 0), 0)
+
+      self.nb_channels = len(self.channels)
+      self.channels = get_channel_number(self.channels)
+
+      self.gain = format_lists(self.sensor_args.get('gain', 1), self.nb_channels)
+      self.offset = format_lists(self.sensor_args.get('offset', 0), self.nb_channels)
+      self.resolution = format_lists(self.sensor_args.get('resolution', 12), self.nb_channels)
 
   def open_handle(self, dictionary):
-    print('open handle')
-    pass
+    return UE9()
+
 
   def new(self):
     print('new')
@@ -37,8 +81,11 @@ class LabJack_UE9(object):
     pass
 
   def get_data(self, mock=None):
-    print('get data')
-    pass
+    results = []
+    for index, channel in enumerate(self.channels):
+      results.append(
+        self.handle.getAIN(channel, Resolution=self.resolution[index]) * self.gain[index] + self.offset[index])
+    return time(), results
 
   def get_stream(self):
     print('get stream')
@@ -49,9 +96,7 @@ class LabJack_UE9(object):
     pass
 
   def close(self):
-    print('close')
-    pass
-
+    self.handle.close()
   def close_streamer(self):
     print('close streamer')
     pass
@@ -145,7 +190,7 @@ class LabJack_T7(object):
 
     # while True:
     #   try:
-    if self.sensor_args: # and not self.handle:
+    if self.sensor_args:  # and not self.handle:
       self.handle = open_handle(self.sensor_args)
     elif self.actuator_args:  # and not self.handle:
       self.handle = open_handle(self.actuator_args)
@@ -189,16 +234,16 @@ class LabJack_T7(object):
         if self.verbose:
           global queue  # Used to run a dialog box in parallel
           queue = Queue()
-      # while True:
-      #   try:
-        #   break
-        # except ljm.LJMError as e:
-        #   if e.errorCode == 2605 or e.errorCode == 1239:
-        #     pass
-        #   else:
-        #     raise
-        # except Exception:
-        #   raise
+          # while True:
+          #   try:
+          #   break
+          # except ljm.LJMError as e:
+          #   if e.errorCode == 2605 or e.errorCode == 1239:
+          #     pass
+          #   else:
+          #     raise
+          # except Exception:
+          #   raise
     self.new()
 
     if self.actuator_args:
@@ -383,7 +428,7 @@ class LabJack(object):
     #     else:
     #       raise
 
-    self.type = kwargs.get('device', None)
+    self.type = kwargs.get('device', None).lower()
 
     # if not self.type:
     #   identify_t7(kwargs.get('identifier', 'ANY'))

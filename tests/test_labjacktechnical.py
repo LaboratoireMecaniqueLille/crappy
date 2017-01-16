@@ -3,43 +3,27 @@ import crappy
 import time
 
 sensor = {
-    'channels': ['AIN0', 'AIN1', 'AIN2', 'AIN3'],
-    'gain': 1,
-    'offset': 0,
-    'resolution': 0,
-    'chan_range': 10,
-    'mode': 'thermocouple'
+  'channels': ['AIN0'],
+  'gain': 1,
+  'offset': 0,
+  'resolution': 0,
+  'chan_range': 10,
+  'mode': 'single'
 }
 actuator = {
-    'channel': 'DAC0',
-    'gain': 1,
-    'offset': 0
+  'channel': 'DAC0',
+  'gain': 1,
+  'offset': 0
 }
 
-crappy.blocks.MasterBlock.instances = []
-labjack = crappy.technical.LabJack(sensor=sensor, actuator=actuator)
-measurebystep = crappy.blocks.MeasureByStep(sensor=labjack)
-compacter = crappy.blocks.Compacter(2)
-saver = crappy.blocks.Saver('/home/francois/freq.csv', stamp='yes')
+labjack = crappy.technical.LabJack(sensor=sensor, actuator=actuator, device='t7')
+measurebystep = crappy.blocks.MeasureByStep(sensor=labjack, verbose=True, compacter=10, freq=None)
+# saver = crappy.blocks.Saver('/home/francois/freq.csv', stamp='yes')
+dash = crappy.blocks.Dashboard()
 
-link1 = crappy.links.Link()
-link2 = crappy.links.Link()
+crappy.link(measurebystep, dash)
+crappy.start()
 
-measurebystep.add_output(link1)
-compacter.add_input(link1)
-
-compacter.add_output(link2)
-saver.add_input(link2)
-
-t0 = time.time()
-try:
-    for instance in crappy.blocks.MasterBlock.instances:
-        instance.t0 = t0
-    for instance in crappy.blocks.MasterBlock.instances:
-        instance.start()
-except:
-    for instance in crappy.blocks.MasterBlock.instances:
-        instance.stop()
 
 # print 'bien ouvert'
 # volt = 0
