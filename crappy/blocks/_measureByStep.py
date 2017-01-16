@@ -50,7 +50,7 @@ class MeasureByStep(CompacterBlock):
     assert sensor, 'ERROR in MeasureByStep: no sensor defined.'
     self.labels = kwargs.get('labels', ["time(sec)"] + self.sensor.channels)
     CompacterBlock.__init__(self, labels=self.labels, compacter=kwargs.get("compacter", 1))
-    self.freq = kwargs.get('freq', None)
+    self.freq = float(kwargs.get('freq', None))
     self.verbose = kwargs.get('verbose', False)
     if self.verbose:
       self.nb_acquisitions = 0.
@@ -81,9 +81,9 @@ class MeasureByStep(CompacterBlock):
       nb_points0 = nb_points1
 
   def temporization(self, timer):
-    while time.time() - timer < 1. / self.freq:
-      time.sleep(1. / (100 * self.freq))
-    pass
+    t_a = time.time()
+    while time.time() - t_a < timer:
+      time.sleep(timer / 100)
 
   def main(self):
     """
@@ -98,6 +98,7 @@ class MeasureByStep(CompacterBlock):
         printer.start()
       elapsed = 0.
       while True:
+        t_before_acq = time.time()
         if trigger == "internal":
           pass
         elif trigger == "external":
@@ -117,10 +118,15 @@ class MeasureByStep(CompacterBlock):
             elapsed = chronometer
             if self.verbose:
               queue.put(self.nb_acquisitions)
-
+          pass
         except TimeoutError:
           raise
         except AttributeError:  # if no outputs
+          pass
+        t_after_acq = time.time()
+        if self.freq and t_after_acq - t_before_acq < 1 / self.freq:
+          self.temporization(1 / self.freq - (t_after_acq - t_before_acq))
+        else:
           pass
 
     except (Exception, KeyboardInterrupt) as e:
