@@ -103,7 +103,6 @@ class SignalGenerator(MasterBlock):
 
   def main(self):
     try:
-      print "PathGenerator!", os.getpid()
       last_t = self.t0
       cycle = 0
       first = True
@@ -151,19 +150,15 @@ class SignalGenerator(MasterBlock):
           cycle = 0
           security = 0
           while cycle == 0:
-            while time.time() - last_t < 1. / self.send_freq or first:
-              for input_ in self.inputs:
-                if input_.in_.poll() or first:  # if there is data waiting
-                  recv = input_.recv()
-                  # print recv
-                  df = pd.DataFrame([recv.values()], columns=recv.keys())
-                  Data = pd.concat([Data, df], ignore_index=True)
-              security += 1
-              if security >= 2:
-                first = False
-              # first=False
-              delay(1. / (100 * 1000 * self.send_freq))
+            timer = time.time()
+            while timer - last_t < 1. / self.send_freq:
+              delay(-(timer-last_t - 1. / (self.send_freq))/10.)
+              timer = time.time()
             last_t = time.time()
+            recv = self.recv_last(uncompact=True)
+            while recv is None:
+              recv = self.recv_any(uncompact=True)
+            Data = pd.DataFrame([recv.values()],columns=recv.keys())
             # print "goto 3"
             last_upper = (Data[self.value[1]]).last_valid_index()
             last_lower = (Data[self.value[1]]).last_valid_index()
@@ -179,13 +174,7 @@ class SignalGenerator(MasterBlock):
               Data = Data[min(last_upper, last_lower):]
             Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha, cycle]))
             # print "goto 4"
-            try:
-              for output in self.outputs:
-                output.send(Array)
-            except TimeoutError:
-              raise
-            except AttributeError:  # if no outputs
-              pass
+            self.send(Array)
           self.step += 1
           first = True
           first_of_step = True
@@ -195,17 +184,16 @@ class SignalGenerator(MasterBlock):
         elif self.waveform == "limit":  # signal defined by a lower and upper limit
           alpha = np.sign(np.cos(self.phase))
           while self.cycles is None or cycle < self.cycles:
-            while time.time() - last_t < 1. / self.send_freq or first:
-              for input_ in self.inputs:
-                if input_.in_.poll() or first:  # if there is data waiting
-                  recv = input_.recv()
-                  # print recv
-                  df = pd.DataFrame([recv.values()], columns=recv.keys())
-                  Data = pd.concat([Data, df], ignore_index=True)
-              first = False
-              delay(1. / (100 * 1000 * self.send_freq))
-            # print "here" , df, Data
+            timer = time.time()
+            while timer - last_t < 1. / self.send_freq:
+              delay(-(timer-last_t - 1. / (self.send_freq))/10.)
+              timer = time.time()
             last_t = time.time()
+            recv = self.recv_last(uncompact=True)
+            while recv is None:
+              recv = self.recv_any(uncompact=True)
+            Data = pd.DataFrame([recv.values()],columns=recv.keys())
+
             last_upper = (Data[self.upper_limit[1]]).last_valid_index()
             last_lower = (Data[self.lower_limit[1]]).last_valid_index()
             first_lower = (Data[self.lower_limit[1]]).first_valid_index()
@@ -243,13 +231,7 @@ class SignalGenerator(MasterBlock):
               Data = Data[min(last_upper, last_lower):]
             # Array=pd.DataFrame([[last_t-self.t0,alpha*self.gain,cycle]],columns=self.labels)
             Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha * self.gain, cycle]))
-            try:
-              for output in self.outputs:
-                output.send(Array)
-            except TimeoutError:
-              raise
-            except AttributeError:  # if no outputs
-              pass
+            self.send(Array)
           self.step += 1
           first = True
           first_of_step = True
@@ -259,16 +241,16 @@ class SignalGenerator(MasterBlock):
           t_step = time.time()
         elif self.waveform == "protection":  # signal defined by a lower and upper limit
           while True:
-            while time.time() - last_t < 1. / self.send_freq or first:
-              for input_ in self.inputs:
-                if input_.in_.poll() or first:  # if there is data waiting
-                  recv = input_.recv()
-                  # print recv
-                  df = pd.DataFrame([recv.values()], columns=recv.keys())
-                  Data = pd.concat([Data, df], ignore_index=True)
-              first = False
-              delay(1. / (100 * 1000 * self.send_freq))
-            # print "here" , df, Data
+            timer = time.time()
+            while timer - last_t < 1. / self.send_freq:
+              delay(-(timer-last_t - 1. / (self.send_freq))/10.)
+              timer = time.time()
+            last_t = time.time()
+            recv = self.recv_last(uncompact=True)
+            while recv is None:
+              recv = self.recv_any(uncompact=True)
+            Data = pd.DataFrame([recv.values()],columns=recv.keys())
+
             last_t = time.time()
             last_upper = (Data[self.upper_limit[1]]).last_valid_index()
             last_lower = (Data[self.lower_limit[1]]).last_valid_index()
@@ -286,13 +268,7 @@ class SignalGenerator(MasterBlock):
               Data = Data[min(last_upper, last_lower):]
             # Array=pd.DataFrame([[last_t-self.t0,alpha*self.gain,cycle]],columns=self.labels)
             Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha * self.gain, cycle]))
-            try:
-              for output in self.outputs:
-                output.send(Array)
-            except TimeoutError:
-              raise
-            except AttributeError:  # if no outputs
-              pass
+            self.send(Array)
           self.step += 1
           first = True
           first_of_step = True
@@ -304,12 +280,7 @@ class SignalGenerator(MasterBlock):
           # print "holding"
           while self.time is None or (time.time() - t_step) < self.time:
             while time.time() - last_t < 1. / self.send_freq:
-              try:
-                for input_ in self.inputs:
-                  recv = input_.recv(blocking=False)
-                  # first=False
-              except AttributeError:  # if no inputs
-                pass
+              self.clear_inputs()
               # first=False
               delay(1. / (100 * 1000 * self.send_freq))
             last_t = time.time()
@@ -330,13 +301,7 @@ class SignalGenerator(MasterBlock):
                 # Data=Data[min(last_upper,last_lower):]
             # Array=pd.DataFrame([[last_t-self.t0,self.alpha,0]],columns=self.labels)
             Array = OrderedDict(zip(self.labels, [last_t - self.t0, self.alpha, 0]))
-            try:
-              for output in self.outputs:
-                output.send(Array)
-            except TimeoutError:
-              raise
-            except AttributeError:  # if no outputs
-              pass
+            self.send(Array)
           self.step += 1
           first_of_step = True
           cycle = 0
@@ -361,12 +326,7 @@ class SignalGenerator(MasterBlock):
           while self.time is None or (time.time() - t_step) < self.time:
             # t1=time.time()
             while time.time() - last_t < 1. / self.send_freq:
-              try:
-                for input_ in self.inputs:
-                  recv = input_.recv(blocking=False)
-                  # first=False
-              except AttributeError:
-                pass
+              self.clear_inputs()
               delay(1. / (100 * 1000 * self.send_freq))
             # time.sleep(0.0001)
             # select.select([],[],[],0.0001)
@@ -390,13 +350,7 @@ class SignalGenerator(MasterBlock):
             cycle = 0.5 * np.floor(2 * ((t - t_step) * self.freq + 0.25))
             # Array=pd.DataFrame([[t-self.t0,self.alpha,cycle]],columns=self.labels)
             Array = OrderedDict(zip(self.labels, [t - self.t0, self.alpha, cycle]))
-            try:
-              for output in self.outputs:
-                output.send(Array)
-            except TimeoutError:
-              raise
-            except AttributeError:  # if no outputs
-              pass
+            self.send(Array)
               # t3=time.time()
               # t_send=max(t3-t2,t_send)
               # loop_max=max(loop_max,t3-t_loop)
@@ -419,4 +373,4 @@ class SignalGenerator(MasterBlock):
       exc_type, exc_obj, tb = sys.exc_info()
       lineno = tb.tb_lineno
       print "Exception in SignalGenerator %s: %s line %s" % (os.getpid(), e, lineno)
-      # raise
+      raise
