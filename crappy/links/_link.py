@@ -246,6 +246,9 @@ class Link(object):
       raise Exception(e)
 
 
+  def poll(self):
+    return self.in_.poll()
+
 def link(in_block, out_block, **kwargs):
   """
   Function that links two blocks
