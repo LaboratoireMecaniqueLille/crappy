@@ -131,11 +131,11 @@ class LabJack_T7(object):
                                range
                                to measure. Put the absolute maximum of your expected values.
 
-        resolution:            int, resolution index for each channel, 16 to 24bits.
+        resolution:            int, resolution index for each channel.
                                 T7 : 1 to 8, T7-PRO : 1 to 12. If 0 is specified, will be 8 (20 bits)
-
                                ~16 to 22 bits depending on the device, the chan_range and the resolution index.
                                higher resolution index = higher resolution, but higher latency.
+                               Check https://labjack.com/support/datasheets/t7/appendix-a-3-1 for more information.
 
         scan_rate_per_channel: STREAMER MODE ONLY : int, defines how many scans to perform on each channel
                                during streaming.
@@ -182,6 +182,7 @@ class LabJack_T7(object):
       assert False not in [isinstance(var[i], (int, float)) for i in range(nb_channels)], \
         str(var) + "Error: parameters should be int or float."
       return var
+
 
     self.verbose = kwargs.get('verbose', False)
     self.vprint = vprint if self.verbose else lambda *args: None
@@ -287,9 +288,6 @@ class LabJack_T7(object):
     """
     Initialize the device.
     """
-    # res_max = 12 if ljm.eReadName(self.handle, "WIFI_VERSION") > 0 else 8  # Test if LabJack is pro or not
-    # assert False not in [0 <= self.resolution[chan] <= res_max for chan in range(self.nb_channels)], \
-    #   "Wrong definition of resolution index. INDEX_MAX for T7: 8, for T7PRO: 12"
     if self.mode == "single":
       to_write = OrderedDict([
         ("_RANGE", self.chan_range),
