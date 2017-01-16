@@ -243,11 +243,21 @@ class Link(object):
       print "EXCEPTION in link %s : %s " % (self.name, e.message)
       if not self.in_.closed:
         self.in_.close()
-      raise Exception(e)
+      raise
 
 
   def poll(self):
     return self.in_.poll()
+
+  def clear(self):
+    while self.in_.poll():
+      self.in_.recv()
+
+  def recv_last(self):
+    data = None
+    while self.in_.poll():
+      data = self.in_.recv()
+    return data
 
 def link(in_block, out_block, **kwargs):
   """
