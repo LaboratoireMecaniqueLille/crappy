@@ -18,6 +18,17 @@ from ..links._link import TimeoutError
 
 import time
 
+def uncomp(data):
+  """Used to uncompact data: only keeps the last data of the list (if any)"""
+  if data is None:
+    return
+  for k in data:
+    try:
+      data[k] = data[k][-1]
+    except (TypeError,IndexError): # Already uncompacted or list empty
+      pass
+  return data
+
 class MasterBlock(Process):
   """
   This represent a Crappy block, it must be parent of all the blocks.
@@ -133,8 +144,43 @@ class MasterBlock(Process):
     for o in self.outputs:
       o.send(data)
 
-  def recv(self,in_id=0):
-    return self.inputs[in_id].recv()
+  def recv(self,in_id=0,blocking=True,uncompact=False):
+    if uncompact:
+      return uncomp(self.inputs[in_id].recv(blocking))
+    return self.inputs[in_id].recv(blocking)
+
+  def recv_any(self,blocking=True,uncompact=False):
+    """Tries to recv data from the first waiting input, can be blocking or non blocking 
+  (will return None if no data is waiting)"""
+    first = True
+    while blocking or first:
+      for i in self.inputs:
+        if i.poll():
+          if uncompact:
+            return uncomp(i.recv())
+          return i.recv()
+      first = False
+
+  def recv_last(self,uncompact=False):
+    """Will get the latest data in each pipe, dropping all the other and then combines them
+    Necessarily non blocking"""
+    data = None
+    for l in self.inputs:
+      if data:
+        new = l.recv_last()
+        if new:
+          data.update(new)
+      else:
+        data = l.recv_last()
+    if uncompact:
+      return uncomp(data)
+    return data
+
+
+  def clear_inputs(self):
+    """Will clear all the inputs of the block"""
+    for l in self.inputs:
+      l.clear()
 
   def add_output(self,o):
     self.outputs.append(o)
