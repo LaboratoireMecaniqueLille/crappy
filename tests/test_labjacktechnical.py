@@ -3,12 +3,12 @@ import crappy
 import time
 
 sensor = {
-  'channels': ['AIN0'],
+  'channels': range(1),
   'gain': 1,
   'offset': 0,
-  'resolution': 0,
+  'resolution': 9,
   'chan_range': 10,
-  'mode': 'single'
+  'mode': 'thermocouple'
 }
 actuator = {
   'channel': 'DAC0',
@@ -17,7 +17,7 @@ actuator = {
 }
 
 labjack = crappy.technical.LabJack(sensor=sensor, actuator=actuator, device='t7')
-measurebystep = crappy.blocks.MeasureByStep(sensor=labjack, verbose=True, compacter=10, freq=50)
+measurebystep = crappy.blocks.MeasureByStep(sensor=labjack, verbose=True, compacter=100, freq=None)
 # saver = crappy.blocks.Saver('/home/francois/freq.csv', stamp='yes')
 dash = crappy.blocks.Dashboard()
 

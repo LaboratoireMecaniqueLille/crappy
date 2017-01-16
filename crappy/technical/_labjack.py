@@ -131,8 +131,10 @@ class LabJack_T7(object):
                                range
                                to measure. Put the absolute maximum of your expected values.
 
-        resolution:            int, resolution index for each channel (T7 : 0 to 8, T7-PRO : 0 to 12)
-                               ~11 to 22 bits depending on the device, the chan_range and the resolution index.
+        resolution:            int, resolution index for each channel, 16 to 24bits.
+                                T7 : 1 to 8, T7-PRO : 1 to 12. If 0 is specified, will be 8 (20 bits)
+
+                               ~16 to 22 bits depending on the device, the chan_range and the resolution index.
                                higher resolution index = higher resolution, but higher latency.
 
         scan_rate_per_channel: STREAMER MODE ONLY : int, defines how many scans to perform on each channel
@@ -216,7 +218,7 @@ class LabJack_T7(object):
       self.channels_index_read = [self.channels[chan] + "_EF_READ_A" for chan in range(self.nb_channels)]
 
       self.chan_range = var_tester(self.sensor_args.get('chan_range', 10), self.nb_channels)
-      self.resolution = var_tester(self.sensor_args.get('resolution', 0), self.nb_channels)
+      self.resolution = var_tester(self.sensor_args.get('resolution', 1), self.nb_channels)
 
       self.gain = var_tester(self.sensor_args.get('gain', 1), self.nb_channels)
       self.offset = var_tester(self.sensor_args.get('offset', 0), self.nb_channels)
@@ -294,7 +296,8 @@ class LabJack_T7(object):
         ("_RESOLUTION_INDEX", self.resolution),
         ("_EF_INDEX", 1),  # for applying a slope and offset
         ("_EF_CONFIG_D", self.gain),  # index to set the gain
-        ("_EF_CONFIG_E", self.offset)  # index to set the offset
+        ("_EF_CONFIG_E", self.offset),  # index to set the offset
+        ("_SETTLING_US", [0] * self.nb_channels)
       ])
 
     elif self.mode == "thermocouple":
@@ -415,32 +418,32 @@ class LabJack(object):
   Parent class that loads the one of the above class depending on the device connected.
   """
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, **kwargs):
     """
     The parameters are the same as defined for each device. This class simply inherits from it.
     """
-    # def identify_t7(id):
-    #   try:
-    #     ljm.openS("ANY", "ANY", id)
-    #   except ljm.LJMError.errorCode as e:
-    #     if e == '1249':
-    #       pass
-    #     else:
-    #       raise
+    def identify_t7():
+      try:
+        ljm.listAllS('ANY', 'ANY')
+        self.type = 't7'
+      except ljm.LJMError.errorCode as e:
+        if e == 1249:
+          self.type = 'ue9'
+        else:
+          raise IOError('No labjack device found.')
 
-    self.type = kwargs.get('device', None).lower()
+    self.type = kwargs.get('device', None)
 
-    # if not self.type:
-    #   identify_t7(kwargs.get('identifier', 'ANY'))
-    #
+    if not self.type:
+      identify_t7()
 
-    if self.type == 't7':
+    if self.type.lower() == 't7':
       self.sublabjack = LabJack_T7(**kwargs)
 
-    elif self.type == 'ue9':
+    elif self.type.lower() == 'ue9':
       self.sublabjack = LabJack_UE9(**kwargs)
     else:
-      print('Error: LabJack not recognized.')
+      raise TypeError('Specified Labjack device not found.')
 
     methods = getmembers(self.sublabjack, predicate=ismethod)
     variables = vars(self.sublabjack)
