@@ -50,7 +50,7 @@ class MeasureByStep(CompacterBlock):
     assert sensor, 'ERROR in MeasureByStep: no sensor defined.'
     self.labels = kwargs.get('labels', ["time(sec)"] + self.sensor.channels)
     CompacterBlock.__init__(self, labels=self.labels, compacter=kwargs.get("compacter", 1))
-    self.freq = float(kwargs.get('freq', None))
+    self.freq = kwargs.get('freq', None)
     self.verbose = kwargs.get('verbose', False)
     if self.verbose:
       self.nb_acquisitions = 0.
@@ -83,7 +83,7 @@ class MeasureByStep(CompacterBlock):
   def temporization(self, timer):
     t_a = time.time()
     while time.time() - t_a < timer:
-      time.sleep(timer / 100)
+      time.sleep(timer / 1000.)
 
   def main(self):
     """
@@ -124,8 +124,8 @@ class MeasureByStep(CompacterBlock):
         except AttributeError:  # if no outputs
           pass
         t_after_acq = time.time()
-        if self.freq and t_after_acq - t_before_acq < 1 / self.freq:
-          self.temporization(1 / self.freq - (t_after_acq - t_before_acq))
+        if self.freq and t_after_acq - t_before_acq < 1 / float(self.freq):
+          self.temporization(1 / float(self.freq) - (t_after_acq - t_before_acq))
         else:
           pass
 
