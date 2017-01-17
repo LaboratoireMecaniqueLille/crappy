@@ -52,19 +52,13 @@ class MeasureByStep(CompacterBlock):
     CompacterBlock.__init__(self, labels=self.labels, compacter=kwargs.get("compacter", 1))
     self.freq = kwargs.get('freq', None)
     self.verbose = kwargs.get('verbose', False)
-    if self.verbose:
-      self.nb_acquisitions = 0.
-      global queue, last_len, time_interval
-      time_interval = 1.
-      last_len = None
-      queue = Queue()
 
   def print_time(self):
     def reprint(*args):
       """
       Method to update printed value, instead of print a new one.
       """
-      global last_len
+      global last_len, queue, time_interval
       s = " ".join([str(i) for i in args])
       s = s.split("\n")[0]
       l = len(s)
@@ -85,47 +79,52 @@ class MeasureByStep(CompacterBlock):
     while time.time() - t_a < timer:
       time.sleep(timer / 1000.)
 
+  def prepare(self):
+    """
+    Block called before main.
+    """
+    if self.verbose:
+      self.nb_acquisitions = 0.
+      self.elapsed = 0.
+
+      global last_len, queue, time_interval
+      time_interval = 1.
+      last_len = None
+      queue = Queue()
+      printer = threading.Thread(target=self.print_time)
+      printer.daemon = True
+      printer.start()
+
+
+    self.trigger = "internal" if len(self.inputs) == 0 else "external"
+
   def main(self):
     """
     Main loop for MeasureByStep. Retrieves data at specified frequency (or software looping speed) from specified
     sensor, and sends it to a crappy link.
     """
     try:
-      trigger = "internal" if len(self.inputs) == 0 else "external"
-      if self.verbose:
-        printer = threading.Thread(target=self.print_time)
-        printer.daemon = True
-        printer.start()
-      elapsed = 0.
       while True:
-        t_before_acq = time.time()
-        if trigger == "internal":
+        if self.trigger == "internal":
           pass
-        elif trigger == "external":
+        elif self.trigger == "external":
           if self.inputs[0].recv(blocking=True):  # wait for a signal
             pass
-        sensor_epoch, sensor_values = self.sensor.get_data("all")
-        chronometer = sensor_epoch - self.t0
-        sensor_values.insert(0, chronometer)
 
-        try:
-          self.send(sensor_values)
-          if self.verbose:
-            self.nb_acquisitions += 1
-          if chronometer - elapsed >= 1.:
-            global time_interval
-            time_interval = chronometer - elapsed
-            elapsed = chronometer
-            if self.verbose:
-              queue.put(self.nb_acquisitions)
-          pass
-        except TimeoutError:
-          raise
-        except AttributeError:  # if no outputs
-          pass
-        t_after_acq = time.time()
-        if self.freq and t_after_acq - t_before_acq < 1 / float(self.freq):
-          self.temporization(1 / float(self.freq) - (t_after_acq - t_before_acq))
+        t_before_acq = time.time()
+        data = self.acquire_data()
+        self.send_to_compacter(data)
+
+        if self.verbose:
+          self.nb_acquisitions += 1
+          time_interval = data[0] - self.elapsed
+          if time_interval >= 1.:
+            self.elapsed = data[0]
+            queue.put(self.nb_acquisitions)
+        t_acq = time.time() - t_before_acq
+
+        if self.freq and t_acq < 1 / float(self.freq):
+          self.temporization(1 / float(self.freq) - t_acq)
         else:
           pass
 
@@ -133,3 +132,24 @@ class MeasureByStep(CompacterBlock):
       print("Exception in measureByStep :", e)
       self.sensor.close()
       raise
+
+  def acquire_data(self):
+    """
+    Method to acquire data from the sensor. Returns an array, the first element is the chronometer, the second contains
+    a list of all acquired points.
+    """
+    sensor_epoch, sensor_values = self.sensor.get_data("all")
+    chronometer = sensor_epoch - self.t0
+    sensor_values.insert(0, chronometer)
+    return sensor_values
+
+  def send_to_compacter(self, data):
+    """
+    Method to send acquired data to the compacter.
+    """
+    try:
+      self.send(data)
+    except TimeoutError:
+      raise
+    except AttributeError:  # if no outputs
+      pass
