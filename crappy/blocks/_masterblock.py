@@ -18,6 +18,7 @@ from ..links._link import TimeoutError
 
 import time
 
+
 def uncomp(data):
   """Used to uncompact data: only keeps the last data of the list (if any)"""
   if data is None:
@@ -25,9 +26,10 @@ def uncomp(data):
   for k in data:
     try:
       data[k] = data[k][-1]
-    except (TypeError,IndexError): # Already uncompacted or list empty
+    except (TypeError, IndexError):  # Already uncompacted or list empty
       pass
   return data
+
 
 class MasterBlock(Process):
   """
@@ -67,19 +69,20 @@ class MasterBlock(Process):
 
   """
   instances = []
+
   def __init__(self):
     Process.__init__(self)
-    #MasterBlock.instances.append(self)
+    # MasterBlock.instances.append(self)
     self.outputs = []
     self.inputs = []
-    #This pipe allows to send 2 essential signals:
-    #p1->p2 is to start the main function and set t0
-    #p2->p1 to know when the prepartion is over
-    self.p1,self.p2 = Pipe()
+    # This pipe allows to send 2 essential signals:
+    # p1->p2 is to start the main function and set t0
+    # p2->p1 to know when the prepartion is over
+    self.p1, self.p2 = Pipe()
     self._status = "idle"
-    self.in_process = False # To know if we are in the process or not
+    self.in_process = False  # To know if we are in the process or not
 
-  def __new__(cls,*args,**kwargs):
+  def __new__(cls, *args, **kwargs):
     instance = super(MasterBlock, cls).__new__(cls, *args, **kwargs)
     MasterBlock.instances.append(instance)
     return instance
@@ -88,15 +91,15 @@ class MasterBlock(Process):
     Masterblock.instances.remove(self)
 
   def run(self):
-    self.in_process = True # we are in the process
-    self._status = "initializing" # Child only
+    self.in_process = True  # we are in the process
+    self._status = "initializing"  # Child only
     self.prepare()
-    self._status = "ready" # Child only
-    self.p2.send(1) # Let the parent know we are ready
-    self.t0 = self.p2.recv() # Wait for parent to tell me to start the main
-    self._status = "running" # child only
+    self._status = "ready"  # Child only
+    self.p2.send(1)  # Let the parent know we are ready
+    self.t0 = self.p2.recv()  # Wait for parent to tell me to start the main
+    self._status = "running"  # child only
     self.main()
-    #self._status = "done" # child only, useless: process will end after this
+    # self._status = "done" # child only, useless: process will end after this
 
   def start(self):
     """
@@ -106,15 +109,15 @@ class MasterBlock(Process):
     self._status = "initializing"
     Process.start(self)
 
-  def launch(self,t0):
+  def launch(self, t0):
     """
     To start the main method, will call start if needed
     """
     if self._status == "idle":
-      print(self,": Called launch on unprepared process!")
+      print(self, ": Called launch on unprepared process!")
       self.start()
-    self.p1.send(t0) # asking to start main in the process
-    self._status = "running" # Parent only
+    self.p1.send(t0)  # asking to start main in the process
+    self._status = "running"  # Parent only
 
   @property
   def status(self):
@@ -122,13 +125,13 @@ class MasterBlock(Process):
     Returns the status of the block, from the process itself or the parent
     """
     if self._status == "running" and not self.is_alive():
-      self._status = "done" # Parent only (duh, process is over >.<)
-    elif self.p1.poll(): # Got the signal, init is over \o/
-      if self.in_process: # Only clear the pipe if out of the process,
-                          # because the process already knows that...
+      self._status = "done"  # Parent only (duh, process is over >.<)
+    elif self.p1.poll():  # Got the signal, init is over \o/
+      if self.in_process:  # Only clear the pipe if out of the process,
+        # because the process already knows that...
         self.p1.recv()
       if self._status == "initializing":
-        self._status = "ready" # Parent only
+        self._status = "ready"  # Parent only
     return self._status
 
   def main(self):
@@ -140,16 +143,16 @@ class MasterBlock(Process):
     can do nothing"""
     pass
 
-  def send(self,data):
+  def send(self, data):
     for o in self.outputs:
       o.send(data)
 
-  def recv(self,in_id=0,blocking=True,uncompact=False):
+  def recv(self, in_id=0, blocking=True, uncompact=False):
     if uncompact:
       return uncomp(self.inputs[in_id].recv(blocking))
     return self.inputs[in_id].recv(blocking)
 
-  def recv_any(self,blocking=True,uncompact=False):
+  def recv_any(self, blocking=True, uncompact=False):
     """Tries to recv data from the first waiting input, can be blocking or non blocking 
   (will return None if no data is waiting)"""
     first = True
@@ -161,7 +164,7 @@ class MasterBlock(Process):
           return i.recv()
       first = False
 
-  def recv_last(self,uncompact=False):
+  def recv_last(self, uncompact=False):
     """Will get the latest data in each pipe, dropping all the other and then combines them
     Necessarily non blocking"""
     data = None
@@ -176,23 +179,23 @@ class MasterBlock(Process):
       return uncomp(data)
     return data
 
-
   def clear_inputs(self):
     """Will clear all the inputs of the block"""
     for l in self.inputs:
       l.clear()
 
-  def add_output(self,o):
+  def add_output(self, o):
     self.outputs.append(o)
 
-  def add_input(self,i):
+  def add_input(self, i):
     self.inputs.append(i)
 
   def stop(self):
     try:
       self.terminate()
     except Exception as e:
-      print(self,"Could not terminate:",e)
+      print(self, "Could not terminate:", e)
+
 
 def delay(s):
   time.sleep(s)
