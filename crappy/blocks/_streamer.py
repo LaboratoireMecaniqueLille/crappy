@@ -10,11 +10,11 @@
 # @author Corentin Martel
 # @version 0.1
 # @date 13/07/2016
+from __future__ import division
 
 from _masterblock import MasterBlock
 from collections import OrderedDict
 from ..links._link import TimeoutError
-from os import getpid
 import numpy as np
 from multiprocessing import Process, Queue
 from time import sleep, time
@@ -48,15 +48,13 @@ class Streamer(MasterBlock):
     self.mean = kwargs.get('mean', None)
 
     if type(self.sensor).__name__ == 'LabJack':
-      """"
-      Additionnal values used only for LabJack Streaming: queue for time vector reconstruction.
-      """
+      # Additional values used only for LabJack Streaming: queue for time vector reconstruction.
       global queue
       queue = Queue(2)
     elif type(self.sensor).__name__ == 'OpenDAQ':
-      """
-      Additionnal values used only for OpenDAQ Streaming: a variable used for time vector reconstruction to keep track.
-      """
+
+      # Additional values used only for OpenDAQ Streaming: a variable used for time vector reconstruction to keep track.
+
       self.current_length = 0.
 
   def time_vector(self):
@@ -66,15 +64,13 @@ class Streamer(MasterBlock):
     """
     sample_number = 0
     while True:
-      """
-      LJM Buffer sends a list of points with fixed length at a fixed interval, so we're creating the time vector
-      consequently.
-      This method sends a time_vector of N points equally dispatched on 1 second.
-      """
+      # LJM Buffer sends a list of points with fixed length at a fixed interval, so we're creating the time vector
+      # consequently.
+      # This method sends a time_vector of N points equally dispatched on 1 second.
       try:
-        ratio = self.sensor.scans_per_read / float(self.sensor.scan_rate_per_channel)
+        ratio = self.sensor.scans_per_read / self.sensor.scan_rate_per_channel
         nb_points = self.sensor.scans_per_read if not self.mean else self.sensor.scans_per_read / self.mean
-        time_vector = np.linspace(sample_number * ratio, (sample_number + 1 - 1 / float(nb_points)) * ratio,
+        time_vector = np.linspace(sample_number * ratio, (sample_number + 1 - 1 / nb_points) * ratio,
                                   nb_points)
         time_vector = np.around(time_vector, 5).tolist()
         queue.put(time_vector)
@@ -82,16 +78,16 @@ class Streamer(MasterBlock):
       except:
         while not queue.empty():  # flush the queue after leaving the loop
           queue.get_nowait()
-        break
+        raise
 
   def reshape(self, nparray, n):
     """
     Method to average data.
     """
     reshaped = []
-    print 'np shape nparray:', np.shape(nparray)
-    for length in xrange(np.shape(nparray)[1] / n):
-      reshaped.append(np.mean(nparray[:, length * n: int((length + 1 - 1 / float(n)) * n)], axis=1).tolist())
+
+    for length in xrange(int(np.shape(nparray)[1] / n)):
+      reshaped.append(np.mean(nparray[:, length * n: int((length + 1 - 1 / n) * n)], axis=1).tolist())
     return np.array(reshaped)
 
   def get_stream_from_labjack(self):
@@ -104,7 +100,7 @@ class Streamer(MasterBlock):
     retrieved = self.sensor.get_stream()[1]
     deinterlaced = np.array([retrieved[each::self.sensor.nb_channels] for each in xrange(self.sensor.nb_channels)])
     if self.mean:
-      deinterlaced = self.reshape(deinterlaced, self.mean)
+      deinterlaced = self.reshape(deinterlaced, self.mean).transpose()
     for each in xrange(self.sensor.nb_channels):
       liste_temp = self.sensor.gain[each] * deinterlaced[each] + self.sensor.offset[each]  # Applying gain and offset
       results.append(liste_temp.tolist())
@@ -124,11 +120,9 @@ class Streamer(MasterBlock):
     retrieved = self.sensor.get_stream()
 
     if self.mean:
-      print 'before mean'
       retrieved = self.reshape(retrieved, self.mean)
-      print 'after mean'
 
-    nb_points = len(retrieved) if not self.mean else len(retrieved) / float(self.mean)
+    nb_points = len(retrieved) if not self.mean else len(retrieved) / self.mean
     time_vector = np.linspace(start=self.current_length, stop=self.current_length + 0.2, num=nb_points, endpoint=False)
     self.current_length += 0.2
     time_vector = np.around(time_vector, 5).tolist()
