@@ -9,8 +9,8 @@
 # @brief  Link class. All connection between Blocks should be made with this.
 #
 # @authors Corentin Martel, Robin Siemiatkowski
-# @version 0.1
-# @date 13/07/2016
+# @version 0.2
+# @date 19/01/2017
 
 from multiprocessing import Pipe
 import copy
@@ -46,22 +46,6 @@ class MethodThread(Thread):
       self.exception = Exception()
     else:
       self.exception = None
-
-
-# def timeout_func(f):
-# 	"""Decorator for adding a timeout to a link send."""
-# 	def _handle_timeout(signum, frame):
-# 		raise TimeoutError("timeout error in pipe send")
-
-# 	def wrapper(*args):
-# 		signal.signal(signal.SIGALRM, _handle_timeout)
-# 		signal.setitimer(signal.ITIMER_REAL,args[0].timeout) # args[0] is the class "self" here.
-# 		try:
-# 			result = f(*args)
-# 		finally:
-# 			signal.alarm(0)
-# 		return result
-# 	return wrapper
 
 def win_timeout(timeout=None):
   """Decorator for adding a timeout to a link send."""
@@ -152,7 +136,7 @@ class Link(object):
         print self.action
         pass
     except KeyboardInterrupt:
-      print "KEYBAORD INTERRUPT RECEIVED IN LINK: " % self.name
+      print "KEYBAORD INTERRUPT RECEIVED IN LINK: %s" % self.name
       if not self.out_.closed:
         self.out_.send('close')
         self.out_.close()
@@ -185,22 +169,6 @@ class Link(object):
         self.out_.send('close')
         self.out_.close()
       raise Exception(e)
-
-      #
-      # 		except TimeoutError as e:
-      # 			if self.action=="warn":
-      # 				print "WARNING : Timeout error in pipe send! Value : ", value
-      # 			elif self.action=="kill":
-      # 				print "Killing Link : ", e
-      # 				raise
-      # 			elif self.action=="NoWarn":
-      # 				pass
-      # 			else : # for debugging !!
-      # 				print self.action
-      # 				#pass
-      # 		except (Exception,KeyboardInterrupt) as e:
-      # 			pass
-      # 			#print "Exception in link : ", e, value
 
   def recv(self, blocking=True):
     """
