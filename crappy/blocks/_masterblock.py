@@ -60,12 +60,7 @@ class MasterBlock(Process):
         "ready": prepare is over, waiting to start main by calling launch
         "running": main is running
         "done": main is over
-        NOTE: Once launch is called, the status as seen from the parent
-          will switch to "running", even if prepare is not over yet.
-          Then, the block will instantly start running when prepare
-          is over, ignoring "ready" state.
-
-          start and launch method will return instantly
+        start and launch method will return instantly
 
   """
   instances = []
@@ -77,7 +72,7 @@ class MasterBlock(Process):
     self.inputs = []
     # This pipe allows to send 2 essential signals:
     # p1->p2 is to start the main function and set t0
-    # p2->p1 to know when the prepartion is over
+    # p2->p1 to set process status to the parent
     self.p1, self.p2 = Pipe()
     self._status = "idle"
     self.in_process = False  # To know if we are in the process or not
@@ -91,15 +86,21 @@ class MasterBlock(Process):
     Masterblock.instances.remove(self)
 
   def run(self):
-    self.in_process = True  # we are in the process
-    self._status = "initializing"  # Child only
-    self.prepare()
-    self._status = "ready"  # Child only
-    self.p2.send(1)  # Let the parent know we are ready
-    self.t0 = self.p2.recv()  # Wait for parent to tell me to start the main
-    self._status = "running"  # child only
-    self.main()
-    # self._status = "done" # child only, useless: process will end after this
+    try:
+      self.in_process = True  # we are in the process
+      self.status = "initializing"
+      self.prepare()
+      self.status = "ready"
+      self.t0 = self.p2.recv()  # Wait for parent to tell me to start the main
+      self.status = "running"
+      self.main()
+      self.status = "done"
+    except Exception as e:
+      print("[%r] Exception caught:"%self, e)
+      raise
+    except KeyboardInterrupt:
+      print("[%r] Keyboard interrupt received"%self)
+      raise
 
   def start(self):
     """
@@ -113,33 +114,34 @@ class MasterBlock(Process):
     """
     To start the main method, will call start if needed
     """
-    if self._status == "idle":
+    if self.status == "idle":
       print(self, ": Called launch on unprepared process!")
       self.start()
     self.p1.send(t0)  # asking to start main in the process
-    self._status = "running"  # Parent only
 
   @property
   def status(self):
     """
     Returns the status of the block, from the process itself or the parent
     """
-    if self._status == "running" and not self.is_alive():
-      self._status = "done"  # Parent only (duh, process is over >.<)
-    elif self.p1.poll():  # Got the signal, init is over \o/
-      if self.in_process:  # Only clear the pipe if out of the process,
-        # because the process already knows that...
-        self.p1.recv()
-      if self._status == "initializing":
-        self._status = "ready"  # Parent only
+    if not self.in_process:
+      while self.p1.poll():
+        self._status = self.p1.recv()
     return self._status
+
+  @status.setter
+  def status(self,s):
+    assert self.in_process,"Cannot set status from outside of the process!"
+    self.p2.send(s)
+    self._status = s
 
   def main(self):
     """The method that will be run when .launch() is called"""
     raise NotImplementedError("Override me!")
 
   def prepare(self):
-    """The first code to be run in the new process, will only be called once and before the actual start of the main launch of the blocks
+    """The first code to be run in the new process, will only be called
+    once and before the actual start of the main launch of the blocks
     can do nothing"""
     pass
 
@@ -153,20 +155,20 @@ class MasterBlock(Process):
     return self.inputs[in_id].recv(blocking)
 
   def recv_any(self, blocking=True, uncompact=False):
-    """Tries to recv data from the first waiting input, can be blocking or non blocking 
-  (will return None if no data is waiting)"""
-    first = True
-    while blocking or first:
+    """Tries to recv data from the first waiting input, can be blocking
+    or non blocking (will then return None if no data is waiting)"""
+    while True:
       for i in self.inputs:
         if i.poll():
           if uncompact:
             return uncomp(i.recv())
           return i.recv()
-      first = False
+      if not blocking:
+        break
 
   def recv_last(self, uncompact=False):
-    """Will get the latest data in each pipe, dropping all the other and then combines them
-    Necessarily non blocking"""
+    """Will get the latest data in each pipe, dropping all the other and
+    then combines them. Necessarily non blocking"""
     data = None
     for l in self.inputs:
       if data:
@@ -195,6 +197,9 @@ class MasterBlock(Process):
       self.terminate()
     except Exception as e:
       print(self, "Could not terminate:", e)
+
+  def __repr__(self):
+    return str(type(self))+" ("+self.status+")"
 
 
 def delay(s):
