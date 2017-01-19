@@ -48,7 +48,7 @@ class _CameraInit:
     self._cax = self._fig.add_axes([0.17 + rat, 0.135, 0.02, rat * (Height / Width)])  # colorbar frame
     self._axhist = self._fig.add_axes([0.15, (0.17 + rat), rat, 0.1])  # histogram frame
     axcolor = 'lightgoldenrodyellow'
-    self.cam.new(width=self.videoextenso['width'], height=self.videoextenso['height'],
+    self.cam.open(width=self.videoextenso['width'], height=self.videoextenso['height'],
                  yoffset=self.videoextenso['yoffset'], xoffset=self.videoextenso['xoffset'])
     self.cam.height = self.videoextenso['height']
     self.cam.width = self.videoextenso['width']

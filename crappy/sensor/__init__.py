@@ -12,7 +12,7 @@
 ## @file __init__.py
 # @brief  Import classes to put them in the current namespace.
 #
-# @author Robin Siemiatkowski
+# @author Robin Siemiatkowski, Victor Couty
 # @version 0.1
 # @date 21/06/2016
 
@@ -27,15 +27,16 @@ from _dummySensor import DummySensor
 from _variateurTriboSensor import VariateurTriboSensor
 from _lal300Sensor import Lal300Sensor, SensorLal300
 from _PISensor import PISensor
-from _webcamSensor import Webcam
 
+#Cameras
 try:
   import ximeaModule as ximeaModule
   from _ximeaSensor import Ximea
 except Exception as e:
   import_error(e.message)
-
-from _fakeCameraSensor import FakeCameraSensor as Dummy
+from _webcamSensor import Webcam
+from _fakeCameraSensor import Fake_camera
+from _ximeaCV import XimeaCV
 
 if _platform.system() == "Linux":
   try:

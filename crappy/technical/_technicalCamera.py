@@ -10,10 +10,16 @@
 #
 # @author Victor Couty, Robin Siemiatkowski
 # @version 0.1
-# @date 13/07/2016
+# @date 17/01/2017
+from __future__ import print_function
+
 
 from multiprocessing import Process, Pipe
 from . import get_camera_config
+from . import camera_config
+from crappy.sensor._meta import MetaCam
+
+
 
 
 class TechnicalCamera(object):
@@ -50,11 +56,13 @@ class TechnicalCamera(object):
             Width of the image, in pixels.
     """
     try:
-      module = __import__("crappy.sensor", fromlist=[camera.capitalize()])
-      camera_class = getattr(module, camera.capitalize())
-    except AttributeError as e:
-      print "{0}".format(e), " : Unreconized camera\n"
-      raise
+      camera_class = MetaCam.classes[camera]
+    except KeyError:
+      print("Could not find camera",camera,
+                    "\nAvailables cameras are:",MetaCam.classes.keys())
+      raise NotImplementedError("Could not find camera "+camera)
+    
+    # ======= Serial stuff: for jai cam ? ======
     try:
       module = __import__("crappy.sensor.clserial", fromlist=[camera.capitalize() + "Serial"])
       code_class = getattr(module, camera.capitalize() + "Serial")
@@ -64,18 +72,28 @@ class TechnicalCamera(object):
     except ImportError:
       self.serial = None
     except Exception as e:
-      print "{0}".format(e)
       self.serial = None
     # print "module, camera_class, serial : ", module, camera_class, self.serial
+    # ========================
+
     # initialisation:
     self.sensor = camera_class(numdevice=num_device)
-    self.video_extenso = videoextenso
-    data = get_camera_config(self.sensor,self.video_extenso)
-    if self.video_extenso and self.video_extenso['enabled']:
-      self.exposure, self.gain, self.width, self.height, self.x_offset, self.y_offset, self.minx, self.maxx, \
-      self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh, self.Points_coordinates = data[:]
-    else:
-      self.exposure, self.gain, self.width, self.height, self.x_offset, self.y_offset = data[:]
+    #data = get_camera_config(self.sensor)
+    self.sensor.open()
+    camera_config(self.sensor)
+    
+
+  def __getattr__(self,attr):
+    try:
+      return super(TechnicalCamera,self).__getattr__(attr)
+    except AttributeError:
+      try:
+        return getattr(self.sensor,attr)
+      except RuntimeError: # To avoid recursion error if self.sensor is not set
+        raise AttributeError("TechnicalCamera has no attribute "+attr)
+
+  def set(self,setting,value):
+    setattr(self.sensor,setting,value)
 
   def __str__(self):
     return self.sensor.__str__()

@@ -36,6 +36,7 @@ from _interfaceCMdrive import Interface
 from _orientalTechnical import Oriental
 from _conditionneur_5018 import Conditionner_5018
 from _datapicker import DataPicker
+from _cameraConfig import camera_config
 
 try:
   from _labjack import LabJack

@@ -14,7 +14,7 @@
 
 from os import path
 
-from ._meta import cameraSensor
+from ._meta import MasterCam
 
 here = path.abspath(path.dirname(__file__))
 import ximeaModule as xi
@@ -22,7 +22,7 @@ import ximeaModule as xi
 import time
 import platform
 
-class Ximea(cameraSensor.CameraSensor):
+class Ximea(MasterCam):
   """
   Camera class for ximea devices, this class should inherit from CameraSensor
 
@@ -68,7 +68,7 @@ class Ximea(cameraSensor.CameraSensor):
   def reset(self):
     self.ximea=None
 
-  def new(self, exposure=10000, width=2048, height=2048, xoffset=0, yoffset=0,
+  def open(self, exposure=10000, width=2048, height=2048, xoffset=0, yoffset=0,
            gain=0):
     """
     This method opens the ximea device and return a camera object.

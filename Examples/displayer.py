@@ -6,13 +6,32 @@ import time
 """
 Very simple program that displays the output of a camera
 """
+class Print_val(crappy.links.Condition):
+  def evaluate(self,data):
+    print("GOT:",type(data))
+    try:
+      print("shape:",data.shape)
+    except AttributeError:
+      pass
+    return data
+
 if __name__ == "__main__":
-  #camera = crappy.blocks.StreamerCamera("Ximea", numdevice=0, freq=20, save=False,save_directory="CHANGEME",xoffset=0, yoffset=0, width=2048, height=2048)
+  #camera = crappy.blocks.StreamerCamera(camera="Ximea", freq=20, save=False)
+  #camera = crappy.blocks.StreamerCamera(camera="Ximea", save=False, show_fps=True)
   #camera = crappy.blocks.FakeCamera(512,512)
-  camera = crappy.blocks.StreamerCamera("Webcam", save=False, save_directory='CHANGEME')
+  cam_list = crappy.sensor._meta.MetaCam.classes.keys()
+  cam_list.remove("MasterCam")
+  #camera = crappy.blocks.StreamerCamera(camera="Fake_camera")
+  for i,c in enumerate(cam_list):
+    print i,c
+  r = int(raw_input("What cam do you want to use ?> "))
+  cam = cam_list[r]
+  camera = crappy.blocks.StreamerCamera(camera=cam)
 
   disp = crappy.blocks.CameraDisplayer(framerate=None)
+  #disp = crappy.blocks.Sink()
 
-  crappy.links.Link(camera,disp)
+  crappy.link(camera,disp)
+  #crappy.links.Link(camera,disp,condition=Print_val())
 
   crappy.start()

@@ -10,43 +10,31 @@
 #
 # @author Victor Couty
 # @version 0.1
-# @date 02/12/2016
+# @date 16/01/2017
 from __future__ import print_function
-from ._meta import cameraSensor
+from ._meta import MasterCam
 import time
 import numpy as np
 import cv2
 
 
-class Webcam(cameraSensor.CameraSensor):
+
+class Webcam(MasterCam):
   """
   Camera class for webcams, simply read using opencv
   """
 
   def __init__(self, numdevice=0):
     self.name = "webcam"
-    self.xoffset = self.yoffset = 0
-    self.exposure = 1
+ 
     self.numdevice = numdevice
     self.cap = None
-    #self.open()
-    self.width = 640# self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    self.height = 480# self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    self.arguments = [('width',self.width),
-                      ('height',self.height),
-                      ('gain',1),
-                      ('xoffset',0),
-                      ('yoffset',0),
-                      ('channels',1)]
     #self.close()
 
   def open(self):
     if not self.cap:
       print("opening cap")
       self.cap = cv2.VideoCapture(self.numdevice)
-
-  def new(self, **kwargs):
-    self.open()
     for arg,default in self.arguments:
       setattr(self,arg,kwargs.get(arg,default))
     inv = []
