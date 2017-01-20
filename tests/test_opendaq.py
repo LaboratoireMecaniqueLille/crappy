@@ -3,7 +3,7 @@ import numpy as np
 from time import sleep, time
 
 #
-# opendaq = crappy.technical.OpenDAQ(channels=[2], nsamples=10, gain=0, negative_channel=5)
+opendaq = crappy.technical.OpenDAQ(channels=[2], nsamples=10, gain=0, negative_channel=5)
 labjack = crappy.technical.LabJack(actuator={'channel': 'TDAC0'},
                                    sensor={'channels': 'AIN0', 'resolution': 8, 'range_num': 10})
 

@@ -43,7 +43,7 @@ class OpenDAQ(io.Control_Command):
     if self.nb_channels == 1 and self.mode == 'single':
       self.handle.conf_adc(pinput=self.channels[0], ninput=self.negative_channel, gain=self.input_gain,
                            nsamples=self.input_nsamples_per_read)
-
+    self.handle.set_led(3)
   def init_stream(self):
     # self.stream_exp_list = []
     # for index in self.channels:
@@ -96,6 +96,7 @@ class OpenDAQ(io.Control_Command):
     self.handle.set_dac(command)
 
   def close(self):
+    self.handle.set_led(1)
     self.handle.stop()  # if an experiment is running
     self.handle.close()
     pass
