@@ -69,106 +69,115 @@ class Grapher(MasterBlock):
     self.args = args[0] if isinstance(args[0], list) else args
     self.nbr_graphs = len(self.args)
 
+  def plot_dynamic_graph(self):
+
+    save_number = 0
+    fig = plt.figure(figsize=self.window_size)
+    ax = fig.add_subplot(111)
+    for i in xrange(self.nbr_graphs):  # init lines
+      if i == 0:
+        li = ax.plot(np.arange(1), np.zeros(1))
+      else:
+        li.extend(ax.plot(np.arange(1), np.zeros(1)))
+    plt.grid()
+    if self.window_pos:
+      mng = plt.get_current_fig_manager()
+      mng.window.wm_geometry("+%s+%s" % self.window_pos)
+    fig.canvas.draw()  # draw and show it
+    plt.show(block=False)
+
+    while True:
+      Data = self.recv(0)  # recv data
+      if type(Data) is not OrderedDict:
+        Data = OrderedDict(zip(Data.columns, Data.values[0]))
+      if type(Data[Data.keys()[0]]) != list:
+        #  got uncompacted data
+        for k in Data:
+          Data[k] = [Data[k]]
+      legend_ = [self.args[i][1] for i in xrange(self.nbr_graphs)]
+      if save_number > 0:  # lose the first round of data
+        if save_number == 1:  # init
+          var = Data
+          plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
+                     loc=3, ncol=len(legend_), mode="expand",
+                     borderaxespad=1)
+        elif save_number <= self.len_graph:  # stack values
+          try:
+            var = OrderedDict(zip(var.keys(), [var.values()[t] + Data.values()[t] for t in
+                                               xrange(len(var.keys()))]))
+          except TypeError:
+            var = OrderedDict(zip(var.keys(), [(var.values()[t],) + (Data.values()[t],) for t in
+                                               xrange(len(var.keys()))]))
+        else:  # delete old value and add new ones
+          var = OrderedDict(zip(var.keys(),
+                                [var.values()[t][np.shape(Data.values())[1]:] + Data.values()[t] for t
+                                 in xrange(len(var.keys()))]))
+        for i in xrange(self.nbr_graphs):  # update lines
+          li[i].set_xdata(var[self.args[i][0]])
+          li[i].set_ydata(var[self.args[i][1]])
+      ax.relim()
+      ax.autoscale_view(True, True, True)
+      fig.canvas.draw()
+      plt.pause(0.001)
+      if save_number <= self.len_graph:
+        save_number += 1
+
+  def plot_static_graph(self):
+    plt.ion()
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(111)
+    first_round = True
+    k = [0] * self.nbr_graphs  # internal value for downsampling
+
+    while True:
+      Data = self.recv(0)  # recv data
+      if type(Data) is not OrderedDict:
+        Data = OrderedDict(zip(Data.columns, Data.values[0]))
+      legend_ = [self.args[i][1] for i in xrange(self.nbr_graphs)]
+      if first_round:  # init at first round
+        for i in xrange(self.nbr_graphs):
+          if i == 0:
+            li = ax.plot(
+              Data[self.args[i][0]], Data[self.args[i][1]],
+              label='line ' + str(i))
+          else:
+            li.extend(ax.plot(
+              Data[self.args[i][0]], Data[self.args[i][1]],
+              label='line ' + str(i)))
+        plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
+                   loc=3, ncol=len(legend_), mode="expand",
+                   borderaxespad=1.)
+        plt.grid()
+        fig.canvas.draw()
+        first_round = False
+      else:  # not first round anymore
+        for i in xrange(self.nbr_graphs):
+          data_x = li[i].get_xdata()
+          data_y = li[i].get_ydata()
+          if len(data_x) >= 20000:
+            # if more than 20000 values, cut half
+            k[i] += 1
+            li[i].set_xdata(np.hstack((data_x[::2],
+                                       Data[self.args[i][0]][::2 ** k[i]])))
+            li[i].set_ydata(np.hstack((data_y[::2],
+                                       Data[self.args[i][1]][::2 ** k[i]])))
+          else:
+            li[i].set_xdata(np.hstack((data_x,
+                                       Data[self.args[i][0]][::2 ** k[i]])))
+            li[i].set_ydata(np.hstack((data_y,
+                                       Data[self.args[i][1]][::2 ** k[i]])))
+      ax.relim()
+      ax.autoscale_view(True, True, True)
+      fig.canvas.draw()
+      plt.pause(0.001)
+
   def main(self):
     try:
       if self.mode == "dynamic":
-        save_number = 0
-        fig = plt.figure(figsize=self.window_size)
-        ax = fig.add_subplot(111)
-        for i in xrange(self.nbr_graphs):  # init lines
-          if i == 0:
-            li = ax.plot(np.arange(1), np.zeros(1))
-          else:
-            li.extend(ax.plot(np.arange(1), np.zeros(1)))
-        plt.grid()
-        if self.window_pos:
-          mng = plt.get_current_fig_manager()
-          mng.window.wm_geometry("+%s+%s" % self.window_pos)
-        fig.canvas.draw()  # draw and show it
-        plt.show(block=False)
-        while True:
-          Data = self.recv(0)  # recv data
-          if type(Data) is not OrderedDict:
-            Data = OrderedDict(zip(Data.columns, Data.values[0]))
-          if type(Data[Data.keys()[0]]) != list:
-            #  got uncompacted data
-            for k in Data:
-              Data[k] = [Data[k]]
-          legend_ = [self.args[i][1] for i in xrange(self.nbr_graphs)]
-          if save_number > 0:  # lose the first round of data
-            if save_number == 1:  # init
-              var = Data
-              plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
-                         loc=3, ncol=len(legend_), mode="expand",
-                         borderaxespad=1)
-            elif save_number <= self.len_graph:  # stack values
-              try:
-                var = OrderedDict(zip(var.keys(), [var.values()[t] + Data.values()[t] for t in
-                                                   xrange(len(var.keys()))]))
-              except TypeError:
-                var = OrderedDict(zip(var.keys(), [(var.values()[t],) + (Data.values()[t],) for t in
-                                                   xrange(len(var.keys()))]))
-            else:  # delete old value and add new ones
-              var = OrderedDict(zip(var.keys(),
-                                    [var.values()[t][np.shape(Data.values())[1]:] + Data.values()[t] for t
-                                     in xrange(len(var.keys()))]))
-            for i in xrange(self.nbr_graphs):  # update lines
-              li[i].set_xdata(var[self.args[i][0]])
-              li[i].set_ydata(var[self.args[i][1]])
-          ax.relim()
-          ax.autoscale_view(True, True, True)
-          fig.canvas.draw()
-          plt.pause(0.001)
-          if save_number <= self.len_graph:
-            save_number += 1
+        self.plot_dynamic_graph()
 
-      if self.mode == "static":
-        plt.ion()
-        fig = plt.figure(figsize=(8, 8))
-        ax = fig.add_subplot(111)
-        first_round = True
-        k = [0] * self.nbr_graphs  # internal value for downsampling
-        while True:
-          Data = self.recv(0)  # recv data
-          if type(Data) is not OrderedDict:
-            Data = OrderedDict(zip(Data.columns, Data.values[0]))
-          legend_ = [self.args[i][1] for i in xrange(self.nbr_graphs)]
-          if first_round:  # init at first round
-            for i in xrange(self.nbr_graphs):
-              if i == 0:
-                li = ax.plot(
-                  Data[self.args[i][0]], Data[self.args[i][1]],
-                  label='line ' + str(i))
-              else:
-                li.extend(ax.plot(
-                  Data[self.args[i][0]], Data[self.args[i][1]],
-                  label='line ' + str(i)))
-            plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
-                       loc=3, ncol=len(legend_), mode="expand",
-                       borderaxespad=1.)
-            plt.grid()
-            fig.canvas.draw()
-            first_round = False
-          else:  # not first round anymore
-            for i in xrange(self.nbr_graphs):
-              data_x = li[i].get_xdata()
-              data_y = li[i].get_ydata()
-              if len(data_x) >= 20000:
-                # if more than 20000 values, cut half
-                k[i] += 1
-                li[i].set_xdata(np.hstack((data_x[::2],
-                                           Data[self.args[i][0]][::2 ** k[i]])))
-                li[i].set_ydata(np.hstack((data_y[::2],
-                                           Data[self.args[i][1]][::2 ** k[i]])))
-              else:
-                li[i].set_xdata(np.hstack((data_x,
-                                           Data[self.args[i][0]][::2 ** k[i]])))
-                li[i].set_ydata(np.hstack((data_y,
-                                           Data[self.args[i][1]][::2 ** k[i]])))
-          ax.relim()
-          ax.autoscale_view(True, True, True)
-          fig.canvas.draw()
-          plt.pause(0.001)
+      elif self.mode == "static":
+        self.plot_static_graph()
 
     except (Exception, KeyboardInterrupt) as e:
       print "Exception in grapher %s: %s" % (os.getpid(), e)
