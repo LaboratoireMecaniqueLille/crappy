@@ -98,20 +98,17 @@ class Grapher(MasterBlock):
       if save_number > 0:  # lose the first round of data
         if save_number == 1:  # init
           var = Data
-          plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
-                     loc=3, ncol=len(legend_), mode="expand",
+          plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102), loc=3, ncol=len(legend_), mode="expand",
                      borderaxespad=1)
         elif save_number <= self.len_graph:  # stack values
           try:
-            var = OrderedDict(zip(var.keys(), [var.values()[t] + Data.values()[t] for t in
-                                               xrange(len(var.keys()))]))
+            var = OrderedDict(zip(var.keys(), [var.values()[t] + Data.values()[t] for t in xrange(len(var.keys()))]))
           except TypeError:
             var = OrderedDict(zip(var.keys(), [(var.values()[t],) + (Data.values()[t],) for t in
                                                xrange(len(var.keys()))]))
         else:  # delete old value and add new ones
-          var = OrderedDict(zip(var.keys(),
-                                [var.values()[t][np.shape(Data.values())[1]:] + Data.values()[t] for t
-                                 in xrange(len(var.keys()))]))
+          var = OrderedDict(zip(var.keys(), [var.values()[t][np.shape(Data.values())[1]:] + Data.values()[t] for t
+                                             in xrange(len(var.keys()))]))
         for i in xrange(self.nbr_graphs):  # update lines
           li[i].set_xdata(var[self.args[i][0]])
           li[i].set_ydata(var[self.args[i][1]])
@@ -144,8 +141,7 @@ class Grapher(MasterBlock):
             li.extend(ax.plot(
               Data[self.args[i][0]], Data[self.args[i][1]],
               label='line ' + str(i)))
-        plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102),
-                   loc=3, ncol=len(legend_), mode="expand",
+        plt.legend(legend_, bbox_to_anchor=(-0.03, 1.02, 1.06, .102), loc=3, ncol=len(legend_), mode="expand",
                    borderaxespad=1.)
         plt.grid()
         fig.canvas.draw()
@@ -157,15 +153,11 @@ class Grapher(MasterBlock):
           if len(data_x) >= 20000:
             # if more than 20000 values, cut half
             k[i] += 1
-            li[i].set_xdata(np.hstack((data_x[::2],
-                                       Data[self.args[i][0]][::2 ** k[i]])))
-            li[i].set_ydata(np.hstack((data_y[::2],
-                                       Data[self.args[i][1]][::2 ** k[i]])))
+            li[i].set_xdata(np.hstack((data_x[::2], Data[self.args[i][0]][::2 ** k[i]])))
+            li[i].set_ydata(np.hstack((data_y[::2], Data[self.args[i][1]][::2 ** k[i]])))
           else:
-            li[i].set_xdata(np.hstack((data_x,
-                                       Data[self.args[i][0]][::2 ** k[i]])))
-            li[i].set_ydata(np.hstack((data_y,
-                                       Data[self.args[i][1]][::2 ** k[i]])))
+            li[i].set_xdata(np.hstack((data_x, Data[self.args[i][0]][::2 ** k[i]])))
+            li[i].set_ydata(np.hstack((data_y, Data[self.args[i][1]][::2 ** k[i]])))
       ax.relim()
       ax.autoscale_view(True, True, True)
       fig.canvas.draw()
