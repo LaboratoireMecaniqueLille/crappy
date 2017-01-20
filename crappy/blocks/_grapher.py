@@ -66,10 +66,7 @@ class Grapher(MasterBlock):
     self.window_pos = kwargs.get("window_pos")
     self.window_size = kwargs.get("window_size", (8, 8))
     self.mode = "dynamic" if self.len_graph > 0 else "static"
-    if isinstance(args[0], list):
-      self.args = args[0]
-    else:
-      self.args = args
+    self.args = args[0] if isinstance(args[0], list) else args
     self.nbr_graphs = len(self.args)
 
   def main(self):
@@ -78,7 +75,7 @@ class Grapher(MasterBlock):
         save_number = 0
         fig = plt.figure(figsize=self.window_size)
         ax = fig.add_subplot(111)
-        for i in range(self.nbr_graphs):  # init lines
+        for i in xrange(self.nbr_graphs):  # init lines
           if i == 0:
             li = ax.plot(np.arange(1), np.zeros(1))
           else:
@@ -94,10 +91,10 @@ class Grapher(MasterBlock):
           if type(Data) is not OrderedDict:
             Data = OrderedDict(zip(Data.columns, Data.values[0]))
           if type(Data[Data.keys()[0]]) != list:
-            #got uncompacted data
+            #  got uncompacted data
             for k in Data:
               Data[k] = [Data[k]]
-          legend_ = [self.args[i][1] for i in range(self.nbr_graphs)]
+          legend_ = [self.args[i][1] for i in xrange(self.nbr_graphs)]
           if save_number > 0:  # lose the first round of data
             if save_number == 1:  # init
               var = Data
@@ -107,15 +104,15 @@ class Grapher(MasterBlock):
             elif save_number <= self.len_graph:  # stack values
               try:
                 var = OrderedDict(zip(var.keys(), [var.values()[t] + Data.values()[t] for t in
-                                                   range(len(var.keys()))]))
+                                                   xrange(len(var.keys()))]))
               except TypeError:
                 var = OrderedDict(zip(var.keys(), [(var.values()[t],) + (Data.values()[t],) for t in
-                                                   range(len(var.keys()))]))
+                                                   xrange(len(var.keys()))]))
             else:  # delete old value and add new ones
               var = OrderedDict(zip(var.keys(),
                                     [var.values()[t][np.shape(Data.values())[1]:] + Data.values()[t] for t
-                                     in range(len(var.keys()))]))
-            for i in range(self.nbr_graphs):  # update lines
+                                     in xrange(len(var.keys()))]))
+            for i in xrange(self.nbr_graphs):  # update lines
               li[i].set_xdata(var[self.args[i][0]])
               li[i].set_ydata(var[self.args[i][1]])
           ax.relim()
@@ -135,9 +132,9 @@ class Grapher(MasterBlock):
           Data = self.recv(0)  # recv data
           if type(Data) is not OrderedDict:
             Data = OrderedDict(zip(Data.columns, Data.values[0]))
-          legend_ = [self.args[i][1] for i in range(self.nbr_graphs)]
+          legend_ = [self.args[i][1] for i in xrange(self.nbr_graphs)]
           if first_round:  # init at first round
-            for i in range(self.nbr_graphs):
+            for i in xrange(self.nbr_graphs):
               if i == 0:
                 li = ax.plot(
                   Data[self.args[i][0]], Data[self.args[i][1]],
@@ -153,7 +150,7 @@ class Grapher(MasterBlock):
             fig.canvas.draw()
             first_round = False
           else:  # not first round anymore
-            for i in range(self.nbr_graphs):
+            for i in xrange(self.nbr_graphs):
               data_x = li[i].get_xdata()
               data_y = li[i].get_ydata()
               if len(data_x) >= 20000:
