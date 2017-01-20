@@ -47,6 +47,7 @@ class MethodThread(Thread):
     else:
       self.exception = None
 
+
 def win_timeout(timeout=None):
   """Decorator for adding a timeout to a link send."""
 
@@ -136,7 +137,7 @@ class Link(object):
         print self.action
         pass
     except KeyboardInterrupt:
-      print "KEYBAORD INTERRUPT RECEIVED IN LINK: %s" % self.name
+      print "KEYBOARD INTERRUPT RECEIVED IN LINK: %s" % self.name
       if not self.out_.closed:
         self.out_.send('close')
         self.out_.close()
@@ -158,7 +159,7 @@ class Link(object):
         if value is not None:
           self.out_.send(value)
     except KeyboardInterrupt:
-      print "KEYBAORD INTERRUPT RECEIVED IN LINK: " % self.name
+      print "KEYBOARD INTERRUPT RECEIVED IN LINK: " % self.name
       if not self.out_.closed:
         self.out_.send('close')
         self.out_.close()
@@ -203,7 +204,7 @@ class Link(object):
         print self.action
         # pass
     except KeyboardInterrupt:
-      print "KEYBAORD INTERRUPT RECEIVED IN LINK: %s" % self.name
+      print "KEYBOARD INTERRUPT RECEIVED IN LINK: %s" % self.name
       if not self.in_.closed:
         self.in_.close()
       raise KeyboardInterrupt
@@ -212,7 +213,6 @@ class Link(object):
       if not self.in_.closed:
         self.in_.close()
       raise
-
 
   def poll(self):
     return self.in_.poll()
@@ -226,6 +226,7 @@ class Link(object):
     while self.in_.poll():
       data = self.in_.recv()
     return data
+
 
 def link(in_block, out_block, **kwargs):
   """
