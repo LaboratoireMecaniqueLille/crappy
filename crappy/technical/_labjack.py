@@ -12,9 +12,10 @@
 # @date 18/08/2016
 from __future__ import print_function
 from labjack import ljm
-from time import time, sleep
+from time import time
 from collections import OrderedDict
-from multiprocessing import Process, Queue
+from threading import Thread
+from Queue import Queue
 from Tkinter import Tk, Label
 from inspect import ismethod, getmembers
 from os import getpid
@@ -49,6 +50,7 @@ class LabJack_UE9(object):
           raise TypeError('Wrong Labjack Parameter definition.')
       else:
         return list_to_format
+
     self.sensor_args = kwargs.get('sensor', None)
     self.actuator_args = kwargs.get('actuator', None)
     if self.sensor_args:
@@ -70,7 +72,6 @@ class LabJack_UE9(object):
 
   def open_handle(self, dictionary):
     return UE9()
-
 
   def new(self):
     print('new')
@@ -97,6 +98,7 @@ class LabJack_UE9(object):
 
   def close(self):
     self.handle.close()
+
   def close_streamer(self):
     print('close streamer')
     pass
@@ -183,7 +185,6 @@ class LabJack_T7(object):
         str(var) + "Error: parameters should be int or float."
       return var
 
-
     self.verbose = kwargs.get('verbose', False)
     self.vprint = vprint if self.verbose else lambda *args: None
 
@@ -235,8 +236,7 @@ class LabJack_T7(object):
           self.scan_rate_per_channel = int(100000 / self.nb_channels)
         self.scans_per_read = self.sensor_args.get('scans_per_read', int(self.scan_rate_per_channel / 10.))
         if self.verbose:
-          global queue  # Used to run a dialog box in parallel
-          queue = Queue()
+          self.queue = Queue()
           # while True:
           #   try:
           #   break
@@ -259,7 +259,7 @@ class LabJack_T7(object):
     Dialog box that pops when using streamer function with verbosity.
     """
 
-    def __init__(self, scan_rate_per_channel, scans_per_read):
+    def __init__(self, scan_rate_per_channel, scans_per_read, queue):
       self.root = Tk()
       self.root.title('LabJack Streamer')
       self.root.resizable(width=False, height=False)
@@ -271,18 +271,20 @@ class LabJack_T7(object):
         Label(self.root, text=first_column, borderwidth=10).grid(row=row_index, column=0)
         self.c2.append(Label(self.root, text=self.second_column[row_index], borderwidth=10))
         self.c2[-1].grid(row=row_index, column=1)
+      self.queue = queue
       self.update()
 
     def update(self):
       """Method to update data inside the dialog box. The window is updated every time data in queue occurs."""
-      array = queue.get()
+      array = self.queue.get()
+
       t0 = array[0]
       while True:
         array[0] = '%.1f' % (array[0] - t0)
         for row_index, value in enumerate(array):
           self.c2[row_index + 2].configure(text=value, borderwidth=10)
         self.root.update()
-        array = queue.get()
+        array = self.queue.get()
 
   def new(self):
     """
@@ -342,7 +344,10 @@ class LabJack_T7(object):
       ljm.eStreamStart(self.handle, self.scans_per_read, self.nb_channels,
                        self.a_scan_list, self.scan_rate_per_channel)
       if self.verbose:
-        Process(target=self.DialogBox, args=(self.scan_rate_per_channel, self.scans_per_read)).start()
+        thread = Thread(target=self.DialogBox, args=(self.scan_rate_per_channel, self.scans_per_read, self.queue))
+        thread.daemon = True
+        thread.start()
+
 
     except ljm.LJMError as e:
       self.vprint('Error in start_stream:', e)
@@ -371,7 +376,7 @@ class LabJack_T7(object):
       results = retrieved_from_buffer[0]
       timer = time()
       if self.verbose:
-        queue.put([timer, retrieved_from_buffer[1], retrieved_from_buffer[2]])
+        self.queue.put([timer, retrieved_from_buffer[1], retrieved_from_buffer[2]])
       return timer, results
 
     except Exception:
@@ -404,9 +409,9 @@ class LabJack_T7(object):
     """
     Special method called if streamer is open.
     """
-    while not queue.empty():
+    while not self.queue.empty():
       # Flushing the queue
-      queue.get_nowait()
+      self.queue.get_nowait()
     ljm.eStreamStop(self.handle)
     self.close()
 
@@ -420,6 +425,7 @@ class LabJack(object):
     """
     The parameters are the same as defined for each device. This class simply inherits from it.
     """
+
     def identify_t7():
       try:
         ljm.listAllS('ANY', 'ANY')
