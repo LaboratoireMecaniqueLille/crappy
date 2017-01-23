@@ -58,20 +58,19 @@ class MeasureByStep(CompacterBlock):
       """
       Method to update printed value, instead of print a new one.
       """
-      global last_len, queue, time_interval
       s = " ".join([str(i) for i in args])
       s = s.split("\n")[0]
       l = len(s)
-      if last_len is not None:
-        s += " " * (last_len - l)
+      if self.last_len is not None:
+        s += " " * (self.last_len - l)
         sys.stdout.write("\033[F")
-      last_len = l
+      self.last_len = l
       print(s)
 
     nb_points0 = 0.
     while True:
-      nb_points1 = queue.get()
-      reprint('Freq:', '%.2f' % ((nb_points1 - nb_points0) / time_interval), 'Hz')
+      nb_points1 = self.queue.get()
+      reprint('Freq:', '%.2f' % ((nb_points1 - nb_points0) / self.time_interval), 'Hz')
       nb_points0 = nb_points1
 
   def temporization(self, timer):
@@ -84,19 +83,18 @@ class MeasureByStep(CompacterBlock):
     Block called before main.
     """
     if self.verbose:
-      self.nb_acquisitions = 0.
-      self.elapsed = 0.
-
-      global last_len, queue, time_interval
-      time_interval = 1.
-      last_len = None
-      queue = Queue()
-      printer = threading.Thread(target=self.print_time)
-      printer.daemon = True
-      printer.start()
-
-
+      self.prepare_verbosity()
     self.trigger = "internal" if len(self.inputs) == 0 else "external"
+
+  def prepare_verbosity(self):
+    self.nb_acquisitions = 0.
+    self.elapsed = 0.
+    self.time_interval = 1.
+    self.last_len = None
+    self.queue = Queue()
+    printer = threading.Thread(target=self.print_time)
+    printer.daemon = True
+    printer.start()
 
   def main(self):
     """
@@ -117,10 +115,10 @@ class MeasureByStep(CompacterBlock):
 
         if self.verbose:
           self.nb_acquisitions += 1
-          time_interval = data[0] - self.elapsed
-          if time_interval >= 1.:
+          self.time_interval = data[0] - self.elapsed
+          if self.time_interval >= 1.:
             self.elapsed = data[0]
-            queue.put(self.nb_acquisitions)
+            self.queue.put(self.nb_acquisitions)
         t_acq = time.time() - t_before_acq
 
         if self.freq and t_acq < 1 / float(self.freq):
