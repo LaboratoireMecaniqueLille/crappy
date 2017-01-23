@@ -71,9 +71,9 @@ class MasterBlock(Process):
     self.outputs = []
     self.inputs = []
     # This pipe allows to send 2 essential signals:
-    # p1->p2 is to start the main function and set t0
-    # p2->p1 to set process status to the parent
-    self.p1, self.p2 = Pipe()
+    # pipe1->pipe2 is to start the main function and set t0
+    # pipe2->pipe1 to set process status to the parent
+    self.pipe1, self.pipe2 = Pipe()
     self._status = "idle"
     self.in_process = False  # To know if we are in the process or not
 
@@ -91,15 +91,15 @@ class MasterBlock(Process):
       self.status = "initializing"
       self.prepare()
       self.status = "ready"
-      self.t0 = self.p2.recv()  # Wait for parent to tell me to start the main
+      self.t0 = self.pipe2.recv()  # Wait for parent to tell me to start the main
       self.status = "running"
       self.main()
       self.status = "done"
     except Exception as e:
-      print("[%r] Exception caught:"%self, e)
+      print("[%r] Exception caught:" % self, e)
       raise
     except KeyboardInterrupt:
-      print("[%r] Keyboard interrupt received"%self)
+      print("[%r] Keyboard interrupt received" % self)
       raise
 
   def start(self):
@@ -117,7 +117,7 @@ class MasterBlock(Process):
     if self.status == "idle":
       print(self, ": Called launch on unprepared process!")
       self.start()
-    self.p1.send(t0)  # asking to start main in the process
+    self.pipe1.send(t0)  # asking to start main in the process
 
   @property
   def status(self):
@@ -125,14 +125,14 @@ class MasterBlock(Process):
     Returns the status of the block, from the process itself or the parent
     """
     if not self.in_process:
-      while self.p1.poll():
-        self._status = self.p1.recv()
+      while self.pipe1.poll():
+        self._status = self.pipe1.recv()
     return self._status
 
   @status.setter
-  def status(self,s):
-    assert self.in_process,"Cannot set status from outside of the process!"
-    self.p2.send(s)
+  def status(self, s):
+    assert self.in_process, "Cannot set status from outside of the process!"
+    self.pipe2.send(s)
     self._status = s
 
   def main(self):
@@ -199,7 +199,7 @@ class MasterBlock(Process):
       print(self, "Could not terminate:", e)
 
   def __repr__(self):
-    return str(type(self))+" ("+self.status+")"
+    return str(type(self)) + " (" + self.status + ")"
 
 
 def delay(s):
