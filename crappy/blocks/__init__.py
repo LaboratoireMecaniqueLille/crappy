@@ -51,6 +51,8 @@ from _videoExtenso import VideoExtenso
 from _streamerCamera import StreamerCamera
 from _streamer import Streamer
 from _dashboard import Dashboard
+from _controlcommand import ControlCommand
+from _wavegenerator import WaveGenerator
 
 try:
   from _videoExtenso import VideoExtenso

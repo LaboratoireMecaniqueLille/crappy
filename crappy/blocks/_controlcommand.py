@@ -47,8 +47,10 @@ class ControlCommand(MeasureByStep):
     while True:
 
       data = self.acquire_data()
-      command = self.inputs[0].recv()['signal']
+      command = self.inputs[0].recv(blocking=True)['signal']
+
       data.append(command)
+
       self.send_to_compacter(data)
       self.device.set_cmd(command)
 
