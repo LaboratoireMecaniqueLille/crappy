@@ -21,30 +21,42 @@ import cv2
 
 class Webcam(MasterCam):
   """
-  Camera class for webcams, simply read using opencv
+  Camera class for webcams, read using opencv
   """
-
   def __init__(self, numdevice=0):
+    MasterCam.__init__(self)
+    self.numdevice=numdevice
     self.name = "webcam"
- 
-    self.numdevice = numdevice
     self.cap = None
-    #self.close()
+    # No sliders for the camera: they usually only allow a few resolutions
+    self.add_setting("width",640,self._set_w)
+    self.add_setting("height",480,self._set_h)
+    self.add_setting("channels",1,self._set_channels,{1:1,3:3})
 
-  def open(self):
-    if not self.cap:
-      print("opening cap")
-      self.cap = cv2.VideoCapture(self.numdevice)
-    for arg,default in self.arguments:
-      setattr(self,arg,kwargs.get(arg,default))
-    inv = []
+  def _set_w(self,i):
+    if self.cap:
+      self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,i)
+      r,f = self.cap.read()
+      return r and f.shape[1] == i
+    return False
+
+  def _set_h(self,i):
+    if self.cap:
+      self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,i)
+      r,f = self.cap.read()
+      return r and f.shape[0] == i
+    return False
+
+  def _set_channels(self,i):
+    return True
+
+  def open(self,**kwargs):
+    if self.cap:
+      self.cap.close()
+    self.cap = cv2.VideoCapture(self.numdevice)
     for k in kwargs:
-      if k not in map(lambda x:x[0],self.arguments):
-        inv.append(k)
-    if inv:
-      print(self,"got invalid args:",*inv)
-    assert self.channels in (1,3), "Incorrect number of channels: "+str(
-                                                                self.channels)
+      assert k in self.available_settings,str(self)+"Unexpected kwarg: "+str(k)
+    self.set_all(**kwargs)
 
   def get_image(self):
     ret, frame = self.cap.read()
@@ -52,12 +64,11 @@ class Webcam(MasterCam):
       print("Error reading the camera")
       raise IOError
     if self.channels == 1:
-      return cv2.cvtColor(self.gain*frame, cv2.COLOR_BGR2GRAY)
+      return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     else:
-      return self.gain*frame
+      return frame#[:,:,[2,1,0]]
 
   def close(self):
     if self.cap:
-      print("Closing cap")
       self.cap.release()
-      self.cap = None
+    self.cap = None

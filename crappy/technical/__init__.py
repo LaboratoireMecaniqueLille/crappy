@@ -13,9 +13,9 @@
 ## @file __init__.py
 # @brief  Import classes to put them in the current namespace.
 #
-# @author Robin Siemiatkowski
-# @version 0.1
-# @date 21/06/2016
+# @author Robin Siemiatkowski, Victor Couty
+# @version 0.2
+# @date 24/01/2017
 
 from .._warnings import import_error
 

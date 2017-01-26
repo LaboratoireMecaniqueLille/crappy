@@ -1,4 +1,16 @@
-#coding: utf-8
+# coding: utf-8
+##  @addtogroup sensor
+# @{
+
+##  @defgroup CameraSensor CameraSensor
+# @{
+
+## @file _cameraSensor.py
+# @brief  Defines all that is needed to make the CameraSensor class
+#
+# @author Victor Couty
+# @version 0.1
+# @date 26/01/2017
 from __future__ import print_function
 
 class DefinitionError(Exception):
@@ -45,8 +57,10 @@ class MetaCam(type):
         #   def method():
         #       do_stuff()
 
+        # Check if this class hasn't already been created
         if name in MetaCam.classes:
             raise DefinitionError("Cannot redefine "+name+" class")
+        # Check if mandatory methods are defined
         missing_methods = []
         for m in MetaCam.needed_methods:
             if not m in dict:
@@ -62,37 +76,62 @@ class MetaCam(type):
 class Cam_setting(object):
   """This class represents an attribute of the camera that cam be set"""
   def __init__(self,name,default,set_f,limits):
-    self.name = name # The name of the setting
-    self.default = default # its default value
+    """
+  Arguments:
+    name: the name of the setting
+    default: the default value, if not specified it will be set to this value
+    set_f: A function that will be called when setting the parameter to a new
+      value. It must return True if it succeded and False aotherwise.
+    limits: It contains the available values for this parameter
+      The possible types are:
+       None: Values will not be tested and the parameter will not appear in 
+       CameraConfig
+
+       A tuple of 2 ints/floats: Values must be between first and second value
+       CameraConfig will add a scale widget to set it. If they are integers, 
+       all the integers between them will be accessible, if they are floats,
+       the range will be divided in 1000 in the scale widget
+
+       A Boolean: Possible values will be True or False, CameraConfig will 
+       add a checkbox to edit the value.
+       (It can be True or False, it doesn't matter)
+
+       A dict: Possible values are the values of the dict, CameraConfig will
+       add radio buttons showing the keys, to set it to the corresponding value
+  """
+    self.name = name
+    self.default = default
     self._value = default
-    self.set_f = set_f # The function that will be called to actually
-    # apply this setting, it also checks the setting for validity
-    # return value must be true if the setting applied correctly,
-    # false otherwise
+    self.set_f = set_f
     self.limits = limits
-    # You must include the boundaries in this condition (ex: 1 <= w <=2048)
-    # It can be None, it will then be ignored (useful for non number settings)
-    # It must be a tuple (min,max). min type will also define the type of the
-    # parameter: int of float
 
   @property
   def value(self):
     return self._value
 
+  # Here is the interesting part: When we set value (setting.value = x),
+  # we will got throught all of this, and save the new value only if the
+  # settting is successful
   @value.setter
   def value(self,i):
-    if self.limits:
+    if type(self.limits)==tuple:
       if not self.limits[0] <= i <= self.limits[1]:
         print("[Cam_setting] Parameter",i," out of range ",self.limits)
         return
+    elif type(self.limits)==dict:
+      if not i in self.limits.values():
+        print("[Cam_setting] Parameter",i," not available",self.limits)
+        return
+    elif type(self.limits)==bool:
+      i = bool(i)
     old = self._value
+    # We could actually wait to see if set_f is succesful before setting the 
+    # value, but if set_f uses self.parameter, it will still be set to its old
+    # value until it returns...
     self._value = i
     if not self.set_f(i):
-      print("Could not set",self.name,"to",i)
-      if i == self.default:
-        raise RuntimeError(
-                      "Could not set default value for "+self.name+": "+str(i))
-      self._value = old
+      print("[Cam_setting] Could not set",self.name,"to",i)
+      self._value = old # If not succesful, roll back
 
   def __str__(self):
     if self.limits:
@@ -110,31 +149,50 @@ class MasterCam(object):
   represent all that can be set on the camera: height, width, exposure, AEAG,
   external trigger, etc...
   Each parameter is represented by a Cam_setting object: it includes the
-  default value, a function to check parameter validity, etc...
+  default value, a function to set and check parameter validity, etc...
   This class makes it transparent to the user: you can access a setting by
   using myinstance.setting = stuff
-  It will automatically check the validity and try to set it.
+  It will automatically check the validity and try to set it. (see Cam_setting)
   """
-  __metaclass__ = MetaCam
+  __metaclass__ = MetaCam # The magic happens here!
 
   def __init__(self):
-    """Represents a camera, all cameras should inherit from this block"""
+    """Don't forget to call this __init__ in the children or __getattr__ will
+    fall in an infinite recursion loop looknig for settings..."""
     self.settings = {}
-    self.is_open = False
     self.name = "MasterCam"
 
-  def add_setting(self,name,default,set_f=lambda a:True,limits=(1,100000)):
+  def add_setting(self,name,default,set_f=lambda a:True,limits=None):
+    """Wrapper to simply add a new setting to the camera"""
     assert name not in self.settings, "This setting already exists"
-    self.settings[name] = \
-                  Cam_setting(name,default,set_f,limits)
+    self.settings[name] = Cam_setting(name,default,set_f,limits)
 
-  def set_all(self):
+  @property
+  def available_settings(self):
+    """Returns a list of available settings"""
+    return map(lambda x: x.name,self.settings.values())
+
+  @property
+  def settings_dict(self):
+    """Returns settings as a dict, keys are the names of the settings and 
+    values are setting.value"""
+    d = dict(self.settings)
+    for k in d:
+      d[k] = d[k].value
+    return d
+
+  def set_all(self,**kwargs):
+    """Sets all the settings based on kwargs, if not specified, the setting 
+    will take its default value"""
     for s in self.settings:
-      self.settings[s].value = self.settings[s].value
+      if s in kwargs:
+        self.settings[s].value = kwargs[s]
+      else:
+        self.settings[s].value = self.settings[s].default
 
   def reset_all(self):
-    for s in self.settings:
-      self.settings[s].value = self.settings[s].default
+    """Reset all the settings to their default values"""
+    self.set_all()
 
   def __getattr__(self,i):
     """The idea is simple: if the camera has this attribute: return it
@@ -142,24 +200,30 @@ class MasterCam(object):
     return its value.
     Note that we made sure to raise an attribute error if it is neither a
     camera attribute nor a setting.
+    Example:
+    Camera definition contains self.add_setting("width",1280,set_w)
+    then 
+    cam = Camera()
+    cam.width will return 1280
     """
     try:
-      return super(MasterCam,self).__getattr__(i)
+      return self.__getattribute__(i)
     except AttributeError:
       try:
         return self.settings[i].value
       except KeyError:
-        raise AttributeError(self.__str__()+": No such setting: "+i)
+        raise AttributeError("No such attribute: "+i)
       except RuntimeError:
-        print("cam.settings is likely not defined! \
-You must call MasterCam.__init__(self) first in any camera.__init__!!")
-        raise AttributeError("No such attribute: settings")
+        print("You have likely forgotten to call MasterCam.__init__(self)!")
+        raise AttributeError("No such attribute:"+i)
 
   def __setattr__(self,attr,val):
     """Same as getattr: if it is a setting, then set its value using the
     setter in the class CamSetting, else use the default behavior
     It is important to make sure we don't try to set 'settings', it would
-    recursively call getattr and enter an infinite loop, hence the condition."""
+    recursively call getattr and enter an infinite loop, hence the condition.
+    Example: cam.width = 2048 will be like cam.settings['width'] = 2048.
+    It allows for simple settings of the camera"""
     if attr != "settings" and attr in self.settings:
       self.settings[attr].value = val
     else:

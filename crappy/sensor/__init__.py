@@ -31,12 +31,15 @@ from _PISensor import PISensor
 #Cameras
 try:
   import ximeaModule as ximeaModule
-  from _ximeaSensor import Ximea
+  from _ximea import Ximea
 except Exception as e:
   import_error(e.message)
 from _webcamSensor import Webcam
 from _fakeCameraSensor import Fake_camera
-from _ximeaCV import XimeaCV
+try:
+  from _ximeaCV import XimeaCV
+except ImportError as e:
+  import_error(e.message)
 
 if _platform.system() == "Linux":
   try:

@@ -27,7 +27,7 @@ class TechnicalCamera(object):
   Opens a camera device and initialise it.
   """
 
-  def __init__(self, camera="ximea", num_device=0, videoextenso=None):
+  def __init__(self, camera="ximea", num_device=0, config=True, **kwargs):
     """
     This Class opens a device and runs the initialisation sequence (CameraInit).
 
@@ -79,8 +79,9 @@ class TechnicalCamera(object):
     # initialisation:
     self.sensor = camera_class(numdevice=num_device)
     #data = get_camera_config(self.sensor)
-    self.sensor.open()
-    camera_config(self.sensor)
+    self.sensor.open(**kwargs)
+    if config:
+      camera_config(self.sensor)
     
 
   def __getattr__(self,attr):

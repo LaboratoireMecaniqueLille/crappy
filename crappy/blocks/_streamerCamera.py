@@ -60,13 +60,19 @@ class StreamerCamera(MasterBlock):
                         ("save_directory",None),
                         ("label","cycle"),
                         ("show_fps",False)]:
-      setattr(self,arg,kwargs.get(arg,default))
+      setattr(self,arg,kwargs.get(arg,default)) #Assign these attributes
+      try: 
+        del kwargs[arg] # And remove them (if any) to 
+                        # keep the parameters for the technical
+      except KeyError:
+        pass
     self.camera_name = self.camera
+    self.tc_kwargs = kwargs
 
   def prepare(self):
     if self.save_directory and not os.path.exists(self.save_directory):
       os.makedirs(self.save_directory)
-    self.camera = tc(self.camera_name, self.numdevice)
+    self.camera = tc(self.camera_name, self.numdevice,**self.tc_kwargs)
     self.trigger = "internal" if len(self.inputs) == 0 else "external"
 
   def main(self):
@@ -84,8 +90,11 @@ class StreamerCamera(MasterBlock):
         last_index = loops
       if self.trigger == "internal":
         if self.max_fps is not None:
-          while time.time() - timer < 1. / self.max_fps:
-            pass
+          while True:
+            left = 1. / self.max_fps - time.time() + timer
+            if left <= 0:
+              break
+            time.sleep(left/2.)
         timer = time.time()
         img = self.camera.sensor.get_image()
       elif self.trigger == "external":

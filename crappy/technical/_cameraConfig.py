@@ -4,87 +4,133 @@ from __future__ import print_function, division
 import cv2
 import Tkinter as tk
 from PIL import ImageTk,Image
+import numpy as np
+from threading import Thread
+from multiprocessing import Queue
 
-maxW = 800
-maxH = 600
+from time import sleep
 
-loop = True
-
-def finish():
-  global loop
-  loop = False
-
-def convert_image(img):
-  height,width = img.shape
-  ratio = max(width/maxW,height/maxH)
-  global h,w
-  if ratio >= 1:
-    w = int(width/ratio)
-    h = int(height/ratio)
-  else:
-    w = width
-    h = height
-  return ImageTk.PhotoImage(Image.fromarray(cv2.resize(img,(w,h))))
+maxW = 640
+maxH = 480
 
 def camera_config(camera):
-  # Dimension of the image: it will be resized to fit in a window of maxW*maxH
-  # while keeping the ratio (or kept as is if smaller)
-  width,height = camera.width, camera.height
-  img = camera.get_image()
-  assert img.shape == (height,width),"""Camera sensor is
-{}x{} but got {}x{} image""".format(width,height,img.shape[1],img.shape[0])
-  root = tk.Tk()
-  root.protocol("WM_DELETE_WINDOW",finish)
-  img = convert_image(img)
-  img_label = tk.Label(image=img)
-  #img_label.image=img
-  img_label.pack()
-  scales = []
-  labels = []
-  checks = {}
-  for name,setting in camera.settings.iteritems():
-    if setting.limits:
-      if type(setting.limits[0]) in [int,float]:
-        if type(setting.limits[0]) is float:
-          step = (setting.limits[1]-setting.limits[0])/1000
-        else:
-          step = 1
-        scales.append(tk.Scale(root,from_=setting.limits[0],resolution=step,
-              to=setting.limits[1], label=name,length=w-40,orient='horizontal'))
-        scales[-1].set(setting.value)
-        scales[-1].pack()
-        labels.append(tk.Label(root, text=name))
-        labels[-1].pack()
-      elif type(setting.limits[0]) is bool:
-        checks[name] = tk.IntVar()
-        b = tk.Checkbutton(root, text=name, variable=checks[name])
-        if setting.value:
-          b.select()
-        b.pack()
-  scales_last = map(lambda a:a.get(),scales)
-  root.update()
+  return Camera_config().config(camera)
 
+class Camera_config(object):
+  def __init__(self):
+    self.loop = True
+    self.scales = {}
+    self.scales_last = {}
+    self.checks = {}
+    self.radios = {}
 
-  while loop:
-    img = convert_image(camera.get_image())
-    img_label.configure(image=img)
-    for i in range(len(scales)):
-      name = scales[i]['label']
-      v = scales[i].get()
-      if v != scales_last[i]:
+  def config(self,camera):
+    self.camera = camera
+    self.create_window()
+    self.create_scales(filter(lambda x:type(x.limits)==tuple,
+                              camera.settings.values()))
+    self.create_radios(filter(lambda x:type(x.limits)==dict,
+                              camera.settings.values()))
+    self.create_checks(filter(lambda x:type(x.limits)==bool,
+                              camera.settings.values()))
+    while self.loop:
+      self.main_loop()
+    self.root.destroy()
+
+  def create_window(self):
+    self.root = tk.Tk()
+    self.root.protocol("WM_DELETE_WINDOW",self.stop)
+
+    self.img_label = tk.Label()
+    self.img_label.pack()
+
+  def stop(self):
+    self.loop = False
+
+  def create_scales(self,settings):
+    for setting in settings:
+      name = setting.name
+      if type(setting.limits[0]) is float:
+        step = (setting.limits[1]-setting.limits[0])/1000
+      else:
+        step = 1
+      self.scales[name]= tk.Scale(self.root,from_=setting.limits[0],
+                      resolution=step,length=maxW-40,
+            to=setting.limits[1], label=name,orient='horizontal')
+      self.scales[name].set(setting.value)
+      self.scales[name].pack()
+      self.scales_last[name] = setting.value
+
+  def create_checks(self,settings):
+    for setting in settings:
+      name = setting.name
+      self.checks[name] = tk.IntVar()
+      b = tk.Checkbutton(self.root, text=name, variable=self.checks[name])
+      if setting.value:
+        b.select()
+      b.pack(anchor=tk.W)
+
+  def create_radios(self,settings):
+    for setting in settings:
+      name = setting.name
+      self.radios[name] = tk.IntVar()
+      tk.Label(text=name+" :").pack(anchor=tk.W)
+      for k,v in setting.limits.iteritems():
+        r = tk.Radiobutton(self.root, text=k, variable=self.radios[name],
+                           value=v)
+        if setting.value == v:
+          r.select()
+        r.pack(anchor=tk.W)
+
+  def convert_image(self,img):
+    if img.dtype == np.uint16:
+      img = (img//4).astype(np.uint8)
+    try:
+      height,width = img.shape
+    except ValueError:
+      height,width,d = img.shape
+      if d == 3:
+        img = img[:,:,[2,1,0]] # BGR to RGB
+    ratio = max(width/maxW,height/maxH)
+    if ratio >= 1:
+      w = int(width/ratio)
+      h = int(height/ratio)
+    else:
+      w = width
+      h = height
+    return ImageTk.PhotoImage(Image.fromarray(cv2.resize(img,(w,h))))
+
+  def update_scales(self):
+    for name,scale in self.scales.iteritems():
+      v = scale.get()
+      if v != self.scales_last[name]:
         #print("Setting",name,"to",v)
         #camera.settings[name].value = s.get() Would be equivalent!
-        setattr(camera,name,v)
-        scales_last[i] = v
+        setattr(self.camera,name,v)
+        self.scales_last[name] = v
           
+        if getattr(self.camera,name) == v:
+          scale.configure(fg="black",label=name)
+        else:
+          scale.configure(fg="red",label=name+" ({})".format(
+                                      getattr(self.camera,name)))
 
-    for k,b in checks.iteritems():
-      if getattr(camera,k) != bool(b.get()):
-        print(k,b.get())
-        setattr(camera,k,bool(b.get()))
-    root.update()
+  def update_radios(self): 
+    for k,v in self.radios.iteritems():
+      if getattr(self.camera,k) != v.get():
+        #print(k,b.get())
+        setattr(self.camera,k,v.get())
 
-  root.destroy()
-"""
-  for k in camera.settings:
-    setattr(camera,k,camera.settings[k].default+10)"""
+  def update_checks(self): 
+    for k,b in self.checks.iteritems():
+      if getattr(self.camera,k) != bool(b.get()):
+        #print(k,b.get())
+        setattr(self.camera,k,bool(b.get()))
+
+  def main_loop(self):
+    img = self.convert_image(self.camera.get_image())
+    self.img_label.configure(image=img)
+    self.update_scales()
+    self.update_radios()
+    self.update_checks()
+    self.root.update()
