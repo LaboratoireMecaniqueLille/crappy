@@ -15,7 +15,7 @@
 #
 # @author Robin Siemiatkowski, Victor Couty
 # @version 0.2
-# @date 24/01/2017
+# @date 26/01/2017
 
 from .._warnings import import_error
 
@@ -36,7 +36,9 @@ from _interfaceCMdrive import Interface
 from _orientalTechnical import Oriental
 from _conditionneur_5018 import Conditionner_5018
 from _datapicker import DataPicker
+from _cameraInit import get_camera_config
 from _cameraConfig import camera_config
+from _camera import TechnicalCamera
 
 try:
   from _labjack import LabJack
@@ -48,14 +50,6 @@ try:
 except Exception as e:
   print e
 
-try:
-  from _cameraInit import get_camera_config
-except Exception as e:
-  import_error(e.message)
-try:
-  from _technicalCamera import TechnicalCamera
-except Exception as e:
-  import_error(e.message)
 try:
   from _correl import TechCorrel
 except Exception as e:

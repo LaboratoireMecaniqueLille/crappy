@@ -5,21 +5,18 @@
 ##  @defgroup TechnicalCamera TechnicalCamera
 # @{
 
-## @file _technicalCamera.py
-# @brief Opens a camera device and initialise it (with cameraInit found in crappy[2]/technical)
+## @file _camera.py
+# @brief Opens a camera device and initialises it
 #
 # @author Victor Couty, Robin Siemiatkowski
-# @version 0.1
-# @date 17/01/2017
+# @version 0.2
+# @date 26/01/2017
 from __future__ import print_function
 
 
-from multiprocessing import Process, Pipe
 from . import get_camera_config
 from . import camera_config
 from crappy.sensor._meta import MetaCam
-
-
 
 
 class TechnicalCamera(object):
@@ -27,33 +24,20 @@ class TechnicalCamera(object):
   Opens a camera device and initialise it.
   """
 
-  def __init__(self, camera="ximea", num_device=0, config=True, **kwargs):
+  def __init__(self, camera="Ximea", num_device=0, config=True, **kwargs):
     """
     This Class opens a device and runs the initialisation sequence (CameraInit).
 
     It then closes the device and keep the parameters in memory for later use.
     Args:
-        camera : {'ximea','jai'}, default = 'ximea'
+        camera : {'Ximea','Webcam',...}, default = 'Ximea'
             Name of the desired camera device.
+            All availalbe cameras are in crappy.sensor._meta.MetaCam.classes
         num_device : int, default = 0
             Number of the desired device.
-        videoextenso : dict
-        dict of parameters that you can use to pass informations.
-
-        * 'enabled' : Bool
-            Set True if you need the videoextenso.
-        * 'white_spot' : Bool
-            Set to True if your spots are white on a dark material.
-        * 'border' : int, default = 4
-            Size of the border for spot detection
-        * 'x_offset' : int
-            Offset for the x-axis.
-        * 'y_offset' : int
-            Offset for the y-axis
-        * 'height' : int
-            Height of the image, in pixels.
-        * 'width : int
             Width of the image, in pixels.
+        config: Call the configurator ? Bool, default= True
+        kwargs will be transmitted to the camera sensor
     """
     try:
       camera_class = MetaCam.classes[camera]
@@ -62,23 +46,8 @@ class TechnicalCamera(object):
                     "\nAvailables cameras are:",MetaCam.classes.keys())
       raise NotImplementedError("Could not find camera "+camera)
     
-    # ======= Serial stuff: for jai cam ? ======
-    try:
-      module = __import__("crappy.sensor.clserial", fromlist=[camera.capitalize() + "Serial"])
-      code_class = getattr(module, camera.capitalize() + "Serial")
-      from crappy.sensor.clserial import ClSerial as cl
-      ser = code_class()
-      self.serial = cl(ser)
-    except ImportError:
-      self.serial = None
-    except Exception as e:
-      self.serial = None
-    # print "module, camera_class, serial : ", module, camera_class, self.serial
-    # ========================
-
     # initialisation:
     self.sensor = camera_class(numdevice=num_device)
-    #data = get_camera_config(self.sensor)
     self.sensor.open(**kwargs)
     if config:
       camera_config(self.sensor)
