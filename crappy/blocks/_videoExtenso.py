@@ -20,9 +20,8 @@ from multiprocessing import Process, Pipe
 
 from ._compacterblock import CompacterBlock
 
-np.set_printoptions(threshold='nan', linewidth=500)
 from ..links._link import TimeoutError
-from ..technical import TechnicalCamera as tc
+from ..technical import TechnicalVideoExtenso as tve
 
 try:
   from skimage.filters import threshold_otsu, rank  # load newest version
@@ -38,6 +37,7 @@ try:
 except ImportError as i:
   print "WARNING: ", i
 
+np.set_printoptions(threshold='nan', linewidth=500)
 
 def plotter(plot_pipe_recv):
   """
@@ -233,6 +233,7 @@ class VideoExtenso(CompacterBlock):
                 Exx : float. Deformation = Lx/L0x
                 Eyy : float. Deformation = Lxy/L0y
     """
+    default_labels = ['t(s)', 'Px', 'Py', 'Exx(%)', 'Eyy(%)']
     for arg,default in [("camera","ximea"),
                         ("numdevice",0),
                         ("xoffset",0),
@@ -243,13 +244,10 @@ class VideoExtenso(CompacterBlock):
                         ('security',False),
                         ('save_folder',None),
                         ('white_spot',False),
+                        ('labels',default_labels),
                         ('display',True)]:
       setattr(self,arg,kwargs.get(arg,default))
     self.camera_name = self.camera
-    if kwargs.get("labels") is None:
-      self.labels = ['t(s)', 'Px', 'Py', 'Exx(%)', 'Eyy(%)']
-    else:
-      self.labels = kwargs.get('labels')
     CompacterBlock.__init__(self,compacter=kwargs.get('compacter',1),
                                  labels=self.labels)
     # camera INIT with ZOI selection
@@ -262,25 +260,23 @@ class VideoExtenso(CompacterBlock):
   def prepare(self):
     while True:
       # the following is to initialise the spot detection
-      self.camera = tc(self.camera_name, self.numdevice,
-                       {'enabled': True, 'white_spot': self.white_spot,
+      self.ve = tve(self.camera_name, self.numdevice,
+                       {'white_spot': self.white_spot,
                         'border': self.border, 'xoffset': self.xoffset,
                         'yoffset': self.yoffset, 'width': self.width,
                         'height': self.height})
       for attr in ['minx','maxx','miny','maxy','NumOfReg','L0x','L0y',
-                   'thresh','Points_coordinates','width','height',
-                   'exposure','gain']:
-        setattr(self,attr,getattr(self.camera,attr))
-      self.xoffset = self.camera.x_offset
-      self.yoffset = self.camera.y_offset
+                   'thresh','Points_coordinates']:#,'width','height',
+                   #'exposure','gain']:
+        setattr(self,attr,self.ve.videoextenso[attr])
       if self.NumOfReg == 4 or self.NumOfReg == 2 or self.NumOfReg == 1:
         break
       else:  # If detection goes wrong, start again, may not be usefull now ?
         print " Spots detected : ", self.NumOfReg
 
-    self.camera.sensor.new(self.exposure, self.width, self.height, 
-                           self.xoffset, self.yoffset, self.gain)
-    image = self.camera.sensor.get_image()
+    #self.ve.sensor.new(self.exposure, self.width, self.height, 
+    #                       self.xoffset, self.yoffset, self.gain)
+    image = self.ve.sensor.get_image()
     # eliminate the first frame, most likely corrupted
     self.proc_bary = []
     self.recv_ = []
@@ -306,7 +302,7 @@ class VideoExtenso(CompacterBlock):
     while True:
       try:
         t2 = time.time()
-        image = self.camera.sensor.get_image()  # read a frame
+        image = self.ve.sensor.get_image()  # read a frame
         if self.save_folder is not None:
           image1 = sitk.GetImageFromArray(image)
           sitk.WriteImage(image1,
@@ -388,7 +384,7 @@ class VideoExtenso(CompacterBlock):
             pass
         raise Exception("Spots lost")
       except KeyboardInterrupt:
-        self.camera.sensor.close()
+        self.ve.sensor.close()
         print 'KeyboardInterrupt\n'
         break
       except Exception as e:

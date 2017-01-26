@@ -52,7 +52,7 @@ class Webcam(MasterCam):
 
   def open(self,**kwargs):
     if self.cap:
-      self.cap.close()
+      self.cap.release()
     self.cap = cv2.VideoCapture(self.numdevice)
     for k in kwargs:
       assert k in self.available_settings,str(self)+"Unexpected kwarg: "+str(k)

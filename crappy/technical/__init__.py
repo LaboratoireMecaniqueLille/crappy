@@ -39,6 +39,7 @@ from _datapicker import DataPicker
 from _cameraInit import get_camera_config
 from _cameraConfig import camera_config
 from _camera import TechnicalCamera
+from _videoExtenso import TechnicalVideoExtenso
 
 try:
   from _labjack import LabJack
