@@ -3,7 +3,7 @@ from __future__ import print_function, division
 
 import cv2
 import Tkinter as tk
-from PIL import ImageTk,Image
+from PIL import ImageTk,Image,ImageDraw
 import numpy as np
 from threading import Thread
 from multiprocessing import Queue
@@ -12,6 +12,28 @@ from time import sleep
 
 maxW = 640
 maxH = 480
+
+histH = 80
+histW = maxW
+
+def make_histogram(img,**kwargs):
+  max_value = kwargs.get("max_value",255)
+  h_w,h_h = kwargs.get("size",(640,100))
+  if len(img.shape) != 2:
+    t = img.dtype
+    img = np.mean(img,axis=2).astype(t)
+  h = np.histogram(img,bins=np.arange(max_value+1))[0] # Length max_value
+
+  xp = np.arange(max_value,dtype=np.float32)/max_value*h_w
+  h2 = np.interp(np.arange(h_w),xp,h)
+  h2 = h2/max(h2)*h_h
+
+  out_img = Image.new('L',(h_w,h_h))
+  draw = ImageDraw.Draw(out_img)
+  draw.rectangle((0,0,h_w,h_h),fill=255)
+  for i in range(h_w):
+    draw.line((i,h_h,i,h_h-h2[i]),fill=0)
+  return ImageTk.PhotoImage(out_img)
 
 def camera_config(camera):
   return Camera_config().config(camera)
@@ -41,6 +63,8 @@ class Camera_config(object):
     self.root = tk.Tk()
     self.root.protocol("WM_DELETE_WINDOW",self.stop)
 
+    self.hist_label = tk.Label()
+    self.hist_label.pack()
     self.img_label = tk.Label()
     self.img_label.pack()
 
@@ -128,7 +152,11 @@ class Camera_config(object):
         setattr(self.camera,k,bool(b.get()))
 
   def main_loop(self):
-    img = self.convert_image(self.camera.get_image())
+    img = self.camera.get_image()
+    hist = make_histogram(img,size=(histW,histH),
+                max_value=255 if img.max()<=255 else 1023)#For 10 bits cameras
+    self.hist_label.configure(image=hist)
+    img = self.convert_image(img)
     self.img_label.configure(image=img)
     self.update_scales()
     self.update_radios()
