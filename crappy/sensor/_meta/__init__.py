@@ -3,4 +3,4 @@
 # print("Call your main application code here")
 
 
-from . import cameraSensor
+from cameraSensor import MasterCam,MetaCam

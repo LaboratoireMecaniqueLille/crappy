@@ -42,7 +42,7 @@ class Jai(cameraSensor.CameraSensor):
     self.serial = serial
     self._init = True
 
-  def new(self, exposure=8000, width=2560, height=2048, xoffset=0, yoffset=0, gain=None):
+  def open(self, exposure=8000, width=2560, height=2048, xoffset=0, yoffset=0, gain=None):
     """
     This method create a new instance of the camera jai class with the class attributes (device number, exposure, width, height, x offset, y offset and FPS)
     Then it prints these settings and initialises the camera and load a configuration file

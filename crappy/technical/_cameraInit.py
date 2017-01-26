@@ -48,14 +48,17 @@ class _CameraInit:
     self._cax = self._fig.add_axes([0.17 + rat, 0.135, 0.02, rat * (Height / Width)])  # colorbar frame
     self._axhist = self._fig.add_axes([0.15, (0.17 + rat), rat, 0.1])  # histogram frame
     axcolor = 'lightgoldenrodyellow'
-    self.cam.new(width=self.videoextenso['width'], height=self.videoextenso['height'],
-                 yoffset=self.videoextenso['yoffset'], xoffset=self.videoextenso['xoffset'])
+    #self.cam.open(width=self.videoextenso['width'], height=self.videoextenso['height'],
+    #             yoffset=self.videoextenso['yoffset'], xoffset=self.videoextenso['xoffset'])
+    """
     self.cam.height = self.videoextenso['height']
     self.cam.width = self.videoextenso['width']
     self.cam.yoffset = self.videoextenso['yoffset']
     self.cam.xoffset = self.videoextenso['xoffset']
+"""
 
-    if self.cam.gain is not None:
+    #if self.cam.gain is not None:
+    if 'gain' in self.cam.available_settings:
       self._axGain = plt.axes([0.15, 0.07, rat, 0.03], axisbg=axcolor)
       self._sGain = Slider(self._axGain, 'Gain', -1, 6, valinit=self.cam.gain)
       self._sGain.on_changed(self.update_gain)
@@ -65,11 +68,12 @@ class _CameraInit:
     self._CloseButton = Button(Closeax, 'Save', color='blue', hovercolor='0.975')
     # define cursors here
 
-    axExp = plt.axes([0.15, 0.02, rat, 0.03], axisbg=axcolor)  # define position and size
 
     # Exposition max = 1000000 # define slider with previous position and size
-    self._sExp = Slider(axExp, 'Exposure', 200, 50000, valinit=self.cam.exposure)
-    self._sExp.on_changed(self.update_exposure)
+    if 'exposure' in self.cam.available_settings:
+      axExp = plt.axes([0.15, 0.02, rat, 0.03], axisbg=axcolor)  # define position and size
+      self._sExp = Slider(axExp, 'Exposure', 200, 50000, valinit=self.cam.exposure)
+      self._sExp.on_changed(self.update_exposure)
 
     self._CloseButton.on_clicked(self.close)
 
@@ -103,7 +107,7 @@ class _CameraInit:
   # self.xoffset = self.cam.xoffset
 
   def start(self):
-    if self.videoextenso and self.videoextenso['enabled']:
+    if self.videoextenso:
       def toggle_selector(self, event):
         toggle_selector.RS.set_active(False)
 
@@ -332,25 +336,12 @@ class _CameraInit:
 
   def close(self, event):
     try:
-      if not self.videoextenso['enabled']:
-        plt.close()
-      else:
-        if self.NumOfReg == 4 or self.NumOfReg == 2:
-          self.L0x = self.Points_coordinates[:, 0].max() - self.Points_coordinates[:, 0].min()
-          self.L0y = self.Points_coordinates[:, 1].max() - self.Points_coordinates[:, 1].min()
-        # elif self.NumOfReg ==1:
-        # minx_=self.Points_coordinates[0,0]
-        # miny_=self.miny.min()
-        # maxx_=self.maxx.max()
-        # maxy_=self.maxy.max()
-        # self.L0x=self.Points_coordinates[0,1]
-        # self.L0y=self.Points_coordinates[0,0]
-        print "L0 saved! : ", self.L0y, self.L0x
-        # self.cam.close()
+      if self.NumOfReg == 4 or self.NumOfReg == 2:
+        self.L0x = self.Points_coordinates[:, 0].max() - self.Points_coordinates[:, 0].min()
+        self.L0y = self.Points_coordinates[:, 1].max() - self.Points_coordinates[:, 1].min()
+      print "L0 saved! : ", self.L0y, self.L0x
     except AttributeError:  # if no selected Points_coordinates
       print "no points selected"
-      # self.cam.close()
-      # plt.close()
 
   # Main
   def get_frame(self, i):
@@ -368,19 +359,15 @@ class _CameraInit:
       return self._cax, self._axim, self._axhist  # return the values that need to be updated
 
   def get_configuration(self):
-    print "in cameraInit :", int(self.cam.exposure), self.cam.gain, int(self.cam.width), int(self.cam.height), int(
-      self.cam.xoffset), int(self.cam.yoffset)
-    if self.videoextenso['enabled']:
+    if self.videoextenso:
       # print "thresh in camera init :" ,self.thresh
-      return self.cam.exposure, self.cam.gain, int(self.cam.width), int(self.cam.height), int(
-        self.cam.xoffset), int(self.cam.yoffset), \
-             self.minx, self.maxx, self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh, self.Points_coordinates
+      return self.minx, self.maxx, self.miny, self.maxy, self.NumOfReg, self.L0x, self.L0y, self.thresh, self.Points_coordinates
     else:
       return int(self.cam.exposure), self.cam.gain, int(self.cam.width), int(self.cam.height), int(
         self.cam.xoffset), int(self.cam.yoffset)
 
 
-def get_camera_config(cam, videoExtenso=None, send_pipe=None):
+def get_camera_config(cam, videoExtenso={}, send_pipe=None):
   """
   Function to open and configure a camera device.
   Args:
@@ -388,9 +375,6 @@ def get_camera_config(cam, videoExtenso=None, send_pipe=None):
       videoExtenso: dictionnary to enable or disable the videoExtenso initialization.
       send_pipe:
   """
-  if videoExtenso == None:
-    videoExtenso = {"enabled": False, "width": cam.width, "height": cam.height,
-                    "xoffset": cam.xoffset, "yoffset": cam.yoffset}
   d = _CameraInit(cam, videoExtenso)
   d.start()
   #d.cam.close()

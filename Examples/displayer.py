@@ -4,15 +4,19 @@ import crappy
 import time
 
 """
-Very simple program that displays the output of a camera
+Very simple program that displays the output of a choosen camera
 """
 if __name__ == "__main__":
-  #camera = crappy.blocks.StreamerCamera("Ximea", numdevice=0, freq=20, save=False,save_directory="CHANGEME",xoffset=0, yoffset=0, width=2048, height=2048)
-  #camera = crappy.blocks.FakeCamera(512,512)
-  camera = crappy.blocks.StreamerCamera("Webcam", save=False, save_directory='CHANGEME')
+  cam_list = crappy.sensor._meta.MetaCam.classes.keys()
+  cam_list.remove("MasterCam")
+  for i,c in enumerate(cam_list):
+    print i,c
+  r = int(raw_input("What cam do you want to use ?> "))
+  cam = cam_list[r]
+  camera = crappy.blocks.StreamerCamera(camera=cam,show_fps=True)
 
-  disp = crappy.blocks.CameraDisplayer(framerate=None)
+  disp = crappy.blocks.CameraDisplayer(framerate=20)
 
-  crappy.links.Link(camera,disp)
+  crappy.link(camera,disp)
 
   crappy.start()
