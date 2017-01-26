@@ -38,7 +38,7 @@ from _webcamSensor import Webcam
 from _fakeCameraSensor import Fake_camera
 try:
   from _ximeaCV import XimeaCV
-except ImportError as e:
+except Exception as e:
   import_error(e.message)
 
 if _platform.system() == "Linux":
