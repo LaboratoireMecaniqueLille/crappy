@@ -15,7 +15,6 @@
 from __future__ import print_function
 from _compacterblock import CompacterBlock
 import time
-from collections import OrderedDict
 from ..links._link import TimeoutError
 import threading
 from Queue import Queue
@@ -29,27 +28,36 @@ class MeasureByStep(CompacterBlock):
 
   def __init__(self, sensor, *args, **kwargs):
     """
-    This streamer read the value on all channels ONE BY ONE and send the values through a Link object.
+    This streamer read the value on all channels ONE BY ONE and send
+    the values through a Link object.
 
     It is slower than StreamerComedi, but works on every USB driver.
     It also works on LabJack devices.
 
-    It can be triggered by a Link sending boolean (through "add_input" method),
-    or internally by defining the frequency.
+    It can be triggered by a Link sending boolean (through "add_input"
+    method), or internally by defining the frequency.
 
     Args:
         sensor:     sensor object
-                    See sensor.sensor documentation. Tested for LabJackSensor and ComediSensor.
+                    See sensor.sensor documentation. Tested for
+                    LabJackSensor and ComediSensor.
         labels:     list, optional
-                    The labels you want on your output data. If None, will be time(sec) as first arg, and the
+                    The labels you want on your output data. If None,
+                    will be time(sec) as first arg, and the
                     channel number as additional args.
         freq :      float or int, optional
-                    Wanted acquisition frequency. If none, will be at the software looping speed.
+                    Wanted acquisition frequency. If none, will be
+                    at the software looping speed.
     """
     self.sensor = sensor
     assert sensor, 'ERROR in MeasureByStep: no sensor defined.'
-    self.labels = kwargs.get('labels', ["time(sec)"] + self.sensor.channels)
-    CompacterBlock.__init__(self, labels=self.labels, compacter=kwargs.get("compacter", 1))
+    try:
+      self.labels = kwargs.get('labels', ["time(sec)"] + self.sensor.channels)
+    except AttributeError:
+      self.labels = ['time(sec)', 'signal']
+    CompacterBlock.__init__(self,
+                            labels=self.labels,
+                            compacter=kwargs.get("compacter", 1))
     self.freq = kwargs.get('freq', None)
     self.verbose = kwargs.get('verbose', False)
 
@@ -70,7 +78,9 @@ class MeasureByStep(CompacterBlock):
     nb_points0 = 0.
     while True:
       nb_points1 = self.queue.get()
-      reprint('Freq:', '%.2f' % ((nb_points1 - nb_points0) / self.time_interval), 'Hz')
+      reprint(
+        'Freq:', '%.2f' % ((nb_points1 - nb_points0) / self.time_interval), 'Hz'
+      )
       nb_points0 = nb_points1
 
   def temporization(self, timer):
@@ -98,17 +108,14 @@ class MeasureByStep(CompacterBlock):
 
   def main(self):
     """
-    Main loop for MeasureByStep. Retrieves data at specified frequency (or software looping speed) from specified
-    sensor, and sends it to a crappy link.
+    Main loop for MeasureByStep. Retrieves data at specified frequency
+    (or software looping speed) from specified sensor, and sends it
+    to a crappy link.
     """
     try:
       while True:
-        if self.trigger == "internal":
+        if self.trigger == "internal" or self.inputs[0].recv(blocking=True):
           pass
-        elif self.trigger == "external":
-          if self.inputs[0].recv(blocking=True):  # wait for a signal
-            pass
-
         t_before_acq = time.time()
         data = self.acquire_data()
         self.send_to_compacter(data)
@@ -133,8 +140,9 @@ class MeasureByStep(CompacterBlock):
 
   def acquire_data(self):
     """
-    Method to acquire data from the sensor. Returns an array, the first element is the chronometer, the second contains
-    a list of all acquired points.
+    Method to acquire data from the sensor. Returns an array, the first
+    element is the chronometer, the second contains a list of all acquired
+    points.
     """
     sensor_epoch, sensor_values = self.sensor.get_data("all")
     chronometer = sensor_epoch - self.t0

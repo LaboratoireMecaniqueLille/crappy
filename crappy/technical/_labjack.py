@@ -38,9 +38,11 @@ class LabJack_UE9(object):
 
     def format_lists(list_to_format, *args):
       """
-      In case the user only specifies one parameter, and wants it applied to all inputs.
+      In case the user only specifies one parameter, and wants
+      it applied to all inputs.
       """
-      list_to_format = [list_to_format] if not isinstance(list_to_format, list) else list_to_format
+      if not isinstance(list_to_format, list):
+        list_to_format = [list_to_format]
       if args[0] is not 0:
         if len(list_to_format) == 1:
           return list_to_format * args[0]
@@ -66,9 +68,12 @@ class LabJack_UE9(object):
       self.nb_channels = len(self.channels)
       self.channels = get_channel_number(self.channels)
 
-      self.gain = format_lists(self.sensor_args.get('gain', 1), self.nb_channels)
-      self.offset = format_lists(self.sensor_args.get('offset', 0), self.nb_channels)
-      self.resolution = format_lists(self.sensor_args.get('resolution', 12), self.nb_channels)
+      self.gain = format_lists(self.sensor_args.get('gain', 1),
+                               self.nb_channels)
+      self.offset = format_lists(self.sensor_args.get('offset', 0),
+                                 self.nb_channels)
+      self.resolution = format_lists(self.sensor_args.get('resolution', 12),
+                                     self.nb_channels)
 
   def open_handle(self, dictionary):
     return UE9()
@@ -85,7 +90,8 @@ class LabJack_UE9(object):
     results = []
     for index, channel in enumerate(self.channels):
       results.append(
-        self.handle.getAIN(channel, Resolution=self.resolution[index]) * self.gain[index] + self.offset[index])
+        self.handle.getAIN(channel, Resolution=self.resolution[index]) *
+        self.gain[index] + self.offset[index])
     return time(), results
 
   def get_stream(self):
@@ -105,55 +111,44 @@ class LabJack_UE9(object):
 
 
 class LabJack_T7(object):
-  """Sensor class for LabJack T7 devices."""
+  """Technical class for LabJack T7 devices. Used to acquire and set
+  analogical datas."""
 
   def __init__(self, **kwargs):
     """
-    Convert tension value into digital values, on several channels, using LabJack Devices.
-
     Args:
-        mode:                  str.
-                               Available modes at the moment :
-                               - Single : Output is (measured_value * gain) + offset, can acquire at 1 kHz max.
-                               - Thermocouple : Output is a temperature in degree celsius.
-                               - Streamer : Output is (measured_value * gain) + offset, can acquire at 100 kHz max.
+      mode: str. Available modes at the moment :
+        single : Output is (measured_value * gain) + offset (~2kHz max.)
+        thermocouple : Output is a temperature in degree celsius.
+        streamer : Output is (measured_value * gain) + offset (100 kSamples
+        max.)
 
-        channels:              int, str or list of int or str, default = 0
-                               The desired input channel(s). If int, will be assumed as "AIN".
+      channels: int, str or list of int or str, default = 0 (AIN0)
 
-        gain:                  float or list of float, default = 1
-                               Multiplication gain for each channel. If there is multiple channels
-                               for a single gain, it will be applied to all.
+      gain: float or list of float, default = 1
 
-        offset:                float, default = 0
-                               Add this value for each channel. If there is multiple channels
-                               for a single offset, it will be applied to all.
+      offset: float, default = 0
 
-        chan_range:            int or float, default = 10. Can be 10, 1, 0.1 or 0.01, depending on the voltage
-                               range
-                               to measure. Put the absolute maximum of your expected values.
+      chan_range: int or float, default = 10. Can be 10, 1, 0.1  or 0.01,
+      depending on the voltage range to measure. Put the absolute maximum of
+      your expected values. The higher the range, the fastest the acquisition
+      rate is. resolution: int, resolution index for each channel.
+      T7 : 1 to 8, T7-PRO : 1 to 12. If 0 is specified, will be 8 (20 bits)
+      Check https://labjack.com/support/datasheets/t7/appendix-a-3-1 for more
+      information.
 
-        resolution:            int, resolution index for each channel.
-                                T7 : 1 to 8, T7-PRO : 1 to 12. If 0 is specified, will be 8 (20 bits)
-                               ~16 to 22 bits depending on the device, the chan_range and the resolution index.
-                               higher resolution index = higher resolution, but higher latency.
-                               Check https://labjack.com/support/datasheets/t7/appendix-a-3-1 for more information.
+      scan_rate_per_channel: STREAMER MODE ONLY : int, defines how many
+      scans to perform on each channel during streaming.
 
-        scan_rate_per_channel: STREAMER MODE ONLY : int, defines how many scans to perform on each channel
-                               during streaming.
+      scans_per_read: STREAMER MODE ONLY : int, defines how many
 
-        scans_per_read:      STREAMER MODE ONLY : int, defines how many samples to collect during one loop.
-                               If undefined, will be assumed as a fraction of sample_rate, determined for performance.
-                               BE AWARE : scan_rate_per_channel is for 1 channel, sample_rate, as defined further
-                               in this code corresponds to how many samples are collected in total by the
-                               labjack device.
-                               sample_rate = nb_channels * scan_rate_per_channel
+      samples to collect during one loop. If undefined,
+      will be assumed as a  fraction of sample_rate, determined
+      for performance.
 
-        handle:                If using labjack as I/O device at the same time.
-                               Unused for the moment (18/08/2016)
-
-        identifier:            str. Used if multiple labjacks are connected. The identifier could be anything
-                               that could define the device : serial number, name, wifi version..
+      identifier: str. Used if multiple labjacks are connected.
+      The identifier could be anything that could define the
+      device : serial number, name, wifi version..
         """
 
     # super(LabJack, self).__init__()
@@ -168,7 +163,8 @@ class LabJack_T7(object):
       Function used only to open handle. For better exception behavior handling.
       """
       try:
-        handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, dictionary.get('identifier', 'ANY'))
+        handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY,
+                          dictionary.get('identifier', 'ANY'))
         return handle
       except ljm.LJMError as e:
         self.vprint('open_handle exception:', e)
@@ -180,8 +176,11 @@ class LabJack_T7(object):
       """Used to check if the user entered correct parameters."""
       var = [var] * nb_channels if isinstance(var, (int, float)) else var
       assert isinstance(var, list) and len(var) == nb_channels, \
-        str(var) + "Parameters definition Error: list is not the same length as nb_channels."
-      assert False not in [isinstance(var[i], (int, float)) for i in range(nb_channels)], \
+        str(var) + \
+        "Parameters definition Error: list is" \
+        " not the same length as nb_channels."
+      assert False not in [isinstance(var[i], (int, float)) for i in
+                           range(nb_channels)], \
         str(var) + "Error: parameters should be int or float."
       return var
 
@@ -212,29 +211,38 @@ class LabJack_T7(object):
     if self.sensor_args:
 
       self.channels = self.sensor_args.get('channels', 'AIN0')
-      self.channels = [self.channels] if not isinstance(self.channels, list) else self.channels
-      self.channels = ["AIN" + str(chan) if type(chan) is not str else chan for chan in self.channels]
+      self.channels = [self.channels] if not isinstance(self.channels,
+                                                        list) else self.channels
+      self.channels = ["AIN" + str(chan) if type(chan) is not str else chan for
+                       chan in self.channels]
       self.nb_channels = len(self.channels)
 
       # To use extended features of ljm libraries:
-      self.channels_index_read = [self.channels[chan] + "_EF_READ_A" for chan in range(self.nb_channels)]
+      self.channels_index_read = [self.channels[chan] + "_EF_READ_A" for chan in
+                                  range(self.nb_channels)]
 
-      self.chan_range = var_tester(self.sensor_args.get('chan_range', 10), self.nb_channels)
-      self.resolution = var_tester(self.sensor_args.get('resolution', 1), self.nb_channels)
+      self.chan_range = var_tester(self.sensor_args.get('chan_range', 10),
+                                   self.nb_channels)
+      self.resolution = var_tester(self.sensor_args.get('resolution', 1),
+                                   self.nb_channels)
 
       self.gain = var_tester(self.sensor_args.get('gain', 1), self.nb_channels)
-      self.offset = var_tester(self.sensor_args.get('offset', 0), self.nb_channels)
+      self.offset = var_tester(self.sensor_args.get('offset', 0),
+                               self.nb_channels)
 
       self.mode = self.sensor_args.get('mode', 'single').lower()
 
       if self.mode == "streamer":
         # Additional variables used in streamer mode only.
-        self.a_scan_list = ljm.namesToAddresses(self.nb_channels, self.channels)[0]
-        self.scan_rate_per_channel = self.sensor_args.get('scan_rate_per_channel', 1000)
+        self.a_scan_list = \
+          ljm.namesToAddresses(self.nb_channels, self.channels)[0]
+        self.scan_rate_per_channel = self.sensor_args.get(
+          'scan_rate_per_channel', 1000)
 
         if self.scan_rate_per_channel * self.nb_channels >= 100000:
           self.scan_rate_per_channel = int(100000 / self.nb_channels)
-        self.scans_per_read = self.sensor_args.get('scans_per_read', int(self.scan_rate_per_channel / 10.))
+        self.scans_per_read = self.sensor_args.get('scans_per_read', int(
+          self.scan_rate_per_channel / 10.))
         if self.verbose:
           self.queue = Queue()
           # while True:
@@ -247,12 +255,22 @@ class LabJack_T7(object):
           #     raise
           # except Exception:
           #   raise
-    self.new()
+      self.new()
 
     if self.actuator_args:
       self.channel_command = self.actuator_args.get('channel', "DAC0")
       self.gain_command = self.actuator_args.get('gain', 1)
       self.offset_command = self.actuator_args.get('offset', 0)
+      if self.actuator_args.get('lua', False):
+        self.addresses_and_datatype = {'lua_run': (6000, 1),
+                                       'frequency': (46002, 3),
+                                       'damping_factor': (46004, 3),
+                                       'amplitude': (46000, 3),
+                                       'offset': (46006, 3),
+                                       'counter': (46100, 1),
+                                       'TDAC0': (30000, 3),
+                                       'TDAC1': (30001, 3)
+                                       }
 
   class DialogBox:
     """
@@ -264,12 +282,16 @@ class LabJack_T7(object):
       self.root.title('LabJack Streamer')
       self.root.resizable(width=False, height=False)
       self.c2 = []  # List to update
-      self.first_column = ['Scan Rate', 'Samples Collecting Rate', 'Chronometer', 'Device Buffer', 'Software Buffer']
+      self.first_column = ['Scan Rate', 'Samples Collecting Rate',
+                           'Chronometer', 'Device Buffer', 'Software Buffer']
       self.second_column = ['%.1f kHz' % (scan_rate_per_channel / 1000.),
-                            '%.1f kSamples per read' % (scans_per_read / 1000.), 0.0, 0, 0]
+                            '%.1f kSamples per read' % (scans_per_read / 1000.),
+                            0.0, 0, 0]
       for row_index, first_column in enumerate(self.first_column):
-        Label(self.root, text=first_column, borderwidth=10).grid(row=row_index, column=0)
-        self.c2.append(Label(self.root, text=self.second_column[row_index], borderwidth=10))
+        Label(self.root, text=first_column, borderwidth=10).grid(row=row_index,
+                                                                 column=0)
+        self.c2.append(
+          Label(self.root, text=self.second_column[row_index], borderwidth=10))
         self.c2[-1].grid(row=row_index, column=1)
       self.queue = queue
       self.update()
@@ -309,7 +331,8 @@ class LabJack_T7(object):
       ])
 
     elif self.mode == "streamer":
-      a_names = ["AIN_ALL_RANGE", "STREAM_SETTLING_US", "STREAM_RESOLUTION_INDEX"]
+      a_names = ["AIN_ALL_RANGE", "STREAM_SETTLING_US",
+                 "STREAM_RESOLUTION_INDEX"]
       a_values = [int(self.chan_range[0]), 0, int(self.resolution[0])]
     else:
       message = 'Error in new: unrecognized mode. Check documentation.'
@@ -344,7 +367,8 @@ class LabJack_T7(object):
       ljm.eStreamStart(self.handle, self.scans_per_read, self.nb_channels,
                        self.a_scan_list, self.scan_rate_per_channel)
       if self.verbose:
-        thread = Thread(target=self.DialogBox, args=(self.scan_rate_per_channel, self.scans_per_read, self.queue))
+        thread = Thread(target=self.DialogBox, args=(
+          self.scan_rate_per_channel, self.scans_per_read, self.queue))
         thread.daemon = True
         thread.start()
 
@@ -359,7 +383,8 @@ class LabJack_T7(object):
     Read the signal on all pre-defined channels, one by one.
     """
     try:
-      results = ljm.eReadNames(self.handle, self.nb_channels, self.channels_index_read)
+      results = ljm.eReadNames(self.handle, self.nb_channels,
+                               self.channels_index_read)
       return time(), results
 
     except ljm.LJMError as e:
@@ -376,7 +401,8 @@ class LabJack_T7(object):
       results = retrieved_from_buffer[0]
       timer = time()
       if self.verbose:
-        self.queue.put([timer, retrieved_from_buffer[1], retrieved_from_buffer[2]])
+        self.queue.put(
+          [timer, retrieved_from_buffer[1], retrieved_from_buffer[2]])
       return timer, results
 
     except Exception:
@@ -388,7 +414,28 @@ class LabJack_T7(object):
     Convert the tension value to a digital value and send it to the output.
     """
     out = (cmd * self.gain_command) + self.offset_command
-    ljm.eWriteName(self.handle, self.channel_command if not args else args[0], out)
+    ljm.eWriteName(self.handle, self.channel_command if not args else args[0],
+                   out)
+
+  def set_parameter_ram(self, *args):
+    # Parameters to fill :
+    # first : address OR string
+    # second : command
+    # third : datatype
+
+    if isinstance(args[0], dict):
+      for key, value in args[0].iteritems():
+        address, datatype = self.addresses_and_datatype[key]
+        ljm.eWriteAddress(self.handle, address, datatype, value=value)
+    else:
+      address, datatype = self.addresses_and_datatype[args[0]] if isinstance(
+        args[0], str) else (args[0], args[2])
+      ljm.eWriteAddress(self.handle, address, datatype, value=args[1])
+
+  def get_parameter_ram(self, *args):
+    address, datatype = self.addresses_and_datatype[args[0]] if isinstance(
+      args[0], str) else (args[0], args[1])
+    return ljm.eReadAddress(self.handle, address, datatype)
 
   def close(self):
     """
@@ -418,12 +465,14 @@ class LabJack_T7(object):
 
 class LabJack(object):
   """
-  Parent class that loads the one of the above class depending on the device connected.
+  Parent class that loads the one of the above class depending on the device
+  connected.
   """
 
   def __init__(self, **kwargs):
     """
-    The parameters are the same as defined for each device. This class simply inherits from it.
+    The parameters are the same as defined for each device. This class simply
+    inherits from it.
     """
 
     def identify_t7():
