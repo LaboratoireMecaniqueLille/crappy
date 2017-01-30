@@ -3,16 +3,16 @@ import numpy as np
 from time import sleep, time
 
 #
-opendaq = crappy.technical.OpenDAQ(channels=[2], nsamples=10, gain=0, negative_channel=5)
-labjack = crappy.technical.LabJack(actuator={'channel': 'TDAC0'},
-                                   sensor={'channels': 'AIN0', 'resolution': 8, 'range_num': 10})
+opendaq = crappy.technical.OpenDAQ(channels=[1], nsamples=10, gain=0, negative_channel=5)
+# labjack = crappy.technical.LabJack(actuator={'channel': 'TDAC0'},
+#                                    sensor={'channels': 'AIN0', 'resolution': 8, 'range_num': 10})
 
 # measure_labjack = crappy.blocks.MeasureByStep(labjack, labels=['t(s)', 'AIN0'])
 # compact_labjack = crappy.blocks.Compacter(100)
 # grapher_labjack = crappy.blocks.Grapher(('t(s)', 'AIN0'), length=10)
 # crappy.link(measure_labjack, compact_labjack, name='pou')
 # crappy.link(compact_labjack, grapher_labjack, name='dav')
-labels = ['t(s)', 'AN2']
+labels = ['t(s)', 'AN1']
 
 # measure_opendaq = crappy.blocks.MeasureByStep(opendaq, labels=labels)
 # grapher_opendaq = crappy.blocks.Grapher([('t(s)', label) for label in labels[1:]], length=100)

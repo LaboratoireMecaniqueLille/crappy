@@ -17,12 +17,13 @@ actuator = {
 }
 
 labjack = crappy.technical.LabJack(sensor=sensor, actuator=actuator, device='t7')
-# measurebystep = crappy.blocks.MeasureByStep(sensor=labjack, verbose=True, compacter=100, freq=1000)
+measurebystep = crappy.blocks.MeasureByStep(sensor=labjack, verbose=True, compacter=1000, freq=None)
 # saver = crappy.blocks.Saver('/home/francois/freq.csv', stamp='yes')
-cc = crappy.blocks.ControlCommand(labjack)
+# cc = crappy.blocks.ControlCommand(labjack)
 dash = crappy.blocks.Dashboard(nb_digits=20)
 
-crappy.link(cc, dash)
+
+crappy.link(measurebystep, dash)
 crappy.start()
 
 
