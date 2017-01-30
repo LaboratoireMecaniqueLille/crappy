@@ -10,8 +10,13 @@ channels = [0]
 
 # If labjack as sensor
 sensor = crappy.technical.LabJack(sensor={'channels': channels, 'gain': 1, 'offset': 0, 'resolution': 1}, verbose=True)
-stream = crappy.blocks.MeasureByStep(sensor, freq=1000, compacter=100, verbose=True, labels=['t(s)', str(channels[0])])
-graph = crappy.blocks.Grapher(('t(s)', str(channels[0])), length=0)
+
+# If openDAQ as sensor
+# sensor = crappy.technical.OpenDAQ()
+
+stream = crappy.blocks.MeasureByStep(sensor, freq=None, compacter=1000, verbose=True, labels=['t(s)', str(channels[0])])
+
+graph = crappy.blocks.Grapher(('t(s)', str(channels[0])), length=1)
 dash = crappy.blocks.Dashboard(nb_digits=6)
 
 crappy.link(stream, dash)
