@@ -383,3 +383,8 @@ def get_camera_config(cam, videoExtenso={}, send_pipe=None):
     send_pipe.send(d.get_configuration())
   else:
     return d.get_configuration()
+
+from ._cameraConfig import Camera_config
+
+class ve_config(Camera_config):
+  pass
