@@ -84,6 +84,7 @@ class WaveGenerator(MasterBlock):
     x = np.linspace(0, 1, num=self.nb_points, endpoint=True)
     while True:
       for i in x:
+        self.temporization(self.wave_frequency * self.nb_points)
         yield i * self.gain + self.offset
 
   def temporization(self, timeout):
