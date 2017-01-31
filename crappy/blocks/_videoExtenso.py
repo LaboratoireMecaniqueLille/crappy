@@ -41,7 +41,7 @@ np.set_printoptions(threshold='nan', linewidth=500)
 
 def plotter(plot_pipe_recv):
   """
-  Wait for data an plot a frame in an opencv window.
+  Wait for data and plot a frame in an opencv window.
 
   Args:
       plot_pipe_recv: Pipe which receive data to plot (numpy.ndarray).
@@ -84,8 +84,9 @@ def plotter(plot_pipe_recv):
       maxy = data[4]
       Points_coordinates = data[5]
       frame = data[8]
-      for i in range(0,
-                     NumOfReg):  # For each region, plots the rectangle around the spot and a cross at the center
+      for i in range(NumOfReg):
+      # For each region, plots the rectangle around the spot
+      # and a cross at the center
         frame = cv2.rectangle(frame, (miny[i], minx[i]), (maxy[i] - 1, maxx[i] - 1), (color, 0, 0), 1)
         frame = cv2.circle(frame, (int(Points_coordinates[i, 1]), int(Points_coordinates[i, 0])), 1,
                            (255 - color, 0, 0), -1)
@@ -236,20 +237,22 @@ class VideoExtenso(CompacterBlock):
     default_labels = ['t(s)', 'Px', 'Py', 'Exx(%)', 'Eyy(%)']
     for arg,default in [("camera","ximea"),
                         ("numdevice",0),
-                        ("xoffset",0),
-                        ("yoffset",0),
-                        ("width",2048),
-                        ("height",2048),
                         ('update_tresh',False),
                         ('security',False),
                         ('save_folder',None),
+                        ('save_period',1), # Save one out of every N pictures
                         ('white_spot',False),
                         ('labels',default_labels),
-                        ('display',True)]:
+                        ('display',True),
+                        ('compacter',1)]:
       setattr(self,arg,kwargs.get(arg,default))
+      try:
+        del kwargs[arg]
+      except KeyError:
+        pass
     self.camera_name = self.camera
-    CompacterBlock.__init__(self,compacter=kwargs.get('compacter',1),
-                                 labels=self.labels)
+    self.tve_kwargs = kwargs
+    CompacterBlock.__init__(self,compacter=self.compacter, labels=self.labels)
     # camera INIT with ZOI selection
     self.border = 4
     if self.save_folder is not None:
@@ -262,9 +265,7 @@ class VideoExtenso(CompacterBlock):
       # the following is to initialise the spot detection
       self.ve = tve(self.camera_name, self.numdevice,
                        {'white_spot': self.white_spot,
-                        'border': self.border, 'xoffset': self.xoffset,
-                        'yoffset': self.yoffset, 'width': self.width,
-                        'height': self.height})
+                        'border': self.border},**self.tve_kwargs)
       for attr in ['minx','maxx','miny','maxy','NumOfReg','L0x','L0y',
                    'thresh','Points_coordinates']:#,'width','height',
                    #'exposure','gain']:
@@ -302,15 +303,16 @@ class VideoExtenso(CompacterBlock):
     while True:
       try:
         t2 = time.time()
-        image = self.ve.sensor.get_image()  # read a frame
-        if self.save_folder is not None:
+        image = self.ve.sensor.read_image()  # read a frame
+        if self.save_folder is not None and not j%self.save_period:
           image1 = sitk.GetImageFromArray(image)
           sitk.WriteImage(image1,
-                          self.save_folder + "img_videoExtenso%.5d.tiff" % j)
+                    self.save_folder + "img_videoExtenso%.5d_%4.4f.tiff" % (
+                                                        j,t2-self.t0))
 
         # for each spot, calulate the news coordinates of the center, based on
         # previous coordinate and border.
-        for i in range(0, self.NumOfReg):
+        for i in range(self.NumOfReg):
           self.send_[i].send([image[int(self.minx[i]) - 1:int(self.maxx[i]) + 1,
                          int(self.miny[i]) - 1:int(self.maxy[i]) + 1],
                          self.minx[i] - 1, self.miny[i] - 1,
@@ -321,7 +323,7 @@ class VideoExtenso(CompacterBlock):
           self.minx[i], self.miny[i], \
           self.maxx[i], self.maxy[i], Lx, Ly = self.send_[i].recv()[:]
         else:
-          for i in range(0, self.NumOfReg):
+          for i in range(self.NumOfReg):
             self.Points_coordinates[i, 0], self.Points_coordinates[i, 1],\
              self.minx[i], self.miny[i], \
             self.maxx[i], self.maxy[i] = self.send_[i].recv()[:]

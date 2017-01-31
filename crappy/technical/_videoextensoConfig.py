@@ -202,27 +202,11 @@ class _CameraInit:
             image[self.minx[i, 0] - 1:self.maxx[i, 0] + 1, self.miny[i, 0] - 1:self.maxy[i, 0] + 1],
             self.minx[i, 0] - 1, self.miny[i, 0] - 1)
 
-
-          # self.Points_coordinates=np.mean(self.Points_coordinates,axis=2)
-          # self.minx=np.mean(self.minx,axis=2)
-          # self.miny=np.mean(self.miny,axis=2)
-          # self.maxx=np.mean(self.maxx,axis=2)
-          # self.maxy=np.mean(self.maxy,axis=2)
-          # print "new image"
-          # image=self.cam.get_image()
-          # for i in range(0,self.NumOfReg): # find the center of every region
-          # print "round 2"
-          # self.Points_coordinates[i,0],self.Points_coordinates[i,1],a_,b_,c_,d_=self.barycenter_opencv(image[self.minx[i]-1:self.maxx[i]+1,self.miny[i]-1:self.maxy[i]+1],self.minx[i]-1,self.miny[i]-1)
-      # Evaluating initial distance bewteen 2 spots
-      # self.L0x=self.Points_coordinates[:,0].max()-self.Points_coordinates[:,0].min()
-      # self.L0y=self.Points_coordinates[:,1].max()-self.Points_coordinates[:,1].min()
-
       self.minx += self.yoffset
       self.maxx += self.yoffset
       self.miny += self.xoffset
       self.maxy += self.xoffset
 
-      # print "2"
       image = self.cam.get_image()  # read a frame
       print "type of frame: ", type(image)
 
@@ -246,20 +230,19 @@ class _CameraInit:
         color = 0
 
       if len(self.rect) > 0:
-        for i in range(0, len(self.rect)):
+        for i in range(len(self.rect)):
           # print 'test'
           self.rect[i].remove()
         self.rect = {}
       # evaluating the reduction ratio to enlarge the rectangles
-      ratx = self.videoextenso['height'] * 1. / self.cam.height
-      raty = self.videoextenso['width'] * 1. / self.cam.width
-      for i in range(0,
-                     self.NumOfReg):  # For each region, plots the rectangle around the spot and a cross at the center
+      ratx = 1#self.videoextenso['height'] * 1. / image.shape[0] #self.cam.height
+      raty = 1#self.videoextenso['width'] * 1. / image.shape[1] #self.cam.width
+      for i in range(self.NumOfReg):
+      # For each region, plots the rectangle around the spot and a cross at the center
         print self.maxx[i], self.maxy[i]
         self.rect[i] = mpatches.Rectangle((self.miny[i] * raty, self.minx[i] * ratx), (maxy[i] - miny[i]) * raty,
                                           (maxx[i] - minx[i]) * ratx, fill=False, edgecolor='red', linewidth=1)
         self.rec[i] = self._axim.get_axes().add_patch(self.rect[i])
-        # print "TEST111111"
     else:
       print "No spot detected."
 
@@ -386,5 +369,12 @@ def get_camera_config(cam, videoExtenso={}, send_pipe=None):
 
 from ._cameraConfig import Camera_config
 
-class ve_config(Camera_config):
-  pass
+def ve_config(cam):
+  return Ve_config().config(cam)
+
+class Ve_config(Camera_config):
+  def __init__(self):
+    Camera_config.__init__(self)
+
+  def config(self,camera):
+    pass
