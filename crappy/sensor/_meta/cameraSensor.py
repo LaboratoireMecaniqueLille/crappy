@@ -254,7 +254,7 @@ class MasterCam(object):
     setter in the class CamSetting, else use the default behavior
     It is important to make sure we don't try to set 'settings', it would
     recursively call getattr and enter an infinite loop, hence the condition.
-    Example: cam.width = 2048 will be like cam.settings['width'] = 2048.
+    Example: cam.width = 2048 will be like cam.settings['width'].value = 2048.
     It allows for simple settings of the camera"""
     if attr != "settings" and attr in self.settings:
       self.settings[attr].value = val
