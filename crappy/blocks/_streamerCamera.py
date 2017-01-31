@@ -24,7 +24,6 @@ class StreamerCamera(MasterBlock):
   """
   Streams pictures.
   """
-
   def __init__(self,**kwargs):
     """
     This block fetch images from a camera object, can save and/or transmit them to another block.
@@ -38,13 +37,7 @@ class StreamerCamera(MasterBlock):
           See crappy.sensor._meta.MasterCam.classes for a full list
         numdevice : int, default = 0
             If you have several camera plugged, choose the right one.
-        max_fps : float or int or None, default=None
-            Wanted acquisition frequency. 
-            Cannot exceed acquisition device capability.
-            If None, will go as fast as possible.
-            It is not named fps to avoid interfering with cameras with embedded
-            framerate settings
-        save_directory : directory, default = None
+        save_folder : directory, default = None
             directory to save the images. If inexistant, will be created.
             If None, will not save the images
         label : string, default="cycle"
@@ -56,8 +49,7 @@ class StreamerCamera(MasterBlock):
     MasterBlock.__init__(self)
     for arg,default in [("camera","ximea"),
                         ("numdevice",0),
-                        ("max_fps",None),
-                        ("save_directory",None),
+                        ("save_folder",None),
                         ("label","cycle"),
                         ("show_fps",False)]:
       setattr(self,arg,kwargs.get(arg,default)) #Assign these attributes
@@ -70,8 +62,8 @@ class StreamerCamera(MasterBlock):
     self.tc_kwargs = kwargs
 
   def prepare(self):
-    if self.save_directory and not os.path.exists(self.save_directory):
-      os.makedirs(self.save_directory)
+    if self.save_folder and not os.path.exists(self.save_folder):
+      os.makedirs(self.save_folder)
     self.camera = tc(self.camera_name, self.numdevice,**self.tc_kwargs)
     self.trigger = "internal" if len(self.inputs) == 0 else "external"
 
@@ -89,31 +81,25 @@ class StreamerCamera(MasterBlock):
         fps_timer = timer
         last_index = loops
       if self.trigger == "internal":
-        if self.max_fps is not None:
-          while True:
-            left = 1. / self.max_fps - time.time() + timer
-            if left <= 0:
-              break
-            time.sleep(left/2.)
-        timer = time.time()
-        img = self.camera.sensor.get_image()
+        img = self.camera.sensor.read_image()
       elif self.trigger == "external":
         data = self.inputs[0].recv()  # wait for a signal
         if data is None:
           continue
         img = self.camera.sensor.get_image()
         t = time.time() - self.t0
-      if self.save_directory:
+      timer = time.time()
+      if self.save_folder:
         image = sitk.GetImageFromArray(img)
         try:
           cycle = data[self.label] # If we received a data to add in the name
           sitk.WriteImage(image,
-                 self.save_directory + "img_%.6d_cycle%09.1f_%.5f.tiff" % (
-                 loops, cycle, time.time() - self.t0))
+                 self.save_folder + "img_%.6d_cycle%09.1f_%.5f.tiff" % (
+                 loops, cycle, timer - self.t0))
         except KeyError: # If we did not
           sitk.WriteImage(image,
-                 self.save_directory + "img_%.6d_%.5f.tiff" % (
-                 loops, time.time() - self.t0))
+                 self.save_folder + "img_%.6d_%.5f.tiff" % (
+                 loops, timer - self.t0))
       loops += 1
       self.send(img)
 

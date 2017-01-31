@@ -37,8 +37,8 @@ class XimeaCV(MasterCam):
     self.numdevice = numdevice
     self.name = "XimeaCV"
     self.cap = None
-    self.add_setting("width",2048,self._set_w,(1,2048))
-    self.add_setting("height",2048,self._set_h,(1,2048))
+    self.add_setting("width",2048,self._set_w,(1,4240))
+    self.add_setting("height",2048,self._set_h,(1,2830))
     self.add_setting("xoffset",0,self._set_ox,(0,2044))
     self.add_setting("yoffset",0,self._set_oy,(0,2046))
     self.add_setting("exposure",10000,self._set_exp,(28,100000))
@@ -153,7 +153,7 @@ class XimeaCV(MasterCam):
          Y offset: 0
          \endcode
     """
-    return " Exposure: {0} \n Numdevice: {2} \n Width: {3} \n Height: {4} " \
-           "\n X offset: {5} \n Y offset: {6}".format(self.exposure, 
+    return " Exposure: {0} \n Numdevice: {1} \n Width: {2} \n Height: {3} " \
+           "\n X offset: {4} \n Y offset: {5}".format(self.exposure,
                                   self.numdevice, self.width,
                                   self.height, self.xoffset, self.yoffset)

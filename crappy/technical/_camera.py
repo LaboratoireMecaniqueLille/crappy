@@ -48,6 +48,7 @@ class TechnicalCamera(object):
     
     # initialisation:
     self.sensor = camera_class(numdevice=num_device)
+    print("Sending",kwargs)
     self.sensor.open(**kwargs)
     if config:
       camera_config(self.sensor)

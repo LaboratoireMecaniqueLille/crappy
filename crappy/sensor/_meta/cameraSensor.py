@@ -11,7 +11,9 @@
 # @author Victor Couty
 # @version 0.1
 # @date 26/01/2017
-from __future__ import print_function
+from __future__ import print_function,division
+
+from time import time,sleep
 
 class DefinitionError(Exception):
     """Error to raise when classes are not defined correctly"""
@@ -160,7 +162,22 @@ class MasterCam(object):
     """Don't forget to call this __init__ in the children or __getattr__ will
     fall in an infinite recursion loop looknig for settings..."""
     self.settings = {}
+    self.last = time()
+    self.max_fps = None
     self.name = "MasterCam"
+
+  @property
+  def max_fps(self):
+    return self._max_fps
+
+  @max_fps.setter
+  def max_fps(self,value):
+    """To compute self.delay again when fps is set"""
+    self._max_fps = value
+    if value:
+      self.delay = 1/value
+    else:
+      self.delay = 0
 
   def add_setting(self,name,default,set_f=lambda a:True,limits=None):
     """Wrapper to simply add a new setting to the camera"""
@@ -170,7 +187,7 @@ class MasterCam(object):
   @property
   def available_settings(self):
     """Returns a list of available settings"""
-    return map(lambda x: x.name,self.settings.values())
+    return map(lambda x: x.name,self.settings.values())+["max_fps"]
 
   @property
   def settings_dict(self):
@@ -187,12 +204,27 @@ class MasterCam(object):
     for s in self.settings:
       if s in kwargs:
         self.settings[s].value = kwargs[s]
+        del kwargs[s]
       else:
         self.settings[s].value = self.settings[s].default
+      for k,v in kwargs.iteritems():
+        setattr(self,k,v)
 
   def reset_all(self):
     """Reset all the settings to their default values"""
     self.set_all()
+
+  def read_image(self):
+    """This method is a wrapper for get_image that will limit fps to max_fps"""
+    if self.delay:
+      t = time()
+      wait = self.last - t + self.delay
+      while wait > 0:
+        t = time()
+        wait = self.last - t + self.delay
+        sleep(max(0,wait/10))
+      self.last = t
+    return self.get_image()
 
   def __getattr__(self,i):
     """The idea is simple: if the camera has this attribute: return it
