@@ -147,9 +147,7 @@ class SignalGenerator(MasterBlock):
               delay(-(timer-last_t - 1. / (self.send_freq))/10.)
               timer = time.time()
             last_t = time.time()
-            recv = self.recv_last(uncompact=True)
-            while recv is None:
-              recv = self.recv_any(uncompact=True)
+            recv = self.recv_all_last()
             Data = pd.DataFrame([recv.values()],columns=recv.keys())
             last_upper = (Data[self.value[1]]).last_valid_index()
             last_lower = (Data[self.value[1]]).last_valid_index()
@@ -175,9 +173,7 @@ class SignalGenerator(MasterBlock):
               delay(-(timer-last_t - 1. / (self.send_freq))/10.)
               timer = time.time()
             last_t = time.time()
-            recv = self.recv_last(uncompact=True)
-            while recv is None:
-              recv = self.recv_any(uncompact=True)
+            recv = self.recv_all_last()
             Data = pd.DataFrame([recv.values()],columns=recv.keys())
 
             last_upper = (Data[self.upper_limit[1]]).last_valid_index()
@@ -219,9 +215,7 @@ class SignalGenerator(MasterBlock):
               delay(-(timer-last_t - 1. / (self.send_freq))/10.)
               timer = time.time()
             last_t = time.time()
-            recv = self.recv_last(uncompact=True)
-            while recv is None:
-              recv = self.recv_any(uncompact=True)
+            recv = self.recv_all_last()
             Data = pd.DataFrame([recv.values()],columns=recv.keys())
 
             last_t = time.time()
