@@ -16,7 +16,6 @@ from __future__ import print_function
 
 from ._meta import MasterCam
 import time
-import numpy as np
 import cv2
 
 #To check wether opencv can handle ximeas or not:

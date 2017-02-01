@@ -82,6 +82,9 @@ class Cam_setting(object):
   Arguments:
     name: the name of the setting
     default: the default value, if not specified it will be set to this value
+      A particular case is when default is a function: it will be called once
+      to get the default value (useful when default values depends on device)
+      also, it will not be reset if not speceifed otherwise
     set_f: A function that will be called when setting the parameter to a new
       value. It must return True if it succeded and False aotherwise.
     limits: It contains the available values for this parameter
@@ -102,7 +105,7 @@ class Cam_setting(object):
        add radio buttons showing the keys, to set it to the corresponding value
   """
     self.name = name
-    self.default = default
+    self._default = default
     self._value = default
     self.set_f = set_f
     self.limits = limits
@@ -202,10 +205,10 @@ class MasterCam(object):
     """Sets all the settings based on kwargs, if not specified, the setting 
     will take its default value"""
     for s in self.settings:
-      if s in kwargs:
+      if s in kwargs and self.settings[s] != kwargs[s]:
         self.settings[s].value = kwargs[s]
         del kwargs[s]
-      else:
+      elif self.settings[s].value != self.settings[s].default:
         self.settings[s].value = self.settings[s].default
       for k,v in kwargs.iteritems():
         setattr(self,k,v)
