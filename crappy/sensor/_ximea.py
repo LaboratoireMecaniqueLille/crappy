@@ -14,7 +14,6 @@
 
 from __future__ import print_function
 
-from os import path
 from time import sleep
 
 from ._meta import MasterCam

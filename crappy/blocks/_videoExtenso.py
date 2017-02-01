@@ -57,8 +57,8 @@ def plotter(plot_pipe_recv):
   miny = data[3]
   maxy = data[4]
   Points_coordinates = data[5]
-  L0x = data[6]
-  L0y = data[7]
+  #L0x = data[6]
+  #L0y = data[7]
   frame = data[8]
   white_spot = data[9]
   if white_spot:
@@ -277,7 +277,7 @@ class VideoExtenso(CompacterBlock):
 
     #self.ve.sensor.new(self.exposure, self.width, self.height, 
     #                       self.xoffset, self.yoffset, self.gain)
-    image = self.ve.sensor.get_image()
+    #image = self.ve.sensor.get_image()
     # eliminate the first frame, most likely corrupted
     self.proc_bary = []
     self.recv_ = []
@@ -394,7 +394,7 @@ class VideoExtenso(CompacterBlock):
         if self.display:
           self.proc.terminate()
         for i in range(0, self.NumOfReg):
-          proc_bary[i].terminate()
+          self.proc_bary[i].terminate()
         if self.security:
           print 'Exception Video Extenso Security PAS OK'
           try:

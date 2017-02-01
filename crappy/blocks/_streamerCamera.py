@@ -17,7 +17,6 @@ import os
 import time
 import sys
 from crappy.technical import TechnicalCamera as tc
-from ..links._link import TimeoutError
 import SimpleITK as sitk
 
 class StreamerCamera(MasterBlock):
@@ -87,7 +86,6 @@ class StreamerCamera(MasterBlock):
         if data is None:
           continue
         img = self.camera.sensor.get_image()
-        t = time.time() - self.t0
       timer = time.time()
       if self.save_folder:
         image = sitk.GetImageFromArray(img)
