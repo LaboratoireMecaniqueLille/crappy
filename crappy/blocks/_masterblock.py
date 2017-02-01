@@ -187,13 +187,15 @@ class MasterBlock(Process):
     Returns the last known value of ALL the inputs.
     Note that this recv method must be the only one called in the block
     in order to work properly"""
-    if not hasattr(self,last_data):
+    if not hasattr(self,"last_data"):
       self.last_data = OrderedDict()
       for i in self.inputs:
         self.last_data.update(i.recv())
 
     for i in self.inputs:
-      self.last_data.update(i.recv_last())
+      data = i.recv_last()
+      if data is not None:
+        self.last_data.update(data)
     if uncompact:
       return uncomp(self.last_data)
     return self.last_data
