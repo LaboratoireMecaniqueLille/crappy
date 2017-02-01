@@ -8,7 +8,7 @@
 ## @file __init__.py
 # @brief  Link class. All connection between Blocks should be made with this.
 #
-# @authors Corentin Martel, Robin Siemiatkowski
+# @authors Corentin Martel, Robin Siemiatkowski, Victor Couty
 # @version 0.2
 # @date 19/01/2017
 

@@ -14,9 +14,10 @@
 from __future__ import print_function
 
 from multiprocessing import Process, Pipe
-from ..links._link import TimeoutError
-
+from collections import OrderedDict
 import time
+
+from ..links._link import TimeoutError
 
 
 def uncomp(data):
@@ -171,15 +172,31 @@ class MasterBlock(Process):
     then combines them. Necessarily non blocking"""
     data = None
     for l in self.inputs:
-      if data:
+      if data is not None:
         new = l.recv_last()
-        if new:
+        if new is not None:
           data.update(new)
       else:
         data = l.recv_last()
     if uncompact:
       return uncomp(data)
     return data
+
+  def recv_all_last(self,uncompact=True):
+    """May be blocking on first call, but necessarily non-blocking afterward
+    Returns the last known value of ALL the inputs.
+    Note that this recv method must be the only one called in the block
+    in order to work properly"""
+    if not hasattr(self,last_data):
+      self.last_data = OrderedDict()
+      for i in self.inputs:
+        self.last_data.update(i.recv())
+
+    for i in self.inputs:
+      self.last_data.update(i.recv_last())
+    if uncompact:
+      return uncomp(self.last_data)
+    return self.last_data
 
   def clear_inputs(self):
     """Will clear all the inputs of the block"""
