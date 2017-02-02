@@ -7,10 +7,10 @@ cc = crappy.blocks.ControlCommand(lbj,
                                   compacter=1000,
                                   verbose=True)
 
-wave = crappy.blocks.WaveGenerator(waveform='saw_tooth',
-                                   duty_cycle=0.2,
-                                   wave_frequency=1,
-                                   nb_points=20,
+wave = crappy.blocks.WaveGenerator(waveform='square',
+                                   duty_cycle=0.5,
+                                   wave_frequency=0.5,
+                                   nb_points=1,
                                    gain=10)
 # dash = crappy.blocks.Dashboard()
 # graph = crappy.blocks.Grapher(('time(sec)', 'signal'), length=10)
