@@ -23,7 +23,7 @@ class ComediSensor(acquisition.Acquisition):
   Sensor class for Comedi devices.
   """
 
-  def __init__(self, device='/dev/comedi0', subdevice=0, channels=[0], range_num=0, gain=1, offset=0):
+  def __init__(self, *args, **kwargs):
     """
     Convert tension value into digital values, on several channels.
 
@@ -45,35 +45,31 @@ class ComediSensor(acquisition.Acquisition):
                 Add this value for each channel. If there is multiple channels
                 for a single offset, it will be applied to all.
     """
+    def var_tester(var, nb_channels):
+      """Used to check if the user entered correct parameters."""
+      var = [var] * nb_channels if isinstance(var, (int, float)) else var
+      assert isinstance(var, list) and len(var) == nb_channels, \
+        str(var) + "Parameter definition Error: list is" \
+        " not the same length as nb_channels."
+      assert False not in [isinstance(var[i], (int, float)) for i in
+                           xrange(nb_channels)], \
+        str(var) + "Error: parameter should be int or float."
+      return var
+
     super(ComediSensor, self).__init__()
-    ## input subdevice number
-    self.subdevice = subdevice
-    ## channel number
-    self.channels = channels
-    ## range number
-    self.range_num = range_num
-    ## gain to be applied to the input
-    self.gain = gain
-    ## offset
-    self.offset = offset
-    ## device instance
-    self.device = c.comedi_open(device)
-    # if type(self.channels)==int or len(self.channels)==1:	# for get_data
-    # self.nchans=1
-    if type(self.channels) == list:  # if multiple channels
-      ## number of channels
-      self.nchans = len(self.channels)
-      ## range number or list of range numbers
-      self.range_num = [self.range_num] * self.nchans
-      if type(self.gain) == int:
-        ## gain or list of gain (for each output)
-        self.gain = [self.gain] * self.nchans
-      if type(self.offset) == int:
-        ## offset or list of offset (for each output)
-        self.offset = [self.offset] * self.nchans
-      self.new()
-    else:
-      raise Exception("channels must be int or list")
+    self.subdevice = kwargs.get('subdevice', 0)  # input subdevice number
+    self.channels = kwargs.get('channels', [0])
+    if not isinstance(self.channels, list):
+      self.channels = [self.channels]
+    self.nb_channels = len(self.channels)
+
+    self.range_num = var_tester(kwargs.get('range_num', 0), self.nb_channels)
+    self.gain = var_tester(kwargs.get('gain', 1), self.nb_channels)
+    self.offset = var_tester(kwargs.get('offset', 0), self.nb_channels)
+
+    self.device = kwargs.get('device', '/dev/comedi0')
+    self.device = c.comedi_open(self.device)
+    self.new()
 
   def get_data(self, channel_number=0):
     """
@@ -81,20 +77,31 @@ class ComediSensor(acquisition.Acquisition):
     """
     if channel_number == "all":
       result = []
-      for channel in range(self.nchans):
-        data = c.comedi_data_read(self.device, self.subdevice, self.channels[channel],
-                                  self.range_num[channel], c.AREF_GROUND)
+      for channel in xrange(self.nb_channels):
+        data = c.comedi_data_read(self.device,
+                                  self.subdevice,
+                                  self.channels[channel],
+                                  self.range_num[channel],
+                                  c.AREF_GROUND)
+
         self.position = (c.comedi_to_phys(data[1], self.range_ds[channel],
-                                          self.maxdata[channel]) * self.gain[channel] + self.offset[channel])
+                                          self.maxdata[channel]) *
+                         self.gain[channel] + self.offset[channel])
+
         result.append(self.position)
       t = time.time()
       return t, result
+
     else:
-      data = c.comedi_data_read(self.device, self.subdevice,
+      data = c.comedi_data_read(self.device,
+                                self.subdevice,
                                 self.channels[channel_number],
-                                self.range_num[channel_number], c.AREF_GROUND)
+                                self.range_num[channel_number],
+                                c.AREF_GROUND)
+
       self.position = (c.comedi_to_phys(data[1], self.range_ds[channel_number],
-                                        self.maxdata[channel_number]) * self.gain[channel_number] + self.offset[
+                                        self.maxdata[channel_number]) *
+                       self.gain[channel_number] + self.offset[
                          channel_number])
       t = time.time()
       return t, self.position
@@ -105,13 +112,16 @@ class ComediSensor(acquisition.Acquisition):
 
     This is only called on init.
     """
-    self.maxdata = [0] * self.nchans
-    self.range_ds = [0] * self.nchans
-    for i in range(self.nchans):
-      self.maxdata[i] = c.comedi_get_maxdata(self.device, self.subdevice,
+    self.maxdata = [0] * self.nb_channels
+    self.range_ds = [0] * self.nb_channels
+    for i in xrange(self.nb_channels):
+      self.maxdata[i] = c.comedi_get_maxdata(self.device,
+                                             self.subdevice,
                                              self.channels[i])
-      self.range_ds[i] = c.comedi_get_range(self.device, self.subdevice,
-                                            self.channels[i], self.range_num[i])
+      self.range_ds[i] = c.comedi_get_range(self.device,
+                                            self.subdevice,
+                                            self.channels[i],
+                                            self.range_num[i])
 
   def close(self):
     """
