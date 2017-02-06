@@ -75,13 +75,9 @@ class MeasureByStep(CompacterBlock):
       self.last_len = l
       print(s)
 
-    nb_points0 = 0.
     while True:
-      nb_points1 = self.queue.get()
-      reprint(
-        'Freq:', '%.2f' % ((nb_points1 - nb_points0) / self.time_interval), 'Hz'
-      )
-      nb_points0 = nb_points1
+      nb_points = self.queue.get()
+      reprint('[MeasureByStep] Samples/Sec:', nb_points)
 
   def temporization(self, timer):
     t_a = time.time()
@@ -97,7 +93,7 @@ class MeasureByStep(CompacterBlock):
     self.trigger = "internal" if len(self.inputs) == 0 else "external"
 
   def prepare_verbosity(self):
-    self.nb_acquisitions = 0.
+    self.nb_acquisitions = 0
     self.elapsed = 0.
     self.time_interval = 1.
     self.last_len = None
@@ -123,9 +119,11 @@ class MeasureByStep(CompacterBlock):
         if self.verbose:
           self.nb_acquisitions += 1
           self.time_interval = data[0] - self.elapsed
+
           if self.time_interval >= 1.:
             self.elapsed = data[0]
             self.queue.put(self.nb_acquisitions)
+            self.nb_acquisitions = 0
         t_acq = time.time() - t_before_acq
 
         if self.freq and t_acq < 1 / float(self.freq):
