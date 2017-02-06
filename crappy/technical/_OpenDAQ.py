@@ -1,29 +1,40 @@
 from opendaq import DAQ
 from time import time, sleep
-from ._meta import io
 from operator import itemgetter
 
 
-class OpenDAQ(io.Control_Command):
+class OpenDAQ(object):
   """
   Class for openDAQ Devices.
+  Can acquire in 8 channels
    Args:
-            pinput: Positive input [1:8]
-            ninput: Negative input [0, 5, 6, 7, 8, 25]
+
+            channels:   int or list, positive input [1:8]
+            ninput:     int, negative input for all measures, possible values
+                        are: [0, 5, 6, 7, 8, 25]
+            gain:       positive values 0, 1, 2, 3, 4 (x1/3, x1, x2, x10, x100)
+            offset:     int or float, applied after reading.
+            nsamples:   number of samples acquired by the device before
+                        sending it. Values are between 0 and 254, the higher
+                        the better resolution, but it is slower.
+            mode:       single or streamer. The streamer mode is working for
+                        frequencies of 1 kHz, but can't acquire more
+                        than 65535 values.
+
+
 
   """
 
   def __init__(self, *args, **kwargs):
 
-    self.channels = kwargs.get('channels', 1)  # Possible values: 1..8
-    self.nb_channels = 1 if not isinstance(self.channels, list) else len(self.channels)
-
-    if not isinstance(self.channels, list) and self.nb_channels == 1:  # To unpack and prevent errors
+    self.channels = kwargs.get('channels', [1])
+    if not isinstance(self.channels, list):
       self.channels = [self.channels]
+    self.nb_channels = len(self.channels)
 
-    self.input_gain = kwargs.get('gain', 0)  # Possible values: 0..4 (x1/3, x1, x2, x10, x100)
-    self.input_offset = kwargs.get('offset', 0)  # not a parameter. apply after reading it.
-    self.input_nsamples_per_read = kwargs.get('nsamples', 20)  # possible values : 0..254
+    self.input_gain = kwargs.get('gain', 0)
+    self.input_offset = kwargs.get('offset', 0)
+    self.input_nsamples_per_read = kwargs.get('nsamples', 20)
     self.negative_channel = kwargs.get('negative_channel', 0)
     self.mode = kwargs.get('mode', 'single')
     self.sample_rate = kwargs.get('sample_rate', 100)
@@ -32,6 +43,7 @@ class OpenDAQ(io.Control_Command):
       self.init_stream()
 
     if self.nb_channels > 1:
+      """Special method to unpack a list very fast."""
       self.getter = itemgetter(*self.channels)
 
   def new(self):
@@ -41,9 +53,12 @@ class OpenDAQ(io.Control_Command):
       self.handle = DAQ("/dev/ttyUSB1")
 
     if self.nb_channels == 1 and self.mode == 'single':
-      self.handle.conf_adc(pinput=self.channels[0], ninput=self.negative_channel, gain=self.input_gain,
+      self.handle.conf_adc(pinput=self.channels[0],
+                           ninput=self.negative_channel,
+                           gain=self.input_gain,
                            nsamples=self.input_nsamples_per_read)
     self.handle.set_led(3)
+
   def init_stream(self):
     # self.stream_exp_list = []
     # for index in self.channels:
@@ -56,7 +71,9 @@ class OpenDAQ(io.Control_Command):
                                                 continuous=True,
                                                 buffersize=1000)
 
-    self.stream_exp.analog_setup(pinput=self.channels, ninput=self.negative_channel, gain=self.input_gain,
+    self.stream_exp.analog_setup(pinput=self.channels,
+                                 ninput=self.negative_channel,
+                                 gain=self.input_gain,
                                  nsamples=self.input_nsamples_per_read)
     # self.stream_exp_list.append(self.stream_exp)
     self.generator = self.stream_grabber()
@@ -89,7 +106,9 @@ class OpenDAQ(io.Control_Command):
     if self.nb_channels == 1:
       data = [self.handle.read_analog()]
     else:
-      data = list(self.getter(self.handle.read_all(self.input_nsamples_per_read)))
+      data = list(self.getter(
+        self.handle.read_all(
+          self.input_nsamples_per_read)))
     return time(), data
 
   def set_cmd(self, command):
@@ -99,4 +118,3 @@ class OpenDAQ(io.Control_Command):
     self.handle.set_led(1)
     self.handle.stop()  # if an experiment is running
     self.handle.close()
-    pass

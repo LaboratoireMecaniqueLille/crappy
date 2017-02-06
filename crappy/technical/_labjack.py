@@ -177,11 +177,11 @@ class LabJack_T7(object):
       var = [var] * nb_channels if isinstance(var, (int, float)) else var
       assert isinstance(var, list) and len(var) == nb_channels, \
         str(var) + \
-        "Parameters definition Error: list is" \
+        "Parameter definition Error: list is" \
         " not the same length as nb_channels."
       assert False not in [isinstance(var[i], (int, float)) for i in
-                           range(nb_channels)], \
-        str(var) + "Error: parameters should be int or float."
+                           xrange(nb_channels)], \
+        str(var) + "Error: parameter should be int or float."
       return var
 
     self.verbose = kwargs.get('verbose', False)
@@ -479,8 +479,8 @@ class LabJack(object):
       try:
         ljm.listAllS('ANY', 'ANY')
         self.type = 't7'
-      except ljm.LJMError.errorCode as e:
-        if e == 1249:
+      except ljm.LJMError as e:
+        if e.errorCode == 1249:
           self.type = 'ue9'
         else:
           raise IOError('No labjack device found.')
