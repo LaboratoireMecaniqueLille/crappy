@@ -53,6 +53,7 @@ from _streamer import Streamer
 from _dashboard import Dashboard
 from _controlcommand import ControlCommand
 from _wavegenerator import WaveGenerator
+from _dataReader import DataReader
 
 try:
   from _videoExtenso import VideoExtenso

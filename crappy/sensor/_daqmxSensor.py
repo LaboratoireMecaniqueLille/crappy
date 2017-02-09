@@ -59,7 +59,7 @@ class DaqmxSensor(acquisition.Acquisition):
 
     # Declaration of variable passed by reference
     self.mode = mode
-    self.channels = channels
+    self.channels = [channels]
     self.range_num = range_num
 
     # if type(self.channels)==list:
@@ -75,10 +75,12 @@ class DaqmxSensor(acquisition.Acquisition):
     # raise Exception("channels must be int or list")
 
     self.channel = self._channels_tab[channels]
-    self.device = "%s/%s" % (device, self.channel)
+    self.device = device
+    self.dev_chan = "%s/%s" % (device, self.channel)
+    
 
   def new(self):
-    DAQmxResetDevice(device)
+    DAQmxResetDevice(self.device)
 
     self.taskHandle = TaskHandle()
     self.read = int32()
@@ -86,19 +88,19 @@ class DaqmxSensor(acquisition.Acquisition):
     # DAQmx Configure Code
     DAQmxCreateTask("", byref(self.taskHandle))
 
-    print self.device
-    print type(self.device)
+    #print self.device
+    #print type(self.device)
 
     buffer_size = 4096
     buffer = ctypes.create_string_buffer(buffer_size)
-    DAQmxGetDeviceAttribute(device, DAQmx_Dev_ProductType, buffer)
-    print buffer.value
+    #DAQmxGetDeviceAttribute(self.device, DAQmx_Dev_ProductType, buffer)
+    #print buffer.value
     # if buffer.value == "PXIe-4331":
     #     print device
     #     DAQmxCreateAIBridgeChan(self.taskHandle, self.device, "", 0.0, 100.0, DAQmx_Val_VoltsPerVolt,
     #                             DAQmx_Val_FullBridge, DAQmx_Val_Internal, 1, 20, None)
     # else:
-    DAQmxCreateAIVoltageChan(self.taskHandle, self.device, "", DAQmx_Val_Cfg_Default,
+    DAQmxCreateAIVoltageChan(self.taskHandle, self.dev_chan, "", DAQmx_Val_Cfg_Default,
                              self._ranges_tab[self.range_num][0], self._ranges_tab[self.range_num][1],
                              DAQmx_Val_Volts, None)
 
@@ -127,7 +129,7 @@ class DaqmxSensor(acquisition.Acquisition):
       # DAQmx Stop Code
       DAQmxStopTask(self.taskHandle)
       delta = (t - t0) / float(nb_points + 1)
-      print delta
+      #print delta
       temps = [0]
       for x in xrange(1, nb_points + 1):
         temps.append(float(x) * delta)
