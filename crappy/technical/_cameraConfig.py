@@ -5,16 +5,15 @@ import cv2
 import Tkinter as tk
 from PIL import ImageTk,Image,ImageDraw
 import numpy as np
-from threading import Thread
-from multiprocessing import Queue
-
-from time import sleep
+from time import time
 
 maxW = 640
 maxH = 480
 
 histH = 80
 histW = maxW
+
+histRate = .5 # how often should we refresh the histogram
 
 def make_histogram(img,**kwargs):
   max_value = kwargs.get("max_value",255)
@@ -45,6 +44,7 @@ class Camera_config(object):
     self.scales_last = {}
     self.checks = {}
     self.radios = {}
+    self.last_hist_update = time()
 
   def config(self,camera):
     self.camera = camera
@@ -136,7 +136,8 @@ class Camera_config(object):
         if getattr(self.camera,name) == v:
           scale.configure(fg="black",label=name)
         else:
-          scale.configure(fg="red",label=name+" ({})".format(
+          #scale.configure(fg="red",label=name+" ({})".format(
+          scale.configure(label=name+" ({})".format(
                                       getattr(self.camera,name)))
 
   def update_radios(self): 
@@ -151,11 +152,17 @@ class Camera_config(object):
         #print(k,b.get())
         setattr(self.camera,k,bool(b.get()))
 
+  def update_histogram(self,img):
+    self.hist = make_histogram(img,size=(histW,histH),
+                max_value=255 if img.max()<=255 else 1023)#For 10 bits cameras
+    self.hist_label.configure(image=self.hist)
+
+
   def main_loop(self):
     img = self.camera.get_image()
-    hist = make_histogram(img,size=(histW,histH),
-                max_value=255 if img.max()<=255 else 1023)#For 10 bits cameras
-    self.hist_label.configure(image=hist)
+    if time() - self.last_hist_update > histRate:
+      self.last_hist_update = time()
+      self.update_histogram(img)
     img = self.convert_image(img)
     self.img_label.configure(image=img)
     self.update_scales()
