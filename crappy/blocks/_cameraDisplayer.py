@@ -15,7 +15,7 @@
 # @date 05/07/2016
 
 from _masterblock import MasterBlock
-from time import sleep, time
+from time import time
 
 
 class CameraDisplayer(MasterBlock):
@@ -33,7 +33,6 @@ class CameraDisplayer(MasterBlock):
       self.delay = 1. / framerate  # Framerate (fps)
     self.cv = cv
     self.title = title
-    print "cameraDisplayer!"
 
   def main(self):
     try:
@@ -41,15 +40,14 @@ class CameraDisplayer(MasterBlock):
         import matplotlib.pyplot as plt
         plt.ion()
         fig = plt.figure()
-        ax = fig.add_subplot(111)
-        first_loop = True
+        fig.add_subplot(111)
         while True:
           # print "top loop"
           frame = self.inputs[0].recv()
           # print frame.shape
           # if frame None:
           # print frame[0][0]
-          im = plt.imshow(frame, cmap='gray')
+          plt.imshow(frame, cmap='gray')
           plt.pause(0.001)
           plt.show()
       else:
@@ -83,3 +81,4 @@ class CameraDisplayer(MasterBlock):
       else:
         plt.close('all')
       print "Exception in CameraDisplayer : ", e
+      raise
