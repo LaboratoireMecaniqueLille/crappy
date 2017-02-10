@@ -38,15 +38,17 @@ class Ximea(MasterCam):
     self.numdevice = numdevice
     self.name = "Ximea"
     self.ximea = None
-    self.add_setting("width",2048,self._set_w,(1,2048))
-    self.add_setting("height",2048,self._set_h,(1,2048))
-    self.add_setting("xoffset",0,self._set_ox,(0,2044))
-    self.add_setting("yoffset",0,self._set_oy,(0,2046))
-    self.add_setting("exposure",10000,self._set_exp,(28,100000))
-    self.add_setting("gain",1,self._set_gain,(0.,6.))
-    self.add_setting("data_format",0,self._set_data_format,xi_format_dict)
-    self.add_setting("AEAG",False,self._set_AEAG,True)
-    self.add_setting("External Trigger",False,self._set_ext_trig)
+    self.add_setting("width",self._get_w,self._set_w,(1,self._get_w))
+    self.add_setting("height",self._get_h,self._set_h,(1,self._get_h))
+    self.add_setting("xoffset",self._get_ox,self._set_ox,(0,self._get_w))
+    self.add_setting("yoffset",self._get_oy,self._set_oy,(0,self._get_h))
+    self.add_setting("exposure",self._get_exp,self._set_exp,(28,100000),10000)
+    self.add_setting("gain",self._get_gain,self._set_gain,(0.,6.))
+    self.add_setting("data_format",self._get_data_format,
+                                   self._set_data_format,xi_format_dict)
+    self.add_setting("AEAG",self._get_AEAG,self._set_AEAG,True,False)
+    self.add_setting("External Trigger",setter=self._set_ext_trig,limits=True,
+                                                          default=False)
 
   def open(self, **kwargs):
     """
@@ -63,55 +65,69 @@ class Ximea(MasterCam):
     # Will apply all the settings to default or specified value
     self.set_all(**kwargs) 
 
+  def _get_w(self):
+    print("Getting w")
+    return self.ximea.get(xi.CAP_PROP_FRAME_WIDTH)
+
+  def _get_h(self):
+    print("Getting h")
+    return self.ximea.get(xi.CAP_PROP_FRAME_HEIGHT)
+
+  def _get_ox(self):
+    print("Getting x")
+    return self.ximea.get(xi.CAP_PROP_XI_OFFSET_X)
+
+  def _get_oy(self):
+    print("Getting y")
+    return self.ximea.get(xi.CAP_PROP_XI_OFFSET_Y)
+
+  def _get_gain(self):
+    print("Getting g")
+    return self.ximea.get(xi.CAP_PROP_GAIN)
+
+  def _get_exp(self):
+    print("Getting e")
+    return self.ximea.get(xi.CAP_PROP_EXPOSURE)
+
+  def _get_data_format(self):
+    print("Getting d")
+    return self.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)  
+
+  def _get_AEAG(self):
+    print("Getting a")
+    return self.ximea.get(xi.CAP_PROP_XI_AEAG)
+
   def _set_w(self,i):
-    if self.ximea:
-      return self.ximea.set(xi.CAP_PROP_FRAME_WIDTH,i)
-    return i % 4 == i and 0 < i <= 2048
+    self.ximea.set(xi.CAP_PROP_FRAME_WIDTH,i)
 
   def _set_h(self,i):
-    if self.ximea:
-      return self.ximea.set(xi.CAP_PROP_FRAME_HEIGHT,i)
-    return i % 2 == i and 0 < i <= 2048
+    self.ximea.set(xi.CAP_PROP_FRAME_HEIGHT,i)
 
   def _set_ox(self,i):
-    if self.ximea:
-      return self.ximea.set(xi.CAP_PROP_XI_OFFSET_X,i)
-    return i % 4 == i and 0 < i <= 2048 - self.width
+    self.ximea.set(xi.CAP_PROP_XI_OFFSET_X,i)
 
   def _set_oy(self,i):
-    if self.ximea:
-      return self.ximea.set(xi.CAP_PROP_XI_OFFSET_Y,i)
-    return i % 2 == i and 0 < i <= 2048 - self.height
+    self.ximea.set(xi.CAP_PROP_XI_OFFSET_Y,i)
 
   def _set_gain(self,i):
-    if self.ximea:
-      return self.ximea.set(xi.CAP_PROP_GAIN,i)
-    return 0 <= i <= 6
+    self.ximea.set(xi.CAP_PROP_GAIN,i)
 
   def _set_exp(self,i):
-    if self.ximea:
-      return self.ximea.set(xi.CAP_PROP_EXPOSURE,i)
-    return i == int(i) and 28 <= i <= 1000000
+    self.ximea.set(xi.CAP_PROP_EXPOSURE,i)
 
   def _set_ext_trig(self,i):
-    if self.ximea:
-      self.ximea.addTrigger(1000000, int(bool(i)))
-    return True
+    self.ximea.addTrigger(1000000, int(bool(i)))
 
   def _set_data_format(self,i):
     # 0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW
-    if self.ximea:
-      if i == 1 or i == 6:  
-      # increase the FPS in 10 bits
-        self.ximea.set(xi.CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH, 10)
-        self.ximea.set(xi.CAP_PROP_XI_DATA_PACKING, 1)
-      return self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT, i)  
-    return abs(int(i)) == i and i <=6
+    if i == 1 or i == 6:  
+    # increase the FPS in 10 bits
+      self.ximea.set(xi.CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH, 10)
+      self.ximea.set(xi.CAP_PROP_XI_DATA_PACKING, 1)
+    self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT, i)  
 
   def _set_AEAG(self,i):
-    if self.ximea:
-      return self.ximea.set(xi.CAP_PROP_XI_AEAG,int(bool(i)))
-    return True
+    return self.ximea.set(xi.CAP_PROP_XI_AEAG,int(bool(i)))
 
   def get_image(self):
     """

@@ -15,6 +15,9 @@ from __future__ import print_function,division
 
 from time import time,sleep
 
+def do_nothing(*args):
+  pass
+
 class DefinitionError(Exception):
     """Error to raise when classes are not defined correctly"""
     def __init__(self,msg=""):
@@ -77,16 +80,19 @@ class MetaCam(type):
 
 class Cam_setting(object):
   """This class represents an attribute of the camera that cam be set"""
-  def __init__(self,name,default,set_f,limits):
+  def __init__(self,name,getter,setter,limits,default):
     """
   Arguments:
     name: the name of the setting
+
     default: the default value, if not specified it will be set to this value
-      A particular case is when default is a function: it will be called once
-      to get the default value (useful when default values depends on device)
-      also, it will not be reset if not speceifed otherwise
-    set_f: A function that will be called when setting the parameter to a new
-      value. It must return True if it succeded and False aotherwise.
+
+    getter: Function to read this value from the device
+      If set to None, it will assume that the setting always happened correctly
+
+    setter: A function that will be called when setting the parameter to a new
+      value. Can do nothing, it will only change its value and nothing else.
+
     limits: It contains the available values for this parameter
       The possible types are:
        None: Values will not be tested and the parameter will not appear in 
@@ -95,7 +101,10 @@ class Cam_setting(object):
        A tuple of 2 ints/floats: Values must be between first and second value
        CameraConfig will add a scale widget to set it. If they are integers, 
        all the integers between them will be accessible, if they are floats,
-       the range will be divided in 1000 in the scale widget
+       the range will be divided in 1000 in the scale widget.
+       Note: If the upper value is callable (a function or method), it will 
+       be set to the return value of this function. It allows reading the 
+       max value from the device.
 
        A Boolean: Possible values will be True or False, CameraConfig will 
        add a checkbox to edit the value.
@@ -105,38 +114,50 @@ class Cam_setting(object):
        add radio buttons showing the keys, to set it to the corresponding value
   """
     self.name = name
-    self._default = default
-    self._value = default
-    self.set_f = set_f
+    self.getter = getter
+    self.setter = setter
     self.limits = limits
+    self.default = default
+    self._value = None
+    if getter is None:
+      self._value = default
+      self.getter = lambda *args: self._value
 
   @property
   def value(self):
+    if self._value is None:
+      self._value = self.getter()
+      if type(self.limits) is tuple and callable(self.limits[1]):
+          self.limits = (self.limits[0],self.limits[1]())
+      if self.default is None:
+        self.default = self._value
     return self._value
 
   # Here is the interesting part: When we set value (setting.value = x),
-  # we will got throught all of this, and save the new value only if the
-  # settting is successful
+  # we will got throught all of this, and the new value will be the actual
+  # value of the setting after the operation
   @value.setter
   def value(self,i):
-    if type(self.limits)==tuple:
+    if type(self.limits) == tuple:
       if not self.limits[0] <= i <= self.limits[1]:
         print("[Cam_setting] Parameter",i," out of range ",self.limits)
         return
-    elif type(self.limits)==dict:
+    elif type(self.limits) == dict:
       if not i in self.limits.values():
         print("[Cam_setting] Parameter",i," not available",self.limits)
         return
-    elif type(self.limits)==bool:
+    elif type(self.limits) == bool:
       i = bool(i)
-    old = self._value
-    # We could actually wait to see if set_f is succesful before setting the 
-    # value, but if set_f uses self.parameter, it will still be set to its old
+    # We could actually wait to see if setter is succesful before setting the 
+    # value, but if setter uses self.parameter, it will still be set to its old
     # value until it returns...
+    self.setter(i)
     self._value = i
-    if not self.set_f(i):
-      print("[Cam_setting] Could not set",self.name,"to",i)
-      self._value = old # If not succesful, roll back
+    new_val = self.getter()
+    if new_val != i:
+      print("[Cam_setting] Could not set",self.name,"to",i,"value is",new_val)
+    self._value = new_val
+
 
   def __str__(self):
     if self.limits:
@@ -182,10 +203,11 @@ class MasterCam(object):
     else:
       self.delay = 0
 
-  def add_setting(self,name,default,set_f=lambda a:True,limits=None):
+  def add_setting(self, name, getter = None, setter = do_nothing,
+                                            limits = None, default = None):
     """Wrapper to simply add a new setting to the camera"""
     assert name not in self.settings, "This setting already exists"
-    self.settings[name] = Cam_setting(name,default,set_f,limits)
+    self.settings[name] = Cam_setting(name,getter,setter,limits,default)
 
   @property
   def available_settings(self):
@@ -205,11 +227,16 @@ class MasterCam(object):
     """Sets all the settings based on kwargs, if not specified, the setting 
     will take its default value"""
     for s in self.settings:
-      if s in kwargs and self.settings[s] != kwargs[s]:
+      if s in kwargs and self.settings[s].value != kwargs[s]:
+        print("Setting",s,"to",kwargs[s])
         self.settings[s].value = kwargs[s]
         del kwargs[s]
       elif self.settings[s].value != self.settings[s].default:
+        print("AAA",self.settings[s].value,self.settings[s].default)
+        print("Defaulting",s,"to",self.settings[s].default)
         self.settings[s].value = self.settings[s].default
+      else:
+        print(s,'is already set to',self.settings[s].default)
       for k,v in kwargs.iteritems():
         setattr(self,k,v)
 
@@ -245,6 +272,7 @@ class MasterCam(object):
       return self.__getattribute__(i)
     except AttributeError:
       try:
+        #print("Returning",i,"=",self.settings[i].value)
         return self.settings[i].value
       except KeyError:
         raise AttributeError("No such attribute: "+i)

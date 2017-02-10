@@ -36,62 +36,70 @@ class XimeaCV(MasterCam):
     self.numdevice = numdevice
     self.name = "XimeaCV"
     self.cap = None
-    self.add_setting("width",2048,self._set_w,(1,4240))
-    self.add_setting("height",2048,self._set_h,(1,2830))
-    self.add_setting("xoffset",0,self._set_ox,(0,2044))
-    self.add_setting("yoffset",0,self._set_oy,(0,2046))
-    self.add_setting("exposure",10000,self._set_exp,(28,100000))
-    self.add_setting("gain",1,self._set_gain,(0.,6.))
-    self.add_setting("data_format",0,self._set_data_format,xi_format_dict)
-    self.add_setting("AEAG",False,self._set_AEAG,True)
+    self.add_setting("width",self._get_w,self._set_w,(1,self._get_w))
+    self.add_setting("height",self._get_h,self._set_h,(1,self._get_h))
+    self.add_setting("xoffset",self._get_ox,self._set_ox,(0,self._get_w))
+    self.add_setting("yoffset",self._get_oy,self._set_oy,(0,self._get_h))
+    self.add_setting("exposure",self._get_exp,self._set_exp,(28,100000),10000)
+    self.add_setting("gain",self._get_gain,self._set_gain,(0.,6.))
+    self.add_setting("data_format",self._get_data_format,
+                                   self._set_data_format,xi_format_dict)
+    self.add_setting("AEAG",self._get_AEAG,self._set_AEAG,True,False)
+
+  def _get_w(self):
+    return int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+  def _get_h(self):
+    return int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+  def _get_ox(self):
+    return int(self.cap.get(cv2.CAP_PROP_XI_OFFSET_X))
+
+  def _get_oy(self):
+    return int(self.cap.get(cv2.CAP_PROP_XI_OFFSET_Y))
+
+  def _get_gain(self):
+    return self.cap.get(cv2.CAP_PROP_XI_GAIN)
+
+  def _get_exp(self):
+    return int(self.cap.get(cv2.CAP_PROP_XI_EXPOSURE))
+
+  def _get_AEAG(self):
+    return bool(self.cap.get(cv2.CAP_PROP_XI_AEAG))
+
+  def _get_data_format(self):
+    return self.cap.get(cv2.CAP_PROP_XI_DATA_FORMAT)
 
   def _set_w(self,i):
-    if self.cap:
-      return self.cap.set(cv2.CAP_PROP_XI_WIDTH,i)
-    return i % 4 == i and 0 < i <= 2048
+    self.cap.set(cv2.CAP_PROP_XI_WIDTH,i)
 
   def _set_h(self,i):
-    if self.cap:
-      return self.cap.set(cv2.CAP_PROP_XI_HEIGHT,i)
-    return i % 2 == i and 0 < i <= 2048
+    self.cap.set(cv2.CAP_PROP_XI_HEIGHT,i)
 
   def _set_ox(self,i):
-    if self.cap:
-      return self.cap.set(cv2.CAP_PROP_XI_OFFSET_X,i)
-    return i % 4 == i and 0 < i <= 2048 - self.width
+    self.cap.set(cv2.CAP_PROP_XI_OFFSET_X,i)
 
   def _set_oy(self,i):
-    if self.cap:
-      return self.cap.set(cv2.CAP_PROP_XI_OFFSET_Y,i)
-    return i % 2 == i and 0 < i <= 2048 - self.height
+    self.cap.set(cv2.CAP_PROP_XI_OFFSET_Y,i)
 
   def _set_gain(self,i):
-    if self.cap:
-      return self.cap.set(cv2.CAP_PROP_XI_GAIN,i)
-    return 0 <= i <= 6
+    self.cap.set(cv2.CAP_PROP_XI_GAIN,i)
 
   def _set_exp(self,i):
-    if self.cap:
-      return self.cap.set(cv2.CAP_PROP_XI_EXPOSURE,i)
-    return i == int(i) and 28 <= i <= 1000000
+    self.cap.set(cv2.CAP_PROP_XI_EXPOSURE,i)
 
   def _set_AEAG(self,i):
-    if self.cap:
-      return self.cap.set(cv2.CAP_PROP_XI_AEAG,int(bool(i)))
-    return True
+    self.cap.set(cv2.CAP_PROP_XI_AEAG,int(bool(i)))
 
   def _set_data_format(self,i):
-    if self.cap:
-      return self.cap.set(cv2.CAP_PROP_XI_DATA_FORMAT,i)
-    return abs(int(i)) == i and i <=6
+    self.cap.set(cv2.CAP_PROP_XI_DATA_FORMAT,i)
 
   def open(self,**kwargs):
     """
     Will actually open the camera, args will be set to default unless 
     specified otherwise in kwargs
     """
-    if self.cap:
-      self.close()
+    self.close()
     self.cap = cv2.VideoCapture(cv2.CAP_XIAPI+self.numdevice)
 
     for k in kwargs:
@@ -111,12 +119,10 @@ class XimeaCV(MasterCam):
     if not ret:
       print("Error reading the camera!")
       print("Trying to reopen...")
-      time.sleep(1)
-      self.open(**self.settings_dict)
-      ret, frame = self.cap.read()
-      if not ret:
-        raise IOError("Error reading Ximea camera!")
-      print("Phew, I got it! (Some frames were lost, thought...)")
+      time.sleep(.2)
+      #self.open(**self.settings_dict)
+      self.open() # Does not include settings, will open with default values!
+      return self.get_image()
     return frame
 
   def close(self):

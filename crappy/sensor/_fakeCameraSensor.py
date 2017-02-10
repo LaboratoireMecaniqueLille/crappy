@@ -14,7 +14,6 @@
 from __future__ import print_function,division
 
 from ._meta import MasterCam
-import cv2
 from time import time,sleep
 import numpy as np
 
@@ -26,10 +25,10 @@ class Fake_camera(MasterCam):
   def __init__(self, numdevice=0):
     MasterCam.__init__(self)
     self.name = "fake_camera"
-    self.add_setting("width",1280,self._set_w,(1,4096))
-    self.add_setting("height",1024,self._set_h,(1,4096))
-    self.add_setting("speed",100.,limits=(0.,800.))
-    self.add_setting("fps",50,limits=(0.1,500.))
+    self.add_setting("width",default=1280,setter=self._set_w,limits=(1,4096))
+    self.add_setting("height",default=1024,setter=self._set_h,limits=(1,4096))
+    self.add_setting("speed",default=100.,limits=(0.,800.))
+    self.add_setting("fps",default=50,limits=(0.1,500.))
 
   def gen_image(self):
     self.img = np.arange(self.height)*255./self.height
@@ -37,14 +36,10 @@ class Fake_camera(MasterCam):
                            self.width, axis=1).astype(np.uint8)
 
   def _set_h(self,val):
-    #self.height = val
     self.gen_image()
-    return int(val) == val
 
   def _set_w(self,val):
-    #self.width = val
     self.gen_image()
-    return int(val) == val
 
   def open(self, **kwargs):
     """
