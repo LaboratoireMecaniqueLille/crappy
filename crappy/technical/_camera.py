@@ -10,11 +10,10 @@
 #
 # @author Victor Couty, Robin Siemiatkowski
 # @version 0.2
-# @date 26/01/2017
+# @date 10/02/2017
 from __future__ import print_function
 
 
-from . import get_camera_config
 from . import camera_config
 from crappy.sensor._meta import MetaCam
 
@@ -23,7 +22,6 @@ class TechnicalCamera(object):
   """
   Opens a camera device and initialise it.
   """
-
   def __init__(self, camera="Ximea", num_device=0, config=True, **kwargs):
     """
     This Class opens a device and runs the initialisation sequence (CameraInit).
@@ -45,14 +43,12 @@ class TechnicalCamera(object):
       print("Could not find camera",camera,
                     "\nAvailables cameras are:",MetaCam.classes.keys())
       raise NotImplementedError("Could not find camera "+camera)
-    
+
     # initialisation:
     self.sensor = camera_class(numdevice=num_device)
-    print("Sending",kwargs)
     self.sensor.open(**kwargs)
     if config:
       camera_config(self.sensor)
-    
 
   def __getattr__(self,attr):
     try:
