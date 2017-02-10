@@ -66,35 +66,27 @@ class Ximea(MasterCam):
     self.set_all(**kwargs) 
 
   def _get_w(self):
-    print("Getting w")
     return self.ximea.get(xi.CAP_PROP_FRAME_WIDTH)
 
   def _get_h(self):
-    print("Getting h")
     return self.ximea.get(xi.CAP_PROP_FRAME_HEIGHT)
 
   def _get_ox(self):
-    print("Getting x")
     return self.ximea.get(xi.CAP_PROP_XI_OFFSET_X)
 
   def _get_oy(self):
-    print("Getting y")
     return self.ximea.get(xi.CAP_PROP_XI_OFFSET_Y)
 
   def _get_gain(self):
-    print("Getting g")
     return self.ximea.get(xi.CAP_PROP_GAIN)
 
   def _get_exp(self):
-    print("Getting e")
     return self.ximea.get(xi.CAP_PROP_EXPOSURE)
 
   def _get_data_format(self):
-    print("Getting d")
     return self.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)  
 
   def _get_AEAG(self):
-    print("Getting a")
     return self.ximea.get(xi.CAP_PROP_XI_AEAG)
 
   def _set_w(self,i):
@@ -139,6 +131,8 @@ class Ximea(MasterCam):
         frame from ximea device (ndarray height*width)
     """
     ret, frame = self.ximea.read()
+    while 0 in frame['data'].shape:
+      ret, frame = self.ximea.read()
     try:
       if ret:
         return frame.get('data')
