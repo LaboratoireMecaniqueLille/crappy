@@ -131,7 +131,7 @@ class Ximea(MasterCam):
         frame from ximea device (ndarray height*width)
     """
     ret, frame = self.ximea.read()
-    while 0 in frame['data'].shape:
+    while 0 in frame['data'].shape or frame['data'].size >= 100000000:
       ret, frame = self.ximea.read()
     try:
       if ret:
