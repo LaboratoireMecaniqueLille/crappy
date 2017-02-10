@@ -34,7 +34,7 @@ try:
   from _ximea import Ximea
 except Exception as e:
   import_error(e.message)
-from _webcamSensor import Webcam
+from _webcam import Webcam
 from _fakeCameraSensor import Fake_camera
 try:
   from _ximeaCV import XimeaCV

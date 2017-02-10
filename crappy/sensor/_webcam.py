@@ -13,8 +13,6 @@
 # @date 16/01/2017
 from __future__ import print_function
 from ._meta import MasterCam
-import time
-import numpy as np
 import cv2
 
 
@@ -29,26 +27,21 @@ class Webcam(MasterCam):
     self.name = "webcam"
     self.cap = None
     # No sliders for the camera: they usually only allow a few resolutions
-    self.add_setting("width",640,self._set_w)
-    self.add_setting("height",480,self._set_h)
-    self.add_setting("channels",1,self._set_channels,{1:1,3:3})
+    self.add_setting("width",self._get_w,self._set_w,(1,1920))
+    self.add_setting("height",self._get_h,self._set_h,(1,2080))
+    self.add_setting("channels", limits = {1:1,3:3}, default = 1)
+
+  def _get_w(self):
+    return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+
+  def _get_h(self):
+    return self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
   def _set_w(self,i):
-    if self.cap:
-      self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,i)
-      r,f = self.cap.read()
-      return r and f.shape[1] == i
-    return False
+    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,i)
 
   def _set_h(self,i):
-    if self.cap:
-      self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,i)
-      r,f = self.cap.read()
-      return r and f.shape[0] == i
-    return False
-
-  def _set_channels(self,i):
-    return True
+    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,i)
 
   def open(self,**kwargs):
     if self.cap:
