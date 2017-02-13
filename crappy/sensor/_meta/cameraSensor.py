@@ -228,15 +228,15 @@ class MasterCam(object):
     will take its default value"""
     for s in self.settings:
       if s in kwargs and self.settings[s].value != kwargs[s]:
-        print("Setting",s,"to",kwargs[s])
+        #print("Setting",s,"to",kwargs[s])
         self.settings[s].value = kwargs[s]
         del kwargs[s]
       elif self.settings[s].value != self.settings[s].default:
-        print("AAA",self.settings[s].value,self.settings[s].default)
-        print("Defaulting",s,"to",self.settings[s].default)
+        #print("Defaulting",s,"to",self.settings[s].default)
         self.settings[s].value = self.settings[s].default
       else:
-        print(s,'is already set to',self.settings[s].default)
+	pass
+        #print(s,'is already set to',self.settings[s].default)
       for k,v in kwargs.iteritems():
         setattr(self,k,v)
 
