@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function,division
 
 from _measureByStep import MeasureByStep
 from os import getpid
@@ -64,6 +64,7 @@ class ControlCommand(MeasureByStep):
   def main_control_command(self):
 
     while True:
+      t = time.time()
       data = self.acquire_data()
       command = self.inputs[0].recv(blocking=False)
       if command:
@@ -75,6 +76,11 @@ class ControlCommand(MeasureByStep):
       self.send_to_compacter(data)
       if self.verbose:
         self.increment_verbosity(data)
+      if self.freq:
+        delay = 1/self.freq-time.time()+t
+        while delay > 0:
+          time.sleep(delay/10)
+          delay = 1/self.freq-time.time()+t
 
   def increment_verbosity(self, data):
     self.nb_acquisitions += 1
