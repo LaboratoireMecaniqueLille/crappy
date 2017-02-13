@@ -15,6 +15,7 @@ from __future__ import print_function
 
 from multiprocessing import Process, Pipe
 from collections import OrderedDict
+from time import sleep
 
 class MasterBlock(Process):
   """
@@ -93,6 +94,21 @@ class MasterBlock(Process):
       print("[%r] Keyboard interrupt received" % self)
       raise
 
+  def main(self):
+    try:
+      while not self.p2.poll():
+        self.loop()
+      print(self,"Got stop signal, interrupting...")
+    except Exception as e:
+      print(self,"Raised an error:",e)
+    try:
+      self.finish()
+    except Exception as e:
+      print(self,"Encountered an error in finish!",e)
+      raise
+ 
+
+
   def start(self):
     """
     This will NOT execute the main, only start the process
@@ -125,10 +141,6 @@ class MasterBlock(Process):
     assert self.in_process, "Cannot set status from outside of the process!"
     self.pipe2.send(s)
     self._status = s
-
-  def main(self):
-    """The method that will be run when .launch() is called"""
-    raise NotImplementedError("Override me!")
 
   def prepare(self):
     """The first code to be run in the new process, will only be called
@@ -194,10 +206,10 @@ class MasterBlock(Process):
     self.inputs.append(i)
 
   def stop(self):
-    try:
+    self.pipe1.send(0)
+    sleep(2)
+    if self.status != "done":
       self.terminate()
-    except Exception as e:
-      print(self, "Could not terminate:", e)
 
   def __repr__(self):
     return str(type(self)) + " (" + self.status + ")"
