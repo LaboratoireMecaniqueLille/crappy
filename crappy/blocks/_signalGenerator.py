@@ -120,6 +120,13 @@ class SignalGenerator(MasterBlock):
             self.phase = current_step["phase"]
             self.lower_limit = current_step["lower_limit"]
             self.upper_limit = current_step["upper_limit"]
+          elif self.waveform == 'ramp':
+            self.gain = current_step["gain"]
+            self.cycles = current_step["cycles"]
+            self.phase = current_step["phase"]
+            self.lower_limit = current_step["lower_limit"]
+            self.upper_limit = current_step["upper_limit"]
+            self.origin = current_step['origin']
           elif self.waveform == 'goto':
             self.direction = current_step["direction"]
             self.value = current_step["value"]
@@ -203,6 +210,54 @@ class SignalGenerator(MasterBlock):
             if last_upper != first_upper and last_lower != first_lower:  # clean old data
               Data = Data[min(last_upper, last_lower):]
             Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha * self.gain, cycle]))
+            self.send(Array)
+          self.step += 1
+          first_of_step = True
+          cycle = 0
+          t_step = time.time()
+        elif self.waveform == "ramp":  # signal defined by a lower and upper limit
+          alpha = np.sign(np.cos(self.phase))
+          t_cycle = time.time()
+          while self.cycles is None or cycle < self.cycles:
+            timer = time.time()
+            while timer - last_t < 1. / self.send_freq:
+              delay(-(timer-last_t - 1. / (self.send_freq))/10.)
+              timer = time.time()
+            last_t = time.time()
+            recv = self.recv_all_last()
+            Data = pd.DataFrame([recv.values()],columns=recv.keys())
+
+            last_upper = (Data[self.upper_limit[1]]).last_valid_index()
+            last_lower = (Data[self.lower_limit[1]]).last_valid_index()
+            first_lower = (Data[self.lower_limit[1]]).first_valid_index()
+            first_upper = (Data[self.upper_limit[1]]).first_valid_index()
+            if first_of_step:
+              if alpha > 0:
+                if Data[self.upper_limit[1]][last_upper] > self.upper_limit[0]:  # if value > high_limit
+                  alpha = -1
+              elif alpha < 0:
+                if Data[self.lower_limit[1]][last_lower] < self.lower_limit[0]:  # if value < low_limit
+                  alpha = 1
+              first_of_step = False
+
+            if self.upper_limit == self.lower_limit:  # if same limits
+              alpha = 0
+              cycle = time.time() - t_step
+            if alpha > 0:
+              if Data[self.upper_limit[1]][last_upper] > self.upper_limit[0]:  # if value > high_limit
+		self.origin = alpha * self.gain * (last_t-t_cycle)+self.origin
+                alpha = -1
+                cycle += 0.5
+                t_cycle = time.time()
+            elif alpha < 0:
+              if Data[self.lower_limit[1]][last_lower] < self.lower_limit[0]:  # if value < low_limit
+		self.origin = alpha * self.gain * (last_t-t_cycle)+self.origin
+                alpha = 1
+                cycle += 0.5
+                t_cycle = time.time()
+            if last_upper != first_upper and last_lower != first_lower:  # clean old data
+              Data = Data[min(last_upper, last_lower):]
+            Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha * self.gain * (last_t-t_cycle)+self.origin, cycle]))
             self.send(Array)
           self.step += 1
           first_of_step = True
