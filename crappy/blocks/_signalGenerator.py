@@ -126,7 +126,11 @@ class SignalGenerator(MasterBlock):
             self.phase = current_step["phase"]
             self.lower_limit = current_step["lower_limit"]
             self.upper_limit = current_step["upper_limit"]
-            self.origin = current_step['origin']
+            # This will allow continuous ramps if origin is not specified
+            # However, it must be given for the first ramp
+            # For now, continuity is guaranteed only between ramps!
+            if 'origin' in current_step or self.step == 0:
+	      self.origin = current_step['origin']
           elif self.waveform == 'goto':
             self.direction = current_step["direction"]
             self.value = current_step["value"]
@@ -208,7 +212,7 @@ class SignalGenerator(MasterBlock):
                 alpha = 1
                 cycle += 0.5
             if last_upper != first_upper and last_lower != first_lower:  # clean old data
-              Data = Data[min(last_upper, last_lower):]
+              Data = Data[min(last_upper, last_lower):t_data]
             Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha * self.gain, cycle]))
             self.send(Array)
           self.step += 1
@@ -220,11 +224,11 @@ class SignalGenerator(MasterBlock):
           t_cycle = time.time()
           while self.cycles is None or cycle < self.cycles:
             timer = time.time()
+            recv = self.recv_all_last()
             while timer - last_t < 1. / self.send_freq:
               delay(-(timer-last_t - 1. / (self.send_freq))/10.)
               timer = time.time()
-            last_t = time.time()
-            recv = self.recv_all_last()
+            last_t = timer
             Data = pd.DataFrame([recv.values()],columns=recv.keys())
 
             last_upper = (Data[self.upper_limit[1]]).last_valid_index()
@@ -299,7 +303,7 @@ class SignalGenerator(MasterBlock):
           # print "holding"
           while self.time is None or (time.time() - t_step) < self.time:
             while time.time() - last_t < 1. / self.send_freq:
-              self.clear_inputs()
+              self.recv_all_last()
               # first=False
               delay(1. / (100 * 1000 * self.send_freq))
             last_t = time.time()
