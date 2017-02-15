@@ -95,18 +95,18 @@ class Cam_setting(object):
 
     limits: It contains the available values for this parameter
       The possible types are:
-       None: Values will not be tested and the parameter will not appear in 
+       None: Values will not be tested and the parameter will not appear in
        CameraConfig
 
        A tuple of 2 ints/floats: Values must be between first and second value
-       CameraConfig will add a scale widget to set it. If they are integers, 
+       CameraConfig will add a scale widget to set it. If they are integers,
        all the integers between them will be accessible, if they are floats,
        the range will be divided in 1000 in the scale widget.
-       Note: If the upper value is callable (a function or method), it will 
-       be set to the return value of this function. It allows reading the 
+       Note: If the upper value is callable (a function or method), it will
+       be set to the return value of this function. It allows reading the
        max value from the device.
 
-       A Boolean: Possible values will be True or False, CameraConfig will 
+       A Boolean: Possible values will be True or False, CameraConfig will
        add a checkbox to edit the value.
        (It can be True or False, it doesn't matter)
 
@@ -140,15 +140,15 @@ class Cam_setting(object):
   def value(self,i):
     if type(self.limits) == tuple:
       if not self.limits[0] <= i <= self.limits[1]:
-        print("[Cam_setting] Parameter",i," out of range ",self.limits)
+        print("[Cam_setting] Parameter",i,"out of range ",self.limits)
         return
     elif type(self.limits) == dict:
       if not i in self.limits.values():
-        print("[Cam_setting] Parameter",i," not available",self.limits)
+        print("[Cam_setting] Parameter",i,"not available",self.limits)
         return
     elif type(self.limits) == bool:
       i = bool(i)
-    # We could actually wait to see if setter is succesful before setting the 
+    # We could actually wait to see if setter is succesful before setting the
     # value, but if setter uses self.parameter, it will still be set to its old
     # value until it returns...
     self.setter(i)
@@ -216,7 +216,7 @@ class MasterCam(object):
 
   @property
   def settings_dict(self):
-    """Returns settings as a dict, keys are the names of the settings and 
+    """Returns settings as a dict, keys are the names of the settings and
     values are setting.value"""
     d = dict(self.settings)
     for k in d:
@@ -224,21 +224,26 @@ class MasterCam(object):
     return d
 
   def set_all(self,**kwargs):
-    """Sets all the settings based on kwargs, if not specified, the setting 
+    """Sets all the settings based on kwargs, if not specified, the setting
     will take its default value"""
     for s in self.settings:
-      if s in kwargs and self.settings[s].value != kwargs[s]:
-        #print("Setting",s,"to",kwargs[s])
-        self.settings[s].value = kwargs[s]
+      if s in kwargs:
+        if self.settings[s].value != kwargs[s]:
+          #print("Setting",s,"to",kwargs[s])
+          self.settings[s].value = kwargs[s]
+        else:
+          #print(s,'is already set to',kwargs[s])
+          pass
         del kwargs[s]
       elif self.settings[s].value != self.settings[s].default:
+        #print(s,'is',self.settings[s].value)
         #print("Defaulting",s,"to",self.settings[s].default)
         self.settings[s].value = self.settings[s].default
       else:
-	pass
         #print(s,'is already set to',self.settings[s].default)
-      for k,v in kwargs.iteritems():
-        setattr(self,k,v)
+        pass
+    for k,v in kwargs.iteritems():
+      setattr(self,k,v)
 
   def reset_all(self):
     """Reset all the settings to their default values"""
