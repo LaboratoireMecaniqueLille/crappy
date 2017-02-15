@@ -299,3 +299,4 @@ class MasterCam(object):
     s = self.__str__()
     for i in self.settings.values():
       s+=("\n"+str(i))
+    return s

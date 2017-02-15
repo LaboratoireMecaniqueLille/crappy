@@ -182,7 +182,7 @@ class Ximea(MasterCam):
          Y offset: 0
          \endcode
     """
-    return " Exposure: {0} \n Numdevice: {2} \n Width: {3} \n Height: {4} " \
-           "\n X offset: {5} \n Y offset: {6}".format(self.exposure, 
+    return " Exposure: {0} \n Numdevice: {1} \n Width: {2} \n Height: {3} " \
+           "\n X offset: {4} \n Y offset: {5}".format(self.exposure,
                                   self.numdevice, self.width,
                                   self.height, self.xoffset, self.yoffset)
