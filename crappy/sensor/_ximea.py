@@ -52,7 +52,7 @@ class Ximea(MasterCam):
 
   def open(self, **kwargs):
     """
-    Will actually open the camera, args will be set to default unless 
+    Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs
     """
     self.close() #If it was already open (won't do anything if cam is not open)
@@ -63,7 +63,21 @@ class Ximea(MasterCam):
     else:
       self.ximea = xi.VideoCapture(self.numdevice)
     # Will apply all the settings to default or specified value
-    self.set_all(**kwargs) 
+    self.set_all(**kwargs)
+
+  def reopen(self, **kwargs):
+    """
+    Will reopen the camera
+    """
+    self.close() #If it was already open (won't do anything if cam is not open)
+
+    if type(self.numdevice) == str:
+      # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
+      self.ximea = xi.VideoCapture(device_path=self.numdevice)
+    else:
+      self.ximea = xi.VideoCapture(self.numdevice)
+    # Will apply all the settings to default or specified value
+    self.set_all(override=True,**kwargs)
 
   def _get_w(self):
     return self.ximea.get(xi.CAP_PROP_FRAME_WIDTH)
@@ -84,7 +98,7 @@ class Ximea(MasterCam):
     return self.ximea.get(xi.CAP_PROP_EXPOSURE)
 
   def _get_data_format(self):
-    return self.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)  
+    return self.ximea.get(xi.CAP_PROP_XI_DATA_FORMAT)
 
   def _get_AEAG(self):
     return self.ximea.get(xi.CAP_PROP_XI_AEAG)
@@ -112,11 +126,11 @@ class Ximea(MasterCam):
 
   def _set_data_format(self,i):
     # 0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW
-    if i == 1 or i == 6:  
+    if i == 1 or i == 6:
     # increase the FPS in 10 bits
       self.ximea.set(xi.CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH, 10)
       self.ximea.set(xi.CAP_PROP_XI_DATA_PACKING, 1)
-    self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT, i)  
+    self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT, i)
 
   def _set_AEAG(self,i):
     return self.ximea.set(xi.CAP_PROP_XI_AEAG,int(bool(i)))
@@ -136,12 +150,11 @@ class Ximea(MasterCam):
     try:
       if ret:
         return frame.get('data')
-
       print("restarting camera...")
       sleep(2)
-      self.open(**self.settings_dict)
+      self.reopen(**self.settings_dict)
       return self.get_image()
-    except UnboundLocalError:  
+    except UnboundLocalError: 
       # if ret doesn't exist, because of KeyboardInterrupt
       print("ximea quitting, probably because of KeyBoardInterrupt")
       raise KeyboardInterrupt

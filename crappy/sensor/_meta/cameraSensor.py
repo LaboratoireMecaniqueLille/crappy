@@ -220,15 +220,17 @@ class MasterCam(object):
     values are setting.value"""
     d = dict(self.settings)
     for k in d:
-      d[k] = d[k].value
+      d[k] = d[k]._value
     return d
 
-  def set_all(self,**kwargs):
+  def set_all(self,override=False,**kwargs):
     """Sets all the settings based on kwargs, if not specified, the setting
-    will take its default value"""
+    will take its default value.
+    If override is True, it will not assume a setting and reset it unless
+    it is already default"""
     for s in self.settings:
       if s in kwargs:
-        if self.settings[s].value != kwargs[s]:
+        if self.settings[s].value != kwargs[s] or override:
           #print("Setting",s,"to",kwargs[s])
           self.settings[s].value = kwargs[s]
         else:

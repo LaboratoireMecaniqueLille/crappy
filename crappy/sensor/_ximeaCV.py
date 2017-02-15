@@ -96,7 +96,7 @@ class XimeaCV(MasterCam):
 
   def open(self,**kwargs):
     """
-    Will actually open the camera, args will be set to default unless 
+    Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs
     """
     self.close()
@@ -105,6 +105,15 @@ class XimeaCV(MasterCam):
     for k in kwargs:
       assert k in self.available_settings,str(self)+"Unexpected kwarg: "+str(k)
     self.set_all(**kwargs)
+
+  def reopen(self,**kwargs):
+    """
+    Will reopen the camera, args will be set to default unless
+    specified otherwise in kwargs
+    """
+    self.close()
+    self.cap = cv2.VideoCapture(cv2.CAP_XIAPI+self.numdevice)
+    self.set_all(override=True,**kwargs)
 
   def get_image(self):
     """
@@ -119,9 +128,9 @@ class XimeaCV(MasterCam):
     if not ret:
       print("Error reading the camera!")
       print("Trying to reopen...")
-      time.sleep(.2)
-      #self.open(**self.settings_dict)
-      self.open() # Does not include settings, will open with default values!
+      time.sleep(.5)
+      print("Reopening with",self.settings_dict)
+      self.reopen(**self.settings_dict)
       return self.get_image()
     return frame
 
