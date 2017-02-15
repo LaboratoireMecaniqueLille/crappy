@@ -73,7 +73,7 @@ class ControlCommand(MeasureByStep):
       else:
         signal = 0.0
       data.append(signal)
-      self.send_to_compacter(data)
+      self.send(data)
       if self.verbose:
         self.increment_verbosity(data)
       if self.freq:
@@ -98,7 +98,7 @@ class ControlCommand(MeasureByStep):
       if received:
         self.sensor.set_parameter_ram(received)
       data.append(0)
-      self.send_to_compacter(data)
+      self.send(data)
 
       if self.verbose:
         self.increment_verbosity(data)

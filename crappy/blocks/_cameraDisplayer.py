@@ -43,7 +43,7 @@ class CameraDisplayer(MasterBlock):
         fig.add_subplot(111)
         while True:
           # print "top loop"
-          frame = self.inputs[0].recv()
+          frame = self.inputs[0].recv()['frame']
           # print frame.shape
           # if frame None:
           # print frame[0][0]
@@ -64,7 +64,7 @@ class CameraDisplayer(MasterBlock):
             last = data  # Save the latest non-None value
             data = self.inputs[0].recv(False)  # ... use non-blocking recv until pipe is empty
           if last is not 0:  # If we received something (ie the last non-None value is not 0)
-            cv2.imshow('Displayer', last)
+            cv2.imshow('Displayer', last['frame'])
             cv2.waitKey(1)
           data = 0  # A default value to check if we received something
           while time() - t1 < self.delay:

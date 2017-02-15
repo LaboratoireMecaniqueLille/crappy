@@ -50,7 +50,8 @@ class StreamerCamera(MasterBlock):
                         ("numdevice",0),
                         ("save_folder",None),
                         ("label","cycle"),
-                        ("show_fps",False)]:
+                        ("show_fps",False),
+                        ("labels",['t(s)','frame'])]:
       setattr(self,arg,kwargs.get(arg,default)) #Assign these attributes
       try: 
         del kwargs[arg] # And remove them (if any) to 
@@ -80,12 +81,12 @@ class StreamerCamera(MasterBlock):
         fps_timer = timer
         last_index = loops
       if self.trigger == "internal":
-        img = self.camera.sensor.read_image()
+        t,img = self.camera.sensor.read_image()
       elif self.trigger == "external":
         data = self.inputs[0].recv()  # wait for a signal
         if data is None:
           continue
-        img = self.camera.sensor.get_image()
+        t,img = self.camera.sensor.get_image()
       timer = time.time()
       if self.save_folder:
         image = sitk.GetImageFromArray(img)
@@ -93,13 +94,13 @@ class StreamerCamera(MasterBlock):
           cycle = data[self.label] # If we received a data to add in the name
           sitk.WriteImage(image,
                  self.save_folder + "img_%.6d_cycle%09.1f_%.5f.tiff" % (
-                 loops, cycle, timer - self.t0))
+                 loops, cycle, t-self.t0))
         except KeyError: # If we did not
           sitk.WriteImage(image,
                  self.save_folder + "img_%.6d_%.5f.tiff" % (
-                 loops, timer - self.t0))
+                 loops, t-self.t0))
       loops += 1
-      self.send(img)
+      self.send([t-self.t0,img])
 
     def __repr__(self):
       return "Streamer Camera (%s)"%self.camera_name

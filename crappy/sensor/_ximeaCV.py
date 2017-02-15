@@ -124,6 +124,7 @@ class XimeaCV(MasterCam):
     Returns:
         frame from ximea device (ndarray height*width)
     """
+    t = time.time()
     ret, frame = self.cap.read()
     if not ret:
       print("Error reading the camera!")
@@ -132,7 +133,7 @@ class XimeaCV(MasterCam):
       print("Reopening with",self.settings_dict)
       self.reopen(**self.settings_dict)
       return self.get_image()
-    return frame
+    return t,frame
 
   def close(self):
     """

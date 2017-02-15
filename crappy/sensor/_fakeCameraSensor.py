@@ -17,8 +17,6 @@ from ._meta import MasterCam
 from time import time,sleep
 import numpy as np
 
-def nothing(*args):
-  pass
 class Fake_camera(MasterCam):
   """Fake camera sensor object"""
 
@@ -61,7 +59,7 @@ class Fake_camera(MasterCam):
       pass
     self.t = time()
     i = int(self.speed*(time()-self.t0)) % self.height
-    return np.concatenate((self.img[i:,:], self.img[:i,:]),axis=0)
+    return self.t,np.concatenate((self.img[i:,:], self.img[:i,:]),axis=0)
 
   def close(self):
     sleep(.5)

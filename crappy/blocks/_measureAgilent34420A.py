@@ -12,7 +12,7 @@
 # @version 0.1
 # @date 11/07/2016
 
-from _masterblock import MasterBlock, delay
+from _masterblock import MasterBlock
 import time
 import os
 from collections import OrderedDict
@@ -60,7 +60,7 @@ class MeasureAgilent34420A(MasterBlock):
           # print "-2"
           if self.freq != None:
             while time.time() - timer < 1. / self.freq:
-              delay(1. / (100 * 1000 * self.freq))
+              time.sleep(1. / (100 * 1000 * self.freq))
           timer = time.time()
           data = [timer - self.t0]
           ret = self.agilentSensor.get_data()

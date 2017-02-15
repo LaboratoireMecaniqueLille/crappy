@@ -12,8 +12,9 @@
 # @version 0.1
 # @date 16/01/2017
 from __future__ import print_function
-from ._meta import MasterCam
+from time import time
 import cv2
+from ._meta import MasterCam
 
 
 
@@ -52,14 +53,15 @@ class Webcam(MasterCam):
     self.set_all(**kwargs)
 
   def get_image(self):
+    t = time()
     ret, frame = self.cap.read()
     if not ret:
       print("Error reading the camera")
       raise IOError
     if self.channels == 1:
-      return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      return t,cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     else:
-      return frame#[:,:,[2,1,0]]
+      return t,frame#[:,:,[2,1,0]]
 
   def close(self):
     if self.cap:

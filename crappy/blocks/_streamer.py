@@ -29,7 +29,7 @@ class Streamer(MasterBlock):
   def __init__(self, sensor=None, labels=None, *args, **kwargs):
     """
     Use it for LabJack streaming.
-    You can directly link output data to a graph/save without going through a compacter.
+    You can directly link output data to a graph/save
     Args:
         sensor: LabJack sensor instance
                 Will read the streaming buffer of the LabJack device as defined at

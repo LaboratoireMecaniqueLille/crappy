@@ -6,7 +6,7 @@
 # @{
 
 ## @file _videoExtenso.py
-# @brief Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
+# @brief Detects spots (1,2 or 4) on images, and evaluate the deformations
 # @authors Robin Siemiatkowski, Corentin Martel
 # @version 0.1
 # @date 13/07/2016
@@ -18,24 +18,16 @@ import SimpleITK as sitk  # only for testing
 import os
 from multiprocessing import Process, Pipe
 
-from ._compacterblock import CompacterBlock
+from ._masterblock import MasterBlock
 
 from ..links._link import TimeoutError
 from ..technical import TechnicalVideoExtenso as tve
 
 try:
-  from skimage.filters import threshold_otsu, rank  # load newest version
+  from skimage.filters import threshold_otsu  # load newest version
 except ImportError:
-  from skimage.filter import threshold_otsu, rank  # load deprecated version
-from collections import OrderedDict
+  from skimage.filter import threshold_otsu  # load deprecated version
 from sys import stdout
-
-try:
-  import pyglet
-  import glob
-  import random
-except ImportError as i:
-  print "WARNING: ", i
 
 np.set_printoptions(threshold='nan', linewidth=500)
 
@@ -47,7 +39,8 @@ def plotter(plot_pipe_recv):
       plot_pipe_recv: Pipe which receive data to plot (numpy.ndarray).
 
   Returns:
-      void return function, first it opens a new opencv windows which plot the picture.
+      void return function, first it opens a new opencv windows which plot the
+      picture.
 
   """
   data = plot_pipe_recv.recv()  # receiving data
@@ -66,13 +59,18 @@ def plotter(plot_pipe_recv):
   else:
     color = 0
   cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
-  for i in range(0, NumOfReg):  # For each region, plots the rectangle around the spot and a cross at the center
-    frame = cv2.rectangle(frame, (miny[i], minx[i]), (maxy[i] - 1, maxx[i] - 1), (color, 0, 0), 1)
-    frame = cv2.circle(frame, (int(Points_coordinates[i, 1]), int(Points_coordinates[i, 0])), 1,
+  # For each region, plots the rectangle around the spot and a cross
+  # at the center
+  for i in range(0, NumOfReg):
+    frame = cv2.rectangle(frame, (miny[i], minx[i]),
+                         (maxy[i] - 1, maxx[i] - 1), (color, 0, 0), 1)
+    frame = cv2.circle(frame, (int(Points_coordinates[i, 1]),
+                         int(Points_coordinates[i, 0])), 1,
                        (255 - color, 0, 0), -1)
   cv2.imshow('frame', frame)
   cv2.waitKey(1)
-  # for every round, receive data, correct the positions of the rectangles/centers and the values of Lx/Ly ,
+  # for every round, receive data, correct the positions of the
+  # rectangles/centers and the values of Lx/Ly ,
   # and refresh the plot.
   while True:
     try:
@@ -87,8 +85,10 @@ def plotter(plot_pipe_recv):
       for i in range(NumOfReg):
       # For each region, plots the rectangle around the spot
       # and a cross at the center
-        frame = cv2.rectangle(frame, (miny[i], minx[i]), (maxy[i] - 1, maxx[i] - 1), (color, 0, 0), 1)
-        frame = cv2.circle(frame, (int(Points_coordinates[i, 1]), int(Points_coordinates[i, 0])), 1,
+        frame = cv2.rectangle(frame, (miny[i], minx[i]), (maxy[i] - 1,
+                           maxx[i] - 1), (color, 0, 0), 1)
+        frame = cv2.circle(frame, (int(Points_coordinates[i, 1]),
+                           int(Points_coordinates[i, 0])), 1,
                            (255 - color, 0, 0), -1)
       cv2.imshow('frame', frame)
       cv2.waitKey(1)
@@ -99,6 +99,14 @@ def plotter(plot_pipe_recv):
       raise
 
 
+def bary_wrapper(recv_):
+  try:
+    barycenter_opencv(recv_)
+  except Exception as e:
+    print "[barycenter process] Lost the spot:",e
+    recv_.send("error")
+
+
 def barycenter_opencv(recv_):
   """
   computation of the barycenter (moment 1 of image) on ZOI using OpenCV
@@ -106,7 +114,8 @@ def barycenter_opencv(recv_):
   The median filter helps a lot for real life images ...
 
   Args:
-      recv_: Pipe which should receive data to calculate the barycenter of on or multiple spots.
+      recv_: Pipe which should receive data to calculate the barycenter of on
+      or multiple spots.
               Received data is a tuple composed by:
                   - the picture where the spots are (numpy.ndarray)
                   - the min coordinate in x
@@ -114,7 +123,7 @@ def barycenter_opencv(recv_):
                   - a boolean: True to update the threshold False otherwise.
                   - the current threshold
                   - border
-                  - a boolean that is true if the spot are white, false otherwise.
+                  - a boolean: true if the spot are white, false otherwise.
   """
   while True:
     image, minx, miny, update_tresh, thresh, NumOfReg, border, white_spot = recv_.recv()[:]
@@ -172,25 +181,27 @@ def barycenter_opencv(recv_):
       recv_.send([Px, Py, minx, miny, maxx, maxy])
 
 
-class VideoExtenso(CompacterBlock):
+class VideoExtenso(MasterBlock):
   """
   Detects spots (1,2 or 4) on images, and evaluate the deformations Exx and Eyy.
   """
 
   def __init__(self,**kwargs):
     """
-    Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy. display the image with the center of the spots.
+    Detects 1/2/4 spots, and evaluate the deformations Exx and Eyy.
 
-    4 spots mode : deformations are evaluated on the distance between centers of spots.
+    4 spots mode : deformations are evaluated on the distance between
+                   centers of spots.
     2 spots mode : same, but deformation is only reliable on 1 axis.
-    1 spot : deformation is evaluated on the major/minor axis of a theorical ellipse
-    around the spot, projected over axis x and y. Results are less precise if your
-    spot isn't big enough, but it is easier on smaller sample to only have 1 spot.
+    1 spot : deformation is evaluated on the major/minor axis of a theorical
+             ellipse around the spot, projected over axis x and y.
+             Results are less precise if your spot isn't big enough,
+             but it is easier on smaller sample to only have 1 spot.
 
     Note that if this block lose the spots, it will play a song in the '/home/'
-    repository. You need a .wav sound, python-pyglet and python-glob. This can be
-    usefull if you have a long test to do, as the script doesn't stop when losing
-    spots. Not to mention it is fun.
+    repository. You need a .wav sound, python-pyglet and python-glob. This can
+    be usefull if you have a long test to do, as the script doesn't stop when
+    losing spots. Not to mention it is fun.
 
     Args:
         camera : string, {"Ximea","Jai"},default=Ximea
@@ -205,23 +216,24 @@ class VideoExtenso(CompacterBlock):
                 Width of the image.
         height: int, default = 2048
                 Height of the image.
-        white_spot : Boolean, default=True
+        white_spot : Boolean, default=False
                 Set to False if you have dark spots on a light surface.
         display : Boolean, default=True
-                Set to False if you don't want to see the image with the spot detected.
+                If True, a window will show up, displaying the spots and their
+                computed position, userful to monitor the behavior
         update_tresh : Boolean, default=False
-                Set to True if you want to re-evaluate the threshold for every new image.
-                Updside is that it allows you to follow more easily your spots even if your
-                light changes. Downside is that it will change the area and possibly the
-                shape of the spots, wich may inscrease the noise on the deformation and
-                artificially change its value. This is especially true with a single spot
-                configuration.
+                Set to True if you want to re-evaluate the threshold for every
+                new image.  Updside is that it allows you to follow more
+                easily your spots even if your light changes. Downside is that
+                it will change the area and possibly the shape of the spots,
+                wich may inscrease the noise on the deformation and
+                artificially change its value. This is especially true with a
+                single spot configuration.
         labels : list of string, default = ['t(s)','Px','Py','Exx(%)','Eyy(%)']
                 Labels of your output. Order is important.
-        security : bool, default = False
-                If True, send a kill pill for other processes to stop when spots are losts.
         save_folder : str or None (default)
-                If a path is definied, will save the images in this folder. If None, no saving
+                If a path is definied, will save the images in this folder.
+                If None, no saving
 
     Returns:
         dict :
@@ -243,8 +255,7 @@ class VideoExtenso(CompacterBlock):
                         ('save_period',1), # Save one out of every N pictures
                         ('white_spot',False),
                         ('labels',default_labels),
-                        ('display',True),
-                        ('compacter',1)]:
+                        ('display',True)]:
       setattr(self,arg,kwargs.get(arg,default))
       try:
         del kwargs[arg]
@@ -252,7 +263,7 @@ class VideoExtenso(CompacterBlock):
         pass
     self.camera_name = self.camera
     self.tve_kwargs = kwargs
-    CompacterBlock.__init__(self,compacter=self.compacter, labels=self.labels)
+    MasterBlock.__init__(self)
     # camera INIT with ZOI selection
     self.border = 4
     if self.save_folder is not None:
@@ -275,7 +286,7 @@ class VideoExtenso(CompacterBlock):
       else:  # If detection goes wrong, start again, may not be usefull now ?
         print " Spots detected : ", self.NumOfReg
 
-    #self.ve.sensor.new(self.exposure, self.width, self.height, 
+    #self.ve.sensor.new(self.exposure, self.width, self.height,
     #                       self.xoffset, self.yoffset, self.gain)
     #image = self.ve.sensor.get_image()
     # eliminate the first frame, most likely corrupted
@@ -289,7 +300,7 @@ class VideoExtenso(CompacterBlock):
       self.send_.append(_s)
 
       self.proc_bary.append(Process(
-                              target=barycenter_opencv, args=(self.recv_[i],)))
+                              target=bary_wrapper, args=(self.recv_[i],)))
       self.proc_bary[i].start()
     if self.display:
       # Creating displayer process
@@ -303,7 +314,7 @@ class VideoExtenso(CompacterBlock):
     while True:
       try:
         t2 = time.time()
-        image = self.ve.sensor.read_image()  # read a frame
+        t_image,image = self.ve.sensor.read_image()  # read a frame
         if self.save_folder is not None and not j%self.save_period:
           image1 = sitk.GetImageFromArray(image)
           sitk.WriteImage(image1,
@@ -342,7 +353,7 @@ class VideoExtenso(CompacterBlock):
         elif self.NumOfReg == 1:
           Dy = 100. * ((Ly) / self.L0y - 1.)
           Dx = 100. * ((Lx) / self.L0x - 1.)
-        array = [time.time() - self.t0, str(self.Points_coordinates[:, 0]),
+        array = [t_image - self.t0, str(self.Points_coordinates[:, 0]),
                      str(self.Points_coordinates[:, 1]), Dx, Dy]
         self.send(array)
         self.Points_coordinates[:, 1] -= miny_  # go back to local repere
@@ -367,6 +378,9 @@ class VideoExtenso(CompacterBlock):
       except ValueError:  # if lost spots in barycenter
         print "[VideoExtenso] SPOTS LOST, abort mission!"
         try:
+          import pyglet
+          import glob
+          import random
           song_list = glob.glob('/home/*.wav')
           song = pyglet.media.load(random.choice(song_list))
           song.play()
@@ -391,17 +405,6 @@ class VideoExtenso(CompacterBlock):
         break
       except Exception as e:
         print "Exception in videoextenso : ", e
-        if self.display:
-          self.proc.terminate()
         for i in range(0, self.NumOfReg):
           self.proc_bary[i].terminate()
-        if self.security:
-          print 'Exception Video Extenso Security PAS OK'
-          try:
-            for output in self.outputs:
-              output.send("error")
-          except TimeoutError:
-            raise
-          except AttributeError:  # if no outputs
-            pass
         raise

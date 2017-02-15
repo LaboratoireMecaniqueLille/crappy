@@ -15,44 +15,33 @@ from __future__ import print_function
 
 from multiprocessing import Process, Pipe
 from collections import OrderedDict
-import time
-
-from ..links._link import TimeoutError
-
-
-def uncomp(data):
-  """Used to uncompact data: only keeps the last data of the list (if any)"""
-  if data is None:
-    return
-  for k in data:
-    try:
-      data[k] = data[k][-1]
-    except (TypeError, IndexError):  # Already uncompacted or list empty
-      pass
-  return data
-
 
 class MasterBlock(Process):
   """
   This represent a Crappy block, it must be parent of all the blocks.
   Methods:
     main()
-      It must not take any arg, it is where you define the main loop of the block
-      If not overriden, will raise an error
+      It must not take any arg, it is where you define the main loop of
+      the block. If not overriden, will raise an error
 
     add_[in/out]put(Link object)
       Add a link as [in/out]put
 
     prepare()
-      This method will be called inside the new process but before actually starting the main loop of the program
-      Use it for all the tasks to be done before starting the main loop (can be empty)
+      This method will be called inside the new process but before actually
+      starting the main loop of the program.  Use it for all the tasks to be
+      done before starting the main loop (can be empty).
     start()
-      This is the same start method as Process.start: it starts the process, so the initialization (defined in prepare method) will be done, but NOT the main loop
+      This is the same start method as Process.start: it starts the process,
+      so the initialization (defined in prepare method)
+      will be done, but NOT the main loop.
 
     launch(t0)
-      Once the process is started, calling launch will set the starting time and actually start the main method.
-      If the block was not started yet, it will be done automatically.
-      t0: time to set as starting time of the block (mandatory) (in seconds after epoch)
+      Once the process is started, calling launch will set the starting time
+      and actually start the main method.  If the block was not started yet,
+      it will be done automatically.
+      t0: time to set as starting time of the block
+      (mandatory, in seconds after epoch)
 
     status
       Property that can be accessed both in the process or from the parent
@@ -92,7 +81,8 @@ class MasterBlock(Process):
       self.status = "initializing"
       self.prepare()
       self.status = "ready"
-      self.t0 = self.pipe2.recv()  # Wait for parent to tell me to start the main
+      # Wait for parent to tell me to start the main
+      self.t0 = self.pipe2.recv()
       self.status = "running"
       self.main()
       self.status = "done"
@@ -147,63 +137,112 @@ class MasterBlock(Process):
     pass
 
   def send(self, data):
+    """
+    Send has 2 ways to operate: you can either build the ordered dict yourself
+    or you can define self.labels (usually time first) and call send with a
+    list. It will then map them to the dict.
+    Note that ONLY OrderedDict can go through links
+    """
+    if type(data) == OrderedDict:
+      pass
+    elif type(data) == list:
+      data = OrderedDict(zip(self.labels,data))
+    else:
+      raise IOError("Trying to send a "+str(type(data))+" in a link!")
     for o in self.outputs:
       o.send(data)
 
-  def recv(self, in_id=0, blocking=True, uncompact=False):
-    if uncompact:
-      return uncomp(self.inputs[in_id].recv(blocking))
-    return self.inputs[in_id].recv(blocking)
+#  def recv(self, num=0, blocking=True):
+#    """
+#    Will get the OD from input link n° num. If not blocking and not data is
+#    waiting, it will return None
+#    """
+#    return self.inputs[num].recv(blocking)
+#
+#  def recv_chunk(self,num,length=0):
+#    """
+#    Allows you to receive a chunk of data: if length > 0 it will return an
+#    OrderedDict containing LISTS of the last length received data
+#    If length=0, it will return all the waiting data util the pipe is empty
+#    if the pipe is already empty, it will wait to return at least one value.
+#    """
+#    ret = self.inputs[num].recv()
+#    for k in ret:
+#      ret[k] = [ret[k]]
+#    c = 0
+#    while c < length or (length <= 0 and self.inputs[num].poll()):
+#      c += 1
+#      data = self.inputs[num].recv()
+#      for k in ret:
+#        try:
+#          ret[k].append(data(k))
+#        except KeyError:
+#          raise IOError(str(self)+" Got data without label "+k)
+#    return ret
+#
+#  def recv_delay(self,num,delay=1):
+#    """
+#    Useful for blocks that don't need data all so frequently:
+#    It will continuously receive data for a given delay and return them as a
+#    single OrderedDict containing lists of the values.
+#    Note that all the .recv calls are blocking so this method will take
+#    AT LEAST delay seconds to return, but it could be more since it may wait
+#    for data. Also, it will return at least one reading.
+#    """
+#    t = time()
+#    ret = self.inputs[num].recv()
+#    for k in ret:
+#      ret[k] = [ret[k]]
+#    while time()-t < delay:
+#      data = self.inputs[num].recv()
+#      for k in ret:
+#        try:
+#          ret[k].append(data[k])
+#        except KeyError:
+#          raise IOError(str(self)+" Got data without label "+k)
+#    return ret
 
-  def recv_any(self, blocking=True, uncompact=False):
-    """Tries to recv data from the first waiting input, can be blocking
-    or non blocking (will then return None if no data is waiting)"""
-    while True:
+  def get_last(self,num=None):
+    """
+    Unlike the recv methods of Link, get_last is NOT guaranteed to return
+    all the data going through the links! It is meant to get the latest values,
+    discarding all the previous one (for a displayer for example)
+    Its mode of operation is completely different since it can operate on
+    multiple inputs at once. num is a list containing all the concerned inputs.
+    The first call may be blocking until it receives data, all the others will
+    return instantaneously, giving the latest known reading
+    If num is None, it will operate on all the input link at once
+    """
+    if not hasattr(self,'_last_values'):
+      self._last_values = []
       for i in self.inputs:
-        if i.poll():
-          if uncompact:
-            return uncomp(i.recv())
-          return i.recv()
-      if not blocking:
-        break
+        self._last_values.append(None)
+    if num is None:
+      num = range(len(self.inputs))
+    for i in num:
+      if self._last_values[i] is None:
+        self._last_values = self.inputs[i].recv()
+      while self.inputs[i].poll():
+        self._last_values[i] = self.inputs[i].recv()
+    ret = OrderedDict()
+    for i in num:
+      ret.update(self._last_values[i])
+    return ret
 
-  def recv_last(self, uncompact=False):
-    """Will get the latest data in each pipe, dropping all the other and
-    then combines them. Necessarily non blocking"""
-    data = None
-    for l in self.inputs:
-      if data is not None:
-        new = l.recv_last()
-        if new is not None:
-          data.update(new)
-      else:
-        data = l.recv_last()
-    if uncompact:
-      return uncomp(data)
-    return data
+  def get_all_last(self,num=None):
+    """
+    Like get_last but will return all the data, usings chunks if necessary
 
-  def recv_all_last(self,uncompact=True):
-    """May be blocking on first call, but necessarily non-blocking afterward
-    Returns the last known value of ALL the inputs.
-    Note that this recv method must be the only one called in the block
-    in order to work properly"""
-    if not hasattr(self,"last_data"):
-      self.last_data = OrderedDict()
-      for i in self.inputs:
-        self.last_data.update(i.recv())
+    """
+    pass
 
-    for i in self.inputs:
-      data = i.recv_last()
-      if data is not None:
-        self.last_data.update(data)
-    if uncompact:
-      return uncomp(self.last_data)
-    return self.last_data
-
-  def clear_inputs(self):
-    """Will clear all the inputs of the block"""
-    for l in self.inputs:
-      l.clear()
+  def drop(self,num=None):
+    """Will clear the inputs of the blocks, performs like get_last
+    but returns None instantly"""
+    if num is None:
+      num = range(len(self.inputs))
+    for n in num:
+      self.inputs[n].clear()
 
   def add_output(self, o):
     self.outputs.append(o)
@@ -219,7 +258,3 @@ class MasterBlock(Process):
 
   def __repr__(self):
     return str(type(self)) + " (" + self.status + ")"
-
-
-def delay(s):
-  time.sleep(s)

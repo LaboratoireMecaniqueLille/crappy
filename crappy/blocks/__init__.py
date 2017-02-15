@@ -24,7 +24,6 @@ e = None
 not_imported = []
 
 from _masterblock import MasterBlock
-from _compacterblock import CompacterBlock
 
 if platform.system() == "Linux":
   from _commandComedi import CommandComedi
@@ -34,7 +33,6 @@ from _commandBiaxe import CommandBiaxe
 from _commandBiotens import CommandBiotens
 from _autoDrive import AutoDrive
 from _commandPI import CommandPI
-from _compacter import Compacter
 from _grapher import Grapher
 from _measureAgilent34420A import MeasureAgilent34420A
 from _measureByStep import MeasureByStep

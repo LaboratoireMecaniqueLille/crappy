@@ -1,11 +1,8 @@
 from ._masterblock import MasterBlock
 from ..technical._correl import TechCorrel
-from ..technical import DataPicker
 from collections import OrderedDict
-from time import time, sleep
+from time import time
 import numpy as np
-from multiprocessing import Process, Pipe
-
 
 class Correl(MasterBlock):
   """
@@ -64,7 +61,7 @@ with fields=(.,.) or Nfields=k"
     # We don't need to pass these arg to the TechCorrel class
     if kwargs.get("labels") is not None:
       del kwargs["labels"]
-    # Handle drop parameter: if True, use DataPicker
+    # Handle drop parameter: if True, can drop data
     if kwargs.get("drop") is not None:
       self.drop = kwargs["drop"]
       del kwargs["drop"]
@@ -80,50 +77,39 @@ with fields=(.,.) or Nfields=k"
     self.kwargs = kwargs
 
   def prepare(self):
-    if self.drop:
-      self.datapicker = DataPicker(self.inputs[0])
     self.correl = TechCorrel(self.img_size, **self.kwargs)
     print("CORREL READY")
 
   def main(self):
     nLoops = 100  # For testing: resets the original images every nLoops loop
-    try:
-      t2 = time() - 1
-      if self.drop:
-        self.datapicker.get_data() # Drop the first...
-        data = self.datapicker.get_data().astype(np.float32)
-      else:
-        # Drop the first image
-        self.recv(0)
-        # This is the only time the original picture is set, so the residual may
-        # increase if lightning vary or large displacements are reached
-        data = self.recv(0).astype(np.float32)
-      self.correl.setOrig(data)
-      self.correl.prepare()
-      tr1 = tr2 = time()
-      while True:
+    t2 = time() - 1
+    # Drop the first image
+    self.inputs[0].recv()
+    # This is the only time the original picture is set, so the residual may
+    # increase if lightning vary or large displacements are reached
+    data = self.inputs[0].recv()
+    self.correl.setOrig(data['frame'].astype(np.float32))
+    self.correl.prepare()
+    tr1 = tr2 = time()
+    while True:
+      if self.verbose:
         t1 = time()
-        if self.verbose:
-          print "[Correl block] processed", nLoops / (t1 - t2), "ips"
-          print "[Correl block] Receiving images took", \
-            (tr2 - tr1) / (t1 - t2) * 100, "% of the time"
+        print "[Correl block] processed", nLoops / (t1 - t2), "ips"
+        print "[Correl block] Receiving images took", \
+          (tr2 - tr1) / (t1 - t2) * 100, "% of the time"
         t2 = t1
         tr1 = 0
         tr2 = 0
-        for i in range(nLoops):
-          tr1 += time()
-          if self.drop:
-            data = datapicker.get_data()
-          else:
-            data = self.inputs[0].recv()
-          tr2 += time()
-          t = time() - self.t0
-          self.correl.setImage(data.astype(np.float32))
-          out = [t] + self.correl.getDisp().tolist()
-          if self.res:
-            out += [self.correl.getRes()]
-          Dout = OrderedDict(zip(self.labels, out))
-          self.send(Dout)
-    except Exception as e:
-      print "Error in Correl", e
-      raise e
+      for i in range(nLoops):
+        tr1 += time()
+        if self.drop:
+          data = self.inputs[0].recv_last(blocking=True)
+        else:
+          data = self.inputs[0].recv()
+        tr2 += time()
+        self.correl.setImage(data['frame'].astype(np.float32))
+        out = [data['t(s)']] + self.correl.getDisp().tolist()
+        if self.res:
+          out += [self.correl.getRes()]
+        Dout = OrderedDict(zip(self.labels, out))
+        self.send(Dout)

@@ -11,14 +11,13 @@
 # @version 0.1
 # @date 18/07/2016
 
-from _masterblock import MasterBlock, delay
+from _masterblock import MasterBlock
 import numpy as np
 import time
 import pandas as pd
 import os
 import sys
 from collections import OrderedDict
-from ..links._link import TimeoutError
 
 
 class SignalGenerator(MasterBlock):
@@ -155,10 +154,10 @@ class SignalGenerator(MasterBlock):
           while cycle == 0:
             timer = time.time()
             while timer - last_t < 1. / self.send_freq:
-              delay(-(timer-last_t - 1. / (self.send_freq))/10.)
+              time.sleep(-(timer-last_t - 1. / (self.send_freq))/10.)
               timer = time.time()
             last_t = time.time()
-            recv = self.recv_all_last()
+            recv = self.get_last()
             Data = pd.DataFrame([recv.values()],columns=recv.keys())
             last_upper = (Data[self.value[1]]).last_valid_index()
             last_lower = (Data[self.value[1]]).last_valid_index()
@@ -181,10 +180,10 @@ class SignalGenerator(MasterBlock):
           while self.cycles is None or cycle < self.cycles:
             timer = time.time()
             while timer - last_t < 1. / self.send_freq:
-              delay(-(timer-last_t - 1. / (self.send_freq))/10.)
+              time.sleep(-(timer-last_t - 1. / (self.send_freq))/10.)
               timer = time.time()
             last_t = time.time()
-            recv = self.recv_all_last()
+            recv = self.get_last()
             Data = pd.DataFrame([recv.values()],columns=recv.keys())
 
             last_upper = (Data[self.upper_limit[1]]).last_valid_index()
@@ -224,9 +223,9 @@ class SignalGenerator(MasterBlock):
           t_cycle = time.time()
           while self.cycles is None or cycle < self.cycles:
             timer = time.time()
-            recv = self.recv_all_last()
+            recv = self.get_last()
             while timer - last_t < 1. / self.send_freq:
-              delay(-(timer-last_t - 1. / (self.send_freq))/10.)
+              time.sleep(-(timer-last_t - 1. / (self.send_freq))/10.)
               timer = time.time()
             last_t = timer
             Data = pd.DataFrame([recv.values()],columns=recv.keys())
@@ -271,10 +270,10 @@ class SignalGenerator(MasterBlock):
           while True:
             timer = time.time()
             while timer - last_t < 1. / self.send_freq:
-              delay(-(timer-last_t - 1. / (self.send_freq))/10.)
+              time.sleep(-(timer-last_t - 1. / (self.send_freq))/10.)
               timer = time.time()
             last_t = time.time()
-            recv = self.recv_all_last()
+            recv = self.get_last()
             Data = pd.DataFrame([recv.values()],columns=recv.keys())
 
             last_t = time.time()
@@ -303,9 +302,9 @@ class SignalGenerator(MasterBlock):
           # print "holding"
           while self.time is None or (time.time() - t_step) < self.time:
             while time.time() - last_t < 1. / self.send_freq:
-              self.recv_all_last()
+              self.get_last()
               # first=False
-              delay(1. / (100 * 1000 * self.send_freq))
+              time.sleep(1. / (100 * 1000 * self.send_freq))
             last_t = time.time()
             if self.step == 0:
               self.alpha = 0
@@ -327,7 +326,7 @@ class SignalGenerator(MasterBlock):
           while self.time is None or (time.time() - t_step) < self.time:
             while time.time() - last_t < 1. / self.send_freq:
               self.clear_inputs()
-              delay(1. / (100 * 1000 * self.send_freq))
+              time.sleep(1. / (100 * 1000 * self.send_freq))
             last_t = time.time()
             t = last_t + t_add
             if self.waveform == "sinus":

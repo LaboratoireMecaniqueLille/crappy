@@ -6,7 +6,7 @@
 # @{
 
 ## @file _dashboard.py
-# @brief The dashboard shows actual values of data received from the Compacter (via a Link).
+# @brief The dashboard shows actual values of data received from a block
 #
 # @author Francois Bari
 # @version 0.1

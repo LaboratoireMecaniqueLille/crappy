@@ -8,18 +8,14 @@
 ## @file _commandBiotens.py
 # @brief Receive a signal and send it for the Biotens actuator.
 #
-# @author Robin Siemiatkowski
+# @author Robin Siemiatkowski, Victor Couty
 # @version 0.1
-# @date 11/07/2016
+# @date 13/02/2017
 
-from _compacterblock import CompacterBlock
+from _masterblock import MasterBlock
 import time
-# import pandas as pd
-from collections import OrderedDict
-from ..links._link import TimeoutError
 
-
-class CommandBiotens(CompacterBlock):
+class CommandBiotens(MasterBlock):
   """Receive a signal and send it for the Biotens actuator"""
 
   def __init__(self, biotens_technicals, signal_label='signal', speed=5, **kwargs):
@@ -34,13 +30,12 @@ class CommandBiotens(CompacterBlock):
         speed: int, default = 5
             Wanted speed, in mm/min.
     """
-    labels = kwargs.get("labels")
-    if not labels:
-      labels = ['t(s)']
+    self.labels = kwargs.get("labels")
+    if not self.labels:
+      self.labels = ['t(s)']
       for i in range(len(biotens_technicals)):
-        labels.append('position%d'%(i+1))
-    compacter=kwargs.get('compacter',1)
-    CompacterBlock.__init__(self,labels=labels,compacter=compacter)
+        self.labels.append('position%d'%(i+1))
+    MasterBlock.__init__(self)
     self.biotens_technicals = biotens_technicals
     self.speed = speed
     self.signal_label = signal_label

@@ -30,18 +30,18 @@ if __name__ == "__main__":
     F_offset = eval_offset(F_sensor,1)
     F_sensor = crappy.sensor.ComediSensor(channels=[0], gain=[-48.8], offset=[F_offset])
     # Creating F block
-    effort = crappy.blocks.MeasureByStep(F_sensor, labels=['t(s)', 'F(N)'], freq=100,compacter=100)
+    effort = crappy.blocks.MeasureByStep(F_sensor, labels=['t(s)', 'F(N)'], freq=100)
     # grapher
     graph_effort = crappy.blocks.Grapher(('t(s)','F(N)'),length=30)
     crappy.link(effort,graph_effort)
     # and saver
     save_effort = crappy.blocks.Saver(save_path+"effort.csv")
     crappy.link(effort,save_effort)
-    
+
     # Creating biotens technical
     biotensTech = crappy.technical.Biotens(port='/dev/ttyUSB0', size=10)  # Used to initialize motor.
     # Biotens block
-    biotens = crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5,compacter=5)
+    biotens = crappy.blocks.CommandBiotens(biotens_technicals=[biotensTech], speed=5)
     # grapher
     graph_pos= crappy.blocks.Grapher(('t(s)', 'position1'), length=10)
     crappy.link(biotens,graph_pos)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     signal_generator = crappy.blocks.SignalGenerator(path=[
       {"waveform": "limit", "gain": 1, "cycles": 2, "phase": 0, "lower_limit": [0.02, 'F(N)'],
        "upper_limit": [30, 'F(N)']}],
-      send_freq=5, repeat=False, labels=['t(s)', 'signal', 'cycle']) 
+      send_freq=5, repeat=False, labels=['t(s)', 'signal', 'cycle'])
     crappy.link(effort,signal_generator)
     crappy.link(signal_generator,biotens)
 
@@ -61,15 +61,12 @@ if __name__ == "__main__":
 
     # VideoExtenso
     extenso = crappy.blocks.VideoExtenso(camera="Ximea", white_spot=False, display=True)
-    # Compacter (will soon be unnecessary)
-    comp_extenso = crappy.blocks.Compacter(90)
-    crappy.link(extenso,comp_extenso)
     # Saver
     save_extenso = crappy.blocks.Saver(save_path+'extenso.csv')
-    crappy.link(comp_extenso, save_extenso)
+    crappy.link(extenso, save_extenso)
     # And grapher
     graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
-    crappy.link(comp_extenso, graph_extenso)
+    crappy.link(extenso, graph_extenso)
 
     #And here we go !
     crappy.start()

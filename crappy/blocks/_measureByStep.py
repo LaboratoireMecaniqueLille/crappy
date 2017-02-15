@@ -13,15 +13,14 @@
 # @date 11/07/2016
 
 from __future__ import print_function
-from _compacterblock import CompacterBlock
+from _masterblock import MasterBlock
 import time
-from ..links._link import TimeoutError
 import threading
 from Queue import Queue
 import sys
 
 
-class MeasureByStep(CompacterBlock):
+class MeasureByStep(MasterBlock):
   """
   Streams value measured on a card through a Link object.
   """
@@ -55,9 +54,7 @@ class MeasureByStep(CompacterBlock):
       self.labels = kwargs.get('labels', ["time(sec)"] + self.sensor.channels)
     except AttributeError:
       self.labels = ['time(sec)', 'signal']
-    CompacterBlock.__init__(self,
-                            labels=self.labels,
-                            compacter=kwargs.get("compacter", 1))
+    MasterBlock.__init__(self)
     self.freq = kwargs.get('freq', None)
     self.verbose = kwargs.get('verbose', False)
 
@@ -114,7 +111,7 @@ class MeasureByStep(CompacterBlock):
           pass
         t_before_acq = time.time()
         data = self.acquire_data()
-        self.send_to_compacter(data)
+        self.send(data)
 
         if self.verbose:
           self.nb_acquisitions += 1
@@ -146,14 +143,3 @@ class MeasureByStep(CompacterBlock):
     chronometer = sensor_epoch - self.t0
     sensor_values.insert(0, chronometer)
     return sensor_values
-
-  def send_to_compacter(self, data):
-    """
-    Method to send acquired data to the compacter.
-    """
-    try:
-      self.send(data)
-    except TimeoutError:
-      raise
-    except AttributeError:  # if no outputs
-      pass

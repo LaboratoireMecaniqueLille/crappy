@@ -6,7 +6,7 @@
 # @{
 
 ## @file _grapher.py
-# @brief The grapher plots data received from the Compacter (via a Link).
+# @brief The grapher plots data received from a block (via a Link).
 #
 # @author Robin Siemiatkowski
 # @version 0.1

@@ -159,7 +159,7 @@ class Camera_config(object):
 
 
   def main_loop(self):
-    img = self.camera.get_image()
+    t,img = self.camera.get_image()
     if time() - self.last_hist_update > histRate:
       self.last_hist_update = time()
       self.update_histogram(img)

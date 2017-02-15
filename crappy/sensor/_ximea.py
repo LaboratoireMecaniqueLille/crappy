@@ -14,7 +14,7 @@
 
 from __future__ import print_function
 
-from time import sleep
+from time import sleep,time
 
 from ._meta import MasterCam
 import ximeaModule as xi
@@ -144,12 +144,14 @@ class Ximea(MasterCam):
     Returns:
         frame from ximea device (ndarray height*width)
     """
+    t = time()
     ret, frame = self.ximea.read()
     while 0 in frame['data'].shape or frame['data'].size >= 100000000:
+      t = time()
       ret, frame = self.ximea.read()
     try:
       if ret:
-        return frame.get('data')
+        return t,frame.get('data')
       print("restarting camera...")
       sleep(2)
       self.reopen(**self.settings_dict)

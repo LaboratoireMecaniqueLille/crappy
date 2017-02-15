@@ -90,7 +90,7 @@ class _CameraInit:
       self.x = np.arange(0, 256, 4)
 
     hist = np.ones(np.shape(self.x))
-    frame = self.cam.get_image()
+    t,frame = self.cam.get_image()
     # print "type frame : " , type(frame)
 
     self._axhist.set_xlim([0, max(self.x)])  # set histogram limit in x...
@@ -137,7 +137,7 @@ class _CameraInit:
     # print "1"
     # camera INIT with ZOI selection
     # the following is to initialise the spot detection
-    image = self.cam.get_image()
+    t,image = self.cam.get_image()
     # plt.imsave("/home/corentin/Bureau/image_originale.tiff",image)
     croped_image = image[self.yoffset:self.height + self.yoffset, self.xoffset:self.xoffset + self.width]
     image = croped_image
@@ -184,7 +184,7 @@ class _CameraInit:
 
         # for k in range(smoothing):
         # print k
-      image = self.cam.get_image()
+      t,image = self.cam.get_image()
       # plt.imsave("/home/corentin/Bureau/image_originale.tiff",image)
       croped_image = image[self.yoffset:self.height + self.yoffset, self.xoffset:self.xoffset + self.width]
       image = croped_image
@@ -207,7 +207,7 @@ class _CameraInit:
       self.miny += self.xoffset
       self.maxy += self.xoffset
 
-      image = self.cam.get_image()  # read a frame
+      t,image = self.cam.get_image()  # read a frame
       print "type of frame: ", type(image)
 
       minx_ = self.minx.min()
@@ -328,7 +328,7 @@ class _CameraInit:
 
   # Main
   def get_frame(self, i):
-    frame = self.cam.get_image()  # read a frame
+    t,frame = self.cam.get_image()  # read a frame
     # x=np.arange(0,2048,4)
     if i == 1:
       self._cax.axis('on')
