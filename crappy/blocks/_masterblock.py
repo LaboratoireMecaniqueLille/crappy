@@ -221,7 +221,7 @@ class MasterBlock(Process):
       num = range(len(self.inputs))
     for i in num:
       if self._last_values[i] is None:
-        self._last_values = self.inputs[i].recv()
+        self._last_values[i] = self.inputs[i].recv()
       while self.inputs[i].poll():
         self._last_values[i] = self.inputs[i].recv()
     ret = OrderedDict()
