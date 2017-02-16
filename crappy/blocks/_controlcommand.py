@@ -49,7 +49,6 @@ class ControlCommand(MeasureByStep):
         self.main = self.main_control_command
 
       self.labels.append('signal')
-      self.clear_results()
       if self.verbose:
         self.prepare_verbosity()
     else:
