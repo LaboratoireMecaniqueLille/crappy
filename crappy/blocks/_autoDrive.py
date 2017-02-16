@@ -81,7 +81,7 @@ class AutoDrive(MasterBlock):
     """
     try:
       while True:
-	data = self.inputs[0].recv_last() # Get the data
+	data = self.inputs[0].recv_last(blocking=True) # Get the data
 	#print("Diff:",(self.get_center(data)-self.range/2))
 	self.device.set_speed(int(self.P*(self.get_center(data)-self.range/2))) # And set speed to P*(img center-spots center)
     except (Exception,KeyboardInterrupt) as e:
