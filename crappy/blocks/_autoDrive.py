@@ -12,6 +12,7 @@
 # @version 1.0
 # @date 10/02/2017
 from __future__ import print_function, division
+from time import time
 
 from _masterblock import MasterBlock
 
@@ -29,7 +30,7 @@ class AutoDrive(MasterBlock):
     for arg,default in [('technical',None), # If specified, will open crappy.technical.xx as the device to command
 			('actuator',None), # Same as above but if it is an actuator, one of these two should be sepcified
 			('dev_args', {}), # The kwargs to be given to the technical/actuator
-			('P', 500), # The gain for commanding the technical/actuator
+			('P', 2000), # The gain for commanding the technical/actuator
 			('direction', 'Y-'), # The direction to follow (X/Y +/-), depending on camera orientation
 			('range',2048), # The number of pixels in this direction
 			]:
@@ -42,6 +43,7 @@ class AutoDrive(MasterBlock):
       raise AttributeError("[AutoDrive] Unknown kwarg(s):"+str(kwargs))
     sign = -1 if self.direction[1] == '-' else 1
     self.P *= sign
+    self.labels = ['t(s)','diff(pix)']
 
   def get_class(self):
     """
@@ -81,9 +83,14 @@ class AutoDrive(MasterBlock):
     """
     try:
       while True:
-	data = self.inputs[0].recv_last(blocking=True) # Get the data
-	#print("Diff:",(self.get_center(data)-self.range/2))
-	self.device.set_speed(int(self.P*(self.get_center(data)-self.range/2))) # And set speed to P*(img center-spots center)
+        data = self.inputs[0].recv_last(blocking=True) # Get the data
+        t = time()
+        #print("Diff:",(self.get_center(data)-self.range/2))
+        diff = self.get_center(data)-self.range/2
+        self.device.set_speed(int(self.P*diff))
+        self.send([t-self.t0,diff])
+        # And set speed to P*(img center-spots center)
+
     except (Exception,KeyboardInterrupt) as e:
       print("[Autodrive] Encountered an exception",e,"stopping actuator!")
       self.device.set_speed(0)
