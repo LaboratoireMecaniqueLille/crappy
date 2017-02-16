@@ -35,7 +35,7 @@ lj = crappy.technical.LabJack(sensor={'channels':[0,1],'gain':gains,'offset':off
 lj.set_cmd(0) # To make sure we start from 0
 
 
-videoextenso = crappy.blocks.VideoExtenso(camera='Ximea', compacter=30)
+videoextenso = crappy.blocks.VideoExtenso(camera='Ximea')
 autodrive = crappy.blocks.AutoDrive(technical='CmDrive',dev_args={'port': '/dev/ttyUSB0'},direction='Y-')
 crappy.link(videoextenso,autodrive)
 
@@ -45,7 +45,7 @@ crappy.link(videoextenso,graph_ve)
 saver_extenso = crappy.blocks.Saver(save_path+"extenso.csv")
 crappy.link(videoextenso,saver_extenso)
 
-controlcommand = crappy.blocks.ControlCommand(lj,labels=['t(s)','F(N)','x(mm)'],compacter=10,freq=50)
+controlcommand = crappy.blocks.ControlCommand(lj,labels=['t(s)','F(N)','x(mm)'],freq=50)
 
 saver_sensors = crappy.blocks.Saver(save_path+"sensors.csv")
 crappy.link(controlcommand,saver_sensors)
