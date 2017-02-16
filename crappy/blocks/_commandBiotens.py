@@ -48,7 +48,7 @@ class CommandBiotens(MasterBlock):
       last_cmd = 0
       self.last_time = self.t0
       while True:
-        Data = self.inputs[0].recv()
+        Data = self.inputs[0].recv_last(blocking=True)
         # try:
         # cmd=Data['signal'].values[0]
         # except AttributeError:
