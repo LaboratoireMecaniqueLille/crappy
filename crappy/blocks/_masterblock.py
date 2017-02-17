@@ -152,56 +152,6 @@ class MasterBlock(Process):
     for o in self.outputs:
       o.send(data)
 
-#  def recv(self, num=0, blocking=True):
-#    """
-#    Will get the OD from input link n° num. If not blocking and not data is
-#    waiting, it will return None
-#    """
-#    return self.inputs[num].recv(blocking)
-#
-#  def recv_chunk(self,num,length=0):
-#    """
-#    Allows you to receive a chunk of data: if length > 0 it will return an
-#    OrderedDict containing LISTS of the last length received data
-#    If length=0, it will return all the waiting data util the pipe is empty
-#    if the pipe is already empty, it will wait to return at least one value.
-#    """
-#    ret = self.inputs[num].recv()
-#    for k in ret:
-#      ret[k] = [ret[k]]
-#    c = 0
-#    while c < length or (length <= 0 and self.inputs[num].poll()):
-#      c += 1
-#      data = self.inputs[num].recv()
-#      for k in ret:
-#        try:
-#          ret[k].append(data(k))
-#        except KeyError:
-#          raise IOError(str(self)+" Got data without label "+k)
-#    return ret
-#
-#  def recv_delay(self,num,delay=1):
-#    """
-#    Useful for blocks that don't need data all so frequently:
-#    It will continuously receive data for a given delay and return them as a
-#    single OrderedDict containing lists of the values.
-#    Note that all the .recv calls are blocking so this method will take
-#    AT LEAST delay seconds to return, but it could be more since it may wait
-#    for data. Also, it will return at least one reading.
-#    """
-#    t = time()
-#    ret = self.inputs[num].recv()
-#    for k in ret:
-#      ret[k] = [ret[k]]
-#    while time()-t < delay:
-#      data = self.inputs[num].recv()
-#      for k in ret:
-#        try:
-#          ret[k].append(data[k])
-#        except KeyError:
-#          raise IOError(str(self)+" Got data without label "+k)
-#    return ret
-
   def get_last(self,num=None):
     """
     Unlike the recv methods of Link, get_last is NOT guaranteed to return
@@ -228,13 +178,6 @@ class MasterBlock(Process):
     for i in num:
       ret.update(self._last_values[i])
     return ret
-
-  def get_all_last(self,num=None):
-    """
-    Like get_last but will return all the data, usings chunks if necessary
-
-    """
-    pass
 
   def drop(self,num=None):
     """Will clear the inputs of the blocks, performs like get_last
