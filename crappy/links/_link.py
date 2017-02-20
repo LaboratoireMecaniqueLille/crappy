@@ -11,12 +11,21 @@
 # @authors Corentin Martel, Robin Siemiatkowski, Victor Couty
 # @version 0.2
 # @date 19/01/2017
+from __future__ import print_function
 
 from multiprocessing import Pipe
 import copy
 from time import time
 from threading import Thread
 
+def error_if_stop(recv):
+  "Decorator to raise an error if the function returns a string"
+  def wrapper(*args,**kwargs):
+    ret = recv(*args,**kwargs)
+    if type(ret) == str:
+      raise KeyboardInterrupt
+    return ret
+  return wrapper
 
 class TimeoutError(Exception):
   """Custom error to raise in case of timeout."""
@@ -127,22 +136,17 @@ class Link(object):
       self.send_timeout(value)
     except TimeoutError as e:
       if self.action == "warn":
-        print "WARNING : Timeout error in pipe send! Link name: %s" % self.name
+        print("WARNING : Timeout error in pipe send! Link name: %s" % self.name)
       elif self.action == "kill":
-        print "Killing Link : ", e
+        print("Killing Link : ", e)
         raise
       elif self.action == "NoWarn":
         pass
       else:  # for debugging !!
-        print self.action
-        pass
-    except KeyboardInterrupt:
-      print "KEYBOARD INTERRUPT RECEIVED IN LINK: %s" % self.name
-      if not self.out_.closed:
-        self.out_.close()
-      raise KeyboardInterrupt
+        print(self.action)
     except Exception as e:
-      print "Exception in link send %s : %s " % (self.name, e.message)
+      print("Exception in link send %s : %s " % (self.name, e.message))
+      raise
 
   @win_timeout(1)
   def send_timeout(self, value):
@@ -158,18 +162,16 @@ class Link(object):
         if value is not None:
           self.out_.send(value)
     except KeyboardInterrupt:
-      print "KEYBOARD INTERRUPT RECEIVED IN LINK: " % self.name
-      if not self.out_.closed:
-        self.out_.send('close')
-        self.out_.close()
-      raise KeyboardInterrupt
+      print("Keyboard interrupt received in link: " % self.name)
+      raise
     except Exception as e:
-      print "Exception in link %s : %s " % (self.name, e.message)
+      print("Exception in link %s : %s " % (self.name, e.message))
       if not self.out_.closed:
         self.out_.send('close')
         self.out_.close()
       raise Exception(e)
 
+  @error_if_stop # Recv will raise an error if 'stop' is recved
   def recv(self, blocking=True):
     """
     Receive data. If blocking=False, return None if there is no data
@@ -192,22 +194,16 @@ class Link(object):
 
     except TimeoutError as e:
       if self.action == "warn":
-        print "WARNING : Timeout error in pipe send! Link name: %s" % self.name
+        print("WARNING : Timeout error in pipe send! Link name: %s" % self.name)
       elif self.action == "kill":
-        print "Killing Link %s : %s" % (self.name, e.message)
+        print("Killing Link %s : %s" % (self.name, e.message))
         raise
       elif self.action == "NoWarn":
         pass
       else:  # for debugging !!
-        print self.action
-        # pass
-    except KeyboardInterrupt:
-      print "KEYBOARD INTERRUPT RECEIVED IN LINK: %s" % self.name
-      if not self.in_.closed:
-        self.in_.close()
-      raise KeyboardInterrupt
+        print(self.action)
     except Exception as e:
-      print "EXCEPTION in link %s : %s " % (self.name, e.message)
+      print("EXCEPTION in link %s : %s " % (self.name, e.message))
       if not self.in_.closed:
         self.in_.close()
       raise

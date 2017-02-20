@@ -15,7 +15,10 @@ from __future__ import print_function
 
 from multiprocessing import Process, Pipe
 from collections import OrderedDict
-from time import sleep
+from time import sleep,time,localtime,strftime
+
+class CrappyStop(Exception):
+  pass
 
 class MasterBlock(Process):
   """
@@ -77,45 +80,131 @@ class MasterBlock(Process):
     Masterblock.instances.remove(self)
 
   def run(self):
+    self.in_process = True  # we are in the process
+    self.status = "initializing"
+    self.prepare()
+    self.status = "ready"
+    # Wait for parent to tell me to start the main
+    self.t0 = self.pipe2.recv()
+    self.status = "running"
+    self.begin()
     try:
-      self.in_process = True  # we are in the process
-      self.status = "initializing"
-      self.prepare()
-      self.status = "ready"
-      # Wait for parent to tell me to start the main
-      self.t0 = self.pipe2.recv()
-      self.status = "running"
       self.main()
       self.status = "done"
     except Exception as e:
       print("[%r] Exception caught:" % self, e)
+      self.finish()
+      self.status = "error"
       raise
     except KeyboardInterrupt:
       print("[%r] Keyboard interrupt received" % self)
-      raise
+    self.finish()
+    self.status = "done"
+
+  @classmethod
+  def get_status(cls):
+    return map(lambda x: x.status, cls.instances)
+
+  @classmethod
+  def all_are(cls,s):
+    """
+    Returns true only if all processes status are s
+    """
+    return len(set(cls.get_status())) == 1 and s in cls.get_status()
+
+  @classmethod
+  def prepare_all(cls,verbose=True):
+    """
+    Starts all the blocks processes (block.prepare), but not the main loop
+    """
+    if verbose:
+      def vprint(*args):
+        print("[prepare]", *args)
+    else:
+      vprint = lambda *x: None
+    vprint("Starting the blocks...")
+    for instance in cls.instances:
+        vprint("Starting", instance)
+        instance.start()
+        vprint("Started, PID:", instance.pid)
+    vprint("All processes are started.")
+
+  @classmethod
+  def launch_all(cls,t0=None,verbose=True,wait=True):
+    if verbose:
+      def vprint(*args):
+        print("[launch]", *args)
+    else:
+      vprint = lambda *x: None
+    if not cls.all_are('ready'):
+      vprint("Waiting for all blocks to be ready...")
+    while not cls.all_are('ready'):
+      sleep(.1)
+    vprint("All blocks ready, let's go !")
+    if not t0:
+      t0 = time()
+    vprint("Setting t0 to", strftime("%d %b %Y, %H:%M:%S", localtime(t0)))
+    for instance in cls.instances:
+      instance.launch(t0)
+    t1 = time()
+    vprint("All blocks loop started. It took", (t1 - t0) * 1000, "ms")
+    if not wait:
+      return
+    try:
+      # Keep running
+      while True:
+        sleep(31536000)# 1 year, just to be sure
+    except KeyboardInterrupt:
+      print("Main proccess got keyboard interrupt!")
+      if not cls.all_are('running'):
+        print('Waiting for all processes to finish')
+      while 'running' in cls.get_status():
+        sleep(.1)
+      print("Crappy terminated gracefully")
+
+  @classmethod
+  def start_all(cls,t0=None,verbose=True,wait=True):
+    cls.prepare_all(verbose)
+    cls.launch_all(t0,verbose,wait)
+
+  @classmethod
+  def stop_all(cls,verbose=True):
+    """
+    Stops all the blocks (crappy.stop)
+    """
+    if verbose:
+      def vprint(*args):
+        print("[stop]", *args)
+    else:
+      vprint = lambda *x: None
+    vprint("Stopping the blocks...")
+    for instance in cls.instances:
+      if instance.status == 'running':
+        vprint("Stopping", instance, "(PID:{})".format(instance.pid))
+        instance.stop()
+    vprint("All blocks are stopped.")
+
+  def begin(self):
+    """
+    If main is not overriden, this method will be called first, before
+    entering the main loop
+    """
+    pass
+
+  def finish(self):
+    """
+    If main is not overriden, this method will be called upon exit or after
+    a crash.
+    """
+    pass
+
+  def loop(self):
+    raise NotImplementedError('You must override loop or main in'+str(self))
 
   def main(self):
-    try:
-      while not self.p2.poll():
-        self.loop()
-      print(self,"Got stop signal, interrupting...")
-    except Exception as e:
-      print(self,"Raised an error:",e)
-    try:
-      self.finish()
-    except Exception as e:
-      print(self,"Encountered an error in finish!",e)
-      raise
- 
-
-
-  def start(self):
-    """
-    This will NOT execute the main, only start the process
-    prepare will be called but not main !
-    """
-    self._status = "initializing"
-    Process.start(self)
+    while not self.pipe2.poll():
+      self.loop()
+    print("[%r] Got stop signal, interrupting..." % self)
 
   def launch(self, t0):
     """
@@ -134,6 +223,7 @@ class MasterBlock(Process):
     if not self.in_process:
       while self.pipe1.poll():
         self._status = self.pipe1.recv()
+      self.pipe2.send(self._status) # If another process tries to get the status
     return self._status
 
   @status.setter
@@ -159,6 +249,8 @@ class MasterBlock(Process):
       pass
     elif type(data) == list:
       data = OrderedDict(zip(self.labels,data))
+    elif data =='stop':
+      pass
     else:
       raise IOError("Trying to send a "+str(type(data))+" in a link!")
     for o in self.outputs:
@@ -206,10 +298,23 @@ class MasterBlock(Process):
     self.inputs.append(i)
 
   def stop(self):
+    if self.status != 'running':
+      return
+    print('[%r] Stopping'%self)
     self.pipe1.send(0)
-    sleep(2)
+    t = time()
+    while self.status != 'done' and time() - t < 2:
+      sleep(.1)
+      try:
+        self.inputs[0].send('stop')
+        print("DEBUG: sent stop!")
+      except IndexError:
+        pass
     if self.status != "done":
+      print('[%r] Could not stop properly, terminating' % self)
       self.terminate()
+    else:
+      print("[%r] Stopped correctly"%self)
 
   def __repr__(self):
     return str(type(self)) + " (" + self.status + ")"
