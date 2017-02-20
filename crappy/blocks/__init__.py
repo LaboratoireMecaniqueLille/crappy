@@ -53,11 +53,6 @@ from _controlcommand import ControlCommand
 from _wavegenerator import WaveGenerator
 from _dataReader import DataReader
 
-try:
-  from _videoExtenso import VideoExtenso
-except Exception as e:
-  import_error(e.message)
-
 from _saverTriggered import SaverTriggered
 from _interfaceTribo import InterfaceTribo
 from _lal300Command import CommandLal300
