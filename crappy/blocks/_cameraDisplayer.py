@@ -15,7 +15,6 @@
 # @date 05/07/2016
 
 from _masterblock import MasterBlock
-from time import time
 
 
 class CameraDisplayer(MasterBlock):
@@ -24,7 +23,6 @@ class CameraDisplayer(MasterBlock):
   Use cv=False to use the old, inefficient and deprecated version
   NOTE: You need to use one displayer block per window (in other words, you can only attach one input to the diplayer)
   """
-
   def __init__(self, framerate=5, cv=True, title='Displayer'):
     super(CameraDisplayer, self).__init__()
     if framerate is None:
@@ -33,52 +31,44 @@ class CameraDisplayer(MasterBlock):
       self.delay = 1. / framerate  # Framerate (fps)
     self.cv = cv
     self.title = title
+    if cv:
+      self.loop = self.loop_cv
+      self.begin = self.begin_cv
+      self.finish = self.finish_cv
+    else:
+      self.loop = self.loop_mpl
+      self.begin = self.begin_mpl
+      self.finish = self.finish_mpl
 
-  def main(self):
+  def begin_mpl(self):
+    import matplotlib.pyplot as plt
+    self.plt = plt
+    self.plt.ion()
+    fig = self.plt.figure()
+    fig.add_subplot(111)
+
+  def loop_mpl(self):
+    frame = self.inputs[0].recv()['frame']
+    self.plt.imshow(frame, cmap='gray')
+    self.plt.pause(0.001)
+    self.plt.show()
+
+  def begin_cv(self):
+    import cv2
+    self.cv2 = cv2
     try:
-      if not self.cv:
-        import matplotlib.pyplot as plt
-        plt.ion()
-        fig = plt.figure()
-        fig.add_subplot(111)
-        while True:
-          # print "top loop"
-          frame = self.inputs[0].recv()['frame']
-          # print frame.shape
-          # if frame None:
-          # print frame[0][0]
-          plt.imshow(frame, cmap='gray')
-          plt.pause(0.001)
-          plt.show()
-      else:
-        import cv2
-        data = 0
-        try:
-          flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
-        except AttributeError:  # WINDOW_KEEPRATIO is not implemented in all opencv versions...
-          flags = cv2.WINDOW_NORMAL
-        cv2.namedWindow(self.title, flags)
-        while True:
-          t1 = time()
-          while data is not None:  # To flush the pipe...
-            last = data  # Save the latest non-None value
-            data = self.inputs[0].recv(False)  # ... use non-blocking recv until pipe is empty
-          if last is not 0:  # If we received something (ie the last non-None value is not 0)
-            cv2.imshow('Displayer', last['frame'])
-            cv2.waitKey(1)
-          data = 0  # A default value to check if we received something
-          while time() - t1 < self.delay:
-            data = self.inputs[0].recv()
+      flags = self.cv2.WINDOW_NORMAL | self.cv2.WINDOW_KEEPRATIO
+    except AttributeError:  # WINDOW_KEEPRATIO is not implemented in all opencv versions...
+      flags = self.cv2.WINDOW_NORMAL
+    self.cv2.namedWindow(self.title, flags)
 
-    except KeyboardInterrupt:
-      if self.cv:
-        cv2.destroyAllWindows()
-      else:
-        plt.close('all')
-    except Exception as e:
-      if self.cv:
-        cv2.destroyAllWindows()
-      else:
-        plt.close('all')
-      print "Exception in CameraDisplayer : ", e
-      raise
+  def loop_cv(self):
+    data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
+    self.cv2.imshow(self.title,data)
+    self.cv2.waitKey(1)
+
+  def finish_mpl(self):
+    self.plt.close('all')
+
+  def finish_cv(self):
+    self.cv2.destroyAllWindows()

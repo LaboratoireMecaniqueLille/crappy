@@ -22,7 +22,5 @@ class Sink(MasterBlock):
   def __init__(self, *args, **kwargs):
     MasterBlock.__init__(self)
 
-  def main(self):
-    while True:
-      for i in self.inputs:
-        i.recv(False)
+  def loop(self):
+    self.drop()
