@@ -62,8 +62,9 @@ try:
 except Exception as e:
   import_error(e.message)
 
-from _commandCegitab import SerialPortActuator, SerialPortCaptor, PipeCegitab
+from _commandCegitab import PipeCegitab
 from _savergui import SaverGUI
 from _gui import InterfaceTomo4D
+from _pidtomo import PIDTomo
 
 del e, platform, import_error
