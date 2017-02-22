@@ -9,7 +9,7 @@ https://github.com/pypa/sampleproject
 from setuptools import find_packages, __version__
 # To use a consistent encoding
 from codecs import open
-from os import path, popen, system, listdir
+from os import path, popen, system, listdir, walk
 from distutils.core import setup, Extension
 import platform
 
@@ -40,24 +40,32 @@ if platform.system() == "Linux":
                             extra_link_args=["-Werror", "-L", "../bin", "-L", "../bin/X64", "-L", "../bin/ARM", "-l",
                                              "m3api", "-l", "python2.7"],
                             include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
-    clModule = Extension('sensor.clModule',
+    try:
+      # Find the latest runtime version of SiliconSoftware install
+      clPath = '/opt/SiliconSoftware/'+sorted(next(walk('/opt/SiliconSoftware/'))[1])[-1]+'/lib64/'
+    except IndexError:
+      print "WARNING: Silicon Software install could not be found, CameraLink won't be available."
+      # If the software is installed but not found, just set clPath manually in this file
+      clPath = None
+    if clPath:
+      clModule = Extension('sensor.clModule',
                          sources=['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp',
                                   'sources/Jai_lib/clSerial.cpp'], extra_compile_args=["-std=c++11"],
-                         extra_link_args=["-l", "python2.7", "-L", "/opt/SiliconSoftware/Runtime5.4.1.2/lib64/", "-l",
+                         extra_link_args=["-l", "python2.7", "-L", clPath, "-l",
                                           "display", "-l", "clsersis", "-l", "fglib5"],
                          include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
+      p = popen("lsmod |grep menable")
+      if len(p.read()) != 0:
+        extentions.append(clModule)
+      else:
+        print "WARNING: cannot find menable kernel module, CameraLink module won't be available."
     try:
         import comedi
         extentions.append(comediModule)
     except Exception as e:
         print "WARNING: Cannot find comedi driver.", e
-    p = popen("lsmod |grep menable")
-    if len(p.read()) != 0:
-        extentions.append(clModule)
-    else:
-        print "WARNING: cannot find menable kernel module, CameraLink module won't be available."
 
-    if raw_input("would you like to install ximea module? ([y]/n)?") != "n":
+    if raw_input("would you like to install ximea module? ([y]/n)?").lower() != "n":
         extentions.append(ximeaModule)
 
 if platform.system() == "Windows":
@@ -194,7 +202,7 @@ setup(
 )
 
 # this lines above copy extensions modules to the crappy folder (allows you to import crappy from crappy directory)
-# in fact, when you are located in the crappy directory, import crappy2 doesn't import crappy2 from dist-package.
+# in fact, when you are located in the crappy directory, "import crappy" doesn't import crappy from dist-package.
 
 if ximeaModule in extentions:
     if platform.system() == "Windows":
