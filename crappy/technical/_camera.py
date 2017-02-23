@@ -35,7 +35,9 @@ class TechnicalCamera(object):
             Number of the desired device.
             Width of the image, in pixels.
         config: Call the configurator ? Bool, default= True
-        kwargs will be transmitted to the camera sensor
+        kwargs starting with "INIT_" will be given to the sensor when instanciating
+        ("INIT_" will be removed)
+        the others will be transfered as is when opening it.
     """
     try:
       camera_class = MetaCam.classes[camera]
@@ -44,9 +46,17 @@ class TechnicalCamera(object):
                     "\nAvailables cameras are:",MetaCam.classes.keys())
       raise NotImplementedError("Could not find camera "+camera)
 
+    self.init_kwargs = {}
+    self.open_kwargs = {}
+    for arg in kwargs:
+      if arg[:5] == 'INIT_':
+        self.init_kwargs[arg[5:]] = kwargs[arg]
+      else:
+        self.open_kwargs[arg] = kwargs[arg]
+
     # initialisation:
-    self.sensor = camera_class(numdevice=num_device)
-    self.sensor.open(**kwargs)
+    self.sensor = camera_class(numdevice=num_device,**self.init_kwargs)
+    self.sensor.open(**self.open_kwargs)
     if config:
       camera_config(self.sensor)
 
