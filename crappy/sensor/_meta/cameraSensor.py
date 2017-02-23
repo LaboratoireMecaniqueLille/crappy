@@ -134,10 +134,11 @@ class Cam_setting(object):
     return self._value
 
   # Here is the interesting part: When we set value (setting.value = x),
-  # we will got throught all of this, and the new value will be the actual
+  # we will go throught all of this, and the new value will be the actual
   # value of the setting after the operation
   @value.setter
   def value(self,i):
+    self.value # Detail: to make sure we called value getter once
     if type(self.limits) == tuple:
       if not self.limits[0] <= i <= self.limits[1]:
         print("[Cam_setting] Parameter",i,"out of range ",self.limits)
@@ -228,6 +229,7 @@ class MasterCam(object):
     will take its default value.
     If override is True, it will not assume a setting and reset it unless
     it is already default"""
+    #print('DEBUG=======set_all')
     for s in self.settings:
       if s in kwargs:
         if self.settings[s].value != kwargs[s] or override:
@@ -246,6 +248,7 @@ class MasterCam(object):
         pass
     for k,v in kwargs.iteritems():
       setattr(self,k,v)
+    #print('DEBUG====ENDset_all')
 
   def reset_all(self):
     """Reset all the settings to their default values"""
