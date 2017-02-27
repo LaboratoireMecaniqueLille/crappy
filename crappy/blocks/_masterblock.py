@@ -15,10 +15,12 @@ from __future__ import print_function
 
 from multiprocessing import Process, Pipe
 from collections import OrderedDict
-from time import sleep,time,localtime,strftime
+from time import sleep, time, localtime, strftime
+
 
 class CrappyStop(Exception):
   pass
+
 
 class MasterBlock(Process):
   """
@@ -106,14 +108,14 @@ class MasterBlock(Process):
     return map(lambda x: x.status, cls.instances)
 
   @classmethod
-  def all_are(cls,s):
+  def all_are(cls, s):
     """
     Returns true only if all processes status are s
     """
     return len(set(cls.get_status())) == 1 and s in cls.get_status()
 
   @classmethod
-  def prepare_all(cls,verbose=True):
+  def prepare_all(cls, verbose=True):
     """
     Starts all the blocks processes (block.prepare), but not the main loop
     """
@@ -124,13 +126,13 @@ class MasterBlock(Process):
       vprint = lambda *x: None
     vprint("Starting the blocks...")
     for instance in cls.instances:
-        vprint("Starting", instance)
-        instance.start()
-        vprint("Started, PID:", instance.pid)
+      vprint("Starting", instance)
+      instance.start()
+      vprint("Started, PID:", instance.pid)
     vprint("All processes are started.")
 
   @classmethod
-  def launch_all(cls,t0=None,verbose=True,wait=True):
+  def launch_all(cls, t0=None, verbose=True, wait=True):
     if verbose:
       def vprint(*args):
         print("[launch]", *args)
@@ -153,7 +155,7 @@ class MasterBlock(Process):
     try:
       # Keep running
       while True:
-        sleep(31536000)# 1 year, just to be sure
+        sleep(31536000)  # 1 year, just to be sure
     except KeyboardInterrupt:
       print("Main proccess got keyboard interrupt!")
       if not cls.all_are('running'):
@@ -163,12 +165,12 @@ class MasterBlock(Process):
       print("Crappy terminated gracefully")
 
   @classmethod
-  def start_all(cls,t0=None,verbose=True,wait=True):
+  def start_all(cls, t0=None, verbose=True, wait=True):
     cls.prepare_all(verbose)
-    cls.launch_all(t0,verbose,wait)
+    cls.launch_all(t0, verbose, wait)
 
   @classmethod
-  def stop_all(cls,verbose=True):
+  def stop_all(cls, verbose=True):
     """
     Stops all the blocks (crappy.stop)
     """
@@ -199,7 +201,7 @@ class MasterBlock(Process):
     pass
 
   def loop(self):
-    raise NotImplementedError('You must override loop or main in'+str(self))
+    raise NotImplementedError('You must override loop or main in' + str(self))
 
   def main(self):
     while not self.pipe2.poll():
@@ -223,7 +225,8 @@ class MasterBlock(Process):
     if not self.in_process:
       while self.pipe1.poll():
         self._status = self.pipe1.recv()
-      self.pipe2.send(self._status) # If another process tries to get the status
+      self.pipe2.send(
+        self._status)  # If another process tries to get the status
     return self._status
 
   @status.setter
@@ -248,15 +251,15 @@ class MasterBlock(Process):
     if type(data) == OrderedDict:
       pass
     elif type(data) == list:
-      data = OrderedDict(zip(self.labels,data))
-    elif data =='stop':
+      data = OrderedDict(zip(self.labels, data))
+    elif data == 'stop':
       pass
     else:
-      raise IOError("Trying to send a "+str(type(data))+" in a link!")
+      raise IOError("Trying to send a " + str(type(data)) + " in a link!")
     for o in self.outputs:
       o.send(data)
 
-  def get_last(self,num=None):
+  def get_last(self, num=None):
     """
     Unlike the recv methods of Link, get_last is NOT guaranteed to return
     all the data going through the links! It is meant to get the latest values,
@@ -267,7 +270,7 @@ class MasterBlock(Process):
     return instantaneously, giving the latest known reading
     If num is None, it will operate on all the input link at once
     """
-    if not hasattr(self,'_last_values'):
+    if not hasattr(self, '_last_values'):
       self._last_values = []
       for i in self.inputs:
         self._last_values.append(None)
@@ -283,7 +286,7 @@ class MasterBlock(Process):
       ret.update(self._last_values[i])
     return ret
 
-  def drop(self,num=None):
+  def drop(self, num=None):
     """Will clear the inputs of the blocks, performs like get_last
     but returns None instantly"""
     if num is None:
@@ -300,7 +303,7 @@ class MasterBlock(Process):
   def stop(self):
     if self.status != 'running':
       return
-    print('[%r] Stopping'%self)
+    print('[%r] Stopping' % self)
     self.pipe1.send(0)
     t = time()
     while self.status != 'done' and time() - t < 2:
@@ -314,7 +317,7 @@ class MasterBlock(Process):
       print('[%r] Could not stop properly, terminating' % self)
       self.terminate()
     else:
-      print("[%r] Stopped correctly"%self)
+      print("[%r] Stopped correctly" % self)
 
   def __repr__(self):
     return str(type(self)) + " (" + self.status + ")"
