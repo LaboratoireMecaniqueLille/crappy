@@ -23,7 +23,7 @@ from pyface.timer.api import Timer
 # Chaco imports
 from chaco.chaco_plot_editor import ChacoPlotItem
 from multiprocessing import Process, Queue  # pour simuler le comportement
-
+# import crappy
 # de crappy
 
 queue = Queue()
@@ -35,6 +35,7 @@ class Plotter(HasTraits):
   permet de les mettre a jour.
   """
   # definition d'objets avec Traits
+
   x_data = Array
   y_data = Array
   length = Int(20)
@@ -61,6 +62,9 @@ class Plotter(HasTraits):
               resizable=True,
               width=800, height=500)
 
+  def __init__(self):
+    print('(toototo')
+
   def update_graph(self):
     """Methode appelee par le timer."""
     recv = queue.get()
@@ -84,8 +88,8 @@ class Plotter(HasTraits):
     print'NEW LENGTH!', self.length
     if self.length < self.printed_points:
       self.tick = 0
-      self.x_data = self.x_data[-self.length:]
-      self.y_data = self.y_data[-self.length:]
+      self.x_data = self.x_data[-self.length * self.nb_points:]
+      self.y_data = self.y_data[-self.length * self.nb_points:]
     else:
       pass
 
@@ -97,7 +101,10 @@ class Viewer(HasTraits):
     resizable=True, title='hello world')
 
   def configure_traits(self, *args, **kws):
-    self.timer = Timer(1, self.plotter.update_graph)
+    self.timer = Timer(10, self.plotter.update_graph)  # lance un timer en
+    # tache de fond: toutes les 10 ms, ma methode est executee. ca correspond
+    #  a la frequence de rafraichissement de la fenetre (sauf si le queue.get
+    #  est bloquant)
     return super(Viewer, self).configure_traits(*args, **kws)
 
 
