@@ -40,6 +40,7 @@ from _videoextensoConfig import get_camera_config,ve_config
 from _cameraConfig import camera_config
 from _camera import TechnicalCamera
 from _videoExtenso import TechnicalVideoExtenso
+from _arduino import Arduino
 
 try:
   from _labjack import LabJack
