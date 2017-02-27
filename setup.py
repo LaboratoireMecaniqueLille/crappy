@@ -43,7 +43,7 @@ if platform.system() == "Linux":
     try:
       # Find the latest runtime version of SiliconSoftware install
       clPath = '/opt/SiliconSoftware/'+sorted(next(walk('/opt/SiliconSoftware/'))[1])[-1]+'/lib64/'
-    except IndexError:
+    except StopIteration:
       print "WARNING: Silicon Software install could not be found, CameraLink won't be available."
       # If the software is installed but not found, just set clPath manually in this file
       clPath = None
