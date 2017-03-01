@@ -40,6 +40,11 @@ try:
   from _ximeaCV import XimeaCV
 except Exception as e:
   import_error(e.message)
+  
+try:
+  from _bispectralSensor import Bispectral
+except Exception as e:
+  import_error(e.message)
 
 if _platform.system() == "Linux":
   try:
@@ -55,6 +60,7 @@ if _platform.system() == "Linux":
       from _jaiSensor import Jai
       from _clserial import _clSerial
       from _clserial import _jaiSerial
+      from _clSensor import CLCamera
 
       JaiSerial = _jaiSerial.JaiSerial
       ClSerial = _clSerial.ClSerial
