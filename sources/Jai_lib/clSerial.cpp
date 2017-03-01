@@ -48,7 +48,7 @@ void CaptureCAM_CL::checkSerialCom(int stat){
 
 void CaptureCAM_CL::serialInit(unsigned int serialIndex){
   try
-  { 
+  {
     unsigned int * numSerialPorts;
     numSerialPorts = (unsigned int *) malloc(32);
 
@@ -70,7 +70,7 @@ void CaptureCAM_CL::serialInit(unsigned int serialIndex){
       printf("port %i is identified as %s\n", serialIndex, buf);
     free(buf);
   }
-  
+
   catch (exception& e)
   {
     cout << "An exception occurred. Exception: " << e.what() << '\n';
@@ -79,8 +79,9 @@ void CaptureCAM_CL::serialInit(unsigned int serialIndex){
 
 void CaptureCAM_CL::serialWrite(char buffer[]){
     clFlushPort(serialRefPtr);
-    unsigned int bufferlen= 20;
-    unsigned int serialTimeout = 1000;
+    unsigned int bufferlen = strlen(buffer)+1;
+    unsigned int serialTimeout = 5000;
+//    cout << "BFLen " << bufferlen << endl;
 //     char * str = "(0x10)\r\n";
 //     char *newBuffer = (char *) malloc(strlen(buffer)+strlen(str));
 //     strcpy(newBuffer, buffer);
@@ -92,18 +93,22 @@ void CaptureCAM_CL::serialWrite(char buffer[]){
     }
     char *mybuff= NULL;
 
-    unsigned int numBytes=256;
+    unsigned int numBytes = 256;
+    unsigned int i = 0;
+    bufferlen = 1;
     mybuff = (char *) malloc(numBytes);
+    while(1){
     try{
-        checkSerialCom(clSerialRead(serialRefPtr, mybuff, &numBytes, serialTimeout));
-    }catch(string const& error){
-        free(mybuff);
-        cout << "Read ERROR:" << error << endl;
-// 	serialWrite(buffer);
-	return;
-    }
-//     char temp[8];
-//     strncpy(temp, mybuff, 8);
-//     cout << "Camera response:" << temp << endl;
+        checkSerialCom(clSerialRead(serialRefPtr, mybuff+i, &bufferlen, serialTimeout));
+        serialTimeout = 30;
+        i++;
+        if(i==numBytes-1){cout << "Reply too long!" << endl;break;}
+    }catch(string const& error){break;}}
+     if(i==0){cout << "No reply from the camera!" << endl;return;}
+     // cout << "read " << i << "chars" << endl;
+     mybuff[i] = '\0';
+     // char *temp = (char*)malloc(numBytes);
+     // strncpy(temp, mybuff, numBytes);
+     cout << mybuff << endl;
     free(mybuff);
 }
