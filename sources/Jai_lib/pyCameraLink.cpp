@@ -139,8 +139,9 @@ PyObject* VideoCapture_serialSet(VideoCapture *self, PyObject *args)
 	char *buffer ;
 	if (!PyArg_ParseTuple(args, "s", &buffer))
 		exit(0);
-	capt->serialWrite(buffer);
-	return Py_None;
+  PyObject* ret = Py_BuildValue("s",capt->serialWrite(buffer));
+  // Py_INCREF(ret);
+	return ret;
 
 }
 

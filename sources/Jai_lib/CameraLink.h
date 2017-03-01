@@ -86,7 +86,7 @@ public:
     const char*     cameraType; /*!< Type of camera, for frame grabber configuration */
     void            *ImgPtr; /*!< Pointer to image data*/
     bool isopened; /*!< State of the camera device*/
-    void serialWrite(char buffer[]);
+    char* serialWrite(char buffer[]);
     //void display(int dis);
 private:
     void init();

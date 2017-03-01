@@ -77,7 +77,9 @@ void CaptureCAM_CL::serialInit(unsigned int serialIndex){
   }
 }
 
-void CaptureCAM_CL::serialWrite(char buffer[]){
+char* CaptureCAM_CL::serialWrite(char buffer[]){
+    unsigned int numBytes = 256;
+    static char mybuff[256];// = (char*)malloc(numBytes);
     clFlushPort(serialRefPtr);
     unsigned int bufferlen = strlen(buffer)+1;
     unsigned int serialTimeout = 5000;
@@ -91,12 +93,10 @@ void CaptureCAM_CL::serialWrite(char buffer[]){
     }catch(string const& error){
         cout << "Write ERROR:" << error << endl;
     }
-    char *mybuff= NULL;
+//mybuff= NULL;
 
-    unsigned int numBytes = 256;
     unsigned int i = 0;
     bufferlen = 1;
-    mybuff = (char *) malloc(numBytes);
     while(1){
     try{
         checkSerialCom(clSerialRead(serialRefPtr, mybuff+i, &bufferlen, serialTimeout));
@@ -104,11 +104,11 @@ void CaptureCAM_CL::serialWrite(char buffer[]){
         i++;
         if(i==numBytes-1){cout << "Reply too long!" << endl;break;}
     }catch(string const& error){break;}}
-     if(i==0){cout << "No reply from the camera!" << endl;return;}
+     if(i==0){cout << "No reply from the camera!" << endl;return NULL;}
      // cout << "read " << i << "chars" << endl;
      mybuff[i] = '\0';
-     // char *temp = (char*)malloc(numBytes);
-     // strncpy(temp, mybuff, numBytes);
      cout << mybuff << endl;
-    free(mybuff);
+     return mybuff;
+
+    //free(mybuff);
 }
