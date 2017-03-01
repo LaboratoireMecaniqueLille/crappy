@@ -138,7 +138,7 @@ class Cam_setting(object):
   # value of the setting after the operation
   @value.setter
   def value(self,i):
-    self.value # Detail: to make sure we called value getter once
+    _ = self.value # Detail: to make sure we called value getter once
     if type(self.limits) == tuple:
       if not self.limits[0] <= i <= self.limits[1]:
         print("[Cam_setting] Parameter",i,"out of range ",self.limits)
