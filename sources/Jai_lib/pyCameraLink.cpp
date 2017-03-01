@@ -2,15 +2,15 @@
  *  @{
  */
 
-/** @addtogroup cameralink 
+/** @addtogroup cameralink
  *  @{
  */
 
-/** @addtogroup videocapture 
+/** @addtogroup videocapture
  *  @{
  */
 
-/** 
+/**
  * \file pyCameraLink.cpp
  * \brief CameraLink class to be interfaced with Python
  * \author Robin Siemiatkowski
@@ -30,28 +30,28 @@ char *array_buffer;
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /**
  * \fn PyObject* VideoCapture_open(int device, const char* file)
 
- * \brief 
+ * \brief
  *      method to open a camera device through the cameraLink interface.
  * \param device The number of the device to be openned.
  * \return a call to VideoCapture_isOpened()
  */
-PyObject* VideoCapture_open(int device, const char* file)
+PyObject* VideoCapture_open(int device, const char* file, const char* camtype)
 {
     if (VideoCapture_isOpened() == Py_True) {
 		VideoCapture_release();
 	}
-	capt->open(device, file);
+	capt->open(device, file, camtype);
     return VideoCapture_isOpened();
 }
 
 /*
  * \fn PyObject* VideoCapture_addTrigger(VideoCapture *self, PyObject *args)
- * \brief 
+ * \brief
  *      method to open a camera device through the cameraLink interface.
  * \param device The number of the device to be openned.
  * \return a call to VideoCapture_isOpened()
@@ -72,7 +72,7 @@ VideoCapture_addTrigger(VideoCapture *self, PyObject *args)
 
 /**
  * \fn void VideoCapture_startAcquisition()
- * \brief 
+ * \brief
  *      Start the acquisition of a camera device.
  * 	The acquisition is started automaticaly after a call to the constructor of the VideoCapture class.
  * 	If you want to change some parameters of the acquisition, you have to call stopAcq() first.
@@ -87,7 +87,7 @@ PyObject* VideoCapture_startAcquisition()
 
 /**
  * \fn void VideoCapture_stopAcquisition()
- * \brief 
+ * \brief
  *      Stop the acquisition of a camera device.
  * 	The acquisition is started automaticaly after a call to the constructor of the VideoCapture class.
  * 	If you want to change some parameters of the acquisition, you have to call stopAcq() first.
@@ -96,15 +96,15 @@ PyObject* VideoCapture_stopAcquisition()
 {
    if(!capt->stop())
      return Py_True;
-   else 
+   else
      return Py_False;
 }
 
 /**
  * \fn PyObject* VideoCapture_isOpened()
- * \brief 
+ * \brief
  *      It check if te camera is running or it has been stopped.
- * \return 
+ * \return
  *      - Py_True if the camera is openned.
  *      - Py_False if the camera is closed.
  */
@@ -119,7 +119,7 @@ PyObject* VideoCapture_isOpened()
 
 /**
  * \fn PyObject* VideoCapture_release()
- * \brief 
+ * \brief
  *      Close the camera device: stop the acquisition and free the allocated memory.
  */
 PyObject* VideoCapture_release()
@@ -130,7 +130,7 @@ PyObject* VideoCapture_release()
 
 /**
  * \fn PyObject* VideoCapture_serialSet(VideoCapture *self, PyObject *args)
- * \brief Setting the value of a parameter from the serial interface 
+ * \brief Setting the value of a parameter from the serial interface
  *
  * \param buffer will be written to the serial port.
  */
@@ -141,7 +141,7 @@ PyObject* VideoCapture_serialSet(VideoCapture *self, PyObject *args)
 		exit(0);
 	capt->serialWrite(buffer);
 	return Py_None;
-  
+
 }
 
 
@@ -161,13 +161,12 @@ bool VideoCapture_grab()
  * \fn PyObject* VideoCapture_retrieve(VideoCapture *self)
 *  \brief Method to retrieve a frame to Python understanding format.
 *  It get the pointer to previously grabbed frame, and convert it to a numpy array object.
- * \return 
+ * \return
  *      - myDict, which contains the frame's data and the meta data of the grabbed frame.
  *      - Py_None if the current format has not been retrived.
  */
 PyObject* VideoCapture_retrieve(VideoCapture *self)
 {
-
         if(array_buffer==NULL){
             free(array_buffer);
             array_buffer=NULL;
@@ -238,7 +237,7 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 			array_buffer = (char *)PyArray_DATA((PyArrayObject *)self->myarray);
 			memcpy(array_buffer, capt->ImgPtr, capt->width*capt->height);
 			break;}
-		default : 
+		default :
 			return Py_None;
 		}
 		//capt-> resetCvImage();
@@ -251,7 +250,7 @@ PyObject* VideoCapture_retrieve(VideoCapture *self)
 /**
  * \fn PyObject* VideoCapture_getMeta()
 *  \brief Method to get meta data of the grabbed frame.
- * \return 
+ * \return
  *      - myDict, which contains the meta data of the grabbed frame:
  *          -# the width of the grabbed frame
  *          -# the height of the grabbed frame
@@ -264,23 +263,23 @@ PyObject* VideoCapture_getMeta()
 // 	PyDict_SetItemString(myDict, "nframe", Py_BuildValue("I",capt->image.nframe));
 // 	PyDict_SetItemString(myDict, "AbsoluteOffsetX", Py_BuildValue("I",capt->image.AbsoluteOffsetX));
 // 	PyDict_SetItemString(myDict, "AbsoluteOffsetY", Py_BuildValue("I",capt->image.AbsoluteOffsetY));
-// 	
+//
 // 	PyObject *floatObj = PyFloat_FromDouble(capt->image.tsSec);
-// 	PyObject *timeTuple = Py_BuildValue("(O)", floatObj);  
+// 	PyObject *timeTuple = Py_BuildValue("(O)", floatObj);
 // 	PyObject *dateTime = PyDateTime_FromTimestamp(timeTuple);
 // 	PyDict_SetItemString(myDict, "tsSec", dateTime);
 //         Py_CLEAR(floatObj);
 //         Py_CLEAR(timeTuple);
 //         Py_CLEAR(dateTime);
-// 	
+//
 // 	PyObject *floatObj1 = PyFloat_FromDouble(capt->image.tsUSec);
-// 	PyObject *timeTuple1 = Py_BuildValue("(O)", floatObj1);  
+// 	PyObject *timeTuple1 = Py_BuildValue("(O)", floatObj1);
 // 	PyObject *dateTime1 = PyDateTime_FromTimestamp(timeTuple1);
 // 	PyDict_SetItemString(myDict, "tsUSec", dateTime1);
 // 	Py_CLEAR(floatObj1);
 //      Py_CLEAR(timeTuple1);
 //      Py_CLEAR(dateTime1);
-        
+
 	return myDict;
 }
 
@@ -289,7 +288,7 @@ PyObject* VideoCapture_getMeta()
 *  \brief Method to get the dictionnary containing the meta data, the frame data and the status of the grabbed frame.
  * \return A PyTuple containing the status of the grabbing as first position:
  *          - Py_False if the grabbing has failled
- *          - Py_True if the grabbing has succeded 
+ *          - Py_True if the grabbing has succeded
  *         and the disctionnary containing the data and meta data of the grabbed frame, or Py_None if the grabbing has failled.
  */
 PyObject* VideoCapture_fgread(VideoCapture *self)
@@ -304,39 +303,39 @@ PyObject* VideoCapture_fgread(VideoCapture *self)
 		//PyTuple_SetItem(rslt, 1, Py_BuildValue("O&", capt->ImgPtr));
     }
     return rslt;
-    
+
 }
 
 /**
  * \fn PyObject* VideoCapture_set(VideoCapture *self, PyObject *args)
- * \brief Setting the value of a parameter from a frame grabber. 
+ * \brief Setting the value of a parameter from a frame grabber.
  *
  * \param property_id As argument, a identification number is needed.
     If the identification number is unknown, the parameter name has to be given.
     It can be one of the following:
-        - FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber. 
+        - FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.
         - FG_WIDTH: Width of the clipping image.
         - FG_HEIGHT: Height of the clipping image.
         - FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).
         - FG_XOFFSET: X-offset from the left top corner in pixel.
-        - FG_YOFFSET: Y-offset from the left top corner in pixel. 
+        - FG_YOFFSET: Y-offset from the left top corner in pixel.
         - FG_FRAMESPERSEC: Number of images per second.
         - FG_EXPOSURE: Exposure time in µs.
         - FG_FORMAT: Color format of the transferred image
                         -# 8bit gray (FG_GRAY)
                         -# 16bit color (FG_GRAY16)
                         -# 24bit color (FG_COL24).
-                     See color management of the according frame grabber design. 
+                     See color management of the according frame grabber design.
         - FG_PORT: Logical number of the active CameraLink port.
         - FG_TRIGGERMODE: Trigger modes:
                             -# FREE_RUN
                             -# GRABBER_CONTROLLED
                             -# GRABBER_CONTROLLED_SYNCRON
                             -# ASYNC_SOFTWARE_TRIGGER
-                            -# ASYNC_TRIGGER. 
+                            -# ASYNC_TRIGGER.
         - FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.
         - FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.
-        
+
  * \param value  Pointer to required value.
  * \return Py_True if the parameter was read correctly
            Py_False if an invalid parameter has been entered or if the entered value is besides valid ranges.
@@ -353,28 +352,28 @@ PyObject* VideoCapture_set(VideoCapture *self, PyObject *args)
 
 /**
  * \fn PyObject* VideoCapture_get(VideoCapture *self, PyObject *args)
- * \brief Reading the current value of a parameter from a frame grabber. 
+ * \brief Reading the current value of a parameter from a frame grabber.
  *
  * \param property_id As argument, a identification number is needed.
  *   If the identification number is unknown, the parameter name has to be given.
  *   It can be one of the following:
  *       - FG_CAMSTAUS: If a camera signal is on CameraLink port value is 1 else 0.
  *       - FG_REVNR: Current revision version of camera DLL.
- *       - FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber. 
+ *       - FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.
  *       - FG_WIDTH: Width of the clipping image.
  *       - FG_MAXWIDTH: Maximum width of the clipping image.
  *       - FG_HEIGHT: Height of the clipping image.
  *       - FG_MAXHEIGHT: Maximum height of the clipping image.
  *       - FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).
  *       - FG_XOFFSET: X-offset from the left top corner in pixel.
- *       - FG_YOFFSET: Y-offset from the left top corner in pixel. 
+ *       - FG_YOFFSET: Y-offset from the left top corner in pixel.
  *       - FG_FRAMESPERSEC: Number of images per second.
  *       - FG_EXPOSURE: Exposure time in µs.
  *       - FG_FORMAT: Color format of the transferred image
  *                       -# 8bit gray (FG_GRAY)
  *                       -# 16bit color (FG_GRAY16)
  *                       -# 24bit color (FG_COL24).
- *                    See color management of the according frame grabber design. 
+ *                    See color management of the according frame grabber design.
  *       - FG_PORT: Logical number of the active CameraLink port.
  *       - FG_PIXELDEPTH: Returns the depth of color of the pixel.
  *       - FG_LINEALIGNMENT: Returns the alignment of a line (in bits).
@@ -384,10 +383,10 @@ PyObject* VideoCapture_set(VideoCapture *self, PyObject *args)
  *                           -# GRABBER_CONTROLLED
  *                           -# GRABBER_CONTROLLED_SYNCRON
  *                           -# ASYNC_SOFTWARE_TRIGGER
- *                           -# ASYNC_TRIGGER. 
+ *                           -# ASYNC_TRIGGER.
  *       - FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.
  *       - FG_TWOCAMMODEL: Returns the value, if the loaded camera applet is a dual (1) or a single applet (0).
- *       - FG_HDSYNC: Returns the HDSYNC value. 
+ *       - FG_HDSYNC: Returns the HDSYNC value.
  *       - FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.
  *       - FG_BOARD_INFORMATION: Information on the board type:
  *                                   -# BINFO_BOARD_TYPE:
@@ -398,7 +397,7 @@ PyObject* VideoCapture_set(VideoCapture *self, PyObject *args)
  *                                   -# BINFO_POCL:
  *                                       - 0 for microEnable IV-Base x1
  *                                       - 1 for microEnable IV-Base x1 PoCL
- * \return 
+ * \return
  *       - Py_True if the parameter was read correctly
  *       - Py_False if an invalid parameter has been entered.
  */
@@ -426,7 +425,7 @@ static void VideoCapture_dealloc(VideoCapture* self)
  * \fn static PyObject * VideoCapture_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
  * \brief The constructor of the VideoCapture class
  * It create the self parameter to be use later in Python.
- * \return self parameter, which represent an instance of the VideoCapture class. 
+ * \return self parameter, which represent an instance of the VideoCapture class.
  */
 static PyObject * VideoCapture_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
@@ -434,7 +433,7 @@ static PyObject * VideoCapture_new(PyTypeObject *type, PyObject *args, PyObject 
 
     self = (VideoCapture *)type->tp_alloc(type, 0);
     if (self != NULL) {
-		if (!PyArg_ParseTuple(args, "is:call", &self->device, &self->file)) {
+		if (!PyArg_ParseTuple(args, "iss:call", &self->device, &self->file, &self->cameraType)) {
 			return NULL;
 		}
     }
@@ -449,13 +448,13 @@ static PyObject * VideoCapture_new(PyTypeObject *type, PyObject *args, PyObject 
  */
 static int VideoCapture_init(VideoCapture *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"device","file",  NULL};
+    static char *kwlist[] = {"device","file","cameratype",  NULL};
 
-    if (! PyArg_ParseTupleAndKeywords(args, kwds, "|is", kwlist,  
-                                      &self->device, &self->file))
-        return -1; 
+    if (! PyArg_ParseTupleAndKeywords(args, kwds, "|iss", kwlist,
+                                      &self->device, &self->file, &self->cameraType))
+        return -1;
     capt = new CaptureCAM_CL();
-    VideoCapture_open(self->device, self->file);
+    VideoCapture_open(self->device, self->file, self->cameraType);
     return 0;
 }
 
@@ -473,7 +472,7 @@ PyObject* VideoCapture_Display(VideoCapture *self, PyObject *args)
 }*/
 
 static PyMemberDef VideoCapture_members[] = {
-    {NULL} 
+    {NULL}
 };
 
 
@@ -490,14 +489,14 @@ void set_map_to_export(){
 	my_map.insert(make_pair("FG_MAXWIDTH", FG_MAXWIDTH));// Maximum width of the clipping image.
 	my_map.insert(make_pair("FG_HEIGHT", FG_HEIGHT));// Height of the clipping image.
 	my_map.insert(make_pair("FG_MAXHEIGHT", FG_MAXHEIGHT));// Maximum height of the clipping image.
-	my_map.insert(make_pair("FG_XSHIFT", FG_XSHIFT));// Number of invalid words at the beginning of a row (modulo of the width of the interface). 
-	my_map.insert(make_pair("FG_XOFFSET", FG_XOFFSET));// X-offset from the left top corner in pixel. 
-	my_map.insert(make_pair("FG_YOFFSET", FG_YOFFSET));// Y-offset from the left top corner in pixel. 
+	my_map.insert(make_pair("FG_XSHIFT", FG_XSHIFT));// Number of invalid words at the beginning of a row (modulo of the width of the interface).
+	my_map.insert(make_pair("FG_XOFFSET", FG_XOFFSET));// X-offset from the left top corner in pixel.
+	my_map.insert(make_pair("FG_YOFFSET", FG_YOFFSET));// Y-offset from the left top corner in pixel.
 	my_map.insert(make_pair("FG_FRAMESPERSEC", FG_FRAMESPERSEC));// Number of images per second.
 	my_map.insert(make_pair("FG_MAXFRAMESPERSEC", FG_MAXFRAMESPERSEC));// Max number of images per second.
 	my_map.insert(make_pair("FG_EXPOSURE", FG_EXPOSURE));// Exposure time in µs.
         /*
-         * Color format of the transferred image: 
+         * Color format of the transferred image:
          *  1bit (FG_BINARY),
          *  8bit (FG_GRAY),
          *  16bit (FG_GRAY16),
@@ -505,10 +504,10 @@ void set_map_to_export(){
          *  30bit (FG_COL30),
          *  32bit (FG_COL32),
          *  48bit (FG_COL48).
-         * See color management of the according frame grabber design.  
+         * See color management of the according frame grabber design.
          */
 	my_map.insert(make_pair("FG_FORMAT", FG_FORMAT));
-        
+
 	my_map.insert(make_pair("FG_BINARY", FG_BINARY));
 	my_map.insert(make_pair("FG_GRAY", FG_GRAY));
 	my_map.insert(make_pair("FG_GRAY16 ", FG_GRAY16));
@@ -516,42 +515,42 @@ void set_map_to_export(){
 	my_map.insert(make_pair("FG_COL30", FG_COL30));
 	my_map.insert(make_pair("FG_COL32", FG_COL32));
 	my_map.insert(make_pair("FG_COL48 ", FG_COL48));
-	
+
 	my_map.insert(make_pair("PORT_A", PORT_A)); // base config
 	my_map.insert(make_pair("PORT_B", PORT_B)); // base config
 	my_map.insert(make_pair("FG_COL48 ", PORT_AB)); // medium/full config
-        
+
 	my_map.insert(make_pair("FG_PORT", FG_PORT));//Logical number of the active CameraLink port.
-	my_map.insert(make_pair("FG_PIXELDEPTH", FG_PIXELDEPTH));// Returns the depth of color of the pixel. 
+	my_map.insert(make_pair("FG_PIXELDEPTH", FG_PIXELDEPTH));// Returns the depth of color of the pixel.
 	my_map.insert(make_pair("FG_LINEALIGNMENT ", FG_LINEALIGNMENT));// Returns the alignment of a line (in bits).
 	my_map.insert(make_pair("FG_RIGHT_ALIGNED", FG_RIGHT_ALIGNED)); // right
 	my_map.insert(make_pair("FG_LEFT_ALIGNED ", FG_LEFT_ALIGNED)); // left
-	
+
 	my_map.insert(make_pair("FG_TRANSFER_LEN", FG_TRANSFER_LEN));// Returns the length of the last DMA transfer.
-	
-        /* 
-         *Trigger modes: 
+
+        /*
+         *Trigger modes:
          *  - FREE_RUN
          *  - GRABBER_CONTROLLED
          *  - GRABBER_CONTROLLED_SYNCRON
          *  - ASYNC_SOFTWARE_TRIGGER
-         *  - ASYNC_TRIGGER 
+         *  - ASYNC_TRIGGER
          */
 	my_map.insert(make_pair("FG_TRIGGERMODE", FG_TRIGGERMODE));
-        
+
 	my_map.insert(make_pair("FREE_RUN", FREE_RUN));
 	my_map.insert(make_pair("GRABBER_CONTROLLED",  GRABBER_CONTROLLED));
 // 		my_map.insert(make_pair("GRABBER_CONTROLLED_SYNCRON", GRABBER_CONTROLLED_SYNCRON));
 	my_map.insert(make_pair("ASYNC_SOFTWARE_TRIGGER" , ASYNC_SOFTWARE_TRIGGER));
 	my_map.insert(make_pair("ASYNC_TRIGGER" , ASYNC_TRIGGER));
-	
+
 // 		my_map.insert(make_pair("FG_STROBPULSEDELAY", FG_STROBPULSEDELAY));// Strobe delay to the trigger in µs.
 	my_map.insert(make_pair("FG_TWOCAMMODEL", FG_TWOCAMMODEL));// Returns the value, if the loaded camera applet is a dual (1) or a single applet (0).
-	my_map.insert(make_pair("FG_HDSYNC", FG_HDSYNC));// Returns the HDSYNC value. 
+	my_map.insert(make_pair("FG_HDSYNC", FG_HDSYNC));// Returns the HDSYNC value.
 	my_map.insert(make_pair("FG_GLOBAL_ACCESS", FG_GLOBAL_ACCESS));// Returns the value for the set plausibility access.
-	 
+
         /*
-         * Information on the board type: 
+         * Information on the board type:
          *
          *  BINFO_BOARD_TYPE:
          *      0xa40 for microEnable IV-Base x1
@@ -560,7 +559,7 @@ void set_map_to_export(){
          *
          *  BINFO_POCL:
          *      0 for microEnable IV-Base x1
-         *      1 for microEnable IV-Base x1 PoCL 
+         *      1 for microEnable IV-Base x1 PoCL
          */
 	my_map.insert(make_pair("FG_BOARD_INFORMATION", FG_BOARD_INFORMATION));
 }
@@ -635,11 +634,11 @@ static PyMethodDef module_methods[] = {
 
 
 /**
- * \fn PyMODINIT_FUNC initclModule(void) 
+ * \fn PyMODINIT_FUNC initclModule(void)
  * \brief This function will create the clModule and export the references to the VideoCapture class and other exported variables.
  */
-PyMODINIT_FUNC 
-initclModule(void) 
+PyMODINIT_FUNC
+initclModule(void)
 {
     try{
         PyObject* m;
@@ -664,18 +663,18 @@ initclModule(void)
 			PyDict_SetItemString(d, (char *)p->first.c_str(), tmp);
 			Py_DECREF(tmp);
 		}
-	            
+
         Py_INCREF(&VideoCaptureType);
         PyModule_AddObject(m, "VideoCapture", (PyObject *)&VideoCaptureType);
-    } 
-    catch ( const std::exception & e ) 
-    { 
-        std::cerr << e.what(); 
-    } 
+    }
+    catch ( const std::exception & e )
+    {
+        std::cerr << e.what();
+    }
 }
 #ifdef __cplusplus
 }
-#endif 
-/** @} */ 
+#endif
+/** @} */
 /** @} */
 /** @} */

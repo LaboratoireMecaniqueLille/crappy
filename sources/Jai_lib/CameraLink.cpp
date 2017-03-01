@@ -2,19 +2,19 @@
  *  @{
  */
 
-/** @addtogroup cameralink 
+/** @addtogroup cameralink
  *  @{
  */
 
-/** @addtogroup capturecam 
+/** @addtogroup capturecam
  *  @{
  */
 
 
-/** 
+/**
  * \file CameraLink.cpp
  * \brief CaptureCAM_CL class
- * 
+ *
  * This class allows to parameter and control a camera device throught a cameraLink interface
  * \author Robin Siemiatkowski
  * \version 0.1
@@ -26,7 +26,7 @@
  * \fn CaptureCAM_CL::CaptureCAM_CL()
  * \brief Constructor of CaptureCAM_CL Class
  *        It Initialize the camera class
- * 
+ *
  */
 CaptureCAM_CL::CaptureCAM_CL() {
 	init();
@@ -35,7 +35,7 @@ CaptureCAM_CL::CaptureCAM_CL() {
 /**
  * \fn CaptureCAM_CL::~CaptureCAM_CL()
  * \brief Destructor of CaptureCAM_CL Class
- * 
+ *
  */
 CaptureCAM_CL::~CaptureCAM_CL(){
 	close();
@@ -44,13 +44,13 @@ CaptureCAM_CL::~CaptureCAM_CL(){
 /**
  * \fn void CaptureCAM_CL::init()
  * \brief This function initialize the CaptureCAM_CL attributes.
- * 
+ *
  */
 void CaptureCAM_CL::init()
 {
     isopened=false;
     last_pic_nr = 0;
-    timeout = 4;
+    timeout = 20;
     fg= NULL;
     camPort= PORT_A;
     nrOfPicturesToGrab  = GRAB_INFINITE;
@@ -93,13 +93,15 @@ void CaptureCAM_CL::init()
  * \param file path to the configuration file of the camera, cannot be Null.
  * \return True if the camera was correctly openned.
  */
-bool CaptureCAM_CL::open( int wIndex, const char* conffile)
+bool CaptureCAM_CL::open(int wIndex, const char* conffile, const char* camtype)
 {
+    cout << "opening with cam type: " << camtype << "\nConffile: "
+      << conffile << endl;
     int isSlave =0;
     boardNr=wIndex;
-    // file=conffile;
-    cout << "FullLineGray8" << endl;
-    if ((fg = Fg_InitEx("FullAreaGray8", wIndex, isSlave)) == NULL) {
+    file=conffile;
+    // if ((fg = Fg_InitEx("FullAreaGray8", wIndex, isSlave)) == NULL) {
+    if ((fg = Fg_InitEx(camtype, wIndex, isSlave)) == NULL) {
       fprintf(stderr, "error in Fg_InitEx: %s\n", Fg_getLastErrorDescription(NULL));
       exit(EXIT_FAILURE);
     }
@@ -109,7 +111,7 @@ bool CaptureCAM_CL::open( int wIndex, const char* conffile)
     }
     ComNr=boardNr*2;
     serialInit(ComNr);
-  
+
     if(Fg_setParameter(fg,FG_TRIGGERMODE,&TriggerMode,camPort)==FG_OK){
       printf("\nTrig config succeed\n");
     }
@@ -164,13 +166,15 @@ bool CaptureCAM_CL::grabFrame()
     }
   }catch(string const& error){
     cout <<"ERROR: " << error << endl;
+    cout << " Trying to repoen..." << endl;
     sleep(5);
     timeout+= 100;
     last_pic_nr = 0;
     const char *f=file;
+    const char *ct=cameraType;
     int boardNb = boardNr;
     init();
-    open(boardNb,f);
+    open(boardNb,f,ct);
     startAcquire();
     return grabFrame();
   }
@@ -196,28 +200,28 @@ void CaptureCAM_CL::resetCvImage()
 
 /**
  * \fn int CaptureCAM_CL::getProperty( int property_id )
- * \brief Reading the current value of a parameter from a frame grabber. 
+ * \brief Reading the current value of a parameter from a frame grabber.
  *
  * \param property_id As argument, a identification number is needed.
     If the identification number is unknown, the parameter name has to be given.
     It can be one of the following:
         - FG_CAMSTAUS: If a camera signal is on CameraLink port value is 1 else 0.
         - FG_REVNR: Current revision version of camera DLL.
-        - FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber. 
+        - FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.
         - FG_WIDTH: Width of the clipping image.
         - FG_MAXWIDTH: Maximum width of the clipping image.
         - FG_HEIGHT: Height of the clipping image.
         - FG_MAXHEIGHT: Maximum height of the clipping image.
         - FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).
         - FG_XOFFSET: X-offset from the left top corner in pixel.
-        - FG_YOFFSET: Y-offset from the left top corner in pixel. 
+        - FG_YOFFSET: Y-offset from the left top corner in pixel.
         - FG_FRAMESPERSEC: Number of images per second.
         - FG_EXPOSURE: Exposure time in µs.
         - FG_FORMAT: Color format of the transferred image
                         -# 8bit gray (FG_GRAY)
                         -# 16bit color (FG_GRAY16)
                         -# 24bit color (FG_COL24).
-                     See color management of the according frame grabber design. 
+                     See color management of the according frame grabber design.
         - FG_PORT: Logical number of the active CameraLink port.
         - FG_PIXELDEPTH: Returns the depth of color of the pixel.
         - FG_LINEALIGNMENT: Returns the alignment of a line (in bits).
@@ -227,10 +231,10 @@ void CaptureCAM_CL::resetCvImage()
                             -# GRABBER_CONTROLLED
                             -# GRABBER_CONTROLLED_SYNCRON
                             -# ASYNC_SOFTWARE_TRIGGER
-                            -# ASYNC_TRIGGER. 
+                            -# ASYNC_TRIGGER.
         - FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.
         - FG_TWOCAMMODEL: Returns the value, if the loaded camera applet is a dual (1) or a single applet (0).
-        - FG_HDSYNC: Returns the HDSYNC value. 
+        - FG_HDSYNC: Returns the HDSYNC value.
         - FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.
         - FG_BOARD_INFORMATION: Information on the board type:
                                     -# BINFO_BOARD_TYPE:
@@ -241,7 +245,7 @@ void CaptureCAM_CL::resetCvImage()
                                     -# BINFO_POCL:
                                         - 0 for microEnable IV-Base x1
                                         - 1 for microEnable IV-Base x1 PoCL
- * \return 
+ * \return
         - The value of the parameter.
  */
 unsigned int CaptureCAM_CL::getProperty( int property_id )
@@ -286,9 +290,9 @@ unsigned int CaptureCAM_CL::getProperty( int property_id )
     }
     switch(ret)
     {
-        case FG_NOT_INIT: cout << "Initialization failed." << endl; break; 
-        case FG_INVALID_PARAMETER: cout << "An invalid parameter has been entered." << endl; break; 
-        case FG_VALUE_OUT_OF_RANGE : cout << "Value is besides valid ranges." << endl; break; 
+        case FG_NOT_INIT: cout << "Initialization failed." << endl; break;
+        case FG_INVALID_PARAMETER: cout << "An invalid parameter has been entered." << endl; break;
+        case FG_VALUE_OUT_OF_RANGE : cout << "Value is besides valid ranges." << endl; break;
 
     }
     return value;
@@ -297,34 +301,34 @@ unsigned int CaptureCAM_CL::getProperty( int property_id )
 
 /**
  * \fn bool CaptureCAM_CL::setProperty( int property_id, int value )
- * \brief Setting the value of a parameter from a frame grabber. 
+ * \brief Setting the value of a parameter from a frame grabber.
  *
  * \param property_id As argument, a identification number is needed.
     If the identification number is unknown, the parameter name has to be given.
     It can be one of the following:
-        - FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber. 
+        - FG_TIMEOUT: Time in seconds until device driver displays a timeout of the frame grabber.
         - FG_WIDTH: Width of the clipping image.
         - FG_HEIGHT: Height of the clipping image.
         - FG_XSHIFT: Number of invalid words at the beginning of a row (modulo of the width of the interface).
         - FG_XOFFSET: X-offset from the left top corner in pixel.
-        - FG_YOFFSET: Y-offset from the left top corner in pixel. 
+        - FG_YOFFSET: Y-offset from the left top corner in pixel.
         - FG_FRAMESPERSEC: Number of images per second.
         - FG_EXPOSURE: Exposure time in µs.
         - FG_FORMAT: Color format of the transferred image
                         -# 8bit gray (FG_GRAY)
                         -# 16bit color (FG_GRAY16)
                         -# 24bit color (FG_COL24).
-                     See color management of the according frame grabber design. 
+                     See color management of the according frame grabber design.
         - FG_PORT: Logical number of the active CameraLink port.
         - FG_TRIGGERMODE: Trigger modes:
                             -# FREE_RUN
                             -# GRABBER_CONTROLLED
                             -# GRABBER_CONTROLLED_SYNCRON
                             -# ASYNC_SOFTWARE_TRIGGER
-                            -# ASYNC_TRIGGER. 
+                            -# ASYNC_TRIGGER.
         - FG_STROBPULSEDELAY: Strobe delay to the trigger in µs.
         - FG_GLOBAL_ACCESS: Returns the value for the set plausibility access.
-        
+
  * \param value  Pointer to required value.
  * \return FG_OK if the parameter was read correctly
            FG_INVALID_PARAMETER if an invalid parameter has been entered.
@@ -354,9 +358,9 @@ bool CaptureCAM_CL::setProperty( int property_id, int value )
 
     switch(mvret)
     {
-        case FG_NOT_INIT: cout << "Initialization failed." << endl; return false; break; 
-        case FG_INVALID_PARAMETER: cout << "An invalid parameter has been entered." << endl; return false; break; 
-        case FG_VALUE_OUT_OF_RANGE : cout << "Value is besides valid ranges." << endl; return false; break; 
+        case FG_NOT_INIT: cout << "Initialization failed." << endl; return false; break;
+        case FG_INVALID_PARAMETER: cout << "An invalid parameter has been entered." << endl; return false; break;
+        case FG_VALUE_OUT_OF_RANGE : cout << "Value is besides valid ranges." << endl; return false; break;
 
     }
     return true;
@@ -365,8 +369,8 @@ bool CaptureCAM_CL::setProperty( int property_id, int value )
 
 /**
  * \fn int CaptureCAM_CL::startAcquire()
- * \brief   This function start a continuous grabbing. 
- *          Having started, an infinite number of image will be grabbed. 
+ * \brief   This function start a continuous grabbing.
+ *          Having started, an infinite number of image will be grabbed.
  *          By default, the maximum image number is set to GRAB_INFINITE (nrOfPicturesToGrab)
  *          If a timeout occurs, the grabbing will be stopped.
  *          To manually stop the grabbing, use CaptureCAM_CL::close().
@@ -442,8 +446,8 @@ void CaptureCAM_CL::errMsg(const char* msg, int errNum)
 #else
     cout << msg << errNum << endl;
 #endif
-}   
+}
 
-/** @} */ 
+/** @} */
 /** @} */
 /** @} */

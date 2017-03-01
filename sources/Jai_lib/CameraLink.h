@@ -62,7 +62,7 @@ class CaptureCAM_CL
 public:
     CaptureCAM_CL(); /*!< Constructor */
     virtual ~CaptureCAM_CL(); /*!< Desctructor*/
-    bool open( int index, const char* file);
+    bool open( int index, const char* file, const char* cameraType);
     void close();
     bool grabFrame();
     int startAcquire();
@@ -83,6 +83,7 @@ public:
     double          framespersec; /*!< The number of frames per sec wanted*/
     unsigned int    exposure; /*!< Exposure time in microsecond*/
     const char*     file; /*!< path to the configuration file of the camera*/
+    const char*     cameraType; /*!< Type of camera, for frame grabber configuration */
     void            *ImgPtr; /*!< Pointer to image data*/
     bool isopened; /*!< State of the camera device*/
     void serialWrite(char buffer[]);
@@ -115,9 +116,10 @@ extern "C" {
         PyObject *myarray;
         int device;
         const char* file;
+        const char* cameraType;
     } VideoCapture;
     //PyObject* VideoCapture_Display(VideoCapture *self, PyObject *args);
-    PyObject* VideoCapture_open(int device, const char* file);
+    PyObject* VideoCapture_open(int device, const char* file, const char* cameraType);
     PyObject* VideoCapture_isOpened();
     PyObject* VideoCapture_release();
     PyObject* VideoCapture_startAcquisition();
