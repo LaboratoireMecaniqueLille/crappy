@@ -1,171 +1,254 @@
 import serial
 from threading import Thread
-from Tkinter import *
+import Tkinter as tk
+import tkFont
 from Queue import Queue as Queue_threading, Empty
 from time import sleep, time
 from collections import OrderedDict
 from multiprocessing import Process, Queue
+from ast import literal_eval
 
 
-class ArduinoProcess(object):
-  """
-  Dialog box for arduino monitor : shows the received from serial port,
-  and permits to transmit information. This is done in a separate process,
-  called by the main class.
-  """
-
-  def __init__(self, arduino, queue_recv, program, title_window):
+class MonitorFrame(tk.Frame):
+  def __init__(self, parent, *args, **kwargs):
     """
-    :param arduino: Arduino serial port opened.
-    :param queue_recv: Queue to transmit information from serial to crappy.
-    :param program: Program used, to adapt the GUI.
-    :param title_window: GUI window title.
+    A frame that displays everything enters the serial port.
+    Args:
+      arduino: serial.Serial of arduino board.
+      width: size of the text frame
+      title: the title of the frame.
+      fontsize: size of font inside the text frame.
     """
+    tk.Frame.__init__(self, parent)
+    self.grid()
+    self.total_width = kwargs.get('width', 100 * 8 / 10)
+    self.arduino = kwargs.get("arduino")
+    self.queue = kwargs.get("queue")
+    self.enabled_checkbox = tk.IntVar()
+    self.enabled_checkbox.set(1)
 
+    self.create_widgets(**kwargs)
+
+  def create_widgets(self, **kwargs):
+    """
+    Widgets shown : the title with option
+    """
+    self.top_frame = tk.Frame(self)
+    tk.Label(self.top_frame, text=kwargs.get('title', '')).grid(row=0, column=0)
+
+    tk.Checkbutton(self.top_frame,
+                   variable=self.enabled_checkbox,
+                   text="Display?").grid(row=0, column=1)
+    self.serial_monitor = tk.Text(self,
+                                  relief="sunken",
+                                  height=int(self.total_width / 10),
+                                  width=int(self.total_width),
+                                  font=tkFont.Font(size=kwargs.get("fontsize",
+                                                                   13)))
+
+    self.top_frame.grid(row=0)
+    self.serial_monitor.grid(row=1)
+
+  def update_widgets(self, *args):
+    if self.enabled_checkbox.get():
+      self.serial_monitor.insert("0.0", args[0])  # To insert at the top
+    else:
+      pass
+
+
+class SubmitSerialFrame(tk.Frame):
+  def __init__(self, parent, *args, **kwargs):
+    tk.Frame.__init__(self, parent)
+    self.grid()
+    self.total_width = kwargs.get("width", 100)
+    self.queue = kwargs.get("queue")
+
+    self.create_widgets(**kwargs)
+
+  def create_widgets(self, **kwargs):
+    self.input_txt = tk.Entry(self,
+                              width=self.total_width * 5 / 10,
+                              font=tkFont.Font(size=kwargs.get("fontsize", 13)))
+    self.submit_label = tk.Label(self, text='',
+                                 width=1,
+                                 font=tkFont.Font(
+                                   size=kwargs.get("fontsize", 13)))
+    self.submit_button = tk.Button(self,
+                                   text='Submit',
+                                   command=self.update_widgets,
+                                   width=int(self.total_width * 0.5 / 10),
+                                   font=tkFont.Font(
+                                     size=kwargs.get("fontsize", 13)))
+
+    self.input_txt.bind('<Return>', self.update_widgets)
+    self.input_txt.bind('<KP_Enter>', self.update_widgets)
+
+    # Positioning
+    self.input_txt.grid(row=0, column=0, sticky=tk.W)
+    self.submit_label.grid(row=0, column=1)
+    self.submit_button.grid(row=0, column=2, sticky=tk.E)
+
+  def update_widgets(self, *args):
+    try:
+      message = self.queue.get(block=False)
+    except Empty:
+      message = self.input_txt.get()
+    self.input_txt.delete(0, 'end')
+    if len(message) > int(self.total_width / 4):
+      self.input_txt.configure(width=int(self.total_width * 5 / 10 - len(
+        message)))
+    else:
+      self.input_txt.configure(width=int(self.total_width * 5 / 10))
+    self.submit_label.configure(width=len(message))
+    self.submit_label.configure(text=message)
+    self.queue.put(message)
+
+
+class MinitensFrame(tk.Frame):
+  def __init__(self, parent, *args, **kwargs):
+    tk.Frame.__init__(self, parent)
+    self.grid()
+    self.mode = tk.IntVar()
+    self.modes = [('stop', 0),
+                  ('traction', 1),
+                  ('compression', 2),
+                  ('cycle', 3)]
+    self.create_widgets(**kwargs)
+    self.queue = kwargs.get("queue")
+
+  def create_widgets(self, **kwargs):
+    self.minitens_frame_radiobuttons = tk.Frame(self)
+    for index, value in enumerate(self.modes):
+      tk.Radiobutton(self.minitens_frame_radiobuttons, text=value[0],
+                     value=value[1], variable=self.mode).grid(row=index,
+                                                              sticky=tk.W)
+
+    self.vitesse_frame = tk.Frame(self)
+    self.vitesse_parameter = tk.Entry(self.vitesse_frame)
+    self.vitesse_parameter.grid(row=1)
+    tk.Label(self.vitesse_frame, text="Vitesse(0..255)").grid(row=0)
+
+    self.boucle_frame = tk.Frame(self)
+    self.boucle_parameter = tk.Entry(self.boucle_frame)
+    self.boucle_parameter.grid(row=1)
+    tk.Label(self.boucle_frame, text="Temps(ms)").grid(row=0)
+
+    self.buttons_frame = tk.Frame(self)
+    tk.Button(self.buttons_frame,
+              text="SUBMIT",
+              bg="green",
+              relief="raised",
+              height=4, width=10,
+              command=lambda: self.update_widgets("SUBMIT")
+              ).grid(row=0, column=0)
+
+    tk.Button(self.buttons_frame,
+              text="STOP",
+              bg="red",
+              relief="raised",
+              height=4, width=10,
+              command=lambda: self.update_widgets("STOP")
+              ).grid(row=0, column=1)
+
+    self.minitens_frame_radiobuttons.grid(row=0, column=0)
+    self.vitesse_frame.grid(row=0, column=1)
+    self.boucle_frame.grid(row=0, column=2)
+    self.buttons_frame.grid(row=0, column=4)
+
+  def update_widgets(self, *args):
+    if args[0] == "STOP":
+      message = str({"mode": 0,
+                     "vitesse": 255,
+                     "boucle": 0})
+    else:
+      message = str({"mode": self.mode.get(),
+                     "vitesse": self.vitesse_parameter.get(),
+                     "boucle": self.boucle_parameter.get()})
+
+    self.queue.put(message)
+
+
+class ArduinoHandler(object):
+  def __init__(self, *args, **kwargs):
     def collect_serial(arduino, queue):
-      """
-      Serial data are collected in a separated thread, then put in a
-      queue to communicate with the main thread.
-      """
       while True:
         queue.put(arduino.readline())
 
-    self.arduino = arduino
-    self.queue_from_arduino = queue_recv
-    self.queue_collect_serial = Queue_threading()
-    self.init_main_window(title_window)
-    if program == 'minitens':
-      self.init_minitens_layout()
-    collect_serial_thread = Thread(target=collect_serial,
-                                   args=(self.arduino,
-                                         self.queue_collect_serial))
-    collect_serial_thread.daemon = True
-    collect_serial_thread.start()
-    self.main()
+    self.port = args[0]
+    self.baudrate = args[1]
+    self.queue_process = args[2]
+    self.arduino_ser = serial.Serial(port=self.port,
+                                     baudrate=self.baudrate)
+    self.collect_serial_queue = Queue_threading()
+    self.submit_serial_queue = Queue_threading()
 
-  def init_main_window(self, title_window):
+    self.collect_serial_threaded = Thread(target=collect_serial,
+                                          args=(self.arduino_ser,
+                                                self.collect_serial_queue))
+    self.collect_serial_threaded.daemon = True
+    self.init_main_window()
+    self.collect_serial_threaded.start()
+    self.main_loop()
 
-    # Main window
-    self.root = Tk()
-    self.root.title('Arduino Monitor on port %s' % title_window[0])
-    self.root.resizable(width=False, height=True)
+  def init_main_window(self):
+    self.root = tk.Tk()
+    self.root.resizable(width=False, height=False)
+    self.root.title("Arduino Minitens Command")
+    self.monitor_frame = MonitorFrame(self.root,
+                                 title="Arduino on port %s "
+                                       "baudrate %s" % (self.port,
+                                                        self.baudrate))
 
-    # Frame to display received from serial
-    self.frame_serial_txt = Frame(self.root)
-    Label(self.frame_serial_txt, text='Serial port output, baudrate = %s' %
-                                      title_window[1]).pack(side=TOP)
-    self.serial_txt = Text(self.frame_serial_txt, relief="sunken")
-    self.serial_txt.pack(side=BOTTOM)
-    self.frame_serial_txt.pack(side=TOP, padx=5, pady=5)
-
-    # Frame for entry to submit to the serial port
-    self.frame_input = Frame(self.root)
-    self.input_txt = Entry(self.frame_input)
-    self.input_txt.pack(side=LEFT, padx=5, pady=5)
-
-    # Submit button (enter key works as well)
-    self.submit_button = Button(self.frame_input,
-                                text='Submit',
-                                command=self.submit_serial)
-
-    self.submit_button.pack(side=RIGHT, padx=5, pady=5)
-    self.root.bind('<Return>', self.submit_serial)
-
-    # Label to show the previous entered command
-    self.submit_label = Label(self.frame_input, text='')
-    self.submit_label.pack(side=LEFT, padx=5, pady=5)
-    self.frame_input.pack(side=BOTTOM)
-    # Handle on closing event
-    self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-
-  def init_minitens_layout(self):
-
-    self.input_txt.configure(state='disable')
-    self.minitens_frame = Frame(self.root)
-    self.minitens_frame_radiobuttons = Frame(self.minitens_frame)
-    self.modes = OrderedDict([('stop', 0,),
-                              ('traction', 1),
-                              ('compression', 2),
-                              ('cycle', 3)])
-
-    # Radio buttons for the mode
-    for index, value in self.modes.iteritems():
-      Radiobutton(self.minitens_frame_radiobuttons, text=index,
-                  value=value).pack(anchor=W)
-    self.minitens_frame_radiobuttons.pack(side=LEFT, padx=10)
-
-    # Set the speed parameter
-    Label(self.minitens_frame, text='vitesse').pack(side=LEFT)
-    self.vitesse_parameter = Entry(self.minitens_frame, text='vitesse')
-    self.vitesse_parameter.pack(side=LEFT, padx=10)
-
-    # Set the time parameter
-    Label(self.minitens_frame, text='temps').pack(side=LEFT)
-    self.temps_parameter = Entry(self.minitens_frame, text='temps')
-    self.temps_parameter.pack(side=LEFT, padx=10)
-    self.minitens_frame.pack(side=BOTTOM)
-
-  def main(self):
-    """
-    Main loop.
-    """
+    self.submit_frame = SubmitSerialFrame(self.root,
+                                       queue=self.submit_serial_queue)
+    self.minitens_frame = MinitensFrame(self.root,
+                                       queue=self.submit_serial_queue)
+    self.monitor_frame.grid()
+    self.submit_frame.grid()
+    self.minitens_frame.grid()
+  def main_loop(self):
     while True:
       try:
-        value = self.queue_collect_serial.get(block=False)
-        self.update(value)
-      except Empty:
-        sleep(0.01)
+        message = self.collect_serial_queue.get(block=False)
+        self.monitor_frame.update_widgets(message)
+        self.queue_process.put(message)
+        to_send = self.submit_serial_queue.get(block=False)
+
+        print('to send:', to_send)
+        self.arduino_ser.write(to_send)
+
         self.root.update()
-
-  def update(self, value):
-    self.queue_from_arduino.put(value)  # To communicate with the crappy
-    # process.
-    self.serial_txt.insert("0.0", value + '\n')  # To insert at the top
-    self.root.update()
-
-  def submit_serial(self, *args):
-    """
-    Executed if OK key is clicked, or enter key is hit
-    """
-    message = self.input_txt.get()
-    self.input_txt.delete(0, 'end')
-    self.submit_label.configure(text=message)
-    self.arduino.write(message)
-    # self.queue_send.put(message)
-
-  def on_closing(self):
-    self.root.destroy()
+        sleep(0.01)
+      except Empty:
+        self.root.update()
+        sleep(0.01)
+      except KeyboardInterrupt:
+        break
 
 
 class Arduino(object):
   def __init__(self, *args, **kwargs):
-    # Specific to the GUI and the arduino class, used for serial communication.
-    self.title_window = [kwargs.get('port', '/dev/ttyACM0'),
-                         kwargs.get('baudrate', 9600)]
-    self.arduino_ser = serial.Serial(port=self.title_window[0],
-                                     baudrate=self.title_window[1])
-    self.monitor = kwargs.get('monitor', False)
-    self.program = kwargs.get('program', None)
-    self.queue_serial_from_arduino = Queue()  # Acquired with readline()
-    # self.queue_serial_to_arduino = Queue()  # Set with write()
-
-    thread_arduino_serial = Process(target=ArduinoProcess,
-                                    args=(self.arduino_ser,
-                                          self.queue_serial_from_arduino,
-                                          self.program,
-                                          self.title_window))
-    thread_arduino_serial.daemon = True
-    thread_arduino_serial.start()
-
-    # Specific to CRAPPY
-    self.channels = ['Serial']
+    self.port = kwargs.get("port", "/dev/ttyACM0")
+    self.baudrate = kwargs.get("baudrate", 9600)
+    self.queue_get_data = Queue()
+    self.arduino_handler = Process(target=ArduinoHandler,
+                                   args=(self.port,
+                                         self.baudrate,
+                                         self.queue_get_data))
+    self.arduino_handler.start()
+    # Initialize the queue
+    while True:
+      try:
+        print("glushing")
+        getting = literal_eval(self.queue_get_data.get())
+        if isinstance(getting, dict):
+          break
+      except:
+        continue
 
   def get_data(self, mock=None):
-    try:
-      received_from_arduino = self.queue_serial_from_arduino.get()
-      return time(), map(int, received_from_arduino.split(' '))
-    except ValueError:
-      return time(), [0, 0, 0, 0]
+    retrieved_from_arduino = literal_eval(self.queue_get_data.get())
+    return time(), OrderedDict(retrieved_from_arduino)
 
   def close(self):
-    self.arduino_ser.close()
+    self.arduino_handler.terminate()
