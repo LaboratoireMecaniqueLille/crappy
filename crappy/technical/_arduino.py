@@ -58,6 +58,12 @@ class MonitorFrame(tk.Frame):
 
 class SubmitSerialFrame(tk.Frame):
   def __init__(self, parent, *args, **kwargs):
+    """
+    Frame that permits to submit to the serial port of arduino.
+    Args:
+      width: width of the frame.
+      fontsize: self-explanatory.
+    """
     tk.Frame.__init__(self, parent)
     self.grid()
     self.total_width = kwargs.get("width", 100)
@@ -106,6 +112,9 @@ class SubmitSerialFrame(tk.Frame):
 
 class MinitensFrame(tk.Frame):
   def __init__(self, parent, *args, **kwargs):
+    """
+    Special frame used in case of a minitens machine.
+    """
     tk.Frame.__init__(self, parent)
     self.grid()
     self.mode = tk.IntVar()
@@ -170,17 +179,27 @@ class MinitensFrame(tk.Frame):
 
 class ArduinoHandler(object):
   def __init__(self, *args, **kwargs):
+    """Special class called in a new process, that handles
+    connection between crappy and the GUI."""
+
     def collect_serial(arduino, queue):
+      """Collect serial information, in a parallel way."""
       while True:
         queue.put(arduino.readline())
 
     self.port = args[0]
     self.baudrate = args[1]
     self.queue_process = args[2]
+    self.width = args[3]
+    self.fontsize = args[4]
+
     self.arduino_ser = serial.Serial(port=self.port,
                                      baudrate=self.baudrate)
-    self.collect_serial_queue = Queue_threading()
-    self.submit_serial_queue = Queue_threading()
+
+    self.collect_serial_queue = Queue_threading()  # To collect serial
+    # information
+    self.submit_serial_queue = Queue_threading()  # To collect user commands
+    # and send it to serial
 
     self.collect_serial_threaded = Thread(target=collect_serial,
                                           args=(self.arduino_ser,
@@ -191,64 +210,84 @@ class ArduinoHandler(object):
     self.main_loop()
 
   def init_main_window(self):
+    """
+    Method to create and place widgets inside the main window.
+    """
     self.root = tk.Tk()
     self.root.resizable(width=False, height=False)
-    self.root.title("Arduino Minitens Command")
+    self.root.title("Arduino Minitens")
     self.monitor_frame = MonitorFrame(self.root,
-                                 title="Arduino on port %s "
-                                       "baudrate %s" % (self.port,
-                                                        self.baudrate))
+                                      width=int(self.width * 7/10),
+                                      fontsize=self.fontsize,
+                                      title="Arduino on port %s "
+                                            "baudrate %s" % (self.port,
+                                                             self.baudrate))
 
     self.submit_frame = SubmitSerialFrame(self.root,
-                                       queue=self.submit_serial_queue)
+                                          fontsize=self.fontsize,
+                                          width=self.width,
+                                          queue=self.submit_serial_queue)
     self.minitens_frame = MinitensFrame(self.root,
-                                       queue=self.submit_serial_queue)
+                                        queue=self.submit_serial_queue)
     self.monitor_frame.grid()
     self.submit_frame.grid()
     self.minitens_frame.grid()
+
   def main_loop(self):
+    """
+    Main method to update the GUI, collect and transmit information.
+
+    """
     while True:
       try:
-        message = self.collect_serial_queue.get(block=False)
+        message = self.collect_serial_queue.get(block=True, timeout=0.01)
         self.monitor_frame.update_widgets(message)
-        self.queue_process.put(message)
+        self.queue_process.put(message)  # Message is sent to the crappy
+        # process.
         to_send = self.submit_serial_queue.get(block=False)
-
-        print('to send:', to_send)
         self.arduino_ser.write(to_send)
-
         self.root.update()
-        sleep(0.01)
       except Empty:
         self.root.update()
-        sleep(0.01)
       except KeyboardInterrupt:
         break
 
 
 class Arduino(object):
   def __init__(self, *args, **kwargs):
+    """
+    Main class used ton interface Arduino, its GUI and crappy. For
+    reusability, make sure the program inside the arduino sends to the serial
+    port a python dictionary formated string.
+    Args:
+      port: serial port of the arduino.
+      baudrate: baudrate defined inside the arduino program.
+      width: width of the GUI.
+      fontsize: size of the font inside the GUI.
+    """
     self.port = kwargs.get("port", "/dev/ttyACM0")
     self.baudrate = kwargs.get("baudrate", 9600)
+    self.labels = kwargs.get("labels", None)
+
     self.queue_get_data = Queue()
     self.arduino_handler = Process(target=ArduinoHandler,
                                    args=(self.port,
                                          self.baudrate,
-                                         self.queue_get_data))
+                                         self.queue_get_data,
+                                         kwargs.get("width", 100),
+                                         kwargs.get("fontsize", 11)))
+    self.handler_t0 = time()
     self.arduino_handler.start()
-    # Initialize the queue
-    while True:
-      try:
-        print("glushing")
-        getting = literal_eval(self.queue_get_data.get())
-        if isinstance(getting, dict):
-          break
-      except:
-        continue
 
   def get_data(self, mock=None):
-    retrieved_from_arduino = literal_eval(self.queue_get_data.get())
-    return time(), OrderedDict(retrieved_from_arduino)
+    while True:
+      try:
+        retrieved_from_arduino = literal_eval(self.queue_get_data.get())
+        if isinstance(retrieved_from_arduino, dict):
+          return time(), OrderedDict(retrieved_from_arduino)
+      except:
+        print '[arduino] Skipped data at %.3f secs' % (time() - self.handler_t0)
+        continue
 
   def close(self):
     self.arduino_handler.terminate()

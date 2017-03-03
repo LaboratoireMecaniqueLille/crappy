@@ -6,7 +6,7 @@ if __name__ == '__main__':
                                      baudrate=9600)
   measurebystep = crappy.blocks.MeasureByStep(arduino)
 
-  # graph = crappy.blocks.Grapher(('temps_arduino(ms)', 'random'), length=10)
+  # graph = crappy.blocks.Grapher(('temps_arduino(ms)', ''), length=10)
   dash = crappy.blocks.Dashboard()
 
   # crappy.link(measurebystep, graph)
