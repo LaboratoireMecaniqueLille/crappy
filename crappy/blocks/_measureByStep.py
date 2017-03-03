@@ -141,5 +141,9 @@ class MeasureByStep(MasterBlock):
     """
     sensor_epoch, sensor_values = self.sensor.get_data("all")
     chronometer = sensor_epoch - self.t0
-    sensor_values.insert(0, chronometer)
-    return sensor_values
+    if isinstance(sensor_values, list):
+      sensor_values.insert(0, chronometer)
+      return sensor_values
+    elif isinstance(sensor_values, dict):
+      sensor_values['time(sec)'] = chronometer
+      return sensor_values
