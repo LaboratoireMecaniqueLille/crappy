@@ -192,6 +192,7 @@ class ArduinoHandler(object):
     self.queue_process = args[2]
     self.width = args[3]
     self.fontsize = args[4]
+    self.frames = args[5]
 
     self.arduino_ser = serial.Serial(port=self.port,
                                      baudrate=self.baudrate)
@@ -216,41 +217,50 @@ class ArduinoHandler(object):
     self.root = tk.Tk()
     self.root.resizable(width=False, height=False)
     self.root.title("Arduino Minitens")
-    self.monitor_frame = MonitorFrame(self.root,
-                                      width=int(self.width * 7/10),
-                                      fontsize=self.fontsize,
-                                      title="Arduino on port %s "
-                                            "baudrate %s" % (self.port,
-                                                             self.baudrate))
-
-    self.submit_frame = SubmitSerialFrame(self.root,
-                                          fontsize=self.fontsize,
-                                          width=self.width,
+    if "monitor" in self.frames:
+      self.monitor_frame = MonitorFrame(self.root,
+                                        width=int(self.width * 7 / 10),
+                                        fontsize=self.fontsize,
+                                        title="Arduino on port %s "
+                                              "baudrate %s" % (self.port,
+                                                               self.baudrate))
+      self.monitor_frame.grid()
+    if "submit" in self.frames:
+      self.submit_frame = SubmitSerialFrame(self.root,
+                                            fontsize=self.fontsize,
+                                            width=self.width,
+                                            queue=self.submit_serial_queue)
+      self.submit_frame.grid()
+    if "minitens" in self.frames:
+      self.minitens_frame = MinitensFrame(self.root,
                                           queue=self.submit_serial_queue)
-    self.minitens_frame = MinitensFrame(self.root,
-                                        queue=self.submit_serial_queue)
-    self.monitor_frame.grid()
-    self.submit_frame.grid()
-    self.minitens_frame.grid()
+      self.minitens_frame.grid()
 
   def main_loop(self):
     """
     Main method to update the GUI, collect and transmit information.
-
     """
     while True:
       try:
         message = self.collect_serial_queue.get(block=True, timeout=0.01)
+      except Empty:
+        # In case there is a queue timeout
+        self.root.update()
+
+      try:
         self.monitor_frame.update_widgets(message)
         self.queue_process.put(message)  # Message is sent to the crappy
         # process.
+      except (AttributeError, UnboundLocalError):
+        pass
+
+      try:
         to_send = self.submit_serial_queue.get(block=False)
         self.arduino_ser.write(to_send)
-        self.root.update()
       except Empty:
-        self.root.update()
-      except KeyboardInterrupt:
-        break
+        pass
+      self.root.update()
+
 
 
 class Arduino(object):
@@ -268,6 +278,7 @@ class Arduino(object):
     self.port = kwargs.get("port", "/dev/ttyACM0")
     self.baudrate = kwargs.get("baudrate", 9600)
     self.labels = kwargs.get("labels", None)
+    self.frames = kwargs.get("frames", ["monitor", "submit"])
 
     self.queue_get_data = Queue()
     self.arduino_handler = Process(target=ArduinoHandler,
@@ -275,7 +286,8 @@ class Arduino(object):
                                          self.baudrate,
                                          self.queue_get_data,
                                          kwargs.get("width", 100),
-                                         kwargs.get("fontsize", 11)))
+                                         kwargs.get("fontsize", 11),
+                                         self.frames))
     self.handler_t0 = time()
     self.arduino_handler.start()
 
@@ -284,9 +296,17 @@ class Arduino(object):
       try:
         retrieved_from_arduino = literal_eval(self.queue_get_data.get())
         if isinstance(retrieved_from_arduino, dict):
-          return time(), OrderedDict(retrieved_from_arduino)
+          if self.labels:
+            ordered = OrderedDict()
+            ordered["time(sec)"] = 0.
+            for key in self.labels:
+              ordered[key] = retrieved_from_arduino[key]
+            return time(), ordered
+          else:
+            return time(), retrieved_from_arduino
       except:
-        print '[arduino] Skipped data at %.3f secs' % (time() - self.handler_t0)
+        print '[arduino] Skipped data at %.3f sec (Python time)' % (time() -
+                                                                    self.handler_t0)
         continue
 
   def close(self):
