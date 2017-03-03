@@ -248,9 +248,9 @@ class MasterBlock(Process):
     list. It will then map them to the dict.
     Note that ONLY OrderedDict can go through links
     """
-    if type(data) == OrderedDict:
+    if isinstance(data, (dict, OrderedDict)):
       pass
-    elif type(data) == list:
+    elif isinstance(data, list):
       data = OrderedDict(zip(self.labels, data))
     elif data == 'stop':
       pass
