@@ -87,6 +87,7 @@ class ControlCommand(MeasureByStep):
     if time_interval >= 1.:
       self.elapsed = data[0]
       self.queue.put(self.nb_acquisitions)
+      self.nb_acquisitions = 0
 
   def main_control_command_lua(self):
 

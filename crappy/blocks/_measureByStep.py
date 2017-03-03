@@ -99,6 +99,15 @@ class MeasureByStep(MasterBlock):
     printer.daemon = True
     printer.start()
 
+  def print_verbosity(self, timer):
+    self.nb_acquisitions += 1
+    self.time_interval = timer - self.elapsed
+
+    if self.time_interval >= 1.:
+      self.elapsed = timer
+      self.queue.put(self.nb_acquisitions)
+      self.nb_acquisitions = 0
+
   def main(self):
     """
     Main loop for MeasureByStep. Retrieves data at specified frequency
@@ -114,15 +123,11 @@ class MeasureByStep(MasterBlock):
         self.send(data)
 
         if self.verbose:
-          self.nb_acquisitions += 1
-          self.time_interval = data[0] - self.elapsed
-
-          if self.time_interval >= 1.:
-            self.elapsed = data[0]
-            self.queue.put(self.nb_acquisitions)
-            self.nb_acquisitions = 0
+          if isinstance(data, list):
+            self.print_verbosity(data[0])
+          elif isinstance(data, dict):
+            self.print_verbosity(data["time(sec)"])
         t_acq = time.time() - t_before_acq
-
         if self.freq and t_acq < 1 / float(self.freq):
           self.temporization(1 / float(self.freq) - t_acq)
         else:
