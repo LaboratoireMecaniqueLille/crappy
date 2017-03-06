@@ -1,5 +1,5 @@
 #coding: utf-8
-from __future__ import print_function
+from __future__ import print_function,division
 from time import sleep
 import numpy as np
 
@@ -60,6 +60,7 @@ class Bispectral(CLCamera):
   def __init__(self, **kwargs):
     kwargs['camera_type'] = "SingleAreaGray2DShading"
     CLCamera.__init__(self,**kwargs)
+    self.send_cmd('@W10012') # Make sure the image is not inverted
     self.settings['width'].limits = (1,640*2)
     self.settings['width'].default = 640*2
     self.settings['height'].limits = (1,512)
@@ -71,7 +72,15 @@ class Bispectral(CLCamera):
       print('WARNING! Incorrect reply!')
     return r[2:4]
 
-  def _get_ROI(self):
+  def set_external_trigger(self,val):
+    """Sets the external trigger to val by toggling the value of the 3rd bit 
+    of register 102"""
+    if val:
+      self.send_cmd('@W1027C') #3rd bit to 1
+    else:
+      self.send_cmd('@W10274') #3rd bit to 0
+
+  def get_ROI(self):
     X1min_LSB=self.send_cmd("@R1D0")
     X1min_MSB=self.send_cmd("@R1D1")
     Y1min_LSB=self.send_cmd("@R1D2")
@@ -87,7 +96,7 @@ class Bispectral(CLCamera):
     return xmin,ymin,xmax,ymax
   
 
-  def _set_ROI(self,xmin,ymin,xmax,ymax):
+  def set_ROI(self,xmin,ymin,xmax,ymax):
     if (xmin,xmax,ymin,ymax) != (0,0,639,511):
       self.send_cmd('@W1A080') # Set to windowed mode
     else:
@@ -115,6 +124,60 @@ class Bispectral(CLCamera):
     if self.width != w:
       self.width = w
 
+  def get_IT(self):
+    MC = 10.35 # MHz
+    IT1_LSB=self.send_cmd("@R1B4")
+    IT1_MID=self.send_cmd("@R1B5")    
+    IT1_MSB=self.send_cmd("@R1B6")
+    IT2_LSB=self.send_cmd("@R1B8")
+    IT2_MID=self.send_cmd("@R1B9")    
+    IT2_MSB=self.send_cmd("@R1BA")
+    IT1=int(IT1_MSB+IT1_MID+IT1_LSB,16) # Number of clock cycles
+    IT2=int(IT2_MSB+IT2_MID+IT2_LSB,16)
+    return IT1/MC,IT2/MC # IT in µs
+
+  def set_IT(self,IT1,IT2):
+    MC = 10.35
+    IT1 = int(MC*IT1)
+    IT2 = int(MC*IT2)
+    IT1_LSB = hexlify(IT1 % 256)
+    IT1 -= IT1%256
+    IT1 //= 256
+    IT1_MID = hexlify(IT1 % 256)
+    IT1_MSB = hexlify(IT1 // 256)
+    IT2_LSB = hexlify(IT2 % 256)
+    IT2 -= IT2%256
+    IT2 //= 256
+    IT2_MID = hexlify(IT2 % 256)
+    IT2_MSB = hexlify(IT2 // 256)
+    self.send_cmd("@W1B4"+IT1_LSB)
+    self.send_cmd("@W1B5"+IT1_MID)
+    self.send_cmd("@W1B6"+IT1_MSB)
+    self.send_cmd("@W1B8"+IT2_LSB)
+    self.send_cmd("@W1B9"+IT2_MID)
+    self.send_cmd("@W1BA"+IT2_MSB)
+
+
+  def get_trigg_freq(self):
+    MC = 10350000 # Hz   
+    P_LSB=self.send_cmd("@R1B0")
+    P_MID=self.send_cmd("@R1B1")
+    P_MSB=self.send_cmd("@R1B2")
+    P=int(P_MSB+P_MID+P_LSB,16)
+    return MC/P
+  
+  def set_trigg_freq(self,Freq):
+    MC = 10350000 # Hz 
+    Period = int(MC/Freq)
+    P_LSB = hexlify(Period  % 256)
+    Period -= P%256
+    Period //= 256
+    P_MID = hexlify(Period  % 256)
+    P_MSB = hexlify(Period  // 256)
+    self.send_cmd("@W1B0"+P_LSB)
+    self.send_cmd("@W1B1"+P_MID)
+    self.send_cmd("@W1B2"+P_MSB)
+    
   
   def get_sensor_temperature(self):
     """Returns sensor temperature in Kelvin"""
@@ -122,14 +185,20 @@ class Bispectral(CLCamera):
     lsb = self.send_cmd('@R160')
     msb = self.send_cmd('@R161')
     return int(msb+lsb,16)*gain
+  
+  def get_ambiant_temperature(self):
+    """Returns temperature of the board in °C"""
+    T = self.send_cmd('@R173')
+    return int(T,16)
+  
     
   def get_image(self):
     t,frame = CLCamera.get_image(self)
     img = np.ones((self.height,self.width),dtype=np.uint8)
-    img[::,:self.width/2:2] = frame[::,::4]
-    img[::,1:self.width/2:2] = frame[::,1::4]
-    img[::,self.width/2::2] = frame[::,2::4]
-    img[::,self.width/2+1::2] = frame[::,3::4]
+    img[::,:self.width//2:2] = frame[::,::4]
+    img[::,1:self.width//2:2] = frame[::,1::4]
+    img[::,self.width//2::2] = frame[::,2::4]
+    img[::,self.width//2+1::2] = frame[::,3::4]
     return t,img
 
   def close(self):
