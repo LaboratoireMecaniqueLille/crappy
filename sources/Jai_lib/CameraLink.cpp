@@ -49,6 +49,7 @@ CaptureCAM_CL::~CaptureCAM_CL(){
 void CaptureCAM_CL::init()
 {
     isopened=false;
+    isacquiring=false;
     last_pic_nr = 0;
     timeout = 20;
     fg= NULL;
@@ -62,6 +63,7 @@ void CaptureCAM_CL::init()
     serialRefPtr = NULL;
     width = 640;
     height = 513;
+    format = FG_GRAY;
     exposure = 8000;
     xoffset = 0;
     yoffset = 0;
@@ -100,12 +102,17 @@ bool CaptureCAM_CL::open(int wIndex, const char* camtype)
       fprintf(stderr, "error in Fg_InitEx: %s\n", Fg_getLastErrorDescription(NULL));
       exit(EXIT_FAILURE);
     }
+    if(Fg_loadConfig(fg,"/home/camera/Documents/CameraLinkJaiConf/Master_Config.mcf")!=FG_OK){
+      printf("\nFile config loading failed\n");
+      exit(EXIT_FAILURE);
+    }
     ComNr=boardNr*2;
     serialInit(ComNr);
 
     if(Fg_setParameter(fg,FG_TRIGGERMODE,&TriggerMode,camPort)==FG_OK){
       printf("\nTrig config succeed\n");
     }
+    isopened = true;
     return true;
 }
 
@@ -126,7 +133,7 @@ int CaptureCAM_CL::stop(){
       cout << "Stop acquisition failed: " << Fg_getLastErrorDescription(fg)<< endl;
       return FG_ERROR;
   }
-  isopened=false;
+  isacquiring=false;
   return FG_OK;
 }
 
@@ -386,7 +393,7 @@ int CaptureCAM_CL::startAcquire(){
     HandleResult(mvret, "error while setting width");
     mvret = Fg_setParameter(fg, FG_HEIGHT, &height, camPort);
     HandleResult(mvret, "error while setting height");
-    format = FG_GRAY;
+    // format = FG_GRAY;
     mvret = Fg_setParameter(fg,  FG_FORMAT, &format , camPort);
     HandleResult(mvret, "error while setting data format");
     if ((Fg_AcquireEx(fg, camPort, nrOfPicturesToGrab, ACQ_STANDARD, memHandle)) < 0) {

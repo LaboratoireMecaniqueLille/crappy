@@ -3,15 +3,6 @@
 #include <numpy/arrayobject.h>
 #include "structmember.h"
 
-// Struct to define the python object
-typedef struct {
-  PyObject_HEAD;
-  CaptureCAM_CL *camptr = NULL;
-  const int device;
-  const char* file;
-  const char* camType;
-} VideoCapture;
-
 // =========== Methods for VideoCapture object ==============
 // The constructor
 static int VideoCapture_init(VideoCapture *self)
@@ -23,10 +14,9 @@ static int VideoCapture_init(VideoCapture *self)
               &self->device, &self->file, &self->camType))
         return -1;*/
   if(self->camptr != NULL)
-    self->camptr->release();
+    self->camptr->close();
   self->camptr = new CaptureCAM_CL();
-  // self->camptr.init();
-  if(self->campt != NULL) return 0;
+  if(self->camptr != NULL) return 0;
   else return -1;
 }
 
@@ -39,31 +29,31 @@ static void VideoCapture_destructor(PyObject *self)
   cout << "Destructor done!" << endl;
 }
 
-PyObject* VideoCapture_open(PyObject* self, PyObject *args)
+PyObject* VideoCapture_open(VideoCapture* self, PyObject *args)
 {
-  if(!PyArg_ParseTuple(args,"iss",&self->device,&self->file,&self->camType))
+  if(!PyArg_ParseTuple(args,"is",&self->device,&self->camType))
     return NULL;
-  if(PyBool_Check(self->camptr->isOpened())) self->camptr->release();
-  self->camptr->open(self->device,self->file,self->camType);
-  return VideoCapture_isOpened();
+  if(self->camptr->isopened) self->camptr->close();
+  self->camptr->open(self->device,self->camType);
+  return VideoCapture_isOpened(self);
 }
 
 PyObject* VideoCapture_isOpened(VideoCapture *self)
 {
-  if(self->camptr->isopened) return Py_RETURN_TRUE;
+  if(self->camptr->isopened) Py_RETURN_TRUE;
   else Py_RETURN_FALSE;
 }
 
-PyObject* VideoCapture_release()
+PyObject* VideoCapture_release(VideoCapture *self)
 {
-  if(self->capt->isopened)
+  if(self->camptr->isopened)
     self->camptr->close();
   Py_RETURN_NONE;
 }
 
 PyObject* VideoCapture_read(VideoCapture *self)
 {
-  if(!capt->grabFrame()) return Py_BuildValue("(OO)",Py_False,Py_None);
+  if(!self->camptr->grabFrame()) return Py_BuildValue("(OO)",Py_False,Py_None);
   return Py_BuildValue("(OO)",Py_True,VideoCapture_get_array(self));
 }
 
@@ -73,17 +63,25 @@ PyObject* VideoCapture_get_array(VideoCapture *self)
   {
   case FG_BINARY:
   case FG_GRAY:
-    npy_intp dims[2] = {self->camptr->width,self->camptr->height};
-    return PyArray_simpleNewFromData(2,dims,NPY_UINT8,self->camptr->ImgPtr);
+    {
+      npy_intp dims[2] = {self->camptr->width,self->camptr->height};
+      return PyArray_SimpleNewFromData(2,dims,NPY_UINT8,self->camptr->ImgPtr);
+    }
   case FG_GRAY16:
-    npy_intp dims[2] = {self->camptr->width,self->camptr->height};
-    return PyArray_simpleNewFromData(2,dims,NPY_UINT16,self->camptr->ImgPtr);
+    {
+      npy_intp dims[2] = {self->camptr->width,self->camptr->height};
+      return PyArray_SimpleNewFromData(2,dims,NPY_UINT16,self->camptr->ImgPtr);
+    }
   case FG_COL24:
-    npy_intp dims[3] = {self->camptr->with,self->camptr->height,3};
-    return PyArray_simpleNewFromData(3,dims,NPY_UINT8,self->camptr->ImgPtr);
+    {
+      npy_intp dims[3] = {self->camptr->width,self->camptr->height,3};
+      return PyArray_SimpleNewFromData(3,dims,NPY_UINT8,self->camptr->ImgPtr);
+    }
   default:
-    cout << "VideoCapture.get_array(): Unsupported data type!" << endl;
-    Py_RETURN_NONE;
+    {
+      cout << "VideoCapture.get_array(): Unsupported data type!" << endl;
+      Py_RETURN_NONE;
+    }
   }
 }
 
@@ -92,7 +90,7 @@ PyObject* VideoCapture_set(VideoCapture *self, PyObject *args)
 	int propId;
 	int value;
 	if (!PyArg_ParseTuple(args, "ii", &propId, &value)) return NULL;
-  if(capt->setProperty(propId, value)) Py_RETURN_TRUE;
+  if(self->camptr->setProperty(propId, value)) Py_RETURN_TRUE;
 	else Py_RETURN_FALSE;
 }
 
@@ -100,18 +98,21 @@ PyObject* VideoCapture_get(VideoCapture *self, PyObject *args)
 {
 	int propId;
 	if (!PyArg_ParseTuple(args, "i", &propId)) return NULL;
-  return Py_BuildValue("i", capt->getProperty(propId));
+  return Py_BuildValue("i", self->camptr->getProperty(propId));
 }
 
-PyObject* VideoCapture_startAcq(PyObject *self)
+PyObject* VideoCapture_startAcq(VideoCapture *self, PyObject *args)
 {
+  if(!PyArg_ParseTuple(args,"|iii",
+        &self->camptr->width,&self->camptr->height,&self->camptr->format))
+    return NULL;
   if(!self->camptr->startAcquire())
     Py_RETURN_TRUE;
   else
     Py_RETURN_FALSE;
 }
 
-PyObject* VideoCapture_stopAcq(PyObject *self)
+PyObject* VideoCapture_stopAcq(VideoCapture *self)
 {
   if(!self->camptr->stop())
     Py_RETURN_TRUE;
@@ -119,23 +120,26 @@ PyObject* VideoCapture_stopAcq(PyObject *self)
     Py_RETURN_FALSE;
 }
 
-PyObject* VideoCapture_serial_write(PyObject *self,PyObject *args)
+PyObject* VideoCapture_serial_write(VideoCapture *self,PyObject *args)
 {
   char *buffer;
   if(!PyArg_ParseTuple(args,"s",&buffer)) return NULL;
   return Py_BuildValue("s",self->camptr->serialWrite(buffer));
 }
 
-PyObject* VideoCapture_load_config(PyObject *self, PyObject *args)
+PyObject* VideoCapture_load_config(VideoCapture *self, PyObject *args)
 {
   char *buffer;
   if(!PyArg_ParseTuple(args,"s",&buffer)) return NULL;
-  return Py_BuildValue("s",self->camptr->loadConfig(buffer));
+  self->camptr->loadConfig(buffer);
+  Py_RETURN_NONE;
 }
 
 
 // The object methods
 static PyMethodDef VideoCapture_methods[] = {
+  {"open",(PyCFunction)VideoCapture_open, METH_VARARGS,
+    "Opens the frame grabber with default, needs the fg type as second argument"},
   {"read",(PyCFunction)VideoCapture_read, METH_NOARGS,
     "Read a frame from the camera, return a tuple with a bool set to True if"
     " reading was successful, False otherwise and the frame in second"},
@@ -147,12 +151,14 @@ static PyMethodDef VideoCapture_methods[] = {
     "Returns True if the device is open, False otherwise"},
   {"release",(PyCFunction)VideoCapture_release, METH_NOARGS,
     "Release the frame grabber, closing the device"},
-  {"startAcq",(PyCFunction)VideoCapture_startAcq, METH_NOARGS,
+  {"startAcq",(PyCFunction)VideoCapture_startAcq, METH_VARARGS,
     "Starts the acquisition, necessary to start capturing"},
   {"stopAcq",(PyCFunction)VideoCapture_stopAcq, METH_NOARGS,
     "Stops the acquisition, necessary to change settings"},
   {"serialWrite",(PyCFunction)VideoCapture_serial_write, METH_VARARGS,
     "To send a serial command to the camera through the cameralink"},
+  {"loadFile",(PyCFunction)VideoCapture_load_config, METH_VARARGS,
+    "To configure the frame grabber using a config file"},
   {NULL} // Sentinel
 };
 
@@ -207,19 +213,18 @@ static PyTypeObject CLObjectType = {
 // The module has no method
 static PyMethodDef clModuleMethods[] = {
   {NULL} // Sentinel
-}
+};
 
 // Initializing the module
 PyMODINIT_FUNC initclModule(void)
 {
   PyObject *m;
   if(!PyType_Ready(&CLObjectType) < 0)return;
-  m = Py_InitModule("clModule", clModuleMethods,
+  m = Py_InitModule3("clModule", clModuleMethods,
       "Module for cameralink interfaces");
-  if m = NULL;{cout << "Unable to load clModule" << endl;return;}
+  if(m == NULL){cout << "Unable to load clModule" << endl;return;}
   Py_INCREF(&CLObjectType);
   // Add the python object to the module
   PyModule_AddObject(m,"VideoCapture",(PyObject*)&CLObjectType);
   import_array();
 }
-

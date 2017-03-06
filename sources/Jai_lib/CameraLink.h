@@ -62,7 +62,7 @@ class CaptureCAM_CL
 public:
     CaptureCAM_CL(); /*!< Constructor */
     virtual ~CaptureCAM_CL(); /*!< Desctructor*/
-    bool open( int index, const char* cameraType);
+    bool open(int index, const char* cameraType);
     void loadConfig(const char* conffile);
     void close();
     bool grabFrame();
@@ -86,6 +86,7 @@ public:
     const char*     cameraType; /*!< Type of camera, for frame grabber configuration */
     void            *ImgPtr; /*!< Pointer to image data*/
     bool isopened; /*!< State of the camera device*/
+    bool isacquiring;
     char* serialWrite(char buffer[]);
     //void display(int dis);
 private:
@@ -109,7 +110,27 @@ private:
     void *serialRefPtr;
 };
 
+typedef struct {
+  PyObject_HEAD;
+  CaptureCAM_CL *camptr = NULL;
+  const int device;
+  const char* file;
+  const char* camType;
+} VideoCapture;
 
+PyObject* VideoCapture_open(VideoCapture* self, PyObject *args);
+PyObject* VideoCapture_isOpened(VideoCapture *self);
+PyObject* VideoCapture_release(VideoCapture*);
+PyObject* VideoCapture_read(VideoCapture *self);
+PyObject* VideoCapture_get_array(VideoCapture *self);
+PyObject* VideoCapture_set(VideoCapture *self, PyObject *args);
+PyObject* VideoCapture_get(VideoCapture *self, PyObject *args);
+PyObject* VideoCapture_startAcq(VideoCapture *self,PyObject *args);
+PyObject* VideoCapture_stopAcq(VideoCapture *self);
+PyObject* VideoCapture_serial_write(VideoCapture *self,PyObject *args);
+PyObject* VideoCapture_load_config(VideoCapture *self, PyObject *args);
+
+/*
 extern "C" {
     typedef struct {
         PyObject_HEAD
@@ -132,7 +153,7 @@ extern "C" {
     PyObject* VideoCapture_get(VideoCapture *self, PyObject *args);
     PyObject* VideoCapture_getMeta();
     PyObject* VideoCapture_serialSet(VideoCapture *self, PyObject *args);
-}
+}*/
 #endif
 /** @} */ 
 /** @} */
