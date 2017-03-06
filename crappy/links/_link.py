@@ -232,7 +232,7 @@ class Link(object):
     """
     Allows you to receive a chunk of data: if length > 0 it will return an
     OrderedDict containing LISTS of the last length received data
-    If length=0, it will return all the waiting data util the pipe is empty
+    If length=0, it will return all the waiting data until the pipe is empty
     if the pipe is already empty, it will wait to return at least one value.
     """
     ret = self.recv()
@@ -244,7 +244,7 @@ class Link(object):
       data = self.recv()
       for k in ret:
         try:
-          ret[k].append(data(k))
+          ret[k].append(data[k])
         except KeyError:
           raise IOError(str(self)+" Got data without label "+k)
     return ret
