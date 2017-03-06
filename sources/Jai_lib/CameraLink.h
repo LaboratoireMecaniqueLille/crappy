@@ -62,7 +62,8 @@ class CaptureCAM_CL
 public:
     CaptureCAM_CL(); /*!< Constructor */
     virtual ~CaptureCAM_CL(); /*!< Desctructor*/
-    bool open( int index, const char* file, const char* cameraType);
+    bool open( int index, const char* cameraType);
+    void loadConfig(const char* conffile);
     void close();
     bool grabFrame();
     int startAcquire();
@@ -82,7 +83,6 @@ public:
     int             camPort; /*!< The number of the port on the cameraLink interface, should be PORT_A or PORT_B.*/
     double          framespersec; /*!< The number of frames per sec wanted*/
     unsigned int    exposure; /*!< Exposure time in microsecond*/
-    const char*     file; /*!< path to the configuration file of the camera*/
     const char*     cameraType; /*!< Type of camera, for frame grabber configuration */
     void            *ImgPtr; /*!< Pointer to image data*/
     bool isopened; /*!< State of the camera device*/

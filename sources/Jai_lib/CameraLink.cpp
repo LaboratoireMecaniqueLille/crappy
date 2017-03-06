@@ -60,7 +60,6 @@ void CaptureCAM_CL::init()
     TriggerMode= GRABBER_CONTROLLED;
     memHandle =NULL;
     serialRefPtr = NULL;
-    file = NULL;
     width = 640;
     height = 513;
     exposure = 8000;
@@ -93,20 +92,12 @@ void CaptureCAM_CL::init()
  * \param file path to the configuration file of the camera, cannot be Null.
  * \return True if the camera was correctly openned.
  */
-bool CaptureCAM_CL::open(int wIndex, const char* conffile, const char* camtype)
+bool CaptureCAM_CL::open(int wIndex, const char* camtype)
 {
-    cout << "opening with cam type: " << camtype << "\nConffile: "
-      << conffile << endl;
     int isSlave =0;
     boardNr=wIndex;
-    file=conffile;
-    // if ((fg = Fg_InitEx("FullAreaGray8", wIndex, isSlave)) == NULL) {
     if ((fg = Fg_InitEx(camtype, wIndex, isSlave)) == NULL) {
       fprintf(stderr, "error in Fg_InitEx: %s\n", Fg_getLastErrorDescription(NULL));
-      exit(EXIT_FAILURE);
-    }
-    if(Fg_loadConfig(fg,conffile)!=FG_OK){
-      printf("\nFile config loading failed\n");
       exit(EXIT_FAILURE);
     }
     ComNr=boardNr*2;
@@ -118,6 +109,13 @@ bool CaptureCAM_CL::open(int wIndex, const char* conffile, const char* camtype)
     return true;
 }
 
+void CaptureCAM_CL::loadConfig(const char* conffile)
+{
+    if(Fg_loadConfig(fg,conffile)!=FG_OK){
+      printf("\nFile config loading failed\n");
+      exit(EXIT_FAILURE);
+    }
+}
 
 /**
  * \fn void CaptureCAM_CL::stop()
@@ -170,11 +168,10 @@ bool CaptureCAM_CL::grabFrame()
     sleep(5);
     timeout+= 100;
     last_pic_nr = 0;
-    const char *f=file;
     const char *ct=cameraType;
     int boardNb = boardNr;
     init();
-    open(boardNb,f,ct);
+    open(boardNb,ct);
     startAcquire();
     return grabFrame();
   }

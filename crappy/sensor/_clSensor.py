@@ -15,7 +15,7 @@ from __future__ import print_function,division
 
 from ._meta import MasterCam
 from . import clModule
-from time import time,sleep
+from time import time
 import numpy as np
 import Tkinter
 import tkFileDialog
@@ -24,6 +24,11 @@ class CLCamera(MasterCam):
   """Cameralink camera sensor"""
 
   def __init__(self, numdevice = 0, config_file = None, camera_type = None):
+    """Using the clModule, will open a cameraLink camera.
+    If a config file is specified, it will be used to configure the camera
+    Else, you must at least provide the camera type (eg: "FullAreaGray8")
+    Using a config file is recommended over changing all settings manually
+    """
     #print("config_file:",config_file)
     MasterCam.__init__(self)
     self.config_file = config_file
@@ -36,21 +41,22 @@ class CLCamera(MasterCam):
       with open(config_file,'r') as f:
         r = f.readlines()
       r = filter(lambda s:s[:5]=="Typ='",r)
-      if len(r) == 0:
-        raise AttributeError('Could not determine camera type (invalid config file?)')
-      self.camera_type = r[0][5:-3]
+      if len(r) != 0:
+        self.camera_type = r[0][5:-3]
+    if camera_type is None:
+      raise AttributeError("No camera type or valid config file specified!")
     self.name = "cl_camera"
     self.numdevice = numdevice
     self.add_setting("width",setter=self._set_w, getter=self._get_w)
     self.add_setting("height",setter=self._set_h, getter=self._get_h)
     self.add_setting("framespersec",setter=self._set_framespersec,getter=self._get_framespersec,limits=(1,200))
     self.acqStarted = False
-    
+
   def stopAcq(self):
     if self.acqStarted:
       self.cap.stopAcq()
     self.acqStarted = False
-  
+
   def startAcq(self):
     if not self.acqStarted:
       self.cap.startAcq()
@@ -58,7 +64,7 @@ class CLCamera(MasterCam):
 
   def _set_framespersec(self,val):
     self.cap.set(clModule.FG_FRAMESPERSEC,val)
-    
+
   def _get_framespersec(self):
     return self.cap.get(clModule.FG_FRAMESPERSEC)
 
@@ -71,7 +77,7 @@ class CLCamera(MasterCam):
     self.stopAcq()
     self.cap.set(clModule.FG_WIDTH,val)
     self.startAcq()
-  
+
   def _get_h(self):
     return self.cap.get(clModule.FG_HEIGHT)
 
