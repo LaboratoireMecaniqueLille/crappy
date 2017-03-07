@@ -107,7 +107,7 @@ char* CaptureCAM_CL::serialWrite(char buffer[]){
      if(i==0){cout << "No reply from the camera!" << endl;return NULL;}
      // cout << "read " << i << "chars" << endl;
      mybuff[i] = '\0';
-     cout << mybuff << endl;
+     // cout << mybuff << endl;
      return mybuff;
 
     //free(mybuff);

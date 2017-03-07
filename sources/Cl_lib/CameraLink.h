@@ -110,6 +110,7 @@ private:
     void *serialRefPtr;
 };
 
+// Defining videocapture struct
 typedef struct {
   PyObject_HEAD;
   CaptureCAM_CL *camptr = NULL;
@@ -118,6 +119,7 @@ typedef struct {
   const char* camType;
 } VideoCapture;
 
+// Videocapture object prototypes
 PyObject* VideoCapture_open(VideoCapture* self, PyObject *args);
 PyObject* VideoCapture_isOpened(VideoCapture *self);
 PyObject* VideoCapture_release(VideoCapture*);
@@ -130,31 +132,7 @@ PyObject* VideoCapture_stopAcq(VideoCapture *self);
 PyObject* VideoCapture_serial_write(VideoCapture *self,PyObject *args);
 PyObject* VideoCapture_load_config(VideoCapture *self, PyObject *args);
 
-/*
-extern "C" {
-    typedef struct {
-        PyObject_HEAD
-        PyObject *myarray;
-        int device;
-        const char* file;
-        const char* cameraType;
-    } VideoCapture;
-    //PyObject* VideoCapture_Display(VideoCapture *self, PyObject *args);
-    PyObject* VideoCapture_open(int device, const char* file, const char* cameraType);
-    PyObject* VideoCapture_isOpened();
-    PyObject* VideoCapture_release();
-    PyObject* VideoCapture_startAcquisition();
-    PyObject* VideoCapture_stopAcquisition();
-//     PyObject* VideoCapture_addTrigger(VideoCapture *self, PyObject *args);
-    bool VideoCapture_grab();
-    PyObject* VideoCapture_retrieve(VideoCapture *self);
-    PyObject* VideoCapture_fgread(VideoCapture *self);
-    PyObject* VideoCapture_set(VideoCapture *self, PyObject *args);
-    PyObject* VideoCapture_get(VideoCapture *self, PyObject *args);
-    PyObject* VideoCapture_getMeta();
-    PyObject* VideoCapture_serialSet(VideoCapture *self, PyObject *args);
-}*/
 #endif
-/** @} */ 
+/** @} */
 /** @} */
 /** @} */

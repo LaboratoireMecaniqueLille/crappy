@@ -34,6 +34,26 @@ def make_histogram(img,**kwargs):
     draw.line((i,h_h,i,h_h-h2[i]),fill=0)
   return ImageTk.PhotoImage(out_img)
 
+def convert_image(img):
+  if img.dtype == np.uint16:
+    while img.max() >= 256:
+      img /= 2
+    img = img.astype(np.uint8)
+  try:
+    height,width = img.shape
+  except ValueError:
+    height,width,d = img.shape
+    if d == 3:
+      img = img[:,:,[2,1,0]] # BGR to RGB
+  ratio = max(width/maxW,height/maxH)
+  if ratio >= 1:
+    w = int(width/ratio)
+    h = int(height/ratio)
+  else:
+    w = width
+    h = height
+  return ImageTk.PhotoImage(Image.fromarray(cv2.resize(img,(w,h))))
+  
 def camera_config(camera):
   return Camera_config().config(camera)
 
@@ -48,6 +68,7 @@ class Camera_config(object):
 
   def config(self,camera):
     self.camera = camera
+    self.camera.get_image()
     self.create_window()
     self.create_scales(filter(lambda x:type(x.limits)==tuple,
                               camera.settings.values()))
@@ -106,24 +127,6 @@ class Camera_config(object):
           r.select()
         r.pack(anchor=tk.W)
 
-  def convert_image(self,img):
-    if img.dtype == np.uint16:
-      img = (img//4).astype(np.uint8)
-    try:
-      height,width = img.shape
-    except ValueError:
-      height,width,d = img.shape
-      if d == 3:
-        img = img[:,:,[2,1,0]] # BGR to RGB
-    ratio = max(width/maxW,height/maxH)
-    if ratio >= 1:
-      w = int(width/ratio)
-      h = int(height/ratio)
-    else:
-      w = width
-      h = height
-    return ImageTk.PhotoImage(Image.fromarray(cv2.resize(img,(w,h))))
-
   def update_scales(self):
     for name,scale in self.scales.iteritems():
       v = scale.get()
@@ -163,8 +166,8 @@ class Camera_config(object):
     if time() - self.last_hist_update > histRate:
       self.last_hist_update = time()
       self.update_histogram(img)
-    img = self.convert_image(img)
-    self.img_label.configure(image=img)
+    self.img = convert_image(img)
+    self.img_label.configure(image=self.img)
     self.update_scales()
     self.update_radios()
     self.update_checks()

@@ -51,7 +51,7 @@ void CaptureCAM_CL::init()
     isopened=false;
     isacquiring=false;
     last_pic_nr = 0;
-    timeout = 20;
+    timeout = 2;
     fg= NULL;
     camPort= PORT_A;
     nrOfPicturesToGrab  = GRAB_INFINITE;
@@ -102,16 +102,12 @@ bool CaptureCAM_CL::open(int wIndex, const char* camtype)
       fprintf(stderr, "error in Fg_InitEx: %s\n", Fg_getLastErrorDescription(NULL));
       exit(EXIT_FAILURE);
     }
-    if(Fg_loadConfig(fg,"/home/camera/Documents/CameraLinkJaiConf/Master_Config.mcf")!=FG_OK){
-      printf("\nFile config loading failed\n");
-      exit(EXIT_FAILURE);
-    }
     ComNr=boardNr*2;
     serialInit(ComNr);
-
+/*
     if(Fg_setParameter(fg,FG_TRIGGERMODE,&TriggerMode,camPort)==FG_OK){
       printf("\nTrig config succeed\n");
-    }
+    }*/
     isopened = true;
     return true;
 }
@@ -142,6 +138,8 @@ int CaptureCAM_CL::stop(){
  * \brief Close the camera device: stop the acquisition and free the allocated memory.
  */
 void CaptureCAM_CL::close(){
+  if(isacquiring) stop();
+  if(!isopened) return;
   Fg_stopAcquire(fg,camPort);
   Fg_FreeMemEx(fg, memHandle);
   Fg_FreeGrabber(fg);
@@ -161,19 +159,19 @@ bool CaptureCAM_CL::grabFrame()
     cur_pic_nr = Fg_getLastPicNumberBlockingEx(fg, last_pic_nr + 1, camPort, timeout, memHandle);
     if (cur_pic_nr < 0) {
       sprintf(Data,"Fg_getLastPicNumberBlockingEx failed: %s\n", Fg_getLastErrorDescription(fg));
-      stop();
-      throw string(Data);
+      cur_pic_nr = Fg_getLastPicNumberEx(fg, camPort, memHandle);
+      cout << "DEBUG cur_pic_nr" << cur_pic_nr << endl;
+      last_pic_nr = cur_pic_nr;
+      //stop();
+      //throw string(Data);
     }else{
       last_pic_nr = cur_pic_nr;
-      timeout=4;
       ImgPtr = Fg_getImagePtrEx(fg, last_pic_nr, camPort, memHandle);
       return true;
     }
   }catch(string const& error){
     cout <<"ERROR: " << error << endl;
     cout << " Trying to repoen..." << endl;
-    sleep(5);
-    timeout+= 100;
     last_pic_nr = 0;
     const char *ct=cameraType;
     int boardNb = boardNr;
@@ -352,7 +350,7 @@ bool CaptureCAM_CL::setProperty( int property_id, int value )
     case FG_YOFFSET             : mvret = Fg_setParameter( fg, FG_YOFFSET, &value, camPort); yoffset = value; break;
     case FG_XSHIFT              : mvret = Fg_setParameter( fg, FG_XSHIFT, &value, camPort); break;
     case FG_TIMEOUT             : mvret = Fg_setParameter( fg, FG_TIMEOUT, &value, camPort); timeout = value; break;
-    case FG_FRAMESPERSEC        : {double val = double(value); cout << val << endl; mvret = Fg_setParameter( fg, FG_FRAMESPERSEC, &val, camPort); framespersec = value; break;}
+    case FG_FRAMESPERSEC        : {double val = double(value); mvret = Fg_setParameter( fg, FG_FRAMESPERSEC, &val, camPort); framespersec = value; break;}
     case FG_FORMAT              : mvret = Fg_setParameter( fg, FG_FORMAT, &value, camPort); format = value; break;
     case FG_EXPOSURE            : mvret = Fg_setParameter( fg, FG_EXPOSURE, &value, camPort); exposure = value; break;
     case FG_TRIGGERMODE         : mvret = Fg_setParameter( fg, FG_TRIGGERMODE, &value, camPort); break;
@@ -403,7 +401,7 @@ int CaptureCAM_CL::startAcquire(){
       Fg_FreeGrabber(fg);
       return FG_ERROR;
     }
-    isopened=true;
+    isacquiring = true;
     try{
 	int bitAlignment = FG_LEFT_ALIGNED;
 	CHECK(FG_BITALIGNMENT, "FG_BITALIGNMENT", &bitAlignment);

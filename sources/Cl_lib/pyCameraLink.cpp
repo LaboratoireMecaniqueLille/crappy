@@ -7,12 +7,7 @@
 // The constructor
 static int VideoCapture_init(VideoCapture *self)
 {
-  cout << "Calling init!" << endl;
-  /*
-  static char *kwlist[] = {"device","file","cameratype",  NULL};
-  if (! PyArg_ParseTupleAndKeywords(args, kwds, "|iss", kwlist,
-              &self->device, &self->file, &self->camType))
-        return -1;*/
+  //cout << "Calling init!" << endl;
   if(self->camptr != NULL)
     self->camptr->close();
   self->camptr = new CaptureCAM_CL();
@@ -23,10 +18,10 @@ static int VideoCapture_init(VideoCapture *self)
 // And destructor
 static void VideoCapture_destructor(PyObject *self)
 {
-  cout << "Calling destructor!" << endl;
+  // cout << "Calling destructor!" << endl;
   ((VideoCapture*)self)->camptr->close();
   delete ((VideoCapture*)self)->camptr;
-  cout << "Destructor done!" << endl;
+  cout << "cl Destructor done!" << endl;
 }
 
 PyObject* VideoCapture_open(VideoCapture* self, PyObject *args)
@@ -64,17 +59,17 @@ PyObject* VideoCapture_get_array(VideoCapture *self)
   case FG_BINARY:
   case FG_GRAY:
     {
-      npy_intp dims[2] = {self->camptr->width,self->camptr->height};
+      npy_intp dims[2] = {self->camptr->height,self->camptr->width};
       return PyArray_SimpleNewFromData(2,dims,NPY_UINT8,self->camptr->ImgPtr);
     }
   case FG_GRAY16:
     {
-      npy_intp dims[2] = {self->camptr->width,self->camptr->height};
+      npy_intp dims[2] = {self->camptr->height,self->camptr->width};
       return PyArray_SimpleNewFromData(2,dims,NPY_UINT16,self->camptr->ImgPtr);
     }
   case FG_COL24:
     {
-      npy_intp dims[3] = {self->camptr->width,self->camptr->height,3};
+      npy_intp dims[3] = {self->camptr->height,self->camptr->width,3};
       return PyArray_SimpleNewFromData(3,dims,NPY_UINT8,self->camptr->ImgPtr);
     }
   default:
@@ -103,6 +98,7 @@ PyObject* VideoCapture_get(VideoCapture *self, PyObject *args)
 
 PyObject* VideoCapture_startAcq(VideoCapture *self, PyObject *args)
 {
+  if(self->camptr->isacquiring) Py_RETURN_FALSE;
   if(!PyArg_ParseTuple(args,"|iii",
         &self->camptr->width,&self->camptr->height,&self->camptr->format))
     return NULL;
@@ -114,6 +110,7 @@ PyObject* VideoCapture_startAcq(VideoCapture *self, PyObject *args)
 
 PyObject* VideoCapture_stopAcq(VideoCapture *self)
 {
+  if(!self->camptr->isacquiring) Py_RETURN_FALSE;
   if(!self->camptr->stop())
     Py_RETURN_TRUE;
   else
@@ -136,7 +133,7 @@ PyObject* VideoCapture_load_config(VideoCapture *self, PyObject *args)
 }
 
 
-// The object methods
+// Creating the PyDefMethod table grouping all the VideoCapture methods
 static PyMethodDef VideoCapture_methods[] = {
   {"open",(PyCFunction)VideoCapture_open, METH_VARARGS,
     "Opens the frame grabber with default, needs the fg type as second argument"},
@@ -162,7 +159,7 @@ static PyMethodDef VideoCapture_methods[] = {
   {NULL} // Sentinel
 };
 
-// The object members
+// The VideoCapture members
 static PyMemberDef VideoCapture_members[] = {
   {NULL}
 };
@@ -210,7 +207,7 @@ static PyTypeObject CLObjectType = {
   PyType_GenericNew        /* tp_new   */
 };
 
-// The module has no method
+// The module itself has no method
 static PyMethodDef clModuleMethods[] = {
   {NULL} // Sentinel
 };
@@ -223,6 +220,11 @@ PyMODINIT_FUNC initclModule(void)
   m = Py_InitModule3("clModule", clModuleMethods,
       "Module for cameralink interfaces");
   if(m == NULL){cout << "Unable to load clModule" << endl;return;}
+  map<string, int>::iterator p;
+  for(p=my_map.begin(); p != my_map.end();p++)
+    PyModule_AddIntConstant(m,(char*)p->first.c_str(),p->second);
+
+
   Py_INCREF(&CLObjectType);
   // Add the python object to the module
   PyModule_AddObject(m,"VideoCapture",(PyObject*)&CLObjectType);

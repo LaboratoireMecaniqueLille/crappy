@@ -49,8 +49,8 @@ if platform.system() == "Linux":
       clPath = None
     if clPath:
       clModule = Extension('sensor.clModule',
-                         sources=['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp',
-                                  'sources/Jai_lib/clSerial.cpp'], extra_compile_args=["-std=c++11"],
+                         sources=['sources/Cl_lib/CameraLink.cpp', 'sources/Cl_lib/pyCameraLink.cpp',
+                                  'sources/Cl_lib/clSerial.cpp'], extra_compile_args=["-std=c++11"],
                          extra_link_args=["-l", "python2.7", "-L", clPath, "-l",
                                           "display", "-l", "clsersis", "-l", "fglib5"],
                          include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
@@ -86,8 +86,8 @@ if platform.system() == "Windows":
                             extra_compile_args=["/EHsc", "/WX"])
     clModule = Extension('sensor.clModule', include_dirs=["C:\Program Files\SiliconSoftware\Runtime5.2.1\include",
                                                           "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"],
-                         sources=['sources/Jai_lib/CameraLink.cpp', 'sources/Jai_lib/pyCameraLink.cpp',
-                                  'sources/Jai_lib/clSerial.cpp'], libraries=["clsersis", "fglib5"],
+                         sources=['sources/Cl_lib/CameraLink.cpp', 'sources/Cl_lib/pyCameraLink.cpp',
+                                  'sources/Cl_lib/clSerial.cpp'], libraries=["clsersis", "fglib5"],
                          library_dirs=["C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\lib\\visualc"],
                          extra_compile_args=["/EHsc", "/WX"])
 
