@@ -313,6 +313,8 @@ class SignalGenerator(MasterBlock):
                 self.alpha = 0
               elif self.path[self.step - 1]["waveform"] == "goto":
                 self.alpha = 0
+              elif self.path[self.step - 1]["waveform"] == "ramp":
+                self.alpha = self.origin
               else:
                 pass
             Array = OrderedDict(zip(self.labels, [last_t - self.t0, self.alpha, 0]))
