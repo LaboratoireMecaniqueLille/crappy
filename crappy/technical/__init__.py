@@ -37,7 +37,7 @@ from _orientalTechnical import Oriental
 from _conditionneur_5018 import Conditionner_5018
 from _datapicker import DataPicker
 from _videoextensoConfig import get_camera_config,ve_config
-from _cameraConfig import camera_config
+from _cameraConfig import Camera_config
 from _camera import TechnicalCamera
 from _videoExtenso import TechnicalVideoExtenso
 from _arduino import Arduino

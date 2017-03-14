@@ -14,7 +14,7 @@
 from __future__ import print_function
 
 
-from . import camera_config
+from . import Camera_config
 from crappy.sensor._meta import MetaCam
 
 
@@ -58,7 +58,7 @@ class TechnicalCamera(object):
     self.sensor = camera_class(numdevice=num_device,**self.init_kwargs)
     self.sensor.open(**self.open_kwargs)
     if config:
-      camera_config(self.sensor)
+      Camera_config(self.sensor)
 
   def __getattr__(self,attr):
     try:
