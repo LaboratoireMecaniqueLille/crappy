@@ -125,10 +125,10 @@ class _CameraInit:
   def zoi_selection(self, eclick, erelease):
     x1, y1 = eclick.xdata, eclick.ydata
     x2, y2 = erelease.xdata, erelease.ydata
-    xmin = round(min(x1, x2))
-    xmax = round(max(x1, x2))
-    ymin = round(min(y1, y2))
-    ymax = round(max(y1, y2))
+    xmin = int(round(min(x1, x2)))
+    xmax = int(round(max(x1, x2)))
+    ymin = int(round(min(y1, y2)))
+    ymax = int(round(max(y1, y2)))
     # update dimension of the image:
     self.height = (ymax - ymin)
     self.width = (xmax - xmin)
@@ -171,10 +171,10 @@ class _CameraInit:
     if self.NumOfReg:
       print " Spots detected in camerainit: ", self.NumOfReg
       # smoothing=1
-      self.minx = np.empty([self.NumOfReg, 1])
-      self.miny = np.empty([self.NumOfReg, 1])
-      self.maxx = np.empty([self.NumOfReg, 1])
-      self.maxy = np.empty([self.NumOfReg, 1])
+      self.minx = np.empty([self.NumOfReg, 1],dtype=np.int64)
+      self.miny = np.empty([self.NumOfReg, 1],dtype=np.int64)
+      self.maxx = np.empty([self.NumOfReg, 1],dtype=np.int64)
+      self.maxy = np.empty([self.NumOfReg, 1],dtype=np.int64)
       self.Points_coordinates = np.empty([self.NumOfReg, 2])
       # Definition of the ZOI and initialisation of the regions border
       i = 0
