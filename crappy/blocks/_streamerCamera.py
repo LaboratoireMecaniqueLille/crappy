@@ -96,7 +96,7 @@ class StreamerCamera(MasterBlock):
         sitk.WriteImage(image,
                self.save_folder + "img_%.6d_cycle%09.1f_%.5f.tiff" % (
                self.loops, cycle, t-self.t0))
-      except KeyError: # If we did not
+      except (KeyError,UnboundLocalError): # If we did not
         sitk.WriteImage(image,
                self.save_folder + "img_%.6d_%.5f.tiff" % (
                self.loops, t-self.t0))
