@@ -38,13 +38,13 @@ table = (
 0x4E00, 0x8EC1, 0x8F81, 0x4F40, 0x8D01, 0x4DC0, 0x4C80, 0x8C41,
 0x4400, 0x84C1, 0x8581, 0x4540, 0x8701, 0x47C0, 0x4680, 0x8641,
 0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040 )
- 
+
 def calcString( st, crc):
     """Given a bunary string and starting CRC, Calc a final CRC-16 """
     for ch in st:
         crc = (crc >> 8) ^ table[(crc ^ ord(ch)) & 0xFF]
     return crc
-  
+
 def add_crc(s):
   return s+hex(calcString(s,0xFFFF)).split('x')[1].upper().rjust(4,'0')
 
@@ -54,17 +54,61 @@ def check_crc(s):
 
 def hexlify(n):
   return hex(n).split('x')[1].rjust(2,'0').upper()
-  
+
 
 class Bispectral(CLCamera):
   def __init__(self, **kwargs):
     kwargs['camera_type'] = "SingleAreaGray2DShading"
     CLCamera.__init__(self,**kwargs)
-    self.send_cmd('@W10012') # Make sure the image is not inverted
-    self.settings['width'].limits = (1,640*2)
-    self.settings['width'].default = 640*2
+    self.settings['width'].limits = (1,640)
+    self.settings['width'].default = 640
     self.settings['height'].limits = (1,512)
     self.settings['height'].default = 512
+    self.add_setting('xoffset',limits=(0,639*2),default=0,setter=self._set_ox,
+        getter=self._get_ox)
+    self.add_setting('yoffset',limits=(0,511),default=0,setter=self._set_oy,
+        getter=self._get_oy)
+    self.add_setting('IT1',limits=(10,10000),#default=self._get_IT1,
+        setter=self._set_IT1,getter=self._get_IT1)
+    self.add_setting('IT2',limits=(10,10000),#default=self._get_IT2,
+        setter=self._set_IT2,getter=self._get_IT2)
+    self.add_setting('fps',getter=self.get_trigg_freq,
+        setter=self.set_trigg_freq,limits=(1.,150.))
+
+  def _set_w(self,val):
+    CLCamera._set_w(self,val*2)
+    self.set_ROI(self.xoffset,self.yoffset,self.xoffset+self.width-1,self.yoffset+self.height-1)
+
+  def _get_w(self):
+    return int(CLCamera._get_w(self)/2)
+
+  def _set_h(self,val):
+    CLCamera._set_h(self,val)
+    self.set_ROI(self.xoffset,self.yoffset,self.xoffset+self.width-1,self.yoffset+self.height-1)
+
+  def _set_ox(self,val):
+    self.set_ROI(val,self.yoffset,val+self.width-1,self.yoffset+self.height-1)
+
+  def _set_oy(self,val):
+    self.set_ROI(self.xoffset,val,self.xoffset+self.width-1,val+self.height-1)
+
+  def _get_ox(self):
+    return self.get_ROI()[0]
+
+  def _get_oy(self):
+    return self.get_ROI()[1]
+
+  def _get_IT1(self):
+    return int(self.get_IT()[0])
+
+  def _get_IT2(self):
+    return int(self.get_IT()[1])
+
+  def _set_IT1(self,val):
+    self.set_IT(val,self._get_IT2())
+
+  def _set_IT2(self,val):
+    self.set_IT(self._get_IT1(),val)
 
   def send_cmd(self,cmd):
     r = self.cap.serialWrite(add_crc(cmd))
@@ -73,7 +117,7 @@ class Bispectral(CLCamera):
     return r[2:4]
 
   def set_external_trigger(self,val):
-    """Sets the external trigger to val by toggling the value of the 3rd bit 
+    """Sets the external trigger to val by toggling the value of the 3rd bit
     of register 102"""
     if val:
       self.send_cmd('@W1027C') #3rd bit to 1
@@ -94,13 +138,14 @@ class Bispectral(CLCamera):
     ymin = int(Y1min_MSB+Y1min_LSB,16)
     ymax = int(Y1max_MSB+Y1max_LSB,16)
     return xmin,ymin,xmax,ymax
-  
+
 
   def set_ROI(self,xmin,ymin,xmax,ymax):
     if (xmin,xmax,ymin,ymax) != (0,0,639,511):
       self.send_cmd('@W1A080') # Set to windowed mode
     else:
       self.send_cmd('@W1A084')
+    print("D set ROI to",xmin,ymin,xmax,ymax)
     lsb_xmin = hexlify(xmin % 256)
     msb_xmin = hexlify(xmin // 256)
     lsb_xmax = hexlify(xmax % 256)
@@ -119,18 +164,18 @@ class Bispectral(CLCamera):
     self.send_cmd("@W1D7"+msb_ymax)
     w = (xmax-xmin+1)*2
     h = ymax-ymin+1
-    if self.height != h:
-      self.height = h
-    if self.width != w:
-      self.width = w
+    #if self.height != h:
+    #  self.height = h
+    #if self.width != w:
+    #  self.width = w
 
   def get_IT(self):
     MC = 10.35 # MHz
     IT1_LSB=self.send_cmd("@R1B4")
-    IT1_MID=self.send_cmd("@R1B5")    
+    IT1_MID=self.send_cmd("@R1B5")
     IT1_MSB=self.send_cmd("@R1B6")
     IT2_LSB=self.send_cmd("@R1B8")
-    IT2_MID=self.send_cmd("@R1B9")    
+    IT2_MID=self.send_cmd("@R1B9")
     IT2_MSB=self.send_cmd("@R1BA")
     IT1=int(IT1_MSB+IT1_MID+IT1_LSB,16) # Number of clock cycles
     IT2=int(IT2_MSB+IT2_MID+IT2_LSB,16)
@@ -159,51 +204,52 @@ class Bispectral(CLCamera):
 
 
   def get_trigg_freq(self):
-    MC = 10350000 # Hz   
+    MC = 10350000 # Hz
     P_LSB=self.send_cmd("@R1B0")
     P_MID=self.send_cmd("@R1B1")
     P_MSB=self.send_cmd("@R1B2")
     P=int(P_MSB+P_MID+P_LSB,16)
     return MC/P
-  
+
   def set_trigg_freq(self,Freq):
-    MC = 10350000 # Hz 
+    MC = 10350000 # Hz
     Period = int(MC/Freq)
     P_LSB = hexlify(Period  % 256)
-    Period -= P%256
+    Period -= Period%256
     Period //= 256
     P_MID = hexlify(Period  % 256)
     P_MSB = hexlify(Period  // 256)
     self.send_cmd("@W1B0"+P_LSB)
     self.send_cmd("@W1B1"+P_MID)
     self.send_cmd("@W1B2"+P_MSB)
-    
-  
+
+
   def get_sensor_temperature(self):
     """Returns sensor temperature in Kelvin"""
     gain = .01
     lsb = self.send_cmd('@R160')
     msb = self.send_cmd('@R161')
     return int(msb+lsb,16)*gain
-  
+
   def get_ambiant_temperature(self):
     """Returns temperature of the board in °C"""
     T = self.send_cmd('@R173')
     return int(T,16)
-  
-    
+
+
   def get_image(self):
     t,frame = CLCamera.get_image(self)
-    img = np.ones((self.height,self.width),dtype=np.uint8)
-    img[::,:self.width//2:2] = frame[::,::4]
-    img[::,1:self.width//2:2] = frame[::,1::4]
-    img[::,self.width//2::2] = frame[::,2::4]
-    img[::,self.width//2+1::2] = frame[::,3::4]
+    img = np.ones((self.height,self.width*2),dtype=np.uint8)
+    img[::,:self.width:2] = frame[::,::4]
+    img[::,1:self.width:2] = frame[::,1::4]
+    img[::,self.width::2] = frame[::,2::4]
+    img[::,self.width+1::2] = frame[::,3::4]
     return t,img
 
   def close(self):
     CLCamera.close(self)
-    
+
   def open(self,**kwargs):
     CLCamera.open(self,**kwargs)
     self.send_cmd('@W1A084') # Restore unwindowed Mode
+    self.send_cmd('@W10012') # Make sure the image is not inverted
