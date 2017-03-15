@@ -139,11 +139,11 @@ class Cam_setting(object):
   @value.setter
   def value(self,i):
     _ = self.value # Detail: to make sure we called value getter once
-    if type(self.limits) == tuple:
-      if not self.limits[0] <= i <= self.limits[1]:
-        print("[Cam_setting] Parameter",i,"out of range ",self.limits)
-        return
-    elif type(self.limits) == dict:
+    #if type(self.limits) == tuple:
+    #  if not self.limits[0] <= i <= self.limits[1]:
+    #    print("[Cam_setting] Parameter",i,"out of range ",self.limits)
+    #    return
+    if type(self.limits) == dict:
       if not i in self.limits.values():
         print("[Cam_setting] Parameter",i,"not available",self.limits)
         return
