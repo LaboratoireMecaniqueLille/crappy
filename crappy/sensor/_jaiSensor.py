@@ -12,6 +12,8 @@ class Jai(CLCamera):
     self.settings['width'].default = 2560
     self.settings['height'].limits = (1,2048)
     self.settings['height'].default = 2048
+    self.add_setting('exposure',setter=self._set_exp,getter=self._get_exp,
+                               limits = (10,800000))
 
   def _set_w(self,val):
     if val % 640 != 0:
@@ -28,6 +30,12 @@ class Jai(CLCamera):
     CLCamera._set_h(self,val)
     self.cap.serialWrite('HTL={}\r\n'.format(val))
     self.startAcq()
+
+  def _set_exp(self,val):
+    self.cap.serialWrite('PE={}\r\n'.format(val))
+
+  def _get_exp(self):
+    return self.cap.serialWrite('PE?\r\n').strip()[3:]
 
   def get_image(self):
     return CLCamera.get_image(self)
