@@ -121,6 +121,7 @@ class Camera_config(object):
     self.create_infos()
     self.img_label.bind('<4>', self.zoom_in)
     self.img_label.bind('<5>', self.zoom_out)
+    self.root.bind('<MouseWheel>', self.zoom)
     self.img_label.bind('<1>', self.start_move)
     self.img_label.bind('<B1-Motion>', self.move)
 
@@ -391,6 +392,15 @@ class Camera_config(object):
     ratio = min(self.label_shape[0]/self.img.shape[0],
             self.label_shape[1]/self.img.shape[1])
     self.img_shape = (int(self.img.shape[0]*ratio),int(self.img.shape[1]*ratio))
+
+  def zoom(self,event):
+    """For windows, only one type of wheel event"""
+    #This event is relative to the window!
+    event.y -= self.img_label.winfo_y()
+    if event.num == 5 or event.delta < 0:
+      self.zoom_out(event)
+    elif event.num == 4 or event.delta > 0:
+      self.zoom_in(event)
 
   def zoom_in(self,event):
     """Called when scrolling in"""
