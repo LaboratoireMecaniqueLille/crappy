@@ -214,7 +214,7 @@ class Camera_config(object):
     # Integer rounding can lead to resizing loop if we compare exact values
     # so let's resize only if the difference is signigficant (more than 2pix)
     #if new != self.label_shape:
-    if sum([abs(i-j) for i,j in zip(new,self.label_shape)]) > 2:
+    if sum([abs(i-j) for i,j in zip(new,self.label_shape)]) >= 5:
       if new[0] > 0 and new[1] > 0:
         self.label_shape = new
       return True
