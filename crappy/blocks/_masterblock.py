@@ -155,7 +155,7 @@ class MasterBlock(Process):
     try:
       # Keep running
       while True:
-        sleep(31536000)  # 1 year, just to be sure
+        sleep(86400) #1 day (will loop anyway)
     except KeyboardInterrupt:
       print("Main proccess got keyboard interrupt!")
       if not cls.all_are('running'):
@@ -225,8 +225,13 @@ class MasterBlock(Process):
     if not self.in_process:
       while self.pipe1.poll():
         self._status = self.pipe1.recv()
-      self.pipe2.send(
-        self._status)  # If another process tries to get the status
+      #If another process tries to get the status
+      #self.pipe2.send(self._status)
+
+      #Somehow the previous line makes crappy hang on Windows, no idea why
+      #It is not critical, but it means that process status can now only
+      #be read from the process itself and ONE other process.
+      #Luckily, only the parent (the main process) needs the status for now
     return self._status
 
   @status.setter
