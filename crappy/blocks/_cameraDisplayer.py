@@ -54,7 +54,6 @@ class CameraDisplayer(MasterBlock):
     i = 0
     while m >= 2**(8+i):
       i+=1
-    print("DEBUG: divide by",2**i)
     return (f/(2**i)).astype(np.uint8)
 
   def loop_mpl(self):
