@@ -14,7 +14,7 @@
 from __future__ import print_function,division
 
 from ._meta import MasterCam
-from . import clModule
+from . import clModule as cl
 from time import time
 import numpy as np
 
@@ -57,37 +57,57 @@ class CLCamera(MasterCam):
   def stopAcq(self):
     self.cap.stopAcq()
 
-  def startAcq(self):
-    self.cap.startAcq()
+  def startAcq(self,*args):
+    self.cap.startAcq(*args)
 
   def _set_framespersec(self,val):
-    self.cap.set(clModule.FG_FRAMESPERSEC,val)
+    self.cap.set(cl.FG_FRAMESPERSEC,val)
 
   def _get_framespersec(self):
-    return self.cap.get(clModule.FG_FRAMESPERSEC)
+    return self.cap.get(cl.FG_FRAMESPERSEC)
 
   def _set_h(self,val):
     self.stopAcq()
-    self.cap.set(clModule.FG_HEIGHT,val)
+    self.cap.set(cl.FG_HEIGHT,val)
     self.startAcq()
 
   def _set_w(self,val):
     self.stopAcq()
-    self.cap.set(clModule.FG_WIDTH,val)
+    self.cap.set(cl.FG_WIDTH,val)
     self.startAcq()
 
   def _get_h(self):
-    return self.cap.get(clModule.FG_HEIGHT)
+    return self.cap.get(cl.FG_HEIGHT)
 
   def _get_w(self):
-    return self.cap.get(clModule.FG_WIDTH)
+    return self.cap.get(cl.FG_WIDTH)
 
   def open(self, **kwargs):
     """
     Opens the camera
     """
-    self.cap = clModule.VideoCapture()
-    self.cap.open(self.numdevice,self.camera_type)
+    if 'format' in kwargs:
+      f = kwargs['format']
+    else:
+      if self.camera_type[-1] == '8':
+        f = cl.FG_GRAY
+      elif self.camera_type[-2:] == '16':
+        f = cl.FG_GRAY16
+      elif self.camera_type[-2:] == '24':
+        f = cl.FG_COL24
+      else:
+        if self.config_file:
+          with open(self.config_file,'r') as f:
+            r = f.readlines()
+          r = filter(lambda s:s[:10]=="FG_FORMAT=",r)
+          if len(r) != 0:
+            f = int(r[0].split['='][1])
+          else:
+            raise ValueError("Could not determine the format")
+        else:
+          raise ValueError("Could not determine the format")
+    self.cap = cl.VideoCapture()
+    self.cap.open(self.numdevice,self.camera_type,f)
     for k in kwargs:
       if not k in self.settings:
         raise AttributeError('Unexpected keyword: '+k)
@@ -97,10 +117,13 @@ class CLCamera(MasterCam):
     # To make sure ROI is properly set up on first call
     for i in ['framespersec','height','width']:
       setattr(self,i,getattr(self,i))
-    #CLCamera._set_w(self,self.width)
-    #CLCamera._set_h(self,self.height)
-    #CLCamera._set_framespersec(self,self.framespersec)
     self.startAcq()
+    self.configure()
+
+  def configure(self):
+    """Configure the frame grabber to trig the camera internally"""
+    self.cap.set(cl.FG_TRIGGERMODE,1)
+    self.cap.set(cl.FG_EXSYNCON,1)
 
   def get_image(self):
     t = time()

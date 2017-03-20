@@ -40,7 +40,7 @@ try:
   from _ximeaCV import XimeaCV
 except Exception as e:
   import_error(e.message)
-  
+
 try:
   from _bispectralSensor import Bispectral
 except Exception as e:
@@ -57,7 +57,7 @@ if _platform.system() == "Linux":
   if len(_p.read()) != 0:
     try:
       import clModule as clModule
-      from _jaiSensor import Jai
+      from _jaiSensor import Jai,Jai8
       from _clserial import _clSerial
       from _clserial import _jaiSerial
       from _clSensor import CLCamera
@@ -76,7 +76,7 @@ if _platform.system() == "Windows":
   if len(_popen('driverquery /NH |findstr "me4"').read()) != 0:
     try:
       import clModule as clModule
-      from _jaiSensor import Jai
+      from _jaiSensor import Jai,Jai8
 
       from _clserial import _clSerial
       from _clserial import _jaiSerial

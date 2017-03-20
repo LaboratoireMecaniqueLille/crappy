@@ -76,7 +76,8 @@ void CaptureCAM_CL::init()
  * \brief Initialize camera input.
  *
  * \param wIndex Number of the camera device, starts at 0.
- * \param file path to the configuration file of the camera, cannot be Null.
+ * \param The type of module to load to use the camera
+ * \param The format to use with the frame grabber
  * \return True if the camera was correctly openned.
  */
 bool CaptureCAM_CL::open(int wIndex, const char* camtype, int fg_format)
@@ -98,6 +99,11 @@ bool CaptureCAM_CL::open(int wIndex, const char* camtype, int fg_format)
     return true;
 }
 
+/**
+ *\fn void CaptureCAM_CL::loadConfig(const char* conffile)
+ *\brief Allows a quick configuration of the device using a file
+ *\param The path to the config file
+ */
 void CaptureCAM_CL::loadConfig(const char* conffile)
 {
     if(Fg_loadConfig(fg,conffile)!=FG_OK){
