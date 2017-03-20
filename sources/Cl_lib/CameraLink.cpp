@@ -56,14 +56,13 @@ void CaptureCAM_CL::init()
     camPort= PORT_A;
     nrOfPicturesToGrab  = GRAB_INFINITE;
     nbBuffers= 4;
-    samplePerPixel= 1;
-    bytePerSample= 1;
+    bytesPerPixel = 2;
     TriggerMode= GRABBER_CONTROLLED;
     memHandle =NULL;
     serialRefPtr = NULL;
     width = 640;
     height = 513;
-    format = FG_GRAY;
+    format = FG_GRAY16;
     exposure = 8000;
     xoffset = 0;
     yoffset = 0;
@@ -71,20 +70,6 @@ void CaptureCAM_CL::init()
     nId = 0;
 }
 
-/*void CaptureCAM_CL::display(int dis){
-    if(dis==1){
-      if(nId== 0)
-	  nId=CreateDisplay(24,640,513);
-      cout << "nId: " << nId << endl;
-      SetBufferWidth(nId, 640, 513);
-      DrawBuffer(nId, ImgPtr, 1, 0);
-    }else{
-      if(nId!=0){
-	CloseDisplay(nId);
-	nId=0;
-      }
-    }
-}*/
 
 /**
  * \fn bool CaptureCAM_CL::open( int wIndex, const char* file)
@@ -94,10 +79,11 @@ void CaptureCAM_CL::init()
  * \param file path to the configuration file of the camera, cannot be Null.
  * \return True if the camera was correctly openned.
  */
-bool CaptureCAM_CL::open(int wIndex, const char* camtype)
+bool CaptureCAM_CL::open(int wIndex, const char* camtype, int fg_format)
 {
     int isSlave =0;
     boardNr=wIndex;
+    format = fg_format;
     if ((fg = Fg_InitEx(camtype, wIndex, isSlave)) == NULL) {
       fprintf(stderr, "error in Fg_InitEx: %s\n", Fg_getLastErrorDescription(NULL));
       exit(EXIT_FAILURE);
@@ -176,29 +162,12 @@ bool CaptureCAM_CL::grabFrame()
     const char *ct=cameraType;
     int boardNb = boardNr;
     init();
-    open(boardNb,ct);
+    open(boardNb,ct,format);
     startAcquire();
     return grabFrame();
   }
 }
 
-
-/**
- * \fn void CaptureCAM_CL::resetCvImage()
- * \brief reset the width, height and format attributes.
- *
- */
-void CaptureCAM_CL::resetCvImage()
-{
-    cout << "resetCvImage" << endl;
-  //TODO
-//     if( (int)image.width != width || (int)image.height != height || image.frm != (XI_IMG_FORMAT)format)
-//     {
-// 	xiGetParamInt( hmv, XI_PRM_WIDTH, &width);
-// 	xiGetParamInt( hmv, XI_PRM_HEIGHT, &height);
-// 	xiGetParamInt( hmv, XI_PRM_IMAGE_DATA_FORMAT, &format);
-//     }
-}
 
 /**
  * \fn int CaptureCAM_CL::getProperty( int property_id )
@@ -262,6 +231,7 @@ unsigned int CaptureCAM_CL::getProperty( int property_id )
         return 0;
     unsigned int value = NULL;
     double val = NULL;
+    const int id = property_id;
     int ret = FG_OK;
     switch( property_id )
     {
@@ -288,6 +258,10 @@ unsigned int CaptureCAM_CL::getProperty( int property_id )
     case FG_TWOCAMMODEL         : ret= Fg_getParameter( fg, FG_TWOCAMMODEL, &value, camPort); break;
     case FG_HDSYNC              : ret= Fg_getParameter( fg, FG_HDSYNC, &value, camPort); break;
     case FG_BOARD_INFORMATION   : ret= Fg_getParameter( fg, FG_BOARD_INFORMATION, &value, camPort); break;
+    case FG_EXSYNCON            : ret= Fg_getParameter( fg, FG_EXSYNCON, &value, camPort); break;
+    case FG_SENSORREADOUT       : ret= Fg_getParameter( fg, FG_SENSORREADOUT, &value, camPort); break;
+    case FG_CAMERA_LINK_CAMTYP  : ret= Fg_getParameter( fg, FG_CAMERA_LINK_CAMTYP, &value, camPort); break;
+    default                     : cout << "Sorry, parameter not implemented!" << endl;
 
     }
     switch(ret)
@@ -356,6 +330,10 @@ bool CaptureCAM_CL::setProperty( int property_id, int value )
     case FG_TRIGGERMODE         : mvret = Fg_setParameter( fg, FG_TRIGGERMODE, &value, camPort); break;
     case FG_STROBEPULSEDELAY    : mvret = Fg_setParameter( fg, FG_STROBEPULSEDELAY, &value, camPort); break;
     case FG_GLOBAL_ACCESS       : mvret = Fg_setParameter( fg, FG_GLOBAL_ACCESS, &value, camPort); break;
+    case FG_EXSYNCON            : mvret = Fg_setParameter( fg, FG_EXSYNCON, &value, camPort); break;
+    case FG_SENSORREADOUT       : mvret = Fg_setParameter( fg, FG_SENSORREADOUT, &value, camPort); break;
+    case FG_CAMERA_LINK_CAMTYP       : mvret = Fg_setParameter( fg, FG_CAMERA_LINK_CAMTYP, &value, camPort); break;
+    default: cout << "Sorry, parameter not implemented!" << endl;
     }
 
     switch(mvret)
@@ -379,7 +357,7 @@ bool CaptureCAM_CL::setProperty( int property_id, int value )
  * \return FG_OK if the acquisition has started, FG_ERROR if it has failed.
  */
 int CaptureCAM_CL::startAcquire(){
-    size_t totalBufferSize = width * height * samplePerPixel * bytePerSample * nbBuffers;
+    size_t totalBufferSize = width * height * bytesPerPixel * nbBuffers;
     memHandle = Fg_AllocMemEx(fg, totalBufferSize, nbBuffers);
     if (memHandle == NULL) {
         fprintf(stderr, "error in Fg_AllocMemEx: %s\n", Fg_getLastErrorDescription(fg));
@@ -422,7 +400,7 @@ int CaptureCAM_CL::startAcquire(){
  * \return FG_OK if the acquisition ha restarted, FG_ERROR if it has failed.
  */
 int CaptureCAM_CL::restart(){
-    size_t totalBufferSize = width * height * samplePerPixel * bytePerSample * nbBuffers;
+    size_t totalBufferSize = width * height * bytesPerPixel * nbBuffers;
     memHandle = Fg_AllocMemEx(fg, totalBufferSize, nbBuffers);
     if (memHandle == NULL) {
         fprintf(stderr, "error in Fg_AllocMemEx: %s\n", Fg_getLastErrorDescription(fg));

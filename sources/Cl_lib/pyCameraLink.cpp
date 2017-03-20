@@ -26,10 +26,11 @@ static void VideoCapture_destructor(PyObject *self)
 
 PyObject* VideoCapture_open(VideoCapture* self, PyObject *args)
 {
-  if(!PyArg_ParseTuple(args,"is",&self->device,&self->camType))
+  int format = FG_GRAY16;
+  if(!PyArg_ParseTuple(args,"is|i",&self->device,&self->camType,&format))
     return NULL;
   if(self->camptr->isopened) self->camptr->close();
-  self->camptr->open(self->device,self->camType);
+  self->camptr->open(self->device,self->camType,format);
   return VideoCapture_isOpened(self);
 }
 
@@ -69,6 +70,7 @@ PyObject* VideoCapture_get_array(VideoCapture *self)
     }
   case FG_COL24:
     {
+      cout << "24 bits!" << endl;
       npy_intp dims[3] = {self->camptr->height,self->camptr->width,3};
       return PyArray_SimpleNewFromData(3,dims,NPY_UINT8,self->camptr->ImgPtr);
     }
@@ -102,6 +104,18 @@ PyObject* VideoCapture_startAcq(VideoCapture *self, PyObject *args)
   if(!PyArg_ParseTuple(args,"|iii",
         &self->camptr->width,&self->camptr->height,&self->camptr->format))
     return NULL;
+  switch(self->camptr->format)
+  {
+    case FG_GRAY:
+      self->camptr->bytesPerPixel = 1;
+      break;
+    case FG_GRAY16:
+      self->camptr->bytesPerPixel = 2;
+      break;
+    case FG_COL24:
+      self->camptr->bytesPerPixel = 3;
+      break;
+  }
   if(!self->camptr->startAcquire())
     Py_RETURN_TRUE;
   else

@@ -37,7 +37,7 @@ map< string, int > my_map=
     
     {"FG_BINARY", FG_BINARY},
     {"FG_GRAY", FG_GRAY},
-	{"FG_GRAY16 ", FG_GRAY16},
+	{"FG_GRAY16", FG_GRAY16},
 	{"FG_COL24", FG_COL24},
 	{"FG_COL30", FG_COL30},
         {"FG_COL32", FG_COL32},
@@ -64,6 +64,9 @@ map< string, int > my_map=
          *  - ASYNC_TRIGGER 
          */
 	{"FG_TRIGGERMODE", FG_TRIGGERMODE},
+	{"FG_EXSYNCON", FG_EXSYNCON},
+	{"FG_CAMERA_LINK_CAMTYP", FG_CAMERA_LINK_CAMTYP},
+	{"FG_SENSORREADOUT", FG_SENSORREADOUT},
         
 	{"FREE_RUN", FREE_RUN},
 	{"GRABBER_CONTROLLED",  GRABBER_CONTROLLED},

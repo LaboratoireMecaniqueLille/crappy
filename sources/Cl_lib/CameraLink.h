@@ -1,5 +1,5 @@
 /** @defgroup sources Sources
- *  This package contains source code for C or C++ libraries interfaced with Python. 
+ *  This package contains source code for C or C++ libraries interfaced with Python.
  *  @{
  */
 /** @defgroup cameralink CameraLink
@@ -12,7 +12,7 @@
  *  @{
  */
 
-/** 
+/**
  * \file CameraLink.h
  * \brief CameraLink header, defines functions and classes for CameraLink module.
  * \author Robin Siemiatkowski
@@ -62,7 +62,7 @@ class CaptureCAM_CL
 public:
     CaptureCAM_CL(); /*!< Constructor */
     virtual ~CaptureCAM_CL(); /*!< Desctructor*/
-    bool open(int index, const char* cameraType);
+    bool open(int index, const char* cameraType, int fg_format);
     void loadConfig(const char* conffile);
     void close();
     bool grabFrame();
@@ -88,6 +88,7 @@ public:
     bool isopened; /*!< State of the camera device*/
     bool isacquiring;
     char* serialWrite(char buffer[]);
+    size_t             bytesPerPixel;
     //void display(int dis);
 private:
     void init();
@@ -98,8 +99,6 @@ private:
     frameindex_t    nrOfPicturesToGrab;
     frameindex_t    nbBuffers;
     Fg_Struct       *fg;
-    int             samplePerPixel;
-    size_t          bytePerSample;
     unsigned int    TriggerMode;
     const char      *applet;
     dma_mem         *memHandle;
