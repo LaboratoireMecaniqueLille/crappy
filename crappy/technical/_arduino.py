@@ -21,7 +21,7 @@ class MonitorFrame(tk.Frame):
     """
     tk.Frame.__init__(self, parent)
     self.grid()
-    self.total_width = kwargs.get('width', 100 * 8 / 10)
+    self.total_width = kwargs.get('width', 100 * 5 / 10)
     self.arduino = kwargs.get("arduino")
     self.queue = kwargs.get("queue")
     self.enabled_checkbox = tk.IntVar()
@@ -72,6 +72,7 @@ class SubmitSerialFrame(tk.Frame):
     self.create_widgets(**kwargs)
 
   def create_widgets(self, **kwargs):
+
     self.input_txt = tk.Entry(self,
                               width=self.total_width * 5 / 10,
                               font=tkFont.Font(size=kwargs.get("fontsize", 13)))
@@ -126,23 +127,26 @@ class MinitensFrame(tk.Frame):
     self.queue = kwargs.get("queue")
 
   def create_widgets(self, **kwargs):
-    self.minitens_frame_radiobuttons = tk.Frame(self)
+    self.frame_one = tk.Frame(self, relief=tk.SUNKEN, borderwidth=1)
+    self.minitens_frame_radiobuttons = tk.Frame(self.frame_one)
+
+    # Sequence to compose
     for index, value in enumerate(self.modes):
       tk.Radiobutton(self.minitens_frame_radiobuttons, text=value[0],
                      value=value[1], variable=self.mode).grid(row=index,
                                                               sticky=tk.W)
 
-    self.vitesse_frame = tk.Frame(self)
+    self.vitesse_frame = tk.Frame(self.frame_one)
     self.vitesse_parameter = tk.Entry(self.vitesse_frame)
     self.vitesse_parameter.grid(row=1)
     tk.Label(self.vitesse_frame, text="Vitesse(0..255)").grid(row=0)
 
-    self.boucle_frame = tk.Frame(self)
+    self.boucle_frame = tk.Frame(self.frame_one)
     self.boucle_parameter = tk.Entry(self.boucle_frame)
     self.boucle_parameter.grid(row=1)
     tk.Label(self.boucle_frame, text="Temps(ms)").grid(row=0)
 
-    self.buttons_frame = tk.Frame(self)
+    self.buttons_frame = tk.Frame(self.frame_one)
     tk.Button(self.buttons_frame,
               text="SUBMIT",
               bg="green",
@@ -163,6 +167,19 @@ class MinitensFrame(tk.Frame):
     self.vitesse_frame.grid(row=0, column=1)
     self.boucle_frame.grid(row=0, column=2)
     self.buttons_frame.grid(row=0, column=4)
+    self.frame_one.grid()
+
+    # Limits and pre-loading.
+    self.unload_mode = tk.StringVar()
+    self.minitens_frame_preload_radiobuttons = tk.Frame(self)
+    tk.Radiobutton(self.minitens_frame_preload_radiobuttons,
+                   text="HOLD",
+                   value="HOLD",
+                   variable=self.unload_mode).grid(row=0, sticky=tk.W)
+    tk.Radiobutton(self.minitens_frame_preload_radiobuttons,
+                   text="UNLOAD",
+                   value="UNLOAD",
+                   variable=self.unload_mode).grid(row=1, sticky=tk.W)
 
   def update_widgets(self, *args):
     if args[0] == "STOP":
@@ -233,7 +250,9 @@ class ArduinoHandler(object):
       self.submit_frame.grid()
     if "minitens" in self.frames:
       self.minitens_frame = MinitensFrame(self.root,
-                                          queue=self.submit_serial_queue)
+                                          queue=self.submit_serial_queue,
+                                          width=self.width,
+                                          fontsize=self.fontsize)
       self.minitens_frame.grid()
 
   def main_loop(self):
@@ -249,7 +268,9 @@ class ArduinoHandler(object):
 
       try:
         self.monitor_frame.update_widgets(message)
+        # self.minitens_frame.control_force(message)
         self.queue_process.put(message)  # Message is sent to the crappy
+        message = ""
         # process.
       except (AttributeError, UnboundLocalError):
         pass
@@ -260,7 +281,6 @@ class ArduinoHandler(object):
       except Empty:
         pass
       self.root.update()
-
 
 
 class Arduino(object):
