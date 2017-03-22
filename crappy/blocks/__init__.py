@@ -4,7 +4,8 @@
 # blocks are the part that do and the Links are the parts that carry informations between these blocks.
 #
 # Blocks are classes, running indefinitely in a single process.
-# Some of them are already implemented (see the reference manual), but you can also implement your own.
+# Some of them are already implemented (see the reference manual),
+# but you can also implement your own.
 # @{
 
 ##  @defgroup init Init
@@ -13,58 +14,53 @@
 ## @file __init__.py
 # @brief  Import classes to put them in the current namespace.
 #
-# @author Robin Siemiatkowski
+# @author Victor Couty, Robin Siemiatkowski
 # @version 0.1
 # @date 05/07/2016
 
 import platform
-from .._warnings import import_error
 
-e = None
-not_imported = []
-
-from _masterblock import MasterBlock
+from .._global import NotInstalled,NotSupported
+from .masterblock import MasterBlock
 
 if platform.system() == "Linux":
-  from _commandComedi import CommandComedi
+  from .commandComedi import CommandComedi
+else:
+  CommandComedi = NotSupported('CommandComedi')
 
-from _cameraDisplayer import CameraDisplayer
-from _commandBiaxe import CommandBiaxe
-from _commandBiotens import CommandBiotens
-from _autoDrive import AutoDrive
-from _commandPI import CommandPI
-from _grapher import Grapher
-from _measureAgilent34420A import MeasureAgilent34420A
-from _measureByStep import MeasureByStep
-from _multiPath import MultiPath
-from _reader import Reader
-from _saver import Saver
-from _server import Server
-from _client import Client
-from _signalGenerator import SignalGenerator
-from _canvasdrawing import CanvasDrawing
-from _fakeCamera import FakeCamera
-from _sink import Sink
-from _videoExtenso import VideoExtenso
-from _streamerCamera import StreamerCamera
-from _streamer import Streamer
-from _dashboard import Dashboard
-from _controlcommand import ControlCommand
-from _wavegenerator import WaveGenerator
-from _dataReader import DataReader
-
-from _saverTriggered import SaverTriggered
-from _interfaceTribo import InterfaceTribo
-from _lal300Command import CommandLal300
+from .displayer import Displayer
+from .commandBiaxe import CommandBiaxe
+from .commandBiotens import CommandBiotens
+from .autoDrive import AutoDrive
+from .commandPI import CommandPI
+from .grapher import Grapher
+from .measureAgilent34420A import MeasureAgilent34420A
+from .measureByStep import MeasureByStep
+from .multiPath import MultiPath
+from .reader import Reader
+from .saver import Saver
+from .server import Server
+from .client import Client
+from .signalGenerator import SignalGenerator
+from .canvasdrawing import CanvasDrawing
+from .fakeCamera import FakeCamera
+from .sink import Sink
+#from .videoExtenso import VideoExtenso ## TO FIX
+from .camera import Camera
+from .streamer import Streamer
+from .dashboard import Dashboard
+from .controlcommand import ControlCommand
+from .wavegenerator import WaveGenerator
+from .dataReader import DataReader
+from .saverTriggered import SaverTriggered
+from .interfaceTribo import InterfaceTribo
+from .lal300Command import CommandLal300
+from .commandCegitab import PipeCegitab
+from .savergui import SaverGUI
+from .gui import InterfaceTomo4D
+from .pidtomo import PIDTomo
 
 try:
-  from ._correl import Correl
-except Exception as e:
-  import_error(e.message)
-
-from _commandCegitab import PipeCegitab
-from _savergui import SaverGUI
-from _gui import InterfaceTomo4D
-from _pidtomo import PIDTomo
-
-del e, platform, import_error
+  from .correl import Correl
+except ImportError:
+  Correl = NotInstalled('Correl')

@@ -13,7 +13,7 @@ from os import path, popen, system, listdir, walk
 from distutils.core import setup, Extension
 import platform
 
-comediModule = Extension('sensor.comediModule',
+comediModule = Extension('inout.comediModule',
                          sources=['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'],
                          extra_link_args=["-l", "comedi", "-l", "python2.7"],
                          include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
@@ -25,16 +25,16 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 extentions = []
 ximeaModule = pyFgenModule = clModule = None
 
-# uncomment folowing lines for testing extension module (see documentation "How to bin C/C++ with Crappy")
-helloModule = Extension('technical.helloModule',
-                         sources=['sources/hello/hello_class.cpp'],
-                         extra_compile_args=["-l", "python2.7"])
-
-extentions.append(helloModule)
+## uncomment folowing lines for testing extension module (see documentation "How to bin C/C++ with Crappy")
+#helloModule = Extension('technical.helloModule',
+#                         sources=['sources/hello/hello_class.cpp'],
+#                         extra_compile_args=["-l", "python2.7"])
+#
+#extentions.append(helloModule)
 
 if platform.system() == "Linux":
     execfile("./crappy/__version__.py")  # read the current version in version.py
-    ximeaModule = Extension('sensor.ximeaModule',
+    ximeaModule = Extension('camera.ximeaModule',
                             sources=['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'],
                             extra_compile_args=["-std=c++11"],
                             extra_link_args=["-Werror", "-L", "../bin", "-L", "../bin/X64", "-L", "../bin/ARM", "-l",
@@ -48,7 +48,7 @@ if platform.system() == "Linux":
       # If the software is installed but not found, just set clPath manually in this file
       clPath = None
     if clPath:
-      clModule = Extension('sensor.clModule',
+      clModule = Extension('camera.clModule',
                          sources=['sources/Cl_lib/CameraLink.cpp', 'sources/Cl_lib/pyCameraLink.cpp',
                                   'sources/Cl_lib/clSerial.cpp'], extra_compile_args=["-std=c++11"],
                          extra_link_args=["-l", "python2.7", "-L", clPath, "-l",
@@ -206,26 +206,26 @@ setup(
 
 if ximeaModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\ximeaModule.pyd crappy\\sensor\\')
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\camera\\ximeaModule.pyd crappy\\camera\\')
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/ximeaModule.so crappy/sensor/')
+        system('cp build/lib.linux-x86_64-2.7/crappy/camera/ximeaModule.so crappy/camera/')
 
 if comediModule in extentions:
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/comediModule.so crappy/sensor/')
+        system('cp build/lib.linux-x86_64-2.7/crappy/inout/comediModule.so crappy/inout/')
 
 if clModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\clModule.pyd crappy\\sensor\\')
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\camera\\clModule.pyd crappy\\camera\\')
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy/sensor/clModule.so crappy/sensor/')
+        system('cp build/lib.linux-x86_64-2.7/crappy/camera/clModule.so crappy/camera/')
 
 if pyFgenModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\sensor\\pyFgenModule.pyd crappy\\sensor\\')
+        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\inout\\pyFgenModule.pyd crappy\\inout\\')
 
-if helloModule in extentions:
-    if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\technical\\helloModule.pyd crappy\\technical\\')
-    if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy/technical/helloModule.so crappy/technical/')
+#if helloModule in extentions:
+#    if platform.system() == "Windows":
+#        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\technical\\helloModule.pyd crappy\\technical\\')
+#    if platform.system() == "Linux":
+#        system('cp build/lib.linux-x86_64-2.7/crappy/technical/helloModule.so crappy/technical/')
