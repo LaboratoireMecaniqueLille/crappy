@@ -17,7 +17,7 @@ import os
 import time
 import sys
 from crappy.technical import TechnicalCamera as tc
-import SimpleITK as sitk
+from  skimage.external.tifffile import imsave
 
 class StreamerCamera(MasterBlock):
   """
@@ -90,16 +90,13 @@ class StreamerCamera(MasterBlock):
       t,img = self.camera.sensor.get_image()
     self.timer = time.time()
     if self.save_folder:
-      image = sitk.GetImageFromArray(img)
       try:
         cycle = data[self.label] # If we received a data to add in the name
-        sitk.WriteImage(image,
-               self.save_folder + "img_%.6d_cycle%09.1f_%.5f.tiff" % (
-               self.loops, cycle, t-self.t0))
+        imsave(self.save_folder + "img_%.6d_cycle%09.1f_%.5f.tiff" % (
+               self.loops, cycle, t-self.t0),img)
       except (KeyError,UnboundLocalError): # If we did not
-        sitk.WriteImage(image,
-               self.save_folder + "img_%.6d_%.5f.tiff" % (
-               self.loops, t-self.t0))
+        imsave(self.save_folder + "img_%.6d_%.5f.tiff" % (
+               self.loops, t-self.t0),img)
     self.loops += 1
     self.send([t-self.t0,img])
 

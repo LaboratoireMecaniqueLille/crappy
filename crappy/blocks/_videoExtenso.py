@@ -14,7 +14,6 @@
 import numpy as np
 import time
 import cv2
-import SimpleITK as sitk  # only for testing
 import os
 from multiprocessing import Process, Pipe
 
@@ -23,11 +22,9 @@ from ._masterblock import MasterBlock
 from ..links._link import TimeoutError
 from ..technical import TechnicalVideoExtenso as tve
 
-try:
-  from skimage.filters import threshold_otsu  # load newest version
-except ImportError:
-  from skimage.filter import threshold_otsu  # load deprecated version
+from skimage.filters import threshold_otsu  # load newest version
 from sys import stdout
+from skimage.external.tifffile import imsave
 
 np.set_printoptions(threshold='nan', linewidth=500)
 
@@ -127,8 +124,6 @@ def barycenter_opencv(recv_):
   """
   while True:
     image, minx, miny, update_tresh, thresh, NumOfReg, border, white_spot = recv_.recv()[:]
-    # image1=sitk.GetImageFromArray(image)
-    # sitk.WriteImage(image1,"img_videoExtenso%i.tiff"%os.getpid())
     if update_tresh:
       thresh = threshold_otsu(image)
     bw = cv2.medianBlur(image, 5) > thresh
@@ -316,10 +311,8 @@ class VideoExtenso(MasterBlock):
         t2 = time.time()
         t_image,image = self.ve.sensor.read_image()  # read a frame
         if self.save_folder is not None and not j%self.save_period:
-          image1 = sitk.GetImageFromArray(image)
-          sitk.WriteImage(image1,
-                    self.save_folder + "img_videoExtenso%.5d_%4.4f.tiff" % (
-                                                        j,t2-self.t0))
+          imsave(self.save_folder + "img_videoExtenso%.5d_%4.4f.tiff" % (
+                                                        j,t2-self.t0),image)
 
         # for each spot, calulate the news coordinates of the center, based on
         # previous coordinate and border.
