@@ -69,7 +69,8 @@ class Camera(MasterBlock):
     self.camera.open()
     self.trigger = "internal" if len(self.inputs) == 0 else "external"
     if self.config:
-      Camera_config(self.camera)
+      conf = Camera_config(self.camera)
+      conf.main()
 
   def begin(self):
     self.timer = time.time()

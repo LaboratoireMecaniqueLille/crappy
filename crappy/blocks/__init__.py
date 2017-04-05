@@ -45,7 +45,7 @@ from .signalGenerator import SignalGenerator
 from .canvasdrawing import CanvasDrawing
 from .fakeCamera import FakeCamera
 from .sink import Sink
-#from .videoExtenso import VideoExtenso ## TO FIX
+from .videoExtenso import Video_extenso
 from .camera import Camera
 from .streamer import Streamer
 from .dashboard import Dashboard

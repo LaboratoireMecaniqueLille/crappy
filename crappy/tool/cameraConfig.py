@@ -73,6 +73,7 @@ class Camera_config(object):
     self.camera = camera
     self.label_shape = 800,600
     self.scale_length = 350
+    self.last_reticle_pos = (0,0)
     self.root = tk.Tk()
     self.root.protocol("WM_DELETE_WINDOW",self.stop)
     self.zoom_step = .1
@@ -90,7 +91,7 @@ class Camera_config(object):
     self.t = time()
     self.t_fps = self.t
     self.go = True
-    self.main()
+    #self.main()
 
   def stop(self):
     self.hist_pipe.send((0,0,0))
@@ -118,6 +119,7 @@ class Camera_config(object):
         sticky=tk.N+tk.E+tk.S+tk.W)
     self.create_inputs()
     self.create_infos()
+    self.img_label.bind('<Motion>', self.update_reticle)
     self.img_label.bind('<4>', self.zoom_in)
     self.img_label.bind('<5>', self.zoom_out)
     self.root.bind('<MouseWheel>', self.zoom)
@@ -159,6 +161,8 @@ class Camera_config(object):
     self.bits_label.pack()
     self.zoom_label = tk.Label(self.info_frame,text="Zoom: 100%")
     self.zoom_label.pack()
+    self.reticle_label = tk.Label(self.info_frame,text="Y:0 X:0 V=0")
+    self.reticle_label.pack()
 
   def create_scale(self,setting,pos):
     f = tk.Frame(self.root)
@@ -252,8 +256,11 @@ class Camera_config(object):
         int(self.img.shape[0]*self.zoom_window[2]))
     sly = slice(int(self.img.shape[1]*self.zoom_window[1]),
         int(self.img.shape[1]*self.zoom_window[3]))
+    self.resize_img((sly,slx))
+
+  def resize_img(self,sl):
     self.c_img = ImageTk.PhotoImage(Image.fromarray(
-        cv2.resize(self.img8[slx,sly],tuple(reversed(self.img_shape)),
+        cv2.resize(self.img8[sl[1],sl[0]],tuple(reversed(self.img_shape)),
         interpolation=0)))
     # Interpolation=0 means nearest neighbor
     # Resize somehow takes x,y when EVERYTHING else takes y,x thanks numpy !
@@ -286,12 +293,34 @@ class Camera_config(object):
     self.bits_label.configure(text="detected bits: {} ({} values)".format(
       self.detect_bits(),2**self.detect_bits()))
     self.range_label.configure(text='Range: {}-{}'.format(self.low,self.high))
+    self.update_reticle(self.last_reticle_pos)
+
+  def update_reticle(self,event):
+    if isinstance(event,tuple):
+      y,x = event
+      if y > self.img.shape[0] or x > self.img.shape[1]:
+        y = x = 0
+    else:
+      y,x = self.get_img_coord(event.y,event.x)
+    self.reticle_label.configure(text="Y:{} X:{} V={}".format(
+                                        y,x,self.img[y,x]))
+    self.last_reticle_pos = (y,x)
 
 # ============ Zoom related methods ===============
 
   def reset_zoom(self):
     self.zoom_level = 1
     self.zoom_window = (0,0,1,1)
+
+  def get_img_coord(self,ey,ex):
+    ey -= (self.label_shape[0]-self.img_shape[0])/2
+    ex -= (self.label_shape[1]-self.img_shape[1])/2
+    miny,minx,maxy,maxx = self.zoom_window
+    miny,maxy = int(miny*self.img.shape[0]),int(maxy*self.img.shape[0])
+    minx,maxx = int(minx*self.img.shape[1]),int(maxx*self.img.shape[1])
+    ry,rx = ey/self.img_shape[0],ex/self.img_shape[1]
+    y,x = int(ry*(maxy-miny)+miny+.5),int(rx*(maxx-minx)+minx+.5)
+    return min(max(miny,y),maxy-1),min(max(minx,x),maxx-1)
 
   def make_new_window(self,ey,ex):
     """
