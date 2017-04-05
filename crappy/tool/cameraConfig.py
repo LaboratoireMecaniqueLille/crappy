@@ -140,9 +140,12 @@ class Camera_config(object):
         self.create_check(s,i)
       elif type(s.limits) == dict:
         self.create_radio(s,i)
-    self.apply_button = tk.Button(self.root,text="Apply",
+    self.lower_frame = tk.Frame()
+    self.lower_frame.grid(column=1,row=i+3)
+    self.apply_button = tk.Button(self.lower_frame,text="Apply",
                                   command=self.apply_settings)
-    self.apply_button.grid(column=1,row=i+3)
+    self.apply_button.pack()
+    #self.apply_button.grid(column=1,row=i+3)
 
   def create_infos(self):
     self.info_frame = tk.Frame()

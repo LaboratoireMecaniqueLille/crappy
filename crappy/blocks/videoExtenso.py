@@ -62,6 +62,7 @@ class Video_extenso(MasterBlock):
     try:
       d = self.ve.get_def(img)
     except LostSpotError:
+      print("[VE block] Lost spots, terminating")
       self.ve.stop_tracking()
       raise
     if self.show_image:
@@ -71,8 +72,8 @@ class Video_extenso(MasterBlock):
         img[maxy,minx:maxx] = 255
         img[miny:maxy,minx] = 255
         img[miny:maxy,maxx] = 255
-        cv2.imshow("Videoextenso",img)
-        cv2.waitKey(0)
+      cv2.imshow("Videoextenso",img)
+      cv2.waitKey(5)
 
     centers = map(lambda r: (r['y'],r['x']),self.ve.spot_list)
     self.send([t-self.t0,centers]+d)

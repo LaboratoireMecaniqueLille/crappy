@@ -62,6 +62,7 @@ The basic VideoExtenso class:
     assert self.num_spots in ['auto',2,3,4],"Invalid number of spots!"
     self.spot_list = []
     self.fallback_mode = False
+    self.consecutive_overlaps = 0
     # This number of pixel will be added to the window sending the
     # spot image to the process
 
@@ -71,10 +72,6 @@ The basic VideoExtenso class:
     # Finding out how many spots we should detect
     # If L0 is already saved, we have already counted the spots, else
     # see the num_spot parameter
-    if hasattr(self,"saved"):
-      to_detect = len(self.saved)
-    else:
-      to_detect = self.num_spots
     #img = rank.median(img,np.ones((15,15),dtype=img.dtype))
     img = cv2.medianBlur(img,5)
     self.thresh = threshold_otsu(img)
@@ -107,7 +104,7 @@ The basic VideoExtenso class:
           i-=1
           break
       i+=1
-    if to_detect == 'auto':
+    if self.num_spots == 'auto':
       # Remove the smallest region until we have a valid number
       # and all of them are larger than 150 pix
       while len(l) not in [0,2,3,4]:
@@ -116,10 +113,10 @@ The basic VideoExtenso class:
         print("Not spots found!")
         return
     else:
-      if len(l) < self.spots:
-        print("Found only",len(l),"spots when expecting",self.spots)
+      if len(l) < self.num_spots:
+        print("Found only",len(l),"spots when expecting",self.num_spots)
         return
-      l = l[:to_detect] # Keep the largest ones
+      l = l[:self.num_spots] # Keep the largest ones
     print("Detected",len(l),"spots")
     self.spot_list = []
     for r in l:
@@ -143,13 +140,13 @@ The basic VideoExtenso class:
     if not hasattr(self,"spot_list"):
       print("You must select the spots first!")
       return
-    self.saved = self.spot_list
     if not hasattr(self,"tracker"):
       self.start_tracking()
     y = [s['y'] for s in self.spot_list]
     x = [s['x'] for s in self.spot_list]
     self.l0y = max(y)-min(y)
     self.l0x = max(x)-min(x)
+    self.num_spots = len(self.spot_list)
 
   def enlarged_window(self,window,shape):
     """Returns the slices to get the window around the spot"""
@@ -173,18 +170,19 @@ The basic VideoExtenso class:
   def get_def(self,img):
     """The "heart" of the videoextenso
     Will keep track of the spots and return the computed deformation"""
-    if not hasattr(self,"saved"):
+    if not hasattr(self,"l0x"):
       print("L0 not saved, saving it now.")
       self.save_length()
     for p,s in zip(self.pipe,self.spot_list):
       win = self.enlarged_window(s['bbox'],img.shape)
       #print("DEBUG: win is",s['bbox'],"sending",win)
       p.send(((win[0].start,win[1].start),img[win]))
+    ol = False
     for p,s in zip(self.pipe,self.spot_list):
       r = p.recv()
-      if r == -1:
+      if isinstance(r,str):
         self.stop_tracking()
-        raise LostSpotError
+        raise LostSpotError("Tracker returned"+r)
       l = list(self.spot_list)
       l.remove(s)
       # Please excuse me for the following line,
@@ -194,13 +192,21 @@ The basic VideoExtenso class:
         if self.safe_mode:
           print("Overlapping!")
           self.stop_tracking()
-          raise LostSpotError
+          raise LostSpotError("[safe mode] Overlap")
         print("Overlap! Reducing spot window...")
+        ol = True
         s['bbox'] = (min(s['bbox'][0]+1,s['y']-2),min(s['bbox'][1]+1,s['x']-2),
                      max(s['bbox'][2]-1,s['y']+2),max(s['bbox'][3]-1,s['x']+2))
         continue
       s.update(r)
       #print("DEBUG updating spot to",s)
+    if ol:
+      self.consecutive_overlaps += 1
+      if self.consecutive_overlaps >= 10:
+        print("Too many overlaps, I give up!")
+        raise LostSpotError("Multiple overlaps")
+    else:
+      self.consecutive_overlaps = 0
     y = [s['y'] for s in self.spot_list]
     x = [s['x'] for s in self.spot_list]
     eyy = (max(y)-min(y))/self.l0y - 1
@@ -281,9 +287,11 @@ class Tracker(Process):
   def fallback(self,img):
     """Called when the spots are lost"""
     if self.safe_mode or self.fallback_mode:
-      print("SPOT LOST!")
+      if self.fallback_mode:
+        self.pipe.send("Fallback failed")
+      else:
+        self.pipe.send("[safe mode] Could not compute barycenter")
       self.fallback_mode = False
-      self.pipe.send(-1)
       return -1
     self.fallback_mode = True
     print("Loosing spot! Trying to reevaluate threshold...")
