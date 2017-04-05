@@ -162,7 +162,12 @@ class MasterBlock(Process):
         print('Waiting for all processes to finish')
       while 'running' in cls.get_status():
         sleep(.1)
-      print("Crappy terminated gracefully")
+      if cls.all_are('done'):
+        print("Crappy terminated gracefully")
+      else:
+        print("Crappy terminated, blocks status:")
+        for b in cls.instances:
+          print(b)
 
   @classmethod
   def start_all(cls, t0=None, verbose=True, wait=True):
