@@ -18,7 +18,7 @@ import sys
 import SimpleITK as sitk
 
 from .masterblock import MasterBlock
-from ..camera import Camera_wrapper as Cam
+from ..camera import camera_list
 from ..tool import Camera_config
 
 
@@ -47,7 +47,6 @@ class Camera(MasterBlock):
       See below for default values
     """
     MasterBlock.__init__(self)
-    self.camera = camera
     for arg,default in [("save_folder",None),
                         ("label","cycle"),
                         ("show_fps",False),
@@ -59,13 +58,15 @@ class Camera(MasterBlock):
                         # keep the parameters for the technical
       except KeyError:
         pass
-    self.camera_name = self.camera
+    self.camera_name = camera
     self.cam_kw = kwargs
+    assert self.camera_name in camera_list,"{} camera does not exist!".format(
+                                        self.camera_name)
 
   def prepare(self):
     if self.save_folder and not os.path.exists(self.save_folder):
       os.makedirs(self.save_folder)
-    self.camera = Cam(self.camera_name, **self.cam_kw)
+    self.camera = camera_list[self.camera_name](**self.cam_kw)
     self.camera.open()
     self.trigger = "internal" if len(self.inputs) == 0 else "external"
     if self.config:

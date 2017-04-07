@@ -2,11 +2,11 @@
 ##  @addtogroup sensor
 # @{
 
-##  @defgroup CameraSensor CameraSensor
+##  @defgroup Camera Camera
 # @{
 
-## @file _cameraSensor.py
-# @brief  Defines all that is needed to make the CameraSensor class
+## @file camera.py
+# @brief  Defines all that is needed to make the Camera class
 #
 # @author Victor Couty
 # @version 0.1
@@ -18,55 +18,56 @@ from time import time,sleep
 from .._global import DefinitionError
 
 class MetaCam(type):
+  """
+  Metaclass that will define all cameras
+  Camera classes should be of this type
+  To do so, simply add __metaclass__ = MetaCam in the class definition
+  (Obviously, you must import this Metaclass first)
+  """
+  classes = {} #This dict will keep track of all the existing cam classes
+  #Attention: It keeps track of the CLASSES, not the instances !
+  #If a camera is defined without these
+  needed_methods = ["__init__", "get_image","open","close"]
+  #methods, it will raise an error
+
+  def __new__(metacls,name,bases,dict):
+    #print "[MetaCam.__new__] Creating class",name,"from metaclass",metacls
+    return type.__new__(metacls, name, bases, dict)
+
+  def __init__(cls,name,bases,dict):
     """
-    Metaclass that will define all cameras
-    Camera classes should be of this type
-    To do so, simply add __metaclass__ = MetaCam in the class definition
-    (Obviously, you must import this Metaclass first)
+    Note: MetaCam is a MetaClass: we will NEVER do c = MetaCam(...)
+    This __init__ is used to init the classes of type MetaCam
+    (with __metaclass__ = MetaCam as a class attribute)
+    and NOT an instance of MetaClass
     """
-    classes = {} #This dict will keep track of all the existing cam classes
-    #Attention: It keeps track of the CLASSES, not the instances !
-    needed_methods = ["__init__", "get_image","open","close"] #If a camera is defined without these
-    #methods, it will raise an error
+    #print "[MetaCam.__init__] Initializing",cls
+    type.__init__(cls,name,bases,dict) # This is the important line
+    #It creates the class, the same way we could do this:
+    #MyClass = type(name,bases,dict)
+    #bases is a tuple containing the parents of the class
+    #dict is the dict with the methods
 
-    def __new__(metacls,name,bases,dict):
-        #print "[MetaCam.__new__] Creating class",name,"from metaclass",metacls
-        return type.__new__(metacls, name, bases, dict)
+    #MyClass = type("MyClass",(object,),{'method': do_stuff})
+    # is equivalent to
+    #class MyClass(object):
+    #   def method():
+    #       do_stuff()
 
-    def __init__(cls,name,bases,dict):
-        """
-        Note: MetaCam is a MetaClass: we will NEVER do c = MetaCam(...)
-        This __init__ is used to init the classes of type MetaCam
-        (with __metaclass__ = MetaCam as a class attribute)
-        and NOT an instance of MetaClass
-        """
-        #print "[MetaCam.__init__] Initializing",cls
-        type.__init__(cls,name,bases,dict) # This is the important line
-        #It creates the class, the same way we could do this:
-        #MyClass = type(name,bases,dict)
-        #bases is a tuple containing the parents of the class
-        #dict is the dict with the methods
+    # Check if this class hasn't already been created
+    if name in MetaCam.classes:
+      raise DefinitionError("Cannot redefine "+name+" class")
+    # Check if mandatory methods are defined
+    missing_methods = []
+    for m in MetaCam.needed_methods:
+      if not m in dict:
+        missing_methods.append(m)
+    if name != "Camera" and missing_methods:
+      raise DefinitionError("Class "+name+" is missing methods: "+str(
+                                                      missing_methods))
 
-        #MyClass = type("MyClass",(object,),{'method': do_stuff})
-        # is equivalent to
-        #class MyClass(object):
-        #   def method():
-        #       do_stuff()
-
-        # Check if this class hasn't already been created
-        if name in MetaCam.classes:
-            raise DefinitionError("Cannot redefine "+name+" class")
-        # Check if mandatory methods are defined
-        missing_methods = []
-        for m in MetaCam.needed_methods:
-            if not m in dict:
-                missing_methods.append(m)
-        if name != "Camera" and missing_methods:
-            raise DefinitionError("Class "+name+" is missing methods: "+str(
-                                                          missing_methods))
-
-        del missing_methods
-        MetaCam.classes[name] = cls
+    del missing_methods
+    MetaCam.classes[name] = cls
 
 
 class Cam_setting(object):

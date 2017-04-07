@@ -15,23 +15,21 @@ from __future__ import print_function, division
 from time import time
 
 from .masterblock import MasterBlock
-
-def listify(s):
-  return map(float,filter(None,s.lstrip('[ ').rstrip(' ]').split(' ')))
+from ..actuator import actuator_list
 
 class AutoDrive(MasterBlock):
   """
-  This block gets data from videoextenso and drives a technical or an actuator to move the camera in order to keep
+  This block gets data from videoextenso and drives a technical or an actuator
+  to move the camera in order to keep
   the spots in the center of the frame
   """
 
   def __init__(self, **kwargs):
     MasterBlock.__init__(self)
-    for arg,default in [('technical',None), # If specified, will open crappy.technical.xx as the device to command
-			('actuator',None), # Same as above but if it is an actuator, one of these two should be sepcified
-			('dev_args', {}), # The kwargs to be given to the technical/actuator
+    for arg,default in [('actuator',{'name':'CM_drive'}),
 			('P', 2000), # The gain for commanding the technical/actuator
-			('direction', 'Y-'), # The direction to follow (X/Y +/-), depending on camera orientation
+      # The direction to follow (X/Y +/-), depending on camera orientation
+			('direction', 'Y-'),
 			('range',2048), # The number of pixels in this direction
 			]:
       setattr(self,arg,kwargs.get(arg,default))
@@ -45,38 +43,28 @@ class AutoDrive(MasterBlock):
     self.P *= sign
     self.labels = ['t(s)','diff(pix)']
 
-  def get_class(self):
-    """
-    This method simply imports the correct technical or actuator and instanciates it, it raises an error 
-    if the given device does not exist or no device was specified
-    """
-    if self.technical is not None:
-      i = __import__('crappy.technical',fromlist=[self.technical])
-      try:
-	return getattr(i,self.technical)
-      except AttributeError:
-	raise NotImplementedError('[AutoDrive] No such technical:'+self.technical)
-    elif self.actuator is not None:
-      i = __import__('crappy.actuator',fromlist=[self.actuator])
-      try:
-	return getattr(i,self.actuator)
-      except AttributeError:
-	raise NotImplementedError('[AutoDrive] No such actuator:'+self.actuator)
-    else:
-      raise AttributeError("[AutoDrive] You must specify a technical or an actuator!")
-
   def get_center(self,data):
-    l = listify(data['P'+self.direction[0].lower()])
-    #print(l,type(l))
-    #print("Center:",(max(l)+min(l))/2)
+    l = data['Coord(px)']
+    i = 0 if self.direction[0].lower() == 'y' else 1
+    l = map(lambda x: x[i],l)
     return (max(l)+min(l))/2
 
   def prepare(self):
-    self.device = self.get_class()(**self.dev_args)
-    if hasattr(self.device,'actuator'): # Most technical have their actuatos methods under self.actuator
-      self.device = self.device.actuator
+    actuator_name = self.actuator['name']
+    self.actuator.pop('name')
+    self.device = actuator_list[actuator_name](**self.actuator)
     self.device.set_speed(0) # Make sure it is stopped
 
+  def loop(self):
+    data = self.inputs[0].recv_last(blocking=True)
+    t = time()
+    diff = self.get_center(data)-self.range/2
+    self.device.set_speed(int(self.P*diff))
+    self.send([t-self.t0,diff])
+
+
+  def finish(self):
+    self.device.set_speed(0)
   def main(self):
     """
     Apply the command received by a link to the technical object.
@@ -84,11 +72,10 @@ class AutoDrive(MasterBlock):
     try:
       while True:
         data = self.inputs[0].recv_last(blocking=True) # Get the data
-        t = time()
         #print("Diff:",(self.get_center(data)-self.range/2))
         diff = self.get_center(data)-self.range/2
         self.device.set_speed(int(self.P*diff))
-        self.send([t-self.t0,diff])
+        self.send([data['t(s)']-self.t0,diff])
         # And set speed to P*(img center-spots center)
 
     except (Exception,KeyboardInterrupt) as e:

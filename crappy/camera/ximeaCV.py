@@ -102,6 +102,7 @@ class XimeaCV(Camera):
     specified otherwise in kwargs
     """
     self.close()
+    print("DEBUG nd=",self.numdevice)
     self.cap = cv2.VideoCapture(cv2.CAP_XIAPI+self.numdevice)
 
     for k in kwargs:

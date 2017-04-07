@@ -55,7 +55,7 @@ The basic VideoExtenso class:
                         # spots when losing them.
                         # Could result in incoherent values without crash.
                         # Set it to True when security is a concern.
-                        ("border",20)]:
+                        ("border",5)]:
                         # The number of pixel that will be added to the limits
                         # of the boundingbox
       setattr(self,arg,kwargs.get(arg,default))
@@ -253,7 +253,7 @@ class Tracker(Process):
       r['bbox'] = miny+oy,minx+ox,maxy+oy,maxx+ox
       #print("DEBUG: new bbox=",r['bbox'])
       self.pipe.send(r)
-    print("DEBUG: Process terminating")
+    #print("DEBUG: Process terminating")
 
   def eval(self,img):
     img = cv2.medianBlur(img,5)

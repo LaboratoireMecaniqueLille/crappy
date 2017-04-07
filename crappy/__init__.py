@@ -1,9 +1,9 @@
 # coding: utf-8
 
-#import actuator
+import actuator
 import camera
 #import inout
-#import tool
+import tool
 import blocks
 import links
 from .__version__ import __version__

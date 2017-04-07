@@ -13,6 +13,7 @@
 from __future__ import print_function
 
 import cv2
+import sys
 
 from ..tool.videoextenso import LostSpotError,Video_extenso as VE
 from ..tool.videoextensoConfig import VE_config
@@ -28,7 +29,7 @@ class Video_extenso(MasterBlock):
                         ("save_folder",None),
                         ("save_period",1),
                         ("labels",default_labels),
-                        ("show_fps",False),
+                        ("show_fps",True),
                         ("show_image",False)
                         ]:
       try:
@@ -56,8 +57,12 @@ class Video_extenso(MasterBlock):
       except AttributeError:
         flags = cv2.WINDOW_NORMAL
       cv2.namedWindow("Videoextenso",flags)
+    self.loops = 0
+    self.last_fps_print = 0
+    self.last_fps_loops = 0
 
   def loop(self):
+    self.loops += 1
     t,img = self.cam.read_image()
     try:
       d = self.ve.get_def(img)
@@ -74,6 +79,14 @@ class Video_extenso(MasterBlock):
         img[miny:maxy,maxx] = 255
       cv2.imshow("Videoextenso",img)
       cv2.waitKey(5)
+    if self.show_fps:
+      if t - self.last_fps_print > 2:
+        sys.stdout.write("\rFPS: %.2f"%((self.loops - self.last_fps_loops)
+                              /(t - self.last_fps_print)))
+        sys.stdout.flush()
+        self.last_fps_print = t
+        self.last_fps_loops = self.loops
+
 
     centers = map(lambda r: (r['y'],r['x']),self.ve.spot_list)
     self.send([t-self.t0,centers]+d)

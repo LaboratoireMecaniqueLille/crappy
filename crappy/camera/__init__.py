@@ -7,7 +7,7 @@ from camera import Camera, MetaCam
 from fakeCamera import Fake_camera
 from webcam import Webcam
 from ximea import Ximea
-from wrapper import Camera_wrapper
+#from wrapper import Camera_wrapper
 
 try:
   from ximeaCV import XimeaCV
@@ -23,3 +23,5 @@ except ImportError:
   Jai = NotInstalled("Jai")
   Jai8 = NotInstalled("Jai8")
   Bispectral = NotInstalled("Bispectral")
+
+camera_list = MetaCam.classes
