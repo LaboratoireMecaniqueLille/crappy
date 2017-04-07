@@ -13,12 +13,10 @@
 # @date 29/06/2016
 
 import serial
-from ._meta import motion
-from ..actuator import BiaxeActuator
-from ..sensor import BiaxeSensor
+from .actuator import Actuator
 
 
-class Biaxe(motion.Motion):
+class Biaxe(Actuator):
   """Declare a new axis for the Biaxe"""
 
   def __init__(self, port='/dev/ttyUSB0', baudrate=38400, timeout=1):
@@ -33,7 +31,7 @@ class Biaxe(motion.Motion):
         timeout : int or float, default = 1
                 Serial timeout.
     """
-    super(Biaxe, self).__init__(port, baudrate)
+    Actuator.__init__(self)
     self.port = port
     self.baudrate = baudrate
     self.timeout = timeout
@@ -42,8 +40,6 @@ class Biaxe(motion.Motion):
                              serial.EIGHTBITS, serial.PARITY_EVEN
                              , serial.STOPBITS_ONE, self.timeout)
     self.ser.write("OPMODE 0\r\n EN\r\n")
-    self.sensor = BiaxeSensor(ser=self.ser)
-    self.actuator = BiaxeActuator(ser=self.ser)
 
   def stop(self):
     self.ser.write("J 0\r\n")
@@ -54,7 +50,7 @@ class Biaxe(motion.Motion):
 
   def close(self):
     """Close the designated port"""
-    self.actuator.set_speed(0)
+    self.set_speed(0)
     self.stop()
     self.ser.close()
 
@@ -62,3 +58,36 @@ class Biaxe(motion.Motion):
     """Reset errors"""
     self.ser.write("CLRFAULT\r\n")
     self.ser.write("OPMODE 0\r\n EN\r\n")
+
+  def set_speed(self, speed):
+    """Re-define the speed of the motor. 1 = 0.002 mm/s"""
+    # here we should add the physical conversion for the speed
+    self.ser.write("J " + str(speed) + "\r\n")
+
+  def set_position(self, position, speed, motion_type='relative'):
+    """
+    Go to a defined position with a defined speed.
+
+    \todo
+        - implement set_position, with eventually a motion_type mode
+          which can be 'relative' or 'absolute'. (from actual position or from zero).
+    """
+    pass
+
+  def move_home(self):
+    """
+    Go to position zero.
+
+    \todo
+        - implement move_home method: Go to the position zero.
+    """
+    pass
+
+  def get_position(self):
+    """
+    return the position of the motor.
+
+    \todo
+        - implement get_position: search for the physical position of the motor.
+    """
+    pass
