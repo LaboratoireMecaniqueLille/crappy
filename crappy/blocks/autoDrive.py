@@ -65,20 +65,3 @@ class AutoDrive(MasterBlock):
 
   def finish(self):
     self.device.set_speed(0)
-  def main(self):
-    """
-    Apply the command received by a link to the technical object.
-    """
-    try:
-      while True:
-        data = self.inputs[0].recv_last(blocking=True) # Get the data
-        #print("Diff:",(self.get_center(data)-self.range/2))
-        diff = self.get_center(data)-self.range/2
-        self.device.set_speed(int(self.P*diff))
-        self.send([data['t(s)']-self.t0,diff])
-        # And set speed to P*(img center-spots center)
-
-    except (Exception,KeyboardInterrupt) as e:
-      print("[Autodrive] Encountered an exception",e,"stopping actuator!")
-      self.device.set_speed(0)
-      raise

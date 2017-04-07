@@ -2,9 +2,10 @@
 
 import crappy
 
-ve = crappy.blocks.VideoExtenso(camera='Ximea', compacter=30)
+ve = crappy.blocks.Video_extenso(camera='XimeaCV',show_image=True)
 
-ad = crappy.blocks.AutoDrive(technical='CmDrive',dev_args={'port': '/dev/ttyUSB0'},direction='Y-')
+ad = crappy.blocks.AutoDrive(
+    actuator={'name':'CM_drive','port': '/dev/ttyUSB0'},direction='X-')
 
 graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'),
 				      length=0)
