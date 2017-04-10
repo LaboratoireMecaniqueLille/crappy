@@ -8,7 +8,7 @@ help_string = """
 Syntax:
 {axe}{speed}
 (You can put a space between axe and speed)
-Example: 
+Example:
   x -50
 Will pull the axe in at 50% of the speed
   a20
@@ -22,10 +22,10 @@ Type 'h' or 'help' to see this message again
 
 
 biaxeTech = []
-biaxeTech.append(crappy.technical.Oriental(port='/dev/ttyUSB0'))
-biaxeTech.append(crappy.technical.Oriental(port='/dev/ttyUSB1'))
-biaxeTech.append(crappy.technical.Oriental(port='/dev/ttyUSB2'))
-biaxeTech.append(crappy.technical.Oriental(port='/dev/ttyUSB3'))
+biaxeTech.append(crappy.actuator.Oriental(port='/dev/ttyUSB0'))
+biaxeTech.append(crappy.actuator.Oriental(port='/dev/ttyUSB1'))
+biaxeTech.append(crappy.actuator.Oriental(port='/dev/ttyUSB2'))
+biaxeTech.append(crappy.actuator.Oriental(port='/dev/ttyUSB3'))
 
 motors = ['A','B','C','D']
 biaxeTech = sorted(biaxeTech,key=lambda x:x.num_device)
@@ -61,9 +61,9 @@ while True:
   except ValueError:
     print("Unknow command, stopping")
     for axe in biaxeTech:
-      axe.actuator.set_speed(0)
+      axe.set_speed(0)
     continue
 
   if user_input[0] in 'xyabcd':
     for axe in biaxeDict[user_input[0]]:
-      axe.actuator.set_speed(speed)
+      axe.set_speed(speed)
