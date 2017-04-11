@@ -15,7 +15,7 @@ from __future__ import division
 from collections import OrderedDict
 import numpy as np
 from multiprocessing import Process, Queue
-from time import sleep, time
+from time import sleep
 
 from .masterblock import MasterBlock
 from ..links._link import TimeoutError
@@ -116,7 +116,6 @@ class Streamer(MasterBlock):
     Due to this behavior, we cannot predict the length of the list. Thus, the time_vector is reconstructed in serial
     after collecting the results.
     """
-    tinit = time()
     retrieved = self.sensor.get_stream()
 
     if self.mean:

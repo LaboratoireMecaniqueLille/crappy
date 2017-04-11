@@ -2,7 +2,7 @@
 
 import actuator
 import camera
-#import inout
+import inout
 import tool
 import blocks
 import links
