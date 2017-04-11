@@ -314,20 +314,25 @@ class Arduino(object):
   def get_data(self, mock=None):
     while True:
       try:
-        retrieved_from_arduino = literal_eval(self.queue_get_data.get())
-        if isinstance(retrieved_from_arduino, dict):
-          if self.labels:
-            ordered = OrderedDict()
-            ordered["time(sec)"] = 0.
-            for key in self.labels:
-              ordered[key] = retrieved_from_arduino[key]
-            return time(), ordered
-          else:
-            return time(), retrieved_from_arduino
-      except:
+        got = self.queue_get_data.get()
+        if len(got) == 0:
+          continue
+        else:
+          retrieved_from_arduino = literal_eval(got)
+      except SyntaxError:
         print '[arduino] Skipped data at %.3f sec (Python time)' % (time() -
                                                                     self.handler_t0)
         continue
+
+      if isinstance(retrieved_from_arduino, dict):
+        if self.labels:
+          ordered = OrderedDict()
+          ordered["time(sec)"] = 0.
+          for key in self.labels:
+            ordered[key] = retrieved_from_arduino[key]
+          return time(), ordered
+        else:
+          return time(), retrieved_from_arduino
 
   def close(self):
     self.arduino_handler.terminate()
