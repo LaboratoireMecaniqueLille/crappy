@@ -81,7 +81,7 @@ class MeasureByStep(MasterBlock):
     self.sensor = in_list[self.sensor_name](**self.sensor_kwargs)
     self.sensor.open()
     data = self.sensor.get_data()
-    if len(self.labels) < len(data):
+    while len(self.labels) < len(data):
       self.labels.append(str(len(self.labels)))
 
   def prepare_verbosity(self):
@@ -90,6 +90,7 @@ class MeasureByStep(MasterBlock):
     self.queue = Queue()
     printer = threading.Thread(target=self.print_time)
     printer.start()
+    self.last_t = time()
 
   def print_verbosity(self, timer):
     self.nb_acquisitions += 1
@@ -108,6 +109,7 @@ class MeasureByStep(MasterBlock):
       while t < self.last_t + 1/self.freq:
         sleep((self.last_t + 1/self.freq - t)/10)
         t = time()
+      self.last_t = t
     data = self.acquire_data()
     self.send(data)
 
