@@ -16,8 +16,7 @@ import time
 
 import math
 
-from crappy.sensor._meta import motion
-from inout import InOut
+from .inout import InOut
 
 
 class DummySensor(InOut):

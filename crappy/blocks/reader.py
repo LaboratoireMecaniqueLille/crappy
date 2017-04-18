@@ -6,41 +6,35 @@
 # @{
 
 ## @file reader.py
-# @brief Children class of MasterBlock. Read and print the input Link.
+# @brief Read and print the input Link.
 #
-# @author Robin Siemiatkowski
+# @author Victor Couty
 # @version 0.1
 # @date 13/07/2016
+from __future__ import print_function
 
 from .masterblock import MasterBlock
-import os
-
 
 class Reader(MasterBlock):
   """
-  Children class of MasterBlock. Read and print the input Link.
+  Read and print the input Link.
   """
-
-  def __init__(self, k):
+  def __init__(self, name=None):
     """
     Create a reader that prints k and the input data in continuous.
 
     Args:
-        k : printable
-            Some identifier for this particular instance of Reader
+        name: if set, will be printed to identify the reader
     """
-    super(Reader, self).__init__()
-    self.k = k
+    MasterBlock.__init__(self)
+    self.name = name
 
-  def main(self):
-    try:
-      while True:
-        for input_ in self.inputs:
-          self.data = input_.recv()
-          print "Received by {0}: {1}.".format(input_.name, self.data)
-    except Exception as e:
-      print "Exception in reader (pid:{0}): {1}".format(os.getpid(), e)
-    except KeyboardInterrupt:
-      pass
-    except:
-      print "Unexpected exception."
+  def loop(self):
+    for i in self.inputs:
+      d = i.recv_last()
+      if d:
+        s = ""
+        if self.name:
+          s += self.name+" "
+        s += "got: "+str(d)
+        print(s)

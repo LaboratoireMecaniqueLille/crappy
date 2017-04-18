@@ -172,6 +172,10 @@ class Labjack_T7(InOut):
     self.offset = var_tester(self.offset,self.nb_channels)
     self.channels_index_read = [self.channels[chan]
                   + "_EF_READ_A" for chan in range(self.nb_channels)]
+    if not isinstance(self.out_gain,list):
+      self.out_gain = [self.out_gain]*len(self.out_channels)
+    if not isinstance(self.out_offset,list):
+      self.out_offset = [self.out_offset]*len(self.out_channels)
     if self.mode == 'streamer':
       if self.scan_rate_per_channel * self.nb_channels >= 100000:
         self.scan_rate_per_channel = int(100000 / self.nb_channels)
@@ -258,8 +262,10 @@ class Labjack_T7(InOut):
     Read the signal on all pre-defined channels, one by one.
     """
     try:
-      return time(), ljm.eReadNames(self.handle, self.nb_channels,
-                               self.channels_index_read)
+      l = [time()]
+      l.extend(ljm.eReadNames(self.handle, self.nb_channels,
+                               self.channels_index_read))
+      return l
     except ljm.LJMError as e:
       self.vprint('Error in get_data:', e)
       self.close()
@@ -277,13 +283,13 @@ class Labjack_T7(InOut):
         [timer, retrieved_from_buffer[1], retrieved_from_buffer[2]])
     return timer, results
 
-  def set_cmd(self, cmd, *args):
+  def set_cmd(self, *cmd):
     """
     Convert the tension value to a digital value and send it to the output.
     """
-    out = (cmd * self.out_gain) + self.out_offset
-    ljm.eWriteName(self.handle, self.out_channels if not args else args[0],
-                   out)
+    for command,channel,gain,offset in zip(
+        cmd,self.out_channels,self.out_gain,self.out_offset):
+      ljm.eWriteName(self.handle, channel, command*gain+offset)
 
   def close(self):
     """
@@ -305,5 +311,5 @@ class Labjack_T7(InOut):
     if self.verbose:
       while not self.queue.empty():
         self.queue.get_nowait()
-        self.queue.put("stop")
+      self.queue.put("stop")
     ljm.eStreamStop(self.handle)

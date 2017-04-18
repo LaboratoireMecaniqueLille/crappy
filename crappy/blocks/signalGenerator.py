@@ -25,7 +25,7 @@ class SignalGenerator(MasterBlock):
   Generate a signal.
   """
 
-  def __init__(self, path=None, *args, **kwargs):
+  def __init__(self, path=None, **kwargs):
     """
     Calculate a signal, based on the time (from t0).
 
@@ -91,13 +91,12 @@ class SignalGenerator(MasterBlock):
     Every dict contains informations for one step.
     The required informations depend on the type of waveform you need.
     """
-    super(SignalGenerator, self).__init__()
-    print "PathGenerator!"
+    MasterBlock.__init__(self)
     self.path = path
     self.nb_step = len(path)
     self.send_freq = kwargs.get('send_freq', 800)
     self.repeat = kwargs.get('repeat', True)
-    self.labels = kwargs.get('labels', ['time(sec)', 'signal', 'cycle'])
+    self.labels = kwargs.get('labels', ['time(sec)', 'cmd', 'cycle'])
     self.step = 0
 
   def main(self):
@@ -327,7 +326,7 @@ class SignalGenerator(MasterBlock):
           t_add = self.phase / (2 * np.pi * self.freq)
           while self.time is None or (time.time() - t_step) < self.time:
             while time.time() - last_t < 1. / self.send_freq:
-              self.clear_inputs()
+              self.drop()
               time.sleep(1. / (100 * 1000 * self.send_freq))
             last_t = time.time()
             t = last_t + t_add

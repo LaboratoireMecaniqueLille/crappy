@@ -1,11 +1,11 @@
 # coding: utf-8
 
-import actuator
-import camera
-import inout
-import tool
-import blocks
-import links
+from . import actuator
+from . import camera
+from . import inout
+from . import tool
+from . import blocks
+from . import links
 from .__version__ import __version__
 
 link = links.link

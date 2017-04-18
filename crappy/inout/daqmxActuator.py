@@ -16,7 +16,7 @@ try:
   from PyDAQmx import *
 except ImportError:
   print "WARNING : no module PyDAQmx installed, sensor won't work!"
-from inout import InOut
+from .inout import InOut
 
 
 def get_daqmx_devices_names():

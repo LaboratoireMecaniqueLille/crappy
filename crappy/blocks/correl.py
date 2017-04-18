@@ -1,17 +1,17 @@
 #coding; utf-8
 
-from .masterblock import MasterBlock
-from ..tool import Correl as Correl_class
-from collections import OrderedDict
 from time import time
 import numpy as np
+import SimpleITK as sitk
+
+from .masterblock import MasterBlock
+from ..tool import Camera_config,Correl as Correl_class
+from ..camera import camera_list
 
 class Correl(MasterBlock):
   """
     This block uses the Correl class (in crappy/technicals/_correl.py)
 
-    The first argument is the (y,x) resolution of the image, and you must
-        specify the fields with fields=(...)
     See the docstring of Correl to have more informations about the
         arguments specific to Correl.
     It will try to identify the deformation parameters for each fields.
@@ -20,20 +20,12 @@ class Correl(MasterBlock):
     If no labels are specified, custom fields will be named by their position.
     Note that the reference image is only taken once, when the
         .start() method is called (after dropping the first image).
-    IMPORTANT: This block has an extra method: .init()
-    It is meant to compile all the necessary kernels and should be done before
-    starting all the blocks, but AFTER creating, initializing and LINKING them.
-    In short, you simply have to add yourCorrelBlock.init() just before
-        starting all the blocks.
-    You can omit this but the delay before processing the first images
-        can be long enough to fill a link and crash.
-        Also, the correl block will not send any value before this init is over.
   """
 
-  def __init__(self, img_size, **kwargs):
+  def __init__(self, camera="Ximea", **kwargs):
     MasterBlock.__init__(self)
     self.ready = False
-    self.img_size = img_size
+    self.camera_name = camera
     self.Nfields = kwargs.get("Nfields")
     self.verbose = kwargs.get("verbose", 0)
     if self.Nfields is None:
@@ -45,7 +37,7 @@ with fields=(.,.) or Nfields=k"
         raise NameError('Missing fields')
 
     # Creating the tuple of labels (to name the outputs)
-    self.labels = ('t',)
+    self.labels = ('t(s)',)
     for i in range(self.Nfields):
       # If explicitly named with labels=(...)
       if kwargs.get("labels") is not None:
@@ -59,16 +51,9 @@ with fields=(.,.) or Nfields=k"
       else:
         self.labels += (str(i),)
 
-    # print "[Correl Block] output labels:",self.labels
     # We don't need to pass these arg to the Correl class
     if kwargs.get("labels") is not None:
       del kwargs["labels"]
-    # Handle drop parameter: if True, can drop data
-    if kwargs.get("drop") is not None:
-      self.drop = kwargs["drop"]
-      del kwargs["drop"]
-    else:
-      self.drop = False
     # Handle res parameters: if true, also return the residual
     if kwargs.get("res") is not None:
       self.res = kwargs["res"]
@@ -76,41 +61,49 @@ with fields=(.,.) or Nfields=k"
       self.labels += ("res",)
     else:
       self.res = False
+    if "cam_kwargs" in kwargs:
+      self.cam_kwargs = kwargs["cam_kwargs"]
+      del kwargs["cam_kwargs"]
+    else:
+      self.cam_kwargs = {}
+    if "save_folder" in kwargs:
+      self.save_folder = kwargs["save_folder"]
+      del kwargs["save_folder"]
+    else:
+      self.save_folder = None
     self.kwargs = kwargs
 
   def prepare(self):
-    self.correl = Correl_class(self.img_size, **self.kwargs)
+    self.camera = camera_list[self.camera_name](**self.cam_kwargs)
+    self.camera.open()
+    Camera_config(self.camera).main()
+    t,img = self.camera.read_image()
+    self.correl = Correl_class(img.shape, **self.kwargs)
+    self.loops = 0
 
   def main(self):
-    nLoops = 100  # For testing: resets the original images every nLoops loop
+    nLoops = 100  # Info will be printed every nLoops (if verbose)
     t2 = time() - 1
-    # Drop the first image
-    self.inputs[0].recv()
     # This is the only time the original picture is set, so the residual may
     # increase if lightning vary or large displacements are reached
-    data = self.inputs[0].recv()
-    self.correl.setOrig(data['frame'].astype(np.float32))
+    t,img = self.camera.read_image()
+    self.correl.setOrig(img.astype(np.float32))
     self.correl.prepare()
-    tr1 = tr2 = time()
     while True:
       if self.verbose:
         t1 = time()
         print "[Correl block] processed", nLoops / (t1 - t2), "ips"
-        print "[Correl block] Receiving images took", \
-          (tr2 - tr1) / (t1 - t2) * 100, "% of the time"
         t2 = t1
-        tr1 = 0
-        tr2 = 0
       for i in range(nLoops):
-        tr1 += time()
-        if self.drop:
-          data = self.inputs[0].recv_last(blocking=True)
-        else:
-          data = self.inputs[0].recv()
-        tr2 += time()
-        self.correl.setImage(data['frame'].astype(np.float32))
-        out = [data['t(s)']] + self.correl.getDisp().tolist()
+        self.loops += 1
+        t,img = self.camera.read_image()
+        if self.save_folder:
+          sitk.WriteImage(sitk.getImageFromArray(img),self.save_folder
+          +"img_%.6d.png"%self.loops)
+
+
+        self.correl.setImage(img.astype(np.float32))
+        out = [t] + self.correl.getDisp().tolist()
         if self.res:
           out += [self.correl.getRes()]
-        Dout = OrderedDict(zip(self.labels, out))
-        self.send(Dout)
+        self.send(out)

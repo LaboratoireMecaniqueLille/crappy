@@ -18,7 +18,7 @@ except ImportError:
   print "WARNING : no module PyDAQmx installed, sensor won't work!"
 import numpy
 import time
-from inout import InOut
+from .inout import InOut
 
 
 def get_daqmx_devices_names():

@@ -3,7 +3,7 @@ from opendaq import DAQ
 from time import time, sleep
 from operator import itemgetter
 
-from inout import InOut
+from .inout import InOut
 
 class OpenDAQ(InOut):
   """

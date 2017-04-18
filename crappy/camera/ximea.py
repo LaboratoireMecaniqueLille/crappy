@@ -17,7 +17,7 @@ from __future__ import print_function
 from time import sleep,time
 
 from .camera import Camera
-import ximeaModule as xi
+from . import ximeaModule as xi
 
 xi_format_dict = {'8 bits': 0, '10 bits': 1, '8 bits RAW': 5, '10 bits RAW': 6}
 

@@ -14,51 +14,25 @@
 ## @file __init__.py
 # @brief  Import classes to put them in the current namespace.
 #
-# @author Victor Couty, Robin Siemiatkowski
+# @author Victor Couty
 # @version 0.1
-# @date 05/07/2016
-
-import platform
+# @date 13/04/2017
 
 from .._global import NotInstalled,NotSupported
-from .masterblock import MasterBlock
-
-if platform.system() == "Linux":
-  from .commandComedi import CommandComedi
-else:
-  CommandComedi = NotSupported('CommandComedi')
-
-from .displayer import Displayer
-from .commandBiaxe import CommandBiaxe
-from .commandBiotens import CommandBiotens
 from .autoDrive import AutoDrive
-from .commandPI import CommandPI
+from .camera import Camera
+from .dashboard import Dashboard
+from .displayer import Displayer
 from .grapher import Grapher
-from .measureAgilent34420A import MeasureAgilent34420A
+from .ioblock import IOBlock
+from .masterblock import MasterBlock
 from .measureByStep import MeasureByStep
-from .multiPath import MultiPath
 from .reader import Reader
 from .saver import Saver
-from .server import Server
-from .client import Client
 from .signalGenerator import SignalGenerator
-from .canvasdrawing import CanvasDrawing
-from .fakeCamera import FakeCamera
 from .sink import Sink
 from .videoExtenso import Video_extenso
-from .camera import Camera
-from .streamer import Streamer
-from .dashboard import Dashboard
-from .controlcommand import ControlCommand
 from .wavegenerator import WaveGenerator
-from .dataReader import DataReader
-from .saverTriggered import SaverTriggered
-from .interfaceTribo import InterfaceTribo
-from .lal300Command import CommandLal300
-from .commandCegitab import PipeCegitab
-from .savergui import SaverGUI
-from .gui import InterfaceTomo4D
-from .pidtomo import PIDTomo
 
 try:
   from .correl import Correl

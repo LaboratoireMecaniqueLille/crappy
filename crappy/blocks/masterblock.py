@@ -286,6 +286,8 @@ class MasterBlock(Process):
         self._last_values.append(None)
     if num is None:
       num = range(len(self.inputs))
+    elif not isinstance(num,list):
+      num = [num]
     for i in num:
       if self._last_values[i] is None:
         self._last_values[i] = self.inputs[i].recv()
