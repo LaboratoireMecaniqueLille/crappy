@@ -23,6 +23,7 @@ from .autoDrive import AutoDrive
 from .camera import Camera
 from .dashboard import Dashboard
 from .displayer import Displayer
+from .generator import Generator
 from .grapher import Grapher
 from .ioblock import IOBlock
 from .masterblock import MasterBlock
@@ -32,7 +33,6 @@ from .saver import Saver
 from .signalGenerator import SignalGenerator
 from .sink import Sink
 from .videoExtenso import Video_extenso
-from .wavegenerator import WaveGenerator
 
 try:
   from .correl import Correl
