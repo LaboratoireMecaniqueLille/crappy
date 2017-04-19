@@ -20,10 +20,10 @@ class Cyclic_ramp(Path):
   Note that unlike paths.Constant, paths.Cyclic will ignore previous value
   of cmd and set value1 before any condition is reached
   """
-  def __init__(self,time,cmd,condition1,condition2,value1,value2,cycles=1,
+  def __init__(self,time,cmd,condition1,condition2,speed1,speed2,cycles=1,
       verbose=False):
     Path.__init__(self,time,cmd)
-    self.value = (value1,value2)
+    self.speed = (speed1,speed2)
     self.condition1 = self.parse_condition(condition1)
     self.condition2 = self.parse_condition(condition2)
     self.cycles = int(2*cycles) # Logic in this class will be in half-cycle
@@ -35,8 +35,10 @@ class Cyclic_ramp(Path):
       raise StopIteration
     if not self.cycle % 2 and self.condition1(data) or\
         self.cycle % 2 and self.condition2(data):
+      t = time()
+      self.cmd += self.speed[self.cycle%2]*(t-self.t0)
+      self.t0 = t
       self.cycle +=1
       if self.verbose:
         print("cycle",self.cycle)
-      self.t0 = time()
-    return self.value[self.cycle%2]
+    return self.speed[self.cycle%2]*(time()-self.t0)+self.cmd
