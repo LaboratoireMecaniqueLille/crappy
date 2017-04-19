@@ -17,9 +17,7 @@ from multiprocessing import Process, Pipe
 from collections import OrderedDict
 from time import sleep, time, localtime, strftime
 
-
-class CrappyStop(Exception):
-  pass
+from .._global import CrappyStop
 
 
 class MasterBlock(Process):
@@ -56,6 +54,7 @@ class MasterBlock(Process):
         "ready": prepare is over, waiting to start main by calling launch
         "running": main is running
         "done": main is over
+        "error": An error occured and the block stopped
         start and launch method will return instantly
 
   """
@@ -89,17 +88,19 @@ class MasterBlock(Process):
     # Wait for parent to tell me to start the main
     self.t0 = self.pipe2.recv()
     self.status = "running"
-    self.begin()
     try:
+      self.begin()
       self.main()
       self.status = "done"
+    except CrappyStop:
+      print("[%r] Encountered CrappyStop Exception, terminating" % self)
+    except KeyboardInterrupt:
+      print("[%r] Keyboard interrupt received" % self)
     except Exception as e:
       print("[%r] Exception caught:" % self, e)
       self.finish()
       self.status = "error"
       raise
-    except KeyboardInterrupt:
-      print("[%r] Keyboard interrupt received" % self)
     self.finish()
     self.status = "done"
 
@@ -112,7 +113,8 @@ class MasterBlock(Process):
     """
     Returns true only if all processes status are s
     """
-    return len(set(cls.get_status())) == 1 and s in cls.get_status()
+    l = cls.get_status()
+    return len(set(l)) == 1 and s in l
 
   @classmethod
   def prepare_all(cls, verbose=True):
@@ -132,7 +134,7 @@ class MasterBlock(Process):
     vprint("All processes are started.")
 
   @classmethod
-  def launch_all(cls, t0=None, verbose=True, wait=True):
+  def launch_all(cls, t0=None, verbose=True):
     if verbose:
       def vprint(*args):
         print("[launch]", *args)
@@ -150,29 +152,31 @@ class MasterBlock(Process):
       instance.launch(t0)
     t1 = time()
     vprint("All blocks loop started. It took", (t1 - t0) * 1000, "ms")
-    if not wait:
-      return
     try:
       # Keep running
-      while True:
-        sleep(86400) #1 day (will loop anyway)
+      l = cls.get_status()
+      while not "done" in l or "error" in l:
+        l = cls.get_status()
+        sleep(1)
     except KeyboardInterrupt:
       print("Main proccess got keyboard interrupt!")
-      if not cls.all_are('running'):
-        print('Waiting for all processes to finish')
-      while 'running' in cls.get_status():
-        sleep(.1)
-      if cls.all_are('done'):
-        print("Crappy terminated gracefully")
-      else:
-        print("Crappy terminated, blocks status:")
-        for b in cls.instances:
-          print(b)
+      # It will automatically propagate to the blocks processes
+    if not cls.all_are('running'):
+      print('Waiting for all processes to finish')
+    t = time()
+    while 'running' in cls.get_status() and time() - t < 3:
+      sleep(.1)
+    if cls.all_are('done'):
+      print("Crappy terminated gracefully")
+    else:
+      print("Crappy terminated, blocks status:")
+      for b in cls.instances:
+        print(b)
 
   @classmethod
-  def start_all(cls, t0=None, verbose=True, wait=True):
+  def start_all(cls, t0=None, verbose=True):
     cls.prepare_all(verbose)
-    cls.launch_all(t0, verbose, wait)
+    cls.launch_all(t0, verbose)
 
   @classmethod
   def stop_all(cls, verbose=True):
@@ -231,7 +235,7 @@ class MasterBlock(Process):
       while self.pipe1.poll():
         self._status = self.pipe1.recv()
       #If another process tries to get the status
-      #self.pipe2.send(self._status)
+      self.pipe2.send(self._status)
 
       #Somehow the previous line makes crappy hang on Windows, no idea why
       #It is not critical, but it means that process status can now only
@@ -281,9 +285,7 @@ class MasterBlock(Process):
     If num is None, it will operate on all the input link at once
     """
     if not hasattr(self, '_last_values'):
-      self._last_values = []
-      for i in self.inputs:
-        self._last_values.append(None)
+      self._last_values = [None]*len(self.inputs)
     if num is None:
       num = range(len(self.inputs))
     elif not isinstance(num,list):
@@ -293,9 +295,36 @@ class MasterBlock(Process):
         self._last_values[i] = self.inputs[i].recv()
       while self.inputs[i].poll():
         self._last_values[i] = self.inputs[i].recv()
-    ret = OrderedDict()
+    ret = {}
     for i in num:
       ret.update(self._last_values[i])
+    return ret
+
+  def get_all_last(self, num=None):
+    """
+    Almost the same as get_last, but will return all the data that goes
+    through the links (in lists). Note that for the sake of returning at
+    least one value per label, it MAY return a value more than once on
+    successive calls. Also, if multiple links have the same label,
+    only the last link's value will be kept
+    """
+    if not hasattr(self, '_all_last_values'):
+      self._all_last_values = [None]*len(self.inputs)
+    if num is None:
+      num = range(len(self.inputs))
+    elif not isinstance(num,list):
+      num = [num]
+    for i in num:
+      if self._all_last_values[i] is None or self.inputs[i].poll():
+        self._all_last_values[i] = self.inputs[i].recv_chunk()
+      else:
+        # Dropping all data (already sent on last call) except the last
+        # to make sure the block has at least one value
+        for key in self._all_last_values[i]:
+          self._all_last_values[i][key] = [self._all_last_values[i][key][-1]]
+    ret = {}
+    for i in num:
+      ret.update(self._all_last_values[i])
     return ret
 
   def drop(self, num=None):
@@ -322,12 +351,14 @@ class MasterBlock(Process):
       sleep(.1)
       try:
         self.inputs[0].send('stop')
-        print("DEBUG: sent stop!")
       except IndexError:
         pass
     if self.status != "done":
       print('[%r] Could not stop properly, terminating' % self)
-      self.terminate()
+      try:
+        self.terminate()
+      except:
+        pass
     else:
       print("[%r] Stopped correctly" % self)
 

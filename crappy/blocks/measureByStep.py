@@ -110,7 +110,8 @@ class MeasureByStep(MasterBlock):
         sleep((self.last_t + 1/self.freq - t)/10)
         t = time()
       self.last_t = t
-    data = self.acquire_data()
+    data = self.sensor.get_data()
+    data[0] -= self.t0
     self.send(data)
 
     if self.verbose:
@@ -120,21 +121,6 @@ class MeasureByStep(MasterBlock):
         self.queue.put(self.nb_loops/(t - self.last_print))
         self.nb_loops = 0
         self.last_print = t
-
-  def acquire_data(self):
-    """
-    Method to acquire data from the sensor. Returns an array, the first
-    element is the chronometer, the second contains a list of all acquired
-    points.
-    """
-    sensor_epoch, sensor_values = self.sensor.get_data()
-    chronometer = sensor_epoch - self.t0
-    if isinstance(sensor_values, list):
-      sensor_values.insert(0, chronometer)
-      return sensor_values
-    elif isinstance(sensor_values, dict):
-      sensor_values['time(sec)'] = chronometer
-      return sensor_values
 
   def finish(self):
     if hasattr(self,"queue"):

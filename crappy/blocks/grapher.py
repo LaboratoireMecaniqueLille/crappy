@@ -17,7 +17,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 np.set_printoptions(threshold='nan', linewidth=500)
-import os
 from collections import OrderedDict
 
 
@@ -167,14 +166,8 @@ class Grapher(MasterBlock):
       plt.pause(0.001)
 
   def main(self):
-    try:
-      if self.mode == "dynamic":
-        self.plot_dynamic_graph()
+    if self.mode == "dynamic":
+      self.plot_dynamic_graph()
 
-      elif self.mode == "static":
-        self.plot_static_graph()
-
-    except (Exception, KeyboardInterrupt) as e:
-      print "Exception in grapher %s: %s" % (os.getpid(), e)
-      plt.close('all')
-      raise
+    elif self.mode == "static":
+      self.plot_static_graph()

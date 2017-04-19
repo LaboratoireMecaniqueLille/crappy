@@ -18,12 +18,14 @@ import copy
 from time import time
 from threading import Thread
 
+from .._global import CrappyStop
+
 def error_if_stop(recv):
   "Decorator to raise an error if the function returns a string"
   def wrapper(*args,**kwargs):
     ret = recv(*args,**kwargs)
     if type(ret) == str:
-      raise KeyboardInterrupt
+      raise CrappyStop
     return ret
   return wrapper
 
@@ -169,7 +171,7 @@ class Link(object):
       if not self.out_.closed:
         self.out_.send('close')
         self.out_.close()
-      raise Exception(e)
+      raise
 
   @error_if_stop # Recv will raise an error if 'stop' is recved
   def recv(self, blocking=True):
