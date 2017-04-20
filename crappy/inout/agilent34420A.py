@@ -2,21 +2,21 @@
 ##  @addtogroup sensor
 # @{
 
-##  @defgroup Agilent34420ASensor Agilent34420ASensor
+##  @defgroup Agilent34420A Agilent34420A
 # @{
 
-## @file _Agilent34420ASensor.py
+## @file agilent34420A.py
 # @brief  Sensor class for Agilent34420A devices.
 #
-# @author Robin Siemiatkowski
-# @version 0.1
-# @date 29/06/2016
+# @author Robin Siemiatkowski, Victor Couty
+# @version 0.2
+# @date 20/04/2017
 
 import serial
 from .inout import InOut
 
 
-class Agilent34420ASensor(InOut):
+class Agilent34420A(InOut):
   """Sensor class for Agilent34420A devices."""
 
   def __init__(self, mode="VOLT", device='/dev/ttyUSB0', baudrate=9600, timeout=10):
@@ -37,7 +37,7 @@ class Agilent34420ASensor(InOut):
         timeout : int or float, default = 10
                 Timeout for the serial connection.
     """
-    super(Agilent34420ASensor, self).__init__()
+    InOut.__init__(self)
     ## path to the device
     self.device = device
     ## desired baudrate
@@ -46,11 +46,10 @@ class Agilent34420ASensor(InOut):
     self.timeout = timeout
     ## desired value to measure
     self.mode = mode
-    ## Serial instance
-    self.ser = serial.Serial(port=self.device, baudrate=self.baudrate, timeout=self.timeout)
-    self.new()
 
-  def new(self):
+  def open(self):
+    self.ser = serial.Serial(port=self.device, baudrate=self.baudrate,
+        timeout=self.timeout)
     self.ser.write("*RST;*CLS;*OPC?\n")
     self.ser.write("SENS:FUNC \"" + self.mode + "\";  \n")
     self.ser.write("SENS:" + self.mode + ":NPLC 2  \n")
@@ -62,20 +61,10 @@ class Agilent34420ASensor(InOut):
     """
     Read the signal, return False if error and print 'bad serial'.
     """
-    try:
-      self.ser.write("READ?  \n")
-      # tmp = self.ser.readline()
-      tmp = self.ser.read(self.ser.in_waiting)
-      self.ser.flush()
-      # print tmp
-      return float(tmp)
-    except Exception as e:
-      print e
-      # self.ser.read(self.ser.inWaiting())
-      # print self.ser.inWaiting()
-      # self.ser.flush()
-      # time.sleep(0.5)
-      return False
+    self.ser.write("READ?  \n")
+    tmp = self.ser.read(self.ser.in_waiting)
+    self.ser.flush()
+    return float(tmp)
 
   def close(self):
     """

@@ -1,5 +1,5 @@
 # coding: utf-8
-from _condition import Condition
+from .condition import Condition
 import numpy as np
 
 

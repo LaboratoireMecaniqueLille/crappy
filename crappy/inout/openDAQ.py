@@ -27,7 +27,7 @@ class OpenDAQ(InOut):
 
   """
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, **kwargs):
 
     self.channels = kwargs.get('channels', [1])
     if not isinstance(self.channels, list):
@@ -40,15 +40,8 @@ class OpenDAQ(InOut):
     self.negative_channel = kwargs.get('negative_channel', 0)
     self.mode = kwargs.get('mode', 'single')
     self.sample_rate = kwargs.get('sample_rate', 100)
-    self.new()
-    if self.mode == 'streamer':
-      self.init_stream()
 
-    if self.nb_channels > 1:
-      """Special method to unpack a list very fast."""
-      self.getter = itemgetter(*self.channels)
-
-  def new(self):
+  def open(self):
     try:
       self.handle = DAQ("/dev/ttyUSB0")
     except OSError:
@@ -60,6 +53,12 @@ class OpenDAQ(InOut):
                            gain=self.input_gain,
                            nsamples=self.input_nsamples_per_read)
     self.handle.set_led(3)
+    if self.mode == 'streamer':
+      self.init_stream()
+
+    if self.nb_channels > 1:
+      """Special method to unpack a list very fast."""
+      self.getter = itemgetter(*self.channels)
 
   def init_stream(self):
     # self.stream_exp_list = []

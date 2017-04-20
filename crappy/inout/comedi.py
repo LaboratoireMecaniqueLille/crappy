@@ -23,7 +23,6 @@ class Comedi(InOut):
   """Comedi object, for IO with cards using comedi driver"""
   def __init__(self, **kwargs):
     InOut.__init__(self)
-    print("DEBUG Comedi Init")
     self.default = {'device':'/dev/comedi0',
                     'subdevice':0,
                     'channels':[0],
@@ -87,7 +86,6 @@ class Comedi(InOut):
   def open(self):
     """Starts commmunication with the device, must be called before any
     set_cmd or get_data"""
-    print("DEBUG Comedi open")
     self.device = c.comedi_open(self.device_name)
     for chan in self.channels:
       chan['maxdata'] = c.comedi_get_maxdata(self.device, self.subdevice,
@@ -127,8 +125,7 @@ class Comedi(InOut):
         channel = [channel]
       to_read = [self.channels[self.channels_dict[i]] for i in channel]
 
-    t = time()
-    data = []
+    data = [time()]
     for chan in to_read:
       data_read = c.comedi_data_read(self.device,
                                 self.subdevice,
@@ -138,7 +135,7 @@ class Comedi(InOut):
 
       val = c.comedi_to_phys(data_read[1], chan['range_ds'], chan['maxdata'])
       data.append(val*chan['gain']+chan['offset'])
-    return t,data
+    return data
 
 
   def close(self):

@@ -12,7 +12,7 @@ from ast import literal_eval
 from .inout import InOut
 
 class MonitorFrame(tk.Frame):
-  def __init__(self, parent, *args, **kwargs):
+  def __init__(self, parent, **kwargs):
     """
     A frame that displays everything enters the serial port.
     Args:
@@ -51,15 +51,13 @@ class MonitorFrame(tk.Frame):
     self.top_frame.grid(row=0)
     self.serial_monitor.grid(row=1)
 
-  def update_widgets(self, *args):
+  def update_widgets(self, arg):
     if self.enabled_checkbox.get():
-      self.serial_monitor.insert("0.0", args[0])  # To insert at the top
-    else:
-      pass
+      self.serial_monitor.insert("0.0", arg)  # To insert at the top
 
 
 class SubmitSerialFrame(tk.Frame):
-  def __init__(self, parent, *args, **kwargs):
+  def __init__(self, parent, **kwargs):
     """
     Frame that permits to submit to the serial port of arduino.
     Args:
@@ -97,7 +95,7 @@ class SubmitSerialFrame(tk.Frame):
     self.submit_label.grid(row=0, column=1)
     self.submit_button.grid(row=0, column=2, sticky=tk.E)
 
-  def update_widgets(self, *args):
+  def update_widgets(self):
     try:
       message = self.queue.get(block=False)
     except Empty:
@@ -114,7 +112,7 @@ class SubmitSerialFrame(tk.Frame):
 
 
 class MinitensFrame(tk.Frame):
-  def __init__(self, parent, *args, **kwargs):
+  def __init__(self, parent, **kwargs):
     """
     Special frame used in case of a minitens machine.
     """
@@ -183,8 +181,8 @@ class MinitensFrame(tk.Frame):
                    value="UNLOAD",
                    variable=self.unload_mode).grid(row=1, sticky=tk.W)
 
-  def update_widgets(self, *args):
-    if args[0] == "STOP":
+  def update_widgets(self, arg):
+    if arg == "STOP":
       message = str({"mode": 0,
                      "vitesse": 255,
                      "boucle": 0})
@@ -197,7 +195,7 @@ class MinitensFrame(tk.Frame):
 
 
 class ArduinoHandler(object):
-  def __init__(self, *args, **kwargs):
+  def __init__(self, port, baudrate, queue_process, width, fontsize, frames):
     """Special class called in a new process, that handles
     connection between crappy and the GUI."""
 
@@ -206,12 +204,12 @@ class ArduinoHandler(object):
       while True:
         queue.put(arduino.readline())
 
-    self.port = args[0]
-    self.baudrate = args[1]
-    self.queue_process = args[2]
-    self.width = args[3]
-    self.fontsize = args[4]
-    self.frames = args[5]
+    self.port = port
+    self.baudrate = baudrate
+    self.queue_process = queue_process
+    self.width = width
+    self.fontsize = fontsize
+    self.frames = frames
 
     self.arduino_ser = serial.Serial(port=self.port,
                                      baudrate=self.baudrate)
@@ -286,7 +284,7 @@ class ArduinoHandler(object):
 
 
 class Arduino(InOut):
-  def __init__(self, *args, **kwargs):
+  def __init__(self, **kwargs):
     """
     Main class used ton interface Arduino, its GUI and crappy. For
     reusability, make sure the program inside the arduino sends to the serial
@@ -301,14 +299,17 @@ class Arduino(InOut):
     self.baudrate = kwargs.get("baudrate", 9600)
     self.labels = kwargs.get("labels", None)
     self.frames = kwargs.get("frames", ["monitor", "submit"])
+    self.width = kwargs.get("width", 100)
+    self.fontsize = kwargs.get("fontsize",11)
 
+  def open(self):
     self.queue_get_data = Queue()
     self.arduino_handler = Process(target=ArduinoHandler,
                                    args=(self.port,
                                          self.baudrate,
                                          self.queue_get_data,
-                                         kwargs.get("width", 100),
-                                         kwargs.get("fontsize", 11),
+                                         self.width,
+                                         self.fontsize,
                                          self.frames))
     self.handler_t0 = time()
     self.arduino_handler.start()

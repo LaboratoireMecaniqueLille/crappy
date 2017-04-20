@@ -2,7 +2,7 @@
 echo "This script will remove every compiled files, pyc and dist-packages"
 echo "related to Crappy. RUN AT YOUR OWN RISK"
 echo "This script requires trash-cli package and sudo access"
-echo "Continue?"
+echo "Continue? (y/[n])"
 read conf
 if [ "$conf" != "y" ];then
   exit 0
