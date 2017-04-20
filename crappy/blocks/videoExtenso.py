@@ -25,7 +25,6 @@ class Video_extenso(MasterBlock):
     MasterBlock.__init__(self)
     default_labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
     for arg,default in [("camera","Ximea"),
-                        ("max_fps",None),
                         ("save_folder",None),
                         ("save_period",1),
                         ("labels",default_labels),

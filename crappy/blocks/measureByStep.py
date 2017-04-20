@@ -14,11 +14,6 @@
 
 from __future__ import print_function, division
 
-from time import time,sleep
-import threading
-from Queue import Queue
-import sys
-
 from .masterblock import MasterBlock
 from ..inout import in_list
 
@@ -64,19 +59,11 @@ class MeasureByStep(MasterBlock):
         setattr(self,arg,default)
     self.sensor_kwargs = kwargs
 
-  def print_time(self):
-    data = 1
-    while data != 'stop':
-      data = self.queue.get()
-      sys.stdout.write('\r[MeasureByStep] Samples/Sec: {}'.format(data))
-      sys.stdout.flush()
 
   def prepare(self):
     """
     Block called before main.
     """
-    if self.verbose:
-      self.prepare_verbosity()
     self.trigger = "internal" if len(self.inputs) == 0 else "external"
     self.sensor = in_list[self.sensor_name](**self.sensor_kwargs)
     self.sensor.open()
@@ -84,43 +71,12 @@ class MeasureByStep(MasterBlock):
     while len(self.labels) < len(data):
       self.labels.append(str(len(self.labels)))
 
-  def prepare_verbosity(self):
-    self.nb_loops = 0
-    self.last_print = time()
-    self.queue = Queue()
-    printer = threading.Thread(target=self.print_time)
-    printer.start()
-    self.last_t = time()
-
-  def print_verbosity(self, timer):
-    self.nb_acquisitions += 1
-    self.time_interval = timer - self.elapsed
-
-    if self.time_interval >= 1.:
-      self.elapsed = timer
-      self.queue.put(self.nb_acquisitions)
-      self.nb_acquisitions = 0
-
   def loop(self):
     if self.trigger == "external":
       self.inputs[0].recv(blocking=True)
-    if self.freq:
-      t = time()
-      while t < self.last_t + 1/self.freq:
-        sleep((self.last_t + 1/self.freq - t)/10)
-        t = time()
-      self.last_t = t
     data = self.sensor.get_data()
     data[0] -= self.t0
     self.send(data)
-
-    if self.verbose:
-      self.nb_loops += 1
-      t = time()
-      if (t - self.last_print > 1):
-        self.queue.put(self.nb_loops/(t - self.last_print))
-        self.nb_loops = 0
-        self.last_print = t
 
   def finish(self):
     if hasattr(self,"queue"):

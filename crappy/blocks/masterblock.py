@@ -11,7 +11,7 @@
 # @authors Victor Couty
 # @version 1.1
 # @date 07/01/2017
-from __future__ import print_function
+from __future__ import print_function,division
 
 from multiprocessing import Process, Pipe
 from collections import OrderedDict
@@ -90,6 +90,9 @@ class MasterBlock(Process):
     self.status = "running"
     try:
       self.begin()
+      self._MB_last_t = time()
+      self._MB_last_FPS = self._MB_last_t
+      self._MB_loops = 0
       self.main()
       self.status = "done"
     except CrappyStop:
@@ -215,7 +218,28 @@ class MasterBlock(Process):
   def main(self):
     while not self.pipe2.poll():
       self.loop()
+      self.handle_freq()
     print("[%r] Got stop signal, interrupting..." % self)
+
+  def handle_freq(self):
+    """
+    For block with a given number of loops/s (use freq attr to set it)
+    """
+    self._MB_loops += 1
+    t = time()
+    if hasattr(self,'freq') and self.freq > 0:
+      d = t-self._MB_last_t+1/self.freq
+      while d > 0:
+        t = time()
+        d = self._MB_last_t+1/self.freq-t
+        sleep(max(0,d/2-2e-3))# Ugly, yet simple and pretty efficient
+    self._MB_last_t = t
+    if hasattr(self,'verbose') and self.verbose and\
+            self._MB_last_t - self._MB_last_FPS > 2:
+        print("[%r] loops/s:"%self,
+            self._MB_loops/(self._MB_last_t - self._MB_last_FPS))
+        self._MB_loops = 0
+        self._MB_last_FPS = self._MB_last_t
 
   def launch(self, t0):
     """

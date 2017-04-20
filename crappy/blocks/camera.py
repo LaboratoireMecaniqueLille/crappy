@@ -55,7 +55,7 @@ class Camera(MasterBlock):
       setattr(self,arg,kwargs.get(arg,default)) #Assign these attributes
       try:
         del kwargs[arg] # And remove them (if any) to
-                        # keep the parameters for the technical
+                        # keep the parameters for the camera
       except KeyError:
         pass
     self.camera_name = camera
@@ -97,13 +97,7 @@ class Camera(MasterBlock):
     self.timer = time.time()
     if self.save_folder:
       image = sitk.GetImageFromArray(img)
-      try:
-        cycle = data[self.label] # If we received a data to add in the name
-        sitk.WriteImage(image,
-               self.save_folder + "img_%.6d_cycle%09.1f_%.5f.tiff" % (
-               self.loops, cycle, t-self.t0))
-      except (KeyError,UnboundLocalError): # If we did not
-        sitk.WriteImage(image,
+      sitk.WriteImage(image,
                self.save_folder + "img_%.6d_%.5f.tiff" % (
                self.loops, t-self.t0))
     self.loops += 1
@@ -111,6 +105,3 @@ class Camera(MasterBlock):
 
   def finish(self):
     self.camera.close()
-
-    def __repr__(self):
-      return "Streamer Camera (%s)"%self.camera_name

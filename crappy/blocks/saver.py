@@ -24,7 +24,7 @@ class Saver(MasterBlock):
   Saves data in a file.
   """
 
-  def __init__(self, log_file, *args, **kwargs):
+  def __init__(self, log_file, **kwargs):
     """
     Constructor of Saver class.
 

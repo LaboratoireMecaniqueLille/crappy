@@ -56,8 +56,3 @@ class Generator(MasterBlock):
     if cmd is not None:
       self.cmd = cmd
     self.send([time(),self.cmd])
-    t = time()
-    while t - self.last_t < 1/self.freq:
-      sleep((self.last_t+1/self.freq-t)/5)
-      t = time()
-    self.last_t = t
