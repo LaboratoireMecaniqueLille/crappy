@@ -92,6 +92,8 @@ class SignalGenerator(MasterBlock):
     The required informations depend on the type of waveform you need.
     """
     MasterBlock.__init__(self)
+    print("WARNING! The SignalGenerator block is deprecated"\
+        "Please use the Generator instead")
     self.path = path
     self.nb_step = len(path)
     self.send_freq = kwargs.get('send_freq', 800)
