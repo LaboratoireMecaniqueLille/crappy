@@ -172,6 +172,11 @@ class Labjack_T7(InOut):
     self.offset = var_tester(self.offset,self.nb_channels)
     self.channels_index_read = [self.channels[chan]
                   + "_EF_READ_A" for chan in range(self.nb_channels)]
+    if not isinstance(self.out_channels,list):
+      self.out_channels = [self.out_channels]
+    for i in range(len(self.out_channels)):
+      if isinstance(self.out_channels[i],int):
+        self.out_channels[i] = 'DAC'+str(self.out_channels[i])
     if not isinstance(self.out_gain,list):
       self.out_gain = [self.out_gain]*len(self.out_channels)
     if not isinstance(self.out_offset,list):

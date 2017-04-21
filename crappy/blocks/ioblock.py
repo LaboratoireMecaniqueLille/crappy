@@ -8,6 +8,7 @@ class IOBlock(MasterBlock):
   def __init__(self,name,**kwargs):
     MasterBlock.__init__(self)
     for arg,default in [('freq',None),
+                        ('verbose',False),
                         ('labels',['t(s)','1']),
                         ('cmd_labels',['cmd'])
                         ]:
