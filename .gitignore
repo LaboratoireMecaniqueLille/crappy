@@ -7,8 +7,6 @@
 *.o
 *~
 *.bat
-# ignorer tous les fichiers dans le répertoire build
-Examples/alerte_jerome.py
 build/
 dist/
 crappy.egg-info/
@@ -16,4 +14,4 @@ Examples/open_log.py
 *.sublime-*
 .idea/
 *.swp
-doc/*
+doc/html/

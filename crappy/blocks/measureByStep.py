@@ -1,17 +1,4 @@
 # coding: utf-8
-##  @addtogroup blocks
-# @{
-
-##  @defgroup MeasureByStep MeasureByStep
-# @{
-
-## @file measureByStep.py
-# @brief Streams value measured on a card through a Link object.
-#
-# @author Robin Siemiatkowski
-# @version 0.1
-# @date 11/07/2016
-
 from __future__ import print_function, division
 
 from .masterblock import MasterBlock

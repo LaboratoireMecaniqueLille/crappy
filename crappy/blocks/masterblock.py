@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup blocks
-# @{
-
-##  @defgroup MasterBlock MasterBlock
-# @{
-
-## @file masterblock.py
-# @brief Main class for block architecture. All blocks should inherit this class.
-#
-# @authors Victor Couty
-# @version 1.1
-# @date 07/01/2017
 from __future__ import print_function,division
 
 from multiprocessing import Process, Pipe

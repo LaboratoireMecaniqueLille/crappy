@@ -1,16 +1,8 @@
-=======================
-Command and Real-time Acquisition in Parallelized PYthon (CRAPPY){#mainpage}
+Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)
 =======================
 
-This package aims to provide easy-to-use tools for command and acquisition on 
+This package aims to provide easy-to-use tools for command and acquisition on
 complex experimental setups.
-
-.. contents::
-
-Description
------------
-
-See ``DESCRIPTION.rst`` for a more complete description.
 
 Requirements
 ------------
@@ -22,15 +14,14 @@ To install Crappy you will need:
 - Scipy
 - Matplotlib
 - openCV
-- Pandas
-- SimpleITK
 - scikit-image
-- pyserial
 
 These packages are not mandatory but will provide additionnal functions:
 - Ximea API (for ximea cameras)
 - Labjack LJM (for labjack support)
 - pycuda (for real-time correlation)
+- Comedi driver (Linux Only, for comedi acquisition boards)
+- PyDaqmx (Windows only, for NI boards)
 - openDAQ (for opendaq board)
 
 Installation
@@ -39,10 +30,12 @@ Installation
 Only tested on Ubuntu 14.04 / 15.10 / 16.04:
 
        git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
-       
+
        cd crappy
 
        sudo python setup install
+
+Se documentation for more details
 
 
 Documentation

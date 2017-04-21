@@ -1,17 +1,4 @@
 ﻿# coding: utf-8
-##  @addtogroup technical
-# @{
-
-##  @defgroup Biaxe Biaxe
-# @{
-
-## @file _biaxeTechnical.py
-# @brief  Declare a new axis for the Biaxe
-#
-# @author Robin Siemiatkowski
-# @version 0.1
-# @date 29/06/2016
-
 import serial
 from .actuator import Actuator
 

@@ -1,15 +1,5 @@
 # coding: utf-8
-## @addtogroup sensor
-# @{
 
-##  @defgroup labjacksensor LabJackSensor
-# @{
-
-## @file labJack.py
-# @brief  General class for LabJack devices.
-# @author Francois Bari
-# @version 0.9
-# @date 18/08/2016
 from __future__ import print_function,absolute_import,division
 from labjack import ljm
 from time import time

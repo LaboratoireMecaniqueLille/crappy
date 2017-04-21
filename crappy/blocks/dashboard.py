@@ -1,24 +1,12 @@
 # coding: utf-8
-##  @addtogroup blocks
-# @{
 
-##  @defgroup Dashboard Dashboard
-# @{
-
-## @file .dashboard.py
-# @brief The dashboard shows actual values of data received from a block
-#
-# @author Francois Bari
-# @version 0.1
-# @date 10/01/2017
-
-from .masterblock import MasterBlock
 import os
-from Tkinter import Tk, Label
 import threading
 from Queue import Queue
+from Tkinter import Tk, Label
 import numpy as np
 
+from .masterblock import MasterBlock
 
 class Dashboard(MasterBlock):
   """
@@ -28,7 +16,7 @@ class Dashboard(MasterBlock):
   In this case, the displayed value corresponds to the average of points.
   """
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, **kwargs):
     """
     Args:
       labels: list, values to plot on the output window.
@@ -77,7 +65,6 @@ class Dashboard(MasterBlock):
       self.root.update()
 
   def main(self):
-
     """
     Main loop.
     """
@@ -91,21 +78,16 @@ class Dashboard(MasterBlock):
     dash_thread.start()
     list_to_show = []
     while True:
-      try:
-        data_received = self.inputs[0].recv(blocking=True)
-        if len(self.labels) == len(data_received):
-          time = np.mean(data_received.values()[0])
-          values = [np.mean(data_received.values()[label]) for label in
-                    xrange(1, self.nb_display_values)]
-          list_to_show.append(time)
-          list_to_show.extend(values)
-        else:
-          for label in self.labels:
-            list_to_show.append(
-              np.around(np.mean(data_received[label]), self.nb_digits))
-        self.queue.put(list_to_show)
-        list_to_show = []
-
-      except (Exception, KeyboardInterrupt) as e:
-        print "Exception in dashboard %s: %s" % (os.getpid(), e)
-        break
+      data_received = self.inputs[0].recv(blocking=True)
+      if len(self.labels) == len(data_received):
+        time = np.mean(data_received.values()[0])
+        values = [np.mean(data_received.values()[label]) for label in
+                  xrange(1, self.nb_display_values)]
+        list_to_show.append(time)
+        list_to_show.extend(values)
+      else:
+        for label in self.labels:
+          list_to_show.append(
+            np.around(np.mean(data_received[label]), self.nb_digits))
+      self.queue.put(list_to_show)
+      list_to_show = []

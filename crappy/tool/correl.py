@@ -1,16 +1,6 @@
 # coding:utf-8
 from __future__ import division, print_function
 
-## @addtogroup technical
-# @{
-
-## @defgroup Correl Correl
-# @{
-# @brief The class used for real-time correlation.
-# @author Victor Couty
-# @version 0.1
-# @date 18/07/2016
-
 import warnings
 from math import ceil
 import numpy as np
@@ -21,7 +11,6 @@ from pycuda.reduction import ReductionKernel
 import cv2
 
 context = None
-
 
 def interpNearest(ary, ny, nx):
   """Used to interpolate the mask for each stage."""
@@ -1009,5 +998,3 @@ to allow GPU computing (got {}). Converting to float32." \
     """Needs to be called at the end, to destroy the context properly"""
     context.pop()
 
-# @}
-# @}

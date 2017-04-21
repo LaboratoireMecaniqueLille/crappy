@@ -1,42 +1,42 @@
 /*! \mainpage  What is Crappy ?
 
-CRAPPY is an acronym and stands for Command and Real-time Acquisition in 
+CRAPPY is an acronym and stands for Command and Real-time Acquisition in
 Parallelized PYthon.
 
-Crappy was first developped in the "Laboratoire de Mécanique de Lille", a 
-mechanical research laboratory base in Lille,France, to provide a powerful 
+Crappy is developped in the "Laboratoire de Mécanique de Lille", a
+mechanical research laboratory based in Lille, France to provide a powerful
 and easy-to-use framework for material testing.
 
-In order to better understand the mechanical behaviour of materials, we tend
-to setup tests, with more sensors, more precision and more complexity.
-As we are one step before industrials, the testing machines we can buy are not
-adapted to our objectives and we have to develop our own softwares to improve
-our tests.
+In order to understand the mechanical behaviour of materials, we tend
+to setup tests with more sensors, more precision and more complexity.
+As we are one step ahead of industrials, the testing machines we can buy may
+not be adapted to our objectives and we have to develop our own softwares to
+improve our tests.
 
-This is the original reason why we created Crappy : provide a framework to 
+This is the original reason why we created Crappy : provide a framework to
 control our tests and all of our hardware.
 
 To this end, we made some choice that are now the keys of the framework:
 
-- **open-source** : it is important for us that everyone can use our work, 
-and bring is own code to the world.
-    
-- **modular** : the hardware as to be, as much as possible, separated from the
+- **open-source** : it is important for us that everyone can use our work,
+and bring its own code to the world.
+
+- **modular** : the hardware has to be, as much as possible, separated from the
 software, to provide re-usable code for different setup.
-    
-- **simple** : Python as been chosen for its good performance and its high 
-level. We are not developpers, and our users neither, so we can't afford
-a low level programming language. We work with typical loop time of more 
+
+- **simple** : Python as been chosen for its high level.
+We are not developpers, and neither are our users , so we cannot afford to use
+a low level programming language. We work with typical loop time of more
 than 1 millisecond (10ms most of the time), and Python is enough for this.
-It is also pretty easy to put a small piece of C/C++ in the Python if we 
+It is also pretty easy to put a small piece of C/C++ in the Python if we
 need a speedup.
 
-- **performance** : a great deal of work is made to ensure the performance of 
+- **performance** : a great deal of work is made to ensure the performance of
 the framework. Most tests requires a good repetablilty and a stability,
 and may become hazardous in case of not-handled issue.
 
 - **parallelization** : the key to a good test is the synchronisation between
-the different sensors. Thsi is why we chose to massively parallelize our
+the different sensors. This is why we chose to massively parallelize our
 framework, to ensure everything can run at the same time. This is also one
 of the major difficulties we have to deal with in Python.
 */
@@ -46,31 +46,40 @@ of the major difficulties we have to deal with in Python.
 <h2> Required Packages </h2>
 
 <ul>
-<li> Opencv </li>
-<li> SimpleITK </li>
-<li> matplotlib </li>
-<li> Python 2.7 or later and Numpy 1.5 or later with developer packages (python-dev, python-numpy) </li>
-<li> Scipy </li>
-<li> Skimage </li>
+<li> Python 2 (>= 2.7) </li>
+<li> Numpy (>=1.5) </li>
+<li> Scipy (>= 0.17) </li>
+<li> Opencv (>= 3.0) </li>
+<li> matplotlib (>= 1.5.3) </li>
+<li> Scikit-image (>= 0.11) </li>
 </ul>
 
-Other packages should be installed to enable some functionalities:
+Other packages can be installed to enable some functionalities:
 
 <ul>
 <li> xiApi </li>
+<li> labjack </li>
+<li> PyCUDA </li>
 <li> Comedi (only avalaible on Linux)</li>
 <li> niFgen package from National Instrument (only avalaible on Windows)</li>
 <li> PyDaqmx </li>
-<li> labjack </li>
 </ul>
-
-<h2> Getting the Crappy Source Code </h2>
-
-The packages can be installed using a terminal and the following commands:
 
 <h2>Installation in Linux</h2>
 
-These steps have been tested for Ubuntu 14.04, 15.10 and 16.04 but should work with other distros as well.
+These steps have been tested for Ubuntu 14.04, 15.10 and 16.04 but should
+work with other distros as well.
+
+First, you should install all the required python modules using pip.
+
+    sudo apt-get install python-pip
+    sudo pip install module-name
+
+You may need the dev packages for python and nump and also python-imaging-tk:
+
+    sudo apt-get install python-dev python-imaging-tk
+
+You can then install crappy, get the sources using git and use setup script:
 
     git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
     cd crappy
@@ -78,7 +87,27 @@ These steps have been tested for Ubuntu 14.04, 15.10 and 16.04 but should work w
 
 <h2>Installation in Windows</h2>
 
-These steps have been tested for Windows 8.1 but should work with other distros as well.
+These steps have been tested for Windows 8.1 but should work with other
+versions as well.
+<b>Make sure you are using the x64 version of python</b> or the C++ modules will
+not compile properly
+Install the dependencies, you can use
+
+    pip install module-name
+
+for most modules, but some may fail and need a wheel file
+built for windows. We had to do this for numpy (with mkl) and scikit-image
+Just find the correct version at http://www.lfd.uci.edu/~gohlke/pythonlibs/
+and simply run
+
+    pip install wheel_file.whl
+
+Also, you will need Visual C++ for Python 2.x (your version of python) in
+order to compile C++ modules
+If you want to use Ximea cameras, don't forget to install XiAPI and
+add c:\\XIMEA\\API\\x64 to your path
+
+Then you can get the source code and install it
 
     git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
     cd crappy
@@ -92,7 +121,7 @@ These steps have been tested for Windows 8.1 but should work with other distros 
 
 \tableofcontents
 <ul>
-<li> \subpage physical_objects </li>
+<li> \subpage technical </li>
 <li> \subpage blocks </li>
 <li> \subpage links </li>
 <li> \subpage condition </li>
@@ -100,67 +129,109 @@ These steps have been tested for Windows 8.1 but should work with other distros 
 */
 
 
-/*! \page physical_objects Physical objects
+/*! \page technical Technical classes
 
-As Crappy is originaly designed to control tests, the core of our framework
-is the hardware we work with.
+This is the core of the module: this regroups all the classes that actually
+DO the stuff we want. Most of them are used to represent hardware, but there
+can also be software classes, for example the classes that process data like
+videoextensometry. They are organized in categories depending on their use.
 
-We chose to divide it in three different categories.
+Each catergory is in a different subfolder of Crappy and has a basis class.
+Every class the enters in this category must be in this folder (or a subfloder)
+and inherit from the parent class. The parent class is always based on a
+metaclass that counts and keeps a reference to each child class. This allows
+complete introspection to list and instanciate easily those classes. Note that
+each metaclass may define conventions for the child classes so they can be used
+by the blocks in a standard way.
 
-Sensors
--------
-In Crappy, the sensors represent everything that can **acquire** a physical
-signal. It can be an acquisition card, but also a camera, a thermocouple...
+For example: camera folder holds all the classes related to cameras.
+The file camera/camera.py defines a metaclass MetaCam and a class Camera
+based on MetaCam. MetaCam keeps track of all the classes in MetaCam.classes.
+The class Camera must be parent of all cameras, so they will also be based on
+MetaCam. Finally, camera/__init__.py defines camera_list = MetaCam.classes,
+which is a dict containing all available classes with their names as key.
+This provides a simple way to instanciate them from a 'name' parameter.
+The MetaCam class makes sure that all cameras have the needed methods (open,
+get_image,close,etc...). This allow replacing a camera with another without
+changing the code using it.
+
+As for now, their are 4 different categories of technical classes,
+this may change as more hardware is implemented.
 
 Actuators
----------
-on the other hand, actuators represent all the objects that can **interact on
-the other part of the test**, and can be controled. The most common example are 
-motors.
+-------
+These classes represent physical actuators like motors or the axis of a machine.
+They must have a "open" method and at least one of "set_speed" or "set_cmd".
+They can also have get_pos and/or get_speed method to read informations.
 
-Technicals
+Cameras
+---------
+The name is pretty self-explenatory: it regroups all the classes that acquire
+images. They must have "open" and "get_image" methods. "get_image" must return
+a tuple containing time since epoch in seconds and a numpy array containing
+the image. They include a setting mechanism for user-friendly camera settings,
+see the camera class for more details.
+
+Inout
 ----------
-Some hardware is **both a sensor and an actuator** by our definitions. This is for 
-example the case of a variable-frequency drive : they can set the speed of the
-motor (the *actuator* part), but most of them can also read the position or the
-speed of the motor the *sensor* part).
+Originally meant for IO boards, it includes all the hardware that can read
+and/or send values.
+
+Tools
+----------
+This category is for purely software classes. These classes are either used in
+several blocks or complicated enough to be isolated in their own file. The goal
+is to keep the code of the blocks as simple as possible.
+
 
 */
 
 /*! \page blocks Blocks objects
 
-Crappy is based on a schematic architecture with single blocks linked between
-each others. Th blocks are the part that **do** and the *Links* are the parts 
-that carry informations between these blocks.
+The goal of Crappy is to make real parallel execution simple. This is why
+it is organised as "blocks". A block will spawn a process and run until the
+test is over. A common Crappy program will create several blocks,
+link them (see links) and call crappy.start(). This will make sure that all the
+processes start running together.
 
-This way, you can simply write down on a paper the architecture of your test,
-what functions you need in which order, and write your code by reading your 
-paper.
-
-## add a schema here
-
-Blocks are classes, running indefinitely in a single process. Some of them are
-already implemented (see the reference manual), but you can also implement your
-own.
 */
 
 
 /*! \page links Links objects
 
-Links are simply the part that carry information between the different blocks.
-You just need to define the input and the output of a links, and it will 
-transfer all data from one block to the other.
+Each process has its own scope, so in order to share information they need
+objects to communicate. This is the role of the Link object. It relies on the
+multiprocessing.Pipe class to send data from a block to another.
+
+A convention has been set-up to format data throught the links: they can only
+send Dict objects. This forces explicit labelling of all the data going through
+the link.
+
+In addition to the links basic methods send, poll and recv,
+the Block base class "MasterBlock" implements several methods
+to work with links:
+ - send: Will send to all the outgoing links
+ - get_last: To get all the latest data from all incoming links
+and more.
+
+The links can be accessed from the block in self.outputs and self.inputs for
+low-level management of the links.
+
+The behavior can be edited using blocking=True/False, see the Link
+and MasterBlock documentation for more details.
+
+
 */
 
 /*! \page  condition Condition objects
 
-With the Blocks and Links, we already have a working framework to design and 
-custom tests. But if you need to do something slightly different than what is 
+With the Blocks and Links, we already have a working framework to design and
+custom tests. But if you need to do something slightly different than what is
 implemented in the Blocks, you have to re-write the whole thing.
 
-To bring some flexibility to the whole system, we added conditions. They are 
+To bring some flexibility to the whole system, we added conditions. They are
 small classes, implemented by the user, and they are added on the links.
-A link paired with a condition won't simply transfer data, but transfer the 
+A link paired with a condition won't simply transfer data, but transfer the
 result of the data passed by the condition.
 That mean almost infinite possibilites :
 
@@ -169,8 +240,8 @@ That mean almost infinite possibilites :
 - Decide wether you should transfer - or not - the data
 - Transfer something completely different from the input values
 
-This can be used to send a signal to another block (for example to synchronise 
-a camera), filter the signal with a mean, include numerical modelisation in 
+This can be used to send a signal to another block (for example to synchronise
+a camera), filter the signal with a mean, include numerical modelisation in
 real-time in your test...
 */
 

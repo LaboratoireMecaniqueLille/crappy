@@ -27,5 +27,3 @@ class Custom(Path):
     if t - self.t0 > max(self.t):
       raise StopIteration
     return np.interp(t-self.t0,self.t,self.f)
-
-

@@ -1,16 +1,4 @@
 # coding: utf-8
-## @addtogroup sensor
-# @{
-
-##  @defgroup fakecamerasensor FakeCameraSensor
-# @{
-
-## @file _fakeCameraSensor.py
-# @brief  WIP. Fake camera sensor object
-#
-# @author Victor Couty
-# @version 0.2
-# @date 16/01/2017
 from __future__ import print_function,division
 
 from .camera import Camera

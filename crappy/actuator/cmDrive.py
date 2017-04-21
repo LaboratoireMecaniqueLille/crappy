@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup technical
-# @{
-
-##  @defgroup CmDrive CmDrive
-# @{
-
-## @file _CmDriveTechnical.py
-# @brief Open a new default serial port for communication with Servostar.
-#
-# @author Robin Siemiatkowski
-# @version 0.1
-# @date 29/06/2016
 
 import serial
 

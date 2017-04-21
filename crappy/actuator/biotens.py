@@ -1,16 +1,4 @@
 ﻿# coding: utf-8
-##  @addtogroup technical
-# @{
-
-##  @defgroup Biotens Biotens
-# @{
-
-## @file _biotensTechnical.py
-# @brief  Open the connection, and initialise the Biotens.
-#
-# @authors Annie Morch, Corentin Martel, Victor Couty
-# @version 0.1
-# @date 29/06/2016
 
 from struct import pack,unpack
 import serial

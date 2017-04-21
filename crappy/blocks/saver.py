@@ -1,15 +1,4 @@
 # coding: utf-8
-##  @addtogroup blocks
-# @{
-
-##  @defgroup Saver Saver
-# @{
-
-## @file saver.py
-# @brief Saves data in a file.
-# @author Robin Siemiatkowski, Francois Bari
-# @version 0.2
-# @date 13/08/2016
 
 import os
 import numpy as np

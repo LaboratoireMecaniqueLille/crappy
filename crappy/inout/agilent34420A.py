@@ -1,17 +1,4 @@
 # coding: utf-8
-##  @addtogroup sensor
-# @{
-
-##  @defgroup Agilent34420A Agilent34420A
-# @{
-
-## @file agilent34420A.py
-# @brief  Sensor class for Agilent34420A devices.
-#
-# @author Robin Siemiatkowski, Victor Couty
-# @version 0.2
-# @date 20/04/2017
-
 import serial
 from .inout import InOut
 
@@ -72,5 +59,3 @@ class Agilent34420A(InOut):
     """
     self.ser.close()
 
-# @}
-# @}

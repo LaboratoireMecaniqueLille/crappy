@@ -1,16 +1,4 @@
 ﻿# coding: utf-8
-##  @addtogroup technical
-# @{
-
-##  @defgroup Oriental Oriental
-# @{
-
-## @file _orientalTechnical.py
-# @brief Class to control a motor defined in crappy.
-#
-# @author Robin Siemiatkowski
-# @version 0.1
-# @date 13/07/2016
 
 import serial
 from .actuator import Actuator

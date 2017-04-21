@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup technical
-# @{
-
-##  @defgroup camerainit CameraInit
-# @{
-
-## @file _cameraInit.py
-# @brief Gui to open and initialize a camera device.
-#
-# @author Victor Couty
-# @version 0.2
-# @date 04/04/2017
 from __future__ import division,print_function
 
 import Tkinter as tk

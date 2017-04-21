@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup sensor
-# @{
-
-##  @defgroup Camera Camera
-# @{
-
-## @file camera.py
-# @brief  Defines all that is needed to make the Camera class
-#
-# @author Victor Couty
-# @version 0.1
-# @date 26/01/2017
 from __future__ import print_function,division
 
 from time import time,sleep

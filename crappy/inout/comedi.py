@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup actuator
-# @{
-
-##  @defgroup ComediActuator ComediActuator
-# @{
-
-## @file _comediActuator.py
-# @brief  Comedi actuator object, commands the output of comedi cards
-#
-# @author  Victor Couty
-# @version 0.2
-# @date 11/04/2017
 from __future__ import print_function,absolute_import
 
 from time import time

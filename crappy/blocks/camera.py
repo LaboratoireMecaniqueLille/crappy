@@ -1,15 +1,5 @@
 # coding: utf-8
-##  @addtogroup blocks
-# @{
 
-##  @defgroup StreamerCamera StreamerCamera
-# @{
-
-## @file _streamerCamera.py
-# @brief Streams pictures.
-# @author V1ctor Couty, Robin Siemiatkowski
-# @version 0.2
-# @date 10/01/2017
 from __future__ import print_function
 
 import os

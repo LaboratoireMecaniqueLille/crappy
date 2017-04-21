@@ -3,4 +3,3 @@
 from .link import Link, link
 from .condition import Condition
 from .filter import Filter
-

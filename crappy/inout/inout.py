@@ -2,9 +2,7 @@
 
 from __future__ import print_function,division
 
-#from .._global import DefinitionError
-class DefinitionError(Exception):
-  pass
+from .._global import DefinitionError
 
 class MetaIO(type):
   """

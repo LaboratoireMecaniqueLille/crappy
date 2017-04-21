@@ -1,17 +1,4 @@
 # coding: utf-8
-##  @addtogroup sensor
-# @{
-
-##  @defgroup Ximea Ximea
-# @{
-
-## @file _ximeaSensor.py
-# @brief  Camera class for ximea devices
-#
-# @author Robin Siemiatkowski, Victor Couty
-# @version 0.2
-# @date 26/01/2017
-
 from __future__ import print_function
 
 from time import sleep,time

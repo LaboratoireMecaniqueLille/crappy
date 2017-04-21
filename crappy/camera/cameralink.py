@@ -1,16 +1,4 @@
 # coding: utf-8
-## @addtogroup sensor
-# @{
-
-##  @defgroup clSensor clSensor
-# @{
-
-## @file _clSensor.py
-# @brief  To read data from cameralink cameras
-#
-# @author Victor Couty
-# @version 0.1
-# @date 22/02/2017
 from __future__ import print_function,division
 
 from .camera import Camera

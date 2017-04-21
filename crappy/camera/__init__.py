@@ -7,7 +7,6 @@ from .camera import Camera, MetaCam
 from .fakeCamera import Fake_camera
 from .webcam import Webcam
 from .ximea import Ximea
-#from wrapper import Camera_wrapper
 
 try:
   from .ximeaCV import XimeaCV

@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup blocks
-# @{
-
-##  @defgroup Grapher Grapher
-# @{
-
-## @file grapher.py
-# @brief The grapher plots data received from a block (via a Link).
-#
-# @author Robin Siemiatkowski
-# @version 0.2
-# @date 13/02/2017
 
 from .masterblock import MasterBlock
 import numpy as np

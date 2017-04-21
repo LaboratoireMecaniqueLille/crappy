@@ -4,8 +4,8 @@ from __future__ import print_function,division
 from multiprocessing import Process, Pipe
 import numpy as np
 import cv2
-from skimage.filters import threshold_otsu#, rank
-from skimage.morphology import label#,dilation, erosion
+from skimage.filters import threshold_otsu
+from skimage.morphology import label
 from skimage.measure import regionprops
 
 class LostSpotError(Exception):

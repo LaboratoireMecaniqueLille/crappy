@@ -1,16 +1,6 @@
 #coding: utf-8
 from __future__ import print_function, division
 
-## @addtogroup technical
-# @{
-
-## @defgroup cameraConfig cameraConfig
-# @{
-# @brief The class used to initialize cameras
-# @author Victor Couty
-# @version 0.2
-# @date 15/03/2017
-
 import Tkinter as tk
 from PIL import ImageTk,Image
 from time import time
@@ -489,5 +479,3 @@ class Camera_config(object):
       self.root.update()
     print("Camera config done !")
 
-#@}
-#@}

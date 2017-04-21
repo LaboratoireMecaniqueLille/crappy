@@ -1,19 +1,7 @@
 # -*- coding:utf-8 -*-
-##  @addtogroup technical
-# @{
 
-##  @defgroup interface Interface
-# @{
-
-## @file _interfaceCMdrive.py
-# @brief Create a graphic interface that allows to drive several actuator
-#
-# @author Robin Siemiatkowski
-# @version 0.1
-# @date 13/07/2016
 import Tix
 from Tkinter import *
-# from serial.tools import list_ports
 from crappy.actuator import actuator_list
 
 

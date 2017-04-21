@@ -1,21 +1,7 @@
 # coding: utf-8
-##  @addtogroup blocks
-# @{
 
-##  @defgroup CameraDisplayer CameraDisplayer
-# @{
-
-## @file cameraDisplayer.py
-# @brief Simple images displayer. Can be paired with StreamerCamera
-#   Use cv=False to use the old, inefficient and deprecated version
-#   NOTE: You need to use one displayer block per window (in other words, you can only attach one input to the diplayer)
-#
-# @author Corentin Martel, Robin Siemiatkowski, Victor Couty
-# @version 0.1
-# @date 05/07/2016
-
-from .masterblock import MasterBlock
 import numpy as np
+from .masterblock import MasterBlock
 
 
 class Displayer(MasterBlock):

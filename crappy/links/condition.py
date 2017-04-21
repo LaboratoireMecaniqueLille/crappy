@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup links
-# @{
-
-##  @defgroup Condition Condition
-# @{
-
-## @file _condition.py
-# @brief Metaclass for all Links conditions. Must implement the evaluate method.
-# @author Robin Siemiatkowski
-# @version 0.1
-# @date 13/07/2016
-
 import abc
 
 

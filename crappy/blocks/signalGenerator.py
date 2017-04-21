@@ -1,15 +1,4 @@
 # coding: utf-8
-##  @addtogroup blocks
-# @{
-
-##  @defgroup SignalGenerator SignalGenerator
-# @{
-
-## @file signalGenerator.py
-# @brief Generate a signal.
-# @author Corentin Martel
-# @version 0.1
-# @date 18/07/2016
 
 import numpy as np
 import time

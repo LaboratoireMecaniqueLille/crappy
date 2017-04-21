@@ -1,20 +1,5 @@
 # coding: utf-8
-##  @addtogroup technical
-# @{
-
-##  @defgroup CmDrive CmDrive
-# @{
-
-## @file _dataPicker.py
-# @brief Class to flush data on a link, it continuously read the data received on a link,
-#        and return the last on get_data call.
-#
-# @author Robin Siemiatkowski
-# @version 0.1
-# @date 13/07/2016
-
 from multiprocessing import Pipe, Process
-
 
 class DataPicker:
   """

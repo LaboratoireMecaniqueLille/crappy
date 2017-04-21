@@ -1,15 +1,4 @@
 ﻿# coding: utf-8
-##  @addtogroup blocks
-# @{
-
-##  @defgroup VideoExtenso VideoExtenso
-# @{
-
-## @file videoExtenso.py
-# @brief Detects spots (2,3 or 4) on images, and evaluate the deformations
-# @authors Victor Couty
-# @version 0.2
-# @date 04/04/2017
 from __future__ import print_function
 
 import cv2

@@ -2,15 +2,6 @@
  *  @{
  */
 
-/** @addtogroup cameralink
- *  @{
- */
-
-/** @addtogroup capturecam
- *  @{
- */
-
-
 /**
  * \file CameraLink.cpp
  * \brief CaptureCAM_CL class

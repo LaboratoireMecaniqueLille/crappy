@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup sensor
-# @{
-
-##  @defgroup Webcam Webcam
-# @{
-
-## @file _webcamSensor.py
-# @brief  Camera class for simple webcams, this class should inherit from CameraSensor
-#
-# @author Victor Couty
-# @version 0.1
-# @date 16/01/2017
 from __future__ import print_function
 from time import time
 import cv2

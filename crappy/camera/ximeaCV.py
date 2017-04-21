@@ -1,17 +1,4 @@
 # coding: utf-8
-##  @addtogroup sensor
-# @{
-
-##  @defgroup XimeaCV XimeaCV
-# @{
-
-## @file _ximeaCV.py
-# @brief  Camera class for Ximea camera, using opencv
-#
-# @author Victor Couty
-# @version 0.1
-# @date 02/12/2016
-
 from __future__ import print_function
 
 import time

@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup sensor
-# @{
-
-##  @defgroup CameraSensor CameraSensor
-# @{
-
-## @file _cameraSensor.py
-# @brief  Defines all that is needed to make the CameraSensor class
-#
-# @author Victor Couty
-# @version 0.1
-# @date 06/04/2017
 from __future__ import print_function,division
 
 from .._global import DefinitionError

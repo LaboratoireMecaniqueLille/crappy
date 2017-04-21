@@ -1,16 +1,4 @@
 # -*- coding: utf-8 -*-
-##  @addtogroup blocks
-# @{
-
-##  @defgroup AutoDrive AutoDrive
-# @{
-
-## @file autoDrive.py
-# @brief Command the motor to follow the spots with the camera, takes a gain and a direction
-#
-# @author Victor Couty
-# @version 1.0
-# @date 10/02/2017
 from __future__ import print_function, division
 from time import time
 

@@ -1,16 +1,4 @@
 # coding: utf-8
-##  @addtogroup blocks
-# @{
-
-##  @defgroup Reader Reader
-# @{
-
-## @file reader.py
-# @brief Read and print the input Link.
-#
-# @author Victor Couty
-# @version 0.1
-# @date 13/07/2016
 from __future__ import print_function
 
 from .masterblock import MasterBlock

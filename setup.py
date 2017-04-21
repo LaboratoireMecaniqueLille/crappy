@@ -19,7 +19,7 @@ comediModule = Extension('inout.comediModule',
                          include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
 here = path.abspath(path.dirname(__file__))
 # Get the long description from the relevant file
-with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
+with open(path.join(here, 'about.txt'), encoding='utf-8') as f:
     long_description = f.read()
 
 extentions = []
