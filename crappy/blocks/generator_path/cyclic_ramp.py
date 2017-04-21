@@ -31,7 +31,7 @@ class Cyclic_ramp(Path):
     self.verbose = verbose
 
   def get_cmd(self,data):
-    if self.cycle >= self.cycles:
+    if self.cycles > 0 and self.cycle >= self.cycles:
       raise StopIteration
     if not self.cycle % 2 and self.condition1(data) or\
         self.cycle % 2 and self.condition2(data):
@@ -40,5 +40,5 @@ class Cyclic_ramp(Path):
       self.t0 = t
       self.cycle +=1
       if self.verbose:
-        print("cycle",self.cycle)
+        print("cyclic ramp {}/{}".format(self.cycle,self.cycles))
     return self.speed[self.cycle%2]*(time()-self.t0)+self.cmd

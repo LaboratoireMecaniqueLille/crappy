@@ -1,17 +1,47 @@
 #coding: utf-8
 from __future__ import print_function,division
 
-from time import time,sleep
+from time import time
 
 from .masterblock import MasterBlock
 from . import generator_path
 from .._global import CrappyStop
 
 class Generator(MasterBlock):
+  """
+  This block is used to generate a signal. It can be used to drive a machine.
+  This block can take inputs, and each path can use these inputs to
+  take decisions.
+  Args:
+  path:
+    It must be a list of dict, each dict providing the parameters to generate
+    the path
+    This dict MUST have a key 'type'
+    The Generator will then instanciate generator_path.**type** with all the
+    other keys as kwargs, adding the current cmd and the time.
+    On each round, it will call get_cmd method of this class, passing data
+    until it raise StopIteration. It will then skip to the next path.
+  When all paths are over, it will stop Crappy by raising CrappyStop
+  unless repeat is set to True. If so, it will start over indefinelty.
+  freq: The frequency of the block
+    if set and positive, the generator will try to send the command at this
+    frequency (Hz). Else, it will go as fast as possible
+    It relies on the MasterBlock freq control scheme (see masterblock.py)
+  cmd_label: the label of the command to send in the links
+    default: 'cmd'
+  cmd: The first value of the command
+    default: 0
+    Some paths may rely on the previous value to guarantee a continuous signal
+    This argument sets the initial value for the first signal
+  repeat: Loop over the paths or stop when done ?
+    If False, the block will raise a CrappyStop exception to end the program
+    when all the paths have been executed
+    If True, the Generator will start over and over again
+  """
   def __init__(self,path=[],**kwargs):
     MasterBlock.__init__(self)
     for arg,default in [('freq',100),
-                        ('labels',['t(s)','cmd']),
+                        ('cmd_label','cmd'),
                         ('cmd',0), # First value
                         ('repeat',False), # Start over when done ?
                        ]:
@@ -20,6 +50,7 @@ class Generator(MasterBlock):
     assert all([hasattr(generator_path,d['type']) for d in self.path]),\
         "Invalid path in signal generator:"\
         +str(filter(lambda s: not hasattr(generator_path,s['type']),self.path))
+    self.labels = ['t(s)',self.cmd_label]
 
   def prepare(self):
     self.path_id = -1 # Will be incremented to 0 on first next_path
@@ -47,12 +78,13 @@ class Generator(MasterBlock):
 
   def loop(self):
     data = self.get_all_last()
+    data[self.cmd_label] = [self.cmd] # Add my own cmd to the dict
     try:
       cmd = self.current_path.get_cmd(data)
     except StopIteration:
       self.next_path()
       self.loop()
       return
-    if cmd is not None:
+    if cmd is not None: # If next_path returns None, do not update cmd
       self.cmd = cmd
     self.send([time(),self.cmd])
