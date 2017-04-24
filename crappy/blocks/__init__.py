@@ -11,6 +11,7 @@ from .displayer import Displayer
 from .generator import Generator
 from .grapher import Grapher
 from .ioblock import IOBlock
+from .machine import Machine
 from .masterblock import MasterBlock
 from .measureByStep import MeasureByStep
 from .reader import Reader
