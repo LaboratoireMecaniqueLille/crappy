@@ -14,7 +14,7 @@ import crappy
 
 save_string = "/home/francois/Code/_Projets/12_arduino/tests_saver/toto.csv"
 save = True
-labels = ["current_millis", "effort", "mode", "vitesse", "boucle"]
+# labels = ["current_millis", "effort", "mode", "vitesse", "boucle", "weight"]
 # This is the name of labels to use,
 # picked from the ones returned by the arduino If not defined, everything
 # returned from the arduino will be printed. Available:
@@ -23,7 +23,8 @@ labels = ["current_millis", "effort", "mode", "vitesse", "boucle"]
 # - "boucle": 0..infinity(?)
 
 
-frames = ["minitens", "monitor", "submit"]
+# frames = ["minitens", "submit", "monitor"]
+frames = ["minitens", "submit", "monitor"]
 
 
 # These are options to compose the GUI:
@@ -46,14 +47,14 @@ class Formatting(crappy.links.Condition):
 
 
 arduino = crappy.technical.Arduino(port='/dev/ttyACM0',
-                                   baudrate=76800,
-                                   labels=labels,
+                                   baudrate=115200,
+                                   # labels=labels,
                                    frames=frames)
 
-measurebystep = crappy.blocks.MeasureByStep(arduino, verbose=True)
+measurebystep = crappy.blocks.MeasureByStep(arduino)
 
-graph = crappy.blocks.Grapher(('arduino_time(s)', 'effort'), length=10)
-dash = crappy.blocks.Dashboard(nb_digits=1)
+graph = crappy.blocks.Grapher(('arduino_time(s)', 'effort'), length=0)
+dash = crappy.blocks.Dashboard(nb_digits=3)
 
 crappy.link(measurebystep, graph, name='grapher', condition=Formatting())
 crappy.link(measurebystep, dash, name='dash', condition=Formatting())

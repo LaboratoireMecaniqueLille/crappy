@@ -119,6 +119,7 @@ class MinitensFrame(tk.Frame):
     tk.Frame.__init__(self, parent)
     self.grid()
     self.mode = tk.IntVar()
+    self.command = tk.StringVar(value="position")
     self.modes = [('stop', 0),
                   ('traction', 1),
                   ('compression', 2),
@@ -127,31 +128,42 @@ class MinitensFrame(tk.Frame):
     self.queue = kwargs.get("queue")
 
   def create_widgets(self, **kwargs):
-    self.frame_one = tk.Frame(self, relief=tk.SUNKEN, borderwidth=1)
-    self.minitens_frame_radiobuttons = tk.Frame(self.frame_one)
 
+    self.frame_one = tk.Frame(self, relief=tk.SUNKEN, borderwidth=1)
+
+    # First: radio_buttons to select the mode
+    self.minitens_frame_radiobuttons = tk.Frame(self.frame_one)
     # Sequence to compose
     for index, value in enumerate(self.modes):
       tk.Radiobutton(self.minitens_frame_radiobuttons, text=value[0],
                      value=value[1], variable=self.mode).grid(row=index,
                                                               sticky=tk.W)
 
-    self.vitesse_frame = tk.Frame(self.frame_one)
-    self.vitesse_parameter = tk.Entry(self.vitesse_frame)
-    self.vitesse_parameter.grid(row=1)
-    tk.Label(self.vitesse_frame, text="Vitesse(0..255)").grid(row=0)
+    # Second: position parameter, which should be switched to effort mode.
+    self.position_frame = tk.Frame(self.frame_one)
 
-    self.boucle_frame = tk.Frame(self.frame_one)
-    self.boucle_parameter = tk.Entry(self.boucle_frame)
-    self.boucle_parameter.grid(row=1)
-    tk.Label(self.boucle_frame, text="Temps(ms)").grid(row=0)
+    tk.Label(self.position_frame, text="Position(mm)").grid(row=0)
+    tk.Radiobutton(self.position_frame, text="Consigne de position (mm)",
+                   value="position", variable=self.command).grid(row=0,
+                                                                 column=0,
+                                                                 sticky=tk.W)
+    tk.Radiobutton(self.position_frame, text="Consigne d'effort (N)",
+                   value="effort", variable=self.command).grid(row=1,
+                                                               column=0,
+                                                               sticky=tk.W)
+    self.position_parameter = tk.Entry(self.position_frame)
+    self.position_parameter.grid(row=2, column=0, sticky=tk.W)
+    # self.boucle_frame = tk.Frame(self.frame_one)
+    # self.effort_parameter = tk.Entry(self.boucle_frame)
+    # self.effort_parameter.grid(row=1)
+    # tk.Label(self.boucle_frame, text="Effort(N)").grid(row=0)
 
     self.buttons_frame = tk.Frame(self.frame_one)
     tk.Button(self.buttons_frame,
               text="SUBMIT",
               bg="green",
               relief="raised",
-              height=4, width=10,
+              height=4, width=8,
               command=lambda: self.update_widgets("SUBMIT")
               ).grid(row=0, column=0)
 
@@ -159,43 +171,60 @@ class MinitensFrame(tk.Frame):
               text="STOP",
               bg="red",
               relief="raised",
-              height=4, width=10,
+              height=4, width=8,
               command=lambda: self.update_widgets("STOP")
               ).grid(row=0, column=1)
 
+    tk.Button(self.buttons_frame,
+              text="Tare",
+              bg="white",
+              relief="raised",
+              height=4, width=8,
+              command=lambda: self.update_widgets("TARE")
+              ).grid(row=0, column=2)
     self.minitens_frame_radiobuttons.grid(row=0, column=0)
-    self.vitesse_frame.grid(row=0, column=1)
-    self.boucle_frame.grid(row=0, column=2)
+    self.position_frame.grid(row=0, column=1)
+    # self.boucle_frame.grid(row=0, column=2)
     self.buttons_frame.grid(row=0, column=4)
     self.frame_one.grid()
 
     # Limits and pre-loading.
-    self.unload_mode = tk.StringVar()
-    self.minitens_frame_preload_radiobuttons = tk.Frame(self)
-    tk.Radiobutton(self.minitens_frame_preload_radiobuttons,
-                   text="HOLD",
-                   value="HOLD",
-                   variable=self.unload_mode).grid(row=0, sticky=tk.W)
-    tk.Radiobutton(self.minitens_frame_preload_radiobuttons,
-                   text="UNLOAD",
-                   value="UNLOAD",
-                   variable=self.unload_mode).grid(row=1, sticky=tk.W)
+    # self.unload_mode = tk.StringVar()
+    # self.minitens_frame_preload_radiobuttons = tk.Frame(self)
+    # tk.Radiobutton(self.minitens_frame_preload_radiobuttons,
+    #                text="HOLD",
+    #                value="HOLD",
+    #                variable=self.unload_mode).grid(row=0, sticky=tk.W)
+    # tk.Radiobutton(self.minitens_frame_preload_radiobuttons,
+    #                text="UNLOAD",
+    #                value="UNLOAD",
+    #                variable=self.unload_mode).grid(row=1, sticky=tk.W)
 
-  def update_widgets(self, *args):
-    if args[0] == "STOP":
+  def update_widgets(self, command):
+    if command == "STOP":
       message = str({"mode": 0,
-                     "vitesse": 255,
-                     "boucle": 0})
+                     "position": 0,
+                     "effort": 0})
+    elif command == "TARE":
+      message = str({"tare": 1})
     else:
-      message = str({"mode": self.mode.get(),
-                     "vitesse": self.vitesse_parameter.get(),
-                     "boucle": self.boucle_parameter.get()})
-
+      if self.command.get() == "effort":
+        mode = 4
+      else:
+        mode = self.mode.get()
+      message = str({"mode": mode,
+                     self.command.get(): self.position_parameter.get()})
     self.queue.put(message)
 
 
 class ArduinoHandler(object):
-  def __init__(self, *args, **kwargs):
+  def __init__(self,
+               port='/dev/ttyACM0',
+               baudrate=9600,
+               queue_process=None,
+               width=13,
+               fontsize=13,
+               frames=None):
     """Special class called in a new process, that handles
     connection between crappy and the GUI."""
 
@@ -204,12 +233,12 @@ class ArduinoHandler(object):
       while True:
         queue.put(arduino.readline())
 
-    self.port = args[0]
-    self.baudrate = args[1]
-    self.queue_process = args[2]
-    self.width = args[3]
-    self.fontsize = args[4]
-    self.frames = args[5]
+    self.port = port
+    self.baudrate = baudrate
+    self.queue_process = queue_process
+    self.width = width
+    self.fontsize = fontsize
+    self.frames = frames
 
     self.arduino_ser = serial.Serial(port=self.port,
                                      baudrate=self.baudrate)
@@ -222,7 +251,6 @@ class ArduinoHandler(object):
     self.collect_serial_threaded = Thread(target=collect_serial,
                                           args=(self.arduino_ser,
                                                 self.collect_serial_queue))
-    self.collect_serial_threaded.daemon = True
     self.init_main_window()
     self.collect_serial_threaded.start()
     self.main_loop()
@@ -233,7 +261,7 @@ class ArduinoHandler(object):
     """
     self.root = tk.Tk()
     self.root.resizable(width=False, height=False)
-    self.root.title("Arduino Minitens")
+    self.root.title("Arduino on Crappy v1.0")
     if "monitor" in self.frames:
       self.monitor_frame = MonitorFrame(self.root,
                                         width=int(self.width * 7 / 10),
@@ -242,6 +270,7 @@ class ArduinoHandler(object):
                                               "baudrate %s" % (self.port,
                                                                self.baudrate))
       self.monitor_frame.grid()
+
     if "submit" in self.frames:
       self.submit_frame = SubmitSerialFrame(self.root,
                                             fontsize=self.fontsize,
@@ -260,25 +289,26 @@ class ArduinoHandler(object):
     Main method to update the GUI, collect and transmit information.
     """
     while True:
+      # Executed in any case:
       try:
         message = self.collect_serial_queue.get(block=True, timeout=0.01)
+        # Message is sent to the crappy process
+        self.queue_process.put(message)
       except Empty:
-        # In case there is a queue timeout
+        # In case there is a queue timeout, we update the window anyway
         self.root.update()
 
+      # Executed if certain frames are present
       try:
         self.monitor_frame.update_widgets(message)
         # self.minitens_frame.control_force(message)
-        self.queue_process.put(message)  # Message is sent to the crappy
         message = ""
-        # process.
       except (AttributeError, UnboundLocalError):
         pass
-
       try:
         to_send = self.submit_serial_queue.get(block=False)
         self.arduino_ser.write(to_send)
-      except Empty:
+      except (AttributeError, Empty):
         pass
       self.root.update()
 
@@ -310,12 +340,15 @@ class Arduino(object):
                                          self.frames))
     self.handler_t0 = time()
     self.arduino_handler.start()
+    self.init_index = 0
 
   def get_data(self, mock=None):
     while True:
+      # variable to flush first values
       try:
         got = self.queue_get_data.get()
-        if len(got) == 0:
+        if len(got) == 0 or self.init_index < 20:
+          self.init_index += 1
           continue
         else:
           retrieved_from_arduino = literal_eval(got)
