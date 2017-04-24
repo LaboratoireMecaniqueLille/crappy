@@ -21,26 +21,28 @@ Type 'h' or 'help' to see this message again
 
 
 
-biaxeTech = []
-biaxeTech.append(crappy.actuator.Oriental(port='/dev/ttyUSB0'))
-biaxeTech.append(crappy.actuator.Oriental(port='/dev/ttyUSB1'))
-biaxeTech.append(crappy.actuator.Oriental(port='/dev/ttyUSB2'))
-biaxeTech.append(crappy.actuator.Oriental(port='/dev/ttyUSB3'))
+actuator_list = []
+actuator_list.append(crappy.actuator.Oriental(port='/dev/ttyUSB0'))
+actuator_list.append(crappy.actuator.Oriental(port='/dev/ttyUSB1'))
+actuator_list.append(crappy.actuator.Oriental(port='/dev/ttyUSB2'))
+actuator_list.append(crappy.actuator.Oriental(port='/dev/ttyUSB3'))
+for act in actuator_list:
+  act.open()
 
 motors = ['A','B','C','D']
-biaxeTech = sorted(biaxeTech,key=lambda x:x.num_device)
-biaxeDict = {}
+actuator_list = sorted(actuator_list,key=lambda x:x.num_device)
+actuator_dict = {}
 i=0
 for c in 'abcd':
-  biaxeDict[c] = [biaxeTech[i]]
+  actuator_dict[c] = [actuator_list[i]]
   i+=1
-biaxeDict['x'] = biaxeDict['b']+biaxeDict['d']
-biaxeDict['y'] = biaxeDict['a']+biaxeDict['c']
+actuator_dict['x'] = actuator_dict['b']+actuator_dict['d']
+actuator_dict['y'] = actuator_dict['a']+actuator_dict['c']
 
 print(help_string)
 for i in range(4):
   print("BiaxeTech{} (on {}) is motor {}".format(
-            i,biaxeTech[i].port,motors[biaxeTech[i].num_device-1]))
+            i,actuator_list[i].port,motors[actuator_list[i].num_device-1]))
 
 user_input = ''
 while True:
@@ -52,7 +54,7 @@ while True:
     print(help_string)
     continue
   elif user_input == 'clear':
-    for axe in biaxeTech:
+    for axe in actuator_list:
       axe.clear_errors()
     continue
   try:
@@ -60,10 +62,10 @@ while True:
     speed = int(user_input[1:].strip())
   except ValueError:
     print("Unknow command, stopping")
-    for axe in biaxeTech:
+    for axe in actuator_list:
       axe.set_speed(0)
     continue
 
   if user_input[0] in 'xyabcd':
-    for axe in biaxeDict[user_input[0]]:
+    for axe in actuator_dict[user_input[0]]:
       axe.set_speed(speed)

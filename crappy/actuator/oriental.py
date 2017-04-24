@@ -1,6 +1,8 @@
 ﻿# coding: utf-8
 
 import serial
+from Queue import Queue
+from threading import Thread,Lock
 from .actuator import Actuator
 
 
@@ -24,6 +26,20 @@ class Oriental(Actuator):
     Actuator.__init__(self)
     self.baudrate = baudrate
     self.port = port
+    self.speed = 0
+
+  def reader(self):
+    while True:
+      d = self.q.get()
+      print("DEBUG qsize=",self.q.qsize())
+      if d == None:
+        break
+      with self.lock:
+        self.ser.write(d+"\n")
+        self.ser.readlines()
+        self.ser.readlines()
+
+  def open(self):
     self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=0.1)
     for i in range(1,5):
       self.ser.write("TALK{0}\n".format(i))
@@ -33,15 +49,22 @@ class Oriental(Actuator):
         motors = ['A', 'B', 'C', 'D']
         print "Motor connected to port {} is {}".format(self.port, motors[i-1])
         break
+    self.q = Queue()
+    self.lock = Lock()
+    self.reader_thread = Thread(target=self.reader)
+    self.reader_thread.start()
 
   def write_cmd(self, cmd):
-    self.ser.write("{0}\n".format(cmd))
-    print self.ser.readlines()
+    self.q.put(cmd)
 
   def clear_errors(self):
     self.write_cmd("ALMCLR")
 
   def close(self):
+    while self.q.qsize():
+      self.q.get(False)
+    self.q.put(None)
+    self.reader_thread.join()
     self.stop()
     self.ser.close()
 
@@ -55,14 +78,21 @@ class Oriental(Actuator):
     self.clear_errors()
 
   def set_speed(self, speed):
+    if speed != 0 and speed == self.speed:
+      return
     if speed < 0:
+      if self.speed > 0:
+        self.write_cmd("SSTOP")
       self.write_cmd("VR {0}".format(abs(speed)))
       self.write_cmd("MCP")
-    if speed > 0:
+    elif speed > 0:
+      if self.speed < 0:
+        self.write_cmd("SSTOP")
       self.write_cmd("VR {0}".format(abs(speed)))
       self.write_cmd("MCN")
-    if speed == 0:
+    elif speed == 0:
       self.write_cmd("SSTOP")
+    self.speed = speed
 
   def set_home(self):
     self.write_cmd('preset')
@@ -74,12 +104,13 @@ class Oriental(Actuator):
     self.write_cmd("VR {0}".format(abs(speed)))
     self.write_cmd("MA {0}".format(position))
 
-  def get_position(self):
+  def get_pos(self):
     # self.ser.open()
-    self.ser.flushInput()
-    self.ser.write('PC\n')
-    self.ser.readline()
-    ActuatorPos = self.ser.readline()
+    with self.lock:
+      self.ser.flushInput()
+      self.ser.write('PC\n')
+      self.ser.readline()
+      ActuatorPos = self.ser.readline()
     # self.ser.close()
     ActuatorPos = str(ActuatorPos)
     ActuatorPos = ActuatorPos[4::]
@@ -88,6 +119,7 @@ class Oriental(Actuator):
     ActuatorPos = ActuatorPos[::-1]
     try:
       ActuatorPos = float(ActuatorPos)
-      return ActuatorPos
     except ValueError:
       print "PositionReadingError"
+      return 0
+    return ActuatorPos
