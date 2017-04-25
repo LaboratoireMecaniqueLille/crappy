@@ -2,6 +2,8 @@
 
 from __future__ import print_function,division
 
+from time import time
+
 from .._global import DefinitionError
 
 class MetaIO(type):
@@ -79,3 +81,16 @@ class InOut(object):
   @classmethod
   def is_output(cls):
     return hasattr(cls,'set_cmd')
+
+  def eval_offset(self,delay=2):
+    assert self.is_input(),"eval_offset requires a get_data method!"
+    t0 = time()
+    table = []
+    while True:
+      if time() > t0+delay:
+        break
+      table.append(self.get_data()[1:])
+    ret = []
+    for i in zip(*table):
+      ret.append(-sum(i)/len(i))
+    return ret

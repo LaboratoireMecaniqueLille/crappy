@@ -40,6 +40,7 @@ class Labjack_UE9(InOut):
     for arg,default in [('channels',0),
                         ('gain',1),
                         ('offset',0),
+                        ('make_zero',True),
                         ('resolution',12),
                         ]:
       if arg in kwargs:
@@ -54,9 +55,15 @@ class Labjack_UE9(InOut):
     self.gain = format_lists(self.gain, self.nb_channels)
     self.offset = format_lists(self.offset, self.nb_channels)
     self.resolution = format_lists(self.resolution, self.nb_channels)
+    self.make_zero = format_lists(self.make_zero, self.nb_channels)
 
   def open(self):
     self.handle = UE9()
+    if any(self.make_zero):
+      off = self.eval_offset()
+      for i,make_zero in enumerate(self.make_zero):
+        if make_zero:
+          self.offset[i] += off[i]
 
   def get_data(self):
     results = []

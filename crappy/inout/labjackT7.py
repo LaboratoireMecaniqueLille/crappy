@@ -117,6 +117,7 @@ class Labjack_T7(InOut):
                         ('channels','AIN0'),
                         ('gain',1),
                         ('offset',0),
+                        ('make_zero',True),
                         ('out_channels',[]),
                         ('out_gain',1),
                         ('out_offset',0),
@@ -158,6 +159,9 @@ class Labjack_T7(InOut):
     self.nb_channels = len(self.channels)
     self.chan_range = var_tester(self.chan_range,self.nb_channels)
     self.resolution = var_tester(self.resolution,self.nb_channels)
+    self.make_zero = self.make_zero if isinstance(self.make_zero,list)\
+        else [self.make_zero]*self.nb_channels
+    assert len(self.make_zero) == self.nb_channels,"Invalid make_zero length"
     self.gain = var_tester(self.gain,self.nb_channels)
     self.offset = var_tester(self.offset,self.nb_channels)
     self.channels_index_read = [self.channels[chan]
@@ -195,7 +199,11 @@ class Labjack_T7(InOut):
       a_names.extend(names)
       a_values.extend(values)
     ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
-
+    if any(self.make_zero):
+      off = self.eval_offset()
+      for i,make_zero in enumerate(self.make_zero):
+        if make_zero:
+          self.offset[i] += off[i]
 
   def open_streamer(self):
     self.a_scan_list = \

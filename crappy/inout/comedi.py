@@ -17,6 +17,7 @@ class Comedi(InOut):
                     'range_num':0,
                     'gain':1,
                     'offset':0,
+                    'make_zero':True,
                     'out_channels':[],
                     'out_range_num':0,
                     'out_gain':1,
@@ -40,7 +41,7 @@ class Comedi(InOut):
     # Turning in channels kwargs into a list of dict with each channel setting
     for i,chan in enumerate(self.kwargs['channels']):
       d = {'num':chan}
-      for s in ['range_num','gain','offset']:
+      for s in ['range_num','gain','offset','make_zero']:
         if isinstance(self.kwargs[s],list):
           try:
             d[s] = self.kwargs[s][i]
@@ -87,6 +88,12 @@ class Comedi(InOut):
                                           chan['num'], chan['range_num'])
       c.comedi_dio_config(self.device, 2, chan['num'], 1)
       c.comedi_dio_write(self.device, 2, chan['num'], 1)
+    if any([i['make_zero'] for i in self.channels]):
+      off = self.eval_offset()
+      for i,chan in enumerate(self.channels):
+        if chan['make_zero']:
+          chan['offset'] += off[i]
+
 
 
   def set_cmd(self, *cmd):
