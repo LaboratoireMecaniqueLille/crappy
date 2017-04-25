@@ -43,6 +43,8 @@ class Biotens(Actuator):
     Actuator.__init__(self)
     self.port = port
     self.baudrate = baudrate
+
+  def open(self):
     self.ser = serial.Serial(self.port, baudrate=19200, timeout=0.1)
     self.clear_errors()
 

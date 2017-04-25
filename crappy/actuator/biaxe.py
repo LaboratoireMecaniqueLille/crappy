@@ -23,6 +23,7 @@ class Biaxe(Actuator):
     self.baudrate = baudrate
     self.timeout = timeout
 
+  def open(self):
     self.ser = serial.Serial(self.port, self.baudrate,
                              serial.EIGHTBITS, serial.PARITY_EVEN
                              , serial.STOPBITS_ONE, self.timeout)

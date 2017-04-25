@@ -13,6 +13,8 @@ class CM_drive(Actuator):
     Actuator.__init__(self)
     self.port = port
     self.baudrate = baudrate
+
+  def open(self):
     self.ser = serial.Serial(self.port, self.baudrate)
 
   """Stop the motor motion"""
