@@ -32,13 +32,8 @@ class Biaxe(Actuator):
   def stop(self):
     self.ser.write("J 0\r\n")
 
-  def reset(self):
-    # TODO
-    pass
-
   def close(self):
     """Close the designated port"""
-    self.set_speed(0)
     self.stop()
     self.ser.close()
 
@@ -49,33 +44,5 @@ class Biaxe(Actuator):
 
   def set_speed(self, speed):
     """Re-define the speed of the motor. 1 = 0.002 mm/s"""
-    # here we should add the physical conversion for the speed
+    speed = int(speed/.002) # Convert to mm/s
     self.ser.write("J " + str(speed) + "\r\n")
-
-  def set_position(self, position, speed, motion_type='relative'):
-    """
-    Go to a defined position with a defined speed.
-
-    \todo
-        - implement set_position, with eventually a motion_type mode
-          which can be 'relative' or 'absolute'. (from actual position or from zero).
-    """
-    pass
-
-  def move_home(self):
-    """
-    Go to position zero.
-
-    \todo
-        - implement move_home method: Go to the position zero.
-    """
-    pass
-
-  def get_position(self):
-    """
-    return the position of the motor.
-
-    \todo
-        - implement get_position: search for the physical position of the motor.
-    """
-    pass

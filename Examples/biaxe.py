@@ -2,36 +2,32 @@
 
 import crappy
 
-path = {'type':'cyclic','value1':20,'condition1':'delay=10',
-                        'value2':-20,'condition2':'delay=10','cycles':0}
+path = {'type':'cyclic','value1':5,'condition1':'delay=3',
+                        'value2':-5,'condition2':'delay=3','cycles':0}
 path2 = dict(path)
-path2['condition1'] = 'delay=15'
-path2['condition2'] = 'delay=15'
+path2['condition1'] = 'delay=5'
+path2['condition2'] = 'delay=5'
 g1 = crappy.blocks.Generator(path=[path],cmd_label="vx")
 g2 = crappy.blocks.Generator(path=[path2],cmd_label="vy")
 
-mot = {'type':'oriental',
+mot = {'type':'biaxe',
        'mode':'speed'
        }
 
-motA = {'port':'/dev/ttyUSB2',
+motA = {'port':'/dev/ttyS4',
         'cmd':'vy',
-        'pos_label':'posA'
         }
 
-motB = {'port':'/dev/ttyUSB3',
+motB = {'port':'/dev/ttyS5',
         'cmd':'vx',
-        'pos_label':'posB'
         }
 
-motC = {'port':'/dev/ttyUSB0',
+motC = {'port':'/dev/ttyS6',
         'cmd':'vy',
-        'pos_label':'posC'
         }
 
-motD = {'port':'/dev/ttyUSB1',
+motD = {'port':'/dev/ttyS7',
         'cmd':'vx',
-        'pos_label':'posD'
         }
 
 b = crappy.blocks.Machine([motA,motB,motC,motD],common=mot)
