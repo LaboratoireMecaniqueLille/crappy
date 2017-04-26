@@ -15,13 +15,12 @@ class Ximea(Camera):
   not require openCV3 with Ximea flags
   """
 
-  def __init__(self,numdevice=0):
+  def __init__(self):
     """
     Args:
         numdevice: Device number
     """
     Camera.__init__(self)
-    self.numdevice = numdevice
     self.name = "Ximea"
     self.ximea = None
     self.add_setting("width",self._get_w,self._set_w,(1,self._get_w))
@@ -36,11 +35,12 @@ class Ximea(Camera):
     self.add_setting("External Trigger",setter=self._set_ext_trig,limits=True,
                                                           default=False)
 
-  def open(self, **kwargs):
+  def open(self,numdevice=0, **kwargs):
     """
     Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs
     """
+    self.numdevice = numdevice
     self.close() #If it was already open (won't do anything if cam is not open)
 
     if type(self.numdevice) == str:

@@ -8,9 +8,8 @@ class Webcam(Camera):
   """
   Camera class for webcams, read using opencv
   """
-  def __init__(self, numdevice=0):
+  def __init__(self):
     Camera.__init__(self)
-    self.numdevice=numdevice
     self.name = "webcam"
     self.cap = None
     # No sliders for the camera: they usually only allow a few resolutions
@@ -30,7 +29,8 @@ class Webcam(Camera):
   def _set_h(self,i):
     self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,i)
 
-  def open(self,**kwargs):
+  def open(self,numdevice=0,**kwargs):
+    self.numdevice=numdevice
     if self.cap:
       self.cap.release()
     self.cap = cv2.VideoCapture(self.numdevice)

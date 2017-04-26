@@ -16,13 +16,12 @@ class XimeaCV(Camera):
   Camera class for ximeas using openCV. It requires opencv 3.0 or higher,
    compiled with WITH_XIMEA flag
   """
-  def __init__(self, numdevice=0):
+  def __init__(self):
     """
     Args:
         numdevice: Device number
     """
     Camera.__init__(self)
-    self.numdevice = numdevice
     self.name = "XimeaCV"
     self.cap = None
     self.add_setting("width",self._get_w,self._set_w,(1,self._get_w))
@@ -83,13 +82,13 @@ class XimeaCV(Camera):
   def _set_data_format(self,i):
     self.cap.set(cv2.CAP_PROP_XI_DATA_FORMAT,i)
 
-  def open(self,**kwargs):
+  def open(self,numdevice=0,**kwargs):
     """
     Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs
     """
+    self.numdevice = numdevice
     self.close()
-    print("DEBUG nd=",self.numdevice)
     self.cap = cv2.VideoCapture(cv2.CAP_XIAPI+self.numdevice)
 
     for k in kwargs:
