@@ -25,11 +25,11 @@ class IOBlock(MasterBlock):
     self.device.open()
 
   def loop(self):
+    data = self.device.get_data()
+    data[0] -= self.t0
+    self.send(data)
     l = self.get_last()
     cmd = []
     for label in self.cmd_labels:
       cmd.append(l[label])
     self.device.set_cmd(*cmd)
-    data = self.device.get_data()
-    data[0] -= self.t0
-    self.send(data)
