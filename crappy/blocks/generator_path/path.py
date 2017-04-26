@@ -32,10 +32,10 @@ class Path(object):
       return condition
     if '<' in condition:
       var,val = condition.split('<')
-      return lambda data:all([i<float(val) for i in data[var]])
+      return lambda data:any([i<float(val) for i in data[var]])
     elif '>' in condition:
       var,val = condition.split('>')
-      return lambda data:all([i>float(val) for i in data[var]])
+      return lambda data:any([i>float(val) for i in data[var]])
     elif condition.startswith('delay'):
       val = float(condition.split('=')[1])
       return lambda data: time()-self.t0>val

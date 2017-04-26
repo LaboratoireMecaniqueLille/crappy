@@ -42,6 +42,7 @@ class Generator(MasterBlock):
     MasterBlock.__init__(self)
     for arg,default in [('freq',100),
                         ('cmd_label','cmd'),
+                        ('cycle_label','cycle'),
                         ('cmd',0), # First value
                         ('repeat',False), # Start over when done ?
                        ]:
@@ -50,7 +51,7 @@ class Generator(MasterBlock):
     assert all([hasattr(generator_path,d['type']) for d in self.path]),\
         "Invalid path in signal generator:"\
         +str(filter(lambda s: not hasattr(generator_path,s['type']),self.path))
-    self.labels = ['t(s)',self.cmd_label]
+    self.labels = ['t(s)',self.cmd_label,self.cycle_label]
 
   def prepare(self):
     self.path_id = -1 # Will be incremented to 0 on first next_path
@@ -75,6 +76,10 @@ class Generator(MasterBlock):
     name = self.path[self.path_id]['type'].capitalize()
     # Instanciating the new path class for the next step
     self.current_path = getattr(generator_path,name)(**kwargs)
+	
+  def begin(self):
+    self.send([self.last_t,self.cmd,self.path_id])
+    self.current_path.t0 = self.t0
 
   def loop(self):
     data = self.get_all_last()
@@ -87,4 +92,5 @@ class Generator(MasterBlock):
       return
     if cmd is not None: # If next_path returns None, do not update cmd
       self.cmd = cmd
-    self.send([time(),self.cmd])
+    self.last_t = time()
+    self.send([self.last_t,self.cmd,self.path_id])
