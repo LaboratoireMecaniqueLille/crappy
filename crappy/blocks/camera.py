@@ -56,8 +56,8 @@ class Camera(MasterBlock):
   def prepare(self):
     if self.save_folder and not os.path.exists(self.save_folder):
       os.makedirs(self.save_folder)
-    self.camera = camera_list[self.camera_name](**self.cam_kw)
-    self.camera.open()
+    self.camera = camera_list[self.camera_name]()
+    self.camera.open(**self.cam_kw)
     self.trigger = "internal" if len(self.inputs) == 0 else "external"
     if self.config:
       conf = Camera_config(self.camera)
