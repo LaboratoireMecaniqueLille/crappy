@@ -78,7 +78,7 @@ class Generator(MasterBlock):
     self.current_path = getattr(generator_path,name)(**kwargs)
 
   def begin(self):
-    self.send([self.last_t,self.cmd,self.path_id])
+    self.send([self.last_t-self.t0,self.cmd,self.path_id])
     self.current_path.t0 = self.t0
 
   def loop(self):
@@ -93,4 +93,4 @@ class Generator(MasterBlock):
     if cmd is not None: # If next_path returns None, do not update cmd
       self.cmd = cmd
     self.last_t = time()
-    self.send([self.last_t,self.cmd,self.path_id])
+    self.send([self.last_t-self.t0,self.cmd,self.path_id])
