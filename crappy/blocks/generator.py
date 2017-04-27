@@ -76,7 +76,7 @@ class Generator(MasterBlock):
     name = self.path[self.path_id]['type'].capitalize()
     # Instanciating the new path class for the next step
     self.current_path = getattr(generator_path,name)(**kwargs)
-	
+
   def begin(self):
     self.send([self.last_t,self.cmd,self.path_id])
     self.current_path.t0 = self.t0

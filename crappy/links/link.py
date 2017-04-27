@@ -146,9 +146,9 @@ class Link(object):
       else:
         for cond in self.condition:
           if hasattr(cond,'evaluate'):
-            value = cond.evaluate(copy.copy(value))
+            value = cond.evaluate(value)
           else:
-            value = cond(copy.copy(value))
+            value = cond(value)
         if value is not None:
           self.out_.send(value)
     except KeyboardInterrupt:
