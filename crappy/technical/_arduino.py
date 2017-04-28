@@ -182,6 +182,14 @@ class MinitensFrame(tk.Frame):
               height=4, width=8,
               command=lambda: self.update_widgets("TARE")
               ).grid(row=0, column=2)
+    
+    tk.Button(self.buttons_frame,
+              text="Tare Position",
+              bg="blue",
+              relief="raised",
+              height=4, width=8,
+              command=lambda: self.update_widgets("TARE_POS")
+              ).grid(row=0, column=3)
     self.minitens_frame_radiobuttons.grid(row=0, column=0)
     self.position_frame.grid(row=0, column=1)
     # self.boucle_frame.grid(row=0, column=2)
@@ -207,6 +215,8 @@ class MinitensFrame(tk.Frame):
                      "effort": 0})
     elif command == "TARE":
       message = str({"tare": 1})
+    elif command == "TARE_POS":
+      message = str({"tare_pos": 0})
     else:
       if self.command.get() == "effort":
         mode = 4
