@@ -74,7 +74,7 @@ class Grapher(MasterBlock):
     self.args = args[0] if isinstance(args[0], list) else args
     self.nbr_graphs = len(self.args)
     self.delay = 1./self.freq
-
+    print('window size and window pos', self.window_pos, self.window_size)
   def plot_dynamic_graph(self):
     save_number = 0
     fig = plt.figure(figsize=self.window_size)
@@ -122,11 +122,12 @@ class Grapher(MasterBlock):
 
   def plot_static_graph(self):
     plt.ion()
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure(figsize=self.window_size)
     ax = fig.add_subplot(111)
     first_round = True
     k = [0] * self.nbr_graphs  # internal value for downsampling
-
+    
+      
     while True:
       Data = self.inputs[0].recv_delay(self.delay)  # recv data
       legend_ = [self.args[i][1] for i in xrange(self.nbr_graphs)]
