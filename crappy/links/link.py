@@ -97,10 +97,7 @@ class Link(object):
     self.name = name
     self.in_, self.out_ = Pipe(duplex=False)
     self.external_trigger = None
-    if type(condition) is list:
-      self.condition = condition
-    else:
-      self.condition = [condition]
+    self.condition = condition if isinstance(condition,list) else [condition]
     self.timeout = timeout
     self.action = action
     if not None in [input_block, output_block]:
