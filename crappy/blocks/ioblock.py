@@ -5,12 +5,33 @@ from .masterblock import MasterBlock
 from ..inout import inout_list
 
 class IOBlock(MasterBlock):
+  """
+  This block is used to communicate with inout objects
+  Then can be used as sensor, command or both.
+  It only takes a single argument:
+    name (str): The name of the inout class to instanciate
+  It can take all the settings as kwargs:
+    freq (float or None): The looping frequency (see masterblock)
+      set to None (default) to go as fast as possible
+    verbose (bool): Will print extra information
+    labels (list): The list of the output labels (see masterblock)
+      NOTE: the first label is the time.
+      default: ['t(s)','1']
+    cmd_label (list): The list of the labels carrying values for the output
+      the block will call ioobject.set_cmd(...) with these values unless
+      it is empty (default).
+    trigger (int or None): If the block is trigged by another block, this
+      must specify the index of the input considered as a trigger.
+      If set to None (default), it will run at freq if possible.
+      Note: The data going through the trig link is discarded.
+      Add another link if necessary
+  """
   def __init__(self,name,**kwargs):
     MasterBlock.__init__(self)
     for arg,default in [('freq',None),
                         ('verbose',False),
                         ('labels',['t(s)','1']),
-                        ('cmd_labels',['cmd']),
+                        ('cmd_labels',[]),
                         ('trigger',None)
                         ]:
       if arg in kwargs:
@@ -25,19 +46,33 @@ class IOBlock(MasterBlock):
     self.to_get = range(len(self.inputs))
     if self.trigger is not None:
       self.to_get.remove(self.trigger)
-
+    self.mode = 'w' if self.to_get else ''
+    if len(self.outputs) != 0:
+      self.mode += 'r'
+    assert self.mode != '',"ERROR: IOBlock is neither an input nor an output!"
+    if 'w' in self.mode:
+      assert self.cmd_labels,"ERROR: IOBlock has an input block but no"\
+          "cmd_labels specified!"
     self.device = inout_list[self.device_name](**self.device_kwargs)
     self.device.open()
 
+  def read(self):
+    data = self.device.get_data()
+    data[0] -= self.t0
+    self.send(data)
+
   def loop(self):
-    if self.trigger is None or self.inputs[self.trigger].poll():
+    if 'r' in self.mode:
       if self.trigger is not None:
-        self.inputs[self.trigger].recv()
-      data = self.device.get_data()
-      data[0] -= self.t0
-      self.send(data)
-    l = self.get_last(self.to_get)
-    cmd = []
-    for label in self.cmd_labels:
-      cmd.append(l[label])
-    self.device.set_cmd(*cmd)
+        # To avoid useless loops if triggered input only
+        if self.mode == 'r' or self.inputs[self.trigger].poll():
+          self.inputs[self.trigger].recv()
+          self.read()
+      else:
+        self.read()
+    if 'w' in self.mode:
+      l = self.get_last(self.to_get)
+      cmd = []
+      for label in self.cmd_labels:
+        cmd.append(l[label])
+      self.device.set_cmd(*cmd)
