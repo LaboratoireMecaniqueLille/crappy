@@ -10,7 +10,7 @@ from .ximea import Ximea
 
 try:
   from .ximeaCV import XimeaCV
-except ImportError:
+except (ImportError,AttributeError):
   XimeaCV = NotInstalled("XimeaCV")
 
 try:
