@@ -1,5 +1,6 @@
 # coding: utf-8
 import serial
+from time import time
 from .inout import InOut
 
 
@@ -49,9 +50,8 @@ class Agilent34420A(InOut):
     Read the signal, return False if error and print 'bad serial'.
     """
     self.ser.write("READ?  \n")
-    tmp = self.ser.read(self.ser.in_waiting)
-    self.ser.flush()
-    return float(tmp)
+    t = time()
+    return [t,float(self.ser.readline())]
 
   def close(self):
     """
