@@ -14,9 +14,9 @@ class Machine(MasterBlock):
     If you want to forward a parameter to the actuator that has the name of
     a key below, add an underscore at the end of its key
     keys:
-      type: The name of the actuator to instanciate
+      type (str): The name of the actuator to instanciate
         Mandatory
-      cmd: The label of the input to drive the axis
+      cmd (str): The label of the input to drive the axis
         Mandatory
       mode: 'speed'|'position'
         Will either call set_speed or set_position on the actuator
@@ -48,6 +48,7 @@ class Machine(MasterBlock):
   def prepare(self):
     self.actuators = []
     for setting in self.settings:
+      # Open each actuators with its associated dict of settings
       self.actuators.append(actuator_list[setting['type'].capitalize()](
         **setting['kwargs']))
       self.actuators[-1].open()

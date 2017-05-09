@@ -10,7 +10,7 @@ from ..camera import camera_list
 
 class Correl(MasterBlock):
   """
-    This block uses the Correl class (in crappy/technicals/_correl.py)
+    This block uses the Correl class (in crappy/tool/correl.py)
 
     See the docstring of Correl to have more informations about the
         arguments specific to Correl.
@@ -100,7 +100,6 @@ with fields=(.,.) or Nfields=k"
         if self.save_folder:
           sitk.WriteImage(sitk.getImageFromArray(img),self.save_folder
           +"img_%.6d.png"%self.loops)
-
 
         self.correl.setImage(img.astype(np.float32))
         out = [t] + self.correl.getDisp().tolist()

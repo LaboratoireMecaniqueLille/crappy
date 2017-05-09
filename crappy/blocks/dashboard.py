@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import os
 import threading
 from Queue import Queue
 from Tkinter import Tk, Label
@@ -16,7 +15,7 @@ class Dashboard(MasterBlock):
   In this case, the displayed value corresponds to the average of points.
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self, labels=None, nb_digits=3):
     """
     Args:
       labels: list, values to plot on the output window.
@@ -24,9 +23,9 @@ class Dashboard(MasterBlock):
       nb_digits: int, number of decimals to show, for every value.
     """
     super(Dashboard, self).__init__()
-    self.labels = kwargs.get('labels', None)
+    self.labels = labels
     self.nb_display_values = len(self.labels) if self.labels else None
-    self.nb_digits = kwargs.get('nb_digits', 3)
+    self.nb_digits = nb_digits
     # global queue
     self.queue = Queue()
 

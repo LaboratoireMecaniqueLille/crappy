@@ -6,7 +6,7 @@ from .masterblock import MasterBlock
 
 class Displayer(MasterBlock):
   """
-  Simple images displayer. Can be paired with StreamerCamera
+  Simple image displayer. Can be paired with StreamerCamera
   Use cv=False to use the old, inefficient and deprecated version
   NOTE: You need to use one displayer block per window
   (in other words, you can only attach one input to the diplayer)

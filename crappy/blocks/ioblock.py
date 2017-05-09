@@ -57,6 +57,7 @@ class IOBlock(MasterBlock):
     self.device.open()
 
   def read(self):
+    """Will read the device and send the data"""
     data = self.device.get_data()
     data[0] -= self.t0
     self.send(data)

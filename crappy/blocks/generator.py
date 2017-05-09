@@ -40,7 +40,7 @@ class Generator(MasterBlock):
   """
   def __init__(self,path=[],**kwargs):
     MasterBlock.__init__(self)
-    for arg,default in [('freq',100),
+    for arg,default in [('freq',None),
                         ('cmd_label','cmd'),
                         ('cycle_label','cycle'),
                         ('cmd',0), # First value

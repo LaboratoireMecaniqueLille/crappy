@@ -361,10 +361,8 @@ class MasterBlock(Process):
     t = time()
     while self.status != 'done' and time() - t < 2:
       sleep(.1)
-      try:
-        self.inputs[0].send('stop')
-      except IndexError:
-        pass
+      for i in self.inputs:
+        i.send('stop')
     if self.status != "done":
       print('[%r] Could not stop properly, terminating' % self)
       try:

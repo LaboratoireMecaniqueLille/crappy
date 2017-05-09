@@ -8,10 +8,8 @@ from ..actuator import actuator_list
 class AutoDrive(MasterBlock):
   """
   This block gets data from videoextenso and drives a technical or an actuator
-  to move the camera in order to keep
-  the spots in the center of the frame
+  to move the camera in order to keep the spots in the center of the frame
   """
-
   def __init__(self, **kwargs):
     MasterBlock.__init__(self)
     for arg,default in [('actuator',{'name':'CM_drive'}),
@@ -49,7 +47,6 @@ class AutoDrive(MasterBlock):
     diff = self.get_center(data)-self.range/2
     self.device.set_speed(int(self.P*diff))
     self.send([t-self.t0,diff])
-
 
   def finish(self):
     self.device.set_speed(0)
