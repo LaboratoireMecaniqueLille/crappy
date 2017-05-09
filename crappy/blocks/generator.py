@@ -46,7 +46,12 @@ class Generator(MasterBlock):
                         ('cmd',0), # First value
                         ('repeat',False), # Start over when done ?
                        ]:
-      setattr(self,arg,kwargs.get(arg,default))
+      if arg in kwargs:
+        setattr(self,arg,kwargs[arg])
+        del kwargs[arg]
+      else:
+        setattr(self,arg,default)
+    assert not kwargs,"generator: unknow kwargs: "+str(kwargs)
     self.path = path
     assert all([hasattr(generator_path,d['type']) for d in self.path]),\
         "Invalid path in signal generator:"\
