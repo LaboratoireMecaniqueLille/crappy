@@ -45,13 +45,14 @@ class Generator(MasterBlock):
                         ('cycle_label','cycle'),
                         ('cmd',0), # First value
                         ('repeat',False), # Start over when done ?
+                        ('verbose',False)
                        ]:
       if arg in kwargs:
         setattr(self,arg,kwargs[arg])
         del kwargs[arg]
       else:
         setattr(self,arg,default)
-    assert not kwargs,"generator: unknow kwargs: "+str(kwargs)
+    assert not kwargs,"generator: unknown kwargs: "+str(kwargs)
     self.path = path
     assert all([hasattr(generator_path,d['type']) for d in self.path]),\
         "Invalid path in signal generator:"\
@@ -73,7 +74,8 @@ class Generator(MasterBlock):
         print("Signal generator terminated!")
         MasterBlock.stop_all()
         raise CrappyStop("Signal Generator terminated")
-    print("[Signal Generator] Next step({}):".format(self.path_id),
+    if self.verbose:
+      print("[Signal Generator] Next step({}):".format(self.path_id),
         self.path[self.path_id])
     kwargs = {'cmd':self.cmd, 'time':self.last_t}
     kwargs.update(self.path[self.path_id])
@@ -93,7 +95,6 @@ class Generator(MasterBlock):
       cmd = self.current_path.get_cmd(data)
     except StopIteration:
       self.next_path()
-      self.loop()
       return
     if cmd is not None: # If next_path returns None, do not update cmd
       self.cmd = cmd
