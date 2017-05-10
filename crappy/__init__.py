@@ -11,6 +11,6 @@ from .__version__ import __version__
 link = links.link
 MasterBlock = blocks.MasterBlock
 stop = MasterBlock.stop_all
-prepare = MasterBlock.prepare
-launch = MasterBlock.launch
+prepare = MasterBlock.prepare_all
+launch = MasterBlock.launch_all
 start = MasterBlock.start_all
