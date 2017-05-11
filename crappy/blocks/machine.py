@@ -4,8 +4,7 @@ from .masterblock import MasterBlock
 from ..actuator import actuator_list
 
 class Machine(MasterBlock):
-  def __init__(self, actuators,common={},freq=200):
-    """
+  """
     Takes a list of dicts, containing the information to create each actuator
     Each key will stand for a parameter (see below), else they are transferred
     to the actuator.
@@ -21,10 +20,12 @@ class Machine(MasterBlock):
       mode: 'speed'|'position'
         Will either call set_speed or set_position on the actuator
         Default: speed
+      speed: If mode is position, the speed of the axis
       pos_label: If set, the block will return the value of .get_position
         with this label
       speed_label: same as pos_label but with get_speed
-    """
+  """
+  def __init__(self, actuators,common={},freq=200):
     MasterBlock.__init__(self)
     self.freq = freq
     self.settings = [{} for i in actuators]
@@ -37,6 +38,8 @@ class Machine(MasterBlock):
         assert d['mode'].lower() in ('position','speed')
         setting['mode'] = d['mode'].lower()
         del d['mode']
+        if 'speed' in d:
+          setting['speed'] = d['speed']
       else:
         setting['mode'] = 'speed'
       for k in ('pos_label','speed_label'):
@@ -60,7 +63,7 @@ class Machine(MasterBlock):
       if setting['mode'] == 'speed':
         actuator.set_speed(recv[setting['cmd']])
       elif setting['mode'] == 'position':
-        actuator.set_speed(recv[setting['cmd']])
+        actuator.set_position(recv[setting['cmd']],setting['speed'])
       if 'pos_label' in setting:
         to_send[setting['pos_label']] = actuator.get_pos()
       if 'speed_label' in setting:
