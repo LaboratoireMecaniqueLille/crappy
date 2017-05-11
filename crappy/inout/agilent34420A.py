@@ -7,7 +7,7 @@ from .inout import InOut
 class Agilent34420A(InOut):
   """Sensor class for Agilent34420A devices."""
 
-  def __init__(self, mode="VOLT", device='/dev/ttyUSB0', baudrate=9600, timeout=10):
+  def __init__(self, mode="VOLT", device='/dev/ttyUSB0', baudrate=9600, timeout=1):
     """
     This class contains method to measure values of resistance or tensution on Agilent34420A devices.
 
@@ -51,7 +51,11 @@ class Agilent34420A(InOut):
     """
     self.ser.write("READ?  \n")
     t = time()
-    return [t,float(self.ser.readline())]
+    try:
+      return [t,float(self.ser.readline())]
+    except (serial.SerialException,ValueError):
+      self.ser.flush()
+      return [t,0]
 
   def close(self):
     """
