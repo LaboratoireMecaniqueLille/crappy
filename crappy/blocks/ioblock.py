@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 from .masterblock import MasterBlock
-from ..inout import inout_list
+from ..inout import inout_list,in_list,out_list
 
 class IOBlock(MasterBlock):
   """
@@ -53,7 +53,12 @@ class IOBlock(MasterBlock):
     if 'w' in self.mode:
       assert self.cmd_labels,"ERROR: IOBlock has an input block but no"\
           "cmd_labels specified!"
-    self.device = inout_list[self.device_name](**self.device_kwargs)
+    if self.mode == 'rw':
+      self.device = inout_list[self.device_name](**self.device_kwargs)
+    elif self.mode == 'r':
+      self.device = in_list[self.device_name](**self.device_kwargs)
+    elif self.mode == 'w':
+      self.device = out_list[self.device_name](**self.device_kwargs)
     self.device.open()
 
   def read(self):
