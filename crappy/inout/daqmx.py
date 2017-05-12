@@ -121,27 +121,29 @@ class Daqmx(InOut):
   def open(self):
     DAQmxResetDevice(self.device)
     # IN channels
-    self.handle = TaskHandle()
-    self.nread = int32()
-    DAQmxCreateTask("", byref(self.handle))
-    for i,chan in enumerate(self.channels):
-      DAQmxCreateAIVoltageChan(self.handle, self.device+"/"+chan, "",
-                             DAQmx_Val_Cfg_Default,
-                             0, self.range[i],
-                             DAQmx_Val_Volts, None)
-    if any(self.make_zero):
-      off = self.eval_offset()
-      for i,make_zero in enumerate(self.make_zero):
-        if make_zero:
-          self.offset[i] += off[i]
+    if self.channels:
+      self.handle = TaskHandle()
+      self.nread = int32()
+      DAQmxCreateTask("", byref(self.handle))
+      for i,chan in enumerate(self.channels):
+        DAQmxCreateAIVoltageChan(self.handle, self.device+"/"+chan, "",
+                               DAQmx_Val_Cfg_Default,
+                               0, self.range[i],
+                               DAQmx_Val_Volts, None)
+      if any(self.make_zero):
+        off = self.eval_offset()
+        for i,make_zero in enumerate(self.make_zero):
+          if make_zero:
+            self.offset[i] += off[i]
     # OUT channels
-    self.out_handle = TaskHandle()
-    DAQmxCreateTask("", byref(self.out_handle))
-    for i,chan in enumerate(self.out_channels):
-      DAQmxCreateAOVoltageChan(self.out_handle, self.device+"/"+chan, "",
-                             0, self.out_range[i],
-                             DAQmx_Val_Volts, None)
-    DAQmxStartTask(self.out_handle)
+    if self.out_channels:
+      self.out_handle = TaskHandle()
+      DAQmxCreateTask("", byref(self.out_handle))
+      for i,chan in enumerate(self.out_channels):
+        DAQmxCreateAOVoltageChan(self.out_handle, self.device+"/"+chan, "",
+                               0, self.out_range[i],
+                               DAQmx_Val_Volts, None)
+      DAQmxStartTask(self.out_handle)
 
   def get_data(self):
     """
