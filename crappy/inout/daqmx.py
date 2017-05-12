@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import print_function,division
 
-import numpy
+import numpy as np
 import time
 from PyDAQmx import *
 
@@ -38,17 +38,17 @@ class Daqmx(InOut):
       if arg in kwargs and arg.startswith('in_'):
         kwargs[arg[3:]] = kwargs[arg]
         del kwargs[arg]
-    for arg,default in [('device','Dev2'),
+    for arg,default in [('device','Dev1'),
                         ('channels',['ai0']),
                         ('gain',1),
                         ('offset',0),
-                        ('range',5),
+                        ('range',5), # Unipolar
                         ('make_zero',True),
                         ('sample_rate',10000),
                         ('out_channels',[]),
                         ('out_gain',1),
                         ('out_offset',0),
-                        ('out_range',5)
+                        ('out_range',5) # Unipolar
                         ]:
       if arg in kwargs:
         setattr(self,arg,kwargs[arg])
@@ -99,9 +99,19 @@ class Daqmx(InOut):
         if make_zero:
           self.offset[i] += off[i]
     # OUT channels
-    # ...
+    self.out_handle = TaskHandle()
+    DAQmxCreateTask("", byref(self.out_handle))
+    for i,chan in enumerate(self.out_channels):
+      DAQmxCreateAOVoltageChan(self.out_handle, self.device+"/"+chan, "",
+                             0, self.out_range[i],
+                             DAQmx_Val_Volts, None)
+    DAQmxStartTask(self.out_handle)
 
   def get_data(self):
+    """
+    Returns a tuple of length len(self.channels)+1
+    first element is the time, others are readings of each channel
+    """
     return [i[0] for i in self.get_stream(1)]
 
   def get_stream(self, npoints=100):
@@ -123,7 +133,7 @@ class Daqmx(InOut):
                           DAQmx_Val_FiniteSamps,
                           npoints + 1)
     DAQmxStartTask(self.handle)
-    data = numpy.empty((len(self.channels),npoints), dtype=numpy.float64)
+    data = np.empty((len(self.channels),npoints), dtype=np.float64)
     t0 = time.time()
     # DAQmx Read Code
     DAQmxReadAnalogF64(self.handle, npoints, 10.0,
@@ -136,10 +146,22 @@ class Daqmx(InOut):
     return [[t1+i/self.sample_rate for i in range(npoints)]]\
      +[data[i,:]*self.gain[i]+self.offset[i] for i in range(len(self.channels))]
 
+  def set_cmd(self,*args):
+    """
+    Set the output(s) to the specified value
+    Takes n arguments, n being the number of channels open at init
+    ith argument is the value to set to the ith channel
+    """
+    assert len(args) == len(self.out_channels)
+    data = np.array(args,dtype=np.float64)
+    DAQmxWriteAnalogF64(self.out_handle,1,1,10.0,DAQmx_Val_GroupByChannel,data,None,None)
+    
 
   def close(self):
     """Close the connection."""
     if self.handle:
-      # DAQmx Stop Code
       DAQmxStopTask(self.handle)
       DAQmxClearTask(self.handle)
+    if self.out_handle:
+      DAQmxStopTask(self.out_handle)
+      DAQmxClearTask(self.out_handle)
