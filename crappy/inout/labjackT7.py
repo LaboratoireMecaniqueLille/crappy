@@ -99,8 +99,7 @@ class Labjack_T7(InOut):
       scans_per_read: STREAMER MODE ONLY : int, defines how many
 
       samples to collect during one loop. If undefined,
-      will be assumed as a  fraction of sample_rate, determined
-      for performance.
+      will set to a tenth of sample_rate
 
       identifier: str. Used if multiple labjacks are connected.
       The identifier could be anything that could define the
@@ -151,6 +150,12 @@ class Labjack_T7(InOut):
     self.handle = None
 
   def check_vars(self):
+    """
+    Turns the settings into lists of the same length, each index standing for
+    one channel.
+    if a list is given, simply check the length
+    else make a list of the correct length containing only the given value
+    """
     self.mode = self.mode.lower()
     self.channels = [self.channels] if not isinstance(self.channels,
                     list) else self.channels
@@ -178,6 +183,8 @@ class Labjack_T7(InOut):
     if self.mode == 'streamer':
       if self.scan_rate_per_channel * self.nb_channels >= 100000:
         self.scan_rate_per_channel = int(100000 / self.nb_channels)
+        print("Labjack warning: scan rate too high! Lowering to ",
+            self.scan_rate_per_channel)
       if self.scans_per_read == 0:
         self.scans_per_read = int(self.scan_rate_per_channel / 10)
 
@@ -214,6 +221,7 @@ class Labjack_T7(InOut):
                "STREAM_RESOLUTION_INDEX"]
     a_values = [int(self.chan_range[0]), 0, int(self.resolution[0])]
     ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
+    self.stream_started = False
 
   def open_thermocouple(self):
     to_write = [
@@ -259,6 +267,7 @@ class Labjack_T7(InOut):
       thread = Thread(target=self.DialogBox, args=(
         self.scan_rate_per_channel, self.scans_per_read, self.queue))
       thread.start()
+    self.stream_started = True
 
   def get_data(self):
     """
@@ -278,6 +287,8 @@ class Labjack_T7(InOut):
     """
     Read the device buffer if scan_mode is set.
     """
+    if not self.stream_started:
+      self.start_stream()
     retrieved_from_buffer = ljm.eStreamRead(self.handle)
     results = retrieved_from_buffer[0]
     timer = time()

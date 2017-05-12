@@ -29,6 +29,35 @@ def listify(stuff,l):
 class Daqmx(InOut):
   """
   Class to use DAQmx devices
+  kwargs:
+    device (str): Name of the device to open. Default: 'Dev1'
+    channels (list of str/int): Names or ids of the channels to read
+      default: ['ai0']
+    gain (list of floats): Gains to apply to each reading
+    offset (list of floats): Offset to apply to each reading
+    range (list of floats): Max value for the reading (max: 5V)
+      must be in [.5,1.,2.5,5.]
+      default: 5
+      See niDAQ api for more details
+    make_zero (list of bools): If True, the average value on the channel
+      at opening will be evaluated and substracted to the actual reading
+      default: True
+    nperscan (int): If using streamer mode, number of readings to acquire
+      on each get_stream call
+    samplerate (float): If using streamer mode, frequency of acquition
+      when calling get_stream
+    out_channels (list of str/int): names or ids of the output channels
+      default: []
+    out_gain (list of floats): gains to apply to the commands
+      default: 1
+    out_offset (list of floats): offset to apply to the commands
+      default: 0
+    out_range (list of floats): Max value of the output (max: 5V)
+      must be in [.5,1.,2.5,5.]
+      default: 5
+      See niDAQ api for more details
+  Note: If an argument taken as a list is given as a single value, it
+  will be applied to all channels.
   """
   def __init__(self, **kwargs):
     InOut.__init__(self)
@@ -44,6 +73,7 @@ class Daqmx(InOut):
                         ('offset',0),
                         ('range',5), # Unipolar
                         ('make_zero',True),
+                        ('nperscan',1000),
                         ('sample_rate',10000),
                         ('out_channels',[]),
                         ('out_gain',1),
@@ -57,8 +87,14 @@ class Daqmx(InOut):
         setattr(self,arg,default)
     assert len(kwargs) == 0,"Daqmx got unsupported arg(s)"+str(kwargs)
     self.check_vars()
-      
+
   def check_vars(self):
+    """
+    Turns the settings into lists of the same length, each index standing for
+    one channel.
+    if a list is given, simply check the length
+    else make a list of the correct length containing only the given value
+    """
     #IN channels
     self.channels = self.channels if isinstance(self.channels,list)\
                else [self.channels]
@@ -77,8 +113,8 @@ class Daqmx(InOut):
     for i in range(nout):
       if isinstance(self.out_channels[i],int):
         self.out_channels[i] = 'ao'+str(self.out_channels[i])
-    self.out_gain = listify(self.out_gain,nout)
-    self.out_offset = listify(self.out_offset,nout)
+    self.out_gain = np.array(listify(self.out_gain,nout))
+    self.out_offset = np.array(listify(self.out_offset,nout))
     self.out_range = listify(self.out_range,nout)
     assert nin+nout,"DAQmx has no in nor out channels!"
 
@@ -114,7 +150,7 @@ class Daqmx(InOut):
     """
     return [i[0] for i in self.get_stream(1)]
 
-  def get_stream(self, npoints=100):
+  def get_stream(self, npoints=None):
     """
     Read the analog voltage on specified channels
     Args:
@@ -123,11 +159,13 @@ class Daqmx(InOut):
             channels = [1,2] will read ai2 and ai4
           if None (default) will read all opened channels
         npoints: number of values to read.
-
+          if None, will use the value of self.nperscan
     Returns:
         a tuple of len(self.channels)+1 lists of length npoints
         first list is the time, the others are the read voltages
     """
+    if npoints is None:
+      npoints = self.nperscan
     DAQmxCfgSampClkTiming(self.handle, "",
                           self.sample_rate, DAQmx_Val_Rising,
                           DAQmx_Val_FiniteSamps,
@@ -153,9 +191,10 @@ class Daqmx(InOut):
     ith argument is the value to set to the ith channel
     """
     assert len(args) == len(self.out_channels)
-    data = np.array(args,dtype=np.float64)
-    DAQmxWriteAnalogF64(self.out_handle,1,1,10.0,DAQmx_Val_GroupByChannel,data,None,None)
-    
+    data = np.array(args,dtype=np.float64)*self.out_gain+self.out_offset
+    DAQmxWriteAnalogF64(self.out_handle,1,1,10.0,DAQmx_Val_GroupByChannel,
+        data,None,None)
+
 
   def close(self):
     """Close the connection."""

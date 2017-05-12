@@ -25,6 +25,8 @@ class IOBlock(MasterBlock):
       If set to None (default), it will run at freq if possible.
       Note: The data going through the trig link is discarded.
       Add another link if necessary
+    streamer (bool): If False (default), will call get_data
+      else, will call get_stream
   """
   def __init__(self,name,**kwargs):
     MasterBlock.__init__(self)
@@ -32,7 +34,8 @@ class IOBlock(MasterBlock):
                         ('verbose',False),
                         ('labels',['t(s)','1']),
                         ('cmd_labels',[]),
-                        ('trigger',None)
+                        ('trigger',None),
+                        ('streamer',False)
                         ]:
       if arg in kwargs:
         setattr(self,arg,kwargs[arg])
@@ -63,8 +66,14 @@ class IOBlock(MasterBlock):
 
   def read(self):
     """Will read the device and send the data"""
-    data = self.device.get_data()
-    data[0] -= self.t0
+    if self.streamer:
+      data = self.device.get_stream()
+    else:
+      data = self.device.get_data()
+    if isinstance(data[0],list):
+      data[0] = [i-self.t0 for i in data[0]]
+    else:
+      data[0] -= self.t0
     self.send(data)
 
   def loop(self):
