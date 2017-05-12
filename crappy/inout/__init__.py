@@ -12,13 +12,13 @@ try:
 except ImportError:
   Comedi = NotInstalled('Comedi')
 try:
-  from .labjackT7 import Labjack_T7
+  from .labjackT7 import Labjack_t7
 except ImportError:
-  Labjack_T7 = NotInstalled('Labjack_T7')
+  Labjack_t7 = NotInstalled('Labjack_t7')
 try:
-  from .labjackUE9 import Labjack_UE9
+  from .labjackUE9 import Labjack_ue9
 except ImportError:
-  Labjack_UE9 = NotInstalled('Labjack_UE9')
+  Labjack_ue9 = NotInstalled('Labjack_ue9')
 try:
   from .openDAQ import OpenDAQ
 except ImportError:

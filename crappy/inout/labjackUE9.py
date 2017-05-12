@@ -31,7 +31,7 @@ def format_lists(list_to_format, length):
   else:
     return list_to_format
 
-class Labjack_UE9(InOut):
+class Labjack_ue9(InOut):
   """Can read data from a LabJack UE9
   streamer mode and DAC are not supported yet
   """

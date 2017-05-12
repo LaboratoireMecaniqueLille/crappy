@@ -67,7 +67,7 @@ def var_tester(var, nb_channels):
     str(var) + "Error: parameter should be int or float."
   return var
 
-class Labjack_T7(InOut):
+class Labjack_t7(InOut):
   """Class for LabJack T7 devices. Used to acquire and set
   analogical datas."""
   def __init__(self, **kwargs):

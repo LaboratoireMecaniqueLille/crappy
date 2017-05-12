@@ -42,7 +42,7 @@ class IOBlock(MasterBlock):
         del kwargs[arg]
       else:
         setattr(self,arg,default)
-    self.device_name = name
+    self.device_name = name.capitalize()
     self.device_kwargs = kwargs
 
   def prepare(self):
@@ -56,7 +56,7 @@ class IOBlock(MasterBlock):
     if 'w' in self.mode:
       assert self.cmd_labels,"ERROR: IOBlock has an input block but no"\
           "cmd_labels specified!"
-    if self.mode == 'rw':
+    if self.mode == 'wr':
       self.device = inout_list[self.device_name](**self.device_kwargs)
     elif self.mode == 'r':
       self.device = in_list[self.device_name](**self.device_kwargs)
