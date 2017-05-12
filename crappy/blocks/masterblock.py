@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import print_function,division
 
+from sys import platform
 from multiprocessing import Process, Pipe
 from collections import OrderedDict
 from time import sleep, time, localtime, strftime
@@ -247,7 +248,8 @@ class MasterBlock(Process):
       while self.pipe1.poll():
         self._status = self.pipe1.recv()
       #If another process tries to get the status
-      self.pipe2.send(self._status)
+      if 'linux' in platform:
+        self.pipe2.send(self._status)
 
       #Somehow the previous line makes crappy hang on Windows, no idea why
       #It is not critical, but it means that process status can now only
