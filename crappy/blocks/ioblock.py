@@ -49,14 +49,13 @@ class IOBlock(MasterBlock):
     self.to_get = range(len(self.inputs))
     if self.trigger is not None:
       self.to_get.remove(self.trigger)
-    self.mode = 'w' if self.to_get else ''
-    if len(self.outputs) != 0:
-      self.mode += 'r'
+    self.mode = 'r' if self.outputs else ''
+    self.mode += 'w' if self.to_get else ''
     assert self.mode != '',"ERROR: IOBlock is neither an input nor an output!"
     if 'w' in self.mode:
       assert self.cmd_labels,"ERROR: IOBlock has an input block but no"\
           "cmd_labels specified!"
-    if self.mode == 'wr':
+    if self.mode == 'rw':
       self.device = inout_list[self.device_name](**self.device_kwargs)
     elif self.mode == 'r':
       self.device = in_list[self.device_name](**self.device_kwargs)
