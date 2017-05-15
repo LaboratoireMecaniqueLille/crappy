@@ -20,7 +20,7 @@ try:
 except ImportError:
   Labjack_ue9 = NotInstalled('Labjack_ue9')
 try:
-  from .openDAQ import OpenDAQ
+  from .opendaq import Opendaq
 except ImportError:
   openDAQ = NotInstalled('OpenDAQ')
 
