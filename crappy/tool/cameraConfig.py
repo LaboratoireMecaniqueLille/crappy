@@ -1,7 +1,7 @@
 #coding: utf-8
-from __future__ import print_function, division
 
-import Tkinter as tk
+
+import tkinter as tk
 from PIL import ImageTk,Image
 from time import time
 import cv2
@@ -117,8 +117,8 @@ class Camera_config(object):
     self.img_label.bind('<B1-Motion>', self.move)
 
   def create_inputs(self):
-    settings = self.camera.settings_dict.keys()
-    settings.sort(key=lambda e: type(self.camera.settings[e].limits))
+    settings = list(self.camera.settings_dict.keys())
+    settings.sort(key=lambda e: str(type(self.camera.settings[e].limits)))
     self.scales = {}
     self.radios = {}
     self.checks = {}
@@ -175,7 +175,7 @@ class Camera_config(object):
     f = tk.Frame(self.root)
     f.grid(row=pos+2,column=1,sticky=tk.E+tk.W)
     tk.Label(f,text=setting.name+":").pack(anchor=tk.W)
-    for k,v in setting.limits.iteritems():
+    for k,v in setting.limits.items():
       r = tk.Radiobutton(f, text=k, variable=self.radios[setting.name], value=v)
       if setting.value == v:
         r.select()
@@ -388,19 +388,19 @@ class Camera_config(object):
     """Callback for the apply button
     as its name suggests, it will apply all the edited settings"""
     # Applying scales values to the camera
-    for name,scale in self.scales.iteritems():
+    for name,scale in self.scales.items():
       if self.camera.settings[name].value != scale.get():
         self.camera.settings[name].value = scale.get()
     # Applying checks (boolean values)
-    for name,value in self.checks.iteritems():
+    for name,value in self.checks.items():
       if bool(self.camera.settings[name].value) != bool(value.get()):
         self.camera.settings[name].value = bool(value.get())
     # And applying the radios (selectable values)
-    for name,value in self.radios.iteritems():
+    for name,value in self.radios.items():
       if self.camera.settings[name].value != value.get():
         self.camera.settings[name].value = value.get()
     # READING from the camera to move the scales to the actual values
-    for name,scale in self.scales.iteritems():
+    for name,scale in self.scales.items():
       if self.camera.settings[name].value != scale.get():
         scale.set(self.camera.settings[name].value)
     # Updating the window

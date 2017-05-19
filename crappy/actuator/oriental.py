@@ -1,7 +1,7 @@
 ﻿# coding: utf-8
 
 import serial
-from Queue import Queue
+from queue import Queue
 from threading import Thread,Lock
 from .actuator import Actuator
 
@@ -31,7 +31,7 @@ class Oriental(Actuator):
   def reader(self):
     while True:
       d = self.q.get()
-      print("DEBUG qsize=",self.q.qsize())
+      #print("DEBUG qsize=",self.q.qsize())
       if d == None:
         break
       with self.lock:
@@ -47,7 +47,7 @@ class Oriental(Actuator):
       if "{0}>".format(i) in ret:
         self.num_device = i
         motors = ['A', 'B', 'C', 'D']
-        print "Motor connected to port {} is {}".format(self.port, motors[i-1])
+        print("Motor connected to port {} is {}".format(self.port, motors[i-1]))
         break
     self.q = Queue()
     self.lock = Lock()
@@ -120,6 +120,6 @@ class Oriental(Actuator):
     try:
       ActuatorPos = float(ActuatorPos)
     except ValueError:
-      print "PositionReadingError"
+      print("PositionReadingError")
       return 0
     return ActuatorPos

@@ -1,8 +1,8 @@
 # coding: utf-8
 
 import threading
-from Queue import Queue
-from Tkinter import Tk, Label
+from queue import Queue
+from tkinter import Tk, Label
 import numpy as np
 
 from .masterblock import MasterBlock
@@ -68,7 +68,7 @@ class Dashboard(MasterBlock):
     Main loop.
     """
     if not self.labels:
-      self.labels = self.inputs[0].recv(blocking=True).keys()
+      self.labels = list(self.inputs[0].recv(blocking=True).keys())
       self.nb_display_values = len(self.labels)
     dash_thread = threading.Thread(target=self.Dashboard,
                                    args=(self.labels, self.nb_digits,
@@ -79,9 +79,9 @@ class Dashboard(MasterBlock):
     while True:
       data_received = self.inputs[0].recv(blocking=True)
       if len(self.labels) == len(data_received):
-        time = np.mean(data_received.values()[0])
-        values = [np.mean(data_received.values()[label]) for label in
-                  xrange(1, self.nb_display_values)]
+        time = np.mean(list(data_received.values())[0])
+        values = [np.mean(list(data_received.values())[label]) for label in
+                  range(1, self.nb_display_values)]
         list_to_show.append(time)
         list_to_show.extend(values)
       else:

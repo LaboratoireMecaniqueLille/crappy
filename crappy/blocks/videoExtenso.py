@@ -1,5 +1,5 @@
 ﻿# coding: utf-8
-from __future__ import print_function
+
 
 import cv2
 import sys
@@ -59,7 +59,7 @@ class Video_extenso(MasterBlock):
       self.ve.stop_tracking()
       raise
     if self.show_image:
-      boxes = map(lambda r: r['bbox'],self.ve.spot_list)
+      boxes = [r['bbox'] for r in self.ve.spot_list]
       for miny,minx,maxy,maxx in boxes:
         img[miny,minx:maxx] = 255
         img[maxy,minx:maxx] = 255
@@ -76,7 +76,7 @@ class Video_extenso(MasterBlock):
         self.last_fps_loops = self.loops
 
 
-    centers = map(lambda r: (r['y'],r['x']),self.ve.spot_list)
+    centers = [(r['y'],r['x']) for r in self.ve.spot_list]
     self.send([t-self.t0,centers]+d)
 
 

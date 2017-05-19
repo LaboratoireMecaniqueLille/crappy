@@ -1,5 +1,5 @@
 #coding: utf-8
-from __future__ import print_function,division
+
 
 from time import time
 
@@ -56,7 +56,7 @@ class Generator(MasterBlock):
     self.path = path
     assert all([hasattr(generator_path,d['type']) for d in self.path]),\
         "Invalid path in signal generator:"\
-        +str(filter(lambda s: not hasattr(generator_path,s['type']),self.path))
+        +str([s for s in self.path if not hasattr(generator_path,s['type'])])
     self.labels = ['t(s)',self.cmd_label,self.cycle_label]
 
   def prepare(self):

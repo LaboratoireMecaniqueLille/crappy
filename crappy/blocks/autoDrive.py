@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function, division
+
 from time import time
 
 from .masterblock import MasterBlock
@@ -32,7 +32,7 @@ class AutoDrive(MasterBlock):
   def get_center(self,data):
     l = data['Coord(px)']
     i = 0 if self.direction[0].lower() == 'y' else 1
-    l = map(lambda x: x[i],l)
+    l = [x[i] for x in l]
     return (max(l)+min(l))/2
 
   def prepare(self):

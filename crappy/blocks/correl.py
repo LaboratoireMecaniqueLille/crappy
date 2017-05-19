@@ -32,8 +32,8 @@ class Correl(MasterBlock):
       try:
         self.Nfields = len(kwargs.get("fields"))
       except TypeError:
-        print "Error: Correl needs to know the number of fields at init \
-with fields=(.,.) or Nfields=k"
+        print("Error: Correl needs to know the number of fields at init \
+with fields=(.,.) or Nfields=k")
         raise NameError('Missing fields')
 
     # Creating the tuple of labels (to name the outputs)
@@ -92,7 +92,7 @@ with fields=(.,.) or Nfields=k"
     while True:
       if self.verbose:
         t1 = time()
-        print "[Correl block] processed", nLoops / (t1 - t2), "ips"
+        print("[Correl block] processed", nLoops / (t1 - t2), "ips")
         t2 = t1
       for i in range(nLoops):
         self.loops += 1

@@ -1,5 +1,5 @@
 # coding: utf-8
-from __future__ import print_function,division
+
 
 from time import time,sleep
 
@@ -151,7 +151,7 @@ class Cam_setting(object):
     return self.__str__()
 
 
-class Camera(object):
+class Camera(object, metaclass=MetaCam):
   """This class represents a camera sensor. It may have settings: they
   represent all that can be set on the camera: height, width, exposure, AEAG,
   external trigger, etc...
@@ -161,7 +161,6 @@ class Camera(object):
   using myinstance.setting = stuff
   It will automatically check the validity and try to set it. (see Cam_setting)
   """
-  __metaclass__ = MetaCam # The magic happens here!
 
   def __init__(self):
     """Don't forget to call this __init__ in the children or __getattr__ will
@@ -193,7 +192,7 @@ class Camera(object):
   @property
   def available_settings(self):
     """Returns a list of available settings"""
-    return map(lambda x: x.name,self.settings.values())+["max_fps"]
+    return [x.name for x in list(self.settings.values())]+["max_fps"]
 
   @property
   def settings_dict(self):
@@ -226,7 +225,7 @@ class Camera(object):
       else:
         #print(s,'is already set to',self.settings[s].default)
         pass
-    for k,v in kwargs.iteritems():
+    for k,v in kwargs.items():
       setattr(self,k,v)
     #print('DEBUG====ENDset_all')
 

@@ -1,5 +1,5 @@
 # Link class. All connection between Blocks should be made with this.
-from __future__ import print_function
+
 
 from multiprocessing import Pipe
 import copy
@@ -37,7 +37,7 @@ class MethodThread(Thread):
   def run(self):
     try:
       self.result = self.target(*self.args, **self.kwargs)
-    except Exception, e:
+    except Exception as e:
       self.exception = e
     except:
       self.exception = Exception()

@@ -1,5 +1,5 @@
 #coding: utf-8
-from __future__ import print_function
+
 
 from .masterblock import MasterBlock
 from ..inout import inout_list,in_list,out_list
@@ -46,7 +46,7 @@ class IOBlock(MasterBlock):
     self.device_kwargs = kwargs
 
   def prepare(self):
-    self.to_get = range(len(self.inputs))
+    self.to_get = list(range(len(self.inputs)))
     if self.trigger is not None:
       self.to_get.remove(self.trigger)
     self.mode = 'r' if self.outputs else ''

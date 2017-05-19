@@ -1,7 +1,7 @@
 # coding: utf-8
-from __future__ import division,print_function
 
-import Tkinter as tk
+
+import tkinter as tk
 from PIL import ImageTk,Image
 import cv2
 from .cameraConfig import Camera_config
@@ -37,7 +37,7 @@ class VE_config(Camera_config):
                                   self.select_box[0],self.select_box[1])
     self.select_box = (-1,-1,-1,-1)
     if hasattr(self.ve,"spot_list") and len(self.ve.spot_list) > 0:
-      self.boxes = map(lambda x:x['bbox'],self.ve.spot_list)
+      self.boxes = [x['bbox'] for x in self.ve.spot_list]
     else:
       self.boxes = None
 

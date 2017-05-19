@@ -1,5 +1,5 @@
 #coding: utf-8
-from __future__ import print_function,division
+
 
 from multiprocessing import Process, Pipe
 import numpy as np
@@ -86,9 +86,9 @@ The basic VideoExtenso class:
     #bw[0,:] = bw[-1,:] = bw[:,0] = bw[:,-1] = -1
     l = regionprops(bw)
     # Remove the regions that are clearly not spots
-    l = filter(lambda r:r.solidity > .8 and r.eccentricity < .95,l)
+    l = [r for r in l if r.solidity > .8 and r.eccentricity < .95]
     # Remove the too small regions (150 is reeaally tiny)
-    l = filter(lambda r:r.area > 150,l)
+    l = [r for r in l if r.area > 150]
     l = sorted(l,key=lambda r:r.area,reverse=True)
     i = 0
     while i < len(l)-1:
@@ -187,8 +187,7 @@ The basic VideoExtenso class:
       l.remove(s)
       # Please excuse me for the following line,
       # understand: "if this box overlaps any existing box"
-      if any(map(lambda (a,b):overlapping(a,b['bbox']),
-                 zip([r['bbox']]*len(l),l))):
+      if any([overlapping(a_b[0],a_b[1]['bbox']) for a_b in zip([r['bbox']]*len(l),l)]):
         if self.safe_mode:
           print("Overlapping!")
           self.stop_tracking()

@@ -1,5 +1,5 @@
 # coding: utf-8
-from __future__ import print_function,division
+
 
 from sys import platform
 from multiprocessing import Process, Pipe
@@ -62,7 +62,7 @@ class MasterBlock(Process):
     self.in_process = False  # To know if we are in the process or not
 
   def __new__(cls, *args, **kwargs):
-    instance = super(MasterBlock, cls).__new__(cls, *args, **kwargs)
+    instance = super().__new__(cls)
     MasterBlock.instances.append(instance)
     return instance
 
@@ -98,7 +98,7 @@ class MasterBlock(Process):
 
   @classmethod
   def get_status(cls):
-    return map(lambda x: x.status, cls.instances)
+    return [x.status for x in cls.instances]
 
   @classmethod
   def all_are(cls, s):
@@ -216,7 +216,7 @@ class MasterBlock(Process):
     """
     self._MB_loops += 1
     t = time()
-    if hasattr(self,'freq') and self.freq > 0:
+    if hasattr(self,'freq') and self.freq:
       d = t-self._MB_last_t+1/self.freq
       while d > 0:
         t = time()
@@ -279,7 +279,7 @@ class MasterBlock(Process):
     if isinstance(data, dict):
       pass
     elif isinstance(data, list):
-      data = OrderedDict(zip(self.labels, data))
+      data = OrderedDict(list(zip(self.labels, data)))
     elif data == 'stop':
       pass
     else:
@@ -346,6 +346,8 @@ class MasterBlock(Process):
     but returns None instantly"""
     if num is None:
       num = range(len(self.inputs))
+    elif not isinstance(num,list):
+      num = [num]
     for n in num:
       self.inputs[n].clear()
 

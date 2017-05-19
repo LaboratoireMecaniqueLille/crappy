@@ -1,5 +1,5 @@
 # coding: utf-8
-from __future__ import print_function,division
+
 
 from .._global import DefinitionError
 
@@ -31,8 +31,7 @@ class MetaActuator(type):
 
     MetaActuator.classes[name] = cls
 
-class Actuator(object):
-  __metaclass__ = MetaActuator
+class Actuator(object, metaclass=MetaActuator):
   def __init__(self):
     pass
 

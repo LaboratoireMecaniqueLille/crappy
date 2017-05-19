@@ -1,5 +1,5 @@
 # coding: utf-8
-from __future__ import print_function,division
+
 
 from .camera import Camera
 from time import time,sleep

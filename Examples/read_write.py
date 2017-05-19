@@ -1,11 +1,13 @@
 #coding: utf-8
-from __future__ import absolute_import
+#import matplotlib
+#matplotlib.use('Agg')
+
 import crappy
 
 
 for i,c in enumerate(crappy.inout.inout_list):
-  print i,c
-name = crappy.inout.inout_list.keys()[int(raw_input(
+  print(i,c)
+name = list(crappy.inout.inout_list.keys())[int(input(
                     "What board do you want to use ?> "))]
 
 sg = crappy.blocks.Generator([{'type':'sine','freq':.5,'amplitude':1,

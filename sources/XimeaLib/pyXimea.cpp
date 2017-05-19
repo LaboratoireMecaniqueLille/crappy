@@ -6,9 +6,8 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
-    
 CaptureCAM_XIMEA* capt;
 PyObject *myDict = PyDict_New();
 PyObject *rslt = PyTuple_New(2);
@@ -159,23 +158,23 @@ VideoCapture_getMeta()
 	PyDict_SetItemString(myDict, "nframe", Py_BuildValue("I",capt->image.nframe));
 	PyDict_SetItemString(myDict, "AbsoluteOffsetX", Py_BuildValue("I",capt->image.AbsoluteOffsetX));
 	PyDict_SetItemString(myDict, "AbsoluteOffsetY", Py_BuildValue("I",capt->image.AbsoluteOffsetY));
-	
+
 	PyObject *floatObj = PyFloat_FromDouble(capt->image.tsSec);
-	PyObject *timeTuple = Py_BuildValue("(O)", floatObj);  
+	PyObject *timeTuple = Py_BuildValue("(O)", floatObj);
 	PyObject *dateTime = PyDateTime_FromTimestamp(timeTuple);
 	PyDict_SetItemString(myDict, "tsSec", dateTime);
         Py_CLEAR(floatObj);
         Py_CLEAR(timeTuple);
         Py_CLEAR(dateTime);
-	
+
 	PyObject *floatObj1 = PyFloat_FromDouble(capt->image.tsUSec);
-	PyObject *timeTuple1 = Py_BuildValue("(O)", floatObj1);  
+	PyObject *timeTuple1 = Py_BuildValue("(O)", floatObj1);
 	PyObject *dateTime1 = PyDateTime_FromTimestamp(timeTuple1);
 	PyDict_SetItemString(myDict, "tsUSec", dateTime1);
 	Py_CLEAR(floatObj1);
         Py_CLEAR(timeTuple1);
         Py_CLEAR(dateTime1);
-        
+
 	return myDict;
 }
 
@@ -211,7 +210,7 @@ VideoCapture_set(VideoCapture *self, PyObject *args)
         ret = Py_True;
         Py_INCREF(ret);
         return ret;
-    }else{ 
+    }else{
         ret = Py_False;
         Py_INCREF(ret);
         return ret;
@@ -232,7 +231,7 @@ VideoCapture_dealloc(VideoCapture* self)
 {
     Py_XDECREF(self->myarray);
     VideoCapture_release();
-    self->ob_type->tp_free((PyObject*)self);
+    //self->ob_type->tp_free((PyObject*)self);
 }
 
 static PyObject *
@@ -255,14 +254,14 @@ static int
 VideoCapture_init(VideoCapture *self, PyObject *args, PyObject *kwds)
 {
     static char *kwlist[] = {"device", "device_path", NULL};
-    
+
     self->device = -1;
     self->device_path = "";
     if (! PyArg_ParseTupleAndKeywords(args, kwds, "|is", kwlist, &self->device, &self->device_path)){
             return NULL;
     }
     capt = new CaptureCAM_XIMEA();
-    
+
     if(self->device != -1){
         VideoCapture_open(self->device);
     }else{
@@ -273,7 +272,7 @@ VideoCapture_init(VideoCapture *self, PyObject *args, PyObject *kwds)
 
 
 static PyMemberDef VideoCapture_members[] = {
-    {NULL} 
+    {NULL}
 };
 
 
@@ -294,8 +293,7 @@ static PyMethodDef VideoCapture_methods[] = {
 };
 
 static PyTypeObject VideoCaptureType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
+    PyVarObject_HEAD_INIT(NULL,0)
     "VideoCapture.VideoCapture",             /*tp_name*/
     sizeof(VideoCapture),             /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -363,7 +361,7 @@ void set_map_to_export(){
 	my_map.insert(make_pair("CAP_PROP_XI_AEAG_LEVEL", 419));// Average intensity of output signal AEAG should achieve(in %)
 	my_map.insert(make_pair("CAP_PROP_XI_TIMEOUT", 420));// Image capture timeout in milliseconds
 	my_map.insert(make_pair("CAP_PROP_XI_TIMESTAMP", 421));   // Time the image has been taken in second accurate at microsecond
-	my_map.insert(make_pair("CAP_PROP_XI_FRAME_NUMBER", 422));// Frame number (reset by exposure, gain, downsampling change, auto exposure (AEAG)) 
+	my_map.insert(make_pair("CAP_PROP_XI_FRAME_NUMBER", 422));// Frame number (reset by exposure, gain, downsampling change, auto exposure (AEAG))
 	my_map.insert(make_pair("CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH", 423));// Number of byte of the camera (mandatory for data packing)
 	my_map.insert(make_pair("CAP_PROP_XI_DATA_PACKING", 424));// Data packing allow to transfert efficiently image with depth over 8 bits
 	my_map.insert(make_pair("CAP_PROP_GAIN",14));
@@ -374,8 +372,22 @@ void set_map_to_export(){
 	my_map.insert(make_pair("CAP_PROP_FPS",5));
 }
 
-PyMODINIT_FUNC
-initximeaModule(void) 
+
+static struct PyModuleDef moddef = {
+  PyModuleDef_HEAD_INIT,
+  "ximeaModule",
+  "Module that allows the use of Ximea camera",
+  -1,
+  module_methods,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+};
+
+
+
+PyMODINIT_FUNC PyInit_ximeaModule(void)
 {
 	try{
     PyObject* m;
@@ -384,8 +396,7 @@ initximeaModule(void)
     if (PyType_Ready(&VideoCaptureType) < 0)
 		cout << "unable to install ximea module" << endl;
 
-    m = Py_InitModule3("ximeaModule", module_methods,
-                       "Module that allows the use of Ximea camera");
+    m = PyModule_Create(&moddef);
 
     if (m == NULL)
 		cout << ( "unable to install ximea module" ) << endl;
@@ -404,12 +415,13 @@ initximeaModule(void)
 
     Py_INCREF(&VideoCaptureType);
     PyModule_AddObject(m, "VideoCapture", (PyObject *)&VideoCaptureType);
-    } 
-    catch ( const std::exception & e ) 
-    { 
-        std::cerr << e.what(); 
-    } 
+    return m;
+    }
+    catch ( const std::exception & e )
+    {
+        std::cerr << e.what();
+    }
 }
 #ifdef __cplusplus
 }
-#endif 
+#endif

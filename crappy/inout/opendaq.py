@@ -1,5 +1,5 @@
 # coding: utf-8
-from __future__ import print_function,absolute_import,division
+
 
 from time import time
 
@@ -83,7 +83,7 @@ class Opendaq(InOut):
   def get_stream(self):
     if not self.stream_started:
       self.start_stream()
-    return self.generator.next()
+    return next(self.generator)
 
   def set_cmd(self,v):
     self.handle.set_analog(v*self.out_gain+self.out_offset)

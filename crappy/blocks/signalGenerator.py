@@ -11,6 +11,7 @@ from .masterblock import MasterBlock
 
 class SignalGenerator(MasterBlock):
   """
+  WARNING: deprecated! Use Generator instead
   Generate a signal.
   """
 
@@ -98,7 +99,7 @@ class SignalGenerator(MasterBlock):
       t_step = self.t0
       while self.step < self.nb_step:
         current_step = self.path[self.step]
-        print "current step : ", self.step
+        print("current step : ", self.step)
         try:
           self.waveform = current_step["waveform"]
           if self.waveform == 'hold':
@@ -119,7 +120,7 @@ class SignalGenerator(MasterBlock):
             # However, it must be given for the first ramp
             # For now, continuity is guaranteed only between ramps!
             if 'origin' in current_step or self.step == 0:
-	      self.origin = current_step['origin']
+              self.origin = current_step['origin']
           elif self.waveform == 'goto':
             self.direction = current_step["direction"]
             self.value = current_step["value"]
@@ -136,7 +137,7 @@ class SignalGenerator(MasterBlock):
             self.freq = current_step["freq"]
 
         except KeyError as e:
-          print "You didn't define parameter %s for step number %s" % (e, self.step)
+          print("You didn't define parameter %s for step number %s" % (e, self.step))
           raise
 
         if self.waveform == "goto":  # signal defined by a lower and upper limit
@@ -148,7 +149,7 @@ class SignalGenerator(MasterBlock):
               timer = time.time()
             last_t = time.time()
             recv = self.get_last()
-            Data = pd.DataFrame([recv.values()],columns=recv.keys())
+            Data = pd.DataFrame([list(recv.values())],columns=list(recv.keys()))
             last_upper = (Data[self.value[1]]).last_valid_index()
             last_lower = (Data[self.value[1]]).last_valid_index()
             first_lower = (Data[self.value[1]]).first_valid_index()
@@ -159,7 +160,7 @@ class SignalGenerator(MasterBlock):
               cycle = 1
             if last_upper != first_upper and last_lower != first_lower:  # clean old data
               Data = Data[min(last_upper, last_lower):]
-            Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha, cycle]))
+            Array = OrderedDict(list(zip(self.labels, [last_t - self.t0, alpha, cycle])))
             self.send(Array)
           self.step += 1
           first_of_step = True
@@ -174,7 +175,7 @@ class SignalGenerator(MasterBlock):
               timer = time.time()
             last_t = time.time()
             recv = self.get_last()
-            Data = pd.DataFrame([recv.values()],columns=recv.keys())
+            Data = pd.DataFrame([list(recv.values())],columns=list(recv.keys()))
 
             last_upper = (Data[self.upper_limit[1]]).last_valid_index()
             last_lower = (Data[self.lower_limit[1]]).last_valid_index()
@@ -202,7 +203,7 @@ class SignalGenerator(MasterBlock):
                 cycle += 0.5
             if last_upper != first_upper and last_lower != first_lower:  # clean old data
               Data = Data[min(last_upper, last_lower):t_data]
-            Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha * self.gain, cycle]))
+            Array = OrderedDict(list(zip(self.labels, [last_t - self.t0, alpha * self.gain, cycle])))
             self.send(Array)
           self.step += 1
           first_of_step = True
@@ -218,7 +219,7 @@ class SignalGenerator(MasterBlock):
               time.sleep(-(timer-last_t - 1. / (self.send_freq))/10.)
               timer = time.time()
             last_t = timer
-            Data = pd.DataFrame([recv.values()],columns=recv.keys())
+            Data = pd.DataFrame([list(recv.values())],columns=list(recv.keys()))
 
             last_upper = (Data[self.upper_limit[1]]).last_valid_index()
             last_lower = (Data[self.lower_limit[1]]).last_valid_index()
@@ -238,19 +239,19 @@ class SignalGenerator(MasterBlock):
               cycle = time.time() - t_step
             if alpha > 0:
               if Data[self.upper_limit[1]][last_upper] > self.upper_limit[0]:  # if value > high_limit
-		self.origin = alpha * self.gain * (last_t-t_cycle)+self.origin
+                self.origin = alpha * self.gain * (last_t-t_cycle)+self.origin
                 alpha = -1
                 cycle += 0.5
                 t_cycle = time.time()
             elif alpha < 0:
               if Data[self.lower_limit[1]][last_lower] < self.lower_limit[0]:  # if value < low_limit
-		self.origin = alpha * self.gain * (last_t-t_cycle)+self.origin
+                self.origin = alpha * self.gain * (last_t-t_cycle)+self.origin
                 alpha = 1
                 cycle += 0.5
                 t_cycle = time.time()
             if last_upper != first_upper and last_lower != first_lower:  # clean old data
               Data = Data[min(last_upper, last_lower):]
-            Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha * self.gain * (last_t-t_cycle)+self.origin, cycle]))
+            Array = OrderedDict(list(zip(self.labels, [last_t - self.t0, alpha * self.gain * (last_t-t_cycle)+self.origin, cycle])))
             self.send(Array)
           self.step += 1
           first_of_step = True
@@ -264,7 +265,7 @@ class SignalGenerator(MasterBlock):
               timer = time.time()
             last_t = time.time()
             recv = self.get_last()
-            Data = pd.DataFrame([recv.values()],columns=recv.keys())
+            Data = pd.DataFrame([list(recv.values())],columns=list(recv.keys()))
 
             last_t = time.time()
             last_upper = (Data[self.upper_limit[1]]).last_valid_index()
@@ -282,7 +283,7 @@ class SignalGenerator(MasterBlock):
             if last_upper != first_upper and last_lower != first_lower:  # clean old data
               Data = Data[min(last_upper, last_lower):]
             # Array=pd.DataFrame([[last_t-self.t0,alpha*self.gain,cycle]],columns=self.labels)
-            Array = OrderedDict(zip(self.labels, [last_t - self.t0, alpha * self.gain, cycle]))
+            Array = OrderedDict(list(zip(self.labels, [last_t - self.t0, alpha * self.gain, cycle])))
             self.send(Array)
           self.step += 1
           first_of_step = True
@@ -307,7 +308,7 @@ class SignalGenerator(MasterBlock):
                 self.alpha = self.origin
               else:
                 pass
-            Array = OrderedDict(zip(self.labels, [last_t - self.t0, self.alpha, 0]))
+            Array = OrderedDict(list(zip(self.labels, [last_t - self.t0, self.alpha, 0])))
             self.send(Array)
           self.step += 1
           first_of_step = True
@@ -333,7 +334,7 @@ class SignalGenerator(MasterBlock):
             else:
               raise Exception("invalid waveform : use sinus,triangle or square")
             cycle = 0.5 * np.floor(2 * ((t - t_step) * self.freq + 0.25))
-            Array = OrderedDict(zip(self.labels, [t - self.t0, self.alpha, cycle]))
+            Array = OrderedDict(list(zip(self.labels, [t - self.t0, self.alpha, cycle])))
             self.send(Array)
           self.step += 1
           t_step = time.time()
@@ -344,5 +345,5 @@ class SignalGenerator(MasterBlock):
     except (Exception, KeyboardInterrupt) as e:
       exc_type, exc_obj, tb = sys.exc_info()
       lineno = tb.tb_lineno
-      print "Exception in SignalGenerator %s: %s line %s" % (os.getpid(), e, lineno)
+      print("Exception in SignalGenerator %s: %s line %s" % (os.getpid(), e, lineno))
       raise

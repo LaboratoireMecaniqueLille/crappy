@@ -1,9 +1,9 @@
 #coding: utf-8
 import serial
 from threading import Thread
-import Tkinter as tk
-import tkFont
-from Queue import Queue as Queue_threading, Empty
+import tkinter as tk
+import tkinter.font
+from queue import Queue as Queue_threading, Empty
 from time import time
 from collections import OrderedDict
 from multiprocessing import Process, Queue
@@ -45,7 +45,7 @@ class MonitorFrame(tk.Frame):
                                   relief="sunken",
                                   height=int(self.total_width / 10),
                                   width=int(self.total_width),
-                                  font=tkFont.Font(size=kwargs.get("fontsize",
+                                  font=tkinter.font.Font(size=kwargs.get("fontsize",
                                                                    13)))
 
     self.top_frame.grid(row=0)
@@ -75,16 +75,16 @@ class SubmitSerialFrame(tk.Frame):
 
     self.input_txt = tk.Entry(self,
                               width=self.total_width * 5 / 10,
-                              font=tkFont.Font(size=kwargs.get("fontsize", 13)))
+                              font=tkinter.font.Font(size=kwargs.get("fontsize", 13)))
     self.submit_label = tk.Label(self, text='',
                                  width=1,
-                                 font=tkFont.Font(
+                                 font=tkinter.font.Font(
                                    size=kwargs.get("fontsize", 13)))
     self.submit_button = tk.Button(self,
                                    text='Submit',
                                    command=self.update_widgets,
                                    width=int(self.total_width * 0.5 / 10),
-                                   font=tkFont.Font(
+                                   font=tkinter.font.Font(
                                      size=kwargs.get("fontsize", 13)))
 
     self.input_txt.bind('<Return>', self.update_widgets)
@@ -328,8 +328,8 @@ class Arduino(InOut):
           else:
             return time(), retrieved_from_arduino
       except:
-        print '[arduino] Skipped data at %.3f sec (Python time)' % (time() -
-                                                                    self.handler_t0)
+        print('[arduino] Skipped data at %.3f sec (Python time)' % (time() -
+                                                                    self.handler_t0))
         continue
 
   def close(self):

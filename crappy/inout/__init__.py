@@ -1,5 +1,5 @@
 #coding: utf-8
-from __future__ import absolute_import
+
 
 from sys import platform
 from .._global import NotInstalled,NotSupported
@@ -21,7 +21,7 @@ except ImportError:
   Labjack_ue9 = NotInstalled('Labjack_ue9')
 try:
   from .opendaq import Opendaq
-except ImportError:
+except Exception:
   openDAQ = NotInstalled('OpenDAQ')
 
 if 'win' in platform:

@@ -1,5 +1,5 @@
 # coding: utf-8
-from __future__ import print_function,division
+
 
 from .camera import Camera
 from . import clModule as cl
@@ -20,16 +20,16 @@ class CLCamera(Camera):
     self.config_file = config_file
     self.camera_type = camera_type
     if config_file is None:
-      import Tkinter
-      import tkFileDialog
-      root = Tkinter.Tk()
+      import tkinter
+      import tkinter.filedialog
+      root = tkinter.Tk()
       root.withdraw()
-      self.config_file = tkFileDialog.askopenfilename(parent=root)
+      self.config_file = tkinter.filedialog.askopenfilename(parent=root)
       root.destroy()
     if self.camera_type is None and self.config_file:
       with open(self.config_file,'r') as f:
         r = f.readlines()
-      r = filter(lambda s:s[:5]=="Typ='",r)
+      r = [s for s in r if s[:5]=="Typ='"]
       if len(r) != 0:
         self.camera_type = r[0][5:-3]
     if self.camera_type is None:
@@ -85,7 +85,7 @@ class CLCamera(Camera):
         if self.config_file:
           with open(self.config_file,'r') as f:
             r = f.readlines()
-          r = filter(lambda s:s[:10]=="FG_FORMAT=",r)
+          r = [s for s in r if s[:10]=="FG_FORMAT="]
           if len(r) != 0:
             f = int(r[0].split['='][1])
           else:

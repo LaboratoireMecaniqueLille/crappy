@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 np.set_printoptions(threshold='nan', linewidth=500)
-from collections import OrderedDict
+from collections import OrderedDict as OD
 
 
 class Grapher(MasterBlock):
@@ -66,7 +66,7 @@ class Grapher(MasterBlock):
     save_number = 0
     fig = plt.figure(figsize=self.window_size)
     ax = fig.add_subplot(111)
-    for i in xrange(self.nbr_graphs):  # init lines
+    for i in range(self.nbr_graphs):  # init lines
       if i == 0:
         li = ax.plot(np.arange(1), np.zeros(1))
       else:
@@ -80,7 +80,7 @@ class Grapher(MasterBlock):
 
     while True:
       Data = self.inputs[0].recv_delay(self.delay)  # recv data
-      legend_ = [self.args[i][1] for i in xrange(self.nbr_graphs)]
+      legend_ = [self.args[i][1] for i in range(self.nbr_graphs)]
       if save_number > 0:  # lose the first round of data
         if save_number == 1:  # init
           var = Data
@@ -88,16 +88,16 @@ class Grapher(MasterBlock):
                     ncol=len(legend_), mode="expand", borderaxespad=1)
         elif save_number <= self.len_graph:  # stack values
           try:
-            var = OrderedDict(zip(var.keys(), [var.values()[t]
-                        + Data.values()[t] for t in xrange(len(var.keys()))]))
+            var = OD(list(zip(list(var.keys()), [list(var.values())[t]
+              + list(Data.values())[t] for t in range(len(list(var.keys())))])))
           except TypeError:
-            var = OrderedDict(zip(var.keys(), [(var.values()[t],)
-                     + (Data.values()[t],) for t in xrange(len(var.keys()))]))
+            var = OD(list(zip(list(var.keys()), [(list(var.values())[t],)
+           + (list(Data.values())[t],) for t in range(len(list(var.keys())))])))
         else:  # delete old value and add new ones
-          var = OrderedDict(zip(var.keys(),
-            [var.values()[t][np.shape(Data.values())[1]:]
-              + Data.values()[t] for t in xrange(len(var.keys()))]))
-        for i in xrange(self.nbr_graphs):  # update lines
+          var = OD(list(zip(list(var.keys()),
+            [list(var.values())[t][np.shape(list(Data.values()))[1]:]
+              + list(Data.values())[t] for t in range(len(list(var.keys())))])))
+        for i in range(self.nbr_graphs):  # update lines
           li[i].set_xdata(var[self.args[i][0]])
           li[i].set_ydata(var[self.args[i][1]])
       ax.relim()
@@ -116,9 +116,9 @@ class Grapher(MasterBlock):
 
     while True:
       Data = self.inputs[0].recv_delay(self.delay)  # recv data
-      legend_ = [self.args[i][1] for i in xrange(self.nbr_graphs)]
+      legend_ = [self.args[i][1] for i in range(self.nbr_graphs)]
       if first_round:  # init at first round
-        for i in xrange(self.nbr_graphs):
+        for i in range(self.nbr_graphs):
           if i == 0:
             li = ax.plot(
               Data[self.args[i][0]], Data[self.args[i][1]],
@@ -133,7 +133,7 @@ class Grapher(MasterBlock):
         fig.canvas.draw()
         first_round = False
       else:  # not first round anymore
-        for i in xrange(self.nbr_graphs):
+        for i in range(self.nbr_graphs):
           data_x = li[i].get_xdata()
           data_y = li[i].get_ydata()
           if len(data_x) >= 20000:

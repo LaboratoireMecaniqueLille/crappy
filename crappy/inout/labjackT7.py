@@ -1,11 +1,11 @@
 # coding: utf-8
 
-from __future__ import print_function,absolute_import,division
+
 from labjack import ljm
 from time import time
 from threading import Thread
-from Queue import Queue
-from Tkinter import Tk, Label
+from queue import Queue
+from tkinter import Tk, Label
 
 from .inout import InOut
 
@@ -63,7 +63,7 @@ def var_tester(var, nb_channels):
     "Parameter definition Error: list is" \
     " not the same length as nb_channels."
   assert False not in [isinstance(var[i], (int, float)) for i in
-                       xrange(nb_channels)], \
+                       range(nb_channels)], \
     str(var) + "Error: parameter should be int or float."
   return var
 
@@ -200,7 +200,7 @@ class Labjack_t7(InOut):
     a_names = []
     a_values = []
     for i,chan in enumerate(self.channels):
-      names,values = zip(*to_write)
+      names,values = list(zip(*to_write))
       names = [chan+n for n in names]
       values = [v[i] if isinstance(v,list) else v for v in values]
       a_names.extend(names)
@@ -233,7 +233,7 @@ class Labjack_t7(InOut):
     a_names = []
     a_values = []
     for i,chan in enumerate(self.channels):
-      names,values = zip(*to_write)
+      names,values = list(zip(*to_write))
       names = [chan+n for n in names]
       values = [v[i] if isinstance(v,list) else v for v in values]
       a_names.extend(names)

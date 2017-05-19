@@ -1,5 +1,5 @@
 # coding:utf-8
-from __future__ import division, print_function
+
 
 import warnings
 from math import ceil
@@ -683,7 +683,7 @@ class Correl:
         unknown.append(k)
     if len(unknown) != 0:
       warnings.warn("Unrecognized parameter" + ('s: ' + str(unknown) if
-                                                len(unknown) > 1 else ': ' + unknown[0]), SyntaxWarning)
+                    len(unknown) > 1 else ': ' + unknown[0]), SyntaxWarning)
     self.verbose = kwargs.get("verbose", 0)
     self.debug(3, "You set the verbose level to the maximum.\n\
 It may help finding bugs or tracking errors but it may also \

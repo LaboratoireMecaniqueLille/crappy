@@ -93,8 +93,8 @@ class Biotens(Actuator):
     while position_si != last_position_si:
       last_position_si = position_si
       position_si = self.get_position()
-      print "position : ", position_si
-    print "init done"
+      print("position : ", position_si)
+    print("init done")
     self.stop()
     # time.sleep(1)
     # initializes the count when the motors is out.

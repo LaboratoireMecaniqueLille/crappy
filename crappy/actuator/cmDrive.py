@@ -32,11 +32,9 @@ class CM_drive(Actuator):
     it to set displacement to zero"""
     self.ser.close()
     self.ser.open()  # open serial port
-    import tkMessageBox
-    result = tkMessageBox.askyesno('resetZero',
-             'Warning! The recorded trajectories will be erased, continue?')
+    result = input("Reset the system ? This will erase recorded trajectories")
     # send request to the user if he would reset the system
-    if result is True:
+    if result.lower()[0] in ['y','o']:
       # send 'DIS' ASCII characters to disable the motor
       self.ser.write('DIS\r')
       # send 'SAVE' ASCII characters to SAVE servostar values
@@ -46,7 +44,7 @@ class CM_drive(Actuator):
       k = 0
       # print different stages of booting
       while k < 24:
-        print self.ser.readline()
+        print(self.ser.readline())
         k += 1
       # self.ser.close() #close serial connection
       return 1
@@ -73,7 +71,7 @@ class CM_drive(Actuator):
       self.ser.write('SL ' + str(int(speed)) + '\r')
       self.ser.read(self.ser.inWaiting())
     else:
-      print 'Maximum speed exeeded'
+      print('Maximum speed exeeded')
     self.ser.close()  # close serial connection
 
   def set_position(self, position, speed, motion_type='relative'):
@@ -110,7 +108,7 @@ class CM_drive(Actuator):
     self.ser.write('PR P \r')  # send 'PFB' ASCII characters to request the location of the motor
     pfb = self.ser.readline()  # read serial data from the buffer
     pfb1 = self.ser.readline()  # read serial data from the buffer
-    print '%s %i' % (pfb, (int(pfb1)))  # print location
-    print '\n'
+    print('%s %i' % (pfb, (int(pfb1))))  # print location
+    print('\n')
     self.ser.close()  # close serial connection
     return int(pfb1)

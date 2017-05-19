@@ -1,6 +1,6 @@
 #coding: utf-8
 
-from __future__ import print_function,division
+
 
 from time import time
 
@@ -71,9 +71,7 @@ class MetaIO(type):
               name+" needs at least get_data or set_cmd method")
       MetaIO.classes[name] = cls
 
-class InOut(object):
-  __metaclass__ = MetaIO
-
+class InOut(object, metaclass=MetaIO):
   @classmethod
   def is_input(cls):
     return hasattr(cls,'get_data')

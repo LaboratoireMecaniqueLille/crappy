@@ -33,7 +33,7 @@ ximeaModule = pyFgenModule = clModule = None
 #extentions.append(helloModule)
 
 if platform.system() == "Linux":
-    execfile("./crappy/__version__.py")  # read the current version in version.py
+    exec(compile(open("./crappy/__version__.py").read(), "./crappy/__version__.py", 'exec'))  # read the current version in version.py
     ximeaModule = Extension('camera.ximeaModule',
                             sources=['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'],
                             extra_compile_args=["-std=c++11"],
@@ -44,7 +44,7 @@ if platform.system() == "Linux":
       # Find the latest runtime version of SiliconSoftware install
       clPath = '/opt/SiliconSoftware/'+sorted(next(walk('/opt/SiliconSoftware/'))[1])[-1]+'/lib64/'
     except StopIteration:
-      print "WARNING: Silicon Software install could not be found, CameraLink won't be available."
+      print("WARNING: Silicon Software install could not be found, CameraLink won't be available.")
       # If the software is installed but not found, just set clPath manually in this file
       clPath = None
     if clPath:
@@ -58,18 +58,18 @@ if platform.system() == "Linux":
       if len(p.read()) != 0:
         extentions.append(clModule)
       else:
-        print "WARNING: cannot find menable kernel module, CameraLink module won't be available."
+        print("WARNING: cannot find menable kernel module, CameraLink module won't be available.")
     try:
         import comedi
         extentions.append(comediModule)
     except Exception as e:
-        print "WARNING: Cannot find comedi driver.", e
+        print("WARNING: Cannot find comedi driver.", e)
 
-    if raw_input("would you like to install ximea module? ([y]/n)?").lower() != "n":
+    if input("would you like to install ximea module? ([y]/n)?").lower() != "n":
         extentions.append(ximeaModule)
 
 if platform.system() == "Windows":
-    execfile(".\crappy\__version__.py")  # read the current version in version.py
+    exec(compile(open(".\crappy\__version__.py").read(), ".\crappy\__version__.py", 'exec'))  # read the current version in version.py
     pyFgenModule = Extension('sensor.pyFgenModule',
                              include_dirs=["c:\\python27\\Lib\\site-packages\\numpy\\core\\include",
                                            "C:\\Program Files (x86)\\IVI Foundation\\VISA\\WinNT\\include",
@@ -77,7 +77,7 @@ if platform.system() == "Windows":
                              sources=['sources/niFgen/pyFgen.cpp'], libraries=["niFgen"],
                              library_dirs=["C:\\Program Files\\IVI Foundation\\IVI\\Lib_x64\\msc"],
                              extra_compile_args=["/EHsc", "/WX"])
-    if raw_input("would you like to install pyFgen module? ([y]/n)") != "n":
+    if input("would you like to install pyFgen module? ([y]/n)") != "n":
         extentions.append(pyFgenModule)
     ximeaModule = Extension('sensor.ximeaModule',
                             include_dirs=["c:\\XIMEA\\API", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"],
@@ -95,13 +95,13 @@ if platform.system() == "Windows":
     if len(p.read()) != 0:
         extentions.append(ximeaModule)
     else:
-        print "Can't find Ximea driver,ximeaModule will not be compiled.\n"
+        print("Can't find Ximea driver,ximeaModule will not be compiled.\n")
 
     p = popen('driverquery /NH |findstr "me4"')
     if len(p.read()) != 0:
         extentions.append(clModule)
     else:
-        print "Can't find microEnable4 Device driver, clModule will not be compiled"
+        print("Can't find microEnable4 Device driver, clModule will not be compiled")
 
 setup(
     name='crappy',
