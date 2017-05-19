@@ -79,5 +79,9 @@ class Video_extenso(MasterBlock):
     centers = map(lambda r: (r['y'],r['x']),self.ve.spot_list)
     self.send([t-self.t0,centers]+d)
 
+  def finish(self):
+    self.ve.stop_tracking()
+    if self.show_image:
+      cv2.destroyAllWindows()
 
 
