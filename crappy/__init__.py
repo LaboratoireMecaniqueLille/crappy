@@ -6,6 +6,7 @@ from . import inout
 from . import tool
 from . import blocks
 from . import links
+from . import condition
 from .__version__ import __version__
 
 link = links.link
