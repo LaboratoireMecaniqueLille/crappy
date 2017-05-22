@@ -2,7 +2,6 @@
 
 
 from multiprocessing import Pipe
-import copy
 from time import time
 from threading import Thread
 
@@ -104,12 +103,6 @@ class Link(object):
       input_block.add_output(self)
       output_block.add_input(self)
 
-  def add_external_trigger(self, link_instance):
-    """Add an external trigger Link."""
-    self.external_trigger = link_instance
-    for cond in self.condition:
-      cond.external_trigger = link_instance
-
   def close(self):
     self.in_.close()
     self.out_.close()
@@ -146,11 +139,10 @@ class Link(object):
             value = cond.evaluate(value)
           else:
             value = cond(value)
+          if value is None:
+            break
         if value is not None:
           self.out_.send(value)
-    except KeyboardInterrupt:
-      print("Keyboard interrupt received in link: " % self.name)
-      raise
     except Exception as e:
       print("Exception in link %s : %s " % (self.name, e.message))
       if not self.out_.closed:

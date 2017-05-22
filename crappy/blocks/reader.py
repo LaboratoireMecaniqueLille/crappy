@@ -20,7 +20,7 @@ class Reader(MasterBlock):
   def loop(self):
     for i in self.inputs:
       d = i.recv_last()
-      if d:
+      if d is not None:
         s = ""
         if self.name:
           s += self.name+" "

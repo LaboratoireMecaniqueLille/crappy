@@ -35,7 +35,8 @@ class IOBlock(MasterBlock):
                         ('labels',['t(s)','1']),
                         ('cmd_labels',[]),
                         ('trigger',None),
-                        ('streamer',False)
+                        ('streamer',False),
+                        ('initial_cmd',0)
                         ]:
       if arg in kwargs:
         setattr(self,arg,kwargs[arg])
@@ -44,6 +45,8 @@ class IOBlock(MasterBlock):
         setattr(self,arg,default)
     self.device_name = name.capitalize()
     self.device_kwargs = kwargs
+    if not isinstance(self.initial_cmd,list):
+      self.initial_cmd = [self.initial_cmd]*len(self.cmd_labels)
 
   def prepare(self):
     self.to_get = list(range(len(self.inputs)))
@@ -62,6 +65,8 @@ class IOBlock(MasterBlock):
     elif self.mode == 'w':
       self.device = out_list[self.device_name](**self.device_kwargs)
     self.device.open()
+    if 'w' in self.mode:
+      self.device.set_cmd(*self.initial_cmd)
 
   def read(self):
     """Will read the device and send the data"""

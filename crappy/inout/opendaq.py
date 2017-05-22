@@ -1,9 +1,9 @@
 # coding: utf-8
 
 
-from time import time
+from time import time,sleep
 
-from opendaq import DAQ
+import opendaq
 
 from .inout import InOut
 
@@ -26,7 +26,8 @@ class Opendaq(InOut):
                         ('out_gain',1),
                         ('out_offset',0),
                         ('make_zero',True),
-                        ('mode','single')
+                        ('mode','single'),
+                        ('nsamples',20)
                         ]:
       if arg in kwargs:
         setattr(self,arg,kwargs[arg])
@@ -43,7 +44,7 @@ class Opendaq(InOut):
 
 
   def open(self):
-    self.handle = DAQ(self.port)
+    self.handle = opendaq.DAQ(self.port)
     if any(self.make_zero):
       off = self.eval_offset()
       for i,make_zero in enumerate(self.make_zero):
@@ -55,22 +56,36 @@ class Opendaq(InOut):
       self.init_stream()
 
   def init_stream(self):
-    self.stream_exp = self.handle.create_stream(mode=0,
+    self.stream_exp = self.handle.create_stream(mode=opendaq.ExpMode.ANALOG_IN,
                                                 period=1,
                                                 npoints=1,
                                                 continuous=True,
                                                 buffersize=1000)
 
-    self.stream_exp.analog_setup(pinput=self.channels,
-                                 ninput=self.negative_channel,
-                                 gain=self.input_gain,
-                                 nsamples=self.input_nsamples_per_read)
+    self.stream_exp.analog_setup(pinput=self.channels[0],
+                                 ninput=0,
+                                 gain=1,
+                                 nsamples=self.nsamples)
     self.generator = self.stream_grabber()
     self.stream_started = False
 
   def start_stream(self):
     self.handle.start()
     self.stream_started = True
+
+  def stream_grabber(self):
+    filling = []
+    while True:
+      try:
+        while len(filling) < self.sample_rate:
+          filling.extend(self.stream_exp.read())
+          sleep(0.001)
+        yield filling[:self.sample_rate]
+        del filling[:self.sample_rate]
+        # print 'filling taille out:', len(filling)
+      except:
+        self.handle.close()
+        break
 
   def get_data(self):
     t = [time()]

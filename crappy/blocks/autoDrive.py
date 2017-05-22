@@ -39,6 +39,7 @@ class AutoDrive(MasterBlock):
     actuator_name = self.actuator['name']
     self.actuator.pop('name')
     self.device = actuator_list[actuator_name](**self.actuator)
+    self.device.open()
     self.device.set_speed(0) # Make sure it is stopped
 
   def loop(self):

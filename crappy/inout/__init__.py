@@ -7,6 +7,7 @@ from .inout import InOut,MetaIO
 
 from .agilent34420A import Agilent34420A
 from .arduino import Arduino
+from .opsens import Opsens
 try:
   from .comedi import Comedi
 except ImportError:
