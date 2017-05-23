@@ -13,10 +13,6 @@ from os import path, popen, system, listdir, walk
 from distutils.core import setup, Extension
 import platform
 
-comediModule = Extension('inout.comediModule',
-                         sources=['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'],
-                         extra_link_args=["-l", "comedi", "-l", "python2.7"],
-                         include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
 here = path.abspath(path.dirname(__file__))
 # Get the long description from the relevant file
 with open(path.join(here, 'about.txt'), encoding='utf-8') as f:
@@ -28,7 +24,7 @@ ximeaModule = pyFgenModule = clModule = None
 ## uncomment folowing lines for testing extension module (see documentation "How to bin C/C++ with Crappy")
 #helloModule = Extension('technical.helloModule',
 #                         sources=['sources/hello/hello_class.cpp'],
-#                         extra_compile_args=["-l", "python2.7"])
+#                         extra_compile_args=["-l", "python3.4"])
 #
 #extentions.append(helloModule)
 
@@ -38,8 +34,8 @@ if platform.system() == "Linux":
                             sources=['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyXimea.cpp'],
                             extra_compile_args=["-std=c++11"],
                             extra_link_args=["-Werror", "-L", "../bin", "-L", "../bin/X64", "-L", "../bin/ARM", "-l",
-                                             "m3api", "-l", "python2.7"],
-                            include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
+                                             "m3api", "-l", "python3.4m"],
+                            include_dirs=['/usr/local/lib/python3.4/dist-packages/numpy/core/include'])
     try:
       # Find the latest runtime version of SiliconSoftware install
       clPath = '/opt/SiliconSoftware/'+sorted(next(walk('/opt/SiliconSoftware/'))[1])[-1]+'/lib64/'
@@ -51,19 +47,14 @@ if platform.system() == "Linux":
       clModule = Extension('camera.clModule',
                          sources=['sources/Cl_lib/CameraLink.cpp', 'sources/Cl_lib/pyCameraLink.cpp',
                                   'sources/Cl_lib/clSerial.cpp'], extra_compile_args=["-std=c++11"],
-                         extra_link_args=["-l", "python2.7", "-L", clPath, "-l",
+                         extra_link_args=["-l", "python3.4m", "-L", clPath, "-l",
                                           "display", "-l", "clsersis", "-l", "fglib5"],
-                         include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
+                         include_dirs=['/usr/local/lib/python3.4m/dist-packages/numpy/core/include'])
       p = popen("lsmod |grep menable")
       if len(p.read()) != 0:
         extentions.append(clModule)
       else:
         print("WARNING: cannot find menable kernel module, CameraLink module won't be available.")
-    try:
-        import comedi
-        extentions.append(comediModule)
-    except Exception as e:
-        print("WARNING: Cannot find comedi driver.", e)
 
     if input("would you like to install ximea module? ([y]/n)?").lower() != "n":
         extentions.append(ximeaModule)
@@ -71,7 +62,7 @@ if platform.system() == "Linux":
 if platform.system() == "Windows":
     exec(compile(open(".\crappy\__version__.py").read(), ".\crappy\__version__.py", 'exec'))  # read the current version in version.py
     pyFgenModule = Extension('sensor.pyFgenModule',
-                             include_dirs=["c:\\python27\\Lib\\site-packages\\numpy\\core\\include",
+                             include_dirs=["c:\\python3.4\\site-packages\\numpy\\core\\include",
                                            "C:\\Program Files (x86)\\IVI Foundation\\VISA\\WinNT\\include",
                                            "C:\\Program Files\\IVI Foundation\\IVI\\Include"],
                              sources=['sources/niFgen/pyFgen.cpp'], libraries=["niFgen"],
@@ -80,12 +71,12 @@ if platform.system() == "Windows":
     if input("would you like to install pyFgen module? ([y]/n)") != "n":
         extentions.append(pyFgenModule)
     ximeaModule = Extension('sensor.ximeaModule',
-                            include_dirs=["c:\\XIMEA\\API", "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"],
+                            include_dirs=["c:\\XIMEA\\API", "c:\\python34\\Lib\\site-packages\\numpy\\core\\include"],
                             sources=['sources/XimeaLib/ximea.cpp', 'sources/XimeaLib/pyximea.cpp'],
                             libraries=["m3apiX64"], library_dirs=["c:\\XIMEA\\API", "c:\\XIMEA\\API\\x64"],
                             extra_compile_args=["/EHsc", "/WX"])
     clModule = Extension('sensor.clModule', include_dirs=["C:\Program Files\SiliconSoftware\Runtime5.2.1\include",
-                                                          "c:\\python27\\Lib\\site-packages\\numpy\\core\\include"],
+                                                          "c:\\python34\\Lib\\site-packages\\numpy\\core\\include"],
                          sources=['sources/Cl_lib/CameraLink.cpp', 'sources/Cl_lib/pyCameraLink.cpp',
                                   'sources/Cl_lib/clSerial.cpp'], libraries=["clsersis", "fglib5"],
                          library_dirs=["C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\lib\\visualc"],
@@ -144,11 +135,11 @@ setup(
         # that you indicate whether you support Python 2, Python 3 or both.
         # 'Programming Language :: Python :: 2',
         # 'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
+        # 'Programming Language :: Python :: 2.7',
         # 'Programming Language :: Python :: 3',
         # 'Programming Language :: Python :: 3.2',
         # 'Programming Language :: Python :: 3.3',
-        # 'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.4',
         'Operating System :: POSIX :: Linux',
     ],
 
@@ -206,23 +197,19 @@ setup(
 
 if ximeaModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\camera\\ximeaModule.pyd crappy\\camera\\')
+        system('copy /Y build\\lib.win-amd64-3.4\\crappy\\camera\\ximeaModule.pyd crappy\\camera\\')
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy/camera/ximeaModule.so crappy/camera/')
-
-if comediModule in extentions:
-    if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy/inout/comediModule.so crappy/inout/')
+        system('cp build/lib.linux-x86_64-3.4/crappy/camera/ximeaModule.cpython-34m.so crappy/camera/')
 
 if clModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\camera\\clModule.pyd crappy\\camera\\')
+        system('copy /Y build\\lib.win-amd64-3.4\\crappy\\camera\\clModule.pyd crappy\\camera\\')
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy/camera/clModule.so crappy/camera/')
+        system('cp build/lib.linux-x86_64-3.4/crappy/camera/clModule.so crappy/camera/')
 
 if pyFgenModule in extentions:
     if platform.system() == "Windows":
-        system('copy /Y build\\lib.win-amd64-2.7\\crappy\\inout\\pyFgenModule.pyd crappy\\inout\\')
+        system('copy /Y build\\lib.win-amd64-3.4\\crappy\\inout\\pyFgenModule.pyd crappy\\inout\\')
 
 #if helloModule in extentions:
 #    if platform.system() == "Windows":
