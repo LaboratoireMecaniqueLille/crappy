@@ -13,10 +13,6 @@ from os import path, popen, system, listdir, walk
 from distutils.core import setup, Extension
 import platform
 
-comediModule = Extension('inout.comediModule',
-                         sources=['sources/comediModule/comediModule.c', 'sources/comediModule/common.c'],
-                         extra_link_args=["-l", "comedi", "-l", "python2.7"],
-                         include_dirs=['/usr/local/lib/python2.7/dist-packages/numpy/core/include'])
 here = path.abspath(path.dirname(__file__))
 # Get the long description from the relevant file
 with open(path.join(here, 'about.txt'), encoding='utf-8') as f:
@@ -59,11 +55,6 @@ if platform.system() == "Linux":
         extentions.append(clModule)
       else:
         print "WARNING: cannot find menable kernel module, CameraLink module won't be available."
-    try:
-        import comedi
-        extentions.append(comediModule)
-    except Exception as e:
-        print "WARNING: Cannot find comedi driver.", e
 
     if raw_input("would you like to install ximea module? ([y]/n)?").lower() != "n":
         extentions.append(ximeaModule)
@@ -209,10 +200,6 @@ if ximeaModule in extentions:
         system('copy /Y build\\lib.win-amd64-2.7\\crappy\\camera\\ximeaModule.pyd crappy\\camera\\')
     if platform.system() == "Linux":
         system('cp build/lib.linux-x86_64-2.7/crappy/camera/ximeaModule.so crappy/camera/')
-
-if comediModule in extentions:
-    if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-2.7/crappy/inout/comediModule.so crappy/inout/')
 
 if clModule in extentions:
     if platform.system() == "Windows":
