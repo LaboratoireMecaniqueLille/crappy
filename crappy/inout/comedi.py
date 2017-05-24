@@ -3,7 +3,7 @@
 
 from time import time
 
-import comedi as c
+from ..tool import comedi_bind as c
 
 from .inout import InOut
 
@@ -11,7 +11,7 @@ class Comedi(InOut):
   """Comedi object, for IO with cards using comedi driver"""
   def __init__(self, **kwargs):
     InOut.__init__(self)
-    self.default = {'device':'/dev/comedi0',
+    self.default = {'device':b'/dev/comedi0',
                     'subdevice':0,
                     'channels':[0],
                     'range_num':0,
@@ -32,6 +32,9 @@ class Comedi(InOut):
         del kwargs[arg]
     self.kwargs.update(kwargs)
     self.device_name = self.kwargs['device']
+    if isinstance(self.device_name,str):
+      self.device_name = bytes(self.device_name,'utf-8')
+      # We need to give this to a c function, so convert it to bytes
     self.subdevice = self.kwargs['subdevice']
     self.out_subdevice = self.kwargs['out_subdevice']
     if not isinstance(self.kwargs['channels'],list):
@@ -73,8 +76,12 @@ class Comedi(InOut):
 
 
   def open(self):
-    """Starts commmunication with the device, must be called before any
-    set_cmd or get_data"""
+    """
+    Starts commmunication with the device, must be called before any
+    set_cmd or get_data
+    It reads channel properties from the device, those will be used
+    in data_read/data_write
+    """
     self.device = c.comedi_open(self.device_name)
     for chan in self.channels:
       chan['maxdata'] = c.comedi_get_maxdata(self.device, self.subdevice,
@@ -86,14 +93,14 @@ class Comedi(InOut):
                                           chan['num'])
       chan['range_ds'] = c.comedi_get_range(self.device, self.out_subdevice,
                                           chan['num'], chan['range_num'])
-      c.comedi_dio_config(self.device, 2, chan['num'], 1)
-      c.comedi_dio_write(self.device, 2, chan['num'], 1)
     if any([i['make_zero'] for i in self.channels]):
       off = self.eval_offset()
       for i,chan in enumerate(self.channels):
         if chan['make_zero']:
-          chan['offset'] += off[i]
-
+          if off[i] != off[i]: # True if off[i] is a nan
+            print("WARNING: could not measure offset on channel",chan['num'])
+          else:
+            chan['offset'] += off[i]
 
 
   def set_cmd(self, *cmd):
@@ -128,12 +135,11 @@ class Comedi(InOut):
                                 chan['range_num'],
                                 c.AREF_GROUND)
 
-      val = c.comedi_to_phys(data_read[1], chan['range_ds'], chan['maxdata'])
+      val = c.comedi_to_phys(data_read, chan['range_ds'], chan['maxdata'])
       data.append(val*chan['gain']+chan['offset'])
     return data
 
 
   def close(self):
-    c.comedi_cancel(self.device, self.subdevice)
     ret = c.comedi_close(self.device)
     if ret != 0: print('Comedi.close failed')
