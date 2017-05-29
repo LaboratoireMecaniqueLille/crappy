@@ -279,7 +279,7 @@ class MasterBlock(Process):
     if isinstance(data, dict):
       pass
     elif isinstance(data, list):
-      data = OrderedDict(zip(self.labels, data))
+      data = dict(zip(self.labels, data))
     elif data == 'stop':
       pass
     else:
