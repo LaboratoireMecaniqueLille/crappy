@@ -27,7 +27,7 @@ class Biaxe(Actuator):
     self.ser = serial.Serial(self.port, self.baudrate,
                              serial.EIGHTBITS, serial.PARITY_EVEN
                              , serial.STOPBITS_ONE, self.timeout)
-    self.ser.write("OPMODE 0\r\n EN\r\n")
+    self.clear_errors()
 
   def stop(self):
     self.ser.write("J 0\r\n")
