@@ -4,6 +4,7 @@ from __future__ import print_function
 from multiprocessing import Pipe
 from time import time
 from threading import Thread
+from copy import copy
 
 from .._global import CrappyStop
 
@@ -136,9 +137,9 @@ class Link(object):
       else:
         for cond in self.condition:
           if hasattr(cond,'evaluate'):
-            value = cond.evaluate(value)
+            value = cond.evaluate(copy(value))
           else:
-            value = cond(value)
+            value = cond(copy(value))
           if value is None:
             break
         if value is not None:
