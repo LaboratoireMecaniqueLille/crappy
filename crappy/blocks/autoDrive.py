@@ -17,6 +17,7 @@ class AutoDrive(MasterBlock):
       # The direction to follow (X/Y +/-), depending on camera orientation
 			('direction', 'Y-'),
 			('range',2048), # The number of pixels in this direction
+      ('max_speed',200000) # To avoid loosing spots swhen going to fast
 			]:
       setattr(self,arg,kwargs.get(arg,default))
       try:
@@ -46,7 +47,8 @@ class AutoDrive(MasterBlock):
     data = self.inputs[0].recv_last(blocking=True)
     t = time()
     diff = self.get_center(data)-self.range/2
-    self.device.set_speed(int(self.P*diff))
+    self.device.set_speed(
+        max(-self.max_speed,min(self.max_speed,int(self.P*diff))))
     self.send([t-self.t0,diff])
 
   def finish(self):

@@ -25,7 +25,10 @@ class Median(Condition):
     for k in data:
       self.last[k].append(data[k])
       if len(self.last[k]) == self.npoints:
-        r[k] = np.median(self.last[k])
+        try:
+          r[k] = np.median(self.last[k])
+        except TypeError:
+          r[k] = self.last[k][-1]
       elif len(self.last[k]) > self.npoints:
         self.last[k] = []
     if r:

@@ -1,5 +1,6 @@
 ﻿# coding: utf-8
 import serial
+from time import sleep
 from .actuator import Actuator
 
 
@@ -27,14 +28,15 @@ class Biaxe(Actuator):
     self.ser = serial.Serial(self.port, self.baudrate,
                              serial.EIGHTBITS, serial.PARITY_EVEN
                              , serial.STOPBITS_ONE, self.timeout)
-    self.ser.write("OPMODE 0\r\n EN\r\n")
+    self.clear_errors()
 
   def stop(self):
-    self.ser.write("J 0\r\n")
+    self.set_speed(0)
 
   def close(self):
     """Close the designated port"""
     self.stop()
+    sleep(.01)
     self.ser.close()
 
   def clear_errors(self):

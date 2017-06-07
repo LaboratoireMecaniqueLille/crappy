@@ -208,9 +208,15 @@ class Labjack_t7(InOut):
     ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
     if any(self.make_zero):
       off = self.eval_offset()
+      a_names = []
+      a_values = []
       for i,make_zero in enumerate(self.make_zero):
         if make_zero:
           self.offset[i] += off[i]
+          a_names.append(self.channels[i]+"_EF_CONFIG_E")
+          a_values.append(self.offset[i])
+      ljm.eWriteNames(self.handle,len(a_names), a_names, a_values)
+      
 
   def open_streamer(self):
     self.a_scan_list = \

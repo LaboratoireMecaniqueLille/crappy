@@ -78,13 +78,13 @@ class Saver(MasterBlock):
           Data = self.inputs[0].recv_chunk()  # recv data
         else:
           Data = self.inputs[0].recv_delay(1)
-        data = np.transpose(list(Data.values()))
+        data = np.transpose([i for i in Data.values() if isinstance(i[-1],(int,float))])
         fo = open(self.log_file, "a", buffering=3)
         # "a" for appending, buffering to limit r/w disk access.
         fo.seek(0, 2)  # place the "cursor" at the end of the file
 
         if first and not self.existing:
-          legend_ = list(Data.keys())
+          legend_ = [k for k,v in Data.items() if isinstance(v[-1],(int,float))]
           if self.output_format == '.txt':
             fo.write(str([legend_[i] for i in range(len(legend_))]) + "\n")
           elif self.output_format == '.csv':

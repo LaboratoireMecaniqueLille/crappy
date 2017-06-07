@@ -27,7 +27,10 @@ class Mean(Condition):
     for k in data:
       self.last[k].append(data[k])
       if len(self.last[k]) == self.npoints:
-        r[k] = np.mean(self.last[k])
+        try:
+          r[k] = np.mean(self.last[k])
+        except TypeError: # Non numeric data
+          r[k] = self.last[k][-1]
       elif len(self.last[k]) > self.npoints:
         self.last[k] = []
     if r:

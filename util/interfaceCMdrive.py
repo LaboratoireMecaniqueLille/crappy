@@ -222,6 +222,7 @@ class Interface(Frame):
           self.actuator = Actuator(port=self.myPortCombo.get(), baudrate=self.baudCombo.get())
         self.actuatorName = self.actuatorNameCombo.get()
         print 'connection'
+        self.actuator.open()
         self.location.config(state='normal')
         self.moveButton.config(state='normal')
         self.recoilButton.config(state='normal')

@@ -33,8 +33,8 @@ class Video_extenso(MasterBlock):
     self.cam_kwargs = kwargs
 
   def prepare(self):
-    self.cam = Camera.classes[self.camera](**self.cam_kwargs)
-    self.cam.open()
+    self.cam = Camera.classes[self.camera]()
+    self.cam.open(**self.cam_kwargs)
     self.ve = VE(**self.ve_kwargs)
     config = VE_config(self.cam,self.ve)
     config.main()

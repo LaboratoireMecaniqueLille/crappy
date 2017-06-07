@@ -20,5 +20,8 @@ class Moving_avg(Condition):
       self.last[k].append(data[k])
       if len(self.last[k]) > self.npoints:
         self.last[k] = self.last[k][-self.npoints:]
-      r[k] = np.mean(self.last[k])
+      try:
+        r[k] = np.mean(self.last[k])
+      except TypeError:
+        r[k] = self.last[k][-1]
     return r

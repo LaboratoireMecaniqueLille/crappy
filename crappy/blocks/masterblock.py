@@ -3,7 +3,6 @@
 
 from sys import platform
 from multiprocessing import Process, Pipe
-from collections import OrderedDict
 from time import sleep, time, localtime, strftime
 
 from .._global import CrappyStop
@@ -279,7 +278,7 @@ class MasterBlock(Process):
     if isinstance(data, dict):
       pass
     elif isinstance(data, list):
-      data = OrderedDict(list(zip(self.labels, data)))
+      data = dict(zip(self.labels, data))
     elif data == 'stop':
       pass
     else:
