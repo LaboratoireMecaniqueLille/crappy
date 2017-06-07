@@ -3,7 +3,6 @@ from __future__ import print_function,division
 
 from sys import platform
 from multiprocessing import Process, Pipe
-from collections import OrderedDict
 from time import sleep, time, localtime, strftime
 
 from .._global import CrappyStop
