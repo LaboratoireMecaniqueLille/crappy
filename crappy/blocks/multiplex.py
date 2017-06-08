@@ -77,11 +77,11 @@ class Multiplex(MasterBlock):
           continue
         for k in l:
           r[k] = interp(self.t_hist[i],self.hist[k],self.t) # Interpolate
+        # To know until when we can delete
+        last = int(interp(self.t_hist[i],range(len(self.t_hist[i])),self.t))
         # Delete the data we don't need anymore
-        # May be a bit slow ?
-        while len(self.t_hist[i]) > 2 and self.t_hist[i][1] < self.t:
-          del self.t_hist[i][0]
-          for k in l:
-            del self.hist[k][0]
+        self.t_hist[i] = self.t_hist[i][last:]
+        for k in l:
+          self.hist[k] = self.hist[k][last:]
       self.send(r) # Send it!
       self.t += self.dt # And increment our timebase
