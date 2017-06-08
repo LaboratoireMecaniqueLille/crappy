@@ -270,10 +270,10 @@ class MasterBlock(Process):
 
   def send(self, data):
     """
-    Send has 2 ways to operate: you can either build the ordered dict yourself
+    Send has 2 ways to operate: you can either build the dict yourself
     or you can define self.labels (usually time first) and call send with a
     list. It will then map them to the dict.
-    Note that ONLY OrderedDict can go through links
+    Note that ONLY dict can go through links
     """
     if isinstance(data, dict):
       pass
@@ -316,9 +316,9 @@ class MasterBlock(Process):
   def get_all_last(self, num=None):
     """
     Almost the same as get_last, but will return all the data that goes
-    through the links (in lists). Note that for the sake of returning at
-    least one value per label, it MAY return a value more than once on
-    successive calls. Also, if multiple links have the same label,
+    through the links (in lists). Note that it may return empty lists if
+    no data was received between two successive calls.
+    Also, if multiple links have the same label,
     only the last link's value will be kept
     """
     if not hasattr(self, '_all_last_values'):
@@ -334,7 +334,7 @@ class MasterBlock(Process):
         # Dropping all data (already sent on last call) except the last
         # to make sure the block has at least one value
         for key in self._all_last_values[i]:
-          self._all_last_values[i][key] = [self._all_last_values[i][key][-1]]
+          self._all_last_values[i][key] = []
     ret = {}
     for i in num:
       ret.update(self._all_last_values[i])
