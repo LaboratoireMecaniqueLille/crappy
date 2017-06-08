@@ -16,6 +16,7 @@ from .ioblock import IOBlock
 from .machine import Machine
 from .masterblock import MasterBlock
 from .measureByStep import MeasureByStep
+from .multiplex import Multiplex
 from .reader import Reader
 from .saver import Saver
 try:
