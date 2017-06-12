@@ -132,7 +132,7 @@ class Link(object):
   @win_timeout(1)
   def send_timeout(self, value):
     try:
-      if self.condition is None:
+      if self.condition is None or isinstance(value,str):
         self.out_.send(value)
       else:
         for cond in self.condition:
@@ -221,7 +221,11 @@ class Link(object):
     c = 0
     while c < length or (length <= 0 and self.poll()):
       c += 1
-      data = self.recv()
+      try:
+        data = self.recv() # Here, we need to send our data first
+      except CrappyStop:
+        self.out_.send("stop") # To re-raise on next call
+        break
       for k in ret:
         try:
           ret[k].append(data[k])
@@ -229,7 +233,7 @@ class Link(object):
           raise IOError(str(self)+" Got data without label "+k)
     return ret
 
-  def recv_delay(self,delay=1):
+  def recv_delay(self,delay):
     """
     Useful for blocks that don't need data all so frequently:
     It will continuously receive data for a given delay and return them as a
@@ -239,11 +243,15 @@ class Link(object):
     for data. Also, it will return at least one reading.
     """
     t = time()
-    ret = self.recv()
+    ret = self.recv() # If we get CrappyStop at this instant, no data loss
     for k in ret:
       ret[k] = [ret[k]]
     while time()-t < delay:
-      data = self.recv()
+      try:
+        data = self.recv() # Here, we need to send our data first
+      except CrappyStop:
+        self.out_.send("stop") # To re-raise on next call
+        break
       for k in ret:
         try:
           ret[k].append(data[k])
