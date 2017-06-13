@@ -1,18 +1,20 @@
 # coding: utf-8
 
-from __future__ import print_function,absolute_import,division
+from __future__ import print_function, absolute_import, division
 from time import time
 from ue9 import UE9
 
 from .inout import InOut
 
+
 def get_channel_number(channels):
   """
   register needs to be called with the channel name as int.
   """
-  for i,channel in enumerate(channels):
-    if isinstance(str,channel):
+  for i, channel in enumerate(channels):
+    if isinstance(str, channel):
       channels[i] = int(channel[-1])
+
 
 def format_lists(list_to_format, length):
   """
@@ -31,24 +33,26 @@ def format_lists(list_to_format, length):
   else:
     return list_to_format
 
+
 class Labjack_ue9(InOut):
   """Can read data from a LabJack UE9
   streamer mode and DAC are not supported yet
   """
+
   def __init__(self, **kwargs):
     InOut.__init__(self)
-    for arg,default in [('channels',0),
-                        ('gain',1),
-                        ('offset',0),
-                        ('make_zero',True),
-                        ('resolution',12),
-                        ]:
+    for arg, default in [('channels', 0),
+                         ('gain', 1),
+                         ('offset', 0),
+                         ('make_zero', True),
+                         ('resolution', 12),
+                         ]:
       if arg in kwargs:
-        setattr(self,arg,kwargs[arg])
+        setattr(self, arg, kwargs[arg])
         del kwargs[arg]
       else:
-        setattr(self,arg,default)
-    assert len(kwargs) == 0,"Labjack_UE9 got unsupported arg(s)"+str(kwargs)
+        setattr(self, arg, default)
+    assert len(kwargs) == 0, "Labjack_UE9 got unsupported arg(s)" + str(kwargs)
     self.channels = format_lists(self.channels, 0)
     self.nb_channels = len(self.channels)
     get_channel_number(self.channels)
@@ -61,7 +65,7 @@ class Labjack_ue9(InOut):
     self.handle = UE9()
     if any(self.make_zero):
       off = self.eval_offset()
-      for i,make_zero in enumerate(self.make_zero):
+      for i, make_zero in enumerate(self.make_zero):
         if make_zero:
           self.offset[i] += off[i]
 
@@ -73,8 +77,8 @@ class Labjack_ue9(InOut):
         self.handle.getAIN(channel, Resolution=self.resolution[index]) *
         self.gain[index] + self.offset[index])
     t1 = time()
-    return (t0+t1)/2, results
+    return (t0 + t1) / 2, results
 
   def close(self):
-    if hasattr(self,'handle') and self.handle is not None:
+    if hasattr(self, 'handle') and self.handle is not None:
       self.handle.close()

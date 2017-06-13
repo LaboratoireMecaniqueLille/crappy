@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 import serial
 from threading import Thread
 import Tkinter as tk
@@ -10,6 +10,7 @@ from multiprocessing import Process, Queue
 from ast import literal_eval
 
 from .inout import InOut
+
 
 class MonitorFrame(tk.Frame):
   def __init__(self, parent, **kwargs):
@@ -300,7 +301,7 @@ class Arduino(InOut):
     self.labels = kwargs.get("labels", None)
     self.frames = kwargs.get("frames", ["monitor", "submit"])
     self.width = kwargs.get("width", 100)
-    self.fontsize = kwargs.get("fontsize",11)
+    self.fontsize = kwargs.get("fontsize", 11)
 
   def open(self):
     self.queue_get_data = Queue()

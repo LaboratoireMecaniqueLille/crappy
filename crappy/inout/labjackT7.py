@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from __future__ import print_function,absolute_import,division
+from __future__ import print_function, absolute_import, division
 from labjack import ljm
 from time import time
 from threading import Thread
@@ -8,6 +8,7 @@ from Queue import Queue
 from Tkinter import Tk, Label
 
 from .inout import InOut
+
 
 class DialogBox:
   """
@@ -45,15 +46,17 @@ class DialogBox:
         self.c2[row_index + 2].configure(text=value, borderwidth=10)
       self.root.update()
       array = self.queue.get()
-      if array =='stop':
+      if array == 'stop':
         break
+
 
 def open_handle(identifier='ANY'):
   """
   Function used only to open handle. For better exception behavior handling.
   """
-  handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY,identifier)
+  handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, identifier)
   return handle
+
 
 def var_tester(var, nb_channels):
   """Used to check if the user entered correct parameters."""
@@ -67,9 +70,11 @@ def var_tester(var, nb_channels):
     str(var) + "Error: parameter should be int or float."
   return var
 
+
 class Labjack_t7(InOut):
   """Class for LabJack T7 devices. Used to acquire and set
   analogical datas."""
+
   def __init__(self, **kwargs):
     """
     Args:
@@ -112,38 +117,38 @@ class Labjack_t7(InOut):
       if arg in kwargs and arg.startswith('in_'):
         kwargs[arg[3:]] = kwargs[arg]
         del kwargs[arg]
-    for arg,default in [('verbose',False),
-                        ('channels','AIN0'),
-                        ('gain',1),
-                        ('offset',0),
-                        ('make_zero',True),
-                        ('out_channels',[]),
-                        ('out_gain',1),
-                        ('out_offset',0),
-                        ('mode','single'),
-                        ('chan_range', 10),
-                        ('resolution',1),
-                        ('identifier','ANY'),
-                        ]:
+    for arg, default in [('verbose', False),
+                         ('channels', 'AIN0'),
+                         ('gain', 1),
+                         ('offset', 0),
+                         ('make_zero', True),
+                         ('out_channels', []),
+                         ('out_gain', 1),
+                         ('out_offset', 0),
+                         ('mode', 'single'),
+                         ('chan_range', 10),
+                         ('resolution', 1),
+                         ('identifier', 'ANY'),
+                         ]:
       if arg in kwargs:
-        setattr(self,arg,kwargs[arg])
+        setattr(self, arg, kwargs[arg])
         del kwargs[arg]
       else:
-        setattr(self,arg,default)
+        setattr(self, arg, default)
 
     if self.mode == 'streamer':
-      for arg,default in [('scan_rate_per_channel',1000),
-                          ('scans_per_read',0),
-                          ]:
+      for arg, default in [('scan_rate_per_channel', 1000),
+                           ('scans_per_read', 0),
+                           ]:
         if arg in kwargs:
-          setattr(self,arg,kwargs[arg])
+          setattr(self, arg, kwargs[arg])
           del kwargs[arg]
         else:
-          setattr(self,arg,default)
-    assert len(kwargs) == 0,"Labjack_T7 got unsupported arg(s)"+str(kwargs)
+          setattr(self, arg, default)
+    assert len(kwargs) == 0, "Labjack_T7 got unsupported arg(s)" + str(kwargs)
 
-    self.vprint = lambda *args:\
-        print('[crappy.InOut.LabjackT7]', *args)\
+    self.vprint = lambda *args: \
+      print('[crappy.InOut.LabjackT7]', *args) \
         if self.verbose else lambda *args: None
 
     self.check_vars()
@@ -158,33 +163,34 @@ class Labjack_t7(InOut):
     """
     self.mode = self.mode.lower()
     self.channels = [self.channels] if not isinstance(self.channels,
-                    list) else self.channels
+                                                      list) else self.channels
     self.channels = ["AIN" + str(chan) if type(chan) is not str else chan for
-                    chan in self.channels]
+                     chan in self.channels]
     self.nb_channels = len(self.channels)
-    self.chan_range = var_tester(self.chan_range,self.nb_channels)
-    self.resolution = var_tester(self.resolution,self.nb_channels)
-    self.make_zero = self.make_zero if isinstance(self.make_zero,list)\
-        else [self.make_zero]*self.nb_channels
-    assert len(self.make_zero) == self.nb_channels,"Invalid make_zero length"
-    self.gain = var_tester(self.gain,self.nb_channels)
-    self.offset = var_tester(self.offset,self.nb_channels)
+    self.chan_range = var_tester(self.chan_range, self.nb_channels)
+    self.resolution = var_tester(self.resolution, self.nb_channels)
+    self.make_zero = self.make_zero if isinstance(self.make_zero, list) \
+      else [self.make_zero] * self.nb_channels
+    assert len(self.make_zero) == self.nb_channels, "Invalid make_zero length"
+    self.gain = var_tester(self.gain, self.nb_channels)
+    self.offset = var_tester(self.offset, self.nb_channels)
     self.channels_index_read = [self.channels[chan]
-                  + "_EF_READ_A" for chan in range(self.nb_channels)]
-    if not isinstance(self.out_channels,list):
+                                + "_EF_READ_A" for chan in
+                                range(self.nb_channels)]
+    if not isinstance(self.out_channels, list):
       self.out_channels = [self.out_channels]
     for i in range(len(self.out_channels)):
-      if isinstance(self.out_channels[i],int):
-        self.out_channels[i] = 'DAC'+str(self.out_channels[i])
-    if not isinstance(self.out_gain,list):
-      self.out_gain = [self.out_gain]*len(self.out_channels)
-    if not isinstance(self.out_offset,list):
-      self.out_offset = [self.out_offset]*len(self.out_channels)
+      if isinstance(self.out_channels[i], int):
+        self.out_channels[i] = 'DAC' + str(self.out_channels[i])
+    if not isinstance(self.out_gain, list):
+      self.out_gain = [self.out_gain] * len(self.out_channels)
+    if not isinstance(self.out_offset, list):
+      self.out_offset = [self.out_offset] * len(self.out_channels)
     if self.mode == 'streamer':
       if self.scan_rate_per_channel * self.nb_channels >= 100000:
         self.scan_rate_per_channel = int(100000 / self.nb_channels)
         print("Labjack warning: scan rate too high! Lowering to ",
-            self.scan_rate_per_channel)
+              self.scan_rate_per_channel)
       if self.scans_per_read == 0:
         self.scans_per_read = int(self.scan_rate_per_channel / 10)
 
@@ -199,10 +205,10 @@ class Labjack_t7(InOut):
     ]
     a_names = []
     a_values = []
-    for i,chan in enumerate(self.channels):
-      names,values = zip(*to_write)
-      names = [chan+n for n in names]
-      values = [v[i] if isinstance(v,list) else v for v in values]
+    for i, chan in enumerate(self.channels):
+      names, values = zip(*to_write)
+      names = [chan + n for n in names]
+      values = [v[i] if isinstance(v, list) else v for v in values]
       a_names.extend(names)
       a_values.extend(values)
     ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
@@ -210,13 +216,12 @@ class Labjack_t7(InOut):
       off = self.eval_offset()
       a_names = []
       a_values = []
-      for i,make_zero in enumerate(self.make_zero):
+      for i, make_zero in enumerate(self.make_zero):
         if make_zero:
           self.offset[i] += off[i]
-          a_names.append(self.channels[i]+"_EF_CONFIG_E")
+          a_names.append(self.channels[i] + "_EF_CONFIG_E")
           a_values.append(self.offset[i])
-      ljm.eWriteNames(self.handle,len(a_names), a_names, a_values)
-      
+      ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
 
   def open_streamer(self):
     self.a_scan_list = \
@@ -238,10 +243,10 @@ class Labjack_t7(InOut):
     ]
     a_names = []
     a_values = []
-    for i,chan in enumerate(self.channels):
-      names,values = zip(*to_write)
-      names = [chan+n for n in names]
-      values = [v[i] if isinstance(v,list) else v for v in values]
+    for i, chan in enumerate(self.channels):
+      names, values = zip(*to_write)
+      names = [chan + n for n in names]
+      values = [v[i] if isinstance(v, list) else v for v in values]
       a_names.extend(names)
       a_values.extend(values)
     ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
@@ -256,7 +261,7 @@ class Labjack_t7(InOut):
     elif self.mode == "thermocouple":
       self.open_thermocouple()
     else:
-      raise IOError("Unknown Labjack mode: "+self.mode)
+      raise IOError("Unknown Labjack mode: " + self.mode)
 
   def start_stream(self):
     """
@@ -282,7 +287,7 @@ class Labjack_t7(InOut):
     try:
       l = [time()]
       l.extend(ljm.eReadNames(self.handle, self.nb_channels,
-                               self.channels_index_read))
+                              self.channels_index_read))
       return l
     except ljm.LJMError as e:
       self.vprint('Error in get_data:', e)
@@ -307,9 +312,9 @@ class Labjack_t7(InOut):
     """
     Convert the tension value to a digital value and send it to the output.
     """
-    for command,channel,gain,offset in zip(
-        cmd,self.out_channels,self.out_gain,self.out_offset):
-      ljm.eWriteName(self.handle, channel, command*gain+offset)
+    for command, channel, gain, offset in zip(
+        cmd, self.out_channels, self.out_gain, self.out_offset):
+      ljm.eWriteName(self.handle, channel, command * gain + offset)
 
   def close(self):
     """
