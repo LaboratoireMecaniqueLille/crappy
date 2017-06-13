@@ -8,7 +8,19 @@ from .masterblock import MasterBlock
 class Saver(MasterBlock):
   """
   Will save the incomming data to a file (default csv)
-  Can only take ONE input
+
+  Can only take ONE input. If the folders do not exist, they will be created.
+  If the file exists, the actual file will be named with a trailing number
+  to avoid overriding it.
+  Args:
+    filename: Path and name of the output file
+
+    delay: (default=5) Delay between each writes (in seconds)
+
+    labels: (default='t(s)') What labels to save
+    If labels is a string, all the data will be saved, but with this one
+    in first place. If it is a list, only these labels will be saved, in
+    that order.
   """
   def __init__(self,filename,delay=5,labels='t(s)'):
     """
