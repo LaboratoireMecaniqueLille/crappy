@@ -66,6 +66,7 @@ class Grapher(MasterBlock):
     plt.xlabel(self.labels[0][0])
     plt.ylabel(self.labels[0][1])
     plt.grid()
+
     if self.window_pos:
       mng = plt.get_current_fig_manager()
       mng.window.wm_geometry("+%s+%s" % self.window_pos)
