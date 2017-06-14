@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import
 
 from time import time
 
-import comedi as c
+from . import comedi as c
 
 from .inout import InOut
 
