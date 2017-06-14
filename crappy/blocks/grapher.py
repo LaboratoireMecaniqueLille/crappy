@@ -71,19 +71,28 @@ class Grapher(MasterBlock):
       mng.window.wm_geometry("+%s+%s" % self.window_pos)
 
   def loop(self):
-    data = self.get_all_last()
+    # We need to recv data from all the links, but keep
+    # ALL of the data, even with the same label (so not get_all_last)
+    data = [l.recv_chunk() if l.poll() else {} for l in self.inputs]
     for i, (lx, ly) in enumerate(self.labels):
-      x = np.hstack((self.lines[i].get_xdata(), data[lx]))
-      y = np.hstack((self.lines[i].get_ydata(), data[ly]))
+      x = [] # So that if we don't find it, we do nothing
+      y = []
+      for d in data:
+        if lx in d and ly in d: # Find the first input with both labels
+          x = np.hstack((self.lines[i].get_xdata(), d[lx]))
+          y = np.hstack((self.lines[i].get_ydata(), d[ly]))
+          break
       if self.length and len(x) >= self.length:
+        # Remove the begining if the graph is dynamic
         x = x[-self.length:]
         y = y[-self.length:]
       elif len(x) > self.maxpt:
+        # Reduce the number of points if we have to many to display
         x = x[::2]
         y = y[::2]
       self.lines[i].set_xdata(x)
       self.lines[i].set_ydata(y)
-    self.ax.relim()
+    self.ax.relim() # Update the window
     self.ax.autoscale_view(True, True, True)
-    self.f.canvas.draw()
+    self.f.canvas.draw() # Update the graph
     plt.pause(.01)
