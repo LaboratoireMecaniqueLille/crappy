@@ -263,13 +263,19 @@ class MasterBlock(Process):
     self._status = s
 
   def prepare(self):
-    """The first code to be run in the new process, will only be called
-    once and before the actual start of the main launch of the blocks
-    can do nothing"""
+    """
+    This will be run when creating the process, but before the actual start
+
+    The first code to be run in the new process, will only be called
+    once and before the actual start of the main launch of the blocks.
+    It can stay empty to do nothing.
+    """
     pass
 
   def send(self, data):
     """
+    To send the data to all blocks downstream
+
     Send has 2 ways to operate: you can either build the ordered dict yourself
     or you can define self.labels (usually time first) and call send with a
     list. It will then map them to the dict.
@@ -288,6 +294,8 @@ class MasterBlock(Process):
 
   def get_last(self, num=None):
     """
+    To get the latest value of each labels from all inputs
+
     Unlike the recv methods of Link, get_last is NOT guaranteed to return
     all the data going through the links! It is meant to get the latest values,
     discarding all the previous one (for a displayer for example)
@@ -315,10 +323,11 @@ class MasterBlock(Process):
 
   def get_all_last(self, num=None):
     """
+    To get the data from all links of the block
+
     Almost the same as get_last, but will return all the data that goes
-    through the links (in lists). Note that for the sake of returning at
-    least one value per label, it MAY return a value more than once on
-    successive calls. Also, if multiple links have the same label,
+    through the links (in lists).
+    Also, if multiple links have the same label,
     only the last link's value will be kept
     """
     if not hasattr(self, '_all_last_values'):
@@ -334,15 +343,19 @@ class MasterBlock(Process):
         # Dropping all data (already sent on last call) except the last
         # to make sure the block has at least one value
         for key in self._all_last_values[i]:
-          self._all_last_values[i][key] = [self._all_last_values[i][key][-1]]
+          self._all_last_values[i][key] = []
     ret = {}
     for i in num:
       ret.update(self._all_last_values[i])
     return ret
 
   def drop(self, num=None):
-    """Will clear the inputs of the blocks, performs like get_last
-    but returns None instantly"""
+    """
+    Will clear the inputs of the blocks
+
+    This method performs like get_last
+    but returns None instantly
+    """
     if num is None:
       num = range(len(self.inputs))
     for n in num:
