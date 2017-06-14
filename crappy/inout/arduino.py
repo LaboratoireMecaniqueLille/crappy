@@ -15,8 +15,9 @@ from .inout import InOut
 class MonitorFrame(tk.Frame):
   def __init__(self, parent, **kwargs):
     """
-    A frame that displays everything enters the serial port.
-    Args:
+    A frame that displays everything entering the serial port.
+
+    args:
       arduino: serial.Serial of arduino board.
       width: size of the text frame
       title: the title of the frame.
@@ -35,6 +36,7 @@ class MonitorFrame(tk.Frame):
   def create_widgets(self, **kwargs):
     """
     Widgets shown : the title with option
+    
     """
     self.top_frame = tk.Frame(self)
     tk.Label(self.top_frame, text=kwargs.get('title', '')).grid(row=0, column=0)
@@ -61,7 +63,8 @@ class SubmitSerialFrame(tk.Frame):
   def __init__(self, parent, **kwargs):
     """
     Frame that permits to submit to the serial port of arduino.
-    Args:
+    
+    args:
       width: width of the frame.
       fontsize: self-explanatory.
     """
@@ -131,7 +134,6 @@ class MinitensFrame(tk.Frame):
     self.frame_one = tk.Frame(self, relief=tk.SUNKEN, borderwidth=1)
     self.minitens_frame_radiobuttons = tk.Frame(self.frame_one)
 
-    # Sequence to compose
     for index, value in enumerate(self.modes):
       tk.Radiobutton(self.minitens_frame_radiobuttons, text=value[0],
                      value=value[1], variable=self.mode).grid(row=index,
@@ -287,9 +289,10 @@ class ArduinoHandler(object):
 class Arduino(InOut):
   def __init__(self, **kwargs):
     """
-    Main class used ton interface Arduino, its GUI and crappy. For
+    Main class used to interface Arduino, its GUI and crappy. For
     reusability, make sure the program inside the arduino sends to the serial
     port a python dictionary formated string.
+
     Args:
       port: serial port of the arduino.
       baudrate: baudrate defined inside the arduino program.
