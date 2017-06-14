@@ -83,7 +83,7 @@ class Grapher(MasterBlock):
         y = y[::2]
       self.lines[i].set_xdata(x)
       self.lines[i].set_ydata(y)
+    self.ax.relim()
     self.ax.autoscale_view(True, True, True)
     self.f.canvas.draw()
-    self.ax.relim()
     plt.pause(.01)
