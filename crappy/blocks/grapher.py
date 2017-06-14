@@ -76,13 +76,14 @@ class Grapher(MasterBlock):
     # ALL of the data, even with the same label (so not get_all_last)
     data = [l.recv_chunk() if l.poll() else {} for l in self.inputs]
     for i, (lx, ly) in enumerate(self.labels):
-      x = [] # So that if we don't find it, we do nothing
-      y = []
+      x = 0 # So that if we don't find it, we do nothing
       for d in data:
         if lx in d and ly in d: # Find the first input with both labels
           x = np.hstack((self.lines[i].get_xdata(), d[lx]))
           y = np.hstack((self.lines[i].get_ydata(), d[ly]))
           break
+      if isinstance(x,int):
+        break
       if self.length and len(x) >= self.length:
         # Remove the begining if the graph is dynamic
         x = x[-self.length:]
@@ -97,3 +98,6 @@ class Grapher(MasterBlock):
     self.ax.autoscale_view(True, True, True)
     self.f.canvas.draw() # Update the graph
     plt.pause(.01)
+
+  def finish(self):
+    plt.close("all")
