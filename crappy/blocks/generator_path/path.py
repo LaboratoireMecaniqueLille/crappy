@@ -16,17 +16,18 @@ class Path(object):
   def parse_condition(self,condition):
     """
     This method turns a string into a fonction that returns a bool
+
     It is meant to check if a skip condition is reached
-    The following syntaxe is supported:
+    The following syntax is supported:
       myvar>myvalue
       myvar<myvalue
-    myvar is the label of an input value
-    myvalue is a float
-    This will return True when the data under the label myvar will be
-    larger/smaller than myvalue
       delay=mydelay
-    The condtion will turn True after mydelay seconds
-    Any other syntax will return True instantly
+    myvar is the label of an input value.
+    myvalue is a float.
+    This will return True when the data under the label myvar will be
+    larger/smaller than myvalue.
+    The condtion will turn True after mydelay seconds.
+    Any other syntax will return True instantly.
     """
     if not isinstance(condition,str):
       return condition

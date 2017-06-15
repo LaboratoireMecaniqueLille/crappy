@@ -15,3 +15,4 @@ stop = MasterBlock.stop_all
 prepare = MasterBlock.prepare_all
 launch = MasterBlock.launch_all
 start = MasterBlock.start_all
+reset = MasterBlock.reset

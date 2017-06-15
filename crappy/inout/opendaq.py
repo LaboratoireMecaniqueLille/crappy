@@ -1,57 +1,58 @@
 # coding: utf-8
 
-
-from time import time,sleep
+from time import time, sleep
 
 import opendaq
 
 from .inout import InOut
 
-def listify(stuff,l):
-  r = stuff if isinstance(stuff,list) else [stuff]*l
-  assert len(r) == l,"Invalid list length for "+str(r)
+
+def listify(stuff, l):
+  r = stuff if isinstance(stuff, list) else [stuff] * l
+  assert len(r) == l, "Invalid list length for " + str(r)
   return r
+
 
 class Opendaq(InOut):
   """
   Can read data from an OpenDAQ card
   """
+
   def __init__(self, **kwargs):
     InOut.__init__(self)
-    for arg,default in [('channels',1),
-                        ('port','/dev/ttyUSB0'),
-                        ('gain',1),
-                        ('offset',0),
-                        ('cmd_label','cmd'),
-                        ('out_gain',1),
-                        ('out_offset',0),
-                        ('make_zero',True),
-                        ('mode','single'),
-                        ('nsamples',20)
-                        ]:
+    for arg, default in [('channels', 1),
+                         ('port', '/dev/ttyUSB0'),
+                         ('gain', 1),
+                         ('offset', 0),
+                         ('cmd_label', 'cmd'),
+                         ('out_gain', 1),
+                         ('out_offset', 0),
+                         ('make_zero', True),
+                         ('mode', 'single'),
+                         ('nsamples', 20)
+                         ]:
       if arg in kwargs:
-        setattr(self,arg,kwargs[arg])
+        setattr(self, arg, kwargs[arg])
         del kwargs[arg]
       else:
-        setattr(self,arg,default)
-    assert len(kwargs) == 0,"Open_daq got unsupported kwarg(s)"+str(kwargs)
-    self.channels = self.channels if isinstance(self.channels,list) else\
-          [self.channels]
+        setattr(self, arg, default)
+    assert len(kwargs) == 0, "Open_daq got unsupported kwarg(s)" + str(kwargs)
+    self.channels = self.channels if isinstance(self.channels, list) else \
+      [self.channels]
     n = len(self.channels)
-    self.gain = listify(self.gain,n)
-    self.offset = listify(self.offset,n)
-    self.make_zero = listify(self.make_zero,n)
-
+    self.gain = listify(self.gain, n)
+    self.offset = listify(self.offset, n)
+    self.make_zero = listify(self.make_zero, n)
 
   def open(self):
     self.handle = opendaq.DAQ(self.port)
     if any(self.make_zero):
       off = self.eval_offset()
-      for i,make_zero in enumerate(self.make_zero):
+      for i, make_zero in enumerate(self.make_zero):
         if make_zero:
           self.offset[i] += off[i]
     if len(self.channels) == 1:
-      self.handle.conf_adc(pinput=self.channels[0],ninput=0,gain=1)
+      self.handle.conf_adc(pinput=self.channels[0], ninput=0, gain=1)
     if self.mode == 'streamer':
       self.init_stream()
 
@@ -90,20 +91,20 @@ class Opendaq(InOut):
   def get_data(self):
     t = [time()]
     if len(self.channels) == 1:
-      return t+[self.handle.read_analog()]
+      return t + [self.handle.read_analog()]
     else:
       l = self.handle.read_all()
-      return t+[l[i-1] for i in self.channels]
+      return t + [l[i - 1] for i in self.channels]
 
   def get_stream(self):
     if not self.stream_started:
       self.start_stream()
     return next(self.generator)
 
-  def set_cmd(self,v):
-    self.handle.set_analog(v*self.out_gain+self.out_offset)
+  def set_cmd(self, v):
+    self.handle.set_analog(v * self.out_gain + self.out_offset)
 
   def close(self):
-    if hasattr(self,'handle') and self.handle is not None:
+    if hasattr(self, 'handle') and self.handle is not None:
       self.handle.stop()
       self.handle.close()

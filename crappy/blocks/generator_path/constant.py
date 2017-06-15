@@ -5,7 +5,13 @@ from .path import Path
 
 class Constant(Path):
   """
-  Simplest condition: will send value unil condition is reached and end
+  Simplest condition. It will send value until condition is reached
+
+  Args:
+    value: What value must be sent.
+
+    condition: String representing the condition to end this path.
+    See Path.parse_condition for more detail.
   """
   def __init__(self,time,cmd,condition,value=None):
     Path.__init__(self,time,cmd)

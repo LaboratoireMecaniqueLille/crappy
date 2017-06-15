@@ -7,8 +7,12 @@ import numpy as np
 from .path import Path
 
 class Custom(Path):
-  """To generate a custom path from a file. It must contain 2 columns:
-    time and value"""
+  """To generate a custom path from a file.
+
+  Args:
+    filename: Name of the .csv file.
+    It must contain two columns: one with time, the other with the value
+  """
   def __init__(self,time,cmd,filename):
     Path.__init__(self,time,cmd)
     with open(filename,'r') as f:

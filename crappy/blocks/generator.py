@@ -9,34 +9,38 @@ from .._global import CrappyStop
 
 class Generator(MasterBlock):
   """
-  This block is used to generate a signal. It can be used to drive a machine.
+  This block is used to generate a signal.
+
+  It can be used to drive a machine.
   This block can take inputs, and each path can use these inputs to
   take decisions.
+
   Args:
-  path:
-    It must be a list of dict, each dict providing the parameters to generate
-    the path
-    This dict MUST have a key 'type'
+    path: It must be a list of dict, each dict providing the parameters
+    to generate the path. Each dict MUST have a key 'type'.
     The Generator will then instanciate generator_path.**type** with all the
     other keys as kwargs, adding the current cmd and the time.
     On each round, it will call get_cmd method of this class, passing data
     until it raise StopIteration. It will then skip to the next path.
-  When all paths are over, it will stop Crappy by raising CrappyStop
-  unless repeat is set to True. If so, it will start over indefinelty.
-  freq: The frequency of the block
-    if set and positive, the generator will try to send the command at this
-    frequency (Hz). Else, it will go as fast as possible
-    It relies on the MasterBlock freq control scheme (see masterblock.py)
-  cmd_label: the label of the command to send in the links
-    default: 'cmd'
-  cmd: The first value of the command
-    default: 0
-    Some paths may rely on the previous value to guarantee a continuous signal
-    This argument sets the initial value for the first signal
-  repeat: Loop over the paths or stop when done ?
-    If False, the block will raise a CrappyStop exception to end the program
-    when all the paths have been executed
-    If True, the Generator will start over and over again
+    When all paths are over, it will stop Crappy by raising CrappyStop
+    unless repeat is set to True. If so, it will start over indefinelty.
+
+  Kwargs:
+    freq: (default=500) The frequency of the block.
+      If set and positive, the generator will try to send the command at this
+      frequency (Hz). Else, it will go as fast as possible.
+      It relies on the MasterBlock freq control scheme (see masterblock.py).
+
+    cmd_label: (default='cmd') The label of the command to send in the links.
+
+    cmd: (default=0) The first value of the command.
+      Some paths may rely on the previous value to guarantee a continuous signal
+      This argument sets the initial value for the first signal
+
+    repeat: (default=False) Loop over the paths or stop when done ?
+      If False, the block will raise a CrappyStop exception to end the program
+      when all the paths have been executed
+      If True, the Generator will start over and over again
   """
   def __init__(self,path=[],**kwargs):
     MasterBlock.__init__(self)

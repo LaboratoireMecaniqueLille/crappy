@@ -7,19 +7,32 @@ from .path import Path
 
 class Cyclic_ramp(Path):
   """
-  A "boosted" cyclic path: will take TWO speeds and condtions.
-  It will start the first ramp, switch to the second when the first condtion
-  is reached and restart the first when the second condtion is reached.
+  A "boosted" ramp path: will take TWO values and condtions.
+
+  It will make a ramp of speed speed1, switch to the second when the first
+  condtion is reached and return to the first when the second condtion
+  is reached.
   This will be done "cycles" times (supporting half cycles for ending after
-  the first condition), always preserving continuity
+  the first condition)
+
+  Args:
+    speed1: Speed of the first ramp.
+
+    condition1: String representing the condition to switch to speed2.
+    See Path.parse_condition for more detail.
+
+    speed2: Speed of the second ramp.
+
+    condition2: String representing the condition to switch to speed1.
+
+    cycles: Number of time we should be doing this.
+        cycles = 0 will make it loop forever
   [{'type':'cyclic_ramp','speed1':5,'condition1':'AIN0>2',
   'speed2':-2,'condition2':'AIN1<1','cycles':5}]
   is equivalent to
   [{'type':'ramp','speed':5,'condition':'AIN0>2'},
   {'type':'ramp','value':-2,'condition':'AIN1<1'}]*5
-  Note that unlike paths.Constant, paths.Cyclic will ignore previous value
-  of cmd and set value1 before any condition is reached
-  """
+ """
   def __init__(self,time,cmd,condition1,condition2,speed1,speed2,cycles=1,
       verbose=False):
     Path.__init__(self,time,cmd)

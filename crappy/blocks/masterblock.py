@@ -4,6 +4,7 @@
 from sys import platform
 from multiprocessing import Process, Pipe
 from time import sleep, time, localtime, strftime
+from weakref import WeakSet
 
 from .._global import CrappyStop
 
@@ -46,7 +47,7 @@ class MasterBlock(Process):
         start and launch method will return instantly
 
   """
-  instances = []
+  instances = WeakSet()
 
   def __init__(self):
     Process.__init__(self)
@@ -62,11 +63,12 @@ class MasterBlock(Process):
 
   def __new__(cls, *args, **kwargs):
     instance = super().__new__(cls)
-    MasterBlock.instances.append(instance)
+    MasterBlock.instances.add(instance)
     return instance
 
-  def __del__(self):
-    MasterBlock.instances.remove(self)
+  @classmethod
+  def reset(cls):
+    cls.instances = WeakSet()
 
   def run(self):
     self.in_process = True  # we are in the process
@@ -125,7 +127,7 @@ class MasterBlock(Process):
     vprint("All processes are started.")
 
   @classmethod
-  def launch_all(cls, t0=None, verbose=True):
+  def launch_all(cls, t0=None, verbose=True, bg=False):
     if verbose:
       def vprint(*args):
         print("[launch]", *args)
@@ -143,6 +145,8 @@ class MasterBlock(Process):
       instance.launch(t0)
     t1 = time()
     vprint("All blocks loop started. It took", (t1 - t0) * 1000, "ms")
+    if bg:
+      return
     try:
       # Keep running
       l = cls.get_status()
@@ -165,9 +169,9 @@ class MasterBlock(Process):
         print(b)
 
   @classmethod
-  def start_all(cls, t0=None, verbose=True):
+  def start_all(cls, t0=None, verbose=True,bg=False):
     cls.prepare_all(verbose)
-    cls.launch_all(t0, verbose)
+    cls.launch_all(t0, verbose, bg)
 
   @classmethod
   def stop_all(cls, verbose=True):
@@ -263,14 +267,20 @@ class MasterBlock(Process):
     self._status = s
 
   def prepare(self):
-    """The first code to be run in the new process, will only be called
-    once and before the actual start of the main launch of the blocks
-    can do nothing"""
+    """
+    This will be run when creating the process, but before the actual start
+
+    The first code to be run in the new process, will only be called
+    once and before the actual start of the main launch of the blocks.
+    It can stay empty to do nothing.
+    """
     pass
 
   def send(self, data):
     """
-    Send has 2 ways to operate: you can either build the dict yourself
+    To send the data to all blocks downstream
+
+    Send has 2 ways to operate: you can either build the ordered dict yourself
     or you can define self.labels (usually time first) and call send with a
     list. It will then map them to the dict.
     Note that ONLY dict can go through links
@@ -288,6 +298,8 @@ class MasterBlock(Process):
 
   def get_last(self, num=None):
     """
+    To get the latest value of each labels from all inputs
+
     Unlike the recv methods of Link, get_last is NOT guaranteed to return
     all the data going through the links! It is meant to get the latest values,
     discarding all the previous one (for a displayer for example)
@@ -315,9 +327,10 @@ class MasterBlock(Process):
 
   def get_all_last(self, num=None):
     """
+    To get the data from all links of the block
+
     Almost the same as get_last, but will return all the data that goes
-    through the links (in lists). Note that it may return empty lists if
-    no data was received between two successive calls.
+    through the links (in lists).
     Also, if multiple links have the same label,
     only the last link's value will be kept
     """
@@ -341,8 +354,12 @@ class MasterBlock(Process):
     return ret
 
   def drop(self, num=None):
-    """Will clear the inputs of the blocks, performs like get_last
-    but returns None instantly"""
+    """
+    Will clear the inputs of the blocks
+
+    This method performs like get_last
+    but returns None instantly
+    """
     if num is None:
       num = range(len(self.inputs))
     elif not isinstance(num,list):
