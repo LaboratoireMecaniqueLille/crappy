@@ -4,6 +4,7 @@ from __future__ import print_function,division
 from sys import platform
 from multiprocessing import Process, Pipe
 from time import sleep, time, localtime, strftime
+from weakref import WeakSet
 
 from .._global import CrappyStop
 
@@ -46,7 +47,7 @@ class MasterBlock(Process):
         start and launch method will return instantly
 
   """
-  instances = []
+  instances = WeakSet()
 
   def __init__(self):
     Process.__init__(self)
@@ -62,11 +63,12 @@ class MasterBlock(Process):
 
   def __new__(cls, *args, **kwargs):
     instance = super(MasterBlock, cls).__new__(cls, *args, **kwargs)
-    MasterBlock.instances.append(instance)
+    MasterBlock.instances.add(instance)
     return instance
 
-  def __del__(self):
-    MasterBlock.instances.remove(self)
+  @classmethod
+  def reset(cls):
+    cls.instances = WeakSet()
 
   def run(self):
     self.in_process = True  # we are in the process
@@ -125,7 +127,7 @@ class MasterBlock(Process):
     vprint("All processes are started.")
 
   @classmethod
-  def launch_all(cls, t0=None, verbose=True):
+  def launch_all(cls, t0=None, verbose=True, bg=False):
     if verbose:
       def vprint(*args):
         print("[launch]", *args)
@@ -143,6 +145,8 @@ class MasterBlock(Process):
       instance.launch(t0)
     t1 = time()
     vprint("All blocks loop started. It took", (t1 - t0) * 1000, "ms")
+    if bg:
+      return
     try:
       # Keep running
       l = cls.get_status()
@@ -165,9 +169,9 @@ class MasterBlock(Process):
         print(b)
 
   @classmethod
-  def start_all(cls, t0=None, verbose=True):
+  def start_all(cls, t0=None, verbose=True,bg=False):
     cls.prepare_all(verbose)
-    cls.launch_all(t0, verbose)
+    cls.launch_all(t0, verbose, bg)
 
   @classmethod
   def stop_all(cls, verbose=True):
