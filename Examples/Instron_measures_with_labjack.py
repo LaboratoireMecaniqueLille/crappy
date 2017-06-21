@@ -6,7 +6,7 @@ import time
 import crappy
 import numpy as np
 
-class EvalStress(crappy.condition):
+class EvalStress(crappy.links.Condition):
   """
   Classe utilisée pour effectuer des opérations sur les valeurs mesurées.
   Exemple avec un calcul de contraintes et de cycles.  
