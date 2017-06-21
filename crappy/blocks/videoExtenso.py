@@ -81,7 +81,7 @@ class Video_extenso(MasterBlock):
 
     centers = map(lambda r: (r['y'],r['x']),self.ve.spot_list)
     self.send([t-self.t0,centers]+d)
-    if self.save_folder:
+    if self.save_folder and not self.loops%self.save_period:
       image = sitk.GetImageFromArray(img)
       sitk.WriteImage(image,
                self.save_folder + "img_%.6d_%.5f.tiff" % (
