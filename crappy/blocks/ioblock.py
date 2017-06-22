@@ -1,6 +1,5 @@
 # coding: utf-8
 from __future__ import print_function
-from collections import OrderedDict
 from .masterblock import MasterBlock
 from ..inout import inout_list, in_list, out_list
 
@@ -8,6 +7,7 @@ from ..inout import inout_list, in_list, out_list
 class IOBlock(MasterBlock):
   """
   This block is used to communicate with inout objects
+
   Then can be used as sensor, command or both.
   It only takes a single argument:
     name (str): The name of the inout class to instanciate
