@@ -14,7 +14,7 @@ class Webcam(Camera):
     self.cap = None
     # No sliders for the camera: they usually only allow a few resolutions
     self.add_setting("width",self._get_w,self._set_w,(1,1920))
-    self.add_setting("height",self._get_h,self._set_h,(1,2080))
+    self.add_setting("height",self._get_h,self._set_h,(1,1080))
     self.add_setting("channels", limits = {1:1,3:3}, default = 1)
 
   def _get_w(self):
