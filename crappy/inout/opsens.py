@@ -1,6 +1,4 @@
 # coding: utf-8
-from __future__ import print_function
-
 import serial
 from time import time
 from .inout import InOut

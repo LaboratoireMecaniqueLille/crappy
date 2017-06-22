@@ -122,6 +122,7 @@ class Camera_config(object):
     self.scales = {}
     self.radios = {}
     self.checks = {}
+    i = 0
     for i,k in enumerate(settings):
       s = self.camera.settings[k]
       if type(s.limits) == tuple:

@@ -1,12 +1,13 @@
 #coding: utf-8
 
-
 from .masterblock import MasterBlock
-from ..inout import inout_list,in_list,out_list
+from ..inout import inout_list, in_list, out_list
+
 
 class IOBlock(MasterBlock):
   """
   This block is used to communicate with inout objects
+
   Then can be used as sensor, command or both.
   It only takes a single argument:
     name (str): The name of the inout class to instanciate
@@ -28,25 +29,26 @@ class IOBlock(MasterBlock):
     streamer (bool): If False (default), will call get_data
       else, will call get_stream
   """
-  def __init__(self,name,**kwargs):
+
+  def __init__(self, name, **kwargs):
     MasterBlock.__init__(self)
-    for arg,default in [('freq',None),
-                        ('verbose',False),
-                        ('labels',['t(s)','1']),
-                        ('cmd_labels',[]),
-                        ('trigger',None),
-                        ('streamer',False),
-                        ('initial_cmd',0)
-                        ]:
+    for arg, default in [('freq', None),
+                         ('verbose', False),
+                         ('labels', ['t(s)', '1']),
+                         ('cmd_labels', []),
+                         ('trigger', None),
+                         ('streamer', False),
+                         ('initial_cmd', 0)
+                         ]:
       if arg in kwargs:
-        setattr(self,arg,kwargs[arg])
+        setattr(self, arg, kwargs[arg])
         del kwargs[arg]
       else:
-        setattr(self,arg,default)
+        setattr(self, arg, default)
     self.device_name = name.capitalize()
     self.device_kwargs = kwargs
-    if not isinstance(self.initial_cmd,list):
-      self.initial_cmd = [self.initial_cmd]*len(self.cmd_labels)
+    if not isinstance(self.initial_cmd, list):
+      self.initial_cmd = [self.initial_cmd] * len(self.cmd_labels)
 
   def prepare(self):
     self.to_get = list(range(len(self.inputs)))
@@ -54,10 +56,10 @@ class IOBlock(MasterBlock):
       self.to_get.remove(self.trigger)
     self.mode = 'r' if self.outputs else ''
     self.mode += 'w' if self.to_get else ''
-    assert self.mode != '',"ERROR: IOBlock is neither an input nor an output!"
+    assert self.mode != '', "ERROR: IOBlock is neither an input nor an output!"
     if 'w' in self.mode:
-      assert self.cmd_labels,"ERROR: IOBlock has an input block but no"\
-          "cmd_labels specified!"
+      assert self.cmd_labels, "ERROR: IOBlock has an input block but no" \
+                              "cmd_labels specified!"
     if self.mode == 'rw':
       self.device = inout_list[self.device_name](**self.device_kwargs)
     elif self.mode == 'r':
@@ -74,8 +76,10 @@ class IOBlock(MasterBlock):
       data = self.device.get_stream()
     else:
       data = self.device.get_data()
-    if isinstance(data[0],list):
-      data[0] = [i-self.t0 for i in data[0]]
+    if isinstance(data, dict):
+      pass
+    elif isinstance(data[0], list):
+      data[0] = [i - self.t0 for i in data[0]]
     else:
       data[0] -= self.t0
     self.send(data)

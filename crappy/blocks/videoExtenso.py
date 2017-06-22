@@ -1,8 +1,9 @@
 ﻿# coding: utf-8
 
-
 import cv2
 import sys
+import os
+import SimpleITK as sitk
 
 from ..tool.videoextenso import LostSpotError,Video_extenso as VE
 from ..tool.videoextensoConfig import VE_config
@@ -33,6 +34,8 @@ class Video_extenso(MasterBlock):
     self.cam_kwargs = kwargs
 
   def prepare(self):
+    if self.save_folder and not os.path.exists(self.save_folder):
+      os.makedirs(self.save_folder)
     self.cam = Camera.classes[self.camera]()
     self.cam.open(**self.cam_kwargs)
     self.ve = VE(**self.ve_kwargs)
@@ -75,9 +78,13 @@ class Video_extenso(MasterBlock):
         self.last_fps_print = t
         self.last_fps_loops = self.loops
 
-
     centers = [(r['y'],r['x']) for r in self.ve.spot_list]
     self.send([t-self.t0,centers]+d)
+    if self.save_folder and not self.loops%self.save_period:
+      image = sitk.GetImageFromArray(img)
+      sitk.WriteImage(image,
+               self.save_folder + "img_%.6d_%.5f.tiff" % (
+               self.loops, t-self.t0))
 
   def finish(self):
     self.ve.stop_tracking()
