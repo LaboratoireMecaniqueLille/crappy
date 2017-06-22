@@ -25,9 +25,9 @@ class Streamer(Camera):
     pattern: the regular expression matching the images and returning the time
       The default value is compatible with the naming method of the Camera
       and Videoextenso blocks. (str, default= "img_\d+_(\d+\.\d+)\.tiff").
-      \d matches digits, \d+ matches a group of digits.
+      "\d" matches digits, "\d+" matches a group of digits.
       () is a capturing group, returning what is inside. Dot is a special
-      character and needs to be escaped (hence the \.).
+      character and needs to be escaped (hence the "\.").
 
     start_delay: Before actually streaming the image flux, you can set
       a delay in secongs during which the first image will be streamed in
