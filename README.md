@@ -41,12 +41,12 @@ Se documentation for more details
 Documentation
 -------------
 
-The documentation is generated with doxywizard:
+The latest version for the branch master can be accessed at
+https://laboratoiremecaniquelille.github.io/crappy/
 
-Please install doxygen and pluggins as follow:
+To build it yourself, install doxygen, doxypy and doxygen-gui:
 
-sudo apt-get install doxygen doxygen-gui
-sudo apt-get instal doxypy
+    sudo apt-get install doxygen doxypy doxygen-gui
 
 Then, download and install the doxypypy project.
 
