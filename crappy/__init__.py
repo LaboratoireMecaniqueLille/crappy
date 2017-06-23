@@ -15,4 +15,5 @@ stop = MasterBlock.stop_all
 prepare = MasterBlock.prepare_all
 launch = MasterBlock.launch_all
 start = MasterBlock.start_all
+renice = MasterBlock.renice_all
 reset = MasterBlock.reset

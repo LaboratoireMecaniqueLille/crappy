@@ -24,6 +24,7 @@ class Saver(MasterBlock):
   """
   def __init__(self,filename,delay=5,labels='t(s)'):
     MasterBlock.__init__(self)
+    self.niceness = -5
     self.delay = delay
     self.filename = filename
     self.labels = labels

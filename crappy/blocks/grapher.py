@@ -45,6 +45,7 @@ class Grapher(MasterBlock):
 
   def __init__(self, *args, **kwargs):
     MasterBlock.__init__(self)
+    self.niceness = 10
     self.length = kwargs.pop("length", 0)
     self.freq = kwargs.pop("freq", 5)
     self.maxpt = kwargs.pop("maxpt", 20000)

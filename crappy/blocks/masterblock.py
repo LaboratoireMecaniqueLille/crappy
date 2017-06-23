@@ -8,6 +8,20 @@ from weakref import WeakSet
 
 from .._global import CrappyStop
 
+import subprocess
+
+def renice(pid,niceness):
+  """
+  Function to renice a process
+
+  Only works on Linux. The user must be allowed to use sudo to renice with
+  a negative value. It may ask for a password for negative values.
+  """
+  if niceness < 0:
+    subprocess.call(['sudo','renice',str(niceness),'-p',str(pid)])
+  else:
+    subprocess.call(['renice',str(niceness),'-p',str(pid)])
+
 
 class MasterBlock(Process):
   """
@@ -60,6 +74,7 @@ class MasterBlock(Process):
     self.pipe1, self.pipe2 = Pipe()
     self._status = "idle"
     self.in_process = False  # To know if we are in the process or not
+    self.niceness = 0
 
   def __new__(cls, *args, **kwargs):
     instance = super(MasterBlock, cls).__new__(cls, *args, **kwargs)
@@ -108,6 +123,23 @@ class MasterBlock(Process):
     """
     l = cls.get_status()
     return len(set(l)) == 1 and s in l
+
+  @classmethod
+  def renice_all(cls,high_prio=True,verbose=True):
+    """
+    Will renice all the blocks processes according to block.niceness value
+
+    If high_prio is False, blocks with a negative niceness value will
+    be ignored. This is to avoid asking for the sudo password since only
+    root can lower the niceness of processes.
+    """
+    if "win" in platform:
+      # Not supported on Windows yet
+      return
+    for b in cls.instances:
+      if b.niceness < 0 and high_prio or b.niceness > 0:
+        print("[renice] Renicing",b.pid,"to",b.niceness)
+        renice(b.pid,b.niceness)
 
   @classmethod
   def prepare_all(cls, verbose=True):
@@ -169,8 +201,11 @@ class MasterBlock(Process):
         print(b)
 
   @classmethod
-  def start_all(cls, t0=None, verbose=True,bg=False):
+  def start_all(cls, t0=None, verbose=True,bg=False,high_prio=False):
     cls.prepare_all(verbose)
+    if high_prio and any([b.niceness < 0 for b in cls.instances]):
+      print("[start] High prio: root premission needed to renice")
+    cls.renice_all(high_prio,verbose=verbose)
     cls.launch_all(t0, verbose, bg)
 
   @classmethod

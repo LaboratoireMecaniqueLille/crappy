@@ -32,6 +32,7 @@ class IOBlock(MasterBlock):
 
   def __init__(self, name, **kwargs):
     MasterBlock.__init__(self)
+    self.niceness = -10
     for arg, default in [('freq', None),
                          ('verbose', False),
                          ('labels', ['t(s)', '1']),

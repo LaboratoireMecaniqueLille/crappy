@@ -37,6 +37,7 @@ class Camera(MasterBlock):
       See below for default values
     """
     MasterBlock.__init__(self)
+    self.niceness = -10
     for arg,default in [("save_folder",None),
                         ("label","cycle"),
                         ("show_fps",False),

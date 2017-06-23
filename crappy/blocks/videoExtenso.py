@@ -14,6 +14,7 @@ from ..camera import Camera
 class Video_extenso(MasterBlock):
   def __init__(self,**kwargs):
     MasterBlock.__init__(self)
+    self.niceness = -5
     default_labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
     for arg,default in [("camera","Ximea"),
                         ("save_folder",None),
