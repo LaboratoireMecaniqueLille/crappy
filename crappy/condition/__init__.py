@@ -4,6 +4,7 @@ from .condition import Condition,MetaCondition
 
 condition_list = MetaCondition.classes
 
+from .derive import Derive
 from .integrate import Integrate
 from .mean import Mean
 from .median import Median
