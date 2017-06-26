@@ -48,6 +48,7 @@ class IOBlock(MasterBlock):
         setattr(self, arg, default)
     self.device_name = name.capitalize()
     self.device_kwargs = kwargs
+    self.stream_idle = True
     if not isinstance(self.initial_cmd, list):
       self.initial_cmd = [self.initial_cmd] * len(self.cmd_labels)
 
@@ -74,6 +75,9 @@ class IOBlock(MasterBlock):
   def read(self):
     """Will read the device and send the data"""
     if self.streamer:
+      if self.stream_idle:
+        self.device.start_stream()
+        self.stream_idle = False
       data = self.device.get_stream()
     else:
       data = self.device.get_data()
