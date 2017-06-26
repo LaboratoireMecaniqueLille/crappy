@@ -1,5 +1,7 @@
 #coding: utf-8
 
+from time import time
+
 from .masterblock import MasterBlock
 from ..actuator import actuator_list
 
@@ -25,9 +27,10 @@ class Machine(MasterBlock):
         with this label
       speed_label: same as pos_label but with get_speed
   """
-  def __init__(self, actuators,common={},freq=200):
+  def __init__(self, actuators,common={},freq=200,time_label='t(s)'):
     MasterBlock.__init__(self)
     self.freq = freq
+    self.time_label = time_label
     self.settings = [{} for i in actuators]
     for setting,d in zip(self.settings,actuators):
       d.update(common)
@@ -69,6 +72,7 @@ class Machine(MasterBlock):
       if 'speed_label' in setting:
         to_send[setting['speed_label']] = actuator.get_speed()
     if to_send != {}:
+      to_send[self.time_label] = time() - self.t0
       self.send(to_send)
 
   def finish(self):
