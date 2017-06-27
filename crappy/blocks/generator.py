@@ -44,6 +44,7 @@ class Generator(MasterBlock):
   """
   def __init__(self,path=[],**kwargs):
     MasterBlock.__init__(self)
+    self.niceness = -5
     for arg,default in [('freq',500),
                         ('cmd_label','cmd'),
                         ('cycle_label','cycle'),
