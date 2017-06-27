@@ -59,14 +59,9 @@ class Machine(MasterBlock):
         **setting['kwargs']))
       self.actuators[-1].open()
 
-  def loop(self):
-    recv = self.get_last()
+  def send_data(self):
     to_send = {}
     for actuator,setting in zip(self.actuators,self.settings):
-      if setting['mode'] == 'speed':
-        actuator.set_speed(recv[setting['cmd']])
-      elif setting['mode'] == 'position':
-        actuator.set_position(recv[setting['cmd']],setting['speed'])
       if 'pos_label' in setting:
         to_send[setting['pos_label']] = actuator.get_pos()
       if 'speed_label' in setting:
@@ -74,6 +69,18 @@ class Machine(MasterBlock):
     if to_send != {}:
       to_send[self.time_label] = time() - self.t0
       self.send(to_send)
+
+  def begin(self):
+    self.send_data()
+
+  def loop(self):
+    recv = self.get_last()
+    for actuator,setting in zip(self.actuators,self.settings):
+      if setting['mode'] == 'speed':
+        actuator.set_speed(recv[setting['cmd']])
+      elif setting['mode'] == 'position':
+        actuator.set_position(recv[setting['cmd']],setting['speed'])
+    self.send_data()
 
   def finish(self):
     for actuator in self.actuators:
