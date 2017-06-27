@@ -15,6 +15,7 @@ from .machine import Machine
 from .masterblock import MasterBlock
 from .measureByStep import MeasureByStep
 from .multiplex import Multiplex
+from .pid import PID
 from .reader import Reader
 from .saver import Saver
 from .signalGenerator import SignalGenerator
