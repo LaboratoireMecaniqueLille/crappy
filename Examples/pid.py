@@ -30,9 +30,9 @@ crappy.link(g,graph_m)
 #crappy.link(g,mot)
 #crappy.start()
 
-p = 20/kv
+p = 30/kv
 i = 10/kv
-d = 1/kv
+d = .8/kv
 
 pid = crappy.blocks.PID(kp=p,
                         ki=i,
@@ -45,7 +45,7 @@ pid = crappy.blocks.PID(kp=p,
 crappy.link(g,pid)
 crappy.link(pid,mot)
 crappy.link(mot,pid)
-crappy.link(mot,pid,condition=crappy.condition.Moving_avg(15))
+#crappy.link(mot,pid,condition=crappy.condition.Moving_avg(15))
 
 
 
@@ -58,4 +58,5 @@ graph_pid2 = crappy.blocks.Grapher(('t(s)','p_term'),
 
 crappy.link(pid,graph_pid2)
 
-crappy.start(high_prio=True)
+#crappy.start(high_prio=True)
+crappy.start()
