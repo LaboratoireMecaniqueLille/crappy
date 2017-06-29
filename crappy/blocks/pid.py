@@ -65,8 +65,8 @@ class PID(MasterBlock):
   def set_k(self,kp,ki=0,kd=0):
     s = -1 if self.reverse else 1
     self.kp = s*kp
-    self.ki = s*ki
-    self.kd = s*kd
+    self.ki = s*kp*ki
+    self.kd = s*kp*kd
 
   def loop(self):
     data = self.inputs[self.feedback_link_id].recv_last(True)

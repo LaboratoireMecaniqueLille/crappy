@@ -4,9 +4,10 @@ from __future__ import print_function,division
 import crappy
 
 g = crappy.blocks.Generator([
-  {'type':'ramp','speed':100,'condition':'delay=10'},
-  {'type':'constant','value':1800,'condition':'delay=10'},
-  {'type':'constant','value':500,'condition':'delay=10'},
+  {'type':'constant','value':1000,'condition':'delay=3'},
+  {'type':'ramp','speed':100,'condition':'delay=5','cmd':0},
+  {'type':'constant','value':1800,'condition':'delay=3'},
+  {'type':'constant','value':500,'condition':'delay=3'},
   {'type':'sine','amplitude':2000,'offset':1000,'freq':.3,'condition':'delay=15'}
   ])
 
@@ -30,9 +31,9 @@ crappy.link(g,graph_m)
 #crappy.link(g,mot)
 #crappy.start()
 
-p = 30/kv
-i = 10/kv
-d = .8/kv
+p = 38/kv
+i = .28
+d = .015
 
 pid = crappy.blocks.PID(kp=p,
                         ki=i,
