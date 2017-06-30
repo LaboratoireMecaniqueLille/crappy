@@ -30,6 +30,8 @@ class Saver(MasterBlock):
     self.labels = labels
 
   def prepare(self):
+    assert self.inputs, "No input connected to the saver!"
+    assert len(self.inputs) == 1, "Cannot link more than one block to a saver!"
     if not path.exists(path.dirname(self.filename)):
       # Create the folder if it does not exist
       makedirs(path.dirname(self.filename))
@@ -47,8 +49,6 @@ class Saver(MasterBlock):
     """
     This is meant to receive data once and adapt the label list
     """
-    assert self.inputs, "No input connected to the saver!"
-    assert len(self.inputs) == 1, "Cannot link more than one block to a saver!"
     self.last_save = self.t0
     r = self.inputs[0].recv_delay(self.delay) # To know the actual labels
     if self.labels:
