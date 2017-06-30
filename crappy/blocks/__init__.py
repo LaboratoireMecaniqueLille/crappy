@@ -26,3 +26,8 @@ try:
   from .correl import Correl
 except ImportError:
   Correl = NotInstalled('Correl')
+
+try:
+  from .hdf_saver import Hdf_saver
+except ImportError:
+  Hdf_saver = NotInstalled("Hdf_saver")
