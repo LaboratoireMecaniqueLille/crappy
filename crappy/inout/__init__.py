@@ -8,7 +8,10 @@ from .inout import InOut,MetaIO
 from .agilent34420A import Agilent34420A
 from .arduino import Arduino
 from .opsens import Opsens
-from .spectrum import Spectrum
+try:
+  from .spectrum import Spectrum
+except (ImportError,OSError):
+  Spectrum = NotInstalled("Spectrum")
 try:
   from .comedi import Comedi
 except ImportError:
