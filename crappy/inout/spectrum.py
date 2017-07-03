@@ -18,7 +18,8 @@ class Spectrum(InOut):
                         ('ranges',[1000]),
                         ('freq',100000),
                         ('buff_size',2**22),  # 4 MB
-                        ('notify_size',2**16) # 64 kB
+                        ('notify_size',2**16), # 64 kB
+                        ('split_chan',False) # If False, sends the 2D array
                         ]:
       setattr(self,arg,kwargs.pop(arg,default))
     if kwargs:
@@ -74,8 +75,8 @@ class Spectrum(InOut):
     start = self.t0 + self.dt*self.n
     t = np.arange(start,start+(self.bs-1)*self.dt,self.dt)
     spc.dwSetParam(self.h,spc.SPC_M2CMD,spc.M2CMD_DATA_WAITDMA)
-    self.status = spc.dwGetParam(self.h, spc.SPC_M2STATUS)
-    self.avail = spc.dwGetParam(self.h, spc.SPC_DATA_AVAIL_USER_LEN)
+    #self.status = spc.dwGetParam(self.h, spc.SPC_M2STATUS)
+    #self.avail = spc.dwGetParam(self.h, spc.SPC_DATA_AVAIL_USER_LEN)
     self.pcpos = spc.dwGetParam(self.h, spc.SPC_DATA_AVAIL_USER_POS)
     a = np.frombuffer(self.buff,dtype=np.int16,
                           count=self.notify_size//2,
@@ -94,5 +95,8 @@ class Spectrum(InOut):
     del a
     spc.dwSetParam(self.h, spc.SPC_DATA_AVAIL_CARD_LEN,  self.notify_size)
     self.n += self.bs
-    return [t]+[r[:,i] for i in range(len(self.channels))]
+    if self.split_chan:
+      return [t]+[r[:,i] for i in range(len(self.channels))]
+    else:
+      return [t,r]
     #total += notify_size
