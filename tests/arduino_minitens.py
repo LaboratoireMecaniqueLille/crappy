@@ -17,9 +17,9 @@ import crappy
 arduino = crappy.blocks.IOBlock("Arduino",
                                 port='/dev/ttyACM0',
                                 baudrate=115200,
-                                frames=['monitor', 'submit', 'minitens'],
-                                labels=['current_millis', 'effort'])
+                                frames=['minitens'],
+                                labels=['mil', 'eff'])
 
-graph = crappy.blocks.Grapher(('current_millis', 'effort'), length=10)
+graph = crappy.blocks.Grapher(('mil', 'eff'), length=10)
 crappy.link(arduino, graph)
 crappy.start()
