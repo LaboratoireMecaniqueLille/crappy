@@ -8,7 +8,7 @@ from time import time
 from collections import OrderedDict
 from multiprocessing import Process, Queue
 from ast import literal_eval
-
+from ..tool.minitens import MinitensFrame
 from .inout import InOut
 
 
@@ -115,295 +115,6 @@ class SubmitSerialFrame(tk.Frame):
     self.queue.put(message)
 
 
-class MinitensFrame(tk.Frame):
-  def __init__(self, parent, **kwargs):
-    """
-    Special frame used in case of a minitens machine.
-    """
-    tk.Frame.__init__(self, parent)
-    self.grid()
-    self.mode = tk.IntVar()
-    self.create_widgets(**kwargs)
-    self.queue = kwargs.get("queue")
-
-  def add_button(self, widgets_dict, frame, text='Button', bg='white',
-                 command=None):
-    widgets_dict[text] = tk.Button(frame,
-                                   text=text,
-                                   bg=bg,
-                                   relief="raised",
-                                   height=2, width=10,
-                                   command=lambda: self.submit_command(command)
-                                   )
-
-  def add_label(self, widgets_dict, frame, text='label', relief='raised',
-                font=("Courier bold", 12)):
-    widgets_dict[text] = (tk.Label(frame, text=text, relief=relief,
-                                   font=font))
-
-  def add_entry(self, widgets_dict, frame, entry_name):
-    widgets_dict[entry_name] = tk.Entry(frame)
-
-  def add_listbox(self, widgets_dict, frame, name):
-    widgets_dict[name] = tk.Listbox(frame)
-
-  def create_widgets(self, **kwargs):
-    """
-    Frames organization
-      Frame_displayer: to display effort and displacement values.
-      Frame_position: to start and stop the motor, according to pre-defined
-      values.
-      Frame_cycle: cycle generator.
-    """
-    self.frame_displayer = tk.Frame(self,
-                                    relief=tk.SUNKEN,
-                                    borderwidth=1)
-
-    self.frame_position = tk.Frame(self,
-                                   relief=tk.SUNKEN,
-                                   borderwidth=1)
-    self.frame_limits = tk.Frame(self,
-                                 relief=tk.SUNKEN,
-                                 borderwidth=1)
-    self.frame_cycles = tk.Frame(self,
-                                 relief=tk.SUNKEN,
-                                 borderwidth=1)
-
-    self.frame_displayer_widgets = OrderedDict()
-    self.frame_position_widgets = OrderedDict()
-    self.frame_limits_widgets = OrderedDict()
-    self.frame_cycles_widgets = OrderedDict()
-    self.lim_behavior_widgets = OrderedDict()
-
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
-                   text="Effort(N)")
-    self.add_button(self.frame_displayer_widgets,
-                    self.frame_displayer,
-                    text='tare_effort',
-                    command='tare_effort')
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
-                   text='effort',
-                   font=("Courier bold", 48))
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
-                   text='Position(mm)')
-
-    self.add_button(self.frame_displayer_widgets,
-                    self.frame_displayer,
-                    text='tare_position',
-                    command='tare_position')
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
-                   text='position',
-                   font=("Courier bold", 48))
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
-                   text='l0')
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
-                   text='position_prct',
-                   font=("Courier bold", 48))
-    self.add_entry(self.frame_displayer_widgets,
-                   self.frame_displayer,
-                   entry_name='l0_entry')
-
-    for command in ["TRACTION", "STOP", "COMPRESSION"]:
-      self.add_button(self.frame_position_widgets, self.frame_position,
-                      text=command, bg='green', command=command)
-    labels_limits = ['Limites',
-                     'Effort',
-                     'Position',
-                     'Position_prct',
-                     'Haute',
-                     'Basse']
-    labels_entries = ['lim_haute_effort',
-                      'lim_basse_effort',
-                      'lim_haute_position',
-                      'lim_basse_position',
-                      'lim_haute_position_prct',
-                      'lim_basse_position_prct']
-
-    self.lim_behavior = tk.IntVar()
-    self.lim_behavior_widgets["maintien"] = tk.Radiobutton(self.frame_limits,
-                                                           text='Maintien',
-                                                           value=0,
-                                                           variable=self.lim_behavior)
-
-    self.lim_behavior_widgets["decharge"] = tk.Radiobutton(self.frame_limits,
-                                                           text='Cycles :',
-                                                           value=1,
-                                                           variable=self.lim_behavior)
-    self.add_entry(self.lim_behavior_widgets,
-                   self.frame_limits,
-                   'nb_cycles')
-
-    self.add_label(self.frame_limits_widgets,
-                   self.frame_limits,
-                   text='CONSIGNES',
-                   font=("Courier bold", 28))
-
-    for text in labels_limits:
-      self.add_label(self.frame_limits_widgets,
-                     self.frame_limits,
-                     text=text)
-    for entry in labels_entries:
-      self.add_entry(self.frame_limits_widgets,
-                     self.frame_limits,
-                     entry_name=entry)
-
-    self.add_label(self.frame_cycles_widgets,
-                   self.frame_cycles,
-                   text="GENERATEUR DE CYCLES",
-                   font=("Courier bold", 12))
-
-    labels_cycles = ['#',
-                     'Effort min',
-                     'Effort max',
-                     "Position min",
-                     "Position max"]
-    for label in labels_cycles:
-      self.add_label(self.frame_cycles_widgets,
-                     self.frame_cycles,
-                     text=label)
-
-    for label in labels_cycles:
-      self.add_entry(self.frame_cycles_widgets,
-                     self.frame_cycles,
-                     label + '_entry')
-
-    self.add_listbox(self.frame_cycles_widgets,
-                     self.frame_cycles,
-                     name='list_cycles')
-
-    self.frame_displayer_widgets["Effort(N)"].grid(row=0,
-                                                   column=0,
-                                                   columnspan=3,
-                                                   sticky=tk.W)
-    self.frame_displayer_widgets['tare_effort'].grid(row=1,
-                                                     column=0,
-                                                     sticky=tk.W)
-    self.frame_displayer_widgets['effort'].grid(row=1,
-                                                column=1,
-                                                columnspan=2)
-
-    self.frame_displayer_widgets['Position(mm)'].grid(row=2,
-                                                      column=0,
-                                                      columnspan=3,
-                                                      sticky=tk.W)
-    self.frame_displayer_widgets['tare_position'].grid(row=3,
-                                                       column=0,
-                                                       sticky=tk.W)
-    self.frame_displayer_widgets['position'].grid(row=3, column=1,
-                                                  sticky=tk.W)
-    self.frame_displayer_widgets['position_prct'].grid(row=3, column=2,
-
-                                                       sticky=tk.W)
-    self.frame_displayer_widgets['l0'].grid(row=4, column=0, sticky=tk.W)
-    self.frame_displayer_widgets['l0_entry'].grid(row=4, column=1, sticky=tk.W)
-    self.frame_limits_widgets["CONSIGNES"].grid(row=0, columnspan=3)
-
-    # labels_limits = ['Limites',
-    #                  'Effort',
-    #                  'Position',
-    #                  'Position_prct',
-    #                  'Haute',
-    #                  'Basse']
-    labels_entries = ['lim_haute_effort',
-                      'lim_haute_position',
-                      'lim_haute_position_prct',
-                      'lim_basse_effort',
-                      'lim_basse_position',
-                      'lim_basse_position_prct']
-
-    for id, widget in enumerate(self.frame_position_widgets):
-      self.frame_position_widgets[widget].grid(row=0 + 1, column=id)
-
-    for id, widget in enumerate(labels_limits[:4]):
-      self.frame_limits_widgets[widget].grid(row=id + 1, column=0)
-
-    for id, widget in enumerate(labels_limits[4:]):
-      self.frame_limits_widgets[widget].grid(row=1, column=1 + id)
-
-    for id, widget in enumerate(labels_entries[:3]):
-      self.frame_limits_widgets[widget].grid(row=2 + id, column=1)
-
-    for id, widget in enumerate(labels_entries[3:]):
-      self.frame_limits_widgets[widget].grid(row=2 + id, column=2)
-
-    for id, widget in enumerate(self.lim_behavior_widgets):
-      self.lim_behavior_widgets[widget].grid(row=5, column=0 + id, columnspan=1)
-
-    self.frame_cycles_widgets["GENERATEUR DE CYCLES"].grid(row=0, columnspan=4)
-    for id, widget in enumerate(labels_cycles):
-      self.frame_cycles_widgets[widget].grid(row=1, column=id)
-    for id, widget in enumerate(labels_cycles):
-      self.frame_cycles_widgets[widget + '_entry'].grid(row=2, column=id)
-    self.frame_cycles_widgets["list_cycles"].grid(row=3, columnspan=4)
-
-    self.frame_displayer.grid(row=0, column=0)
-    self.frame_position.grid(row=1, column=0)
-    self.frame_limits.grid(row=2, column=0)
-    # self.frame_cycles.grid(row=0, column=1)
-
-  def submit_command(self, arg):
-
-    lim_haute_eff = self.frame_limits_widgets['lim_haute_effort'].get()
-    lim_basse_eff = self.frame_limits_widgets['lim_basse_effort'].get()
-    lim_haute_pos = self.frame_limits_widgets['lim_haute_position'].get()
-    lim_basse_pos = self.frame_limits_widgets['lim_basse_position'].get()
-    lim_haute_pos_prct = self.frame_limits_widgets[
-      'lim_haute_position_prct'].get()
-    lim_basse_pos_prct = self.frame_limits_widgets[
-      'lim_basse_position_prct'].get()
-    nb_cycles = self.lim_behavior_widgets["nb_cycles"].get()
-
-    print('entree et def des limites', lim_basse_pos, lim_haute_eff)
-
-    dico = {"consigne": 1,
-            "vitesse": 200,
-            "lim_haute_effort": lim_haute_eff,
-            "lim_basse_effort": lim_basse_eff,
-            "lim_haute_position": lim_haute_pos,
-            "lim_basse_position": lim_basse_pos,
-            "lim_cycles": nb_cycles,
-            "lim_haute_position_prct": lim_haute_pos_prct,
-            "lim_basse_position_prct": lim_basse_pos_prct,
-            "l0": self.frame_displayer_widgets["l0_entry"].get()
-            }
-
-    if arg == "STOP":
-      dico = {"sens": 0, "consigne": 1}
-    elif arg == "TRACTION":
-      dico["sens"] = 1
-      print('traction')
-    elif arg == "COMPRESSION":
-      dico["sens"] = -1
-      print('compression')
-
-    if arg == "tare_position":
-      dico = {"tare_position": 1}
-    elif arg == "tare_effort":
-      dico = {'tare_effort': 1}
-
-    message = str(dico)
-    print('envoye', message)
-    self.queue.put(message)
-
-  def update_widgets(self, message):
-    try:
-      dico = literal_eval(message)
-      self.frame_displayer_widgets["position"].configure(text=dico[
-        "position_abs"])
-      self.frame_displayer_widgets["effort"].configure(text=dico[
-        "effort"])
-      self.frame_displayer_widgets["position_prct"].configure(text=dico[
-        "position_prct"])
-    except (SyntaxError, EOFError, ValueError):
-      pass
-
-
 class ArduinoHandler(object):
   def __init__(self, port, baudrate, queue_process, width, fontsize, frames):
     """Special class called in a new process, that handles
@@ -471,27 +182,34 @@ class ArduinoHandler(object):
     """
     while True:
       try:
-        message = self.collect_serial_queue.get(block=True, timeout=0.01)
+        serial_received = self.collect_serial_queue.get(block=True,
+                                                        timeout=0.01)
       except Empty:
-        # In case there is a queue timeout
-        self.root.update()
-
+        serial_received = None
+        self.root.update()  # In case there is a queue timeout
       try:
-        if "monitor" in self.frames:
-          self.monitor_frame.update_widgets(message)
-        if "minitens" in self.frames:
-          self.minitens_frame.update_widgets(message)
-        self.queue_process.put(message)  # Message is sent to the crappy
-        message = ""
-        # process.
-      except (AttributeError, UnboundLocalError):
-        pass
-
-      try:
-        to_send = self.submit_serial_queue.get(block=False)
-        self.arduino_ser.write(to_send)
+        serial_to_send = self.submit_serial_queue.get(block=False)
+        self.arduino_ser.write(serial_to_send)
       except Empty:
         pass
+
+      if "monitor" in self.frames and serial_received:
+        self.monitor_frame.update_widgets(serial_received)
+
+      if "minitens" in self.frames and serial_received:
+        try:
+          message = literal_eval(serial_received)
+          self.minitens_frame.update_data(message)
+        except (ValueError, SyntaxError):
+          pass
+
+      if serial_received:
+        try:
+          message = literal_eval(serial_received)
+          self.queue_process.put(message)  # Message is sent to the crappy
+          # process
+        except (ValueError, SyntaxError):
+          pass
       self.root.update()
 
 
@@ -529,26 +247,23 @@ class Arduino(InOut):
 
   def get_data(self, mock=None):
     while True:
-      try:
-        retrieved_from_arduino = literal_eval(self.queue_get_data.get())
-        # print('retrieved from arduino:', retrieved_from_arduino)
-        if isinstance(retrieved_from_arduino, dict):
-          if self.labels:
-            ordered = OrderedDict()
-            ordered["time(sec)"] = 0.
-            for key in self.labels:
-              ordered[key] = retrieved_from_arduino[key]
-            return ordered
-          else:
-            return retrieved_from_arduino
+      retrieved_from_arduino = self.queue_get_data.get()
 
-        print('ok')
-      except EOFError:
-        continue
-      except Exception:
-        # print '[arduino] Skipped data at %.3f sec (Python time)' % (time() -
-        #                                                        self.handler_t0)
-        continue
+      if self.labels:
+        ordered = OrderedDict()
+        ordered["time(sec)"] = 0.
+        for key in self.labels:
+          ordered[key] = retrieved_from_arduino[key]
+        return ordered
+      else:
+        return retrieved_from_arduino
+
+        # except EOFError:
+        #   continue
+        # except Exception:
+        #   # print '[arduino] Skipped data at %.3f sec (Python time)' % (time() -
+        #   #                                                        self.handler_t0)
+        #   continue
 
   def close(self):
     self.arduino_handler.terminate()
