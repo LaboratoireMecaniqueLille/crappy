@@ -211,7 +211,8 @@ class Labjack_t7(InOut):
       values = [v[i] if isinstance(v, list) else v for v in values]
       a_names.extend(names)
       a_values.extend(values)
-    ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
+    if a_names:
+      ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
     if any(self.make_zero):
       off = self.eval_offset()
       a_names = []
@@ -315,6 +316,24 @@ class Labjack_t7(InOut):
     for command, channel, gain, offset in zip(
         cmd, self.out_channels, self.out_gain, self.out_offset):
       ljm.eWriteName(self.handle, channel, command * gain + offset)
+
+  def __getitem__(self,chan):
+    """
+    Allows reading of a chan by calling lj[chan]
+    """
+    return time(),ljm.eReadName(self.handle,chan+"_EF_READ_A")
+
+  def __setitem__(self,chan,val):
+    """
+    Allows setting of a chan by calling lj[chan] = val
+    """
+    ljm.eWriteName(self.handle,chan,val)
+
+  def write(self,value,address,dtype=ljm.constants.FLOAT32):
+    """
+    To write data directly into a register
+    """
+    ljm.eWriteAddress(self.handle,address,dtype,value)
 
   def close(self):
     """
