@@ -154,7 +154,7 @@ class ArduinoHandler(object):
     """
     self.root = tk.Tk()
     self.root.resizable(width=False, height=False)
-    self.root.title("Arduino Minitens")
+    self.root.title("Arduino on crappy v1.0")
     if "monitor" in self.frames:
       self.monitor_frame = MonitorFrame(self.root,
                                         width=int(self.width * 7 / 10),
@@ -174,6 +174,7 @@ class ArduinoHandler(object):
                                           queue=self.submit_serial_queue,
                                           width=self.width,
                                           fontsize=self.fontsize)
+      self.root.config(menu=self.minitens_frame.menubar)
       self.minitens_frame.grid()
 
   def main_loop(self):

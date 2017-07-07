@@ -14,9 +14,18 @@ class MinitensFrame(tk.Frame):
     self.create_widgets(**kwargs)
     self.queue = kwargs.get("queue")
 
-  def add_button(self, widgets_dict, frame, name='Button', text='Button',
-                 bg='white', command=None, height=2, width=10,
-                 command_type='to_serial'):
+  def add_button(self, **kwargs):
+
+    widgets_dict = kwargs.get('widgets_dict', None)
+    frame = kwargs.get('frame', None)
+    name = kwargs.get('name', 'Button')
+    text = kwargs.get('text', 'Button')
+    bg = kwargs.get('bg', 'white')
+    height = kwargs.get('height', 2)
+    width = kwargs.get('width', 10)
+    command = kwargs.get('command', None)
+    command_type = kwargs.get('command_type', 'to_serial')
+
     if command_type is not 'to_serial':
       widgets_dict[name] = tk.Button(frame,
                                      text=text,
@@ -35,27 +44,49 @@ class MinitensFrame(tk.Frame):
                                        command),
                                      font=("Courier bold", 10))
 
-  def add_label(self, widgets_dict, frame, name=None, text='label',
-                relief='flat',
-                font=("Courier bold", 11)):
-    if not name:
-      name = text
-    widgets_dict[name] = (tk.Label(frame, text=text, relief=relief,
+  def add_label(self, **kwargs):
+
+    widgets_dict = kwargs.get('widgets_dict', None)
+    frame = kwargs.get('frame', None)
+    text = kwargs.get('text', 'label')
+    name = kwargs.get('name', text)
+    relief = kwargs.get('relief', 'flat')
+    font = kwargs.get('font', ('Courier bold', 11))
+
+    widgets_dict[name] = (tk.Label(frame,
+                                   text=text,
+                                   relief=relief,
                                    font=font))
 
-  def add_entry(self, widgets_dict, frame, entry_name, width=10, vartype=None):
-    if not vartype:
-      setattr(self, entry_name, tk.DoubleVar())
-    else:
-      setattr(self, entry_name, vartype)
+  def add_entry(self, **kwargs):
+
+    widgets_dict = kwargs.get('widgets_dict', None)
+    frame = kwargs.get('frame', None)
+    entry_name = kwargs.get('entry_name', 'entry_name')
+    width = kwargs.get('width', 10)
+    vartype = kwargs.get('vartype', tk.DoubleVar())
+
+    # Affect the variable associated with the entry to the self object.
+    setattr(self, entry_name, vartype)
+
     widgets_dict[entry_name] = tk.Entry(frame,
                                         textvariable=getattr(self, entry_name),
                                         width=width)
 
-  def add_listbox(self, widgets_dict, frame, name):
+  def add_listbox(self, **kwargs):
+
+    widgets_dict = kwargs.get('widgets_dict', None)
+    frame = kwargs.get('frame', None)
+    name = kwargs.get('name', 'listbox')
+
     widgets_dict[name] = tk.Listbox(frame)
 
-  def add_checkbutton(self, widgets_dict, frame, name, variable):
+  def add_checkbutton(self, **kwargs):
+    widgets_dict = kwargs.get('widgets_dict', None)
+    frame = kwargs.get('frame', None)
+    name = kwargs.get('name', 'checkbutton')
+    variable = kwargs.get('variable', 'variable')
+
     widgets_dict[name] = tk.Checkbutton(frame,
                                         text=None,
                                         variable=variable)
@@ -69,15 +100,35 @@ class MinitensFrame(tk.Frame):
       Frame_cycle: cycle generator.
     """
 
+    self.create_menubar()
     self.create_displayer_menu()
     self.create_submit_menu()
-    self.create_limits_menu()
+    # self.create_limits_menu()
     self.create_cycles_menu()
+    self.create_popup_limits()
 
     self.frame_displayer.grid(row=0, column=0, rowspan=2)
     self.frame_position.grid(row=1, column=1)
-    self.frame_limits.grid(row=0, column=1)
+    # self.frame_limits.grid(row=0, column=1)
     self.frame_cycles.grid(row=2, column=0, columnspan=2)
+
+  def create_menubar(self):
+    self.menubar = tk.Menu(self)
+    self.menubar.add_command(label='Limites',
+                             command=lambda: self.create_popup_limits())
+    self.menubar.add_command(label='Vitesse')
+    self.menubar.add_command(label='Paramètres échantillon')
+    self.menubar.add_command(label='Consigne...')
+
+  def create_popup_limits(self):
+    self.popup_limits = tk.Toplevel()
+    self.popup_limits.title("Limites")
+    self.popup_limits_menubar = tk.Menu(self.popup_limits)
+    self.popup_limits_menubar.add_command(label="Aide",
+                                          command=lambda: tk.Message("oui"))
+
+    self.popup_limits.config(menu=self.popup_limits_menubar)
+    self.create_limits_menu()
 
   def create_displayer_menu(self):
 
@@ -87,59 +138,54 @@ class MinitensFrame(tk.Frame):
 
     self.frame_displayer_widgets = OrderedDict()
 
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
+    self.add_label(widgets_dict=self.frame_displayer_widgets,
+                   frame=self.frame_displayer,
                    text="Effort",
                    name="Effort(N)",
                    font=("Courier bold", 11, "bold"))
 
-    self.add_button(self.frame_displayer_widgets,
-                    self.frame_displayer,
+    self.add_button(widgets_dict=self.frame_displayer_widgets,
+                    frame=self.frame_displayer,
                     name='tare_effort',
                     text='Zero',
                     command='tare_effort')
 
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
+    self.add_label(widgets_dict=self.frame_displayer_widgets,
+                   frame=self.frame_displayer,
                    text='0.0',
                    font=("Courier bold", 48),
                    name="effort")
 
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
+    self.add_label(widgets_dict=self.frame_displayer_widgets,
+                   frame=self.frame_displayer,
                    text='Position absolue: l',
                    name="Position(mm)",
                    font=("Courier bold", 11, "bold"))
 
-    self.add_button(self.frame_displayer_widgets,
-                    self.frame_displayer,
+    self.add_button(widgets_dict=self.frame_displayer_widgets,
+                    frame=self.frame_displayer,
                     name='tare_position',
                     text='Zero',
                     command='tare_position')
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
+
+    self.add_label(widgets_dict=self.frame_displayer_widgets,
+                   frame=self.frame_displayer,
                    text='0.0',
                    name="position",
                    font=("Courier bold", 48))
 
-    # self.add_label(self.frame_displayer_widgets,
-    #                self.frame_displayer,
-    #                text='l0',
-    #                name="l0",
-    #                font=("Courier bold", 10, "italic"))
-
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
+    self.add_label(widgets_dict=self.frame_displayer_widgets,
+                   frame=self.frame_displayer,
                    text='0.0',
                    font=("Courier bold", 48),
                    name="position_prct")
 
-    self.add_entry(self.frame_displayer_widgets,
-                   self.frame_displayer,
+    self.add_entry(widgets_dict=self.frame_displayer_widgets,
+                   frame=self.frame_displayer,
                    entry_name='l0_entry',
                    width=8)
-    self.add_label(self.frame_displayer_widgets,
-                   self.frame_displayer,
+    self.add_label(widgets_dict=self.frame_displayer_widgets,
+                   frame=self.frame_displayer,
                    text='Position relative: (l - l0) / l0',
                    name="Position(%)",
                    font=("Courier bold", 11, "bold"))
@@ -192,19 +238,22 @@ class MinitensFrame(tk.Frame):
 
     self.frame_position_widgets = OrderedDict()
 
-    self.add_button(self.frame_position_widgets, self.frame_position,
+    self.add_button(widgets_dict=self.frame_position_widgets,
+                    frame=self.frame_position,
                     text="Traction",
                     bg="white",
                     command="TRACTION",
                     name="TRACTION",
                     width=10, height=4)
-    self.add_button(self.frame_position_widgets, self.frame_position,
+    self.add_button(widgets_dict=self.frame_position_widgets,
+                    frame=self.frame_position,
                     text="STOP!",
                     bg="red",
                     command="STOP",
                     name="STOP",
                     width=10, height=4)
-    self.add_button(self.frame_position_widgets, self.frame_position,
+    self.add_button(widgets_dict=self.frame_position_widgets,
+                    frame=self.frame_position,
                     text="Compression",
                     bg="white",
                     command="COMPRESSION",
@@ -217,43 +266,44 @@ class MinitensFrame(tk.Frame):
   def create_limits_menu(self):
 
     self.frame_limits_widgets = OrderedDict()
-    self.frame_limits = tk.Frame(self,
+
+    self.frame_limits = tk.Frame(self.popup_limits,
                                  relief=tk.SUNKEN,
                                  borderwidth=1)
 
-    self.add_label(self.frame_limits_widgets,
-                   self.frame_limits,
+    self.add_label(widgets_dict=self.frame_limits_widgets,
+                   frame=self.frame_limits,
                    text="Limites",
                    name="limites_title",
                    font=("Courier bold", 14, "bold"))
 
-    self.add_label(self.frame_limits_widgets,
-                   self.frame_limits,
+    self.add_label(widgets_dict=self.frame_limits_widgets,
+                   frame=self.frame_limits,
                    text="Effort(N)",
                    name="Effort")
 
-    self.add_label(self.frame_limits_widgets,
-                   self.frame_limits,
+    self.add_label(widgets_dict=self.frame_limits_widgets,
+                   frame=self.frame_limits,
                    text="Position(mm)",
                    name="Position")
 
-    self.add_label(self.frame_limits_widgets,
-                   self.frame_limits,
+    self.add_label(widgets_dict=self.frame_limits_widgets,
+                   frame=self.frame_limits,
                    text="Position(%)",
                    name="Position_prct")
 
-    self.add_label(self.frame_limits_widgets,
-                   self.frame_limits,
+    self.add_label(widgets_dict=self.frame_limits_widgets,
+                   frame=self.frame_limits,
                    text="MAXIMUM",
                    name="Haute")
 
-    self.add_label(self.frame_limits_widgets,
-                   self.frame_limits,
+    self.add_label(widgets_dict=self.frame_limits_widgets,
+                   frame=self.frame_limits,
                    text="MINIMUM",
                    name="Basse")
 
-    self.add_label(self.frame_limits_widgets,
-                   self.frame_limits,
+    self.add_label(widgets_dict=self.frame_limits_widgets,
+                   frame=self.frame_limits,
                    text="Actif?",
                    name="Actif")
 
@@ -274,8 +324,8 @@ class MinitensFrame(tk.Frame):
                       'lim_basse_position_prct']
 
     for entry in labels_entries:
-      self.add_entry(self.frame_limits_widgets,
-                     self.frame_limits,
+      self.add_entry(widgets_dict=self.frame_limits_widgets,
+                     frame=self.frame_limits,
                      entry_name=entry)
 
     self.effort_lim_enabled = tk.IntVar()
@@ -286,16 +336,18 @@ class MinitensFrame(tk.Frame):
     self.position_lim_enabled.set(0)
     self.position_prct_lim_enabled.set(0)
 
-    self.add_checkbutton(self.frame_limits_widgets,
-                         self.frame_limits,
+    self.add_checkbutton(widgets_dict=self.frame_limits_widgets,
+                         frame=self.frame_limits,
                          name="chck_effort",
                          variable=self.effort_lim_enabled)
-    self.add_checkbutton(self.frame_limits_widgets,
-                         self.frame_limits,
+
+    self.add_checkbutton(widgets_dict=self.frame_limits_widgets,
+                         frame=self.frame_limits,
                          name="chck_position",
                          variable=self.position_lim_enabled)
-    self.add_checkbutton(self.frame_limits_widgets,
-                         self.frame_limits,
+
+    self.add_checkbutton(widgets_dict=self.frame_limits_widgets,
+                         frame=self.frame_limits,
                          name="chck_position_prct",
                          variable=self.position_prct_lim_enabled)
 
@@ -310,20 +362,17 @@ class MinitensFrame(tk.Frame):
     self.frame_limits_widgets["chck_position_prct"].grid(row=4, column=3)
 
   def create_cycles_menu(self):
+
     self.frame_cycles = tk.Frame(self,
                                  relief=tk.SUNKEN,
                                  borderwidth=1)
 
     self.frame_cycles_widgets = OrderedDict()
-    self.add_label(self.frame_cycles_widgets,
-                   self.frame_cycles,
+    self.add_label(widgets_dict=self.frame_cycles_widgets,
+                   frame=self.frame_cycles,
                    text="GENERATEUR DE CYCLES",
                    name="CYCLES",
                    font=("Courier bold", 14, "bold"))
-
-    labels_cycles = [("Effort(N)", 'effort'),
-                     ("Position(mm)", 'position'),
-                     ("Position(%)", 'prct')]
 
     self.frame_cycles_widgets["cycles_type"] = tk.StringVar()
     self.frame_cycles_widgets["cycles_type"].set("position")
@@ -332,46 +381,54 @@ class MinitensFrame(tk.Frame):
     self.cycles_started = False
     self.rising = True
 
-    for label, mode in labels_cycles:
-      self.frame_cycles_widgets[label] = tk.Radiobutton(self.frame_cycles,
-                                                        text=label,
-                                                        variable=
-                                                        self.frame_cycles_widgets[
-                                                          "cycles_type"],
-                                                        value=mode)
+    # for label, mode in labels_cycles:
+    #   self.frame_cycles_widgets[label] = tk.Radiobutton(self.frame_cycles,
+    #                                                     text=label,
+    #                                                     variable=
+    #                                                     self.frame_cycles_widgets[
+    #                                                       "cycles_type"],
+    #                                                     value=mode)
+    #
+    # for limit in ["maximum", "minimum"]:
+    #   self.add_label(widgets_dict=self.frame_cycles_widgets,
+    #                  frame=self.frame_cycles,
+    #                  name=limit,
+    #                  text=limit)
+    #   self.add_entry(widgets_dict=self.frame_cycles_widgets,
+    #                  frame=self.frame_cycles,
+    #                  entry_name=limit + '_entry')
+    # self.add_label(widgets_dict=self.frame_cycles_widgets,
+    #                frame=self.frame_cycles,
+    #                name="nombre",
+    #                text="nombre")
+    # self.add_entry(widgets_dict=self.frame_cycles_widgets,
+    #                frame=self.frame_cycles,
+    #                entry_name="nombre_entry",
+    #                vartype=tk.IntVar())
 
-    for limit in ["maximum", "minimum"]:
-      self.add_label(self.frame_cycles_widgets,
-                     self.frame_cycles,
-                     name=limit,
-                     text=limit)
-      self.add_entry(self.frame_cycles_widgets,
-                     self.frame_cycles,
-                     entry_name=limit + '_entry')
-    self.add_label(self.frame_cycles_widgets,
-                   self.frame_cycles,
-                   name="nombre",
-                   text="nombre")
-    self.add_entry(self.frame_cycles_widgets,
-                   self.frame_cycles,
-                   entry_name="nombre_entry",
-                   vartype=tk.IntVar())
-
-    self.add_button(self.frame_cycles_widgets, self.frame_cycles,
+    self.add_button(widgets_dict=self.frame_cycles_widgets,
+                    frame=self.frame_cycles,
                     name="submit_cycle",
-                    text="Soumettre!",
+                    text="Soumettre \n nouveau cycle...",
                     bg="white",
                     command_type="custom",
-                    command=lambda: self.submit_cycle())
+                    command=lambda: self.submit_new_cycle(),
+                    width=15, height=5)
 
-    self.add_button(self.frame_cycles_widgets, self.frame_cycles,
+    self.add_button(widgets_dict=self.frame_cycles_widgets,
+                    frame=self.frame_cycles,
                     name="start_cycle",
-                    text="Demarrer!",
+                    text="Démarrer",
                     bg="green",
                     command_type="custom",
-                    command=lambda: self.start_cycle())
+                    command=lambda: self.start_cycle(),
+                    width=15, height=5)
 
-    columns = ("Type de limite", "Max", "Min")
+    columns = ("Type de limite haute",
+               "Limite haute",
+               "Type de limite basse",
+               "Limite basse")
+
     self.cycles_table = ttk.Treeview(self.frame_cycles)
     self.cycles_table["columns"] = columns
 
@@ -383,22 +440,121 @@ class MinitensFrame(tk.Frame):
       self.cycles_table.heading(column, text=column)
 
     self.frame_cycles_widgets["CYCLES"].grid(row=0, columnspan=4)
-    self.frame_cycles_widgets["Effort(N)"].grid(row=1, column=0)
-    self.frame_cycles_widgets["Position(mm)"].grid(row=1, column=1)
-    self.frame_cycles_widgets["Position(%)"].grid(row=1, column=2)
+    self.frame_cycles_widgets["submit_cycle"].grid(row=1, column=0,
+                                                   columnspan=2)
 
-    self.frame_cycles_widgets["maximum"].grid(row=2,
-                                              column=0)  # , columnspan=1)
-    self.frame_cycles_widgets["minimum"].grid(row=2,
-                                              column=1)  # , columnspan=1)
-    self.frame_cycles_widgets["nombre"].grid(row=2, column=2)
-    self.frame_cycles_widgets["maximum_entry"].grid(row=3, column=0)
-    self.frame_cycles_widgets["minimum_entry"].grid(row=3, column=1)
-    self.frame_cycles_widgets["nombre_entry"].grid(row=3, column=2)
-    self.frame_cycles_widgets["submit_cycle"].grid(row=2, column=3,
-                                                   rowspan=2)
-    self.frame_cycles_widgets["start_cycle"].grid(row=4, column=3)
+    self.frame_cycles_widgets["start_cycle"].grid(row=1, column=2,
+                                                  columnspan=2)
     self.cycles_table.grid(row=5, column=0, columnspan=4, rowspan=1)
+
+  def add_combobox(self, **kwargs):
+
+    widgets_dict = kwargs.get("widgets_dict", None)
+    frame = kwargs.get("frame", None)
+    entries = kwargs.get("entries", None)
+    name = kwargs.get("name", "combobox")
+    variable = kwargs.get("variable", None)
+
+    widgets_dict[variable] = tk.StringVar()
+
+    combo_box = ttk.Combobox(frame,
+                             textvariable=widgets_dict[variable],
+                             values=entries,
+                             state='readonly')
+
+    widgets_dict[name + '_combobox'] = combo_box
+
+  def submit_new_cycle(self):
+
+    if hasattr(self, 'cycles_popup'):
+      return
+
+    self.cycles_popup = tk.Toplevel()
+    self.cycles_popup.title("Nouveau cycle")
+
+    entries_combobox = ('Position(%)', 'Position(mm)', 'Effort(N)')
+
+    labels_cycles = (("max_type_label", "Type de valeur max"),
+                     ("max_label", "Valeur max"),
+                     ("min_type_label", "Type de valeur min"),
+                     ("min_label", "Valeur min"),
+                     ("nb_label", "Nombre"))
+
+    for name, label in labels_cycles:
+      self.add_label(widgets_dict=self.frame_cycles_widgets,
+                     frame=self.cycles_popup,
+                     name=name,
+                     text=label)
+
+    self.add_entry(widgets_dict=self.frame_cycles_widgets,
+                   frame=self.cycles_popup,
+                   entry_name="maximum_entry")
+
+    self.add_combobox(widgets_dict=self.frame_cycles_widgets,
+                      frame=self.cycles_popup,
+                      name="maximum_type",
+                      entries=entries_combobox,
+                      variable="maximum_type")
+
+    self.add_entry(widgets_dict=self.frame_cycles_widgets,
+                   frame=self.cycles_popup,
+                   entry_name="minimum_entry")
+
+    self.add_combobox(widgets_dict=self.frame_cycles_widgets,
+                      frame=self.cycles_popup,
+                      name="minimum_type",
+                      entries=entries_combobox,
+                      variable="minimum_type")
+
+    self.add_entry(widgets_dict=self.frame_cycles_widgets,
+                   frame=self.cycles_popup,
+                   entry_name="nombre_entry")
+
+    self.add_button(widgets_dict=self.frame_cycles_widgets,
+                    frame=self.cycles_popup,
+                    name="submit",
+                    text="Soumettre",
+                    command=lambda: self.submit_cycle(),
+                    command_type='custom')
+
+    self.add_button(widgets_dict=self.frame_cycles_widgets,
+                    frame=self.cycles_popup,
+                    text="Terminer",
+                    name="quit",
+                    command=lambda: self.close_cycles_popup(),
+                    command_type='custom')
+
+    for index, (name, _) in enumerate(labels_cycles):
+      self.frame_cycles_widgets[name].grid(row=0, column=index)
+
+    self.frame_cycles_widgets["maximum_type_combobox"].grid(row=1, column=0)
+    self.frame_cycles_widgets["maximum_entry"].grid(row=1, column=1)
+    self.frame_cycles_widgets["minimum_type_combobox"].grid(row=1, column=2)
+    self.frame_cycles_widgets["minimum_entry"].grid(row=1, column=3)
+    self.frame_cycles_widgets["nombre_entry"].grid(row=1, column=4)
+    self.frame_cycles_widgets["submit"].grid(row=2, column=1, columnspan=2)
+    self.frame_cycles_widgets["quit"].grid(row=2, column=3, columnspan=2)
+
+  def close_cycles_popup(self):
+    self.cycles_popup.destroy()
+    del self.cycles_popup
+
+    # for limit in ["maximum", "minimum"]:
+    #   self.add_label(widgets_dict=self.frame_cycles_widgets,
+    #                  frame=self.frame_cycles,
+    #                  name=limit,
+    #                  text=limit)
+    #   self.add_entry(widgets_dict=self.frame_cycles_widgets,
+    #                  frame=self.frame_cycles,
+    #                  entry_name=limit + '_entry')
+    # self.add_label(widgets_dict=self.frame_cycles_widgets,
+    #                frame=self.frame_cycles,
+    #                name="nombre",
+    #                text="nombre")
+    # self.add_entry(widgets_dict=self.frame_cycles_widgets,
+    #                frame=self.frame_cycles,
+    #                entry_name="nombre_entry",
+    #                vartype=tk.IntVar())
 
   def check_limits(self, effort, position, sens, prct):
     try:
@@ -426,8 +582,9 @@ class MinitensFrame(tk.Frame):
 
       for i in xrange(nb_cycles):
         new_cycle = [len(self.cycles) + 1,
-                     self.frame_cycles_widgets["cycles_type"].get(),
+                     self.frame_cycles_widgets["maximum_type"].get(),
                      self.maximum_entry.get(),
+                     self.frame_cycles_widgets["minimum_type"].get(),
                      self.minimum_entry.get()]
         self.cycles.append(new_cycle)
         self.cycles_table.insert("", "end",
@@ -450,14 +607,24 @@ class MinitensFrame(tk.Frame):
 
   def check_cycle(self, eff, sns, pos, prct):
 
-    mode, maximum, minimum = self.cycles[0][1:]
-    if mode == "effort":
-      var = eff
-    elif mode == "prct":
-      var = prct
-    elif mode == "position":
-      var = pos
-    print("nb_cycles:", self.nb_cycles)
+    mode_max, maximum, mode_min, minimum = self.cycles[0][1:]
+
+    if self.rising:
+      if mode_max == "Effort(N)":
+        var = eff
+      elif mode_max == "Position(%)":
+        var = prct
+      elif mode_max == "Position(mm)":
+        var = pos
+    else:
+      if mode_min == "Effort(N)":
+        var = eff
+      elif mode_min == "Position(%)":
+        var = prct
+      elif mode_min == "Position(mm)":
+        var = pos
+
+
     if var >= maximum and sns == 1 and self.rising:
       self.nb_cycles += 0.5
       self.rising = False
