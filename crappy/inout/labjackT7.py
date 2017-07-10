@@ -276,7 +276,7 @@ class Labjack_t7(InOut):
       self.close_streamer()
       raise
     if self.verbose:
-      thread = Thread(target=self.DialogBox, args=(
+      thread = Thread(target=DialogBox, args=(
         self.scan_rate_per_channel, self.scans_per_read, self.queue))
       thread.start()
     self.stream_started = True
