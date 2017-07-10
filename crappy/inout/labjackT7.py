@@ -3,331 +3,207 @@
 from __future__ import print_function, absolute_import, division
 from labjack import ljm
 from time import time
-from threading import Thread
-from Queue import Queue
-from Tkinter import Tk, Label
 
 from .inout import InOut
 
 
-class DialogBox:
-  """
-  Dialog box that pops when using streamer function with verbosity.
-  """
-
-  def __init__(self, scan_rate_per_channel, scans_per_read, queue):
-    self.root = Tk()
-    self.root.title('LabJack Streamer')
-    self.root.resizable(width=False, height=False)
-    self.c2 = []  # List to update
-    self.first_column = ['Scan Rate', 'Samples Collecting Rate',
-                         'Chronometer', 'Device Buffer', 'Software Buffer']
-    self.second_column = ['%.1f kHz' % (scan_rate_per_channel / 1000.),
-                          '%.1f kSamples per read' % (scans_per_read / 1000.),
-                          0.0, 0, 0]
-    for row_index, first_column in enumerate(self.first_column):
-      Label(self.root, text=first_column, borderwidth=10).grid(row=row_index,
-                                                               column=0)
-      self.c2.append(
-        Label(self.root, text=self.second_column[row_index], borderwidth=10))
-      self.c2[-1].grid(row=row_index, column=1)
-    self.queue = queue
-    self.update()
-
-  def update(self):
-    """Method to update data inside the dialog box. The window is updated
-    every time data in queue occurs."""
-    array = self.queue.get()
-
-    t0 = array[0]
-    while True:
-      array[0] = '%.1f' % (array[0] - t0)
-      for row_index, value in enumerate(array):
-        self.c2[row_index + 2].configure(text=value, borderwidth=10)
-      self.root.update()
-      array = self.queue.get()
-      if array == 'stop':
-        break
-
-
-def open_handle(identifier='ANY'):
-  """
-  Function used only to open handle. For better exception behavior handling.
-  """
-  handle = ljm.open(ljm.constants.dtANY, ljm.constants.ctANY, identifier)
-  return handle
-
-
-def var_tester(var, nb_channels):
-  """Used to check if the user entered correct parameters."""
-  var = [var] * nb_channels if isinstance(var, (int, float)) else var
-  assert isinstance(var, list) and len(var) == nb_channels, \
-    str(var) + \
-    "Parameter definition Error: list is" \
-    " not the same length as nb_channels."
-  assert False not in [isinstance(var[i], (int, float)) for i in
-                       xrange(nb_channels)], \
-    str(var) + "Error: parameter should be int or float."
-  return var
-
-
 class Labjack_t7(InOut):
-  """Class for LabJack T7 devices. Used to acquire and set
-  analogical datas."""
+  """
+  Class for LabJack T7 devices.
 
+  It can use any channel as input/output, it can be used with an IOBlock.
+  The keyword argument "channels" is used to specify the channels.
+  Each channel must be represented as a dict including all the parameters.
+  See below for more details on the parameters of the channels.
+  Args:
+    device: The type of the device to open (str). Ex: 'T7'.
+       Can be 'ANY' (default).
+    connection: How is the Labjack connected ? (str). Ex: 'USB', 'ETHERNET',..
+      Can be 'ANY' (default).
+    identifier: Something to identify the Labjack (str)
+      It can be a name, serial number or functionality.
+      Can be 'ANY' (default).
+    channels: Channels to use and their settings. It must be a list of dicts.
+
+  Channel keys:
+    name: The name of the channel according to Labjack's naming convention
+      (str). Ex: 'AIN0'. This will be used to define the direction (in/out)
+      and the available settings.
+      - AINx: An analog input, if gain and/or offset is given, the integrated
+        slope mechanism will be used with the extended features registers.
+        It can also be used for thermocouples (see below). You can use any
+        EF by using the 'to_write' and 'to_read' keys if necessary.
+      - (T)DACx: An analog output, you can specifiy gain and/or offset.
+      - (E/F/C/M IOx): Digital in/outputs. You can specify the direction for each.
+
+    gain: A numeric value that will multiply the given value for inputs
+      and outputs. Default=1
+
+    offset: Will be added to the value. Default=0
+      - For inputs: returned_value = gain*measured_value+offset
+      - For outputs: set_value = gain*given_value+offset
+      Where measured_value and set_values are in Volts.
+
+    make_zero: AIN only, if True the input value will be evaluated at startup
+      and the offset will be adjusted to return 0 (or the offset if any).
+
+    direction: DIO only, if True (or 1), the port will be used as an output
+      else as an input.
+
+    resolution: int 1-8(1-12) The resolution of the acquisition, see Labjack
+      documentation for more details. Default=1 (fastest)
+
+    range: 10/1/.1/.01. The range of the acquisition (V).
+      10 means -10V>+10V default=10
+
+    thermocouple: E/J/K/R/T/S/C (char) The type of thermocouple (AIN only)
+      If specified, it will use the EF to read a temperature directly from
+      the thermocouples.
+  """
   def __init__(self, **kwargs):
-    """
-    Args:
-      mode: str. Available modes at the moment :
-        single : Output is (measured_value * gain) + offset (~2kHz max.)
-        thermocouple : Output is a temperature in degree celsius.
-        streamer : Output is (measured_value * gain) + offset (100 kSamples
-        max.)
-
-      channels: int, str or list of int or str, default = 0 (AIN0)
-
-      gain: float or list of float, default = 1
-
-      offset: float, default = 0
-
-      chan_range: int or float, default = 10. Can be 10, 1, 0.1  or 0.01,
-      depending on the voltage range to measure. Put the absolute maximum of
-      your expected values. The higher the range, the fastest the acquisition
-      rate is. resolution: int, resolution index for each channel.
-      T7 : 1 to 8, T7-PRO : 1 to 12. If 0 is specified, will be 8 (20 bits)
-      Check https://labjack.com/support/datasheets/t7/appendix-a-3-1 for more
-      information.
-
-      scan_rate_per_channel: STREAMER MODE ONLY : int, defines how many
-      scans to perform on each channel during streaming.
-
-      scans_per_read: STREAMER MODE ONLY : int, defines how many
-
-      samples to collect during one loop. If undefined,
-      will set to a tenth of sample_rate
-
-      identifier: str. Used if multiple labjacks are connected.
-      The identifier could be anything that could define the
-      device : serial number, name, wifi version..
-        """
     InOut.__init__(self)
-    # For now, kwargs like in_gain are eqivalent to gain
-    # (it is for consitency with out_gain, out_channels, etc...)
-    for arg in kwargs:
-      if arg in kwargs and arg.startswith('in_'):
-        kwargs[arg[3:]] = kwargs[arg]
-        del kwargs[arg]
-    for arg, default in [('verbose', False),
-                         ('channels', 'AIN0'),
-                         ('gain', 1),
-                         ('offset', 0),
-                         ('make_zero', True),
-                         ('out_channels', []),
-                         ('out_gain', 1),
-                         ('out_offset', 0),
-                         ('mode', 'single'),
-                         ('chan_range', 10),
-                         ('resolution', 1),
-                         ('identifier', 'ANY'),
+    for arg, default in [
+                         ('device', 'ANY'), # Model (T7, DIGIT,...)
+                         ('connection', 'ANY'), # Connection (USB,ETHERNET,...)
+                         ('identifier', 'ANY'), # Identifier (serial n°, ip,..)
+                         ('channels', [{'name':'AIN0'}]),
                          ]:
       if arg in kwargs:
         setattr(self, arg, kwargs[arg])
         del kwargs[arg]
       else:
         setattr(self, arg, default)
-
-    if self.mode == 'streamer':
-      for arg, default in [('scan_rate_per_channel', 1000),
-                           ('scans_per_read', 0),
-                           ]:
-        if arg in kwargs:
-          setattr(self, arg, kwargs[arg])
-          del kwargs[arg]
-        else:
-          setattr(self, arg, default)
     assert len(kwargs) == 0, "Labjack_T7 got unsupported arg(s)" + str(kwargs)
-
-    self.vprint = lambda *args: \
-      print('[crappy.InOut.LabjackT7]', *args) \
-        if self.verbose else lambda *args: None
-
-    self.check_vars()
+    self.check_chan()
     self.handle = None
 
-  def check_vars(self):
-    """
-    Turns the settings into lists of the same length, each index standing for
-    one channel.
-    if a list is given, simply check the length
-    else make a list of the correct length containing only the given value
-    """
-    self.mode = self.mode.lower()
-    self.channels = [self.channels] if not isinstance(self.channels,
-                                                      list) else self.channels
-    self.channels = ["AIN" + str(chan) if type(chan) is not str else chan for
-                     chan in self.channels]
-    self.nb_channels = len(self.channels)
-    self.chan_range = var_tester(self.chan_range, self.nb_channels)
-    self.resolution = var_tester(self.resolution, self.nb_channels)
-    self.make_zero = self.make_zero if isinstance(self.make_zero, list) \
-      else [self.make_zero] * self.nb_channels
-    assert len(self.make_zero) == self.nb_channels, "Invalid make_zero length"
-    self.gain = var_tester(self.gain, self.nb_channels)
-    self.offset = var_tester(self.offset, self.nb_channels)
-    self.channels_index_read = [self.channels[chan]
-                                + "_EF_READ_A" for chan in
-                                range(self.nb_channels)]
-    if not isinstance(self.out_channels, list):
-      self.out_channels = [self.out_channels]
-    for i in range(len(self.out_channels)):
-      if isinstance(self.out_channels[i], int):
-        self.out_channels[i] = 'DAC' + str(self.out_channels[i])
-    if not isinstance(self.out_gain, list):
-      self.out_gain = [self.out_gain] * len(self.out_channels)
-    if not isinstance(self.out_offset, list):
-      self.out_offset = [self.out_offset] * len(self.out_channels)
-    if self.mode == 'streamer':
-      if self.scan_rate_per_channel * self.nb_channels >= 100000:
-        self.scan_rate_per_channel = int(100000 / self.nb_channels)
-        print("Labjack warning: scan rate too high! Lowering to ",
-              self.scan_rate_per_channel)
-      if self.scans_per_read == 0:
-        self.scans_per_read = int(self.scan_rate_per_channel / 10)
+  def check_chan(self):
+    default = {'gain':1,'offset':0,'make_zero':False,'resolution':1,
+               'range':10,'direction':1}
+    if not isinstance(self.channels,list):
+      self.channels = [self.channels]
+    # Let's loop over all the channels to set everything we need
+    self.in_chan_list = []
+    self.out_chan_list = []
+    for d in self.channels:
+      if isinstance(d,str):
+        d = {'name':d}
 
-  def open_single(self):
-    to_write = [
-      ("_RANGE", self.chan_range),
-      ("_RESOLUTION_INDEX", self.resolution),
-      ("_EF_INDEX", 1),  # for applying a slope and offset
-      ("_EF_CONFIG_D", self.gain),  # index to set the gain
-      ("_EF_CONFIG_E", self.offset),  # index to set the offset
-      ("_SETTLING_US", [0] * self.nb_channels)
-    ]
-    a_names = []
-    a_values = []
-    for i, chan in enumerate(self.channels):
-      names, values = zip(*to_write)
-      names = [chan + n for n in names]
-      values = [v[i] if isinstance(v, list) else v for v in values]
-      a_names.extend(names)
-      a_values.extend(values)
-    if a_names:
-      ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
-    if any(self.make_zero):
-      off = self.eval_offset()
-      a_names = []
-      a_values = []
-      for i, make_zero in enumerate(self.make_zero):
-        if make_zero:
-          self.offset[i] += off[i]
-          a_names.append(self.channels[i] + "_EF_CONFIG_E")
-          a_values.append(self.offset[i])
-      ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
+      # === AIN channels ===
+      if d['name'].startswith("AIN"):
+        for k in ['gain','offset','make_zero','resolution','range']:
+          if not k in d:
+            d[k] = default[k]
+        if not 'to_write' in d:
+          d['to_write'] = []
+        d['to_write'].extend([ # What will be written when opening the chan
+            ("_RANGE",d['range']),
+            ("_RESOLUTION_INDEX",d['resolution']),
+            ])
+        if 'thermocouple' in d:
+          therm = {'E':20,'J':21,'K':22,'R':23,'T':24,'S':25,'C':30}
+          d['to_write'].extend([
+              ("_EF_INDEX",therm[d['thermocouple']]),
+              ("_EF_CONFIG_A", 1),  # for degrees C
+              ("_EF_CONFIG_B", 60052),  # CJC config
+            ])
+          d['to_read'] = d['name']+"_EF_READ_A"
+        elif d["gain"] == 1 and d['offset'] == 0 and not d['make_zero']:
+          # No gain/offset
+          d['to_read'] = d['name'] # We can read directly of the AIN register
+        else: # With gain and offset: let's use Labjack's built in slope
+          d['to_write'].extend([
+              ("_EF_INDEX",1),
+              ("_EF_CONFIG_D",d['gain']),
+              ]) # To configure slope in the device
+          if not d['make_zero']:
+            d['to_write'].append(("_EF_CONFIG_E",d['offset']))
+          d['to_read'] = d['name']+"_EF_READ_A" # And read the computed value
 
-  def open_streamer(self):
-    self.a_scan_list = \
-      ljm.namesToAddresses(self.nb_channels, self.channels)[0]
-    if self.verbose:
-      self.queue = Queue()
-    a_names = ["AIN_ALL_RANGE", "STREAM_SETTLING_US",
-               "STREAM_RESOLUTION_INDEX"]
-    a_values = [int(self.chan_range[0]), 0, int(self.resolution[0])]
-    ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
-    self.stream_started = False
+        self.in_chan_list.append(d)
 
-  def open_thermocouple(self):
-    to_write = [
-      ("_EF_INDEX", 22),  # for thermocouple measures
-      ("_EF_CONFIG_A", 1),  # for degrees C
-      ("_EF_CONFIG_B", 60052),  # for type K
-      ("_RESOLUTION_INDEX", self.resolution)
-    ]
-    a_names = []
-    a_values = []
-    for i, chan in enumerate(self.channels):
-      names, values = zip(*to_write)
-      names = [chan + n for n in names]
-      values = [v[i] if isinstance(v, list) else v for v in values]
-      a_names.extend(names)
-      a_values.extend(values)
-    ljm.eWriteNames(self.handle, len(a_names), a_names, a_values)
+      # === DAC/TDAC channels ===
+      elif "DAC" in d['name']:
+        for k in ['gain','offset']:
+          if not k in d:
+            d[k] = default[k]
+        self.out_chan_list.append(d)
+
+      # === FIO/EIO/CIO/MIO channels ===
+      elif "IO" in d['name']:
+        if not "direction" in d:
+          d["direction"] = default["direction"]
+        if d["direction"]: # 1/True => output, 0/False => input
+          d['gain'] = 1
+          d['offset'] = 0
+          self.out_chan_list.append(d)
+        else:
+          d["to_read"] = d["name"]
+          self.in_chan_list.append(d)
+
+      self.in_chan_dict = {}
+      for c in self.in_chan_list:
+        self.in_chan_dict[c["name"]] = c
+      self.out_chan_dict = {}
+      for c in self.out_chan_list:
+        self.out_chan_dict[c["name"]] = c
 
   def open(self):
-    self.handle = open_handle(self.identifier)
-    # To use extended features of ljm libraries:
-    if self.mode == "single":
-      self.open_single()
-    elif self.mode == "streamer":
-      self.open_streamer()
-    elif self.mode == "thermocouple":
-      self.open_thermocouple()
-    else:
-      raise IOError("Unknown Labjack mode: " + self.mode)
+    self.handle = ljm.openS(self.device,self.connection,self.identifier)
+    names,values = [],[]
+    for c in self.in_chan_list+self.out_chan_list:
+      if "to_write" in c:
+        for n,v in c['to_write']:
+          names.append(c['name']+n)
+          values.append(v)
+    ljm.eWriteNames(self.handle,len(names),names,values)
+    if any([c.get("make_zero",False) for c in self.in_chan_list]):
+      print("[Labjack] Please wait during offset evaluation...")
+      off = self.eval_offset()
+      names,values = [],[]
+      for i,c in enumerate(self.in_chan_list):
+        if 'make_zero' in c and c['make_zero']:
+          names.append(c['name']+'_EF_CONFIG_E')
+          values.append(c['offset']+off[i])
+      ljm.eWriteNames(self.handle,len(names),names,values)
 
-  def start_stream(self):
-    """
-    Method to initialize a streaming data.
-    """
-    try:
-      ljm.eStreamStart(self.handle, self.scans_per_read, self.nb_channels,
-                       self.a_scan_list, self.scan_rate_per_channel)
-    except ljm.LJMError as e:
-      print('Error in start_stream:', e)
-      self.close_streamer()
-      raise
-    if self.verbose:
-      thread = Thread(target=DialogBox, args=(
-        self.scan_rate_per_channel, self.scans_per_read, self.queue))
-      thread.start()
-    self.stream_started = True
 
   def get_data(self):
     """
-    Read the signal on all pre-defined channels, one by one.
+    Read the signal on all pre-defined input channels.
     """
     try:
       l = [time()]
-      l.extend(ljm.eReadNames(self.handle, self.nb_channels,
-                              self.channels_index_read))
+      l.extend(ljm.eReadNames(self.handle, len(self.in_chan_list),
+                              [c['to_read'] for c in self.in_chan_list]))
       return l
     except ljm.LJMError as e:
-      self.vprint('Error in get_data:', e)
+      print('[Labjack] Error in get_data:', e)
       self.close()
       raise
-
-  def get_stream(self):
-    """
-    Read the device buffer if scan_mode is set.
-    """
-    if not self.stream_started:
-      self.start_stream()
-    retrieved_from_buffer = ljm.eStreamRead(self.handle)
-    results = retrieved_from_buffer[0]
-    timer = time()
-    if self.verbose:
-      self.queue.put(
-        [timer, retrieved_from_buffer[1], retrieved_from_buffer[2]])
-    return timer, results
 
   def set_cmd(self, *cmd):
     """
     Convert the tension value to a digital value and send it to the output.
     """
-    for command, channel, gain, offset in zip(
-        cmd, self.out_channels, self.out_gain, self.out_offset):
-      ljm.eWriteName(self.handle, channel, command * gain + offset)
+    names, values = [],[]
+    for val,chan in zip(cmd,self.out_chan_list):
+      names.append(chan['name'])
+      values.append(chan['gain']*val+chan['offset'])
+    ljm.eWriteNames(self.handle,len(names),names,values)
 
   def __getitem__(self,chan):
     """
-    Allows reading of a chan by calling lj[chan]
+    Allows reading of an intput chan by calling lj[chan]
     """
-    return time(),ljm.eReadName(self.handle,chan+"_EF_READ_A")
+    return time(),ljm.eReadName(self.handle,self.in_chan_dict[chan]['to_read'])
 
   def __setitem__(self,chan,val):
     """
-    Allows setting of a chan by calling lj[chan] = val
+    Allows setting of an output chan by calling lj[chan] = val
     """
-    ljm.eWriteName(self.handle,chan,val)
+    ljm.eWriteName(self.handle,chan,
+        self.out_chan_dict[chan]['gain']*val+self.out_chan_dict[chan]['offset'])
 
   def write(self,value,address,dtype=ljm.constants.FLOAT32):
     """
@@ -339,21 +215,4 @@ class Labjack_t7(InOut):
     """
     Close the device.
     """
-    if self.mode == "streamer":
-      self.close_streamer()
-    try:
-      ljm.close(self.handle)
-    except ljm.LJMError as e:
-      if e.errorCode != 1224:
-        raise
-    self.vprint("LabJack device closed")
-
-  def close_streamer(self):
-    """
-    Special method called if streamer is open.
-    """
-    if self.verbose:
-      while not self.queue.empty():
-        self.queue.get_nowait()
-      self.queue.put("stop")
-    ljm.eStreamStop(self.handle)
+    ljm.close(self.handle)
