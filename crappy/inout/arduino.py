@@ -10,6 +10,7 @@ from multiprocessing import Process, Queue
 from ast import literal_eval
 from ..tool.minitens import MinitensFrame
 from .inout import InOut
+from .._global import CrappyStop
 
 
 class MonitorFrame(tk.Frame):
@@ -146,7 +147,9 @@ class ArduinoHandler(object):
     self.collect_serial_threaded.daemon = True
     self.init_main_window()
     self.collect_serial_threaded.start()
+    self.bool_loop = True
     self.main_loop()
+
 
   def init_main_window(self):
     """
@@ -154,7 +157,8 @@ class ArduinoHandler(object):
     """
     self.root = tk.Tk()
     self.root.resizable(width=False, height=False)
-    self.root.title("Arduino on crappy v1.0")
+    self.root.title("Arduino on crappy v1.1")
+    self.root.protocol("WM_DELETE_WINDOW", self.close)
     if "monitor" in self.frames:
       self.monitor_frame = MonitorFrame(self.root,
                                         width=int(self.width * 7 / 10),
@@ -181,7 +185,7 @@ class ArduinoHandler(object):
     """
     Main method to update the GUI, collect and transmit information.
     """
-    while True:
+    while True and self.bool_loop:
       try:
         serial_received = self.collect_serial_queue.get(block=True,
                                                         timeout=0.01)
@@ -212,6 +216,11 @@ class ArduinoHandler(object):
         except (ValueError, SyntaxError):
           pass
       self.root.update()
+    self.root.destroy()
+    self.queue_process.put("STOP")
+
+  def close(self):
+    self.bool_loop = False
 
 
 class Arduino(InOut):
@@ -247,24 +256,17 @@ class Arduino(InOut):
     self.arduino_handler.start()
 
   def get_data(self, mock=None):
-    while True:
-      retrieved_from_arduino = self.queue_get_data.get()
-
-      if self.labels:
-        ordered = OrderedDict()
-        ordered["time(sec)"] = 0.
-        for key in self.labels:
-          ordered[key] = retrieved_from_arduino[key]
-        return ordered
-      else:
-        return retrieved_from_arduino
-
-        # except EOFError:
-        #   continue
-        # except Exception:
-        #   # print '[arduino] Skipped data at %.3f sec (Python time)' % (time() -
-        #   #                                                        self.handler_t0)
-        #   continue
+    retrieved_from_arduino = self.queue_get_data.get()
+    if retrieved_from_arduino == "STOP":
+      raise CrappyStop
+    if self.labels:
+      ordered = OrderedDict()
+      ordered["time(sec)"] = 0.
+      for key in self.labels:
+        ordered[key] = retrieved_from_arduino[key]
+      return ordered
+    else:
+      return retrieved_from_arduino
 
   def close(self):
     self.arduino_handler.terminate()

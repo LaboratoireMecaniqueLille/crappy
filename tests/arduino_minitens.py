@@ -20,6 +20,9 @@ arduino = crappy.blocks.IOBlock("Arduino",
                                 frames=['minitens'],
                                 labels=['mil', 'eff'])
 
-graph = crappy.blocks.Grapher(('mil', 'eff'), length=10)
-crappy.link(arduino, graph)
+graph = crappy.blocks.Grapher(('mil', 'eff'), length=0)
+save = crappy.blocks.Saver('/home/francois/Code/_Projets/minitens/toto.csv')
+
+crappy.link(arduino, graph, condition=crappy.condition.Mean(npoints=10))
+crappy.link(arduino, save, condition=crappy.condition.Mean(npoints=10))
 crappy.start()
