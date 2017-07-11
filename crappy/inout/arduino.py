@@ -205,7 +205,7 @@ class ArduinoHandler(object):
         try:
           message = literal_eval(serial_received)
           self.minitens_frame.update_data(message)
-        except (ValueError, SyntaxError):
+        except (ValueError, SyntaxError, TypeError):
           pass
 
       if serial_received:
@@ -213,7 +213,7 @@ class ArduinoHandler(object):
           message = literal_eval(serial_received)
           self.queue_process.put(message)  # Message is sent to the crappy
           # process
-        except (ValueError, SyntaxError):
+        except (ValueError, SyntaxError, TypeError):
           pass
       self.root.update()
     self.root.destroy()
