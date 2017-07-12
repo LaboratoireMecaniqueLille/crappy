@@ -18,8 +18,10 @@ except ImportError:
   Comedi = NotInstalled('Comedi')
 try:
   from .labjackT7 import Labjack_t7
+  from .t7Streamer import T7_streamer
 except ImportError:
   Labjack_t7 = NotInstalled('Labjack_t7')
+  T7_streamer = NotInstalled('T7_streamer')
 try:
   from .labjackUE9 import Labjack_ue9
 except ImportError:

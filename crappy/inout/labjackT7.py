@@ -12,6 +12,8 @@ class Labjack_t7(InOut):
   Class for LabJack T7 devices.
 
   It can use any channel as input/output, it can be used with an IOBlock.
+  This class is NOT capable of streaming. For higher frequency, see
+  T7_streamer class.
   The keyword argument "channels" is used to specify the channels.
   Each channel must be represented as a dict including all the parameters.
   See below for more details on the parameters of the channels.
@@ -34,7 +36,7 @@ class Labjack_t7(InOut):
         It can also be used for thermocouples (see below). You can use any
         EF by using the 'to_write' and 'to_read' keys if necessary.
       - (T)DACx: An analog output, you can specifiy gain and/or offset.
-      - (E/F/C/M IOx): Digital in/outputs. You can specify the direction for each.
+      - (E/F/C/M IOx): Digital in/outputs. You can specify the direction.
 
     gain: A numeric value that will multiply the given value for inputs
       and outputs. Default=1
@@ -173,10 +175,8 @@ class Labjack_t7(InOut):
     Read the signal on all pre-defined input channels.
     """
     try:
-      l = [time()]
-      l.extend(ljm.eReadNames(self.handle, len(self.in_chan_list),
-                              [c['to_read'] for c in self.in_chan_list]))
-      return l
+      return [time()]+ljm.eReadNames(self.handle, len(self.in_chan_list),
+                              [c['to_read'] for c in self.in_chan_list])
     except ljm.LJMError as e:
       print('[Labjack] Error in get_data:', e)
       self.close()
