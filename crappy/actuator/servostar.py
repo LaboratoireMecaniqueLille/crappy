@@ -18,9 +18,9 @@ class Servostar(Actuator):
 
   def open(self):
     self.lock.acquire()
-    self.ser = serial.Serial(self.devname,baudrate=self.baud)
+    self.ser = serial.Serial(self.devname,baudrate=self.baud,timeout=2)
     self.ser.flushInput()
-    self.ser.write('ancnfg 0\r\n')
+    self.ser.write('ANCNFG 0\r\n')
     self.lock.release()
     if self.mode == "analog":
       self.set_mode_analog()
@@ -29,8 +29,8 @@ class Servostar(Actuator):
     else:
       raise AttributeError("No such mode: "+str(self.mode))
     self.lock.acquire()
-    self.ser.write('en\r\n')
-    self.ser.write('mh\r\n')
+    self.ser.write('EN\r\n')
+    self.ser.write('MH\r\n')
     self.lock.release()
 
   def set_position(self,pos,speed=20000,acc=200,dec=200):
@@ -55,6 +55,10 @@ class Servostar(Actuator):
       if len(r) == 5:
         r = r[1:]
       r += self.ser.read()
+      if not r:
+        print("Servostar timeout error! make sure the servostar is on!")
+        self.lock.release()
+        return
     r = ''
     while not "\n" in r:
       r += self.ser.read()
@@ -64,7 +68,7 @@ class Servostar(Actuator):
   def set_mode_serial(self):
     self.lock.acquire()
     self.ser.flushInput()
-    self.ser.write('opmode 8\r\n')
+    self.ser.write('OPMODE 8\r\n')
     self.lock.release()
     self.mode = "serial"
 
@@ -74,12 +78,16 @@ class Servostar(Actuator):
     """
     self.lock.acquire()
     self.ser.flushInput()
-    self.ser.write('opmode 1\r\n')
+    self.ser.write('OPMODE 1\r\n')
     self.lock.release()
     self.mode = "analog"
 
+  def clear_errors(self):
+    self.ser.flushInput()
+    self.ser.write("CLRFAULT\r\n")
+
   def stop(self):
-    self.ser.write("dis\r\n")
+    self.ser.write("DIS\r\n")
     self.ser.flushInput()
 
   def close(self):
