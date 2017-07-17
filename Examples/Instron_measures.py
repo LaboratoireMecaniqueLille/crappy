@@ -1,6 +1,8 @@
 #coding: utf-8
-# Programme servant de base de travail pour l'acquisition et la commande des 
-# Instron à l'aide du LabJack T7.
+""" 
+Base de travail pour l'acquisition et la commande des Instron à l'aide 
+du LabJack T7. 
+"""
 
 import time
 import crappy
@@ -24,6 +26,8 @@ class EvalStress(crappy.links.Condition):
   def evaluate(self, value):
     
     value["Contrainte(MPa)"] = value["effort(kN)"] * 1000 / self.surface
+    # On détecte la demi-période en surveillant les changements de signe de la
+    # déformation.
     if value["Deformation(%)"] * self.signe - self.mean < 0:
       self.nb_cycles += 0.5
       self.signe *= -1
@@ -55,7 +59,11 @@ labjack = crappy.blocks.IOBlock("Labjack_T7",
                                 #out_channels='TDAC0',
                                 #cmd_labels=["position_command"],
                                 verbose=True)
-# Décommenter ci-dessous si usage de la commande
+"""
+Décommenter ci-dessous si usage de la commande : il est possible de faire 
+des chemins très compliqués, ici on montre l'exemple de 2 cycles avec des 
+limites hautes et basses en déformation.
+"""
 #pente = 0.05 # fois l'amplitude = mm/s
 #paliers = [0.2, 0.3]
 ##paliers = np.arange(0.2, 1.1, 0.1)
