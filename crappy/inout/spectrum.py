@@ -100,3 +100,7 @@ class Spectrum(InOut):
     else:
       return [t,r]
     #total += notify_size
+
+  def stop_stream(self):
+    spc.dwSetParam(self.h, spc.SPC_M2CMD, spc.M2CMD_CARD_STOP |
+                                          spc.M2CMD_DATA_STOPDMA)
