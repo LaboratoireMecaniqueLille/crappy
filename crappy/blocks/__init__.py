@@ -8,6 +8,7 @@ from .autoDrive import AutoDrive
 from .camera import Camera
 from .dashboard import Dashboard
 from .displayer import Displayer
+from .drawing import Drawing
 from .generator import Generator
 from .grapher import Grapher
 from .ioblock import IOBlock
