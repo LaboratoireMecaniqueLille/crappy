@@ -1,4 +1,5 @@
 # coding: utf-8
+
 import serial
 from threading import Thread
 import Tkinter as tk
@@ -11,24 +12,28 @@ from ast import literal_eval
 from ..tool.minitens import MinitensFrame
 from .inout import InOut
 from .._global import CrappyStop
-
+from os.path import exists
 
 class MonitorFrame(tk.Frame):
-  def __init__(self, parent, **kwargs):
-    """
-    A frame that displays everything entering the serial port.
+  """
+  A frame that displays everything entering the serial port.
+  Everything is handled by ArduinoHandler, so you don't get to modify these
+  values.
+  args:
+    arduino: serial.Serial of arduino board.
+    width: size of the text frame
+    title: the title of the frame.
+    fontsize: size of font inside the text frame.
+  """
 
-    args:
-      arduino: serial.Serial of arduino board.
-      width: size of the text frame
-      title: the title of the frame.
-      fontsize: size of font inside the text frame.
-    """
+  def __init__(self, parent, **kwargs):
     tk.Frame.__init__(self, parent)
     self.grid()
     self.total_width = kwargs.get('width', 100 * 5 / 10)
     self.arduino = kwargs.get("arduino")
     self.queue = kwargs.get("queue")
+
+    # A checkbox to enable or disable displaying of information.
     self.enabled_checkbox = tk.IntVar()
     self.enabled_checkbox.set(1)
 
@@ -36,7 +41,10 @@ class MonitorFrame(tk.Frame):
 
   def create_widgets(self, **kwargs):
     """
-    Widgets shown : the title with option
+    Widgets shown:
+    - The frame's title,
+    - The checkbutton to enable/disable displaying,
+    - The textbox.
     
     """
     self.top_frame = tk.Frame(self)
@@ -45,6 +53,7 @@ class MonitorFrame(tk.Frame):
     tk.Checkbutton(self.top_frame,
                    variable=self.enabled_checkbox,
                    text="Display?").grid(row=0, column=1)
+
     self.serial_monitor = tk.Text(self,
                                   relief="sunken",
                                   height=int(self.total_width / 10),
@@ -61,14 +70,15 @@ class MonitorFrame(tk.Frame):
 
 
 class SubmitSerialFrame(tk.Frame):
+  """
+  Frame that permits to submit to the serial port of arduino.
+
+  args:
+    width: width of the frame.
+    fontsize: self-explanatory.
+  """
+
   def __init__(self, parent, **kwargs):
-    """
-    Frame that permits to submit to the serial port of arduino.
-    
-    args:
-      width: width of the frame.
-      fontsize: self-explanatory.
-    """
     tk.Frame.__init__(self, parent)
     self.grid()
     self.total_width = kwargs.get("width", 100)
@@ -77,6 +87,12 @@ class SubmitSerialFrame(tk.Frame):
     self.create_widgets(**kwargs)
 
   def create_widgets(self, **kwargs):
+    """
+    Widgets shown:
+    - an Input text, to enter what to write on serial port.
+    - a submit label, to show previous command submitted.
+    - a submit button.
+    """
 
     self.input_txt = tk.Entry(self,
                               width=self.total_width * 5 / 10,
@@ -106,7 +122,9 @@ class SubmitSerialFrame(tk.Frame):
     except Empty:
       message = self.input_txt.get()
     self.input_txt.delete(0, 'end')
+
     if len(message) > int(self.total_width / 4):
+      # A fancy feature to resize the entry's length.
       self.input_txt.configure(width=int(self.total_width * 5 / 10 - len(
         message)))
     else:
@@ -117,9 +135,12 @@ class SubmitSerialFrame(tk.Frame):
 
 
 class ArduinoHandler(object):
+  """
+  Main ArduinoHandler, that creates every frame and handles in and outs from/to
+  every frame and arduino.
+
+  """
   def __init__(self, port, baudrate, queue_process, width, fontsize, frames):
-    """Special class called in a new process, that handles
-    connection between crappy and the GUI."""
 
     def collect_serial(arduino, queue):
       """Collect serial information, in a parallel way."""
@@ -150,14 +171,13 @@ class ArduinoHandler(object):
     self.bool_loop = True
     self.main_loop()
 
-
   def init_main_window(self):
     """
     Method to create and place widgets inside the main window.
     """
     self.root = tk.Tk()
     self.root.resizable(width=False, height=False)
-    self.root.title("Arduino on crappy v1.1")
+    self.root.title("Arduino on crappy v1.2")
     self.root.protocol("WM_DELETE_WINDOW", self.close)
     if "monitor" in self.frames:
       self.monitor_frame = MonitorFrame(self.root,
@@ -236,12 +256,21 @@ class Arduino(InOut):
       width: width of the GUI.
       fontsize: size of the font inside the GUI.
     """
-    self.port = kwargs.get("port", "/dev/ttyACM0")
-    self.baudrate = kwargs.get("baudrate", 9600)
-    self.labels = kwargs.get("labels", None)
-    self.frames = kwargs.get("frames", ["monitor", "submit"])
-    self.width = kwargs.get("width", 100)
-    self.fontsize = kwargs.get("fontsize", 11)
+    for arg, default in [('port', None),
+                         ("baudrate", 9600),
+                         ("labels", None),
+                         ("frames", ["monitor", "submit"]),
+                         ("width", 100),
+                         ("fontsize", 11)]:
+      setattr(self, arg, kwargs.pop(arg, default))
+
+    if not self.port:
+      for i in xrange(5):  #
+        if exists('/dev/ttyACM' + str(i)):
+          self.port = '/dev/ttyACM' + str(i)
+          break
+
+    assert not kwargs, "arduino: unknown kwarg(s):" + str(kwargs)
 
   def open(self):
     self.queue_get_data = Queue()
@@ -256,6 +285,7 @@ class Arduino(InOut):
     self.arduino_handler.start()
 
   def get_data(self, mock=None):
+
     retrieved_from_arduino = self.queue_get_data.get()
     if retrieved_from_arduino == "STOP":
       raise CrappyStop
