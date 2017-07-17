@@ -158,7 +158,8 @@ class Labjack_t7(InOut):
         for n,v in c['to_write']:
           names.append(c['name']+n)
           values.append(v)
-    ljm.eWriteNames(self.handle,len(names),names,values)
+    if names:
+      ljm.eWriteNames(self.handle,len(names),names,values)
     if any([c.get("make_zero",False) for c in self.in_chan_list]):
       print("[Labjack] Please wait during offset evaluation...")
       off = self.eval_offset()
