@@ -17,7 +17,7 @@ class Spectrum(InOut):
                         ('channels',[0]),
                         ('ranges',[1000]),
                         ('freq',100000),
-                        ('buff_size',2**22),  # 4 MB
+                        ('buff_size',2**26),  # 64 MB
                         ('notify_size',2**16), # 64 kB
                         ('split_chan',False) # If False, sends the 2D array
                         ]:
