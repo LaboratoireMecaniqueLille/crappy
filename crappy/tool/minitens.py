@@ -1,6 +1,8 @@
 # coding: utf-8
 import Tkinter as tk
+import tkMessageBox
 import ttk
+
 from collections import OrderedDict
 
 
@@ -118,6 +120,13 @@ class FrameObjects(tk.Frame):
                                   orient=tk.HORIZONTAL,
                                   )
 
+  def add_text(self, **kwargs):
+    widgets_dict = kwargs.pop('widgets_dict', None)
+    frame = kwargs.pop('frame', None)
+    text = kwargs.pop('text', 'label')
+    name = kwargs.pop('name', text)
+    widgets_dict[name] = tk.Text(frame)
+
 
 class MinitensPopups(FrameObjects):
   def __init__(self):
@@ -133,6 +142,8 @@ class MinitensPopups(FrameObjects):
                              command=self.create_popup_sample_parameters)
     self.menubar.add_command(label='Consigne...',
                              command=self.create_popup_command)
+    self.menubar.add_command(label='Utilitaire de calibration',
+                             command=self.create_popup_calibration)
 
   def create_menu_limits(self, frame):
 
@@ -195,7 +206,6 @@ class MinitensPopups(FrameObjects):
 
     if hasattr(self, 'cycles_popup'):
       self.cycles_popup.deiconify()
-      print(self.cycles_popup.winfo_geometry())
       return
 
     self.cycles_popup = tk.Toplevel()
@@ -467,6 +477,39 @@ class MinitensPopups(FrameObjects):
     for widg in self.init_popup_widgets.itervalues():
       widg.pack()
 
+  def create_popup_calibration(self):
+
+    if hasattr(self, 'popup_calibration'):
+      return
+
+    ok = tkMessageBox.askokcancel(title="Confirmation",
+                                  message="Changer les paramètres de calibration? "
+                                          "Opération délicate!")
+    if not ok:
+      return
+    else:
+      self.popup_calibration_widgets = OrderedDict()
+      self.popup_calibration = tk.Toplevel()
+      self.popup_calibration.resizable(False, False)
+      self.popup_calibration.title("Calibration de la cellule d'effort")
+      self.add_label(widgets_dict=self.popup_calibration_widgets,
+                     frame=self.popup_calibration,
+                     text="Placer un effort connu,\n"
+                          " puis entrer cette valeur (N):",
+                     font=("Courier bold", 16))
+
+      self.add_entry(widgets_dict=self.popup_calibration_widgets,
+                     frame=self.popup_calibration,
+                     entry_name="calib")
+
+      self.add_button(widgets_dict=self.popup_calibration_widgets,
+                      frame=self.popup_calibration,
+                      text="OK",
+                      command="CALIBRATION")
+
+      for widg in self.popup_calibration_widgets.values():
+        widg.pack()
+
 
 class MinitensFrames(MinitensPopups):
   def __init__(self):
@@ -509,7 +552,15 @@ class MinitensFrames(MinitensPopups):
                     name="effort_tare",
                     text='Zéro',
                     command="effort_tare")
+    self.add_button(widgets_dict=self.displayer_widgets,
+                    frame=self.frame_displayer,
+                    name="prct_tare",
+                    text="Zéro",
+                    command_type="custom",
+                    command=self.tare)
+
     self.displayer_widgets["effort_tare"].grid(row=5, column=0, sticky=tk.W)
+    self.displayer_widgets["prct_tare"].grid(row=3, column=0, sticky=tk.W)
 
   def create_frame_action(self):
 
@@ -601,6 +652,28 @@ class MinitensFrames(MinitensPopups):
                                             columnspan=2)
     self.cycles_table.grid(row=5, column=0, columnspan=4, rowspan=1)
 
+  def create_frame_recording(self):
+    self.frame_rec_widgets = OrderedDict()
+    self.frame_rec = tk.Frame(self,
+                              relief=tk.SUNKEN,
+                              borderwidth=1)
+    self.recording_state = tk.BooleanVar()
+
+    self.add_button(widgets_dict=self.frame_rec_widgets,
+                    frame=self.frame_rec,
+                    text='Enregistrer!',
+                    command_type='custom',
+                    command=self.start_recording)
+
+    for i, widg in enumerate(self.frame_rec_widgets.values()):
+      widg.pack()
+
+      # self.add_button(widgets_dict=self.frame_rec_widgets,
+      #                 frame=self.frame_rec,
+      #                 text='',
+      #                 command_type='custom',
+      #                 command=lambda: None)
+
 
 class MinitensFrame(MinitensFrames):
   def __init__(self, parent, **kwargs):
@@ -627,25 +700,24 @@ class MinitensFrame(MinitensFrames):
     self.create_widgets(**kwargs)
     self.queue = kwargs.get("queue")
 
-    for name, default in [('speed', 0.8),
+    for name, default in [('speed', 10),
                           ('ep_length', 0),
                           ('ep_width', 0),
                           ('ep_depth', 0),
                           ('length_0', 10)]:
       setattr(self, name, tk.DoubleVar())
       getattr(self, name).set(default)
-    self.submit_command({"vts": self.speed})
+    self.submit_command("VITESSE")
 
     # self.position = self.length_0.get()
     self.position = 0.0
     self.position_rel = 0.0
     self.position_prct = 0.0
+
     self.create_popup_length_init()
     self.wait_window(self.popup_init)
-    # print('self?', self.length_init_var)
-    #
-    # print('widgets:', self.init_popup_widgets)
     self.position = self.length_init_var.get()
+    self.position_prct = self.position
 
   def create_widgets(self, **kwargs):
     """
@@ -660,12 +732,14 @@ class MinitensFrame(MinitensFrames):
     self.create_frame_display()
     self.create_frame_action()
     # self.create_menu_limits()
+    self.create_frame_recording()
     self.create_frame_cycles()
     # self.create_popup_limits()
 
     self.frame_displayer.pack()
     self.frame_action.pack()
     self.frame_cycles.pack()
+    self.frame_rec.pack()
 
     # self.frame_displayer.grid(row=0, column=0)
     # self.frame_action.grid(row=1, column=0)
@@ -683,6 +757,9 @@ class MinitensFrame(MinitensFrames):
             self.submit_command("STOP")
       except ValueError:
         pass
+
+  def start_recording(self):
+    self.recording_state.set(True)
 
   def submit_cycle(self):
     try:
@@ -774,6 +851,10 @@ class MinitensFrame(MinitensFrames):
         self.cycles_started = False
         self.submit_command("STOP")
 
+  def tare(self):
+    self.position_prct = self.position
+    pass
+
   def calc_speed(self):
     return int(255 * (-self.speed.get() / 208. + 1))
 
@@ -787,9 +868,13 @@ class MinitensFrame(MinitensFrames):
     # elif arg == "position_tare":
     #   dico = {"t": 1}
     elif arg == "effort_tare":
-      dico = {"t": 2}
+      dico = {"t": 0}
     elif arg == "VITESSE":
-      dico = {"v": (self.calc_speed())}
+      dico = {"v": self.calc_speed()}
+    elif arg == "CALIBRATION":
+      self.popup_calibration.destroy()
+      del self.popup_calibration
+      dico = {"c": self.calib_var.get()}
     else:
       dico = arg
     message = str(dico)
@@ -814,15 +899,17 @@ class MinitensFrame(MinitensFrames):
         contrainte = 0.0
       else:
         contrainte = effort / (self.ep_depth.get() * self.ep_width.get())
-      if self.ep_length.get() == 0:
-        position_prct = 0.0
+      # if self.ep_length.get() == 0:
+      #   position_prct = 0.0
+      # else:
+      if not self.position_prct == 0.:
+        position_prct = 100 * (self.position - self.position_prct) / \
+                        self.position_prct
       else:
-        position_prct = 100 * (self.position - self.length_0.get()) / \
-                        self.length_0.get()
+        position_prct = 0.0
 
-    except (TypeError, AttributeError) as e:  # If errors, at the beginning in
+    except (TypeError, AttributeError):  # If errors, at the beginning in
       # general.
-      print e
       position_abs = 0.0
       effort = 0.0
       sens = 0.0
