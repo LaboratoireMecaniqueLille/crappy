@@ -186,20 +186,20 @@ class ArduinoHandler(object):
                                         title="Arduino on port %s "
                                               "baudrate %s" % (self.port,
                                                                self.baudrate))
-      self.monitor_frame.grid()
+      self.monitor_frame.pack()
     if "submit" in self.frames:
       self.submit_frame = SubmitSerialFrame(self.root,
                                             fontsize=self.fontsize,
                                             width=self.width,
                                             queue=self.submit_serial_queue)
-      self.submit_frame.grid()
+      self.submit_frame.pack()
     if "minitens" in self.frames:
       self.minitens_frame = MinitensFrame(self.root,
                                           queue=self.submit_serial_queue,
                                           width=self.width,
                                           fontsize=self.fontsize)
       self.root.config(menu=self.minitens_frame.menubar)
-      self.minitens_frame.grid()
+      self.minitens_frame.pack()
 
   def main_loop(self):
     """
