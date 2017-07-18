@@ -856,7 +856,7 @@ class MinitensFrame(MinitensFrames):
     pass
 
   def calc_speed(self):
-    return int(255 * (-self.speed.get() / 208. + 1))
+    return int(255 * (-self.speed.get() / 20.8 + 1))
 
   def submit_command(self, arg):
     if arg == "STOP":
@@ -944,9 +944,11 @@ class MinitensFrame(MinitensFrames):
                "effort": effort,
                "sens": sens,
                "position_prct": position_prct,
-               "contrainte": contrainte}
+               "contrainte": contrainte,
+               "millis": millis}
 
     self.update_widgets(to_send)
+    self.update_crappy(to_send)
 
   def update_widgets(self, new_data):
 
@@ -968,3 +970,6 @@ class MinitensFrame(MinitensFrames):
     else:
       self.action_widgets["COMPRESSION"].configure(bg="white")
       self.action_widgets["TRACTION"].configure(bg="white")
+
+  def update_crappy(self, new_data):
+    pass
