@@ -1,9 +1,11 @@
-#coding: utf-8
+# coding: utf-8
 """
 A very simple class that should be inherited by frames, to help create and
 maintain in order the file.
 """
 import Tkinter as tk
+import ttk
+
 
 class FrameObjects(tk.Frame):
   def __init__(self):
@@ -80,13 +82,14 @@ class FrameObjects(tk.Frame):
   def add_checkbutton(self, **kwargs):
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
+    text = kwargs.pop("text", None)
     name = kwargs.pop('name', 'checkbutton')
     variable_name = kwargs.pop('variable', name + '_var')
 
     var = tk.BooleanVar()
     setattr(self, variable_name, var)
     widgets_dict[name] = tk.Checkbutton(frame,
-                                        text=None,
+                                        text=text,
                                         variable=var)
 
   def add_combobox(self, **kwargs):
@@ -125,4 +128,3 @@ class FrameObjects(tk.Frame):
     text = kwargs.pop('text', 'label')
     name = kwargs.pop('name', text)
     widgets_dict[name] = tk.Text(frame)
-

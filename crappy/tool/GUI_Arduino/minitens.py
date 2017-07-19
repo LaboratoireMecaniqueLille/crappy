@@ -6,22 +6,58 @@ import ttk
 from .frame_objects import FrameObjects
 from collections import OrderedDict
 
+
 class MinitensPopups(FrameObjects):
   def __init__(self):
     pass
 
   def create_menubar(self):
+
     self.menubar = tk.Menu(self)
-    self.menubar.add_command(label='Limites',
-                             command=self.create_popup_limits)
-    self.menubar.add_command(label='Vitesse',
-                             command=self.create_popup_speed)
-    self.menubar.add_command(label='Paramètres de longueur',
-                             command=self.create_popup_sample_parameters)
-    self.menubar.add_command(label='Consigne...',
-                             command=self.create_popup_command)
-    self.menubar.add_command(label='Utilitaire de calibration',
-                             command=self.create_popup_calibration)
+    self.menu_exp_parameters = tk.Menu(self.menubar, tearoff=0)
+    self.menubar.add_cascade(label="Paramètres de l'essai",
+                             menu=self.menu_exp_parameters)
+
+    self.menu_exp_parameters.add_command(label='Limites',
+                                         command=self.create_popup_limits)
+    self.menu_exp_parameters.add_command(label='Vitesse',
+                                         command=self.create_popup_speed)
+    self.menu_exp_parameters.add_command(label='Paramètres échantillon',
+                                         command=self.create_popup_sample_parameters)
+
+    self.menu_tools = tk.Menu(self.menubar, tearoff=0)
+
+    self.menubar.add_cascade(label="Outils",
+                             menu=self.menu_tools)
+    self.menu_tools.add_command(label='Consigne...',
+                                command=self.create_popup_command)
+    self.menu_tools.add_command(label="Générateur de cycles",
+                                command=self.create_popup_new_cycle)
+    self.menu_tools.add_command(label='Utilitaire de calibration',
+                                command=self.create_popup_calibration)
+
+    self.menu_rec = tk.Menu(self.menubar, tearoff=0)
+    self.menubar.add_cascade(label="Enregistrer?",
+                             menu=self.menu_rec)
+
+    self.menu_rec.add_checkbutton(label="Oui", variable=self.recording_state,
+                                  onvalue=True, offvalue=False)
+
+    self.menu_rec.add_checkbutton(label="Non", variable=self.recording_state,
+                                  onvalue=False, offvalue=True)
+
+    self.menu_display = tk.Menu(self.menubar, tearoff=0)
+    self.menubar.add_cascade(label="Affichage",
+                             menu=self.menu_display)
+
+    for key, value in self.variables.iteritems():
+      setattr(self, value + "_on", tk.BooleanVar())
+      getattr(self, value + "_on").set(True)
+      self.menu_display.add_checkbutton(label=key, variable=getattr(self,
+                                                                      value +
+                                                                      "_on"))
+
+
 
   def create_menu_limits(self, frame):
 
@@ -45,14 +81,14 @@ class MinitensPopups(FrameObjects):
                      name=name)
       self.limits_widgets[name].grid(row=1, column=1 + i)
 
-    for i, (variable, abrg) in enumerate(self.variables):
+    for i, (variable, abrg) in enumerate(self.variables.iteritems()):
       self.add_label(widgets_dict=self.limits_widgets,
                      frame=self.frame_limits,
                      text=variable,
                      name=abrg)
       self.limits_widgets[abrg].grid(row=2 + i, column=0, sticky=tk.W)
 
-    for i, (variable, abrg) in enumerate(self.variables):
+    for i, (variable, abrg) in enumerate(self.variables.iteritems()):
       self.add_entry(widgets_dict=self.limits_widgets,
                      frame=self.frame_limits,
                      entry_name=abrg + '_haute')
@@ -91,12 +127,9 @@ class MinitensPopups(FrameObjects):
     self.cycles_popup.protocol("WM_DELETE_WINDOW",
                                self.cycles_popup.withdraw)
     self.cycles_popup.resizable(False, False)
-    # entries_combobox = ('Position(%)',
-    #                     'Position(mm)',
-    #                     'Effort(N)',
-    #                     'Effort('
-    #                                                                 'MPa)')
-    entries_combobox = [name[0] for name in self.variables]
+
+    # entries_combobox = [name[0] for name in self.variables]
+    entries_combobox = self.variables.keys()
 
     labels_cycles = (("max_type_label", "Type de valeur max"),
                      ("max_label", "Valeur max"),
@@ -221,8 +254,8 @@ class MinitensPopups(FrameObjects):
     self.popup_command.resizable(False, False)
     self.popup_command_widgets = OrderedDict()
 
-    combobox_entries = [variable[0] for variable in self.variables]
-
+    # combobox_entries = [variable[0] for variable in self.variables]
+    combobox_entries = self.variables.keys()
     self.add_label(frame=self.popup_command,
                    widgets_dict=self.popup_command_widgets,
                    name="command_type_label",
@@ -389,13 +422,13 @@ class MinitensPopups(FrameObjects):
         widg.pack()
 
 
-class MinitensFrames(MinitensPopups):
+class MinitensFrames(FrameObjects):
   def __init__(self):
     pass
 
   def create_frame_display(self):
 
-    for i, (variable, abrg) in enumerate(self.variables):
+    for i, (variable, abrg) in enumerate(self.variables.iteritems()):
       self.add_label(widgets_dict=self.displayer_widgets,
                      frame=self.frame_displayer,
                      text=variable,
@@ -408,19 +441,10 @@ class MinitensFrames(MinitensPopups):
                      font=("Courier bold", 48),
                      name=abrg + '_display')
 
-      # self.add_button(widgets_dict=self.displayer_widgets,
-      #                 frame=self.frame_displayer,
-      #                 name=abrg + "_tare",
-      #                 text='Zéro',
-      #                 command=abrg + "_tare")
-
       self.displayer_widgets[abrg + '_label'].grid(row=2 * i,
                                                    column=0,
                                                    columnspan=3,
                                                    sticky=tk.W)
-      # self.displayer_widgets[abrg + '_tare'].grid(row=2 * i + 1,
-      #                                             column=0,
-      #                                             sticky=tk.W)
       self.displayer_widgets[abrg + '_display'].grid(row=2 * i + 1,
                                                      column=1,
                                                      columnspan=2)
@@ -430,6 +454,7 @@ class MinitensFrames(MinitensPopups):
                     name="effort_tare",
                     text='Zéro',
                     command="effort_tare")
+
     self.add_button(widgets_dict=self.displayer_widgets,
                     frame=self.frame_displayer,
                     name="prct_tare",
@@ -476,6 +501,7 @@ class MinitensFrames(MinitensPopups):
     #                              borderwidth=1)
     #
     # self.cycles_widgets = OrderedDict()
+
     self.add_label(widgets_dict=self.cycles_widgets,
                    frame=self.frame_cycles,
                    text="GENERATEUR DE CYCLES",
@@ -483,20 +509,20 @@ class MinitensFrames(MinitensPopups):
                    font=("Courier bold", 14, "bold"))
 
     self.cycles_widgets["cycles_type"] = tk.StringVar()
-    self.cycles_widgets["cycles_type"].set("position")
+    self.cycles_widgets["cycles_type"].set("position_prct")
     self.cycles = []
     self.nb_cycles = 0.
     self.cycles_started = False
     self.rising = True
 
-    self.add_button(widgets_dict=self.cycles_widgets,
-                    frame=self.frame_cycles,
-                    name="submit_cycle",
-                    text="Soumettre \n nouveaux cycles...",
-                    bg="white",
-                    command_type="custom",
-                    command=self.create_popup_new_cycle,
-                    width=15, height=5)
+    # self.add_button(widgets_dict=self.cycles_widgets,
+    #                 frame=self.frame_cycles,
+    #                 name="submit_cycle",
+    #                 text="Soumettre \n nouveaux cycles...",
+    #                 bg="white",
+    #                 command_type="custom",
+    #                 command=self.create_popup_new_cycle,
+    #                 width=15, height=5)
 
     self.add_button(widgets_dict=self.cycles_widgets,
                     frame=self.frame_cycles,
@@ -505,7 +531,19 @@ class MinitensFrames(MinitensPopups):
                     bg="green",
                     command_type="custom",
                     command=self.start_cycle,
-                    width=15, height=5)
+                    width=15, height=3)
+
+    self.add_checkbutton(widgets_dict=self.cycles_widgets,
+                         frame=self.frame_cycles,
+                         variable="start_rec_cycle",
+                         text="Au démarrage: lancer l'enregistrement",
+                         name="start_rec_cycle")
+
+    self.add_checkbutton(widgets_dict=self.cycles_widgets,
+                         frame=self.frame_cycles,
+                         variable="stop_rec_cycle",
+                         text="A l'arrêt: stopper l'enregistrement",
+                         name="stop_rec_cycle")
 
     columns = ("Type de limite haute",
                "Limite haute",
@@ -523,28 +561,28 @@ class MinitensFrames(MinitensPopups):
       self.cycles_table.heading(column, text=column)
 
     self.cycles_widgets["CYCLES"].grid(row=0, columnspan=4)
-    self.cycles_widgets["submit_cycle"].grid(row=1, column=0,
-                                             columnspan=2)
+    # self.cycles_widgets["submit_cycle"].grid(row=1, column=0,
+    #                                          columnspan=2)
 
-    self.cycles_widgets["start_cycle"].grid(row=1, column=2,
-                                            columnspan=2)
+    self.cycles_widgets["start_cycle"].grid(row=1, column=3,
+                                            columnspan=2, rowspan=3)
+    self.cycles_widgets["start_rec_cycle"].grid(row=2, column=2, sticky=tk.W)
+    self.cycles_widgets["stop_rec_cycle"].grid(row=3, column=2, sticky=tk.W)
     self.cycles_table.grid(row=5, column=0, columnspan=4, rowspan=1)
 
-  def create_frame_recording(self):
-    self.frame_rec_widgets = OrderedDict()
-    self.frame_rec = tk.Frame(self,
-                              relief=tk.SUNKEN,
-                              borderwidth=1)
-    self.recording_state = tk.BooleanVar()
-
-    self.add_button(widgets_dict=self.frame_rec_widgets,
-                    frame=self.frame_rec,
-                    text='Enregistrer!',
-                    command_type='custom',
-                    command=self.start_recording)
-
-    for i, widg in enumerate(self.frame_rec_widgets.values()):
-      widg.pack()
+  # def create_frame_recording(self):
+  #   self.frame_rec_widgets = OrderedDict()
+  #   self.frame_rec = tk.Frame(self,
+  #                             relief=tk.SUNKEN,
+  #                             borderwidth=1)
+  #
+  #   self.add_checkbutton(widgets_dict=self.frame_rec_widgets,
+  #                        frame=self.frame_rec,
+  #                        text='Enregistrer?',
+  #                        variable="recording_state")
+  #
+  #   for i, widg in enumerate(self.frame_rec_widgets.values()):
+  #     widg.pack()
 
       # self.add_button(widgets_dict=self.frame_rec_widgets,
       #                 frame=self.frame_rec,
@@ -553,30 +591,35 @@ class MinitensFrames(MinitensPopups):
       #                 command=lambda: None)
 
 
-class MinitensFrame(MinitensFrames):
+class MinitensFrame(MinitensFrames, MinitensPopups):
   def __init__(self, parent, **kwargs):
     """
     Frame to use with minitens in crappy.
     """
     tk.Frame.__init__(self, parent)
-    self.grid()
+    # self.grid()
 
     self.frames = ["displayer",
                    "action",
                    "cycles"]
+
     for frame in self.frames:
       setattr(self, "frame_" + frame, tk.Frame(self,
                                                relief=tk.SUNKEN,
                                                borderwidth=1))
       setattr(self, frame + "_widgets", OrderedDict())
 
-    self.variables = [("Position(mm)", "position"),
-                      ("Position(%)", "position_prct"),
-                      ("Effort(N)", "effort"),
-                      ("Contrainte(MPa)", "contrainte")]
 
-    self.create_widgets(**kwargs)
+
+      self.variables = OrderedDict([("Position(mm)", "position"),
+                                    ("Position(%)", "position_prct"),
+                                    ("Effort(N)", "effort"),
+                                   ("Contrainte(MPa)", "contrainte")])
+
     self.queue = kwargs.get("queue")
+    self.crappy_queue = kwargs.get("crappy_queue")
+    self.recording_state = tk.BooleanVar()
+    self.create_widgets(**kwargs)
 
     for name, default in [('speed', 5),
                           ('ep_length', 0),
@@ -592,10 +635,14 @@ class MinitensFrame(MinitensFrames):
     self.position_rel = 0.0
     self.position_prct = 0.0
 
+
     self.create_popup_length_init()
     self.wait_window(self.popup_init)
     self.position = self.length_init_var.get()
     self.position_prct = self.position
+
+
+
 
   def create_widgets(self, **kwargs):
     """
@@ -610,14 +657,15 @@ class MinitensFrame(MinitensFrames):
     self.create_frame_display()
     self.create_frame_action()
     # self.create_menu_limits()
-    self.create_frame_recording()
+    # self.create_frame_recording()
     self.create_frame_cycles()
     # self.create_popup_limits()
 
-    self.frame_displayer.pack()
-    self.frame_action.pack()
-    self.frame_cycles.pack()
-    self.frame_rec.pack()
+    self.frame_displayer.grid(row=0, column=0)
+    self.frame_action.grid(row=1, column=0)
+    self.frame_cycles.grid(row=0, column=1)
+    self.frame_cycles.grid_forget()
+    # self.frame_rec.grid(row=1, column=1)
 
     # self.frame_displayer.grid(row=0, column=0)
     # self.frame_action.grid(row=1, column=0)
@@ -625,7 +673,7 @@ class MinitensFrame(MinitensFrames):
 
   def check_limits(self, **kwargs):
     sens = kwargs.pop("sens")
-    for variable, abrg in self.variables:
+    for variable, abrg in self.variables.iteritems():
       try:
         if getattr(self, abrg + '_chck_var').get():
           var = kwargs.pop(abrg)
@@ -635,9 +683,6 @@ class MinitensFrame(MinitensFrames):
             self.submit_command("STOP")
       except ValueError:
         pass
-
-  def start_recording(self):
-    self.recording_state.set(True)
 
   def submit_cycle(self):
     try:
@@ -671,7 +716,7 @@ class MinitensFrame(MinitensFrames):
   def check_go_to(self, **kwargs):
     sens = kwargs.pop("sens")
     var_type = self.command_type_var.get()
-    for name, variable in self.variables:
+    for name, variable in self.variables.iteritems():
       if name == var_type:
         var = kwargs.pop(variable)
     if self.command_bool:
@@ -694,13 +739,15 @@ class MinitensFrame(MinitensFrames):
     if self.cycles:
       self.cycles_started = True
       self.submit_command("TRACTION")
+    if self.start_rec_cycle.get():
+      self.recording_state.set(True)
 
   def check_cycle(self, **kwargs):
 
     sens = kwargs.pop("sens")
     mode_max, maximum, mode_min, minimum = self.cycles[0][1:]
 
-    for name, variable in self.variables:
+    for name, variable in self.variables.iteritems():
       if name == mode_max:
         mode_max = variable
       if name == mode_min:
@@ -728,6 +775,8 @@ class MinitensFrame(MinitensFrames):
       else:
         self.cycles_started = False
         self.submit_command("STOP")
+        if self.stop_rec_cycle.get():
+          self.recording_state.set(False)
 
   def tare(self):
     self.position_prct = self.position
@@ -777,9 +826,6 @@ class MinitensFrame(MinitensFrames):
         contrainte = 0.0
       else:
         contrainte = effort / (self.ep_depth.get() * self.ep_width.get())
-      # if self.ep_length.get() == 0:
-      #   position_prct = 0.0
-      # else:
       if not self.position_prct == 0.:
         position_prct = 100 * (self.position - self.position_prct) / \
                         self.position_prct
@@ -826,10 +872,14 @@ class MinitensFrame(MinitensFrames):
                "millis": millis}
 
     self.update_widgets(to_send)
-    self.update_crappy(to_send)
+
+    if self.recording_state.get():
+      # for key, value in to_send.iteritems():
+      #   to_send[]
+
+      self.crappy_queue.put(to_send)
 
   def update_widgets(self, new_data):
-
     formating_parameters = [("position", ('.3f', 'mm')),
                             ("effort", ('.2f', 'N')),
                             ('position_prct', ('.2f', '%')),
@@ -838,7 +888,6 @@ class MinitensFrame(MinitensFrames):
     for parameters, formats in formating_parameters:
       mot = format(new_data[parameters], formats[0]) + ' ' + formats[1]
       self.displayer_widgets[parameters + "_display"].configure(text=mot)
-
     if new_data["sens"] == 1:
       self.action_widgets["TRACTION"].configure(bg="blue")
       self.action_widgets["COMPRESSION"].configure(bg="white")
@@ -849,5 +898,18 @@ class MinitensFrame(MinitensFrames):
       self.action_widgets["COMPRESSION"].configure(bg="white")
       self.action_widgets["TRACTION"].configure(bg="white")
 
-  def update_crappy(self, new_data):
-    pass
+    if self.cycles:
+      self.frame_cycles.grid()
+    else:
+      self.frame_cycles.grid_forget()
+
+    # for key, value in self.variables.iteritems():
+    #   if not getattr(self, value + '_on').get():
+    #     self.displayer_widgets[value + "_label"].grid_forget()
+    #     self.displayer_widgets[value + "_display"].grid_forget()
+    #   else:
+    #     self.displayer_widgets[value + "_label"].grid()
+    #     self.displayer_widgets[value + "_display"].grid()
+
+
+
