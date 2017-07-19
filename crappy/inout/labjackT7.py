@@ -228,12 +228,15 @@ class Labjack_t7(InOut):
     #ljm.eWriteAddresses(self.handle,len(self.write_addresses),
     #    self.write_addresses,self.write_types,values)
     addresses,types,values = [],[],[]
-    for i,(a,t,v,o) in enumerate(zip(self.write_addresses,self.write_types,cmd,self.last_values)):
+    for i,(a,t,v,o,c) in enumerate(zip(
+        self.write_addresses,self.write_types,
+        cmd,self.last_values,self.out_chan_list)):
       if v != o:
+        new_v = c['gain']*v+c['offset']
         self.last_values[i] = v
         addresses.append(a)
         types.append(t)
-        values.append(v)
+        values.append(new_v)
     if addresses:
       ljm.eWriteAddresses(self.handle,len(addresses),addresses,types,values)
 
