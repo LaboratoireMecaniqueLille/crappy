@@ -54,10 +54,8 @@ class MinitensPopups(FrameObjects):
       setattr(self, value + "_on", tk.BooleanVar())
       getattr(self, value + "_on").set(True)
       self.menu_display.add_checkbutton(label=key, variable=getattr(self,
-                                                                      value +
-                                                                      "_on"))
-
-
+                                                                    value +
+                                                                    "_on"))
 
   def create_menu_limits(self, frame):
 
@@ -570,25 +568,25 @@ class MinitensFrames(FrameObjects):
     self.cycles_widgets["stop_rec_cycle"].grid(row=3, column=2, sticky=tk.W)
     self.cycles_table.grid(row=5, column=0, columnspan=4, rowspan=1)
 
-  # def create_frame_recording(self):
-  #   self.frame_rec_widgets = OrderedDict()
-  #   self.frame_rec = tk.Frame(self,
-  #                             relief=tk.SUNKEN,
-  #                             borderwidth=1)
-  #
-  #   self.add_checkbutton(widgets_dict=self.frame_rec_widgets,
-  #                        frame=self.frame_rec,
-  #                        text='Enregistrer?',
-  #                        variable="recording_state")
-  #
-  #   for i, widg in enumerate(self.frame_rec_widgets.values()):
-  #     widg.pack()
+    # def create_frame_recording(self):
+    #   self.frame_rec_widgets = OrderedDict()
+    #   self.frame_rec = tk.Frame(self,
+    #                             relief=tk.SUNKEN,
+    #                             borderwidth=1)
+    #
+    #   self.add_checkbutton(widgets_dict=self.frame_rec_widgets,
+    #                        frame=self.frame_rec,
+    #                        text='Enregistrer?',
+    #                        variable="recording_state")
+    #
+    #   for i, widg in enumerate(self.frame_rec_widgets.values()):
+    #     widg.pack()
 
-      # self.add_button(widgets_dict=self.frame_rec_widgets,
-      #                 frame=self.frame_rec,
-      #                 text='',
-      #                 command_type='custom',
-      #                 command=lambda: None)
+    # self.add_button(widgets_dict=self.frame_rec_widgets,
+    #                 frame=self.frame_rec,
+    #                 text='',
+    #                 command_type='custom',
+    #                 command=lambda: None)
 
 
 class MinitensFrame(MinitensFrames, MinitensPopups):
@@ -609,12 +607,10 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
                                                borderwidth=1))
       setattr(self, frame + "_widgets", OrderedDict())
 
-
-
       self.variables = OrderedDict([("Position(mm)", "position"),
                                     ("Position(%)", "position_prct"),
                                     ("Effort(N)", "effort"),
-                                   ("Contrainte(MPa)", "contrainte")])
+                                    ("Contrainte(MPa)", "contrainte")])
 
     self.queue = kwargs.get("queue")
     self.crappy_queue = kwargs.get("crappy_queue")
@@ -635,14 +631,10 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     self.position_rel = 0.0
     self.position_prct = 0.0
 
-
     self.create_popup_length_init()
     self.wait_window(self.popup_init)
     self.position = self.length_init_var.get()
     self.position_prct = self.position
-
-
-
 
   def create_widgets(self, **kwargs):
     """
@@ -903,13 +895,10 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     else:
       self.frame_cycles.grid_forget()
 
-    # for key, value in self.variables.iteritems():
-    #   if not getattr(self, value + '_on').get():
-    #     self.displayer_widgets[value + "_label"].grid_forget()
-    #     self.displayer_widgets[value + "_display"].grid_forget()
-    #   else:
-    #     self.displayer_widgets[value + "_label"].grid()
-    #     self.displayer_widgets[value + "_display"].grid()
-
-
-
+      # for key, value in self.variables.iteritems():
+      #   if not getattr(self, value + '_on').get():
+      #     self.displayer_widgets[value + "_label"].grid_forget()
+      #     self.displayer_widgets[value + "_display"].grid_forget()
+      #   else:
+      #     self.displayer_widgets[value + "_label"].grid()
+      #     self.displayer_widgets[value + "_display"].grid()
