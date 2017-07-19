@@ -23,27 +23,21 @@ def collect_serial(arduino, queue):
   while True:
     queue.put(arduino.readline())
 
+
 class ArduinoHandler(object):
   """
   Main ArduinoHandler, that creates every frame and handles in and outs from/to
   every frame and arduino.
-
   """
-  def __init__(self, port, baudrate, queue_process, width, fontsize, frames):
 
-    self.port = port
-    self.baudrate = baudrate
-    self.queue_process = queue_process
-    self.width = width
-    self.fontsize = fontsize
-    self.frames = frames
-
+  def __init__(self, *args):
+    kwargs = args[0]
+    for key, value in kwargs.iteritems():
+      setattr(self, key, value)
     self.arduino_ser = serial.Serial(port=self.port,
                                      baudrate=self.baudrate)
-
     self.collect_serial_queue = Queue_threading()  # To collect serial
     self.submit_serial_queue = Queue_threading()  # To send in serial
-
     self.collect_serial_threaded = Thread(target=collect_serial,
                                           args=(self.arduino_ser,
                                                 self.collect_serial_queue))
@@ -77,50 +71,68 @@ class ArduinoHandler(object):
                                             queue=self.submit_serial_queue)
       self.submit_frame.pack()
     if "minitens" in self.frames:
+      self.crappy_queue = Queue_threading()
       self.minitens_frame = MinitensFrame(self.root,
                                           queue=self.submit_serial_queue,
                                           width=self.width,
-                                          fontsize=self.fontsize)
+                                          fontsize=self.fontsize,
+                                          crappy_queue=self.crappy_queue)
       self.root.config(menu=self.minitens_frame.menubar)
       self.minitens_frame.pack()
+
+  def update_serial(self):
+    try:
+      # Receiving from arduino
+      serial_received = self.collect_serial_queue.get(block=True,
+                                                      timeout=0.01)
+    except Empty:
+      # In case there is a queue timeout, to update GUI anyway
+      serial_received = None
+      self.root.update()
+    try:
+      # Sending to arduino
+      serial_to_send = self.submit_serial_queue.get(block=False)
+      self.arduino_ser.write(serial_to_send)
+    except Empty:
+      pass
+    return serial_received
+
+  def send_GUIs(self, serial_received):
+    if "monitor" in self.frames:
+      self.monitor_frame.update_widgets(serial_received)
+
+    if "minitens" in self.frames:
+      try:
+        message = literal_eval(serial_received)
+        self.minitens_frame.update_data(message)
+      except (ValueError, SyntaxError, TypeError):
+        pass
+
+  def send_crappy(self, serial_received):
+    try:
+      # message = literal_eval(serial_received)
+      message = serial_received
+      self.queue_process.put(message)  # Message is sent to the crappy
+      # process
+    except (ValueError, SyntaxError, TypeError):
+      pass
 
   def main_loop(self):
     """
     Main method to update the GUI, collect and transmit information.
     """
     while True and self.bool_loop:
-      try:
-        # Receiving from arduino
-        serial_received = self.collect_serial_queue.get(block=True,
-                                                        timeout=0.01)
-      except Empty:
-        # In case there is a queue timeout, to update GUI anyway
-        serial_received = None
-        self.root.update()
-      try:
-        # Sending to arduino
-        serial_to_send = self.submit_serial_queue.get(block=False)
-        self.arduino_ser.write(serial_to_send)
-      except Empty:
-        pass
-
-      if "monitor" in self.frames and serial_received:
-        self.monitor_frame.update_widgets(serial_received)
-
-      if "minitens" in self.frames and serial_received:
-        try:
-          message = literal_eval(serial_received)
-          self.minitens_frame.update_data(message)
-        except (ValueError, SyntaxError, TypeError):
-          pass
-
+      serial_received = self.update_serial()
       if serial_received:
+        self.send_GUIs(serial_received)
+      if "minitens" in self.frames:
         try:
-          message = literal_eval(serial_received)
-          self.queue_process.put(message)  # Message is sent to the crappy
-          # process
-        except (ValueError, SyntaxError, TypeError):
+          mot = self.crappy_queue.get(block=False)
+          self.send_crappy(mot)
+        except Empty:
           pass
+      else:
+        self.send_crappy(serial_received)
       self.root.update()
     self.root.destroy()
     self.queue_process.put("STOP")
@@ -160,13 +172,16 @@ class Arduino(InOut):
 
   def open(self):
     self.queue_get_data = Queue()
+    args_handler = {"port": self.port,
+                    "baudrate": self.baudrate,
+                    "queue_process": self.queue_get_data,
+                    "width": self.width,
+                    "fontsize": self.fontsize,
+                    "frames": self.frames,
+                    "labels": self.labels}
+
     self.arduino_handler = Process(target=ArduinoHandler,
-                                   args=(self.port,
-                                         self.baudrate,
-                                         self.queue_get_data,
-                                         self.width,
-                                         self.fontsize,
-                                         self.frames))
+                                   args=(args_handler,))
     self.handler_t0 = time()
     self.arduino_handler.start()
 
