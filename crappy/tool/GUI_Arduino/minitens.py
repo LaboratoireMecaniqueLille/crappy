@@ -8,11 +8,34 @@ from collections import OrderedDict
 
 
 class MinitensPopups(FrameObjects):
+  """
+  This class contains every popup. That means everything except the frames
+  in the main window. The popups are called via a command in the menu.
+  """
+
   def __init__(self):
     pass
 
-  def create_menubar(self):
+  def create_popup_limits(self):
 
+    if hasattr(self, 'popup_limits'):
+      self.popup_limits.deiconify()
+      return
+
+    self.popup_limits = tk.Toplevel()
+    self.popup_limits.resizable(False, False)
+    self.popup_limits.protocol("WM_DELETE_WINDOW",
+                               self.popup_limits.withdraw)
+
+    self.popup_limits.title("Limites")
+    self.create_menu_limits(self.popup_limits)
+
+  def create_menubar(self):
+    """
+    A menubar that contains every menu.
+    """
+
+    # 1st menu: contains experience parameters.
     self.menubar = tk.Menu(self)
     self.menu_exp_parameters = tk.Menu(self.menubar, tearoff=0)
     self.menubar.add_cascade(label="Paramètres de l'essai",
@@ -25,8 +48,8 @@ class MinitensPopups(FrameObjects):
     self.menu_exp_parameters.add_command(label='Paramètres échantillon',
                                          command=self.create_popup_sample_parameters)
 
+    # 2nd menu: tools to conduct the experience.
     self.menu_tools = tk.Menu(self.menubar, tearoff=0)
-
     self.menubar.add_cascade(label="Outils",
                              menu=self.menu_tools)
     self.menu_tools.add_command(label='Consigne...',
@@ -36,6 +59,7 @@ class MinitensPopups(FrameObjects):
     self.menu_tools.add_command(label='Utilitaire de calibration',
                                 command=self.create_popup_calibration)
 
+    # 3rd menu: to enable or disable the link to crappy.
     self.menu_rec = tk.Menu(self.menubar, tearoff=0)
     self.menubar.add_cascade(label="Enregistrer?",
                              menu=self.menu_rec)
@@ -46,6 +70,7 @@ class MinitensPopups(FrameObjects):
     self.menu_rec.add_checkbutton(label="Non", variable=self.recording_state,
                                   onvalue=False, offvalue=True)
 
+    # 4th menu: to show on or show off some displays. Not working 20/07/2017
     self.menu_display = tk.Menu(self.menubar, tearoff=0)
     self.menubar.add_cascade(label="Affichage",
                              menu=self.menu_display)
@@ -58,7 +83,10 @@ class MinitensPopups(FrameObjects):
                                                                     "_on"))
 
   def create_menu_limits(self, frame):
-
+    """
+    A menu to define limits of the minitens machine. It includes limits in
+    every imaginable variable.
+    """
     self.limits_widgets = OrderedDict()
     self.frame_limits = frame
 
@@ -67,7 +95,6 @@ class MinitensPopups(FrameObjects):
                    text="Limites",
                    name="limites_title",
                    font=("Courier bold", 14, "bold"))
-
     self.limits_widgets['limites_title'].grid(row=0, columnspan=4)
 
     for i, (label, name) in enumerate([("MAXIMUM", "Haute"),
@@ -89,13 +116,10 @@ class MinitensPopups(FrameObjects):
     for i, (variable, abrg) in enumerate(self.variables.iteritems()):
       self.add_entry(widgets_dict=self.limits_widgets,
                      frame=self.frame_limits,
-                     entry_name=abrg + '_haute')
+                     name=abrg + '_haute')
       self.add_entry(widgets_dict=self.limits_widgets,
                      frame=self.frame_limits,
-                     entry_name=abrg + '_basse')
-
-      # setattr(self, abrg + '_enabled', tk.BooleanVar())
-      # getattr(self, abrg + '_enabled').set(False)
+                     name=abrg + '_basse')
 
       self.add_checkbutton(widgets_dict=self.limits_widgets,
                            frame=self.frame_limits,
@@ -115,8 +139,11 @@ class MinitensPopups(FrameObjects):
     self.limits_widgets["quit_window"].grid(row=10, column=1, columnspan=2)
 
   def create_popup_new_cycle(self):
-
+    """
+    A popup used in the cycle generator.
+    """
     if hasattr(self, 'cycles_popup'):
+      # To make sure the popup is not already created.
       self.cycles_popup.deiconify()
       return
 
@@ -126,7 +153,6 @@ class MinitensPopups(FrameObjects):
                                self.cycles_popup.withdraw)
     self.cycles_popup.resizable(False, False)
 
-    # entries_combobox = [name[0] for name in self.variables]
     entries_combobox = self.variables.keys()
 
     labels_cycles = (("max_type_label", "Type de valeur max"),
@@ -140,19 +166,21 @@ class MinitensPopups(FrameObjects):
                      frame=self.cycles_popup,
                      name=name,
                      text=label)
+
     for name in ['maximum', 'minimum']:
       self.add_entry(widgets_dict=self.cycles_widgets,
                      frame=self.cycles_popup,
-                     entry_name=name + "_entry")
+                     name=name + "_entry")
 
       self.add_combobox(widgets_dict=self.cycles_widgets,
                         frame=self.cycles_popup,
                         name=name + "_type",
-                        entries=entries_combobox)
+                        entries=entries_combobox,
+                        default=1)
 
     self.add_entry(widgets_dict=self.cycles_widgets,
                    frame=self.cycles_popup,
-                   entry_name="nombre_entry",
+                   name="nombre_entry",
                    vartype=tk.IntVar())
 
     self.add_button(widgets_dict=self.cycles_widgets,
@@ -177,32 +205,13 @@ class MinitensPopups(FrameObjects):
     self.cycles_widgets["minimum_type"].grid(row=1, column=2)
     self.cycles_widgets["minimum_entry"].grid(row=1, column=3)
     self.cycles_widgets["nombre_entry"].grid(row=1, column=4)
-    self.cycles_widgets["submit"].grid(row=2, column=1, columnspan=2)
-    self.cycles_widgets["quit"].grid(row=2, column=3, columnspan=2)
-
-    # def close_cycles_popup(self):
-    # self.cycles_popup.destroy()
-    # del self.cycles_popup
-
-    # for limit in ["maximum", "minimum"]:
-    #   self.add_label(widgets_dict=self.cycles_widgets,
-    #                  frame=self.frame_cycles,
-    #                  name=limit,
-    #                  text=limit)
-    #   self.add_entry(widgets_dict=self.cycles_widgets,
-    #                  frame=self.frame_cycles,
-    #                  entry_name=limit + '_entry')
-    # self.add_label(widgets_dict=self.cycles_widgets,
-    #                frame=self.frame_cycles,
-    #                name="nombre",
-    #                text="nombre")
-    # self.add_entry(widgets_dict=self.cycles_widgets,
-    #                frame=self.frame_cycles,
-    #                entry_name="nombre_entry",
-    #                vartype=tk.IntVar())
+    self.cycles_widgets["submit"].grid(row=2, column=0, columnspan=2)
+    self.cycles_widgets["quit"].grid(row=2, column=2, columnspan=2)
 
   def create_popup_sample_parameters(self):
-
+    """
+    To define sample parameters. Used to compute strengh(MPa).
+    """
     if hasattr(self, 'sample_parameters'):
       self.sample_parameters.deiconify()
       return
@@ -222,11 +231,12 @@ class MinitensPopups(FrameObjects):
                      widgets_dict=self.sample_parameters_widgets,
                      text=parameter,
                      name=parameter + '_label')
+
       self.sample_parameters_widgets[parameter + '_label'].grid(row=i, column=0)
 
       self.add_entry(frame=self.sample_parameters,
                      widgets_dict=self.sample_parameters_widgets,
-                     entry_name=parameter,
+                     name=parameter,
                      variable=variable)
       self.sample_parameters_widgets[parameter].grid(row=i, column=1)
 
@@ -240,20 +250,25 @@ class MinitensPopups(FrameObjects):
                                                      columnspan=2)
 
   def create_popup_command(self):
+    """
+    Popup to show command options.
+    """
 
     if hasattr(self, 'popup_command'):
       self.popup_command.deiconify()
       return
+
     self.check_goto_bool = False
     self.popup_command = tk.Toplevel()
     self.popup_command.title("Aller à")
     self.popup_command.protocol("WM_DELETE_WINDOW",
                                 self.popup_command.withdraw)
     self.popup_command.resizable(False, False)
+
     self.popup_command_widgets = OrderedDict()
 
-    # combobox_entries = [variable[0] for variable in self.variables]
     combobox_entries = self.variables.keys()
+
     self.add_label(frame=self.popup_command,
                    widgets_dict=self.popup_command_widgets,
                    name="command_type_label",
@@ -271,7 +286,7 @@ class MinitensPopups(FrameObjects):
 
     self.add_entry(frame=self.popup_command,
                    widgets_dict=self.popup_command_widgets,
-                   entry_name='command_value',
+                   name='command_value',
                    vartype=tk.DoubleVar())
 
     self.add_button(frame=self.popup_command,
@@ -288,20 +303,14 @@ class MinitensPopups(FrameObjects):
                     command=self.popup_command.withdraw,
                     command_type="custom")
 
-    # to_show = ['command_type_label',
-    #            'command_type',
-    #            'command_value_label',
-    #            'command_value',
-    #            'submit_command_button',
-    #            'quit_popup_command']
-
     for i, widg in enumerate(self.popup_command_widgets.values()):
       widg.grid(row=0, column=i)
-
     self.popup_command_widgets["quit_popup_command"].grid(row=0, column=6)
 
   def create_popup_speed(self):
-
+    """
+    To define motor speed. Only an entry.
+    """
     if hasattr(self, 'popup_speed'):
       self.popup_speed.deiconify()
       return
@@ -317,24 +326,21 @@ class MinitensPopups(FrameObjects):
 
     self.add_label(frame=self.popup_speed,
                    widgets_dict=self.popup_speed_widgets,
-                   text="Vitesse du moteur (mm/min)",
+                   text="Vitesse du moteur \n"
+                        "0.08 à 20.8 mm/min",
                    name="vit_mot_label")
 
     self.add_entry(frame=self.popup_speed,
                    widgets_dict=self.popup_speed_widgets,
-                   entry_name="vit_mot",
+                   name="vit_mot",
                    variable=self.speed)
-
-    # self.add_scale(frame=self.popup_speed,
-    #                widgets_dict=self.popup_speed_widgets,
-    #                name="vit_mot_scale",
-    #                boundaries=(0, 255))
 
     self.add_button(frame=self.popup_speed,
                     widgets_dict=self.popup_speed_widgets,
                     name="vit_mot_submit",
                     command="VITESSE",
                     text='Soumettre')
+
     self.add_button(frame=self.popup_speed,
                     widgets_dict=self.popup_speed_widgets,
                     name="vit_mot_quit",
@@ -345,25 +351,13 @@ class MinitensPopups(FrameObjects):
     for value in self.popup_speed_widgets.values():
       value.pack()
 
-  def create_popup_limits(self):
-
-    if hasattr(self, 'popup_limits'):
-      self.popup_limits.deiconify()
-      return
-
-    self.popup_limits = tk.Toplevel()
-    self.popup_limits.resizable(False, False)
-    self.popup_limits.protocol("WM_DELETE_WINDOW",
-                               self.popup_limits.withdraw)
-
-    self.popup_limits.title("Limites")
-    self.create_menu_limits(self.popup_limits)
-
   def create_popup_length_init(self, **kwargs):
+    """
+    The first popup when program is started. Used to define the distance
+    between jaws (mm).
+    """
     self.popup_init = tk.Toplevel()
     self.popup_init.resizable(False, False)
-    # self.popup_init.protocol("WM_DELETE_WINDOW",
-    #                            self.popup_limits.withdraw)
 
     self.init_popup_widgets = OrderedDict()
     self.popup_init.title("Longueur entre les mors (mm)")
@@ -374,7 +368,7 @@ class MinitensPopups(FrameObjects):
                    name="text_label")
     self.add_entry(widgets_dict=self.init_popup_widgets,
                    frame=self.popup_init,
-                   entry_name="length_init")
+                   name="length_init")
 
     self.add_button(widgets_dict=self.init_popup_widgets,
                     frame=self.popup_init,
@@ -387,20 +381,23 @@ class MinitensPopups(FrameObjects):
       widg.pack()
 
   def create_popup_calibration(self):
-
+    """
+    Popup to recreate calibration of the machine.
+    """
     if hasattr(self, 'popup_calibration'):
       return
 
     ok = tkMessageBox.askokcancel(title="Confirmation",
-                                  message="Changer les paramètres de calibration? "
-                                          "Opération délicate!")
+                                  message="Changer les paramètres de calibration?")
     if not ok:
       return
     else:
       self.popup_calibration_widgets = OrderedDict()
       self.popup_calibration = tk.Toplevel()
       self.popup_calibration.resizable(False, False)
+
       self.popup_calibration.title("Calibration de la cellule d'effort")
+
       self.add_label(widgets_dict=self.popup_calibration_widgets,
                      frame=self.popup_calibration,
                      text="Placer un effort connu,\n"
@@ -409,7 +406,7 @@ class MinitensPopups(FrameObjects):
 
       self.add_entry(widgets_dict=self.popup_calibration_widgets,
                      frame=self.popup_calibration,
-                     entry_name="calib")
+                     name="calib")
 
       self.add_button(widgets_dict=self.popup_calibration_widgets,
                       frame=self.popup_calibration,
@@ -425,7 +422,10 @@ class MinitensFrames(FrameObjects):
     pass
 
   def create_frame_display(self):
-
+    """
+    The frame that shows values of positions and efforts. Also includes tare
+    buttons for force and relative positions.
+    """
     for i, (variable, abrg) in enumerate(self.variables.iteritems()):
       self.add_label(widgets_dict=self.displayer_widgets,
                      frame=self.frame_displayer,
@@ -464,7 +464,9 @@ class MinitensFrames(FrameObjects):
     self.displayer_widgets["prct_tare"].grid(row=3, column=0, sticky=tk.W)
 
   def create_frame_action(self):
-
+    """
+    The frame that shows the action buttons.
+    """
     self.add_button(widgets_dict=self.action_widgets,
                     frame=self.frame_action,
                     text="Traction",
@@ -494,12 +496,6 @@ class MinitensFrames(FrameObjects):
 
   def create_frame_cycles(self):
 
-    # self.frame_cycles = tk.Frame(self,
-    #                              relief=tk.SUNKEN,
-    #                              borderwidth=1)
-    #
-    # self.cycles_widgets = OrderedDict()
-
     self.add_label(widgets_dict=self.cycles_widgets,
                    frame=self.frame_cycles,
                    text="GENERATEUR DE CYCLES",
@@ -512,15 +508,6 @@ class MinitensFrames(FrameObjects):
     self.nb_cycles = 0.
     self.cycles_started = False
     self.rising = True
-
-    # self.add_button(widgets_dict=self.cycles_widgets,
-    #                 frame=self.frame_cycles,
-    #                 name="submit_cycle",
-    #                 text="Soumettre \n nouveaux cycles...",
-    #                 bg="white",
-    #                 command_type="custom",
-    #                 command=self.create_popup_new_cycle,
-    #                 width=15, height=5)
 
     self.add_button(widgets_dict=self.cycles_widgets,
                     frame=self.frame_cycles,
@@ -559,35 +546,11 @@ class MinitensFrames(FrameObjects):
       self.cycles_table.heading(column, text=column)
 
     self.cycles_widgets["CYCLES"].grid(row=0, columnspan=4)
-    # self.cycles_widgets["submit_cycle"].grid(row=1, column=0,
-    #                                          columnspan=2)
-
     self.cycles_widgets["start_cycle"].grid(row=1, column=3,
                                             columnspan=2, rowspan=3)
     self.cycles_widgets["start_rec_cycle"].grid(row=2, column=2, sticky=tk.W)
     self.cycles_widgets["stop_rec_cycle"].grid(row=3, column=2, sticky=tk.W)
     self.cycles_table.grid(row=5, column=0, columnspan=4, rowspan=1)
-
-    # def create_frame_recording(self):
-    #   self.frame_rec_widgets = OrderedDict()
-    #   self.frame_rec = tk.Frame(self,
-    #                             relief=tk.SUNKEN,
-    #                             borderwidth=1)
-    #
-    #   self.add_checkbutton(widgets_dict=self.frame_rec_widgets,
-    #                        frame=self.frame_rec,
-    #                        text='Enregistrer?',
-    #                        variable="recording_state")
-    #
-    #   for i, widg in enumerate(self.frame_rec_widgets.values()):
-    #     widg.pack()
-
-    # self.add_button(widgets_dict=self.frame_rec_widgets,
-    #                 frame=self.frame_rec,
-    #                 text='',
-    #                 command_type='custom',
-    #                 command=lambda: None)
-
 
 class MinitensFrame(MinitensFrames, MinitensPopups):
   def __init__(self, parent, **kwargs):
@@ -633,38 +596,39 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
 
     self.create_popup_length_init()
     self.wait_window(self.popup_init)
-    self.position = self.length_init_var.get()
+
+    try:
+      self.position = self.length_init_var.get()
+    except ValueError:
+      self.position = 0
     self.position_prct = self.position
 
   def create_widgets(self, **kwargs):
     """
     Frames organization
-      Frame_displayer: to display effort and displacement values.
-      Frame_position: to start and stop the motor, according to pre-defined
+      Frame displayer: to display effort and displacement values.
+      Frame position: to start and stop the motor, according to pre-defined
       values.
-      Frame_cycle: cycle generator.
+      The cycle frame is also showed if cycles are defined.
     """
 
     self.create_menubar()
     self.create_frame_display()
     self.create_frame_action()
-    # self.create_menu_limits()
-    # self.create_frame_recording()
     self.create_frame_cycles()
-    # self.create_popup_limits()
 
     self.frame_displayer.grid(row=0, column=0)
     self.frame_action.grid(row=1, column=0)
     self.frame_cycles.grid(row=0, column=1)
     self.frame_cycles.grid_forget()
-    # self.frame_rec.grid(row=1, column=1)
-
-    # self.frame_displayer.grid(row=0, column=0)
-    # self.frame_action.grid(row=1, column=0)
-    # self.frame_cycles.grid(row=2, column=0)
 
   def check_limits(self, **kwargs):
+    """
+    A method that checks every variable, and if a limit has been reached. In
+    that case, the stop command is sent to arduino.
+    """
     sens = kwargs.pop("sens")
+
     for variable, abrg in self.variables.iteritems():
       try:
         if getattr(self, abrg + '_chck_var').get():
@@ -677,6 +641,10 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
         pass
 
   def submit_cycle(self):
+    """
+    To submit new cycles. If the user entered correct parameters, will be
+    added to the cycle generator.
+    """
     try:
       nb_cycles = self.nombre_entry_var.get()
 
@@ -697,20 +665,29 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
       getattr(self, widg).set(0.0)
 
   def init_command(self):
+    """
+    Used if the user entered a command. Does nothing if incorrect type is
+    entered.
+    """
     try:
       self.command_value_var.get()
     except ValueError:
       return
-
     self.command_bool = True
     self.check_goto_bool = True
 
   def check_go_to(self, **kwargs):
+    """
+    Used if the user entered a command. Checks if the destination has been
+    reached, and sends stop if it's the case.
+    """
     sens = kwargs.pop("sens")
     var_type = self.command_type_var.get()
+
     for name, variable in self.variables.iteritems():
       if name == var_type:
         var = kwargs.pop(variable)
+
     if self.command_bool:
       if var < self.command_value_var.get():
         self.submit_command("TRACTION")
@@ -718,6 +695,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
       elif var > self.command_value_var.get():
         self.submit_command("COMPRESSION")
         self.command_bool = False
+
     else:
       if var >= self.command_value_var.get() and sens == 1:
         self.submit_command("STOP")
@@ -728,14 +706,21 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
         self.check_goto_bool = False
 
   def start_cycle(self):
+    """
+    Executed when cycle generator is started.
+    """
     if self.cycles:
       self.cycles_started = True
+      var_type = self.cycles[0][1]
+
       self.submit_command("TRACTION")
-    if self.start_rec_cycle.get():
-      self.recording_state.set(True)
+      if self.start_rec_cycle.get():
+        self.recording_state.set(True)
 
   def check_cycle(self, **kwargs):
-
+    """
+    Executed in case the cycle generator is started.
+    """
     sens = kwargs.pop("sens")
     mode_max, maximum, mode_min, minimum = self.cycles[0][1:]
 
@@ -771,21 +756,32 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
           self.recording_state.set(False)
 
   def tare(self):
+    """
+    Tare for position_prct variable.
+    """
     self.position_prct = self.position
-    pass
 
   def calc_speed(self):
+    """
+    Does the conversion between speed and bytes, to send to arduino. Also
+    makes sure the user entered in the right range.
+    """
+    if self.speed.get() < 0.08:
+      self.speed.set(0.08)
+    elif self.speed.get() > 20.8:
+      self.speed.set(20.8)
     return int(255 * (-self.speed.get() / 20.8 + 1))
 
   def submit_command(self, arg):
+    """
+    Information to transmit to the arduino.
+    """
     if arg == "STOP":
       dico = {"s": 0}
     elif arg == "TRACTION":
       dico = {"s": 1}
     elif arg == "COMPRESSION":
       dico = {"s": -1}
-    # elif arg == "position_tare":
-    #   dico = {"t": 1}
     elif arg == "effort_tare":
       dico = {"t": 0}
     elif arg == "VITESSE":
@@ -800,39 +796,38 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     self.queue.put(message)
 
   def update_data(self, new_data):
+    """
+    Retrieves data from the ArduinoHandler, updates the GUI, and sends it to
+    the crappy link.
+    """
+    # Retrieved from ArduinoHandler
+    effort = new_data.get('e')
+    sens = new_data.get('s')
+    millis = new_data.get('m')
+    position_abs = new_data.get('p')
+
+    # Computed
+    delta = position_abs - self.position_rel
+    self.position_rel = position_abs
+    self.position += delta * self.speed.get() / (1000 * 60.)
 
     try:
-      # Retrieved from arduino
-      effort = new_data.get('e')
-      sens = new_data.get('s')
-      millis = new_data.get('m')
-
-      position_abs = new_data.get('p')
-      delta = position_abs - self.position_rel
-      self.position_rel = position_abs
-
-      self.position += delta * self.speed.get() / (1000 * 60.)
-
-      # Computed
+      # The try..except to prevent user to enter wrong data type for sample
+      # parameters.
       if 0 in (self.ep_depth.get(), self.ep_width.get()):
+        # In case the user didn't entered sample parameters.
         contrainte = 0.0
       else:
         contrainte = effort / (self.ep_depth.get() * self.ep_width.get())
-      if not self.position_prct == 0.:
-        position_prct = 100 * (self.position - self.position_prct) / \
-                        self.position_prct
-      else:
-        position_prct = 0.0
-
-    except (TypeError, AttributeError):  # If errors, at the beginning in
-      # general.
-      position_abs = 0.0
-      effort = 0.0
-      sens = 0.0
-      millis = 0.0
-
-      position_prct = 0.0
+    except ValueError:
       contrainte = 0.0
+
+    if not self.position_prct == 0.:
+      # In case the user didn't initialized distance between claws.
+      position_prct = 100 * (self.position - self.position_prct) / \
+                      self.position_prct
+    else:
+      position_prct = 0.0
 
     if hasattr(self, 'limits_widgets'):
       self.check_limits(effort=effort,
@@ -849,6 +844,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
                        contrainte=contrainte)
 
     if hasattr(self, 'popup_command'):
+
       if self.check_goto_bool:
         self.check_go_to(position=self.position,
                          position_prct=position_prct,
@@ -867,8 +863,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
 
     if self.recording_state.get():
       # for key, value in to_send.iteritems():
-      #   to_send[]
-
+      #   to_send[self.variables[key]] =
       self.crappy_queue.put(to_send)
 
   def update_widgets(self, new_data):

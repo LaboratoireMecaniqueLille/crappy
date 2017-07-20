@@ -1,18 +1,44 @@
 # coding: utf-8
-"""
-A very simple class that should be inherited by frames, to help create and
-maintain in order the file.
-"""
+
+
 import Tkinter as tk
 import ttk
 
 
 class FrameObjects(tk.Frame):
+  """
+  A very simple class that should be inherited by frames, to help create and
+  maintain in order the file.
+  How it works:
+  - After frames defined, create a dict (or an orderedDict, for convenience),
+  that will contain every widget.
+  - Use appropriate method, and specify the frame and its dictionary. If
+  variables are created, they will be a class attribute.
+
+  These are commune args to specify to every widget:
+
+  - widgets_dict: the dictionary in which the widget will be stored.
+  - frame: the frame to put the widget.
+  - name: the key to call the widget inside the dictionary.
+  - text (if applicable): the text to show.
+  """
+
   def __init__(self):
     pass
 
   def add_button(self, **kwargs):
-
+    """
+    To add a tkinter button.
+    args:
+      text: the text to show inside the button.
+      bg: background color.
+      height, width: self-explanatory
+      command_type: by default, clicking to the button executes the
+      submit_command(command) method, with command as arg. To have different
+      behavior, just specify "custom", or other string than "to_serial".
+      command: the command to be executed, OR the string to pass to
+      submit_command.
+    """
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     name = kwargs.pop('name', 'Button')
@@ -20,8 +46,8 @@ class FrameObjects(tk.Frame):
     bg = kwargs.pop('bg', 'white')
     height = kwargs.pop('height', 2)
     width = kwargs.pop('width', 10)
-    command = kwargs.pop('command', None)
     command_type = kwargs.pop('command_type', 'to_serial')
+    command = kwargs.pop('command', None)
 
     assert not kwargs, 'Error: unknown arg(s) in button definition:' + str(
       kwargs)
@@ -45,7 +71,13 @@ class FrameObjects(tk.Frame):
                                      font=("Courier bold", 11))
 
   def add_label(self, **kwargs):
+    """
+    To add label.
 
+    args:
+    - font: to specify the text font, size, style.
+    - relief: to add some relief to the label.
+    """
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     text = kwargs.pop('text', 'label')
@@ -59,15 +91,24 @@ class FrameObjects(tk.Frame):
                                    font=font))
 
   def add_entry(self, **kwargs):
+    """
+    To add an entry box. The adding of the entry box will add an attribute,
+    if no variable is specified.
 
+    args:
+    - vartype: to specify which type the variable associated with the entry
+    will be. Useful to make sure the user does not enter a string when a
+    number is expected.
+    - variable: the variables name, which will be set as an attribute.
+    - width : the width of the entry box.
+    """
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
-    entry_name = kwargs.pop('entry_name', 'entry_name')
+    entry_name = kwargs.pop('name', 'name')
     width = kwargs.pop('width', 10)
     vartype = kwargs.pop('vartype', tk.DoubleVar())
     variable = kwargs.pop("variable", None)
 
-    # Affect the variable associated with the entry to the self object.
     if not variable:
       setattr(self, entry_name + '_var', vartype)
       widgets_dict[entry_name] = tk.Entry(frame,
@@ -80,6 +121,10 @@ class FrameObjects(tk.Frame):
                                           width=width)
 
   def add_checkbutton(self, **kwargs):
+    """
+    To add a checkbutton. Will create automatically a boolean attribute,
+    which will represent the checkbutton state.
+    """
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     text = kwargs.pop("text", None)
@@ -87,20 +132,31 @@ class FrameObjects(tk.Frame):
     variable_name = kwargs.pop('variable', name + '_var')
 
     var = tk.BooleanVar()
+
     setattr(self, variable_name, var)
     widgets_dict[name] = tk.Checkbutton(frame,
                                         text=text,
                                         variable=var)
 
   def add_combobox(self, **kwargs):
-
+    """
+    To add a combobox. Will automatically add an attribute.
+    Args:
+    - entries: a list that contains every selectable option.
+    - variable: the name of the variable, that will become an attribute.
+    - default_index: to define which default entry to show on the combobox.
+    - var
+    """
     widgets_dict = kwargs.pop("widgets_dict", None)
     frame = kwargs.pop("frame", None)
     entries = kwargs.pop("entries", None)
     name = kwargs.pop("name", "combobox")
     variable_name = kwargs.pop("variable", name + "_var")
+    default_index = kwargs.pop("default", 0)
+
     var = tk.StringVar()
-    var.set(entries[0])
+    var.set(entries[default_index])
+
     setattr(self, variable_name, var)
 
     combo_box = ttk.Combobox(frame,
@@ -111,6 +167,9 @@ class FrameObjects(tk.Frame):
     widgets_dict[name] = combo_box
 
   def add_scale(self, **kwargs):
+    """
+    To add a scrollbar 
+    """
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     name = kwargs.pop('name', 'Button')
