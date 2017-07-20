@@ -35,6 +35,24 @@ class T7_streamer(InOut):
     resolution: The resolution index for all channels. The higher it is, the
       slower the acquisition will be (but more precise). It cannot be set for
       each channel in streamer mode.
+
+  Channel keys:
+    name: The name of the channel according to Labjack's naming convention
+      (str). Ex: 'AIN0'. This will be used to define the direction (in/out)
+      and the available settings. Only inputs can be used in stream mode.
+
+    gain: A numeric value that will multiply the given value for inputs
+      and outputs. Default=1
+
+    offset: Will be added to the value. Default=0
+      returned_value = gain*measured_value+offset
+      Where measured_value is in Volts.
+
+    make_zero: If True the input value will be evaluated at startup
+      and the offset will be adjusted to return 0 (or the offset if any).
+
+    range: 10/1/.1/.01. The range of the acquisition (V).
+      10 means -10V>+10V default=10
   """
   def __init__(self, **kwargs):
     InOut.__init__(self)
