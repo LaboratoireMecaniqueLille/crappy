@@ -102,6 +102,7 @@ class MasterBlock(Process):
       self.status = "done"
     except CrappyStop:
       print("[%r] Encountered CrappyStop Exception, terminating" % self)
+      self.stop_all()
     except KeyboardInterrupt:
       print("[%r] Keyboard interrupt received" % self)
     except Exception as e:
