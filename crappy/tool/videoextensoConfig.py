@@ -4,6 +4,7 @@ from __future__ import division,print_function
 import Tkinter as tk
 from PIL import ImageTk,Image
 import cv2
+import numpy as np
 from .cameraConfig import Camera_config
 
 class VE_config(Camera_config):
@@ -45,6 +46,15 @@ class VE_config(Camera_config):
     self.ve.save_length()
     print("L0 saved:",(self.ve.l0y,self.ve.l0x))
 
+  def draw_box(self,box,img):
+    for s in [
+        (box[0],slice(box[1],box[3])),
+        (box[2],slice(box[1],box[3])),
+        (slice(box[0],box[2]),box[1]),
+        (slice(box[0],box[2]),box[3])]:
+      # Turn these pixels white or black for highest possible contrast
+      img[s] = 255*int(np.mean(img[s])<128)
+
   def resize_img(self,sl):
     rimg = cv2.resize(self.img8[sl[1],sl[0]],tuple(reversed(self.img_shape)),
         interpolation=0)
@@ -55,10 +65,7 @@ class VE_config(Camera_config):
         n /= (self.zoom_window[2+i%2]-self.zoom_window[i%2])
         lbox[i] = int(n/self.img.shape[i%2]
                       *self.img_shape[i%2])
-      rimg[lbox[0],lbox[1]:lbox[3]] = 255
-      rimg[lbox[2],lbox[1]:lbox[3]] = 255
-      rimg[lbox[0]:lbox[2],lbox[1]] = 255
-      rimg[lbox[0]:lbox[2],lbox[3]] = 255
+      self.draw_box(lbox,rimg)
     if self.boxes:
       for b in self.boxes:
         lbox = [0]*4
@@ -67,9 +74,6 @@ class VE_config(Camera_config):
           n /= (self.zoom_window[2+i%2]-self.zoom_window[i%2])
           lbox[i] = int(n/self.img.shape[i%2]
                         *self.img_shape[i%2])
-        rimg[lbox[0],lbox[1]:lbox[3]] = 255
-        rimg[lbox[2],lbox[1]:lbox[3]] = 255
-        rimg[lbox[0]:lbox[2],lbox[1]] = 255
-        rimg[lbox[0]:lbox[2],lbox[3]] = 255
+        self.draw_box(lbox,rimg)
 
     self.c_img = ImageTk.PhotoImage(Image.fromarray(rimg))
