@@ -1,15 +1,26 @@
 import crappy
-# labels = ['temps_python(s)', 'temps_arduino(ms)', 'mode', 'vitesse', 'random']
-if __name__ == '__main__':
-  labels = ["current_millis", "effort"]
-  arduino = crappy.technical.Arduino(port='/dev/ttyACM0',
-                                     baudrate=250000,
-                                     labels=labels)
-  measurebystep = crappy.blocks.MeasureByStep(arduino)
 
-  graph = crappy.blocks.Grapher(('current_millis', 'effort'), length=10)
-  dash = crappy.blocks.Dashboard()
 
-  crappy.link(measurebystep, graph)
-  crappy.link(measurebystep, dash, name='dash')
-  crappy.start()
+# class names(crappy.condition.Mean):
+#   def __init__(self, **kwargs):
+#     self.npoints = kwargs.pop('npoints', 1)
+#     self.labels = kwargs.pop('labels', None)
+#
+#   def evaluate(self, value):
+#     value["Time(sec)"] = value.pop("m") / 1000.
+#     value["Effort(N)"] = value.pop("e")
+#     value["Sens"] = value.pop("s")
+#     value[]
+#     return value
+
+
+arduino = crappy.blocks.IOBlock("Arduino",
+                                baudrate=115200,
+                                frames=['submit', 'monitor'])#'minitens'])
+
+graph = crappy.blocks.Grapher(('millis', 'effort'), length=1000)
+save = crappy.blocks.Saver('/home/francois/Code/_Projets/minitens/toto.csv')
+
+crappy.link(arduino, graph) #, condition=names())
+crappy.link(arduino, save)  #, condition=crappy.condition.Mean(npoints=10))
+crappy.start()
