@@ -16,12 +16,11 @@ import crappy
 
 arduino = crappy.blocks.IOBlock("Arduino",
                                 baudrate=115200,
-                                frames=['submit', 'monitor'])
+                                frames=['submit', 'monitor'])#'minitens'])
 
-graph = crappy.blocks.Grapher(('Time(sec)', 'Effort(N)'), length=1000)
-# save = crappy.blocks.Saver('/home/francois/Code/_Projets/minitens/toto.csv')
+graph = crappy.blocks.Grapher(('millis', 'effort'), length=1000)
+save = crappy.blocks.Saver('/home/francois/Code/_Projets/minitens/toto.csv')
 
 crappy.link(arduino, graph) #, condition=names())
-# crappy.link(arduino, save, condition=crappy.condition.Mean(npoints=10))
-# crappy.prepare()
+crappy.link(arduino, save)  #, condition=crappy.condition.Mean(npoints=10))
 crappy.start()
