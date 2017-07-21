@@ -102,6 +102,7 @@ class MasterBlock(Process):
       self.status = "done"
     except CrappyStop:
       print("[%r] Encountered CrappyStop Exception, terminating" % self)
+      self.status = "done"
       self.stop_all()
     except KeyboardInterrupt:
       print("[%r] Keyboard interrupt received" % self)
@@ -427,4 +428,4 @@ class MasterBlock(Process):
       print("[%r] Stopped correctly" % self)
 
   def __repr__(self):
-    return str(type(self)) + " (" + self.status + ")"
+    return str(type(self)) + " (" + str(self.pid or "Not running") + ")"
