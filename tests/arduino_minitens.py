@@ -18,8 +18,8 @@ arduino = crappy.blocks.IOBlock("Arduino",
                                 baudrate=115200,
                                 frames=['submit', 'monitor', 'minitens'])
 
-graph = crappy.blocks.Sink()
-# graph = crappy.blocks.Grapher(('millis', 'effort'), length=1000)
+# graph = crappy.blocks.Sink()
+graph = crappy.blocks.Grapher(('millis', 'effort'), length=1000)
 # save = crappy.blocks.Saver('/home/francois/Code/_Projets/minitens/toto.csv')
 
 crappy.link(arduino, graph) #, condition=names())

@@ -71,16 +71,16 @@ class MinitensPopups(FrameObjects):
                                   onvalue=False, offvalue=True)
 
     # 4th menu: to show on or show off some displays. Not working 20/07/2017
-    self.menu_display = tk.Menu(self.menubar, tearoff=0)
-    self.menubar.add_cascade(label="Affichage",
-                             menu=self.menu_display)
-
-    for key, value in self.variables.iteritems():
-      setattr(self, value + "_on", tk.BooleanVar())
-      getattr(self, value + "_on").set(True)
-      self.menu_display.add_checkbutton(label=key, variable=getattr(self,
-                                                                    value +
-                                                                    "_on"))
+    # self.menu_display = tk.Menu(self.menubar, tearoff=0)
+    # self.menubar.add_cascade(label="Affichage",
+    #                          menu=self.menu_display)
+    #
+    # for key, value in self.variables.iteritems():
+    #   setattr(self, value + "_on", tk.BooleanVar())
+    #   getattr(self, value + "_on").set(True)
+    #   self.menu_display.add_checkbutton(label=key, variable=getattr(self,
+    #                                                                 value +
+    #                                                                 "_on"))
 
   def create_menu_limits(self, frame):
     """
@@ -551,6 +551,7 @@ class MinitensFrames(FrameObjects):
     self.cycles_widgets["start_rec_cycle"].grid(row=2, column=2, sticky=tk.W)
     self.cycles_widgets["stop_rec_cycle"].grid(row=3, column=2, sticky=tk.W)
     self.cycles_table.grid(row=5, column=0, columnspan=4, rowspan=1)
+
 
 class MinitensFrame(MinitensFrames, MinitensPopups):
   def __init__(self, parent, **kwargs):
