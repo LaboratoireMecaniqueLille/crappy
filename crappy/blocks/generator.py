@@ -1,11 +1,12 @@
-#coding: utf-8
-from __future__ import print_function,division
+# coding: utf-8
+from __future__ import print_function, division
 
 from time import time
 
 from .masterblock import MasterBlock
 from . import generator_path
 from .._global import CrappyStop
+
 
 class Generator(MasterBlock):
   """
@@ -42,30 +43,28 @@ class Generator(MasterBlock):
       when all the paths have been executed
       If True, the Generator will start over and over again
   """
-  def __init__(self,path=[],**kwargs):
+
+  def __init__(self, path=[], **kwargs):
     MasterBlock.__init__(self)
     self.niceness = -5
-    for arg,default in [('freq',500),
-                        ('cmd_label','cmd'),
-                        ('cycle_label','cycle'),
-                        ('cmd',0), # First value
-                        ('repeat',False), # Start over when done ?
-                        ('verbose',False)
-                       ]:
-      if arg in kwargs:
-        setattr(self,arg,kwargs[arg])
-        del kwargs[arg]
-      else:
-        setattr(self,arg,default)
-    assert not kwargs,"generator: unknown kwargs: "+str(kwargs)
+    for arg, default in [('freq', 500),
+                         ('cmd_label', 'cmd'),
+                         ('cycle_label', 'cycle'),
+                         ('cmd', 0),  # First value
+                         ('repeat', False),  # Start over when done ?
+                         ('verbose', False)
+                         ]:
+      setattr(self, arg, kwargs.pop(arg, default))
+
+    assert not kwargs, "generator: unknown kwargs: " + str(kwargs)
     self.path = path
-    assert all([hasattr(generator_path,d['type']) for d in self.path]),\
-        "Invalid path in signal generator:"\
-        +str(filter(lambda s: not hasattr(generator_path,s['type']),self.path))
-    self.labels = ['t(s)',self.cmd_label,self.cycle_label]
+    assert all([hasattr(generator_path, d['type']) for d in self.path]), \
+      "Invalid path in signal generator:" \
+      + str(filter(lambda s: not hasattr(generator_path, s['type']), self.path))
+    self.labels = ['t(s)', self.cmd_label, self.cycle_label]
 
   def prepare(self):
-    self.path_id = -1 # Will be incremented to 0 on first next_path
+    self.path_id = -1  # Will be incremented to 0 on first next_path
     self.last_t = time()
     self.last_data = {}
     self.next_path()
@@ -81,27 +80,27 @@ class Generator(MasterBlock):
         raise CrappyStop("Signal Generator terminated")
     if self.verbose:
       print("[Signal Generator] Next step({}):".format(self.path_id),
-        self.path[self.path_id])
-    kwargs = {'cmd':self.cmd, 'time':self.last_t}
+            self.path[self.path_id])
+    kwargs = {'cmd': self.cmd, 'time': self.last_t}
     kwargs.update(self.path[self.path_id])
     del kwargs['type']
     name = self.path[self.path_id]['type'].capitalize()
     # Instanciating the new path class for the next step
-    self.current_path = getattr(generator_path,name)(**kwargs)
+    self.current_path = getattr(generator_path, name)(**kwargs)
 
   def begin(self):
-    self.send([self.last_t-self.t0,self.cmd,self.path_id])
+    self.send([self.last_t - self.t0, self.cmd, self.path_id])
     self.current_path.t0 = self.t0
 
   def loop(self):
     data = self.get_all_last()
-    data[self.cmd_label] = [self.cmd] # Add my own cmd to the dict
+    data[self.cmd_label] = [self.cmd]  # Add my own cmd to the dict
     try:
       cmd = self.current_path.get_cmd(data)
     except StopIteration:
       self.next_path()
       return
-    if cmd is not None: # If next_path returns None, do not update cmd
+    if cmd is not None:  # If next_path returns None, do not update cmd
       self.cmd = cmd
     self.last_t = time()
-    self.send([self.last_t-self.t0,self.cmd,self.path_id])
+    self.send([self.last_t - self.t0, self.cmd, self.path_id])
