@@ -1,9 +1,10 @@
-#coding: utf-8
+# coding: utf-8
 
 from time import time
 
 from .masterblock import MasterBlock
 from ..actuator import actuator_list
+
 
 class Machine(MasterBlock):
   """
@@ -27,25 +28,26 @@ class Machine(MasterBlock):
         with this label
       speed_label: same as pos_label but with get_speed
   """
-  def __init__(self, actuators,common={},freq=200,time_label='t(s)'):
+
+  def __init__(self, actuators, common={}, freq=200, time_label='t(s)'):
     MasterBlock.__init__(self)
     self.freq = freq
     self.time_label = time_label
     self.settings = [{} for i in actuators]
-    for setting,d in zip(self.settings,actuators):
+    for setting, d in zip(self.settings, actuators):
       d.update(common)
-      for k in ('type','cmd'):
+      for k in ('type', 'cmd'):
         setting[k] = d[k]
         del d[k]
       if 'mode' in d:
-        assert d['mode'].lower() in ('position','speed')
+        assert d['mode'].lower() in ('position', 'speed')
         setting['mode'] = d['mode'].lower()
         del d['mode']
         if 'speed' in d:
           setting['speed'] = d['speed']
       else:
         setting['mode'] = 'speed'
-      for k in ('pos_label','speed_label'):
+      for k in ('pos_label', 'speed_label'):
         if k in d:
           setting[k] = d[k]
           del d[k]
@@ -61,7 +63,7 @@ class Machine(MasterBlock):
 
   def send_data(self):
     to_send = {}
-    for actuator,setting in zip(self.actuators,self.settings):
+    for actuator, setting in zip(self.actuators, self.settings):
       if 'pos_label' in setting:
         to_send[setting['pos_label']] = actuator.get_pos()
       if 'speed_label' in setting:
@@ -75,11 +77,11 @@ class Machine(MasterBlock):
 
   def loop(self):
     recv = self.get_last()
-    for actuator,setting in zip(self.actuators,self.settings):
+    for actuator, setting in zip(self.actuators, self.settings):
       if setting['mode'] == 'speed':
         actuator.set_speed(recv[setting['cmd']])
       elif setting['mode'] == 'position':
-        actuator.set_position(recv[setting['cmd']],setting['speed'])
+        actuator.set_position(recv[setting['cmd']], setting['speed'])
     self.send_data()
 
   def finish(self):
