@@ -43,7 +43,7 @@ class EvalStress(crappy.links.Condition):
 labjack_instron = crappy.blocks.IOBlock("Labjack_T7", 
     labels=["time(sec)", "Position(mm)", "Effort(kN)"],
     channels=["AIN0", "AIN1"],
-    gain = [0.5, 8]  # mm/V, kN/V
+    gain = [0.5, 8],  # mm/V, kN/V
     offset=0,
     chan_range=10,
     make_zero=True,
