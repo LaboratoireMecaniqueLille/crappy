@@ -8,14 +8,22 @@ from .inout import InOut,MetaIO
 from .agilent34420A import Agilent34420A
 from .arduino import Arduino
 from .opsens import Opsens
+from .kollmorgen import Koll
+
+try:
+  from .spectrum import Spectrum
+except (ImportError,OSError):
+  Spectrum = NotInstalled("Spectrum")
 try:
   from .comedi import Comedi
 except ImportError:
   Comedi = NotInstalled('Comedi')
 try:
   from .labjackT7 import Labjack_t7
+  from .t7Streamer import T7_streamer
 except ImportError:
   Labjack_t7 = NotInstalled('Labjack_t7')
+  T7_streamer = NotInstalled('T7_streamer')
 try:
   from .labjackUE9 import Labjack_ue9
 except ImportError:

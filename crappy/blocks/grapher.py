@@ -45,11 +45,13 @@ class Grapher(MasterBlock):
 
   def __init__(self, *args, **kwargs):
     MasterBlock.__init__(self)
+    self.niceness = 10
     self.length = kwargs.pop("length", 0)
     self.freq = kwargs.pop("freq", 5)
     self.maxpt = kwargs.pop("maxpt", 20000)
     self.window_size = kwargs.pop("window_size", (8, 8))
     self.window_pos = kwargs.pop("window_pos", None)
+    self.factor = 1
     if kwargs:
       raise AttributeError("Invalid kwarg(s) in Grapher: " + str(kwargs))
     self.labels = args
@@ -79,8 +81,8 @@ class Grapher(MasterBlock):
       x = 0 # So that if we don't find it, we do nothing
       for d in data:
         if lx in d and ly in d: # Find the first input with both labels
-          x = np.hstack((self.lines[i].get_xdata(), d[lx]))
-          y = np.hstack((self.lines[i].get_ydata(), d[ly]))
+          x = np.hstack((self.lines[i].get_xdata(), d[lx][::self.factor]))
+          y = np.hstack((self.lines[i].get_ydata(), d[ly][::self.factor]))
           break
       if isinstance(x,int):
         break
@@ -92,6 +94,7 @@ class Grapher(MasterBlock):
         # Reduce the number of points if we have to many to display
         x = x[::2]
         y = y[::2]
+        self.factor *= 2
       self.lines[i].set_xdata(x)
       self.lines[i].set_ydata(y)
     self.ax.relim() # Update the window

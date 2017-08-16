@@ -101,7 +101,6 @@ class Comedi(InOut):
           else:
             chan['offset'] += off[i]
 
-
   def set_cmd(self, *cmd):
     """To set the value of the outputs (when specified)
     Takes as many argument as opened output channels"""

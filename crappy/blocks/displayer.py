@@ -13,6 +13,7 @@ class Displayer(MasterBlock):
   """
   def __init__(self, framerate=5, cv=True, title='Displayer'):
     MasterBlock.__init__(self)
+    self.niceness = 10
     if framerate is None:
       self.delay = 0
     else:

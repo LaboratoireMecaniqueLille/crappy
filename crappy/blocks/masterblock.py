@@ -1,12 +1,26 @@
 # coding: utf-8
 
-
 from sys import platform
 from multiprocessing import Process, Pipe
 from time import sleep, time, localtime, strftime
 from weakref import WeakSet
 
 from .._global import CrappyStop
+
+import subprocess
+
+
+def renice(pid, niceness):
+  """
+  Function to renice a process
+
+  Only works on Linux. The user must be allowed to use sudo to renice with
+  a negative value. It may ask for a password for negative values.
+  """
+  if niceness < 0:
+    subprocess.call(['sudo', 'renice', str(niceness), '-p', str(pid)])
+  else:
+    subprocess.call(['renice', str(niceness), '-p', str(pid)])
 
 
 class MasterBlock(Process):
@@ -60,6 +74,7 @@ class MasterBlock(Process):
     self.pipe1, self.pipe2 = Pipe()
     self._status = "idle"
     self.in_process = False  # To know if we are in the process or not
+    self.niceness = 0
 
   def __new__(cls, *args, **kwargs):
     instance = super().__new__(cls)
@@ -87,6 +102,8 @@ class MasterBlock(Process):
       self.status = "done"
     except CrappyStop:
       print("[%r] Encountered CrappyStop Exception, terminating" % self)
+      self.status = "done"
+      self.stop_all()
     except KeyboardInterrupt:
       print("[%r] Keyboard interrupt received" % self)
     except Exception as e:
@@ -108,6 +125,23 @@ class MasterBlock(Process):
     """
     l = cls.get_status()
     return len(set(l)) == 1 and s in l
+
+  @classmethod
+  def renice_all(cls, high_prio=True, verbose=True):
+    """
+    Will renice all the blocks processes according to block.niceness value
+
+    If high_prio is False, blocks with a negative niceness value will
+    be ignored. This is to avoid asking for the sudo password since only
+    root can lower the niceness of processes.
+    """
+    if "win" in platform:
+      # Not supported on Windows yet
+      return
+    for b in cls.instances:
+      if b.niceness < 0 and high_prio or b.niceness > 0:
+        print("[renice] Renicing", b.pid, "to", b.niceness)
+        renice(b.pid, b.niceness)
 
   @classmethod
   def prepare_all(cls, verbose=True):
@@ -169,8 +203,11 @@ class MasterBlock(Process):
         print(b)
 
   @classmethod
-  def start_all(cls, t0=None, verbose=True,bg=False):
+  def start_all(cls, t0=None, verbose=True, bg=False, high_prio=False):
     cls.prepare_all(verbose)
+    if high_prio and any([b.niceness < 0 for b in cls.instances]):
+      print("[start] High prio: root premission needed to renice")
+    cls.renice_all(high_prio, verbose=verbose)
     cls.launch_all(t0, verbose, bg)
 
   @classmethod
@@ -219,19 +256,19 @@ class MasterBlock(Process):
     """
     self._MB_loops += 1
     t = time()
-    if hasattr(self,'freq') and self.freq:
-      d = t-self._MB_last_t+1/self.freq
+    if hasattr(self, 'freq') and self.freq > 0:
+      d = t - self._MB_last_t + 1 / self.freq
       while d > 0:
         t = time()
-        d = self._MB_last_t+1/self.freq-t
-        sleep(max(0,d/2-2e-3))# Ugly, yet simple and pretty efficient
+        d = self._MB_last_t + 1 / self.freq - t
+        sleep(max(0, d / 2 - 2e-3))  # Ugly, yet simple and pretty efficient
     self._MB_last_t = t
-    if hasattr(self,'verbose') and self.verbose and\
-            self._MB_last_t - self._MB_last_FPS > 2:
-        print("[%r] loops/s:"%self,
-            self._MB_loops/(self._MB_last_t - self._MB_last_FPS))
-        self._MB_loops = 0
-        self._MB_last_FPS = self._MB_last_t
+    if hasattr(self, 'verbose') and self.verbose and \
+                self._MB_last_t - self._MB_last_FPS > 2:
+      print("[%r] loops/s:" % self,
+            self._MB_loops / (self._MB_last_t - self._MB_last_FPS))
+      self._MB_loops = 0
+      self._MB_last_FPS = self._MB_last_t
 
   def launch(self, t0):
     """
@@ -250,14 +287,14 @@ class MasterBlock(Process):
     if not self.in_process:
       while self.pipe1.poll():
         self._status = self.pipe1.recv()
-      #If another process tries to get the status
+      # If another process tries to get the status
       if 'linux' in platform:
         self.pipe2.send(self._status)
 
-      #Somehow the previous line makes crappy hang on Windows, no idea why
-      #It is not critical, but it means that process status can now only
-      #be read from the process itself and ONE other process.
-      #Luckily, only the parent (the main process) needs the status for now
+        # Somehow the previous line makes crappy hang on Windows, no idea why
+        # It is not critical, but it means that process status can now only
+        # be read from the process itself and ONE other process.
+        # Luckily, only the parent (the main process) needs the status for now
     return self._status
 
   @status.setter
@@ -310,10 +347,10 @@ class MasterBlock(Process):
     If num is None, it will operate on all the input link at once
     """
     if not hasattr(self, '_last_values'):
-      self._last_values = [None]*len(self.inputs)
+      self._last_values = [None] * len(self.inputs)
     if num is None:
       num = range(len(self.inputs))
-    elif not isinstance(num,list):
+    elif not isinstance(num, list):
       num = [num]
     for i in num:
       if self._last_values[i] is None:
@@ -335,10 +372,10 @@ class MasterBlock(Process):
     only the last link's value will be kept
     """
     if not hasattr(self, '_all_last_values'):
-      self._all_last_values = [None]*len(self.inputs)
+      self._all_last_values = [None] * len(self.inputs)
     if num is None:
       num = range(len(self.inputs))
-    elif not isinstance(num,list):
+    elif not isinstance(num, list):
       num = [num]
     for i in num:
       if self._all_last_values[i] is None or self.inputs[i].poll():
@@ -393,4 +430,4 @@ class MasterBlock(Process):
       print("[%r] Stopped correctly" % self)
 
   def __repr__(self):
-    return str(type(self)) + " (" + self.status + ")"
+    return str(type(self)) + " (" + str(self.pid or "Not running") + ")"

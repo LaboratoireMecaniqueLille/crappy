@@ -4,6 +4,9 @@ from .condition import Condition,MetaCondition
 
 condition_list = MetaCondition.classes
 
+from .demux import Demux
+from .derive import Derive
+from .integrate import Integrate
 from .mean import Mean
 from .median import Median
 from .moving_avg import Moving_avg

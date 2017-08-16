@@ -4,5 +4,7 @@ from .actuator import MetaActuator,Actuator
 from .biaxe import Biaxe
 from .biotens import Biotens
 from .cmDrive import CM_drive
+from .fakemotor import Fake_motor
 from .oriental import Oriental
+from .servostar import Servostar
 actuator_list = MetaActuator.classes

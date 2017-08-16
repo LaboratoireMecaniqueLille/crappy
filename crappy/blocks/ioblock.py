@@ -32,21 +32,25 @@ class IOBlock(MasterBlock):
 
   def __init__(self, name, **kwargs):
     MasterBlock.__init__(self)
+    self.niceness = -10
     for arg, default in [('freq', None),
                          ('verbose', False),
-                         ('labels', ['t(s)', '1']),
+                         ('labels', None),
                          ('cmd_labels', []),
                          ('trigger', None),
                          ('streamer', False),
                          ('initial_cmd', 0)
                          ]:
-      if arg in kwargs:
-        setattr(self, arg, kwargs[arg])
-        del kwargs[arg]
+      setattr(self, arg, kwargs.pop(arg, default))
+
+    if self.labels is None:
+      if self.streamer:
+        self.labels = ['t(s)', 'stream']
       else:
-        setattr(self, arg, default)
+        self.labels = ['t(s)'] + [str(c) for c in kwargs.get("channels", ['1'])]
     self.device_name = name.capitalize()
     self.device_kwargs = kwargs
+    self.stream_idle = True
     if not isinstance(self.initial_cmd, list):
       self.initial_cmd = [self.initial_cmd] * len(self.cmd_labels)
 
@@ -73,6 +77,9 @@ class IOBlock(MasterBlock):
   def read(self):
     """Will read the device and send the data"""
     if self.streamer:
+      if self.stream_idle:
+        self.device.start_stream()
+        self.stream_idle = False
       data = self.device.get_stream()
     else:
       data = self.device.get_data()
@@ -99,3 +106,8 @@ class IOBlock(MasterBlock):
       for label in self.cmd_labels:
         cmd.append(l[label])
       self.device.set_cmd(*cmd)
+
+  def finish(self):
+    if self.streamer:
+      self.device.stop_stream()
+    self.device.close()

@@ -13,6 +13,7 @@ from ..camera import Camera
 class Video_extenso(MasterBlock):
   def __init__(self,**kwargs):
     MasterBlock.__init__(self)
+    self.niceness = -5
     default_labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
     for arg,default in [("camera","Ximea"),
                         ("save_folder",None),
@@ -32,6 +33,7 @@ class Video_extenso(MasterBlock):
         self.ve_kwargs[arg] = kwargs[arg]
         del kwargs[arg]
     self.cam_kwargs = kwargs
+    assert not kwargs,"Invalid kwarg in videoextenso: "+str(kwargs)
 
   def prepare(self):
     if self.save_folder and not os.path.exists(self.save_folder):

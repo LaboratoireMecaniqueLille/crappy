@@ -92,7 +92,7 @@ class Biotens(Actuator):
     time.sleep(1)
     while position_si != last_position_si:
       last_position_si = position_si
-      position_si = self.get_position()
+      position_si = self.get_pos()
       print("position : ", position_si)
     print("init done")
     self.stop()
@@ -244,7 +244,7 @@ class Biotens(Actuator):
     self.ser.writelines([set_position, set_speed,
                         set_torque, set_acceleration, command])
 
-  def get_position(self):
+  def get_pos(self):
     """
     Reads current position
 

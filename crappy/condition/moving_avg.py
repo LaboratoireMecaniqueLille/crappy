@@ -11,10 +11,9 @@ class Moving_avg(Condition):
 
   def evaluate(self,data):
     if not hasattr(self,"last"):
-      self.last = data
+      self.last = dict(data)
       for k in data:
         self.last[k] = [self.last[k]]
-      return
     r = {}
     for k in data:
       self.last[k].append(data[k])

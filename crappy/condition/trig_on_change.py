@@ -14,8 +14,8 @@ class Trig_on_change(Condition):
   def evaluate(self,data):
     if not hasattr(self,'last'):
       self.last = data[self.name]
-      return {}
+      return data
     if data[self.name] == self.last:
       return None
     self.last = data[self.name]
-    return {}
+    return data

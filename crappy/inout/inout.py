@@ -58,7 +58,7 @@ class MetaIO(type):
       if missing_methods:
         raise DefinitionError("Class " + name + " is missing methods: " + str(
           missing_methods))
-      i = ("get_data" in dict)
+      i = ("get_data" in dict or "get_stream" in dict)
       o = ("set_cmd" in dict)
       if i and o:
         MetaIO.IOclasses[name] = cls
@@ -68,7 +68,7 @@ class MetaIO(type):
         MetaIO.Oclasses[name] = cls
       else:
         raise DefinitionError(
-          name + " needs at least get_data or set_cmd method")
+          name + " needs at least get_data, get_stream or set_cmd method")
       MetaIO.classes[name] = cls
 
 class InOut(object, metaclass = MetaIO):

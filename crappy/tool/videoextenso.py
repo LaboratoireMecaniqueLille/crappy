@@ -41,7 +41,7 @@ The basic VideoExtenso class:
     for arg,default in [("white_spots",False),
                         # Set to True if spots are lighter than the
                         # surroundings, else set to False
-                        ("update_tresh",False),
+                        ("update_thresh",False),
                         # Should the threshold be updated in each round ?
                         # lower chance to loose the spots, but more noise
                         # in the measurements
@@ -58,7 +58,8 @@ The basic VideoExtenso class:
                         ("border",5)]:
                         # The number of pixel that will be added to the limits
                         # of the boundingbox
-      setattr(self,arg,kwargs.get(arg,default))
+      setattr(self,arg,kwargs.pop(arg,default))
+    assert not kwargs,"Invalid kwarg in ve:"+str(kwargs)
     assert self.num_spots in ['auto',2,3,4],"Invalid number of spots!"
     self.spot_list = []
     self.fallback_mode = False
@@ -163,7 +164,7 @@ The basic VideoExtenso class:
       i,o = Pipe()
       self.pipe.append(i)
       self.tracker.append(Tracker(o,white_spots=self.white_spots,
-                      thresh='auto' if self.update_tresh else self.thresh,
+                      thresh='auto' if self.update_thresh else self.thresh,
                       safe_mode=self.safe_mode))
       self.tracker[-1].start()
 
@@ -238,7 +239,7 @@ class Tracker(Process):
       if type(img) != np.ndarray:
         break
       oy,ox = offset
-      r = self.eval(img)
+      r = self.evaluate(img)
       if not isinstance(r,dict):
         r = self.fallback(img)
         if not isinstance(r,dict):
@@ -254,7 +255,7 @@ class Tracker(Process):
       self.pipe.send(r)
     #print("DEBUG: Process terminating")
 
-  def eval(self,img):
+  def evaluate(self,img):
     img = cv2.medianBlur(img,5)
     if self.auto_thresh:
       self.thresh = threshold_otsu(img)
@@ -295,4 +296,4 @@ class Tracker(Process):
     self.fallback_mode = True
     print("Loosing spot! Trying to reevaluate threshold...")
     self.thresh = threshold_otsu(img)
-    return self.eval(img)
+    return self.evaluate(img)

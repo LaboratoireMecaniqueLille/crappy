@@ -23,14 +23,18 @@ class Saver(MasterBlock):
   """
   def __init__(self,filename,delay=5,labels='t(s)'):
     MasterBlock.__init__(self)
+    self.niceness = -5
     self.delay = delay
     self.filename = filename
     self.labels = labels
 
   def prepare(self):
-    if not path.exists(path.dirname(self.filename)):
+    assert self.inputs, "No input connected to the saver!"
+    assert len(self.inputs) == 1, "Cannot link more than one block to a saver!"
+    d = path.dirname(self.filename)
+    if d and not path.exists(d):
       # Create the folder if it does not exist
-      makedirs(path.dirname(self.filename))
+      makedirs(d)
     if path.exists(self.filename):
       # If the file already exists, append a number to the name
       print("[saver] WARNING!",self.filename,"already exists !")
@@ -42,6 +46,9 @@ class Saver(MasterBlock):
       print("[saver] Using",self.filename,"instead!")
 
   def begin(self):
+    """
+    This is meant to receive data once and adapt the label list
+    """
     self.last_save = self.t0
     r = self.inputs[0].recv_delay(self.delay) # To know the actual labels
     if self.labels:
@@ -50,8 +57,8 @@ class Saver(MasterBlock):
           # If one label is specified, place it first and
           # add the others alphabetically
           self.labels = [self.labels]
-          for k in r.keys():
-            if not k in sorted(self.labels):
+          for k in sorted(r.keys()):
+            if not k in self.labels:
               self.labels.append(k)
         else:
           # If not a list but not in labels, forget it and take all the labels
@@ -60,16 +67,13 @@ class Saver(MasterBlock):
     else:
       # If we did not give them (False, [] or None):
       self.labels = list(sorted(r.keys()))
-    self.write_labels()
+    with open(self.filename,'w') as f:
+      f.write(", ".join(self.labels)+"\n")
     self.save(r)
 
   def loop(self):
     r = self.inputs[0].recv_delay(self.delay)
     self.save(r)
-
-  def write_labels(self):
-    with open(self.filename,'w') as f:
-      f.write(", ".join(self.labels)+"\n")
 
   def save(self,d):
     with open(self.filename,'a') as f:
