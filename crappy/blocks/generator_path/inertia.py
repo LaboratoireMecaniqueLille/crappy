@@ -36,15 +36,27 @@ class Inertia(Path):
     self.flabel = flabel
     self.tlabel = tlabel
     self.value = cmd if value is None else value
-    self.last_t = 0
+    self.last_t = None
 
   def get_cmd(self,data):
     if self.condition(data):
       raise StopIteration
     if data[self.tlabel]:
-      t = [self.last_t]+data[self.tlabel]
+      if self.last_t is None:
+        # If it is the first call, we cannot is the first data point, since we
+        # don't have the previous time (I use left rectangle integration)
+        t = data[self.tlabel]
+        if len(t) == 1:
+          # If we have only one point, save it and return,
+          # first value will be returned on the next call
+          self.last_t = t[0]
+          return self.value
+        # else: drop the first point and keep going
+        f = np.array(data[self.flabel][1:])
+      else:
+        t = [self.last_t]+data[self.tlabel] # We have a previous point: use it
+        f = np.array(data[self.flabel])
       dt = np.array([j-i for i,j in zip(t[:-1],t[1:])])
-      f = np.array(data[self.flabel])
-      self.value -= sum(dt*f)/self.inertia
+      self.value -= sum(dt*f)/self.inertia # The actual integration
       self.last_t = t[-1]
     return self.value
