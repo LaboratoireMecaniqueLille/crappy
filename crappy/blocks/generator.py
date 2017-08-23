@@ -47,7 +47,7 @@ class Generator(MasterBlock):
   def __init__(self, path=[], **kwargs):
     MasterBlock.__init__(self)
     self.niceness = -5
-    for arg, default in [('freq', 500),
+    for arg, default in [('freq', 200),
                          ('cmd_label', 'cmd'),
                          ('cycle_label', 'cycle'),
                          ('cmd', 0),  # First value
@@ -100,7 +100,12 @@ class Generator(MasterBlock):
     except StopIteration:
       self.next_path()
       return
-    if cmd is not None:  # If next_path returns None, do not update cmd
+    # If next_path returns None, do not update cmd
+    if cmd is not None and cmd != self.cmd:
       self.cmd = cmd
+      self.send([self.last_t - self.t0, self.cmd, self.path_id])
+      self.last_path = self.path_id
+    elif self.last_path != self.path_id:
+      self.send([self.last_t - self.t0, self.cmd, self.path_id])
+      self.last_path = self.path_id
     self.last_t = time()
-    self.send([self.last_t - self.t0, self.cmd, self.path_id])
