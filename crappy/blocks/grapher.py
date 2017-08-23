@@ -53,7 +53,7 @@ class Grapher(MasterBlock):
     MasterBlock.__init__(self)
     self.niceness = 10
     self.length = kwargs.pop("length", 0)
-    self.freq = kwargs.pop("freq", 5)
+    self.freq = kwargs.pop("freq", 2)
     self.maxpt = kwargs.pop("maxpt", 20000)
     self.window_size = kwargs.pop("window_size", (8, 8))
     self.window_pos = kwargs.pop("window_pos", None)
@@ -81,6 +81,7 @@ class Grapher(MasterBlock):
     if self.window_pos:
       mng = plt.get_current_fig_manager()
       mng.window.wm_geometry("+%s+%s" % self.window_pos)
+    plt.show(block=False)
 
   def loop(self):
     # We need to recv data from all the links, but keep
@@ -124,7 +125,6 @@ class Grapher(MasterBlock):
     self.ax.relim() # Update the window
     self.ax.autoscale_view(True, True, True)
     self.f.canvas.draw() # Update the graph
-    plt.pause(.01)
 
   def finish(self):
     plt.close("all")
