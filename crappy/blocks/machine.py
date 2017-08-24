@@ -81,7 +81,11 @@ class Machine(MasterBlock):
       if setting['mode'] == 'speed':
         actuator.set_speed(recv[setting['cmd']])
       elif setting['mode'] == 'position':
-        actuator.set_position(recv[setting['cmd']], setting['speed'])
+        try:
+          actuator.set_position(recv[setting['cmd']], setting['speed'])
+        except (TypeError,KeyError):
+          actuator.set_position(recv[setting['cmd']])
+
     self.send_data()
 
   def finish(self):
