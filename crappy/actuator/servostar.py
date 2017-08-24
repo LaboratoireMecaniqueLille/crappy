@@ -37,8 +37,16 @@ class Servostar(Actuator):
     """
     Go to the position specified at the given speed and acceleration
     """
-    if self.mode != "serial":
-      print("Servotar error: could not set position! Use set_mode_serial first!")
+    if isinstance(pos,bool):
+      # To use set_position(True) as set_mode_serial()
+      # and set_position(False) as set_mode_analog()
+      # (to command all of this from as single generator)
+      if pos:
+        self.set_mode_serial()
+      else:
+        self.set_mode_analog()
+    elif self.mode != "serial":
+      self.set_mode_serial()
     self.lock.acquire()
     self.ser.flushInput()
     self.ser.write(" ".join(["ORDER 0", str(pos), str(speed),
