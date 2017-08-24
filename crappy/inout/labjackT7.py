@@ -6,6 +6,8 @@ from time import time
 
 from .inout import InOut
 
+def clamp(val,mini,maxi):
+  return max(min(val,maxi),mini)
 
 class Labjack_t7(InOut):
   """
@@ -58,6 +60,13 @@ class Labjack_t7(InOut):
     range: 10/1/.1/.01. The range of the acquisition (V).
       10 means -10V>+10V default=10
 
+    limits: tuple (mini,maxi), To clamp the output values to a given range.
+      Can be useful to make sure not to go beyond given values.
+      DO NOT CONSIDER THIS AS A SAFETY IMPLEMENTATION.
+      It *should* not go beyond/below the given values,
+      but this is not meant to replace hardware safety !
+      default: None
+
     thermocouple: E/J/K/R/T/S/C (char) The type of thermocouple (AIN only)
       If specified, it will use the EF to read a temperature directly from
       the thermocouples.
@@ -81,7 +90,7 @@ class Labjack_t7(InOut):
 
   def check_chan(self):
     default = {'gain':1,'offset':0,'make_zero':False,'resolution':1,
-        'range':10,'direction':1,'dtype':ljm.constants.FLOAT32}
+        'range':10,'direction':1,'dtype':ljm.constants.FLOAT32,'limits':None}
     if not isinstance(self.channels,list):
       self.channels = [self.channels]
     # Let's loop over all the channels to set everything we need
@@ -142,7 +151,7 @@ class Labjack_t7(InOut):
 
       # === DAC/TDAC channels ===
       elif "DAC" in d['name']:
-        for k in ['gain','offset']:
+        for k in ['gain','offset','limits']:
           if not k in d:
             d[k] = default[k]
         d['to_write'],d['dtype'] = ljm.nameToAddress(d['name'])
@@ -233,6 +242,8 @@ class Labjack_t7(InOut):
         cmd,self.last_values,self.out_chan_list)):
       if v != o:
         new_v = c['gain']*v+c['offset']
+        if c['limits']:
+          new_v = clamp(new_v,c['limits'][0],c['limits'][1])
         self.last_values[i] = v
         addresses.append(a)
         types.append(t)
