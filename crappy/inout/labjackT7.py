@@ -102,7 +102,7 @@ class Labjack_t7(InOut):
 
       # === Modbus registers ===
       if isinstance(d['name'],int):
-        for k in ['direction','dtype']:
+        for k in ['direction','dtype','limits']:
           if not k in d:
             d[k] = default[k]
         if d['direction']:
@@ -164,6 +164,7 @@ class Labjack_t7(InOut):
         if d["direction"]: # 1/True => output, 0/False => input
           d['gain'] = 1
           d['offset'] = 0
+          d['limits'] = None
           d['to_write'],d['dtype'] = ljm.nameToAddress(d['name'])
           self.out_chan_list.append(d)
         else:
