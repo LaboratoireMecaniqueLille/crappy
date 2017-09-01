@@ -120,7 +120,7 @@ class Generator(MasterBlock):
       self.next_path()
       return
     # If next_path returns None, do not update cmd
-    if cmd is not None and cmd != self.cmd:
+    if cmd is not None and not cmd is self.cmd:
       self.cmd = cmd
       self.send([self.last_t - self.t0, self.cmd, self.path_id])
       self.last_path = self.path_id
