@@ -37,7 +37,7 @@ coord = [ # Coordinated for the thermocouples
 
 options = [{'type':'dot_text',
             'coord':coord[i],
-            'text':'T{} = '.format(i+1),
+            'text':'T{} = %.1f'.format(i+1),
             'label':'T'+str(i+1)} for i in range(9)]
 
 s = TestBlock([d['label'] for d in options])

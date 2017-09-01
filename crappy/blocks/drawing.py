@@ -35,7 +35,7 @@ class Text(object):
     self.txt = plt.text(self.coord[0],self.coord[1],self.text)
 
   def update(self,data):
-    self.txt.set_text(self.text+str(data[self.label]))
+    self.txt.set_text(self.text%data[self.label])
 
 class Dot_text(object):
   """
@@ -58,7 +58,7 @@ class Dot_text(object):
     self.low = low
 
   def update(self,data):
-    self.txt.set_text(self.text+str(data[self.label]))
+    self.txt.set_text(self.text%data[self.label])
     self.dot.set_color(cm.coolwarm((data[self.label]-self.low)/self.amp))
 
 class Time(object):
