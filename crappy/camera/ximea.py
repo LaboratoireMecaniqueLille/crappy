@@ -50,6 +50,7 @@ class Ximea(Camera):
       self.ximea = xi.VideoCapture(self.numdevice)
     # Will apply all the settings to default or specified value
     self.set_all(**kwargs)
+    self.set_all(**kwargs)
 
   def reopen(self, **kwargs):
     """

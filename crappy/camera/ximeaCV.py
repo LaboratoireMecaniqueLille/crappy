@@ -94,6 +94,7 @@ class XimeaCV(Camera):
     for k in kwargs:
       assert k in self.available_settings,str(self)+"Unexpected kwarg: "+str(k)
     self.set_all(**kwargs)
+    self.set_all(**kwargs)
 
   def reopen(self,**kwargs):
     """
