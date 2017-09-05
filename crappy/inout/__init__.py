@@ -8,7 +8,11 @@ from .inout import InOut,MetaIO
 from .agilent34420A import Agilent34420A
 from .arduino import Arduino
 from .opsens import Opsens
-from .kollmorgen import Koll
+
+try:
+  from .kollmorgen import Koll
+except ImportError:
+  Koll = NotInstalled("Koll")
 
 try:
   from .spectrum import Spectrum
