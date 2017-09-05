@@ -34,7 +34,6 @@ class Video_extenso(MasterBlock):
         self.ve_kwargs[arg] = kwargs[arg]
         del kwargs[arg]
     self.cam_kwargs = kwargs
-    assert not kwargs,"Invalid kwarg in videoextenso: "+str(kwargs)
 
   def prepare(self):
     if self.save_folder and not os.path.exists(self.save_folder):
