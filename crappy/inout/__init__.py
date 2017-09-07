@@ -1,6 +1,13 @@
 #coding: utf-8
 from __future__ import absolute_import
 
+# On Linux, WindowsError does not exist, so to avoid NameError,
+# make sure it is defined (and set it to None instead)
+try:
+  WindowsError
+except NameError:
+  WindowsError = None
+
 from sys import platform
 from .._global import NotInstalled,NotSupported
 from .inout import InOut,MetaIO
@@ -20,7 +27,7 @@ except (ImportError,OSError):
   Spectrum = NotInstalled("Spectrum")
 try:
   from .comedi import Comedi
-except ImportError:
+except (ImportError,WindowsError):
   Comedi = NotInstalled('Comedi')
 try:
   from .labjackT7 import Labjack_t7
