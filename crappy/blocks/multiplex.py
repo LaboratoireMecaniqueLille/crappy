@@ -11,7 +11,7 @@ from .masterblock import MasterBlock
 def interp(xp,yp,x):
   try:
     return np.interp(x,xp,yp)
-  except TypeError:
+  except (TypeError,ValueError):
     # Make a nearest interpolation for non numerical values
     a = range(len(yp))
     return yp[int(np.interp(x,xp,a)+.5)]
