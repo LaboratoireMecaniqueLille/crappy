@@ -29,6 +29,7 @@ class Biaxe(Actuator):
                              serial.EIGHTBITS, serial.PARITY_EVEN
                              , serial.STOPBITS_ONE, self.timeout)
     self.clear_errors()
+    self.speed = None
 
   def stop(self):
     self.set_speed(0)
@@ -46,5 +47,7 @@ class Biaxe(Actuator):
 
   def set_speed(self, speed):
     """Re-define the speed of the motor. 1 = 0.002 mm/s"""
-    speed = int(speed/.002) # Convert to mm/s
-    self.ser.write("J " + str(speed) + "\r\n")
+    s = int(speed/.002) # Convert to mm/s
+    if s != self.speed: # If it changed since last time (to avoid spamming)
+      self.ser.write("J " + str(s) + "\r\n")
+      self.speed = s
