@@ -30,6 +30,10 @@ class Protection(Path):
     self.value = (value0,value1,value2)
     self.condition1 = self.parse_condition(condition1)
     self.condition2 = self.parse_condition(condition2)
+    s = '<' if '<' in condition1 else '>'
+    self.lbl1 = condition1.split(s)[0]
+    s = '<' if '<' in condition2 else '>'
+    self.lbl2 = condition2.split(s)[0]
     self.verbose = verbose
     self.status = 0
 
@@ -40,9 +44,9 @@ class Protection(Path):
       elif self.condition2(data):
         self.status = 2
       return self.value[self.status]
-    if self.status == 1 and not self.condition1(data):
+    if self.status == 1 and data[self.lbl1] and not self.condition1(data):
       self.status = 0
-    elif self.status == 2 and not self.condition2(data):
+    elif self.status == 2 and data[self.lbl2] and not self.condition2(data):
       self.status = 0
     return self.value[self.status]
 
