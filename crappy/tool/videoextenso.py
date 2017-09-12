@@ -30,7 +30,7 @@ def overlapping(box1,box2):
 class Video_extenso(object):
   """
 The basic VideoExtenso class:
-  Can take 1, 2 or 4 spots
+  Can take 2,3 or 4 spots
   It will detect the spots, save the initial position, and return the
   measured deformation in the most simple way:
   It will always return a list of the spots coordinate (in pixel)
@@ -87,7 +87,7 @@ The basic VideoExtenso class:
     #bw[0,:] = bw[-1,:] = bw[:,0] = bw[:,-1] = -1
     l = regionprops(bw)
     # Remove the regions that are clearly not spots
-    l = filter(lambda r:r.solidity > .8 and r.eccentricity < .95,l)
+    l = filter(lambda r:r.solidity > .8,l)
     # Remove the too small regions (150 is reeaally tiny)
     l = filter(lambda r:r.area > 150,l)
     l = sorted(l,key=lambda r:r.area,reverse=True)
