@@ -14,6 +14,12 @@ class VE_config(Camera_config):
     Camera_config.__init__(self,camera)
     self.ve = ve
 
+  def clamp(self,t):
+    if isinstance(t[0],slice):
+      return (t[0],min(max(0,t[1]),self.img_shape[1]-1))
+    else:
+      return (min(max(0,t[0]),self.img_shape[0]-1),t[1])
+
   def create_window(self):
     Camera_config.create_window(self)
     self.img_label.bind('<1>', self.start_select)
@@ -53,6 +59,7 @@ class VE_config(Camera_config):
         (slice(box[0],box[2]),box[1]),
         (slice(box[0],box[2]),box[3])]:
       # Turn these pixels white or black for highest possible contrast
+      s = self.clamp(s)
       img[s] = 255*int(np.mean(img[s])<128)
 
   def resize_img(self,sl):
