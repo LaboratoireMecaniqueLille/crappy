@@ -30,6 +30,8 @@ class Path(object):
     Any other syntax will return True instantly.
     """
     if not isinstance(condition,str):
+      if condition is None or condition == False:
+        return lambda _:False # For neverending conditions
       return condition
     if '<' in condition:
       var,val = condition.split('<')
