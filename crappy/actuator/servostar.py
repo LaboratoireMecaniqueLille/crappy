@@ -52,7 +52,7 @@ class Servostar(Actuator):
       self.set_mode_serial()
     self.lock.acquire()
     self.ser.flushInput()
-    self.ser.write(" ".join(["ORDER 0", str(pos), str(speed),
+    self.ser.write(" ".join(["ORDER 0", str(int(pos)), str(speed),
                       "8192", str(acc), str(dec), "0 0 0 0\r\n"]))
     self.ser.write("MOVE 0\r\n")  # activates the order
     self.lock.release()
