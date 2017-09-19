@@ -58,6 +58,7 @@ class Grapher(MasterBlock):
     self.window_size = kwargs.pop("window_size", (8, 8))
     self.window_pos = kwargs.pop("window_pos", None)
     self.interp = kwargs.pop("interp",True)
+    self.backend = kwargs.pop("backend","tkagg")
     self.factor = 1
     if kwargs:
       raise AttributeError("Invalid kwarg(s) in Grapher: " + str(kwargs))
@@ -66,6 +67,7 @@ class Grapher(MasterBlock):
       self.lasty = [None]*len(self.labels)
 
   def prepare(self):
+    plt.switch_backend(self.backend)
     self.f = plt.figure(figsize=self.window_size)
     self.ax = self.f.add_subplot(111)
     self.lines = []
@@ -81,7 +83,11 @@ class Grapher(MasterBlock):
     if self.window_pos:
       mng = plt.get_current_fig_manager()
       mng.window.wm_geometry("+%s+%s" % self.window_pos)
-    plt.show(block=False)
+    if self.backend =="tkagg":
+      plt.show(block=False)
+    else:
+      plt.draw()
+      plt.pause(.001)
 
   def loop(self):
     # We need to recv data from all the links, but keep
@@ -125,6 +131,8 @@ class Grapher(MasterBlock):
     self.ax.relim() # Update the window
     self.ax.autoscale_view(True, True, True)
     self.f.canvas.draw() # Update the graph
+    if self.backend != "tkagg":
+      plt.pause(.001)
 
   def finish(self):
     plt.close("all")
