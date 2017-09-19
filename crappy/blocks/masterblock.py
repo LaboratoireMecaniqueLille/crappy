@@ -414,11 +414,8 @@ class MasterBlock(Process):
       return
     print('[%r] Stopping' % self)
     self.pipe1.send(0)
-    t = time()
-    while self.status != 'done' and time() - t < 2:
-      sleep(.1)
-      for i in self.inputs:
-        i.send('stop')
+    for i in self.inputs:
+      i.send('stop')
     if self.status != "done":
       print('[%r] Could not stop properly, terminating' % self)
       try:
