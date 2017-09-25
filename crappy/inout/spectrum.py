@@ -15,8 +15,8 @@ class Spectrum(InOut):
     InOut.__init__(self)
     for arg,default in [('device', b'/dev/spcm0'),
                         ('channels',[0]),
-                        ('ranges',[1000]),
-                        ('freq',100000),
+                        ('ranges',[10000]),
+                        ('samplerate',100000),
                         ('buff_size',2**26),  # 64 MB
                         ('notify_size',2**16), # 64 kB
                         ('split_chan',False) # If False, sends the 2D array
@@ -26,9 +26,9 @@ class Spectrum(InOut):
       raise AttributeError("Invalid arg for Spectrum: "+str(kwargs))
     self.nchan = len(self.channels)
     print("[Spectrum] Will send {} chunks of {} kB per second ({} kB/s)".format(
-      2*self.freq*self.nchan/self.notify_size,
+      2*self.samplerate*self.nchan/self.notify_size,
       self.notify_size/1024,
-      self.freq*self.nchan/512))
+      self.samplerate*self.nchan/512))
     self.bs = self.notify_size//(2*self.nchan)
 
   def open(self):
@@ -44,10 +44,10 @@ class Spectrum(InOut):
     for i,chan in enumerate(self.channels):
       spc.dwSetParam(self.h, spc.SPC_AMP0+100*chan, self.ranges[i])
 
-    spc.dwSetParam(self.h, spc.SPC_SAMPLERATE, self.freq)
+    spc.dwSetParam(self.h, spc.SPC_SAMPLERATE, self.samplerate)
     spc.dwSetParam(self.h, spc.SPC_CLOCKOUT, 0)
-    real_freq = spc.dwGetParam(self.h, spc.SPC_SAMPLERATE)
-    self.dt = 1/real_freq
+    real_samplerate = spc.dwGetParam(self.h, spc.SPC_SAMPLERATE)
+    self.dt = 1/real_samplerate
 
     self.buff = spc.new_buffer(self.buff_size) # Allocating the buffer
 
