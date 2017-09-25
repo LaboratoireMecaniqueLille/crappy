@@ -29,6 +29,7 @@ class Demux(Condition):
     self.stream =  kwargs.pop("stream","stream")
     self.mean = kwargs.pop("mean",False)
     self.time = kwargs.pop("time_label","t(s)")
+    assert not kwargs,"Demux condition got invalid kwarg:"+str(kwargs)
     if self.mean:
       self.evaluate = self.evaluate_mean
     else:
