@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import print_function, division
 
-from time import time
+from time import time,sleep
 
 from .masterblock import MasterBlock
 from . import generator_path
@@ -62,7 +62,8 @@ class Generator(MasterBlock):
                          ('repeat', False),  # Start over when done ?
                          ('trig_link',None),
                          ('spam',False),
-                         ('verbose', False)
+                         ('verbose', False),
+                         ('end_delay',2), # Delay before stopping everything
                          ]:
       setattr(self, arg, kwargs.pop(arg, default))
 
@@ -90,6 +91,7 @@ class Generator(MasterBlock):
         self.path_id = 0
       else:
         print("Signal generator terminated!")
+        sleep(self.end_delay)
         MasterBlock.stop_all()
         raise CrappyStop("Signal Generator terminated")
     if self.verbose:
