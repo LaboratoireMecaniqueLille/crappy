@@ -256,11 +256,11 @@ class Labjack_t7(InOut):
     """
     Allows reading of an input chan by calling lj[chan]
     """
-    # Apply offsets and stuff if this is a channel we know
+    # Apply offsets and stuff if this is a channel we know
     try:
       return time(),ljm.eReadName(
           self.handle,self.in_chan_dict[chan]['to_read'])
-    # Else: let the user access it directly
+    # Else: let the user access it directly
     except KeyError:
       return time(),ljm.eReadName(self.handle,chan)
 

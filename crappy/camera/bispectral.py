@@ -170,9 +170,9 @@ class Bispectral(CLCamera):
     IT2_LSB=self.send_cmd("@R1B8")
     IT2_MID=self.send_cmd("@R1B9")
     IT2_MSB=self.send_cmd("@R1BA")
-    IT1=int(IT1_MSB+IT1_MID+IT1_LSB,16) # Number of clock cycles
+    IT1=int(IT1_MSB+IT1_MID+IT1_LSB,16) # Number of clock cycles
     IT2=int(IT2_MSB+IT2_MID+IT2_LSB,16)
-    return IT1/MC,IT2/MC # IT in µs
+    return IT1/MC,IT2/MC # IT in µs
 
   def set_IT(self,IT1,IT2):
     MC = 10.35
@@ -244,5 +244,5 @@ class Bispectral(CLCamera):
 
   def open(self,**kwargs):
     CLCamera.open(self,**kwargs)
-    self.send_cmd('@W1A084') # Restore unwindowed Mode
+    self.send_cmd('@W1A084') # Restore unwindowed Mode
     self.send_cmd('@W10012') # Make sure the image is not inverted

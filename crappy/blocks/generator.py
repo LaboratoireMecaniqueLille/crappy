@@ -63,7 +63,7 @@ class Generator(MasterBlock):
                          ('trig_link',None),
                          ('spam',False),
                          ('verbose', False),
-                         ('end_delay',2), # Delay before stopping everything
+                         ('end_delay',2), # Delay before stopping everything
                          ]:
       setattr(self, arg, kwargs.pop(arg, default))
 

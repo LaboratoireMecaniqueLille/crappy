@@ -117,7 +117,7 @@ class SignalGenerator(MasterBlock):
             self.upper_limit = current_step["upper_limit"]
             # This will allow continuous ramps if origin is not specified
             # However, it must be given for the first ramp
-            # For now, continuity is guaranteed only between ramps!
+            # For now, continuity is guaranteed only between ramps!
             if 'origin' in current_step or self.step == 0:
 	      self.origin = current_step['origin']
           elif self.waveform == 'goto':

@@ -14,9 +14,9 @@ class AutoDrive(MasterBlock):
     MasterBlock.__init__(self)
     for arg,default in [('actuator',{'name':'CM_drive'}),
 			('P', 2000), # The gain for commanding the technical/actuator
-      # The direction to follow (X/Y +/-), depending on camera orientation
+      # The direction to follow (X/Y +/-), depending on camera orientation
 			('direction', 'Y-'),
-			('range',2048), # The number of pixels in this direction
+			('range',2048), # The number of pixels in this direction
       ('max_speed',200000) # To avoid loosing spots swhen going to fast
 			]:
       setattr(self,arg,kwargs.get(arg,default))

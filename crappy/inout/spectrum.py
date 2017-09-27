@@ -18,14 +18,14 @@ class Spectrum(InOut):
                         ('ranges',[10000]),
                         ('samplerate',100000),
                         ('buff_size',2**26),  # 64 MB
-                        ('notify_size',2**16), # 64 kB
-                        ('split_chan',False) # If False, sends the 2D array
+                        ('notify_size',2**16), # 64 kB
+                        ('split_chan',False) # If False, sends the 2D array
                         ]:
       setattr(self,arg,kwargs.pop(arg,default))
     if kwargs:
       raise AttributeError("Invalid arg for Spectrum: "+str(kwargs))
     self.nchan = len(self.channels)
-    print("[Spectrum] Will send {} chunks of {} kB per second ({} kB/s)".format(
+    print("[Spectrum] Will send {} chunks of {} kB per second ({} kB/s)".format(
       2*self.samplerate*self.nchan/self.notify_size,
       self.notify_size/1024,
       self.samplerate*self.nchan/512))
@@ -49,15 +49,15 @@ class Spectrum(InOut):
     real_samplerate = spc.dwGetParam(self.h, spc.SPC_SAMPLERATE)
     self.dt = 1/real_samplerate
 
-    self.buff = spc.new_buffer(self.buff_size) # Allocating the buffer
+    self.buff = spc.new_buffer(self.buff_size) # Allocating the buffer
 
     spc.dwDefTransfer(self.h, # Handle
                       spc.SPCM_BUF_DATA, # Buff type
-                      spc.SPCM_DIR_CARDTOPC, # Direction
-                      self.notify_size, # Notify every x byte
-                      self.buff, # buffer
-                      0, # Offset
-                      self.buff_size) # Buffer size
+                      spc.SPCM_DIR_CARDTOPC, # Direction
+                      self.notify_size, # Notify every x byte
+                      self.buff, # buffer
+                      0, # Offset
+                      self.buff_size) # Buffer size
 
 
   def close(self):
@@ -82,13 +82,13 @@ class Spectrum(InOut):
                           count=self.notify_size//2,
                           offset=self.pcpos)\
         .reshape(self.notify_size//(2*self.nchan),self.nchan)
-    # To return mV as floats (More CPU and memory!)
+    # To return mV as floats (More CPU and memory!)
     # =======================
     #r = np.empty(a.shape)
     #for i in range(len(self.channels)):
     #  r[:,i] = a[:,i]*self.ranges[i]/32000
     # =======================
-    # To return ints
+    # To return ints
     # =======================
     r = a.copy()
     # =======================
