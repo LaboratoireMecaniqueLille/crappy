@@ -95,7 +95,7 @@ class Drawing(MasterBlock):
     the corresponding class with all the other keys as argument.
   """
   def __init__(self,image,draw=[],crange=[20,300],title="Drawing",
-      window_size=(7,5),freq=2):
+      window_size=(7,5),freq=2,backend="TkAgg"):
     MasterBlock.__init__(self)
     self.freq = freq
     self.image = image
@@ -103,8 +103,10 @@ class Drawing(MasterBlock):
     self.crange = crange
     self.title = title
     self.window_size = window_size
+    self.backend = backend
 
   def prepare(self):
+    plt.switch_backend(self.backend)
     self.fig, self.ax = plt.subplots(figsize=self.window_size)
     image = self.ax.imshow(plt.imread(self.image), cmap=cm.coolwarm)
     image.set_clim(-0.5, 1)
@@ -126,5 +128,5 @@ class Drawing(MasterBlock):
     self.fig.canvas.draw()
     plt.pause(0.001)
 
-  def stop(self):
-    plt.close('all')
+  def finish(self):
+    plt.close()
