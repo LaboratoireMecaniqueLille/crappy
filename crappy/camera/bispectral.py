@@ -2,7 +2,7 @@
 from __future__ import print_function,division
 import numpy as np
 
-from ._clSensor import CLCamera
+from .cameralink import CLCamera
 
 table = (
 0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
