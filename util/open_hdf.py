@@ -3,23 +3,25 @@ from __future__ import print_function, division
 
 import tables
 import sys
-import numpy as np
+#import numpy as np
 import matplotlib.pyplot as plt
 
-NODE = "table" # Node containing the array to read
-# If the range node is not specified, the digital levels (ints) will be returned
-# If specified, it will use it to turn these levels in mV (SLOWER!)
-RANGE_NODE = None # The name of the node storing the ranges of each channel
-#RANGE_NODE = "ranges"
+NODE = "table" # Node containing the array to read
+# If the range node is not specified, the digital levels (ints) will be returned
+# If specified, it will use it to turn these levels in mV (SLOWER!)
+#RANGE_NODE = None # The name of the node storing the ranges of each channel
+RANGE_NODE = "factor"
 
-filename = None # Change here to ignore the prompt
-start = 0 # Start to read from
-stop = None # Where to stop (leave none to read the whole file)
-step = None # Step (if None, will be computed and suggested)
+# Change here to ignore the prompt
+filename = None
+start = 0 # Start to read from
+stop = None # Where to stop (leave none to read the whole file)
+step = None # Step (if None, will be computed and suggested)
 
 if sys.version_info.major > 2:
   raw_input = input
 
+filename = filename if len(sys.argv) == 1 else sys.argv[-1]
 if not filename:
   filename = raw_input("File name?")
 h = tables.open_file(filename)
@@ -39,20 +41,19 @@ else:
   step = a
 
 i = 0
-if RANGE_NODE:
-  out = np.empty((0,rows))
-else:
-  out = np.empty((0,rows),dtype=np.int16)
 print("Reading...")
-out = arr.read(start=start,stop=stop,step=step)
+if RANGE_NODE:
+  out = arr.read(start=start,stop=stop,step=step).astype(float)
+else:
+  out = arr.read(start=start,stop=stop,step=step)
 print(out.shape)
 
 if RANGE_NODE:
   ranges = getattr(h.root,RANGE_NODE).read()
-  print("Converting to mV...")
   h.close()
+  print("Applying factor...")
   for i,r in enumerate(ranges):
-    out[:,i] *= r/32000
+    out[:,i] *= r
 else:
   h.close()
 
