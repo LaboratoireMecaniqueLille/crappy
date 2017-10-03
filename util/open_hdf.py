@@ -41,6 +41,8 @@ else:
   step = a
 
 i = 0
+if not hasattr(h.root,RANGE_NODE):
+  RANGE_NODE = None
 print("Reading...")
 if RANGE_NODE:
   out = arr.read(start=start,stop=stop,step=step).astype(float)
