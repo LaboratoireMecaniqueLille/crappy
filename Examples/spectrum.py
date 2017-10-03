@@ -1,24 +1,28 @@
 #coding: utf-8
-from __future__ import print_function
+from __future__ import division
 
 import crappy
-#import numpy as np
 
-def my_mean(data):
-  #print("D",data)
-  for k,val in data.items():
-    #data[k] = np.mean(val)
-    data[k] = val[0]
-  return data
+channels = list(range(16)) # Every channel (from 0 to 15)
+ranges = [10000]*len(channels) # -10/+10V (in mV)
+# This will NOT apply the gain to the stream, only save a key in the h5
+gains = [1]*len(channels)
+save_file = "./out.h5"
 
-spectrum = crappy.blocks.IOBlock('spectrum',ranges=[1000]*16,
-    channels=list(range(16)),
+chan_names = ['ch'+str(i) for i in channels]
+
+spectrum = crappy.blocks.IOBlock('spectrum',ranges=ranges,
+    channels=channels,
     streamer=True,
-    labels=['t(s)']+['ch'+str(i) for i in range(16)])
+    labels=['t(s)','stream'])
 
-#graph = crappy.blocks.Grapher(('t(s)','ch0'),('t(s)','ch8'))
-graph = crappy.blocks.Grapher(*[('t(s)','ch'+str(i)) for i in range(16)])
-
-crappy.link(spectrum,graph,condition=my_mean)
+graph = crappy.blocks.Grapher(*[('t(s)',i) for i in chan_names])
+if save_file:
+  hsaver = crappy.blocks.Hdf_saver("./out.h5",
+      metadata={'channels':channels,'ranges':ranges,'freq':100000,
+        'factor':[r*g/32000000 for r,g in zip(ranges,gains)]})
+  crappy.link(spectrum,hsaver)
+crappy.link(spectrum,graph,
+    condition=crappy.condition.Demux(chan_names,mean=False))
 
 crappy.start()
