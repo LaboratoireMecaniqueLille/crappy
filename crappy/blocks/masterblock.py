@@ -27,6 +27,7 @@ def renice(pid, niceness):
 class MasterBlock(Process):
   """
   This represent a Crappy block, it must be parent of all the blocks.
+
   Methods:
     main()
       It must not take any arg, it is where you define the main loop of

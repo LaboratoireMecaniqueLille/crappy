@@ -9,7 +9,8 @@ from .masterblock import MasterBlock
 
 class Dashboard(MasterBlock):
   """
-  The Dashboard receives data from a link, and plots it on a new poped window.
+  The Dashboard receives data from a link, and prints it on a new poped window.
+
   It can receive either a single point,
   or a list of points.
   In this case, the displayed value corresponds to the average of points.
@@ -33,7 +34,6 @@ class Dashboard(MasterBlock):
     """
     Dashboard class created, is launched in a new thread.
     """
-
     def __init__(self, labels, nb_digits, queue):
       self.root = Tk()
       self.root.title('Dashboard')
@@ -57,7 +57,6 @@ class Dashboard(MasterBlock):
       """
       Method to update the output window.
       """
-      # while True:
       values = self.queue.get()
       for row, text in enumerate(values):
         self.c2[row].configure(text='%.{}f'.format(self.nb_digits) % text)

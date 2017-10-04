@@ -6,6 +6,18 @@ from time import time
 from .actuator import Actuator
 
 class Fake_motor(Actuator):
+  """
+  To run test programs without a physical actuator
+
+  A virtual motor driven by a voltage, you can set its properties with the args
+  It has the same methods as a real motor: open, set_speed, get_speed, get_pos
+  Args:
+    - inertia (float,default=.5): Inertia of the motor
+    - torque (float,default=0): A torque applied on the axis
+    - kv (float, default=1000): The electrical constant of the motor
+    - rv (float,default=.4): The solid friction
+    - fv (float, default=2e-5): the fluid friction
+  """
   def __init__(self,**kwargs):
     for arg,default in [("inertia",.5), # Inertia of the motor
                         ("torque",0), # Counter torque on the axis

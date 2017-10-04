@@ -9,7 +9,8 @@ class Saver(MasterBlock):
   """
   Will save the incomming data to a file (default csv)
 
-  Can only take ONE input. If the folders do not exist, they will be created.
+  Can only take ONE input. If you want multiple readings in a single file,
+  see Multiplex block. If the folders do not exist, they will be created.
   If the file exists, the actual file will be named with a trailing number
   to avoid overriding it.
   Args:

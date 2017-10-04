@@ -5,8 +5,29 @@ from .masterblock import MasterBlock
 
 class PID(MasterBlock):
   """
-  This PID class will continuously adjust the output based on the target
-  and the actual value
+  A PID corrector
+
+  A PID will continuously adjust the output based on the target
+  and the actual value, to try to actually reach the target.
+  Args:
+    - kp: (float) P gain
+    - ki: (float, default=0) I gain
+    - kd: (float, default=0) D gain
+  kwargs:
+    - out_max (float or None,default:None):
+      If not None, it will always keep the output below this value
+    - out_min (float or None,default:None):
+      If not None, it will always keep the output above this value
+    - target_label (str,default="cmd"): The label of the setpoint
+    - input_label (str,default="V"): The reading of the actual value to be
+      compared with the setpoint
+    - time_label (str,default="t(s)"): The label of the time
+    - labels (list,default=['t(s)','pid']): The labels of the output of the
+      block. It must have TWO strings: the time and the command.
+    - reverse (bool,default=False): To reverse the retroaction
+    - send_terms (bool,default=False): To get the weight of each term in the
+      output value. It will add ['p_term','i_term','d_term'] to the labels.
+      This is particularly useful to tweak the gains.
   """
   def __init__(self,kp,ki=0,kd=0,**kwargs):
     MasterBlock.__init__(self)
@@ -17,7 +38,7 @@ class PID(MasterBlock):
                     ('target_label','cmd'),
                     ('input_label','V'),
                     ('time_label','t(s)'),
-                    ('labels',['t(s)','pid']),
+                    ('labels',[self.time_label,'pid']),
                     ('reverse',False),
                     ('send_terms',False) # For debug, mostly
                     ]:

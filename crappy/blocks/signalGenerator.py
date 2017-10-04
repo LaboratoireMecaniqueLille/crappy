@@ -18,7 +18,7 @@ class SignalGenerator(MasterBlock):
     """
     Calculate a signal, based on the time (from t0).
 
-    See the examples section for more details.
+    ** DEPRECATED ** use Generator instead
     As t0 is used for evaluating the signal, multiple instances of this block will
     be synchronised.
 

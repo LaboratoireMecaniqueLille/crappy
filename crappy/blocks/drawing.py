@@ -22,7 +22,7 @@ from .masterblock import MasterBlock
 
 class Text(object):
   """
-  A simple text line, with a fixed part
+  A simple text line
 
   Args:
     text: The left part of the displayed string (constant)
@@ -39,7 +39,7 @@ class Text(object):
 
 class Dot_text(object):
   """
-  Like Text, but with a colored dot to visualize a value
+  Like Text, but with a colored dot to visualize a numerical value
 
   Args:
     See Text

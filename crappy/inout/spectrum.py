@@ -12,6 +12,22 @@ class SpectrumError(Exception):
 
 class Spectrum(InOut):
   def __init__(self,**kwargs):
+    """
+    Acquire data from a Spectrum device
+
+    Args:
+      - device (str,default="/dev/spcm0"): The address of the device to use
+      - channels (list,default=[0]): The channels to open. See doc for the
+        allowed combinations!
+      - ranges (list, default=[10000]): The ranges of the channels in mV
+      - samplerate (int, default=100000): The samplerate for all channels in Hz
+      - buff_size (int, default=2**16 (64MB)): The size of the memory
+        allocated as a rolling buffer to copy the data from the card
+      - notify_size (int, default=2**16 (64kB)): The size of the chunks of
+        data to copy from the card.
+      - split_chan (bool, default=False): If False, it will return a single
+        2D array, else each chan will be a 1D array
+    """
     InOut.__init__(self)
     for arg,default in [('device', b'/dev/spcm0'),
                         ('channels',[0]),

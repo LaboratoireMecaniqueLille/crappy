@@ -8,25 +8,25 @@ class IOBlock(MasterBlock):
   """
   This block is used to communicate with inout objects
 
-  Then can be used as sensor, command or both.
+  Then can be used as sensor, actuators or both.
   It only takes a single argument:
     name (str): The name of the inout class to instanciate
   It can take all the settings as kwargs:
-    freq (float or None): The looping frequency (see masterblock)
+    - freq (float or None): The looping frequency (see masterblock)
       set to None (default) to go as fast as possible
-    verbose (bool): Will print extra information
-    labels (list): The list of the output labels (see masterblock)
-      NOTE: the first label is the time.
+    - verbose (bool): Will print extra information
+    - labels (list): The list of the output labels (see masterblock)
+        NOTE: the first label is the time.
       default: ['t(s)','1']
-    cmd_label (list): The list of the labels carrying values for the output
+    - cmd_label (list): The list of the labels carrying values for the output
       the block will call ioobject.set_cmd(...) with these values unless
       it is empty (default).
-    trigger (int or None): If the block is trigged by another block, this
+    - trigger (int or None): If the block is trigged by another block, this
       must specify the index of the input considered as a trigger.
       If set to None (default), it will run at freq if possible.
       Note: The data going through the trig link is discarded.
       Add another link if necessary
-    streamer (bool): If False (default), will call get_data
+    - streamer (bool): If False (default), will call get_data
       else, will call get_stream
   """
 

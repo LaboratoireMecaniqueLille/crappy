@@ -12,11 +12,31 @@ from .masterblock import MasterBlock
 from ..camera import Camera
 
 class Video_extenso(MasterBlock):
+  """
+  Measure the deformation for the video of dots on the sample
+
+  This requires the user to select the ROI to make the spot detection.
+  Once done, it will return the deformation (in %) along X and Y axis.
+  It also returns a list of tuples, which are the coordinates (in pixel)
+  of the barycenters of the spots.
+  Optionally, it can save images.
+  Args:
+    - camera ("str",default="XimeaCV"): The name of the camera class to use
+    - save_folder (str or None, default=None): If given, the images will be
+      saved in this folder.
+    - save_period (int, default=1): If saving, will only save one out of
+      save_period images.
+    - labels (list, default=['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']):
+      The labels of the output
+    - show_fps (bool deafult=False): If True, the block will print the FPS
+      in the terminal every 2 seconds
+
+  """
   def __init__(self,**kwargs):
     MasterBlock.__init__(self)
     self.niceness = -5
     default_labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
-    for arg,default in [("camera","Ximea"),
+    for arg,default in [("camera","XimeaCV"),
                         ("save_folder",None),
                         ("save_period",1),
                         ("labels",default_labels),

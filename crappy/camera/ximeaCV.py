@@ -13,8 +13,9 @@ del _
 xi_format_dict = {'8 bits': 0, '10 bits': 1, '8 bits RAW': 5, '10 bits RAW': 6}
 class XimeaCV(Camera):
   """
-  Camera class for ximeas using openCV. It requires opencv 3.0 or higher,
-   compiled with WITH_XIMEA flag
+  Camera class for ximeas using openCV.
+
+  It requires opencv 3.0 or higher, compiled with WITH_XIMEA flag
   """
   def __init__(self):
     """
