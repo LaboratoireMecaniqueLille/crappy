@@ -38,7 +38,7 @@ class PID(MasterBlock):
                     ('target_label','cmd'),
                     ('input_label','V'),
                     ('time_label','t(s)'),
-                    ('labels',[self.time_label,'pid']),
+                    ('labels',['t(s)','pid']),
                     ('reverse',False),
                     ('send_terms',False) # For debug, mostly
                     ]:
