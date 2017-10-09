@@ -49,8 +49,14 @@ if 'win' in platform:
     from .daqmx import Daqmx
   except ImportError:
     Daqmx = NotInstalled('Daqmx')
+  try:
+    from .nidaqmx import Nidaqmx
+  except ImportError:
+    Nidaqmx = NotInstalled('Nidaqmx')
 else:
   Daqmx = NotSupported('Daqmx')
+  Nidaqmx = NotSupported('Nidaqmx')
+
 
 inout_list = MetaIO.IOclasses
 in_list = MetaIO.Iclasses
