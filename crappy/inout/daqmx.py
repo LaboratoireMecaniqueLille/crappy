@@ -155,7 +155,7 @@ class Daqmx(InOut):
     """
     return [i[0] for i in self.get_stream(1)]
 
-  def get_stream(self, npoints=None):
+  def get_single(self, npoints=None):
     """
     Read the analog voltage on specified channels
     Args:
