@@ -29,6 +29,7 @@ class Demux(Condition):
     self.stream =  kwargs.pop("stream","stream")
     self.mean = kwargs.pop("mean",False)
     self.time = kwargs.pop("time_label","t(s)")
+    self.transpose = kwargs.pop("transpose",False)
     assert not kwargs,"Demux condition got invalid kwarg:"+str(kwargs)
     if self.mean:
       self.evaluate = self.evaluate_mean
@@ -39,15 +40,28 @@ class Demux(Condition):
     pass
 
   def evaluate_nomean(self,data):
+    if 0 in data[self.stream].shape:
+      return data
     for i,n in enumerate(self.labels):
-      data[n] = data[self.stream][0,i]
+      if self.transpose:
+        data[n] = data[self.stream][i,0]
+      else:
+        data[n] = data[self.stream][0,i]
     del data[self.stream]
-    data[self.time] = data[self.time][0]
+    try:
+      data[self.time] = data[self.time][0]
+    except:
+      pass
     return data
 
   def evaluate_mean(self,data):
+    if 0 in data[self.stream].shape:
+      return data
     for i,n in enumerate(self.labels):
-      data[n] = np.mean(data[self.stream][:,i])
+      if self.transpose:
+        data[n] = np.mean(data[self.stream][i,:])
+      else:
+        data[n] = np.mean(data[self.stream][:,i])
     del data[self.stream]
     data[self.time] = np.mean(data[self.time])
     return data
