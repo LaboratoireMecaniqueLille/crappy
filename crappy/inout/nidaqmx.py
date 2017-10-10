@@ -29,7 +29,27 @@ units = {
 
 class Nidaqmx(InOut):
   """
-  TODO: doc!
+  Opens National Instrument devices using the NiDAQmx driver (Windows only)
+
+  This class can open ai, ao and dio channels on NI devices.
+  It supports continuous streaming on ai channels only.
+  Streaming is not supported with ai channels of different types.
+  It uses the nidaqmx python module by NI.
+  Args:
+    <b>channels</b> (list, default=[{'name':'ai0'}]): A list of dict describing
+      all the channels to open. For a detail on the channel-specific args,
+      see "Channel dict" below<br>
+    <b>samplerate</b> (float default=100): If using stream mode, the samplerate
+      of the stream<br>
+    <b>nsamples</b> (int, default=samplerate//5): If using stream mode,
+      the stream array will be returned after reading nsamples samples
+  Channel dict:
+    name: The name of the channel to open. For dio, use diX for digital input
+        on line X and doX for digital output.
+    type (default='voltage'): The type of channel to open. (Ex: thrmcpl)
+
+    All the other args will be given as kwargs to
+    nidaqmx.Task.add_[a/d][i/o]_[type]_chan
   """
   def __init__(self,device="Dev1", **kwargs):
     InOut.__init__(self)
@@ -75,6 +95,9 @@ class Nidaqmx(InOut):
       kwargs = dict(c)
       kwargs.pop("name",None)
       kwargs.pop("type",None)
+      if c['type'] == 'voltage':
+        kwargs['max_val'] = kwargs.get('max_val',5)
+        kwargs['min_val'] = kwargs.get('max_val',0)
       for k in kwargs:
         if isinstance(kwargs[k],str):
           if k == "thermocouple_type":
@@ -87,7 +110,7 @@ class Nidaqmx(InOut):
         getattr(self.t_in[c['type']].ai_channels,"add_ai_%s_chan"%c['type'])(
         "/".join([self.device,c['name']]),
         **kwargs)
-      except Exception as e:
+      except Exception:
         print("Invalid channel settings in nidaqmx:"+str(c))
         raise
     self.stream_in = {}
@@ -104,8 +127,10 @@ class Nidaqmx(InOut):
       kwargs = dict(c)
       kwargs.pop("name",None)
       kwargs.pop("type",None)
+      kwargs['max_val'] = kwargs.get('max_val',5)
+      kwargs['min_val'] = kwargs.get('max_val',0)
       self.t_out.ao_channels.add_ao_voltage_chan(
-          "/".join([self.device,c['name']]),min_val=0,max_val=5, **kwargs)
+          "/".join([self.device,c['name']]), **kwargs)
     # DI
     if self.di_channels:
       self.t_di = nidaqmx.Task()
@@ -134,7 +159,7 @@ class Nidaqmx(InOut):
 
   def start_stream(self):
     if len(self.t_in) != 1:
-      raise IOError("Stream mode can only open one type of chanchan type in stream mode!")
+      raise IOError("Stream mode can only open one type of chan!")
     for t in self.t_in.values(): # Only one loop
       t.timing.cfg_samp_clk_timing(self.samplerate,
           sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS)
@@ -186,4 +211,5 @@ class Nidaqmx(InOut):
         dtype=np.float64))
     if self.do_channels:
       self.do_stream.write_one_sample_multi_line(
-        np.array(v[len(self.ao_channels):],dtype=np.bool).reshape(len(self.do_channels),1))
+        np.array(v[len(self.ao_channels):],dtype=np.bool).reshape(
+        len(self.do_channels),1))
