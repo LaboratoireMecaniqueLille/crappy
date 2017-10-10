@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -131,7 +132,7 @@ class Grapher(MasterBlock):
     self.ax.relim() # Update the window
     self.ax.autoscale_view(True, True, True)
     self.f.canvas.draw() # Update the graph
-    if self.backend != "tkagg":
+    if self.backend != "tkagg" or sys.platform.startswith("win"):
       plt.pause(.001)
 
   def finish(self):
