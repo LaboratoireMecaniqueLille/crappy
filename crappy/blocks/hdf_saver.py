@@ -42,7 +42,7 @@ class Hdf_saver(MasterBlock):
                         ]:
       setattr(self,arg,kwargs.pop(arg,default))
     assert not kwargs,"Invalid kwarg(s) in Hdf_saver: "+str(kwargs)
-    if not isinstance(tables.Atom,self.atom):
+    if not isinstance(self.atom,tables.Atom):
       self.atom = tables.Atom.from_dtype(np.dtype(self.atom))
 
   def prepare(self):
