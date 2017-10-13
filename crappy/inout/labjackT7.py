@@ -70,6 +70,12 @@ class Labjack_t7(InOut):
     thermocouple: E/J/K/R/T/S/C (char) The type of thermocouple (AIN only)
       If specified, it will use the EF to read a temperature directly from
       the thermocouples.
+
+    write_at_open: list, If you need to write specific names or registers when
+      opening the channel, you can give them as a list of tuple. They will
+      be written in the order of the list. The tuples can either be
+      (name (str), value (int/float)) or
+      (register (int), type (int), value (float/int))
   """
   def __init__(self, **kwargs):
     InOut.__init__(self)
@@ -186,6 +192,11 @@ class Labjack_t7(InOut):
     # ==== Writing initial config ====
     reg,types,values = [],[],[]
     for c in self.in_chan_list+self.out_chan_list:
+      # Turn (name,val) tuples to (addr,type,val)
+      for i,t in enumerate(c.get('write_at_open',[])):
+        if len(t) == 2:
+          c['write_at_open'][i] = ljm.nameToAddress(t[0])+(t[1],)
+      # Write everything we need
       for r,t,v in c.get('write_at_open',[]):
         reg.append(r)
         types.append(t)
