@@ -386,7 +386,7 @@ class MasterBlock(Process):
         # Dropping all data (already sent on last call) except the last
         # to make sure the block has at least one value
         for key in self._all_last_values[i]:
-          self._all_last_values[i][key] = []
+          self._all_last_values[i][key][:-1] = []
     ret = {}
     for i in num:
       ret.update(self._all_last_values[i])
