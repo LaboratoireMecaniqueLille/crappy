@@ -137,7 +137,9 @@ class Labjack_t7(InOut):
               ljm.nameToAddress(d['name']+"_EF_INDEX")\
                 +(therm[d['thermocouple']],),
               ljm.nameToAddress(d['name']+"_EF_CONFIG_A")+(1,), # for degrees C
-              ljm.nameToAddress(d['name']+"_EF_CONFIG_B")+(60052,) # CJC config
+              ljm.nameToAddress(d['name']+"_EF_CONFIG_B")+(60052,), # CJC config
+              ljm.nameToAddress(d['name']+"_EF_CONFIG_D")+(1,), # CJC config
+              ljm.nameToAddress(d['name']+"_EF_CONFIG_E")+(0,) # CJC config
             ])
           d['to_read'],d['dtype'] = ljm.nameToAddress(d['name']+"_EF_READ_A")
         elif d["gain"] == 1 and d['offset'] == 0 and not d['make_zero']:
