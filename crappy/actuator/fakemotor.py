@@ -24,15 +24,18 @@ class Fake_motor(Actuator):
                         ("kv",1000), # t/min/V
                         ("rv",.4), # Solid friction
                         ("fv",2e-5), # Fluid friction
+                        ("sim_speed",1), # Speed factor of the simulation
+                        ("initial_speed",0),
+                        ("initial_pos",0),
                         ]:
       setattr(self,arg,kwargs.pop(arg,default))
     assert not kwargs,"Fake_motor got invalid kwarg(s): "+str(kwargs)
 
   def open(self):
-    self.rpm = 0
-    self.pos = 0
+    self.rpm = self.initial_speed
+    self.pos = self.initial_pos
     self.u = 0 # V
-    self.t = time()
+    self.t = time()*self.sim_speed
 
   def stop(self):
     self.set_speed(0)
@@ -45,8 +48,8 @@ class Fake_motor(Actuator):
     Will update the motor rpm
     Supposes u is constant for the interval dt
     """
-    t1 = time()
-    dt = t1-self.t
+    t1 = time()*self.sim_speed
+    dt = (t1-self.t)
     self.t = t1
     F = self.u*self.kv-self.torque-self.rpm*(1+self.rv+self.rpm*self.fv)
     drpm = F/self.inertia*dt
