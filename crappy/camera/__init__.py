@@ -6,7 +6,10 @@ from .._global import NotInstalled
 from .camera import Camera, MetaCam
 from .fakeCamera import Fake_camera
 from .webcam import Webcam
-from .streamer import Streamer
+try:
+  from .streamer import Streamer
+except ImportError:
+  Streamer = NotInstalled("Streamer")
 try:
   from .ximea import Ximea
 except ImportError:

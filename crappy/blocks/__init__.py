@@ -19,7 +19,6 @@ from .multiplex import Multiplex
 from .pid import PID
 from .reader import Reader
 from .saver import Saver
-from .signalGenerator import SignalGenerator
 from .sink import Sink
 from .videoExtenso import Video_extenso
 
@@ -32,3 +31,8 @@ try:
   from .hdf_saver import Hdf_saver
 except ImportError:
   Hdf_saver = NotInstalled("Hdf_saver")
+
+try:
+  from .signalGenerator import SignalGenerator
+except ImportError:
+  SignalGenerator = NotInstalled('SignalGenerator')

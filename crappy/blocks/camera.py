@@ -5,7 +5,10 @@ from __future__ import print_function
 import os
 import time
 import sys
-import SimpleITK as sitk
+try:
+  import SimpleITK as sitk
+except:
+  print("[Warning] SimpleITK is not installed, cannot save images!")
 
 from .masterblock import MasterBlock
 from ..camera import camera_list

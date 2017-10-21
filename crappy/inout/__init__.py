@@ -27,7 +27,7 @@ except (ImportError,OSError):
   Spectrum = NotInstalled("Spectrum")
 try:
   from .comedi import Comedi
-except (ImportError,WindowsError):
+except (ImportError,WindowsError,OSError):
   Comedi = NotInstalled('Comedi')
 try:
   from .labjackT7 import Labjack_t7

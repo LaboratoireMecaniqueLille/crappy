@@ -4,7 +4,10 @@ from __future__ import print_function
 import cv2
 import sys
 import os
-import SimpleITK as sitk
+try:
+  import SimpleITK as sitk
+except:
+  print("[Warning] SimpleITK is not installed, cannot save images!")
 
 from ..tool.videoextenso import LostSpotError,Video_extenso as VE
 from ..tool.videoextensoConfig import VE_config
