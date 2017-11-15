@@ -123,6 +123,7 @@ class Daqmx(InOut):
 
   def open(self):
     DAQmxResetDevice(self.device)
+    self.handle,self.out_handle = None,None
     # IN channels
     if self.channels:
       self.handle = TaskHandle()
@@ -153,7 +154,7 @@ class Daqmx(InOut):
     Returns a tuple of length len(self.channels)+1
     first element is the time, others are readings of each channel
     """
-    return [i[0] for i in self.get_stream(1)]
+    return [i[0] for i in self.get_single(1)]
 
   def get_single(self, npoints=None):
     """
