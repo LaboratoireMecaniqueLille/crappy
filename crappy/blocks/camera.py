@@ -4,11 +4,10 @@ from __future__ import print_function
 
 import os
 import time
-import sys
 try:
   import SimpleITK as sitk
-except:
-  print("[Warning] SimpleITK is not installed, cannot save images!")
+except ImportError:
+  sitk = None
 
 from .masterblock import MasterBlock
 from ..camera import camera_list
@@ -33,7 +32,7 @@ class Camera(MasterBlock):
       save_folder : directory to save the images. It will be created
         if necessary. If None, it will not save the images
         (str or None, default: None)
-      verbose : Will print fps every 2 seconds in the console
+      verbose : If True, the block will print the number of fps
           (bool, default=False)
       labels : string, default=['t(s)','frame']
         The labels for respectively time and the frame
@@ -74,12 +73,6 @@ class Camera(MasterBlock):
     self.loops = 0
 
   def loop(self):
-    if self.verbose and self.timer - self.fps_timer > 2:
-      sys.stdout.write("\r[StreamerCamera] FPS: %2.2f" % (
-                (self.loops - self.last_index) / (self.timer - self.fps_timer)))
-      sys.stdout.flush()
-      self.fps_timer = self.timer
-      self.last_index = self.loops
     if self.trigger == "internal":
       t,img = self.camera.read_image()
     elif self.trigger == "external":
@@ -89,6 +82,8 @@ class Camera(MasterBlock):
       t,img = self.camera.get_image()
     self.timer = time.time()
     if self.save_folder:
+      if not sitk:
+        raise IOError("[Camera] Cannot save image, sitk is not installed !")
       image = sitk.GetImageFromArray(img)
       sitk.WriteImage(image,
                self.save_folder + "img_%.6d_%.5f.tiff" % (
