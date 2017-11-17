@@ -13,6 +13,7 @@ from .generator import Generator
 from .grapher import Grapher
 from .ioblock import IOBlock
 from .machine import Machine
+from .mean import Mean
 from .masterblock import MasterBlock
 from .measureByStep import MeasureByStep
 from .multiplex import Multiplex
