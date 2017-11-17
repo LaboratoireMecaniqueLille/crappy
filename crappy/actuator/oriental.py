@@ -31,7 +31,7 @@ class Oriental(Actuator):
   def reader(self):
     while True:
       d = self.q.get()
-      print("DEBUG qsize=",self.q.qsize())
+      #print("DEBUG qsize=",self.q.qsize())
       if d == None:
         break
       with self.lock:
