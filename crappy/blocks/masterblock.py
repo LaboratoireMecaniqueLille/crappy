@@ -90,12 +90,18 @@ class MasterBlock(Process):
   def run(self):
     self.in_process = True  # we are in the process
     self.status = "initializing"
-    self.prepare()
-    self.status = "ready"
-    # Wait for parent to tell me to start the main
-    self.t0 = self.pipe2.recv()
-    self.status = "running"
     try:
+      self.prepare()
+      self.status = "ready"
+      # Wait for parent to tell me to start the main
+      self.t0 = self.pipe2.recv()
+      if self.t0 < 0:
+        try:
+          self.finish()
+        except:
+          pass
+        return
+      self.status = "running"
       self.begin()
       self._MB_last_t = time()
       self._MB_last_FPS = self._MB_last_t
@@ -110,7 +116,10 @@ class MasterBlock(Process):
       print("[%r] Keyboard interrupt received" % self)
     except Exception as e:
       print("[%r] Exception caught:" % self, e)
-      self.finish()
+      try:
+        self.finish()
+      except:
+        pass
       self.status = "error"
       raise
     self.finish()
@@ -173,6 +182,15 @@ class MasterBlock(Process):
       vprint("Waiting for all blocks to be ready...")
     while not cls.all_are('ready'):
       sleep(.1)
+      if not all([i in ['ready','initializing','idle']\
+            for i in cls.get_status()]):
+          print("Crappy failed to start!")
+          for i in cls.instances:
+            if i.status in ['ready','initializing']:
+              i.launch(-1)
+          cls.stop_all()
+          return
+          #raise RuntimeError("Crappy failed to start!")
     vprint("All blocks ready, let's go !")
     if not t0:
       t0 = time()
