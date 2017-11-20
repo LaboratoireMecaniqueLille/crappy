@@ -53,10 +53,10 @@ class Jai8(CLCamera):
 
   def open(self,**kwargs):
     CLCamera.open(self,**kwargs)
-    self.cap.serialWrite('TAGM=5\r\n') # (default)
+    self.cap.serialWrite('TAGM=5\r\n') # (default)
     self._set_format(0) # Set camera to 8 bits
-    self.cap.set(cl.FG_CAMERA_LINK_CAMTYP,208) # Set the input to 8 bits
-    self.cap.set(cl.FG_SENSORREADOUT,0) # To set the correct framegrabber mode
+    self.cap.set(cl.FG_CAMERA_LINK_CAMTYP,208) # Set the input to 8 bits
+    self.cap.set(cl.FG_SENSORREADOUT,0) # To set the correct framegrabber mode
 
 
 class Jai(Jai8):
@@ -74,10 +74,10 @@ class Jai(Jai8):
 
   def open(self):
     CLCamera.open(self)
-    self.cap.serialWrite('TAGM=1\r\n') # dual tap (default does not allow 12 bits)
-    self._set_format(2) # 12 bits
-    self.cap.set(cl.FG_CAMERA_LINK_CAMTYP,212) # Set the input to 12 bits
-    self.cap.set(cl.FG_SENSORREADOUT,7) # To set the correct framegrabber mode
+    self.cap.serialWrite('TAGM=1\r\n') # dual tap (default does not allow 12 bits)
+    self._set_format(2) # 12 bits
+    self.cap.set(cl.FG_CAMERA_LINK_CAMTYP,212) # Set the input to 12 bits
+    self.cap.set(cl.FG_SENSORREADOUT,7) # To set the correct framegrabber mode
 
   def close(self):
     Jai8.close(self)

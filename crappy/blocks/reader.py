@@ -9,7 +9,7 @@ class Reader(MasterBlock):
   """
   def __init__(self, name=None):
     """
-    Create a reader that prints k and the input data in continuous.
+    Create a reader that prints the input data continuously
 
     Args:
         name: if set, will be printed to identify the reader

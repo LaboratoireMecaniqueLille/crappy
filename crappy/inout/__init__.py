@@ -1,6 +1,13 @@
 #coding: utf-8
 
 
+# On Linux, WindowsError does not exist, so to avoid NameError,
+# make sure it is defined (and set it to None instead)
+try:
+  WindowsError
+except NameError:
+  WindowsError = None
+
 from sys import platform
 from .._global import NotInstalled,NotSupported
 from .inout import InOut,MetaIO
@@ -8,7 +15,11 @@ from .inout import InOut,MetaIO
 from .agilent34420A import Agilent34420A
 from .arduino import Arduino
 from .opsens import Opsens
-from .kollmorgen import Koll
+
+try:
+  from .kollmorgen import Koll
+except ImportError:
+  Koll = NotInstalled("Koll")
 
 try:
   from .spectrum import Spectrum
@@ -16,7 +27,7 @@ except (ImportError,OSError):
   Spectrum = NotInstalled("Spectrum")
 try:
   from .comedi import Comedi
-except ImportError:
+except (ImportError,WindowsError,OSError):
   Comedi = NotInstalled('Comedi')
 try:
   from .labjackT7 import Labjack_t7
@@ -38,8 +49,14 @@ if 'win' in platform:
     from .daqmx import Daqmx
   except ImportError:
     Daqmx = NotInstalled('Daqmx')
+  try:
+    from .nidaqmx import Nidaqmx
+  except ImportError:
+    Nidaqmx = NotInstalled('Nidaqmx')
 else:
   Daqmx = NotSupported('Daqmx')
+  Nidaqmx = NotSupported('Nidaqmx')
+
 
 inout_list = MetaIO.IOclasses
 in_list = MetaIO.Iclasses

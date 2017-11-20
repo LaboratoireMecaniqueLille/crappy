@@ -8,7 +8,7 @@ from .actuator import Actuator
 
 class Oriental(Actuator):
   """
-  Open both a BiotensSensor and BiotensActuator instances.
+  To drive an axis with an oriental motor through a serial link
   """
 
   def __init__(self, baudrate=115200, port='/dev/ttyUSB0'):

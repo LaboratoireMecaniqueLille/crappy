@@ -26,6 +26,7 @@ def renice(pid, niceness):
 class MasterBlock(Process):
   """
   This represent a Crappy block, it must be parent of all the blocks.
+
   Methods:
     main()
       It must not take any arg, it is where you define the main loop of
@@ -88,12 +89,18 @@ class MasterBlock(Process):
   def run(self):
     self.in_process = True  # we are in the process
     self.status = "initializing"
-    self.prepare()
-    self.status = "ready"
-    # Wait for parent to tell me to start the main
-    self.t0 = self.pipe2.recv()
-    self.status = "running"
     try:
+      self.prepare()
+      self.status = "ready"
+      # Wait for parent to tell me to start the main
+      self.t0 = self.pipe2.recv()
+      if self.t0 < 0:
+        try:
+          self.finish()
+        except:
+          pass
+        return
+      self.status = "running"
       self.begin()
       self._MB_last_t = time()
       self._MB_last_FPS = self._MB_last_t
@@ -108,7 +115,10 @@ class MasterBlock(Process):
       print("[%r] Keyboard interrupt received" % self)
     except Exception as e:
       print("[%r] Exception caught:" % self, e)
-      self.finish()
+      try:
+        self.finish()
+      except:
+        pass
       self.status = "error"
       raise
     self.finish()
@@ -171,6 +181,15 @@ class MasterBlock(Process):
       vprint("Waiting for all blocks to be ready...")
     while not cls.all_are('ready'):
       sleep(.1)
+      if not all([i in ['ready','initializing','idle']\
+            for i in cls.get_status()]):
+          print("Crappy failed to start!")
+          for i in cls.instances:
+            if i.status in ['ready','initializing']:
+              i.launch(-1)
+          cls.stop_all()
+          return
+          #raise RuntimeError("Crappy failed to start!")
     vprint("All blocks ready, let's go !")
     if not t0:
       t0 = time()
@@ -256,7 +275,7 @@ class MasterBlock(Process):
     """
     self._MB_loops += 1
     t = time()
-    if hasattr(self, 'freq') and self.freq > 0:
+    if hasattr(self, 'freq') and self.freq:
       d = t - self._MB_last_t + 1 / self.freq
       while d > 0:
         t = time()
@@ -384,7 +403,7 @@ class MasterBlock(Process):
         # Dropping all data (already sent on last call) except the last
         # to make sure the block has at least one value
         for key in self._all_last_values[i]:
-          self._all_last_values[i][key] = []
+          self._all_last_values[i][key][:-1] = []
     ret = {}
     for i in num:
       ret.update(self._all_last_values[i])
@@ -415,11 +434,8 @@ class MasterBlock(Process):
       return
     print('[%r] Stopping' % self)
     self.pipe1.send(0)
-    t = time()
-    while self.status != 'done' and time() - t < 2:
-      sleep(.1)
-      for i in self.inputs:
-        i.send('stop')
+    for i in self.inputs:
+      i.send('stop')
     if self.status != "done":
       print('[%r] Could not stop properly, terminating' % self)
       try:

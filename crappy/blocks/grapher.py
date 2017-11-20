@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -33,6 +34,12 @@ class Grapher(MasterBlock):
           to have a graph that pops on the top right corner:
           window_pos=(1920, 0)
 
+      optional: interp (bool, default=True)
+          If True, the points of data will be linked by straight lines
+          else, each value wil be displayed as constant until the next update
+          In simple words,
+          . ' will be linked like so _| if False and like so / if True
+
   Examples
   --------
       graph=Grapher(('t(s)','F(N)'),('t(s)','def(%)'))
@@ -47,16 +54,21 @@ class Grapher(MasterBlock):
     MasterBlock.__init__(self)
     self.niceness = 10
     self.length = kwargs.pop("length", 0)
-    self.freq = kwargs.pop("freq", 5)
+    self.freq = kwargs.pop("freq", 2)
     self.maxpt = kwargs.pop("maxpt", 20000)
     self.window_size = kwargs.pop("window_size", (8, 8))
     self.window_pos = kwargs.pop("window_pos", None)
+    self.interp = kwargs.pop("interp",True)
+    self.backend = kwargs.pop("backend","tkagg")
     self.factor = 1
     if kwargs:
       raise AttributeError("Invalid kwarg(s) in Grapher: " + str(kwargs))
     self.labels = args
+    if not self.interp:
+      self.lasty = [None]*len(self.labels)
 
   def prepare(self):
+    plt.switch_backend(self.backend)
     self.f = plt.figure(figsize=self.window_size)
     self.ax = self.f.add_subplot(111)
     self.lines = []
@@ -72,6 +84,11 @@ class Grapher(MasterBlock):
     if self.window_pos:
       mng = plt.get_current_fig_manager()
       mng.window.wm_geometry("+%s+%s" % self.window_pos)
+    if self.backend =="tkagg":
+      plt.show(block=False)
+    else:
+      plt.draw()
+      plt.pause(.001)
 
   def loop(self):
     # We need to recv data from all the links, but keep
@@ -81,8 +98,23 @@ class Grapher(MasterBlock):
       x = 0 # So that if we don't find it, we do nothing
       for d in data:
         if lx in d and ly in d: # Find the first input with both labels
-          x = np.hstack((self.lines[i].get_xdata(), d[lx][::self.factor]))
-          y = np.hstack((self.lines[i].get_ydata(), d[ly][::self.factor]))
+          if not self.interp:
+            l = len(d[lx][::self.factor])
+            dx = [None]*(2*l-1)
+            dx[::2] = d[lx][::self.factor]
+            dx[1::2] = dx[2::2]
+            dy = [None]*(2*l-1)
+            dy[::2] = d[ly][::self.factor]
+            dy[1::2] = dy[:-1:2]
+            if self.lasty[i] is not None:
+              dx.insert(0,dx[0])
+              dy.insert(0,self.lasty[i])
+            self.lasty[i] = dy[-1]
+          else:
+            dx = d[lx][::self.factor]
+            dy = d[ly][::self.factor]
+          x = np.hstack((self.lines[i].get_xdata(), dx))
+          y = np.hstack((self.lines[i].get_ydata(), dy))
           break
       if isinstance(x,int):
         break
@@ -100,7 +132,8 @@ class Grapher(MasterBlock):
     self.ax.relim() # Update the window
     self.ax.autoscale_view(True, True, True)
     self.f.canvas.draw() # Update the graph
-    plt.pause(.01)
+    if self.backend != "tkagg" or sys.platform.startswith("win"):
+      plt.pause(.001)
 
   def finish(self):
     plt.close("all")

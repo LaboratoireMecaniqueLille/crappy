@@ -9,19 +9,27 @@ from .masterblock import MasterBlock
 def interp(xp,yp,x):
   try:
     return np.interp(x,xp,yp)
-  except TypeError:
+  except (TypeError,ValueError):
     # Make a nearest interpolation for non numerical values
     a = range(len(yp))
     return yp[int(np.interp(x,xp,a)+.5)]
 
 class Multiplex(MasterBlock):
   """
-  This bloc is meant to interpolate data in order to return a data flux
-  with a common time base
-  It is really useful to save data from multiple sensors, it will
-  then be easier to process at once.
-  It will send data at a fixed frequency, but needs a delay to make
-  sure all the required data for interpolation has already been processed
+  This block interpolates data
+
+  It is used to read data and return the reading from
+  multiple sensors at the same instants and a constant frequency.
+  s block  needs a delay to make sure all the required data for interpolation
+  has already been received, so do not use this block as the input of a
+  decision block !
+  This block uses linear interpolation whenever possible, else the nearest
+  neighbor.
+  Args:
+    - key (str,default='t(s)'): The key of the sensors that holds the timestamp
+    - freq (float, default=200): The frequency of the output
+    - delay (float, default=1): Delay to wait for the input in seconds. The
+    block will return the data from instant t at t+delay.
   """
   def __init__(self,key='t(s)',freq=200,delay=1):
     MasterBlock.__init__(self)

@@ -201,11 +201,11 @@ class Link(object):
     if blocking=True: Will wait for at least one data
     Warning! Unlike recv, default is NON blocking"""
     if blocking:
-      data = self.in_.recv()
+      data = self.recv()
     else:
       data = None
     while self.in_.poll():
-      data = self.in_.recv()
+      data = self.recv()
     return data
 
   def recv_chunk(self,length=0):

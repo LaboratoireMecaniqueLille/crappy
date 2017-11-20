@@ -4,8 +4,10 @@
 
 import os
 import time
-import sys
-import SimpleITK as sitk
+try:
+  import SimpleITK as sitk
+except ImportError:
+  sitk = None
 
 from .masterblock import MasterBlock
 from ..camera import camera_list
@@ -18,32 +20,31 @@ class Camera(MasterBlock):
   """
   def __init__(self,camera="Fake_camera",**kwargs):
     """
-    This block fetch images from a camera object, can save and/or
-    transmit them to another block.
+    Read images from a camera object, save and/or send them to another block.
 
     It can be triggered by an other block, internally,
-    or run as fast as possible
+    or try to run at a given framerate
 
     kwargs:
       camera : {"Ximea","Jai","Webcam",...}
         See crappy.camera.MasterCam.classes for a full list
-      save_folder : directory, default = None
-        directory to save the images. If inexistant, will be created.
-        If None, will not save the images
-      show_fps:
-        Will print fps every 2 seconds in the console
+        (str, default="Fake_camera")
+      save_folder : directory to save the images. It will be created
+        if necessary. If None, it will not save the images
+        (str or None, default: None)
+      verbose : If True, the block will print the number of fps
+          (bool, default=False)
       labels : string, default=['t(s)','frame']
         The labels for respectively time and the frame
-      See below for default values
+      config : Show the popup for config ? (bool, default = True)
     """
     MasterBlock.__init__(self)
     self.niceness = -10
     for arg,default in [("save_folder",None),
-                        ("label","cycle"),
-                        ("show_fps",False),
+                        ("verbose",False),
                         ("labels",['t(s)','frame']),
                         ("config",True)]:
-      setattr(self,arg,kwargs.get(arg,default)) #Assign these attributes
+      setattr(self,arg,kwargs.get(arg,default)) # Assign these attributes
       try:
         del kwargs[arg] # And remove them (if any) to
                         # keep the parameters for the camera
@@ -72,12 +73,6 @@ class Camera(MasterBlock):
     self.loops = 0
 
   def loop(self):
-    if self.show_fps and self.timer - self.fps_timer > 2:
-      sys.stdout.write("\r[StreamerCamera] FPS: %2.2f" % (
-                (self.loops - self.last_index) / (self.timer - self.fps_timer)))
-      sys.stdout.flush()
-      self.fps_timer = self.timer
-      self.last_index = self.loops
     if self.trigger == "internal":
       t,img = self.camera.read_image()
     elif self.trigger == "external":
@@ -87,6 +82,8 @@ class Camera(MasterBlock):
       t,img = self.camera.get_image()
     self.timer = time.time()
     if self.save_folder:
+      if not sitk:
+        raise IOError("[Camera] Cannot save image, sitk is not installed !")
       image = sitk.GetImageFromArray(img)
       sitk.WriteImage(image,
                self.save_folder + "img_%.6d_%.5f.tiff" % (

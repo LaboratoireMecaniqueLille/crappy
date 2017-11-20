@@ -5,6 +5,8 @@ from time import time
 
 from .inout import InOut
 
+def clamp(val,mini,maxi):
+  return max(min(val,maxi),mini)
 
 class Labjack_t7(InOut):
   """
@@ -57,9 +59,22 @@ class Labjack_t7(InOut):
     range: 10/1/.1/.01. The range of the acquisition (V).
       10 means -10V>+10V default=10
 
+    limits: tuple (mini,maxi), To clamp the output values to a given range.
+      Can be useful to make sure not to go beyond given values.
+      DO NOT CONSIDER THIS AS A SAFETY IMPLEMENTATION.
+      It *should* not go beyond/below the given values,
+      but this is not meant to replace hardware safety !
+      default: None
+
     thermocouple: E/J/K/R/T/S/C (char) The type of thermocouple (AIN only)
       If specified, it will use the EF to read a temperature directly from
       the thermocouples.
+
+    write_at_open: list, If you need to write specific names or registers when
+      opening the channel, you can give them as a list of tuple. They will
+      be written in the order of the list. The tuples can either be
+      (name (str), value (int/float)) or
+      (register (int), type (int), value (float/int))
   """
   def __init__(self, **kwargs):
     InOut.__init__(self)
@@ -80,7 +95,7 @@ class Labjack_t7(InOut):
 
   def check_chan(self):
     default = {'gain':1,'offset':0,'make_zero':False,'resolution':1,
-        'range':10,'direction':1,'dtype':ljm.constants.FLOAT32}
+        'range':10,'direction':1,'dtype':ljm.constants.FLOAT32,'limits':None}
     if not isinstance(self.channels,list):
       self.channels = [self.channels]
     # Let's loop over all the channels to set everything we need
@@ -92,7 +107,7 @@ class Labjack_t7(InOut):
 
       # === Modbus registers ===
       if isinstance(d['name'],int):
-        for k in ['direction','dtype']:
+        for k in ['direction','dtype','limits']:
           if not k in d:
             d[k] = default[k]
         if d['direction']:
@@ -121,7 +136,9 @@ class Labjack_t7(InOut):
               ljm.nameToAddress(d['name']+"_EF_INDEX")\
                 +(therm[d['thermocouple']],),
               ljm.nameToAddress(d['name']+"_EF_CONFIG_A")+(1,), # for degrees C
-              ljm.nameToAddress(d['name']+"_EF_CONFIG_B")+(60052,) # CJC config
+              ljm.nameToAddress(d['name']+"_EF_CONFIG_B")+(60052,), # CJC config
+              ljm.nameToAddress(d['name']+"_EF_CONFIG_D")+(1,), # CJC config
+              ljm.nameToAddress(d['name']+"_EF_CONFIG_E")+(0,) # CJC config
             ])
           d['to_read'],d['dtype'] = ljm.nameToAddress(d['name']+"_EF_READ_A")
         elif d["gain"] == 1 and d['offset'] == 0 and not d['make_zero']:
@@ -141,7 +158,7 @@ class Labjack_t7(InOut):
 
       # === DAC/TDAC channels ===
       elif "DAC" in d['name']:
-        for k in ['gain','offset']:
+        for k in ['gain','offset','limits']:
           if not k in d:
             d[k] = default[k]
         d['to_write'],d['dtype'] = ljm.nameToAddress(d['name'])
@@ -154,6 +171,7 @@ class Labjack_t7(InOut):
         if d["direction"]: # 1/True => output, 0/False => input
           d['gain'] = 1
           d['offset'] = 0
+          d['limits'] = None
           d['to_write'],d['dtype'] = ljm.nameToAddress(d['name'])
           self.out_chan_list.append(d)
         else:
@@ -175,6 +193,11 @@ class Labjack_t7(InOut):
     # ==== Writing initial config ====
     reg,types,values = [],[],[]
     for c in self.in_chan_list+self.out_chan_list:
+      # Turn (name,val) tuples to (addr,type,val)
+      for i,t in enumerate(c.get('write_at_open',[])):
+        if len(t) == 2:
+          c['write_at_open'][i] = ljm.nameToAddress(t[0])+(t[1],)
+      # Write everything we need
       for r,t,v in c.get('write_at_open',[]):
         reg.append(r)
         types.append(t)
@@ -232,6 +255,8 @@ class Labjack_t7(InOut):
         cmd,self.last_values,self.out_chan_list)):
       if v != o:
         new_v = c['gain']*v+c['offset']
+        if c['limits']:
+          new_v = clamp(new_v,c['limits'][0],c['limits'][1])
         self.last_values[i] = v
         addresses.append(a)
         types.append(t)
@@ -243,11 +268,11 @@ class Labjack_t7(InOut):
     """
     Allows reading of an input chan by calling lj[chan]
     """
-    # Apply offsets and stuff if this is a channel we know
+    # Apply offsets and stuff if this is a channel we know
     try:
       return time(),ljm.eReadName(
           self.handle,self.in_chan_dict[chan]['to_read'])
-    # Else: let the user access it directly
+    # Else: let the user access it directly
     except KeyError:
       return time(),ljm.eReadName(self.handle,chan)
 

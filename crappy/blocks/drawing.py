@@ -9,7 +9,7 @@ from matplotlib import cm
 from .masterblock import MasterBlock
 
 # ======= Visual objects =========
-# These classes represent all that can be drawn on the canvas
+# These classes represent all that can be drawn on the canvas
 # Commmon arg:
 #   drawing: The drawing itself. It is used to access its attributes when needed
 # Common kwargs:
@@ -17,12 +17,12 @@ from .masterblock import MasterBlock
 #
 # Update method will be called frequently by the Drawing block, you can
 # define here what it will do on each update
-# It givs the argument "data" containing all the latest data received
-# by the block
+# It gives the argument "data" containing all the latest data received
+# by the block
 
 class Text(object):
   """
-  A simple text line, with a fixed part
+  A simple text line
 
   Args:
     text: The left part of the displayed string (constant)
@@ -35,11 +35,11 @@ class Text(object):
     self.txt = plt.text(self.coord[0],self.coord[1],self.text)
 
   def update(self,data):
-    self.txt.set_text(self.text+str(data[self.label]))
+    self.txt.set_text(self.text%data[self.label])
 
 class Dot_text(object):
   """
-  Like Text, but with a colored dot to visualize a value
+  Like Text, but with a colored dot to visualize a numerical value
 
   Args:
     See Text
@@ -58,7 +58,7 @@ class Dot_text(object):
     self.low = low
 
   def update(self,data):
-    self.txt.set_text(self.text+str(data[self.label]))
+    self.txt.set_text(self.text%data[self.label])
     self.dot.set_color(cm.coolwarm((data[self.label]-self.low)/self.amp))
 
 class Time(object):
@@ -95,15 +95,18 @@ class Drawing(MasterBlock):
     the corresponding class with all the other keys as argument.
   """
   def __init__(self,image,draw=[],crange=[20,300],title="Drawing",
-      window_size=(7,5)):
+      window_size=(7,5),freq=2,backend="TkAgg"):
     MasterBlock.__init__(self)
+    self.freq = freq
     self.image = image
     self.draw = draw
     self.crange = crange
     self.title = title
     self.window_size = window_size
+    self.backend = backend
 
   def prepare(self):
+    plt.switch_backend(self.backend)
     self.fig, self.ax = plt.subplots(figsize=self.window_size)
     image = self.ax.imshow(plt.imread(self.image), cmap=cm.coolwarm)
     image.set_clim(-0.5, 1)
@@ -125,5 +128,5 @@ class Drawing(MasterBlock):
     self.fig.canvas.draw()
     plt.pause(0.001)
 
-  def stop(self):
-    plt.close('all')
+  def finish(self):
+    plt.close()

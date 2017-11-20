@@ -15,6 +15,7 @@ from .generator import Generator
 from .grapher import Grapher
 from .ioblock import IOBlock
 from .machine import Machine
+from .mean import Mean
 from .masterblock import MasterBlock
 from .measureByStep import MeasureByStep
 from .multiplex import Multiplex
@@ -37,3 +38,8 @@ try:
   from .hdf_saver import Hdf_saver
 except ImportError:
   Hdf_saver = NotInstalled("Hdf_saver")
+
+try:
+  from .signalGenerator import SignalGenerator
+except ImportError:
+  SignalGenerator = NotInstalled('SignalGenerator')

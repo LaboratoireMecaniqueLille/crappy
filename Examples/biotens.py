@@ -22,7 +22,7 @@ b.set_position(5,50)
 # Creating biotens technical
 biotens = crappy.blocks.Machine([{'type':'biotens','port':'/dev/ttyUSB0','pos_label':'position1','cmd':'cmd'}])  # Used to initialize motor.
 graph_pos= crappy.blocks.Grapher(('t(s)', 'position1'))
-crappy.link(biotens,graph_pos,condition=print_cd)
+crappy.link(biotens,graph_pos)
 # And saver
 save_pos= crappy.blocks.Saver(save_path+'position.csv')
 crappy.link(biotens,save_pos)

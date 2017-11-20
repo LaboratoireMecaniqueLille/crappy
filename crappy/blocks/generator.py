@@ -1,6 +1,6 @@
 #coding: utf-8
 
-from time import time
+from time import time,sleep
 
 from .masterblock import MasterBlock
 from . import generator_path
@@ -26,7 +26,7 @@ class Generator(MasterBlock):
     unless repeat is set to True. If so, it will start over indefinelty.
 
   Kwargs:
-    freq: (default=500) The frequency of the block.
+    freq: (default=200) The frequency of the block.
       If set and positive, the generator will try to send the command at this
       frequency (Hz). Else, it will go as fast as possible.
       It relies on the MasterBlock freq control scheme (see masterblock.py).
@@ -41,17 +41,28 @@ class Generator(MasterBlock):
       If False, the block will raise a CrappyStop exception to end the program
       when all the paths have been executed
       If True, the Generator will start over and over again
+
+    trig_link: (default=None) If given, the block will wait until data
+      is received through the input link with this index.
+      If None, it will try loop at freq.
+      It is not necessary but can be really useful for optimization.
+
+    spam: (default=False) If True, the value will be sent on each loop.
+      Else, it will only send it if it was updated or we reached a new step.
   """
 
   def __init__(self, path=[], **kwargs):
     MasterBlock.__init__(self)
     self.niceness = -5
-    for arg, default in [('freq', 500),
+    for arg, default in [('freq', 200),
                          ('cmd_label', 'cmd'),
                          ('cycle_label', 'cycle'),
                          ('cmd', 0),  # First value
                          ('repeat', False),  # Start over when done ?
-                         ('verbose', False)
+                         ('trig_link',None),
+                         ('spam',False),
+                         ('verbose', False),
+                         ('end_delay',2), # Delay before stopping everything
                          ]:
       setattr(self, arg, kwargs.pop(arg, default))
 
@@ -64,8 +75,12 @@ class Generator(MasterBlock):
 
   def prepare(self):
     self.path_id = -1  # Will be incremented to 0 on first next_path
+    if self.trig_link is not None:
+      self.to_get = list(range(len(self.inputs)))
+      self.to_get.remove(self.trig_link)
     self.last_t = time()
     self.last_data = {}
+    self.last_path = -1
     self.next_path()
 
   def next_path(self):
@@ -75,6 +90,7 @@ class Generator(MasterBlock):
         self.path_id = 0
       else:
         print("Signal generator terminated!")
+        sleep(self.end_delay)
         MasterBlock.stop_all()
         raise CrappyStop("Signal Generator terminated")
     if self.verbose:
@@ -92,14 +108,26 @@ class Generator(MasterBlock):
     self.current_path.t0 = self.t0
 
   def loop(self):
-    data = self.get_all_last()
+    if self.trig_link is not None:
+      da = self.inputs[self.trig_link].recv_chunk()
+      data = self.get_all_last(self.to_get)
+      data.update(da)
+    else:
+      data = self.get_all_last()
     data[self.cmd_label] = [self.cmd]  # Add my own cmd to the dict
     try:
       cmd = self.current_path.get_cmd(data)
     except StopIteration:
       self.next_path()
       return
-    if cmd is not None:  # If next_path returns None, do not update cmd
+    # If next_path returns None, do not update cmd
+    if cmd is not None and not cmd is self.cmd:
       self.cmd = cmd
+      self.send([self.last_t - self.t0, self.cmd, self.path_id])
+      self.last_path = self.path_id
+    elif self.last_path != self.path_id:
+      self.send([self.last_t - self.t0, self.cmd, self.path_id])
+      self.last_path = self.path_id
+    elif self.spam:
+      self.send([self.last_t - self.t0, self.cmd, self.path_id])
     self.last_t = time()
-    self.send([self.last_t - self.t0, self.cmd, self.path_id])

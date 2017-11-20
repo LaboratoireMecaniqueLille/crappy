@@ -7,6 +7,8 @@ from ..inout import in_list
 class MeasureByStep(MasterBlock):
   """
   Streams value measured on a card through a Link object.
+
+  This block is deprecated, please use IOBlock instead
   """
 
   def __init__(self, sensor_name, **kwargs):

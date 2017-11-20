@@ -12,23 +12,39 @@ class SpectrumError(Exception):
 
 class Spectrum(InOut):
   def __init__(self,**kwargs):
+    """
+    Acquire data from a Spectrum device
+
+    Args:
+      - device (str,default="/dev/spcm0"): The address of the device to use
+      - channels (list,default=[0]): The channels to open. See doc for the
+        allowed combinations!
+      - ranges (list, default=[10000]): The ranges of the channels in mV
+      - samplerate (int, default=100000): The samplerate for all channels in Hz
+      - buff_size (int, default=2**16 (64MB)): The size of the memory
+        allocated as a rolling buffer to copy the data from the card
+      - notify_size (int, default=2**16 (64kB)): The size of the chunks of
+        data to copy from the card.
+      - split_chan (bool, default=False): If False, it will return a single
+        2D array, else each chan will be a 1D array
+    """
     InOut.__init__(self)
     for arg,default in [('device', b'/dev/spcm0'),
                         ('channels',[0]),
-                        ('ranges',[1000]),
-                        ('freq',100000),
+                        ('ranges',[10000]),
+                        ('samplerate',100000),
                         ('buff_size',2**26),  # 64 MB
-                        ('notify_size',2**16), # 64 kB
-                        ('split_chan',False) # If False, sends the 2D array
+                        ('notify_size',2**16), # 64 kB
+                        ('split_chan',False) # If False, sends the 2D array
                         ]:
       setattr(self,arg,kwargs.pop(arg,default))
     if kwargs:
       raise AttributeError("Invalid arg for Spectrum: "+str(kwargs))
     self.nchan = len(self.channels)
-    print("[Spectrum] Will send {} chunks of {} kB per second ({} kB/s)".format(
-      2*self.freq*self.nchan/self.notify_size,
+    print("[Spectrum] Will send {} chunks of {} kB per second ({} kB/s)".format(
+      2*self.samplerate*self.nchan/self.notify_size,
       self.notify_size/1024,
-      self.freq*self.nchan/512))
+      self.samplerate*self.nchan/512))
     self.bs = self.notify_size//(2*self.nchan)
 
   def open(self):
@@ -44,20 +60,20 @@ class Spectrum(InOut):
     for i,chan in enumerate(self.channels):
       spc.dwSetParam(self.h, spc.SPC_AMP0+100*chan, self.ranges[i])
 
-    spc.dwSetParam(self.h, spc.SPC_SAMPLERATE, self.freq)
+    spc.dwSetParam(self.h, spc.SPC_SAMPLERATE, self.samplerate)
     spc.dwSetParam(self.h, spc.SPC_CLOCKOUT, 0)
-    real_freq = spc.dwGetParam(self.h, spc.SPC_SAMPLERATE)
-    self.dt = 1/real_freq
+    real_samplerate = spc.dwGetParam(self.h, spc.SPC_SAMPLERATE)
+    self.dt = 1/real_samplerate
 
-    self.buff = spc.new_buffer(self.buff_size) # Allocating the buffer
+    self.buff = spc.new_buffer(self.buff_size) # Allocating the buffer
 
     spc.dwDefTransfer(self.h, # Handle
                       spc.SPCM_BUF_DATA, # Buff type
-                      spc.SPCM_DIR_CARDTOPC, # Direction
-                      self.notify_size, # Notify every x byte
-                      self.buff, # buffer
-                      0, # Offset
-                      self.buff_size) # Buffer size
+                      spc.SPCM_DIR_CARDTOPC, # Direction
+                      self.notify_size, # Notify every x byte
+                      self.buff, # buffer
+                      0, # Offset
+                      self.buff_size) # Buffer size
 
 
   def close(self):
@@ -82,13 +98,13 @@ class Spectrum(InOut):
                           count=self.notify_size//2,
                           offset=self.pcpos)\
         .reshape(self.notify_size//(2*self.nchan),self.nchan)
-    # To return mV as floats (More CPU and memory!)
+    # To return mV as floats (More CPU and memory!)
     # =======================
     #r = np.empty(a.shape)
     #for i in range(len(self.channels)):
     #  r[:,i] = a[:,i]*self.ranges[i]/32000
     # =======================
-    # To return ints
+    # To return ints
     # =======================
     r = a.copy()
     # =======================

@@ -15,6 +15,7 @@ class Servostar(Actuator):
     self.mode = mode
     self.baud = baudrate
     self.lock = Lock()
+    self.last = None
 
   def open(self):
     self.lock.acquire()
@@ -37,14 +38,25 @@ class Servostar(Actuator):
     """
     Go to the position specified at the given speed and acceleration
     """
-    if self.mode != "serial":
-      print("Servotar error: could not set position! Use set_mode_serial first!")
+    if self.last is pos:
+      return
+    if isinstance(pos,bool):
+      # To use set_position(True) as set_mode_serial()
+      # and set_position(False) as set_mode_analog()
+      # (to command all of this from as single generator)
+      if pos:
+        self.set_mode_serial()
+      else:
+        self.set_mode_analog()
+    elif self.mode != "serial":
+      self.set_mode_serial()
     self.lock.acquire()
     self.ser.flushInput()
-    self.ser.write(" ".join(["ORDER 0", str(pos), str(speed),
+    self.ser.write(" ".join(["ORDER 0", str(int(pos)), str(speed),
                       "8192", str(acc), str(dec), "0 0 0 0\r\n"]))
     self.ser.write("MOVE 0\r\n")  # activates the order
     self.lock.release()
+    self.last = pos
 
   def get_position(self):
     self.lock.acquire()
@@ -76,6 +88,7 @@ class Servostar(Actuator):
     """
     Sets the analog input as setpoint
     """
+    self.last = None
     self.lock.acquire()
     self.ser.flushInput()
     self.ser.write('OPMODE 1\r\n')

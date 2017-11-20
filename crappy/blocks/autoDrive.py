@@ -7,16 +7,29 @@ from ..actuator import actuator_list
 
 class AutoDrive(MasterBlock):
   """
-  This block gets data from videoextenso and drives a technical or an actuator
-  to move the camera in order to keep the spots in the center of the frame
+  To follow the spots with videoextenso
+
+  This blocks takes the output of a Videoextenso block and uses the spots
+  coordinates to drive an actuator, on which the camera is mounted.
+  This will allow the camera to follow the spots along an axis.
+  It is simply a P loop: the difference in pixel between the barycenter
+  of the spots and the middle of the image along the given axis is multiplied
+  by P and set as the speed of the actuator.
+  kwargs:
+    - P: The gain (float, default=2000)
+    - direction: {X,Y}{+,-} what axis should be considered, and in which
+        direction ? (two chars string, default="Y-")
+    - range: the size in pixel of the image along this axis (int,default=2048)
+    - max_speed: The absolute max value to send to the actuator
+          (float,default:200000)
   """
   def __init__(self, **kwargs):
     MasterBlock.__init__(self)
     for arg,default in [('actuator',{'name':'CM_drive'}),
 			('P', 2000), # The gain for commanding the technical/actuator
-      # The direction to follow (X/Y +/-), depending on camera orientation
+      # The direction to follow (X/Y +/-), depending on camera orientation
 			('direction', 'Y-'),
-			('range',2048), # The number of pixels in this direction
+			('range',2048), # The number of pixels in this direction
       ('max_speed',200000) # To avoid loosing spots swhen going to fast
 			]:
       setattr(self,arg,kwargs.get(arg,default))

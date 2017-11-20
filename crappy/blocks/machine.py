@@ -8,27 +8,34 @@ from ..actuator import actuator_list
 
 class Machine(MasterBlock):
   """
-    Takes a list of dicts, containing the information to create each actuator
-    Each key will stand for a parameter (see below), else they are transferred
-    to the actuator.
-    The content of the dict common will be added to each dict
-    However, if a same key is in an arg AND in common, the arg will prevail
-    If you want to forward a parameter to the actuator that has the name of
-    a key below, add an underscore at the end of its key
-    keys:
-      type (str): The name of the actuator to instanciate
-        Mandatory
-      cmd (str): The label of the input to drive the axis
-        Mandatory
-      mode: 'speed'|'position'
-        Will either call set_speed or set_position on the actuator
-        Default: speed
-      speed: If mode is position, the speed of the axis
-      pos_label: If set, the block will return the value of .get_position
-        with this label
-      speed_label: same as pos_label but with get_speed
-  """
+  To drive a machine with a one or more actuators
 
+  Takes a list of dicts, containing the information to create each actuator
+  Each key will stand for a parameter (see below), else they are transferred
+  to the actuator.
+  Args:
+    - actuators (list of dict): The list of the actuators of the machine.
+      Each dict must have keys according to the list below and the kwargs
+      you want to send to the actuator.
+    - common (dict, default:{}) The keys of this dict will be added to
+      each dict. However, if a same key is in an arg AND in common, the arg
+      will prevail.
+    - freq (float, default 200): The looping frequency of the block
+    - time_label (str, default='t(s)'): If reading data from one or more
+      actuators, the time will also be returned under this label.
+
+  If you want to forward a parameter to the actuator that has the name of
+  a key below, add an underscore at the end of its key
+  keys:
+    - type (str): The name of the actuator to instanciate
+    - cmd (str): The label of the input to drive the axis
+    - mode: ('speed'|'position', default='speed')
+      Will either call set_speed or set_position on the actuator
+    - speed: If mode is position, the speed of the axis
+    - pos_label: If set, the block will return the value of .get_position
+      with this label
+    - speed_label: same as pos_label but with get_speed
+  """
   def __init__(self, actuators, common={}, freq=200, time_label='t(s)'):
     MasterBlock.__init__(self)
     self.freq = freq
@@ -81,7 +88,11 @@ class Machine(MasterBlock):
       if setting['mode'] == 'speed':
         actuator.set_speed(recv[setting['cmd']])
       elif setting['mode'] == 'position':
-        actuator.set_position(recv[setting['cmd']], setting['speed'])
+        try:
+          actuator.set_position(recv[setting['cmd']], setting['speed'])
+        except (TypeError,KeyError):
+          actuator.set_position(recv[setting['cmd']])
+
     self.send_data()
 
   def finish(self):

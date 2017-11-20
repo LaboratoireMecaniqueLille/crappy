@@ -1,17 +1,16 @@
 """
 This example shows an usage of crappy to run some self-heating tests.
-It requires two labjacks T7, and you need to fill the "identifier" keyword 
+It requires two labjacks T7, and you need to fill the "identifier" keyword
 depending on which labjack you use.
 """
 import crappy
-import time
 import numpy as np
 
 directory = '/home/francois/Essais/self-heating-prise2/traction_20pts/'
 
 class ConditionCalib(crappy.links.Condition):
   """
-  Used to compute directly self-heating temperature from 3 thermocouples, as 
+  Used to compute directly self-heating temperature from 3 thermocouples, as
   described in Munier thesis.
   """
 
@@ -25,7 +24,7 @@ class ConditionCalib(crappy.links.Condition):
 
 class EvalStress(crappy.links.Condition):
   """
-  Used to compute strain stress related to torque applied by the instron, and 
+  Used to compute strain stress related to torque applied by the instron, and
   tensile stress as well.
   """
 
@@ -40,7 +39,7 @@ class EvalStress(crappy.links.Condition):
     value['Stress(MPa)'] = (value['Force(N)'] / self.section)
     return value
 
-labjack_instron = crappy.blocks.IOBlock("Labjack_T7", 
+labjack_instron = crappy.blocks.IOBlock("Labjack_T7",
     labels=["time(sec)", "Position(mm)", "Effort(kN)"],
     channels=["AIN0", "AIN1"],
     gain = [0.5, 8],  # mm/V, kN/V
@@ -60,9 +59,12 @@ labjack_temperatures = crappy.blocks.IOBlock("Labjack_T7",
     labels=labels,
     identifier='ANY')
 saver_temperatures = crappy.blocks.Saver(directory + 'Temperatures.csv')
-grapher_temperatures = crappy.blocks.Grapher([('time(sec)', label) for label in labels[1:]], length=1800)
+grapher_temperatures = crappy.blocks.Grapher(
+    [('time(sec)', label) for label in labels[1:]], length=1800)
 
-crappy.link(labjack_temperatures, grapher_temperatures, condition=ConditionCalib())
-crappy.link(labjack_temperatures, saver_temperatures, condition=ConditionCalib())
+crappy.link(labjack_temperatures, grapher_temperatures,
+    condition=ConditionCalib())
+crappy.link(labjack_temperatures, saver_temperatures,
+    condition=ConditionCalib())
 crappy.start()
 

@@ -37,14 +37,15 @@ coord = [ # Coordinated for the thermocouples
 
 options = [{'type':'dot_text',
             'coord':coord[i],
-            'text':'T{} = '.format(i+1),
+            'text':'T{} = %.1f'.format(i+1),
             'label':'T'+str(i+1)} for i in range(9)]
 
-s = TestBlock([d['label'] for d in options])
+if __name__ == "__main__":
+  s = TestBlock([d['label'] for d in options])
 
-options.append({"type":'time','coord':(80,1000)})
+  options.append({"type":'time','coord':(80,1000)})
 
-d = crappy.blocks.Drawing(img,options, crange=[20,300], title="Temperatures")
+  d = crappy.blocks.Drawing(img,options, crange=[20,300], title="Temperatures")
 
-crappy.link(s,d)
-crappy.start()
+  crappy.link(s,d)
+  crappy.start()

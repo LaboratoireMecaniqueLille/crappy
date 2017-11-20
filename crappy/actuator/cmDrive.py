@@ -6,7 +6,7 @@ from .actuator import Actuator
 
 class CM_drive(Actuator):
   """
-  Open a new default serial port for communication with Servostar
+  Open a new default serial port for communication with a CMdrive actuator
   """
 
   def __init__(self, port='/dev/ttyUSB0', baudrate=9600):

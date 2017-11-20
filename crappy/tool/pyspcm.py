@@ -5,7 +5,7 @@ from __future__ import print_function
 from ctypes import *
 from sys import platform
 
-# ======= Constants definition ======
+# ======= Constants definition ======
 
 ERRORTEXTLEN = 200
 SPC_CHENABLE = 11000
@@ -49,8 +49,8 @@ SPC_DATA_AVAIL_CARD_LEN = 202
 
 # ====== Library binding ========
 
-double_reg = [SPC_SAMPLERATE] # Place here the registers that hold 64 bits data
-new_buffer = create_string_buffer # To allow to create a buffer without ctypes
+double_reg = [SPC_SAMPLERATE] # Place here the registers that hold 64 bits data
+new_buffer = create_string_buffer # To allow to create a buffer without ctypes
 
 if "linux" in platform.lower():
   mod = cdll.LoadLibrary("libspcm_linux.so")
@@ -82,7 +82,7 @@ vClose = mod.spcm_vClose
 vClose.argtype = [c_char_p]
 vClose.restype = None
 
-my_i64 = c_int64() # C ints to read args when calling getparam
+my_i64 = c_int64() # C ints to read args when calling getparam
 my_i32 = c_int32()
 
 mod.spcm_dwGetParam_i32.argtype = [c_void_p, c_int32, POINTER(c_int32)]
