@@ -36,9 +36,10 @@ class Nidaqmx(InOut):
   Streaming is not supported with ai channels of different types.
   It uses the nidaqmx python module by NI.
   Args:
-    <b>channels</b> (list, default=[{'name':'ai0'}]): A list of dict describing
-      all the channels to open. For a detail on the channel-specific args,
-      see "Channel dict" below<br>
+    <b>channels</b> (list, default=[{'name':'Dev1/ai0'}]): A list of dict
+      describing all the channels to open. For a detail on the
+      channel-specific args, see "Channel dict" below.
+      For dio, use DevX/d[i/o] Y to select port(Y//8)/line(Y%8) on DevX<br>
     <b>samplerate</b> (float default=100): If using stream mode, the samplerate
       of the stream<br>
     <b>nsamples</b> (int, default=samplerate//5): If using stream mode,
@@ -51,11 +52,10 @@ class Nidaqmx(InOut):
     All the other args will be given as kwargs to
     nidaqmx.Task.add_[a/d][i/o]_[type]_chan
   """
-  def __init__(self,device="Dev1", **kwargs):
+  def __init__(self, **kwargs):
     InOut.__init__(self)
-    self.device = device
     for arg, default in [
-                         ('channels', [{'name':'ai0'}]),
+                         ('channels', [{'name':'Dev1/ai0'}]),
                          ('samplerate',100),
                          ('nsamples',None)
                          ]:
@@ -69,18 +69,22 @@ class Nidaqmx(InOut):
     self.do_channels = []
     for c in self.channels:
       c['type'] = c.get('type','voltage').lower()
-      if c['name'].startswith('ai'):
+      if c['name'].split('/')[-1].startswith('ai'):
         if c['type'] in self.ai_channels:
           self.ai_channels[c['type']].append(c)
         else:
           self.ai_channels[c['type']] = [c]
-      elif c['name'].startswith('ao'):
+      elif c['name'].split('/')[-1].startswith('ao'):
         self.ao_channels.append(c)
-      elif c['name'].startswith('di'):
-        c['name'] = 'line'+c['name'][2:]
+      elif c['name'].split('/')[-1].startswith('di'):
+        i = int(c['name'].split('/')[-1][2:])
+        c['name'] = "/".join(
+            [c['name'].split("/")[0],'port%d'%(i//8),'line%d'%(i%8)])
         self.di_channels.append(c)
-      elif c['name'].startswith('do'):
-        c['name'] = 'line'+c['name'][2:]
+      elif c['name'].split('/')[-1].startswith('do'):
+        i = int(c['name'].split('/')[-1][2:])
+        c['name'] = "/".join(
+            [c['name'].split("/")[0],'port%d'%(i//8),'line%d'%(i%8)])
         self.do_channels.append(c)
       else:
         raise AttributeError("Unknown channel in nidaqmx"+str(c))
@@ -97,7 +101,7 @@ class Nidaqmx(InOut):
       kwargs.pop("type",None)
       if c['type'] == 'voltage':
         kwargs['max_val'] = kwargs.get('max_val',5)
-        kwargs['min_val'] = kwargs.get('max_val',0)
+        kwargs['min_val'] = kwargs.get('min_val',0)
       for k in kwargs:
         if isinstance(kwargs[k],str):
           if k == "thermocouple_type":
@@ -108,8 +112,7 @@ class Nidaqmx(InOut):
         self.t_in[c['type']] = nidaqmx.Task()
       try:
         getattr(self.t_in[c['type']].ai_channels,"add_ai_%s_chan"%c['type'])(
-        "/".join([self.device,c['name']]),
-        **kwargs)
+            c['name'],**kwargs)
       except Exception:
         print("Invalid channel settings in nidaqmx:"+str(c))
         raise
@@ -129,8 +132,7 @@ class Nidaqmx(InOut):
       kwargs.pop("type",None)
       kwargs['max_val'] = kwargs.get('max_val',5)
       kwargs['min_val'] = kwargs.get('max_val',0)
-      self.t_out.ao_channels.add_ao_voltage_chan(
-          "/".join([self.device,c['name']]), **kwargs)
+      self.t_out.ao_channels.add_ao_voltage_chan(c['name'], **kwargs)
     # DI
     if self.di_channels:
       self.t_di = nidaqmx.Task()
@@ -138,8 +140,7 @@ class Nidaqmx(InOut):
       kwargs = dict(c)
       kwargs.pop("name",None)
       kwargs.pop("type",None)
-      self.t_di.di_channels.add_di_chan(
-          "/".join([self.device,c['name']]), **kwargs)
+      self.t_di.di_channels.add_di_chan(c['name'], **kwargs)
     if self.di_channels:
       self.di_stream = stream_readers.DigitalMultiChannelReader(
           self.t_di.in_stream)
@@ -151,8 +152,7 @@ class Nidaqmx(InOut):
       kwargs = dict(c)
       kwargs.pop("name",None)
       kwargs.pop("type",None)
-      self.t_do.do_channels.add_do_chan(
-          "/".join([self.device,c['name']]), **kwargs)
+      self.t_do.do_channels.add_do_chan(c['name'], **kwargs)
     if self.do_channels:
       self.do_stream = stream_writers.DigitalMultiChannelWriter(
           self.t_do.out_stream)
@@ -193,7 +193,7 @@ class Nidaqmx(InOut):
       self.t_out.close()
 
   def get_data(self):
-    a = np.empty((len(self.ai_channels),))
+    a = np.empty((sum([len(i) for i in self.ai_channels.values()]),))
     i = 0
     t = time()
     for chan_type,s in self.stream_in.items():
