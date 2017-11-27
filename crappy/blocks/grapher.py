@@ -133,7 +133,8 @@ class Grapher(MasterBlock):
     self.ax.autoscale_view(True, True, True)
     self.f.canvas.draw() # Update the graph
     if self.backend != "tkagg" or sys.platform.startswith("win"):
-      plt.pause(.001)
+      #plt.pause(.001)
+	  self.f.canvas.flush_events()
 
   def finish(self):
     plt.close("all")
