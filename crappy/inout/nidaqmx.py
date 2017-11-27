@@ -131,7 +131,7 @@ class Nidaqmx(InOut):
       kwargs.pop("name",None)
       kwargs.pop("type",None)
       kwargs['max_val'] = kwargs.get('max_val',5)
-      kwargs['min_val'] = kwargs.get('max_val',0)
+      kwargs['min_val'] = kwargs.get('min_val',0)
       self.t_out.ao_channels.add_ao_voltage_chan(c['name'], **kwargs)
     # DI
     if self.di_channels:
