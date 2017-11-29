@@ -14,6 +14,7 @@ To install Crappy you will need:
 - Scipy
 - Matplotlib
 - openCV
+- pyserial
 - scikit-image
 
 These packages are not mandatory but will provide additionnal functions:

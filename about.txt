@@ -52,6 +52,7 @@ of the major difficulties we have to deal with in Python.
 <li> Opencv (>= 3.0) </li>
 <li> matplotlib (>= 1.5.3) </li>
 <li> Scikit-image (>= 0.11) </li>
+<li> pyserial </li>
 </ul>
 
 Other packages can be installed to enable some functionalities:
