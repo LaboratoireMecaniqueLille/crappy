@@ -147,6 +147,10 @@ class Camera_config(object):
     self.range_check = tk.Checkbutton(self.info_frame,
                       text="Auto range",variable=self.auto_range)
     self.range_check.pack()
+    self.auto_apply = tk.IntVar()
+    self.auto_apply_check = tk.Checkbutton(self.info_frame,
+                      text="Auto apply",variable=self.auto_apply)
+    self.auto_apply_check.pack()
     self.minmax_label = tk.Label(self.info_frame,text="min: max:")
     self.minmax_label.pack()
     self.range_label = tk.Label(self.info_frame,text="range:")
@@ -467,6 +471,9 @@ class Camera_config(object):
           self.fps_label.configure(text="fps=%.1f"%(loop/(curr_t-self.t_fps)))
           self.t_fps = curr_t
           loop = 0
+          # And auto apply the settings if needed
+          if self.auto_apply.get():
+            self.apply_settings()
         if self.hist_pipe.poll():
           # The histogram proccess has finished computing: let's update
           self.update_histogram()
