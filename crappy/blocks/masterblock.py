@@ -220,7 +220,7 @@ class MasterBlock(Process):
     else:
       print("Crappy terminated, blocks status:")
       for b in cls.instances:
-        print(b)
+        print(b,b.status)
 
   @classmethod
   def start_all(cls, t0=None, verbose=True, bg=False, high_prio=False):
@@ -243,7 +243,7 @@ class MasterBlock(Process):
     vprint("Stopping the blocks...")
     for instance in cls.instances:
       if instance.status == 'running':
-        vprint("Stopping", instance, "(PID:{})".format(instance.pid))
+        vprint("Stopping", instance)
         instance.stop()
     vprint("All blocks are stopped.")
 
@@ -435,6 +435,10 @@ class MasterBlock(Process):
     self.pipe1.send(0)
     for i in self.inputs:
       i.send('stop')
+    for i in range(10):
+      if self.status == "done":
+        break
+      sleep(.05)
     if self.status != "done":
       print('[%r] Could not stop properly, terminating' % self)
       try:
