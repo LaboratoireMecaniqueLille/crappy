@@ -10,5 +10,6 @@ from .integrate import Integrate
 from .mean import Mean
 from .median import Median
 from .moving_avg import Moving_avg
+from .moving_med import Moving_med
 from .trig_on_change import Trig_on_change
 from .trig_on_value import Trig_on_value
