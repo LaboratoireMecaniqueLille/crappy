@@ -10,6 +10,7 @@ from .dashboard import Dashboard
 from .displayer import Displayer
 from .drawing import Drawing
 from .generator import Generator
+from .gui import GUI
 from .grapher import Grapher
 from .ioblock import IOBlock
 from .machine import Machine
