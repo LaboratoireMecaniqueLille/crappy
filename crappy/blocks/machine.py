@@ -97,4 +97,5 @@ class Machine(MasterBlock):
 
   def finish(self):
     for actuator in self.actuators:
+      actuator.stop()
       actuator.close()
