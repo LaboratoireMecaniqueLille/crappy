@@ -1,9 +1,12 @@
-﻿# coding: utf-8
+# coding: utf-8
 
 import serial
+from time import sleep
 from Queue import Queue
 from threading import Thread,Lock
 from .actuator import Actuator
+
+ACCEL = .1 # Acceleration and deceleration times
 
 
 class Oriental(Actuator):
@@ -12,17 +15,6 @@ class Oriental(Actuator):
   """
 
   def __init__(self, baudrate=115200, port='/dev/ttyUSB0'):
-    """
-    Open the connection, and initialise the Biotens.
-
-    You should always use this Class to communicate with the Biotens.
-
-    Argrs:
-        port : str, default = '/dev/ttyUSB0'
-            Path to the correct serial ser.
-        size : int of float, default = 30
-            Initial size of your test sample, in mm.
-    """
     Actuator.__init__(self)
     self.baudrate = baudrate
     self.port = port
@@ -35,9 +27,12 @@ class Oriental(Actuator):
       if d == None:
         break
       with self.lock:
+        #print("[DEBUG] Writing",d)
         self.ser.write(d+"\n")
-        self.ser.readlines()
-        self.ser.readlines()
+        a = self.ser.readlines()
+        if a:
+          print("DEBUG",a)
+        #self.ser.readlines()
 
   def open(self):
     self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=0.1)
@@ -53,6 +48,9 @@ class Oriental(Actuator):
     self.lock = Lock()
     self.reader_thread = Thread(target=self.reader)
     self.reader_thread.start()
+    self.clear_errors()
+    self.write_cmd("TA "+str(ACCEL)) # Acceleration time
+    self.write_cmd("TD "+str(ACCEL)) # Deceleration time
 
   def write_cmd(self, cmd):
     self.q.put(cmd)
@@ -69,7 +67,7 @@ class Oriental(Actuator):
     self.ser.close()
 
   def stop(self):
-    self.write_cmd("SSTOP")
+    self.ser.write("SSTOP\n")
 
   def reset(self):
     self.clear_errors()
@@ -78,20 +76,26 @@ class Oriental(Actuator):
     self.clear_errors()
 
   def set_speed(self, speed):
-    if speed != 0 and speed == self.speed:
+    speed = int(speed*10) # Conversion en mm/min VERIFIER GAIN !!
+    if speed == 0:
+      self.speed = 0
+      self.stop()
       return
-    if speed < 0:
-      if self.speed > 0:
-        self.write_cmd("SSTOP")
-      self.write_cmd("VR {0}".format(abs(speed)))
-      self.write_cmd("MCP")
-    elif speed > 0:
-      if self.speed < 0:
-        self.write_cmd("SSTOP")
-      self.write_cmd("VR {0}".format(abs(speed)))
-      self.write_cmd("MCN")
-    elif speed == 0:
+    if speed == self.speed:
+      return
+    sign = speed/abs(speed)
+    dirchg = self.speed*sign < 0
+    if dirchg:
+      #print("DEBUGORIENTAL changing dir")
       self.write_cmd("SSTOP")
+      sleep(ACCEL)
+    self.write_cmd("VR %d"%abs(speed))
+    if sign > 0:
+      #print("DEBUGORIENTAL going +")
+      self.write_cmd("MCP")
+    else:
+      #print("DEBUGORIENTAL going -")
+      self.write_cmd("MCN")
     self.speed = speed
 
   def set_home(self):
@@ -105,20 +109,14 @@ class Oriental(Actuator):
     self.write_cmd("MA {0}".format(position))
 
   def get_pos(self):
-    # self.ser.open()
     with self.lock:
       self.ser.flushInput()
       self.ser.write('PC\n')
       self.ser.readline()
       ActuatorPos = self.ser.readline()
-    # self.ser.close()
     ActuatorPos = str(ActuatorPos)
-    ActuatorPos = ActuatorPos[4::]
-    ActuatorPos = ActuatorPos[::-1]
-    ActuatorPos = ActuatorPos[3::]
-    ActuatorPos = ActuatorPos[::-1]
     try:
-      ActuatorPos = float(ActuatorPos)
+      ActuatorPos = float(ActuatorPos[4:-3])
     except ValueError:
       print "PositionReadingError"
       return 0
