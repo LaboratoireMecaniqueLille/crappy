@@ -2,7 +2,7 @@
 
 import serial
 from time import sleep
-from Queue import Queue
+from queue import Queue
 from threading import Thread,Lock
 from .actuator import Actuator
 

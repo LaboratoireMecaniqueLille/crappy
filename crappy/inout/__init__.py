@@ -6,7 +6,7 @@
 try:
   WindowsError
 except NameError:
-  WindowsError = None
+  WindowsError = BaseException
 
 from sys import platform
 from .._global import NotInstalled,NotSupported

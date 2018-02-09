@@ -1,5 +1,5 @@
 # coding: utf-8
-import Tkinter as tk
+import tkinter as tk
 from time import time
 
 from .masterblock import MasterBlock

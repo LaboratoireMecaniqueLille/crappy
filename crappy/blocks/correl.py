@@ -94,7 +94,7 @@ with fields=(.,.) or Nfields=k")
   def loop(self):
     if self.verbose and self.loops%self.nloops == 0:
       t = time()
-      print "[Correl block] processed", self.nloops / (t-self.last_t), "ips"
+      print("[Correl block] processed", self.nloops / (t-self.last_t), "ips")
       self.last_t = t
     self.loops += 1
     t,img = self.camera.read_image()
