@@ -17,10 +17,10 @@ class Median(Condition):
 
   def evaluate(self,data):
     if not hasattr(self,"last"):
-      self.last = data
+      self.last = dict(data)
       for k in data:
         self.last[k] = [self.last[k]]
-      return
+      return data
     r = {}
     for k in data:
       self.last[k].append(data[k])

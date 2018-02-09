@@ -2,26 +2,40 @@
 
 import crappy
 
+SHOW_PID = 3
+
+MED = 20
+MEAN = 50
+
 FREQ = 100
-P = .1
-I = 0
-D = 0
+P = .25
+I = .03
+D = 20
 
 pins= [0,2,3,4,5]
 
+T = 200
+
 v = {}
-v[0] = 200
-v[2] = 200
-v[3] = 200
-v[4] = 200
-v[5] = 200
+v[0] = T
+v[2] = T+10
+v[3] = T
+v[4] = T
+v[5] = T
+
 
 class dc_to_clk:
   def __init__(self,lbl):
     self.l = lbl
   def evaluate(self,data):
     #data[self.l] = int(data[self.l]*80000000/FREQ)
-    data[self.l] = int((1-data[self.l])*80000000/FREQ)
+    if data[self.l] < 0.01:
+      cmd = 0
+    elif data[self.l] > .99:
+      cmd = 1
+    else:
+      cmd = data[self.l]
+    data[self.l] = int((1-cmd)*80000000/FREQ)
     return data
 
 clock_config = [
@@ -52,15 +66,17 @@ th_chan = [dict(name='AIN%d'%i,thermocouple='K') for i in pins]
 
 lj = crappy.blocks.IOBlock("Labjack_t7",channels=pwm_chan+th_chan,
   labels=['t(s)']+['T%d'%i for i in pins],
-  cmd_labels=['pwm%d'%i for i in pins])
+  cmd_labels=['pwm%d'%i for i in pins],verbose=True)
 
 pid_list = []
 gen_list = []
 graph_cmd = crappy.blocks.Grapher(*[('t(s)','pwm%d'%i) for i in pins])
 for i in pins:
-  pid_list.append(crappy.blocks.PID(P,I,D,
+  pid_list.append(crappy.blocks.PID(P,I if i != 5 else 0,D,
     input_label='T%d'%i,
     out_max=1,out_min=0,
+    i_limit=.5,
+    send_terms=(SHOW_PID is not None and i == SHOW_PID),
     labels=['t(s)','pwm%d'%i]))
 
   gen_list.append( crappy.blocks.Generator(
@@ -68,11 +84,19 @@ for i in pins:
 
   crappy.link(gen_list[-1],pid_list[-1])
   crappy.link(pid_list[-1],lj,condition=dc_to_clk('pwm%d'%i))
-  crappy.link(lj,pid_list[-1])
+  crappy.link(lj,pid_list[-1],condition=[crappy.condition.Median(MED),crappy.condition.Moving_avg(MEAN)])
   crappy.link(pid_list[-1],graph_cmd)
 
 graph = crappy.blocks.Grapher(*[('t(s)','T%d'%i) for i in pins])
-crappy.link(lj,graph)
+crappy.link(lj,graph,condition=[crappy.condition.Median(MED),crappy.condition.Moving_avg(MEAN)])
 
+
+if SHOW_PID:
+  graph_pid = crappy.blocks.Grapher(
+      ('t(s)','p_term'),
+      ('t(s)','i_term'),
+      ('t(s)','d_term'),
+      ('t(s)','pwm%d'%SHOW_PID))
+  crappy.link(pid_list[pins.index(SHOW_PID)],graph_pid)
 
 crappy.start()

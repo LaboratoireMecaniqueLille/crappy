@@ -3,6 +3,7 @@
 from time import time
 import numpy as np
 import SimpleITK as sitk
+import os
 
 from .masterblock import MasterBlock
 from ..tool import Camera_config,Correl as Correl_class
@@ -74,35 +75,36 @@ with fields=(.,.) or Nfields=k")
     self.kwargs = kwargs
 
   def prepare(self):
+    if self.save_folder and not os.path.exists(self.save_folder):
+      os.makedirs(self.save_folder)
     self.camera = camera_list[self.camera_name](**self.cam_kwargs)
     self.camera.open()
     Camera_config(self.camera).main()
     t,img = self.camera.read_image()
     self.correl = Correl_class(img.shape, **self.kwargs)
     self.loops = 0
+    self.nloops = 50
 
-  def main(self):
-    nLoops = 100  # Info will be printed every nLoops (if verbose)
-    t2 = time() - 1
-    # This is the only time the original picture is set, so the residual may
-    # increase if lightning vary or large displacements are reached
+  def begin(self):
     t,img = self.camera.read_image()
     self.correl.setOrig(img.astype(np.float32))
     self.correl.prepare()
-    while True:
-      if self.verbose:
-        t1 = time()
-        print("[Correl block] processed", nLoops / (t1 - t2), "ips")
-        t2 = t1
-      for i in range(nLoops):
-        self.loops += 1
-        t,img = self.camera.read_image()
-        if self.save_folder:
-          sitk.WriteImage(sitk.getImageFromArray(img),self.save_folder
-          +"img_%.6d.png"%self.loops)
+    self.last_t = time() - 1
 
-        self.correl.setImage(img.astype(np.float32))
-        out = [t] + self.correl.getDisp().tolist()
-        if self.res:
-          out += [self.correl.getRes()]
-        self.send(out)
+  def loop(self):
+    if self.verbose and self.loops%self.nloops == 0:
+      t = time()
+      print "[Correl block] processed", self.nloops / (t-self.last_t), "ips"
+      self.last_t = t
+    self.loops += 1
+    t,img = self.camera.read_image()
+    if self.save_folder:
+      image = sitk.GetImageFromArray(img)
+      sitk.WriteImage(image,self.save_folder
+      +"img_%.6d.tiff"%self.loops)
+
+    self.correl.setImage(img.astype(np.float32))
+    out = [t] + self.correl.getDisp().tolist()
+    if self.res:
+      out += [self.correl.getRes()]
+    self.send(out)

@@ -4,12 +4,12 @@ import crappy
 
 STREAMER = True
 channels = range(1)
-chan_names = ['ai%d'%i for i in channels]
+chan_names = ['cDAQ1Mod1/ai%d'%i for i in channels]
 labels = ['t(s)']+['T%d'%i for i in channels]
 
 if __name__ == "__main__":
   
-  io = crappy.blocks.IOBlock("Nidaqmx",device="cDAQ1Mod1",
+  io = crappy.blocks.IOBlock("Nidaqmx",
       channels=[dict(name=c_name,units='C',
       type='thrmcpl',
       thermocouple_type='K') for c_name in chan_names],
