@@ -83,3 +83,7 @@ class Saver(MasterBlock):
         for j,k in enumerate(self.labels):
           f.write((", " if j else "")+str(d[k][i]))
         f.write("\n")
+
+  def finish(self):
+    if self.inputs[0].poll():
+      self.save(self.inputs[0].recv_chunk(0))
