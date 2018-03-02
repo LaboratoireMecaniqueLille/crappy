@@ -52,7 +52,7 @@ class Video_extenso(MasterBlock):
       except KeyError:
         setattr(self,arg,default)
     self.ve_kwargs = {}
-    for arg in ['white_spots','update_thresh','num_spots','safe_mode','border']:
+    for arg in ['white_spots','update_thresh','num_spots','safe_mode','border','min_area']:
       if arg in kwargs:
         self.ve_kwargs[arg] = kwargs[arg]
         del kwargs[arg]
