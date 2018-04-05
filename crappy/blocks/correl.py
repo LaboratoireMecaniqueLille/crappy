@@ -29,6 +29,7 @@ class Correl(MasterBlock):
     self.camera_name = camera
     self.Nfields = kwargs.get("Nfields")
     self.verbose = kwargs.get("verbose", 0)
+    self.config = kwargs.get("config", True)
     if self.Nfields is None:
       try:
         self.Nfields = len(kwargs.get("fields"))
@@ -77,9 +78,10 @@ with fields=(.,.) or Nfields=k"
   def prepare(self):
     if self.save_folder and not os.path.exists(self.save_folder):
       os.makedirs(self.save_folder)
-    self.camera = camera_list[self.camera_name](**self.cam_kwargs)
-    self.camera.open()
-    Camera_config(self.camera).main()
+    self.camera = camera_list[self.camera_name]()
+    self.camera.open(**self.cam_kwargs)
+    if self.config:
+      Camera_config(self.camera).main()
     t,img = self.camera.read_image()
     self.correl = Correl_class(img.shape, **self.kwargs)
     self.loops = 0
