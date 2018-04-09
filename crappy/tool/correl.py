@@ -149,7 +149,7 @@ class CorrelStage:
     self._resampleOrigKrnl.prepare("Pii", texrefs=[self.tex])
     self._resampleKrnl.prepare("Pii", texrefs=[self.tex_d])
     self._gradientKrnl.prepare("PP", texrefs=[self.tex])
-    self._makeDiff.prepare("PPPP", texrefs=[self.tex, self.tex_d, self.texMask])
+    self._makeDiff.prepare("PPPP",texrefs=[self.tex, self.tex_d, self.texMask])
     self._addKrnl.prepare("PfP")
     # Reading original image if provided #
     if kwargs.get("img") is not None:
@@ -212,7 +212,7 @@ class CorrelStage:
   def _computeGradients(self):
     """Wrapper to call the gradient kernel"""
     self._gradientKrnl.prepared_call(self.grid, self.block,
-                                     self.devGradX.gpudata, self.devGradY.gpudata)
+                                 self.devGradX.gpudata, self.devGradY.gpudata)
 
   def prepare(self):
     """
@@ -360,7 +360,8 @@ with a border of 5% the dimension")
     self._makeDiff.prepared_call(self.grid, self.block,
                                  self.devOut.gpudata,
                                  self.devX.gpudata,
-                                 self.devFieldsX.gpudata, self.devFieldsY.gpudata)
+                                 self.devFieldsX.gpudata,
+                                 self.devFieldsY.gpudata)
     diff = (self.devOut.get() + 128).astype(np.uint8)
     cv2.imwrite("/home/vic/diff/diff{}-{}.png" \
                 .format(self.num, self.loop), diff)
@@ -382,7 +383,8 @@ with a border of 5% the dimension")
     self._makeDiff.prepared_call(self.grid, self.block,
                                  self.devOut.gpudata,
                                  self.devX.gpudata,
-                                 self.devFieldsX.gpudata, self.devFieldsY.gpudata)
+                                 self.devFieldsX.gpudata,
+                                 self.devFieldsY.gpudata)
     self.res = self._leastSquare(self.devOut).get()
     self.debug(3, "res:", self.res / 1e6)
 
@@ -398,11 +400,13 @@ with a border of 5% the dimension")
         self.devVec[i] = self._mulRedKrnl(self.devG[i], self.devOut)
       # Newton method: we multiply the gradient vector by the pre-inverted
       # Hessian, devVec now contains the actual research direction.
-      self._dotKrnl(self.devHi, self.devVec, grid=(1, 1), block=(self.Nfields, 1, 1))
+      self._dotKrnl(self.devHi, self.devVec,
+                    grid=(1, 1), block=(self.Nfields, 1, 1))
       # This line simply adds k times the research direction to devX
       # with a really simple kernel (does self.devX += k*self.devVec)
       self._addKrnl.prepared_call((1, 1), (self.Nfields, 1, 1),
-                                  self.devX.gpudata, self.mul, self.devVec.gpudata)
+                                  self.devX.gpudata, self.mul,
+                                  self.devVec.gpudata)
       # Do not get rid of this condition: it will not change the output but
       # the parameters will be evaluated, this will copy data from the device
       if self.verbose >= 3:
@@ -562,7 +566,7 @@ class Correl:
       To have the stretch in % for exx and eyy, simply divide the value by HALF
         the dimension in pixel along this axis (because it goes from -1 to 1)
 
-      You can mix strings and tuples at your convenience to perform 
+      You can mix strings and tuples at your convenience to perform
         your identification.
 
       Example:
@@ -571,7 +575,7 @@ class Correl:
       where MyfieldX and MyfieldY are numpy arrays with the same shape
       as the images
 
-      Example of memory usage: On a 2048x2048 image, 
+      Example of memory usage: On a 2048x2048 image,
       count roughly 180 + 100*Nfields MB of VRAM
 
     ## Original image ##
@@ -682,8 +686,9 @@ class Correl:
                    'fields', 'mask', 'mul']:
         unknown.append(k)
     if len(unknown) != 0:
-      warnings.warn("Unrecognized parameter" + ('s: ' + str(unknown) if
-                                                len(unknown) > 1 else ': ' + unknown[0]), SyntaxWarning)
+      warnings.warn("Unrecognized parameter" + (
+        's: ' + str(unknown) if len(unknown) > 1 else ': ' + unknown[0]),
+        SyntaxWarning)
     self.verbose = kwargs.get("verbose", 0)
     self.debug(3, "You set the verbose level to the maximum.\n\
 It may help finding bugs or tracking errors but it may also \
@@ -727,9 +732,11 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     self.correl = []
     for i in range(self.levels):
       self.correl.append(CorrelStage((self.h[i], self.w[i]),
-                                     verbose=self.verbose, Nfields=self.Nfields,
+                                     verbose=self.verbose,
+                                     Nfields=self.Nfields,
                                      iterations=self.nbIter,
-                                     show_diff=(i == 0 and kwargs.get("show_diff", False)),
+                                     show_diff=(i == 0 and kwargs.get(
+                                         "show_diff", False)),
                                      mul=kwargs.get("mul", 3),
                                      kernel_file=kernelFile))
 
@@ -753,7 +760,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     """
     self.src = ""
     for i in range(self.Nfields):
-      self.src += s.format(i)  # Adding textures for the quick fields resampling
+      self.src += s.format(i) # Adding textures for the quick fields resampling
 
     self.mod = SourceModule(self.src)
 
@@ -787,7 +794,8 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     block = (int(ceil(x / grid[0])), int(ceil(y / grid[1])), 1)
     for i in range(self.Nfields):
       self.resampleF[i].prepared_call(grid, block,
-                                      outX[i, :, :].gpudata, outY[i, :, :].gpudata,
+                                      outX[i, :, :].gpudata,
+                                      outY[i, :, :].gpudata,
                                       np.int32(x), np.int32(y))
     return outX, outY
 
@@ -820,7 +828,8 @@ to allow GPU computing (got {}). Converting to float32." \
 
     self.correl[0].setOrig(img)
     for i in range(1, self.levels):
-      self.correl[i - 1].resampleOrig(self.h[i], self.w[i], self.correl[i].devOrig)
+      self.correl[i - 1].resampleOrig(self.h[i], self.w[i],
+                                      self.correl[i].devOrig)
       self.correl[i].updateOrig()
 
   def setFields(self, fields):
@@ -850,63 +859,63 @@ See docstring of Correl")
           fields[i] = (np.zeros((self.h[0], self.w[0]), dtype=np.float32),
                        np.ones((self.h[0], self.w[0]), dtype=np.float32))
         elif c in ['r', 'rz', 'rot']:  # Rotation
-          sq = .5 ** .5
-          z = np.meshgrid(np.arange(-sq, sq, 2 * sq / self.w[0], dtype=np.float32),
-                          np.arange(-sq, sq, 2 * sq / self.h[0], dtype=np.float32))
+          sh = 1/(self.w[0]*self.w[0]/self.h[0]/self.h[0]+1)**.5
+          sw = self.w[0]*sh/self.h[0]
+          z = np.meshgrid(np.arange(-sw, sw, 2*sw/self.w[0], dtype=np.float32),
+                          np.arange(-sh, sh, 2*sh/self.h[0], dtype=np.float32))
           fields[i] = (z[1].astype(np.float32), -z[0].astype(np.float32))
 
         # Uniform deformations
         elif c in ['ex', 'exx']:  # Stretch along X
-          fields[i] = (np.concatenate((
-                                        np.arange(-1, 1, 2. / self.w[0], dtype=np.float32)[np.newaxis, :],) * self.h[0],
-                                      axis=0),
+          fields[i] = (np.concatenate((np.arange(-1, 1, 2/self.w[0],
+                        dtype=np.float32)[np.newaxis, :],)*self.h[0], axis=0),
                        np.zeros((self.h[0], self.w[0]), dtype=np.float32))
         elif c in ['ey', 'eyy']:  # Stretch along Y
           fields[i] = (np.zeros((self.h[0], self.w[0]), dtype=np.float32),
-                       np.concatenate((
-                                        np.arange(-1, 1, 2. / self.h[0], dtype=np.float32)[:, np.newaxis],) * self.w[0],
-                                      axis=1))
+                       np.concatenate((np.arange(-1, 1, 2. / self.h[0],
+                         dtype=np.float32)[:, np.newaxis],)*self.w[0], axis=1))
         elif c in ['exy', 'tau', 's']:  # Shear
-          sq = .5 ** .5
-          z = np.meshgrid(np.arange(-sq, sq, 2 * sq / self.w[0], dtype=np.float32),
-                          np.arange(-sq, sq, 2 * sq / self.h[0], dtype=np.float32))
+          sh = 1/(self.w[0]*self.w[0]/self.h[0]/self.h[0]+1)**.5
+          sw = self.w[0]*sh/self.h[0]
+          z = np.meshgrid(np.arange(-sw, sw, 2*sw/self.w[0], dtype=np.float32),
+                          np.arange(-sh, sh, 2*sh/self.h[0], dtype=np.float32))
           fields[i] = (z[1].astype(np.float32), z[0].astype(np.float32))
 
         # Bonus (Is equivalent to exx+eyy, don't use them together!)
         elif c == 'z' or c in ['mz', 'tz']:  # Shrinking/Zooming
-          sq = .5 ** .5
-          z = np.meshgrid(np.arange(-sq, sq, 2 * sq / self.w[0], dtype=np.float32),
-                          np.arange(-sq, sq, 2 * sq / self.h[0], dtype=np.float32))
+          sh = 1/(self.w[0]*self.w[0]/self.h[0]/self.h[0]+1)**.5
+          sw = self.w[0]*sh/self.h[0]
+          z = np.meshgrid(np.arange(-sw, sw, 2*sw/self.w[0], dtype=np.float32),
+                          np.arange(-sh, sh, 2*sh/self.h[0], dtype=np.float32))
           fields[i] = (z[0].astype(np.float32), z[1].astype(np.float32))
 
         # Quadratic fields
         elif c == 'uxx':  # U(x,y) = x², V = 0
           fields[i] = (
-            np.concatenate(((np.arange(-1, 1, 2. / self.w[0], dtype=np.float32) ** 2)
+            np.concatenate(((np.arange(-1, 1, 2/self.w[0],dtype=np.float32)**2)
                             [np.newaxis, :],) * self.h[0], axis=0),
             np.zeros((self.h[0], self.w[0]), dtype=np.float32))
         elif c == 'uyy':  # U(x,y) = y², V = 0
           fields[i] = (
-            np.concatenate(((np.arange(-1, 1, 2. / self.h[0], dtype=np.float32) ** 2)
+            np.concatenate(((np.arange(-1, 1, 2/self.h[0],dtype=np.float32)**2)
                             [:, np.newaxis],) * self.w[0], axis=1),
             np.zeros((self.h[0], self.w[0]), dtype=np.float32))
         elif c == 'uxy':  # U(x,y) = xy, V = 0
-          fields[i] = (np.array([[k * j for j in np.arange(-1, 1, 2. / self.w[0])]
-                                 for k in np.arange(-1, 1, 2. / self.h[0])], dtype=np.float32),
+          fields[i] = (np.array([[k * j for j in np.arange(-1, 1, 2/self.w[0])]
+                       for k in np.arange(-1,1,2/self.h[0])],dtype=np.float32),
                        np.zeros((self.h[0], self.w[0]), np.float32))
         elif c == 'vxx':  # U = 0, V(x,y) = x²
           fields[i] = (np.zeros((self.h[0], self.w[0]), dtype=np.float32),
-                       np.concatenate(((np.arange(-1, 1, 2. / self.w[0], dtype=np.float32) ** 2)
-                                       [np.newaxis, :],) * self.h[0], axis=0))
+                       np.concatenate(((np.arange(-1, 1, 2/self.w[0],
+                       dtype=np.float32)**2)[np.newaxis,:],)*self.h[0],axis=0))
         elif c == 'vyy':  # U = 0, V(x,y) = y²
           fields[i] = (np.zeros((self.h[0], self.w[0]), dtype=np.float32),
-                       np.concatenate(((np.arange(-1, 1, 2. / self.h[0], dtype=np.float32) ** 2)
-                                       [:, np.newaxis],) * self.w[0], axis=1))
+                       np.concatenate(((np.arange(-1, 1, 2/self.h[0],
+                       dtype=np.float32)**2)[:,np.newaxis],)*self.w[0],axis=1))
         elif c == 'vxy':  # U = 0, V(x,y) = xy
           fields[i] = (np.zeros((self.h[0], self.w[0]), np.float32),
-                       np.array([[k * j for j in np.arange(-1, 1, 2. / self.w[0])]
-                                 for k in np.arange(-1, 1, 2. / self.h[0])], dtype=np.float32))
-
+                       np.array([[k * j for j in np.arange(-1, 1, 2/self.w[0])]
+                       for k in np.arange(-1,1,2/self.h[0])],dtype=np.float32))
         else:
           self.debug(0, "Error ! Unrecognized field parameter:", fields[i])
           raise ValueError
