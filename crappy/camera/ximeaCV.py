@@ -34,6 +34,7 @@ class XimeaCV(Camera):
     self.add_setting("data_format",self._get_data_format,
                                    self._set_data_format,xi_format_dict)
     self.add_setting("AEAG",self._get_AEAG,self._set_AEAG,True,False)
+    self.add_setting("external_trig",self._get_extt,self._set_extt,True,False)
 
   def _get_w(self):
     return int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -59,6 +60,9 @@ class XimeaCV(Camera):
   def _get_data_format(self):
     return self.cap.get(cv2.CAP_PROP_XI_DATA_FORMAT)
 
+  def _get_extt(self):
+    self.cap.set(cv2.CAP_PROP_XI_GPI_MODE,1)
+
   def _set_w(self,i):
     self.cap.set(cv2.CAP_PROP_XI_WIDTH,i)
 
@@ -82,6 +86,10 @@ class XimeaCV(Camera):
 
   def _set_data_format(self,i):
     self.cap.set(cv2.CAP_PROP_XI_DATA_FORMAT,i)
+
+  def _set_extt(self,i):
+    self.cap.set(cv2.CAP_PROP_XI_GPI_MODE,int(i))
+    self.cap.set(cv2.CAP_PROP_XI_TRG_SOURCE,int(i))
 
   def open(self,numdevice=0,**kwargs):
     """
