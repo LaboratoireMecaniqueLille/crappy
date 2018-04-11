@@ -30,10 +30,8 @@ class Multiplex(MasterBlock):
   Args:
     - key (str,default='t(s)'): The key of the sensors that holds the timestamp
     - freq (float, default=200): The frequency of the output
-    - delay (float, default=1): Delay to wait for the input in seconds. The
-    block will return the data from instant t at t+delay.
   """
-  def __init__(self,key='t(s)',freq=200,delay=1):
+  def __init__(self,key='t(s)',freq=200):
     MasterBlock.__init__(self)
     self.k = key
     self.freq = freq
@@ -45,7 +43,6 @@ class Multiplex(MasterBlock):
     self.label_list = []
     # ith element is a list containing a list of the labels to get from
     # the ith link
-    self.delay = delay
     self.t = 0
     self.dt = 1/self.freq
 
