@@ -36,7 +36,10 @@ class Saver(MasterBlock):
     d = path.dirname(self.filename)
     if d and not path.exists(d):
       # Create the folder if it does not exist
-      makedirs(d)
+      try:
+        makedirs(d)
+      except OSError:
+        assert path.exists(d),"Error creating "+d
     if path.exists(self.filename):
       # If the file already exists, append a number to the name
       print("[saver] WARNING!",self.filename,"already exists !")

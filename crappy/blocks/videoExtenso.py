@@ -60,7 +60,11 @@ class Video_extenso(MasterBlock):
 
   def prepare(self):
     if self.save_folder and not os.path.exists(self.save_folder):
-      os.makedirs(self.save_folder)
+      try:
+        os.makedirs(self.save_folder)
+      except OSError:
+        assert os.path.exists(self.save_folder),\
+            "Error creating "+self.save_folder
     self.cam = Camera.classes[self.camera]()
     self.cam.open(**self.cam_kwargs)
     self.ve = VE(**self.ve_kwargs)
