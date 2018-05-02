@@ -16,3 +16,4 @@ Examples/open_log.py
 *.swp
 doc/html/
 tests/
+.directory
