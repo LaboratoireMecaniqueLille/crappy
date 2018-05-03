@@ -1,6 +1,7 @@
 #coding: utf-8
 from __future__ import print_function
 
+from time import sleep
 from os import path,makedirs
 
 from .masterblock import MasterBlock
@@ -23,7 +24,7 @@ class Saver(MasterBlock):
     in first place. If it is a list, only these labels will be saved, in
     that order.
   """
-  def __init__(self,filename,delay=5,labels='t(s)'):
+  def __init__(self,filename,delay=2,labels='t(s)'):
     MasterBlock.__init__(self)
     self.niceness = -5
     self.delay = delay
@@ -77,8 +78,7 @@ class Saver(MasterBlock):
     self.save(r)
 
   def loop(self):
-    r = self.inputs[0].recv_delay(self.delay)
-    self.save(r)
+    self.save(self.inputs[0].recv_delay(self.delay))
 
   def save(self,d):
     with open(self.filename,'a') as f:
@@ -88,5 +88,7 @@ class Saver(MasterBlock):
         f.write("\n")
 
   def finish(self):
-    if self.inputs[0].poll():
-      self.save(self.inputs[0].recv_chunk(0))
+    sleep(.5) # Wait to finish last
+    r = self.inputs[0].recv_chunk_nostop()
+    if r:
+      self.save(r)
