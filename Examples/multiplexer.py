@@ -2,6 +2,19 @@
 
 import crappy
 
+class Delay:
+  """
+  Crappy condition to make the inputs of the multiplexer asynchronous
+  """
+  def __init__(self,n):
+    self.n = n
+    self.hist = []
+
+  def evaluate(self,data):
+    self.hist.append(data)
+    if len(self.hist) >= self.n:
+      return self.hist.pop(0)
+
 g1 = crappy.blocks.Generator([
   dict(type='sine',freq=1,amplitude=1,condition=None)
   ],freq=100,cmd_label='cmd1')
@@ -13,7 +26,8 @@ g2 = crappy.blocks.Generator([
 
 mul = crappy.blocks.Multiplex()
 
-crappy.link(g1,mul)
+#crappy.link(g1,mul)
+crappy.link(g1,mul,condition=Delay(50))
 crappy.link(g2,mul)
 
 graph = crappy.blocks.Grapher(('t(s)','cmd1'),('t(s)','cmd2'))
