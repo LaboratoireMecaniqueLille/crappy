@@ -28,6 +28,8 @@ class IOBlock(MasterBlock):
       Add another link if necessary
     - streamer (bool): If False (default), will call get_data
       else, will call get_stream
+    - exit_values (list): if not None, the outputs will be set
+      to these values when Crappy is ending (or crashing)
   """
 
   def __init__(self, name, **kwargs):
@@ -39,7 +41,8 @@ class IOBlock(MasterBlock):
                          ('cmd_labels', []),
                          ('trigger', None),
                          ('streamer', False),
-                         ('initial_cmd', 0)
+                         ('initial_cmd', 0),
+                         ('exit_values',None)
                          ]:
       setattr(self, arg, kwargs.pop(arg, default))
 
@@ -53,6 +56,9 @@ class IOBlock(MasterBlock):
     self.stream_idle = True
     if not isinstance(self.initial_cmd, list):
       self.initial_cmd = [self.initial_cmd] * len(self.cmd_labels)
+    if self.exit_values is not None:
+      assert len(self.exit_values) == len(self.cmd_labels),\
+          'Invalid number of exit values!'
 
   def prepare(self):
     self.to_get = range(len(self.inputs))
@@ -110,4 +116,6 @@ class IOBlock(MasterBlock):
   def finish(self):
     if self.streamer:
       self.device.stop_stream()
+    if self.exit_values is not None:
+      self.device.set_cmd(*self.exit_values)
     self.device.close()
