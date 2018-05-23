@@ -56,6 +56,8 @@ class IOBlock(MasterBlock):
     self.stream_idle = True
     if not isinstance(self.initial_cmd, list):
       self.initial_cmd = [self.initial_cmd] * len(self.cmd_labels)
+    if not isinstance(self.exit_values, list) and self.exit_values is not None:
+      self.exit_values = [self.exit_values] * len(self.cmd_labels)
     if self.exit_values is not None:
       assert len(self.exit_values) == len(self.cmd_labels),\
           'Invalid number of exit values!'
