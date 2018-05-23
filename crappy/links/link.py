@@ -166,11 +166,8 @@ class Link(object):
         or return None if the pipe is empty.
     """
     try:
-      if blocking:
+      if blocking or self.in_.poll():
         return self.in_.recv()
-      else:
-        if self.in_.poll():
-          return self.in_.recv()
 
     except TimeoutError as e:
       if self.action == "warn":
@@ -258,6 +255,26 @@ class Link(object):
         except KeyError:
           raise IOError(str(self)+" Got data without label "+k)
     return ret
+
+  def recv_chunk_nostop(self):
+    """
+    Experimental feature, to be used in finish methods to
+    recover the final remaining data (possibly after a stop signal)
+    """
+    l = []
+    while self.in_.poll():
+      data = self.in_.recv()
+      if isinstance(data,dict):
+        l.append(data)
+    r = {}
+    for d in l:
+      for k,v in d.items():
+        if k in r:
+          r[k].append(v)
+        else:
+          r[k] = [v]
+    return r
+
 
 def link(in_block, out_block, **kwargs):
   """

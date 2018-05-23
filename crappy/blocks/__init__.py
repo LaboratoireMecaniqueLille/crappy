@@ -8,6 +8,7 @@ from .._global import NotInstalled
 from .._global import NotInstalled,NotSupported
 from .autoDrive import AutoDrive
 from .camera import Camera
+from .client import Client
 from .dashboard import Dashboard
 from .displayer import Displayer
 from .drawing import Drawing
@@ -23,10 +24,7 @@ from .multiplex import Multiplex
 from .pid import PID
 from .reader import Reader
 from .saver import Saver
-try:
-  from .signalGenerator import SignalGenerator
-except ImportError:
-  SignalGenerator = NotInstalled("SignalGenerator")
+from .server import Server
 from .sink import Sink
 from .videoExtenso import Video_extenso
 

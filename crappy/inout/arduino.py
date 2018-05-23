@@ -35,7 +35,7 @@ class ArduinoHandler(object):
     kwargs = args[0]  # Because one cannot pass multiple kwargs when creating
     #  a process...
 
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
       setattr(self, key, value)
     self.arduino_ser = serial.Serial(port=self.port,
                                      baudrate=self.baudrate)
@@ -194,7 +194,7 @@ class Arduino(InOut):
 
     if not kwargs.pop("port", None):
       # Tries to open the 5 first ttyACM's, that should be enough.
-      for i in xrange(5):  #
+      for i in range(5):  #
         if exists('/dev/ttyACM' + str(i)):
           self.port = '/dev/ttyACM' + str(i)
           break

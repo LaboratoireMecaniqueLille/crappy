@@ -199,7 +199,7 @@ if ximeaModule in extentions:
     if platform.system() == "Windows":
         system('copy /Y build\\lib.win-amd64-3.5\\crappy\\camera\\ximeaModule.pyd crappy\\camera\\')
     if platform.system() == "Linux":
-        system('cp build/lib.linux-x86_64-3.5/crappy/camera/ximeaModule.cpython-34m.so crappy/camera/')
+        system('cp build/lib.linux-x86_64-3.5/crappy/camera/ximeaModule.cpython-35m-x86_64-linux-gnu.so crappy/camera/')
 
 if clModule in extentions:
     if platform.system() == "Windows":

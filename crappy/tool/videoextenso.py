@@ -55,9 +55,12 @@ The basic VideoExtenso class:
                         # spots when losing them.
                         # Could result in incoherent values without crash.
                         # Set it to True when security is a concern.
-                        ("border",5)]:
+                        ("border",5),
                         # The number of pixel that will be added to the limits
                         # of the boundingbox
+                        ("min_area",150)]:
+                        # Filters regions with an area smaller than this values
+                        # among the selected regions
       setattr(self,arg,kwargs.pop(arg,default))
     assert not kwargs,"Invalid kwarg in ve:"+str(kwargs)
     assert self.num_spots in ['auto',2,3,4],"Invalid number of spots!"
@@ -89,7 +92,7 @@ The basic VideoExtenso class:
     # Remove the regions that are clearly not spots
     l = [r for r in l if r.solidity > .8]
     # Remove the too small regions (150 is reeaally tiny)
-    l = [r for r in l if r.area > 150]
+    l = [r for r in l if r.area > self.min_area]
     l = sorted(l,key=lambda r:r.area,reverse=True)
     i = 0
     while i < len(l)-1:
@@ -107,7 +110,7 @@ The basic VideoExtenso class:
       i+=1
     if self.num_spots == 'auto':
       # Remove the smallest region until we have a valid number
-      # and all of them are larger than 150 pix
+      # and all of them are larger than "min_area" pix
       while len(l) not in [0,2,3,4]:
         del l[-1]
       if len(l) == 0:

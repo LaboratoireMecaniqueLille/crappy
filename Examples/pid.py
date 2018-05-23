@@ -25,7 +25,7 @@ if __name__ == "__main__":
                                'rv':.2,
                                'fv':1e-5
                                }])
-  graph_m = crappy.blocks.Grapher(('t(s)','speed'),('t(s)','cmd'))
+  graph_m = crappy.blocks.Grapher(('t(s)','speed'),('t(s)','cmd'),interp=False)
 
   crappy.link(mot,graph_m)
   crappy.link(g,graph_m)

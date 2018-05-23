@@ -49,9 +49,13 @@ class Hdf_saver(MasterBlock):
     assert self.inputs, "No input connected to the hdf_saver!"
     assert len(self.inputs) == 1,\
         "Cannot link more than one block to a hdf_saver!"
-    if not path.exists(path.dirname(self.filename)):
+    d = path.dirname(self.filename)
+    if not path.exists(d):
       # Create the folder if it does not exist
-      makedirs(path.dirname(self.filename))
+      try:
+        makedirs(d)
+      except OSError:
+        assert path.exists(d),"Error creating "+d
     if path.exists(self.filename):
       # If the file already exists, append a number to the name
       print("[hdf_saver] WARNING!",self.filename,"already exists !")
@@ -62,7 +66,7 @@ class Hdf_saver(MasterBlock):
       self.filename = name+"_%05d"%i+ext
       print("[hdf_saver] Using",self.filename,"instead!")
     self.hfile = tables.open_file(self.filename,"w")
-    for name,value in self.metadata.iteritems():
+    for name,value in self.metadata.items():
       self.hfile.create_array(self.hfile.root,name,value)
 
   def begin(self):

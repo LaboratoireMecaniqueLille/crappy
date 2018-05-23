@@ -40,9 +40,11 @@ class Interface(Frame):
     sous_fra = Frame(fra1, width=400, borderwidth=2, relief=GROOVE)
     self.portLabel = Label(sous_fra, text="Serial ser:")  # create a label
     # create a variable, it will contain ser selection
-    self.myPortCombo = Tix.StringVar()
+    #self.myPortCombo = Tix.StringVar()
+    self.myPortCombo = Tix.StringVar(sous_fra,"/dev/ttyUSB0")
 
     self.actuatorNameCombo = Tix.StringVar()
+    self.actuatorNameCombo.set("CM_drive")
     # create a combobox, it will contain names of ports
     self.actuatorCombo = Tix.ComboBox(sous_fra, editable=1, dropdown=1,
                                    variable=self.actuatorNameCombo)
@@ -55,7 +57,8 @@ class Interface(Frame):
     self.portCombo = Entry(sous_fra, textvariable=self.myPortCombo)
     self.baudrateLabel = Label(sous_fra, text="Baudrate:")  # create a label
     # create a variable, it will contain baudrate selection
-    self.baudCombo = Tix.StringVar()
+    #self.baudCombo = Tix.StringVar()
+    self.baudCombo = Tix.StringVar(sous_fra,"9600")
     self.baudrateCombo = Entry(sous_fra, textvariable=self.baudCombo)
     self.num_device = Tix.IntVar()
     # create a label

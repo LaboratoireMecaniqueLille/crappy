@@ -1,5 +1,6 @@
 #coding: utf-8
 
+from time import sleep
 from os import path,makedirs
 
 from .masterblock import MasterBlock
@@ -22,7 +23,7 @@ class Saver(MasterBlock):
     in first place. If it is a list, only these labels will be saved, in
     that order.
   """
-  def __init__(self,filename,delay=5,labels='t(s)'):
+  def __init__(self,filename,delay=2,labels='t(s)'):
     MasterBlock.__init__(self)
     self.niceness = -5
     self.delay = delay
@@ -35,7 +36,10 @@ class Saver(MasterBlock):
     d = path.dirname(self.filename)
     if d and not path.exists(d):
       # Create the folder if it does not exist
-      makedirs(d)
+      try:
+        makedirs(d)
+      except OSError:
+        assert path.exists(d),"Error creating "+d
     if path.exists(self.filename):
       # If the file already exists, append a number to the name
       print("[saver] WARNING!",self.filename,"already exists !")
@@ -73,8 +77,7 @@ class Saver(MasterBlock):
     self.save(r)
 
   def loop(self):
-    r = self.inputs[0].recv_delay(self.delay)
-    self.save(r)
+    self.save(self.inputs[0].recv_delay(self.delay))
 
   def save(self,d):
     with open(self.filename,'a') as f:
@@ -82,3 +85,9 @@ class Saver(MasterBlock):
         for j,k in enumerate(self.labels):
           f.write((", " if j else "")+str(d[k][i]))
         f.write("\n")
+
+  def finish(self):
+    sleep(.5) # Wait to finish last
+    r = self.inputs[0].recv_chunk_nostop()
+    if r:
+      self.save(r)

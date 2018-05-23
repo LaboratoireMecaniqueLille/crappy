@@ -120,6 +120,8 @@ class MasterBlock(Process):
       except:
         pass
       self.status = "error"
+      sleep(1) # To let downstream blocks process the data and avoid loss
+      self.stop_all()
       raise
     self.finish()
     self.status = "done"
@@ -203,7 +205,7 @@ class MasterBlock(Process):
     try:
       # Keep running
       l = cls.get_status()
-      while not "done" in l or "error" in l:
+      while not ("done" in l or "error" in l):
         l = cls.get_status()
         sleep(1)
     except KeyboardInterrupt:

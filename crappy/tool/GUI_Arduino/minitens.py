@@ -74,7 +74,7 @@ class MinitensPopups(FrameObjects):
     # self.menubar.add_cascade(label="Affichage",
     #                          menu=self.menu_display)
     #
-    # for key, value in self.variables.iteritems():
+    # for key, value in self.variables.items():
     #   setattr(self, value + "_on", tk.BooleanVar())
     #   getattr(self, value + "_on").set(True)
     #   self.menu_display.add_checkbutton(label=key, variable=getattr(self,
@@ -105,14 +105,14 @@ class MinitensPopups(FrameObjects):
                      name=name)
       self.limits_widgets[name].grid(row=1, column=1 + i)
 
-    for i, (variable, abrg) in enumerate(self.variables.iteritems()):
+    for i, (variable, abrg) in enumerate(self.variables.items()):
       self.add_label(widgets_dict=self.limits_widgets,
                      frame=self.frame_limits,
                      text=variable,
                      name=abrg)
       self.limits_widgets[abrg].grid(row=2 + i, column=0, sticky=tk.W)
 
-    for i, (variable, abrg) in enumerate(self.variables.iteritems()):
+    for i, (variable, abrg) in enumerate(self.variables.items()):
       self.add_entry(widgets_dict=self.limits_widgets,
                      frame=self.frame_limits,
                      name=abrg + '_haute')
@@ -425,7 +425,7 @@ class MinitensFrames(FrameObjects):
     The frame that shows values of positions and efforts. Also includes tare
     buttons for force and relative positions.
     """
-    for i, (variable, abrg) in enumerate(self.variables.iteritems()):
+    for i, (variable, abrg) in enumerate(self.variables.items()):
       self.add_label(widgets_dict=self.displayer_widgets,
                      frame=self.frame_displayer,
                      text=variable,
@@ -629,7 +629,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     """
     sens = kwargs.pop("sens")
 
-    for variable, abrg in self.variables.iteritems():
+    for variable, abrg in self.variables.items():
       try:
         if getattr(self, abrg + '_chck_var').get():
           var = kwargs.pop(abrg)
@@ -648,7 +648,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     try:
       nb_cycles = self.nombre_entry_var.get()
 
-      for i in xrange(nb_cycles):
+      for i in range(nb_cycles):
         new_cycle = [len(self.cycles) + 1,
                      self.maximum_type_var.get(),
                      self.maximum_entry_var.get(),
@@ -684,7 +684,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     sens = kwargs.pop("sens")
     var_type = self.command_type_var.get()
 
-    for name, variable in self.variables.iteritems():
+    for name, variable in self.variables.items():
       if name == var_type:
         var = kwargs.pop(variable)
 
@@ -724,7 +724,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     sens = kwargs.pop("sens")
     mode_max, maximum, mode_min, minimum = self.cycles[0][1:]
 
-    for name, variable in self.variables.iteritems():
+    for name, variable in self.variables.items():
       if name == mode_max:
         mode_max = variable
       if name == mode_min:
@@ -862,7 +862,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     self.update_widgets(to_send)
 
     if self.recording_state.get():
-      # for key, value in to_send.iteritems():
+      # for key, value in to_send.items():
       #   to_send[self.variables[key]] =
       self.crappy_queue.put(to_send)
 
@@ -890,7 +890,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     else:
       self.frame_cycles.grid_forget()
 
-      # for key, value in self.variables.iteritems():
+      # for key, value in self.variables.items():
       #   if not getattr(self, value + '_on').get():
       #     self.displayer_widgets[value + "_label"].grid_forget()
       #     self.displayer_widgets[value + "_display"].grid_forget()

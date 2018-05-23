@@ -47,7 +47,7 @@ class Mean(MasterBlock):
     if self.t-self.last_t > self.delay:
       ret = {self.tlabel:(self.t + self.last_t)/2}
       for d in self.temp:
-        for k,v in d.iteritems():
+        for k,v in d.items():
           try:
             ret[k] = np.mean(v)
           except TypeError:
