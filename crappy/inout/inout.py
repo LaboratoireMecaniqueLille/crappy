@@ -80,12 +80,14 @@ class InOut(object, metaclass = MetaIO):
   def is_output(cls):
     return hasattr(cls, 'set_cmd')
 
-  def eval_offset(self, delay=2):
-    assert self.is_input(), "eval_offset requires a get_data method!"
+  def eval_offset(self):
+    assert self.is_input(), "eval_offset only works for inputs!"
+    if not hasattr(self,'eval_offset_delay'):
+      self.eval_offset_delay = 2 # Default value
     t0 = time()
     table = []
     while True:
-      if time() > t0 + delay:
+      if time() > t0 + self.eval_offset_delay:
         break
       table.append(self.get_data()[1:])
     ret = []
