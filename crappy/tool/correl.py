@@ -431,7 +431,7 @@ with a border of 5% the dimension")
                                     self.devVec.gpudata)
         self.res = oldres
         self.debug(3, "Undone: X=", self.devX.get())
-        break;
+        break
 
       self.debug(3, "res:", self.res / 1e6)
     # self.writeDiffFile()
