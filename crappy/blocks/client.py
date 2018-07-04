@@ -3,12 +3,11 @@
 from __future__ import print_function
 
 import socket
-import pickle
 
 from .masterblock import MasterBlock
 
 class Client(MasterBlock):
-  def __init__(self,address,port=1148,header=4,bs=4096):
+  def __init__(self,address,port=1148,header=4,bs=4096,load_method='pickle'):
     """
     """
     MasterBlock.__init__(self)
@@ -17,6 +16,14 @@ class Client(MasterBlock):
     self.port = port
     self.header = header
     self.bs = bs
+    if load_method == 'pickle':
+      import pickle
+      self.load = pickle.loads
+    elif load_method == 'json':
+      import json
+      self.load = lambda s: json.loads(s.decode('ascii'))
+    else:
+      self.load = load_method
 
   def prepare(self):
     self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -25,7 +32,7 @@ class Client(MasterBlock):
   def decode_size(self,h):
     size = 0
     for i,c in enumerate(h):
-      size += 256**i*ord(c)
+      size += 256**i*c
     return size
 
   def loop(self):
@@ -35,13 +42,10 @@ class Client(MasterBlock):
     #print("Expecting",size,"bytes")
     while len(s) < size:
       s += self.socket.recv(min(self.bs,size-len(s)))
-    data = pickle.loads(s)
+    data = self.load(s)
     keys = data.keys()
-    #print("K=",keys)
-    data = [dict([(k,data[k][i]) for k in keys])
-        for i in range(len(data[keys[0]]))]
-    for d in data:
-      self.send(d)
+    for i in range(len(data[next(iter(keys))])):
+      self.send(dict([(k,data[k][i]) for k in keys]))
 
   def finish(self):
     try:

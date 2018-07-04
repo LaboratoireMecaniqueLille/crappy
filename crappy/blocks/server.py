@@ -3,12 +3,12 @@
 from __future__ import print_function
 
 import socket
-import pickle
 
 from .masterblock import MasterBlock
 
 class Server(MasterBlock):
-  def __init__(self,port=1148,nclient=1,header=4,bs=4096,delay=1):
+  def __init__(self,port=1148,nclient=1,header=4,bs=4096,delay=1,
+      dump_method='pickle'):
     """
     """
     MasterBlock.__init__(self)
@@ -19,6 +19,14 @@ class Server(MasterBlock):
     self.header = header
     self.bs = bs
     self.delay = delay
+    if dump_method == 'pickle':
+      import pickle
+      self.dump = pickle.dumps
+    elif dump_method == 'json':
+      import json
+      self.dump = lambda o: json.dumps(o).encode('ascii')
+    else:
+      self.dump = dump_method
 
   def prepare(self):
     self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -32,7 +40,7 @@ class Server(MasterBlock):
 
   def loop(self):
     data = self.inputs[0].recv_delay(self.delay)
-    s = pickle.dumps(data)
+    s = self.dump(data)
     h = []
     nbytes = len(s)
     for i in range(self.header):
@@ -40,7 +48,7 @@ class Server(MasterBlock):
       nbytes = (nbytes - h[-1])//256
     if nbytes:
       raise EOFError("header cannot encode this size "+str(nbytes))
-    s = "".join([chr(c) for c in h])+s
+    s = b"".join([bytes([c]) for c in h])+s
     for c in self.client:
       c.send(s)
 
