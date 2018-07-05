@@ -7,14 +7,16 @@ import socket
 from .masterblock import MasterBlock
 
 class Client(MasterBlock):
-  def __init__(self,address,port=1148,header=4,bs=4096,load_method='pickle'):
+  def __init__(self,address,port=1148,header=(b'\x05\x01\x02\x01',4),
+      bs=4096,load_method='pickle'):
     """
     """
     MasterBlock.__init__(self)
     self.niceness = -10
     self.address = address
     self.port = port
-    self.header = header
+    self.header,self.header_len = header
+    self.header_len += len(self.header) # Length of header+size encoding
     self.bs = bs
     if load_method == 'pickle':
       import pickle
@@ -24,6 +26,7 @@ class Client(MasterBlock):
       self.load = lambda s: json.loads(s.decode('ascii'))
     else:
       self.load = load_method
+    self.data = b''
 
   def prepare(self):
     self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -35,17 +38,52 @@ class Client(MasterBlock):
       size += 256**i*c
     return size
 
+  def begin(self):
+    #print("==BEGIN==")
+    #print("data=",self.data)
+    while not self.header in self.data:
+      #print("No header found!, getting some more")
+      self.data = self.data[-self.header_len:]
+      self.data += self.socket.recv(self.bs)
+      #print("data=",self.data)
+    self.data = self.data[self.data.find(self.header):]
+    #print("Got a header! cropping")
+    #print("data=",self.data)
+    while len(self.data) < self.header_len:
+      #print("Too short, waiting for the whole header to come")
+      self.data += self.socket.recv()
+      #print("data=",self.data)
+    #print("++END BEGIN++")
+
   def loop(self):
-    s = self.socket.recv(self.bs)
-    h,s = s[:self.header],s[self.header:]
+    #print('==LOOP==')
+    while len(self.data) < self.header_len:
+      self.data += self.socket.recv(self.bs)
+    if not self.data.startswith(self.header):
+      print("WARNING data loss in client block!")
+      self.begin()
+    h = self.data[len(self.header):self.header_len]
+    s = self.data[self.header_len:]
+    #print("data=",self.data)
+    #print("s=",s)
     size = self.decode_size(h)
     #print("Expecting",size,"bytes")
     while len(s) < size:
-      s += self.socket.recv(min(self.bs,size-len(s)))
+      #print("Still not full, waiting for more")
+      #print("S=",s)
+      s += self.socket.recv(self.bs)
+    if len(s) > size:
+      #print('Whoops, got {} when waiting for {}...'.format(len(s),size))
+      s,self.data = s[:size],s[size:]
+    else:
+      self.data = b''
+    #print("OK! let's send it")
+    #print("S=",s)
     data = self.load(s)
     keys = data.keys()
     for i in range(len(data[next(iter(keys))])):
       self.send(dict([(k,data[k][i]) for k in keys]))
+    #print('++END LOOP++')
 
   def finish(self):
     try:

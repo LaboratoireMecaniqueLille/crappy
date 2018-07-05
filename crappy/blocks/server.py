@@ -7,8 +7,8 @@ import socket
 from .masterblock import MasterBlock
 
 class Server(MasterBlock):
-  def __init__(self,port=1148,nclient=1,header=4,bs=4096,delay=1,
-      dump_method='pickle'):
+  def __init__(self,port=1148,nclient=1,header=(b'\x05\x01\x02\x01',4),
+      bs=4096,delay=1,dump_method='pickle'):
     """
     """
     MasterBlock.__init__(self)
@@ -16,7 +16,7 @@ class Server(MasterBlock):
     self.port = port
     self.nclient = nclient
     self.client = []
-    self.header = header
+    self.header,self.header_len = header
     self.bs = bs
     self.delay = delay
     if dump_method == 'pickle':
@@ -43,12 +43,12 @@ class Server(MasterBlock):
     s = self.dump(data)
     h = []
     nbytes = len(s)
-    for i in range(self.header):
+    for i in range(self.header_len):
       h.append(nbytes%256)
       nbytes = (nbytes - h[-1])//256
     if nbytes:
       raise EOFError("header cannot encode this size "+str(nbytes))
-    s = b"".join([bytes([c]) for c in h])+s
+    s = self.header+b"".join([bytes([c]) for c in h])+s
     for c in self.client:
       c.send(s)
 
