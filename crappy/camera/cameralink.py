@@ -112,8 +112,8 @@ class CLCamera(Camera):
     self.cap.set(cl.FG_EXSYNCON,1)
 
   def get_image(self):
-    t = time()
     r,f = self.cap.read()
+    t = time()
     if not r:
       raise IOError("Could not read camera")
     return t,f

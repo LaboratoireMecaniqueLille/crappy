@@ -131,11 +131,11 @@ class Ximea(Camera):
     Returns:
         frame from ximea device (ndarray height*width)
     """
-    t = time()
     ret, frame = self.ximea.read()
+    t = time()
     while 0 in frame['data'].shape or frame['data'].size >= 100000000:
-      t = time()
       ret, frame = self.ximea.read()
+      t = time()
     try:
       if ret:
         return t,frame.get('data')
