@@ -39,8 +39,8 @@ class Webcam(Camera):
     self.set_all(**kwargs)
 
   def get_image(self):
-    t = time()
     ret, frame = self.cap.read()
+    t = time()
     if not ret:
       print("Error reading the camera")
       raise IOError

@@ -123,8 +123,8 @@ class XimeaCV(Camera):
     Returns:
         frame from ximea device (ndarray height*width)
     """
-    t = time.time()
     ret, frame = self.cap.read()
+    t = time.time()
     if not ret:
       print("Error reading the camera!")
       print("Trying to reopen...")
