@@ -7,7 +7,7 @@ import socket
 from .masterblock import MasterBlock
 
 class Client(MasterBlock):
-  def __init__(self,address,port=1148,header=(b'\x05\x01\x02\x01',4),
+  def __init__(self,address,port=1148,header='crappy_h\x01\x02\x03',
       bs=4096,load_method='pickle'):
     """
     """
@@ -15,18 +15,17 @@ class Client(MasterBlock):
     self.niceness = -10
     self.address = address
     self.port = port
-    self.header,self.header_len = header
-    self.header_len += len(self.header) # Length of header+size encoding
+    self.header = header
     self.bs = bs
     if load_method == 'pickle':
       import pickle
       self.load = pickle.loads
     elif load_method == 'json':
       import json
-      self.load = lambda s: json.loads(s.decode('ascii'))
+      self.load = json.loads
     else:
       self.load = load_method
-    self.data = b''
+    self.data = ''
 
   def prepare(self):
     self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -35,7 +34,7 @@ class Client(MasterBlock):
   def decode_size(self,h):
     size = 0
     for i,c in enumerate(h):
-      size += 256**i*c
+      size += 256**i*ord(c)
     return size
 
   def begin(self):
@@ -43,27 +42,24 @@ class Client(MasterBlock):
     #print("data=",self.data)
     while not self.header in self.data:
       #print("No header found!, getting some more")
-      self.data = self.data[-self.header_len:]
+      self.data = self.data[-len(self.header)-1:]
       self.data += self.socket.recv(self.bs)
       #print("data=",self.data)
     self.data = self.data[self.data.find(self.header):]
     #print("Got a header! cropping")
     #print("data=",self.data)
-    while len(self.data) < self.header_len:
-      #print("Too short, waiting for the whole header to come")
-      self.data += self.socket.recv()
-      #print("data=",self.data)
     #print("++END BEGIN++")
 
   def loop(self):
     #print('==LOOP==')
-    while len(self.data) < self.header_len:
+    while len(self.data) < len(self.header)+1:
       self.data += self.socket.recv(self.bs)
     if not self.data.startswith(self.header):
       print("WARNING data loss in client block!")
       self.begin()
-    h = self.data[len(self.header):self.header_len]
-    s = self.data[self.header_len:]
+    h_len = ord(self.data[len(self.header)])+len(self.header)+1
+    h = self.data[len(self.header)+1:h_len]
+    s = self.data[h_len:]
     #print("data=",self.data)
     #print("s=",s)
     size = self.decode_size(h)
@@ -76,7 +72,7 @@ class Client(MasterBlock):
       #print('Whoops, got {} when waiting for {}...'.format(len(s),size))
       s,self.data = s[:size],s[size:]
     else:
-      self.data = b''
+      self.data = ''
     #print("OK! let's send it")
     #print("S=",s)
     data = self.load(s)

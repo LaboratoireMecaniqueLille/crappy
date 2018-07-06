@@ -7,16 +7,23 @@ import socket
 from .masterblock import MasterBlock
 
 class Server(MasterBlock):
-  def __init__(self,port=1148,nclient=1,header=(b'\x05\x01\x02\x01',4),
-      bs=4096,delay=1,dump_method='pickle'):
+  def __init__(self,port=1148,nclient=1,header='crappy_h\x01\x02\x03',
+      bs=4096,delay=.1,dump_method='pickle'):
     """
+      This block will only start after nclients are connecteD
+      The header is a byte sequence to identify the start of a payload.
+    One byte is appended to the header: the length of the next field,
+    that will hold n, the length of the incoming sequence
+    (usually 2 bytes is enough).
+    The length of the message is coded in the next n bytes and then the message 
+    is appended
     """
     MasterBlock.__init__(self)
     self.niceness = -10
     self.port = port
     self.nclient = nclient
     self.client = []
-    self.header,self.header_len = header
+    self.header = header
     self.bs = bs
     self.delay = delay
     if dump_method == 'pickle':
@@ -24,7 +31,7 @@ class Server(MasterBlock):
       self.dump = pickle.dumps
     elif dump_method == 'json':
       import json
-      self.dump = lambda o: json.dumps(o).encode('ascii')
+      self.dump = json.dumps
     else:
       self.dump = dump_method
 
@@ -43,12 +50,10 @@ class Server(MasterBlock):
     s = self.dump(data)
     h = []
     nbytes = len(s)
-    for i in range(self.header_len):
+    while nbytes:
       h.append(nbytes%256)
       nbytes = (nbytes - h[-1])//256
-    if nbytes:
-      raise EOFError("header cannot encode this size "+str(nbytes))
-    s = self.header+b"".join([bytes([c]) for c in h])+s
+    s = self.header+chr(len(h))+"".join([chr(c) for c in h])+s
     for c in self.client:
       c.send(s)
 
