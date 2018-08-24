@@ -103,10 +103,10 @@ class Video_extenso(MasterBlock):
     if self.show_image:
       boxes = map(lambda r: r['bbox'],self.ve.spot_list)
       for miny,minx,maxy,maxx in boxes:
-        img[miny,minx:maxx] = 255
-        img[maxy,minx:maxx] = 255
-        img[miny:maxy,minx] = 255
-        img[miny:maxy,maxx] = 255
+        img[miny:miny+1,minx:maxx] = 255
+        img[maxy:maxy+1,minx:maxx] = 255
+        img[miny:maxy,minx:minx+1] = 255
+        img[miny:maxy,maxx:maxx+1] = 255
       cv2.imshow("Videoextenso",img)
       cv2.waitKey(5)
     if self.show_fps:
