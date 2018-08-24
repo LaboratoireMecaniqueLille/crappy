@@ -30,8 +30,10 @@ class Video_extenso(MasterBlock):
       save_period images.
     - labels (list, default=['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']):
       The labels of the output
-    - show_fps (bool deafult=False): If True, the block will print the FPS
+    - show_fps (bool default=False): If True, the block will print the FPS
       in the terminal every 2 seconds
+    - stop (bool default=True): If True, the block will stop the Crappy
+      program when the spots are lost, else it will just stop sending data
 
   """
   def __init__(self,**kwargs):
@@ -43,7 +45,8 @@ class Video_extenso(MasterBlock):
                         ("save_period",1),
                         ("labels",default_labels),
                         ("show_fps",True),
-                        ("show_image",False)
+                        ("show_image",False),
+                        ("stop",True),
                         ]:
       try:
         setattr(self,arg,kwargs[arg])
@@ -88,14 +91,21 @@ class Video_extenso(MasterBlock):
     except LostSpotError:
       print("[VE block] Lost spots, terminating")
       self.ve.stop_tracking()
-      raise
+      if self.stop:
+        raise
+      else:
+        self.loop = self.lost_loop
+        return
+    #print("DEBUG",self.ve.spot_list)
+    if self.save_folder and not self.loops%self.save_period:
+      self.save_img(t,img)
     if self.show_image:
       boxes = [r['bbox'] for r in self.ve.spot_list]
       for miny,minx,maxy,maxx in boxes:
-        img[miny,minx:maxx] = 255
-        img[maxy,minx:maxx] = 255
-        img[miny:maxy,minx] = 255
-        img[miny:maxy,maxx] = 255
+        img[miny:miny+1,minx:maxx] = 255
+        img[maxy:maxy+1,minx:maxx] = 255
+        img[miny:maxy,minx:minx+1] = 255
+        img[miny:maxy,maxx:maxx+1] = 255
       cv2.imshow("Videoextenso",img)
       cv2.waitKey(5)
     if self.show_fps:
@@ -108,11 +118,21 @@ class Video_extenso(MasterBlock):
 
     centers = [(r['y'],r['x']) for r in self.ve.spot_list]
     self.send([t-self.t0,centers]+d)
+
+  def save_img(self,t,img):
+    image = sitk.GetImageFromArray(img)
+    sitk.WriteImage(image,
+             self.save_folder + "img_%.6d_%.5f.tiff" % (
+             self.loops, t-self.t0))
+
+  def lost_loop(self):
+    self.loops += 1
+    t,img = self.cam.read_image()
     if self.save_folder and not self.loops%self.save_period:
-      image = sitk.GetImageFromArray(img)
-      sitk.WriteImage(image,
-               self.save_folder + "img_%.6d_%.5f.tiff" % (
-               self.loops, t-self.t0))
+      self.save_img(t,img)
+    if self.show_image:
+      cv2.imshow("Videoextenso",img)
+      cv2.waitKey(5)
 
   def finish(self):
     self.ve.stop_tracking()

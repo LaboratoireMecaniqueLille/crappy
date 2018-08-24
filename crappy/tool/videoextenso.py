@@ -198,8 +198,10 @@ The basic VideoExtenso class:
           raise LostSpotError("[safe mode] Overlap")
         print("Overlap! Reducing spot window...")
         ol = True
-        s['bbox'] = (min(s['bbox'][0]+1,s['y']-2),min(s['bbox'][1]+1,s['x']-2),
-                     max(s['bbox'][2]-1,s['y']+2),max(s['bbox'][3]-1,s['x']+2))
+        s['bbox'] = (min(s['bbox'][0]+1,int(s['y'])-2),
+                     min(s['bbox'][1]+1,int(s['x'])-2),
+                     max(s['bbox'][2]-1,int(s['y'])+2),
+                     max(s['bbox'][3]-1,int(s['x'])+2))
         continue
       s.update(r)
       #print("DEBUG updating spot to",s)
@@ -242,11 +244,14 @@ class Tracker(Process):
       if type(img) != np.ndarray:
         break
       oy,ox = offset
-      r = self.evaluate(img)
+      try:
+        r = self.evaluate(img)
+      except:
+        raise LostSpotError
       if not isinstance(r,dict):
         r = self.fallback(img)
         if not isinstance(r,dict):
-          continue
+          raise LostSpotError
       else:
         self.fallback_mode = False
       r['y'] += oy
