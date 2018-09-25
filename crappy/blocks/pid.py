@@ -107,6 +107,8 @@ class PID(MasterBlock):
     data = self.inputs[self.feedback_link_id].recv_last(True)
     t = data[self.time_label]
     dt = t - self.last_t
+    if dt == 0:
+      dt = 1e-5
     feedback = data[self.input_label]
     if self.feedback_link_id == self.target_link_id:
       target = data[self.target_label]
