@@ -47,7 +47,10 @@ for i in range(4):
 user_input = ''
 while True:
   print("Axe and speed ?>",end="")
-  user_input = raw_input().lower()
+  try:
+    user_input = input().lower()
+  except (EOFError,KeyboardInterrupt):
+    break
   if user_input == 'q':
     break
   elif user_input in ['h','help','?']:
@@ -59,7 +62,7 @@ while True:
     continue
   try:
     axe = user_input[:1]
-    speed = int(user_input[1:].strip())
+    speed = int(user_input[1:].strip())*.07 # From % to mm/min
   except ValueError:
     print("Unknow command, stopping")
     for axe in actuator_list:
@@ -69,3 +72,7 @@ while True:
   if user_input[0] in 'xyabcd':
     for axe in actuator_dict[user_input[0]]:
       axe.set_speed(speed)
+
+for axe in actuator_list:
+  axe.set_speed(0)
+  axe.close()
