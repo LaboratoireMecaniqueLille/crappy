@@ -109,7 +109,7 @@ with fields=(.,.) or Nfields=k")
       sitk.WriteImage(image,self.save_folder
       +"img_%.6d.tiff"%self.loops)
 
-    out = [t] + self.correl.getDisp(img.astype(np.float32)).tolist()
+    out = [t-self.t0] + self.correl.getDisp(img.astype(np.float32)).tolist()
     if self.res:
       out += [self.correl.getRes()]
     self.send(out)
