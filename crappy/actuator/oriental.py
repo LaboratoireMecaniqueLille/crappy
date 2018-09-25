@@ -6,7 +6,7 @@ from queue import Queue
 from threading import Thread,Lock
 from .actuator import Actuator
 
-ACCEL = .1 # Acceleration and deceleration times
+ACCEL = b'.1' # Acceleration and deceleration times
 
 
 class Oriental(Actuator):
@@ -14,11 +14,15 @@ class Oriental(Actuator):
   To drive an axis with an oriental motor through a serial link
   """
 
-  def __init__(self, baudrate=115200, port='/dev/ttyUSB0'):
+  def __init__(self, baudrate=115200, port='/dev/ttyUSB0',gain=1/.07):
+    """
+    The current setup moves at .07mm/min with "VR 1"
+    """
     Actuator.__init__(self)
     self.baudrate = baudrate
     self.port = port
     self.speed = 0
+    self.gain = gain # unit/(mm/min)
 
   def reader(self):
     while True:
@@ -28,18 +32,18 @@ class Oriental(Actuator):
         break
       with self.lock:
         #print("[DEBUG] Writing",d)
-        self.ser.write(d+"\n")
+        self.ser.write(d+b"\n")
         a = self.ser.readlines()
-        if a:
-          print("DEBUG",a)
+        #if a:
+        #  print("DEBUG",a)
         #self.ser.readlines()
 
   def open(self):
     self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=0.1)
     for i in range(1,5):
-      self.ser.write("TALK{0}\n".format(i))
+      self.ser.write("TALK{}\n".format(i).encode('ASCII'))
       ret = self.ser.readlines()
-      if "{0}>".format(i) in ret:
+      if "{0}>".format(i).encode('ASCII') in ret:
         self.num_device = i
         motors = ['A', 'B', 'C', 'D']
         print("Motor connected to port {} is {}".format(self.port, motors[i-1]))
@@ -49,14 +53,14 @@ class Oriental(Actuator):
     self.reader_thread = Thread(target=self.reader)
     self.reader_thread.start()
     self.clear_errors()
-    self.write_cmd("TA "+str(ACCEL)) # Acceleration time
-    self.write_cmd("TD "+str(ACCEL)) # Deceleration time
+    self.write_cmd(b"TA "+ACCEL) # Acceleration time
+    self.write_cmd(b"TD "+ACCEL) # Deceleration time
 
   def write_cmd(self, cmd):
     self.q.put(cmd)
 
   def clear_errors(self):
-    self.write_cmd("ALMCLR")
+    self.write_cmd(b"ALMCLR")
 
   def close(self):
     while self.q.qsize():
@@ -67,51 +71,54 @@ class Oriental(Actuator):
     self.ser.close()
 
   def stop(self):
-    self.ser.write("SSTOP\n")
+    self.ser.write(b"SSTOP\n")
 
   def reset(self):
     self.clear_errors()
-    self.write_cmd("RESET")
-    self.write_cmd("TALK{}".format(self.num_device))
+    self.write_cmd(b"RESET")
+    self.write_cmd("TALK{}".format(self.num_device).encode('ASCII'))
     self.clear_errors()
 
-  def set_speed(self, speed):
-    speed = int(speed*10) # Conversion en mm/min VERIFIER GAIN !!
+  def set_speed(self, cmd):
+    # speed in mm/min
+    # gain can be edited by giving gain=xx to the init
+    speed = int(abs(cmd*self.gain)+.5) # Closest value
+    # These motors take ints only
     if speed == 0:
       self.speed = 0
       self.stop()
       return
     if speed == self.speed:
       return
-    sign = speed/abs(speed)
+    sign = self.gain*cmd
     dirchg = self.speed*sign < 0
     if dirchg:
       #print("DEBUGORIENTAL changing dir")
-      self.write_cmd("SSTOP")
-      sleep(ACCEL)
-    self.write_cmd("VR %d"%abs(speed))
+      self.write_cmd(b"SSTOP")
+      sleep(float(ACCEL))
+    self.write_cmd("VR {}".format(abs(speed)).encode('ASCII'))
     if sign > 0:
       #print("DEBUGORIENTAL going +")
-      self.write_cmd("MCP")
+      self.write_cmd(b"MCP")
     else:
       #print("DEBUGORIENTAL going -")
-      self.write_cmd("MCN")
+      self.write_cmd(b"MCN")
     self.speed = speed
 
   def set_home(self):
-    self.write_cmd('preset')
+    self.write_cmd(b'preset')
 
   def move_home(self):
-    self.write_cmd('EHOME')
+    self.write_cmd(b'EHOME')
 
   def set_position(self, position, speed):
-    self.write_cmd("VR {0}".format(abs(speed)))
-    self.write_cmd("MA {0}".format(position))
+    self.write_cmd("VR {0}".format(abs(speed)).encode('ASCII'))
+    self.write_cmd("MA {0}".format(position).encode('ASCII'))
 
   def get_pos(self):
     with self.lock:
       self.ser.flushInput()
-      self.ser.write('PC\n')
+      self.ser.write(b'PC\n')
       self.ser.readline()
       ActuatorPos = self.ser.readline()
     ActuatorPos = str(ActuatorPos)
