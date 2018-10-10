@@ -83,6 +83,8 @@ class Labjack_t7(InOut):
                          ('connection', 'ANY'), # Connection (USB,ETHERNET,...)
                          ('identifier', 'ANY'), # Identifier (serial n°, ip,..)
                          ('channels', [{'name':'AIN0'}]),
+                         ('write_at_open', []),
+                         ('no_led',False)
                          ]:
       if arg in kwargs:
         setattr(self, arg, kwargs[arg])
@@ -90,6 +92,8 @@ class Labjack_t7(InOut):
       else:
         setattr(self, arg, default)
     assert len(kwargs) == 0, "Labjack_T7 got unsupported arg(s)" + str(kwargs)
+    if self.no_led:
+      self.write_at_open.append(('POWER_LED',0))
     self.check_chan()
     self.handle = None
 
@@ -192,6 +196,15 @@ class Labjack_t7(InOut):
     self.handle = ljm.openS(self.device,self.connection,self.identifier)
     # ==== Writing initial config ====
     reg,types,values = [],[],[]
+    for t in self.write_at_open:
+      if len(t) == 2:
+        r,typ = ljm.nameToAddress(t[0])
+        value = t[1]
+      else:
+        r,typ,value = t
+      reg.append(r)
+      types.append(typ)
+      values.append(value)
     for c in self.in_chan_list+self.out_chan_list:
       # Turn (name,val) tuples to (addr,type,val)
       for i,t in enumerate(c.get('write_at_open',[])):
@@ -202,6 +215,7 @@ class Labjack_t7(InOut):
         reg.append(r)
         types.append(t)
         values.append(v)
+
     if reg:
       ljm.eWriteAddresses(self.handle,len(reg),reg,types,values)
     # ==== Recap of the addresses to read/write ====
