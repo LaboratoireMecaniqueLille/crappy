@@ -64,6 +64,7 @@ with fields=(.,.) or Nfields=k")
       self.labels += ("res",)
     else:
       self.res = True
+      self.labels += ("res",)
     if "cam_kwargs" in kwargs:
       self.cam_kwargs = kwargs["cam_kwargs"]
       del kwargs["cam_kwargs"]
