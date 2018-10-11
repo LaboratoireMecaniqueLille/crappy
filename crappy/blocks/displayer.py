@@ -2,6 +2,8 @@
 
 import numpy as np
 from .masterblock import MasterBlock
+import cv2
+import matplotlib.pyplot as plt
 
 
 class Displayer(MasterBlock):
@@ -20,7 +22,6 @@ class Displayer(MasterBlock):
       self.delay = 0
     else:
       self.delay = 1. / framerate  # Framerate (fps)
-    self.cv = cv
     self.title = title
     if cv:
       self.loop = self.loop_cv
@@ -32,10 +33,8 @@ class Displayer(MasterBlock):
       self.finish = self.finish_mpl
 
   def begin_mpl(self):
-    import matplotlib.pyplot as plt
-    self.plt = plt
-    self.plt.ion()
-    fig = self.plt.figure()
+    plt.ion()
+    fig = plt.figure()
     fig.add_subplot(111)
 
   def cast_8bits(self,f):
@@ -46,20 +45,18 @@ class Displayer(MasterBlock):
     return (f/(2**i)).astype(np.uint8)
 
   def loop_mpl(self):
-    frame = self.inputs[0].recv()['frame'][-1]
-    self.plt.imshow(frame, cmap='gray')
-    self.plt.pause(0.001)
-    self.plt.show()
+    data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
+    plt.imshow(data, cmap='gray')
+    plt.pause(0.001)
+    plt.show()
 
   def begin_cv(self):
-    import cv2
-    self.cv2 = cv2
     try:
-      flags = self.cv2.WINDOW_NORMAL | self.cv2.WINDOW_KEEPRATIO
+      flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
     # WINDOW_KEEPRATIO is not implemented in all opencv versions...
     except AttributeError:
-      flags = self.cv2.WINDOW_NORMAL
-    self.cv2.namedWindow(self.title, flags)
+      flags = cv2.WINDOW_NORMAL
+    cv2.namedWindow(self.title, flags)
 
   def loop_cv(self):
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
@@ -68,11 +65,11 @@ class Displayer(MasterBlock):
         data = self.cast_8bits(data)
       else:
         data = data.astype(np.uint8)
-    self.cv2.imshow(self.title,data)
-    self.cv2.waitKey(1)
+    cv2.imshow(self.title,data)
+    cv2.waitKey(1)
 
   def finish_mpl(self):
-    self.plt.close('all')
+    plt.close('all')
 
   def finish_cv(self):
-    self.cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
