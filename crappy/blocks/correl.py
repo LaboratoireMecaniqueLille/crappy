@@ -9,6 +9,7 @@ from .masterblock import MasterBlock
 from ..tool import Camera_config,Correl as Correl_class
 from ..camera import camera_list
 
+
 class Correl(MasterBlock):
   """
     This block uses the Correl class (in crappy/tool/correl.py)
@@ -62,7 +63,7 @@ with fields=(.,.) or Nfields=k")
       del kwargs["res"]
       self.labels += ("res",)
     else:
-      self.res = False
+      self.res = True
     if "cam_kwargs" in kwargs:
       self.cam_kwargs = kwargs["cam_kwargs"]
       del kwargs["cam_kwargs"]
@@ -106,8 +107,9 @@ with fields=(.,.) or Nfields=k")
     t,img = self.camera.read_image()
     if self.save_folder:
       image = sitk.GetImageFromArray(img)
-      sitk.WriteImage(image,self.save_folder
-      +"img_%.6d.tiff"%self.loops)
+      sitk.WriteImage(image,
+               self.save_folder + "img_%.6d_%.5f.tiff" % (
+               self.loops, t-self.t0))
 
     out = [t-self.t0] + self.correl.getDisp(img.astype(np.float32)).tolist()
     if self.res:

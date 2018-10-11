@@ -12,6 +12,7 @@ import cv2
 
 context = None
 
+
 def interpNearest(ary, ny, nx):
   """Used to interpolate the mask for each stage."""
   if ary.shape == (ny, nx):
@@ -339,7 +340,7 @@ with a border of 5% the dimension")
     if isinstance(mask, np.ndarray):
       self.maskArray = cuda.matrix_to_array(mask, 'C')
     elif isinstance(mask, gpuarray.GPUArray):
-      self.maskArray = gpuarray_to_array(mask, 'C')
+      self.maskArray = cuda.gpuarray_to_array(mask, 'C')
     else:
       self.debug(0, "Error! Mask data type not understood")
       raise ValueError
@@ -363,7 +364,7 @@ with a border of 5% the dimension")
                                  self.devFieldsX.gpudata,
                                  self.devFieldsY.gpudata)
     diff = (self.devOut.get() + 128).astype(np.uint8)
-    cv2.imwrite("/home/vic/diff/diff{}-{}.png" \
+    cv2.imwrite("/home/vic/diff/diff{}-{}.png"
                 .format(self.num, self.loop), diff)
 
   def getDisp(self, img_d=None):
@@ -423,7 +424,7 @@ with a border of 5% the dimension")
       self.res = self._leastSquare(self.devOut).get()
       # If we moved away, revert changes and stop iterating
       if self.res >= oldres:
-        self.debug(3, "Diverting from the solution new res={} >= {}!" \
+        self.debug(3, "Diverting from the solution new res={} >= {}!"
                    .format(self.res / 1e6, oldres / 1e6))
         self._addKrnl.prepared_call((1, 1), (self.Nfields, 1, 1),
                                     self.devX.gpudata,
@@ -822,7 +823,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     assert img.shape == (self.h[0], self.w[0]), "Wrong size!"
     if img.dtype != np.float32:
       warnings.warn("Correl() takes arrays with dtype np.float32 \
-to allow GPU computing (got {}). Converting to float32." \
+to allow GPU computing (got {}). Converting to float32."
                     .format(img.dtype), RuntimeWarning)
       img = img.astype(np.float32)
 
@@ -942,7 +943,7 @@ See docstring of Correl")
   def setImage(self, img_d):
     if img_d.dtype != np.float32:
       warnings.warn("Correl() takes arrays with dtype np.float32 \
-to allow GPU computing (got {}). Converting to float32." \
+to allow GPU computing (got {}). Converting to float32."
                     .format(img_d.dtype), RuntimeWarning)
       img_d = img_d.astype(np.float32)
     self.correl[0].setImage(img_d)
@@ -1006,4 +1007,3 @@ to allow GPU computing (got {}). Converting to float32." \
   def clean(self):
     """Needs to be called at the end, to destroy the context properly"""
     context.pop()
-
