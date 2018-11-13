@@ -7,6 +7,7 @@ import numpy as np
 
 from .masterblock import MasterBlock
 
+
 class Dashboard(MasterBlock):
   """
   The Dashboard receives data from a link, and prints it on a new poped window.

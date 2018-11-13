@@ -4,6 +4,7 @@
 from .masterblock import MasterBlock
 from ..inout import in_list
 
+
 class MeasureByStep(MasterBlock):
   """
   Streams value measured on a card through a Link object.
@@ -47,7 +48,6 @@ class MeasureByStep(MasterBlock):
       else:
         setattr(self,arg,default)
     self.sensor_kwargs = kwargs
-
 
   def prepare(self):
     """

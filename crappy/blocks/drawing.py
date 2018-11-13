@@ -11,7 +11,7 @@ from .masterblock import MasterBlock
 # ======= Visual objects =========
 # These classes represent all that can be drawn on the canvas
 # Commmon arg:
-#   drawing: The drawing itself. It is used to access its attributes when needed
+#  drawing: The drawing itself. It is used to access its attributes when needed
 # Common kwargs:
 #   coord: The coordinates of the object on the Cavas
 #
@@ -19,6 +19,7 @@ from .masterblock import MasterBlock
 # define here what it will do on each update
 # It gives the argument "data" containing all the latest data received
 # by the block
+
 
 class Text(object):
   """
@@ -36,6 +37,7 @@ class Text(object):
 
   def update(self,data):
     self.txt.set_text(self.text%data[self.label])
+
 
 class Dot_text(object):
   """
@@ -61,6 +63,7 @@ class Dot_text(object):
     self.txt.set_text(self.text%data[self.label])
     self.dot.set_color(cm.coolwarm((data[self.label]-self.low)/self.amp))
 
+
 class Time(object):
   """
   To print the time of the experiment
@@ -82,6 +85,7 @@ class Time(object):
 elements = {'text':Text,'dot_text':Dot_text,'time':Time}
 
 # ========== The block itself ==========
+
 
 class Drawing(MasterBlock):
   """

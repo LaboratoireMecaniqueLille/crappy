@@ -3,6 +3,7 @@ from __future__ import division
 
 from .masterblock import MasterBlock
 
+
 class PID(MasterBlock):
   """
   A PID corrector
@@ -74,8 +75,8 @@ class PID(MasterBlock):
         " input label {} and time label {}".format(
         self.input_label,self.time_label)
     assert set(range(len(self.inputs))) ==\
-        set((self.target_link_id,self.feedback_link_id)),"[PID] Error: useless"\
-        " link(s)! Make sure PID block does not have extra inputs"
+        set((self.target_link_id,self.feedback_link_id)),"[PID] Error: "\
+        "useless link(s)! Make sure PID block does not have extra inputs"
     self.last_target = data[self.target_link_id][self.target_label]
     self.last_t = data[self.feedback_link_id][self.time_label]
     # For the classical D approach:
@@ -83,7 +84,6 @@ class PID(MasterBlock):
     #    data[self.feedback_link_id][self.input_label]
     # When ignore setpoint mode
     self.last_val = data[self.feedback_link_id][self.input_label]
-
 
     if self.send_terms:
       self.send([self.last_t,0,0,0,0])

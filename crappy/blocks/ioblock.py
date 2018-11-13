@@ -50,7 +50,7 @@ class IOBlock(MasterBlock):
       if self.streamer:
         self.labels = ['t(s)', 'stream']
       else:
-        self.labels = ['t(s)'] + [str(c) for c in kwargs.get("channels", ['1'])]
+        self.labels = ['t(s)']+[str(c) for c in kwargs.get("channels", ['1'])]
     self.device_name = name.capitalize()
     self.device_kwargs = kwargs
     self.stream_idle = True

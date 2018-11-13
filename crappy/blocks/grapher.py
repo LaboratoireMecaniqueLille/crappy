@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import sys
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import numpy as np

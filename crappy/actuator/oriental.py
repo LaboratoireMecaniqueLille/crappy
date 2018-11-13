@@ -28,12 +28,12 @@ class Oriental(Actuator):
     while True:
       d = self.q.get()
       #print("DEBUG qsize=",self.q.qsize())
-      if d == None:
+      if d is None:
         break
       with self.lock:
         #print("[DEBUG] Writing",d)
         self.ser.write(d+b"\n")
-        a = self.ser.readlines()
+        self.ser.readlines()
         #if a:
         #  print("DEBUG",a)
         #self.ser.readlines()
@@ -46,7 +46,7 @@ class Oriental(Actuator):
       if "{0}>".format(i).encode('ASCII') in ret:
         self.num_device = i
         motors = ['A', 'B', 'C', 'D']
-        print("Motor connected to port {} is {}".format(self.port, motors[i-1]))
+        print("Motor connected to port {} is {}".format(self.port,motors[i-1]))
         break
     self.q = Queue()
     self.lock = Lock()

@@ -5,6 +5,7 @@ import numpy as np
 
 from .masterblock import MasterBlock
 
+
 class Mean(MasterBlock):
   """
   Can take multiple inputs, makes an average and send the result every delay s

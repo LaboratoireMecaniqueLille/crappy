@@ -3,6 +3,7 @@
 
 from .masterblock import MasterBlock
 
+
 class Reader(MasterBlock):
   """
   Read and print the input Link.

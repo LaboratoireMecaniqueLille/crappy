@@ -2,6 +2,7 @@
 
 from .masterblock import MasterBlock
 
+
 class Sink(MasterBlock):
   """
   Test block used to get data and do nothing

@@ -6,6 +6,7 @@ import socket
 
 from .masterblock import MasterBlock
 
+
 class Client(MasterBlock):
   def __init__(self,address,port=1148,header=b'crappy_h\x01\x02\x03',
       bs=4096,load_method='pickle'):
@@ -40,7 +41,7 @@ class Client(MasterBlock):
   def begin(self):
     #print("==BEGIN==")
     #print("data=",self.data)
-    while not self.header in self.data:
+    while self.header not in self.data:
       #print("No header found!, getting some more")
       self.data = self.data[-len(self.header)-1:]
       self.data += self.socket.recv(self.bs)
@@ -84,5 +85,5 @@ class Client(MasterBlock):
   def finish(self):
     try:
       self.socket.close()
-    except:
+    except Exception:
       pass

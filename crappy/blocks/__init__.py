@@ -3,8 +3,6 @@
 # Some of them are already implemented (see the reference manual),
 # but you can also implement your own.
 
-from .._global import NotInstalled
-
 from .._global import NotInstalled,NotSupported
 from .autoDrive import AutoDrive
 from .camera import Camera

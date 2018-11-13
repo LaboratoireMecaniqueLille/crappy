@@ -1,7 +1,5 @@
 # coding: utf-8
 
-
-
 import os
 import time
 try:
@@ -46,14 +44,15 @@ class Camera(MasterBlock):
                         ("config",True)]:
       setattr(self,arg,kwargs.get(arg,default)) # Assign these attributes
       try:
-        del kwargs[arg] # And remove them (if any) to
-                        # keep the parameters for the camera
+        del kwargs[arg]
+        # And remove them (if any) to
+        # keep the parameters for the camera
       except KeyError:
         pass
     self.camera_name = camera
     self.cam_kw = kwargs
     assert self.camera_name in camera_list,"{} camera does not exist!".format(
-                                        self.camera_name)
+        self.camera_name)
 
   def prepare(self):
     if self.save_folder and not os.path.exists(self.save_folder):

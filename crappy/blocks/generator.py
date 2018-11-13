@@ -34,7 +34,7 @@ class Generator(MasterBlock):
     cmd_label: (default='cmd') The label of the command to send in the links.
 
     cmd: (default=0) The first value of the command.
-      Some paths may rely on the previous value to guarantee a continuous signal
+      Some paths may rely on the previous value to guarantee signal continuity
       This argument sets the initial value for the first signal
 
     repeat: (default=False) Loop over the paths or stop when done ?
@@ -70,7 +70,7 @@ class Generator(MasterBlock):
     self.path = path
     assert all([hasattr(generator_path, d['type']) for d in self.path]), \
       "Invalid path in signal generator:" \
-      + str(filter(lambda s: not hasattr(generator_path, s['type']), self.path))
+      +str(filter(lambda s: not hasattr(generator_path, s['type']), self.path))
     self.labels = ['t(s)', self.cmd_label, self.cycle_label]
 
   def prepare(self):
@@ -121,7 +121,7 @@ class Generator(MasterBlock):
       self.next_path()
       return
     # If next_path returns None, do not update cmd
-    if cmd is not None and not cmd is self.cmd:
+    if cmd is not None and cmd is not self.cmd:
       self.cmd = cmd
       self.send([self.last_t - self.t0, self.cmd, self.path_id])
       self.last_path = self.path_id

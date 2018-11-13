@@ -5,6 +5,7 @@ from time import time
 from .masterblock import MasterBlock
 from ..actuator import actuator_list
 
+
 class AutoDrive(MasterBlock):
   """
   To follow the spots with videoextenso
@@ -26,12 +27,12 @@ class AutoDrive(MasterBlock):
   def __init__(self, **kwargs):
     MasterBlock.__init__(self)
     for arg,default in [('actuator',{'name':'CM_drive'}),
-			('P', 2000), # The gain for commanding the technical/actuator
+      ('P', 2000), # The gain for commanding the technical/actuator
       # The direction to follow (X/Y +/-), depending on camera orientation
-			('direction', 'Y-'),
-			('range',2048), # The number of pixels in this direction
+      ('direction', 'Y-'),
+      ('range',2048), # The number of pixels in this direction
       ('max_speed',200000) # To avoid loosing spots swhen going to fast
-			]:
+        ]:
       setattr(self,arg,kwargs.get(arg,default))
       try:
         del kwargs[arg]

@@ -5,6 +5,7 @@ from time import time
 from .masterblock import MasterBlock
 from .._global import CrappyStop
 
+
 class GUI(MasterBlock):
   """
   Block to send a signal based on a user input

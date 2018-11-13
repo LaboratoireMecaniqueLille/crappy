@@ -5,6 +5,7 @@ from os import path,makedirs
 
 from .masterblock import MasterBlock
 
+
 class Saver(MasterBlock):
   """
   Will save the incomming data to a file (default csv)
@@ -63,7 +64,7 @@ class Saver(MasterBlock):
           # add the others alphabetically
           self.labels = [self.labels]
           for k in sorted(r.keys()):
-            if not k in self.labels:
+            if k not in self.labels:
               self.labels.append(k)
         else:
           # If not a list but not in labels, forget it and take all the labels

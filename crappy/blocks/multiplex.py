@@ -6,6 +6,7 @@ from itertools import chain
 
 from .masterblock import MasterBlock
 
+
 def interp(xp,yp,x):
   try:
     return np.interp(x,xp,yp)
@@ -13,6 +14,7 @@ def interp(xp,yp,x):
     # Make a nearest interpolation for non numerical values
     a = range(len(yp))
     return yp[int(np.interp(x,xp,a)+.5)]
+
 
 class Multiplex(MasterBlock):
   """
@@ -51,7 +53,7 @@ class Multiplex(MasterBlock):
     """
     for i,link in enumerate(self.inputs):
       r = link.recv_chunk()
-      if not self.k in r: # This input don't have the timebase label!
+      if self.k not in r: # This input don't have the timebase label!
         self.t_hist.append([])
         self.label_list.append([])
         continue

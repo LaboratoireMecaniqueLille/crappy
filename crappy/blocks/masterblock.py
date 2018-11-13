@@ -97,7 +97,7 @@ class MasterBlock(Process):
       if self.t0 < 0:
         try:
           self.finish()
-        except:
+        except Exception:
           pass
         return
       self.status = "running"
@@ -117,7 +117,7 @@ class MasterBlock(Process):
       print("[%r] Exception caught:" % self, e)
       try:
         self.finish()
-      except:
+      except Exception:
         pass
       self.status = "error"
       sleep(1) # To let downstream blocks process the data and avoid loss
@@ -183,7 +183,7 @@ class MasterBlock(Process):
       vprint("Waiting for all blocks to be ready...")
     while not cls.all_are('ready'):
       sleep(.1)
-      if not all([i in ['ready','initializing','idle']\
+      if not all([i in ['ready','initializing','idle']
             for i in cls.get_status()]):
           print("Crappy failed to start!")
           for i in cls.instances:
@@ -446,7 +446,7 @@ class MasterBlock(Process):
       print('[%r] Could not stop properly, terminating' % self)
       try:
         self.terminate()
-      except:
+      except Exception:
         pass
     else:
       print("[%r] Stopped correctly" % self)

@@ -6,6 +6,7 @@ import socket
 
 from .masterblock import MasterBlock
 
+
 class Server(MasterBlock):
   def __init__(self,port=1148,nclient=1,header=b'crappy_h\x01\x02\x03',
       bs=4096,delay=.1,dump_method='pickle'):
@@ -15,7 +16,7 @@ class Server(MasterBlock):
     One byte is appended to the header: the length of the next field,
     that will hold n, the length of the incoming sequence
     (usually 2 bytes is enough).
-    The length of the message is coded in the next n bytes and then the message 
+    The length of the message is coded in the next n bytes and then the message
     is appended
     """
     MasterBlock.__init__(self)
@@ -61,9 +62,9 @@ class Server(MasterBlock):
     for c in self.client:
       try:
         c.close()
-      except:
+      except Exception:
         pass
     try:
       self.socket.close()
-    except:
+    except Exception:
       pass
