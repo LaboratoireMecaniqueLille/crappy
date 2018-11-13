@@ -8,8 +8,10 @@ from skimage.filters import threshold_otsu
 from skimage.morphology import label
 from skimage.measure import regionprops
 
+
 class LostSpotError(Exception):
   pass
+
 
 def overlapping(box1,box2):
   """Returns True if box1 and box2 are overlapping or included in each other"""
@@ -23,9 +25,11 @@ def overlapping(box1,box2):
         return True
   #Inclusion
   for b1,b2 in ((box1,box2),(box2,box1)):
-    if (b1[0] <= b2[0] <= b2[2] <= b1[2]) and (b1[1] <= b2[1] <= b2[3] <= b1[3]):
+    if (b1[0] <= b2[0] <= b2[2] <= b1[2]) and\
+        (b1[1] <= b2[1] <= b2[3] <= b1[3]):
       return True
   return False
+
 
 class Video_extenso(object):
   """
@@ -154,8 +158,10 @@ The basic VideoExtenso class:
 
   def enlarged_window(self,window,shape):
     """Returns the slices to get the window around the spot"""
-    s1 = slice(max(0,window[0]-self.border),min(shape[0],window[2]+self.border))
-    s2 = slice(max(0,window[1]-self.border),min(shape[1],window[3]+self.border))
+    s1 = slice(max(0,window[0]-self.border),
+        min(shape[0],window[2]+self.border))
+    s2 = slice(max(0,window[1]-self.border),
+        min(shape[1],window[3]+self.border))
     return s1,s2
 
   def start_tracking(self):
@@ -191,7 +197,8 @@ The basic VideoExtenso class:
       l.remove(s)
       # Please excuse me for the following line,
       # understand: "if this box overlaps any existing box"
-      if any([overlapping(a_b[0],a_b[1]['bbox']) for a_b in zip([r['bbox']]*len(l),l)]):
+      if any([overlapping(a_b[0],a_b[1]['bbox'])
+        for a_b in zip([r['bbox']]*len(l),l)]):
         if self.safe_mode:
           print("Overlapping!")
           self.stop_tracking()
