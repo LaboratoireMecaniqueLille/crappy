@@ -253,7 +253,7 @@ class Tracker(Process):
       oy,ox = offset
       try:
         r = self.evaluate(img)
-      except:
+      except Exception:
         raise LostSpotError
       if not isinstance(r,dict):
         r = self.fallback(img)

@@ -4,13 +4,14 @@
 from ._clSensor import CLCamera
 from . import clModule as cl
 
+
 class Jai8(CLCamera):
   """This class supports Jai GO-5000-PMCL gray cameras
   This one uses FullAreaGray8 module for maximum framerate"""
   def __init__(self, **kwargs):
-    if not 'camera_type' in kwargs:
+    if 'camera_type' not in kwargs:
       kwargs['camera_type'] = "FullAreaGray8"
-    if not 'config_file' in kwargs:
+    if 'config_file' not in kwargs:
       kwargs['config_file'] = False
     CLCamera.__init__(self,**kwargs)
     self.settings['width'].limits = (1,2560)
@@ -18,7 +19,7 @@ class Jai8(CLCamera):
     self.settings['height'].limits = (1,2048)
     self.settings['height'].default = 2048
     self.add_setting('exposure',setter=self._set_exp,getter=self._get_exp,
-                               limits = (10,800000))
+                               limits=(10,800000))
 
   def _set_w(self,val):
     self.stopAcq()
@@ -70,11 +71,12 @@ class Jai(Jai8):
 
   def get_image(self):
     t,f = CLCamera.get_image(self)
-    return t,f>>4
+    return t,f >> 4
 
   def open(self):
     CLCamera.open(self)
-    self.cap.serialWrite('TAGM=1\r\n') # dual tap (default does not allow 12 bits)
+    # dual tap (default does not allow 12 bits)
+    self.cap.serialWrite('TAGM=1\r\n')
     self._set_format(2) # 12 bits
     self.cap.set(cl.FG_CAMERA_LINK_CAMTYP,212) # Set the input to 12 bits
     self.cap.set(cl.FG_SENSORREADOUT,7) # To set the correct framegrabber mode

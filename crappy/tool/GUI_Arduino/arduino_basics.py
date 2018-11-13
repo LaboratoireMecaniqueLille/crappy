@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import font as tkFont
 from queue import Empty
 
+
 class MonitorFrame(tk.Frame):
   """
   A frame that displays everything entering the serial port.
@@ -41,7 +42,8 @@ class MonitorFrame(tk.Frame):
 
     """
     self.top_frame = tk.Frame(self)
-    tk.Label(self.top_frame, text=kwargs.get('title', '')).grid(row=0, column=0)
+    tk.Label(self.top_frame,
+        text=kwargs.get('title', '')).grid(row=0, column=0)
 
     tk.Checkbutton(self.top_frame,
                    variable=self.enabled_checkbox,
@@ -89,7 +91,8 @@ class SubmitSerialFrame(tk.Frame):
 
     self.input_txt = tk.Entry(self,
                               width=self.total_width * 5 / 10,
-                              font=tkFont.Font(size=kwargs.get("fontsize", 13)))
+                              font=tkFont.Font(
+                                size=kwargs.get("fontsize", 13)))
     self.submit_label = tk.Label(self, text='',
                                  width=1,
                                  font=tkFont.Font(

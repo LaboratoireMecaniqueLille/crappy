@@ -5,8 +5,10 @@ from time import time
 
 from .inout import InOut
 
+
 def clamp(val,mini,maxi):
   return max(min(val,maxi),mini)
+
 
 class Labjack_t7(InOut):
   """
@@ -79,13 +81,13 @@ class Labjack_t7(InOut):
   def __init__(self, **kwargs):
     InOut.__init__(self)
     for arg, default in [
-                         ('device', 'ANY'), # Model (T7, DIGIT,...)
-                         ('connection', 'ANY'), # Connection (USB,ETHERNET,...)
-                         ('identifier', 'ANY'), # Identifier (serial n°, ip,..)
-                         ('channels', [{'name':'AIN0'}]),
-                         ('write_at_open', []),
-                         ('no_led',False)
-                         ]:
+       ('device', 'ANY'), # Model (T7, DIGIT,...)
+       ('connection', 'ANY'), # Connection (USB,ETHERNET,...)
+       ('identifier', 'ANY'), # Identifier (serial n°, ip,..)
+       ('channels', [{'name':'AIN0'}]),
+       ('write_at_open', []),
+       ('no_led',False)
+        ]:
       if arg in kwargs:
         setattr(self, arg, kwargs[arg])
         del kwargs[arg]
@@ -112,7 +114,7 @@ class Labjack_t7(InOut):
       # === Modbus registers ===
       if isinstance(d['name'],int):
         for k in ['direction','dtype','limits']:
-          if not k in d:
+          if k not in d:
             d[k] = default[k]
         if d['direction']:
           d['to_write'] = d['name']
@@ -126,21 +128,21 @@ class Labjack_t7(InOut):
       # === AIN channels ===
       elif d['name'].startswith("AIN"):
         for k in ['gain','offset','make_zero','resolution','range']:
-          if not k in d:
+          if k not in d:
             d[k] = default[k]
-        if not 'write_at_open' in d:
+        if 'write_at_open' not in d:
           d['write_at_open'] = []
-        d['write_at_open'].extend([ # What will be written when opening the chan
+        d['write_at_open'].extend([# What will be written when opening the chan
             ljm.nameToAddress(d['name']+"_RANGE")+(d['range'],),
             ljm.nameToAddress(d['name']+"_RESOLUTION_INDEX")+(d['resolution'],)
-            ])
+          ])
         if 'thermocouple' in d:
           therm = {'E':20,'J':21,'K':22,'R':23,'T':24,'S':25,'C':30}
           d['write_at_open'].extend([
-              ljm.nameToAddress(d['name']+"_EF_INDEX")\
-                +(therm[d['thermocouple']],),
+              ljm.nameToAddress(d['name']+"_EF_INDEX")+
+              (therm[d['thermocouple']],),
               ljm.nameToAddress(d['name']+"_EF_CONFIG_A")+(1,), # for degrees C
-              ljm.nameToAddress(d['name']+"_EF_CONFIG_B")+(60052,), # CJC config
+              ljm.nameToAddress(d['name']+"_EF_CONFIG_B")+(60052,),# CJC config
               ljm.nameToAddress(d['name']+"_EF_CONFIG_D")+(1,), # CJC config
               ljm.nameToAddress(d['name']+"_EF_CONFIG_E")+(0,) # CJC config
             ])
@@ -154,8 +156,8 @@ class Labjack_t7(InOut):
               ljm.nameToAddress(d['name']+"_EF_INDEX")+(1,), # for slope
               ljm.nameToAddress(d['name']+"_EF_CONFIG_D")+(d['gain'],),
               ljm.nameToAddress(d['name']+"_EF_CONFIG_E")\
-                  +(d['offset'] if not d['make_zero'] else 0,),
-              ]) # To configure slope in the device
+              +(d['offset'] if not d['make_zero'] else 0,),
+          ]) # To configure slope in the device
           d['to_read'],d['dtype'] = ljm.nameToAddress(d['name']+"_EF_READ_A")
 
         self.in_chan_list.append(d)
@@ -163,14 +165,14 @@ class Labjack_t7(InOut):
       # === DAC/TDAC channels ===
       elif "DAC" in d['name']:
         for k in ['gain','offset','limits']:
-          if not k in d:
+          if k not in d:
             d[k] = default[k]
         d['to_write'],d['dtype'] = ljm.nameToAddress(d['name'])
         self.out_chan_list.append(d)
 
       # === FIO/EIO/CIO/MIO channels ===
       elif "IO" in d['name']:
-        if not "direction" in d:
+        if "direction" not in d:
           d["direction"] = default["direction"]
         if d["direction"]: # 1/True => output, 0/False => input
           d['gain'] = 1
@@ -235,7 +237,6 @@ class Labjack_t7(InOut):
           values.append(c['offset']+off[i])
       ljm.eWriteNames(self.handle,len(names),names,values)
 
-
   def get_data(self):
     """
     Read the signal on all pre-defined input channels.
@@ -296,7 +297,7 @@ class Labjack_t7(InOut):
     """
     try:
       ljm.eWriteName(self.handle,chan,
-        self.out_chan_dict[chan]['gain']*val+self.out_chan_dict[chan]['offset'])
+       self.out_chan_dict[chan]['gain']*val+self.out_chan_dict[chan]['offset'])
     except KeyError:
       ljm.eWriteName(self.handle,chan,val)
 

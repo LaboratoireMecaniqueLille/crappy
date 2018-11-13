@@ -4,6 +4,7 @@ import serial
 
 from .actuator import Actuator
 
+
 class CM_drive(Actuator):
   """
   Open a new default serial port for communication with a CMdrive actuator
@@ -103,9 +104,11 @@ class CM_drive(Actuator):
         physical position of the motor
     """
     self.ser.close()
-    # ser=self.setConnection(self.myPort, self.baudrate) # initialise serial port
+    # ser=self.setConnection(self.myPort, self.baudrate)
+    # initialise serial port
     self.ser.open()
-    self.ser.write('PR P \r')  # send 'PFB' ASCII characters to request the location of the motor
+    # send 'PFB' ASCII characters to request the location of the motor
+    self.ser.write('PR P \r')
     pfb = self.ser.readline()  # read serial data from the buffer
     pfb1 = self.ser.readline()  # read serial data from the buffer
     print('%s %i' % (pfb, (int(pfb1))))  # print location

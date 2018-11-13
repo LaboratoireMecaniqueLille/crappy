@@ -47,7 +47,7 @@ class PID(MasterBlock):
                     ('reverse',False),
                     ('i_limit',1),
                     ('send_terms',False) # For debug, mostly
-                    ]:
+    ]:
       setattr(self,arg,kwargs.pop(arg,default))
     assert not kwargs,"PID got incorrect kwarg(s): "+str(kwargs)
     self.set_k(kp,ki,kd)

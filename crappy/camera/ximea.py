@@ -8,6 +8,7 @@ from . import ximeaModule as xi
 
 xi_format_dict = {'8 bits': 0, '10 bits': 1, '8 bits RAW': 5, '10 bits RAW': 6}
 
+
 class Ximea(Camera):
   """
   Camera class for ximea devices, this class should inherit from Camera
@@ -41,10 +42,11 @@ class Ximea(Camera):
     specified otherwise in kwargs
     """
     self.numdevice = numdevice
-    self.close() #If it was already open (won't do anything if cam is not open)
+    self.close()# If it was already open (won't do anything if cam is not open)
 
     if type(self.numdevice) == str:
-      # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
+      # open the ximea device Ximea devices start at 1100. 1100
+      # => device 0, 1101 => device 1
       self.ximea = xi.VideoCapture(device_path=self.numdevice)
     else:
       self.ximea = xi.VideoCapture(self.numdevice)
@@ -56,10 +58,11 @@ class Ximea(Camera):
     """
     Will reopen the camera
     """
-    self.close() #If it was already open (won't do anything if cam is not open)
+    self.close()# If it was already open (won't do anything if cam is not open)
 
     if type(self.numdevice) == str:
-      # open the ximea device Ximea devices start at 1100. 1100 => device 0, 1101 => device 1
+      # open the ximea device Ximea devices start at 1100. 1100
+      # => device 0, 1101 => device 1
       self.ximea = xi.VideoCapture(device_path=self.numdevice)
     else:
       self.ximea = xi.VideoCapture(self.numdevice)
@@ -114,7 +117,7 @@ class Ximea(Camera):
   def _set_data_format(self,i):
     # 0=8 bits, 1=16(10)bits, 5=8bits RAW, 6=16(10)bits RAW
     if i == 1 or i == 6:
-    # increase the FPS in 10 bits
+      # increase the FPS in 10 bits
       self.ximea.set(xi.CAP_PROP_XI_OUTPUT_DATA_BIT_DEPTH, 10)
       self.ximea.set(xi.CAP_PROP_XI_DATA_PACKING, 1)
     self.ximea.set(xi.CAP_PROP_XI_DATA_FORMAT, i)

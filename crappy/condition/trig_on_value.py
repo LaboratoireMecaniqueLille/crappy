@@ -2,6 +2,7 @@
 
 from .condition import Condition
 
+
 class Trig_on_value(Condition):
   """
   Can be used to send data (an empty dict) when the input reached a given value

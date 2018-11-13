@@ -161,4 +161,5 @@ class Comedi(InOut):
 
   def close(self):
     ret = c.comedi_close(self.device)
-    if ret != 0: print('Comedi.close failed')
+    if ret != 0:
+      print('Comedi.close failed')

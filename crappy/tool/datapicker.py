@@ -1,9 +1,11 @@
 # coding: utf-8
 from multiprocessing import Pipe, Process
 
+
 class DataPicker:
   """
-  Class to flush data on a link, it continuously read the data received on a link,
+  Class to flush data on a link, it continuously read
+  the data received on a link
   and return the last on get_data call.
   """
 

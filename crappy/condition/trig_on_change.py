@@ -2,6 +2,7 @@
 
 from .condition import Condition
 
+
 class Trig_on_change(Condition):
   """
   Can be used to trig an evant when the value of a given label changes

@@ -1,7 +1,7 @@
 # coding: utf-8
 
-
 from .._global import DefinitionError
+
 
 class MetaActuator(type):
   """
@@ -12,6 +12,7 @@ class MetaActuator(type):
   """
   classes = {}
   needed_methods = ["open","stop",('set_speed','set_position')]
+
   def __new__(metacls,name,bases,dict):
     return type.__new__(metacls, name, bases, dict)
 
@@ -33,12 +34,12 @@ class MetaActuator(type):
           raise DefinitionError(
               name+" class needs at least one of these methods: "+str(m))
       else:
-        if not m in dict:
+        if m not in dict:
           raise DefinitionError(name+" class needs the method "+str(m))
 
     MetaActuator.classes[name] = cls
 
+
 class Actuator(object, metaclass=MetaActuator):
   def __init__(self):
     pass
-

@@ -109,8 +109,9 @@ class Daqmx(InOut):
     self.range = listify(self.range, nin)
     self.make_zero = listify(self.make_zero, nin)
     # OUT channels
-    self.out_channels = self.out_channels if isinstance(self.out_channels, list) \
-      else [self.out_channels]
+    self.out_channels = self.out_channels if \
+        isinstance(self.out_channels, list) else\
+        [self.out_channels]
     nout = len(self.out_channels)
     for i in range(nout):
       if isinstance(self.out_channels[i], int):
@@ -185,8 +186,9 @@ class Daqmx(InOut):
     t = time.time()
     # DAQmx Stop Code
     DAQmxStopTask(self.handle)
+    # Estimated starting of the acq
     t1 = ((
-          t + t0) - npoints / self.sample_rate) / 2  # Estimated starting of the acq
+          t + t0) - npoints / self.sample_rate) / 2
     return [[t1 + i / self.sample_rate for i in range(npoints)]] \
            + [data[i, :] * self.gain[i] + self.offset[i] for i in
               range(len(self.channels))]

@@ -6,6 +6,7 @@ import numpy as np
 
 from .path import Path
 
+
 class Sine(Path):
   """
   To generate a sine wave.

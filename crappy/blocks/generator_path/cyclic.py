@@ -5,6 +5,7 @@ from time import time
 
 from .path import Path
 
+
 class Cyclic(Path):
   """
   A "boosted" constant path: will take TWO values and condtions.

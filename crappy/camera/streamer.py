@@ -8,6 +8,7 @@ import SimpleITK as sitk
 from .camera import Camera
 from .._global import CrappyStop
 
+
 class Streamer(Camera):
   """
   This is a fake sensor meant to stream images that were already saved.

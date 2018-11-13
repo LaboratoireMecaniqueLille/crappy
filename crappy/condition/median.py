@@ -4,6 +4,7 @@ import numpy as np
 
 from .condition import Condition
 
+
 class Median(Condition):
   """
   Median filter:
@@ -33,4 +34,3 @@ class Median(Condition):
         self.last[k] = []
     if r:
       return r
-

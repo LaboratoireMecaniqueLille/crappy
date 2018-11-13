@@ -6,6 +6,7 @@ import numpy as np
 
 from .path import Path
 
+
 class Custom(Path):
   """To generate a custom path from a file.
 

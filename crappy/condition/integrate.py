@@ -2,6 +2,7 @@
 
 from .condition import Condition
 
+
 class Integrate(Condition):
   """
   Intgration filter

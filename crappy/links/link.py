@@ -8,6 +8,7 @@ from copy import copy
 
 from .._global import CrappyStop
 
+
 def error_if_stop(recv):
   "Decorator to raise an error if the function returns a string"
   def wrapper(*args,**kwargs):
@@ -16,6 +17,7 @@ def error_if_stop(recv):
       raise CrappyStop
     return ret
   return wrapper
+
 
 class TimeoutError(Exception):
   """Custom error to raise in case of timeout."""
@@ -39,8 +41,6 @@ class MethodThread(Thread):
       self.result = self.target(*self.args, **self.kwargs)
     except Exception as e:
       self.exception = e
-    except:
-      self.exception = Exception()
     else:
       self.exception = None
 
@@ -100,7 +100,7 @@ class Link(object):
     self.condition = condition if isinstance(condition,list) else [condition]
     self.timeout = timeout
     self.action = action
-    if not None in [input_block, output_block]:
+    if None not in [input_block, output_block]:
       input_block.add_output(self)
       output_block.add_input(self)
 
@@ -117,7 +117,8 @@ class Link(object):
       self.send_timeout(value)
     except TimeoutError as e:
       if self.action == "warn":
-        print("WARNING : Timeout error in pipe send! Link name: %s" % self.name)
+        print(
+            "WARNING : Timeout error in pipe send! Link name: %s" % self.name)
       elif self.action == "kill":
         print("Killing Link : ", e)
         raise
@@ -171,7 +172,8 @@ class Link(object):
 
     except TimeoutError as e:
       if self.action == "warn":
-        print("WARNING : Timeout error in pipe send! Link name: %s" % self.name)
+        print(
+            "WARNING : Timeout error in pipe send! Link name: %s" % self.name)
       elif self.action == "kill":
         print("Killing Link %s : %s" % (self.name, e.message))
         raise

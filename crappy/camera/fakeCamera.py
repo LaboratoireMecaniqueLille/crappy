@@ -5,6 +5,7 @@ from .camera import Camera
 from time import time,sleep
 import numpy as np
 
+
 class Fake_camera(Camera):
   """Fake camera sensor object"""
 
@@ -32,7 +33,7 @@ class Fake_camera(Camera):
     Opens the fake camera
     """
     for k in kwargs:
-      if not k in self.settings:
+      if k not in self.settings:
         print("Unexpected keyword:",k)
         continue
       print("Setting",k,"to",kwargs[k])

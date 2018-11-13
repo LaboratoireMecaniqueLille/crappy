@@ -86,7 +86,7 @@ class KollMorgenVariator(object):
     address_hld = int(str(motor) + str(self.hldreg_addresses["velocity"]))
     self.variator.write_register(address_hld, abs(speed))
     address_hld_direction = int(str(motor) + str(self.hldreg_addresses[
-                                                   "direction"]))
+      "direction"]))
     if speed > 0:
       self.variator.write_register(address_hld_direction, 0)
     else:
@@ -146,7 +146,7 @@ class KollMorgenVariator(object):
     if not motor == "all":
       # If 1 axis is needed
       address_inpreg = int(str(motor) + str(self.inpreg_addresses[
-                                              "act_position"]))
+        "act_position"]))
       read = self.variator.read_input_registers(address_inpreg, 2)
       converted = convert_data.data_to_float32(read.registers)
     else:
@@ -156,7 +156,7 @@ class KollMorgenVariator(object):
       read = self.variator.read_input_registers(0, 44)
       for motor_adr in self.motor_addresses:
         address_inpreg = int(str(motor_adr) + str(self.inpreg_addresses[
-                                                    "act_position"]))
+         "act_position"]))
 
         data = read.registers[address_inpreg:address_inpreg + 2]
         converted.append(convert_data.data_to_float32(data))
@@ -168,7 +168,7 @@ class KollMorgenVariator(object):
     """
     if not motor == "all":
       address_inpreg = int(str(motor) + str(self.inpreg_addresses[
-                                              "act_speed"]))
+          "act_speed"]))
       read = self.variator.read_input_registers(address_inpreg, 2)
       converted = convert_data.data_to_float32(read.registers)
 
@@ -177,7 +177,7 @@ class KollMorgenVariator(object):
       read = self.variator.read_input_registers(0, 44)
       for motor_adr in self.motor_addresses:
         address_inpreg = int(str(motor_adr) + str(self.inpreg_addresses[
-                                                    "act_speed"]))
+          "act_speed"]))
 
         data = read.registers[address_inpreg:address_inpreg + 2]
         converted.append(convert_data.data_to_float32(data))

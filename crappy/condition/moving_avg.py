@@ -4,6 +4,7 @@ import numpy as np
 
 from .condition import Condition
 
+
 class Moving_avg(Condition):
   def __init__(self,npoints=100):
     Condition.__init__(self)

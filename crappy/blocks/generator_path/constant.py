@@ -3,6 +3,7 @@
 
 from .path import Path
 
+
 class Constant(Path):
   """
   Simplest condition. It will send value until condition is reached

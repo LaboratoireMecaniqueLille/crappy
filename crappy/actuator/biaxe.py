@@ -24,8 +24,8 @@ class Biaxe(Actuator):
 
   def open(self):
     self.ser = serial.Serial(self.port, self.baudrate,
-                             serial.EIGHTBITS, serial.PARITY_EVEN
-                             , serial.STOPBITS_ONE, self.timeout)
+                             serial.EIGHTBITS, serial.PARITY_EVEN,
+                             serial.STOPBITS_ONE, self.timeout)
     self.clear_errors()
     self.speed = None
 

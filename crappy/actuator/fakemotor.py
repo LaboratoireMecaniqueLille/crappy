@@ -5,6 +5,7 @@ from time import time
 
 from .actuator import Actuator
 
+
 class Fake_motor(Actuator):
   """
   To run test programs without a physical actuator

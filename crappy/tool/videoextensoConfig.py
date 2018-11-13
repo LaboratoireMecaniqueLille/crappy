@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 from .cameraConfig import Camera_config
 
+
 class VE_config(Camera_config):
   def __init__(self,camera,ve):
     self.boxes = None
@@ -27,7 +28,8 @@ class VE_config(Camera_config):
     self.img_label.bind('<ButtonRelease-1>', self.stop_select)
     self.save_length_button = tk.Button(self.lower_frame,text="Save L0",
                                         command=self.save_length)
-    #self.save_length_button.grid(column=1,row=len(self.camera.settings_dict)+4)
+    # self.save_length_button.grid(
+    #   column=1,row=len(self.camera.settings_dict)+4)
     self.save_length_button.pack()
 
   def start_select(self,event):
@@ -57,7 +59,8 @@ class VE_config(Camera_config):
         (box[0],slice(box[1],box[3])),
         (box[2],slice(box[1],box[3])),
         (slice(box[0],box[2]),box[1]),
-        (slice(box[0],box[2]),box[3])]:
+        (slice(box[0],box[2]),box[3])
+     ]:
       # Turn these pixels white or black for highest possible contrast
       s = self.clamp(s)
       img[s] = 255*int(np.mean(img[s])<128)
@@ -70,8 +73,8 @@ class VE_config(Camera_config):
       for i in range(4):
         n = self.select_box[i]-self.zoom_window[i%2]*self.img.shape[i%2]
         n /= (self.zoom_window[2+i%2]-self.zoom_window[i%2])
-        lbox[i] = int(n/self.img.shape[i%2]
-                      *self.img_shape[i%2])
+        lbox[i] = int(n/self.img.shape[i%2]*
+                      self.img_shape[i%2])
       self.draw_box(lbox,rimg)
     if self.boxes:
       for b in self.boxes:
@@ -79,8 +82,8 @@ class VE_config(Camera_config):
         for i in range(4):
           n = b[i]-self.zoom_window[i%2]*self.img.shape[i%2]
           n /= (self.zoom_window[2+i%2]-self.zoom_window[i%2])
-          lbox[i] = int(n/self.img.shape[i%2]
-                        *self.img_shape[i%2])
+          lbox[i] = int(n/self.img.shape[i%2]*
+                        self.img_shape[i%2])
         self.draw_box(lbox,rimg)
 
     self.c_img = ImageTk.PhotoImage(Image.fromarray(rimg))

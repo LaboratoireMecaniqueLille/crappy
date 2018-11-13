@@ -4,11 +4,14 @@ from ctypes import *
 
 c = cdll.LoadLibrary("/usr/lib/libcomedi.so")
 
+
 class comedi_t(Structure):
   pass
 
+
 class comedi_range(Structure):
   pass
+
 
 AREF_GROUND = 0
 lsampl_t = c_uint
@@ -47,9 +50,12 @@ c.comedi_data_read.restype = c_int # Error code (1 if fine else -1)
 c.comedi_data_read.argtypes = [POINTER(comedi_t),
                               c_uint,c_uint,c_uint,c_uint,POINTER(lsampl_t)]
 # Handle, subdevice, channel, range_num, aref, data pointer
+
+
 def comedi_data_read(*args):
   assert c.comedi_data_read(*(args+(byref(data),))) == 1,"Data read failed!"
   return data
+
 
 comedi_data_write = c.comedi_data_write
 comedi_data_write.restype = c_int # Error code (1 if fine else -1)

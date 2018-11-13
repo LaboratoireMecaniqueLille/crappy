@@ -4,6 +4,7 @@ from time import time
 import cv2
 from .camera import Camera
 
+
 class Webcam(Camera):
   """
   Camera class for webcams, read using opencv
@@ -15,7 +16,7 @@ class Webcam(Camera):
     # No sliders for the camera: they usually only allow a few resolutions
     self.add_setting("width",self._get_w,self._set_w,(1,1920))
     self.add_setting("height",self._get_h,self._set_h,(1,1080))
-    self.add_setting("channels", limits = {1:1,3:3}, default = 1)
+    self.add_setting("channels", limits={1:1,3:3}, default=1)
 
   def _get_w(self):
     return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -47,7 +48,7 @@ class Webcam(Camera):
     if self.channels == 1:
       return t,cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     else:
-      return t,frame#[:,:,[2,1,0]]
+      return t,frame # [:,:,[2,1,0]]
 
   def close(self):
     if self.cap:

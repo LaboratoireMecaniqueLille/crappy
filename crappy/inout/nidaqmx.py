@@ -27,6 +27,7 @@ units = {
 # To complete...
 }
 
+
 class Nidaqmx(InOut):
   """
   Opens National Instrument devices using the NiDAQmx driver (Windows only)
@@ -55,13 +56,14 @@ class Nidaqmx(InOut):
   def __init__(self, **kwargs):
     InOut.__init__(self)
     for arg, default in [
-                         ('channels', [{'name':'Dev1/ai0'}]),
-                         ('samplerate',100),
-                         ('nsamples',None)
-                         ]:
+       ('channels', [{'name':'Dev1/ai0'}]),
+       ('samplerate',100),
+       ('nsamples',None)
+     ]:
       setattr(self, arg, kwargs.pop(arg,default))
     assert len(kwargs) == 0, "Nidaqmx got unsupported arg(s)" + str(kwargs)
-    if self.nsamples is None: self.nsamples = max(1,int(self.samplerate/5))
+    if self.nsamples is None:
+      self.nsamples = max(1,int(self.samplerate/5))
     self.streaming = False
     self.ao_channels = []
     self.ai_channels = {}
@@ -89,7 +91,6 @@ class Nidaqmx(InOut):
       else:
         raise AttributeError("Unknown channel in nidaqmx"+str(c))
     self.ai_chan_list = sum(self.ai_channels.values(),[])
-
 
   def open(self):
     # AI
@@ -176,7 +177,7 @@ class Nidaqmx(InOut):
     if not self.streaming:
       self.start_stream()
     a = np.empty((len(self.ai_chan_list),self.nsamples))
-    for chan_type,s in self.stream_in.items(): #Will only loop once
+    for chan_type,s in self.stream_in.items(): # Will only loop once
       s.read_many_sample(a,self.nsamples)
     return [time(),a]
 

@@ -2,6 +2,7 @@
 
 from .condition import Condition
 
+
 class Derive(Condition):
   """
   Derivation filter

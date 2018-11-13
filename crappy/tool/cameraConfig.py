@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from multiprocessing import Process,Pipe
 
+
 class Hist_generator(Process):
   """
   Process to generate the histogram of images
@@ -36,7 +37,8 @@ class Hist_generator(Process):
       if len(img.shape) == 3:
         img = np.mean(img,axis=2)
       assert len(img.shape) == 2,"Invalid image: shape= "+str(img.shape)
-      h = np.histogram(img,bins=np.arange(*hist_range))[0]# The actual histogram
+      # The actual histogram
+      h = np.histogram(img,bins=np.arange(*hist_range))[0]
       x = np.arange(out_size[1])# The base of the image
       # We need to interpolate the histogram on the size of the output image
       l = hist_range[1]-hist_range[0]-1
@@ -48,6 +50,7 @@ class Hist_generator(Process):
       for i in range(out_size[1]):
         out_img[0:int(out_size[0]-h2[i]),i] = 255
       self.pipe.send(out_img)
+
 
 class Camera_config(object):
   """
@@ -105,8 +108,8 @@ class Camera_config(object):
     self.hist_label = tk.Label(self.root)
     self.hist_label.grid(row=0,column=0)
     #self.img_label.pack(fill=tk.BOTH)
-    self.img_label.grid(row=1,column=0,rowspan=len(self.camera.settings_dict)+2,
-        sticky=tk.N+tk.E+tk.S+tk.W)
+    self.img_label.grid(row=1,column=0,
+        rowspan=len(self.camera.settings_dict)+2, sticky=tk.N+tk.E+tk.S+tk.W)
     self.create_inputs()
     self.create_infos()
     self.img_label.bind('<Motion>', self.update_reticle)
@@ -170,8 +173,9 @@ class Camera_config(object):
     else:
       step = 1 # To go through all possible int values
     tk.Label(f,text=setting.name).pack()
-    self.scales[setting.name] = tk.Scale(f,orient='horizontal', resolution=step,
-        length=self.scale_length,from_=setting.limits[0],to=setting.limits[1])
+    self.scales[setting.name] = tk.Scale(f,orient='horizontal',
+        resolution=step, length=self.scale_length,
+        from_=setting.limits[0],to=setting.limits[1])
     self.scales[setting.name].pack()
     self.scales[setting.name].set(setting.value)
 
@@ -181,7 +185,7 @@ class Camera_config(object):
     f.grid(row=pos+2,column=1,sticky=tk.E+tk.W)
     tk.Label(f,text=setting.name+":").pack(anchor=tk.W)
     for k,v in setting.limits.items():
-      r = tk.Radiobutton(f, text=k, variable=self.radios[setting.name], value=v)
+      r = tk.Radiobutton(f,text=k,variable=self.radios[setting.name],value=v)
       if setting.value == v:
         r.select()
       r.pack(anchor=tk.W)
@@ -234,8 +238,8 @@ class Camera_config(object):
         # ar=True, 16bits
         self.low = np.percentile(self.img,1)
         self.high = np.percentile(self.img,99)
-        self.img8 = ((np.clip(self.img,self.low,self.high)
-                    -self.low)*256/self.high).astype(np.uint8)
+        self.img8 = ((np.clip(self.img,self.low,self.high)-
+                    self.low)*256/self.high).astype(np.uint8)
       except (AssertionError,AttributeError):
         # ar=False, 16 bits
         self.img8 = (self.img/2**(self.detect_bits()-8)).astype(np.uint8)
@@ -245,8 +249,8 @@ class Camera_config(object):
         # ar=True, 8bits
         self.low = np.percentile(self.img,1)
         self.high = np.percentile(self.img,99)
-        self.img8 = ((np.clip(self.img,self.low,self.high)
-                        -self.low)*256/self.high)
+        self.img8 = ((np.clip(self.img,self.low,self.high)-
+                        self.low)*256/self.high)
       except (AssertionError,AttributeError):
         # ar=False, 8bits
         self.img8 = self.img
@@ -301,7 +305,7 @@ class Camera_config(object):
     else:
       y,x = self.get_img_coord(event.y,event.x)
     self.reticle_label.configure(text="Y:{} X:{} V={}".format(
-                                        y,x,self.img[y,x]))
+        y,x,self.img[y,x]))
     self.last_reticle_pos = (y,x)
 
 # ============ Zoom related methods ===============
@@ -365,7 +369,6 @@ class Camera_config(object):
       miny = 1-1/z
     self.zoom_window = (miny,minx,maxy,maxx)
 
-
   def move_window(self,y,x):
     """Given the movement of the mouse, it will recompute the zoom_window"""
     z = (1+self.zoom_step)**self.zoom_level
@@ -417,7 +420,8 @@ class Camera_config(object):
     """Recomputes the new shape of the resized image"""
     ratio = min(self.label_shape[0]/self.img.shape[0],
             self.label_shape[1]/self.img.shape[1])
-    self.img_shape = (int(self.img.shape[0]*ratio),int(self.img.shape[1]*ratio))
+    self.img_shape = (int(self.img.shape[0]*ratio),
+        int(self.img.shape[1]*ratio))
 
   def zoom(self,event):
     """For windows, only one type of wheel event"""
@@ -486,4 +490,3 @@ class Camera_config(object):
         self.update_img()
       self.root.update()
     print("Camera config done !")
-

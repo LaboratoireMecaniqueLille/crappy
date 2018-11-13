@@ -11,6 +11,8 @@ _ = cv2.CAP_PROP_XI_WIDTH # Will fail if the flag is not defined
 del _
 
 xi_format_dict = {'8 bits': 0, '10 bits': 1, '8 bits RAW': 5, '10 bits RAW': 6}
+
+
 class XimeaCV(Camera):
   """
   Camera class for ximeas using openCV.

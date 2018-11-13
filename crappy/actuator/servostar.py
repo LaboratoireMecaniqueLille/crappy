@@ -5,6 +5,7 @@ from multiprocessing import Lock
 
 from .actuator import Actuator
 
+
 class Servostar(Actuator):
   """
   To drive and configure a servostar variator through a serial connection
@@ -72,7 +73,7 @@ class Servostar(Actuator):
         self.lock.release()
         return
     r = ''
-    while not "\n" in r:
+    while "\n" not in r:
       r += self.ser.read()
     self.lock.release()
     return int(r)

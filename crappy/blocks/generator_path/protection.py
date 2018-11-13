@@ -3,6 +3,7 @@
 
 from .path import Path
 
+
 class Protection(Path):
   """
   Useful to protect samples from being pulled appart when setting up a test
@@ -49,4 +50,3 @@ class Protection(Path):
     elif self.status == 2 and data[self.lbl2] and not self.condition2(data):
       self.status = 0
     return self.value[self.status]
-

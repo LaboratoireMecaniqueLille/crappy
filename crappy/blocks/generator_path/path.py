@@ -2,6 +2,7 @@
 
 from time import time
 
+
 class Path(object):
   """
   Parent class for all paths
@@ -30,7 +31,7 @@ class Path(object):
     Any other syntax will return True instantly.
     """
     if not isinstance(condition,str):
-      if condition is None or condition == False:
+      if condition is None or not condition:
         return lambda _:False # For neverending conditions
       return condition
     if '<' in condition:

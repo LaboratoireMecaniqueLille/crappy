@@ -45,7 +45,7 @@ class MinitensPopups(FrameObjects):
     self.menu_exp_parameters.add_command(label='Vitesse',
                                          command=self.create_popup_speed)
     self.menu_exp_parameters.add_command(label='Paramètres échantillon',
-                                         command=self.create_popup_sample_parameters)
+                                   command=self.create_popup_sample_parameters)
 
     # 2nd menu: tools to conduct the experience.
     self.menu_tools = tk.Menu(self.menubar, tearoff=0)
@@ -231,7 +231,7 @@ class MinitensPopups(FrameObjects):
                      text=parameter,
                      name=parameter + '_label')
 
-      self.sample_parameters_widgets[parameter + '_label'].grid(row=i, column=0)
+      self.sample_parameters_widgets[parameter + '_label'].grid(row=i,column=0)
 
       self.add_entry(frame=self.sample_parameters,
                      widgets_dict=self.sample_parameters_widgets,
@@ -387,7 +387,7 @@ class MinitensPopups(FrameObjects):
       return
 
     ok = tk.messagebox.askokcancel(title="Confirmation",
-                                  message="Changer les paramètres de calibration?")
+                            message="Changer les paramètres de calibration?")
     if not ok:
       return
     else:
@@ -711,7 +711,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     """
     if self.cycles:
       self.cycles_started = True
-      var_type = self.cycles[0][1]
+      #var_type = self.cycles[0][1]
 
       self.submit_command("TRACTION")
       if self.start_rec_cycle.get():
@@ -825,7 +825,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     if not self.position_prct == 0.:
       # In case the user didn't initialized distance between claws.
       position_prct = 100 * (self.position - self.position_prct) / \
-                      self.position_prct
+        self.position_prct
     else:
       position_prct = 0.0
 

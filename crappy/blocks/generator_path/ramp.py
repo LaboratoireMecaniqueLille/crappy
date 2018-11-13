@@ -5,6 +5,7 @@ from time import time
 
 from .path import Path
 
+
 class Ramp(Path):
   """
   Will make a ramp from previous value until condition is reached,

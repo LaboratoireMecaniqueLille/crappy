@@ -52,7 +52,7 @@ class MetaIO(type):
     # Check if mandatory methods are defined
     missing_methods = []
     for m in MetaIO.needed_methods:
-      if not m in dict:
+      if m not in dict:
         missing_methods.append(m)
     if name != "InOut":
       if missing_methods:
@@ -71,7 +71,8 @@ class MetaIO(type):
           name + " needs at least get_data, get_stream or set_cmd method")
       MetaIO.classes[name] = cls
 
-class InOut(object, metaclass = MetaIO):
+
+class InOut(object, metaclass=MetaIO):
   @classmethod
   def is_input(cls):
     return hasattr(cls, 'get_data')

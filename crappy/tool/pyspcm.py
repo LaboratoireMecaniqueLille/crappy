@@ -57,12 +57,16 @@ if "linux" in platform.lower():
 else:
   mod = windll.LoadLibrary("C:\\Windows\\system32\\spcm_win64.dll")
 
+
 class SpectrumError(Exception):
   pass
 
+
 dwGetErrorInfo_i32 = mod.spcm_dwGetErrorInfo_i32
-dwGetErrorInfo_i32.argtype = [c_void_p,POINTER(c_uint32),POINTER(c_int32),c_char_p]
+dwGetErrorInfo_i32.argtype = [
+    c_void_p,POINTER(c_uint32),POINTER(c_int32),c_char_p]
 dwGetErrorInfo_i32.restype = c_uint32
+
 
 def check(h,code):
   if code == 0:
@@ -73,6 +77,7 @@ def check(h,code):
   print(szErrorTextBuffer.value)
   vClose(h)
   raise SpectrumError(szErrorTextBuffer.value)
+
 
 hOpen = mod.spcm_hOpen
 hOpen.argtype = [c_char_p]
@@ -91,6 +96,7 @@ mod.spcm_dwGetParam_i32.restype = c_uint32
 mod.spcm_dwGetParam_i64.argtype = [c_void_p, c_int32, POINTER(c_int64)]
 mod.spcm_dwGetParam_i64.restype = c_uint32
 
+
 def dwGetParam(h,reg):
   if reg in double_reg:
     check(h,mod.spcm_dwGetParam_i64(h,reg,byref(my_i64)))
@@ -106,15 +112,18 @@ mod.spcm_dwSetParam_i32.restype = c_uint32
 mod.spcm_dwSetParam_i64.argtype = [c_void_p, c_int32, c_int64]
 mod.spcm_dwSetParam_i64.restype = c_uint32
 
+
 def dwSetParam(h,reg,val):
   if reg in double_reg:
     check(h,mod.spcm_dwSetParam_i64(h,reg,val))
   else:
     check(h,mod.spcm_dwSetParam_i32(h,reg,val))
 
+
 mod.spcm_dwDefTransfer_i64.argtype = [c_void_p, c_uint32, c_uint32, c_uint32,
                             c_void_p, c_uint64, c_uint64]
 mod.spcm_dwDefTransfer_i64.restype = c_uint32
+
 
 def dwDefTransfer(h,buff_type,direction,notify_size,buff,offset,buff_size):
   check(h,mod.spcm_dwDefTransfer_i64(h,buff_type,direction,notify_size,buff,

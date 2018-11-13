@@ -4,6 +4,7 @@ import numpy as np
 
 from .condition import Condition
 
+
 class Demux(Condition):
   """
   Condition to change a stream table into a dict with values (to plot streams).
@@ -26,7 +27,7 @@ class Demux(Condition):
       self.labels = labels[0]
     else:
       self.labels = labels
-    self.stream =  kwargs.pop("stream","stream")
+    self.stream = kwargs.pop("stream","stream")
     self.mean = kwargs.pop("mean",False)
     self.time = kwargs.pop("time_label","t(s)")
     self.transpose = kwargs.pop("transpose",False)
@@ -50,7 +51,7 @@ class Demux(Condition):
     del data[self.stream]
     try:
       data[self.time] = data[self.time][0]
-    except:
+    except Exception:
       pass
     return data
 

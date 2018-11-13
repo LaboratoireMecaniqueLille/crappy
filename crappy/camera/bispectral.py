@@ -36,20 +36,24 @@ table = (
 0x8801, 0x48C0, 0x4980, 0x8941, 0x4B00, 0x8BC1, 0x8A81, 0x4A40,
 0x4E00, 0x8EC1, 0x8F81, 0x4F40, 0x8D01, 0x4DC0, 0x4C80, 0x8C41,
 0x4400, 0x84C1, 0x8581, 0x4540, 0x8701, 0x47C0, 0x4680, 0x8641,
-0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040 )
+0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040)
 
-def calcString( st, crc):
+
+def calcString(st, crc):
     """Given a bunary string and starting CRC, Calc a final CRC-16 """
     for ch in st:
         crc = (crc >> 8) ^ table[(crc ^ ord(ch)) & 0xFF]
     return crc
 
+
 def add_crc(s):
   return s+hex(calcString(s,0xFFFF)).split('x')[1].upper().rjust(4,'0')
+
 
 def check_crc(s):
   r = s[:-4]
   return add_crc(r)==s
+
 
 def hexlify(n):
   return hex(n).split('x')[1].rjust(2,'0').upper()
@@ -67,23 +71,25 @@ class Bispectral(CLCamera):
         getter=self._get_ox)
     self.add_setting('yoffset',limits=(0,511),default=0,setter=self._set_oy,
         getter=self._get_oy)
-    self.add_setting('IT1',limits=(10,10000),#default=self._get_IT1,
+    self.add_setting('IT1',limits=(10,10000),# default=self._get_IT1,
         setter=self._set_IT1,getter=self._get_IT1)
-    self.add_setting('IT2',limits=(10,10000),#default=self._get_IT2,
+    self.add_setting('IT2',limits=(10,10000),# default=self._get_IT2,
         setter=self._set_IT2,getter=self._get_IT2)
     self.add_setting('fps',getter=self.get_trigg_freq,
         setter=self.set_trigg_freq,limits=(1.,150.))
 
   def _set_w(self,val):
     CLCamera._set_w(self,val*2)
-    self.set_ROI(self.xoffset,self.yoffset,self.xoffset+self.width-1,self.yoffset+self.height-1)
+    self.set_ROI(self.xoffset,self.yoffset,self.xoffset+self.width-1,
+        self.yoffset+self.height-1)
 
   def _get_w(self):
     return int(CLCamera._get_w(self)/2)
 
   def _set_h(self,val):
     CLCamera._set_h(self,val)
-    self.set_ROI(self.xoffset,self.yoffset,self.xoffset+self.width-1,self.yoffset+self.height-1)
+    self.set_ROI(self.xoffset,self.yoffset,self.xoffset+self.width-1,
+        self.yoffset+self.height-1)
 
   def _set_ox(self,val):
     self.set_ROI(val,self.yoffset,val+self.width-1,self.yoffset+self.height-1)
@@ -119,9 +125,9 @@ class Bispectral(CLCamera):
     """Sets the external trigger to val by toggling the value of the 3rd bit
     of register 102"""
     if val:
-      self.send_cmd('@W1027C') #3rd bit to 1
+      self.send_cmd('@W1027C') # 3rd bit to 1
     else:
-      self.send_cmd('@W10274') #3rd bit to 0
+      self.send_cmd('@W10274') # 3rd bit to 0
 
   def get_ROI(self):
     X1min_LSB=self.send_cmd("@R1D0")
@@ -137,7 +143,6 @@ class Bispectral(CLCamera):
     ymin = int(Y1min_MSB+Y1min_LSB,16)
     ymax = int(Y1max_MSB+Y1max_LSB,16)
     return xmin,ymin,xmax,ymax
-
 
   def set_ROI(self,xmin,ymin,xmax,ymax):
     if (xmin,xmax,ymin,ymax) != (0,0,639,511):
@@ -195,7 +200,6 @@ class Bispectral(CLCamera):
     self.send_cmd("@W1B9"+IT2_MID)
     self.send_cmd("@W1BA"+IT2_MSB)
 
-
   def get_trigg_freq(self):
     MC = 10350000 # Hz
     P_LSB=self.send_cmd("@R1B0")
@@ -207,15 +211,14 @@ class Bispectral(CLCamera):
   def set_trigg_freq(self,Freq):
     MC = 10350000 # Hz
     Period = int(MC/Freq)
-    P_LSB = hexlify(Period  % 256)
+    P_LSB = hexlify(Period % 256)
     Period -= Period%256
     Period //= 256
-    P_MID = hexlify(Period  % 256)
-    P_MSB = hexlify(Period  // 256)
+    P_MID = hexlify(Period % 256)
+    P_MSB = hexlify(Period // 256)
     self.send_cmd("@W1B0"+P_LSB)
     self.send_cmd("@W1B1"+P_MID)
     self.send_cmd("@W1B2"+P_MSB)
-
 
   def get_sensor_temperature(self):
     """Returns sensor temperature in Kelvin"""
@@ -228,7 +231,6 @@ class Bispectral(CLCamera):
     """Returns temperature of the board in °C"""
     T = self.send_cmd('@R173')
     return int(T,16)
-
 
   def get_image(self):
     t,frame = CLCamera.get_image(self)

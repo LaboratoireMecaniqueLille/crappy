@@ -11,6 +11,7 @@ make sure all dependencies are met
 and try to reinstall Crappy""".format(self.name)
     raise NotImplementedError(m)
 
+
 class NotSupported():
   def __init__(self,name):
     self.name = name
@@ -19,9 +20,11 @@ class NotSupported():
     m = "Module {} is not available on this platform".format(self.name)
     raise NotImplementedError(m)
 
+
 class CrappyStop(Exception):
   """Error to raise when Crappy is terminating"""
   pass
+
 
 class DefinitionError(Exception):
     """Error to raise when classes are not defined correctly"""
@@ -30,4 +33,3 @@ class DefinitionError(Exception):
 
     def __str__(self):
         return self.msg
-

@@ -5,6 +5,7 @@ from time import time
 
 from .path import Path
 
+
 class Cyclic_ramp(Path):
   """
   A "boosted" ramp path: will take TWO values and condtions.

@@ -112,8 +112,8 @@ class FrameObjects(tk.Frame):
     if not variable:
       setattr(self, entry_name + '_var', vartype)
       widgets_dict[entry_name] = tk.Entry(frame,
-                                          textvariable=getattr(self, entry_name
-                                                               + '_var'),
+                                        textvariable=getattr(self, entry_name+
+                                        '_var'),
                                           width=width)
     else:
       widgets_dict[entry_name] = tk.Entry(frame,
@@ -168,7 +168,7 @@ class FrameObjects(tk.Frame):
 
   def add_scale(self, **kwargs):
     """
-    To add a scrollbar 
+    To add a scrollbar
     """
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)

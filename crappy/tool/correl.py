@@ -126,11 +126,11 @@ class CorrelStage:
     self._addKrnl = self.mod.get_function('kadd')
     # These ones use pyCuda reduction module to generate efficient kernels
     self._mulRedKrnl = ReductionKernel(np.float32, neutral="0",
-                                       reduce_expr="a+b", map_expr="x[i]*y[i]",
-                                       arguments="float *x, float *y")
+                                     reduce_expr="a+b", map_expr="x[i]*y[i]",
+                                     arguments="float *x, float *y")
     self._leastSquare = ReductionKernel(np.float32, neutral="0",
-                                        reduce_expr="a+b", map_expr="x[i]*x[i]",
-                                        arguments="float *x")
+                                     reduce_expr="a+b", map_expr="x[i]*x[i]",
+                                     arguments="float *x")
     # We could have used use mulRedKrnl(x,x), but this is probably faster ?
 
     # Getting texture references #

@@ -23,7 +23,8 @@ class Filter(Condition):
     -------
     dict : OrderedDict
 
-        The dict contains the same values as the input, plus the filtered value,
+        The dict contains the same values as the input,
+        plus the filtered value,
         labeled as (name_of_the_input_label)_filtered.
     """
     self.mode = mode

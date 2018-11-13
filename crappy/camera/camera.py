@@ -5,6 +5,7 @@ from time import time,sleep
 
 from .._global import DefinitionError
 
+
 class MetaCam(type):
   """
   Metaclass that will define all cameras
@@ -12,7 +13,7 @@ class MetaCam(type):
   To do so, simply add __metaclass__ = MetaCam in the class definition
   (Obviously, you must import this Metaclass first)
   """
-  classes = {} #This dict will keep track of all the existing cam classes
+  classes = {} # This dict will keep track of all the existing cam classes
   #Attention: It keeps track of the CLASSES, not the instances !
   #If a camera is defined without these
   needed_methods = ["__init__", "get_image","open","close"]
@@ -48,11 +49,11 @@ class MetaCam(type):
     # Check if mandatory methods are defined
     missing_methods = []
     for m in MetaCam.needed_methods:
-      if not m in dict:
+      if m not in dict:
         missing_methods.append(m)
     if name != "Camera" and missing_methods:
       raise DefinitionError("Class "+name+" is missing methods: "+str(
-                                                      missing_methods))
+        missing_methods))
 
     del missing_methods
     MetaCam.classes[name] = cls
@@ -118,13 +119,13 @@ class Cam_setting(object):
   # value of the setting after the operation
   @value.setter
   def value(self,i):
-    _ = self.value # Detail: to make sure we called value getter once
+    self.value # Detail: to make sure we called value getter once
     #if type(self.limits) == tuple:
     #  if not self.limits[0] <= i <= self.limits[1]:
     #    print("[Cam_setting] Parameter",i,"out of range ",self.limits)
     #    return
     if type(self.limits) == dict:
-      if not i in self.limits.values():
+      if i not in self.limits.values():
         print("[Cam_setting] Parameter",i,"not available",self.limits)
         return
     elif type(self.limits) == bool:
@@ -138,7 +139,6 @@ class Cam_setting(object):
     if new_val != i:
       print("[Cam_setting] Could not set",self.name,"to",i,"value is",new_val)
     self._value = new_val
-
 
   def __str__(self):
     if self.limits:
@@ -183,8 +183,8 @@ class Camera(object, metaclass=MetaCam):
     else:
       self.delay = 0
 
-  def add_setting(self, name, getter = None, setter = lambda *l:None,
-                                            limits = None, default = None):
+  def add_setting(self, name, getter=None, setter=lambda *l:None,
+                                            limits=None, default=None):
     """Wrapper to simply add a new setting to the camera"""
     assert name not in self.settings, "This setting already exists"
     self.settings[name] = Cam_setting(name,getter,setter,limits,default)

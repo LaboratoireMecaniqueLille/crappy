@@ -7,9 +7,11 @@ from .inout import InOut
 class Agilent34420A(InOut):
   """Sensor class for Agilent34420A devices."""
 
-  def __init__(self, mode="VOLT", device='/dev/ttyUSB0', baudrate=9600, timeout=1):
+  def __init__(self, mode="VOLT", device='/dev/ttyUSB0',
+      baudrate=9600, timeout=1):
     """
-    This class contains method to measure values of resistance or tensution on Agilent34420A devices.
+    This class contains method to measure values of resistance or voltage
+    on Agilent34420A devices.
 
     May work for other devices too, but not tested.
     If you have issues with this class returning a lot of 'bad serial', \
@@ -26,13 +28,13 @@ class Agilent34420A(InOut):
                 Timeout for the serial connection.
     """
     InOut.__init__(self)
-    ## path to the device
+    # path to the device
     self.device = device
-    ## desired baudrate
+    # desired baudrate
     self.baudrate = baudrate
-    ## timeout for the serial connection
+    # timeout for the serial connection
     self.timeout = timeout
-    ## desired value to measure
+    # desired value to measure
     self.mode = mode
 
   def open(self):
@@ -62,4 +64,3 @@ class Agilent34420A(InOut):
     Close the serial port.
     """
     self.ser.close()
-

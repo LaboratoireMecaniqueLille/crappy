@@ -2,6 +2,7 @@
 
 from .._global import DefinitionError
 
+
 class MetaCondition(type):
   """
   To keep track of all conditions
@@ -19,13 +20,14 @@ class MetaCondition(type):
 
     missing_methods = []
     for m in MetaCondition.needed_methods:
-      if not m in dict:
+      if m not in dict:
         missing_methods.append(m)
     if name != "Condition" and missing_methods:
       raise DefinitionError("Class "+name+" is missing methods: "+str(
-                                                      missing_methods))
+        missing_methods))
     del missing_methods
     MetaCondition.classes[name] = cls
+
 
 class Condition(object):
   __metaclass__ = MetaCondition

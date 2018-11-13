@@ -4,6 +4,7 @@ import numpy as np
 
 from .path import Path
 
+
 class Inertia(Path):
   """
   Used to lower/higher the output command by integrating an input over time

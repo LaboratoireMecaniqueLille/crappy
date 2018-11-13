@@ -16,6 +16,7 @@ from .inout import InOut
 from .._global import CrappyStop
 from os.path import exists
 
+
 def collect_serial(arduino, queue):
   """Collect serial information, in a parallel way."""
   while True:
@@ -83,7 +84,6 @@ class ArduinoHandler(object):
       # arduino, and passes it to the crappy link.
       self.crappy_queue = Queue_threading()
 
-
       self.minitens_frame = MinitensFrame(self.root,
                                           queue=self.submit_serial_queue,
                                           width=self.width,
@@ -114,7 +114,7 @@ class ArduinoHandler(object):
 
   def send_GUIs(self, serial_received):
     """
-    send to every created GUI information received from arduino (if applicable.)
+    send to every created GUI information received from arduino (if applicable)
     """
     if "monitor" in self.frames:
       self.monitor_frame.update_widgets(serial_received)

@@ -5,10 +5,11 @@ from .camera import Camera
 from . import clModule as cl
 from time import time
 
+
 class CLCamera(Camera):
   """Cameralink camera sensor"""
 
-  def __init__(self, numdevice = 0, config_file = None, camera_type = None):
+  def __init__(self, numdevice=0, config_file=None, camera_type=None):
     """Using the clModule, will open a cameraLink camera.
     If a config file is specified, it will be used to configure the camera
     If not set, it will be asked, unless set to False (or 0)
@@ -38,7 +39,8 @@ class CLCamera(Camera):
     self.numdevice = numdevice
     self.add_setting("width",setter=self._set_w, getter=self._get_w)
     self.add_setting("height",setter=self._set_h, getter=self._get_h)
-    self.add_setting("framespersec",setter=self._set_framespersec,getter=self._get_framespersec,limits=(1,200))
+    self.add_setting("framespersec",setter=self._set_framespersec,
+        getter=self._get_framespersec,limits=(1,200))
 
   def stopAcq(self):
     self.cap.stopAcq()
@@ -95,7 +97,7 @@ class CLCamera(Camera):
     self.cap = cl.VideoCapture()
     self.cap.open(self.numdevice,self.camera_type,f)
     for k in kwargs:
-      if not k in self.settings:
+      if k not in self.settings:
         raise AttributeError('Unexpected keyword: '+k)
     if self.config_file:
       self.cap.loadFile(self.config_file)
