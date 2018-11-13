@@ -17,7 +17,6 @@ from .ioblock import IOBlock
 from .machine import Machine
 from .mean import Mean
 from .masterblock import MasterBlock
-from .measureByStep import MeasureByStep
 from .multiplex import Multiplex
 from .pid import PID
 from .reader import Reader
