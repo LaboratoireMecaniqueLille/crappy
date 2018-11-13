@@ -5,13 +5,14 @@ import sys
 import os
 try:
   import SimpleITK as sitk
-except:
+except ImportError:
   print("[Warning] SimpleITK is not installed, cannot save images!")
 
 from ..tool.videoextenso import LostSpotError,Video_extenso as VE
 from ..tool.videoextensoConfig import VE_config
 from .masterblock import MasterBlock
 from ..camera import Camera
+
 
 class Video_extenso(MasterBlock):
   """
@@ -54,7 +55,8 @@ class Video_extenso(MasterBlock):
       except KeyError:
         setattr(self,arg,default)
     self.ve_kwargs = {}
-    for arg in ['white_spots','update_thresh','num_spots','safe_mode','border','min_area']:
+    for arg in ['white_spots','update_thresh','num_spots',
+        'safe_mode','border','min_area']:
       if arg in kwargs:
         self.ve_kwargs[arg] = kwargs[arg]
         del kwargs[arg]
@@ -86,6 +88,10 @@ class Video_extenso(MasterBlock):
   def loop(self):
     self.loops += 1
     t,img = self.cam.read_image()
+    if self.inputs and self.inputs[0].poll():
+      self.inputs[0].clear()
+      print("[VE block] resetting L0")
+      self.ve.save_length()
     try:
       d = self.ve.get_def(img)
     except LostSpotError:
@@ -110,8 +116,8 @@ class Video_extenso(MasterBlock):
       cv2.waitKey(5)
     if self.show_fps:
       if t - self.last_fps_print > 2:
-        sys.stdout.write("\rFPS: %.2f"%((self.loops - self.last_fps_loops)
-                              /(t - self.last_fps_print)))
+        sys.stdout.write("\rFPS: %.2f"%((self.loops - self.last_fps_loops)/
+                              (t - self.last_fps_print)))
         sys.stdout.flush()
         self.last_fps_print = t
         self.last_fps_loops = self.loops
@@ -138,5 +144,3 @@ class Video_extenso(MasterBlock):
     self.ve.stop_tracking()
     if self.show_image:
       cv2.destroyAllWindows()
-
-
