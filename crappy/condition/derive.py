@@ -10,10 +10,12 @@ class Derive(Condition):
   This will derive the value at label over time. The time label must
   be specified with time='...'
   """
-  def __init__(self,label,time='t(s)'):
+  def __init__(self,label,time='t(s)',out_label=None):
     Condition.__init__(self)
     self.label = label
     self.t = time
+    if out_label is None:
+      self.out_label = 'd_'+self.label
     self.last_t = 0
     self.last_val = 0
 
