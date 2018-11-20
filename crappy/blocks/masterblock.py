@@ -442,7 +442,8 @@ class MasterBlock(Process):
       if self.status == "done":
         break
       sleep(.05)
-    if self.status != "done":
+    #if self.status != "done":
+    if self.status not in ['done','idle','error']:
       print('[%r] Could not stop properly, terminating' % self)
       try:
         self.terminate()

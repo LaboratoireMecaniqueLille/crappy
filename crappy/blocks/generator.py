@@ -91,7 +91,7 @@ class Generator(MasterBlock):
       else:
         print("Signal generator terminated!")
         sleep(self.end_delay)
-        MasterBlock.stop_all()
+        #MasterBlock.stop_all()
         raise CrappyStop("Signal Generator terminated")
     if self.verbose:
       print("[Signal Generator] Next step({}):".format(self.path_id),
