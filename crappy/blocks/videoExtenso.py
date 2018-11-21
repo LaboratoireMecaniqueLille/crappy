@@ -47,7 +47,7 @@ class Video_extenso(MasterBlock):
                         ("labels",default_labels),
                         ("show_fps",True),
                         ("show_image",False),
-                        ("stop",True),
+                        ("end",True),
                         ]:
       try:
         setattr(self,arg,kwargs[arg])
@@ -97,7 +97,7 @@ class Video_extenso(MasterBlock):
     except LostSpotError:
       print("[VE block] Lost spots, terminating")
       self.ve.stop_tracking()
-      if self.stop:
+      if self.end:
         raise
       else:
         self.loop = self.lost_loop
