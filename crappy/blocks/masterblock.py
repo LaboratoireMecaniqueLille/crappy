@@ -307,7 +307,11 @@ class MasterBlock(Process):
     """
     if not self.in_process:
       while self.pipe1.poll():
-        self._status = self.pipe1.recv()
+        try:
+          self._status = self.pipe1.recv()
+        except EOFError:
+          if self._status == 'running':
+            self._status = 'done'
       # If another process tries to get the status
       if 'linux' in platform:
         self.pipe2.send(self._status)
