@@ -41,6 +41,7 @@ class Camera(MasterBlock):
     for arg,default in [("save_folder",None),
                         ("verbose",False),
                         ("labels",['t(s)','frame']),
+                        ("fps_label",""),
                         ("config",True)]:
       setattr(self,arg,kwargs.get(arg,default)) # Assign these attributes
       try:
@@ -63,7 +64,9 @@ class Camera(MasterBlock):
             "Error creating "+self.save_folder
     self.camera = camera_list[self.camera_name]()
     self.camera.open(**self.cam_kw)
-    self.trigger = "internal" if len(self.inputs) == 0 else "external"
+    #self.trigger = "internal" if len(self.inputs) == 0 else "external"
+    self.trigger = "external" if self.inputs and self.fps_label == ""\
+        else "internal"
     if self.config:
       conf = Camera_config(self.camera)
       conf.main()
@@ -77,6 +80,9 @@ class Camera(MasterBlock):
 
   def loop(self):
     if self.trigger == "internal":
+      if self.fps_label:
+        while self.inputs[0].poll():
+          self.camera.max_fps = self.inputs[0].recv()[self.fps_label]
       t,img = self.camera.read_image()
     elif self.trigger == "external":
       data = self.inputs[0].recv()  # wait for a signal
