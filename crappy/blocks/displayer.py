@@ -4,6 +4,8 @@ import numpy as np
 from .masterblock import MasterBlock
 import cv2
 import matplotlib.pyplot as plt
+import tkinter as tk
+from PIL import ImageTk,Image
 
 
 class Displayer(MasterBlock):
@@ -15,7 +17,7 @@ class Displayer(MasterBlock):
   NOTE: You need to use one displayer block per window
   (in other words, you can only attach one input to the diplayer)
   """
-  def __init__(self, framerate=5, cv=True, title='Displayer'):
+  def __init__(self, framerate=5, backend='cv', title='Displayer'):
     MasterBlock.__init__(self)
     self.niceness = 10
     if framerate is None:
@@ -23,15 +25,22 @@ class Displayer(MasterBlock):
     else:
       self.delay = 1. / framerate  # Framerate (fps)
     self.title = title
-    if cv:
+    if backend.lower() in ['cv','opencv']:
       self.loop = self.loop_cv
       self.begin = self.begin_cv
       self.finish = self.finish_cv
-    else:
+    elif backend.lower() in ['matplotlib','mpl']:
       self.loop = self.loop_mpl
       self.begin = self.begin_mpl
       self.finish = self.finish_mpl
+    elif backend.lower() in ['tk','tkinter']:
+      self.loop = self.loop_tk
+      self.begin = self.begin_tk
+      self.finish = self.finish_tk
+    else:
+      raise AttributeError("Unknown backend: "+str(backend))
 
+  # Matplotlib
   def begin_mpl(self):
     plt.ion()
     fig = plt.figure()
@@ -50,6 +59,10 @@ class Displayer(MasterBlock):
     plt.pause(0.001)
     plt.show()
 
+  def finish_mpl(self):
+    plt.close('all')
+
+  # OpenCV
   def begin_cv(self):
     try:
       flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
@@ -68,8 +81,30 @@ class Displayer(MasterBlock):
     cv2.imshow(self.title,data)
     cv2.waitKey(1)
 
-  def finish_mpl(self):
-    plt.close('all')
-
   def finish_cv(self):
     cv2.destroyAllWindows()
+
+  # TKinter
+  def resize(self,img):
+    return cv2.resize(img,(self.w,self.h))
+
+  def begin_tk(self):
+    self.root = tk.Tk()
+    self.imglabel = tk.Label(self.root)
+    self.imglabel.pack()
+    self.h = 480
+    self.w = 640
+
+  def loop_tk(self):
+    data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
+    if data.dtype != np.uint8:
+      if data.max() >= 256:
+        data = self.cast_8bits(data)
+      else:
+        data = data.astype(np.uint8)
+    cimg = ImageTk.PhotoImage(Image.fromarray(self.resize(data)))
+    self.imglabel.configure(image=cimg)
+    self.root.update()
+
+  def finish_tk(self):
+    self.root.destroy()
