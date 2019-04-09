@@ -3,7 +3,6 @@
 import serial
 from time import sleep
 from queue import Queue
-from threading import Thread,Lock
 from .actuator import Actuator
 
 ACCEL = b'.1' # Acceleration and deceleration times
@@ -24,20 +23,6 @@ class Oriental(Actuator):
     self.speed = 0
     self.gain = gain # unit/(mm/min)
 
-  def reader(self):
-    while True:
-      d = self.q.get()
-      #print("DEBUG qsize=",self.q.qsize())
-      if d is None:
-        break
-      with self.lock:
-        #print("[DEBUG] Writing",d)
-        self.ser.write(d+b"\n")
-        self.ser.readlines()
-        #if a:
-        #  print("DEBUG",a)
-        #self.ser.readlines()
-
   def open(self):
     self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=0.1)
     for i in range(1,5):
@@ -48,72 +33,63 @@ class Oriental(Actuator):
         motors = ['A', 'B', 'C', 'D']
         print("Motor connected to port {} is {}".format(self.port,motors[i-1]))
         break
-    self.q = Queue()
-    self.lock = Lock()
-    self.reader_thread = Thread(target=self.reader)
-    self.reader_thread.start()
     self.clear_errors()
-    self.write_cmd(b"TA "+ACCEL) # Acceleration time
-    self.write_cmd(b"TD "+ACCEL) # Deceleration time
-
-  def write_cmd(self, cmd):
-    self.q.put(cmd)
+    self.ser.write(b"TA "+ACCEL+b'\n') # Acceleration time
+    self.ser.write(b"TD "+ACCEL+b'\n') # Deceleration time
 
   def clear_errors(self):
-    self.write_cmd(b"ALMCLR")
+    self.ser.write(b"ALMCLR\n")
 
   def close(self):
-    while self.q.qsize():
-      self.q.get(False)
-    self.q.put(None)
-    self.reader_thread.join()
     self.stop()
     self.ser.close()
 
   def stop(self):
     self.ser.write(b"SSTOP\n")
+    sleep(float(ACCEL))
+    #sleep(1)
+    self.speed = 0
 
   def reset(self):
     self.clear_errors()
-    self.write_cmd(b"RESET")
-    self.write_cmd("TALK{}".format(self.num_device).encode('ASCII'))
+    self.ser.write(b"RESET\n")
+    self.ser.write("TALK{}\n".format(self.num_device).encode('ASCII'))
     self.clear_errors()
 
   def set_speed(self, cmd):
     # speed in mm/min
     # gain can be edited by giving gain=xx to the init
-    speed = int(abs(cmd*self.gain)+.5) # Closest value
+    speed = min(100,int(abs(cmd*self.gain)+.5)) # Closest value < 100
     # These motors take ints only
     if speed == 0:
-      self.speed = 0
       self.stop()
       return
-    if speed == self.speed:
+    sign = int(self.gain*cmd/abs(self.gain*cmd))
+    signed_speed = sign*speed
+    if signed_speed == self.speed:
       return
-    sign = self.gain*cmd
     dirchg = self.speed*sign < 0
     if dirchg:
       #print("DEBUGORIENTAL changing dir")
-      self.write_cmd(b"SSTOP")
-      sleep(float(ACCEL))
-    self.write_cmd("VR {}".format(abs(speed)).encode('ASCII'))
+      self.stop()
+    self.ser.write("VR {}\n".format(abs(speed)).encode('ASCII'))
     if sign > 0:
       #print("DEBUGORIENTAL going +")
-      self.write_cmd(b"MCP")
+      self.ser.write(b"MCP\n")
     else:
       #print("DEBUGORIENTAL going -")
-      self.write_cmd(b"MCN")
-    self.speed = speed
+      self.ser.write(b"MCN\n")
+    self.speed = signed_speed
 
   def set_home(self):
-    self.write_cmd(b'preset')
+    self.ser.write(b'preset\n')
 
   def move_home(self):
-    self.write_cmd(b'EHOME')
+    self.ser.write(b'EHOME\n')
 
   def set_position(self, position, speed):
-    self.write_cmd("VR {0}".format(abs(speed)).encode('ASCII'))
-    self.write_cmd("MA {0}".format(position).encode('ASCII'))
+    self.ser.write("VR {0}".format(abs(speed)).encode('ASCII'))
+    self.ser.write("MA {0}".format(position).encode('ASCII'))
 
   def get_pos(self):
     with self.lock:
