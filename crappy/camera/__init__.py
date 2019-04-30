@@ -21,6 +21,11 @@ except (ImportError,AttributeError):
   XimeaCV = NotInstalled("XimeaCV")
 
 try:
+  from .xiapi import Xiapi
+except (ImportError,AttributeError):
+  Xiapi = NotInstalled("Xiapi")
+
+try:
   from .cameralink import CLCamera
   from .jai import Jai,Jai8
   from .bispectral import Bispectral

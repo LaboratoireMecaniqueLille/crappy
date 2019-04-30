@@ -19,62 +19,54 @@ class Xiapi(Camera):
     self.add_setting("height",self._get_h,self._set_h,(1,self._get_h))
     self.add_setting("xoffset",self._get_ox,self._set_ox,(0,self._get_w))
     self.add_setting("yoffset",self._get_oy,self._set_oy,(0,self._get_h))
-    self.add_setting("exposure",self._get_exp,self._set_exp,(28,100000),10000)
+    self.add_setting("exposure",self._get_exp,self._set_exp,(28,500000),10000)
     self.add_setting("gain",self._get_gain,self._set_gain,(0.,6.))
-    self.add_setting("data_format",self._get_data_format,
-                                   self._set_data_format,xi_format_dict)
     self.add_setting("AEAG",self._get_AEAG,self._set_AEAG,True,False)
     self.add_setting("external_trig",self._get_extt,self._set_extt,True,False)
 
   def _get_w(self):
-    pass
+    return self.cam.get_width()
 
   def _get_h(self):
-    pass
+    return self.cam.get_height()
 
   def _get_ox(self):
-    pass
+    return self.cam.get_offsetX()
 
   def _get_oy(self):
-    pass
+    return self.cam.get_offsetY()
 
   def _get_gain(self):
-    pass
+    return self.cam.get_gain()
 
   def _get_exp(self):
-    pass
+    return self.cam.get_exposure()
 
   def _get_AEAG(self):
-    pass
-
-  def _get_data_format(self):
     pass
 
   def _get_extt(self):
     pass
 
   def _set_w(self,i):
-    pass
+    self.cam.set_width(i)
 
   def _set_h(self,i):
-    pass
+    self.cam.set_height(i)
 
   def _set_ox(self,i):
-    pass
+    self.cam.set_offsetX(i)
 
   def _set_oy(self,i):
-    pass
+    self.cam.set_offsetY(i)
 
   def _set_gain(self,i):
-    pass
+    self.cam.set_gain(i)
 
   def _set_exp(self,i):
-    pass
+    self.cam.set_exposure(i)
 
   def _set_AEAG(self,i):
-    pass
-
-  def _set_data_format(self,i):
     pass
 
   def _set_extt(self,i):
@@ -91,7 +83,7 @@ class Xiapi(Camera):
     Else, it will open any camera
     """
     self.sn = sn
-    self.close()
+    #self.close()
     if self.sn is not None:
       self.cam.open_device_by_sn(self.sn)
     else:
@@ -120,7 +112,7 @@ class Xiapi(Camera):
     """
     self.cam.get_image(self.img)
     t = time.time()
-    return t,frame.get_image_data_numpy()
+    return t,self.img.get_image_data_numpy()
 
   def close(self):
     """
