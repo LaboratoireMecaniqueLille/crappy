@@ -31,6 +31,8 @@ class Correl(MasterBlock):
     self.Nfields = kwargs.get("Nfields")
     self.verbose = kwargs.get("verbose", 0)
     self.config = kwargs.get("config", True)
+    # A function to apply to the image
+    self.transform = kwargs.pop("transform",None)
     if self.Nfields is None:
       try:
         self.Nfields = len(kwargs.get("fields"))
@@ -89,13 +91,18 @@ with fields=(.,.) or Nfields=k")
     if self.config:
       Camera_config(self.camera).main()
     t,img = self.camera.read_image()
+    if self.transform is not None:
+      img = self.transform(img)
     self.correl = Correl_class(img.shape, **self.kwargs)
     self.loops = 0
     self.nloops = 50
 
   def begin(self):
     t,img = self.camera.read_image()
-    self.correl.setOrig(img.astype(np.float32))
+    if self.transform is not None:
+      self.correl.setOrig(self.transform(img).astype(np.float32))
+    else:
+      self.correl.setOrig(img.astype(np.float32))
     self.correl.prepare()
     self.last_t = time() - 1
     if self.save_folder:
@@ -116,7 +123,11 @@ with fields=(.,.) or Nfields=k")
                self.save_folder + "img_%.6d_%.5f.tiff" % (
                self.loops, t-self.t0))
 
-    out = [t-self.t0] + self.correl.getDisp(img.astype(np.float32)).tolist()
+    if self.transform is not None:
+      out = [t-self.t0] + self.correl.getDisp(
+          self.transform(img).astype(np.float32)).tolist()
+    else:
+      out = [t-self.t0] + self.correl.getDisp(img.astype(np.float32)).tolist()
     if self.res:
       out += [self.correl.getRes()]
     self.send(out)
