@@ -255,6 +255,7 @@ with a border of 5% the dimension")
         self.H[i, j] = self._mulRedKrnl(self.devG[i], self.devG[j]).get()
         if i != j:
           self.H[j, i] = self.H[i, j]
+    self.debug(3,"Hessian:\n", self.H)
     self.devHi.set(np.linalg.inv(self.H))  # *1e-3)
     # Looks stupid but prevents a useless devHi copy if nothing is printed
     if self.verbose >= 3:
@@ -787,8 +788,11 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     if kwargs.get("mask") is not None:
       self.setMask(kwargs.get("mask"))
 
-  def getFields(self, y, x):
+  def getFields(self, y=None, x=None):
     """Returns the fields, reampled to size (y,x)"""
+    if x is None or y is None:
+      y = self.h[0]
+      x = self.w[0]
     outX = gpuarray.empty((self.Nfields, y, x), np.float32)
     outY = gpuarray.empty((self.Nfields, y, x), np.float32)
     grid = (int(ceil(x / 32)), int(ceil(y / 32)))
