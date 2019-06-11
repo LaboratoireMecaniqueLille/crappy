@@ -17,4 +17,4 @@ class Trig_on_value(Condition):
 
   def evaluate(self,data):
     if data[self.name] in self.values:
-      return {}
+      return data
