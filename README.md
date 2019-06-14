@@ -9,7 +9,7 @@ Requirements
 
 To install Crappy you will need:
 
-- Python 2 (2.6 or higher)
+- Python 3 (3.4 or higher)
 - Numpy
 - Scipy
 - Matplotlib
@@ -28,7 +28,7 @@ These packages are not mandatory but will provide additionnal functions:
 Installation
 ------------
 
-Only tested on Ubuntu 14.04 / 15.10 / 16.04:
+Only tested on Ubuntu 14.04 / 16.04 / 18.04:
 
        git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
 
