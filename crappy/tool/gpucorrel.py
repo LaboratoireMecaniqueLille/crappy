@@ -450,7 +450,7 @@ with a border of 5% the dimension")
 # =======================================================================#
 
 
-class Correl:
+class GPUCorrel:
   """
   Identify the displacement between two images
 

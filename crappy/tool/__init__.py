@@ -4,6 +4,6 @@ from .cameraConfig import Camera_config
 from .videoextensoConfig import VE_config
 from .datapicker import DataPicker
 try:
-  from .correl import Correl
+  from .gpucorrel import GPUCorrel
 except ImportError:
-  Correl = NotInstalled("Correl")
+  GPUCorrel = NotInstalled("GPUCorrel")

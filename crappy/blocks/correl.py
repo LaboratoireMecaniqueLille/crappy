@@ -6,7 +6,7 @@ import SimpleITK as sitk
 import os
 
 from .masterblock import MasterBlock
-from ..tool import Camera_config,Correl as Correl_class
+from ..tool import Camera_config,GPUCorrel
 from ..camera import camera_list
 
 
@@ -93,7 +93,7 @@ with fields=(.,.) or Nfields=k")
     t,img = self.camera.read_image()
     if self.transform is not None:
       img = self.transform(img)
-    self.correl = Correl_class(img.shape, **self.kwargs)
+    self.correl = GPUCorrel(img.shape, **self.kwargs)
     self.loops = 0
     self.nloops = 50
 
