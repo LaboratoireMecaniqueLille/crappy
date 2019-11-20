@@ -12,7 +12,7 @@ from sys import platform
 from .._global import NotInstalled,NotSupported
 from .inout import InOut,MetaIO
 
-from .agilent34420A import Agilent34420A
+from .agilent34420A import Agilent34420a
 from .arduino import Arduino
 from .opsens import Opsens
 

@@ -4,10 +4,10 @@ from time import time
 from .inout import InOut
 
 
-class Agilent34420A(InOut):
+class Agilent34420a(InOut):
   """Sensor class for Agilent34420A devices."""
 
-  def __init__(self, mode="VOLT", device='/dev/ttyUSB0',
+  def __init__(self, mode=b"VOLT", device='/dev/ttyUSB0',
       baudrate=9600, timeout=1):
     """
     This class contains method to measure values of resistance or voltage
@@ -40,18 +40,18 @@ class Agilent34420A(InOut):
   def open(self):
     self.ser = serial.Serial(port=self.device, baudrate=self.baudrate,
         timeout=self.timeout)
-    self.ser.write("*RST;*CLS;*OPC?\n")
-    self.ser.write("SENS:FUNC \"" + self.mode + "\";  \n")
-    self.ser.write("SENS:" + self.mode + ":NPLC 2  \n")
+    self.ser.write(b"*RST;*CLS;*OPC?\n")
+    self.ser.write(b"SENS:FUNC \"" + self.mode + b"\";  \n")
+    self.ser.write(b"SENS:" + self.mode + b":NPLC 2  \n")
     # ser.readline()
-    self.ser.write("SYST:REM\n")
+    self.ser.write(b"SYST:REM\n")
     self.get_data()
 
   def get_data(self):
     """
     Read the signal, return False if error and print 'bad serial'.
     """
-    self.ser.write("READ?  \n")
+    self.ser.write(b"READ?  \n")
     t = time()
     try:
       return [t,float(self.ser.readline())]
