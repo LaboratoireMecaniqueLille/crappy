@@ -47,6 +47,7 @@ class Video_extenso(MasterBlock):
                         ("labels",default_labels),
                         ("show_fps",True),
                         ("show_image",False),
+                        ("wait_l0",False),
                         ("end",True),
                         ]:
       try:
@@ -90,6 +91,7 @@ class Video_extenso(MasterBlock):
     t,img = self.cam.read_image()
     if self.inputs and self.inputs[0].poll():
       self.inputs[0].clear()
+      self.wait_l0 = False
       print("[VE block] resetting L0")
       self.ve.save_length()
     try:
@@ -123,7 +125,10 @@ class Video_extenso(MasterBlock):
         self.last_fps_loops = self.loops
 
     centers = [(r['y'],r['x']) for r in self.ve.spot_list]
-    self.send([t-self.t0,centers]+d)
+    if not self.wait_l0:
+      self.send([t-self.t0,centers]+d)
+    else:
+      self.send([t-t0,[(0,0)]*4,0,0])
 
   def save_img(self,t,img):
     image = sitk.GetImageFromArray(img)
