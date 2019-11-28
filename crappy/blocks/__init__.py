@@ -26,9 +26,14 @@ from .sink import Sink
 from .videoExtenso import Video_extenso
 
 try:
-  from .correl import Correl
+  from .gpucorrel import GPUCorrel
 except ImportError:
-  Correl = NotInstalled('Correl')
+  GPUCorrel = NotInstalled('GPUCorrel')
+
+try:
+  from .discorrel import DISCorrel
+except ImportError:
+  DISCorrel = NotInstalled('DISCorrel')
 
 try:
   from .hdf_saver import Hdf_saver

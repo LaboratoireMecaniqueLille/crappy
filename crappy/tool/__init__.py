@@ -7,3 +7,8 @@ try:
   from .gpucorrel import GPUCorrel
 except ImportError:
   GPUCorrel = NotInstalled("GPUCorrel")
+try:
+  from .discorrel import DISCorrel
+  from .discorrelConfig import DISConfig
+except ImportError:
+  DISCorrel = NotInstalled("DISCorrel")
