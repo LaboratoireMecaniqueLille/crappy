@@ -128,7 +128,7 @@ class Video_extenso(MasterBlock):
     if not self.wait_l0:
       self.send([t-self.t0,centers]+d)
     else:
-      self.send([t-t0,[(0,0)]*4,0,0])
+      self.send([t-self.t0,[(0,0)]*4,0,0])
 
   def save_img(self,t,img):
     image = sitk.GetImageFromArray(img)
@@ -147,5 +147,6 @@ class Video_extenso(MasterBlock):
 
   def finish(self):
     self.ve.stop_tracking()
+    self.cam.close()
     if self.show_image:
       cv2.destroyAllWindows()
