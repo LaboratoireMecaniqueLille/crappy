@@ -7,6 +7,18 @@ import numpy as np
 from .masterblock import MasterBlock
 
 
+def split(x,y):
+  """
+  Takes [x0,x1,x2,...,xn] and [y0,y1,y2,...,yn]
+
+  returns [x0,x1,x1,x2,x2,...,xn,xn] and [y0,y0,y1,y1,y2,...,y(n-1),yn]
+  This is to move only one axis at a time when plotting the list (see interp)
+  """
+  rx = sum([[i,i] for i in x],[])[1:]
+  ry = sum([[i,i] for i in y],[])[:-1]
+  return rx,ry
+
+
 class Grapher(MasterBlock):
   """
   The grapher receive data from a block (via a Link) and plots it.
@@ -60,7 +72,6 @@ class Grapher(MasterBlock):
     self.window_pos = kwargs.pop("window_pos", None)
     self.interp = kwargs.pop("interp",True)
     self.backend = kwargs.pop("backend",None)
-    self.factor = 1
     if kwargs:
       raise AttributeError("Invalid kwarg(s) in Grapher: " + str(kwargs))
     self.labels = args
@@ -75,6 +86,10 @@ class Grapher(MasterBlock):
     self.lines = []
     for _ in self.labels:
       self.lines.append(self.ax.plot([], [])[0])
+    # Keep only 1/factor points on each line
+    self.factor = [1 for i in self.labels]
+    # Count to drop exactly 1/factor points, no more and no less
+    self.counter = [0 for i in self.labels]
     legend = [y for x, y in self.labels]
     plt.legend(legend, bbox_to_anchor=(-0.03, 1.02, 1.06, .102), loc=3,
                ncol=len(legend), mode="expand", borderaxespad=1)
@@ -95,7 +110,8 @@ class Grapher(MasterBlock):
     for l in self.lines:
       l.set_xdata([])
       l.set_ydata([])
-    self.factor = 1
+    self.factor = [1 for i in self.labels]
+    self.counter = [0 for i in self.labels]
 
   def loop(self):
     # We need to recv data from all the links, but keep
@@ -106,20 +122,20 @@ class Grapher(MasterBlock):
       for d in data:
         if lx in d and ly in d: # Find the first input with both labels
           if not self.interp:
-            l = len(d[lx][::self.factor])
-            dx = [None]*(2*l-1)
-            dx[::2] = d[lx][::self.factor]
-            dx[1::2] = dx[2::2]
-            dy = [None]*(2*l-1)
-            dy[::2] = d[ly][::self.factor]
-            dy[1::2] = dy[:-1:2]
+            dx = d[lx][self.factor[i]-self.counter[i]-1::self.factor[i]]
+            dy = d[ly][self.factor[i]-self.counter[i]-1::self.factor[i]]
+            if not dx:
+              self.counter[i] = (self.counter[i]+len(d[lx]))%self.factor[i]
+              break
+            dx,dy = split(dx,dy)
             if self.lasty[i] is not None:
               dx.insert(0,dx[0])
               dy.insert(0,self.lasty[i])
             self.lasty[i] = dy[-1]
           else:
-            dx = d[lx][::self.factor]
-            dy = d[ly][::self.factor]
+            dx = d[lx][self.factor[i]-self.counter[i]-1::self.factor[i]]
+            dy = d[ly][self.factor[i]-self.counter[i]-1::self.factor[i]]
+          self.counter[i] = (self.counter[i]+len(d[lx]))%self.factor[i]
           x = np.hstack((self.lines[i].get_xdata(), dx))
           y = np.hstack((self.lines[i].get_ydata(), dy))
           break
@@ -131,9 +147,16 @@ class Grapher(MasterBlock):
         y = y[-self.length:]
       elif len(x) > self.maxpt:
         # Reduce the number of points if we have to many to display
-        x = x[::2]
-        y = y[::2]
-        self.factor *= 2
+        print("[Grapher] Too many points on the graph {} ({}>{})".format(
+          i,len(x),self.maxpt))
+        if self.interp:
+          x,y = x[::2], y[::2]
+        else:
+          x,y = x[::4], y[::4]
+          x,y = split(x,y)
+          self.lasty[i] = y[-1]
+        self.factor[i] *= 2
+        print("[Grapher] Resampling factor is now {}".format(self.factor[i]))
       self.lines[i].set_xdata(x)
       self.lines[i].set_ydata(y)
     self.ax.relim() # Update the window
