@@ -6,11 +6,11 @@ import SimpleITK as sitk
 import os
 
 from .masterblock import MasterBlock
-from ..tool import Camera_config,GPUCorrel
+from ..tool import Camera_config,GPUCorrel as GPUCorrel_tool
 from ..camera import camera_list
 
 
-class Correl(MasterBlock):
+class GPUCorrel(MasterBlock):
   """
     This block uses the Correl class (in crappy/tool/correl.py)
 
@@ -93,7 +93,7 @@ with fields=(.,.) or Nfields=k")
     t,img = self.camera.read_image()
     if self.transform is not None:
       img = self.transform(img)
-    self.correl = GPUCorrel(img.shape, **self.kwargs)
+    self.correl = GPUCorrel_tool(img.shape, **self.kwargs)
     self.loops = 0
     self.nloops = 50
 
