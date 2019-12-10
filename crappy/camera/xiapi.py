@@ -43,10 +43,14 @@ class Xiapi(Camera):
     return self.cam.get_exposure()
 
   def _get_AEAG(self):
-    pass
+    return self.cam.get_param('aeag')
 
   def _get_extt(self):
-    pass
+    r = self.cam.get_trigger_source()
+    if r == 'XI_TRG_OFF':
+      return False
+    else:
+      return True
 
   def _set_w(self,i):
     self.cam.set_width(i)
@@ -67,10 +71,17 @@ class Xiapi(Camera):
     self.cam.set_exposure(i)
 
   def _set_AEAG(self,i):
-    pass
+    self.cam.set_param('aeag',int(i))
 
   def _set_extt(self,i):
-    pass
+    self.cam.stop_acquisition()
+    if i:
+      self.cam.set_gpi_mode('XI_GPI_TRIGGER')
+      self.cam.set_trigger_source('XI_TRG_EDGE_RISING')
+    else:
+      self.cam.set_gpi_mode('XI_GPI_OFF')
+      self.cam.set_trigger_source('XI_TRG_OFF')
+    self.cam.start_acquisition()
 
   def open(self,sn=None,**kwargs):
     """
