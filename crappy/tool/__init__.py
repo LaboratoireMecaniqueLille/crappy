@@ -10,5 +10,5 @@ except ImportError:
 try:
   from .discorrel import DISCorrel
   from .discorrelConfig import DISConfig
-except ImportError:
+except (ImportError,NameError):
   DISCorrel = NotInstalled("DISCorrel")

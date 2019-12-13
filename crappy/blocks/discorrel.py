@@ -9,8 +9,8 @@ try:
 except ImportError:
   print("[Warning] SimpleITK is not installed, cannot save images!")
 
-from ..tool.discorrel import DISCorrel as DIS
-from ..tool.discorrelConfig import DISConfig
+from ..tool import DISCorrel as DIS
+from ..tool import DISConfig
 from .masterblock import MasterBlock
 from ..camera import Camera
 
