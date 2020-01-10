@@ -75,8 +75,6 @@ class Grapher(MasterBlock):
     if kwargs:
       raise AttributeError("Invalid kwarg(s) in Grapher: " + str(kwargs))
     self.labels = args
-    if not self.interp:
-      self.lasty = [None]*len(self.labels)
 
   def prepare(self):
     if self.backend:
@@ -85,7 +83,10 @@ class Grapher(MasterBlock):
     self.ax = self.f.add_subplot(111)
     self.lines = []
     for _ in self.labels:
-      self.lines.append(self.ax.plot([], [])[0])
+      if self.interp:
+        self.lines.append(self.ax.plot([], [])[0])
+      else:
+        self.lines.append(self.ax.step([], [])[0])
     # Keep only 1/factor points on each line
     self.factor = [1 for i in self.labels]
     # Count to drop exactly 1/factor points, no more and no less
@@ -121,20 +122,8 @@ class Grapher(MasterBlock):
       x = 0 # So that if we don't find it, we do nothing
       for d in data:
         if lx in d and ly in d: # Find the first input with both labels
-          if not self.interp:
-            dx = d[lx][self.factor[i]-self.counter[i]-1::self.factor[i]]
-            dy = d[ly][self.factor[i]-self.counter[i]-1::self.factor[i]]
-            if not dx:
-              self.counter[i] = (self.counter[i]+len(d[lx]))%self.factor[i]
-              break
-            dx,dy = split(dx,dy)
-            if self.lasty[i] is not None:
-              dx.insert(0,dx[0])
-              dy.insert(0,self.lasty[i])
-            self.lasty[i] = dy[-1]
-          else:
-            dx = d[lx][self.factor[i]-self.counter[i]-1::self.factor[i]]
-            dy = d[ly][self.factor[i]-self.counter[i]-1::self.factor[i]]
+          dx = d[lx][self.factor[i]-self.counter[i]-1::self.factor[i]]
+          dy = d[ly][self.factor[i]-self.counter[i]-1::self.factor[i]]
           self.counter[i] = (self.counter[i]+len(d[lx]))%self.factor[i]
           x = np.hstack((self.lines[i].get_xdata(), dx))
           y = np.hstack((self.lines[i].get_ydata(), dy))
@@ -149,12 +138,7 @@ class Grapher(MasterBlock):
         # Reduce the number of points if we have to many to display
         print("[Grapher] Too many points on the graph {} ({}>{})".format(
           i,len(x),self.maxpt))
-        if self.interp:
-          x,y = x[::2], y[::2]
-        else:
-          x,y = x[::4], y[::4]
-          x,y = split(x,y)
-          self.lasty[i] = y[-1]
+        x,y = x[::2], y[::2]
         self.factor[i] *= 2
         print("[Grapher] Resampling factor is now {}".format(self.factor[i]))
       self.lines[i].set_xdata(x)
