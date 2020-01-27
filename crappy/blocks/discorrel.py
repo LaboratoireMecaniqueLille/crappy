@@ -81,6 +81,12 @@ class DISCorrel(MasterBlock):
 
   def loop(self):
     self.loops += 1
+    if self.inputs and self.inputs[0].poll():
+      self.inputs[0].clear()
+      self.correl.img0 = img
+      self.img0 = img
+      print("[CORREL block] : Resetting L0")
+
     t,img = self.cam.read_image()
     d = self.correl.calc(img)
     if self.save_folder and not self.loops%self.save_period:
