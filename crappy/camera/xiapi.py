@@ -96,7 +96,7 @@ class Xiapi(Camera):
     self.sn = sn
     #self.close()
     if self.sn is not None:
-      self.cam.open_device_by_sn(self.sn)
+      self.cam.open_device_by_SN(self.sn)
     else:
       self.cam.open_device()
 
