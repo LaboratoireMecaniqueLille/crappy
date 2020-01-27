@@ -34,25 +34,25 @@ def get_field(s,h,w):
     u,v = z(h,w)
     return v,-u
   elif s == 'exx':
-    return (np.concatenate((np.linspace(-w/2, w/2, w,
+    return (np.concatenate((np.linspace(-w/200, w/200, w,
             dtype=np.float32)[np.newaxis, :],)*h, axis=0),
             zeros(h,w))
   elif s == 'eyy':
     return (zeros(h,w),
-            np.concatenate((np.linspace(-h/2, h/2, h,
+            np.concatenate((np.linspace(-h/200, h/200, h,
             dtype=np.float32)[:, np.newaxis],)*w, axis=1))
   elif s == 'exy':
-    return (np.concatenate((np.linspace(-h/2, h/2, h,
+    return (np.concatenate((np.linspace(-h/200, h/200, h,
             dtype=np.float32)[:, np.newaxis],)*w, axis=1),
             zeros(h,w))
   elif s == 'eyx':
     return (zeros(h,w),
-            np.concatenate((np.linspace(-w/2, w/2, w,
+            np.concatenate((np.linspace(-w/200, w/200, w,
             dtype=np.float32)[np.newaxis, :],)*h, axis=0))
   elif s == 'exy2':
-    return (np.concatenate((np.linspace(-h/2, h/2, h,
+    return (np.concatenate((np.linspace(-h/200, h/200, h,
             dtype=np.float32)[:, np.newaxis],)*w, axis=1),
-            (np.concatenate((np.linspace(-w/2, w/2, w,
+            (np.concatenate((np.linspace(-w/200, w/200, w,
             dtype=np.float32)[np.newaxis, :],)*h, axis=0)))
 
   elif s == 'z':
