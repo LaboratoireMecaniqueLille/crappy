@@ -10,6 +10,8 @@ import pycuda.gpuarray as gpuarray
 from pycuda.reduction import ReductionKernel
 import cv2
 
+from .fields import get_field
+
 context = None
 
 
@@ -565,9 +567,6 @@ class GPUCorrel:
         of 1 pixel and are centered in the middle of the image.
         They are generated to have the size of your image.
 
-      To have the stretch in % for exx and eyy, simply divide the value by HALF
-        the dimension in pixel along this axis (because it goes from -1 to 1)
-
       You can mix strings and tuples at your convenience to perform
         your identification.
 
@@ -855,75 +854,8 @@ See docstring of Correl")
     self.fieldsYArray = []
     for i in range(self.Nfields):
       if isinstance(fields[i], str):
-        c = fields[i].lower()
-        # Rigid body
-        if c in ['x', 'mx', 'tx']:  # Movement along X
-          fields[i] = (np.ones((self.h[0], self.w[0]), dtype=np.float32),
-                       np.zeros((self.h[0], self.w[0]), dtype=np.float32))
-        elif c in ['y', 'my', 'ty']:  # ..along Y
-          fields[i] = (np.zeros((self.h[0], self.w[0]), dtype=np.float32),
-                       np.ones((self.h[0], self.w[0]), dtype=np.float32))
-        elif c in ['r', 'rz', 'rot']:  # Rotation
-          sh = 1/(self.w[0]*self.w[0]/self.h[0]/self.h[0]+1)**.5
-          sw = self.w[0]*sh/self.h[0]
-          z = np.meshgrid(np.arange(-sw, sw, 2*sw/self.w[0], dtype=np.float32),
-                          np.arange(-sh, sh, 2*sh/self.h[0], dtype=np.float32))
-          fields[i] = (z[1].astype(np.float32), -z[0].astype(np.float32))
-
-        # Uniform deformations
-        elif c in ['ex', 'exx']:  # Stretch along X
-          fields[i] = (np.concatenate((np.arange(-1, 1, 2/self.w[0],
-                        dtype=np.float32)[np.newaxis, :],)*self.h[0], axis=0),
-                       np.zeros((self.h[0], self.w[0]), dtype=np.float32))
-        elif c in ['ey', 'eyy']:  # Stretch along Y
-          fields[i] = (np.zeros((self.h[0], self.w[0]), dtype=np.float32),
-                       np.concatenate((np.arange(-1, 1, 2. / self.h[0],
-                         dtype=np.float32)[:, np.newaxis],)*self.w[0], axis=1))
-        elif c in ['exy', 'tau', 's']:  # Shear
-          sh = 1/(self.w[0]*self.w[0]/self.h[0]/self.h[0]+1)**.5
-          sw = self.w[0]*sh/self.h[0]
-          z = np.meshgrid(np.arange(-sw, sw, 2*sw/self.w[0], dtype=np.float32),
-                          np.arange(-sh, sh, 2*sh/self.h[0], dtype=np.float32))
-          fields[i] = (z[1].astype(np.float32), z[0].astype(np.float32))
-
-        # Bonus (Is equivalent to exx+eyy, don't use them together!)
-        elif c == 'z' or c in ['mz', 'tz']:  # Shrinking/Zooming
-          sh = 1/(self.w[0]*self.w[0]/self.h[0]/self.h[0]+1)**.5
-          sw = self.w[0]*sh/self.h[0]
-          z = np.meshgrid(np.arange(-sw, sw, 2*sw/self.w[0], dtype=np.float32),
-                          np.arange(-sh, sh, 2*sh/self.h[0], dtype=np.float32))
-          fields[i] = (z[0].astype(np.float32), z[1].astype(np.float32))
-
-        # Quadratic fields
-        elif c == 'uxx':  # U(x,y) = x², V = 0
-          fields[i] = (
-            np.concatenate(((np.arange(-1, 1, 2/self.w[0],dtype=np.float32)**2)
-                            [np.newaxis, :],) * self.h[0], axis=0),
-            np.zeros((self.h[0], self.w[0]), dtype=np.float32))
-        elif c == 'uyy':  # U(x,y) = y², V = 0
-          fields[i] = (
-            np.concatenate(((np.arange(-1, 1, 2/self.h[0],dtype=np.float32)**2)
-                            [:, np.newaxis],) * self.w[0], axis=1),
-            np.zeros((self.h[0], self.w[0]), dtype=np.float32))
-        elif c == 'uxy':  # U(x,y) = xy, V = 0
-          fields[i] = (np.array([[k * j for j in np.arange(-1, 1, 2/self.w[0])]
-                       for k in np.arange(-1,1,2/self.h[0])],dtype=np.float32),
-                       np.zeros((self.h[0], self.w[0]), np.float32))
-        elif c == 'vxx':  # U = 0, V(x,y) = x²
-          fields[i] = (np.zeros((self.h[0], self.w[0]), dtype=np.float32),
-                       np.concatenate(((np.arange(-1, 1, 2/self.w[0],
-                       dtype=np.float32)**2)[np.newaxis,:],)*self.h[0],axis=0))
-        elif c == 'vyy':  # U = 0, V(x,y) = y²
-          fields[i] = (np.zeros((self.h[0], self.w[0]), dtype=np.float32),
-                       np.concatenate(((np.arange(-1, 1, 2/self.h[0],
-                       dtype=np.float32)**2)[:,np.newaxis],)*self.w[0],axis=1))
-        elif c == 'vxy':  # U = 0, V(x,y) = xy
-          fields[i] = (np.zeros((self.h[0], self.w[0]), np.float32),
-                       np.array([[k * j for j in np.arange(-1, 1, 2/self.w[0])]
-                       for k in np.arange(-1,1,2/self.h[0])],dtype=np.float32))
-        else:
-          self.debug(0, "Error ! Unrecognized field parameter:", fields[i])
-          raise ValueError
+        fields[i] = get_field(fields[i].lower(),
+            self.h[0],self.w[0])
 
       self.fieldsXArray.append(toArray(fields[i][0], "C"))
       self.texFx[i].set_array(self.fieldsXArray[i])
