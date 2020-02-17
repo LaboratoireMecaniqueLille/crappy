@@ -60,12 +60,8 @@ with fields=(.,.) or Nfields=k")
     if kwargs.get("labels") is not None:
       del kwargs["labels"]
     # Handle res parameters: if true, also return the residual
-    if kwargs.get("res") is not None:
-      self.res = kwargs["res"]
-      del kwargs["res"]
-      self.labels += ("res",)
-    else:
-      self.res = True
+    self.res = kwargs.get("res",True)
+    if self.res:
       self.labels += ("res",)
     if "cam_kwargs" in kwargs:
       self.cam_kwargs = kwargs["cam_kwargs"]
@@ -116,13 +112,14 @@ with fields=(.,.) or Nfields=k")
       print("[Correl block] processed", self.nloops / (t-self.last_t), "ips")
       self.last_t = t
     self.loops += 1
-    t,img = self.camera.read_image()
-    if self.save_folder:
-      image = sitk.GetImageFromArray(img)
-      sitk.WriteImage(image,
-               self.save_folder + "img_%.6d_%.5f.tiff" % (
-               self.loops, t-self.t0))
-
+    if self.inputs: # If we have an input: external trigger
+      data = self.inputs[0].recv()
+      if data is None:
+        return
+      else:
+        t,img = self.camera.get_image() # No fps control
+    else:
+      t,img = self.camera.read_image() # Limits to max_fps
     if self.transform is not None:
       out = [t-self.t0] + self.correl.getDisp(
           self.transform(img).astype(np.float32)).tolist()
@@ -131,3 +128,8 @@ with fields=(.,.) or Nfields=k")
     if self.res:
       out += [self.correl.getRes()]
     self.send(out)
+    if self.save_folder:
+      image = sitk.GetImageFromArray(img)
+      sitk.WriteImage(image,
+               self.save_folder + "img_%.6d_%.5f.tiff" % (
+               self.loops, t-self.t0))
