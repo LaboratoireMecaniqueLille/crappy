@@ -32,7 +32,12 @@ def get_field(s,h,w):
     return zeros(h,w),ones(h,w)
   elif s == 'r':
     u,v = z(h,w)
-    return v,-u
+    # Ratio (angle) of the rotation
+    # Should be π/180 to be 1 for 1 deg
+    # Z has and amplitude of 1 in the corners
+    # 360 because h²+w² is twice the distance center-corner
+    r = (h**2+w**2)**.5*np.pi/360
+    return v*r,-u*r
   elif s == 'exx':
     return (np.concatenate((np.linspace(-w/200, w/200, w,
             dtype=np.float32)[np.newaxis, :],)*h, axis=0),
@@ -56,7 +61,10 @@ def get_field(s,h,w):
             dtype=np.float32)[np.newaxis, :],)*h, axis=0)))
 
   elif s == 'z':
-    return z(h,w)
+    u,v = z(h,w)
+    # Zoom in %
+    r = (h**2+w**2)**.5/200
+    return u*r,v*r
   else:
     print("Unknown field:",s)
     raise NameError
