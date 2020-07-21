@@ -73,6 +73,11 @@ with fields=(.,.) or Nfields=k")
       del kwargs["save_folder"]
     else:
       self.save_folder = None
+    if "save_period" in kwargs:
+      self.save_period = kwargs["save_period"]
+      del kwargs["save_period"]
+    else:
+      self.save_period = 1
     self.kwargs = kwargs
 
   def prepare(self):
@@ -128,7 +133,7 @@ with fields=(.,.) or Nfields=k")
     if self.res:
       out += [self.correl.getRes()]
     self.send(out)
-    if self.save_folder:
+    if self.save_folder and self.loops % self.save_period == 0:
       image = sitk.GetImageFromArray(img)
       sitk.WriteImage(image,
                self.save_folder + "img_%.6d_%.5f.tiff" % (
