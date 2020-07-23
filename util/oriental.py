@@ -39,6 +39,8 @@ for c in 'abcd':
 actuator_dict['x'] = actuator_dict['b']+actuator_dict['d']
 actuator_dict['y'] = actuator_dict['a']+actuator_dict['c']
 
+actuator_dict['z'] = actuator_dict['x']+actuator_dict['y']
+
 print(help_string)
 for i in range(4):
   print("BiaxeTech{} (on {}) is motor {}".format(
@@ -69,7 +71,7 @@ while True:
       axe.set_speed(0)
     continue
 
-  if user_input[0] in 'xyabcd':
+  if user_input[0] in 'xyzabcd':
     for axe in actuator_dict[user_input[0]]:
       axe.set_speed(speed)
 
