@@ -33,6 +33,11 @@ class GPUCorrel(MasterBlock):
     self.config = kwargs.get("config", True)
     # A function to apply to the image
     self.transform = kwargs.pop("transform",None)
+    self.discard_lim = kwargs.pop("discard_lim",3)
+    self.discard_ref = kwargs.pop("discard_ref",5)
+    # If the residual of the image exceeds <discard_lim> times the
+    # average of the residual of the last <discard_ref> images,
+    # do not send the result (requires res=True)
     if self.Nfields is None:
       try:
         self.Nfields = len(kwargs.get("fields"))
@@ -97,6 +102,7 @@ with fields=(.,.) or Nfields=k")
     self.correl = GPUCorrel_tool(img.shape, **self.kwargs)
     self.loops = 0
     self.nloops = 50
+    self.res_hist = [np.inf]
 
   def begin(self):
     t,img = self.camera.read_image()
@@ -125,6 +131,11 @@ with fields=(.,.) or Nfields=k")
         t,img = self.camera.get_image() # No fps control
     else:
       t,img = self.camera.read_image() # Limits to max_fps
+    if self.save_folder and self.loops % self.save_period == 0:
+      image = sitk.GetImageFromArray(img)
+      sitk.WriteImage(image,
+               self.save_folder + "img_%.6d_%.5f.tiff" % (
+               self.loops, t-self.t0))
     if self.transform is not None:
       out = [t-self.t0] + self.correl.getDisp(
           self.transform(img).astype(np.float32)).tolist()
@@ -132,9 +143,10 @@ with fields=(.,.) or Nfields=k")
       out = [t-self.t0] + self.correl.getDisp(img.astype(np.float32)).tolist()
     if self.res:
       out += [self.correl.getRes()]
+      if self.discard_lim:
+        self.res_hist = self.res_hist+[out[-1]]
+        self.res_hist = self.res_hist[-self.discard_ref-1:]
+        if self.res_hist[-1] > self.discard_lim*np.average(self.res_hist[:-1]):
+          print("[Correl block] Residual too high, not sending values")
+          return
     self.send(out)
-    if self.save_folder and self.loops % self.save_period == 0:
-      image = sitk.GetImageFromArray(img)
-      sitk.WriteImage(image,
-               self.save_folder + "img_%.6d_%.5f.tiff" % (
-               self.loops, t-self.t0))
