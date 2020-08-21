@@ -7,17 +7,16 @@ complex experimental setups.
 Requirements
 ------------
 
-To install Crappy you will need:
-
-- Python 3 (3.4 or higher)
+To install Crappy you will need Python 3 (3.4 or higher)
+with the following modules :
 - Numpy
-- Scipy
 - Matplotlib
 - openCV
 - pyserial
 - scikit-image
 
-These packages are not mandatory but will provide additionnal functions:
+These modules are not mandatory but will provide additionnal functionalities:
+- SimpleITK (to save images to disk)
 - Ximea API (for ximea cameras)
 - Labjack LJM (for labjack support)
 - pycuda (for real-time correlation)
@@ -28,7 +27,7 @@ These packages are not mandatory but will provide additionnal functions:
 Installation
 ------------
 
-Only tested on Ubuntu 14.04 / 16.04 / 18.04:
+Only tested on Ubuntu 16.04 / 18.04 and 20.04:
 
        git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
 
