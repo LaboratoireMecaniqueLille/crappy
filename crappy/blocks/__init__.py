@@ -31,6 +31,11 @@ except ImportError:
   GPUCorrel = NotInstalled('GPUCorrel')
 
 try:
+  from .gpuve import GPUVE
+except ImportError:
+  GPUVE = NotInstalled('GPUVE')
+
+try:
   from .discorrel import DISCorrel
 except ImportError:
   DISCorrel = NotInstalled('DISCorrel')
