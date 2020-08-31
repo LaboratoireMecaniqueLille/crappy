@@ -41,6 +41,11 @@ except ImportError:
   DISCorrel = NotInstalled('DISCorrel')
 
 try:
+  from .disve import DISVE
+except ImportError:
+  DISVE = NotInstalled('DISVE')
+
+try:
   from .hdf_saver import Hdf_saver
 except ImportError:
   Hdf_saver = NotInstalled("Hdf_saver")
