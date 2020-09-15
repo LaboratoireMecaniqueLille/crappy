@@ -178,7 +178,7 @@ GNU General Public License v2 or later (GPLv2+)',
   # your project is installed. For an analysis of "install_requires" vs pip's
   # requirements files see:
   # https://packaging.python.org/en/latest/requirements.html
-  install_requires=['scipy','numpy', 'matplotlib','pyserial','scikit-image'],
+  install_requires=['numpy', 'matplotlib','pyserial','scikit-image'],
 
   # List additional groups of dependencies here (e.g. development
   # dependencies). You can install these using the following syntax,
