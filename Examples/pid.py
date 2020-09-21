@@ -11,7 +11,7 @@ if __name__ == "__main__":
     {'type':'constant','value':1800,'condition':'delay=3'},
     {'type':'constant','value':500,'condition':'delay=3'},
     {'type':'sine','amplitude':2000,'offset':1000,'freq':.3,'condition':'delay=15'}
-    ])
+    ],spam=True)
 
   kv = 1000
 
@@ -21,11 +21,12 @@ if __name__ == "__main__":
                                'speed_label':'speed',
                                # Motor properties:
                                'kv':kv,
-                               'inertia':2,
+                               'inertia':4,
                                'rv':.2,
                                'fv':1e-5
                                }])
-  graph_m = crappy.blocks.Grapher(('t(s)','speed'),('t(s)','cmd'),interp=False)
+  graph_m = crappy.blocks.Grapher(('t(s)','speed'),('t(s)','cmd'))
+  # ,interp=False)
 
   crappy.link(mot,graph_m)
   crappy.link(g,graph_m)
@@ -34,8 +35,8 @@ if __name__ == "__main__":
   #crappy.start()
 
   p = 38/kv
-  i = .28
-  d = .015
+  i = 1
+  d = .05
 
   pid = crappy.blocks.PID(kp=p,
                           ki=i,
