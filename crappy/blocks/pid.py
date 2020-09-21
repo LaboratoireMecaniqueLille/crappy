@@ -1,5 +1,5 @@
 #coding: utf-8
-from __future__ import division
+from time import time
 
 from .masterblock import MasterBlock
 
@@ -107,8 +107,8 @@ class PID(MasterBlock):
     data = self.inputs[self.feedback_link_id].recv_last(True)
     t = data[self.time_label]
     dt = t - self.last_t
-    if dt == 0:
-      dt = 1e-5
+    if dt <= 0:
+      return
     feedback = data[self.input_label]
     if self.feedback_link_id == self.target_link_id:
       target = data[self.target_label]
@@ -137,6 +137,6 @@ class PID(MasterBlock):
       out = self.clamp(out)
     self.i_term = self.clamp(self.i_term,self.i_limit)
     if self.send_terms:
-      self.send([t,out,p_term,self.i_term,d_term])
+      self.send([time()-self.t0,out,p_term,self.i_term,d_term])
     else:
-      self.send([t,out])
+      self.send([time()-self.t0,out])
