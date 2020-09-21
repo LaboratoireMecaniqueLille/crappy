@@ -358,6 +358,19 @@ class MasterBlock(Process):
     for o in self.outputs:
       o.send(data)
 
+  def recv_all(self):
+    """
+    Receive new data from all the inputs (not as chunks)
+
+    Will simply call recv on all non empty links and return a single dict
+    If the same label comes from multiple links, it may be overriden
+    """
+    r = {}
+    for i in self.inputs:
+      if i.poll():
+        r.update(i.recv())
+    return r
+
   def get_last(self, num=None):
     """
     To get the latest value of each labels from all inputs

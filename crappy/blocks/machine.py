@@ -23,6 +23,8 @@ class Machine(MasterBlock):
     - freq (float, default 200): The looping frequency of the block
     - time_label (str, default='t(s)'): If reading data from one or more
       actuators, the time will also be returned under this label.
+    - spam (bool, default=False) : If True, the command is sent on each loop,
+      else, it is sent every time a value is received
 
   If you want to forward a parameter to the actuator that has the name of
   a key below, add an underscore at the end of its key
@@ -36,10 +38,12 @@ class Machine(MasterBlock):
       with this label
     - speed_label: same as pos_label but with get_speed
   """
-  def __init__(self, actuators, common={}, freq=200, time_label='t(s)'):
+  def __init__(self, actuators, common={}, freq=200, time_label='t(s)',
+      spam=False):
     MasterBlock.__init__(self)
     self.freq = freq
     self.time_label = time_label
+    self.spam = spam
     self.settings = [{} for i in actuators]
     for setting, d in zip(self.settings, actuators):
       d.update(common)
@@ -83,11 +87,14 @@ class Machine(MasterBlock):
     self.send_data()
 
   def loop(self):
-    recv = self.get_last()
+    if self.spam:
+      recv = self.get_last()
+    else:
+      recv = self.recv_all()
     for actuator, setting in zip(self.actuators, self.settings):
-      if setting['mode'] == 'speed':
+      if setting['mode'] == 'speed' and setting['cmd'] in recv:
         actuator.set_speed(recv[setting['cmd']])
-      elif setting['mode'] == 'position':
+      elif setting['mode'] == 'position' and setting['cmd'] in recv:
         try:
           actuator.set_position(recv[setting['cmd']], setting['speed'])
         except (TypeError,KeyError):
