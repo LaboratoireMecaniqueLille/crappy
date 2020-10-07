@@ -16,6 +16,8 @@ class Integrate(Condition):
     self.t = time
     if out_label is None:
       self.out_label = 'i_'+self.label
+    else:
+      self.out_label = out_label
     self.last_t = 0
     self.val = 0
 
