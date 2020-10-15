@@ -9,7 +9,7 @@ import numpy as np
 class Fake_camera(Camera):
   """Fake camera sensor object"""
 
-  def __init__(self, numdevice=0):
+  def __init__(self):
     Camera.__init__(self)
     self.name = "fake_camera"
     self.add_setting("width",default=1280,setter=self._set_w,limits=(1,4096))
