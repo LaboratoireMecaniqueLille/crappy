@@ -166,7 +166,7 @@ class Camera(object, metaclass=MetaCam):
 
   def __init__(self):
     """Don't forget to call this __init__ in the children or __getattr__ will
-    fall in an infinite recursion loop looknig for settings..."""
+    fall in an infinite recursion loop looking for settings..."""
     self.settings = {}
     self.last = time()
     self.max_fps = None
@@ -210,26 +210,19 @@ class Camera(object, metaclass=MetaCam):
     will take its default value.
     If override is True, it will not assume a setting and reset it unless
     it is already default"""
-    #print('DEBUG=======set_all')
     for s in self.settings:
       if s in kwargs:
         if self.settings[s].value != kwargs[s] or override:
-          #print("Setting",s,"to",kwargs[s])
           self.settings[s].value = kwargs[s]
         else:
-          #print(s,'is already set to',kwargs[s])
           pass
         del kwargs[s]
       elif self.settings[s].value != self.settings[s].default:
-        #print(s,'is',self.settings[s].value)
-        #print("Defaulting",s,"to",self.settings[s].default)
         self.settings[s].value = self.settings[s].default
       else:
-        #print(s,'is already set to',self.settings[s].default)
         pass
     for k,v in kwargs.items():
       setattr(self,k,v)
-    #print('DEBUG====ENDset_all')
 
   def reset_all(self):
     """Reset all the settings to their default values"""
@@ -263,12 +256,11 @@ class Camera(object, metaclass=MetaCam):
       return self.__getattribute__(i)
     except AttributeError:
       try:
-        #print("Returning",i,"=",self.settings[i].value)
         return self.settings[i].value
       except KeyError:
         raise AttributeError("No such attribute: "+i)
       except RuntimeError:
-        print("You have likely forgotten to call Camera.__init__(self)!")
+        print("You have probably forgotten to call Camera.__init__(self)!")
         raise AttributeError("No such attribute:"+i)
 
   def __setattr__(self,attr,val):
