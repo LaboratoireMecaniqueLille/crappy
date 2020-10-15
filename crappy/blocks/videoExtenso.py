@@ -33,7 +33,7 @@ class Video_extenso(MasterBlock):
       The labels of the output
     - show_fps (bool default=False): If True, the block will print the FPS
       in the terminal every 2 seconds
-    - stop (bool default=True): If True, the block will stop the Crappy
+    - end (bool default=True): If True, the block will stop the Crappy
       program when the spots are lost, else it will just stop sending data
 
   """
