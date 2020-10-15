@@ -4,6 +4,7 @@ from sys import platform
 from multiprocessing import Process, Pipe
 from time import sleep, time, localtime, strftime
 from weakref import WeakSet
+from pickle import UnpicklingError
 
 from .._global import CrappyStop
 
@@ -210,6 +211,7 @@ class MasterBlock(Process):
         sleep(1)
     except KeyboardInterrupt:
       print("Main proccess got keyboard interrupt!")
+      cls.stop_all()
       # It will automatically propagate to the blocks processes
     if not cls.all_are('running'):
       print('Waiting for all processes to finish')
@@ -309,7 +311,7 @@ class MasterBlock(Process):
       while self.pipe1.poll():
         try:
           self._status = self.pipe1.recv()
-        except EOFError:
+        except (EOFError,UnpicklingError):
           if self._status == 'running':
             self._status = 'done'
       # If another process tries to get the status
