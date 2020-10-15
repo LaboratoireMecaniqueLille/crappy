@@ -15,9 +15,8 @@ class MetaCam(type):
   """
   classes = {} # This dict will keep track of all the existing cam classes
   #Attention: It keeps track of the CLASSES, not the instances !
-  #If a camera is defined without these
-  needed_methods = ["__init__", "get_image","open","close"]
-  #methods, it will raise an error
+  #If a camera is defined without these methods, it will raise an error
+  needed_methods = ["get_image","open","close"]
 
   def __new__(metacls,name,bases,dict):
     #print "[MetaCam.__new__] Creating class",name,"from metaclass",metacls
@@ -47,9 +46,12 @@ class MetaCam(type):
     if name in MetaCam.classes:
       raise DefinitionError("Cannot redefine "+name+" class")
     # Check if mandatory methods are defined
+    defined_methods = list(dict.keys())
+    for b in bases:
+      defined_methods += list(b.__dict__.keys())
     missing_methods = []
     for m in MetaCam.needed_methods:
-      if m not in dict:
+      if m not in defined_methods:
         missing_methods.append(m)
     if name != "Camera" and missing_methods:
       raise DefinitionError("Class "+name+" is missing methods: "+str(
