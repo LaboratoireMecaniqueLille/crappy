@@ -126,11 +126,11 @@ class Cam_setting(object):
     #  if not self.limits[0] <= i <= self.limits[1]:
     #    print("[Cam_setting] Parameter",i,"out of range ",self.limits)
     #    return
-    if type(self.limits) == dict:
+    if isinstance(self.limits,dict):
       if i not in self.limits.values():
         print("[Cam_setting] Parameter",i,"not available",self.limits)
         return
-    elif type(self.limits) == bool:
+    elif isinstance(self.limits,bool):
       i = bool(i)
     # We could actually wait to see if setter is succesful before setting the
     # value, but if setter uses self.parameter, it will still be set to its old
