@@ -3,14 +3,12 @@
 from time import time
 import numpy as np
 import SimpleITK as sitk
-import os
 
-from .masterblock import MasterBlock
-from ..tool import Camera_config,GPUCorrel as GPUCorrel_tool
-from ..camera import camera_list
+from ..tool import GPUCorrel as GPUCorrel_tool
+from ..camera import Camera,kw as default_cam_block_kw
 
 
-class GPUCorrel(MasterBlock):
+class GPUCorrel(Camera):
   """
     This block uses the Correl class (in crappy/tool/correl.py)
 
@@ -23,14 +21,23 @@ class GPUCorrel(MasterBlock):
     Note that the reference image is only taken once, when the
         .start() method is called (after dropping the first image).
   """
-
   def __init__(self, camera, **kwargs):
-    MasterBlock.__init__(self)
     self.ready = False
+    cam_kw = {}
+    try:
+      self.fields = kwargs['fields']
+    except KeyError:
+      print("[Correl block] Fields were not provided !")
+      raise
+    # Kwargs to be given to the camera BLOCK
+    # ie save_folder, config, etc... but NOT the labels
+    for k,v in default_cam_block_kw.items():
+      if k == 'labels':
+        continue
+      cam_kw[k] = kwargs.pop(k,v)
+    self.verbose = cam_kw['verbose'] # Also, we keep the verbose flag
+    Camera.__init__(self,camera,**cam_kw)
     self.camera_name = camera
-    self.Nfields = kwargs.get("Nfields")
-    self.verbose = kwargs.get("verbose", 0)
-    self.config = kwargs.get("config", True)
     # A function to apply to the image
     self.transform = kwargs.pop("transform",None)
     self.discard_lim = kwargs.pop("discard_lim",3)
@@ -38,13 +45,6 @@ class GPUCorrel(MasterBlock):
     # If the residual of the image exceeds <discard_lim> times the
     # average of the residual of the last <discard_ref> images,
     # do not send the result (requires res=True)
-    if self.Nfields is None:
-      try:
-        self.Nfields = len(kwargs.get("fields"))
-      except TypeError:
-        print("Error: Correl needs to know the number of fields at init \
-with fields=(.,.) or Nfields=k")
-        raise NameError('Missing fields')
 
     # Creating the tuple of labels (to name the outputs)
     self.labels = ('t(s)',)
@@ -73,33 +73,14 @@ with fields=(.,.) or Nfields=k")
       del kwargs["cam_kwargs"]
     else:
       self.cam_kwargs = {}
-    if "save_folder" in kwargs:
-      self.save_folder = kwargs["save_folder"]
-      del kwargs["save_folder"]
-    else:
-      self.save_folder = None
-    if "save_period" in kwargs:
-      self.save_period = kwargs["save_period"]
-      del kwargs["save_period"]
-    else:
-      self.save_period = 1
-    self.kwargs = kwargs
+    self.gpu_correl_kwargs = kwargs
 
   def prepare(self):
-    if self.save_folder and not os.path.exists(self.save_folder):
-      try:
-        os.makedirs(self.save_folder)
-      except OSError: # May happen if another blocks created the folder
-        assert os.path.exists(self.save_folder),\
-            "Error creating "+self.save_folder
-    self.camera = camera_list[self.camera_name]()
-    self.camera.open(**self.cam_kwargs)
-    if self.config:
-      Camera_config(self.camera).main()
+    Camera.prepare(self)
     t,img = self.camera.read_image()
     if self.transform is not None:
       img = self.transform(img)
-    self.correl = GPUCorrel_tool(img.shape, **self.kwargs)
+    self.correl = GPUCorrel_tool(img.shape, **self.gpu_correl_kwargs)
     self.loops = 0
     self.nloops = 50
     self.res_hist = [np.inf]
@@ -115,32 +96,15 @@ with fields=(.,.) or Nfields=k")
     if self.save_folder:
       image = sitk.GetImageFromArray(img)
       sitk.WriteImage(image,
-               self.save_folder + "img_ref_%.5f.tiff" % (t-self.t0))
+               self.save_folder + "img_ref_%.6f.tiff" % (t-self.t0))
 
   def loop(self):
     if self.verbose and self.loops%self.nloops == 0:
       t = time()
       print("[Correl block] processed", self.nloops / (t-self.last_t), "ips")
       self.last_t = t
-    self.loops += 1
-    if self.inputs: # If we have an input: external trigger
-      data = self.inputs[0].recv()
-      if data is None:
-        return
-      else:
-        t,img = self.camera.get_image() # No fps control
-    else:
-      t,img = self.camera.read_image() # Limits to max_fps
-    if self.save_folder and self.loops % self.save_period == 0:
-      image = sitk.GetImageFromArray(img)
-      sitk.WriteImage(image,
-               self.save_folder + "img_%.6d_%.5f.tiff" % (
-               self.loops, t-self.t0))
-    if self.transform is not None:
-      out = [t-self.t0] + self.correl.getDisp(
-          self.transform(img).astype(np.float32)).tolist()
-    else:
-      out = [t-self.t0] + self.correl.getDisp(img.astype(np.float32)).tolist()
+    t,img = self.get_img()
+    out = [t-self.t0] + self.correl.getDisp(img.astype(np.float32)).tolist()
     if self.res:
       out += [self.correl.getRes()]
       if self.discard_lim:
