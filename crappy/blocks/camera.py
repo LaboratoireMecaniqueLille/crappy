@@ -2,7 +2,6 @@
 
 from sys import platform
 import os
-import time
 try:
   import SimpleITK as sitk
 except ImportError:
@@ -13,7 +12,7 @@ from .masterblock import MasterBlock
 from ..camera import camera_list
 from ..tool import Camera_config
 
-kw = dict(
+kw = dict([
   ("save_folder",None),
   ("verbose",False),
   ("labels",['t(s)','frame']),
@@ -22,7 +21,8 @@ kw = dict(
   ("ext","tiff"),
   ("save_period",1),
   ("save_backend",None),
-  ("config",True)
+  ("transform",None),
+  ("config",True)]
 )
 
 
@@ -44,7 +44,7 @@ class Camera(MasterBlock):
       save_folder : directory to save the images. It will be created
         if necessary. If None, it will not save the images
         (str or None, default: None)
-      verbose : If True, the block will print the number of fps
+      verbose : If True, the block will print the number of loops/s
           (bool, default: False)
       labels : The labels for respectively time and the frame
           (list of strings, default: ['t(s)','frame'])
@@ -58,9 +58,12 @@ class Camera(MasterBlock):
       save_period : Will save only one in x images
         (int, default : 1)
       save_backend : module to use to save the images
-        supported backends : sitk, cv2
+        supported backends : sitk (SimpleITK), cv2 (OpenCV)
         if None will try sitk, else cv2
         (str, default: None)
+      transform : Function to be applied on the image before sending
+        it will NOT be applied to the saved image
+        (func or None, default : None)
       config : Show the popup for config ? (bool, default: True)
     """
     MasterBlock.__init__(self)
@@ -73,7 +76,7 @@ class Camera(MasterBlock):
         # keep the parameters for the camera
       except KeyError:
         pass
-    self.camera_name = camera
+    self.camera_name = camera.capitalize()
     self.cam_kw = kwargs
     assert self.camera_name in camera_list,"{} camera does not exist!".format(
         self.camera_name)
@@ -85,6 +88,7 @@ class Camera(MasterBlock):
     assert self.save_backend in ["cv2","sitk"],\
         "Unknown saving backend: "+self.save_backend
     self.save = getattr(self,"save_"+self.save_backend)
+    self.loops = 0
 
   def prepare(self):
     sep = '\\' if 'win' in platform else '/'
@@ -103,13 +107,6 @@ class Camera(MasterBlock):
       conf = Camera_config(self.camera)
       conf.main()
 
-  def begin(self):
-    self.timer = time.time()
-    self.fps_timer = self.timer
-    self.data = {}
-    self.last_index = 0
-    self.loops = 0
-
   def save_sitk(self,img,fname):
     image = sitk.GetImageFromArray(img)
     sitk.WriteImage(image,fname)
@@ -117,22 +114,31 @@ class Camera(MasterBlock):
   def save_cv2(self,img,fname):
     cv2.imwrite(fname,img)
 
-  def loop(self):
+  def get_img(self):
+    """
+    Waits the appropriate time/event to read an image, reads it,
+    saves it if asked to, applies the transformation and increases counter
+    """
     if not self.ext_trigger:
       if self.fps_label:
         while self.inputs[0].poll():
           self.camera.max_fps = self.inputs[0].recv()[self.fps_label]
-      t,img = self.camera.read_image()
+      t,img = self.camera.read_image() # NOT constrained to max_fps
     else:
       data = self.inputs[0].recv()  # wait for a signal
       if data is None:
         return
-      t,img = self.camera.get_image()
-    self.timer = time.time()
+      t,img = self.camera.get_image() # self limiting to max_fps
+    self.loops += 1
     if self.save_folder and self.loops % self.save_period == 0:
       self.save(img, self.save_folder +
           eval('f"{}"'.format(self.img_name)) + f".{self.ext}")
-    self.loops += 1
+    if self.transform:
+      img = self.transform(img)
+    return t,img
+
+  def loop(self):
+    t,img = self.get_img()
     self.send([t-self.t0,img])
 
   def finish(self):
