@@ -5,7 +5,7 @@ import numpy as np
 import SimpleITK as sitk
 
 from ..tool import GPUCorrel as GPUCorrel_tool
-from ..camera import Camera,kw as default_cam_block_kw
+from .camera import Camera,kw as default_cam_block_kw
 
 
 class GPUCorrel(Camera):
@@ -21,14 +21,10 @@ class GPUCorrel(Camera):
     Note that the reference image is only taken once, when the
         .start() method is called (after dropping the first image).
   """
-  def __init__(self, camera, **kwargs):
+  def __init__(self, camera, fields, **kwargs):
     self.ready = False
     cam_kw = {}
-    try:
-      self.fields = kwargs['fields']
-    except KeyError:
-      print("[Correl block] Fields were not provided !")
-      raise
+    self.fields = fields
     # Kwargs to be given to the camera BLOCK
     # ie save_folder, config, etc... but NOT the labels
     for k,v in default_cam_block_kw.items():
@@ -48,15 +44,14 @@ class GPUCorrel(Camera):
 
     # Creating the tuple of labels (to name the outputs)
     self.labels = ('t(s)',)
-    for i in range(self.Nfields):
+    for i in range(len(self.fields)):
       # If explicitly named with labels=(...)
       if kwargs.get("labels") is not None:
         self.labels += (kwargs.get("labels")[i],)
       # Else if we got a default field as a string,
       # use this string (ex: fields=('x','y','r','exx','eyy'))
-      elif kwargs.get("fields") is not None and \
-          isinstance(kwargs.get("fields")[i], str):
-        self.labels += (kwargs.get("fields")[i],)
+      elif isinstance(fields[i], str):
+        self.labels += (fields[i],)
       # Custom field and no label given: name it by its position...
       else:
         self.labels += (str(i),)
@@ -74,6 +69,7 @@ class GPUCorrel(Camera):
     else:
       self.cam_kwargs = {}
     self.gpu_correl_kwargs = kwargs
+    self.gpu_correl_kwargs['fields'] = self.fields
 
   def prepare(self):
     Camera.prepare(self)
