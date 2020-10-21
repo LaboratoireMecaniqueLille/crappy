@@ -2,7 +2,6 @@
 
 from time import time
 import numpy as np
-import SimpleITK as sitk
 
 from ..tool import GPUCorrel as GPUCorrel_tool
 from .camera import Camera,kw as default_cam_block_kw
@@ -90,9 +89,7 @@ class GPUCorrel(Camera):
     self.correl.prepare()
     self.last_t = time() - 1
     if self.save_folder:
-      image = sitk.GetImageFromArray(img)
-      sitk.WriteImage(image,
-               self.save_folder + "img_ref_%.6f.tiff" % (t-self.t0))
+      self.save(img, self.save_folder + "img_ref_%.6f.tiff" % (t-self.t0))
 
   def loop(self):
     if self.verbose and self.loops%self.nloops == 0:
