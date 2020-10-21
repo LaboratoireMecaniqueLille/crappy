@@ -6,7 +6,12 @@ try:
   import SimpleITK as sitk
 except ImportError:
   sitk = None
+try:
+  import PIL
+except ImportError:
+  PIL = None
 import cv2
+
 
 from .masterblock import MasterBlock
 from ..camera import camera_list
@@ -85,7 +90,7 @@ class Camera(MasterBlock):
         self.save_backend = "cv2"
       else:
         self.save_backend = "sitk"
-    assert self.save_backend in ["cv2","sitk"],\
+    assert self.save_backend in ["cv2","sitk","pil"],\
         "Unknown saving backend: "+self.save_backend
     self.save = getattr(self,"save_"+self.save_backend)
     self.loops = 0
@@ -113,6 +118,9 @@ class Camera(MasterBlock):
 
   def save_cv2(self,img,fname):
     cv2.imwrite(fname,img)
+
+  def save_pil(self,img,fname):
+    PIL.Image.fromarray(img).save(fname)
 
   def get_img(self):
     """
