@@ -247,7 +247,10 @@ class Tracker(Process):
   def run(self):
     #print("DEBUG: process starting, thresh=",self.thresh)
     while True:
-      offset,img = self.pipe.recv()
+      try:
+        offset,img = self.pipe.recv()
+      except KeyboardInterrupt:
+        break
       if type(img) != np.ndarray:
         break
       oy,ox = offset
