@@ -1,20 +1,13 @@
 ﻿# coding: utf-8
 
 import cv2
-import sys
-import os
-try:
-  import SimpleITK as sitk
-except ImportError:
-  print("[Warning] SimpleITK is not installed, cannot save images!")
 
 from ..tool.videoextenso import LostSpotError,Video_extenso as VE
 from ..tool.videoextensoConfig import VE_config
-from .masterblock import MasterBlock
-from ..camera import Camera
+from .camera import Camera,kw as default_cam_block_kw
 
 
-class Video_extenso(MasterBlock):
+class Video_extenso(Camera):
   """
   Measure the deformation for the video of dots on the sample
 
@@ -23,29 +16,31 @@ class Video_extenso(MasterBlock):
   It also returns a list of tuples, which are the coordinates (in pixel)
   of the barycenters of the spots.
   Optionally, it can save images.
+  The initial length is reset when receiving data from a parent block
   Args:
-    - camera ("str",default="XimeaCV"): The name of the camera class to use
-    - save_folder (str or None, default=None): If given, the images will be
-      saved in this folder.
-    - save_period (int, default=1): If saving, will only save one out of
-      save_period images.
+    - camera ("str", mandatory): The name of the camera class to use
     - labels (list, default=['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']):
       The labels of the output
-    - show_fps (bool default=False): If True, the block will print the FPS
-      in the terminal every 2 seconds
+    - wait_l0 : If set to True, the block send only zeros until the initial
+      length is reset by receiving data from an input
     - end (bool default=True): If True, the block will stop the Crappy
       program when the spots are lost, else it will just stop sending data
 
   """
-  def __init__(self,**kwargs):
-    MasterBlock.__init__(self)
+  def __init__(self,camera,**kwargs):
     self.niceness = -5
+    cam_kw = {}
+    # Kwargs to be given to the camera BLOCK
+    # ie save_folder, config, etc... but NOT the labels
+    for k,v in default_cam_block_kw.items():
+      if k == 'labels':
+        continue
+      cam_kw[k] = kwargs.pop(k,v)
+    cam_kw['config'] = False # VE has its own config window
+    self.verbose = cam_kw['verbose'] # Also, we keep the verbose flag
+    Camera.__init__(self,camera,**cam_kw)
     default_labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
-    for arg,default in [("camera","XimeaCV"),
-                        ("save_folder",None),
-                        ("save_period",1),
-                        ("labels",default_labels),
-                        ("show_fps",True),
+    for arg,default in [("labels",default_labels),
                         ("show_image",False),
                         ("wait_l0",False),
                         ("end",True),
@@ -64,16 +59,9 @@ class Video_extenso(MasterBlock):
     self.cam_kwargs = kwargs
 
   def prepare(self):
-    if self.save_folder and not os.path.exists(self.save_folder):
-      try:
-        os.makedirs(self.save_folder)
-      except OSError:
-        assert os.path.exists(self.save_folder),\
-            "Error creating "+self.save_folder
-    self.cam = Camera.classes[self.camera]()
-    self.cam.open(**self.cam_kwargs)
+    Camera.prepare(self)
     self.ve = VE(**self.ve_kwargs)
-    config = VE_config(self.cam,self.ve)
+    config = VE_config(self.camera,self.ve)
     config.main()
     self.ve.start_tracking()
     if self.show_image:
@@ -87,8 +75,7 @@ class Video_extenso(MasterBlock):
     self.last_fps_loops = 0
 
   def loop(self):
-    self.loops += 1
-    t,img = self.cam.read_image()
+    t,img = self.get_img()
     if self.inputs and self.inputs[0].poll():
       self.inputs[0].clear()
       self.wait_l0 = False
@@ -104,9 +91,6 @@ class Video_extenso(MasterBlock):
       else:
         self.loop = self.lost_loop
         return
-    #print("DEBUG",self.ve.spot_list)
-    if self.save_folder and not self.loops%self.save_period:
-      self.save_img(t,img)
     if self.show_image:
       boxes = [r['bbox'] for r in self.ve.spot_list]
       for miny,minx,maxy,maxx in boxes:
@@ -116,13 +100,6 @@ class Video_extenso(MasterBlock):
         img[miny:maxy,maxx:maxx+1] = 255
       cv2.imshow("Videoextenso",img)
       cv2.waitKey(5)
-    if self.show_fps:
-      if t - self.last_fps_print > 2:
-        sys.stdout.write("\rFPS: %.2f"%((self.loops - self.last_fps_loops)/
-                              (t - self.last_fps_print)))
-        sys.stdout.flush()
-        self.last_fps_print = t
-        self.last_fps_loops = self.loops
 
     centers = [(r['y'],r['x']) for r in self.ve.spot_list]
     if not self.wait_l0:
@@ -130,23 +107,14 @@ class Video_extenso(MasterBlock):
     else:
       self.send([t-self.t0,[(0,0)]*4,0,0])
 
-  def save_img(self,t,img):
-    image = sitk.GetImageFromArray(img)
-    sitk.WriteImage(image,
-             self.save_folder + "img_%.6d_%.5f.tiff" % (
-             self.loops, t-self.t0))
-
   def lost_loop(self):
-    self.loops += 1
-    t,img = self.cam.read_image()
-    if self.save_folder and not self.loops%self.save_period:
-      self.save_img(t,img)
+    t,img = self.get_img()
     if self.show_image:
       cv2.imshow("Videoextenso",img)
       cv2.waitKey(5)
 
   def finish(self):
     self.ve.stop_tracking()
-    self.cam.close()
     if self.show_image:
       cv2.destroyAllWindows()
+    Camera.finish(self)
