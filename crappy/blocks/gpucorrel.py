@@ -107,3 +107,7 @@ class GPUCorrel(Camera):
           print("[Correl block] Residual too high, not sending values")
           return
     self.send(out)
+
+  def finsih(self):
+    self.correl.clean()
+    Camera.finish(self)
