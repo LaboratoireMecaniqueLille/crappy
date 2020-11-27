@@ -67,6 +67,7 @@ class GPUCorrel(Camera):
       del kwargs["cam_kwargs"]
     else:
       self.cam_kwargs = {}
+    self.imgref = kwargs.pop('imgref',None)
     self.gpu_correl_kwargs = kwargs
     self.gpu_correl_kwargs['fields'] = self.fields
 
@@ -79,15 +80,20 @@ class GPUCorrel(Camera):
     self.loops = 0
     self.nloops = 50
     self.res_hist = [np.inf]
+    if self.imgref is not None:
+      self.correl.setOrig(self.imgref.astype(np.float32))
+      self.correl.prepare()
 
   def begin(self):
+    self.last_t = time() - 1
+    if self.imgref is not None:
+      return
     t,img = self.camera.read_image()
     if self.transform is not None:
       self.correl.setOrig(self.transform(img).astype(np.float32))
     else:
       self.correl.setOrig(img.astype(np.float32))
     self.correl.prepare()
-    self.last_t = time() - 1
     if self.save_folder:
       self.save(img, self.save_folder + "img_ref_%.6f.tiff" % (t-self.t0))
 
