@@ -31,6 +31,7 @@ class GPUCorrel(Camera):
         continue
       cam_kw[k] = kwargs.pop(k,v)
     self.verbose = cam_kw['verbose'] # Also, we keep the verbose flag
+    cam_kw.update(kwargs.pop('cam_kwargs',{}))
     Camera.__init__(self,camera,**cam_kw)
     self.camera_name = camera
     # A function to apply to the image
@@ -62,11 +63,6 @@ class GPUCorrel(Camera):
     self.res = kwargs.get("res",True)
     if self.res:
       self.labels += ("res",)
-    if "cam_kwargs" in kwargs:
-      self.cam_kwargs = kwargs["cam_kwargs"]
-      del kwargs["cam_kwargs"]
-    else:
-      self.cam_kwargs = {}
     self.imgref = kwargs.pop('imgref',None)
     self.gpu_correl_kwargs = kwargs
     self.gpu_correl_kwargs['fields'] = self.fields
