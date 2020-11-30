@@ -676,10 +676,13 @@ class GPUCorrel:
   """
 
   def __init__(self, img_size, **kwargs):
-    cuda.init()
-    from pycuda.tools import make_default_context
     global context
-    context = make_default_context()
+    if 'context' in kwargs:
+      context = kwargs.pop('context')
+    else:
+      cuda.init()
+      from pycuda.tools import make_default_context
+      context = make_default_context()
     unknown = []
     for k in kwargs.keys():
       if k not in ['verbose', 'levels', 'resampling_factor', 'kernel_file',
