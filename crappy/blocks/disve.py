@@ -26,9 +26,9 @@ class DISVE(MasterBlock):
                         ("alpha",3),
                         ("delta",1),
                         ("gamma",0),
-                        ("finest_scale",0),
+                        ("finest_scale",2),
                         ("init",True),
-                        ("iterations",10),
+                        ("iterations",0),
                         ("cam_kwargs",{})
                         ]:
       setattr(self,arg,kwargs.pop(arg,default))

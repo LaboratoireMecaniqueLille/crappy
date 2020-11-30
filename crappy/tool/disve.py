@@ -12,11 +12,11 @@ class DISVE():
                         ("delta",1),
                         ("gamma",0),
                         # alpha, delta, gamma: settings for disflow
-                        ("finest_scale",0),
+                        ("finest_scale",1),
                         # finest_scale: last scale for disflow (0=fullscale)
                         ("init",True),
                         # init: Should we use the last field to init ?
-                        ("iterations",10)]:
+                        ("iterations",3)]:
       setattr(self,arg,kwargs.pop(arg,default))
     assert not kwargs,"Invalid kwarg in ve:"+str(kwargs)
     self.dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
