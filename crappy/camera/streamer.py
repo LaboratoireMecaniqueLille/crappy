@@ -31,15 +31,19 @@ class Streamer(Camera):
 
     start_delay: Before actually streaming the image flux, you can set
       a delay in secongs during which the first image will be streamed in
-      a loop. This can be useful to give time for spot seleciotn when using
+      a loop. This can be useful to give time for spot selection when using
       videoextenso. (float, default=0)
+
+    modifier: To apply a function to the image before sending it
 
   """
   def __init__(self):
     Camera.__init__(self)
     self.frame = 0
 
-  def open(self,path,pattern="img_\d+_(\d+\.\d+)\.tiff",start_delay=0):
+  def open(self,path,pattern="img_\d+_(\d+\.\d+)\.tiff",start_delay=0,
+      modifier=lambda img:img):
+    self.modifier = modifier
     pattern = "^"+path+pattern+"$"
     regex = re.compile(pattern)
     files = glob(path+"*")
@@ -65,7 +69,8 @@ class Streamer(Camera):
     if self.frame == len(self.time_table):
       raise CrappyStop
     img_t = self.time_table[self.frame]
-    img = sitk.GetArrayFromImage(sitk.ReadImage(self.img_dict[img_t]))
+    img = self.modifier(
+        sitk.GetArrayFromImage(sitk.ReadImage(self.img_dict[img_t])))
     t = time()
     delay = self.time_table[self.frame] - t + self.t0
     if delay > 0:
