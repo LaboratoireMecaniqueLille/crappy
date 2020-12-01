@@ -35,7 +35,7 @@ class GPUCorrel(Camera):
     Camera.__init__(self,camera,**cam_kw)
     self.camera_name = camera
     # A function to apply to the image
-    self.transform = kwargs.pop("transform",None)
+    self.transform = cam_kw.get("transform")
     self.discard_lim = kwargs.pop("discard_lim",3)
     self.discard_ref = kwargs.pop("discard_ref",5)
     # If the residual of the image exceeds <discard_lim> times the
@@ -77,7 +77,10 @@ class GPUCorrel(Camera):
     self.nloops = 50
     self.res_hist = [np.inf]
     if self.imgref is not None:
-      self.correl.setOrig(self.imgref.astype(np.float32))
+      if self.transform is not None:
+        self.correl.setOrig(self.transform(self.imgref.astype(np.float32)))
+      else:
+        self.correl.setOrig(self.imgref.astype(np.float32))
       self.correl.prepare()
 
   def begin(self):
