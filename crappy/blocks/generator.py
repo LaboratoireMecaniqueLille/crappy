@@ -79,7 +79,6 @@ class Generator(MasterBlock):
       self.to_get = list(range(len(self.inputs)))
       self.to_get.remove(self.trig_link)
     self.last_t = time()
-    self.last_data = {}
     self.last_path = -1
     self.next_path()
 
