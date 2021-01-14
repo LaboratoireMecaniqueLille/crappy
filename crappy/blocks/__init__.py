@@ -10,6 +10,7 @@ from .client import Client
 from .dashboard import Dashboard
 from .displayer import Displayer
 from .drawing import Drawing
+from .fake_machine import Fake_machine
 from .generator import Generator
 from .gui import GUI
 from .grapher import Grapher
