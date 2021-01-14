@@ -33,7 +33,6 @@ class GPUCorrel(Camera):
     self.verbose = cam_kw['verbose'] # Also, we keep the verbose flag
     cam_kw.update(kwargs.pop('cam_kwargs',{}))
     Camera.__init__(self,camera,**cam_kw)
-    self.camera_name = camera
     # A function to apply to the image
     self.transform = cam_kw.get("transform")
     self.discard_lim = kwargs.pop("discard_lim",3)
