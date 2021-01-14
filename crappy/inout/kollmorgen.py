@@ -1,14 +1,15 @@
-from __future__ import print_function
-
-from pymodbus.client.sync import ModbusTcpClient
+from time import time
 
 from .inout import InOut
 from ..tool import convert_data
+from .._global import OptionalModule
+try:
+  from pymodbus.client.sync import ModbusTcpClient
+except (ModuleNotFoundError,ImportError):
+  ModbusTcpClient = OptionalModule("pymodbus", "Cannot use KollMorgenVariator")
 
-from time import time
 
-
-class KollMorgenVariator(object):
+class KollMorgenVariator:
   """
   Main class to test communication with kollmorgen variator.
   Every variable and its address has been defined in the Kollmorgen

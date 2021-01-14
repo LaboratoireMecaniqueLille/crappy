@@ -5,8 +5,6 @@ import cv2
 import numpy as np
 from .cameraConfig import Camera_config
 
-cv2.DISOpticalFlow # To raise an error if disflow is not installed
-
 
 class DISConfig(Camera_config):
   def __init__(self,camera):

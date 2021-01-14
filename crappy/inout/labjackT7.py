@@ -1,9 +1,14 @@
 # coding: utf-8
 
-from labjack import ljm
 from time import time
 
 from .inout import InOut
+from .._global import OptionalModule
+try:
+  from labjack import ljm
+except (ModuleNotFoundError,ImportError):
+  ljm = OptionalModule("ljm",
+      "Please install Labjack LJM and the ljm Python module")
 
 
 def clamp(val,mini,maxi):

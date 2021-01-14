@@ -2,9 +2,13 @@
 
 from time import time, sleep
 
-import opendaq
-
 from .inout import InOut
+from .._global import OptionalModule
+try:
+  import opendaq
+except (ModuleNotFoundError,ImportError):
+  opendaq = OptionalModule("opendaq",
+      "Please install the OpenDAQ Python Module")
 
 
 def listify(stuff, l):

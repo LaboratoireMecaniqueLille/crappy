@@ -4,13 +4,19 @@
 import warnings
 from math import ceil
 import numpy as np
-import pycuda.driver as cuda
-from pycuda.compiler import SourceModule
-import pycuda.gpuarray as gpuarray
-from pycuda.reduction import ReductionKernel
 import cv2
 
 from .fields import get_field
+from .._global import OptionalModule
+try:
+  import pycuda.driver as cuda
+  from pycuda.compiler import SourceModule
+  import pycuda.gpuarray as gpuarray
+  from pycuda.reduction import ReductionKernel
+except ImportError:
+  cuda = OptionalModule("pycuda",
+      "PyCUDA and CUDA are necessary to use GPUCorrel")
+
 
 context = None
 

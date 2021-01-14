@@ -1,9 +1,14 @@
 # coding: utf-8
 
 import time
-from ximea import xiapi
 
 from .camera import Camera
+from .._global import OptionalModule
+try:
+  from ximea import xiapi
+except (ModuleNotFoundError,ImportError):
+  xiapi = OptionalModule("ximea","To use Xiapi cameras, please install the "
+      "official ximea Python module")
 
 
 class Xiapi(Camera):

@@ -2,7 +2,12 @@
 
 
 from .camera import Camera
-from . import clModule as cl
+from .._global import OptionalModule
+try:
+  from . import clModule as cl
+except ImportError:
+  cl = OptionalModule("clModule","CameraLink module was not compiled. "
+"Please make sure /opt/SiliconSoftware/xxx/lib64 exists and reinstall Crappy")
 from time import time
 
 

@@ -93,8 +93,8 @@ class DISCorrel(MasterBlock):
       cv2.waitKey(5)
     if self.show_fps:
       if t - self.last_fps_print > 2:
-        sys.stdout.write("\rFPS: %.2f"%((self.loops - self.last_fps_loops)/
-                              (t - self.last_fps_print)))
+        sys.stdout.write("\rFPS: %.2f"%(
+          (self.loops - self.last_fps_loops)/(t - self.last_fps_print)))
         sys.stdout.flush()
         self.last_fps_print = t
         self.last_fps_loops = self.loops

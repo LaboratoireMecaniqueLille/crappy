@@ -3,7 +3,13 @@ from __future__ import print_function
 
 from os import path,makedirs
 import numpy as np
-import tables
+
+from .._global import OptionalModule
+try:
+  import tables
+except ModuleNotFoundError:
+  tables = OptionalModule("tables","HDFSaver needs the tables module to "
+      "write hdf files.")
 
 from .masterblock import MasterBlock
 

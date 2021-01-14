@@ -2,9 +2,13 @@
 
 import numpy as np
 import time
-from PyDAQmx import *
 
 from .inout import InOut
+from .._global import OptionalModule
+try:
+  import PyDAQmx
+except (ModuleNotFoundError,ImportError):
+  PyDAQmx = OptionalModule("PyDAQmx")
 
 
 def get_daqmx_devices_names():
@@ -15,8 +19,8 @@ def get_daqmx_devices_names():
 
   """
   buffer_size = 4096
-  buffer = ctypes.create_string_buffer(buffer_size)
-  DAQmxGetSysDevNames(buffer, buffer_size)
+  buffer = PyDAQmx.create_string_buffer(buffer_size)
+  PyDAQmx.DAQmxGetSysDevNames(buffer, buffer_size)
   print(len(buffer.value.split(",")), " devices detected: ", buffer.value)
   return buffer.value.split(",")
 
@@ -122,18 +126,19 @@ class Daqmx(InOut):
     assert nin + nout, "DAQmx has no in nor out channels!"
 
   def open(self):
-    DAQmxResetDevice(self.device)
+    PyDAQmx.DAQmxResetDevice(self.device)
     self.handle,self.out_handle = None,None
     # IN channels
     if self.channels:
-      self.handle = TaskHandle()
-      self.nread = int32()
-      DAQmxCreateTask("", byref(self.handle))
+      self.handle = PyDAQmx.TaskHandle()
+      self.nread = PyDAQmx.int32()
+      PyDAQmx.DAQmxCreateTask("", PyDAQmx.byref(self.handle))
       for i, chan in enumerate(self.channels):
-        DAQmxCreateAIVoltageChan(self.handle, self.device + "/" + chan, "",
-                                 DAQmx_Val_Cfg_Default,
+        PyDAQmx.DAQmxCreateAIVoltageChan(self.handle,
+                                 self.device + "/" + chan, "",
+                                 PyDAQmx.DAQmx_Val_Cfg_Default,
                                  0, self.range[i],
-                                 DAQmx_Val_Volts, None)
+                                 PyDAQmx.DAQmx_Val_Volts, None)
       if any(self.make_zero):
         off = self.eval_offset()
         for i, make_zero in enumerate(self.make_zero):
@@ -141,13 +146,14 @@ class Daqmx(InOut):
             self.offset[i] += off[i]
     # OUT channels
     if self.out_channels:
-      self.out_handle = TaskHandle()
-      DAQmxCreateTask("", byref(self.out_handle))
+      self.out_handle = PyDAQmx.TaskHandle()
+      PyDAQmx.DAQmxCreateTask("", PyDAQmx.byref(self.out_handle))
       for i, chan in enumerate(self.out_channels):
-        DAQmxCreateAOVoltageChan(self.out_handle, self.device + "/" + chan, "",
+        PyDAQmx.DAQmxCreateAOVoltageChan(self.out_handle,
+                                 self.device + "/" + chan, "",
                                  0, self.out_range[i],
-                                 DAQmx_Val_Volts, None)
-      DAQmxStartTask(self.out_handle)
+                                 PyDAQmx.DAQmx_Val_Volts, None)
+      PyDAQmx.DAQmxStartTask(self.out_handle)
 
   def get_data(self):
     """
@@ -172,20 +178,21 @@ class Daqmx(InOut):
     """
     if npoints is None:
       npoints = self.nperscan
-    DAQmxCfgSampClkTiming(self.handle, "",
-                          self.sample_rate, DAQmx_Val_Rising,
-                          DAQmx_Val_FiniteSamps,
+    PyDAQmx.DAQmxCfgSampClkTiming(self.handle, "",
+                          self.sample_rate, PyDAQmx.DAQmx_Val_Rising,
+                          PyDAQmx.DAQmx_Val_FiniteSamps,
                           npoints + 1)
-    DAQmxStartTask(self.handle)
+    PyDAQmx.DAQmxStartTask(self.handle)
     data = np.empty((len(self.channels), npoints), dtype=np.float64)
     t0 = time.time()
     # DAQmx Read Code
-    DAQmxReadAnalogF64(self.handle, npoints, 10.0,
-                       DAQmx_Val_GroupByChannel, data,
-                       npoints * len(self.channels), byref(self.nread), None)
+    PyDAQmx.DAQmxReadAnalogF64(self.handle, npoints, 10.0,
+                       PyDAQmx.DAQmx_Val_GroupByChannel, data,
+                       npoints * len(self.channels),
+                       PyDAQmx.byref(self.nread), None)
     t = time.time()
     # DAQmx Stop Code
-    DAQmxStopTask(self.handle)
+    PyDAQmx.DAQmxStopTask(self.handle)
     # Estimated starting of the acq
     t1 = ((
           t + t0) - npoints / self.sample_rate) / 2
@@ -201,14 +208,14 @@ class Daqmx(InOut):
     """
     assert len(args) == len(self.out_channels)
     data = np.array(args, dtype=np.float64) * self.out_gain + self.out_offset
-    DAQmxWriteAnalogF64(self.out_handle, 1, 1, 10.0, DAQmx_Val_GroupByChannel,
-                        data, None, None)
+    PyDAQmx.DAQmxWriteAnalogF64(self.out_handle, 1, 1, 10.0,
+        PyDAQmx.DAQmx_Val_GroupByChannel, data, None, None)
 
   def close(self):
     """Close the connection."""
     if self.handle:
-      DAQmxStopTask(self.handle)
-      DAQmxClearTask(self.handle)
+      PyDAQmx.DAQmxStopTask(self.handle)
+      PyDAQmx.DAQmxClearTask(self.handle)
     if self.out_handle:
-      DAQmxStopTask(self.out_handle)
-      DAQmxClearTask(self.out_handle)
+      PyDAQmx.DAQmxStopTask(self.out_handle)
+      PyDAQmx.DAQmxClearTask(self.out_handle)

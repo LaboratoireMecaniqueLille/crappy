@@ -1,62 +1,22 @@
 #coding: utf-8
 
-
-# On Linux, WindowsError does not exist, so to avoid NameError,
-# make sure it is defined (and set it to None instead)
-try:
-  WindowsError
-except NameError:
-  WindowsError = BaseException
-
 from sys import platform
-from .._global import NotInstalled,NotSupported
 from .inout import InOut,MetaIO
 
 from .agilent34420A import Agilent34420a
 from .arduino import Arduino
+from .comedi import Comedi
+from .kollmorgen import Koll
+from .labjackT7 import Labjack_t7
+from .labjackUE9 import Labjack_ue9
+from .opendaq import Opendaq
 from .opsens import Opsens
+from .spectrum import Spectrum
+from .t7Streamer import T7_streamer
 
-try:
-  from .kollmorgen import Koll
-except ImportError:
-  Koll = NotInstalled("Koll")
-
-try:
-  from .spectrum import Spectrum
-except (ImportError,OSError):
-  Spectrum = NotInstalled("Spectrum")
-try:
-  from .comedi import Comedi
-except (ImportError,WindowsError,OSError):
-  Comedi = NotInstalled('Comedi')
-try:
-  from .labjackT7 import Labjack_t7
-  from .t7Streamer import T7_streamer
-except ImportError:
-  Labjack_t7 = NotInstalled('Labjack_t7')
-  T7_streamer = NotInstalled('T7_streamer')
-try:
-  from .labjackUE9 import Labjack_ue9
-except ImportError:
-  Labjack_ue9 = NotInstalled('Labjack_ue9')
-try:
-  from .opendaq import Opendaq
-except Exception:
-  openDAQ = NotInstalled('OpenDAQ')
-
-if 'win' in platform:
-  try:
-    from .daqmx import Daqmx
-  except ImportError:
-    Daqmx = NotInstalled('Daqmx')
-  try:
-    from .nidaqmx import Nidaqmx
-  except ImportError:
-    Nidaqmx = NotInstalled('Nidaqmx')
-else:
-  Daqmx = NotSupported('Daqmx')
-  Nidaqmx = NotSupported('Nidaqmx')
-
+# Win specific
+from .daqmx import Daqmx
+from .nidaqmx import Nidaqmx
 
 inout_list = MetaIO.IOclasses
 in_list = MetaIO.Iclasses

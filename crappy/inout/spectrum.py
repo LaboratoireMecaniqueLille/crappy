@@ -1,11 +1,13 @@
 #coding: utf-8
 
-from __future__ import print_function, division
-
-from ..tool import pyspcm as spc # Wrapper for the spcm library
 import numpy as np
 from time import time
 from .inout import InOut
+from .._global import OptionalModule
+try:
+  from ..tool import pyspcm as spc # Wrapper for the spcm library
+except OSError:
+  spc = OptionalModule("pyspcm","Please install the Spectrum library")
 
 
 class SpectrumError(Exception):

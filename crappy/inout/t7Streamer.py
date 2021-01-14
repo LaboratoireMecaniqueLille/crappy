@@ -3,9 +3,14 @@ from __future__ import print_function,division
 
 from time import time
 import numpy as np
-from labjack import ljm
 
 from .inout import InOut
+from .._global import OptionalModule
+try:
+  from labjack import ljm
+except ImportError:
+  ljm = OptionalModule("ljm",
+      "Please install Labjack LJM and the ljm Python module")
 
 
 class T7_streamer(InOut):

@@ -2,8 +2,13 @@
 
 from time import time
 import numpy as np
-from pycuda.tools import make_default_context
-from pycuda.driver import init as cuda_init
+try:
+  from pycuda.tools import make_default_context
+  from pycuda.driver import init as cuda_init
+except (ModuleNotFoundError,ImportError):
+  def cuda_init():
+    print("PyCUDA is could not be imported, cannot use GPUVE block")
+    raise ModuleNotFoundError("pycuda")
 
 from ..tool import GPUCorrel as GPUCorrel_tool
 from .camera import Camera,kw as default_cam_block_kw

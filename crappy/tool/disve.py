@@ -39,22 +39,3 @@ class DISVE():
         self.get_patch(img,p),None))
     self.last = r
     return sum([np.average(i,axis=(0,1)).tolist() for i in r],[])
-
-if __name__ == '__main__':
-  #TEST
-  import matplotlib.pyplot as plt
-
-  def tobw(img):
-    return np.average(img,axis=2).astype(np.uint8)
-  cam = cv2.VideoCapture(0)
-  #cam.open()
-  r,f = cam.read()
-  assert r, "Error opening the camera"
-  for i in range(5):
-    r,f = cam.read() # For auto brigthness to adjust
-  plt.imshow(f[:,:,::-1])
-  plt.show()
-  ve = DISVE(tobw(f),[(100,100,100,100),(200,200,100,100)])
-  while True:
-    r,f = cam.read()
-    print(ve.calc(tobw(f)))
