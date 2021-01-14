@@ -4,10 +4,6 @@ import cv2
 import sys
 import os
 import numpy as np
-try:
-  import SimpleITK as sitk
-except ImportError:
-  print("[Warning] SimpleITK is not installed, cannot save images!")
 
 from ..tool import DISCorrel as DIS
 from ..tool import DISConfig
