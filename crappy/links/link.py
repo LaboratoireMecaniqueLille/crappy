@@ -54,7 +54,7 @@ def win_timeout(timeout=None):
       if timeout is None:
         return worker
       worker.join(timeout)
-      if worker.isAlive():
+      if worker.is_alive():
         raise TimeoutError("timeout error in pipe send")
       elif worker.exception is not None:
         raise worker.exception
@@ -127,7 +127,7 @@ class Link(object):
       else:  # for debugging !!
         print(self.action)
     except Exception as e:
-      print("Exception in link send %s : %s " % (self.name, e.message))
+      print("Exception in link send %s : %s " % (self.name, str(e)))
       raise
 
   @win_timeout(1)
@@ -146,7 +146,7 @@ class Link(object):
         if value is not None:
           self.out_.send(value)
     except Exception as e:
-      print("Exception in link %s : %s " % (self.name, e.message))
+      print("Exception in link %s : %s " % (self.name, str(e)))
       if not self.out_.closed:
         self.out_.send('close')
         self.out_.close()
@@ -175,14 +175,14 @@ class Link(object):
         print(
             "WARNING : Timeout error in pipe send! Link name: %s" % self.name)
       elif self.action == "kill":
-        print("Killing Link %s : %s" % (self.name, e.message))
+        print("Killing Link %s : %s" % (self.name, str(e)))
         raise
       elif self.action == "NoWarn":
         pass
       else:  # for debugging !!
         print(self.action)
     except Exception as e:
-      print("EXCEPTION in link %s : %s " % (self.name, e.message))
+      print("EXCEPTION in link %s : %s " % (self.name, str(e)))
       if not self.in_.closed:
         self.in_.close()
       raise
