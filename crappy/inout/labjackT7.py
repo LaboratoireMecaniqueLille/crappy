@@ -306,16 +306,20 @@ class Labjack_t7(InOut):
     except KeyError:
       ljm.eWriteName(self.handle,chan,val)
 
-  def write(self,value,address,dtype=ljm.constants.FLOAT32):
+  def write(self,value,address,dtype=None):
     """
     To write data directly into a register
     """
+    if dtype is None:
+      dtype = ljm.constants.FLOAT32
     ljm.eWriteAddress(self.handle,address,dtype,value)
 
-  def read(self,address,dtype=ljm.constants.FLOAT32):
+  def read(self,address,dtype=None):
     """
     To read data directly from a register
     """
+    if dtype is None:
+      dtype = ljm.constants.FLOAT32
     return ljm.eReadAddress(self.handle,address,dtype)
 
   def close(self):
