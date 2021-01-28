@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from .masterblock import MasterBlock
+from .block import Block
 from .._global import CrappyStop
 import cv2
 import matplotlib.pyplot as plt
@@ -9,7 +9,7 @@ import tkinter as tk
 from PIL import ImageTk,Image
 
 
-class Displayer(MasterBlock):
+class Displayer(Block):
   """
   Simple image displayer using openCV or Matplotlib
 
@@ -19,7 +19,7 @@ class Displayer(MasterBlock):
   (in other words, you can only attach one input to the diplayer)
   """
   def __init__(self, framerate=5, backend='cv', title='Displayer'):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = 10
     if framerate is None:
       self.delay = 0

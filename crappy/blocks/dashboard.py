@@ -5,10 +5,10 @@ from queue import Queue
 from tkinter import Tk, Label
 import numpy as np
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class Dashboard(MasterBlock):
+class Dashboard(Block):
   """
   The Dashboard receives data from a link, and prints it on a new poped window.
 

@@ -4,10 +4,10 @@ from __future__ import print_function
 
 import socket
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class Server(MasterBlock):
+class Server(Block):
   def __init__(self,port=1148,nclient=1,header=b'crappy_h\x01\x02\x03',
       bs=4096,delay=.1,dump_method='pickle'):
     """
@@ -19,7 +19,7 @@ class Server(MasterBlock):
     The length of the message is coded in the next n bytes and then the message
     is appended
     """
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -10
     self.port = port
     self.nclient = nclient

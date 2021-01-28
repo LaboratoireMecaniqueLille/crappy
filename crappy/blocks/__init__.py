@@ -4,6 +4,7 @@
 # but you can also implement your own.
 
 from .autoDrive import AutoDrive
+from .block import Block
 from .camera import Camera
 from .client import Client
 from .dashboard import Dashboard
@@ -20,7 +21,6 @@ from .gui import GUI
 from .hdf_saver import Hdf_saver
 from .ioblock import IOBlock
 from .machine import Machine
-from .masterblock import MasterBlock
 from .mean import Mean
 from .multiplex import Multiplex
 from .pid import PID

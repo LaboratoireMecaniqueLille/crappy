@@ -2,12 +2,12 @@
 
 from time import time,sleep
 
-from .masterblock import MasterBlock
+from .block import Block
 from . import generator_path
 from .._global import CrappyStop
 
 
-class Generator(MasterBlock):
+class Generator(Block):
   """
   This block is used to generate a signal.
 
@@ -29,7 +29,7 @@ class Generator(MasterBlock):
     freq: (default=200) The frequency of the block.
       If set and positive, the generator will try to send the command at this
       frequency (Hz). Else, it will go as fast as possible.
-      It relies on the MasterBlock freq control scheme (see masterblock.py).
+      It relies on the Block freq control scheme (see block.py).
 
     cmd_label: (default='cmd') The label of the command to send in the links.
 
@@ -52,7 +52,7 @@ class Generator(MasterBlock):
   """
 
   def __init__(self, path=[], **kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -5
     for arg, default in [('freq', 200),
                          ('cmd_label', 'cmd'),
@@ -90,7 +90,7 @@ class Generator(MasterBlock):
       else:
         print("Signal generator terminated!")
         sleep(self.end_delay)
-        #MasterBlock.stop_all()
+        #Block.stop_all()
         raise CrappyStop("Signal Generator terminated")
     if self.verbose:
       print("[Signal Generator] Next step({}):".format(self.path_id),

@@ -1,10 +1,10 @@
 # coding: utf-8
 
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class Reader(MasterBlock):
+class Reader(Block):
   """
   Read and print the input Link.
   """
@@ -15,7 +15,7 @@ class Reader(MasterBlock):
     Args:
         name: if set, will be printed to identify the reader
     """
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.name = name
 
   def loop(self):

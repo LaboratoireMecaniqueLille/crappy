@@ -13,7 +13,7 @@ except ImportError:
 import cv2
 
 
-from .masterblock import MasterBlock
+from .block import Block
 from ..camera import camera_list
 from ..tool import Camera_config
 
@@ -31,7 +31,7 @@ kw = dict([
 )
 
 
-class Camera(MasterBlock):
+class Camera(Block):
   """
   Streams pictures.
   """
@@ -71,7 +71,7 @@ class Camera(MasterBlock):
         (func or None, default : None)
       config : Show the popup for config ? (bool, default: True)
     """
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -10
     for arg,default in kw.items():
       setattr(self,arg,kwargs.get(arg,default)) # Assign these attributes

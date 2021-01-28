@@ -11,10 +11,10 @@ except ModuleNotFoundError:
   tables = OptionalModule("tables","HDFSaver needs the tables module to "
       "write hdf files.")
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class Hdf_saver(MasterBlock):
+class Hdf_saver(Block):
   """
   To save data efficiently in a hdf5 file
 
@@ -39,7 +39,7 @@ class Hdf_saver(MasterBlock):
         (dict, default={})
   """
   def __init__(self,filename,**kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.filename = filename
     for arg,default in [("node","table"),
                         ("expected_rows",10**8),

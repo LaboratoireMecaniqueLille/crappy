@@ -4,7 +4,7 @@ import numpy as np
 from itertools import chain
 #chain(*l) is MUCH faster than sum(l,[]) to concatenate lists
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
 def interp(xp,yp,x):
@@ -16,7 +16,7 @@ def interp(xp,yp,x):
     return yp[int(np.interp(x,xp,a)+.5)]
 
 
-class Multiplex(MasterBlock):
+class Multiplex(Block):
   """
   This block interpolates data
 
@@ -32,7 +32,7 @@ class Multiplex(MasterBlock):
     - freq (float, default=200): The frequency of the output
   """
   def __init__(self,key='t(s)',freq=200):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.k = key
     self.freq = freq
     self.hist = dict()

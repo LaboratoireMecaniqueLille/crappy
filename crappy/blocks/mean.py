@@ -3,10 +3,10 @@ from __future__ import print_function,division
 
 import numpy as np
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class Mean(MasterBlock):
+class Mean(Block):
   """
   Can take multiple inputs, makes an average and send the result every delay s
 
@@ -16,10 +16,10 @@ class Mean(MasterBlock):
     out_labels: if given, only these labels and the time will be kept and
     returned. If none (default), all of them will be kept.
 
-    freq: The block will loop at this freq. see MasterBlock.freq
+    freq: The block will loop at this freq. see Block.freq
   """
   def __init__(self,delay,tlabel='t(s)',out_labels=None,freq=50):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.delay = delay
     self.tlabel = tlabel
     self.out_labels = out_labels

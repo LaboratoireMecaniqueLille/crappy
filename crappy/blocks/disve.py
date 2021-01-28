@@ -6,13 +6,13 @@ import os
 
 from ..tool import DISVE as VE
 from ..tool import Camera_config
-from .masterblock import MasterBlock
+from .block import Block
 from ..camera import Camera
 
 
-class DISVE(MasterBlock):
+class DISVE(Block):
   def __init__(self,camera,patches,**kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -5
     for arg,default in [("save_folder",None),
                         ("save_period",1),

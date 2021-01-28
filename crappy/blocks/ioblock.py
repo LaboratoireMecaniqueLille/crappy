@@ -1,10 +1,10 @@
 #coding: utf-8
 
-from .masterblock import MasterBlock
+from .block import Block
 from ..inout import inout_list, in_list, out_list
 
 
-class IOBlock(MasterBlock):
+class IOBlock(Block):
   """
   This block is used to communicate with inout objects
 
@@ -12,10 +12,10 @@ class IOBlock(MasterBlock):
   It only takes a single argument:
     name (str): The name of the inout class to instanciate
   It can take all the settings as kwargs:
-    - freq (float or None): The looping frequency (see masterblock)
+    - freq (float or None): The looping frequency (see block)
       set to None (default) to go as fast as possible
     - verbose (bool): Will print extra information
-    - labels (list): The list of the output labels (see masterblock)
+    - labels (list): The list of the output labels (see block)
         NOTE: the first label is the time.
       default: ['t(s)','1']
     - cmd_label (list): The list of the labels carrying values for the output
@@ -33,7 +33,7 @@ class IOBlock(MasterBlock):
   """
 
   def __init__(self, name, **kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -10
     for arg, default in [('freq', None),
                          ('verbose', False),

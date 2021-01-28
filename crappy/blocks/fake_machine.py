@@ -1,7 +1,7 @@
 from time import time
 import numpy as np
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
 def plastic(v,yield_strain=.005,rate=.02):
@@ -10,7 +10,7 @@ def plastic(v,yield_strain=.005,rate=.02):
   return 0
 
 
-class Fake_machine(MasterBlock):
+class Fake_machine(Block):
   """
   Block to simulate the behavior of a tensile testing machine
 
@@ -26,7 +26,7 @@ class Fake_machine(MasterBlock):
     # To add normal noise over the data and make things a bit more realistic!
       sigma={'F(N)':50, 'x(mm)': 2e-3, 'Exx(%)': 1e-3},
       cmd_label='cmd'):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.freq = 100
     self.k = k
     self.l0 = l0

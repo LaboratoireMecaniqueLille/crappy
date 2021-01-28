@@ -6,7 +6,7 @@ from time import time
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-from .masterblock import MasterBlock
+from .block import Block
 
 # ======= Visual objects =========
 # These classes represent all that can be drawn on the canvas
@@ -87,7 +87,7 @@ elements = {'text':Text,'dot_text':Dot_text,'time':Time}
 # ========== The block itself ==========
 
 
-class Drawing(MasterBlock):
+class Drawing(Block):
   """
   Block to make a visual representation of data.
 
@@ -100,7 +100,7 @@ class Drawing(MasterBlock):
   """
   def __init__(self,image,draw=[],crange=[20,300],title="Drawing",
       window_size=(7,5),freq=2,backend="TkAgg"):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.freq = freq
     self.image = image
     self.draw = draw

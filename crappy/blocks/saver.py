@@ -3,10 +3,10 @@
 from time import sleep
 from os import path,makedirs
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class Saver(MasterBlock):
+class Saver(Block):
   """
   Will save the incomming data to a file (default csv)
 
@@ -25,7 +25,7 @@ class Saver(MasterBlock):
     that order.
   """
   def __init__(self,filename,delay=2,labels='t(s)'):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -5
     self.delay = delay
     self.filename = filename

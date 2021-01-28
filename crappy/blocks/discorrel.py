@@ -7,7 +7,7 @@ import numpy as np
 
 from ..tool import DISCorrel as DIS
 from ..tool import DISConfig
-from .masterblock import MasterBlock
+from .block import Block
 from ..camera import Camera
 
 
@@ -22,9 +22,9 @@ def draw_box(box,img):
     img[s] = 255*int(np.mean(img[s])<128)
 
 
-class DISCorrel(MasterBlock):
+class DISCorrel(Block):
   def __init__(self,**kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -5
     default_labels = ['t(s)','x(pix)','y(pix)','Exx(%)','Eyy(%)']
     for arg,default in [("camera","XimeaCV"),

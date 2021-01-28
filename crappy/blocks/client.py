@@ -4,15 +4,15 @@ from __future__ import print_function
 
 import socket
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class Client(MasterBlock):
+class Client(Block):
   def __init__(self,address,port=1148,header=b'crappy_h\x01\x02\x03',
       bs=4096,load_method='pickle'):
     """
     """
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -10
     self.address = address
     self.port = port
