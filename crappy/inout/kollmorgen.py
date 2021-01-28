@@ -1,12 +1,21 @@
 from time import time
+import struct
 
 from .inout import InOut
-from ..tool import convert_data
 from .._global import OptionalModule
 try:
   from pymodbus.client.sync import ModbusTcpClient
 except (ModuleNotFoundError,ImportError):
   ModbusTcpClient = OptionalModule("pymodbus", "Cannot use KollMorgenVariator")
+
+
+def float32_to_data(num):
+  return struct.unpack("=HH",struct.pack("=f",num))[::-1]
+
+
+def data_to_float32(data):
+  assert len(data) == 2,"float32 expects 2 registers"
+  return struct.unpack("=f", struct.pack("=HH", *data[::-1]))[0]
 
 
 class KollMorgenVariator:
@@ -125,7 +134,7 @@ class KollMorgenVariator:
     address_coil = int(str(motor) + str(self.coil_addresses["move_rel"]))
     address_hld = int(str(motor) + str(self.hldreg_addresses["distance"]))
 
-    data = convert_data.float32_to_data(rotation)
+    data = float32_to_data(rotation)
     self.variator.write_registers(address_hld, data)
     self.variator.write_coil(address_coil, True)
 
@@ -136,7 +145,7 @@ class KollMorgenVariator:
     address_coil = int(str(motor) + str(self.coil_addresses["move_abs"]))
     address_hld = int(str(motor) + str(self.hldreg_addresses["position"]))
 
-    data = convert_data.float32_to_data(position)
+    data = float32_to_data(position)
     self.variator.write_registers(address_hld, data)
     self.variator.write_coil(address_coil, True)
 
@@ -149,7 +158,7 @@ class KollMorgenVariator:
       address_inpreg = int(str(motor) + str(self.inpreg_addresses[
         "act_position"]))
       read = self.variator.read_input_registers(address_inpreg, 2)
-      converted = convert_data.data_to_float32(read.registers)
+      converted = data_to_float32(read.registers)
     else:
       converted = []
       # Reads 40 first addresses, and then extracts values from the length 40
@@ -160,7 +169,7 @@ class KollMorgenVariator:
          "act_position"]))
 
         data = read.registers[address_inpreg:address_inpreg + 2]
-        converted.append(convert_data.data_to_float32(data))
+        converted.append(data_to_float32(data))
     return converted
 
   def read_speed(self, motor):
@@ -171,7 +180,7 @@ class KollMorgenVariator:
       address_inpreg = int(str(motor) + str(self.inpreg_addresses[
           "act_speed"]))
       read = self.variator.read_input_registers(address_inpreg, 2)
-      converted = convert_data.data_to_float32(read.registers)
+      converted = data_to_float32(read.registers)
 
     else:
       converted = []
@@ -181,7 +190,7 @@ class KollMorgenVariator:
           "act_speed"]))
 
         data = read.registers[address_inpreg:address_inpreg + 2]
-        converted.append(convert_data.data_to_float32(data))
+        converted.append(data_to_float32(data))
     return converted
 
 
