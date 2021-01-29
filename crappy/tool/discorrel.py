@@ -10,17 +10,26 @@ class DISCorrel():
     self.img0 = img0
     self.h,self.w = img0.shape
     for arg,default in [("bbox",None),
-                        ("fields",["x","y","exx","eyy"]),
                         # fields: Base of fields to use for the projection
+                        ("fields",["x","y","exx","eyy"]),
+                        # alpha, delta, gamma: settings for disflow
                         ("alpha",3),
                         ("delta",1),
                         ("gamma",0),
-                        # alpha, delta, gamma: settings for disflow
-                        ("finest_scale",1),
                         # finest_scale: last scale for disflow (0=fullscale)
-                        ("init",True),
+                        ("finest_scale",1),
                         # init: Should we use the last field to init ?
-                        ("iterations",10)]:
+                        ("init",True),
+                        # Variational refinement iterations
+                        ("iterations",1),
+                        # Gradient descent iterations
+                        ("gditerations",10),
+                        # DIS patch size
+                        ("patch_size",8),
+                        # DIS patch stride
+                        ("patch_stride",3),
+
+                        ]:
       setattr(self,arg,kwargs.pop(arg,default))
     assert not kwargs,"Invalid kwarg in ve:"+str(kwargs)
     if self.bbox is None:
@@ -29,11 +38,14 @@ class DISCorrel():
     self.fields = get_fields(self.fields,self.bh,self.bw)
     self.p = Projector(self.fields)
     self.dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
-    self.dis.setVariationalRefinementIterations(self.iterations)
     self.dis.setVariationalRefinementAlpha(self.alpha)
     self.dis.setVariationalRefinementDelta(self.delta)
     self.dis.setVariationalRefinementGamma(self.gamma)
     self.dis.setFinestScale(self.finest_scale)
+    self.dis.setVariationalRefinementIterations(self.iterations)
+    self.dis.setGradientDescentIterations(self.gditerations)
+    self.dis.setPatchSize(self.patch_size)
+    self.dis.setPatchStride(self.patch_stride)
     self.dis_flow = np.zeros((self.h,self.w,2))
 
   def crop(self,img):
@@ -42,8 +54,11 @@ class DISCorrel():
 
   def calc(self,img):
     self.img = img
-    self.f = self.dis.calc(self.img0,img,self.dis_flow)
-    self.proj = self.p.get_scal(self.crop(self.f))
+    if self.init:
+      self.dis_flow = self.dis.calc(self.img0,img,self.dis_flow)
+    else:
+      self.dis_flow = self.dis.calc(self.img0,img,None)
+    self.proj = self.p.get_scal(self.crop(self.dis_flow))
     return self.proj
 
   def dis_res(self):
