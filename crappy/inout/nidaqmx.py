@@ -6,8 +6,10 @@ from .inout import InOut
 from .._global import OptionalModule
 try:
   import nidaqmx
+  from nidaqmx import stream_readers,stream_writers
 except (ModuleNotFoundError,ImportError):
   nidaqmx = OptionalModule("nidaqmx")
+  stream_readers = stream_writers = nidaqmx
 
 
 class Nidaqmx(InOut):
@@ -119,11 +121,11 @@ class Nidaqmx(InOut):
     self.stream_in = {}
     for chan_type,t in self.t_in.items():
       self.stream_in[chan_type] = \
-          nidaqmx.stream_readers.AnalogMultiChannelReader(t.in_stream)
+          stream_readers.AnalogMultiChannelReader(t.in_stream)
     # AO
     if self.ao_channels:
       self.t_out = nidaqmx.Task()
-      self.stream_out = nidaqmx.stream_writers.AnalogMultiChannelWriter(
+      self.stream_out = stream_writers.AnalogMultiChannelWriter(
           self.t_out.out_stream,auto_start=True)
 
     for c in self.ao_channels:
@@ -142,7 +144,7 @@ class Nidaqmx(InOut):
       kwargs.pop("type",None)
       self.t_di.di_channels.add_di_chan(c['name'], **kwargs)
     if self.di_channels:
-      self.di_stream = nidaqmx.stream_readers.DigitalMultiChannelReader(
+      self.di_stream = stream_readers.DigitalMultiChannelReader(
           self.t_di.in_stream)
 
     # DO
@@ -154,7 +156,7 @@ class Nidaqmx(InOut):
       kwargs.pop("type",None)
       self.t_do.do_channels.add_do_chan(c['name'], **kwargs)
     if self.do_channels:
-      self.do_stream = nidaqmx.stream_writers.DigitalMultiChannelWriter(
+      self.do_stream = stream_writers.DigitalMultiChannelWriter(
           self.t_do.out_stream)
 
   def start_stream(self):
