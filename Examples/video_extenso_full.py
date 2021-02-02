@@ -37,7 +37,7 @@ cmd_labels=['cmd'])
 
 # Graph
 graph_sensors = crappy.blocks.Grapher(('t(s)', 'F(N)'), ('t(s)', 'x(mm)'))
-crappy.link(lj,graph_sensors,condition=[crappy.condition.Mean(10)])
+crappy.link(lj,graph_sensors,modifier=crappy.modifier.Mean(10))
 
 # Generator
 g = crappy.blocks.Generator(path=[

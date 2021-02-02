@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import crappy
 
 chan = [0,2,3,4,5]
@@ -12,6 +11,6 @@ if __name__ == "__main__":
   g = crappy.blocks.Grapher(*[('t(s)','T%d'%i) for i in chan])
 
   #crappy.link(m,g)
-  crappy.link(m,g,condition=crappy.condition.Moving_avg(10))
+  crappy.link(m,g,modifier=crappy.modifier.Moving_avg(10))
 
   crappy.start()

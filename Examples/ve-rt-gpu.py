@@ -31,5 +31,5 @@ def compute_strain(d):
 
 
 graphstrain = crappy.blocks.Grapher(('t(s)','Exx(%)'),('t(s)','Eyy(%)'))
-crappy.link(ve,graphstrain,condition=compute_strain)
+crappy.link(ve,graphstrain,modifier=compute_strain)
 crappy.start()

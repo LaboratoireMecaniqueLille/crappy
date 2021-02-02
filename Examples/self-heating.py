@@ -49,7 +49,7 @@ labjack_instron = crappy.blocks.IOBlock("Labjack_T7",
     resolution=0,
     identifier='ANY')
 saver_instron = crappy.blocks.Saver(directory + 'Instron.csv')
-crappy.link(labjack_instron, saver_instron, condition=EvalStress())
+crappy.link(labjack_instron, saver_instron, modifier=EvalStress())
 
 labels = ["time(sec)", 'Tspecimen', 'Tup', 'Tdown']
 
@@ -63,8 +63,8 @@ grapher_temperatures = crappy.blocks.Grapher(
     [('time(sec)', label) for label in labels[1:]], length=1800)
 
 crappy.link(labjack_temperatures, grapher_temperatures,
-    condition=ConditionCalib())
+    modifier=ConditionCalib())
 crappy.link(labjack_temperatures, saver_temperatures,
-    condition=ConditionCalib())
+    modifier=ConditionCalib())
 crappy.start()
 

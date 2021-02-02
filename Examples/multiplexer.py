@@ -27,7 +27,7 @@ g2 = crappy.blocks.Generator([
 mul = crappy.blocks.Multiplex()
 
 #crappy.link(g1,mul)
-crappy.link(g1,mul,condition=Delay(50))
+crappy.link(g1,mul,modifier=Delay(50))
 crappy.link(g2,mul)
 
 graph = crappy.blocks.Grapher(('t(s)','cmd1'),('t(s)','cmd2'))

@@ -21,7 +21,7 @@ s = crappy.blocks.IOBlock("T7_streamer",
     streamer=True)
 
 #g = crappy.blocks.Grapher(('t','AIN0'),('t','AIN1'))
-#crappy.link(s,g,condition=my_mean)
+#crappy.link(s,g,modifier=my_mean)
 
 save = crappy.blocks.Hdf_saver("/home/vic/out.h5",atom=tables.Float64Atom())
 crappy.link(s,save)

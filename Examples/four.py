@@ -83,12 +83,12 @@ for i in pins:
     [dict(type='constant',condition=None,value=v[i])]))
 
   crappy.link(gen_list[-1],pid_list[-1])
-  crappy.link(pid_list[-1],lj,condition=dc_to_clk('pwm%d'%i))
-  crappy.link(lj,pid_list[-1],condition=[crappy.condition.Median(MED),crappy.condition.Moving_avg(MEAN)])
+  crappy.link(pid_list[-1],lj,modifier=dc_to_clk('pwm%d'%i))
+  crappy.link(lj,pid_list[-1],modifier=[crappy.modifier.Median(MED),crappy.modifier.Moving_avg(MEAN)])
   crappy.link(pid_list[-1],graph_cmd)
 
 graph = crappy.blocks.Grapher(*[('t(s)','T%d'%i) for i in pins])
-crappy.link(lj,graph,condition=[crappy.condition.Median(MED),crappy.condition.Moving_avg(MEAN)])
+crappy.link(lj,graph,modifier=[crappy.modifier.Median(MED),crappy.modifier.Moving_avg(MEAN)])
 
 
 if SHOW_PID:
