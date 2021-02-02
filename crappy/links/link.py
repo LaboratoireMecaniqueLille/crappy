@@ -71,20 +71,21 @@ class Link(object):
   Link class. All connection between Blocks should be made with this.
   """
 
-  def __init__(self, input_block=None, output_block=None, condition=[],
-                                    timeout=0.1, action="warn", name="link"):
+  def __init__(self, input_block=None, output_block=None, condition=None,
+                modifier=[], timeout=0.1, action="warn", name="link"):
     """
     Creates a pipe and is used to transfer information between Blocks.
-    You can add one or multiple conditions to modify the value transfered.
+    You can add one or multiple modifiers to modify the value transfered.
 
 
     Args:
         name: name of a link to recognize it on timeout.
-        condition : Children class of links.Condition, optionnal
-            Each "send" call will pass through the condition.evaluate method
+        modifier : Modifier or list of Modifiers, optionnal
+            Each "send" call will pass through the modifier.evaluate method
             and sends the returned value.
-            If condition has not evaluate method, send will try call condition.
-            You can pass a list of conditions, they will be executed in order.
+            If modifier has not evaluate method, send will try to call
+            the modifier.
+            You can pass a list of Modifiers, they will be executed in order.
 
         timeout : int or float, default = 0.1
             Timeout for the send method.
@@ -94,10 +95,14 @@ class Link(object):
             only, not warn or choose to kill the link. If any other string,
             will be printed in case of error to debug.
     """
+    # For compatibility (condition is deprecated, use modifier)
+    if condition is not None:
+      modifier = condition
+    # --
     self.name = name
     self.in_, self.out_ = Pipe(duplex=False)
     self.external_trigger = None
-    self.condition = condition if isinstance(condition,list) else [condition]
+    self.modifiers = modifier if isinstance(modifier,list) else [modifier]
     self.timeout = timeout
     self.action = action
     if None not in [input_block, output_block]:
@@ -111,7 +116,7 @@ class Link(object):
   def send(self, value):
     """
     Send the value, or a modified value if you pass it through a
-    condition.
+    modifier.
     """
     try:
       self.send_timeout(value)
@@ -133,14 +138,14 @@ class Link(object):
   @win_timeout(1)
   def send_timeout(self, value):
     try:
-      if self.condition is None or isinstance(value,str):
+      if self.modifiers is None or isinstance(value,str):
         self.out_.send(value)
       else:
-        for cond in self.condition:
-          if hasattr(cond,'evaluate'):
-            value = cond.evaluate(copy(value))
+        for mod in self.modifiers:
+          if hasattr(mod,'evaluate'):
+            value = mod.evaluate(copy(value))
           else:
-            value = cond(copy(value))
+            value = mod(copy(value))
           if value is None:
             break
         if value is not None:

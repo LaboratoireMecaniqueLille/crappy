@@ -3,9 +3,9 @@
 from .._global import DefinitionError
 
 
-class MetaCondition(type):
+class MetaModifier(type):
   """
-  To keep track of all conditions
+  To keep track of all modifiers
   """
   classes = {}
   needed_methods = ["evaluate"]
@@ -15,19 +15,19 @@ class MetaCondition(type):
 
   def __init__(cls,name,bases,dict):
     type.__init__(cls,name,bases,dict)
-    if name in MetaCondition.classes:
+    if name in MetaModifier.classes:
       raise DefinitionError("Cannot redefine "+name+" class")
 
     missing_methods = []
-    for m in MetaCondition.needed_methods:
+    for m in MetaModifier.needed_methods:
       if m not in dict:
         missing_methods.append(m)
-    if name != "Condition" and missing_methods:
+    if name != "Modifier" and missing_methods:
       raise DefinitionError("Class "+name+" is missing methods: "+str(
         missing_methods))
     del missing_methods
-    MetaCondition.classes[name] = cls
+    MetaModifier.classes[name] = cls
 
 
-class Condition(object):
-  __metaclass__ = MetaCondition
+class Modifier(object):
+  __metaclass__ = MetaModifier

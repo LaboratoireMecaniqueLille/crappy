@@ -1,8 +1,8 @@
 #coding: utf-8
 
-from .condition import Condition,MetaCondition
+from .modifier import Modifier,MetaModifier
 from .demux import Demux
-from .derive import Derive
+from .differentiate import Diff
 from .integrate import Integrate
 from .mean import Mean
 from .median import Median
@@ -11,4 +11,4 @@ from .moving_med import Moving_med
 from .trig_on_change import Trig_on_change
 from .trig_on_value import Trig_on_value
 
-condition_list = MetaCondition.classes
+modifier_list = MetaModifier.classes

@@ -2,12 +2,12 @@
 
 import numpy as np
 
-from .condition import Condition
+from .modifier import Modifier
 
 
-class Moving_avg(Condition):
+class Moving_med(Modifier):
   def __init__(self,npoints=100):
-    Condition.__init__(self)
+    Modifier.__init__(self)
     self.npoints = npoints
 
   def evaluate(self,data):
@@ -21,7 +21,7 @@ class Moving_avg(Condition):
       if len(self.last[k]) > self.npoints:
         self.last[k] = self.last[k][-self.npoints:]
       try:
-        r[k] = np.mean(self.last[k])
+        r[k] = np.median(self.last[k])
       except TypeError:
         r[k] = self.last[k][-1]
     return r

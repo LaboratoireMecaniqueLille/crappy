@@ -6,8 +6,11 @@ from . import inout
 from . import tool
 from . import blocks
 from . import links
-from . import condition
+from . import modifier
 from .__version__ import __version__
+
+# For compatibility (deprecated!)
+condition = modifier
 
 link = links.link
 Block = blocks.Block

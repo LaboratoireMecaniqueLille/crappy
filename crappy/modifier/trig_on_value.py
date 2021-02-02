@@ -1,15 +1,15 @@
 #coding: utf-8
 
-from .condition import Condition
+from .modifier import Modifier
 
 
-class Trig_on_value(Condition):
+class Trig_on_value(Modifier):
   """
   Can be used to send data (an empty dict) when the input reached a given value
   Args:
     name: The name of the label to monitor
     values: A list containing the possible values to send the signal
-  The condition will trig if data[name] is in values.
+  The modifier will trig if data[name] is in values.
   """
   def __init__(self,name,values):
     self.name = name

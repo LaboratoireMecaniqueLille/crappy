@@ -2,20 +2,18 @@
 
 import numpy as np
 
-from .condition import Condition
+from .modifier import Modifier
 
 
-class Mean(Condition):
+class Median(Modifier):
   """
-  Mean filter:
-    returns the mean value every npoints point of data
+  Median filter:
+    returns the median value every npoints point of data
   Arg:
     npoints (int): the number of points it takes to return 1 value
-  Will divide the output freq by npoints
-  If you need the same freq, see Moving_avg
   """
   def __init__(self,npoints=100):
-    Condition.__init__(self)
+    Modifier.__init__(self)
     self.npoints = npoints
 
   def evaluate(self,data):
@@ -29,8 +27,8 @@ class Mean(Condition):
       self.last[k].append(data[k])
       if len(self.last[k]) == self.npoints:
         try:
-          r[k] = np.mean(self.last[k])
-        except TypeError: # Non numeric data
+          r[k] = np.median(self.last[k])
+        except TypeError:
           r[k] = self.last[k][-1]
       elif len(self.last[k]) > self.npoints:
         self.last[k] = []

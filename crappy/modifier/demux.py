@@ -2,14 +2,14 @@
 
 import numpy as np
 
-from .condition import Condition
+from .modifier import Modifier
 
 
-class Demux(Condition):
+class Demux(Modifier):
   """
-  Condition to change a stream table into a dict with values (to plot streams).
+  Modifier to change a stream table into a dict with values (to plot streams).
 
-  This condition turns the array return by a streaming device into a
+  This modifier turns the array return by a streaming device into a
   dict with individual values (but only one per table). This allows
   attaching graphers to HF acquisition devices.
   Note that the table will be lost in the process.
@@ -22,7 +22,7 @@ class Demux(Condition):
     time_label: The name of the label of the time table.
   """
   def __init__(self,*labels,**kwargs):
-    Condition.__init__(self)
+    Modifier.__init__(self)
     if len(labels) == 1 and isinstance(labels[0],list):
       self.labels = labels[0]
     else:
@@ -31,7 +31,7 @@ class Demux(Condition):
     self.mean = kwargs.pop("mean",False)
     self.time = kwargs.pop("time_label","t(s)")
     self.transpose = kwargs.pop("transpose",False)
-    assert not kwargs,"Demux condition got invalid kwarg:"+str(kwargs)
+    assert not kwargs,"Demux modifier got invalid kwarg:"+str(kwargs)
     if self.mean:
       self.evaluate = self.evaluate_mean
     else:
