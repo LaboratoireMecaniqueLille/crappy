@@ -47,7 +47,6 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.autosectionlabel',
-    'rinoh.frontend.sphinx',
     'sphinx_rtd_theme'
 ]
 
