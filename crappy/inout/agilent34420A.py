@@ -5,28 +5,29 @@ from .inout import InOut
 
 
 class Agilent34420a(InOut):
-  """Sensor class for Agilent34420A devices."""
+  """
+  Sensor class for Agilent34420A devices.
 
-  def __init__(self, mode=b"VOLT", device='/dev/ttyUSB0',
-      baudrate=9600, timeout=1):
-    """
-    This class contains method to measure values of resistance or voltage
-    on Agilent34420A devices.
+  This class contains method to measure values of resistance or voltage
+  on Agilent34420A devices.
 
+  Note:
     May work for other devices too, but not tested.
+
     If you have issues with this class returning a lot of 'bad serial', \
     make sure you have the last version of pySerial.
 
-    Args:
-        mode : {"VOLT","RES"} , default = "VOLT"
-                Desired value to measure.
-        device : str, default = '/dev/ttyUSB0'
-                Path to the device.
-        baudrate : int, default = 9600
-                Desired baudrate.
-        timeout : int or float, default = 10
-                Timeout for the serial connection.
-    """
+  Args:
+    - mode ({"VOLT", "RES"}, default: "VOLT"): Desired value to measure.
+    - device (str, default: '/dev/ttyUSB0'): Path to the device.
+    - baudrate (int, default: 9600): Desired baudrate.
+    - timeout (int or float, default: 10): Timeout for the serial connection.
+
+  """
+
+  def __init__(self, mode=b"VOLT", device='/dev/ttyUSB0',
+      baudrate=9600, timeout=1):
+
     InOut.__init__(self)
     # path to the device
     self.device = device

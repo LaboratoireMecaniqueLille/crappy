@@ -2,7 +2,7 @@
 
 import numpy as np
 import time
-from PyDAQmx import *
+#from PyDAQmx import *
 
 from .inout import InOut
 
@@ -10,8 +10,9 @@ from .inout import InOut
 def get_daqmx_devices_names():
   """
   Get all connected daqmx devices.
+
   Returns:
-      a list of all connected daqmx devices.
+    A list of all connected daqmx devices.
 
   """
   buffer_size = 4096
@@ -29,36 +30,40 @@ def listify(stuff, l):
 
 class Daqmx(InOut):
   """
-  Class to use DAQmx devices
-  kwargs:
-    device (str): Name of the device to open. Default: 'Dev1'
-    channels (list of str/int): Names or ids of the channels to read
-      default: ['ai0']
-    gain (list of floats): Gains to apply to each reading
-    offset (list of floats): Offset to apply to each reading
-    range (list of floats): Max value for the reading (max: 5V)
-      must be in [.5,1.,2.5,5.]
-      default: 5
-      See niDAQ api for more details
-    make_zero (list of bools): If True, the average value on the channel
-      at opening will be evaluated and substracted to the actual reading
-      default: True
-    nperscan (int): If using streamer mode, number of readings to acquire
-      on each get_stream call
-    samplerate (float): If using streamer mode, frequency of acquition
-      when calling get_stream
-    out_channels (list of str/int): names or ids of the output channels
-      default: []
-    out_gain (list of floats): gains to apply to the commands
-      default: 1
-    out_offset (list of floats): offset to apply to the commands
-      default: 0
-    out_range (list of floats): Max value of the output (max: 5V)
-      must be in [.5,1.,2.5,5.]
-      default: 5
-      See niDAQ api for more details
-  Note: If an argument taken as a list is given as a single value, it
-  will be applied to all channels.
+  Class to use DAQmx devices.
+
+  Kwargs:
+    - device (str, default: 'Dev1'): Name of the device to open.
+    - channels (list of str/int, default: ['ai0']): Names or ids of the channels
+      to read.
+    - gain (list of floats): Gains to apply to each reading.
+    - offset (list of floats): Offset to apply to each reading.
+    - range (list of floats, [.5, 1., 2.5, 5.], max: 5V, default: 5): Max value
+      for the reading.
+
+      Note:
+        See niDAQ api for more details.
+
+    - make_zero (list of bools, default: True): If True, the average value on
+      the channel at opening will be evaluated and substracted to the actual
+      reading.
+    - nperscan (int): If using streamer mode, number of readings to acquire
+      on each get_stream call.
+    - samplerate (float): If using streamer mode, frequency of acquition
+      when calling get_stream.
+    - out_channels (list of str/int, default: []): Names or ids of the output
+      channels.
+    - out_gain (list of floats, default: 1): Gains to apply to the commands.
+    - out_offset (list of floats, default: 0): Offset to apply to the commands.
+    - out_range (list of floats, [.5, 1., 2.5, 5.], max: 5V, default: 5): Max
+      value of the output.
+
+      Note:
+        See niDAQ api for more details.
+
+        If an argument taken as a list is given as a single value, it
+        will be applied to all channels.
+
   """
 
   def __init__(self, **kwargs):
@@ -94,8 +99,12 @@ class Daqmx(InOut):
     """
     Turns the settings into lists of the same length, each index standing for
     one channel.
-    if a list is given, simply check the length
-    else make a list of the correct length containing only the given value
+
+    Note:
+      If a list is given, simply check the length.
+
+      Else make a list of the correct length containing only the given value.
+
     """
     # IN channels
     self.channels = self.channels if isinstance(self.channels, list) \
@@ -151,24 +160,36 @@ class Daqmx(InOut):
 
   def get_data(self):
     """
-    Returns a tuple of length len(self.channels)+1
-    first element is the time, others are readings of each channel
+    Returns a tuple of length len(self.channels)+1.
+
+    First element is the time, others are readings of each channel.
     """
     return [i[0] for i in self.get_single(1)]
 
   def get_single(self, npoints=None):
     """
-    Read the analog voltage on specified channels
+    Read the analog voltage on specified channels.
+
     Args:
-        channels: List of ints, the INDEX of the channels to read
-          Ex: if self.channels = ['ai1','ai2','ai4']
-            channels = [1,2] will read ai2 and ai4
-          if None (default) will read all opened channels
-        npoints: number of values to read.
-          if None, will use the value of self.nperscan
+      - channels (List of ints, default: None): The INDEX of the channels to read.
+
+        Example:
+          if self.channels = ['ai1','ai2','ai4'],
+          channels = [1,2] will read ai2 and ai4.
+
+        Note:
+          If None will read all opened channels.
+
+      - npoints: Number of values to read.
+
+        Note:
+          If None, will use the value of self.nperscan.
+
     Returns:
-        a tuple of len(self.channels)+1 lists of length npoints
-        first list is the time, the others are the read voltages
+      A tuple of len(self.channels)+1 lists of length npoints.
+
+      First list is the time, the others are the read voltages.
+
     """
     if npoints is None:
       npoints = self.nperscan
@@ -195,9 +216,13 @@ class Daqmx(InOut):
 
   def set_cmd(self, *args):
     """
-    Set the output(s) to the specified value
-    Takes n arguments, n being the number of channels open at init
-    ith argument is the value to set to the ith channel
+    Set the output(s) to the specified value.
+
+    Note:
+      Takes n arguments, n being the number of channels open at init.
+
+      ith argument is the value to set to the ith channel.
+
     """
     assert len(args) == len(self.out_channels)
     data = np.array(args, dtype=np.float64) * self.out_gain + self.out_offset

@@ -10,8 +10,6 @@ from .masterblock import MasterBlock
 class Client(MasterBlock):
   def __init__(self,address,port=1148,header=b'crappy_h\x01\x02\x03',
       bs=4096,load_method='pickle'):
-    """
-    """
     MasterBlock.__init__(self)
     self.niceness = -10
     self.address = address

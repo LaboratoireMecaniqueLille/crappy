@@ -11,13 +11,19 @@ from time import time
 class KollMorgenVariator(object):
   """
   Main class to test communication with kollmorgen variator.
-  Every variable and its address has been defined in the Kollmorgen
-  Integrated Suite. To add or remove some, update the dictionaries below.
-  There is 3 motors, so the tens are for each motor, the units for the address.
+
+  Note:
+    Every variable and its address has been defined in the Kollmorgen
+    Integrated Suite.
+
+    To add or remove some, update the dictionaries of __init__.
+
+    There is 3 motors, so the tens are for each motor, the units for the address.
 
   Args:
-    - host: variator's IP address.
-    - port: port for modbus communication (default: 502)
+    - host: Variator's IP address.
+    - port (default: 502): Port for modbus communication
+
   """
 
   def __init__(self, **kwargs):
@@ -81,7 +87,7 @@ class KollMorgenVariator(object):
   def set_speed(self, motor, speed):
     """
     Writes to variator desired speed (signed), and its direction. Applies to
-    every motor movement (rotations, positionning...)
+    every motor movement (rotations, positionning...).
     """
     address_hld = int(str(motor) + str(self.hldreg_addresses["velocity"]))
     self.variator.write_register(address_hld, abs(speed))

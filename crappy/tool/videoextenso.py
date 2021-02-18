@@ -14,7 +14,7 @@ class LostSpotError(Exception):
 
 
 def overlapping(box1,box2):
-  """Returns True if box1 and box2 are overlapping or included in each other"""
+  """Returns True if box1 and box2 are overlapping or included in each other."""
   for i in box1[::2]:
     if box2[0] < i < box2[2]:
       if not (box1[3] <= box2[1] or box2[3] <= box1[1]):
@@ -33,13 +33,18 @@ def overlapping(box1,box2):
 
 class Video_extenso(object):
   """
-The basic VideoExtenso class:
-  Can take 2,3 or 4 spots
+  The basic VideoExtenso class.
+
+  Note:
+    Can take 2,3 or 4 spots.
+
   It will detect the spots, save the initial position, and return the
   measured deformation in the most simple way:
-  It will always return a list of the spots coordinate (in pixel)
-    It will return Exx, Eyy, projections of the length of the bounding
-    box of the spot on each axis, divided by its original length
+
+    - It will always return a list of the spots coordinate (in pixel).
+    - It will return Exx, Eyy, projections of the length of the bounding
+      box of the spot on each axis, divided by its original length.
+
   """
   def __init__(self,**kwargs):
     for arg,default in [("white_spots",False),
@@ -75,8 +80,13 @@ The basic VideoExtenso class:
     # spot image to the process
 
   def detect_spots(self,img,oy,ox):
-    """Detect the spots in img, subframe of the full image
-    ox and oy represent the offset of the subframe in the full image"""
+    """
+    Detect the spots in img, subframe of the full image.
+
+    Note:
+      ox and oy represent the offset of the subframe in the full image.
+
+    """
     # Finding out how many spots we should detect
     # If L0 is already saved, we have already counted the spots, else
     # see the num_spot parameter
@@ -157,7 +167,7 @@ The basic VideoExtenso class:
     self.num_spots = len(self.spot_list)
 
   def enlarged_window(self,window,shape):
-    """Returns the slices to get the window around the spot"""
+    """Returns the slices to get the window around the spot."""
     s1 = slice(max(0,window[0]-self.border),
         min(shape[0],window[2]+self.border))
     s2 = slice(max(0,window[1]-self.border),
@@ -166,7 +176,7 @@ The basic VideoExtenso class:
 
   def start_tracking(self):
     """Will spawn a process per spot, which goal is to track the spot and
-    send the new coordinate after each update"""
+    send the new coordinate after each update."""
     self.tracker = []
     self.pipe = []
     for s in self.spot_list:
@@ -178,8 +188,10 @@ The basic VideoExtenso class:
       self.tracker[-1].start()
 
   def get_def(self,img):
-    """The "heart" of the videoextenso
-    Will keep track of the spots and return the computed deformation"""
+    """
+    The "heart" of the videoextenso.
+    Will keep track of the spots and return the computed deformation.
+    """
     if not hasattr(self,"l0x"):
       print("L0 not saved, saving it now.")
       self.save_length()
@@ -303,7 +315,7 @@ class Tracker(Process):
     return r
 
   def fallback(self,img):
-    """Called when the spots are lost"""
+    """Called when the spots are lost."""
     if self.safe_mode or self.fallback_mode:
       if self.fallback_mode:
         self.pipe.send("Fallback failed")

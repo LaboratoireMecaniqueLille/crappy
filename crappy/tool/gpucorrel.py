@@ -39,9 +39,12 @@ class CorrelStage:
   """
   Run a correlation routine on an image, at a given resolution.
 
-  Multiple instances of this class are used for
-  the pyramidal correlation in Correl().
-  Can but is not meant to be used as is.
+  Note:
+    Multiple instances of this class are used for
+    the pyramidal correlation in Correl().
+
+    Can but is not meant to be used as is.
+
   """
   num = 0  # To count the instances so they get a unique number (self.num)
 
@@ -166,13 +169,17 @@ class CorrelStage:
 
   def debug(self, n, *s):
     """
-    To print debug messages
+    To print debug messages.
 
-    First argument is the level of the message.
-    The others arguments will be displayed only if
-    the self.debug var is superior or equal
-    Also, flag and indentation reflect resectively
-    the origin and the level of the message
+    Note:
+      First argument is the level of the message.
+
+      The others arguments will be displayed only if
+      the self.debug var is superior or equal.
+
+      Also, flag and indentation reflect respectively
+      the origin and the level of the message.
+
     """
     if n <= self.verbose:
       s2 = ()
@@ -184,9 +191,13 @@ class CorrelStage:
     """
     To set the original image from a given CPU or GPU array.
 
-    If it is a GPU array, it will NOT be copied.
-    Note that the most efficient method is to write directly over
-    self.devOrig with some kernel and then run self.updateOrig()
+    Warning!
+      If it is a GPU array, it will NOT be copied.
+
+    Note:
+      The most efficient method is to write directly over
+      self.devOrig with some kernel and then run self.updateOrig().
+
     """
     assert img.shape == (self.h, self.w), \
       "Got a {} image in a {} correlation routine!".format(
@@ -203,7 +214,7 @@ class CorrelStage:
     self.updateOrig()
 
   def updateOrig(self):
-    """Needs to be called after self.img_d has been written directly"""
+    """Needs to be called after self.img_d has been written directly."""
     self.debug(3, "Updating original image")
     self.array = cuda.gpuarray_to_array(self.devOrig, 'C')
     # 'C' order implies tex2D(x,y) will fetch matrix(y,x):
@@ -213,16 +224,19 @@ class CorrelStage:
     self._ready = False
 
   def _computeGradients(self):
-    """Wrapper to call the gradient kernel"""
+    """Wrapper to call the gradient kernel."""
     self._gradientKrnl.prepared_call(self.grid, self.block,
                                  self.devGradX.gpudata, self.devGradY.gpudata)
 
   def prepare(self):
     """
-    Computes all necessary tables to perform correlation
+    Computes all necessary tables to perform correlation.
 
-    This method must be called everytime the original image or fields are set
-    If not done by the user, it will be done automatically when needed
+    Note:
+      This method must be called everytime the original image or fields are set.
+
+      If not done by the user, it will be done automatically when needed.
+
     """
     if not hasattr(self, 'maskArray'):
       self.debug(2, "No mask set when preparing, using a basic one, \
@@ -265,10 +279,12 @@ with a border of 5% the dimension")
 
   def resampleOrig(self, newY, newX, devOut):
     """
-    To resample the original image
+    To resample the original image.
 
-    Reads orig.texture and writes the interpolated newX*newY
-    image to the devOut array
+    Note:
+      Reads orig.texture and writes the interpolated newX*newY
+      image to the devOut array.
+
     """
     grid = (int(ceil(newX / 32)), int(ceil(newY / 32)))
     block = (int(ceil(newX / grid[0])), int(ceil(newY / grid[1])), 1)
@@ -279,7 +295,7 @@ with a border of 5% the dimension")
     self.debug(3, "Resampled original texture to", devOut.shape)
 
   def resampleD(self, newY, newX):
-    """Resamples tex_d and returns it in a gpuarray"""
+    """Resamples tex_d and returns it in a gpuarray."""
     if (self.rX, self.rY) != (np.int32(newX), np.int32(newY)):
       self.rGrid = (int(ceil(newX / 32)), int(ceil(newY / 32)))
       self.rBlock = (int(ceil(newX / self.rGrid[0])),
@@ -297,10 +313,13 @@ with a border of 5% the dimension")
     """
     Method to give the fields to identify with the routine.
 
-    This is necessary only once and can be done multiple times, but the routine
-    have to be initialized with .prepare(), causing a slight overhead
-    Takes a tuple/list of 2 (gpu)arrays[Nfields,x,y] (one for displacement
-    along x and one along y)
+    Note:
+      This is necessary only once and can be done multiple times, but the
+      routine have to be initialized with .prepare(), causing a slight overhead.
+
+      Takes a tuple/list of 2 (gpu)arrays[Nfields,x,y] (one for displacement
+      along x and one along y).
+
     """
     self.debug(2, "Setting fields")
     if isinstance(fieldsX, np.ndarray):
@@ -313,10 +332,12 @@ with a border of 5% the dimension")
 
   def setImage(self, img_d):
     """
-    Set the image to compare with the original
+    Set the image to compare with the original.
 
-    Note that calling this method is not necessary: you can do .getDisp(image)
-    This will automatically call this method first
+    Note:
+      Calling this method is not necessary: you can do .getDisp(image).
+      This will automatically call this method first.
+
     """
     assert img_d.shape == (self.h, self.w), \
       "Got a {} image in a {} correlation routine!".format(
@@ -371,7 +392,7 @@ with a border of 5% the dimension")
                 .format(self.num, self.loop), diff)
 
   def getDisp(self, img_d=None):
-    """ The method that actually computes the weight of the fields."""
+    """The method that actually computes the weight of the fields."""
     self.debug(3, "Calling main routine")
     self.loop += 1
     # self.mul = 3
@@ -454,7 +475,7 @@ with a border of 5% the dimension")
 
 class GPUCorrel:
   """
-  Identify the displacement between two images
+  Identify the displacement between two images.
 
   This class is the core of the Correl block.
   It is meant to be efficient enough to run in real-time.
@@ -791,7 +812,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
       self.setMask(kwargs.get("mask"))
 
   def getFields(self, y=None, x=None):
-    """Returns the fields, reampled to size (y,x)"""
+    """Returns the fields, reampled to size (y,x)."""
     if x is None or y is None:
       y = self.h[0]
       x = self.w[0]
@@ -808,19 +829,19 @@ Add Nfields=x or directly set fields with fields=list/tuple")
 
   def debug(self, n, *s):
     """
-    To print debug info
+    To print debug info.
 
     First argument is the level of the message.
-    It wil be displayed only if the self.debug is superior or equal
+    It wil be displayed only if the self.debug is superior or equal.
     """
     if n <= self.verbose:
       print("  " * (n - 1) + "[Correl]", *s)
 
   def setOrig(self, img):
     """
-    To set the original image
+    To set the original image.
 
-    This is the reference with which the second image will be compared
+    This is the reference with which the second image will be compared.
     """
     self.debug(2, "updating original image")
     assert isinstance(img, np.ndarray), "Image must be a numpy array"
@@ -896,11 +917,11 @@ to allow GPU computing (got {}). Converting to float32."
 
   def getDisp(self, img_d=None):
     """
-    To get the displacement
+    To get the displacement.
 
     This will perform the correlation routine on each stage, initializing with
     the previous values every time it will return the computed parameters
-    as a list
+    as a list.
     """
     self.loop += 1
     if img_d is not None:
@@ -922,7 +943,7 @@ to allow GPU computing (got {}). Converting to float32."
 
   def getRes(self, lvl=0):
     """
-    Returns the last residual of the sepcified level (0 by default)
+    Returns the last residual of the sepcified level (0 by default).
 
     Usually, the correlation is correct when res < ~1e9-10 but it really
     depends on the images: you need to find the value that suit your own
@@ -939,10 +960,10 @@ to allow GPU computing (got {}). Converting to float32."
     It writes a single channel picture named "diff.png" where 128 gray is
     exact equality, lighter pixels show positive difference and darker pixels
     a negative difference. Useful to see if correlation succeded and to
-    identify the origin of non convergence
+    identify the origin of non convergence.
     """
     self.correl[level].writeDiffFile()
 
   def clean(self):
-    """Needs to be called at the end, to destroy the context properly"""
+    """Needs to be called at the end, to destroy the context properly."""
     context.pop()

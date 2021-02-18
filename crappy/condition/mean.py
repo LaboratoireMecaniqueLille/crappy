@@ -7,12 +7,19 @@ from .condition import Condition
 
 class Mean(Condition):
   """
-  Mean filter:
-    returns the mean value every npoints point of data
+  Mean filter.
+
+  Returns:
+    The mean value every npoints point of data.
+
   Arg:
-    npoints (int): the number of points it takes to return 1 value
-  Will divide the output freq by npoints
-  If you need the same freq, see Moving_avg
+    - npoints (int): The number of points it takes to return 1 value.
+
+  Note:
+    Will divide the output freq by npoints.
+
+    If you need the same freq, see :ref:`Moving average`.
+
   """
   def __init__(self,npoints=100):
     Condition.__init__(self)

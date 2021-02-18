@@ -33,44 +33,56 @@ kw = dict([
 
 class Camera(MasterBlock):
   """
-  Streams pictures.
+  Read images from a camera object, save and/or send them to another block.
+
+  Note:
+    It can be triggered by an other block, internally,
+    or try to run at a given framerate.
+
+  Kwargs:
+    - camera (str, {"Ximea","Jai","Webcam",...}, mandatory): See
+      crappy.camera.MasterCam.classes for a full list.
+    - save_folder (str or None, default: None): directory to save the images.
+
+      Note:
+        It will be created if necessary.
+
+        If None, it will not save the images.
+
+    - verbose (bool, default: False): If True, the block will print the number
+      of loops/s.
+    - labels (list of strings, default: ['t(s)', 'frame']): The labels for
+      respectively time and the frame.
+    - fps_label: If set, self.max_fps will be set to the value received by
+      the block with this label.
+    - img_name (string, default: "{self.loops:06d}_{t-self.t0:.6f}"): Template
+      for the name of the image to save.
+
+      Note:
+        It will be evaluated as a f-string.
+
+    - ext (str, default: "tiff"): Extension of the image.
+
+      Warning!
+        Make sure it is supported by the image saving backend.
+
+    - save_period (int, default: 1): Will save only one in x images.
+    - save_backend (str, default: None): module to use to save the images
+      supported backends: sitk (SimpleITK), cv2 (OpenCV).
+
+      Note:
+        If None will try sitk, else cv2.
+
+    - transform (func or None, default: None): Function to be applied on the
+      image before sending.
+
+      Warning!
+        It will NOT be applied to the saved image.
+
+    - config (bool, default: True): Show the popup for config ?
+
   """
   def __init__(self,camera,**kwargs):
-    """
-    Read images from a camera object, save and/or send them to another block.
-
-    It can be triggered by an other block, internally,
-    or try to run at a given framerate
-
-    kwargs:
-      camera : {"Ximea","Jai","Webcam",...}
-        See crappy.camera.MasterCam.classes for a full list
-        (str, mandatory)
-      save_folder : directory to save the images. It will be created
-        if necessary. If None, it will not save the images
-        (str or None, default: None)
-      verbose : If True, the block will print the number of loops/s
-          (bool, default: False)
-      labels : The labels for respectively time and the frame
-          (list of strings, default: ['t(s)','frame'])
-      fps_label : If set, self.max_fps will be set to the value received by
-        the block with this label
-      img_name : Template for the name of the image to save
-        it will be evaluated as a f-string
-        (string, default: "{self.loops:06d}_{t-self.t0:.6f}"
-      ext : Extension of the image. Make sure it is supported by the
-        image saving backend (str,default: "tiff")
-      save_period : Will save only one in x images
-        (int, default : 1)
-      save_backend : module to use to save the images
-        supported backends : sitk (SimpleITK), cv2 (OpenCV)
-        if None will try sitk, else cv2
-        (str, default: None)
-      transform : Function to be applied on the image before sending
-        it will NOT be applied to the saved image
-        (func or None, default : None)
-      config : Show the popup for config ? (bool, default: True)
-    """
     MasterBlock.__init__(self)
     self.niceness = -10
     for arg,default in kw.items():
@@ -125,7 +137,7 @@ class Camera(MasterBlock):
   def get_img(self):
     """
     Waits the appropriate time/event to read an image, reads it,
-    saves it if asked to, applies the transformation and increases counter
+    saves it if asked to, applies the transformation and increases counter.
     """
     if not self.ext_trigger:
       if self.fps_label:

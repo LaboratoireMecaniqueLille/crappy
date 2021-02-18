@@ -9,16 +9,22 @@ from .camera import Camera,kw as default_cam_block_kw
 
 class GPUCorrel(Camera):
   """
-    This block uses the Correl class (in crappy/tool/correl.py)
+  This block uses the Correl class (in crappy/tool/correl.py).
 
+  Note:
     See the docstring of Correl to have more informations about the
-        arguments specific to Correl.
+    arguments specific to Correl.
+
     It will try to identify the deformation parameters for each fields.
+
     If you use custom fields, you can use labels=(...) to name the data
-        sent through the link.
+    sent through the link.
+
     If no labels are specified, custom fields will be named by their position.
-    Note that the reference image is only taken once, when the
-        .start() method is called (after dropping the first image).
+
+    The reference image is only taken once, when the .start() method is called
+    (after dropping the first image).
+
   """
   def __init__(self, camera, fields, **kwargs):
     self.ready = False

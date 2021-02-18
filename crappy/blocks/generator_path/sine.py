@@ -12,16 +12,13 @@ class Sine(Path):
   To generate a sine wave.
 
   Args:
-    amplitude: Amplitude of the sine wave.
+    - amplitude: Amplitude of the sine wave.
+    - freq (in Hz): Frequency of the sine.
+    - condition (str): Representing the condition to end this path.
+      See Path.parse_condition for more detail.
+    - offset (default: 0): Offset of the sine.
+    - phase (default: 0): phase of the sine.
 
-    freq: Frequency (Hz) of the sine.
-
-    condition: String representing the condition to end this path.
-    See Path.parse_condition for more detail.
-
-    offset: (default=0) offset of the sine.
-
-    phase: (default=0) phase of the sine.
   """
   def __init__(self,time,cmd,condition,freq,amplitude,offset=0,phase=0):
     Path.__init__(self,time,cmd)

@@ -4,8 +4,8 @@ from time import time
 import numpy as np
 import SimpleITK as sitk
 import os
-from pycuda.tools import make_default_context
-from pycuda.driver import init as cuda_init
+#from pycuda.tools import make_default_context
+#from pycuda.driver import init as cuda_init
 
 from .masterblock import MasterBlock
 from ..tool import Camera_config,GPUCorrel as GPUCorrel_tool
@@ -15,19 +15,25 @@ from ..camera import camera_list
 class GPUVE(MasterBlock):
   """
   An optical Videoextensometry measuring the displacement of small
-  areas using GPU accelerated DIC
+  areas using GPU accelerated DIC.
 
-  Patches must be a list of tuples of length 4
-  Each tuple contains the origin and the size of
-  each patch along Y and X respectively (ie Oy,Ox,Ly,Lx)
+  Warning!
+    Patches must be a list of tuples of length 4.
 
-  This block simply returns the displacement of each region along x and y
-  in pixel.
+    Each tuple contains the origin and the size of
+    each patch along Y and X respectively (ie Oy,Ox,Ly,Lx).
 
-  This block will not return the strain as it does not know
-  how the patches are arranged.
-  It should be done by another block or a condition if necessary
+  Note:
+    This block simply returns the displacement of each region along x and y
+    in pixel.
+
+    This block will not return the strain as it does not know
+    how the patches are arranged.
+
+    It should be done by another block or a condition if necessary.
+
   """
+
   def __init__(self, camera, patches, **kwargs):
     MasterBlock.__init__(self)
     self.ready = False

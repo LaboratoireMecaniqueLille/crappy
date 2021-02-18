@@ -11,22 +11,27 @@ from multiprocessing import Process,Pipe
 
 class Hist_generator(Process):
   """
-  Process to generate the histogram of images
+  Process to generate the histogram of images.
 
-  It only takes a Pipe at init, all the data will be transferred through it.
-  See self.run docstring for more infos
+  Note:
+    It only takes a Pipe at init, all the data will be transferred through it.
+
+    See self.run docstring for more infos.
+
   """
   def __init__(self,pipe):
     Process.__init__(self)
     self.pipe = pipe
 
   def run(self):
-    """Expects a tuple of 3 args through the pipe:
-        - out_size: Tuple, The dimensions of the output histogram image
-        - hist_range: Tuple, The lower and upper value of the histogram
-          (eg: (0,256) for full scale uint8)
-        - img: A numpy array with the image,
-          if not single channel, it will be converted to a single channel
+    """
+    Expects a tuple of 3 args through the pipe:
+      - out_size (Tuple): The dimensions of the output histogram image.
+      - hist_range (Tuple, eg: (0,256) for full scale uint8): The lower and
+        upper value of the histogram.
+      - img: A numpy array with the image. If not single channel, it will be
+        converted to a single channel.
+
     """
     while True:
       out_size,hist_range,img = self.pipe.recv()
@@ -54,13 +59,14 @@ class Hist_generator(Process):
 
 class Camera_config(object):
   """
-  Class creating a graphical interface to configure a camera
+  Class creating a graphical interface to configure a camera.
 
-  It will launch create the window  when instanciated:
-  just call Cam_config(camera)
+  Note:
+    It will launch create the window when instanciated:
+    just call Cam_config(camera)
 
-  It takes a single arg: the camera class
-  (it must inherit from crappy.sensor._meta.MasterCam)
+    It takes a single arg: The camera class
+    (it must inherit from crappy.sensor._meta.MasterCam).
   """
   def __init__(self,camera):
     self.camera = camera
@@ -215,7 +221,7 @@ class Camera_config(object):
     return r
 
   def resized(self):
-    """Returns True if window has been resized and saves the new coordinates"""
+    """Returns True if window has been resized and saves the new coordinates."""
     new = self.get_label_shape()
     # Integer rounding can lead to resizing loop if we compare exact values
     # so let's resize only if the difference is signigficant (more than 2pix)
@@ -227,7 +233,7 @@ class Camera_config(object):
     return False
 
   def convert_img(self):
-    """Converts the image to uint if necessary, then to a PhotoImage"""
+    """Converts the image to uint if necessary, then to a PhotoImage."""
     if len(self.img.shape) == 3:
       self.img = self.img[:,:,::-1] # BGR to RGB
     if self.img.dtype != np.uint8:
@@ -326,9 +332,12 @@ class Camera_config(object):
 
   def make_new_window(self,ey,ex):
     """
-    Hang on, it is not that complicated: given the location of the zoom event
-    this will compute the new zoom window. It is represented by 4 floats
-    between 0 and 1 miny,minx,maxy,maxx, default is 0,0,1,1
+    Hang on, it is not that complicated: Given the location of the zoom event
+    this will compute the new zoom window.
+
+    It is represented by 4 floats
+    between 0 and 1 miny,minx,maxy,maxx, default is 0,0,1,1.
+
     """
     # The zoom factor (%)
     z = (1+self.zoom_step)**self.zoom_level
@@ -370,7 +379,7 @@ class Camera_config(object):
     self.zoom_window = (miny,minx,maxy,maxx)
 
   def move_window(self,y,x):
-    """Given the movement of the mouse, it will recompute the zoom_window"""
+    """Given the movement of the mouse, it will recompute the zoom_window."""
     z = (1+self.zoom_step)**self.zoom_level
     miny = self.previous_window[0]+y/z
     maxy = self.previous_window[2]+y/z
@@ -393,8 +402,8 @@ class Camera_config(object):
 # ========== Callback functions ===========
 
   def apply_settings(self):
-    """Callback for the apply button
-    as its name suggests, it will apply all the edited settings"""
+    """Callback for the apply button.
+    As its name suggests, it will apply all the edited settings."""
     # Applying scales values to the camera
     for name,scale in self.scales.items():
       if self.camera.settings[name].value != scale.get():
@@ -417,14 +426,14 @@ class Camera_config(object):
     self.on_resize()
 
   def on_resize(self):
-    """Recomputes the new shape of the resized image"""
+    """Recomputes the new shape of the resized image."""
     ratio = min(self.label_shape[0]/self.img.shape[0],
             self.label_shape[1]/self.img.shape[1])
     self.img_shape = (int(self.img.shape[0]*ratio),
         int(self.img.shape[1]*ratio))
 
   def zoom(self,event):
-    """For windows, only one type of wheel event"""
+    """For windows, only one type of wheel event."""
     #This event is relative to the window!
     event.y -= self.img_label.winfo_y()
     if event.num == 5 or event.delta < 0:
@@ -433,13 +442,13 @@ class Camera_config(object):
       self.zoom_in(event)
 
   def zoom_in(self,event):
-    """Called when scrolling in"""
+    """Called when scrolling in."""
     self.zoom_level += 1
     ls = self.get_label_shape()
     self.make_new_window(event.y/ls[0],event.x/ls[1])
 
   def zoom_out(self,event):
-    """Called when scrolling out"""
+    """Called when scrolling out."""
     if self.zoom_level == 0:
       return
     elif self.zoom_level < 0:
@@ -450,12 +459,12 @@ class Camera_config(object):
     self.make_new_window(event.y/ls[0],event.x/ls[1])
 
   def start_move(self,event):
-    """To save the coordinates before actually moving"""
+    """To save the coordinates before actually moving."""
     self.mv_start = (event.y,event.x)
     self.previous_window = self.zoom_window
 
   def move(self,event):
-    """Moving the image when dragging it with the mouse"""
+    """Moving the image when dragging it with the mouse."""
     mvy = (self.mv_start[0]-event.y)/self.img_shape[0]
     mvx = (self.mv_start[1]-event.x)/self.img_shape[1]
     self.move_window(mvy,mvx)

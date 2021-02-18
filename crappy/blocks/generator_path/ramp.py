@@ -11,12 +11,11 @@ class Ramp(Path):
   Will make a ramp from previous value until condition is reached,
 
   Args:
-    speed: The speed of the ramp in unit/s.
+    - speed (in unit/s): The speed of the ramp.
+    - condition (str): Representing the condition to end this path.
+      See Path.parse_condition for more detail.
+    - cmd: If specified, will be the starting value of the ramp.
 
-    condition: String representing the condition to end this path.
-    See Path.parse_condition for more detail.
-
-    cmd: If specified, will be the starting value of the ramp
   """
   def __init__(self,time,cmd,condition,speed):
     Path.__init__(self,time,cmd)

@@ -9,22 +9,29 @@ from .camera import Camera,kw as default_cam_block_kw
 
 class Video_extenso(Camera):
   """
-  Measure the deformation for the video of dots on the sample
+  Measure the deformation for the video of dots on the sample.
 
-  This requires the user to select the ROI to make the spot detection.
-  Once done, it will return the deformation (in %) along X and Y axis.
-  It also returns a list of tuples, which are the coordinates (in pixel)
-  of the barycenters of the spots.
-  Optionally, it can save images.
-  The initial length is reset when receiving data from a parent block
+  Warning!
+    This requires the user to select the ROI to make the spot detection.
+
+    Once done, it will return the deformation (in %) along X and Y axis.
+
+  Note:
+    It also returns a list of tuples, which are the coordinates (in pixel)
+    of the barycenters of the spots.
+
+    Optionally, it can save images.
+
+    The initial length is reset when receiving data from a parent block.
+
   Args:
-    - camera ("str", mandatory): The name of the camera class to use
-    - labels (list, default=['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']):
-      The labels of the output
-    - wait_l0 : If set to True, the block send only zeros until the initial
-      length is reset by receiving data from an input
-    - end (bool default=True): If True, the block will stop the Crappy
-      program when the spots are lost, else it will just stop sending data
+    - camera (str, mandatory): The name of the camera class to use.
+    - labels (list, default: ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']): The
+      labels of the output.
+    - wait_l0: If set to True, the block send only zeros until the initial
+      length is reset by receiving data from an input.
+    - end (bool, default: True): If True, the block will stop the Crappy
+      program when the spots are lost, else it will just stop sending data.
 
   """
   def __init__(self,camera,**kwargs):

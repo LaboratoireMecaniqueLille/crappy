@@ -8,7 +8,7 @@ from .actuator import Actuator
 
 class Servostar(Actuator):
   """
-  To drive and configure a servostar variator through a serial connection
+  To drive and configure a servostar variator through a serial connection.
   """
   def __init__(self, device, baudrate=38400, mode="serial"):
     Actuator.__init__(self)
@@ -37,7 +37,7 @@ class Servostar(Actuator):
 
   def set_position(self,pos,speed=20000,acc=200,dec=200):
     """
-    Go to the position specified at the given speed and acceleration
+    Go to the position specified at the given speed and acceleration.
     """
     if self.last is pos:
       return
@@ -60,6 +60,13 @@ class Servostar(Actuator):
     self.last = pos
 
   def get_position(self):
+    """
+    Reads current position.
+
+    Returns:
+      Current position of the motor.
+
+    """
     self.lock.acquire()
     self.ser.flushInput()
     self.ser.write("PFB\r\n")
@@ -79,6 +86,9 @@ class Servostar(Actuator):
     return int(r)
 
   def set_mode_serial(self):
+    """
+    Sets the serial input as setpoint.
+    """
     self.lock.acquire()
     self.ser.flushInput()
     self.ser.write('OPMODE 8\r\n')
@@ -87,7 +97,7 @@ class Servostar(Actuator):
 
   def set_mode_analog(self):
     """
-    Sets the analog input as setpoint
+    Sets the analog input as setpoint.
     """
     self.last = None
     self.lock.acquire()
@@ -97,10 +107,14 @@ class Servostar(Actuator):
     self.mode = "analog"
 
   def clear_errors(self):
+    """
+    Clears error in motor registers. Obviously.
+    """
     self.ser.flushInput()
     self.ser.write("CLRFAULT\r\n")
 
   def stop(self):
+    """Stop the motor."""
     self.ser.write("DIS\r\n")
     self.ser.flushInput()
 

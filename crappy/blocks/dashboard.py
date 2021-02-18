@@ -12,18 +12,23 @@ class Dashboard(MasterBlock):
   """
   The Dashboard receives data from a link, and prints it on a new poped window.
 
-  It can receive either a single point,
-  or a list of points.
-  In this case, the displayed value corresponds to the average of points.
+  Note:
+    It can receive either a single point, or a list of points.
+
+    In this case, the displayed value corresponds to the average of points.
+
+  Args:
+    - labels (list): Values to plot on the output window.
+
+      Note:
+        If undefined, will plot every data (with time in first).
+
+    - nb_digits (int): Number of decimals to show, for every value.
+
   """
 
   def __init__(self, labels=None, nb_digits=3):
-    """
-    Args:
-      labels: list, values to plot on the output window.
-      If undefined, will plot every data (with time in first)
-      nb_digits: int, number of decimals to show, for every value.
-    """
+
     super(Dashboard, self).__init__()
     self.labels = labels
     self.nb_display_values = len(self.labels) if self.labels else None

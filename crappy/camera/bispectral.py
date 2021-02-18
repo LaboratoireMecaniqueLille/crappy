@@ -40,7 +40,7 @@ table = (
 
 
 def calcString(st, crc):
-    """Given a bunary string and starting CRC, Calc a final CRC-16 """
+    """Given a bunary string and starting CRC, Calc a final CRC-16."""
     for ch in st:
         crc = (crc >> 8) ^ table[(crc ^ ord(ch)) & 0xFF]
     return crc
@@ -123,7 +123,7 @@ class Bispectral(CLCamera):
 
   def set_external_trigger(self,val):
     """Sets the external trigger to val by toggling the value of the 3rd bit
-    of register 102"""
+    of register 102."""
     if val:
       self.send_cmd('@W1027C') # 3rd bit to 1
     else:
@@ -221,14 +221,14 @@ class Bispectral(CLCamera):
     self.send_cmd("@W1B2"+P_MSB)
 
   def get_sensor_temperature(self):
-    """Returns sensor temperature in Kelvin"""
+    """Returns sensor temperature in Kelvin."""
     gain = .01
     lsb = self.send_cmd('@R160')
     msb = self.send_cmd('@R161')
     return int(msb+lsb,16)*gain
 
   def get_ambiant_temperature(self):
-    """Returns temperature of the board in °C"""
+    """Returns temperature of the board in °C."""
     T = self.send_cmd('@R173')
     return int(T,16)
 

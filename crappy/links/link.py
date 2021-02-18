@@ -10,7 +10,7 @@ from .._global import CrappyStop
 
 
 def error_if_stop(recv):
-  "Decorator to raise an error if the function returns a string"
+  """Decorator to raise an error if the function returns a string."""
   def wrapper(*args,**kwargs):
     ret = recv(*args,**kwargs)
     if type(ret) == str:
@@ -26,7 +26,7 @@ class TimeoutError(Exception):
 
 class MethodThread(Thread):
   """
-  ThreadMethodThread, daemonic descendant class of threading.Thread which
+  ThreadMethodThread, daemonic descendant class of threading. Thread which
   simply runs the specified target method with the specified arguments.
   """
 
@@ -69,31 +69,35 @@ def win_timeout(timeout=None):
 class Link(object):
   """
   Link class. All connection between Blocks should be made with this.
-  """
+  It creates a pipe and is used to transfer information between Blocks.
 
-  def __init__(self, input_block=None, output_block=None, condition=[],
-                                    timeout=0.1, action="warn", name="link"):
-    """
-    Creates a pipe and is used to transfer information between Blocks.
+  Note:
     You can add one or multiple conditions to modify the value transfered.
 
+  Args:
+    - name: name of a link to recognize it on timeout.
+    - condition (optionnal): Children class of links.Condition.
 
-    Args:
-        name: name of a link to recognize it on timeout.
-        condition : Children class of links.Condition, optionnal
-            Each "send" call will pass through the condition.evaluate method
-            and sends the returned value.
-            If condition has not evaluate method, send will try call condition.
-            You can pass a list of conditions, they will be executed in order.
+      Note:
+        Each "send" call will pass through the condition.evaluate method
+        and sends the returned value.
 
-        timeout : int or float, default = 0.1
-            Timeout for the send method.
+        If condition has not evaluate method, send will try call condition.
 
-        action : {'warn','kill','NoWarn',str}, default = "warn"
-            Action in case of TimeoutError in the send method. You can warn
-            only, not warn or choose to kill the link. If any other string,
-            will be printed in case of error to debug.
-    """
+        You can pass a list of conditions, they will be executed in order.
+
+    - timeout (int or float, default: 0.1): Timeout for the send method.
+    - action ({'warn','kill','NoWarn',str}, default: "warn"): Action in case of
+      TimeoutError in the send method.
+
+      Note:
+        You can warn only, not warn or choose to kill the link. If any other
+        string, will be printed in case of error to debug.
+
+  """
+  def __init__(self, input_block=None, output_block=None, condition=[],
+                                    timeout=0.1, action="warn", name="link"):
+
     self.name = name
     self.in_, self.out_ = Pipe(duplex=False)
     self.external_trigger = None
@@ -155,16 +159,20 @@ class Link(object):
   @error_if_stop # Recv will raise an error if 'stop' is recved
   def recv(self, blocking=True):
     """
-    Receive data. If blocking=False, return None if there is no data
+    Receive data.
+
+    Note:
+      If blocking=False, return None if there is no data
 
     Args:
-        blocking: Enable (True) or disable (False) blocking mode.
+      - blocking: Enable (True) or disable (False) blocking mode.
 
     Returns:
-        If blocking is True, recv() method will wait
-        until data is available on the pipe and return the received data,
-        otherwise, it will check if there is data available to return,
-        or return None if the pipe is empty.
+      If blocking is True, recv() method will wait
+      until data is available on the pipe and return the received data.
+      Otherwise, it will check if there is data available to return,
+      or return None if the pipe is empty.
+
     """
     try:
       if blocking or self.in_.poll():
@@ -195,10 +203,18 @@ class Link(object):
       self.in_.recv()
 
   def recv_last(self,blocking=False):
-    """Returns only the LAST value in the pipe, dropping all the others.
-    if blocking=False: will return None if there is no data waiting
-    if blocking=True: Will wait for at least one data
-    Warning! Unlike recv, default is NON blocking"""
+    """
+    Returns only the LAST value in the pipe, dropping all the others.
+
+    Note:
+      If blocking=False: Will return None if there is no data waiting.
+
+      If blocking=True: Will wait for at least one data.
+
+    Warning!
+      Unlike recv, default is NON blocking.
+
+    """
     if blocking:
       data = self.recv()
     else:
@@ -209,10 +225,14 @@ class Link(object):
 
   def recv_chunk(self,length=0):
     """
-    Allows you to receive a chunk of data: if length > 0 it will return an
-    OrderedDict containing LISTS of the last length received data
-    If length=0, it will return all the waiting data until the pipe is empty
-    if the pipe is already empty, it will wait to return at least one value.
+    Allows you to receive a chunk of data:
+      If length > 0 it will return an OrderedDict containing LISTS of the last
+      length received data.
+
+      If length=0, it will return all the waiting data until the pipe is empty.
+
+      If the pipe is already empty, it will wait to return at least one value.
+
     """
     ret = self.recv()
     for k in ret:
@@ -237,9 +257,14 @@ class Link(object):
     Useful for blocks that don't need data all so frequently:
     It will continuously receive data for a given delay and return them as a
     single OrderedDict containing lists of the values.
-    Note that all the .recv calls are blocking so this method will take
-    AT LEAST delay seconds to return, but it could be more since it may wait
-    for data. Also, it will return at least one reading.
+
+    Note:
+      All the .recv calls are blocking so this method will take
+      AT LEAST delay seconds to return, but it could be more since it may wait
+      for data.
+
+      Also, it will return at least one reading.
+
     """
     t = time()
     ret = self.recv() # If we get CrappyStop at this instant, no data loss
@@ -261,7 +286,7 @@ class Link(object):
   def recv_chunk_nostop(self):
     """
     Experimental feature, to be used in finish methods to
-    recover the final remaining data (possibly after a stop signal)
+    recover the final remaining data (possibly after a stop signal).
     """
     l = []
     while self.in_.poll():
@@ -280,7 +305,10 @@ class Link(object):
 
 def link(in_block, out_block, **kwargs):
   """
-  Function that links two blocks
-  For the object, see Link
+  Function that links two blocks.
+
+  Note:
+    For the object, see :ref:`Link`.
+
   """
   Link(input_block=in_block, output_block=out_block, **kwargs)

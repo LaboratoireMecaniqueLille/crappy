@@ -18,18 +18,24 @@ def interp(xp,yp,x):
 
 class Multiplex(MasterBlock):
   """
-  This block interpolates data
+  This block interpolates data.
 
-  It is used to read data and return the reading from
-  multiple sensors at the same instants and a constant frequency.
-  s block  needs a delay to make sure all the required data for interpolation
-  has already been received, so do not use this block as the input of a
-  decision block !
-  This block uses linear interpolation whenever possible, else the nearest
-  neighbor.
+  Note:
+    It is used to read data and return the reading from multiple sensors at the
+    same instants and a constant frequency.
+
+    This block uses linear interpolation whenever possible, else the nearest
+    neighbor.
+
+  Warning!
+    This block  needs a delay to make sure all the required data for
+    interpolation has already been received, so do not use this block as the
+    input of a decision block!
+
   Args:
-    - key (str,default='t(s)'): The key of the sensors that holds the timestamp
-    - freq (float, default=200): The frequency of the output
+    - key (str, default: 't(s)'): The key of the sensors that holds the timestamp.
+    - freq (float, default: 200): The frequency of the output.
+
   """
   def __init__(self,key='t(s)',freq=200):
     MasterBlock.__init__(self)
@@ -49,7 +55,7 @@ class Multiplex(MasterBlock):
   def begin(self):
     """
     We need to receive the first bit of data from each input to know the
-    labels and make lists of what we will read in the main loop
+    labels and make lists of what we will read in the main loop.
     """
     for i,link in enumerate(self.inputs):
       r = link.recv_chunk()

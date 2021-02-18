@@ -13,10 +13,16 @@ import subprocess
 
 def renice(pid, niceness):
   """
-  Function to renice a process
+  Function to renice a process.
 
-  Only works on Linux. The user must be allowed to use sudo to renice with
-  a negative value. It may ask for a password for negative values.
+  Warning!
+    Only works on Linux.
+
+  Note:
+    The user must be allowed to use sudo to renice with a negative value.
+
+    It may ask for a password for negative values.
+
   """
   if niceness < 0:
     subprocess.call(['sudo', 'renice', str(niceness), '-p', str(pid)])
@@ -29,38 +35,46 @@ class MasterBlock(Process):
   This represent a Crappy block, it must be parent of all the blocks.
 
   Methods:
-    main()
-      It must not take any arg, it is where you define the main loop of
-      the block. If not overriden, will raise an error
+    - main(): It must not take any arg, it is where you define the main loop of
+      the block.
 
-    add_[in/out]put(Link object)
-      Add a link as [in/out]put
+      Note:
+        If not overriden, will raise an error.
 
-    prepare()
-      This method will be called inside the new process but before actually
-      starting the main loop of the program.  Use it for all the tasks to be
-      done before starting the main loop (can be empty).
-    start()
-      This is the same start method as Process.start: it starts the process,
-      so the initialization (defined in prepare method)
+    - add_[in/out]put(Link object): Add a link as in/output.
+    - prepare(): This method will be called inside the new process but before
+      actually starting the main loop of the program.
+
+      Note:
+        Use it for all the tasks to be done before starting the main loop.
+
+        It can be empty.
+
+    - start(): This is the same start method as Process.start: it starts the
+      process, so the initialization (defined in prepare method)
       will be done, but NOT the main loop.
+    - launch(t0): Once the process is started, calling launch will set the
+      starting time and actually start the main method.
 
-    launch(t0)
-      Once the process is started, calling launch will set the starting time
-      and actually start the main method.  If the block was not started yet,
-      it will be done automatically.
-      t0: time to set as starting time of the block
-      (mandatory, in seconds after epoch)
+      Note:
+        If the block was not started yet, it will be done automatically.
 
-    status
-      Property that can be accessed both in the process or from the parent
-        "idle": Block not started yet
-        "initializing": start was called and prepare is not over yet
-        "ready": prepare is over, waiting to start main by calling launch
-        "running": main is running
-        "done": main is over
-        "error": An error occured and the block stopped
-        start and launch method will return instantly
+        t0: Time to set as starting time of the block
+        (mandatory, in seconds after epoch).
+
+    - status: Property that can be accessed both in the process or from the
+      parent.
+
+      It can be:
+        - "idle": Block not started yet.
+        - "initializing": start was called and prepare is not over yet.
+        - "ready": prepare is over, waiting to start main by calling launch.
+        - "running": main is running.
+        - "done": main is over.
+        - "error": An error occured and the block stopped.
+
+      Note:
+        Start and launch method will return instantly.
 
   """
   instances = WeakSet()
@@ -134,7 +148,7 @@ class MasterBlock(Process):
   @classmethod
   def all_are(cls, s):
     """
-    Returns true only if all processes status are s
+    Returns true only if all processes status are s.
     """
     l = cls.get_status()
     return len(set(l)) == 1 and s in l
@@ -142,11 +156,15 @@ class MasterBlock(Process):
   @classmethod
   def renice_all(cls, high_prio=True, verbose=True):
     """
-    Will renice all the blocks processes according to block.niceness value
+    Will renice all the blocks processes according to block.niceness value.
 
-    If high_prio is False, blocks with a negative niceness value will
-    be ignored. This is to avoid asking for the sudo password since only
-    root can lower the niceness of processes.
+    Note:
+      If high_prio is False, blocks with a negative niceness value will
+      be ignored.
+
+      This is to avoid asking for the sudo password since only
+      root can lower the niceness of processes.
+
     """
     if "win" in platform:
       # Not supported on Windows yet
@@ -159,7 +177,7 @@ class MasterBlock(Process):
   @classmethod
   def prepare_all(cls, verbose=True):
     """
-    Starts all the blocks processes (block.prepare), but not the main loop
+    Starts all the blocks processes (block.prepare), but not the main loop.
     """
     if verbose:
       def vprint(*args):
@@ -236,7 +254,7 @@ class MasterBlock(Process):
   @classmethod
   def stop_all(cls, verbose=True):
     """
-    Stops all the blocks (crappy.stop)
+    Stops all the blocks (crappy.stop).
     """
     if verbose:
       def vprint(*args):
@@ -253,7 +271,7 @@ class MasterBlock(Process):
   def begin(self):
     """
     If main is not overriden, this method will be called first, before
-    entering the main loop
+    entering the main loop.
     """
     pass
 
@@ -275,7 +293,7 @@ class MasterBlock(Process):
 
   def handle_freq(self):
     """
-    For block with a given number of loops/s (use freq attr to set it)
+    For block with a given number of loops/s (use freq attr to set it).
     """
     self._MB_loops += 1
     t = time()
@@ -295,7 +313,7 @@ class MasterBlock(Process):
 
   def launch(self, t0):
     """
-    To start the main method, will call start if needed
+    To start the main method, will call start if needed.
     """
     if self.status == "idle":
       print(self, ": Called launch on unprepared process!")
@@ -305,7 +323,7 @@ class MasterBlock(Process):
   @property
   def status(self):
     """
-    Returns the status of the block, from the process itself or the parent
+    Returns the status of the block, from the process itself or the parent.
     """
     if not self.in_process:
       while self.pipe1.poll():
@@ -332,22 +350,30 @@ class MasterBlock(Process):
 
   def prepare(self):
     """
-    This will be run when creating the process, but before the actual start
+    This will be run when creating the process, but before the actual start.
 
-    The first code to be run in the new process, will only be called
-    once and before the actual start of the main launch of the blocks.
-    It can stay empty to do nothing.
+    Note:
+      The first code to be run in the new process, will only be called
+      once and before the actual start of the main launch of the blocks.
+
+      It can stay empty to do nothing.
+
     """
     pass
 
   def send(self, data):
     """
-    To send the data to all blocks downstream
+    To send the data to all blocks downstream.
 
-    Send has 2 ways to operate: you can either build the ordered dict yourself
-    or you can define self.labels (usually time first) and call send with a
-    list. It will then map them to the dict.
-    Note that ONLY dict can go through links
+    Send has 2 ways to operate:
+      You can either build the ordered dict yourself.
+
+      Or you can define self.labels (usually time first) and call send with a
+      list. It will then map them to the dict.
+
+    Note:
+      That ONLY dict can go through links.
+
     """
     if isinstance(data, dict):
       pass
@@ -362,10 +388,13 @@ class MasterBlock(Process):
 
   def recv_all(self):
     """
-    Receive new data from all the inputs (not as chunks)
+    Receive new data from all the inputs (not as chunks).
 
-    Will simply call recv on all non empty links and return a single dict
-    If the same label comes from multiple links, it may be overriden
+    Note:
+      It will simply call recv on all non empty links and return a single dict.
+
+      If the same label comes from multiple links, it may be overriden.
+
     """
     r = {}
     for i in self.inputs:
@@ -375,16 +404,26 @@ class MasterBlock(Process):
 
   def get_last(self, num=None):
     """
-    To get the latest value of each labels from all inputs
+    To get the latest value of each labels from all inputs.
 
-    Unlike the recv methods of Link, get_last is NOT guaranteed to return
-    all the data going through the links! It is meant to get the latest values,
-    discarding all the previous one (for a displayer for example)
-    Its mode of operation is completely different since it can operate on
-    multiple inputs at once. num is a list containing all the concerned inputs.
-    The first call may be blocking until it receives data, all the others will
-    return instantaneously, giving the latest known reading
-    If num is None, it will operate on all the input link at once
+    Warning!
+      Unlike the recv methods of Link, get_last is NOT guaranteed to return
+      all the data going through the links!
+
+      It is meant to get the latest values, discarding all the previous one
+      (for a displayer for example).
+
+      Its mode of operation is completely different since it can operate on
+      multiple inputs at once.
+
+    Note:
+      num is a list containing all the concerned inputs.
+
+      The first call may be blocking until it receives data, all the others will
+      return instantaneously, giving the latest known reading.
+
+      If num is None, it will operate on all the input link at once.
+
     """
     if not hasattr(self, '_last_values'):
       self._last_values = [None] * len(self.inputs)
@@ -404,12 +443,15 @@ class MasterBlock(Process):
 
   def get_all_last(self, num=None):
     """
-    To get the data from all links of the block
+    To get the data from all links of the block.
 
-    Almost the same as get_last, but will return all the data that goes
-    through the links (in lists).
-    Also, if multiple links have the same label,
-    only the last link's value will be kept
+    Note:
+      It is almost the same as get_last, but will return all the data that goes
+      through the links (in lists).
+
+      Also, if multiple links have the same label,
+      only the last link's value will be kept.
+
     """
     if not hasattr(self, '_all_last_values'):
       self._all_last_values = [None] * len(self.inputs)
@@ -432,10 +474,11 @@ class MasterBlock(Process):
 
   def drop(self, num=None):
     """
-    Will clear the inputs of the blocks
+    Will clear the inputs of the blocks.
 
-    This method performs like get_last
-    but returns None instantly
+    Note:
+      This method performs like get_last, but returns None instantly.
+
     """
     if num is None:
       num = range(len(self.inputs))

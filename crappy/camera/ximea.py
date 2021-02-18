@@ -11,16 +11,20 @@ xi_format_dict = {'8 bits': 0, '10 bits': 1, '8 bits RAW': 5, '10 bits RAW': 6}
 
 class Ximea(Camera):
   """
-  Camera class for ximea devices, this class should inherit from Camera
-  This class cannot go beyond 30~35 fps depending on your hardware, but does
-  not require openCV3 with Ximea flags
+  Camera class for ximea devices.
+
+  Note:
+    This class should inherit from Camera.
+
+    This class cannot go beyond 30~35 fps depending on your hardware, but does
+    not require openCV3 with Ximea flags.
+
+  Args:
+    - numdevice: Device number.
+
   """
 
   def __init__(self):
-    """
-    Args:
-        numdevice: Device number
-    """
     Camera.__init__(self)
     self.name = "Ximea"
     self.ximea = None
@@ -39,7 +43,7 @@ class Ximea(Camera):
   def open(self,numdevice=0, **kwargs):
     """
     Will actually open the camera, args will be set to default unless
-    specified otherwise in kwargs
+    specified otherwise in kwargs.
     """
     self.numdevice = numdevice
     self.close()# If it was already open (won't do anything if cam is not open)
@@ -56,7 +60,7 @@ class Ximea(Camera):
 
   def reopen(self, **kwargs):
     """
-    Will reopen the camera
+    Will reopen the camera.
     """
     self.close()# If it was already open (won't do anything if cam is not open)
 
@@ -127,12 +131,13 @@ class Ximea(Camera):
 
   def get_image(self):
     """
-    This method get a frame on the selected camera and return a ndarray
+    This method get a frame on the selected camera and return a ndarray.
 
     If the camera breaks down, it reinitializes it, and tries again.
 
     Returns:
-        frame from ximea device (ndarray height*width)
+      frame from ximea device (ndarray height*width).
+
     """
     ret, frame = self.ximea.read()
     t = time()
@@ -158,7 +163,8 @@ class Ximea(Camera):
     It releases the allocated memory and stops the acquisition.
 
     Returns:
-        void return function.
+      void return function.
+
     """
     if self.ximea and self.ximea.isOpened():
       self.ximea.release()

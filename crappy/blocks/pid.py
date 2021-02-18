@@ -6,33 +6,49 @@ from .masterblock import MasterBlock
 
 class PID(MasterBlock):
   """
-  A PID corrector
+  A PID corrector.
 
-  A PID will continuously adjust the output based on the target
-  and the actual value, to try to actually reach the target.
+  Note:
+    A PID will continuously adjust the output based on the target
+    and the actual value, to try to actually reach the target.
+
   Args:
-    - kp: (float) P gain
-    - ki: (float, default=0) I gain
-    - kd: (float, default=0) D gain
-  kwargs:
-    - out_max (float or None,default:None):
-      If not None, it will always keep the output below this value
-    - out_min (float or None,default:None):
-      If not None, it will always keep the output above this value
-    - target_label (str,default="cmd"): The label of the setpoint
-    - input_label (str,default="V"): The reading of the actual value to be
-      compared with the setpoint
-    - time_label (str,default="t(s)"): The label of the time
-    - labels (list,default=['t(s)','pid']): The labels of the output of the
-      block. It must have TWO strings: the time and the command.
-    - reverse (bool,default=False): To reverse the retroaction
-    - i_limit (float/tuple,default=1): To avoid over integration. If it is
-      a tuple, it is the boudaries for the I term. If it is a float, the
-      boudaries will be i_limit*out_min,i_limit*out_max
-      (typically between 0 and 1)
-    - send_terms (bool,default=False): To get the weight of each term in the
-      output value. It will add ['p_term','i_term','d_term'] to the labels.
-      This is particularly useful to tweak the gains.
+    - kp (float): P gain.
+    - ki (float, default: 0): I gain.
+    - kd (float, default: 0): D gain.
+
+  Kwargs:
+    - out_max (float or None, default: None): If not None, it will always keep
+      the output below this value.
+    - out_min (float or None, default: None): If not None, it will always keep
+      the output above this value.
+    - target_label (str, default: "cmd"): The label of the setpoint.
+    - input_label (str, default: "V"): The reading of the actual value to be
+      compared with the setpoint.
+    - time_label (str, default: "t(s)"): The label of the time.
+    - labels (list, default: ['t(s)', 'pid']): The labels of the output of the
+      block.
+
+      Note:
+        It must have TWO strings: the time and the command.
+
+    - reverse (bool, default: False): To reverse the retroaction.
+    - i_limit (float / tuple, default: 1): To avoid over integration.
+
+      Note:
+        If it is a tuple, it is the boudaries for the I term.
+
+        If it is a float, the boudaries will be i_limit*out_min,i_limit*out_max
+        (typically between 0 and 1)
+
+    - send_terms (bool, default: False): To get the weight of each term in the
+      output value.
+
+      Note:
+        It will add ['p_term', 'i_term', 'd_term'] to the labels.
+
+        This is particularly useful to tweak the gains.
+
   """
   def __init__(self,kp,ki=0,kd=0,**kwargs):
     MasterBlock.__init__(self)

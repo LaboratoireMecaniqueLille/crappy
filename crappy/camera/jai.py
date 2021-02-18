@@ -6,8 +6,8 @@ from . import clModule as cl
 
 
 class Jai8(CLCamera):
-  """This class supports Jai GO-5000-PMCL gray cameras
-  This one uses FullAreaGray8 module for maximum framerate"""
+  """This class supports Jai GO-5000-PMCL gray cameras.
+  This one uses FullAreaGray8 module for maximum framerate."""
   def __init__(self, **kwargs):
     if 'camera_type' not in kwargs:
       kwargs['camera_type'] = "FullAreaGray8"
@@ -61,8 +61,8 @@ class Jai8(CLCamera):
 
 
 class Jai(Jai8):
-  """This class allows the use of 10 and 12 bts mode for the Jai Cameras
-  Obviously, the framerate will be slower than the 8 bits version"""
+  """This class allows the use of 10 and 12 bts mode for the Jai Cameras.
+  Obviously, the framerate will be slower than the 8 bits version."""
   def __init__(self, **kwargs):
     kwargs['camera_type'] = "MediumAreaGray16"
     Jai8.__init__(self,**kwargs)

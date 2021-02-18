@@ -7,7 +7,7 @@ from .actuator import Actuator
 
 class CM_drive(Actuator):
   """
-  Open a new default serial port for communication with a CMdrive actuator
+  Open a new default serial port for communication with a CMdrive actuator.
   """
 
   def __init__(self, port='/dev/ttyUSB0', baudrate=9600):
@@ -18,9 +18,8 @@ class CM_drive(Actuator):
   def open(self):
     self.ser = serial.Serial(self.port, self.baudrate)
 
-  """Stop the motor motion"""
-
   def stop(self):
+    """Stop the motor motion."""
     # close serial connection before to avoid errors
     self.ser.close()
     self.ser.open()
@@ -30,7 +29,7 @@ class CM_drive(Actuator):
 
   def reset(self):
     """Reset the serial communication, before reopen
-    it to set displacement to zero"""
+    it to set displacement to zero."""
     self.ser.close()
     self.ser.open()  # open serial port
     result = input("Reset the system ? This will erase recorded trajectories")
@@ -54,16 +53,17 @@ class CM_drive(Actuator):
       return 0
 
   def close(self):
-    """Close the designated port"""
+    """Close the designated port."""
     self.stop()
     self.ser.close()
 
   def clear_errors(self):
-    """Reset errors"""
+    """Reset errors."""
     self.ser.write("CLRFAULT\r\n")
     self.ser.write("OPMODE 0\r\n EN\r\n")
 
   def set_speed(self, speed):
+    """Pilot in speed mode, requires speed in mm/min."""
     self.ser.close()  # close serial connection before to avoid errors
     self.ser.open()  # open serial port
     # velocity = input ('Velocity: \n')#request to the user about velocity
@@ -76,6 +76,8 @@ class CM_drive(Actuator):
     self.ser.close()  # close serial connection
 
   def set_position(self, position, speed, motion_type='relative'):
+    """Pilot in position mode, needs speed and final position to run
+    (in mm/min and mm)."""
     self.ser.close()  # close serial connection before to avoid errors
     self.ser.open()  # open serial port
 
@@ -89,7 +91,7 @@ class CM_drive(Actuator):
     self.ser.close()  # close serial connection
 
   def move_home(self):
-    """Reset the position to zero"""
+    """Reset the position to zero."""
     self.ser.open()  # open serial port
     # send 'MH' ASCII characters for requesting to the motor to return at pos 0
     self.ser.write('MA 0\r')
@@ -101,7 +103,8 @@ class CM_drive(Actuator):
     Search for the physical position of the motor.
 
     Returns:
-        physical position of the motor
+      Physical position of the motor.
+
     """
     self.ser.close()
     # ser=self.setConnection(self.myPort, self.baudrate)

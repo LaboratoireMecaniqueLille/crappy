@@ -7,14 +7,21 @@ from time import time
 
 
 class CLCamera(Camera):
-  """Cameralink camera sensor"""
+  """Cameralink camera sensor."""
 
   def __init__(self, numdevice=0, config_file=None, camera_type=None):
-    """Using the clModule, will open a cameraLink camera.
-    If a config file is specified, it will be used to configure the camera
-    If not set, it will be asked, unless set to False (or 0)
-    Else, you must at least provide the camera type (eg: "FullAreaGray8")
-    Using a config file is recommended over changing all settings manually
+    """
+    Using the clModule, will open a cameraLink camera.
+
+    Note:
+      If a config file is specified, it will be used to configure the camera.
+
+      If not set, it will be asked, unless set to False (or 0).
+
+      Else, you must at least provide the camera type (eg: "FullAreaGray8").
+
+      Using a config file is recommended over changing all settings manually.
+
     """
     #print("config_file:",config_file)
     Camera.__init__(self)
@@ -72,7 +79,7 @@ class CLCamera(Camera):
 
   def open(self, **kwargs):
     """
-    Opens the camera
+    Opens the camera.
     """
     if 'format' in kwargs:
       f = kwargs['format']
@@ -109,7 +116,7 @@ class CLCamera(Camera):
     self.configure()
 
   def configure(self):
-    """Configure the frame grabber to trig the camera internally"""
+    """Configure the frame grabber to trig the camera internally."""
     self.cap.set(cl.FG_TRIGGERMODE,1)
     self.cap.set(cl.FG_EXSYNCON,1)
 

@@ -54,6 +54,8 @@ new_buffer = create_string_buffer # To allow to create a buffer without ctypes
 
 if "linux" in platform.lower():
   mod = cdll.LoadLibrary("libspcm_linux.so")
+elif "darwin" in platform.lower():
+  mod = cdll.LoadLibrary("libc.so.6")
 else:
   mod = windll.LoadLibrary("C:\\Windows\\system32\\spcm_win64.dll")
 

@@ -9,10 +9,15 @@ from .masterblock import MasterBlock
 
 def split(x,y):
   """
-  Takes [x0,x1,x2,...,xn] and [y0,y1,y2,...,yn]
+  Takes:
+    [x0,x1,x2,...,xn] and [y0,y1,y2,...,yn]
 
-  returns [x0,x1,x1,x2,x2,...,xn,xn] and [y0,y0,y1,y1,y2,...,y(n-1),yn]
-  This is to move only one axis at a time when plotting the list (see interp)
+  Returns:
+    [x0,x1,x1,x2,x2,...,xn,xn] and [y0,y0,y1,y1,y2,...,y(n-1),yn]
+
+  Note:
+    This is to move only one axis at a time when plotting the list (see interp).
+
   """
   rx = sum([[i,i] for i in x],[])[1:]
   ry = sum([[i,i] for i in y],[])[:-1]
@@ -24,42 +29,52 @@ class Grapher(MasterBlock):
   The grapher receive data from a block (via a Link) and plots it.
 
   Args:
-      args : tuple
-          tuples of the columns labels of input data for plotting.
-          You can add as much as you want, depending on your performances.
+    - args (tuple): Tuples of the columns labels of input data for plotting.
 
-      optional: length=x (int)
-          number of chunks to data to be kept on the graph (default: 10)
+      Note:
+        You can add as much as you want, depending on your performances.
 
-          length=0 will create a static graph:
-          add new values at every refresh. If there
-          is too many data (> 20000), delete one out of 2
-          to avoid memory overflow.
+    - length=x (int, default: 10, optional): Number of chunks to data to be kept
+      on the graph.
 
-      optional: window_size (tuple: (width, height), in INCHES).
-          Self explanatory ?
-      freq: Defines the refresh rate of the grapher
+      Note:
+        length=0 will create a static graph: add new values at every refresh.
 
-      optional: window_pos (tuple: (x_position, y_position), in PIXELS).
-          Defines where on the screen the window grapher pops. Works with
-          multiple screens. The origin is the top left corner. For instance,
-          to have a graph that pops on the top right corner:
-          window_pos=(1920, 0)
+        If there is too many data (> 20000), delete one out of 2
+        to avoid memory overflow.
 
-      optional: interp (bool, default=True)
-          If True, the points of data will be linked by straight lines
-          else, each value wil be displayed as constant until the next update
-          In simple words,
-          . ' will be linked like so _| if False and like so / if True
+    - window_size (tuple: (width, height), in INCHES, optional): *Self
+      explanatory ?*
+    - freq: Defines the refresh rate of the grapher.
+    - window_pos (tuple: (x_position, y_position), in PIXELS, optional): Defines
+      where on the screen the window grapher pops.
 
-  Examples
-  --------
-      graph=Grapher(('t(s)','F(N)'),('t(s)','def(%)'))
-          plot a dynamic graph with two lines plot(F=f(t) and def=f(t)).
-      graph=Grapher(('def(%)','F(N)'),length=0)
-          plot a static graph.
-      graph=Grapher(('t(s)','F(N)'),length=30)
-          plot a dynamic graph that will display the last 30 chunks of data
+      Note:
+        Works with multiple screens.
+
+        The origin is the top left corner.
+
+        For instance, to have a graph that pops on the top right corner:
+        window_pos=(1920, 0).
+
+    - interp (bool, default: True, optional): If True, the points of data will
+      be linked by straight lines. Else, each value wil be displayed as constant
+      until the next update.
+
+      In simple words:
+        It will be linked like so _| if False, and like so / if True.
+
+  Examples:
+    graph = Grapher(('t(s)', 'F(N)'), ('t(s)', 'def(%)')):
+        It will plot a dynamic graph with two lines plot(F=f(t) and def=f(t)).
+
+    graph = Grapher(('def(%)', 'F(N)'), length=0):
+        It will plot a static graph.
+
+    graph = Grapher(('t(s)', 'F(N)'), length=30):
+        It will plot a dynamic graph that will display the last 30 chunks of
+        data.
+
   """
 
   def __init__(self, *args, **kwargs):

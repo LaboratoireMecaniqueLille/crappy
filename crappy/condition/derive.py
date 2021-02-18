@@ -5,10 +5,11 @@ from .condition import Condition
 
 class Derive(Condition):
   """
-  Derivation filter
+  Derivation filter. This will derive the value at label over time.
 
-  This will derive the value at label over time. The time label must
-  be specified with time='...'
+  Note:
+    The time label must be specified with time='...'.
+
   """
   def __init__(self,label,time='t(s)',out_label=None):
     Condition.__init__(self)

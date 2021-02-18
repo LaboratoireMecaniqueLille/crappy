@@ -11,8 +11,11 @@ class Custom(Path):
   """To generate a custom path from a file.
 
   Args:
-    filename: Name of the .csv file.
-    It must contain two columns: one with time, the other with the value
+    - filename: Name of the .csv file.
+
+      Note:
+        It must contain two columns: one with time, the other with the value.
+
   """
   def __init__(self,time,cmd,filename,delimiter='\t'):
     Path.__init__(self,time,cmd)

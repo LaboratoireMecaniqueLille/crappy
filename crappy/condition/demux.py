@@ -12,14 +12,19 @@ class Demux(Condition):
   This condition turns the array return by a streaming device into a
   dict with individual values (but only one per table). This allows
   attaching graphers to HF acquisition devices.
-  Note that the table will be lost in the process.
+
+  Note:
+    The table will be lost in the process.
+
   Args:
-    labels: The names of the labels to use for each column of the array.
-  kwargs:
-    stream: The name of the label containing the stream (default:'stream')
-    mean: If true, the returned value will be the average of the column
-      else it will be the first value only
-    time_label: The name of the label of the time table.
+    - labels: The names of the labels to use for each column of the array.
+
+  Kwargs:
+    - stream (default: 'stream'): The name of the label containing the stream.
+    - mean: If true, the returned value will be the average of the column
+      else it will be the first value only.
+    - time_label: The name of the label of the time table.
+
   """
   def __init__(self,*labels,**kwargs):
     Condition.__init__(self)

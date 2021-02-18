@@ -7,10 +7,14 @@ from .condition import Condition
 
 class Median(Condition):
   """
-  Median filter:
-    returns the median value every npoints point of data
+  Median filter.
+
+  Returns:
+    The median value every npoints point of data.
+
   Arg:
-    npoints (int): the number of points it takes to return 1 value
+    - npoints (int): The number of points it takes to return 1 value.
+
   """
   def __init__(self,npoints=100):
     Condition.__init__(self)

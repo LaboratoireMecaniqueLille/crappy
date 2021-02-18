@@ -15,7 +15,7 @@ def listify(stuff, l):
 
 class Opendaq(InOut):
   """
-  Can read data from an OpenDAQ card
+  Can read data from an OpenDAQ card.
   """
 
   def __init__(self, **kwargs):

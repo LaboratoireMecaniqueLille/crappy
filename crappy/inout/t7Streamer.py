@@ -12,48 +12,67 @@ class T7_streamer(InOut):
   """
   Class to use stream mode with Labjack T7 devices.
 
-  For single modes, see Labjack_t7. You can use IOBlock with streamer=True
-  to read data at high frequency from the Labjack. Streamer mode makes
-  the Labjack unavailable for any other operation (single acq, DAC or DIO).
-  You can specify each channel as a dict, allowing to set channel-specific
-  settings such as gain, offset (computed on the host machine as this feature
-  is not available on board with streamer mode), range and ability to zero
-  the reading at startup.
+  Note:
+    For single modes, see Labjack_t7.
+
+    You can use IOBlock with streamer=True to read data at high frequency from
+    the Labjack. Streamer mode makes the Labjack unavailable for any other
+    operation (single acq, DAC or DIO).
+
+    You can specify each channel as a dict, allowing to set channel-specific
+    settings such as gain, offset (computed on the host machine as this feature
+    is not available on board with streamer mode), range and ability to zero
+    the reading at startup.
+
   Args:
-    device: The type of the device to open (str). Ex: 'T7'.
-       Can be 'ANY' (default).
-    connection: How is the Labjack connected ? (str). Ex: 'USB', 'ETHERNET',..
-      Can be 'ANY' (default).
-    identifier: Something to identify the Labjack (str)
-      It can be a name, serial number or functionality.
-      Can be 'ANY' (default).
-    channels: Channels to use and their settings. It must be a list of dicts.
-    scan_rate: The acquisition frequency in Hz (int) for the channels
-      Note that the sample rate (scan_rate*num of chan) cannot exceed 100000
-      If too high, it will be lowered to the highest possible value.
-      (default = 100000)
-    scan_per_read: The number of points to read on each loop. Default=10000
-    resolution: The resolution index for all channels. The higher it is, the
-      slower the acquisition will be (but more precise). It cannot be set for
-      each channel in streamer mode.
+    - device (str, default: 'ANY'): The type of the device to open. Ex: 'T7'.
+    - connection (str, default: 'ANY'): How is the Labjack connected ?
+      Ex: 'USB', 'ETHERNET',..
+    - identifier (str, default: 'ANY'): Something to identify the Labjack.
+
+      Note:
+        It can be a name, serial number or functionality.
+
+    - channels: Channels to use and their settings. It must be a list of dicts.
+    - scan_rate (int, default: 100000): The acquisition frequency in Hz for the
+      channels.
+
+      Note:
+        The sample rate (scan_rate*num of chan) cannot exceed 100000
+
+        If too high, it will be lowered to the highest possible value.
+
+    - scan_per_read (default: 10000): The number of points to read on each loop.
+    - resolution: The resolution index for all channels. The higher it is,
+      the slower the acquisition will be (but more precise).
+
+      Note:
+        It cannot be set for each channel in streamer mode.
 
   Channel keys:
-    name: The name of the channel according to Labjack's naming convention
-      (str). Ex: 'AIN0'. This will be used to define the direction (in/out)
-      and the available settings. Only inputs can be used in stream mode.
+    - name (str): The name of the channel according to Labjack's naming
+      convention. Ex: 'AIN0'. This will be used to define the direction (in/out)
+      and the available settings.
 
-    gain: A numeric value that will multiply the given value for inputs
-      and outputs. Default=1
+      Note:
+        Only inputs can be used in stream mode.
 
-    offset: Will be added to the value. Default=0
-      returned_value = gain*measured_value+offset
-      Where measured_value is in Volts.
+    - gain (default: 1): A numeric value that will multiply the given value for
+      inputs and outputs.
+    - offset (default: 0): Will be added to the value.
 
-    make_zero: If True the input value will be evaluated at startup
+      Note:
+        returned_value = gain*measured_value+offset, where measured_value is
+        in Volts.
+
+    - make_zero: If True the input value will be evaluated at startup
       and the offset will be adjusted to return 0 (or the offset if any).
+    - range ({10, 1, .1, .01}, in Volts, default: 10): The range of the
+      acquisition.
 
-    range: 10/1/.1/.01. The range of the acquisition (V).
-      10 means -10V>+10V default=10
+      Note:
+        10 means -10V>+10V
+
   """
   def __init__(self, **kwargs):
     InOut.__init__(self)
@@ -116,7 +135,7 @@ class T7_streamer(InOut):
 
   def get_data(self):
     """
-    Short version, only used for eval_offset
+    Short version, only used for eval_offset.
     """
     return [time()]+ljm.eReadNames(self.handle, len(self.chan_list),
                               [c['name'] for c in self.chan_list])

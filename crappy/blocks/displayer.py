@@ -11,12 +11,17 @@ from PIL import ImageTk,Image
 
 class Displayer(MasterBlock):
   """
-  Simple image displayer using openCV or Matplotlib
+  Simple image displayer using openCV or Matplotlib.
 
-  It can be paired with StreamerCamera
-  Use cv=False to use the old, inefficient and deprecated version
-  NOTE: You need to use one displayer block per window
-  (in other words, you can only attach one input to the diplayer)
+  Ntoe:
+    It can be paired with StreamerCamera.
+
+    Use cv=False to use the old, inefficient and deprecated version.
+
+  Warning!
+    You need to use one displayer block per window
+    (in other words, you can only attach one input to the diplayer).
+
   """
   def __init__(self, framerate=5, backend='cv', title='Displayer'):
     MasterBlock.__init__(self)

@@ -23,12 +23,15 @@ from .masterblock import MasterBlock
 
 class Text(object):
   """
-  A simple text line
+  A simple text line.
 
   Args:
-    text: The left part of the displayed string (constant)
-    label: The label to get the data to update. It will be appended to
-      the constant text
+    - text (constant): The left part of the displayed string.
+    - label: The label to get the data to update.
+
+      Note:
+        It will be appended to the constant text.
+
   """
   def __init__(self,drawing,**kwargs):
     for k in ['coord','text','label']:
@@ -41,13 +44,18 @@ class Text(object):
 
 class Dot_text(object):
   """
-  Like Text, but with a colored dot to visualize a numerical value
+  Like Text, but with a colored dot to visualize a numerical value.
 
   Args:
-    See Text
-  The value received in the label MUST be a numeric value
-  It will be normalized on the crange of the block and the dot will change
-  color from blue to red depending on this value.
+    - *See Text*
+
+  Warning!
+    The value received in the label MUST be a numeric value.
+
+  Note:
+    It will be normalized on the crange of the block and the dot will change
+    color from blue to red depending on this value.
+
   """
   def __init__(self,drawing,**kwargs):
     for k in ['coord','text','label']:
@@ -66,11 +74,14 @@ class Dot_text(object):
 
 class Time(object):
   """
-  To print the time of the experiment
+  To print the time of the experiment.
 
   Args:
-    None in particular
-  It will print the time since the t0 of the block.
+    - *None in particular*
+
+  Note:
+    It will print the time since the t0 of the block.
+
   """
   def __init__(self,drawing,**kwargs):
     for k in ['coord']:
@@ -92,11 +103,18 @@ class Drawing(MasterBlock):
   Block to make a visual representation of data.
 
   Args:
-    image: The only mandatory argument. This image will be the background for
-      the Canvas.
-    draw: A list of dict defining what to draw. Each dict must contain a
-    'type' key that contains the name of the element, Drawing will then create
-    the corresponding class with all the other keys as argument.
+    - image: The only mandatory argument.
+
+      Note:
+        This image will be the background for the Canvas.
+
+    - draw: A list of dict defining what to draw.
+
+      Warning!
+        Each dict must contain a 'type' key that contains the name of the
+        element, Drawing will then create the corresponding class with all the
+        other keys as argument.
+
   """
   def __init__(self,image,draw=[],crange=[20,300],title="Drawing",
       window_size=(7,5),freq=2,backend="TkAgg"):

@@ -6,16 +6,15 @@ from .path import Path
 
 class Constant(Path):
   """
-  Simplest condition. It will send value until condition is reached
+  Simplest condition. It will send value until condition is reached.
 
   Args:
-    value: What value must be sent.
+    - value: What value must be sent.
+    - condition (str): Representing the condition to end this path.
+      See Path.parse_condition for more detail.
+    - send_one: If True, this condition will send the value at least once
+      before checking the condition.
 
-    condition: String representing the condition to end this path.
-    See Path.parse_condition for more detail.
-
-    send_one: If True, this condition will send the value at least once
-    before checking the condition
   """
   def __init__(self,time,cmd,condition,send_one=True,value=None):
     Path.__init__(self,time,cmd)

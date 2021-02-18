@@ -8,7 +8,7 @@ from .._global import CrappyStop
 
 class GUI(MasterBlock):
   """
-  Block to send a signal based on a user input
+  Block to send a signal based on a user input.
   """
   def __init__(self, freq=50, label='step', spam=False):
     MasterBlock.__init__(self)

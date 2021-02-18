@@ -5,7 +5,7 @@ from .._global import DefinitionError
 
 class MetaCondition(type):
   """
-  To keep track of all conditions
+  To keep track of all conditions.
   """
   classes = {}
   needed_methods = ["evaluate"]

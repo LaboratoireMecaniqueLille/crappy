@@ -1,14 +1,14 @@
 # coding: utf-8
 
 from time import time
-from ue9 import UE9
+#from ue9 import UE9
 
 from .inout import InOut
 
 
 def get_channel_number(channels):
   """
-  register needs to be called with the channel name as int.
+  Register needs to be called with the channel name as int.
   """
   for i, channel in enumerate(channels):
     if isinstance(str, channel):
@@ -35,7 +35,10 @@ def format_lists(list_to_format, length):
 
 class Labjack_ue9(InOut):
   """Can read data from a LabJack UE9
-  streamer mode and DAC are not supported yet
+
+  Note:
+    Streamer mode and DAC are not supported yet.
+
   """
 
   def __init__(self, **kwargs):

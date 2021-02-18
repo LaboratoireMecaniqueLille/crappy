@@ -2,34 +2,37 @@
 
 from time import time
 
-from ..tool import comedi_bind as c
+#from ..tool import comedi_bind as c
 from .inout import InOut
 
 
 class Comedi(InOut):
   """
-  Comedi object, for IO with cards using comedi driver
+  Comedi object, for IO with cards using comedi driver.
 
-  The channel-specific args can be given as a list to set it for each channel
-  or as a single value to apply it to every channel
+  Note:
+    The channel-specific args can be given as a list to set it for each channel
+    or as a single value to apply it to every channel.
+
   Args:
-    - device (str, default="/dev/comedi0"): The address of the device
-    - subdevice (int, default=0): The id of the subdevice
-    - channels (list, default=[0]): The list of the input channels
-    - range_num (list/int, default=0): The range to use on each channel
-    - gain (list/float, default=1): The return value for each chan will be
-      multiplied by the gain
-    - offset (list/float, default=0): The offset will be added to the return
-      value for each chan
-    - make_zero (list/bool, default=True): If True, the value read at the
-      begining will be removed to the offset to take it as a reference
-    - channels (list, default=[]): The list of the output channels
-    - out_range_num (list/int, default=0): The range to use on each output
-    - out_gain (list/float, default=1): The output value for each chan will be
-      multiplied by the gain
-    - out_offset (list/float, default=0): The offset will be added to the
-      output value for each chan
-    - out_subdevice (int,default=1): The id of the output subdevice
+    - device (str, default: "/dev/comedi0"): The address of the device.
+    - subdevice (int, default: 0): The id of the subdevice.
+    - channels (list, default: [0]): The list of the input channels.
+    - range_num (list/int, default: 0): The range to use on each channel.
+    - gain (list/float, default: 1): The return value for each chan will be
+      multiplied by the gain.
+    - offset (list/float, default: 0): The offset will be added to the return
+      value for each chan.
+    - make_zero (list/bool, default: True): If True, the value read at the
+      begining will be removed to the offset to take it as a reference.
+    - channels (list, default: []): The list of the output channels.
+    - out_range_num (list/int, default: 0): The range to use on each output.
+    - out_gain (list/float, default: 1): The output value for each chan will be
+      multiplied by the gain.
+    - out_offset (list/float, default: 0): The offset will be added to the
+      output value for each chan.
+    - out_subdevice (int, default: 1): The id of the output subdevice.
+
   """
 
   def __init__(self, **kwargs):
@@ -100,9 +103,12 @@ class Comedi(InOut):
   def open(self):
     """
     Starts commmunication with the device, must be called before any
-    set_cmd or get_data
-    It reads channel properties from the device, those will be used
-    in data_read/data_write
+    set_cmd or get_data.
+
+    Note:
+      It reads channel properties from the device, those will be used
+      in data_read/data_write.
+
     """
     self.device = c.comedi_open(self.device_name)
     for chan in self.channels:
@@ -125,8 +131,10 @@ class Comedi(InOut):
             chan['offset'] += off[i]
 
   def set_cmd(self, *cmd):
-    """To set the value of the outputs (when specified)
-    Takes as many argument as opened output channels"""
+    """
+    To set the value of the outputs (when specified).
+    Takes as many argument as opened output channels.
+    """
     assert len(cmd) == len(self.out_channels), \
       "set_cmd takes {} args, but got {}".format(
         len(self.out_channels), len(cmd))
@@ -137,9 +145,15 @@ class Comedi(InOut):
                           chan['range_num'], c.AREF_GROUND, out_a)
 
   def get_data(self, channel="all"):
-    """To read the value on input_channels. If channel is specified, it will
-    only read and return these channels. 'all' (default) will read all opened
-    channels"""
+    """
+    To read the value on input_channels.
+
+    Note:
+      If channel is specified, it will only read and return these channels.
+
+      'all' (default) will read all opened channels.
+
+    """
     if channel == 'all':
       to_read = self.channels
     else:

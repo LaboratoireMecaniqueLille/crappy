@@ -7,7 +7,7 @@ from .camera import Camera
 
 class Webcam(Camera):
   """
-  Camera class for webcams, read using opencv
+  Camera class for webcams, read using opencv.
   """
   def __init__(self):
     Camera.__init__(self)

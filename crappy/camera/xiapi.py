@@ -8,7 +8,7 @@ from .camera import Camera
 
 class Xiapi(Camera):
   """
-  Camera class for ximeas using official XiAPI
+  Camera class for ximeas using official XiAPI.
   """
   def __init__(self):
     Camera.__init__(self)
@@ -86,12 +86,12 @@ class Xiapi(Camera):
   def open(self,sn=None,**kwargs):
     """
     Will actually open the camera, args will be set to default unless
-    specified otherwise in kwargs
+    specified otherwise in kwargs.
 
     If sn is given, it will open the camera with
-    the corresponing serial number
+    the corresponing serial number.
 
-    Else, it will open any camera
+    Else, it will open any camera.
     """
     self.sn = sn
     #self.close()
@@ -109,7 +109,7 @@ class Xiapi(Camera):
   def reopen(self,**kwargs):
     """
     Will reopen the camera, args will be set to default unless
-    specified otherwise in kwargs
+    specified otherwise in kwargs.
     """
     self.open()
     self.set_all(override=True,**kwargs)
@@ -119,7 +119,8 @@ class Xiapi(Camera):
     This method get a frame on the selected camera and return a ndarray
 
     Returns:
-        frame from ximea device (ndarray height*width)
+        frame from ximea device (ndarray height*width).
+
     """
     self.cam.get_image(self.img)
     t = time.time()
@@ -131,5 +132,6 @@ class Xiapi(Camera):
 
     Returns:
         void return function.
+
     """
     self.cam.close_device()

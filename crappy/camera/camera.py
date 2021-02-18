@@ -8,10 +8,20 @@ from .._global import DefinitionError
 
 class MetaCam(type):
   """
-  Metaclass that will define all cameras
-  Camera classes should be of this type
-  To do so, simply add __metaclass__ = MetaCam in the class definition
-  (Obviously, you must import this Metaclass first)
+  Metaclass that will define all cameras.
+
+  Note:
+    Camera classes should be of this type.
+
+    To do so, simply add __metaclass__ = MetaCam in the class definition.
+    (Obviously, you must import this Metaclass first.)
+
+    MetaCam is a MetaClass: We will NEVER do c = MetaCam(...).
+
+    The __init__ is used to init the classes of type MetaCam
+    (with __metaclass__ = MetaCam as a class attribute)
+    and NOT an instance of MetaClass.
+
   """
   classes = {} # This dict will keep track of all the existing cam classes
   #Attention: It keeps track of the CLASSES, not the instances !
@@ -23,12 +33,6 @@ class MetaCam(type):
     return type.__new__(metacls, name, bases, dict)
 
   def __init__(cls,name,bases,dict):
-    """
-    Note: MetaCam is a MetaClass: we will NEVER do c = MetaCam(...)
-    This __init__ is used to init the classes of type MetaCam
-    (with __metaclass__ = MetaCam as a class attribute)
-    and NOT an instance of MetaClass
-    """
     #print "[MetaCam.__init__] Initializing",cls
     type.__init__(cls,name,bases,dict) # This is the important line
     #It creates the class, the same way we could do this:
@@ -62,40 +66,41 @@ class MetaCam(type):
 
 
 class Cam_setting(object):
-  """This class represents an attribute of the camera that cam be set"""
-  def __init__(self,name,getter,setter,limits,default):
-    """
-  Arguments:
-    name: the name of the setting
-
-    default: the default value, if not specified it will be set to this value
-
-    getter: Function to read this value from the device
-      If set to None, it will assume that the setting always happened correctly
-
-    setter: A function that will be called when setting the parameter to a new
-      value. Can do nothing, it will only change its value and nothing else.
-
-    limits: It contains the available values for this parameter
-      The possible types are:
-       None: Values will not be tested and the parameter will not appear in
-       CameraConfig
-
-       A tuple of 2 ints/floats: Values must be between first and second value
-       CameraConfig will add a scale widget to set it. If they are integers,
-       all the integers between them will be accessible, if they are floats,
-       the range will be divided in 1000 in the scale widget.
-       Note: If the upper value is callable (a function or method), it will
-       be set to the return value of this function. It allows reading the
-       max value from the device.
-
-       A Boolean: Possible values will be True or False, CameraConfig will
-       add a checkbox to edit the value.
-       (It can be True or False, it doesn't matter)
-
-       A dict: Possible values are the values of the dict, CameraConfig will
-       add radio buttons showing the keys, to set it to the corresponding value
   """
+  This class represents an attribute of the camera that cam be set.
+
+  Arguments:
+    - name: The name of the setting.
+    - default: The default value, if not specified it will be set to this value.
+    - getter: Function to read this value from the device.
+      If set to None, it will assume that the setting always happened correctly.
+    - setter: A function that will be called when setting the parameter to a new
+      value. Can do nothing, it will only change its value and nothing else.
+    - limits: It contains the available values for this parameter.
+
+      The possible types are:
+        None: Values will not be tested and the parameter will not appear in
+        CameraConfig.
+
+        A tuple of 2 ints/floats: Values must be between first and second value
+        CameraConfig will add a scale widget to set it. If they are integers,
+        all the integers between them will be accessible, if they are floats,
+        the range will be divided in 1000 in the scale widget.
+
+        Note:
+          If the upper value is callable (a function or method), it will
+          be set to the return value of this function. It allows reading the
+          max value from the device.
+
+        A Boolean: Possible values will be True or False, CameraConfig will
+        add a checkbox to edit the value.
+        (It can be True or False, it doesn't matter)
+
+        A dict: Possible values are the values of the dict, CameraConfig will
+        add radio buttons showing the keys, to set it to the corresponding value.
+
+  """
+  def __init__(self,name,getter,setter,limits,default):
     self.name = name
     self.getter = getter
     self.setter = setter
@@ -154,19 +159,26 @@ class Cam_setting(object):
 
 
 class Camera(object, metaclass=MetaCam):
-  """This class represents a camera sensor. It may have settings: they
-  represent all that can be set on the camera: height, width, exposure, AEAG,
-  external trigger, etc...
-  Each parameter is represented by a Cam_setting object: it includes the
-  default value, a function to set and get parameter, etc...
-  This class makes it transparent to the user: you can access a setting by
-  using myinstance.setting = stuff
-  It will automatically check the validity and try to set it. (see Cam_setting)
+  """
+  This class represents a camera sensor.
+
+  It may have settings: They represent all that can be set on the
+  camera: height, width, exposure, AEAG, external trigger, etc...
+
+  Note:
+    Each parameter is represented by a Cam_setting object: it includes the
+    default value, a function to set and get parameter, etc...
+
+    This class makes it transparent to the user: you can access a setting by
+    using myinstance.setting = stuff.
+
+    It will automatically check the validity and try to set it. (see Cam_setting)
+
+    Don't forget to call the __init__ in the children or __getattr__ will
+    fall in an infinite recursion loop looking for settings...
   """
 
   def __init__(self):
-    """Don't forget to call this __init__ in the children or __getattr__ will
-    fall in an infinite recursion loop looking for settings..."""
     self.settings = {}
     self.last = time()
     self.max_fps = None
@@ -178,7 +190,7 @@ class Camera(object, metaclass=MetaCam):
 
   @max_fps.setter
   def max_fps(self,value):
-    """To compute self.delay again when fps is set"""
+    """To compute self.delay again when fps is set."""
     self._max_fps = value
     if value:
       self.delay = 1/value
@@ -187,29 +199,34 @@ class Camera(object, metaclass=MetaCam):
 
   def add_setting(self, name, getter=None, setter=lambda *l:None,
                                             limits=None, default=None):
-    """Wrapper to simply add a new setting to the camera"""
+    """Wrapper to simply add a new setting to the camera."""
     assert name not in self.settings, "This setting already exists"
     self.settings[name] = Cam_setting(name,getter,setter,limits,default)
 
   @property
   def available_settings(self):
-    """Returns a list of available settings"""
+    """Returns a list of available settings."""
     return [x.name for x in list(self.settings.values())]+["max_fps"]
 
   @property
   def settings_dict(self):
     """Returns settings as a dict, keys are the names of the settings and
-    values are setting.value"""
+    values are setting.value."""
     d = dict(self.settings)
     for k in d:
       d[k] = d[k]._value
     return d
 
   def set_all(self,override=False,**kwargs):
-    """Sets all the settings based on kwargs, if not specified, the setting
-    will take its default value.
-    If override is True, it will not assume a setting and reset it unless
-    it is already default"""
+    """Sets all the settings based on kwargs.
+
+    Note:
+      If not specified, the setting will take its default value.
+
+      If override is True, it will not assume a setting and reset it unless
+      it is already default.
+
+    """
     for s in self.settings:
       if s in kwargs:
         if self.settings[s].value != kwargs[s] or override:
@@ -225,11 +242,11 @@ class Camera(object, metaclass=MetaCam):
       setattr(self,k,v)
 
   def reset_all(self):
-    """Reset all the settings to their default values"""
+    """Reset all the settings to their default values."""
     self.set_all()
 
   def read_image(self):
-    """This method is a wrapper for get_image that will limit fps to max_fps"""
+    """This method is a wrapper for get_image that will limit fps to max_fps."""
     if self.delay:
       t = time()
       wait = self.last - t + self.delay
@@ -241,7 +258,8 @@ class Camera(object, metaclass=MetaCam):
     return self.get_image()
 
   def __getattr__(self,i):
-    """The idea is simple: if the camera has this attribute: return it
+    """
+    The idea is simple: if the camera has this attribute: return it
     (default behavior) else, try to find the corresponding setting and
     return its value.
     Note that we made sure to raise an attribute error if it is neither a
@@ -264,12 +282,14 @@ class Camera(object, metaclass=MetaCam):
         raise AttributeError("No such attribute:"+i)
 
   def __setattr__(self,attr,val):
-    """Same as getattr: if it is a setting, then set its value using the
+    """
+    Same as getattr: if it is a setting, then set its value using the
     setter in the class CamSetting, else use the default behavior
     It is important to make sure we don't try to set 'settings', it would
     recursively call getattr and enter an infinite loop, hence the condition.
     Example: cam.width = 2048 will be like cam.settings['width'].value = 2048.
-    It allows for simple settings of the camera"""
+    It allows for simple settings of the camera
+    """
     if attr != "settings" and attr in self.settings:
       self.settings[attr].value = val
     else:

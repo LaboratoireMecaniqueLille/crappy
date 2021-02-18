@@ -7,14 +7,16 @@ from .masterblock import MasterBlock
 class Reader(MasterBlock):
   """
   Read and print the input Link.
-  """
-  def __init__(self, name=None):
-    """
-    Create a reader that prints the input data continuously
 
-    Args:
-        name: if set, will be printed to identify the reader
-    """
+  Create a reader that prints the input data continuously.
+
+  Args:
+    - name (str): if set, will be printed to identify the reader.
+
+  """
+
+  def __init__(self, name=None):
+
     MasterBlock.__init__(self)
     self.name = name
 

@@ -6,7 +6,7 @@ from .inout import InOut
 
 class Opsens(InOut):
   """
-  Sensor class for opsens condtionner
+  Sensor class for opsens condtionner.
   """
 
   def __init__(self, device='/dev/ttyUSB0', ):

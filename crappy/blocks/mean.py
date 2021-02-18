@@ -8,15 +8,21 @@ from .masterblock import MasterBlock
 
 class Mean(MasterBlock):
   """
-  Can take multiple inputs, makes an average and send the result every delay s
+  Can take multiple inputs, makes an average and send the result every delay s.
 
   Args:
-    tlabel: refers to the label that carries the time (default='t(s)')
+    - tlabel (default: 't(s)'): refers to the label that carries the time.
+    - out_labels (default=none): if given, only these labels and the time will
+      be kept and returned.
 
-    out_labels: if given, only these labels and the time will be kept and
-    returned. If none (default), all of them will be kept.
+      Note:
+        If none, all of them will be kept.
 
-    freq: The block will loop at this freq. see MasterBlock.freq
+    - freq: The block will loop at this freq.
+
+      Note:
+        See the freq argument of :ref:`Masterblock`.
+
   """
   def __init__(self,delay,tlabel='t(s)',out_labels=None,freq=50):
     MasterBlock.__init__(self)

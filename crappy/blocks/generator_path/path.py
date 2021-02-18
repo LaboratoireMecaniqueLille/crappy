@@ -5,7 +5,7 @@ from time import time
 
 class Path(object):
   """
-  Parent class for all paths
+  Parent class for all paths.
   """
   def __init__(self,time,cmd):
     self.t0 = time
@@ -16,19 +16,28 @@ class Path(object):
 
   def parse_condition(self,condition):
     """
-    This method turns a string into a fonction that returns a bool
+    This method turns a string into a fonction that returns a bool.
 
-    It is meant to check if a skip condition is reached
+    Note:
+      It is meant to check if a skip condition is reached.
+
     The following syntax is supported:
-      myvar>myvalue
-      myvar<myvalue
-      delay=mydelay
-    myvar is the label of an input value.
-    myvalue is a float.
-    This will return True when the data under the label myvar will be
-    larger/smaller than myvalue.
-    The condtion will turn True after mydelay seconds.
-    Any other syntax will return True instantly.
+      - myvar>myvalue
+      - myvar<myvalue
+      - delay=mydelay
+
+    Note:
+      myvar is the label of an input value.
+
+      myvalue is a float.
+
+      This will return True when the data under the label myvar will be
+      larger/smaller than myvalue.
+
+      The condtion will turn True after mydelay seconds.
+
+      Any other syntax will return True instantly.
+
     """
     if not isinstance(condition,str):
       if condition is None or not condition:

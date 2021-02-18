@@ -7,7 +7,7 @@ import numpy as np
 
 
 class Fake_camera(Camera):
-  """Fake camera sensor object"""
+  """Fake camera sensor object."""
 
   def __init__(self):
     Camera.__init__(self)
@@ -30,7 +30,7 @@ class Fake_camera(Camera):
 
   def open(self, **kwargs):
     """
-    Opens the fake camera
+    Opens the fake camera.
     """
     for k in kwargs:
       if k not in self.settings:

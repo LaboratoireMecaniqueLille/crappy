@@ -17,13 +17,15 @@ class XimeaCV(Camera):
   """
   Camera class for ximeas using openCV.
 
-  It requires opencv 3.0 or higher, compiled with WITH_XIMEA flag
+  Note:
+    It requires opencv 3.0 or higher, compiled with WITH_XIMEA flag.
+
+  Args:
+    - numdevice: Device number.
+
   """
+
   def __init__(self):
-    """
-    Args:
-        numdevice: Device number
-    """
     Camera.__init__(self)
     self.name = "XimeaCV"
     self.cap = None
@@ -103,7 +105,7 @@ class XimeaCV(Camera):
   def open(self,numdevice=0,**kwargs):
     """
     Will actually open the camera, args will be set to default unless
-    specified otherwise in kwargs
+    specified otherwise in kwargs.
     """
     self.numdevice = numdevice
     self.close()
@@ -117,7 +119,7 @@ class XimeaCV(Camera):
   def reopen(self,**kwargs):
     """
     Will reopen the camera, args will be set to default unless
-    specified otherwise in kwargs
+    specified otherwise in kwargs.
     """
     self.close()
     self.cap = cv2.VideoCapture(cv2.CAP_XIAPI+self.numdevice)
@@ -125,12 +127,13 @@ class XimeaCV(Camera):
 
   def get_image(self):
     """
-    This method get a frame on the selected camera and return a ndarray
+    This method get a frame on the selected camera and return a ndarray.
 
     If the camera breaks down, it reinitializes it, and tries again.
 
     Returns:
-        frame from ximea device (ndarray height*width)
+      frame from ximea device (ndarray height*width).
+
     """
     ret, frame = self.cap.read()
     t = time.time()
@@ -148,7 +151,8 @@ class XimeaCV(Camera):
     This method close properly the frame grabber.
 
     Returns:
-        void return function.
+      void return function.
+
     """
     if self.cap:
       self.cap.release()

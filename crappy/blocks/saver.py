@@ -8,21 +8,31 @@ from .masterblock import MasterBlock
 
 class Saver(MasterBlock):
   """
-  Will save the incomming data to a file (default csv)
+  Will save the incomming data to a file (default csv).
 
-  Can only take ONE input. If you want multiple readings in a single file,
-  see Multiplex block. If the folders do not exist, they will be created.
-  If the file exists, the actual file will be named with a trailing number
-  to avoid overriding it.
+  Warning!
+    Can only take ONE input.
+
+  Note:
+    If you want multiple readings in a single file,
+    see Multiplex block.
+
+    If the folders do not exist, they will be created.
+
+    If the file exists, the actual file will be named with a trailing number
+    to avoid overriding it.
+
   Args:
-    filename: Path and name of the output file
+    - filename: Path and name of the output file
+    - delay (in seconds, default: 5): Delay between each writes.
+    - labels (default: 't(s)'): What labels to save.
 
-    delay: (default=5) Delay between each writes (in seconds)
+      Note:
+        If labels is a string, all the data will be saved, but with this one
+        in first place.
 
-    labels: (default='t(s)') What labels to save
-    If labels is a string, all the data will be saved, but with this one
-    in first place. If it is a list, only these labels will be saved, in
-    that order.
+        If it is a list, only these labels will be saved, in that order.
+
   """
   def __init__(self,filename,delay=2,labels='t(s)'):
     MasterBlock.__init__(self)
@@ -53,7 +63,7 @@ class Saver(MasterBlock):
 
   def begin(self):
     """
-    This is meant to receive data once and adapt the label list
+    This is meant to receive data once and adapt the label list.
     """
     self.last_save = self.t0
     r = self.inputs[0].recv_delay(self.delay) # To know the actual labels

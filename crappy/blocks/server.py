@@ -8,17 +8,23 @@ from .masterblock import MasterBlock
 
 
 class Server(MasterBlock):
-  def __init__(self,port=1148,nclient=1,header=b'crappy_h\x01\x02\x03',
-      bs=4096,delay=.1,dump_method='pickle'):
-    """
-      This block will only start after nclients are connecteD
-      The header is a byte sequence to identify the start of a payload.
+  """
+  This block will only start after nclients are connected.
+
+  Note:
+    The header is a byte sequence to identify the start of a payload.
+
     One byte is appended to the header: the length of the next field,
     that will hold n, the length of the incoming sequence
     (usually 2 bytes is enough).
+
     The length of the message is coded in the next n bytes and then the message
-    is appended
-    """
+    is appended.
+
+  """
+  def __init__(self,port=1148,nclient=1,header=b'crappy_h\x01\x02\x03',
+      bs=4096,delay=.1,dump_method='pickle'):
+
     MasterBlock.__init__(self)
     self.niceness = -10
     self.port = port

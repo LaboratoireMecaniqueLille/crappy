@@ -13,28 +13,38 @@ class Streamer(Camera):
   """
   This is a fake sensor meant to stream images that were already saved.
 
-  It needs a way to locate the time of each frame in the name of the picture,
-  This is done using regular expressions.
+  Note:
+    It needs a way to locate the time of each frame in the name of the picture.
 
-  __init__ takes no args, the arguments must be given whan calling open (like
-  all cameras).
+    This is done using regular expressions.
+
+    __init__ takes no args, the arguments must be given whan calling open (like
+    all cameras).
 
   Args:
-    path: the path of the folder containing the images (str, mandatory)
+    - path (str, mandatory): The path of the folder containing the images.
+    - pattern (str, default: "img_\d+_(\d+\.\d+)\.tiff"): The regular expression
+      matching the images and returning the time.
 
-    pattern: the regular expression matching the images and returning the time
-      The default value is compatible with the naming method of the Camera
-      and Videoextenso blocks. (str, default= "img_\d+_(\d+\.\d+)\.tiff").
-      "\d" matches digits, "\d+" matches a group of digits.
-      () is a capturing group, returning what is inside. Dot is a special
-      character and needs to be escaped (hence the "\.").
+      Note:
+        The default value is compatible with the naming method of the Camera
+        and Videoextenso blocks.
 
-    start_delay: Before actually streaming the image flux, you can set
-      a delay in secongs during which the first image will be streamed in
-      a loop. This can be useful to give time for spot selection when using
-      videoextenso. (float, default=0)
+        "\d" matches digits, "\d+" matches a group of digits.
 
-    modifier: To apply a function to the image before sending it
+        () is a capturing group, returning what is inside.
+
+        Dot is a special character and needs to be escaped (hence the "\.").
+
+    - start_delay (float, default: 0): Before actually streaming the image flux,
+      you can set a delay in secongs during which the first image will be
+      streamed in a loop.
+
+      Note:
+        This can be useful to give time for spot selection
+        when using videoextenso.
+
+    - modifier: To apply a function to the image before sending it.
 
   """
   def __init__(self):

@@ -10,28 +10,31 @@ class Cyclic(Path):
   """
   A "boosted" constant path: will take TWO values and condtions.
 
-  It will set the first value, switch to the second when the first condtion
-  is reached and return to the first when the second condtion is reached.
-  This will be done "cycles" times (supporting half cycles for ending after
-  the first condition)
+  Note:
+    It will set the first value, switch to the second when the first condtion
+    is reached and return to the first when the second condtion is reached.
+
+    This will be done "cycles" times (supporting half cycles for ending after
+    the first condition).
 
   Args:
-    value1: First value to send.
+    - value1: First value to send.
+    - condition1 (str): Representing the condition to switch to value2.
+      See Path.parse_condition for more detail.
+    - value2: Second value to send.
+    - condition2 (str): Representing the condition to switch to value1.
+    - cycles: Number of time we should be doing this.
 
-    condition1: String representing the condition to switch to value2.
-    See Path.parse_condition for more detail.
+      Note:
+        cycles = 0 will make it loop forever.
 
-    value2: Second value to send.
+  Note:
+    [{'type':'cyclic','value1':1,'condition1':'AIN0>2',
+    'value2':0,'condition2':'AIN1<1','cycles':5}]
+    is equivalent to
+    [{'type':'constant','value':1,'condition':'AIN0>2'},
+    {'type':'constant','value':0,'condition':'AIN1<1'}]*5
 
-    condition2: String representing the condition to switch to value1.
-
-    cycles: Number of time we should be doing this.
-        cycles = 0 will make it loop forever
-  [{'type':'cyclic','value1':1,'condition1':'AIN0>2',
-  'value2':0,'condition2':'AIN1<1','cycles':5}]
-  is equivalent to
-  [{'type':'constant','value':1,'condition':'AIN0>2'},
-  {'type':'constant','value':0,'condition':'AIN1<1'}]*5
   """
   def __init__(self,time,cmd,condition1,condition2,value1,value2,cycles=1,
       verbose=False):

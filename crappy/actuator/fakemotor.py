@@ -8,16 +8,19 @@ from .actuator import Actuator
 
 class Fake_motor(Actuator):
   """
-  To run test programs without a physical actuator
+  To run test programs without a physical actuator.
 
-  A virtual motor driven by a voltage, you can set its properties with the args
-  It has the same methods as a real motor: open, set_speed, get_speed, get_pos
+  Note:
+    A virtual motor driven by a voltage, you can set its properties with the args.
+    It has the same methods as a real motor: open, set_speed, get_speed, get_pos.
+
   Args:
-    - inertia (float,default=.5): Inertia of the motor
-    - torque (float,default=0): A torque applied on the axis
-    - kv (float, default=1000): The electrical constant of the motor
-    - rv (float,default=.4): The solid friction
-    - fv (float, default=2e-5): the fluid friction
+    - inertia (float, default: .5): Inertia of the motor.
+    - torque (float, default: 0): A torque applied on the axis.
+    - kv (float, default: 1000): The electrical constant of the motor.
+    - rv (float, default: .4): The solid friction.
+    - fv (float, default: 2e-5): The fluid friction.
+
   """
   def __init__(self,**kwargs):
     for arg,default in [("inertia",.5), # Inertia of the motor
@@ -46,8 +49,11 @@ class Fake_motor(Actuator):
 
   def update(self):
     """
-    Will update the motor rpm
-    Supposes u is constant for the interval dt
+    Will update the motor rpm.
+
+    Note:
+      Supposes u is constant for the interval dt.
+
     """
     t1 = time()*self.sim_speed
     dt = (t1-self.t)
@@ -59,21 +65,21 @@ class Fake_motor(Actuator):
 
   def get_speed(self):
     """
-    Return the motor speed (rpm)
+    Return the motor speed (rpm).
     """
     self.update()
     return self.rpm
 
   def get_pos(self):
     """
-    Returns the motor position
+    Returns the motor position.
     """
     self.update()
     return self.pos
 
   def set_speed(self,u):
     """
-    Sets the motor cmd in volts
+    Sets the motor cmd in volts.
     """
     self.update()
     self.u = u
