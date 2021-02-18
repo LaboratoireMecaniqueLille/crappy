@@ -176,7 +176,7 @@ The new method parse the arguments and keywords arguments, to initialize the str
        return (PyObject *)self;
    }
 
-The constructor parses the arguments and keywords arguments. The "name" argument is optional: "|s" string or nothing; name is set by default to "Crappy".::
+The constructor parses the arguments and keywords arguments. The "name" argument is optional: "\|s" string or nothing; name is set by default to "Crappy".::
 
    static int Hello_init(Hello *self, PyObject *args, PyObject *kwds)
    {
@@ -199,17 +199,17 @@ We then define our two method like before:
    To return a value, we need to use the Py_BuildValue function, to convert C++ type to python type: In
    this way, we directly get a understandable python object.::
 
-   PyObject*
-   Hello_get(Hello *self)
-   {
-       return Py_BuildValue("s", self->name);
-   }
-   PyObject*
-   Hello_print(Hello *self)
-   {
-       cout << "Hello " << self->name << endl;
-       Py_RETURN_NONE;
-   }
+     PyObject*
+     Hello_get(Hello *self)
+     {
+         return Py_BuildValue("s", self->name);
+     }
+     PyObject*
+     Hello_print(Hello *self)
+     {
+         cout << "Hello " << self->name << endl;
+         Py_RETURN_NONE;
+     }
 
 To define a class which can be bound with Python, we need to define the structure of it, with a PyTypeObject. We have to define:
 

@@ -239,7 +239,7 @@ class CorrelStage:
     Computes all necessary tables to perform correlation.
 
     Note:
-      This method must be called everytime the original image or fields are set.
+      This method must be called everytime the original image or fields are set
 
       If not done by the user, it will be done automatically when needed.
 
@@ -321,7 +321,7 @@ with a border of 5% the dimension")
 
     Note:
       This is necessary only once and can be done multiple times, but the
-      routine have to be initialized with .prepare(), causing a slight overhead.
+      routine have to be initialized with .prepare(), causing a slight overhead
 
       Takes a tuple/list of 2 (gpu)arrays[Nfields,x,y] (one for displacement
       along x and one along y).
@@ -543,7 +543,7 @@ class GPUCorrel:
 
     The constructor can take a variety of keyword arguments:
     ## Verbose ##
-      Use verbose=x to choose the amount of information printed to the console:
+    Use verbose=x to choose the amount of information printed to the console:
     - 0: Nothing except for errors
     - 1: Only important infos and warnings
     - 2: Major info and a few values periodacally (at a bearable rate)
@@ -581,8 +581,8 @@ class GPUCorrel:
       Quadratic deformations:
 
       These fields are more complicated to interpret but can be useful
-        for complicated sollicitations such as biaxial stretch.\n
-        U and V represent the displacement along respectively x and y.
+      for complicated sollicitations such as biaxial stretch.\n
+      U and V represent the displacement along respectively x and y.
       - 'uxx': U(x,y) = x²
       - 'uyy': U(x,y) = y²
       - 'uxy': U(x,y) = xy
@@ -598,7 +598,7 @@ class GPUCorrel:
         your identification.
 
       Example:
-          fields=['x','y',(MyFieldX,MyFieldY)] \endcode
+        fields=['x','y',(MyFieldX,MyFieldY)] \\endcode
 
       where MyfieldX and MyfieldY are numpy arrays with the same shape
       as the images
@@ -607,6 +607,7 @@ class GPUCorrel:
       count roughly 180 + 100*Nfields MB of VRAM
 
     ## Original image ##
+
     It must be given as a 2D numpy.ndarray. This block works with
       dtype=np.float32. If the dtype of the given image is different,
       it will print a warning and the image will be converted.
@@ -623,18 +624,20 @@ class GPUCorrel:
       call of .getDisp() after setting/updating the fields or original image
 
     ## Compared image ##
+
     It can be given directly when querying the displacement as a parameter to
       getDisp() or before, with setImage().
       You can provide it as a np.ndarray just like orig,
       or as a pycuda.gpuarray.GPUArray.
 
     ## Editing the behavior ##
+
     Kwargs:
       levels: <b>int, >= 1, default=5</b>\n
         Number of levels of the pyramid\n
-          More levels can help converging with large and quick deformations
-          but may fail on images without low spatial frequency.\n
-          Less levels -> program will run faster
+        More levels can help converging with large and quick deformations
+        but may fail on images without low spatial frequency.\n
+        Less levels -> program will run faster
 
       resampling_factor: <b>float, > 1, default=2</b>\n
         The resolution will be divided by this parameter between each stage of
@@ -644,13 +647,13 @@ class GPUCorrel:
           careful not to loose consistency between stages
 
       iterations: <b>int, x>=1, default=4</b>\n
-          The MAXIMUM number of iteration to be run before returning the
-          values.\n
-          Note that if the residual increases before
-          reaching x iterations, the block will return anyways.
+        The MAXIMUM number of iteration to be run before returning the
+        values.\n
+        Note that if the residual increases before
+        reaching x iterations, the block will return anyways.
 
       img: <b>numpy.ndarray, img.shape=img_size, default: None</b>\n
-          If you want to set the original image at init.
+        If you want to set the original image at init.
 
       mask: <b>numpy.ndarray, mask.shape=img_size, default: None</b>\n
         To set the mask, to weight the zone of interest on the images.
@@ -660,13 +663,13 @@ class GPUCorrel:
         of 5% the size of the image.
 
       show_diff: <b>Boolean, ,default=False</b>\n
-          Will open a cv2 window and print the difference between the
-          original and the displaced image after correlation.\n
-          128 Gray means no difference,
-          lighter means positive and darker negative.
+        Will open a cv2 window and print the difference between the
+        original and the displaced image after correlation.\n
+        128 Gray means no difference,
+        lighter means positive and darker negative.
 
       kernel_file: <b>string, path,
-       default=crappy_install_dir/data/kernels.cu</b>\n
+        default=crappy_install_dir/data/kernels.cu</b>\n
         Where crappy_install_dir is the root directory
         of the installation of crappy (crappy.__path__)
 
@@ -685,21 +688,22 @@ class GPUCorrel:
         Use verbose=3 and see if the convergence is too slow or too fast.
 
 
-  \todo
-    This section lists all the considered improvements for this program.
-    These features may NOT all be implemented in the future.
-    They are sorted by priority.
-    - Allow faster execution by executing the reduction only on a part
-         of the images (random or chosen)
-    - Add the possibility to return the value of the deformation
-        Exx andd Eyy in a specific point
-    - Add a parameter to return values in %
-    - Add a filter to smooth/ignore incorrect values
-    - Allow a reset of the reference picture for simple deformations
-     (to enhance robustness in case of large deformations or lightning changes)
-    - Restart iterating from 0 once in a while to see if the residual is lower.
-         Can be useful to recover when diverged critically due to an incorrect
-         image (Shadow, obstruction, flash, camera failure, ...)
+    \\todo
+      This section lists all the considered improvements for this program.
+      These features may NOT all be implemented in the future.
+      They are sorted by priority.
+      - Allow faster execution by executing the reduction only on a part
+      of the images (random or chosen)
+      - Add the possibility to return the value of the deformation
+      Exx andd Eyy in a specific point
+      - Add a parameter to return values in %
+      - Add a filter to smooth/ignore incorrect values
+      - Allow a reset of the reference picture for simple deformations to
+      enhance robustness in case of large deformations or lightning changes
+      - Restart iterating from 0 once in a while to see if the residual is
+      lower. Can be useful to recover when diverged critically due to an
+      incorrect image (Shadow, obstruction, flash, camera failure, ...)
+
   """
 
   def __init__(self, img_size, **kwargs):

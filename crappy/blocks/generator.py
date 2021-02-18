@@ -46,8 +46,8 @@ class Generator(Block):
 
         Else, it will go as fast as possible.
 
-        It relies on the MasterBlock freq control scheme
-        (see :ref:`masterblock`).
+        It relies on the Block freq control scheme
+        (see :ref:`block`).
 
     - cmd_label (default: 'cmd'): The label of the command to send in the links.
     - cmd (default: 0): The first value of the command.

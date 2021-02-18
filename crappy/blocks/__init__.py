@@ -21,7 +21,7 @@ from .gui import GUI
 from .hdf_saver import Hdf_saver
 from .ioblock import IOBlock
 from .machine import Machine
-from .mean import Mean
+from .mean import Mean_block
 from .multiplex import Multiplex
 from .pid import PID
 from .reader import Reader

@@ -27,7 +27,7 @@ class Streamer(Camera):
 
   Args:
     - path (str, mandatory): The path of the folder containing the images.
-    - pattern (str, default= "img_\\d+_(\\d+\\.\\d+)\\.tiff"): The regular
+    - pattern (str, default= "img _\\d+_(\\d+\\.\\d+)\\.tiff"): The regular
       expression matching the images and returning the time
 
       Note:

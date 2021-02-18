@@ -12,16 +12,6 @@ Comedi Bind
 .. automodule:: crappy.tool.comedi_bind
    :members:
 
-Convert data
-++++++++++++
-.. automodule:: crappy.tool.convert_data
-   :members:
-
-Data picker
-+++++++++++
-.. automodule:: crappy.tool.datapicker
-   :members:
-
 Discorrel tool
 +++++++++++++++
 .. automodule:: crappy.tool.discorrel

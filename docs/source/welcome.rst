@@ -4,11 +4,11 @@ Welcome to Crappy !
 
 .. toctree::
 
-   crappydocs/masterblock
+   crappydocs/block
    crappydocs/actuators
    crappydocs/blocks
    crappydocs/cameras
-   crappydocs/conditions
+   crappydocs/modifiers
    crappydocs/inouts
    crappydocs/links
    crappydocs/tools

@@ -7,11 +7,6 @@ Bispectral
 .. automodule:: crappy.camera.bispectral
    :members:
 
-Cameras
-+++++++
-.. automodule:: crappy.camera.camera
-   :members:
-
 Camera link
 +++++++++++
 .. automodule:: crappy.camera.cameralink
@@ -40,11 +35,6 @@ Webcam
 Xi API
 ++++++
 .. automodule:: crappy.camera.xiapi
-   :members:
-
-Ximea
-+++++
-.. automodule:: crappy.camera.ximea
    :members:
 
 Ximea CV

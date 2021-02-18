@@ -21,6 +21,7 @@ class Cyclic_ramp(Path):
   Args:
     - speed1: Speed of the first ramp.
     - condition1 (str): Representing the condition to switch to speed2.
+
     See Path.parse_condition for more detail.
     - speed2: Speed of the second ramp.
     - condition2 (str): Representing the condition to switch to speed1.

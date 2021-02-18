@@ -49,7 +49,7 @@ Generator
 
 generator path
 ^^^^^^^^^^^^^^^
-There is several types of path available for the generator block.
+There are several types of path available for the generator block.
 
 .. automodule:: crappy.blocks.generator_path.path
    :members:
@@ -129,8 +129,8 @@ Machine
 .. automodule:: crappy.blocks.machine
    :members:
 
-Mean
-+++++++++
+Mean_block
+++++++++++
 .. automodule:: crappy.blocks.mean
    :members:
 
