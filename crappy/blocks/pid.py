@@ -1,10 +1,10 @@
 #coding: utf-8
 from time import time
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class PID(MasterBlock):
+class PID(Block):
   """
   A PID corrector.
 
@@ -51,7 +51,7 @@ class PID(MasterBlock):
 
   """
   def __init__(self,kp,ki=0,kd=0,**kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -10
     for arg,default in [('freq',500),
                     ('out_max',None),

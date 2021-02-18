@@ -10,7 +10,8 @@ if __name__ == "__main__":
     {'type':'ramp','speed':100,'condition':'delay=5','cmd':0},
     {'type':'constant','value':1800,'condition':'delay=3'},
     {'type':'constant','value':500,'condition':'delay=3'},
-    {'type':'sine','amplitude':2000,'offset':1000,'freq':.3,'condition':'delay=15'}
+    {'type':'sine','amplitude':2000,'offset':1000,'freq':.3,
+      'condition':'delay=15'}
     ],spam=True)
 
   kv = 1000
@@ -48,8 +49,8 @@ if __name__ == "__main__":
 
   crappy.link(g,pid)
   crappy.link(pid,mot)
-  crappy.link(mot,pid) # Replace with the next line to smooth the input
-  #crappy.link(mot,pid,condition=crappy.condition.Moving_avg(15))
+  #crappy.link(mot,pid) # Replace with the next line to smooth the input
+  crappy.link(mot,pid,modifier=crappy.modifier.Moving_avg(15))
 
 
 

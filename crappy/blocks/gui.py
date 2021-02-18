@@ -2,16 +2,16 @@
 import tkinter as tk
 from time import time
 
-from .masterblock import MasterBlock
+from .block import Block
 from .._global import CrappyStop
 
 
-class GUI(MasterBlock):
+class GUI(Block):
   """
   Block to send a signal based on a user input.
   """
   def __init__(self, freq=50, label='step', spam=False):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.freq = freq
     self.spam = spam # Send the values only once or at each loop ?
     self.i = 0 # The value to be sent

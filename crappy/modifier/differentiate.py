@@ -1,18 +1,19 @@
 #coding: utf-8
 
-from .condition import Condition
+from .modifier import Modifier
 
 
-class Derive(Condition):
+class Diff(Modifier):
   """
-  Derivation filter. This will derive the value at label over time.
+  Differentiation filter
+
+  This will differentiate the value at label over time.
 
   Note:
-    The time label must be specified with time='...'.
-
+    The time label must be specified with time='...'
   """
   def __init__(self,label,time='t(s)',out_label=None):
-    Condition.__init__(self)
+    Modifier.__init__(self)
     self.label = label
     self.t = time
     if out_label is None:

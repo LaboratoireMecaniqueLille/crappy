@@ -1,8 +1,12 @@
 #coding: utf-8
 
 
-from ._clSensor import CLCamera
-from . import clModule as cl
+from .cameralink import CLCamera
+from .._global import OptionalModule
+try:
+  from . import clModule as cl
+except (ModuleNotFoundError,ImportError):
+  cl = OptionalModule("clModule")
 
 
 class Jai8(CLCamera):

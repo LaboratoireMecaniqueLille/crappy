@@ -1,31 +1,15 @@
 #coding: utf-8
-from __future__ import print_function, absolute_import, division
-
 from time import time
 import numpy as np
-import nidaqmx
-from nidaqmx import stream_readers,stream_writers
 
 from .inout import InOut
-
-thermocouple_type = {
-"B":nidaqmx.constants.ThermocoupleType.B,
-"E":nidaqmx.constants.ThermocoupleType.E,
-"J":nidaqmx.constants.ThermocoupleType.J,
-"K":nidaqmx.constants.ThermocoupleType.K,
-"N":nidaqmx.constants.ThermocoupleType.N,
-"R":nidaqmx.constants.ThermocoupleType.R,
-"S":nidaqmx.constants.ThermocoupleType.S,
-"T":nidaqmx.constants.ThermocoupleType.T,
-}
-
-units = {
-"C":nidaqmx.constants.TemperatureUnits.DEG_C,
-"F":nidaqmx.constants.TemperatureUnits.DEG_F,
-"R":nidaqmx.constants.TemperatureUnits.DEG_R,
-"K":nidaqmx.constants.TemperatureUnits.K,
-# To complete...
-}
+from .._global import OptionalModule
+try:
+  import nidaqmx
+  from nidaqmx import stream_readers,stream_writers
+except (ModuleNotFoundError,ImportError):
+  nidaqmx = OptionalModule("nidaqmx")
+  stream_readers = stream_writers = nidaqmx
 
 
 class Nidaqmx(InOut):
@@ -71,6 +55,23 @@ class Nidaqmx(InOut):
   """
   def __init__(self, **kwargs):
     InOut.__init__(self)
+    self.thermocouple_type = {
+    "B":nidaqmx.constants.ThermocoupleType.B,
+    "E":nidaqmx.constants.ThermocoupleType.E,
+    "J":nidaqmx.constants.ThermocoupleType.J,
+    "K":nidaqmx.constants.ThermocoupleType.K,
+    "N":nidaqmx.constants.ThermocoupleType.N,
+    "R":nidaqmx.constants.ThermocoupleType.R,
+    "S":nidaqmx.constants.ThermocoupleType.S,
+    "T":nidaqmx.constants.ThermocoupleType.T,
+    }
+    self.units = {
+    "C":nidaqmx.constants.TemperatureUnits.DEG_C,
+    "F":nidaqmx.constants.TemperatureUnits.DEG_F,
+    "R":nidaqmx.constants.TemperatureUnits.DEG_R,
+    "K":nidaqmx.constants.TemperatureUnits.K,
+    # To complete...
+    }
     for arg, default in [
        ('channels', [{'name':'Dev1/ai0'}]),
        ('samplerate',100),
@@ -122,9 +123,9 @@ class Nidaqmx(InOut):
       for k in kwargs:
         if isinstance(kwargs[k],str):
           if k == "thermocouple_type":
-            kwargs[k] = thermocouple_type[kwargs[k]]
+            kwargs[k] = self.thermocouple_type[kwargs[k]]
           elif k == "units":
-            kwargs[k] = units[kwargs[k]]
+            kwargs[k] = self.units[kwargs[k]]
       if not c['type'] in self.t_in:
         self.t_in[c['type']] = nidaqmx.Task()
       try:

@@ -1,24 +1,24 @@
 #coding:utf-8
 
 
-class NotInstalled():
-  def __init__(self,name):
-    self.name = name
+class OptionalModule:
+  """
+  Placeholder for optional dependencies when not installed
+
+  Will print a message and raise an error when trying to use them
+  """
+  def __init__(self,module_name,message=None):
+    self.mname = module_name
+    if message is not None:
+      self.message = message
+    else:
+      self.message = """The module {} is necessary to use this fucntionnality
+Please install it and try again""".format(self.mname)
 
   def __getattr__(self,arg):
-    m = """Module {} is not available,
-make sure all dependencies are met
-and try to reinstall Crappy""".format(self.name)
-    raise NotImplementedError(m)
-
-
-class NotSupported():
-  def __init__(self,name):
-    self.name = name
-
-  def __getattr__(self,arg):
-    m = "Module {} is not available on this platform".format(self.name)
-    raise NotImplementedError(m)
+    print("Missing module: {}".format(self.mname))
+    print(self.message)
+    raise RuntimeError(self.message)
 
 
 class CrappyStop(Exception):

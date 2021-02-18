@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from time import time
-#from ue9 import UE9
 
 from .inout import InOut
 
@@ -22,7 +21,7 @@ def format_lists(list_to_format, length):
   """
   if not isinstance(list_to_format, list):
     list_to_format = [list_to_format]
-  if length is not 0:
+  if length != 0:
     if len(list_to_format) == 1:
       return list_to_format * length
     elif len(list_to_format) == length:
@@ -64,6 +63,7 @@ class Labjack_ue9(InOut):
     self.make_zero = format_lists(self.make_zero, self.nb_channels)
 
   def open(self):
+    from ue9 import UE9
     self.handle = UE9()
     if any(self.make_zero):
       off = self.eval_offset()

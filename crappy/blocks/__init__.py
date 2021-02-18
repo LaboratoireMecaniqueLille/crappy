@@ -3,20 +3,25 @@
 # Some of them are already implemented (see the reference manual),
 # but you can also implement your own.
 
-from .._global import NotInstalled,NotSupported
 from .autoDrive import AutoDrive
+from .block import Block
 from .camera import Camera
 from .client import Client
 from .dashboard import Dashboard
+from .discorrel import DISCorrel
 from .displayer import Displayer
+from .disve import DISVE
 from .drawing import Drawing
+from .fake_machine import Fake_machine
 from .generator import Generator
-from .gui import GUI
+from .gpucorrel import GPUCorrel
+from .gpuve import GPUVE
 from .grapher import Grapher
+from .gui import GUI
+from .hdf_saver import Hdf_saver
 from .ioblock import IOBlock
 from .machine import Machine
 from .mean import Mean
-from .masterblock import MasterBlock
 from .multiplex import Multiplex
 from .pid import PID
 from .reader import Reader
@@ -24,33 +29,3 @@ from .saver import Saver
 from .server import Server
 from .sink import Sink
 from .videoExtenso import Video_extenso
-
-try:
-  from .gpucorrel import GPUCorrel
-except ImportError:
-  GPUCorrel = NotInstalled('GPUCorrel')
-
-try:
-  from .gpuve import GPUVE
-except ImportError:
-  GPUVE = NotInstalled('GPUVE')
-
-try:
-  from .discorrel import DISCorrel
-except ImportError:
-  DISCorrel = NotInstalled('DISCorrel')
-
-try:
-  from .disve import DISVE
-except ImportError:
-  DISVE = NotInstalled('DISVE')
-
-try:
-  from .hdf_saver import Hdf_saver
-except ImportError:
-  Hdf_saver = NotInstalled("Hdf_saver")
-
-try:
-  from .signalGenerator import SignalGenerator
-except ImportError:
-  SignalGenerator = NotInstalled('SignalGenerator')

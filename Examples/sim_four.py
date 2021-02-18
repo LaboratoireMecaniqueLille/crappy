@@ -51,7 +51,7 @@ pid = crappy.blocks.PID(P,I,D,input_label='T',out_max=1,out_min=0,
     i_limit=.5,send_terms=True)
 
 crappy.link(g,pid)
-crappy.link(pid,four,condition=Delay(20/SPEED))
+crappy.link(pid,four,modifier=Delay(20/SPEED))
 crappy.link(four,pid)
 
 graph = crappy.blocks.Grapher(('t(s)','T'))

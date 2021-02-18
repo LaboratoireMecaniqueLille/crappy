@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
   graph = crappy.blocks.Grapher(*[('t(s)',l) for l in labels[1:]])
   if STREAMER:
-    crappy.link(io,graph,condition=crappy.condition.Demux(labels[1:],mean=False,transpose=True))
+    crappy.link(io,graph,modifier=crappy.modifier.Demux(labels[1:],mean=False,transpose=True))
   else:
     crappy.link(io,graph)
   crappy.start()

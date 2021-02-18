@@ -4,12 +4,12 @@ import crappy
 from time import sleep
 
 
-class TestBlock(crappy.blocks.MasterBlock):
+class TestBlock(crappy.Block):
   """
   A stupid block to demonstrate the Drawing block.
   """
   def __init__(self,labels):
-    crappy.blocks.MasterBlock.__init__(self)
+    crappy.Block.__init__(self)
     self.labels = labels
     self.loops = 0
 
@@ -21,9 +21,10 @@ class TestBlock(crappy.blocks.MasterBlock):
     self.loops += 1
     sleep(.2)
 
+
 img = "data/Pad.png"
 
-coord = [ # Coordinated for the thermocouples
+coord = [ # Coordinates for the thermocouples
 (185, 430),  # T1
 (145, 320),  # T2
 (105, 220),  # T3

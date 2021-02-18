@@ -30,7 +30,7 @@ def renice(pid, niceness):
     subprocess.call(['renice', str(niceness), '-p', str(pid)])
 
 
-class MasterBlock(Process):
+class Block(Process):
   """
   This represent a Crappy block, it must be parent of all the blocks.
 
@@ -81,7 +81,7 @@ class MasterBlock(Process):
 
   def __init__(self):
     Process.__init__(self)
-    # MasterBlock.instances.append(self)
+    # Block.instances.append(self)
     self.outputs = []
     self.inputs = []
     # This pipe allows to send 2 essential signals:
@@ -94,7 +94,7 @@ class MasterBlock(Process):
 
   def __new__(cls, *args, **kwargs):
     instance = super().__new__(cls)
-    MasterBlock.instances.add(instance)
+    Block.instances.add(instance)
     return instance
 
   @classmethod

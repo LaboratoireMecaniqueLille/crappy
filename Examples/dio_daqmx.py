@@ -21,5 +21,5 @@ if __name__ == "__main__":
       )
   crappy.link(gen,io)
   graph = crappy.blocks.Grapher(('t(s)','di0'),('t(s)','ai0'))
-  crappy.link(io,graph,condition=intify)
+  crappy.link(io,graph,modifier=intify)
   crappy.start()

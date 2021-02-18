@@ -2,11 +2,11 @@
 
 from time import time
 
-from .masterblock import MasterBlock
+from .block import Block
 from ..actuator import actuator_list
 
 
-class Machine(MasterBlock):
+class Machine(Block):
   """
   To drive a machine with a one or more actuators.
 
@@ -50,7 +50,7 @@ class Machine(MasterBlock):
 
   def __init__(self, actuators, common={}, freq=200, time_label='t(s)',
       spam=False):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.freq = freq
     self.time_label = time_label
     self.spam = spam

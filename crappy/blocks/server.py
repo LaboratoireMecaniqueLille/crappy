@@ -4,10 +4,10 @@ from __future__ import print_function
 
 import socket
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class Server(MasterBlock):
+class Server(Block):
   """
   This block will only start after nclients are connected.
 
@@ -25,7 +25,7 @@ class Server(MasterBlock):
   def __init__(self,port=1148,nclient=1,header=b'crappy_h\x01\x02\x03',
       bs=4096,delay=.1,dump_method='pickle'):
 
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -10
     self.port = port
     self.nclient = nclient

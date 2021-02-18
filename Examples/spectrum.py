@@ -23,6 +23,6 @@ if save_file:
         'factor':[r*g/32000000 for r,g in zip(ranges,gains)]})
   crappy.link(spectrum,hsaver)
 crappy.link(spectrum,graph,
-    condition=crappy.condition.Demux(chan_names,mean=False))
+    modifier=crappy.modifier.Demux(chan_names,mean=False))
 
 crappy.start()

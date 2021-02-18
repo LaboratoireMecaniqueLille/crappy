@@ -54,7 +54,7 @@ def win_timeout(timeout=None):
       if timeout is None:
         return worker
       worker.join(timeout)
-      if worker.isAlive():
+      if worker.is_alive():
         raise TimeoutError("timeout error in pipe send")
       elif worker.exception is not None:
         raise worker.exception
@@ -73,6 +73,8 @@ class Link(object):
 
   Note:
     You can add one or multiple conditions to modify the value transfered.
+    Creates a pipe and is used to transfer information between Blocks.
+    You can add one or multiple modifiers to modify the value transfered.
 
   Args:
     - name: name of a link to recognize it on timeout.
@@ -95,13 +97,17 @@ class Link(object):
         string, will be printed in case of error to debug.
 
   """
-  def __init__(self, input_block=None, output_block=None, condition=[],
-                                    timeout=0.1, action="warn", name="link"):
+  def __init__(self, input_block=None, output_block=None, condition=None,
+                modifier=[], timeout=0.1, action="warn", name="link"):
 
+    # For compatibility (condition is deprecated, use modifier)
+    if condition is not None:
+      modifier = condition
+    # --
     self.name = name
     self.in_, self.out_ = Pipe(duplex=False)
     self.external_trigger = None
-    self.condition = condition if isinstance(condition,list) else [condition]
+    self.modifiers = modifier if isinstance(modifier,list) else [modifier]
     self.timeout = timeout
     self.action = action
     if None not in [input_block, output_block]:
@@ -115,7 +121,7 @@ class Link(object):
   def send(self, value):
     """
     Send the value, or a modified value if you pass it through a
-    condition.
+    modifier.
     """
     try:
       self.send_timeout(value)
@@ -131,26 +137,26 @@ class Link(object):
       else:  # for debugging !!
         print(self.action)
     except Exception as e:
-      print("Exception in link send %s : %s " % (self.name, e.message))
+      print("Exception in link send %s : %s " % (self.name, str(e)))
       raise
 
   @win_timeout(1)
   def send_timeout(self, value):
     try:
-      if self.condition is None or isinstance(value,str):
+      if self.modifiers is None or isinstance(value,str):
         self.out_.send(value)
       else:
-        for cond in self.condition:
-          if hasattr(cond,'evaluate'):
-            value = cond.evaluate(copy(value))
+        for mod in self.modifiers:
+          if hasattr(mod,'evaluate'):
+            value = mod.evaluate(copy(value))
           else:
-            value = cond(copy(value))
+            value = mod(copy(value))
           if value is None:
             break
         if value is not None:
           self.out_.send(value)
     except Exception as e:
-      print("Exception in link %s : %s " % (self.name, e.message))
+      print("Exception in link %s : %s " % (self.name, str(e)))
       if not self.out_.closed:
         self.out_.send('close')
         self.out_.close()
@@ -183,14 +189,14 @@ class Link(object):
         print(
             "WARNING : Timeout error in pipe send! Link name: %s" % self.name)
       elif self.action == "kill":
-        print("Killing Link %s : %s" % (self.name, e.message))
+        print("Killing Link %s : %s" % (self.name, str(e)))
         raise
       elif self.action == "NoWarn":
         pass
       else:  # for debugging !!
         print(self.action)
     except Exception as e:
-      print("EXCEPTION in link %s : %s " % (self.name, e.message))
+      print("EXCEPTION in link %s : %s " % (self.name, str(e)))
       if not self.in_.closed:
         self.in_.close()
       raise

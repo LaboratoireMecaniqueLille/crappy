@@ -1,10 +1,10 @@
 #coding: utf-8
 
-from .masterblock import MasterBlock
+from .block import Block
 from ..inout import inout_list, in_list, out_list
 
 
-class IOBlock(MasterBlock):
+class IOBlock(Block):
   """
   This block is used to communicate with inout objects.
 
@@ -16,14 +16,14 @@ class IOBlock(MasterBlock):
 
   It can take all the settings as kwargs:
     - freq (float or None, default: None): The looping frequency
-      (see :ref:`masterblock`).
+      (see :ref:`block`).
 
       Note:
         Set to None to go as fast as possible.
 
     - verbose (bool): Will print extra information.
     - labels (list, default: ['t(s)','1']): The list of the output labels
-      (see :ref:`masterblock`).
+      (see :ref:`block`).
 
       Note:
         The first label is the time.
@@ -48,11 +48,10 @@ class IOBlock(MasterBlock):
       call get_stream.
     - exit_values (list): If not None, the outputs will be set to these
       values when Crappy is ending (or crashing).
-
   """
 
   def __init__(self, name, **kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = -10
     for arg, default in [('freq', None),
                          ('verbose', False),

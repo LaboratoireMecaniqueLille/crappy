@@ -6,14 +6,17 @@ from . import inout
 from . import tool
 from . import blocks
 from . import links
-from . import condition
+from . import modifier
 from .__version__ import __version__
 
+# For compatibility (deprecated!)
+condition = modifier
+
 link = links.link
-MasterBlock = blocks.MasterBlock
-stop = MasterBlock.stop_all
-prepare = MasterBlock.prepare_all
-launch = MasterBlock.launch_all
-start = MasterBlock.start_all
-renice = MasterBlock.renice_all
-reset = MasterBlock.reset
+Block = blocks.Block
+stop = Block.stop_all
+prepare = Block.prepare_all
+launch = Block.launch_all
+start = Block.start_all
+renice = Block.renice_all
+reset = Block.reset

@@ -1,18 +1,11 @@
 # coding: utf-8
 
 import cv2
-import sys
-import os
 import numpy as np
-try:
-  import SimpleITK as sitk
-except ImportError:
-  print("[Warning] SimpleITK is not installed, cannot save images!")
 
 from ..tool import DISCorrel as DIS
 from ..tool import DISConfig
-from .masterblock import MasterBlock
-from ..camera import Camera
+from .camera import Camera
 
 
 def draw_box(box,img):
@@ -26,93 +19,93 @@ def draw_box(box,img):
     img[s] = 255*int(np.mean(img[s])<128)
 
 
-class DISCorrel(MasterBlock):
-  def __init__(self,**kwargs):
-    MasterBlock.__init__(self)
+class DISCorrel(Camera):
+  def __init__(self,camera,
+      fields=["x","y","exx","eyy"],
+      labels=['t(s)','x(pix)','y(pix)','Exx(%)','Eyy(%)'],
+      alpha=3,
+      delta=1,
+      gamma=0,
+      finest_scale=1,
+      iterations=1,
+      gditerations=10,
+      init=True,
+      patch_size=8,
+      patch_stride=3,
+      show_image=False,
+      residual=False,
+      residual_full=False,
+      **kwargs):
     self.niceness = -5
-    default_labels = ['t(s)','x(pix)','y(pix)','Exx(%)','Eyy(%)']
-    for arg,default in [("camera","XimeaCV"),
-                        ("save_folder",None),
-                        ("save_period",1),
-                        ("labels",default_labels),
-                        ("show_fps",True),
-                        ("show_image",False),
-                        ("residual",False),
-                        ("residual_full",False),
-                        ]:
-      try:
-        setattr(self,arg,kwargs[arg])
-        del kwargs[arg]
-      except KeyError:
-        setattr(self,arg,default)
     self.cam_kwargs = kwargs
+    kwargs['config'] = False # We have our own config window
+    Camera.__init__(self,camera,**kwargs)
+    self.fields = fields
+    self.labels = labels
+    self.show_image = show_image
+    self.residual = residual
+    self.residual_full = residual_full
+    self.dis_kw = {
+        "alpha":alpha,
+        "delta":delta,
+        "gamma":gamma,
+        "finest_scale":finest_scale,
+        "init":init,
+        "iterations":iterations,
+        "gditerations":gditerations,
+        "patch_size":patch_size,
+        "patch_stride":patch_stride,
+      }
     if self.residual:
       self.labels.append('res')
     if self.residual_full:
       self.labels.append('res_full')
 
   def prepare(self):
-    if self.save_folder and not os.path.exists(self.save_folder):
-      try:
-        os.makedirs(self.save_folder)
-      except OSError:
-        assert os.path.exists(self.save_folder),\
-            "Error creating "+self.save_folder
-    self.cam = Camera.classes[self.camera]()
-    self.cam.open(**self.cam_kwargs)
-    config = DISConfig(self.cam)
+    Camera.prepare(self)
+    config = DISConfig(self.camera)
     config.main()
     self.bbox = config.box
-    t,img0 = self.cam.get_image()
-    self.correl = DIS(img0,bbox=self.bbox)
+    t,img0 = self.camera.get_image()
+    self.correl = DIS(img0,bbox=self.bbox,fields=self.fields,**self.dis_kw)
     if self.show_image:
       try:
         flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
       except AttributeError:
         flags = cv2.WINDOW_NORMAL
       cv2.namedWindow("DISCorrel",flags)
-    self.loops = 0
-    self.last_fps_print = 0
-    self.last_fps_loops = 0
 
   def begin(self):
-    t,self.img0 = self.cam.get_image()
-    self.correl.img0 = self.img0
+    t,self.img0 = self.camera.read_image()
+    if self.transform is not None:
+      self.correl.img0 = self.transform(self.img0)
+    else:
+      self.correl.img0 = self.img0
+    if self.save_folder:
+      self.save(self.img0,
+          self.save_folder + "img_ref_%.6f.tiff" % (t-self.t0))
 
   def loop(self):
-    self.loops += 1
+    t,img = self.get_img()
     if self.inputs and self.inputs[0].poll():
       self.inputs[0].clear()
-      self.correl.img0 = img
       self.img0 = img
+      if self.transform is not None:
+        self.correl.img0 = self.transform(self.img0)
+      else:
+        self.correl.img0 = self.img0
       print("[CORREL block] : Resetting L0")
 
-    t,img = self.cam.read_image()
     d = self.correl.calc(img)
-    if self.save_folder and not self.loops%self.save_period:
-      self.save_img(t,img)
     if self.show_image:
       draw_box(self.bbox,img)
       cv2.imshow("DISCorrel",img)
       cv2.waitKey(5)
-    if self.show_fps:
-      if t - self.last_fps_print > 2:
-        sys.stdout.write("\rFPS: %.2f"%((self.loops - self.last_fps_loops)/
-                              (t - self.last_fps_print)))
-        sys.stdout.flush()
-        self.last_fps_print = t
-        self.last_fps_loops = self.loops
     if self.residual:
       d.append(self.correl.dis_res_scal())
     self.send([t-self.t0]+d)
 
-  def save_img(self,t,img):
-    image = sitk.GetImageFromArray(img)
-    sitk.WriteImage(image,
-             self.save_folder + "img_%.6d_%.5f.tiff" % (
-             self.loops, t-self.t0))
-
   def finish(self):
-    self.cam.close()
     if self.show_image:
       cv2.destroyAllWindows()
+    Camera.finish(self)

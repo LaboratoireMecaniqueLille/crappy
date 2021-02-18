@@ -2,8 +2,13 @@
 
 from time import time
 
-#from ..tool import comedi_bind as c
 from .inout import InOut
+from .._global import OptionalModule
+try:
+  from ..tool import comedi_bind as c
+except OSError: # Will be raised if unable to locate the .so file
+  c = OptionalModule("comedi_bind","""Could not import comedi_lib, make sure
+libcomedi.so is installed""")
 
 
 class Comedi(InOut):

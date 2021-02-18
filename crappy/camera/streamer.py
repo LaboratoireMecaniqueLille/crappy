@@ -3,7 +3,11 @@
 from time import time,sleep
 import re
 from glob import glob
-import SimpleITK as sitk
+try:
+  import SimpleITK as sitk
+except (ModuleNotFoundError,ImportError):
+  sitk = None
+  import cv2
 
 from .camera import Camera
 from .._global import CrappyStop
@@ -23,20 +27,18 @@ class Streamer(Camera):
 
   Args:
     - path (str, mandatory): The path of the folder containing the images.
-    - pattern (str, default: "img_\d+_(\d+\.\d+)\.tiff"): The regular expression
-      matching the images and returning the time.
+    - pattern (str, default= "img_\\d+_(\\d+\\.\\d+)\\.tiff"): The regular
+      expression matching the images and returning the time
 
       Note:
+        "\\d" matches digits, "\\d+" matches a group of digits.
+        () is a capturing group, returning what is inside. Dot is a special
+        character and needs to be escaped (hence the "\\.").
+
         The default value is compatible with the naming method of the Camera
         and Videoextenso blocks.
 
-        "\d" matches digits, "\d+" matches a group of digits.
-
-        () is a capturing group, returning what is inside.
-
-        Dot is a special character and needs to be escaped (hence the "\.").
-
-    - start_delay (float, default: 0): Before actually streaming the image flux,
+    - start_delay (float, default: 0): Before actually streaming the image flux
       you can set a delay in secongs during which the first image will be
       streamed in a loop.
 
@@ -51,7 +53,7 @@ class Streamer(Camera):
     Camera.__init__(self)
     self.frame = 0
 
-  def open(self,path,pattern="img_\d+_(\d+\.\d+)\.tiff",start_delay=0,
+  def open(self,path,pattern="img_\\d+_(\\d+\\.\\d+)\\.tiff",start_delay=0,
       modifier=lambda img:img):
     self.modifier = modifier
     pattern = "^"+path+pattern+"$"
@@ -79,8 +81,11 @@ class Streamer(Camera):
     if self.frame == len(self.time_table):
       raise CrappyStop
     img_t = self.time_table[self.frame]
-    img = self.modifier(
+    if sitk is not None:
+      img = self.modifier(
         sitk.GetArrayFromImage(sitk.ReadImage(self.img_dict[img_t])))
+    else:
+      img = self.modifier(cv2.imread(self.img_dict[img_t],0))
     t = time()
     delay = self.time_table[self.frame] - t + self.t0
     if delay > 0:

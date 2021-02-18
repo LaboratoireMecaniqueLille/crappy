@@ -6,10 +6,6 @@ import cv2
 
 from .camera import Camera
 
-#To check wether opencv can handle ximeas or not:
-_ = cv2.CAP_PROP_XI_WIDTH # Will fail if the flag is not defined
-del _
-
 xi_format_dict = {'8 bits': 0, '10 bits': 1, '8 bits RAW': 5, '10 bits RAW': 6}
 
 
@@ -26,6 +22,12 @@ class XimeaCV(Camera):
   """
 
   def __init__(self):
+    try:
+      cv2.CAP_PROP_XI_WIDTH
+    except AttributeError:
+      print("Error: OpenCV was not compiled with -DWITH_XIMEA flag, "
+            "cannot use XimeaCV camera")
+      raise
     Camera.__init__(self)
     self.name = "XimeaCV"
     self.cap = None

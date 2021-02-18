@@ -2,11 +2,11 @@
 
 from time import time
 
-from .masterblock import MasterBlock
+from .block import Block
 from ..actuator import actuator_list
 
 
-class AutoDrive(MasterBlock):
+class AutoDrive(Block):
   """
   To follow the spots with videoextenso.
 
@@ -30,7 +30,7 @@ class AutoDrive(MasterBlock):
 
   """
   def __init__(self, **kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     for arg,default in [('actuator',{'name':'CM_drive'}),
       ('P', 2000), # The gain for commanding the technical/actuator
       # The direction to follow (X/Y +/-), depending on camera orientation

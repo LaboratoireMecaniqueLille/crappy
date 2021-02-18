@@ -1,14 +1,14 @@
 # coding: utf-8
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
-class Sink(MasterBlock):
+class Sink(Block):
   """
   Test block used to get data and do nothing.
   """
   def __init__(self, *args, **kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
 
   def loop(self):
     self.drop()

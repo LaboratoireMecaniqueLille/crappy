@@ -4,9 +4,15 @@
 from multiprocessing import Process, Pipe
 import numpy as np
 import cv2
-from skimage.filters import threshold_otsu
-from skimage.morphology import label
-from skimage.measure import regionprops
+try:
+  from skimage.filters import threshold_otsu
+  from skimage.morphology import label
+  from skimage.measure import regionprops
+except ModuleNotFoundError:
+  from .._global import OptionalModule
+  label = OptionalModule("skimage","Please install scikit-image to use"
+  "Video-extenso")
+  threshold_otsu = regionprops = label
 
 
 class LostSpotError(Exception):

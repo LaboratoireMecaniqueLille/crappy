@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import numpy as np
 
-from .masterblock import MasterBlock
+from .block import Block
 
 
 def split(x,y):
@@ -24,7 +24,7 @@ def split(x,y):
   return rx,ry
 
 
-class Grapher(MasterBlock):
+class Grapher(Block):
   """
   The grapher receive data from a block (via a Link) and plots it.
 
@@ -78,7 +78,7 @@ class Grapher(MasterBlock):
   """
 
   def __init__(self, *args, **kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.niceness = 10
     self.length = kwargs.pop("length", 0)
     self.freq = kwargs.pop("freq", 2)

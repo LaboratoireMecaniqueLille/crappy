@@ -3,12 +3,18 @@ from __future__ import print_function
 
 from os import path,makedirs
 import numpy as np
-import tables
 
-from .masterblock import MasterBlock
+from .._global import OptionalModule
+try:
+  import tables
+except ModuleNotFoundError:
+  tables = OptionalModule("tables","HDFSaver needs the tables module to "
+      "write hdf files.")
+
+from .block import Block
 
 
-class Hdf_saver(MasterBlock):
+class Hdf_saver(Block):
   """
   To save data efficiently in a hdf5 file.
 
@@ -50,7 +56,7 @@ class Hdf_saver(MasterBlock):
   """
 
   def __init__(self,filename,**kwargs):
-    MasterBlock.__init__(self)
+    Block.__init__(self)
     self.filename = filename
     for arg,default in [("node","table"),
                         ("expected_rows",10**8),

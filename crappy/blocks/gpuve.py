@@ -2,17 +2,19 @@
 
 from time import time
 import numpy as np
-import SimpleITK as sitk
-import os
-#from pycuda.tools import make_default_context
-#from pycuda.driver import init as cuda_init
+try:
+  from pycuda.tools import make_default_context
+  from pycuda.driver import init as cuda_init
+except (ModuleNotFoundError,ImportError):
+  def cuda_init():
+    print("PyCUDA is could not be imported, cannot use GPUVE block")
+    raise ModuleNotFoundError("pycuda")
 
-from .masterblock import MasterBlock
-from ..tool import Camera_config,GPUCorrel as GPUCorrel_tool
-from ..camera import camera_list
+from ..tool import GPUCorrel as GPUCorrel_tool
+from .camera import Camera,kw as default_cam_block_kw
 
 
-class GPUVE(MasterBlock):
+class GPUVE(Camera):
   """
   An optical Videoextensometry measuring the displacement of small
   areas using GPU accelerated DIC.
@@ -31,18 +33,22 @@ class GPUVE(MasterBlock):
     how the patches are arranged.
 
     It should be done by another block or a condition if necessary.
-
   """
 
   def __init__(self, camera, patches, **kwargs):
-    MasterBlock.__init__(self)
     self.ready = False
-    self.camera_name = camera
     self.patches = patches
-    self.verbose = kwargs.get("verbose", 0)
-    self.config = kwargs.get("config", True)
-    # A function to apply to the image
-    self.transform = kwargs.pop("transform",lambda i: i)
+    cam_kw = {}
+    # Kwargs to be given to the camera BLOCK
+    # ie save_folder, config, etc... but NOT the labels
+    for k,v in default_cam_block_kw.items():
+      if k == 'labels':
+        continue
+      cam_kw[k] = kwargs.pop(k,v)
+    self.verbose = cam_kw['verbose'] # Also, we keep the verbose flag
+    cam_kw.update(kwargs.pop('cam_kwargs',{}))
+    Camera.__init__(self,camera,**cam_kw)
+    self.transform = cam_kw.get("transform")
 
     # Creating the tuple of labels (to name the outputs)
     labels = kwargs.pop('labels',None)
@@ -79,20 +85,10 @@ class GPUVE(MasterBlock):
   def prepare(self):
     cuda_init()
     self.context = make_default_context()
-    if self.save_folder and not os.path.exists(self.save_folder):
-      try:
-        os.makedirs(self.save_folder)
-      except OSError: # May happen if another blocks created the folder
-        assert os.path.exists(self.save_folder),\
-            "Error creating "+self.save_folder
-    self.camera = camera_list[self.camera_name]()
-    self.camera.open(**self.cam_kwargs)
-    if self.config:
-      Camera_config(self.camera).main()
+    Camera.prepare(self)
     t,img = self.camera.read_image()
     if self.transform is not None:
       img = self.transform(img)
-
     self.correl = []
     for oy,ox,h,w in self.patches:
       self.correl.append(GPUCorrel_tool((h,w),
@@ -108,9 +104,7 @@ class GPUVE(MasterBlock):
       c.prepare()
     self.last_t = time() - 1
     if self.save_folder:
-      image = sitk.GetImageFromArray(img)
-      sitk.WriteImage(image,
-               self.save_folder + "img_ref_%.5f.tiff" % (t-self.t0))
+      self.save(self.save_folder + "img_ref_%.5f.tiff" % (t-self.t0))
 
   def loop(self):
     if self.verbose and self.loops%self.nloops == 0:
@@ -118,19 +112,7 @@ class GPUVE(MasterBlock):
       print("[VE block] processed", self.nloops / (t-self.last_t), "ips")
       self.last_t = t
     self.loops += 1
-    if self.inputs: # If we have an input: external trigger
-      data = self.inputs[0].recv()
-      if data is None:
-        return
-      else:
-        t,img = self.camera.get_image() # No fps control
-    else:
-      t,img = self.camera.read_image() # Limits to max_fps
-    if self.save_folder and self.loops % self.save_period == 0:
-      image = sitk.GetImageFromArray(img)
-      sitk.WriteImage(image,
-               self.save_folder + "img_%.6d_%.5f.tiff" % (
-               self.loops, t-self.t0))
+    t,img = self.get_img()
     out = [t-self.t0]
     #+ self.correl.getDisp(
     #      self.transform(img).astype(np.float32)).tolist()

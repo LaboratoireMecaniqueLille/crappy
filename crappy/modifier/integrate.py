@@ -1,9 +1,9 @@
 #coding: utf-8
 
-from .condition import Condition
+from .modifier import Modifier
 
 
-class Integrate(Condition):
+class Integrate(Modifier):
   """
   Integration filter. This will integrate the value at label over time.
 
@@ -12,7 +12,7 @@ class Integrate(Condition):
 
   """
   def __init__(self,label,time='t(s)',out_label=None):
-    Condition.__init__(self)
+    Modifier.__init__(self)
     self.label = label
     self.t = time
     if out_label is None:
