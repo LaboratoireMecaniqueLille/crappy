@@ -7,7 +7,7 @@ complex experimental setups.
 Requirements
 ------------
 
-To install Crappy you will need Python 3 (3.4 or higher)
+To install Crappy you will need Python 3 (3.6 or higher)
 with the following modules :
 - Numpy
 - Matplotlib
@@ -27,13 +27,11 @@ These modules are not mandatory but will provide additionnal functionalities:
 Installation
 ------------
 
-Only tested on Ubuntu 16.04 / 18.04 and 20.04:
+Only tested on Ubuntu 18.04 and 20.04:
 
-       git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
-
-       cd crappy
-
-       sudo python setup install
+    git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
+    cd crappy
+    sudo python3 setup install
 
 See documentation for more details
 
@@ -41,20 +39,18 @@ See documentation for more details
 Documentation
 -------------
 
-The latest version for the branch master can be accessed at
-https://laboratoiremecaniquelille.github.io/crappy/
+The latest version of the documentation can be accessed at
+https://crappy.readthedocs.io/
 
-To build it yourself, install doxygen, doxypy and doxygen-gui:
+To build it locally, please install Sphinx and sphinx\_rtd\_theme
 
-    sudo apt-get install doxygen doxypy doxygen-gui
+    sudo apt install python3-sphinx
+    pip3 install sphinx_rtd_theme
 
-Then, download and install the doxypypy project.
+and use the Makefile in docs/ to build the html pages
 
-then, load the Doxyfile located in doc with doxywizard:
-
-    doxywizard doc/Doxyfile
-
-Finally, run doxygen from the run tab, and show html output.
+    cd docs/
+    make html
 
 
 Bug reports
