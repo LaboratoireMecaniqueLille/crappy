@@ -22,11 +22,11 @@ sys.setrecursionlimit(1500)
 # -- Project information -----------------------------------------------------
 
 project = 'Crappy'
-copyright = '2020, Manu'
-author = 'Manu'
+copyright = '2021'
+author = 'LaMcube'
 
 # The short X.Y version
-version = ''
+version = '1.3.1'
 # The full version, including alpha/beta/rc tags
 release = '0.0.1'
 
