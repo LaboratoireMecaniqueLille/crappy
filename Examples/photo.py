@@ -1,9 +1,18 @@
 #coding: utf-8
+"""
+Using directly the camera object to take a picture
 
-CONFIG = False #True
+Use CONFIG=True to open the configuration GUI
+
+Required hardware:
+  - Any camera (replace Webcam by the desired camera if necessary)
+"""
+
+import SimpleITK as sitk
 
 import crappy
-import SimpleITK as sitk
+
+CONFIG = False # True
 
 cam = crappy.camera.Webcam()
 cam.open()

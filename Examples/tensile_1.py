@@ -1,3 +1,15 @@
+"""
+Detailed example showing a simple tensile test
+
+This example uses a Labjack T7 board to send the position command to a tensile
+machine. This was tested on an Instron 5882, but any tensile machine taking an
+external command can be used
+
+Required hardware:
+  - Tensile machine able to take an external command
+  - DAQ board (here a Labjack T7)
+"""
+
 import crappy
 
 SPEED = 5 # mm/min

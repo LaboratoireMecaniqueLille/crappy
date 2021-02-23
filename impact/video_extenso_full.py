@@ -1,13 +1,15 @@
 #coding: utf-8
-from __future__ import division
+"""
+Base file for tests using videoextensometry and a marker following actuator
+"""
 
-import crappy
 from time import ctime
+import crappy
 
 out_gain = 1/30 # V/mm
-gains = [50,30] #N/V mm/V
+gains = [50, 1/out_gain] # N/V mm/V
 
-timestamp = ctime()[:-5].replace(" ","_")
+timestamp = ctime()[:-5].replace(" ","_").replace(":","_")
 save_path = "./"+timestamp+"/"
 
 # VideoExtenso and Autodrive blocks
@@ -43,7 +45,7 @@ crappy.link(lj,graph_sensors,modifier=crappy.modifier.Mean(10))
 g = crappy.blocks.Generator(path=[
   {'type':'cyclic_ramp','condition1': 'Exx(%)>20',
     'speed1':20/60,'condition2': 'F(N)<.1','speed2':-20/60,'cycles':5},
-  ])
+])
 saver_sensors = crappy.blocks.Saver(save_path+"sensors.csv",
     labels=['t(s)','F(N)','x(mm)'])
 

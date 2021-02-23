@@ -1,5 +1,11 @@
 #coding: utf-8
 
+"""
+This program is used to control a biaxial tensile machine
+
+It demonstrates an equibiaxial cyclic test
+"""
+
 import crappy
 
 path = {'type':'cyclic','value1':5,'condition1':'delay=3',

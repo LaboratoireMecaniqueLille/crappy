@@ -1,10 +1,15 @@
 #coding: utf-8
 
+"""
+This Example shows how to use the fps_label argument to change the
+frequency of a camera during a test
+
+Required hardware:
+  - Any camera
+"""
+
 import crappy
 
-"""
-Very simple program that displays the output of a choosen camera
-"""
 if __name__ == "__main__":
   camera = crappy.blocks.Camera(camera="Webcam",
       verbose=True,fps_label='cmd')

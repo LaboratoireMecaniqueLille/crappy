@@ -1,3 +1,18 @@
+"""
+Detailed example showing a videoextensometry-driven tensile test
+
+This example uses a Labjack T7 board to send the position command to a tensile
+machine. This was tested on an Instron 5882, but any tensile machine taking an
+external command can be used. A camera is used to measure the strain of the
+sample and save the images. Different levels of strain are applied and the
+sample is relaxed between each step
+
+Required hardware:
+  - Tensile machine able to take an external command
+  - DAQ board (here a Labjack T7)
+  - A Camera
+"""
+
 import crappy
 
 SPEED = 5 # mm/min
@@ -61,7 +76,9 @@ crappy.link(ve,saver_ve)
 
 # Our force against time plot
 graph_f = crappy.blocks.Grapher(('t(s)','F(N)'))
-crappy.link(daq,graph_f)
+# Adding a Mean modifier to average the points
+# It lowers the frequency and makes the graph smoother
+crappy.link(daq,graph_f,modifier=crappy.modifier.Mean(10))
 
 # Let's add a second graph to plot strain against time
 graph_s = crappy.blocks.Grapher(('t(s)','Exx(%)'))

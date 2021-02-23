@@ -1,5 +1,16 @@
-import crappy
+"""
+Shows a more advanced way of using GPUCorrel block
+
+Required hardware:
+  - Any camera
+  - A CUDA compatible GPU
+"""
+
 import numpy as np
+
+import crappy
+
+CAMERA = "Webcam"
 
 x=2048
 y=2048
@@ -29,18 +40,18 @@ graphRes = crappy.blocks.Grapher(('t(s)','res'),length=50)
 graphLinDef = crappy.blocks.Grapher(('t(s)','Exx'),('t(s)','Exy'))
 graphQuadDef = crappy.blocks.Grapher(('t(s)','Ux2'),('t(s)','Vy2'))
 # Creating the correl block
-correl = crappy.blocks.Correl(camera="XimeaCV",fields=[myX,'y','r',# Rigid body
+correl = crappy.blocks.Correl(camera=CAMERA,fields=[myX,'y','r',# Rigid body
                               'exx','eyy','exy', # Linear def
                               'uxx','uyy','uxy', # Quadratic def (x)
                               'vxx','vyy','vxy'],# Quadratic def (y)
-                              verbose=2, #To print info
+                              verbose=2, # To print info
                               show_diff=True, # Display the residual (slow!)
                               drop=False, # Disable datapicker
                               mask=mask,
                               levels=4, # Reduce the number of levels
                               iterations=3, # and of iteration
                               resampling_factor=2.5, # agressive resampling
-                              labels=( #Needed to name our custom field
+                              labels=( # Needed to name our custom field
                               'x','y','r','Exx','Eyy','Exy',
                               'Ux2','Uy2','Uxy',
                               'Vx2','Vy2','Vxy'),

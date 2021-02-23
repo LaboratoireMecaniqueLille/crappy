@@ -1,5 +1,12 @@
 #coding: utf-8
-from __future__ import division
+"""
+Example illustrating the use of Spectrum DAQ cards and high-freq saving
+
+The data is saved using the hdf format
+
+Required hardware:
+  - Spectrum acquisition board
+"""
 
 import crappy
 
@@ -17,12 +24,18 @@ spectrum = crappy.blocks.IOBlock('spectrum',ranges=ranges,
     labels=['t(s)','stream'])
 
 graph = crappy.blocks.Grapher(*[('t(s)',i) for i in chan_names])
+
 if save_file:
   hsaver = crappy.blocks.Hdf_saver("./out.h5",
       metadata={'channels':channels,'ranges':ranges,'freq':100000,
         'factor':[r*g/32000000 for r,g in zip(ranges,gains)]})
   crappy.link(spectrum,hsaver)
+
+# The Demux modifier unpacks the stream data so normal blocks can process it
 crappy.link(spectrum,graph,
     modifier=crappy.modifier.Demux(chan_names,mean=False))
+# Note that the majority of the data is DROPPED with this modifier, it was
+# meant to plot the data in real time at a much lower rate
+# However, the hdf file contains the complete raw data
 
 crappy.start()

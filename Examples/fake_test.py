@@ -1,4 +1,14 @@
+"""
+A fully autonomous example of a tensile test using a virtual machine
+
+This program is meant to replicate a tensile test without the need of an
+actual machine
+
+No hardware required
+"""
+
 import crappy
+
 from time import time
 
 speed = 2/60 # mm/sec

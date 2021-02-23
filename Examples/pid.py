@@ -1,5 +1,11 @@
 #coding: utf-8
-from __future__ import print_function,division
+"""
+Quick example showing how the PID block can be used to control the speed
+of a motor
+
+The motor is a virtual entity, taking a voltage and returning a speed and
+position
+"""
 
 import crappy
 
@@ -12,7 +18,7 @@ if __name__ == "__main__":
     {'type':'constant','value':500,'condition':'delay=3'},
     {'type':'sine','amplitude':2000,'offset':1000,'freq':.3,
       'condition':'delay=15'}
-    ],spam=True)
+  ],spam=True)
 
   kv = 1000
 
@@ -25,7 +31,7 @@ if __name__ == "__main__":
                                'inertia':4,
                                'rv':.2,
                                'fv':1e-5
-                               }])
+                                }])
   graph_m = crappy.blocks.Grapher(('t(s)','speed'),('t(s)','cmd'))
   # ,interp=False)
 
@@ -36,7 +42,7 @@ if __name__ == "__main__":
   #crappy.start()
 
   p = 38/kv
-  i = 1
+  i = 2
   d = .05
 
   pid = crappy.blocks.PID(kp=p,
@@ -44,15 +50,14 @@ if __name__ == "__main__":
                           kd=d,
                           out_max=10,
                           out_min=-10,
+                          i_limit=.5,
                           input_label='speed',
                           send_terms=True)
 
   crappy.link(g,pid)
   crappy.link(pid,mot)
-  #crappy.link(mot,pid) # Replace with the next line to smooth the input
+  #crappy.link(mot,pid) # This line will not smooth the feedback
   crappy.link(mot,pid,modifier=crappy.modifier.Moving_avg(15))
-
-
 
   graph_pid = crappy.blocks.Grapher(('t(s)','pid'))
   crappy.link(pid,graph_pid)

@@ -1,10 +1,21 @@
+"""
+Example showing how to use the DISVE block
+
+It performs DIC on the specified patches, and returns the motion along x and y
+in pixels. This example demonstrates the processing to measure strain using
+this method
+
+Required hardware:
+  - Any camera
+"""
+
 import crappy
 
+w,h = 1280,720
+ps = 200 # patch size (x and y)
 
-#h,w = 6004,7920
-h,w = 1024,1024
-ps = 500 # patch size (x and y)
-
+# Patches are defined as such: (y,x,height,width)
+# x and y being the coordinates to the upper-left corner
 patches = [
     (0,w//2-ps//2,ps,ps), # Top
     (h//2-ps,w-ps,ps,ps), # Right
@@ -12,11 +23,10 @@ patches = [
     (h//2-ps,0,ps,ps)] # Left
 
 cam_kw = dict(
-    exposure=8000, # µs
     height=h,
     width=w)
 
-ve = crappy.blocks.DISVE('Xiapi',patches,verbose=True,cam_kwargs=cam_kw)
+ve = crappy.blocks.DISVE('Webcam',patches,verbose=True,**cam_kw)
 graphy = crappy.blocks.Grapher(('t(s)','p0y'),('t(s)','p2y'))
 graphx = crappy.blocks.Grapher(('t(s)','p1x'),('t(s)','p3x'))
 

@@ -1,5 +1,13 @@
 #coding: utf-8
 
+"""
+Program used to control the solidification furnace
+
+It uses a Lajack T7 to send PWN signals to the transistors controling the
+heating element of each section of the furnace. The temperature of each section
+is measured using a thermocouple.
+"""
+
 import crappy
 
 SHOW_PID = 3
@@ -27,6 +35,7 @@ v[5] = T
 class dc_to_clk:
   def __init__(self,lbl):
     self.l = lbl
+
   def evaluate(self,data):
     #data[self.l] = int(data[self.l]*80000000/FREQ)
     if data[self.l] < 0.01:
@@ -38,12 +47,14 @@ class dc_to_clk:
     data[self.l] = int((1-cmd)*80000000/FREQ)
     return data
 
+
 clock_config = [
 ('DIO_EF_CLOCK0_ENABLE',0),
 ('DIO_EF_CLOCK0_DIVISOR',1),
 ('DIO_EF_CLOCK0_ROLL_VALUE',int(80000000/FREQ)),
 ('DIO_EF_CLOCK0_ENABLE',1),
 ]
+
 
 def pwm_config(i):
   return [
@@ -52,10 +63,10 @@ def pwm_config(i):
       ('DIO%d_EF_OPTIONS'%i,0),
       ('DIO%d_EF_CONFIG_A'%i,int(80000000/FREQ*.5)),
       ('DIO%d_EF_ENABLE'%i,1),
-      ]
+    ]
+
 
 #g = crappy.blocks.Generator([dict(type='constant',condition=None,value=200)])
-
 pwm_chan = [dict(name="DIO%d_EF_CONFIG_A"%i,
   direction=1,write_at_open=pwm_config(i)) for i in pins]
 # Adding the clock config to the first chan
@@ -79,16 +90,18 @@ for i in pins:
     send_terms=(SHOW_PID is not None and i == SHOW_PID),
     labels=['t(s)','pwm%d'%i]))
 
-  gen_list.append( crappy.blocks.Generator(
+  gen_list.append(crappy.blocks.Generator(
     [dict(type='constant',condition=None,value=v[i])]))
 
   crappy.link(gen_list[-1],pid_list[-1])
   crappy.link(pid_list[-1],lj,modifier=dc_to_clk('pwm%d'%i))
-  crappy.link(lj,pid_list[-1],modifier=[crappy.modifier.Median(MED),crappy.modifier.Moving_avg(MEAN)])
+  crappy.link(lj,pid_list[-1],
+      modifier=[crappy.modifier.Median(MED),crappy.modifier.Moving_avg(MEAN)])
   crappy.link(pid_list[-1],graph_cmd)
 
 graph = crappy.blocks.Grapher(*[('t(s)','T%d'%i) for i in pins])
-crappy.link(lj,graph,modifier=[crappy.modifier.Median(MED),crappy.modifier.Moving_avg(MEAN)])
+crappy.link(lj,graph,
+    modifier=[crappy.modifier.Median(MED),crappy.modifier.Moving_avg(MEAN)])
 
 
 if SHOW_PID:

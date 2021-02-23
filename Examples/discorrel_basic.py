@@ -1,3 +1,10 @@
+"""
+Basic example demonstrating the use of the DISCorrel block
+
+Required hardware:
+  - Any camera
+"""
+
 import crappy
 
 dis = crappy.blocks.DISCorrel('Webcam',

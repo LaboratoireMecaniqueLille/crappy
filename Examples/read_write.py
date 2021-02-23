@@ -1,6 +1,13 @@
 #coding: utf-8
-#import matplotlib
-#matplotlib.use('Agg')
+"""
+Just like read.py, but with both output and input
+
+This program will send a sine wave on the first output and read the first input
+The type of board can be chosen when starting the file
+
+Required hardware:
+  - Any DAQ board
+"""
 
 import crappy
 
@@ -8,7 +15,7 @@ import crappy
 for i,c in enumerate(crappy.inout.inout_list):
   print(i,c)
 name = list(crappy.inout.inout_list.keys())[int(input(
-                    "What board do you want to use ?> "))]
+    "What board do you want to use ?> "))]
 
 sg = crappy.blocks.Generator([{'type':'sine','freq':.5,'amplitude':1,
   'offset':.5,'condition':'delay=1000'}],cmd_label='cmd')

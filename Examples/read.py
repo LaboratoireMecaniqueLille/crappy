@@ -1,4 +1,14 @@
+"""
+Short code to read a channel on a chosen DAQ board
 
+Will show the supported boards and ask the user the pick one
+Then reads continuously the first channel
+Note that no additionnal argument is specified to the DAQ board, so
+the channel, the rate and precision are the default values
+
+Required hardware:
+  - Any supported DAQ board
+"""
 import crappy
 
 if __name__ == "__main__":

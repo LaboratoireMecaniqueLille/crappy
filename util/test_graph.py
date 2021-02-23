@@ -1,3 +1,6 @@
+"""
+To test the correct resampling of the points in the Grapher
+"""
 import crappy
 
 gen = crappy.blocks.Generator([{'type':'ramp','condition':None,

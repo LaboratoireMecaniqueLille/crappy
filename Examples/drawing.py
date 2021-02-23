@@ -1,7 +1,14 @@
 #coding: utf-8
 
-import crappy
+"""
+Demonstrates the use of the Drawing block
+
+No hardware required
+"""
+
 from time import sleep
+
+import crappy
 
 
 class TestBlock(crappy.Block):

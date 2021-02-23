@@ -1,3 +1,11 @@
+"""
+Introduction to the generator
+
+Shows how to use the Generator block and different paths
+
+No required hardware
+"""
+
 import crappy
 
 # First part : a constant value (2) for 5 seconds

@@ -1,10 +1,14 @@
 #coding: utf-8
 
-import crappy
-
 """
 Very simple program that displays the output of a choosen camera
+
+Required hardware:
+  - Any camera (select the desired camera in the terminal)
 """
+
+import crappy
+
 if __name__ == "__main__":
   cam_list = list(crappy.camera.MetaCam.classes.keys())
   cam_list.remove("Camera")
