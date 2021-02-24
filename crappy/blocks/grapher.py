@@ -57,7 +57,6 @@ class Grapher(Block):
     graph = Grapher(('t(s)', 'F(N)'), length=30):
         It will plot a dynamic graph that will display the last 30 chunks of
         data.
-
   """
 
   def __init__(self, *args, **kwargs):
@@ -115,7 +114,7 @@ class Grapher(Block):
   def loop(self):
     # We need to recv data from all the links, but keep
     # ALL of the data, even with the same label (so not get_all_last)
-    data = [l.recv_chunk() if l.poll() else {} for l in self.inputs]
+    data = self.recv_all_delay()
     for i, (lx, ly) in enumerate(self.labels):
       x = 0 # So that if we don't find it, we do nothing
       for d in data:
