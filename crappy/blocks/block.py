@@ -419,8 +419,8 @@ class Block(Process):
     Note:
       num is a list containing all the concerned inputs.
 
-      The first call may be blocking until it receives data, all the others will
-      return instantaneously, giving the latest known reading.
+      The first call may be blocking until it receives data, all the others
+      will return instantaneously, giving the latest known reading.
 
       If num is None, it will operate on all the input link at once.
 
@@ -471,6 +471,34 @@ class Block(Process):
     for i in num:
       ret.update(self._all_last_values[i])
     return ret
+
+  def recv_all_delay(self,delay=None,poll_delay=.1):
+    """
+    Method to wait for data, but continuously reading all the links
+    to make sure that it does not block
+
+    Returns a list where each entry is what would have been returned by
+    recv_chunk on each link
+    """
+    if delay is None:
+      delay = 1/self.freq
+    t = time()
+    r = [{} for i in self.inputs]
+    last = t
+    while True:
+      sleep(max(0,poll_delay-time()+last))
+      for l,d in zip(self.inputs,r):
+        if not l.poll():
+          continue
+        new = l.recv_chunk()
+        for k,v in new.items():
+          if k in d:
+            d[k].extend(v)
+          else:
+            d[k] = v
+      if time() - t > delay:
+        break
+    return r
 
   def drop(self, num=None):
     """
