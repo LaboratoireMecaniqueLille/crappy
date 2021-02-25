@@ -10,10 +10,9 @@
 build/
 dist/
 crappy.egg-info/
-Examples/open_log.py
 *.sublime-*
 .idea/
 *.swp
-doc/html/
+docs/build/
 tests/
 .directory
