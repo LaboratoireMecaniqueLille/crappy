@@ -85,7 +85,7 @@ class GPUVE(Camera):
   def prepare(self):
     cuda_init()
     self.context = make_default_context()
-    Camera.prepare(self)
+    Camera.prepare(self,send_img=False)
     t,img = self.camera.read_image()
     if self.transform is not None:
       img = self.transform(img)

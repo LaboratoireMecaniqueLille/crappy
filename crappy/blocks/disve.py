@@ -45,7 +45,7 @@ class DISVE(Camera):
       }
 
   def prepare(self):
-    Camera.prepare(self)
+    Camera.prepare(self,send_img=False)
     if self.show_image:
       try:
         flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
@@ -59,7 +59,7 @@ class DISVE(Camera):
 
   def loop(self):
     t,img = self.get_img()
-    if self.inputs and self.inputs[0].poll():
+    if self.inputs and not self.input_label and self.inputs[0].poll():
       self.inputs[0].clear()
       self.ve.img0 = img
       self.img0 = img

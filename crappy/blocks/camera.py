@@ -27,6 +27,7 @@ kw = dict([
   ("save_period",1),
   ("save_backend",None),
   ("transform",None),
+  ("input_label",None),
   ("config",True)]
 )
 
@@ -79,6 +80,9 @@ class Camera(Block):
       Warning!
         It will NOT be applied to the saved image.
 
+    - input_label (str or None, default: None): If specified, the image will
+      not be read from a camera object but from this label
+
     - config (bool, default: True): Show the popup for config ?
 
   """
@@ -95,8 +99,8 @@ class Camera(Block):
         pass
     self.camera_name = camera.capitalize()
     self.cam_kw = kwargs
-    assert self.camera_name in camera_list,"{} camera does not exist!".format(
-        self.camera_name)
+    assert self.camera_name in camera_list or self.input_label,\
+        "{} camera does not exist!".format(self.camera_name)
     if self.save_backend is None:
       if sitk is None:
         self.save_backend = "cv2"
@@ -107,7 +111,7 @@ class Camera(Block):
     self.save = getattr(self,"save_"+self.save_backend)
     self.loops = 0
 
-  def prepare(self):
+  def prepare(self,send_img=True):
     sep = '\\' if 'win' in platform else '/'
     if self.save_folder and not self.save_folder.endswith(sep):
       self.save_folder += sep
@@ -117,12 +121,25 @@ class Camera(Block):
       except OSError:
         assert os.path.exists(self.save_folder),\
             "Error creating "+self.save_folder
+    self.ext_trigger = bool(
+        self.inputs and not (self.fps_label or self.input_label))
+    if self.input_label is not None:
+      # Exception to the usual inner working of Crappy:
+      # We receive data from the link BEFORE the program is started
+      self.ref_img = self.inputs[0].recv()[self.input_label]
+      self.camera = camera_list['Camera']()
+      self.camera.max_fps = 30
+      self.camera.get_image = lambda: (0,self.ref_img)
+      return
     self.camera = camera_list[self.camera_name]()
     self.camera.open(**self.cam_kw)
-    self.ext_trigger = True if self.inputs and not self.fps_label else False
     if self.config:
       conf = Camera_config(self.camera)
       conf.main()
+    # Sending the first image before the actual start
+    if send_img:
+      t,img = self.get_img()
+      self.send([0,img])
 
   def save_sitk(self,img,fname):
     image = sitk.GetImageFromArray(img)
@@ -139,6 +156,9 @@ class Camera(Block):
     Waits the appropriate time/event to read an image, reads it,
     saves it if asked to, applies the transformation and increases counter.
     """
+    if self.input_label:
+      data = self.inputs[0].recv()
+      return data['t(s)'],data[self.input_label]
     if not self.ext_trigger:
       if self.fps_label:
         while self.inputs[0].poll():
@@ -162,4 +182,5 @@ class Camera(Block):
     self.send([t-self.t0,img])
 
   def finish(self):
-    self.camera.close()
+    if self.input_label is None:
+      self.camera.close()

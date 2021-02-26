@@ -62,7 +62,7 @@ class DISCorrel(Camera):
       self.labels.append('res_full')
 
   def prepare(self):
-    Camera.prepare(self)
+    Camera.prepare(self,send_img=False)
     config = DISConfig(self.camera)
     config.main()
     self.bbox = config.box
@@ -87,7 +87,7 @@ class DISCorrel(Camera):
 
   def loop(self):
     t,img = self.get_img()
-    if self.inputs and self.inputs[0].poll():
+    if self.inputs and not self.input_label and self.inputs[0].poll():
       self.inputs[0].clear()
       self.img0 = img
       if self.transform is not None:

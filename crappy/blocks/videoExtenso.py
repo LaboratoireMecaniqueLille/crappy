@@ -66,7 +66,7 @@ class Video_extenso(Camera):
     self.cam_kwargs = kwargs
 
   def prepare(self):
-    Camera.prepare(self)
+    Camera.prepare(self,send_img=False)
     self.ve = VE(**self.ve_kwargs)
     config = VE_config(self.camera,self.ve)
     config.main()
@@ -83,7 +83,7 @@ class Video_extenso(Camera):
 
   def loop(self):
     t,img = self.get_img()
-    if self.inputs and self.inputs[0].poll():
+    if self.inputs and not self.input_label and self.inputs[0].poll():
       self.inputs[0].clear()
       self.wait_l0 = False
       print("[VE block] resetting L0")

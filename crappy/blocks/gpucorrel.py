@@ -73,7 +73,7 @@ class GPUCorrel(Camera):
     self.gpu_correl_kwargs['fields'] = self.fields
 
   def prepare(self):
-    Camera.prepare(self)
+    Camera.prepare(self,send_img=False)
     t,img = self.camera.read_image()
     if self.transform is not None:
       img = self.transform(img)
