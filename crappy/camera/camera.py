@@ -71,11 +71,11 @@ class Cam_setting(object):
 
   Arguments:
     - name: The name of the setting.
-    - default: The default value, if not specified it will be set to this value.
+    - default: The default value, if not specified it will be set to this value
     - getter: Function to read this value from the device.
-      If set to None, it will assume that the setting always happened correctly.
-    - setter: A function that will be called when setting the parameter to a new
-      value. Can do nothing, it will only change its value and nothing else.
+      If set to None, it will assume that the setting always happened correctly
+    - setter: A function that will be called when setting the parameter to a
+      new value. Can do nothing, it will only change its value and nothing else
     - limits: It contains the available values for this parameter.
 
       The possible types are:
@@ -97,7 +97,8 @@ class Cam_setting(object):
         (It can be True or False, it doesn't matter)
 
         A dict: Possible values are the values of the dict, CameraConfig will
-        add radio buttons showing the keys, to set it to the corresponding value.
+        add radio buttons showing the keys, to set it to the corresponding
+        value.
 
   """
   def __init__(self,name,getter,setter,limits,default):
@@ -172,7 +173,8 @@ class Camera(object, metaclass=MetaCam):
     This class makes it transparent to the user: you can access a setting by
     using myinstance.setting = stuff.
 
-    It will automatically check the validity and try to set it. (see Cam_setting)
+    It will automatically check the validity and try to set it
+    (see Cam_setting).
 
     Don't forget to call the __init__ in the children or __getattr__ will
     fall in an infinite recursion loop looking for settings...
@@ -246,7 +248,7 @@ class Camera(object, metaclass=MetaCam):
     self.set_all()
 
   def read_image(self):
-    """This method is a wrapper for get_image that will limit fps to max_fps."""
+    """This method is a wrapper for get_image that will limit fps to max_fps"""
     if self.delay:
       t = time()
       wait = self.last - t + self.delay

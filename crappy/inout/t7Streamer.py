@@ -47,7 +47,7 @@ class T7_streamer(InOut):
 
         If too high, it will be lowered to the highest possible value.
 
-    - scan_per_read (default: 10000): The number of points to read on each loop.
+    - scan_per_read (default: 10000): The number of points to read on each loop
     - resolution: The resolution index for all channels. The higher it is,
       the slower the acquisition will be (but more precise).
 
@@ -56,8 +56,8 @@ class T7_streamer(InOut):
 
   Channel keys:
     - name (str): The name of the channel according to Labjack's naming
-      convention. Ex: 'AIN0'. This will be used to define the direction (in/out)
-      and the available settings.
+      convention. Ex: 'AIN0'. This will be used to define the direction
+      (in/out) and the available settings.
 
       Note:
         Only inputs can be used in stream mode.

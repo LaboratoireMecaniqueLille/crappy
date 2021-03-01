@@ -24,7 +24,8 @@ class AutoDrive(Block):
     - P (float, default: 2000): The gain.
     - direction (two chars string: {X,Y}{+,-}, default: "Y-"): What axis should
       be considered, and in which direction ?
-    - range (int, default: 2048): the size in pixel of the image along this axis.
+    - range (int, default: 2048): the size in pixel of the image along this
+      axis.
     - max_speed (float, default: 200000): The absolute max value to send to the
       actuator.
 

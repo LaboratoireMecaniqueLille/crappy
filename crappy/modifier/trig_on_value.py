@@ -5,7 +5,7 @@ from .modifier import Modifier
 
 class Trig_on_value(Modifier):
   """
-  Can be used to send data (an empty dict) when the input reached a given value.
+  Can be used to send data (an empty dict) when the input reached a given value
 
   Args:
     - name: The name of the label to monitor.

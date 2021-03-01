@@ -15,8 +15,8 @@ class Protection(Path):
 
     While condition2 is met, will return value2.
 
-    If condition1 and condition2 are met simultaneaously, the first one met will
-    prevail. If met at the same time, condition1 will prevail.
+    If condition1 and condition2 are met simultaneaously, the first one met
+    will prevail. If met at the same time, condition1 will prevail.
 
   Args:
     - value0: value to send when no condition is reached.

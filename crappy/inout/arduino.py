@@ -124,7 +124,7 @@ class ArduinoHandler(object):
 
   def send_GUIs(self, serial_received):
     """
-    Send to every created GUI information received from arduino (if applicable).
+    Send to every created GUI information received from arduino (if applicable)
     """
     if "monitor" in self.frames:
       self.monitor_frame.update_widgets(serial_received)
@@ -209,8 +209,6 @@ class Arduino(InOut):
 
   """
   def __init__(self, **kwargs):
-
-
     if not kwargs.pop("port", None):
       # Tries to open the 5 first ttyACM's, that should be enough.
       for i in range(5):  #

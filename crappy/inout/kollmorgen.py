@@ -28,7 +28,8 @@ class KollMorgenVariator:
 
     To add or remove some, update the dictionaries of __init__.
 
-    There is 3 motors, so the tens are for each motor, the units for the address.
+    There are 3 motors, so the tens are for each motor, the units for the
+    address.
 
   Args:
     - host: Variator's IP address.

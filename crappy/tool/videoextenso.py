@@ -20,7 +20,7 @@ class LostSpotError(Exception):
 
 
 def overlapping(box1,box2):
-  """Returns True if box1 and box2 are overlapping or included in each other."""
+  """Returns True if box1 and box2 are overlapping or included in each other"""
   for i in box1[::2]:
     if box2[0] < i < box2[2]:
       if not (box1[3] <= box2[1] or box2[3] <= box1[1]):
@@ -73,9 +73,10 @@ class Video_extenso(object):
                         ("border",5),
                         # The number of pixel that will be added to the limits
                         # of the boundingbox
-                        ("min_area",150)]:
+                        ("min_area",150)
                         # Filters regions with an area smaller than this values
                         # among the selected regions
+                        ]:
       setattr(self,arg,kwargs.pop(arg,default))
     assert not kwargs,"Invalid kwarg in ve:"+str(kwargs)
     assert self.num_spots in ['auto',2,3,4],"Invalid number of spots!"

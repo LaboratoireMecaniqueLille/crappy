@@ -44,7 +44,7 @@ class Nidaqmx(InOut):
     - name: The name of the channel to open.
 
       Note:
-        For dio, use diX for digital input on line X and doX for digital output.
+        For dio, use diX for digital input on line X and doX for digital output
 
     - type (default: 'voltage'): The type of channel to open. Ex: thrmcpl.
 

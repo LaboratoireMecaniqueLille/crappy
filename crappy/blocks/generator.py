@@ -26,8 +26,8 @@ class Generator(Block):
         Each dict MUST have a key 'type'.
 
       Note:
-        The Generator will then instanciate generator_path.**type** with all the
-        other keys as kwargs, adding the current cmd and the time.
+        The Generator will then instanciate generator_path.**type** with all
+        the other keys as kwargs, adding the current cmd and the time.
 
         On each round, it will call get_cmd method of this class, passing data
         until it raise StopIteration. It will then skip to the next path.
@@ -49,19 +49,20 @@ class Generator(Block):
         It relies on the Block freq control scheme
         (see :ref:`block`).
 
-    - cmd_label (default: 'cmd'): The label of the command to send in the links.
+    - cmd_label (default: 'cmd'): The label of the command to send in the links
     - cmd (default: 0): The first value of the command.
 
       Note:
-        Some paths may rely on the previous value to guarantee signal continuity.
+        Some paths may rely on the previous value to guarantee signal
+        continuity.
 
         This argument sets the initial value for the first signal.
 
     - repeat (default: False): Loop over the paths or stop when done ?
 
       Note:
-        If False, the block will raise a CrappyStop exception to end the program
-        when all the paths have been executed.
+        If False, the block will raise a CrappyStop exception to end the
+        program when all the paths have been executed.
 
         If True, the Generator will start over and over again.
 

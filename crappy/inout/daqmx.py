@@ -38,8 +38,8 @@ class Daqmx(InOut):
 
   Kwargs:
     - device (str, default: 'Dev1'): Name of the device to open.
-    - channels (list of str/int, default: ['ai0']): Names or ids of the channels
-      to read.
+    - channels (list of str/int, default: ['ai0']): Names or ids of the
+      channels to read.
     - gain (list of floats): Gains to apply to each reading.
     - offset (list of floats): Offset to apply to each reading.
     - range (list of floats, [.5, 1., 2.5, 5.], max: 5V, default: 5): Max value
@@ -177,7 +177,8 @@ class Daqmx(InOut):
     Read the analog voltage on specified channels.
 
     Args:
-      - channels (List of ints, default: None): The INDEX of the channels to read.
+      - channels (List of ints, default: None): The INDEX of the channels to
+        read.
 
         Example:
           if self.channels = ['ai1','ai2','ai4'],

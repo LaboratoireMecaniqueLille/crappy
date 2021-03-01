@@ -11,8 +11,9 @@ class Fake_motor(Actuator):
   To run test programs without a physical actuator.
 
   Note:
-    A virtual motor driven by a voltage, you can set its properties with the args.
-    It has the same methods as a real motor: open, set_speed, get_speed, get_pos.
+    A virtual motor driven by a voltage, you can set its properties with the
+    args. It has the same methods as a real motor: open, set_speed, get_speed,
+    get_pos.
 
   Args:
     - inertia (float, default: .5): Inertia of the motor.

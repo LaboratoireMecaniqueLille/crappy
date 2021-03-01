@@ -221,7 +221,7 @@ class Camera_config(object):
     return r
 
   def resized(self):
-    """Returns True if window has been resized and saves the new coordinates."""
+    """Returns True if window has been resized and saves the new coordinates"""
     new = self.get_label_shape()
     # Integer rounding can lead to resizing loop if we compare exact values
     # so let's resize only if the difference is signigficant (more than 2pix)

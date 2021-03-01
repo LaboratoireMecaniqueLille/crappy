@@ -19,7 +19,7 @@ class Hdf_saver(Block):
   To save data efficiently in a hdf5 file.
 
   Note:
-    This block is is meant to save data coming by arrays at a high rate (>1kHz).
+    This block is is meant to save data coming by arrays at a high rate (>1kHz)
 
     It uses the module tables from pytables.
 
@@ -46,8 +46,8 @@ class Hdf_saver(Block):
 
     - label (str, default: "stream"): The key of the dict that contains the
       array to save.
-    - metadata (dict, default: {}): A dict containing additional info to save in
-      the hdf5 file.
+    - metadata (dict, default: {}): A dict containing additional info to save
+      in the hdf5 file.
 
       Note:
         You can add any type of info, they will be written when opening the

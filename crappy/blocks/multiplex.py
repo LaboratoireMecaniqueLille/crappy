@@ -33,7 +33,8 @@ class Multiplex(Block):
     input of a decision block!
 
   Args:
-    - key (str, default: 't(s)'): The key of the sensors that holds the timestamp.
+    - key (str, default: 't(s)'): The key of the sensors that holds the
+      timestamp.
     - freq (float, default: 200): The frequency of the output.
 
   """
