@@ -24,7 +24,8 @@ class Fake_machine(Block):
       max_speed=5, # mm/s
       plastic_law=plastic, # Returns the plastic strain given a strain
     # To add normal noise over the data and make things a bit more realistic!
-      sigma={'F(N)':50, 'x(mm)': 2e-3, 'Exx(%)': 1e-3},
+      sigma={'F(N)':50, 'x(mm)': 2e-3, 'Exx(%)': 1e-3,'Eyy(%)': 1e-3},
+      nu=.3,
       cmd_label='cmd'):
     Block.__init__(self)
     self.freq = 100
@@ -33,6 +34,7 @@ class Fake_machine(Block):
     self.maxstrain = maxstrain/100
     self.mode = mode
     self.max_speed = 5
+    self.nu = nu
     self.cmd_label = cmd_label
     self.pos = 0
     self.last_t = None
@@ -54,7 +56,12 @@ class Fake_machine(Block):
         'x(mm)':self.pos,
         'Exx(%)':self.pos*100/self.l0
       }
+    tosend['Eyy(%)'] = -self.nu*tosend['Exx(%)']
     self.send(self.noise(tosend))
+
+  def prepare(self):
+    self.t0 = time()
+    self.send_all()
 
   def begin(self):
     self.last_t = self.t0
