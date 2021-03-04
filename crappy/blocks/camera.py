@@ -158,7 +158,7 @@ class Camera(Block):
     """
     if self.input_label:
       data = self.inputs[0].recv()
-      return data['t(s)'],data[self.input_label]
+      return data['t(s)']+self.t0,data[self.input_label]
     if not self.ext_trigger:
       if self.fps_label:
         while self.inputs[0].poll():
