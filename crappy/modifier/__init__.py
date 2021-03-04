@@ -1,6 +1,7 @@
 #coding: utf-8
 
 from .modifier import Modifier,MetaModifier
+from .apply_strain_img import Apply_strain_img
 from .demux import Demux
 from .differentiate import Diff
 from .integrate import Integrate
