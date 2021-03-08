@@ -73,9 +73,13 @@ class Video_extenso(object):
                         ("border",5),
                         # The number of pixel that will be added to the limits
                         # of the boundingbox
-                        ("min_area",150)
+                        ("min_area",150),
                         # Filters regions with an area smaller than this values
                         # among the selected regions
+                        ("blur",5),
+                        # Median blur to be added to the image
+                        # to smooth out irregularities and make
+                        # detection more reliable
                         ]:
       setattr(self,arg,kwargs.pop(arg,default))
     assert not kwargs,"Invalid kwarg in ve:"+str(kwargs)
@@ -98,7 +102,8 @@ class Video_extenso(object):
     # If L0 is already saved, we have already counted the spots, else
     # see the num_spot parameter
     #img = rank.median(img,np.ones((15,15),dtype=img.dtype))
-    img = cv2.medianBlur(img,5)
+    if self.blur and self.blur > 1:
+      img = cv2.medianBlur(img,self.blur)
     self.thresh = threshold_otsu(img)
     if self.white_spots:
       bw = img > self.thresh
@@ -191,7 +196,7 @@ class Video_extenso(object):
       self.pipe.append(i)
       self.tracker.append(Tracker(o,white_spots=self.white_spots,
                       thresh='auto' if self.update_thresh else self.thresh,
-                      safe_mode=self.safe_mode))
+                      safe_mode=self.safe_mode,blur=self.blur))
       self.tracker[-1].start()
 
   def get_def(self,img):
@@ -251,11 +256,13 @@ class Video_extenso(object):
 
 class Tracker(Process):
   """Process tracking a spot for videoextensometry."""
-  def __init__(self,pipe,white_spots=False,thresh='auto',safe_mode=True):
+  def __init__(self,pipe,white_spots=False,thresh='auto',safe_mode=True,
+      blur=False):
     Process.__init__(self)
     self.pipe = pipe
     self.white_spots = white_spots
     self.safe_mode = safe_mode
+    self.blur = blur
     self.fallback_mode = False
     if thresh == 'auto':
       self.auto_thresh = True
@@ -293,7 +300,8 @@ class Tracker(Process):
     #print("DEBUG: Process terminating")
 
   def evaluate(self,img):
-    img = cv2.medianBlur(img,5)
+    if self.blur and self.blur > 1:
+      img = cv2.medianBlur(img,self.blur)
     if self.auto_thresh:
       self.thresh = threshold_otsu(img)
     if self.white_spots:
