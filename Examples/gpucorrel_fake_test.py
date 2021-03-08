@@ -18,7 +18,7 @@ speed = 5/60 # mm/sec
 generator = crappy.blocks.Generator(path=sum([
   [{'type':'constant','value':speed,'condition':'Exx(%)>{}'.format(5*i)},
   {'type':'constant','value':-speed,'condition':'F(N)<0'}]
-  for i in range(5)], []),
+  for i in range(1,5)], []),
 spam=False)
 
 # Our fake machine
@@ -29,7 +29,7 @@ crappy.link(generator,machine)
 crappy.link(machine,generator)
 
 # The block performing the DIC
-dis = crappy.blocks.GPUCorrel('',input_label='frame',show_image=True,
+dis = crappy.blocks.GPUCorrel('',input_label='frame',verbose=True,
     labels=['x','y','measured_Exx(%)','measured_Eyy(%)'],
     fields=['x','y','exx','eyy'])
 # This modifier will generate an image with the values of strain
