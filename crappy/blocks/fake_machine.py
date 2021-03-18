@@ -68,7 +68,7 @@ class Fake_machine(Block):
     self.send_all()
 
   def loop(self):
-    cmd = self.get_last()['cmd']
+    cmd = self.get_last()[self.cmd_label]
     t = time()
     dt = t-self.last_t
     if dt < 0:
