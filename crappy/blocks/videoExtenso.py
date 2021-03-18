@@ -45,7 +45,6 @@ class Video_extenso(Camera):
       cam_kw[k] = kwargs.pop(k,v)
     cam_kw['config'] = False # VE has its own config window
     self.verbose = cam_kw['verbose'] # Also, we keep the verbose flag
-    Camera.__init__(self,camera,**cam_kw)
     default_labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
     for arg,default in [("labels",default_labels),
                         ("show_image",False),
@@ -63,7 +62,10 @@ class Video_extenso(Camera):
       if arg in kwargs:
         self.ve_kwargs[arg] = kwargs[arg]
         del kwargs[arg]
-    self.cam_kwargs = kwargs
+    self.cam_kw = kwargs
+    self.cam_kw.update(cam_kw)
+    self.cam_kw['labels'] = self.labels
+    Camera.__init__(self,camera,**self.cam_kw)
 
   def prepare(self):
     Camera.prepare(self,send_img=False)
