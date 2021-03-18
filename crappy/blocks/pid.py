@@ -54,8 +54,8 @@ class PID(Block):
     Block.__init__(self)
     self.niceness = -10
     for arg,default in [('freq',500),
-                    ('out_max',None),
-                    ('out_min',None),
+                    ('out_max',float('inf')),
+                    ('out_min',-float('inf')),
                     ('target_label','cmd'),
                     ('input_label','V'),
                     ('time_label','t(s)'),
