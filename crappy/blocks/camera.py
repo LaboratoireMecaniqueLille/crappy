@@ -110,6 +110,7 @@ class Camera(Block):
         "Unknown saving backend: "+self.save_backend
     self.save = getattr(self,"save_"+self.save_backend)
     self.loops = 0
+    self.t0 = 0
 
   def prepare(self,send_img=True):
     sep = '\\' if 'win' in platform else '/'

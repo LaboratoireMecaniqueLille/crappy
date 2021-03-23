@@ -79,14 +79,12 @@ class Xiapi(Camera):
     self.cam.set_param('aeag',int(i))
 
   def _set_extt(self,i):
-    self.cam.stop_acquisition()
     if i:
       self.cam.set_gpi_mode('XI_GPI_TRIGGER')
       self.cam.set_trigger_source('XI_TRG_EDGE_RISING')
     else:
       self.cam.set_gpi_mode('XI_GPI_OFF')
       self.cam.set_trigger_source('XI_TRG_OFF')
-    self.cam.start_acquisition()
 
   def open(self,sn=None,**kwargs):
     """
