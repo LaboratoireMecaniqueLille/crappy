@@ -36,7 +36,7 @@ class Client_server(Block):
     - address='localhost' (str, default: 'localhost', optional): The network
       address on which the MQTT broker is running.
 
-    - port=1148 (int, default: 1148, optional): The network port on which the
+    - port=1148 (int, default: 1148, optional): A network port on which the
       MQTT broker is listening.
 
     - init_output=None (dict, default: None, optional): A dictionary
@@ -139,10 +139,10 @@ class Client_server(Block):
 
   def prepare(self):
     # Preparing for receiving data
-    if self.topics:
+    if self.topics is not None:
       assert self.outputs, "topics are specified but there's no output link "
-      for i in range(len(self.topics)):
-        if not isinstance(self.topics[i], tuple):
+      for i, topic in enumerate(self.topics):
+        if not isinstance(topic, tuple):
           self.topics[i] = (self.topics[i],)
 
       # The buffer for received data is a dictionary of queues
@@ -159,14 +159,14 @@ class Client_server(Block):
           raise
 
     # Preparing for publishing data
-    if self.cmd_labels:
+    if self.cmd_labels is not None:
       assert self.inputs, "cmd_labels are specified but there's no input link "
-      for i in range(len(self.cmd_labels)):
-        if not isinstance(self.cmd_labels[i], tuple):
+      for i, topic in enumerate(self.cmd_labels):
+        if not isinstance(topic, tuple):
           self.cmd_labels[i] = (self.cmd_labels[i],)
-      if self.labels_to_send:
-        for i in range(len(self.labels_to_send)):
-          if not isinstance(self.labels_to_send[i], tuple):
+      if self.labels_to_send is not None:
+        for i, topic in enumerate(self.labels_to_send):
+          if not isinstance(topic, tuple):
             self.labels_to_send[i] = (self.labels_to_send[i],)
 
         # Preparing to rename labels to be send using a dictionary
@@ -197,10 +197,10 @@ class Client_server(Block):
   def loop(self):
     # Loop for receiving data
     # Each queue in the buffer is checked once:
-    # if not empty then the first list of data is popped This data is
-    # then associated with the corresponding labels in dict_out dict_out
-    # is finally returned if not empty
-    if self.topics:
+    # if not empty then the first list of data is popped.
+    # This data is then associated with the corresponding labels in dict_out.
+    # dict_out is finally returned if not empty
+    if self.topics is not None:
       dict_out = {}
       for topic in self.buffer_output:
         if not self.buffer_output[topic].empty():
@@ -214,17 +214,18 @@ class Client_server(Block):
         self.send(dict_out)
 
     # Loop for sending data
-    # Data is first received as a list of
-    # dictionaries For each topic, trying to find a dictionary
-    # containing all the corresponding labels Once this dictionary has
-    # been found, its data is published as a list of list of values
-    if self.cmd_labels:
+    # Data is first received as a list of dictionaries
+    # For each topic, trying to find a dictionary containing all the
+    # corresponding labels
+    # Once this dictionary has been found, its data is published as a list of
+    # list of values
+    if self.cmd_labels is not None:
       received_data = [link.recv_chunk() if link.poll() else {} for link
                        in self.inputs]
       for topic in self.cmd_labels:
         for dic in received_data:
           if all(label in dic for label in topic):
-            if self.labels_to_send:
+            if self.labels_to_send is not None:
               self.client.publish(
                 str(self.labels_to_send[topic]),
                 payload=pickle.dumps(
