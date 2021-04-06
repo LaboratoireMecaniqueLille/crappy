@@ -13,7 +13,7 @@ To install Crappy, you will need Python 3 (3.4 or higher) with the following mod
 	- pyserial
 	- Scikit-image (0.11 or higher)
 
-These modules are not mandatory but will provide additional functionnalities :
+These modules are not mandatory but will provide additional functionalities :
 
 	- Simple-ITK (to save images to disk)
 	- xiApi (for Ximea cameras)
