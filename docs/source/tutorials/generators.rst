@@ -7,52 +7,53 @@ As in every new :ref:`CRAPPY<What is Crappy ?>` project, the first thing to do i
    import crappy
 
 Then, you can think about what you want your program to do.
-Here, we want to generate a signal and after that, we will be able send it into some motor or some card driver or simply just plot it.
+Here we'll simply generate a signal, that we'll be able to send as a command or to plot afterwards.
 
 So first let's choose what kind of signal we want.
 
 Choose your signal
 -------------------
 
-Well, there are 8 different types of signal, all described in the :ref:`generator path` folder.
+There are 8 different types of signal, all described in the :ref:`generator path` folder.
 
 .. note:: Every signal must be a dictionary providing the parameters to generate it.
 
 Dictionary:
-   A dictionary consists of a collection of key-value pairs. Each key-value pair maps the
+   A dictionary consists in a collection of key-value pairs. Each key-value pair maps the
    key to its associated value. Here is the syntax::
 
       d = {<key>: <value>, <key>: <value>, ..., <key>: <value>}
 
-   Like that, you don't have to take care about the order because every value will be
-   called by it's key.
+   The order does not matter as each value is only associated with its key.
 
 .. note::
 
-   Each dictionary **MUST** have a ``type`` key.
+   Each dictionary in the signal generator **MUST** have a ``type`` key.
 
-   Every non cyclic path **MUST** have a ``condition`` key. (Cyclic paths MUST have
+   Every non cyclic path **MUST** have a ``condition`` key. (Cyclic paths **MUST** have
    ``condition1`` and ``condition2``.)
 
 A condition can be:
    - A delay (str, in seconds): ``'delay=x'``
-   - A condition on a label (str): ``'label<x'`` or ``'label>x'``, it can be a condition
-     on an intern label (t(s) or cmd_label), or a condition from a link.
+   - A condition on a label (str): ``'label<x'`` or ``'label>x'``. The label can be internal
+     (t(s) or cmd_label) or be provided using a link.
    - ``None`` for a signal that never ends
-   - A personalized condition: A fonction which takes the dict of actual labels and returns ``True`` if the path ends.
+   - A personalized condition: a fonction taking the dict of current labels as an argument 
+     and returning ``True`` if the path ends.
 
-Here, we will see the 4 major types of signal:
+Here are described the 4 most common types of signal:
 
 1. Constant signals
 ++++++++++++++++++++
 
 The simplest signal, it only has 3 keys:
    - ``type``: :ref:`constant`
-   - ``value``: Whatever constant int or float value you want to give. It can be in a constant.
-   - ``condition``: The condition that will indicate the end of the signal. It can be anything like a position to reach or a time to wait.
+   - ``value``: Whatever constant int or float value you want to give.
+   - ``condition``: The condition that will indicate the end of the signal. For example a 
+     position to reach or a time to wait are commonly used conditions.
 
 Example:
-   If we want a constant signal that send the value 5 for 10 seconds, we can write::
+   To get a constant signal sending the value 5 for 10 seconds, one should write::
 
       Signal1 = {'type': 'constant', 'value': 5, 'condition': 'delay=10'}
 
@@ -62,41 +63,41 @@ Example:
 An other quite simple signal that just has 4 keys:
    - ``type``: :ref:`ramp`
    - ``condition``: same as the :ref:`constant signal<1. Constant signals>` condition, it will indicate the end of your signal when it's reached.
-   - ``speed``: the speed of the ramp in unit per second (how fast the signal goes to the
-     condition?)
+   - ``speed``: the slope of the ramp, in units per second.
    - ``cmd``: the starting value of the ramp. `Optional key`. (If not specified, the
-     starting value will match the previous value.)
+     starting value will be the previous value.)
 
 Example:
-   If we want a ramp that goes up at a speed of 2 (mm/s for example) until it reach 30
-   (mm), we can write::
+   To get a ramp signal increasing by 2 (mm/s for example) until it reaches 30
+   (mm), one should write::
 
       Signal2 = {'type': 'ramp', 'speed': 2, 'condition': 'x(mm)>30')
 
 .. note::
 
-      Of course, ``x(mm)`` must be a variable that contains the real time position of
-      whatever we are controlling.
+      Of course ``x(mm)`` must be a label containing the real-time position of
+      whatever we are controlling. It should be provided to the Generator block
+      through a link.
 
 3. Sine signals
 ++++++++++++++++
 
-Now a signal that has 6 keys:
+Now a sine signal, that has 6 keys:
    - ``type``: :ref:`sine`
-   - ``freq``: the frequency of your signal
-   - ``amplitude``: the amplitude of your signal
-   - ``offset``: add an offset to your signal will move it up and down. `Optional key`.
-   - ``phase``: add a phase to your signal will move it right and left. `Optional key`.
+   - ``freq``: the frequency of the signal
+   - ``amplitude``: the amplitude of the signal
+   - ``offset``: adds an offset to the signal, the default offset is 0. `Optional key`.
+   - ``phase``: adds a pahse to the signal, in unit of radians. The default phase is 0. `Optional key`.
    - ``condition``: same as the :ref:`constant signal<1. Constant signals>` condition, it will indicate the end of your signal when it's reached.
 
 Example:
-   If we want a sine with a frequency of 0.5, an amplitude of 2, an offset of 1 and that
-   stops after 25 seconds, we can write::
+   To get a sine with a frequency of 0.5, an amplitude of 2, an offset of 1 and that
+   stops after 25 seconds, one should write::
 
       Signal3 = {'type': 'sine', 'freq': .5, 'amplitude': 2, 'offset': 1,
       'condition': 'delay=25'}
 
-   Now, if we want a cosine, with the same parameters as the ``Signal3``, then we can
+   Now to get a cosine, with the same parameters as the ``Signal3``, then one should
    write::
 
       from math import pi
@@ -104,39 +105,38 @@ Example:
       Signal4 = {'type': 'sine', 'freq': .5, 'phase': pi/2, 'amplitude': 2, 'offset': 1,
       'condition': 'delay=25'}
 
-.. note:: We have to import the the number pi, which is in the python module ``math``, in order to use it.
+.. note:: Ne number pi first has to be imported from the python module ``math``.
 
 4. Cyclic ramp signals
 +++++++++++++++++++++++
 
-This type of signal seams a little bit more complicated, but it is just two simple :ref:`ramps<ramp>`, with the possibility to repeat them. So you already know :ref:`how it works<2. Ramp signals>`!
+This type of signal is simply the combination of two simple :ref:`ramps<ramp>`, with the possibility to repeat them. So we've already detailed :ref:`how it works<2. Ramp signals>`!
 
 It has 6 keys:
    - ``type``: :ref:`cyclic ramp`
    - ``condition1``: the condition to reach to stop the first ramp.
-   - ``speed1``: the speed of the first ramp (how fast the signal goes to the condition?)
+   - ``speed1``: the slope of the first ramp 
    - ``condition2``: the condition to reach to stop the second ramp.
-   - ``speed2``: the speed of the second ramp
+   - ``speed2``: the slope of the second ramp
    - ``cycles``: number of repetitions of the two ramps. Can be 1. If 0, it will loop forever.
 
 Example:
-   If we want a signal that goes up at a speed of 0.1 (mm/s) until it reach 5
-   (mm) and then goes down to 2 (mm) at a speed of 0.1 (mm/s), and we want to repeat that
-   3 times. Then we can write::
+   To get a signal that goes up at a speed of 0.1 (mm/s) until it reach 5
+   (mm), then goes down to 2 (mm) at a speed of 0.1 (mm/s), and is repeated 3 times, one should write::
 
       Signal5 = {'type': 'cyclic_ramp', 'condition1': 'x(mm)>5',
       'speed1': 0.1, 'condition2': 'x(mm)<2', 'speed2': -0.1, 'cycles': 3}
 
-So, we've seen the 4 major types of signal. Now I'll tell you about an other type that can be very useful in some case.
+Apart from these 4 main types of signals, there's another one that can prove very useful.
 
 5. Custom signals
 ++++++++++++++++++
 
-This type allows you to import any signal of your choice from a .csv file (hence the name `custom`).
+This type allows to import any signal from a .csv file (hence the name `custom`).
 
 It only has 2 key:
    - ``type``: :ref:`custom`
-   - ``filename``: the name of the .csv file.
+   - ``filename``: the path of the .csv file.
 
 .. warning::
 
@@ -152,27 +152,27 @@ Example:
 
       Signal6 = {'type': 'custom', 'filename': 'my_custom_signal.csv'}
 
-Once you've created your signal you can generate it by putting it in a :ref:`Generator` crappy block.
+One the signal has been created, it's ready to be generated using a :ref:`Generator` crappy block.
 
 Generate your signal
 ---------------------
 
-So now, we create our :ref:`Generator` just like that::
+Creating a :ref:`Generator` is as simple as that::
 
    OurGenerator = crappy.blocks.Generator([Signalx])
 
 .. note::
 
-      The :ref:`Generator` class is a block, so you find it under the
+      The :ref:`Generator` class is a block, so it's located in the
       folder :ref:`blocks<Blocks>` which is in :ref:`crappy<What is Crappy ?>`:
       ``crappy.blocks.[...]``
 
-      You can replace Signalx with the name of a signal you've already created, or
-      directly with the dictionary of the signal you want.
+      Signalx can be replaced with the name of a signal you've already created, or
+      directly with the explicit dictionary of the signal you want.
 
-And here it is! Actually, it's not all. A :ref:`Generator` block in crappy must contain a list of dictionaries (hence the list: ``[]``).
+And here it is! Actually, that's not all. A :ref:`Generator` block in crappy must contain a list of dictionaries (hence the list: ``[]``).
 
-Great, we can add other signals! ::
+Great, other signals can be added! ::
 
    OurGenerator = crappy.blocks.Generator([Signal1, Signal2, Signal3, Signal4, Signal5])
 
@@ -182,9 +182,10 @@ Great, we can add other signals! ::
    Once the end of the list have been reached, the :ref:`Generator` stops the
    program.
 
-After that you can add some options that will precise how the :ref:`Generator` should work:
-   - ``cmd_label`` will give names to your signals after their generation so you can plot them easily, or match with a camera for example. Very useful when you have several generators.
-   - ``freq`` will impose a frequency for the generation of the signal (how many points of the signal should it takes in 1 second ?)
+Several options also allow to precise how the :ref:`Generator` should work:
+   - ``cmd_label`` renames the output signal. The default name is 'cmd'. This feature is mostly useful when the program contains several Generators.
+   - ``freq`` is the generator output frequency. 
+   will impose a frequency for the generation of the signal (how many points of the signal should it takes in 1 second ?)
    - ``repeat`` if True, the generator will go back to the beginning of the list endlessly instead of ending the program.
 
 Example:
