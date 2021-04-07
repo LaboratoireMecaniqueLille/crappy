@@ -2,11 +2,11 @@
 How to generate a signal with CRAPPY ?
 =======================================
 
-As in every new :ref:`CRAPPY<What is Crappy ?>` project, the first thing to do is to import it. So your first line of code will simply be::
+As in every new :ref:`CRAPPY<What is Crappy ?>` project, the first thing to do is to import it. So the first line of code will simply be::
 
    import crappy
 
-Then, you can think about what you want your program to do.
+Then it's up to the user to determine what the program should do.
 Here we'll simply generate a signal, that we'll be able to send as a command or to plot afterwards.
 
 So first let's choose what kind of signal we want.
@@ -48,7 +48,7 @@ Here are described the 4 most common types of signal:
 
 The simplest signal, it only has 3 keys:
    - ``type``: :ref:`constant`
-   - ``value``: Whatever constant int or float value you want to give.
+   - ``value``: Whatever constant int or float value.
    - ``condition``: The condition that will indicate the end of the signal. For example a 
      position to reach or a time to wait are commonly used conditions.
 
@@ -62,7 +62,7 @@ Example:
 
 An other quite simple signal that just has 4 keys:
    - ``type``: :ref:`ramp`
-   - ``condition``: same as the :ref:`constant signal<1. Constant signals>` condition, it will indicate the end of your signal when it's reached.
+   - ``condition``: same as the :ref:`constant signal<1. Constant signals>` condition, it will indicate the end of the signal when it's reached.
    - ``speed``: the slope of the ramp, in units per second.
    - ``cmd``: the starting value of the ramp. `Optional key`. (If not specified, the
      starting value will be the previous value.)
@@ -88,7 +88,7 @@ Now a sine signal, that has 6 keys:
    - ``amplitude``: the amplitude of the signal
    - ``offset``: adds an offset to the signal, the default offset is 0. `Optional key`.
    - ``phase``: adds a pahse to the signal, in unit of radians. The default phase is 0. `Optional key`.
-   - ``condition``: same as the :ref:`constant signal<1. Constant signals>` condition, it will indicate the end of your signal when it's reached.
+   - ``condition``: same as the :ref:`constant signal<1. Constant signals>` condition, it will indicate the end of the signal when it's reached.
 
 Example:
    To get a sine with a frequency of 0.5, an amplitude of 2, an offset of 1 and that
@@ -110,7 +110,7 @@ Example:
 4. Cyclic ramp signals
 +++++++++++++++++++++++
 
-This type of signal is simply the combination of two simple :ref:`ramps<ramp>`, with the possibility to repeat them. So we've already detailed :ref:`how it works<2. Ramp signals>`!
+This type of signal is simply the combination of two :ref:`ramps<ramp>`, with the possibility to repeat them. So we've already detailed :ref:`how it works<2. Ramp signals>`!
 
 It has 6 keys:
    - ``type``: :ref:`cyclic ramp`
@@ -148,7 +148,7 @@ It only has 2 key:
    It will try to send at the right time every timestamp with the associated value.
 
 Example:
-   Do you really need it? ::
+   Really needed? ::
 
       Signal6 = {'type': 'custom', 'filename': 'my_custom_signal.csv'}
 
@@ -167,8 +167,8 @@ Creating a :ref:`Generator` is as simple as that::
       folder :ref:`blocks<Blocks>` which is in :ref:`crappy<What is Crappy ?>`:
       ``crappy.blocks.[...]``
 
-      Signalx can be replaced with the name of a signal you've already created, or
-      directly with the explicit dictionary of the signal you want.
+      Signalx can be replaced with the name of a signal that's already been created, or
+      directly with the explicit dictionary of the signal to be generated.
 
 And here it is! Actually, that's not all. A :ref:`Generator` block in crappy must contain a list of dictionaries (hence the list: ``[]``).
 
@@ -218,7 +218,7 @@ Example:
 
 .. note:: Of course it won't work if all the signals haven't been generated before.
 
-Finally, the last step is to link the :ref:`Generator<Generate your signal>` block with the :ref:`Grapher<Plot your signal>` block::
+Finally, the last step is to link the :ref:`Generator<Generate a signal>` block with the :ref:`Grapher<Plot a signal>` block::
 
    crappy.link(`name_of_the_Generator`, `name_of_the_Grapher`)
 
