@@ -11,7 +11,7 @@ Here we'll simply generate a signal, that we'll be able to send as a command or 
 
 So first let's choose what kind of signal we want.
 
-Choose your signal
+Choose a signal
 -------------------
 
 There are 8 different types of signal, all described in the :ref:`generator path` folder.
@@ -154,7 +154,7 @@ Example:
 
 One the signal has been created, it's ready to be generated using a :ref:`Generator` crappy block.
 
-Generate your signal
+Generate a signal
 ---------------------
 
 Creating a :ref:`Generator` is as simple as that::
@@ -184,91 +184,86 @@ Great, other signals can be added! ::
 
 Several options also allow to precise how the :ref:`Generator` should work:
    - ``cmd_label`` renames the output signal. The default name is 'cmd'. This feature is mostly useful when the program contains several Generators.
-   - ``freq`` is the generator output frequency. 
-   will impose a frequency for the generation of the signal (how many points of the signal should it takes in 1 second ?)
-   - ``repeat`` if True, the generator will go back to the beginning of the list endlessly instead of ending the program.
+   - ``freq`` imposes the generator output frequency. The Generator will output commands at the given frequency even if that implies missing signal points.
+   - ``repeat`` if True, the generator loops endlessly on the list and never ends the program.
 
 Example:
-   If we want to generate our Signal1 with 500 points per second and name it 's1', and
-   also generate Signal2 and Signal3 with no required frequency and name it 's2',
-   we can write::
+   To generate Signal1 at 500 points per second and name it 's1', and also
+   generate Signal2 and Signal3 without imposing a frequency and name it 's2',
+   one should write::
 
       OurGenerator1 = crappy.blocks.Generator([{'type': 'constant',
       'value': 5, 'condition': 'delay=10'}], cmd_label='s1', freq=500)
 
       OurGenerator2 = crappy.blocks.Generator([Signal2,Signal3], cmd_label='s2')
 
-As simple as that ! Now we can try to show our signal on a graphic for example.
+As simple as that ! Now let's try plotting the signals.
 
-Plot your signal
+Plot a signal
 -----------------
 
-To do so, we will create a :ref:`Grapher` crappy block::
+To do so, first create a :ref:`Grapher` crappy block::
 
-   crappy.blocks.Grapher((`Here, put everything you want to show on the graph`),
-   Here, you can add some options`)
+   crappy.blocks.Grapher((`Here everything that should be plotted on the graph`),
+   Here the graph settings`)
 
 Example:
-   If we want to plot the Signal1, the Signal2 and the Signal3 at a frequency of 2 points
-   per second on the same graph, and the Signal1 only at a frequency of 10 points per
-   second on an other graph, we will do something like::
+   To plot Signal1, Signal2 and Signal3 at a frequency of 2 points
+   per second on the same graph, and Signal1 only at a frequency of 10 points per
+   second on another graph, one should write::
 
-      OurGraph1 = crappy.blocks.Grapher(('t(s)', 's1'), ('t(s)', 's2'), freq=2)
+      Graph1 = crappy.blocks.Grapher(('t(s)', 's1'), ('t(s)', 's2'), freq=2)
 
-      OurGraph2 = crappy.blocks.Grapher(('t(s)', 's1'), freq=10)
+      Graph2 = crappy.blocks.Grapher(('t(s)', 's1'), freq=10)
 
-.. note:: It will work only if you have generated all the signals before.
+.. note:: Of course it won't work if all the signals haven't been generated before.
 
-The last thing to do to make it work is to link :ref:`your Generator<Generate your signal>` block with :ref:`your Grapher<Plot your signal>` block::
+Finally, the last step is to link the :ref:`Generator<Generate your signal>` block with the :ref:`Grapher<Plot your signal>` block::
 
    crappy.link(`name_of_the_Generator`, `name_of_the_Grapher`)
 
 .. note:: 
 
-   A :ref:`Grapher` should be linked to every :ref:`Generator` that generates the signals
-   it want to plot.
+   For each signal to be plotted, the associated :ref:`Generator` should be linked to the :ref:`Grapher`.
 
-   Also, if you send your signal into a :ref:`Machine`, don't forget the link Generator ->
-   Machine. And if the :ref:`Generator` has a condition on a measured label (a position
-   for example), don't forget the link Machine -> Generator too. 
 
-Example of code
+Code Example
 ----------------
 
 ::
 
    import crappy
 
-   # First part : a constant value (2) for 5 seconds
+   # First: a constant value (2) for 5 seconds
    path1 = {'type':'constant','value':2,'condition':'delay=5'}
    # Second: a sine wave of amplitude 1, freq 1Hz for 5 seconds
    path2 = {'type':'sine','amplitude':1,'freq':1,'condition':'delay=5'}
    # Third: A ramp rising a 1unit/s until the command reaches 10
    path3 = {'type':'ramp','speed':1,'condition':'cmd>10'}
-   # Fourth : cycles of ramps: go down at 1u/s until cmd is <9
-   # then go up at 2u/s for 1s. Repeat 5 times
+   # Fourth: cycles of ramps going down at 1u/s until cmd is <9
+   # then going up at 2u/s for 1s. Repeat 5 times
    path4 = {'type':'cyclic_ramp','speed1':-1,'condition1':'cmd<9',
        'speed2':2,'condition2':'delay=1','cycles':5}
 
    # The generator: takes the list of all the paths to be generated
-   # cmd_label specifies the name to give the signal
-   # freq : the target of points/s
-   # spam : Send the value even if nothing changed
-   #   (so the graph updates continuously)
-   # verbose : add some information in the terminal
+   # cmd_label specifies the name to give to the signal
+   # freq : the target frequency in points/s
+   # spam : Send the value even if it's identical to the previous one
+   #   (so that the graph updates continuously)
+   # verbose : display some information in the terminal
    gen = crappy.blocks.Generator([path1,path2,path3,path4],
        cmd_label='cmd',freq=50,spam=True,verbose=True)
 
-   # The graph : we will plot cmd over time
+   # The graph : we will plot cmd vs time
    graph = crappy.blocks.Grapher(('t(s)','cmd'))
 
-   # Do not forget to link them or the graph will have nothing to plot !
+   # Do not forget to link them or the graph won't be able to plot anything !
    crappy.link(gen,graph)
 
    # Let's start the program
    crappy.start()
 
-An other example
+Another example
 -----------------
 
 ::
@@ -279,7 +274,7 @@ An other example
 
    speed = 5/60 # mm/sec
 
-   path = [] # We will put in this list all the paths to be followed
+   path = [] # The list in which we'll put the paths to be followed
 
    # We will loop over the values we would like to reach
    # And add two paths for each loop: one for loading and one for unloading
@@ -291,15 +286,16 @@ An other example
        'value':-speed,
        'condition':'F(N)<0'}) # Go down to F=0N
 
-   # Now we can simply give our list of paths to the generator
+   # Now we can simply give our list of paths as an argument to the generator
    generator = crappy.blocks.Generator(path=path)
 
-   # This block will simulate a tensile testing machine
+   # This block will simulate a tensile test machine
    machine = crappy.blocks.Fake_machine()
-   # We must link the generator to the machine to give the command to the machine
+   # The generator must be linked to the machine in order to control it
    crappy.link(generator,machine)
-   # But also the machine to the generator because we added conditions on force
-   # and strain, so the generator needs these values coming out of the machine
+   # And the machine must be linked to the generator because we added 
+   # conditions on force and strain, so the generator needs to access these 
+   # values coming out of the machine
    # Remember : links are one way only !
    crappy.link(machine,generator)
 
@@ -310,5 +306,5 @@ An other example
    graph_f = crappy.blocks.Grapher(('t(s)','F(N)'))
    crappy.link(machine,graph_f)
 
-   # And start the experiment
+   # And start the test
    crappy.start()
