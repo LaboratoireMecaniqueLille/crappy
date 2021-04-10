@@ -17,6 +17,11 @@ Client
 .. automodule:: crappy.blocks.client
    :members:
 
+Client Server
+++++++++++
+.. automodule:: crappy.blocks.client_server
+   :members:
+
 Dashboard
 +++++++++++++
 .. automodule:: crappy.blocks.dashboard
