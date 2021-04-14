@@ -2,15 +2,15 @@
 How to use C++ designed hardware drivers with Crappy ?
 =======================================================
 
-There is lot of hardware only available for C++ or C platforms, but it can be easily bound with Python. Here we will give you an example on how to bind C language to make it object oriented (as we use to in Python).
+There is a lot of hardware only available for C++ or C platforms, but it can be easily bound with Python. Here we will give you an example on how to bind C language to make it object oriented (as used in Python).
 
-how to bind C/C++ with Crappy?
+How to bind C/C++ with Crappy?
 ------------------------------
 
-This gives a complete example on how to bind C and C++ language with Python and add it to the Crappy package. Linux and Windows are both used for building.
+Here is detailed a complete example on how to bind C and C++ language with Python and add it to the Crappy package. Linux and Windows are both used for building.
 
 .. warning::
-   This is not a C++ tutorial, some notion are used here, please refer to the tutorials
+   This is not a C++ tutorial, a few programming notions are used here, please refer to the tutorials
    below if you are not a C or C++ developer. /n C++ tutorials:
 
       - openclassrooms (fr)
@@ -25,7 +25,7 @@ Under Linux, you must install the python-dev package to ensure that you can use 
 
    sudo apt-get install python-dev
 
-Under Windows, there is no python-dev package, but the python installer for windows will install a subdirectory in the python dir directory:
+Under Windows, there is no python-dev package, but the python installer for Windows will install a subdirectory in the python dir directory:
 
    C:\Python\include which contains the Python.h.
 
@@ -46,9 +46,9 @@ The C++ code (hello.cpp)
    // The functions bound with python have to return a PyObject understandable in Python.
    static PyObject* hello(PyObject* self, PyObject* args){
        const char* name;
-       // it parse the args argument and look for a string
+       // it parses the args argument and look for a string
        // and set the name var with the parsed value.
-       // if it fails, PyArg_ParseTuple return False, True otherwise.
+       // if it fails, PyArg_ParseTuple returns False, True otherwise.
        // returning NULL directly allows to raise an exception in Python.
        if(!PyArg_ParseTuple(args, "s", &name))
            return NULL;
@@ -67,13 +67,13 @@ The C++ code (hello.cpp)
        (void) Py_InitModule("helloModule", HelloMethods);
    }
 
-Each functions to bind have to return a PyObject pointer. Then, if a function needs to get arguments, there a passed to args, and first parsed in the function with PyArgs_ParseTuple. If the argument parsed is not a char it return NULL, returning a NULL alows to directly raise a python error. Here there is no need to return an object, so we return None (equivalent of C++ NULL).
+Each functions to bind have to return a PyObject pointer. Then, if a function needs to get arguments, they a passed to args, and first parsed in the function with PyArgs_ParseTuple. If the argument parsed is not a char it returns NULL, returning a NULL alows to directly raise a Python error. Here there is no need to return an object, so we return None (equivalent of C++ NULL).
 
 Then, to bind the hello function we need to create a PyMethodDef which contains the function definition::
 
    {"hello", hello, METH_VARARGS, "Say hello to somebody."}
 
-The first element will be the name of the function in python. The second element is the function to bind. The third element is METH_VARARGS if the function get arguments, or METH_NOARGS otherwise. The last element correspond to a description of the function, to appear in the function help.
+The first element will be the name of the function in Python. The second element is the function to bind. The third element is METH_VARARGS if the function gets arguments, or METH_NOARGS otherwise. The last element corresponds to a description of the function, to appear in the function help.
 
 Adding the binding to Crappy
 +++++++++++++++++++++++++++++
@@ -88,14 +88,14 @@ Example::
                         sources=['sources/hello/hello.cpp'],
                         extra_compile_args=["-l", "python2.7"])
    extentions.append(helloModule)
-   Extension take several argument, the first one is the full name of the extension, including any
+   Extension takes several argument, the first one is the full name of the extension, including any
    packages. Not a filename or pathname, but Python dotted name. Here we want to put the extension in
    technical, to import our module as crappy.technical.helloModule, so the extension name is
    'technical.helloModule'.
 
 .. Note::
 
-   Here, we called the extension helloModule, so the init method defined must be defined like follow::
+   Here, we called the extension helloModule, so the init method must be defined as follows::
 
       PyMODINIT_FUNC inithelloModule(void){
           (void) Py_InitModule("helloModule", HelloMethods);
@@ -131,7 +131,7 @@ So we can now simply use our module::
 A more oriented object module
 ------------------------------
 
-Let try to define a class that is similar to the following python class::
+Let's try to define a class that is similar to the following python class::
 
    class Hello:
 
@@ -150,18 +150,18 @@ we first need to define the functions to construct our future class:
    - a constructor
    - a destructor And a structure which will contain the class attributes.
 
-Here, the struct contains two elements. The first, PyObject_HEAD must be always defined, it represent the type of object. The second element represent our attribute 'name'.::
+Here, the struct contains two elements. The first, PyObject_HEAD must always be defined, it represent the type of object. The second element represent our attribute 'name'.::
 
-   // define a struct to build our Python module, this is similar to the dict of a Python class.
+   // defines a struct to build our Python module, this is similar to the dict of a Python class.
    typedef struct {
        PyObject_HEAD
        char *name;
    } Hello;
 
-The new method parse the arguments and keywords arguments, to initialize the structure defined before, which will be passed as first argument for each method (similar to the python self).::
+The new method parses the arguments and keywords arguments, to initialize the structure defined before, which will be passed as first argument for each method (similar to the python self).::
 
-   // This function will be called at the creation of our Python class, it allocates memory, parse the
-   arguments and return
+   // This function will be called at the creation of our Python class, it allocates memory, parses the
+   arguments and returns
    // the self struct.
    static PyObject *Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
    {
@@ -192,11 +192,11 @@ The constructor parses the arguments and keywords arguments. The "name" argument
        self->ob_type->tp_free((PyObject*)self);
    }
 
-We then define our two method like before:
+We then define our two methods like before:
 
 .. Note::
 
-   To return a value, we need to use the Py_BuildValue function, to convert C++ type to python type: In
+   To return a value, we need to use the Py_BuildValue function, to convert C++ type to python type:
    this way, we directly get a understandable python object.::
 
      PyObject*
@@ -211,7 +211,7 @@ We then define our two method like before:
          Py_RETURN_NONE;
      }
 
-To define a class which can be bound with Python, we need to define the structure of it, with a PyTypeObject. We have to define:
+To define a class which can be bound with Python, we need to define its structure, with a PyTypeObject. We have to define:
 
    - which function is the constructor
    - which one is the destructor, the new method...
@@ -273,17 +273,17 @@ To define a class which can be bound with Python, we need to define the structur
        Hello_new,                 /* tp_new */
    };
 
-Finally, as we did on the first example, the init method as to be defined::
+Finally, as we did in the first example, the init method has to be defined::
 
-   Py_InitModule3 create the module and return its instance (here empty).
-   We can add our created objects, here helloType which defined our class.
+   Py_InitModule3 creates the module and returns its instance (here empty).
+   We can add our created objects, here helloType which defines our class.
 
 .. Note::
 
-   When returning an object, it returns a reference to it, each object has a reference counter this is
-   made automatically for memory management issue, to know how many different places there are that have
+   When returning an object, it returns a reference to it, each object has a reference counter that is 
+   automatically created for memory management issue, to know how many different places there are that have
    a reference to an object. When an object's reference count becomes 0, the object is automatically
-   deallocated. This has to be made by yourself when dealing with C-C++/Python bindings. (With
+   deallocated. You have to take care of it when dealing with C-C++/Python bindings. (With
    Py_INCREF, Py_DECREF). Please see Python C-api documentation for more details.
 
 ::

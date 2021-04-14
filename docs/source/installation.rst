@@ -11,7 +11,7 @@ modules :
 	- matplotlib (1.5.3 or higher)
 	- Opencv (3.0 or higher)
 
-These modules are not mandatory but will provide additional functionnalities :
+These modules are not mandatory but will provide additional functionalities :
 
 	- pyserial (To interface with serial sensors and actuators)
 	- Tk (For the configuration interface of cameras)
