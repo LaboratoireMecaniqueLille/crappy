@@ -78,11 +78,7 @@ class Mcp9600(InOut):
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
                mode: str = 'Hot Junction Temperature') -> None:
-    """Class for controlling Adafruit's MCP9600 thermocouple reader
-
-    The Mcp9600 InOut block is meant for reading temperature from an MCP9600
-    board, using the I2C protocol. The output is in °C, except for one
-    operating mode that returns Volts.
+    """Checks the arguments validity
 
     Args:
       thermocouple_type: The type of thermocouple plugged in the MCP9600.
