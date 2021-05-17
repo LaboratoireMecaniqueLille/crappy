@@ -14,6 +14,7 @@ from .opendaq import Opendaq
 from .opsens import Opsens
 from .spectrum import Spectrum
 from .t7Streamer import T7_streamer
+from .mcp9600 import Mcp9600
 
 # Win specific
 from .daqmx import Daqmx
