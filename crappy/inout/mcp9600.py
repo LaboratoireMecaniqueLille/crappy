@@ -104,34 +104,6 @@ class Mcp9600(InOut):
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
                mode: str = 'Hot Junction Temperature') -> None:
-    """Checks the arguments validity
-
-    Args:
-      thermocouple_type: The type of thermocouple plugged in the MCP9600.
-      i2c_port: The I2C port over which the MCP9600 should communicate. On most
-                Raspberry Pi models the default I2C port is 1.
-      device_address: The I2C address of the MCP9600. The default address is
-                      0x67, but it is possible to change this setting using a
-                      specific setup involving the ADDR pin.
-      adc_resolution: The number of bits the ADC output is encoded on. The
-                      greater the resolution, the lower the sample rate.
-      sensor_resolution: The temperature measurement resolution in °C. It
-                         should be either 0.0625 or 0.25 °C. Setting the
-                         resolution to 0.25 will increase the sample rate, but
-                         the output temperature will be encoded on 2 bits less.
-      filter_coefficient: The MCP9600 features an integrated filter (see its
-                          documentation for the exact filter formula). When set
-                          to 0, the filter is inactive. When active, the filter
-                          will prohibit fast temperature changes, thus limiting
-                          noise and smoothening the signal.
-      mode: 4 different values can be accessed when measuring a temperature:
-            the temperature of the thermocouple (hot junction temperature), the
-            temperature of the MCP9600 board (cold junction temperature), the
-            temperature calculated from the ADC data and thermocouple type but
-            not yet cold junction-compensated (junction temperature delta), and
-            the raw ADC measurement of the voltage difference in the
-            thermocouple (raw data ADC, in Volts).
-    """
 
     InOut.__init__(self)
     self._bus = smbus2.SMBus(i2c_port)
