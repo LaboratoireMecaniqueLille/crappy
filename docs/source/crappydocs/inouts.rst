@@ -42,6 +42,11 @@ Labjack UE9
 .. automodule:: crappy.inout.labjackUE9
    :members:
 
+MCP9600
++++++++++++
+.. automodule:: crappy.inout.mcp9600
+   :members:
+
 NI DaQMX
 ++++++++
 .. automodule:: crappy.inout.nidaqmx
