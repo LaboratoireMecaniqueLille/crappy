@@ -31,7 +31,7 @@ Only tested on Ubuntu 18.04 and 20.04:
 
     git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
     cd crappy
-    sudo python3 setup install
+    sudo python3 setup.py install
 
 See documentation for more details
 
