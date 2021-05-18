@@ -15,6 +15,7 @@ from .opsens import Opsens
 from .spectrum import Spectrum
 from .t7Streamer import T7_streamer
 from .mcp9600 import Mcp9600
+from .ads1115 import Ads1115
 
 # Win specific
 from .daqmx import Daqmx

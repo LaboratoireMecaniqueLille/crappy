@@ -2,6 +2,11 @@
 In / Out
 --------
 
+ADS1115
+++++++++++++++
+.. automodule:: crappy.inout.ads1115
+   :members:
+
 Agilent 34420A
 ++++++++++++++
 .. automodule:: crappy.inout.agilent34420A
