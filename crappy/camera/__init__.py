@@ -13,5 +13,6 @@ from .ximeaCV import XimeaCV
 from .cameralink import CLCamera
 from .bispectral import Bispectral
 from .jai import Jai,Jai8
+from .seek_thermal_pro import Seek_thermal_pro
 
 camera_list = MetaCam.classes
