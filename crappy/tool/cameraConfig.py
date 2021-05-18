@@ -50,7 +50,7 @@ class Hist_generator(Process):
       fx = np.arange(0,out_size[1],out_size[1]/l,dtype=np.float)
       #fx *= out_size[1]/len(fx)
       h2 = np.interp(x,fx,h)
-      h2 = np.nan_to_num(h2*out_size[0]/h2.max())
+      h2 = np.nan_to_num(h2*out_size[0]/max(h2.max(), 1))
       out_img = np.zeros(out_size)
       for i in range(out_size[1]):
         out_img[0:int(out_size[0]-h2[i]),i] = 255
