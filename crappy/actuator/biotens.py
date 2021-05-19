@@ -1,9 +1,14 @@
 ﻿# coding: utf-8
 
 from struct import pack,unpack
-import serial
 import time
 from .actuator import Actuator
+from .._global import OptionalModule
+
+try:
+  import serial
+except (ModuleNotFoundError, ImportError):
+  serial = OptionalModule("pyserial")
 
 
 def convert_to_byte(number, length):

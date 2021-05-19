@@ -1,9 +1,13 @@
 # coding: utf-8
 
-import serial
 from time import sleep
-from queue import Queue
 from .actuator import Actuator
+from .._global import OptionalModule
+
+try:
+  import serial
+except (ModuleNotFoundError, ImportError):
+  serial = OptionalModule("pyserial")
 
 ACCEL = b'.1' # Acceleration and deceleration times
 

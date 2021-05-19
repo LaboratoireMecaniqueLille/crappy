@@ -1,7 +1,13 @@
 # coding: utf-8
-import serial
+
 from time import time
 from .inout import InOut
+from .._global import OptionalModule
+
+try:
+  import serial
+except (ModuleNotFoundError, ImportError):
+  serial = OptionalModule("pyserial")
 
 
 class Opsens(InOut):

@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import serial
 from threading import Thread
 import tkinter as tk
 from queue import Queue as Queue_threading, Empty
@@ -15,6 +14,13 @@ from ..tool.GUI_Arduino.arduino_basics import MonitorFrame, SubmitSerialFrame
 from .inout import InOut
 from .._global import CrappyStop
 from os.path import exists
+
+from .._global import OptionalModule
+
+try:
+  import serial
+except (ModuleNotFoundError, ImportError):
+  serial = OptionalModule("pyserial")
 
 
 def collect_serial(arduino, queue):

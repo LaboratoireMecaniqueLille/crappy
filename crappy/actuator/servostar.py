@@ -1,9 +1,14 @@
 # coding: utf-8
 
-import serial
 from multiprocessing import Lock
 
 from .actuator import Actuator
+from .._global import OptionalModule
+
+try:
+  import serial
+except (ModuleNotFoundError, ImportError):
+  serial = OptionalModule("pyserial")
 
 
 class Servostar(Actuator):

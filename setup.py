@@ -15,7 +15,7 @@ from distutils.core import setup, Extension
 import platform
 
 # Get the long description from the relevant file
-with open('about.txt', encoding='utf-8') as f:
+with open('docs/source/whatiscrappy.rst', encoding='utf-8') as f:
     long_description = f.read()
 
 v = "%d.%d"%(sys.version_info.major,sys.version_info.minor)

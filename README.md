@@ -12,11 +12,11 @@ with the following modules :
 - Numpy
 - Matplotlib
 - openCV
-- pyserial
-- scikit-image
 
 These modules are not mandatory but will provide additionnal functionalities:
+- pyserial(to interface with serial sensors and actuators)
 - SimpleITK (to save images to disk)
+- scikit-image (0.11 or higher)
 - Ximea API (for ximea cameras)
 - Labjack LJM (for labjack support)
 - pycuda (for real-time correlation)
