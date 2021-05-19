@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 from sys import platform
 from .inout import InOut,MetaIO
@@ -16,6 +16,7 @@ from .spectrum import Spectrum
 from .t7Streamer import T7_streamer
 from .mcp9600 import Mcp9600
 from .ads1115 import Ads1115
+from .nau7802 import Nau7802
 
 # Win specific
 from .daqmx import Daqmx

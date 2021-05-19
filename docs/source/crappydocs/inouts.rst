@@ -52,6 +52,11 @@ MCP9600
 .. automodule:: crappy.inout.mcp9600
    :members:
 
+NAU7802
++++++++++++
+.. automodule:: crappy.inout.nau7802
+   :members:
+
 NI DaQMX
 ++++++++
 .. automodule:: crappy.inout.nidaqmx
