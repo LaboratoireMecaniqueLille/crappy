@@ -191,12 +191,19 @@ class Client_server(Block):
       time.sleep(5)
 
     # Connecting to the broker
-    try:
-      self.client.connect(self.address, port=self.port, keepalive=10)
-    except ConnectionRefusedError:
-      print("Connection refused, the broker may not be running or you "
-            "may not have the rights to connect")
-      raise
+    try_count = 15
+    while True:
+      try:
+        self.client.connect(self.address, port=self.port, keepalive=10)
+        break
+      except ConnectionRefusedError:
+        try_count -= 1
+        if try_count == 0:
+          print("Connection refused, the broker may not be running or you "
+                "may not have the rights to connect")
+          raise
+        time.sleep(1)
+
     self.client.loop_start()
 
   def loop(self):
