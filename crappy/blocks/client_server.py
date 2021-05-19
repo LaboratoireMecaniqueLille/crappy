@@ -334,10 +334,7 @@ class Client_server(Block):
           print('Mosquitto is already running on this port')
       time.sleep(0.1)
 
-  def _on_message(self,
-                  client,
-                  userdata,
-                  message: mqtt.MQTTMessage) -> None:
+  def _on_message(self, client, userdata, message) -> None:
     """Buffers the received data
 
     The received message consists in a list of lists of values. Data is placed
