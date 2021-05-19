@@ -137,7 +137,12 @@ class Client_server(Block):
       print("WARNING: client-server block is neither an input nor an "
             "output !")
 
-  def prepare(self):
+    if self.topics is not None:
+      self.last_out_val = init_output
+
+  def prepare(self) -> None:
+    """Reorganizes the labels lists, starts the broker and connects to it"""
+
     # Preparing for receiving data
     if self.topics is not None:
       assert self.outputs, "topics are specified but there's no output link "
@@ -169,7 +174,7 @@ class Client_server(Block):
           if not isinstance(topic, tuple):
             self.labels_to_send[i] = (self.labels_to_send[i],)
 
-        # Preparing to rename labels to be send using a dictionary
+        # Preparing to rename labels to send using a dictionary
         assert len(self.labels_to_send) == len(
           self.cmd_labels), "Either a label_to_send should be given for " \
                             "every cmd_label, or none should be given "
@@ -210,7 +215,15 @@ class Client_server(Block):
               dict_out[label] = data
           except queue.Empty:
             pass
+      # Updating the last_out_val buffer, and completing dict_out before
+      # sending data if necessary
       if dict_out:
+        for topic in self.buffer_output:
+          for label in topic:
+            if label not in dict_out:
+              dict_out[label] = self.last_out_val[label]
+            else:
+              self.last_out_val[label] = dict_out[label]
         self.send(dict_out)
 
     # Loop for sending data
