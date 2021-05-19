@@ -6,14 +6,21 @@ import numpy as np
 import time
 
 try:
-  import usb.core
-except (ModuleNotFoundError, ImportError):
-  usb.core = OptionalModule("usb.core")
-
-try:
   import usb.util
+  import usb.core
+
+  Seek_therm_usb_req = {'Write': usb.util.CTRL_OUT |
+                                 usb.util.CTRL_TYPE_VENDOR |
+                                 usb.util.CTRL_RECIPIENT_INTERFACE,
+                        'Read': usb.util.CTRL_IN |
+                                usb.util.CTRL_TYPE_VENDOR |
+                                usb.util.CTRL_RECIPIENT_INTERFACE,
+                        'Read_img': usb.util.CTRL_IN |
+                                    usb.util.CTRL_TYPE_STANDARD |
+                                    usb.util.CTRL_RECIPIENT_INTERFACE}
+
 except (ModuleNotFoundError, ImportError):
-  usb.util = OptionalModule("usb.util")
+  usb = OptionalModule("usb")
 
 Seek_thermal_pro_vendor = 0x289D
 Seek_thermal_pro_product = 0x0011
@@ -33,16 +40,6 @@ Seek_thermal_pro_dimensions = {'Width': 320,
                                'Height': 240,
                                'Raw width': 342,
                                'Raw height': 260}
-
-Seek_therm_usb_req = {'Write': usb.util.CTRL_OUT |
-                                 usb.util.CTRL_TYPE_VENDOR |
-                                 usb.util.CTRL_RECIPIENT_INTERFACE,
-                      'Read': usb.util.CTRL_IN |
-                              usb.util.CTRL_TYPE_VENDOR |
-                              usb.util.CTRL_RECIPIENT_INTERFACE,
-                      'Read_img': usb.util.CTRL_IN |
-                                  usb.util.CTRL_TYPE_STANDARD |
-                                  usb.util.CTRL_RECIPIENT_INTERFACE}
 
 
 class Seek_thermal_pro(Camera):
@@ -158,7 +155,8 @@ class Seek_thermal_pro(Camera):
       ret += self._dev.read(endpoint=Seek_therm_usb_req['Read_img'],
                             size_or_buffer=int(
                               to_read /
-                              (Seek_thermal_pro_dimensions['Raw height'] / 20)),
+                              (Seek_thermal_pro_dimensions['Raw height']
+                               / 20)),
                             timeout=1000)
 
     status = ret[4]

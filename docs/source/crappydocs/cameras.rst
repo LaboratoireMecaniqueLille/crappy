@@ -22,6 +22,11 @@ JAI
 .. automodule:: crappy.camera.jai
    :members:
 
+Seek Thermal Pro
+++++++++
+.. automodule:: crappy.camera.seek_thermal_pro
+   :members:
+
 Streamer
 ++++++++
 .. automodule:: crappy.camera.streamer
