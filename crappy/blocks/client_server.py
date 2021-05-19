@@ -305,8 +305,9 @@ class Client_server(Block):
 
     # Subscribing on connect, so that it automatically resubscribes when
     # reconnecting after a connection loss
-    for topic in self.topics:
-      self.client.subscribe(topic=str(topic), qos=0)
-      print("Subscribed to", topic)
+    if self.topics is not None:
+      for topic in self.topics:
+        self.client.subscribe(topic=str(topic), qos=0)
+        print("Subscribed to", topic)
 
-      self.client.loop_start()
+    self.client.loop_start()
