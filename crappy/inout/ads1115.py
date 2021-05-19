@@ -61,11 +61,6 @@ class Ads1115(InOut):
                offset: float = 0) -> None:
     """Checks arguments validity
 
-    Warning:
-      AINx voltages should not be higher than VDD+0.3V nor lower than
-      GND-0.3V. Setting high `v_range` values does not allow to measure
-      voltages higher than VDD !!
-
     Args:
       device_address (:obj:`int`, optional): The I2C address of the ADS1115.
         The default address is 0x48, but it is possible to change this setting
@@ -83,6 +78,11 @@ class Ads1115(InOut):
         to the formula: output = gain * tension + offset.
       offset (:obj:`float`, optional): Allows to tune the output value
         according to the formula: output = gain * tension + offset.
+
+    Warning:
+      AINx voltages should not be higher than VDD+0.3V nor lower than
+      GND-0.3V. Setting high `v_range` values does not allow to measure
+      voltages higher than VDD !!
     """
 
     InOut.__init__(self)

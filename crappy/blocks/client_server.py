@@ -33,6 +33,41 @@ class Client_server(Block):
                labels_to_send: List[Union[str, Tuple[str]]] = None) -> None:
     """Checks arguments validity and sets the instance attributes
 
+    Args:
+      broker (:obj:`bool`, optional): If True, starts the Mosquitto broker
+         during the prepare loop and stops it during the finish loop. If
+         Mosquitto is not installed a :obj:`FileNotFoundError` is raised.
+      address (optional): The network address on which the MQTT broker is
+        running.
+      port (:obj:`int`, optional): A network port on which the MQTT broker is
+        listening.
+      init_output (:obj:`dict`, optional): A dictionary containing for each
+        label in ``topics`` the first value to be sent in the output link. Must
+        be given if ``topics`` is not None.
+      topics (:obj:`list`, optional): A list of strings and/or tuples of
+        strings. Each string corresponds to the name of a crappy label to be
+        received from the broker. Each element of the list is considered to be
+        the name of an MQTT topic, to which the client subscribes. After a
+        message has been received on that topic, the block returns for each
+        label in the topic (i.e. each string in the tuple) the corresponding
+        data from the message.
+      cmd_labels (:obj:`list`, optional): A list of strings and/or tuples of
+        strings. Each string corresponds to the name of a crappy label to send
+        to the broker. Each element of the list is considered to be the name of
+        an MQTT topic, in which the client publishes. Grouping labels in a same
+        topic (i.e. strings in a same tuple) allows to keep the synchronization
+        between signals coming from a same block, as they will be published
+        together in a same message. This is mostly useful for sending a signal
+        along with its timeframe.
+      labels_to_send (:obj:`list`, optional): A list of strings and/or tuples
+        of strings. Allows to rename the labels before publishing data. The
+        structure of ``labels_to_send`` should be the exact same as
+        ``cmd_labels``, with each label in ``labels_to_send`` replacing the
+        corresponding one in ``cmd_labels``. This is especially useful for
+        transferring several signals along with their timestamps, as the label
+        ``'t(s)'`` should not appear more than once in the topics list of the
+        receiving block.
+
     Note:
       - ``broker``:
         In order for the block to run, an MQTT broker must be running at the
@@ -110,41 +145,6 @@ class Client_server(Block):
         in the topic
         ::
           ('sign',)
-
-    Args:
-      broker (:obj:`bool`, optional): If True, starts the Mosquitto broker
-         during the prepare loop and stops it during the finish loop. If
-         Mosquitto is not installed a :obj:`FileNotFoundError` is raised.
-      address (optional): The network address on which the MQTT broker is
-        running.
-      port (:obj:`int`, optional): A network port on which the MQTT broker is
-        listening.
-      init_output (:obj:`dict`, optional): A dictionary containing for each
-        label in ``topics`` the first value to be sent in the output link. Must
-        be given if ``topics`` is not None.
-      topics (:obj:`list`, optional): A list of strings and/or tuples of
-        strings. Each string corresponds to the name of a crappy label to be
-        received from the broker. Each element of the list is considered to be
-        the name of an MQTT topic, to which the client subscribes. After a
-        message has been received on that topic, the block returns for each
-        label in the topic (i.e. each string in the tuple) the corresponding
-        data from the message.
-      cmd_labels (:obj:`list`, optional): A list of strings and/or tuples of
-        strings. Each string corresponds to the name of a crappy label to send
-        to the broker. Each element of the list is considered to be the name of
-        an MQTT topic, in which the client publishes. Grouping labels in a same
-        topic (i.e. strings in a same tuple) allows to keep the synchronization
-        between signals coming from a same block, as they will be published
-        together in a same message. This is mostly useful for sending a signal
-        along with its timeframe.
-      labels_to_send (:obj:`list`, optional): A list of strings and/or tuples
-        of strings. Allows to rename the labels before publishing data. The
-        structure of ``labels_to_send`` should be the exact same as
-        ``cmd_labels``, with each label in ``labels_to_send`` replacing the
-        corresponding one in ``cmd_labels``. This is especially useful for
-        transferring several signals along with their timestamps, as the label
-        ``'t(s)'`` should not appear more than once in the topics list of the
-        receiving block.
     """
 
     Block.__init__(self)
