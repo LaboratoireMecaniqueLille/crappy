@@ -1,9 +1,13 @@
 # coding: utf-8
 
-import cv2
-
 from ..tool import DISVE as VE
 from .camera import Camera
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 
 class DISVE(Camera):

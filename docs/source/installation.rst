@@ -9,10 +9,10 @@ modules :
 
 	- Numpy (2.7 or higher)
 	- matplotlib (1.5.3 or higher)
-	- Opencv (3.0 or higher)
 
 These modules are not mandatory but will provide additional functionalities :
 
+        - Opencv (3.0 or higher, to perform image acquisition and analysis)
 	- pyserial (To interface with serial sensors and actuators)
 	- Tk (For the configuration interface of cameras)
 	- Scikit-image (0.11 or higher)

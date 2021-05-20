@@ -10,12 +10,17 @@ try:
   import PIL
 except ImportError:
   PIL = None
-import cv2
 
 
 from .block import Block
 from ..camera import camera_list
 from ..tool import Camera_config
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 kw = dict([
   ("save_folder",None),

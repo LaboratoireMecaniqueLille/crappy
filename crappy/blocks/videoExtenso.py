@@ -1,10 +1,14 @@
 ﻿# coding: utf-8
 
-import cv2
-
 from ..tool.videoextenso import LostSpotError,Video_extenso as VE
 from ..tool.videoextensoConfig import VE_config
 from .camera import Camera,kw as default_cam_block_kw
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 
 class Video_extenso(Camera):

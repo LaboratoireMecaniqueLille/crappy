@@ -1,5 +1,10 @@
 import numpy as np
-import cv2
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 from .modifier import Modifier
 

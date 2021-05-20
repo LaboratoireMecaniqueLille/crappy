@@ -1,5 +1,11 @@
-#coding: utf-8
-import cv2
+# coding: utf-8
+
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 import numpy as np
 
 from .fields import get_fields,Projector,get_res

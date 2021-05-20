@@ -1,13 +1,17 @@
-#coding: utf-8
+# coding: utf-8
 
-from time import time,sleep
+from time import time, sleep
 import re
 from glob import glob
+from .._global import OptionalModule
 try:
   import SimpleITK as sitk
 except (ModuleNotFoundError,ImportError):
   sitk = None
-  import cv2
+  try:
+    import cv2
+  except (ModuleNotFoundError, ImportError):
+    cv2 = OptionalModule("opencv-python")
 
 from .camera import Camera
 from .._global import CrappyStop

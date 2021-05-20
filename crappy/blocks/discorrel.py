@@ -1,11 +1,16 @@
 # coding: utf-8
 
-import cv2
 import numpy as np
 
 from ..tool import DISCorrel as DIS
 from ..tool import DISConfig
 from .camera import Camera
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 
 def draw_box(box,img):

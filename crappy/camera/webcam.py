@@ -1,8 +1,13 @@
 # coding: utf-8
 
 from time import time
-import cv2
 from .camera import Camera
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 
 class Webcam(Camera):

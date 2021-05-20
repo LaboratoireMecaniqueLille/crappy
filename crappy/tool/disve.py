@@ -1,6 +1,12 @@
-#coding: utf-8
-import cv2
+# coding: utf-8
+
 import numpy as np
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 
 class DISVE():

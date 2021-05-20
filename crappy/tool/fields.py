@@ -1,7 +1,13 @@
-#coding: utf-8
+# coding: utf-8
+
 from __future__ import division
 import numpy as np
-import cv2
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 
 def ones(h,w):
@@ -131,7 +137,7 @@ def avg_ampl(f):
   return (np.sum(f[:,:,0]**2+f[:,:,1]**2)/f.size*2)**.5
 
 
-def remap(a,r,interp=cv2.INTER_CUBIC):
+def remap(a,r):
   """
   Remaps a using given r the displacement as a result from correlation.
   """

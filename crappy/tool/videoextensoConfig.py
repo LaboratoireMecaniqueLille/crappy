@@ -1,11 +1,15 @@
 # coding: utf-8
 
-
 import tkinter as tk
 from PIL import ImageTk,Image
-import cv2
 import numpy as np
 from .cameraConfig import Camera_config
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 
 class VE_config(Camera_config):

@@ -1,12 +1,16 @@
-#coding: utf-8
-
+# coding: utf-8
 
 import tkinter as tk
 from PIL import ImageTk,Image
 from time import time
-import cv2
 import numpy as np
 from multiprocessing import Process,Pipe
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 
 class Hist_generator(Process):

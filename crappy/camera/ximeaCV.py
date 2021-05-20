@@ -1,10 +1,14 @@
 # coding: utf-8
 
-
 import time
-import cv2
 
 from .camera import Camera
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 xi_format_dict = {'8 bits': 0, '10 bits': 1, '8 bits RAW': 5, '10 bits RAW': 6}
 

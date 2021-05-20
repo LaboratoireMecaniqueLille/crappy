@@ -3,10 +3,15 @@
 import numpy as np
 from .block import Block
 from .._global import CrappyStop
-import cv2
 import matplotlib.pyplot as plt
 import tkinter as tk
 from PIL import ImageTk,Image
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 
 class Displayer(Block):

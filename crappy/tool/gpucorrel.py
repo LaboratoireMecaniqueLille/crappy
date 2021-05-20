@@ -1,10 +1,14 @@
 # coding:utf-8
 
-
 import warnings
 from math import ceil
 import numpy as np
-import cv2
+from .._global import OptionalModule
+
+try:
+  import cv2
+except (ModuleNotFoundError, ImportError):
+  cv2 = OptionalModule("opencv-python")
 
 from .fields import get_field
 from .._global import OptionalModule
@@ -64,7 +68,10 @@ class CorrelStage:
     self.nbIter = kwargs.get("iterations", 5)
     self.showDiff = kwargs.get("show_diff", False)
     if self.showDiff:
-      import cv2
+      try:
+        import cv2
+      except (ModuleNotFoundError, ImportError):
+        cv2 = OptionalModule("opencv-python")
       cv2.namedWindow("Residual", cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
     self.mul = kwargs.get("mul", 3)
     # These two store the values of the last resampled array
@@ -904,7 +911,10 @@ See docstring of Correl")
     self.debug(2, "Ready!")
 
   def saveAllImages(self, name="out"):
-    import cv2
+    try:
+      import cv2
+    except (ModuleNotFoundError, ImportError):
+      cv2 = OptionalModule("opencv-python")
     self.debug(1, "Saving all images with the name", name + "X.png")
     for i in range(self.levels):
       out = self.correl[i].devOrig.get().astype(np.uint8)
