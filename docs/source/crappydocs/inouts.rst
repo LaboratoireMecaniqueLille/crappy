@@ -27,6 +27,11 @@ DaQMX
 .. automodule:: crappy.inout.daqmx
    :members:
 
+GPIO switch
++++++
+.. automodule:: crappy.inout.gpio_switch
+   :members:
+
 InOut
 +++++
 .. automodule:: crappy.inout.inout

@@ -17,6 +17,7 @@ from .t7Streamer import T7_streamer
 from .mcp9600 import Mcp9600
 from .ads1115 import Ads1115
 from .nau7802 import Nau7802
+from.gpio_switch import Gpio_switch
 
 # Win specific
 from .daqmx import Daqmx
