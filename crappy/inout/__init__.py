@@ -1,7 +1,6 @@
 # coding: utf-8
 
-from sys import platform
-from .inout import InOut,MetaIO
+from .inout import InOut, MetaIO
 
 from .agilent34420A import Agilent34420a
 from .arduino import Arduino
@@ -17,7 +16,9 @@ from .t7Streamer import T7_streamer
 from .mcp9600 import Mcp9600
 from .ads1115 import Ads1115
 from .nau7802 import Nau7802
-from.gpio_switch import Gpio_switch
+from .gpio_switch import Gpio_switch
+from .gpio_pwm import Gpio_pwm
+from .waveshare_ad_da import Waveshare_ad_da
 
 # Win specific
 from .daqmx import Daqmx

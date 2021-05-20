@@ -3,7 +3,7 @@ In / Out
 --------
 
 ADS1115
-++++++++++++++
++++++++
 .. automodule:: crappy.inout.ads1115
    :members:
 
@@ -27,8 +27,13 @@ DaQMX
 .. automodule:: crappy.inout.daqmx
    :members:
 
+GPIO PWM
+++++++++
+.. automodule:: crappy.inout.gpio_pwm
+   :members:
+
 GPIO switch
-+++++
++++++++++++
 .. automodule:: crappy.inout.gpio_switch
    :members:
 
@@ -53,12 +58,12 @@ Labjack UE9
    :members:
 
 MCP9600
-+++++++++++
++++++++
 .. automodule:: crappy.inout.mcp9600
    :members:
 
 NAU7802
-+++++++++++
++++++++
 .. automodule:: crappy.inout.nau7802
    :members:
 
@@ -85,4 +90,9 @@ Spectrum
 T7 Streamer
 +++++++++++
 .. automodule:: crappy.inout.t7Streamer
+   :members:
+
+Wavehsare AD/DA
++++++++++++++++
+.. automodule:: crappy.inout.waveshare_ad_da
    :members:
