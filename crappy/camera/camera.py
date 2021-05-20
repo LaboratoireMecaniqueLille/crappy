@@ -1,14 +1,12 @@
 # coding: utf-8
 
-
-from time import time,sleep
+from time import time, sleep
 
 from .._global import DefinitionError
 
 
 class MetaCam(type):
-  """
-  Metaclass that will define all cameras.
+  """Metaclass that will define all cameras.
 
   Note:
     Camera classes should be of this type.
@@ -23,34 +21,35 @@ class MetaCam(type):
     and NOT an instance of MetaClass.
 
   """
-  classes = {} # This dict will keep track of all the existing cam classes
-  #Attention: It keeps track of the CLASSES, not the instances !
-  #If a camera is defined without these methods, it will raise an error
-  needed_methods = ["get_image","open","close"]
 
-  def __new__(metacls,name,bases,dict):
-    #print "[MetaCam.__new__] Creating class",name,"from metaclass",metacls
-    return type.__new__(metacls, name, bases, dict)
+  classes = {}  # This dict will keep track of all the existing cam classes
+  # Attention: It keeps track of the CLASSES, not the instances !
+  # If a camera is defined without these methods, it will raise an error
+  needed_methods = ["get_image", "open", "close"]
 
-  def __init__(cls,name,bases,dict):
-    #print "[MetaCam.__init__] Initializing",cls
-    type.__init__(cls,name,bases,dict) # This is the important line
-    #It creates the class, the same way we could do this:
-    #MyClass = type(name,bases,dict)
-    #bases is a tuple containing the parents of the class
-    #dict is the dict with the methods
+  def __new__(mcs, name, bases, dict_):
+    # print "[MetaCam.__new__] Creating class", name, "from metaclass", metacls
+    return type.__new__(mcs, name, bases, dict_)
 
-    #MyClass = type("MyClass",(object,),{'method': do_stuff})
+  def __init__(cls, name, bases, dict_):
+    # print "[MetaCam.__init__] Initializing", cls
+    type.__init__(cls, name, bases, dict_)  # This is the important line
+    # It creates the class, the same way we could do this:
+    # MyClass = type(name, bases, dict)
+    # bases is a tuple containing the parents of the class
+    # dict is the dict with the methods
+
+    # MyClass = type("MyClass", (object,), {'method': do_stuff})
     # is equivalent to
-    #class MyClass(object):
+    # class MyClass(object):
     #   def method():
-    #       do_stuff()
+    #     do_stuff()
 
     # Check if this class hasn't already been created
     if name in MetaCam.classes:
       raise DefinitionError("Cannot redefine "+name+" class")
     # Check if mandatory methods are defined
-    defined_methods = list(dict.keys())
+    defined_methods = list(dict_.keys())
     for b in bases:
       defined_methods += list(b.__dict__.keys())
     missing_methods = []
@@ -66,17 +65,19 @@ class MetaCam(type):
 
 
 class Cam_setting(object):
-  """
-  This class represents an attribute of the camera that cam be set.
+  """This class represents an attribute of the camera that can be set."""
 
-  Arguments:
-    - name: The name of the setting.
-    - default: The default value, if not specified it will be set to this value
-    - getter: Function to read this value from the device.
-      If set to None, it will assume that the setting always happened correctly
-    - setter: A function that will be called when setting the parameter to a
+  def __init__(self, name, getter, setter, limits, default):
+    """Sets the instance attributes
+
+    Args:
+    name: The name of the setting.
+    default: The default value, if not specified it will be set to this value
+    getter: Function to read this value from the device. If set to None, it
+      will assume that the setting always happened correctly
+    setter: A function that will be called when setting the parameter to a
       new value. Can do nothing, it will only change its value and nothing else
-    - limits: It contains the available values for this parameter.
+    limits: It contains the available values for this parameter.
 
       The possible types are:
         None: Values will not be tested and the parameter will not appear in
@@ -99,9 +100,8 @@ class Cam_setting(object):
         A dict: Possible values are the values of the dict, CameraConfig will
         add radio buttons showing the keys, to set it to the corresponding
         value.
+    """
 
-  """
-  def __init__(self,name,getter,setter,limits,default):
     self.name = name
     self.getter = getter
     self.setter = setter
@@ -117,7 +117,7 @@ class Cam_setting(object):
     if self._value is None:
       self._value = self.getter()
       if type(self.limits) is tuple and callable(self.limits[1]):
-          self.limits = (self.limits[0],self.limits[1]())
+          self.limits = (self.limits[0], self.limits[1]())
       if self.default is None:
         self.default = self._value
     return self._value
@@ -126,42 +126,42 @@ class Cam_setting(object):
   # we will go throught all of this, and the new value will be the actual
   # value of the setting after the operation
   @value.setter
-  def value(self,i):
-    self.value # Detail: to make sure we called value getter once
-    #if type(self.limits) == tuple:
+  def value(self, i):
+    _ = self.value  # Detail: to make sure we called value getter once
+    # if type(self.limits) == tuple:
     #  if not self.limits[0] <= i <= self.limits[1]:
-    #    print("[Cam_setting] Parameter",i,"out of range ",self.limits)
+    #    print("[Cam_setting] Parameter", i, "out of range ", self.limits)
     #    return
-    if isinstance(self.limits,dict):
+    if isinstance(self.limits, dict):
       if i not in self.limits.values():
-        print("[Cam_setting] Parameter",i,"not available",self.limits)
+        print("[Cam_setting] Parameter", i, "not available", self.limits)
         return
-    elif isinstance(self.limits,bool):
+    elif isinstance(self.limits, bool):
       i = bool(i)
-    # We could actually wait to see if setter is succesful before setting the
+    # We could actually wait to see if setter is successful before setting the
     # value, but if setter uses self.parameter, it will still be set to its old
     # value until it returns...
     self.setter(i)
     self._value = i
     new_val = self.getter()
     if new_val != i:
-      print("[Cam_setting] Could not set",self.name,"to",i,"value is",new_val)
+      print("[Cam_setting] Could not set", self.name, "to", i,
+            "value is", new_val)
     self._value = new_val
 
   def __str__(self):
     if self.limits:
-      return "Setting: "+str(self.name)+", value:"+str(self._value)\
-      +" Limits:"+str(self.limits)
+      return "Setting: " + str(self.name) + ", value:" + str(self._value) + \
+             " Limits:" + str(self.limits)
     else:
-      return "Setting: "+str(self.name)+", value:"+str(self._value)
+      return "Setting: " + str(self.name) + ", value:" + str(self._value)
 
   def __repr__(self):
     return self.__str__()
 
 
 class Camera(object, metaclass=MetaCam):
-  """
-  This class represents a camera sensor.
+  """This class represents a camera sensor.
 
   It may have settings: They represent all that can be set on the
   camera: height, width, exposure, AEAG, external trigger, etc...
@@ -191,35 +191,39 @@ class Camera(object, metaclass=MetaCam):
     return self._max_fps
 
   @max_fps.setter
-  def max_fps(self,value):
+  def max_fps(self, value):
     """To compute self.delay again when fps is set."""
+
     self._max_fps = value
     if value:
       self.delay = 1/value
     else:
       self.delay = 0
 
-  def add_setting(self, name, getter=None, setter=lambda *l:None,
+  def add_setting(self, name, getter=None, setter=lambda *val: None,
                                             limits=None, default=None):
     """Wrapper to simply add a new setting to the camera."""
+
     assert name not in self.settings, "This setting already exists"
-    self.settings[name] = Cam_setting(name,getter,setter,limits,default)
+    self.settings[name] = Cam_setting(name, getter, setter, limits, default)
 
   @property
   def available_settings(self):
     """Returns a list of available settings."""
-    return [x.name for x in list(self.settings.values())]+["max_fps"]
+
+    return [x.name for x in list(self.settings.values())] + ["max_fps"]
 
   @property
   def settings_dict(self):
     """Returns settings as a dict, keys are the names of the settings and
     values are setting.value."""
+
     d = dict(self.settings)
     for k in d:
       d[k] = d[k]._value
     return d
 
-  def set_all(self,override=False,**kwargs):
+  def set_all(self, override=False, **kwargs):
     """Sets all the settings based on kwargs.
 
     Note:
@@ -229,6 +233,7 @@ class Camera(object, metaclass=MetaCam):
       it is already default.
 
     """
+
     for s in self.settings:
       if s in kwargs:
         if self.settings[s].value != kwargs[s] or override:
@@ -240,26 +245,28 @@ class Camera(object, metaclass=MetaCam):
         self.settings[s].value = self.settings[s].default
       else:
         pass
-    for k,v in kwargs.items():
-      setattr(self,k,v)
+    for k, v in kwargs.items():
+      setattr(self, k, v)
 
   def reset_all(self):
     """Reset all the settings to their default values."""
+
     self.set_all()
 
   def read_image(self):
     """This method is a wrapper for get_image that will limit fps to max_fps"""
+
     if self.delay:
       t = time()
       wait = self.last - t + self.delay
       while wait > 0:
         t = time()
         wait = self.last - t + self.delay
-        sleep(max(0,wait/10))
+        sleep(max(0, wait / 10))
       self.last = t
     return self.get_image()
 
-  def __getattr__(self,i):
+  def __getattr__(self, i):
     """
     The idea is simple: if the camera has this attribute: return it
     (default behavior) else, try to find the corresponding setting and
@@ -272,18 +279,19 @@ class Camera(object, metaclass=MetaCam):
     cam = Camera()
     cam.width will return 1280
     """
+
     try:
       return self.__getattribute__(i)
     except AttributeError:
       try:
         return self.settings[i].value
       except KeyError:
-        raise AttributeError("No such attribute: "+i)
+        raise AttributeError("No such attribute: " + i)
       except RuntimeError:
         print("You have probably forgotten to call Camera.__init__(self)!")
-        raise AttributeError("No such attribute:"+i)
+        raise AttributeError("No such attribute:" + i)
 
-  def __setattr__(self,attr,val):
+  def __setattr__(self, attr, val):
     """
     Same as getattr: if it is a setting, then set its value using the
     setter in the class CamSetting, else use the default behavior
@@ -292,16 +300,17 @@ class Camera(object, metaclass=MetaCam):
     Example: cam.width = 2048 will be like cam.settings['width'].value = 2048.
     It allows for simple settings of the camera
     """
+
     if attr != "settings" and attr in self.settings:
       self.settings[attr].value = val
     else:
-      super(Camera,self).__setattr__(attr,val)
+      super(Camera, self).__setattr__(attr, val)
 
   def __str__(self):
-    return self.name+" camera with {} settings".format(len(self.settings))
+    return self.name + " camera with {} settings".format(len(self.settings))
 
   def __repr__(self):
     s = self.__str__()
     for i in self.settings.values():
-      s+=("\n"+str(i))
+      s += ("\n" + str(i))
     return s
