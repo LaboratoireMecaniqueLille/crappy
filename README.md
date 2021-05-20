@@ -10,9 +10,9 @@ Requirements
 To install Crappy you will need Python 3 (3.6 or higher)
 with the following modules :
 - Numpy
-- Matplotlib
 
 These modules are not mandatory but will provide additionnal functionalities:
+- Matplotlib (1.5.3 or higher, for plotting graphs and displaying images)
 - openCV (3.0 or higher, to perform image acquisition and analysis)
 - pyserial(to interface with serial sensors and actuators)
 - SimpleITK (to save images to disk)

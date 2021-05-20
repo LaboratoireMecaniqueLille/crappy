@@ -1,10 +1,16 @@
 # coding: utf-8
 
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Button
 import numpy as np
 
 from .block import Block
+from .._global import OptionalModule
+
+try:
+  import matplotlib.pyplot as plt
+  from matplotlib.widgets import Button
+except (ModuleNotFoundError, ImportError):
+  plt = OptionalModule("matplotlib")
+  Button = OptionalModule("matplotlib")
 
 
 class Grapher(Block):

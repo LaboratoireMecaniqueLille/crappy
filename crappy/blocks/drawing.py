@@ -1,12 +1,20 @@
-#coding: utf-8
+# coding: utf-8
+
 from __future__ import print_function,division
 
 from datetime import timedelta
 from time import time
-import matplotlib.pyplot as plt
-from matplotlib import cm
 
 from .block import Block
+from .._global import OptionalModule
+
+try:
+  import matplotlib.pyplot as plt
+  from matplotlib import cm
+except (ModuleNotFoundError, ImportError):
+  plt = OptionalModule("matplotlib")
+  cm = OptionalModule("matplotlib")
+
 
 # ======= Visual objects =========
 # These classes represent all that can be drawn on the canvas

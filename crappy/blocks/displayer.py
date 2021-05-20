@@ -3,10 +3,14 @@
 import numpy as np
 from .block import Block
 from .._global import CrappyStop
-import matplotlib.pyplot as plt
 import tkinter as tk
 from PIL import ImageTk,Image
 from .._global import OptionalModule
+
+try:
+  import matplotlib.pyplot as plt
+except (ModuleNotFoundError, ImportError):
+  plt = OptionalModule("matplotlib")
 
 try:
   import cv2
