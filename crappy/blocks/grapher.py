@@ -74,7 +74,7 @@ class Grapher(Block):
     self.window_size = kwargs.pop("window_size", (8, 8))
     self.window_pos = kwargs.pop("window_pos", None)
     self.interp = kwargs.pop("interp",True)
-    self.backend = kwargs.pop("backend",'TkAgg')
+    self.backend = kwargs.pop("backend",None)
     if kwargs:
       raise AttributeError("Invalid kwarg(s) in Grapher: " + str(kwargs))
     self.labels = args
