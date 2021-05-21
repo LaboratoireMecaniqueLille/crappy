@@ -72,7 +72,12 @@ class Seek_thermal_pro(Camera):
   def open(self) -> None:
     """Sets the USB communication and device"""
 
-    self._dev.set_configuration()
+    try:
+      self._dev.set_configuration()
+    except usb.core.USBError:
+      print("You may have to install the udev-rules for this USB device, "
+            "this can be done using an utility in the util folder")
+      raise
 
     self._write_data(Seek_thermal_pro_commands['Set operation mode'],
                      b'\x00\x00')
