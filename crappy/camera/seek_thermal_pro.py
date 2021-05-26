@@ -48,6 +48,16 @@ class Seek_thermal_pro(Camera):
   The Seek_thermal_pro Camera block is meant for reading images from a Seek
   Thermal Pro infrared camera. It communicates over USB, and gets images by
   converting the received bytearrays into numpy arrays.
+
+  Important:
+    **Only for Linux users:** In order to drive the Seek Thermal Pro, the
+    appropriate udev rule should be set. This can be done using the
+    `udev_rule_setter` utility in ``crappy``'s `util` folder. It is also
+    possible to add it manually by running:
+    ::
+      $ sudo echo ""SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"289d\\", \
+MODE=\\"0777\\\""" > seek_thermal.rules
+    in a shell opened in ``/etc/udev/rules.d``.
   """
 
   def __init__(self) -> None:
