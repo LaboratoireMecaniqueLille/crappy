@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 # Parent class
 from .camera import Camera, MetaCam
@@ -9,6 +9,8 @@ from .streamer import Streamer
 from .webcam import Webcam
 from .xiapi import Xiapi
 from .ximeaCV import XimeaCV
+from .picamera import Picamera
+from .picamera_webcam import Picamera_webcam
 # Cameralink cameras
 from .cameralink import CLCamera
 from .bispectral import Bispectral
