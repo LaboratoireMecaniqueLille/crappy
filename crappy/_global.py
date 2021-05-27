@@ -20,6 +20,11 @@ Please install it and try again""".format(self.mname)
     print(self.message)
     raise RuntimeError(self.message)
 
+  def __call__(self, *args, **kwargs):
+    print("Missing module: {}".format(self.mname))
+    print(self.message)
+    raise RuntimeError(self.message)
+
 
 class CrappyStop(Exception):
   """Error to raise when Crappy is terminating"""
