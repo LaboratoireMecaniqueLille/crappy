@@ -32,6 +32,11 @@ Oriental
 .. automodule:: crappy.actuator.oriental
    :members:
 
+Pololu Tic
+++++++++++
+.. automodule:: crappy.actuator.pololu_tic
+   :members:
+
 Servostar
 +++++++++
 .. automodule:: crappy.actuator.servostar
