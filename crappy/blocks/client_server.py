@@ -92,59 +92,85 @@ class Client_server(Block):
       - **Single-value tuples**:
         Single-value tuples can be shortened as strings.
         ::
+
           topics=[('cmd1',), ('cmd2',)]
           cmd_labels=[('cmd1',), ('cmd2',)]
           labels_to_send=[('cmd1',), ('cmd2',)]
+
         is equivalent to
         ::
+
           topics=['cmd1', 'cmd2']
           cmd_labels=['cmd1', 'cmd2']
           labels_to_send=['cmd1', 'cmd2']
+
 
     Examples:
       - ``topics``:
         If
         ::
+
           topics=[('t1', 'cmd1'), 'sign']
+
         the client will subscribe to the topics
         ::
+
           ('t1', 'cmd1')
           ('sign',)
+
         The block will return data associated with the labels
         ::
+
           't1', 'cmd1'
           'sign'
+
 
       - ``cmd_labels``:
         If
         ::
+
           cmd_labels=[('t1', 'cmd1'), 'sign']
+
         the client will publish data in the form of
         ::
+
           [[t1_0, cmd1_0], [t1_1, cmd1_1], ...]
           [[sign_0], [sign_1], ...]
+
         in the topics
         ::
+
            ('t1', 'cmd1')
            ('sign',)
+
 
       - ``labels_to_send``:
         If
         ::
+
           cmd_labels=[('t(s)', 'cmd'), 'sign']
           labels_to_send=[('t1', 'cmd1'), 'sign']
+
         the data from labels
         ::
+
           't(s)', 'cmd'
+
         will be published in the topic
         ::
+
           ('t1', 'cmd1')
+
         and the data from label
         ::
+
           'sign'
+
         in the topic
         ::
+
           ('sign',)
+
     """
 
     Block.__init__(self)

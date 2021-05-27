@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from typing import Tuple
 from .camera import Camera
 from .._global import OptionalModule
 import numpy as np
@@ -71,7 +72,7 @@ class Picamera(Camera):
         str(self) + "Unexpected kwarg: " + str(k)
     self.set_all(**kwargs)
 
-  def get_image(self) -> [float, np.ndarray]:
+  def get_image(self) -> Tuple[float, np.ndarray]:
     """
     Uses the picamera capture method for capturing an image. The captured image
     is in bgr format, and converted into black and white if needed. Quite slow

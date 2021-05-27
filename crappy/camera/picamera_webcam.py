@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
+from typing import Tuple
 from .camera import Camera
 from .._global import OptionalModule
 from threading import Thread, RLock
@@ -58,7 +59,7 @@ class Picamera_webcam(Camera):
     # Starting the auxiliary thread
     self._thread.start()
 
-  def get_image(self) -> [float, any]:
+  def get_image(self) -> Tuple[float, any]:
     """Reads an image from the PiCamera using V4L2
 
     Returns:

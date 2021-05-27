@@ -112,7 +112,9 @@ class Waveshare_ad_da(InOut):
       adc_channels (:obj:`list`, optional): A list of strings representing the
         channels to be read. The syntax for all strings is either:
         ::
+
           'ADi' (i in range(8)) or 'ADi - ADj' (i, j in range(8))
+
       gain_hardware (:obj:`int`, optional): The gain to be used by the
         programmable gain amplifier. Setting a high gain allows to read small
         voltages with a better precision, but it might saturate the sensor for

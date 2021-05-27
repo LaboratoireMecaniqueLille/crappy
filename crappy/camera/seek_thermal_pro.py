@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from typing import Tuple
 from .camera import Camera
 from .._global import OptionalModule
 import numpy as np
@@ -55,8 +56,10 @@ class Seek_thermal_pro(Camera):
     `udev_rule_setter` utility in ``crappy``'s `util` folder. It is also
     possible to add it manually by running:
     ::
+
       $ sudo echo ""SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"289d\\", \
 MODE=\\"0777\\\""" > seek_thermal.rules
+
     in a shell opened in ``/etc/udev/rules.d``.
   """
 
@@ -128,7 +131,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
       elif i == 9:
         raise TimeoutError("Could not set the camera")
 
-  def get_image(self) -> [float, np.array]:
+  def get_image(self) -> Tuple[float, np.array]:
     """Reads a single image from the camera
 
     Returns:

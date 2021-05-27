@@ -3,7 +3,7 @@ Installation
 ============
 
 Requirements
--------------
+------------
 To install Crappy, you will need Python 3 (3.6 or higher) with the following
 modules :
 
@@ -30,7 +30,7 @@ These modules are not mandatory but will provide additional functionalities :
 		- *"See* :ref:`Documentation` *for more details."*
 
 A. For Linux users
--------------------
+------------------
 These steps have been tested for Ubuntu 16.04, 18.04 and 20.04  but should work
 with other distros as well.
 
@@ -48,13 +48,13 @@ with other distros as well.
 
 2. You can now install crappy. Get the sources using git and use setup script: ::
 
-  git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
-  cd crappy
-  python setup.py install
-  sudo python setup.py install
+    git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
+    cd crappy
+    python setup.py install
+    sudo python setup.py install
 
 B. For Windows users
----------------------
+--------------------
 These steps have been tested for Windows 8.1 but should work with other
 versions as well. Make sure you are using the x64 version of python or the C++
 modules will not compile properly.
@@ -81,7 +81,7 @@ modules will not compile properly.
 	setup.py install
 
 C. For macOS users
--------------------
+------------------
 These steps have been tested on macOS Catalina (10.15.7), but should work with
 other versions as well.
 
