@@ -24,7 +24,7 @@ JAI
 
 PiCamera
 ++++++++
-.. automodule:: crappy.camera.picamera
+.. automodule:: crappy.camera.picamera_picamera
    :members:
 
 PiCamera - Webcam
