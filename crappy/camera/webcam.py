@@ -11,17 +11,16 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Webcam(Camera):
-  """
-  Camera class for webcams, read using opencv.
-  """
+  """Camera class for webcams, read using opencv."""
+
   def __init__(self):
     Camera.__init__(self)
     self.name = "webcam"
     self.cap = None
     # No sliders for the camera: they usually only allow a few resolutions
-    self.add_setting("width",self._get_w,self._set_w,(1,1920))
-    self.add_setting("height",self._get_h,self._set_h,(1,1080))
-    self.add_setting("channels", limits={1:1,3:3}, default=1)
+    self.add_setting("width", self._get_w, self._set_w, (1, 1920))
+    self.add_setting("height", self._get_h, self._set_h, (1, 1080))
+    self.add_setting("channels", limits={1: 1, 3: 3}, default=1)
 
   def _get_w(self):
     return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -29,19 +28,20 @@ class Webcam(Camera):
   def _get_h(self):
     return self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
-  def _set_w(self,i):
-    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,i)
+  def _set_w(self, width):
+    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 
-  def _set_h(self,i):
-    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,i)
+  def _set_h(self, height):
+    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-  def open(self,numdevice=0,**kwargs):
-    self.numdevice=numdevice
+  def open(self, numdevice=0, **kwargs):
+    self.numdevice = numdevice
     if self.cap:
       self.cap.release()
     self.cap = cv2.VideoCapture(self.numdevice)
     for k in kwargs:
-      assert k in self.available_settings,str(self)+"Unexpected kwarg: "+str(k)
+      assert k in self.available_settings, str(self) + \
+                                           "Unexpected kwarg: " + str(k)
     self.set_all(**kwargs)
 
   def get_image(self):
@@ -51,9 +51,9 @@ class Webcam(Camera):
       print("Error reading the camera")
       raise IOError
     if self.channels == 1:
-      return t,cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      return t, cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     else:
-      return t,frame # [:,:,[2,1,0]]
+      return t, frame  # [:, :, [2, 1, 0]]
 
   def close(self):
     if self.cap:

@@ -5,9 +5,9 @@ import re
 from glob import glob
 from .._global import OptionalModule
 try:
-  import SimpleITK as sitk
-except (ModuleNotFoundError,ImportError):
-  sitk = None
+  import SimpleITK as Sitk
+except (ModuleNotFoundError, ImportError):
+  Sitk = None
   try:
     import cv2
   except (ModuleNotFoundError, ImportError):
@@ -53,19 +53,20 @@ class Streamer(Camera):
     - modifier: To apply a function to the image before sending it.
 
   """
+
   def __init__(self):
     Camera.__init__(self)
     self.frame = 0
 
-  def open(self,path,pattern="img_\\d+_(\\d+\\.\\d+)\\.tiff",start_delay=0,
-      modifier=lambda img:img):
+  def open(self, path, pattern="img_\\d+_(\\d+\\.\\d+)\\.tiff", start_delay=0,
+           modifier=lambda img: img):
     self.modifier = modifier
-    pattern = "^"+path+pattern+"$"
+    pattern = "^" + path + pattern + "$"
     regex = re.compile(pattern)
-    files = glob(path+"*")
+    files = glob(path + "*")
     img_list = [f for f in files if regex.match(f)]
-    assert img_list,"No matching image found!"
-    print("[image streamer]",len(img_list),"images to stream")
+    assert img_list, "No matching image found!"
+    print("[image streamer]", len(img_list), "images to stream")
     self.img_dict = {}
     self.time_table = []
     for img in img_list:
@@ -73,7 +74,7 @@ class Streamer(Camera):
       self.img_dict[t] = img
       self.time_table.append(t)
     self.time_table.sort()
-    print("[image streamer] Duration:",self.time_table[-1],"s")
+    print("[image streamer] Duration:", self.time_table[-1], "s")
     self.t0 = time() + start_delay
 
   def close(self):
@@ -85,19 +86,19 @@ class Streamer(Camera):
     if self.frame == len(self.time_table):
       raise CrappyStop
     img_t = self.time_table[self.frame]
-    if sitk is not None:
+    if Sitk is not None:
       img = self.modifier(
-        sitk.GetArrayFromImage(sitk.ReadImage(self.img_dict[img_t])))
+        Sitk.GetArrayFromImage(Sitk.ReadImage(self.img_dict[img_t])))
     else:
-      img = self.modifier(cv2.imread(self.img_dict[img_t],0))
+      img = self.modifier(cv2.imread(self.img_dict[img_t], 0))
     t = time()
     delay = self.time_table[self.frame] - t + self.t0
     if delay > 0:
       if t > self.t0:
         sleep(delay)
       else:
-        return img_t,img
-    #else:
-    #  print("Streamer is",-1000*delay,"ms late")
+        return img_t, img
+    # else:
+    #   print("Streamer is", -1000 * delay, "ms late")
     self.frame += 1
-    return img_t,img
+    return img_t, img
