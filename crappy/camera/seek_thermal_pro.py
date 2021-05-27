@@ -137,11 +137,14 @@ MODE=\\"0777\\\""" > seek_thermal.rules
     Returns:
       The timeframe and the captured image
     """
+
     count = 0
     while True:
       t = time.time()
       status, img = self._grab()
-      if status == 3 and self._calib is not None:
+      if status == 1:
+          self._calib = self._crop(img) - 1600
+      elif status == 3 and self._calib is not None:
         return t, self._correct_dead_pixels(self._crop(img) - self._calib)
       elif count == 5:
         raise TimeoutError("Unable to read image")
