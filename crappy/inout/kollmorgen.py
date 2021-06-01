@@ -5,16 +5,16 @@ from .inout import InOut
 from .._global import OptionalModule
 try:
   from pymodbus.client.sync import ModbusTcpClient
-except (ModuleNotFoundError,ImportError):
+except (ModuleNotFoundError, ImportError):
   ModbusTcpClient = OptionalModule("pymodbus", "Cannot use KollMorgenVariator")
 
 
 def float32_to_data(num):
-  return struct.unpack("=HH",struct.pack("=f",num))[::-1]
+  return struct.unpack("=HH", struct.pack("=f", num))[::-1]
 
 
 def data_to_float32(data):
-  assert len(data) == 2,"float32 expects 2 registers"
+  assert len(data) == 2, "float32 expects 2 registers"
   return struct.unpack("=f", struct.pack("=HH", *data[::-1]))[0]
 
 
@@ -78,14 +78,16 @@ class KollMorgenVariator:
     Toggles power of given motor. Maybe not the most intelligent way to
     handle power, though...
     """
+
     address = int(str(motor) + str(self.coil_addresses["power"]))
     state = self.variator.read_coils(address)
     self.variator.write_coil(address, not state.bits[0])
 
   def clear_errors(self):
     """
-    If errors occured, it must be clear in order to continue the program.
+    If errors occurred, it must be clear in order to continue the program.
     """
+
     axis_states = self.variator.read_input_registers(address=1, count=3)
 
     for index, err in enumerate(axis_states.registers):
@@ -98,8 +100,9 @@ class KollMorgenVariator:
   def set_speed(self, motor, speed):
     """
     Writes to variator desired speed (signed), and its direction. Applies to
-    every motor movement (rotations, positionning...).
+    every motor movement (rotations, positioning...).
     """
+
     address_hld = int(str(motor) + str(self.hldreg_addresses["velocity"]))
     self.variator.write_register(address_hld, abs(speed))
     address_hld_direction = int(str(motor) + str(self.hldreg_addresses[
@@ -111,19 +114,20 @@ class KollMorgenVariator:
 
   def set_accelerations(self, motor, **kwargs):
     """
-    To set acceleration, deceleration (for positionning) and fast
+    To set acceleration, deceleration (for positioning) and fast
     deceleration (boolean stop).
     """
-    addresses_hld = [int(str(motor) + str(self.hldreg_addresses[value])) for
-                     value in kwargs.keys()]
 
-    for index, address in enumerate(addresses_hld):
-      self.variator.write_register(address, kwargs.values()[index])
+    for address, value in kwargs.items():
+      self.variator.write_register(int(str(motor) +
+                                       str(self.hldreg_addresses[address])),
+                                   value)
 
   def start_rotation(self, motor):
     """
-    Sets the rotation of specifed motor at specified speed (signed).
+    Sets the rotation of specified motor at specified speed (signed).
     """
+
     address_coil = int(str(motor) + str(self.coil_addresses["move_vel"]))
     self.variator.write_coil(address_coil, True)
 
@@ -131,6 +135,7 @@ class KollMorgenVariator:
     """
     Stops the motor movement.
     """
+
     address = int(str(motor) + str(self.coil_addresses["stop"]))
     self.variator.write_coil(address, True)
 
@@ -138,6 +143,7 @@ class KollMorgenVariator:
     """
     To set a rotation (in degrees) of the motor axis. rotation is signed.
     """
+
     address_coil = int(str(motor) + str(self.coil_addresses["move_rel"]))
     address_hld = int(str(motor) + str(self.hldreg_addresses["distance"]))
 
@@ -149,6 +155,7 @@ class KollMorgenVariator:
     """
     To set a position (in degrees), absolute value.
     """
+
     address_coil = int(str(motor) + str(self.coil_addresses["move_abs"]))
     address_hld = int(str(motor) + str(self.hldreg_addresses["position"]))
 
@@ -160,6 +167,7 @@ class KollMorgenVariator:
     """
     To read position of motor. Returns a float.
     """
+
     if not motor == "all":
       # If 1 axis is needed
       address_inpreg = int(str(motor) + str(self.inpreg_addresses[
@@ -183,6 +191,7 @@ class KollMorgenVariator:
     """
     Reads speed of each motor.
     """
+
     if not motor == "all":
       address_inpreg = int(str(motor) + str(self.inpreg_addresses[
           "act_speed"]))
@@ -217,7 +226,7 @@ class Koll(InOut):
       setattr(self, arg, kwargs.pop(arg, default))
 
     if self.axis == "all":
-      default_label = ["t(s)"] + map(str, range(1, 4))
+      default_label = ["t(s)"] + [str(i) for i in range(1, 4)]
     else:
       default_label = ["t(s)", str(self.axis)]
 
