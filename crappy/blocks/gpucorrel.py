@@ -118,6 +118,6 @@ class GPUCorrel(Camera):
           return
     self.send(out)
 
-  def finsih(self):
+  def finish(self):
     self.correl.clean()
     Camera.finish(self)
