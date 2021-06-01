@@ -69,12 +69,12 @@ NAU7802
 
 NI DaQMX
 ++++++++
-.. automodule:: crappy.inout.nidaqmx
+.. automodule:: crappy.inout.ni_daqmx
    :members:
 
 Open DaQ
 ++++++++
-.. automodule:: crappy.inout.opendaq
+.. automodule:: crappy.inout.open_daq
    :members:
 
 Opsens

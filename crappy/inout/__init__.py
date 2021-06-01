@@ -8,8 +8,8 @@ from .comedi import Comedi
 from .kollmorgen import Koll
 from .labjackT7 import Labjack_t7
 from .labjackUE9 import Labjack_ue9
-from .nidaqmx import Nidaqmx
-from .opendaq import Opendaq
+from .ni_daqmx import Nidaqmx
+from .open_daq import Opendaq
 from .opsens import Opsens
 from .spectrum import Spectrum
 from .t7Streamer import T7_streamer
