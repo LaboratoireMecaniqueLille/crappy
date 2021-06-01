@@ -22,6 +22,7 @@ class MetaIO(type):
     and NOT an instance of MetaClass.
 
   """
+
   classes = {}  # This dict will keep track of all the existing cam classes
   # Attention: It keeps track of the CLASSES, not the instances !
   # If a class is defined without these
@@ -32,13 +33,13 @@ class MetaIO(type):
 
   # methods, it will raise an error
 
-  def __new__(metacls, name, bases, dict):
-    # print "[MetaIO.__new__] Creating class",name,"from metaclass",metacls
-    return type.__new__(metacls, name, bases, dict)
+  def __new__(mcs, name, bases, dict_):
+    # print "[MetaIO.__new__] Creating class",name,"from metaclass",mcs
+    return type.__new__(mcs, name, bases, dict_)
 
-  def __init__(cls, name, bases, dict):
+  def __init__(cls, name, bases, dict_):
     # print "[MetaIO.__init__] Initializing",cls
-    type.__init__(cls, name, bases, dict)  # This is the important line
+    type.__init__(cls, name, bases, dict_)  # This is the important line
     # It creates the class, the same way we could do this:
     # MyClass = type(name,bases,dict)
     # bases is a tuple containing the parents of the class
@@ -56,14 +57,14 @@ class MetaIO(type):
     # Check if mandatory methods are defined
     missing_methods = []
     for m in MetaIO.needed_methods:
-      if m not in dict:
+      if m not in dict_:
         missing_methods.append(m)
     if name != "InOut":
       if missing_methods:
         raise DefinitionError("Class " + name + " is missing methods: " + str(
           missing_methods))
-      i = ("get_data" in dict or "get_stream" in dict)
-      o = ("set_cmd" in dict)
+      i = ("get_data" in dict_ or "get_stream" in dict_)
+      o = ("set_cmd" in dict_)
       if i and o:
         MetaIO.IOclasses[name] = cls
       elif i:
@@ -87,8 +88,8 @@ class InOut(object, metaclass=MetaIO):
 
   def eval_offset(self):
     assert self.is_input(), "eval_offset only works for inputs!"
-    if not hasattr(self,'eval_offset_delay'):
-      self.eval_offset_delay = 2 # Default value
+    if not hasattr(self, 'eval_offset_delay'):
+      self.eval_offset_delay = 2  # Default value
     t0 = time()
     table = []
     while True:

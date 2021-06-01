@@ -4,7 +4,7 @@ import numpy as np
 from .block import Block
 from .._global import CrappyStop
 import tkinter as tk
-from PIL import ImageTk,Image
+from PIL import ImageTk, Image
 from .._global import OptionalModule
 
 try:
@@ -22,7 +22,7 @@ class Displayer(Block):
   """
   Simple image displayer using openCV or Matplotlib.
 
-  Ntoe:
+  Note:
     It can be paired with StreamerCamera.
 
     Use cv=False to use the old, inefficient and deprecated version.
@@ -40,20 +40,20 @@ class Displayer(Block):
     else:
       self.delay = 1. / framerate  # Framerate (fps)
     self.title = title
-    if backend.lower() in ['cv','opencv']:
+    if backend.lower() in ['cv', 'opencv']:
       self.loop = self.loop_cv
       self.begin = self.begin_cv
       self.finish = self.finish_cv
-    elif backend.lower() in ['matplotlib','mpl']:
+    elif backend.lower() in ['matplotlib', 'mpl']:
       self.loop = self.loop_mpl
       self.begin = self.begin_mpl
       self.finish = self.finish_mpl
-    elif backend.lower() in ['tk','tkinter']:
+    elif backend.lower() in ['tk', 'tkinter']:
       self.loop = self.loop_tk
       self.begin = self.begin_tk
       self.finish = self.finish_tk
     else:
-      raise AttributeError("Unknown backend: "+str(backend))
+      raise AttributeError("Unknown backend: " + str(backend))
 
   # Matplotlib
   def begin_mpl(self):
@@ -62,12 +62,13 @@ class Displayer(Block):
     fig = plt.figure()
     fig.add_subplot(111)
 
-  def cast_8bits(self,f):
+  @staticmethod
+  def cast_8bits(f):
     m = f.max()
     i = 0
-    while m >= 2**(8+i):
-      i+=1
-    return (f/(2**i)).astype(np.uint8)
+    while m >= 2 ** (8 + i):
+      i += 1
+    return (f / (2 ** i)).astype(np.uint8)
 
   def loop_mpl(self):
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
@@ -75,7 +76,8 @@ class Displayer(Block):
     plt.pause(0.001)
     plt.show()
 
-  def finish_mpl(self):
+  @staticmethod
+  def finish_mpl():
     plt.close('all')
 
   # OpenCV
@@ -95,34 +97,35 @@ class Displayer(Block):
         data = self.cast_8bits(data)
       else:
         data = data.astype(np.uint8)
-    cv2.imshow(self.title,data)
+    cv2.imshow(self.title, data)
     cv2.waitKey(1)
 
-  def finish_cv(self):
+  @staticmethod
+  def finish_cv():
     cv2.destroyAllWindows()
 
   # TKinter
-  def resize(self,img):
-    return cv2.resize(img,(self.w,self.h))
+  def resize(self, img):
+    return cv2.resize(img, (self.w, self.h))
 
   def check_resized(self):
-    new = self.imglabel.winfo_height()-2,self.imglabel.winfo_width()-2
-    if sum([abs(i-j) for i,j in zip(new,(self.h,self.w))]) >= 5:
+    new = self.imglabel.winfo_height() - 2, self.imglabel.winfo_width() - 2
+    if sum([abs(i - j) for i, j in zip(new, (self.h, self.w))]) >= 5:
       if new[0] > 0 and new[1] > 0:
-        self.h,self.w = new
-        ratio = min(self.h/self.img_shape[0],
-                self.w/self.img_shape[1])
-        self.h = int(self.img_shape[0]*ratio)
-        self.w = int(self.img_shape[1]*ratio)
+        self.h, self.w = new
+        ratio = min(self.h / self.img_shape[0],
+                self.w / self.img_shape[1])
+        self.h = int(self.img_shape[0] * ratio)
+        self.w = int(self.img_shape[1] * ratio)
 
   def begin_tk(self):
     self.inputs[0].clear()
     self.root = tk.Tk()
-    self.root.protocol("WM_DELETE_WINDOW",self.end)
+    self.root.protocol("WM_DELETE_WINDOW", self.end)
     self.imglabel = tk.Label(self.root)
     self.imglabel.pack()
-    #self.imglabel.grid(row=0,column=0,sticky=tk.N+tk.E+tk.S+tk.W)
-    self.imglabel.pack(expand=1,fill=tk.BOTH)
+    # self.imglabel.grid(row=0, column=0, sticky=tk.N + tk.E + tk.S + tk.W)
+    self.imglabel.pack(expand=1, fill=tk.BOTH)
     self.h = 480
     self.w = 640
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]

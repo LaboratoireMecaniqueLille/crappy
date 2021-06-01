@@ -1,6 +1,6 @@
 ﻿# coding: utf-8
 
-from struct import pack,unpack
+from struct import pack, unpack
 import time
 from .actuator import Actuator
 from .._global import OptionalModule
@@ -16,16 +16,16 @@ def convert_to_byte(number, length):
   This functions converts decimal into bytes or bytes into decimals.
   Mandatory in order to send or read anything into/from MAC Motors registers.
   """
+
   # get hex byte sequence in required '\xXX\xXX', big endian format.
   encoded = pack('%s' % length, number)
-  #b = bytearray(encoded, 'hex')
-  i = 0
+  # b = bytearray(encoded, 'hex')
   c = b''
   for i in range(0, len(encoded)):
-    #x = encoded[i] ^ 0xff  # get the complement to 255
-    #x = pack('B', x)  # byte formalism
+    # x = encoded[0] ^ 0xff  # get the complement to 255
+    # x = pack('B', x)  # byte formalism
     # concatenate byte and complement and add it to the sequence
-    c += bytes([encoded[i], encoded[i] ^ 0xFF])
+    c += bytes([encoded[0], encoded[0] ^ 0xFF])
   return c
 
 
@@ -34,6 +34,7 @@ def convert_to_dec(sequence):
   This functions converts bytes into decimals. Mandatory in order to send
   or read anything into/from MAC Motors registers.
   """
+
   # sequence=sequence[::2] ## cut off "complement byte"
   decim = unpack('i', sequence)  # convert to signed int value
   return decim[0]
@@ -50,6 +51,7 @@ class Biotens(Actuator):
     - port (str, default: '/dev/ttyUSB0'): Path to the connect serial port.
 
   """
+
   def __init__(self, port='/dev/ttyUSB0', baudrate=19200):
 
     Actuator.__init__(self)
@@ -62,6 +64,7 @@ class Biotens(Actuator):
 
   def reset_position(self):
     """Actuators goes out completely, in order to set the initial position."""
+
     init_position = b'\x52\x52\x52\xFF\x00' +\
           convert_to_byte(38, 'B') +\
           convert_to_byte(4, 'B') +\
@@ -92,7 +95,7 @@ class Biotens(Actuator):
           convert_to_byte(37, 'B') + b'\xAA\xAA'
 
     self.ser.writelines([init_position, init_speed, init_torque, to_init])
-    self.ser.write(b'\x52\x52\x52\xFF\x00'+
+    self.ser.write(b'\x52\x52\x52\xFF\x00' +
           convert_to_byte(2, 'B') +
           convert_to_byte(2, 'B') +
           convert_to_byte(12, 'h') +
@@ -130,6 +133,7 @@ class Biotens(Actuator):
 
   def stop(self):
     """Stop the motor."""
+
     command = b'\x52\x52\x52\xFF\x00' +\
           convert_to_byte(2, 'B') +\
           convert_to_byte(2, 'B') +\
@@ -147,6 +151,7 @@ class Biotens(Actuator):
     """
     Clears error in motor registers. Obviously.
     """
+
     command = b'\x52\x52\x52\xFF\x00' +\
           convert_to_byte(35, 'B') +\
           convert_to_byte(4, 'B') +\
@@ -157,9 +162,10 @@ class Biotens(Actuator):
 
   def set_speed(self, speed):
     """Pilot in speed mode, requires speed in mm/min."""
+
     # converts speed in motors value
     # displacement rate in mm/min, V_SOll in 1/16 encoder counts/sample.
-    # 4096 encounder counts/revolution, sampling frequency = 520.8Hz,
+    # 4096 encounter counts/revolution, sampling frequency = 520.8Hz,
     # screw thread=5.
     speed_soll = int(round(16 * 4096 * speed / (520.8 * 60 * 5)))
     set_speed = b'\x52\x52\x52\xFF\x00' +\
@@ -202,6 +208,7 @@ class Biotens(Actuator):
   def set_position(self, position, speed):
     """Pilot in position mode, needs speed and final position to run
     (in mm/min and mm)."""
+
     # conversion of position from mm into encoder's count
     position_soll = int(round(position * 4096 / 5))
     set_position = b'\x52\x52\x52\xFF\x00' +\
@@ -213,7 +220,7 @@ class Biotens(Actuator):
 
     # converts speed in motors value
     # displacement rate in mm/min, V_SOll in 1/16 encoder counts/sample.
-    # 4096 encounder counts/revolution, sampling frequency = 520.8Hz
+    # 4096 encounter counts/revolution, sampling frequency = 520.8Hz
     # screw thread=5.
     speed_soll = int(round(16 * 4096 * speed / (520.8 * 60 * 5)))
     set_speed = b'\x52\x52\x52\xFF\x00' +\
@@ -264,6 +271,7 @@ class Biotens(Actuator):
       Current position of the motor.
 
     """
+
     for i in range(20):
       r = self._get_pos()
       if r is not None:

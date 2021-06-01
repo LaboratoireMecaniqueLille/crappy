@@ -1,3 +1,5 @@
+# coding: utf-8
+
 """
 Very simple test demonstrating the video-extensometry
 
@@ -14,7 +16,7 @@ if __name__ == '__main__':
   graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
 
   extenso = crappy.blocks.Video_extenso(camera="Webcam",
-      stop=True,show_image=True,white_spots=False)
+      stop=True, show_image=True, white_spots=False)
 
-  crappy.link(extenso,graph_extenso)
+  crappy.link(extenso, graph_extenso)
   crappy.start()

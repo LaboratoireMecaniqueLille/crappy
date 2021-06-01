@@ -1,5 +1,4 @@
-#coding: utf-8
-
+# coding: utf-8
 
 from time import time
 import numpy as np
@@ -20,16 +19,18 @@ class Sine(Path):
     - phase (default: 0): phase of the sine.
 
   """
-  def __init__(self,time,cmd,condition,freq,amplitude,offset=0,phase=0):
-    Path.__init__(self,time,cmd)
+
+  def __init__(self, time_, cmd, condition, freq, amplitude, offset=0,
+               phase=0):
+    Path.__init__(self, time_, cmd)
     self.condition = self.parse_condition(condition)
-    self.amplitude = amplitude/2
+    self.amplitude = amplitude / 2
     self.offset = offset
     self.phase = phase
-    self.k = 2*np.pi*freq
+    self.k = 2 * np.pi * freq
 
-  def get_cmd(self,data):
+  def get_cmd(self, data):
     if self.condition(data):
       raise StopIteration
-    return np.sin((time() - self.t0)*self.k-self.phase)\
-        *self.amplitude+self.offset
+    return np.sin((time() - self.t0) * self.k - self.phase) * \
+           self.amplitude + self.offset

@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 """
 A basic example showing how to use the GPUCorrel block
@@ -10,11 +10,12 @@ Required hardware:
 
 import crappy
 
-graph = crappy.blocks.Grapher(('t(s)','x'),('t(s)','y'),('t(s)','r'),length=50)
+graph = crappy.blocks.Grapher(('t(s)', 'x'), ('t(s)', 'y'), ('t(s)', 'r'),
+                              length=50)
 
 correl = crappy.blocks.GPUCorrel(camera="Webcam",
-    fields=['x','y','r']) # Rigid body
+    fields=['x', 'y', 'r'])  # Rigid body
 
-crappy.link(correl,graph)
+crappy.link(correl, graph)
 
 crappy.start()

@@ -6,14 +6,14 @@ from .inout import InOut
 from .._global import OptionalModule
 try:
   import opendaq
-except (ModuleNotFoundError,ImportError):
+except (ModuleNotFoundError, ImportError):
   opendaq = OptionalModule("opendaq",
       "Please install the OpenDAQ Python Module")
 
 
-def listify(stuff, l):
-  r = stuff if isinstance(stuff, list) else [stuff] * l
-  assert len(r) == l, "Invalid list length for " + str(r)
+def listify(stuff, length):
+  r = stuff if isinstance(stuff, list) else [stuff] * length
+  assert len(r) == length, "Invalid list length for " + str(r)
   return r
 
 
@@ -97,8 +97,8 @@ class Opendaq(InOut):
     if len(self.channels) == 1:
       return t + [self.handle.read_analog()]
     else:
-      l = self.handle.read_all()
-      return t + [l[i - 1] for i in self.channels]
+      lst = self.handle.read_all()
+      return t + [lst[i - 1] for i in self.channels]
 
   def get_stream(self):
     if not self.stream_started:

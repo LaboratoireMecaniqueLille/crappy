@@ -1,8 +1,8 @@
 ﻿# coding: utf-8
 
-from ..tool.videoextenso import LostSpotError,Video_extenso as VE
+from ..tool.videoextenso import LostSpotError, Video_extenso as Ve
 from ..tool.videoextensoConfig import VE_config
-from .camera import Camera,kw as default_cam_block_kw
+from .camera import Camera, kw as default_cam_block_kw
 from .._global import OptionalModule
 
 try:
@@ -22,7 +22,7 @@ class Video_extenso(Camera):
 
   Note:
     It also returns a list of tuples, which are the coordinates (in pixel)
-    of the barycenters of the spots.
+    of the barycenter of the spots.
 
     Optionally, it can save images.
 
@@ -38,43 +38,44 @@ class Video_extenso(Camera):
       program when the spots are lost, else it will just stop sending data.
 
   """
-  def __init__(self,camera,**kwargs):
+
+  def __init__(self, camera, **kwargs):
     self.niceness = -5
     cam_kw = {}
     # Kwargs to be given to the camera BLOCK
     # ie save_folder, config, etc... but NOT the labels
-    for k,v in default_cam_block_kw.items():
+    for k, v in default_cam_block_kw.items():
       if k == 'labels':
         continue
-      cam_kw[k] = kwargs.pop(k,v)
-    cam_kw['config'] = False # VE has its own config window
-    self.verbose = cam_kw['verbose'] # Also, we keep the verbose flag
+      cam_kw[k] = kwargs.pop(k, v)
+    cam_kw['config'] = False  # VE has its own config window
+    self.verbose = cam_kw['verbose']  # Also, we keep the verbose flag
     default_labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
-    for arg,default in [("labels",default_labels),
-                        ("show_image",False),
-                        ("wait_l0",False),
-                        ("end",True),
-                        ]:
+    for arg, default in [("labels", default_labels),
+                         ("show_image", False),
+                         ("wait_l0", False),
+                         ("end", True),
+                         ]:
       try:
-        setattr(self,arg,kwargs[arg])
+        setattr(self, arg, kwargs[arg])
         del kwargs[arg]
       except KeyError:
-        setattr(self,arg,default)
+        setattr(self, arg, default)
     self.ve_kwargs = {}
-    for arg in ['white_spots','update_thresh','num_spots',
-        'safe_mode','border','min_area']:
+    for arg in ['white_spots', 'update_thresh', 'num_spots',
+                'safe_mode', 'border', 'min_area']:
       if arg in kwargs:
         self.ve_kwargs[arg] = kwargs[arg]
         del kwargs[arg]
     self.cam_kw = kwargs
     self.cam_kw.update(cam_kw)
     self.cam_kw['labels'] = self.labels
-    Camera.__init__(self,camera,**self.cam_kw)
+    Camera.__init__(self, camera, **self.cam_kw)
 
   def prepare(self):
-    Camera.prepare(self,send_img=False)
-    self.ve = VE(**self.ve_kwargs)
-    config = VE_config(self.camera,self.ve)
+    Camera.prepare(self, send_img=False)
+    self.ve = Ve(**self.ve_kwargs)
+    config = VE_config(self.camera, self.ve)
     config.main()
     self.ve.start_tracking()
     if self.show_image:
@@ -82,13 +83,13 @@ class Video_extenso(Camera):
         flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
       except AttributeError:
         flags = cv2.WINDOW_NORMAL
-      cv2.namedWindow("Videoextenso",flags)
+      cv2.namedWindow("Videoextenso", flags)
     self.loops = 0
     self.last_fps_print = 0
     self.last_fps_loops = 0
 
   def loop(self):
-    t,img = self.get_img()
+    t, img = self.get_img()
     if self.inputs and not self.input_label and self.inputs[0].poll():
       self.inputs[0].clear()
       self.wait_l0 = False
@@ -106,24 +107,24 @@ class Video_extenso(Camera):
         return
     if self.show_image:
       boxes = [r['bbox'] for r in self.ve.spot_list]
-      for miny,minx,maxy,maxx in boxes:
-        img[miny:miny+1,minx:maxx] = 255
-        img[maxy:maxy+1,minx:maxx] = 255
-        img[miny:maxy,minx:minx+1] = 255
-        img[miny:maxy,maxx:maxx+1] = 255
-      cv2.imshow("Videoextenso",img)
+      for miny, minx, maxy, maxx in boxes:
+        img[miny:miny+1, minx:maxx] = 255
+        img[maxy:maxy+1, minx:maxx] = 255
+        img[miny:maxy, minx:minx+1] = 255
+        img[miny:maxy, maxx:maxx+1] = 255
+      cv2.imshow("Videoextenso", img)
       cv2.waitKey(5)
 
-    centers = [(r['y'],r['x']) for r in self.ve.spot_list]
+    centers = [(r['y'], r['x']) for r in self.ve.spot_list]
     if not self.wait_l0:
-      self.send([t-self.t0,centers]+d)
+      self.send([t-self.t0, centers]+d)
     else:
-      self.send([t-self.t0,[(0,0)]*4,0,0])
+      self.send([t - self.t0, [(0, 0)] * 4, 0, 0])
 
   def lost_loop(self):
-    t,img = self.get_img()
+    t, img = self.get_img()
     if self.show_image:
-      cv2.imshow("Videoextenso",img)
+      cv2.imshow("Videoextenso", img)
       cv2.waitKey(5)
 
   def finish(self):

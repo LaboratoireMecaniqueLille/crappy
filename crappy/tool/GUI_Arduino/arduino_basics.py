@@ -1,10 +1,12 @@
-#coding: utf-8
+# coding: utf-8
+
 """
 A window that replicates the behavior of the serial monitor of the official
 Arduino IDE. One can see the serial port entrances, and can write in it.
 """
+
 import tkinter as tk
-from tkinter import font as tkFont
+from tkinter import font as tk_font
 from queue import Empty
 
 
@@ -53,7 +55,7 @@ class MonitorFrame(tk.Frame):
                                   relief="sunken",
                                   height=int(self.total_width / 10),
                                   width=int(self.total_width),
-                                  font=tkFont.Font(size=kwargs.get("fontsize",
+                                  font=tk_font.Font(size=kwargs.get("fontsize",
                                                                    13)))
 
     self.top_frame.grid(row=0)
@@ -91,17 +93,17 @@ class SubmitSerialFrame(tk.Frame):
 
     self.input_txt = tk.Entry(self,
                               width=self.total_width * 5 / 10,
-                              font=tkFont.Font(
+                              font=tk_font.Font(
                                 size=kwargs.get("fontsize", 13)))
     self.submit_label = tk.Label(self, text='',
                                  width=1,
-                                 font=tkFont.Font(
+                                 font=tk_font.Font(
                                    size=kwargs.get("fontsize", 13)))
     self.submit_button = tk.Button(self,
                                    text='Submit',
                                    command=self.update_widgets,
                                    width=int(self.total_width * 0.5 / 10),
-                                   font=tkFont.Font(
+                                   font=tk_font.Font(
                                      size=kwargs.get("fontsize", 13)))
 
     self.input_txt.bind('<Return>', self.update_widgets)

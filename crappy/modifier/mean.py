@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 import numpy as np
 
@@ -21,12 +21,13 @@ class Mean(Modifier):
     If you need the same freq, see :ref:`Moving average`.
 
   """
-  def __init__(self,npoints=100):
+
+  def __init__(self, npoints=100):
     Modifier.__init__(self)
     self.npoints = npoints
 
-  def evaluate(self,data):
-    if not hasattr(self,"last"):
+  def evaluate(self, data):
+    if not hasattr(self, "last"):
       self.last = dict(data)
       for k in data:
         self.last[k] = [self.last[k]]
@@ -37,7 +38,7 @@ class Mean(Modifier):
       if len(self.last[k]) == self.npoints:
         try:
           r[k] = np.mean(self.last[k])
-        except TypeError: # Non numeric data
+        except TypeError:  # Non numeric data
           r[k] = self.last[k][-1]
       elif len(self.last[k]) > self.npoints:
         self.last[k] = []

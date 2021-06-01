@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 from .cameraConfig import Camera_config
 from .videoextensoConfig import VE_config

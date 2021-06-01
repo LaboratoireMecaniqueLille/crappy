@@ -6,13 +6,13 @@ from .inout import InOut
 from .._global import OptionalModule
 try:
   from labjack import ljm
-except (ModuleNotFoundError,ImportError):
+except (ModuleNotFoundError, ImportError):
   ljm = OptionalModule("ljm",
       "Please install Labjack LJM and the ljm Python module")
 
 
-def clamp(val,mini,maxi):
-  return max(min(val,maxi),mini)
+def clamp(val, mini, maxi):
+  return max(min(val, maxi), mini)
 
 
 class Labjack_t7(InOut):
@@ -50,7 +50,7 @@ class Labjack_t7(InOut):
       slope mechanism will be used with the extended features registers.
       It can also be used for thermocouples (see below). You can use any
       EF by using the 'write_at_open' and 'to_read' keys if necessary.
-      - (T)DACx: An analog output, you can specifiy gain and/or offset.
+      - (T)DACx: An analog output, you can specify gain and/or offset.
       - (E/F/C/M IOx): Digital in/outputs. You can specify the direction.
 
     - gain (default: 1): A numeric value that will multiply the given value for
@@ -104,16 +104,16 @@ class Labjack_t7(InOut):
         (register (int), type (int), value (float/int)).
 
   """
+
   def __init__(self, **kwargs):
     InOut.__init__(self)
     for arg, default in [
-       ('device', 'ANY'), # Model (T7, DIGIT,...)
-       ('connection', 'ANY'), # Connection (USB,ETHERNET,...)
-       ('identifier', 'ANY'), # Identifier (serial n°, ip,..)
-       ('channels', [{'name':'AIN0'}]),
+       ('device', 'ANY'),  # Model (T7, DIGIT,...)
+       ('connection', 'ANY'),  # Connection (USB,ETHERNET,...)
+       ('identifier', 'ANY'),  # Identifier (serial n°, ip,..)
+       ('channels', [{'name': 'AIN0'}]),
        ('write_at_open', []),
-       ('no_led',False)
-        ]:
+       ('no_led', False)]:
       if arg in kwargs:
         setattr(self, arg, kwargs[arg])
         del kwargs[arg]
@@ -121,25 +121,26 @@ class Labjack_t7(InOut):
         setattr(self, arg, default)
     assert len(kwargs) == 0, "Labjack_T7 got unsupported arg(s)" + str(kwargs)
     if self.no_led:
-      self.write_at_open.append(('POWER_LED',0))
+      self.write_at_open.append(('POWER_LED', 0))
     self.check_chan()
     self.handle = None
 
   def check_chan(self):
-    default = {'gain':1,'offset':0,'make_zero':False,'resolution':1,
-        'range':10,'direction':1,'dtype':ljm.constants.FLOAT32,'limits':None}
-    if not isinstance(self.channels,list):
+    default = {'gain': 1, 'offset': 0, 'make_zero': False, 'resolution': 1,
+               'range': 10, 'direction': 1, 'dtype': ljm.constants.FLOAT32,
+               'limits': None}
+    if not isinstance(self.channels, list):
       self.channels = [self.channels]
     # Let's loop over all the channels to set everything we need
     self.in_chan_list = []
     self.out_chan_list = []
     for d in self.channels:
-      if isinstance(d,str):
-        d = {'name':d}
+      if isinstance(d, str):
+        d = {'name': d}
 
       # === Modbus registers ===
-      if isinstance(d['name'],int):
-        for k in ['direction','dtype','limits']:
+      if isinstance(d['name'], int):
+        for k in ['direction', 'dtype', 'limits']:
           if k not in d:
             d[k] = default[k]
         if d['direction']:
@@ -153,65 +154,70 @@ class Labjack_t7(InOut):
 
       # === AIN channels ===
       elif d['name'].startswith("AIN"):
-        for k in ['gain','offset','make_zero','resolution','range']:
+        for k in ['gain', 'offset', 'make_zero', 'resolution', 'range']:
           if k not in d:
             d[k] = default[k]
         if 'write_at_open' not in d:
           d['write_at_open'] = []
-        d['write_at_open'].extend([# What will be written when opening the chan
-            ljm.nameToAddress(d['name']+"_RANGE")+(d['range'],),
-            ljm.nameToAddress(d['name']+"_RESOLUTION_INDEX")+(d['resolution'],)
-          ])
+        d['write_at_open'].extend([  # What is written when opening the chan
+          ljm.nameToAddress(d['name'] + "_RANGE") + (d['range'],),
+          ljm.nameToAddress(d['name'] + "_RESOLUTION_INDEX") +
+          (d['resolution'],)])
         if 'thermocouple' in d:
-          therm = {'E':20,'J':21,'K':22,'R':23,'T':24,'S':25,'C':30}
+          therm = {'E': 20, 'J': 21, 'K': 22, 'R': 23, 'T': 24,
+                   'S': 25, 'C': 30}
           d['write_at_open'].extend([
-              ljm.nameToAddress(d['name']+"_EF_INDEX")+
-              (therm[d['thermocouple']],),
-              ljm.nameToAddress(d['name']+"_EF_CONFIG_A")+(1,), # for degrees C
-              ljm.nameToAddress(d['name']+"_EF_CONFIG_B")+(60052,),# CJC config
-              ljm.nameToAddress(d['name']+"_EF_CONFIG_D")+(1,), # CJC config
-              ljm.nameToAddress(d['name']+"_EF_CONFIG_E")+(0,) # CJC config
+            ljm.nameToAddress(d['name'] + "_EF_INDEX") +
+            (therm[d['thermocouple']],),
+            ljm.nameToAddress(d['name'] + "_EF_CONFIG_A") + (1,),
+            # for degrees C
+            ljm.nameToAddress(d['name'] + "_EF_CONFIG_B") + (60052,),
+            # CJC config
+            ljm.nameToAddress(d['name'] + "_EF_CONFIG_D") + (1,),  # CJC config
+            ljm.nameToAddress(d['name'] + "_EF_CONFIG_E") + (0,)  # CJC config
             ])
-          d['to_read'],d['dtype'] = ljm.nameToAddress(d['name']+"_EF_READ_A")
+          d['to_read'], d['dtype'] = ljm.nameToAddress(d['name'] +
+                                                       "_EF_READ_A")
         elif d["gain"] == 1 and d['offset'] == 0 and not d['make_zero']:
           # No gain/offset
           # We can read directly of the AIN register
-          d['to_read'],d['dtype'] = ljm.nameToAddress(d['name'])
-        else: # With gain and offset: let's use Labjack's built in slope
+          d['to_read'], d['dtype'] = ljm.nameToAddress(d['name'])
+        else:  # With gain and offset: let's use Labjack's built in slope
           d['write_at_open'].extend([
-              ljm.nameToAddress(d['name']+"_EF_INDEX")+(1,), # for slope
-              ljm.nameToAddress(d['name']+"_EF_CONFIG_D")+(d['gain'],),
-              ljm.nameToAddress(d['name']+"_EF_CONFIG_E")\
-              +(d['offset'] if not d['make_zero'] else 0,),
-          ]) # To configure slope in the device
-          d['to_read'],d['dtype'] = ljm.nameToAddress(d['name']+"_EF_READ_A")
+            ljm.nameToAddress(d['name'] + "_EF_INDEX") + (1,),  # for slope
+            ljm.nameToAddress(d['name'] + "_EF_CONFIG_D") + (d['gain'],),
+            ljm.nameToAddress(d['name'] + "_EF_CONFIG_E") +
+            (d['offset'] if not d['make_zero'] else 0,),
+          ])  # To configure slope in the device
+          d['to_read'], d['dtype'] = ljm.nameToAddress(d['name'] +
+                                                       "_EF_READ_A")
 
         self.in_chan_list.append(d)
 
       # === DAC/TDAC channels ===
       elif "DAC" in d['name']:
-        for k in ['gain','offset','limits']:
+        for k in ['gain', 'offset', 'limits']:
           if k not in d:
             d[k] = default[k]
-        d['to_write'],d['dtype'] = ljm.nameToAddress(d['name'])
+        d['to_write'], d['dtype'] = ljm.nameToAddress(d['name'])
         self.out_chan_list.append(d)
 
       # === FIO/EIO/CIO/MIO channels ===
       elif "IO" in d['name']:
         if "direction" not in d:
           d["direction"] = default["direction"]
-        if d["direction"]: # 1/True => output, 0/False => input
+        if d["direction"]:  # 1/True => output, 0/False => input
           d['gain'] = 1
           d['offset'] = 0
           d['limits'] = None
-          d['to_write'],d['dtype'] = ljm.nameToAddress(d['name'])
+          d['to_write'], d['dtype'] = ljm.nameToAddress(d['name'])
           self.out_chan_list.append(d)
         else:
-          d['to_read'],d['dtype'] = ljm.nameToAddress(d['name'])
+          d['to_read'], d['dtype'] = ljm.nameToAddress(d['name'])
           self.in_chan_list.append(d)
 
       else:
-        raise AttributeError("[labjack] Invalid chan name: "+str(d['name']))
+        raise AttributeError("[labjack] Invalid chan name: " + str(d['name']))
 
       self.in_chan_dict = {}
       for c in self.in_chan_list:
@@ -221,55 +227,56 @@ class Labjack_t7(InOut):
         self.out_chan_dict[c["name"]] = c
 
   def open(self):
-    self.handle = ljm.openS(self.device,self.connection,self.identifier)
+    self.handle = ljm.openS(self.device, self.connection, self.identifier)
     # ==== Writing initial config ====
-    reg,types,values = [],[],[]
+    reg, types, values = [], [], []
     for t in self.write_at_open:
       if len(t) == 2:
-        r,typ = ljm.nameToAddress(t[0])
+        r, typ = ljm.nameToAddress(t[0])
         value = t[1]
       else:
-        r,typ,value = t
+        r, typ, value = t
       reg.append(r)
       types.append(typ)
       values.append(value)
-    for c in self.in_chan_list+self.out_chan_list:
-      # Turn (name,val) tuples to (addr,type,val)
-      for i,t in enumerate(c.get('write_at_open',[])):
+    for c in self.in_chan_list + self.out_chan_list:
+      # Turn (name, val) tuples to (addr, type, val)
+      for i, t in enumerate(c.get('write_at_open', [])):
         if len(t) == 2:
-          c['write_at_open'][i] = ljm.nameToAddress(t[0])+(t[1],)
+          c['write_at_open'][i] = ljm.nameToAddress(t[0]) + (t[1],)
       # Write everything we need
-      for r,t,v in c.get('write_at_open',[]):
+      for r, t, v in c.get('write_at_open', []):
         reg.append(r)
         types.append(t)
         values.append(v)
 
     if reg:
-      ljm.eWriteAddresses(self.handle,len(reg),reg,types,values)
+      ljm.eWriteAddresses(self.handle, len(reg), reg, types, values)
     # ==== Recap of the addresses to read/write ====
     self.read_addresses = [c['to_read'] for c in self.in_chan_list]
     self.read_types = [c['dtype'] for c in self.in_chan_list]
     self.write_addresses = [c['to_write'] for c in self.out_chan_list]
     self.write_types = [c['dtype'] for c in self.out_chan_list]
-    self.last_values = [None]*len(self.write_addresses)
+    self.last_values = [None] * len(self.write_addresses)
     # ==== Measuring zero to add to the offset (if asked to) ====
-    if any([c.get("make_zero",False) for c in self.in_chan_list]):
+    if any([c.get("make_zero", False) for c in self.in_chan_list]):
       print("[Labjack] Please wait during offset evaluation...")
       off = self.eval_offset()
-      names,values = [],[]
-      for i,c in enumerate(self.in_chan_list):
+      names, values = [], []
+      for i, c in enumerate(self.in_chan_list):
         if 'make_zero' in c and c['make_zero']:
-          names.append(c['name']+'_EF_CONFIG_E')
-          values.append(c['offset']+off[i])
-      ljm.eWriteNames(self.handle,len(names),names,values)
+          names.append(c['name'] + '_EF_CONFIG_E')
+          values.append(c['offset'] + off[i])
+      ljm.eWriteNames(self.handle, len(names), names, values)
 
   def get_data(self):
     """
     Read the signal on all pre-defined input channels.
     """
+
     try:
       return [time()]+ljm.eReadAddresses(self.handle, len(self.read_addresses),
-          self.read_addresses,self.read_types)
+          self.read_addresses, self.read_types)
     except ljm.LJMError as e:
       print('[Labjack] Error in get_data:', e)
       self.close()
@@ -288,66 +295,74 @@ class Labjack_t7(InOut):
       registers as the user).
 
     """
-    #values = []
-    #for val,chan in zip(cmd,self.out_chan_list):
-    #  values.append(chan['gain']*val+chan['offset'])
-    #ljm.eWriteAddresses(self.handle,len(self.write_addresses),
+
+    # values = []
+    # for val,chan in zip(cmd, self.out_chan_list):
+    #   values.append(chan['gain'] * val + chan['offset'])
+    # ljm.eWriteAddresses(self.handle,len(self.write_addresses),
     #    self.write_addresses,self.write_types,values)
-    addresses,types,values = [],[],[]
-    for i,(a,t,v,o,c) in enumerate(zip(
-        self.write_addresses,self.write_types,
-        cmd,self.last_values,self.out_chan_list)):
+    addresses, types, values = [], [], []
+    for i, (a, t, v, o, c) in enumerate(zip(self.write_addresses,
+                                            self.write_types, cmd,
+                                            self.last_values,
+                                            self.out_chan_list)):
       if v != o:
-        new_v = c['gain']*v+c['offset']
+        new_v = c['gain'] * v + c['offset']
         if c['limits']:
-          new_v = clamp(new_v,c['limits'][0],c['limits'][1])
+          new_v = clamp(new_v, c['limits'][0], c['limits'][1])
         self.last_values[i] = v
         addresses.append(a)
         types.append(t)
         values.append(new_v)
     if addresses:
-      ljm.eWriteAddresses(self.handle,len(addresses),addresses,types,values)
+      ljm.eWriteAddresses(self.handle, len(addresses), addresses, types,
+                          values)
 
-  def __getitem__(self,chan):
+  def __getitem__(self, chan):
     """
     Allows reading of an input chan by calling lj[chan].
     """
+
     # Apply offsets and stuff if this is a channel we know
     try:
-      return time(),ljm.eReadName(
-          self.handle,self.in_chan_dict[chan]['to_read'])
+      return time(), ljm.eReadName(
+          self.handle, self.in_chan_dict[chan]['to_read'])
     # Else: let the user access it directly
     except KeyError:
-      return time(),ljm.eReadName(self.handle,chan)
+      return time(), ljm.eReadName(self.handle, chan)
 
-  def __setitem__(self,chan,val):
+  def __setitem__(self, chan, val):
     """
     Allows setting of an output chan by calling lj[chan] = val.
     """
+
     try:
-      ljm.eWriteName(self.handle,chan,
+      ljm.eWriteName(self.handle, chan,
        self.out_chan_dict[chan]['gain']*val+self.out_chan_dict[chan]['offset'])
     except KeyError:
-      ljm.eWriteName(self.handle,chan,val)
+      ljm.eWriteName(self.handle, chan, val)
 
-  def write(self,value,address,dtype=None):
+  def write(self, value, address, dtype=None):
     """
     To write data directly into a register.
     """
+
     if dtype is None:
       dtype = ljm.constants.FLOAT32
-    ljm.eWriteAddress(self.handle,address,dtype,value)
+    ljm.eWriteAddress(self.handle, address, dtype, value)
 
-  def read(self,address,dtype=None):
+  def read(self, address, dtype=None):
     """
     To read data directly from a register.
     """
+
     if dtype is None:
       dtype = ljm.constants.FLOAT32
-    return ljm.eReadAddress(self.handle,address,dtype)
+    return ljm.eReadAddress(self.handle, address, dtype)
 
   def close(self):
     """
     Close the device.
     """
+
     ljm.close(self.handle)

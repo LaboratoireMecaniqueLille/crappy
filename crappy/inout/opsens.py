@@ -12,7 +12,7 @@ except (ModuleNotFoundError, ImportError):
 
 class Opsens(InOut):
   """
-  Sensor class for opsens condtionner.
+  Sensor class for opsens conditioner.
   """
 
   def __init__(self, device='/dev/ttyUSB0', ):

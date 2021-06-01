@@ -24,6 +24,7 @@ def renice(pid, niceness):
     It may ask for a password for negative values.
 
   """
+
   if niceness < 0:
     subprocess.call(['sudo', 'renice', str(niceness), '-p', str(pid)])
   else:
@@ -39,7 +40,7 @@ class Block(Process):
       the block.
 
       Note:
-        If not overriden, will raise an error.
+        If not overridden, will raise an error.
 
     - add_[in/out]put(Link object): Add a link as in/output.
     - prepare(): This method will be called inside the new process but before
@@ -71,12 +72,13 @@ class Block(Process):
         - "ready": prepare is over, waiting to start main by calling launch.
         - "running": main is running.
         - "done": main is over.
-        - "error": An error occured and the block stopped.
+        - "error": An error occurred and the block stopped.
 
       Note:
         Start and launch method will return instantly.
 
   """
+
   instances = WeakSet()
 
   def __init__(self):
@@ -135,7 +137,7 @@ class Block(Process):
       except Exception:
         pass
       self.status = "error"
-      sleep(1) # To let downstream blocks process the data and avoid loss
+      sleep(1)  # To let downstream blocks process the data and avoid loss
       self.stop_all()
       raise
     self.finish()
@@ -150,11 +152,12 @@ class Block(Process):
     """
     Returns true only if all processes status are s.
     """
-    l = cls.get_status()
-    return len(set(l)) == 1 and s in l
+
+    lst = cls.get_status()
+    return len(set(lst)) == 1 and s in lst
 
   @classmethod
-  def renice_all(cls, high_prio=True, verbose=True):
+  def renice_all(cls, high_prio=True, **_):
     """
     Will renice all the blocks processes according to block.niceness value.
 
@@ -166,6 +169,7 @@ class Block(Process):
       root can lower the niceness of processes.
 
     """
+
     if "win" in platform:
       # Not supported on Windows yet
       return
@@ -177,13 +181,15 @@ class Block(Process):
   @classmethod
   def prepare_all(cls, verbose=True):
     """
-    Starts all the blocks processes (block.prepare), but not the main loop.
+    Starts all
+    the blocks processes (block.prepare), but not the main loop.
     """
     if verbose:
       def vprint(*args):
         print("[prepare]", *args)
     else:
-      vprint = lambda *x: None
+      def vprint(*_):
+        return
     vprint("Starting the blocks...")
     for instance in cls.instances:
       vprint("Starting", instance)
@@ -197,20 +203,21 @@ class Block(Process):
       def vprint(*args):
         print("[launch]", *args)
     else:
-      vprint = lambda *x: None
+      def vprint(*_):
+        return
     if not cls.all_are('ready'):
       vprint("Waiting for all blocks to be ready...")
     while not cls.all_are('ready'):
       sleep(.1)
-      if not all([i in ['ready','initializing','idle']
+      if not all([i in ['ready', 'initializing', 'idle']
             for i in cls.get_status()]):
           print("Crappy failed to start!")
           for i in cls.instances:
-            if i.status in ['ready','initializing']:
+            if i.status in ['ready', 'initializing']:
               i.launch(-1)
           cls.stop_all()
           return
-          #raise RuntimeError("Crappy failed to start!")
+          # raise RuntimeError("Crappy failed to start!")
     vprint("All blocks ready, let's go !")
     if not t0:
       t0 = time()
@@ -223,12 +230,12 @@ class Block(Process):
       return
     try:
       # Keep running
-      l = cls.get_status()
-      while not ("done" in l or "error" in l):
-        l = cls.get_status()
+      lst = cls.get_status()
+      while not ("done" in lst or "error" in lst):
+        lst = cls.get_status()
         sleep(1)
     except KeyboardInterrupt:
-      print("Main proccess got keyboard interrupt!")
+      print("Main process got keyboard interrupt!")
       cls.stop_all()
       # It will automatically propagate to the blocks processes
     if not cls.all_are('running'):
@@ -241,13 +248,13 @@ class Block(Process):
     else:
       print("Crappy terminated, blocks status:")
       for b in cls.instances:
-        print(b,b.status)
+        print(b, b.status)
 
   @classmethod
   def start_all(cls, t0=None, verbose=True, bg=False, high_prio=False):
     cls.prepare_all(verbose)
     if high_prio and any([b.niceness < 0 for b in cls.instances]):
-      print("[start] High prio: root premission needed to renice")
+      print("[start] High prio: root permission needed to renice")
     cls.renice_all(high_prio, verbose=verbose)
     cls.launch_all(t0, verbose, bg)
 
@@ -256,11 +263,13 @@ class Block(Process):
     """
     Stops all the blocks (crappy.stop).
     """
+
     if verbose:
       def vprint(*args):
         print("[stop]", *args)
     else:
-      vprint = lambda *x: None
+      def vprint(*_):
+        return
     vprint("Stopping the blocks...")
     for instance in cls.instances:
       if instance.status == 'running':
@@ -273,6 +282,7 @@ class Block(Process):
     If main is not overriden, this method will be called first, before
     entering the main loop.
     """
+
     pass
 
   def finish(self):
@@ -280,6 +290,7 @@ class Block(Process):
     If main is not overriden, this method will be called upon exit or after
     a crash.
     """
+
     pass
 
   def loop(self):
@@ -295,6 +306,7 @@ class Block(Process):
     """
     For block with a given number of loops/s (use freq attr to set it).
     """
+
     self._MB_loops += 1
     t = time()
     if hasattr(self, 'freq') and self.freq:
@@ -315,6 +327,7 @@ class Block(Process):
     """
     To start the main method, will call start if needed.
     """
+
     if self.status == "idle":
       print(self, ": Called launch on unprepared process!")
       self.start()
@@ -325,11 +338,12 @@ class Block(Process):
     """
     Returns the status of the block, from the process itself or the parent.
     """
+
     if not self.in_process:
       while self.pipe1.poll():
         try:
           self._status = self.pipe1.recv()
-        except (EOFError,UnpicklingError):
+        except (EOFError, UnpicklingError):
           if self._status == 'running':
             self._status = 'done'
       # If another process tries to get the status
@@ -359,6 +373,7 @@ class Block(Process):
       It can stay empty to do nothing.
 
     """
+
     pass
 
   def send(self, data):
@@ -375,6 +390,7 @@ class Block(Process):
       That ONLY dict can go through links.
 
     """
+
     if isinstance(data, dict):
       pass
     elif isinstance(data, list):
@@ -396,6 +412,7 @@ class Block(Process):
       If the same label comes from multiple links, it may be overriden.
 
     """
+
     r = {}
     for i in self.inputs:
       if i.poll():
@@ -425,6 +442,7 @@ class Block(Process):
       If num is None, it will operate on all the input link at once.
 
     """
+
     if not hasattr(self, '_last_values'):
       self._last_values = [None] * len(self.inputs)
     if num is None:
@@ -453,6 +471,7 @@ class Block(Process):
       only the last link's value will be kept.
 
     """
+
     if not hasattr(self, '_all_last_values'):
       self._all_last_values = [None] * len(self.inputs)
     if num is None:
@@ -472,7 +491,7 @@ class Block(Process):
       ret.update(self._all_last_values[i])
     return ret
 
-  def recv_all_delay(self,delay=None,poll_delay=.1):
+  def recv_all_delay(self, delay=None, poll_delay=.1):
     """
     Method to wait for data, but continuously reading all the links
     to make sure that it does not block
@@ -480,18 +499,19 @@ class Block(Process):
     Returns a list where each entry is what would have been returned by
     recv_chunk on each link
     """
+
     if delay is None:
-      delay = 1/self.freq
+      delay = 1 / self.freq
     t = time()
-    r = [{} for i in self.inputs]
+    r = [{} for _ in self.inputs]
     last = t
     while True:
-      sleep(max(0,poll_delay-time()+last))
-      for l,d in zip(self.inputs,r):
-        if not l.poll():
+      sleep(max(0., poll_delay - time() + last))
+      for lst, d in zip(self.inputs, r):
+        if not lst.poll():
           continue
-        new = l.recv_chunk()
-        for k,v in new.items():
+        new = lst.recv_chunk()
+        for k, v in new.items():
           if k in d:
             d[k].extend(v)
           else:
@@ -508,9 +528,10 @@ class Block(Process):
       This method performs like get_last, but returns None instantly.
 
     """
+
     if num is None:
       num = range(len(self.inputs))
-    elif not isinstance(num,list):
+    elif not isinstance(num, list):
       num = [num]
     for n in num:
       self.inputs[n].clear()
@@ -532,8 +553,8 @@ class Block(Process):
       if self.status == "done":
         break
       sleep(.05)
-    #if self.status != "done":
-    if self.status not in ['done','idle','error']:
+    # if self.status != "done":
+    if self.status not in ['done', 'idle', 'error']:
       print('[%r] Could not stop properly, terminating' % self)
       try:
         self.terminate()

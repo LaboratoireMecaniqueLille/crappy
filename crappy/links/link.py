@@ -1,3 +1,5 @@
+# coding: utf-8
+
 # Link class. All connection between Blocks should be made with this.
 
 
@@ -11,8 +13,9 @@ from .._global import CrappyStop
 
 def error_if_stop(recv):
   """Decorator to raise an error if the function returns a string."""
-  def wrapper(*args,**kwargs):
-    ret = recv(*args,**kwargs)
+
+  def wrapper(*args, **kwargs):
+    ret = recv(*args, **kwargs)
     if type(ret) == str:
       raise CrappyStop
     return ret
@@ -21,6 +24,7 @@ def error_if_stop(recv):
 
 class TimeoutError(Exception):
   """Custom error to raise in case of timeout."""
+
   pass
 
 
@@ -72,13 +76,13 @@ class Link(object):
   It creates a pipe and is used to transfer information between Blocks.
 
   Note:
-    You can add one or multiple conditions to modify the value transfered.
+    You can add one or multiple conditions to modify the value transferred.
     Creates a pipe and is used to transfer information between Blocks.
-    You can add one or multiple modifiers to modify the value transfered.
+    You can add one or multiple modifiers to modify the value transferred.
 
   Args:
     - name: name of a link to recognize it on timeout.
-    - condition (optionnal): Children class of links.Condition.
+    - condition (optional): Children class of links.Condition.
 
       Note:
         Each "send" call will pass through the condition.evaluate method
@@ -97,8 +101,12 @@ class Link(object):
         string, will be printed in case of error to debug.
 
   """
+
   def __init__(self, input_block=None, output_block=None, condition=None,
-               modifier=[], timeout=0.1, action="warn", name="link"):
+                modifier=None, timeout=0.1, action="warn", name="link"):
+
+    if modifier is None:
+      modifier = []
 
     # For compatibility (condition is deprecated, use modifier)
     if condition is not None:
@@ -123,6 +131,7 @@ class Link(object):
     Send the value, or a modified value if you pass it through a
     modifier.
     """
+
     try:
       self.send_timeout(value)
     except TimeoutError as e:
@@ -143,11 +152,11 @@ class Link(object):
   @win_timeout(1)
   def send_timeout(self, value):
     try:
-      if self.modifiers is None or isinstance(value,str):
+      if self.modifiers is None or isinstance(value, str):
         self.out_.send(value)
       else:
         for mod in self.modifiers:
-          if hasattr(mod,'evaluate'):
+          if hasattr(mod, 'evaluate'):
             value = mod.evaluate(copy(value))
           else:
             value = mod(copy(value))
@@ -162,7 +171,7 @@ class Link(object):
         self.out_.close()
       raise
 
-  @error_if_stop # Recv will raise an error if 'stop' is recved
+  @error_if_stop  # Recv will raise an error if 'stop' is received
   def recv(self, blocking=True):
     """
     Receive data.
@@ -180,6 +189,7 @@ class Link(object):
       or return None if the pipe is empty.
 
     """
+
     try:
       if blocking or self.in_.poll():
         return self.in_.recv()
@@ -208,7 +218,7 @@ class Link(object):
     while self.in_.poll():
       self.in_.recv_bytes()
 
-  def recv_last(self,blocking=False):
+  def recv_last(self, blocking=False):
     """
     Returns only the LAST value in the pipe, dropping all the others.
 
@@ -221,6 +231,7 @@ class Link(object):
       Unlike recv, default is NON blocking.
 
     """
+
     if blocking:
       data = self.recv()
     else:
@@ -229,7 +240,7 @@ class Link(object):
       data = self.recv()
     return data
 
-  def recv_chunk(self,length=0):
+  def recv_chunk(self, length=0):
     """
     Allows you to receive a chunk of data:
       If length > 0 it will return an OrderedDict containing LISTS of the last
@@ -240,6 +251,7 @@ class Link(object):
       If the pipe is already empty, it will wait to return at least one value.
 
     """
+
     ret = self.recv()
     for k in ret:
       ret[k] = [ret[k]]
@@ -247,18 +259,18 @@ class Link(object):
     while c < length or (length <= 0 and self.poll()):
       c += 1
       try:
-        data = self.recv() # Here, we need to send our data first
+        data = self.recv()  # Here, we need to send our data first
       except CrappyStop:
-        self.out_.send("stop") # To re-raise on next call
+        self.out_.send("stop")  # To re-raise on next call
         break
       for k in ret:
         try:
           ret[k].append(data[k])
         except KeyError:
-          raise IOError(str(self)+" Got data without label "+k)
+          raise IOError(str(self) + " Got data without label " + k)
     return ret
 
-  def recv_delay(self,delay):
+  def recv_delay(self, delay):
     """
     Useful for blocks that don't need data all so frequently:
     It will continuously receive data for a given delay and return them as a
@@ -272,21 +284,22 @@ class Link(object):
       Also, it will return at least one reading.
 
     """
+
     t = time()
-    ret = self.recv() # If we get CrappyStop at this instant, no data loss
+    ret = self.recv()  # If we get CrappyStop at this instant, no data loss
     for k in ret:
       ret[k] = [ret[k]]
-    while time()-t < delay:
+    while time() - t < delay:
       try:
-        data = self.recv() # Here, we need to send our data first
+        data = self.recv()  # Here, we need to send our data first
       except CrappyStop:
-        self.out_.send("stop") # To re-raise on next call
+        self.out_.send("stop")  # To re-raise on next call
         break
       for k in ret:
         try:
           ret[k].append(data[k])
         except KeyError:
-          raise IOError(str(self)+" Got data without label "+k)
+          raise IOError(str(self) + " Got data without label " + k)
     return ret
 
   def recv_chunk_nostop(self):
@@ -294,14 +307,15 @@ class Link(object):
     Experimental feature, to be used in finish methods to
     recover the final remaining data (possibly after a stop signal).
     """
-    l = []
+
+    lst = []
     while self.in_.poll():
       data = self.in_.recv()
-      if isinstance(data,dict):
-        l.append(data)
+      if isinstance(data, dict):
+        lst.append(data)
     r = {}
-    for d in l:
-      for k,v in d.items():
+    for d in lst:
+      for k, v in d.items():
         if k in r:
           r[k].append(v)
         else:
@@ -317,4 +331,5 @@ def link(in_block, out_block, **kwargs):
     For the object, see :ref:`Link`.
 
   """
+
   Link(input_block=in_block, output_block=out_block, **kwargs)

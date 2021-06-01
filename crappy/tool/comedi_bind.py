@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 from ctypes import *
 
@@ -15,50 +15,51 @@ class comedi_range(Structure):
 
 AREF_GROUND = 0
 lsampl_t = c_uint
-data = lsampl_t() # To store data for data_read before returning it
+data = lsampl_t()  # To store data for data_read before returning it
 
 comedi_open = c.comedi_open
-comedi_open.restype = POINTER(comedi_t) # Device handle
-comedi_open.argtypes = [c_char_p] # Device path
+comedi_open.restype = POINTER(comedi_t)  # Device handle
+comedi_open.argtypes = [c_char_p]  # Device path
 
 comedi_close = c.comedi_close
-comedi_close.restype = c_int # Error code: 0 on success else -1
-comedi_close.argtypes = [POINTER(comedi_t)] # device handle
+comedi_close.restype = c_int  # Error code: 0 on success else -1
+comedi_close.argtypes = [POINTER(comedi_t)]  # device handle
 
 comedi_to_phys = c.comedi_to_phys
-comedi_to_phys.restype = c_double # Physical value
-comedi_to_phys.argtypes = [lsampl_t,POINTER(comedi_range),lsampl_t]
+comedi_to_phys.restype = c_double  # Physical value
+comedi_to_phys.argtypes = [lsampl_t, POINTER(comedi_range), lsampl_t]
 # Comedi value, range, maxdata
 
 comedi_from_phys = c.comedi_from_phys
-comedi_from_phys.restype = lsampl_t # Comedi value
-comedi_from_phys.argtypes = [c_double,POINTER(comedi_range),lsampl_t]
+comedi_from_phys.restype = lsampl_t  # Comedi value
+comedi_from_phys.argtypes = [c_double, POINTER(comedi_range), lsampl_t]
 # Physical value, range, maxdata
 
 comedi_get_maxdata = c.comedi_get_maxdata
-comedi_get_maxdata.restype = lsampl_t # Maxdata
-comedi_get_maxdata.argtypes = [POINTER(comedi_t),c_uint,c_uint]
+comedi_get_maxdata.restype = lsampl_t  # Maxdata
+comedi_get_maxdata.argtypes = [POINTER(comedi_t), c_uint, c_uint]
 # handle, subdevice, channel
 
 comedi_get_range = c.comedi_get_range
-comedi_get_range.restype = POINTER(comedi_range) # Range
-comedi_get_range.argtypes = [POINTER(comedi_t),c_uint,c_uint,c_uint]
+comedi_get_range.restype = POINTER(comedi_range)  # Range
+comedi_get_range.argtypes = [POINTER(comedi_t), c_uint, c_uint, c_uint]
 # handle, subdevice, channel, range_num
 
 
-c.comedi_data_read.restype = c_int # Error code (1 if fine else -1)
+c.comedi_data_read.restype = c_int  # Error code (1 if fine else -1)
 c.comedi_data_read.argtypes = [POINTER(comedi_t),
-                              c_uint,c_uint,c_uint,c_uint,POINTER(lsampl_t)]
+                              c_uint, c_uint, c_uint,
+                               c_uint, POINTER(lsampl_t)]
 # Handle, subdevice, channel, range_num, aref, data pointer
 
 
 def comedi_data_read(*args):
-  assert c.comedi_data_read(*(args+(byref(data),))) == 1,"Data read failed!"
+  assert c.comedi_data_read(*(args+(byref(data),))) == 1, "Data read failed!"
   return data
 
 
 comedi_data_write = c.comedi_data_write
-comedi_data_write.restype = c_int # Error code (1 if fine else -1)
-comedi_data_write.argtypes = [POINTER(comedi_t),c_uint,c_uint,c_uint,
-                                  c_uint,lsampl_t]
+comedi_data_write.restype = c_int  # Error code (1 if fine else -1)
+comedi_data_write.argtypes = [POINTER(comedi_t), c_uint, c_uint, c_uint,
+                                  c_uint, lsampl_t]
 # Handle, subdevice, channel, range_num, aref, data

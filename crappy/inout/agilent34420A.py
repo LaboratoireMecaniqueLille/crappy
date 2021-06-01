@@ -32,7 +32,7 @@ class Agilent34420a(InOut):
   """
 
   def __init__(self, mode=b"VOLT", device='/dev/ttyUSB0',
-      baudrate=9600, timeout=1):
+               baudrate=9600, timeout=1):
 
     InOut.__init__(self)
     # path to the device
@@ -58,13 +58,14 @@ class Agilent34420a(InOut):
     """
     Read the signal, return False if error and print 'bad serial'.
     """
+
     self.ser.write(b"READ?  \n")
     t = time()
     try:
-      return [t,float(self.ser.readline())]
-    except (serial.SerialException,ValueError):
+      return [t, float(self.ser.readline())]
+    except (serial.SerialException, ValueError):
       self.ser.flush()
-      return [t,0]
+      return [t, 0]
 
   def close(self):
     """

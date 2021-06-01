@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 
 from time import time
 
@@ -30,46 +30,50 @@ class AutoDrive(Block):
       actuator.
 
   """
+
   def __init__(self, **kwargs):
     Block.__init__(self)
-    for arg,default in [('actuator',{'name':'CM_drive'}),
-      ('P', 2000), # The gain for commanding the technical/actuator
-      # The direction to follow (X/Y +/-), depending on camera orientation
-      ('direction', 'Y-'),
-      ('range',2048), # The number of pixels in this direction
-      ('max_speed',200000) # To avoid loosing spots swhen going to fast
-        ]:
-      setattr(self,arg,kwargs.get(arg,default))
+    for arg, default in [('actuator', {'name': 'CM_drive'}),
+                         ('P', 2000),
+                         # The gain for commanding the technical/actuator
+                         ('direction', 'Y-'),  # The direction to follow
+                         # (X/Y +/-), depending on camera orientation
+                         ('range', 2048),  # The number of pixels in this
+                         # direction
+                         ('max_speed', 200000)  # To avoid loosing spots
+                         # when going to fast
+                         ]:
+      setattr(self, arg, kwargs.get(arg, default))
       try:
         del kwargs[arg]
       except KeyError:
         pass
     if len(kwargs) != 0:
-      raise AttributeError("[AutoDrive] Unknown kwarg(s):"+str(kwargs))
+      raise AttributeError("[AutoDrive] Unknown kwarg(s):" + str(kwargs))
     sign = -1 if self.direction[1] == '-' else 1
     self.P *= sign
-    self.labels = ['t(s)','diff(pix)']
+    self.labels = ['t(s)', 'diff(pix)']
 
-  def get_center(self,data):
-    l = data['Coord(px)']
+  def get_center(self, data):
+    lst = data['Coord(px)']
     i = 0 if self.direction[0].lower() == 'y' else 1
-    l = [x[i] for x in l]
-    return (max(l)+min(l))/2
+    lst = [x[i] for x in lst]
+    return (max(lst) + min(lst)) / 2
 
   def prepare(self):
     actuator_name = self.actuator['name']
     self.actuator.pop('name')
     self.device = actuator_list[actuator_name](**self.actuator)
     self.device.open()
-    self.device.set_speed(0) # Make sure it is stopped
+    self.device.set_speed(0)  # Make sure it is stopped
 
   def loop(self):
     data = self.inputs[0].recv_last(blocking=True)
     t = time()
-    diff = self.get_center(data)-self.range/2
+    diff = self.get_center(data) - self.range / 2
     self.device.set_speed(
-        max(-self.max_speed,min(self.max_speed,int(self.P*diff))))
-    self.send([t-self.t0,diff])
+        max(-self.max_speed, min(self.max_speed, int(self.P * diff))))
+    self.send([t - self.t0, diff])
 
   def finish(self):
     self.device.set_speed(0)

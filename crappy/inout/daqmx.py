@@ -7,7 +7,7 @@ from .inout import InOut
 from .._global import OptionalModule
 try:
   import PyDAQmx
-except (ModuleNotFoundError,ImportError):
+except (ModuleNotFoundError, ImportError):
   PyDAQmx = OptionalModule("PyDAQmx")
 
 
@@ -19,6 +19,7 @@ def get_daqmx_devices_names():
     A list of all connected daqmx devices.
 
   """
+
   buffer_size = 4096
   buffer = PyDAQmx.create_string_buffer(buffer_size)
   PyDAQmx.DAQmxGetSysDevNames(buffer, buffer_size)
@@ -26,9 +27,9 @@ def get_daqmx_devices_names():
   return buffer.value.split(",")
 
 
-def listify(stuff, l):
-  r = stuff if isinstance(stuff, list) else [stuff] * l
-  assert len(r) == l, "Invalid list length for " + str(r)
+def listify(stuff, length):
+  r = stuff if isinstance(stuff, list) else [stuff] * length
+  assert len(r) == length, "Invalid list length for " + str(r)
   return r
 
 
@@ -49,11 +50,11 @@ class Daqmx(InOut):
         See niDAQ api for more details.
 
     - make_zero (list of bools, default: True): If True, the average value on
-      the channel at opening will be evaluated and substracted to the actual
+      the channel at opening will be evaluated and subtracted to the actual
       reading.
     - nperscan (int): If using streamer mode, number of readings to acquire
       on each get_stream call.
-    - samplerate (float): If using streamer mode, frequency of acquition
+    - samplerate (float): If using streamer mode, frequency of acquisition
       when calling get_stream.
     - out_channels (list of str/int, default: []): Names or ids of the output
       channels.
@@ -72,8 +73,8 @@ class Daqmx(InOut):
 
   def __init__(self, **kwargs):
     InOut.__init__(self)
-    # For now, kwargs like in_gain are eqivalent to gain
-    # (it is for consitency with out_gain, out_channels, etc...)
+    # For now, kwargs like in_gain are equivalent to gain
+    # (it is for consistency with out_gain, out_channels, etc...)
     for arg in kwargs:
       if arg in kwargs and arg.startswith('in_'):
         kwargs[arg[3:]] = kwargs[arg]
@@ -136,7 +137,7 @@ class Daqmx(InOut):
 
   def open(self):
     PyDAQmx.DAQmxResetDevice(self.device)
-    self.handle,self.out_handle = None,None
+    self.handle, self.out_handle = None, None
     # IN channels
     if self.channels:
       self.handle = PyDAQmx.TaskHandle()
@@ -170,6 +171,7 @@ class Daqmx(InOut):
 
     First element is the time, others are readings of each channel.
     """
+
     return [i[0] for i in self.get_single(1)]
 
   def get_single(self, npoints=None):
@@ -198,6 +200,7 @@ class Daqmx(InOut):
       First list is the time, the others are the read voltages.
 
     """
+
     if npoints is None:
       npoints = self.nperscan
     PyDAQmx.DAQmxCfgSampClkTiming(self.handle, "",
@@ -232,6 +235,7 @@ class Daqmx(InOut):
       ith argument is the value to set to the ith channel.
 
     """
+
     assert len(args) == len(self.out_channels)
     data = np.array(args, dtype=np.float64) * self.out_gain + self.out_offset
     PyDAQmx.DAQmxWriteAnalogF64(self.out_handle, 1, 1, 10.0,
@@ -239,6 +243,7 @@ class Daqmx(InOut):
 
   def close(self):
     """Close the connection."""
+
     if self.handle:
       PyDAQmx.DAQmxStopTask(self.handle)
       PyDAQmx.DAQmxClearTask(self.handle)

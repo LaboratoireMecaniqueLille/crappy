@@ -12,9 +12,8 @@ try:
   from skimage.filters import threshold_otsu
   from skimage.morphology import label
   from skimage.measure import regionprops
-except ModuleNotFoundError:
-  from .._global import OptionalModule
-  label = OptionalModule("skimage","Please install scikit-image to use"
+except (ModuleNotFoundError, ImportError):
+  label = OptionalModule("skimage", "Please install scikit-image to use"
   "Video-extenso")
   threshold_otsu = regionprops = label
 
@@ -23,8 +22,9 @@ class LostSpotError(Exception):
   pass
 
 
-def overlapping(box1,box2):
+def overlapping(box1, box2):
   """Returns True if box1 and box2 are overlapping or included in each other"""
+
   for i in box1[::2]:
     if box2[0] < i < box2[2]:
       if not (box1[3] <= box2[1] or box2[3] <= box1[1]):
@@ -33,10 +33,10 @@ def overlapping(box1,box2):
     if box2[1] < i < box2[3]:
       if not (box1[2] <= box2[0] or box2[2] <= box1[0]):
         return True
-  #Inclusion
-  for b1,b2 in ((box1,box2),(box2,box1)):
-    if (b1[0] <= b2[0] <= b2[2] <= b1[2]) and\
-        (b1[1] <= b2[1] <= b2[3] <= b1[3]):
+  # Inclusion
+  for b1, b2 in ((box1, box2), (box2, box1)):
+    if (b1[0] <= b2[0] <= b2[2] <= b1[2]) and \
+         (b1[1] <= b2[1] <= b2[3] <= b1[3]):
       return True
   return False
 
@@ -56,45 +56,46 @@ class Video_extenso(object):
       box of the spot on each axis, divided by its original length.
 
   """
-  def __init__(self,**kwargs):
-    for arg,default in [("white_spots",False),
+
+  def __init__(self, **kwargs):
+    for arg, default in [("white_spots", False),
                         # Set to True if spots are lighter than the
                         # surroundings, else set to False
-                        ("update_thresh",False),
+                        ("update_thresh", False),
                         # Should the threshold be updated in each round ?
                         # lower chance to loose the spots, but more noise
                         # in the measurements
-                        ("num_spots","auto"),
+                        ("num_spots", "auto"),
                         # Can be either 'auto',2,3 or 4
                         # It will help for spot detection
                         # it allows to force detection of a given number
                         # of spots (auto works fine most of the time)
-                        ("safe_mode",False),
+                        ("safe_mode", False),
                         # If set to False, it will try hard to catch the
                         # spots when losing them.
                         # Could result in incoherent values without crash.
                         # Set it to True when security is a concern.
-                        ("border",5),
+                        ("border", 5),
                         # The number of pixel that will be added to the limits
                         # of the boundingbox
-                        ("min_area",150),
+                        ("min_area", 150),
                         # Filters regions with an area smaller than this values
                         # among the selected regions
-                        ("blur",5),
+                        ("blur", 5),
                         # Median blur to be added to the image
                         # to smooth out irregularities and make
                         # detection more reliable
-                        ]:
-      setattr(self,arg,kwargs.pop(arg,default))
-    assert not kwargs,"Invalid kwarg in ve:"+str(kwargs)
-    assert self.num_spots in ['auto',2,3,4],"Invalid number of spots!"
+                         ]:
+      setattr(self, arg, kwargs.pop(arg, default))
+    assert not kwargs, "Invalid kwarg in ve:" + str(kwargs)
+    assert self.num_spots in ['auto', 2, 3, 4], "Invalid number of spots!"
     self.spot_list = []
     self.fallback_mode = False
     self.consecutive_overlaps = 0
     # This number of pixel will be added to the window sending the
     # spot image to the process
 
-  def detect_spots(self,img,oy,ox):
+  def detect_spots(self, img, oy, ox):
     """
     Detect the spots in img, subframe of the full image.
 
@@ -102,144 +103,149 @@ class Video_extenso(object):
       ox and oy represent the offset of the subframe in the full image.
 
     """
+
     # Finding out how many spots we should detect
     # If L0 is already saved, we have already counted the spots, else
     # see the num_spot parameter
-    #img = rank.median(img,np.ones((15,15),dtype=img.dtype))
+    # img = rank.median(img, np.ones((15, 15), dtype=img.dtype))
     if self.blur and self.blur > 1:
-      img = cv2.medianBlur(img,self.blur)
+      img = cv2.medianBlur(img, self.blur)
     self.thresh = threshold_otsu(img)
     if self.white_spots:
       bw = img > self.thresh
     else:
       bw = img <= self.thresh
-    #bw = dilation(bw,np.ones((3,3),dtype=img.dtype))
-    #bw = erosion(bw,np.ones((3,3),dtype=img.dtype))
+    # bw = dilation(bw,np.ones((3, 3), dtype=img.dtype))
+    # bw = erosion(bw,np.ones((3, 3), dtype=img.dtype))
     bw = label(bw)
     # Is it really useful?
-    #bw[0,:] = bw[-1,:] = bw[:,0] = bw[:,-1] = -1
-    l = regionprops(bw)
+    # bw[0, :] = bw[-1, :] = bw[:, 0] = bw[:, -1] = -1
+    reg_prop = regionprops(bw)
     # Remove the regions that are clearly not spots
-    l = [r for r in l if r.solidity > .8]
-    # Remove the too small regions (150 is reeaally tiny)
-    l = [r for r in l if r.area > self.min_area]
-    l = sorted(l,key=lambda r:r.area,reverse=True)
+    reg_prop = [r for r in reg_prop if r.solidity > .8]
+    # Remove the too small regions (150 is reeally tiny)
+    reg_prop = [r for r in reg_prop if r.area > self.min_area]
+    reg_prop = sorted(reg_prop, key=lambda r: r.area, reverse=True)
     i = 0
-    while i < len(l)-1:
-      r1 = l[i]
-      for j in range(i+1,len(l)):
-        r2 = l[j]
-        if overlapping(r1['bbox'],r2['bbox']):
+    while i < len(reg_prop) - 1:
+      r1 = reg_prop[i]
+      for j in range(i + 1, len(reg_prop)):
+        r2 = reg_prop[j]
+        if overlapping(r1['bbox'], r2['bbox']):
           print("Overlap")
           if r1.area > r2.area:
-            del l[j]
+            del reg_prop[j]
           else:
-            del l[i]
-          i-=1
+            del reg_prop[i]
+          i -= 1
           break
-      i+=1
+      i += 1
     if self.num_spots == 'auto':
       # Remove the smallest region until we have a valid number
       # and all of them are larger than "min_area" pix
-      while len(l) not in [0,2,3,4]:
-        del l[-1]
-      if len(l) == 0:
+      while len(reg_prop) not in [0, 2, 3, 4]:
+        del reg_prop[-1]
+      if len(reg_prop) == 0:
         print("Not spots found!")
         return
     else:
-      if len(l) < self.num_spots:
-        print("Found only",len(l),"spots when expecting",self.num_spots)
+      if len(reg_prop) < self.num_spots:
+        print("Found only", len(reg_prop),
+              "spots when expecting", self.num_spots)
         return
-      l = l[:self.num_spots] # Keep the largest ones
-    print("Detected",len(l),"spots")
+      reg_prop = reg_prop[:self.num_spots]  # Keep the largest ones
+    print("Detected", len(reg_prop), "spots")
     self.spot_list = []
-    for r in l:
+    for r in reg_prop:
       d = {}
-      y,x = r.centroid
+      y, x = r.centroid
       d['y'] = oy + y
       d['x'] = ox + x
-      #l1 = r.major_axis_length
-      #l2 = r.minor_axis_length
-      #s,c = np.sin(r.orientation)**2,np.cos(r.orientation)**2
-      #lx = (l1*c+l2*s)/2
-      #ly = (l1*s+l2*c)/2
-      #d['bbox'] = d['y']-ly,d['x']-lx,d['y']+ly,d['x']+lx
-      #d['bbox'] = d['min_col'],d['min_row'],d['max_col'],d['max_row']
-      #d['bbox'] = tuple([int(i+.5) for i in d['bbox']])
-      d['bbox'] = tuple([r['bbox'][i]+(oy,ox)[i%2] for i in range(4)])
+      # l1 = r.major_axis_length
+      # l2 = r.minor_axis_length
+      # s, c = np.sin(r.orientation) ** 2, np.cos(r.orientation) ** 2
+      # lx = (l1 * c + l2 * s) / 2
+      # ly = (l1 * s + l2 * c) / 2
+      # d['bbox'] = d['y'] - ly,d['x'] - lx,d['y'] + ly,d['x'] + lx
+      # d['bbox'] = d['min_col'], d['min_row'], d['max_col'], d['max_row']
+      # d['bbox'] = tuple([int(i + .5) for i in d['bbox']])
+      d['bbox'] = tuple([r['bbox'][i] + (oy, ox)[i % 2] for i in range(4)])
       self.spot_list.append(d)
     print(self.spot_list)
 
   def save_length(self):
-    if not hasattr(self,"spot_list"):
+    if not hasattr(self, "spot_list"):
       print("You must select the spots first!")
       return
-    if not hasattr(self,"tracker"):
+    if not hasattr(self, "tracker"):
       self.start_tracking()
     y = [s['y'] for s in self.spot_list]
     x = [s['x'] for s in self.spot_list]
-    self.l0y = max(y)-min(y)
-    self.l0x = max(x)-min(x)
+    self.l0y = max(y) - min(y)
+    self.l0x = max(x) - min(x)
     self.num_spots = len(self.spot_list)
 
-  def enlarged_window(self,window,shape):
+  def enlarged_window(self, window, shape):
     """Returns the slices to get the window around the spot."""
-    s1 = slice(max(0,window[0]-self.border),
-        min(shape[0],window[2]+self.border))
-    s2 = slice(max(0,window[1]-self.border),
-        min(shape[1],window[3]+self.border))
-    return s1,s2
+
+    s1 = slice(max(0, window[0] - self.border),
+        min(shape[0], window[2] + self.border))
+    s2 = slice(max(0, window[1] - self.border),
+        min(shape[1], window[3] + self.border))
+    return s1, s2
 
   def start_tracking(self):
     """Will spawn a process per spot, which goal is to track the spot and
     send the new coordinate after each update."""
+
     self.tracker = []
     self.pipe = []
-    for s in self.spot_list:
-      i,o = Pipe()
+    for _ in self.spot_list:
+      i, o = Pipe()
       self.pipe.append(i)
-      self.tracker.append(Tracker(o,white_spots=self.white_spots,
+      self.tracker.append(Tracker(o, white_spots=self.white_spots,
                       thresh='auto' if self.update_thresh else self.thresh,
-                      safe_mode=self.safe_mode,blur=self.blur))
+                      safe_mode=self.safe_mode, blur=self.blur))
       self.tracker[-1].start()
 
-  def get_def(self,img):
+  def get_def(self, img):
     """
     The "heart" of the videoextenso.
     Will keep track of the spots and return the computed deformation.
     """
-    if not hasattr(self,"l0x"):
+
+    if not hasattr(self, "l0x"):
       print("L0 not saved, saving it now.")
       self.save_length()
-    for p,s in zip(self.pipe,self.spot_list):
-      win = self.enlarged_window(s['bbox'],img.shape)
-      #print("DEBUG: win is",s['bbox'],"sending",win)
-      p.send(((win[0].start,win[1].start),img[win]))
+    for p, s in zip(self.pipe, self.spot_list):
+      win = self.enlarged_window(s['bbox'], img.shape)
+      # print("DEBUG: win is", s['bbox'], "sending", win)
+      p.send(((win[0].start, win[1].start), img[win]))
     ol = False
-    for p,s in zip(self.pipe,self.spot_list):
+    for p, s in zip(self.pipe, self.spot_list):
       r = p.recv()
-      if isinstance(r,str):
+      if isinstance(r, str):
         self.stop_tracking()
         raise LostSpotError("Tracker returned"+r)
-      l = list(self.spot_list)
-      l.remove(s)
+      lst = list(self.spot_list)
+      lst.remove(s)
       # Please excuse me for the following line,
       # understand: "if this box overlaps any existing box"
-      if any([overlapping(a_b[0],a_b[1]['bbox'])
-        for a_b in zip([r['bbox']]*len(l),l)]):
+      if any([overlapping(a_b[0], a_b[1]['bbox'])
+        for a_b in zip([r['bbox']] * len(lst), lst)]):
         if self.safe_mode:
           print("Overlapping!")
           self.stop_tracking()
           raise LostSpotError("[safe mode] Overlap")
         print("Overlap! Reducing spot window...")
         ol = True
-        s['bbox'] = (min(s['bbox'][0]+1,int(s['y'])-2),
-                     min(s['bbox'][1]+1,int(s['x'])-2),
-                     max(s['bbox'][2]-1,int(s['y'])+2),
-                     max(s['bbox'][3]-1,int(s['x'])+2))
+        s['bbox'] = (min(s['bbox'][0] + 1, int(s['y']) - 2),
+                     min(s['bbox'][1] + 1, int(s['x']) - 2),
+                     max(s['bbox'][2] - 1, int(s['y']) + 2),
+                     max(s['bbox'][3] - 1, int(s['x']) + 2))
         continue
       s.update(r)
-      #print("DEBUG updating spot to",s)
+      # print("DEBUG updating spot to", s)
     if ol:
       self.consecutive_overlaps += 1
       if self.consecutive_overlaps >= 10:
@@ -249,19 +255,20 @@ class Video_extenso(object):
       self.consecutive_overlaps = 0
     y = [s['y'] for s in self.spot_list]
     x = [s['x'] for s in self.spot_list]
-    eyy = (max(y)-min(y))/self.l0y - 1
-    exx = (max(x)-min(x))/self.l0x - 1
-    return [100*eyy,100*exx]
+    eyy = (max(y) - min(y)) / self.l0y - 1
+    exx = (max(x) - min(x)) / self.l0x - 1
+    return [100 * eyy, 100 * exx]
 
   def stop_tracking(self):
     for p in self.pipe:
-      p.send(("","stop"))
+      p.send(("", "stop"))
 
 
 class Tracker(Process):
   """Process tracking a spot for videoextensometry."""
-  def __init__(self,pipe,white_spots=False,thresh='auto',safe_mode=True,
-      blur=False):
+
+  def __init__(self, pipe, white_spots=False, thresh='auto', safe_mode=True,
+               blur=False):
     Process.__init__(self)
     self.pipe = pipe
     self.white_spots = white_spots
@@ -275,66 +282,67 @@ class Tracker(Process):
       self.thresh = thresh
 
   def run(self):
-    #print("DEBUG: process starting, thresh=",self.thresh)
+    # print("DEBUG: process starting, thresh=", self.thresh)
     while True:
       try:
-        offset,img = self.pipe.recv()
+        offset, img = self.pipe.recv()
       except KeyboardInterrupt:
         break
       if type(img) != np.ndarray:
         break
-      oy,ox = offset
+      oy, ox = offset
       try:
         r = self.evaluate(img)
       except Exception:
         raise LostSpotError
-      if not isinstance(r,dict):
+      if not isinstance(r, dict):
         r = self.fallback(img)
-        if not isinstance(r,dict):
+        if not isinstance(r, dict):
           raise LostSpotError
       else:
         self.fallback_mode = False
       r['y'] += oy
       r['x'] += ox
-      miny,minx,maxy,maxx = r['bbox']
-      #print("DEBUG: bbox=",r['bbox'])
-      r['bbox'] = miny+oy,minx+ox,maxy+oy,maxx+ox
-      #print("DEBUG: new bbox=",r['bbox'])
+      miny, minx, maxy, maxx = r['bbox']
+      # print("DEBUG: bbox=", r['bbox'])
+      r['bbox'] = miny + oy, minx + ox, maxy + oy, maxx + ox
+      # print("DEBUG: new bbox=", r['bbox'])
       self.pipe.send(r)
-    #print("DEBUG: Process terminating")
+    # print("DEBUG: Process terminating")
 
-  def evaluate(self,img):
+  def evaluate(self, img):
     if self.blur and self.blur > 1:
-      img = cv2.medianBlur(img,self.blur)
+      img = cv2.medianBlur(img, self.blur)
     if self.auto_thresh:
       self.thresh = threshold_otsu(img)
     if self.white_spots:
       bw = (img > self.thresh).astype(np.uint8)
     else:
       bw = (img <= self.thresh).astype(np.uint8)
-    #cv2.imshow(self.name,bw*255)
-    #cv2.waitKey(5)
-    if not .1* img.size < np.count_nonzero(bw) < .8*img.size:
+    # cv2.imshow(self.name, bw * 255)
+    # cv2.waitKey(5)
+    if not .1 * img.size < np.count_nonzero(bw) < .8 * img.size:
       print("reevaluating threshold!!")
-      print("Ratio:",np.count_nonzero(bw)/img.size)
-      print("old:",self.thresh)
+      print("Ratio:", np.count_nonzero(bw) / img.size)
+      print("old:", self.thresh)
       self.thresh = threshold_otsu(img)
-      print("new:",self.thresh)
+      print("new:", self.thresh)
     m = cv2.moments(bw)
     r = {}
     try:
-      r['x'] = m['m10']/m['m00']
-      r['y'] = m['m01']/m['m00']
+      r['x'] = m['m10'] / m['m00']
+      r['y'] = m['m01'] / m['m00']
     except ZeroDivisionError:
       return -1
-    x,y,w,h = cv2.boundingRect(bw)
-    #if (h,w) == img.shape:
+    x, y, w, h = cv2.boundingRect(bw)
+    # if (h, w) == img.shape:
     #  return -1
-    r['bbox'] = y,x,y+h,x+w
+    r['bbox'] = y, x, y + h, x + w
     return r
 
-  def fallback(self,img):
+  def fallback(self, img):
     """Called when the spots are lost."""
+
     if self.safe_mode or self.fallback_mode:
       if self.fallback_mode:
         self.pipe.send("Fallback failed")

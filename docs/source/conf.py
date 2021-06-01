@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -14,7 +14,6 @@
 #
 import os
 import sys
-import sphinx_rtd_theme
 sys.path.insert(0, os.path.abspath('../..'))
 sys.setrecursionlimit(1500)
 
@@ -122,7 +121,7 @@ html_static_path = []
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-html_sidebars = {'**': ['searchbox.html', 'globaltoc.html', 'sourcelink.html'] }
+html_sidebars = {'**': ['searchbox.html', 'globaltoc.html', 'sourcelink.html']}
 
 
 # -- Options for HTMLHelp output ---------------------------------------------

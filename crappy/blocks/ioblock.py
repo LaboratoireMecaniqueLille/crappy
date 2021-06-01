@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 from .block import Block
 from ..inout import inout_list, in_list, out_list
@@ -12,7 +12,7 @@ class IOBlock(Block):
     Then can be used as sensor, actuators or both.
 
   It only takes a single argument:
-    - name (str): The name of the inout class to instanciate.
+    - name (str): The name of the inout class to instantiate.
 
   It can take all the settings as kwargs:
     - freq (float or None, default: None): The looping frequency
@@ -60,7 +60,7 @@ class IOBlock(Block):
                          ('trigger', None),
                          ('streamer', False),
                          ('initial_cmd', 0),
-                         ('exit_values',None)
+                         ('exit_values', None)
                          ]:
       setattr(self, arg, kwargs.pop(arg, default))
 
@@ -102,6 +102,7 @@ class IOBlock(Block):
 
   def read(self):
     """Will read the device and send the data."""
+
     if self.streamer:
       if self.stream_idle:
         self.device.start_stream()
@@ -127,10 +128,10 @@ class IOBlock(Block):
       else:
         self.read()
     if 'w' in self.mode:
-      l = self.get_last(self.to_get)
+      lst = self.get_last(self.to_get)
       cmd = []
       for label in self.cmd_labels:
-        cmd.append(l[label])
+        cmd.append(lst[label])
       self.device.set_cmd(*cmd)
 
   def finish(self):

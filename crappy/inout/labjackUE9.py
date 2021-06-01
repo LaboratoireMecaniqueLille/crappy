@@ -3,12 +3,19 @@
 from time import time
 
 from .inout import InOut
+from .._global import OptionalModule
+
+try:
+  from ue9 import UE9
+except (ModuleNotFoundError, ImportError):
+  UE9 = OptionalModule("ue9")
 
 
 def get_channel_number(channels):
   """
   Register needs to be called with the channel name as int.
   """
+
   for i, channel in enumerate(channels):
     if isinstance(str, channel):
       channels[i] = int(channel[-1])
@@ -19,6 +26,7 @@ def format_lists(list_to_format, length):
   In case the user only specifies one parameter, and wants
   it applied to all inputs.
   """
+
   if not isinstance(list_to_format, list):
     list_to_format = [list_to_format]
   if length != 0:
@@ -63,7 +71,6 @@ class Labjack_ue9(InOut):
     self.make_zero = format_lists(self.make_zero, self.nb_channels)
 
   def open(self):
-    from ue9 import UE9
     self.handle = UE9()
     if any(self.make_zero):
       off = self.eval_offset()

@@ -1,4 +1,4 @@
-#coding:utf-8
+# coding:utf-8
 
 from .constant import Constant
 from .cyclic import Cyclic

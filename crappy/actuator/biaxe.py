@@ -20,6 +20,7 @@ class Biaxe(Actuator):
     - timeout (int or float, default: 1): Serial timeout.
 
   """
+
   def __init__(self, port='/dev/ttyUSB0', baudrate=38400, timeout=1):
     Actuator.__init__(self)
     self.port = port
@@ -38,18 +39,21 @@ class Biaxe(Actuator):
 
   def close(self):
     """Close the designated port."""
+
     self.stop()
     sleep(.01)
     self.ser.close()
 
   def clear_errors(self):
     """Reset errors."""
+
     self.ser.write("CLRFAULT\r\n")
     self.ser.write("OPMODE 0\r\n EN\r\n")
 
   def set_speed(self, speed):
     """Re-define the speed of the motor. 1 = 0.002 mm/s."""
-    s = int(speed/.002) # Convert to mm/s
-    if s != self.speed: # If it changed since last time (to avoid spamming)
+
+    s = int(speed/.002)  # Convert to mm/s
+    if s != self.speed:  # If it changed since last time (to avoid spamming)
       self.ser.write("J " + str(s) + "\r\n")
       self.speed = s

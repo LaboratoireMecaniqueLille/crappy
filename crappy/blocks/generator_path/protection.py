@@ -1,12 +1,11 @@
-#coding: utf-8
-
+# coding: utf-8
 
 from .path import Path
 
 
 class Protection(Path):
   """
-  Useful to protect samples from being pulled appart when setting up a test.
+  Useful to protect samples from being pulled apart when setting up a test.
 
   Note:
     By default will send value0.
@@ -15,7 +14,7 @@ class Protection(Path):
 
     While condition2 is met, will return value2.
 
-    If condition1 and condition2 are met simultaneaously, the first one met
+    If condition1 and condition2 are met simultaneously, the first one met
     will prevail. If met at the same time, condition1 will prevail.
 
   Args:
@@ -26,10 +25,10 @@ class Protection(Path):
     - condition2 (str): Representing the second condition.
     - value2: value to send when condition2 is met.
   """
-  def __init__(self,time,cmd,condition1,condition2,value1,value2,value0=0,
-      verbose=False):
-    Path.__init__(self,time,cmd)
-    self.value = (value0,value1,value2)
+  def __init__(self, time, cmd, condition1, condition2, value1, value2,
+               value0=0, verbose=False):
+    Path.__init__(self, time, cmd)
+    self.value = (value0, value1, value2)
     self.condition1 = self.parse_condition(condition1)
     self.condition2 = self.parse_condition(condition2)
     s = '<' if '<' in condition1 else '>'
@@ -39,7 +38,7 @@ class Protection(Path):
     self.verbose = verbose
     self.status = 0
 
-  def get_cmd(self,data):
+  def get_cmd(self, data):
     if self.status == 0:
       if self.condition1(data):
         self.status = 1

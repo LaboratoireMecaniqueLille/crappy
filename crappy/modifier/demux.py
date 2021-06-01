@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 import numpy as np
 
@@ -26,17 +26,18 @@ class Demux(Modifier):
     - time_label: The name of the label of the time table.
 
   """
-  def __init__(self,*labels,**kwargs):
+
+  def __init__(self, *labels, **kwargs):
     Modifier.__init__(self)
-    if len(labels) == 1 and isinstance(labels[0],list):
+    if len(labels) == 1 and isinstance(labels[0], list):
       self.labels = labels[0]
     else:
       self.labels = labels
-    self.stream = kwargs.pop("stream","stream")
-    self.mean = kwargs.pop("mean",False)
-    self.time = kwargs.pop("time_label","t(s)")
-    self.transpose = kwargs.pop("transpose",False)
-    assert not kwargs,"Demux modifier got invalid kwarg:"+str(kwargs)
+    self.stream = kwargs.pop("stream", "stream")
+    self.mean = kwargs.pop("mean", False)
+    self.time = kwargs.pop("time_label", "t(s)")
+    self.transpose = kwargs.pop("transpose", False)
+    assert not kwargs, "Demux modifier got invalid kwarg:" + str(kwargs)
     if self.mean:
       self.evaluate = self.evaluate_mean
     else:
@@ -45,14 +46,14 @@ class Demux(Modifier):
   def evaluate(self):
     pass
 
-  def evaluate_nomean(self,data):
+  def evaluate_nomean(self, data):
     if 0 in data[self.stream].shape:
       return data
-    for i,n in enumerate(self.labels):
+    for i, n in enumerate(self.labels):
       if self.transpose:
-        data[n] = data[self.stream][i,0]
+        data[n] = data[self.stream][i, 0]
       else:
-        data[n] = data[self.stream][0,i]
+        data[n] = data[self.stream][0, i]
     del data[self.stream]
     try:
       data[self.time] = data[self.time][0]
@@ -60,14 +61,14 @@ class Demux(Modifier):
       pass
     return data
 
-  def evaluate_mean(self,data):
+  def evaluate_mean(self, data):
     if 0 in data[self.stream].shape:
       return data
-    for i,n in enumerate(self.labels):
+    for i, n in enumerate(self.labels):
       if self.transpose:
-        data[n] = np.mean(data[self.stream][i,:])
+        data[n] = np.mean(data[self.stream][i, :])
       else:
-        data[n] = np.mean(data[self.stream][:,i])
+        data[n] = np.mean(data[self.stream][:, i])
     del data[self.stream]
     data[self.time] = np.mean(data[self.time])
     return data

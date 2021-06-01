@@ -22,8 +22,9 @@ class Server(Block):
     is appended.
 
   """
-  def __init__(self,port=1148,nclient=1,header=b'crappy_h\x01\x02\x03',
-      bs=4096,delay=.1,dump_method='pickle'):
+
+  def __init__(self, port=1148, nclient=1, header=b'crappy_h\x01\x02\x03',
+               bs=4096, delay=.1, dump_method='pickle'):
 
     Block.__init__(self)
     self.niceness = -10
@@ -43,14 +44,14 @@ class Server(Block):
       self.dump = dump_method
 
   def prepare(self):
-    self.socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    self.socket.bind(('',self.port))
+    self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    self.socket.bind(('', self.port))
     self.socket.listen(self.nclient)
     while len(self.client) < self.nclient:
-      conn,addr = self.socket.accept()
+      conn, addr = self.socket.accept()
       self.client.append(conn)
-      print("New client:",addr,
-          "(%d/%d)"%(len(self.client),self.nclient))
+      print("New client:", addr,
+          "(%d/%d)" % (len(self.client), self.nclient))
 
   def loop(self):
     data = self.inputs[0].recv_delay(self.delay)
@@ -58,9 +59,9 @@ class Server(Block):
     h = []
     nbytes = len(s)
     while nbytes:
-      h.append(nbytes%256)
-      nbytes = (nbytes - h[-1])//256
-    s = self.header+bytes([len(h)])+b"".join([bytes([c]) for c in h])+s
+      h.append(nbytes % 256)
+      nbytes = (nbytes - h[-1]) // 256
+    s = self.header+bytes([len(h)]) + b"".join([bytes([c]) for c in h]) + s
     for c in self.client:
       c.send(s)
 

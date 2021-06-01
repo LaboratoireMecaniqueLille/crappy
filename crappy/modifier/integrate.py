@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 from .modifier import Modifier
 
@@ -11,20 +11,21 @@ class Integrate(Modifier):
     The time label must be specified with time='...'.
 
   """
-  def __init__(self,label,time='t(s)',out_label=None):
+
+  def __init__(self, label, time='t(s)', out_label=None):
     Modifier.__init__(self)
     self.label = label
     self.t = time
     if out_label is None:
-      self.out_label = 'i_'+self.label
+      self.out_label = 'i_' + self.label
     else:
       self.out_label = out_label
     self.last_t = 0
     self.val = 0
 
-  def evaluate(self,data):
+  def evaluate(self, data):
     t = data[self.t]
-    self.val += (t-self.last_t)*data[self.label]
+    self.val += (t - self.last_t) * data[self.label]
     self.last_t = t
     data[self.out_label] = self.val
     return data

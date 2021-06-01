@@ -1,4 +1,5 @@
-#coding: utf-8
+# coding: utf-8
+
 from __future__ import print_function
 
 import crappy
@@ -20,20 +21,19 @@ Type 'h' or 'help' to see this message again
 """
 
 
-
-actuator_list = []
-actuator_list.append(crappy.actuator.Biaxe(port='/dev/ttyS4')) # Motor 1
-actuator_list.append(crappy.actuator.Biaxe(port='/dev/ttyS5')) # Motor 2
-actuator_list.append(crappy.actuator.Biaxe(port='/dev/ttyS6')) # Motor 3
-actuator_list.append(crappy.actuator.Biaxe(port='/dev/ttyS7')) # Motor 4
+actuator_list = list()
+actuator_list.append(crappy.actuator.Biaxe(port='/dev/ttyS4'))  # Motor 1
+actuator_list.append(crappy.actuator.Biaxe(port='/dev/ttyS5'))  # Motor 2
+actuator_list.append(crappy.actuator.Biaxe(port='/dev/ttyS6'))  # Motor 3
+actuator_list.append(crappy.actuator.Biaxe(port='/dev/ttyS7'))  # Motor 4
 for act in actuator_list:
   act.open()
 
 actuator_dict = {}
-i=0
+i = 0
 for c in 'abcd':
   actuator_dict[c] = [actuator_list[i]]
-  i+=1
+  i += 1
 actuator_dict['x'] = actuator_dict['c']+actuator_dict['d']
 actuator_dict['y'] = actuator_dict['a']+actuator_dict['b']
 
@@ -44,14 +44,14 @@ while True:
   user_input = raw_input("Axe and speed ?> ").lower()
   if user_input == 'q':
     break
-  elif user_input in ['h','help','?']:
+  elif user_input in ['h', 'help', '?']:
     print(help_string)
     continue
   try:
     axe = user_input[:1]
     speed = float(user_input[1:].strip())
   except ValueError:
-    print("Unknow command, stopping")
+    print("Unknown command, stopping")
     for axe in actuator_list:
       axe.set_speed(0)
     continue

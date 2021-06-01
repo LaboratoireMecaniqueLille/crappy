@@ -1,6 +1,5 @@
 # coding: utf-8
 
-
 import tkinter as tk
 from tkinter import ttk
 
@@ -24,7 +23,7 @@ class FrameObjects(tk.Frame):
   """
 
   def __init__(self):
-    pass
+    super().__init__()
 
   def add_button(self, **kwargs):
     """
@@ -39,6 +38,7 @@ class FrameObjects(tk.Frame):
       command: the command to be executed, OR the string to pass to
       submit_command.
     """
+
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     name = kwargs.pop('name', 'Button')
@@ -52,7 +52,7 @@ class FrameObjects(tk.Frame):
     assert not kwargs, 'Error: unknown arg(s) in button definition:' + str(
       kwargs)
 
-    if command_type is not 'to_serial':
+    if command_type != 'to_serial':
       widgets_dict[name] = tk.Button(frame,
                                      text=text,
                                      bg=bg,
@@ -70,7 +70,8 @@ class FrameObjects(tk.Frame):
                                        command),
                                      font=("Courier bold", 11))
 
-  def add_label(self, **kwargs):
+  @staticmethod
+  def add_label(**kwargs):
     """
     To add label.
 
@@ -78,6 +79,7 @@ class FrameObjects(tk.Frame):
     - font: to specify the text font, size, style.
     - relief: to add some relief to the label.
     """
+
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     text = kwargs.pop('text', 'label')
@@ -102,6 +104,7 @@ class FrameObjects(tk.Frame):
     - variable: the variables name, which will be set as an attribute.
     - width : the width of the entry box.
     """
+
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     entry_name = kwargs.pop('name', 'name')
@@ -112,7 +115,7 @@ class FrameObjects(tk.Frame):
     if not variable:
       setattr(self, entry_name + '_var', vartype)
       widgets_dict[entry_name] = tk.Entry(frame,
-                                        textvariable=getattr(self, entry_name+
+                                        textvariable=getattr(self, entry_name +
                                         '_var'),
                                           width=width)
     else:
@@ -125,6 +128,7 @@ class FrameObjects(tk.Frame):
     To add a checkbutton. Will create automatically a boolean attribute,
     which will represent the checkbutton state.
     """
+
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     text = kwargs.pop("text", None)
@@ -147,6 +151,7 @@ class FrameObjects(tk.Frame):
     - default_index: to define which default entry to show on the combobox.
     - var
     """
+
     widgets_dict = kwargs.pop("widgets_dict", None)
     frame = kwargs.pop("frame", None)
     entries = kwargs.pop("entries", None)
@@ -166,10 +171,12 @@ class FrameObjects(tk.Frame):
 
     widgets_dict[name] = combo_box
 
-  def add_scale(self, **kwargs):
+  @staticmethod
+  def add_scale(**kwargs):
     """
     To add a scrollbar
     """
+
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     name = kwargs.pop('name', 'Button')
@@ -181,7 +188,8 @@ class FrameObjects(tk.Frame):
                                   orient=tk.HORIZONTAL,
                                   )
 
-  def add_text(self, **kwargs):
+  @staticmethod
+  def add_text(**kwargs):
     widgets_dict = kwargs.pop('widgets_dict', None)
     frame = kwargs.pop('frame', None)
     text = kwargs.pop('text', 'label')

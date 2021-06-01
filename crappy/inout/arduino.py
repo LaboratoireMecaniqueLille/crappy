@@ -31,8 +31,8 @@ def collect_serial(arduino, queue):
 
 class ArduinoHandler(object):
   """
-  This class creates every object (GUIs, Arduinos) and handles communication
-  between them. inputs/ouputs of arduino and GUIs.
+  This class creates every object (GUIs, Arduino) and handles communication
+  between them. inputs/outputs of arduino and GUIs.
 
   Note:
     The user doesn't interact directly with it, the Arduino IOBlock will create
@@ -69,6 +69,7 @@ class ArduinoHandler(object):
   def init_main_window(self):
     """Creates every frame specified by user, and creates links between proper
     objects."""
+
     self.root = tk.Tk()
     self.root.resizable(width=False, height=False)
     self.root.title("Arduino on crappy v1.3")
@@ -112,6 +113,7 @@ class ArduinoHandler(object):
       Received information, or None if nothing received in 0.01 secs.
 
     """
+
     try:
       # Receiving from arduino
       serial_received = self.collect_serial_queue.get(block=True,
@@ -128,10 +130,11 @@ class ArduinoHandler(object):
       pass
     return serial_received
 
-  def send_GUIs(self, serial_received):
+  def send_guis(self, serial_received):
     """
     Send to every created GUI information received from arduino (if applicable)
     """
+
     if "monitor" in self.frames:
       self.monitor_frame.update_widgets(serial_received)
 
@@ -153,6 +156,7 @@ class ArduinoHandler(object):
       If minitens GUI is created, it returns a dict.
 
     """
+
     if isinstance(serial_received, dict):
       self.queue_process.put(serial_received)
     elif isinstance(serial_received, str):
@@ -167,10 +171,11 @@ class ArduinoHandler(object):
     """
     Update GUI, inputs and outputs.
     """
+
     while True and self.bool_loop:
       serial_received = self.update_serial()
       if serial_received:
-        self.send_GUIs(serial_received)
+        self.send_guis(serial_received)
 
       if "minitens" in self.frames:
         try:
@@ -190,6 +195,7 @@ class ArduinoHandler(object):
     """
     Exit main loop.
     """
+
     self.bool_loop = False
 
 
@@ -214,10 +220,11 @@ class Arduino(InOut):
         - minitens
 
   """
+
   def __init__(self, **kwargs):
     if not kwargs.pop("port", None):
       # Tries to open the 5 first ttyACM's, that should be enough.
-      for i in range(5):  #
+      for i in range(5):
         if exists('/dev/ttyACM' + str(i)):
           self.port = '/dev/ttyACM' + str(i)
           break
@@ -237,6 +244,7 @@ class Arduino(InOut):
     """
     Opens ArduinoHandler.
     """
+
     args_handler = {"port": self.port,
                     "baudrate": self.baudrate,
                     "queue_process": self.queue_get_data,
@@ -249,10 +257,11 @@ class Arduino(InOut):
     self.handler_t0 = time()
     self.arduino_handler.start()
 
-  def get_data(self, mock=None):
+  def get_data(self):
     """
     Gets data from arduinoHandler, or the minitens GUI.
     """
+
     retrieved_from_arduino = self.queue_get_data.get()
     if retrieved_from_arduino == "STOP":
       raise CrappyStop

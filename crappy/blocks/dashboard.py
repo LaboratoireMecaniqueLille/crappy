@@ -10,7 +10,8 @@ from .block import Block
 
 class Dashboard(Block):
   """
-  The Dashboard receives data from a link, and prints it on a new poped window.
+  The Dashboard receives data from a link, and prints it on a new popped
+  window.
 
   Note:
     It can receive either a single point, or a list of points.
@@ -40,6 +41,7 @@ class Dashboard(Block):
     """
     Dashboard class created, is launched in a new thread.
     """
+
     def __init__(self, labels, nb_digits, queue):
       self.root = Tk()
       self.root.title('Dashboard')
@@ -63,6 +65,7 @@ class Dashboard(Block):
       """
       Method to update the output window.
       """
+
       values = self.queue.get()
       for row, text in enumerate(values):
         self.c2[row].configure(text='%.{}f'.format(self.nb_digits) % text)
@@ -72,6 +75,7 @@ class Dashboard(Block):
     """
     Main loop.
     """
+
     if not self.labels:
       self.labels = list(self.inputs[0].recv(blocking=True).keys())
       self.nb_display_values = len(self.labels)

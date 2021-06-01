@@ -1,5 +1,4 @@
-#coding: utf-8
-
+# coding: utf-8
 
 from .path import Path
 
@@ -16,8 +15,8 @@ class Constant(Path):
       before checking the condition.
 
   """
-  def __init__(self,time,cmd,condition,send_one=True,value=None):
-    Path.__init__(self,time,cmd)
+  def __init__(self, time, cmd, condition, send_one=True, value=None):
+    Path.__init__(self, time, cmd)
     self.condition = self.parse_condition(condition)
     self.value = cmd if value is None else value
     if send_one:
@@ -25,11 +24,11 @@ class Constant(Path):
     else:
       self.get_cmd = self.get_cmd_condition
 
-  def get_cmd_first(self,data):
+  def get_cmd_first(self, _):
     self.get_cmd = self.get_cmd_condition
     return self.value
 
-  def get_cmd_condition(self,data):
+  def get_cmd_condition(self, data):
     if self.condition(data):
       raise StopIteration
     return self.value

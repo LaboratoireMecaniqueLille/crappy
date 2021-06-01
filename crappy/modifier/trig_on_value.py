@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 from .modifier import Modifier
 
@@ -15,10 +15,11 @@ class Trig_on_value(Modifier):
     The modifier will trig if data[name] is in values.
 
   """
-  def __init__(self,name,values):
-    self.name = name
-    self.values = values if isinstance(values,list) else [values]
 
-  def evaluate(self,data):
+  def __init__(self, name, values):
+    self.name = name
+    self.values = values if isinstance(values, list) else [values]
+
+  def evaluate(self, data):
     if data[self.name] in self.values:
       return data

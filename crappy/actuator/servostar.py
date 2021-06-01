@@ -15,6 +15,7 @@ class Servostar(Actuator):
   """
   To drive and configure a servostar variator through a serial connection.
   """
+
   def __init__(self, device, baudrate=38400, mode="serial"):
     Actuator.__init__(self)
     self.devname = device
@@ -25,7 +26,7 @@ class Servostar(Actuator):
 
   def open(self):
     self.lock.acquire()
-    self.ser = serial.Serial(self.devname,baudrate=self.baud,timeout=2)
+    self.ser = serial.Serial(self.devname, baudrate=self.baud, timeout=2)
     self.ser.flushInput()
     self.ser.write('ANCNFG 0\r\n')
     self.lock.release()
@@ -34,19 +35,20 @@ class Servostar(Actuator):
     elif self.mode == "serial":
       self.set_mode_serial()
     else:
-      raise AttributeError("No such mode: "+str(self.mode))
+      raise AttributeError("No such mode: " + str(self.mode))
     self.lock.acquire()
     self.ser.write('EN\r\n')
     self.ser.write('MH\r\n')
     self.lock.release()
 
-  def set_position(self,pos,speed=20000,acc=200,dec=200):
+  def set_position(self, pos, speed=20000, acc=200, dec=200):
     """
     Go to the position specified at the given speed and acceleration.
     """
+
     if self.last is pos:
       return
-    if isinstance(pos,bool):
+    if isinstance(pos, bool):
       # To use set_position(True) as set_mode_serial()
       # and set_position(False) as set_mode_analog()
       # (to command all of this from as single generator)
@@ -72,6 +74,7 @@ class Servostar(Actuator):
       Current position of the motor.
 
     """
+
     self.lock.acquire()
     self.ser.flushInput()
     self.ser.write("PFB\r\n")
@@ -94,6 +97,7 @@ class Servostar(Actuator):
     """
     Sets the serial input as setpoint.
     """
+
     self.lock.acquire()
     self.ser.flushInput()
     self.ser.write('OPMODE 8\r\n')
@@ -104,6 +108,7 @@ class Servostar(Actuator):
     """
     Sets the analog input as setpoint.
     """
+
     self.last = None
     self.lock.acquire()
     self.ser.flushInput()
@@ -115,11 +120,13 @@ class Servostar(Actuator):
     """
     Clears error in motor registers. Obviously.
     """
+
     self.ser.flushInput()
     self.ser.write("CLRFAULT\r\n")
 
   def stop(self):
     """Stop the motor."""
+
     self.ser.write("DIS\r\n")
     self.ser.flushInput()
 

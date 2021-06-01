@@ -14,7 +14,7 @@ from .picamera_webcam import Picamera_webcam
 # Cameralink cameras
 from .cameralink import CLCamera
 from .bispectral import Bispectral
-from .jai import Jai,Jai8
+from .jai import Jai, Jai8
 from .seek_thermal_pro import Seek_thermal_pro
 
 camera_list = MetaCam.classes

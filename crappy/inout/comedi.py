@@ -6,9 +6,9 @@ from .inout import InOut
 from .._global import OptionalModule
 try:
   from ..tool import comedi_bind as c
-except OSError: # Will be raised if unable to locate the .so file
-  c = OptionalModule("comedi_bind","""Could not import comedi_lib, make sure
-libcomedi.so is installed""")
+except OSError:  # Will be raised if unable to locate the .so file
+  c = OptionalModule("comedi_bind", """Could not import comedi_lib, make sure 
+  libcomedi.so is installed""")
 
 
 class Comedi(InOut):
@@ -29,7 +29,7 @@ class Comedi(InOut):
     - offset (list/float, default: 0): The offset will be added to the return
       value for each chan.
     - make_zero (list/bool, default: True): If True, the value read at the
-      begining will be removed to the offset to take it as a reference.
+      beginning will be removed to the offset to take it as a reference.
     - channels (list, default: []): The list of the output channels.
     - out_range_num (list/int, default: 0): The range to use on each output.
     - out_gain (list/float, default: 1): The output value for each chan will be
@@ -63,8 +63,8 @@ class Comedi(InOut):
         del kwargs[arg]
     self.kwargs.update(kwargs)
     self.device_name = self.kwargs['device']
-    if isinstance(self.device_name,str):
-      self.device_name = bytes(self.device_name,'utf-8')
+    if isinstance(self.device_name, str):
+      self.device_name = bytes(self.device_name, 'utf-8')
       # We need to give this to a c function, so convert it to bytes
     self.subdevice = self.kwargs['subdevice']
     self.out_subdevice = self.kwargs['out_subdevice']
@@ -107,7 +107,7 @@ class Comedi(InOut):
 
   def open(self):
     """
-    Starts commmunication with the device, must be called before any
+    Starts communication with the device, must be called before any
     set_cmd or get_data.
 
     Note:
@@ -130,8 +130,8 @@ class Comedi(InOut):
       off = self.eval_offset()
       for i, chan in enumerate(self.channels):
         if chan['make_zero']:
-          if off[i] != off[i]: # True if off[i] is a nan
-            print("WARNING: could not measure offset on channel",chan['num'])
+          if off[i] != off[i]:  # True if off[i] is a nan
+            print("WARNING: could not measure offset on channel", chan['num'])
           else:
             chan['offset'] += off[i]
 

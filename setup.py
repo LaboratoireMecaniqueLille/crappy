@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 """A setuptools based setup module.
 
 See:
@@ -18,24 +20,24 @@ import platform
 with open('docs/source/whatiscrappy.rst', encoding='utf-8') as f:
     long_description = f.read()
 
-v = "%d.%d"%(sys.version_info.major,sys.version_info.minor)
-extentions = []
+v = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
+extensions = []
 pyFgenModule = clModule = None
 
 
-# uncomment folowing lines for testing extension module
+# uncomment following lines for testing extension module
 # (see documentation "How to bin C/C++ with Crappy")
-#helloModule = Extension('technical.helloModule',
+# helloModule = Extension('technical.helloModule',
 #                         sources=['sources/hello/hello_class.cpp'],
-#                         extra_compile_args=["-l", "python%s"%v])
+#                         extra_compile_args=["-l", "python%s" % v])
 #
-#extentions.append(helloModule)
+# extensions.append(helloModule)
 
 if platform.system() == "Linux":
     try:
       # Find the latest runtime version of SiliconSoftware install
-      clPath = '/opt/SiliconSoftware/'+\
-          sorted(next(walk('/opt/SiliconSoftware/'))[1])[-1]+'/lib64/'
+      clPath = '/opt/SiliconSoftware/' + \
+          sorted(next(walk('/opt/SiliconSoftware/'))[1])[-1] + '/lib64/'
     except StopIteration:
       print("Silicon Software not found, CameraLink will not be supported.")
       # If the software is installed but not found
@@ -47,14 +49,14 @@ if platform.system() == "Linux":
                            'sources/Cl_lib/pyCameraLink.cpp',
                            'sources/Cl_lib/clSerial.cpp'],
                          extra_compile_args=["-std=c++11"],
-                         extra_link_args=["-l", "python%sm"%v, "-L", clPath,
+                         extra_link_args=["-l", "python%sm" % v, "-L", clPath,
                            "-l", "display", "-l", "clsersis", "-l", "fglib5"],
                          include_dirs=['/usr/local/lib/python%sm\
-/dist-packages/numpy/core/include'%v])
+/dist-packages/numpy/core/include' % v])
       p = popen("lsmod |grep menable")
       if len(p.read()) != 0:
         print("menable kernel module found, installing CameraLink module.")
-        extentions.append(clModule)
+        extensions.append(clModule)
       else:
         print("Cannot find menable kernel module, "
             "CameraLink module won't be available.")
@@ -62,19 +64,19 @@ if platform.system() == "Linux":
 if platform.system() == "Windows":
     pyFgenModule = Extension('sensor.pyFgenModule',
          include_dirs=[
-           "C:\\python%s\\site-packages\\numpy\\core\\include"%v,
+           "C:\\python%s\\site-packages\\numpy\\core\\include" % v,
            "C:\\Program Files (x86)\\IVI Foundation\\VISA\\WinNT\\include",
            "C:\\Program Files\\IVI Foundation\\IVI\\Include"],
        sources=['sources/niFgen/pyFgen.cpp'], libraries=["niFgen"],
        library_dirs=["C:\\Program Files\\IVI Foundation\\IVI\\Lib_x64\\msc"],
        extra_compile_args=["/EHsc", "/WX"])
     if input("would you like to install pyFgen module? ([y]/n)") != "n":
-        extentions.append(pyFgenModule)
+        extensions.append(pyFgenModule)
     clpath = "C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\"
     clModule = Extension('sensor.clModule',
         include_dirs=[clpath+"include",
           "C:\\python{}\\Lib\\site-packages\\numpy\\core\\include".format(
-            v.replace('.',''))],
+            v.replace('.', ''))],
         sources=['sources/Cl_lib/CameraLink.cpp',
           'sources/Cl_lib/pyCameraLink.cpp',
           'sources/Cl_lib/clSerial.cpp'],
@@ -84,7 +86,7 @@ if platform.system() == "Windows":
 
     p = popen('driverquery /NH |findstr "me4"')
     if len(p.read()) != 0:
-        extentions.append(clModule)
+        extensions.append(clModule)
     else:
         print("Can't find microEnable4 Device driver, "
               "clModule will not be compiled")
@@ -146,7 +148,7 @@ GNU General Public License v2 or later (GPLv2+)',
   packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
 
   ext_package='crappy',
-  ext_modules=extentions,
+  ext_modules=extensions,
 
   # List run-time dependencies here.  These will be installed by pip when
   # your project is installed. For an analysis of "install_requires" vs pip's
@@ -156,5 +158,5 @@ GNU General Public License v2 or later (GPLv2+)',
 
   # If there are data files included in your packages that need to be
   # installed, specify them here.
-  data_files=[('crappy/data',['data/'+s for s in listdir('data')])]
+  data_files=[('crappy/data', ['data/'+s for s in listdir('data')])]
 )

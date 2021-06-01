@@ -1,4 +1,5 @@
-#coding: utf-8
+# coding: utf-8
+
 from __future__ import print_function
 
 import crappy
@@ -20,8 +21,7 @@ Type 'h' or 'help' to see this message again
 """
 
 
-
-actuator_list = []
+actuator_list = list()
 actuator_list.append(crappy.actuator.Oriental(port='/dev/ttyUSB0'))
 actuator_list.append(crappy.actuator.Oriental(port='/dev/ttyUSB1'))
 actuator_list.append(crappy.actuator.Oriental(port='/dev/ttyUSB2'))
@@ -29,13 +29,13 @@ actuator_list.append(crappy.actuator.Oriental(port='/dev/ttyUSB3'))
 for act in actuator_list:
   act.open()
 
-motors = ['A','B','C','D']
-actuator_list = sorted(actuator_list,key=lambda x:x.num_device)
+motors = ['A', 'B', 'C', 'D']
+actuator_list = sorted(actuator_list, key=lambda x: x.num_device)
 actuator_dict = {}
-i=0
+i = 0
 for c in 'abcd':
   actuator_dict[c] = [actuator_list[i]]
-  i+=1
+  i += 1
 actuator_dict['x'] = actuator_dict['b']+actuator_dict['d']
 actuator_dict['y'] = actuator_dict['a']+actuator_dict['c']
 
@@ -44,18 +44,18 @@ actuator_dict['z'] = actuator_dict['x']+actuator_dict['y']
 print(help_string)
 for i in range(4):
   print("BiaxeTech{} (on {}) is motor {}".format(
-            i,actuator_list[i].port,motors[actuator_list[i].num_device-1]))
+            i, actuator_list[i].port, motors[actuator_list[i].num_device - 1]))
 
 user_input = ''
 while True:
-  print("Axe and speed ?>",end="")
+  print("Axe and speed ?>", end="")
   try:
     user_input = input().lower()
-  except (EOFError,KeyboardInterrupt):
+  except (EOFError, KeyboardInterrupt):
     break
   if user_input == 'q':
     break
-  elif user_input in ['h','help','?']:
+  elif user_input in ['h', 'help', '?']:
     print(help_string)
     continue
   elif user_input == 'clear':
@@ -64,9 +64,9 @@ while True:
     continue
   try:
     axe = user_input[:1]
-    speed = int(user_input[1:].strip())*.07 # From % to mm/min
+    speed = int(user_input[1:].strip()) * .07  # From % to mm/min
   except ValueError:
-    print("Unknow command, stopping")
+    print("Unknown command, stopping")
     for axe in actuator_list:
       axe.set_speed(0)
     continue

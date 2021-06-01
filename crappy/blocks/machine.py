@@ -37,7 +37,7 @@ class Machine(Block):
     a key below, add an underscore at the end of its key.
 
   Keys:
-    - type (str): The name of the actuator to instanciate.
+    - type (str): The name of the actuator to instantiate.
     - cmd (str): The label of the input to drive the axis.
     - mode ({'speed', 'position'}, default='speed'): Will either call set_speed
       or set_position on the actuator.
@@ -48,13 +48,15 @@ class Machine(Block):
 
   """
 
-  def __init__(self, actuators, common={}, freq=200, time_label='t(s)',
-      spam=False):
+  def __init__(self, actuators, common=None, freq=200, time_label='t(s)',
+               spam=False):
     Block.__init__(self)
+    if common is None:
+      common = {}
     self.freq = freq
     self.time_label = time_label
     self.spam = spam
-    self.settings = [{} for i in actuators]
+    self.settings = [{} for _ in actuators]
     for setting, d in zip(self.settings, actuators):
       d.update(common)
       for k in ('type', 'cmd'):
@@ -107,7 +109,7 @@ class Machine(Block):
       elif setting['mode'] == 'position' and setting['cmd'] in recv:
         try:
           actuator.set_position(recv[setting['cmd']], setting['speed'])
-        except (TypeError,KeyError):
+        except (TypeError, KeyError):
           actuator.set_position(recv[setting['cmd']])
 
     self.send_data()

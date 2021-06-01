@@ -1,4 +1,4 @@
-#coding: utf-8
+# coding: utf-8
 
 import numpy as np
 
@@ -6,12 +6,12 @@ from .modifier import Modifier
 
 
 class Moving_med(Modifier):
-  def __init__(self,npoints=100):
+  def __init__(self, npoints=100):
     Modifier.__init__(self)
     self.npoints = npoints
 
-  def evaluate(self,data):
-    if not hasattr(self,"last"):
+  def evaluate(self, data):
+    if not hasattr(self, "last"):
       self.last = dict(data)
       for k in data:
         self.last[k] = [self.last[k]]

@@ -1,5 +1,6 @@
-#coding: utf-8
-from __future__ import print_function,division
+# coding: utf-8
+
+from __future__ import print_function, division
 import numpy as np
 
 from .path import Path
@@ -10,7 +11,7 @@ class Inertia(Path):
   Used to lower/higher the output command by integrating an input over time.
 
   Let f(t) be the input signal, v(t) the value of the output,
-  m the inertia and t0 the beginning of this path. K is a choosen constant.
+  m the inertia and t0 the beginning of this path. K is a chosen constant.
 
   Note:
     The output value for this path will be:
@@ -47,18 +48,18 @@ class Inertia(Path):
       See :ref:`generator path` for more info.
 
   """
-  def __init__(self,time,cmd,condition,inertia,
-      flabel,const=30/np.pi,tlabel='t(s)',value=None):
-    Path.__init__(self,time,cmd)
+  def __init__(self, time_, cmd, condition, inertia,
+               flabel, const=30/np.pi, tlabel='t(s)', value=None):
+    Path.__init__(self, time_, cmd)
     self.condition = self.parse_condition(condition)
     self.inertia = inertia
     self.flabel = flabel
     self.tlabel = tlabel
-    self.const = const/self.inertia
+    self.const = const / self.inertia
     self.value = cmd if value is None else value
     self.last_t = None
 
-  def get_cmd(self,data):
+  def get_cmd(self, data):
     if self.condition(data):
       raise StopIteration
     if data[self.tlabel]:
@@ -74,9 +75,9 @@ class Inertia(Path):
         # else: drop the first point and keep going
         f = np.array(data[self.flabel][1:])
       else:
-        t = [self.last_t]+data[self.tlabel] # We have a previous point: use it
+        t = [self.last_t]+data[self.tlabel]  # We have a previous point: use it
         f = np.array(data[self.flabel])
-      dt = np.array([j-i for i,j in zip(t[:-1],t[1:])])
-      self.value -= self.const*sum(dt*f) # The actual integration
+      dt = np.array([j - i for i, j in zip(t[:-1], t[1:])])
+      self.value -= self.const * sum(dt * f)  # The actual integration
       self.last_t = t[-1]
     return self.value

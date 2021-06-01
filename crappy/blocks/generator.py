@@ -1,6 +1,6 @@
-#coding: utf-8
+# coding: utf-8
 
-from time import time,sleep
+from time import time, sleep
 
 from .block import Block
 from . import generator_path
@@ -26,14 +26,14 @@ class Generator(Block):
         Each dict MUST have a key 'type'.
 
       Note:
-        The Generator will then instanciate generator_path.**type** with all
+        The Generator will then instantiate generator_path.**type** with all
         the other keys as kwargs, adding the current cmd and the time.
 
         On each round, it will call get_cmd method of this class, passing data
         until it raise StopIteration. It will then skip to the next path.
 
         When all paths are over, it will stop Crappy by raising CrappyStop
-        unless repeat is set to True. If so, it will start over indefinelty.
+        unless repeat is set to True. If so, it will start over indefinitely.
 
   Kwargs:
     - freq (default: 200): The frequency of the block.
@@ -78,7 +78,7 @@ class Generator(Block):
 
   """
 
-  def __init__(self, path=[], **kwargs):
+  def __init__(self, path=None, **kwargs):
     Block.__init__(self)
     self.niceness = -5
     for arg, default in [('freq', 200),
@@ -86,18 +86,20 @@ class Generator(Block):
                          ('cycle_label', 'cycle'),
                          ('cmd', 0),  # First value
                          ('repeat', False),  # Start over when done ?
-                         ('trig_link',None),
-                         ('spam',False),
+                         ('trig_link', None),
+                         ('spam', False),
                          ('verbose', False),
-                         ('end_delay',2), # Delay before stopping everything
+                         ('end_delay', 2),  # Delay before stopping everything
                          ]:
       setattr(self, arg, kwargs.pop(arg, default))
 
     assert not kwargs, "generator: unknown kwargs: " + str(kwargs)
+    if path is None:
+      path = []
     self.path = path
     assert all([hasattr(generator_path, d['type']) for d in self.path]), \
-      "Invalid path in signal generator:" \
-      +str(filter(lambda s: not hasattr(generator_path, s['type']), self.path))
+      "Invalid path in signal generator:" + \
+      str(filter(lambda s: not hasattr(generator_path, s['type']), self.path))
     self.labels = ['t(s)', self.cmd_label, self.cycle_label]
 
   def prepare(self):
@@ -117,7 +119,7 @@ class Generator(Block):
       else:
         print("Signal generator terminated!")
         sleep(self.end_delay)
-        #Block.stop_all()
+        # Block.stop_all()
         raise CrappyStop("Signal Generator terminated")
     if self.verbose:
       print("[Signal Generator] Next step({}):".format(self.path_id),
@@ -126,7 +128,7 @@ class Generator(Block):
     kwargs.update(self.path[self.path_id])
     del kwargs['type']
     name = self.path[self.path_id]['type'].capitalize()
-    # Instanciating the new path class for the next step
+    # Instantiating the new path class for the next step
     self.current_path = getattr(generator_path, name)(**kwargs)
 
   def begin(self):

@@ -26,7 +26,7 @@ class Streamer(Camera):
 
     This is done using regular expressions.
 
-    __init__ takes no args, the arguments must be given whan calling open (like
+    __init__ takes no args, the arguments must be given when calling open (like
     all cameras).
 
   Args:
@@ -43,7 +43,7 @@ class Streamer(Camera):
         and Videoextenso blocks.
 
     - start_delay (float, default: 0): Before actually streaming the image flux
-      you can set a delay in secongs during which the first image will be
+      you can set a delay in seconds during which the first image will be
       streamed in a loop.
 
       Note:

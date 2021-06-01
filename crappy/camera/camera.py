@@ -28,7 +28,7 @@ class MetaCam(type):
   needed_methods = ["get_image", "open", "close"]
 
   def __new__(mcs, name, bases, dict_):
-    # print "[MetaCam.__new__] Creating class", name, "from metaclass", metacls
+    # print "[MetaCam.__new__] Creating class", name, "from metaclass", mcs
     return type.__new__(mcs, name, bases, dict_)
 
   def __init__(cls, name, bases, dict_):
@@ -123,7 +123,7 @@ class Cam_setting(object):
     return self._value
 
   # Here is the interesting part: When we set value (setting.value = x),
-  # we will go throught all of this, and the new value will be the actual
+  # we will go through all of this, and the new value will be the actual
   # value of the setting after the operation
   @value.setter
   def value(self, i):
@@ -262,7 +262,7 @@ class Camera(object, metaclass=MetaCam):
       while wait > 0:
         t = time()
         wait = self.last - t + self.delay
-        sleep(max(0, wait / 10))
+        sleep(max(0., wait / 10))
       self.last = t
     return self.get_image()
 

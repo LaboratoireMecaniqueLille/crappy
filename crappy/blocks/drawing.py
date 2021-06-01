@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from __future__ import print_function,division
+from __future__ import print_function, division
 
 from datetime import timedelta
 from time import time
@@ -18,10 +18,10 @@ except (ModuleNotFoundError, ImportError):
 
 # ======= Visual objects =========
 # These classes represent all that can be drawn on the canvas
-# Commmon arg:
+# Common arg:
 #  drawing: The drawing itself. It is used to access its attributes when needed
 # Common kwargs:
-#   coord: The coordinates of the object on the Cavas
+#   coord: The coordinates of the object on the Canvas
 #
 # Update method will be called frequently by the Drawing block, you can
 # define here what it will do on each update
@@ -41,13 +41,14 @@ class Text(object):
         It will be appended to the constant text.
 
   """
-  def __init__(self,drawing,**kwargs):
-    for k in ['coord','text','label']:
-      setattr(self,k,kwargs[k])
-    self.txt = plt.text(self.coord[0],self.coord[1],self.text)
 
-  def update(self,data):
-    self.txt.set_text(self.text%data[self.label])
+  def __init__(self, *_, **kwargs):
+    for k in ['coord', 'text', 'label']:
+      setattr(self, k, kwargs[k])
+    self.txt = plt.text(self.coord[0], self.coord[1], self.text)
+
+  def update(self, data):
+    self.txt.set_text(self.text % data[self.label])
 
 
 class Dot_text(object):
@@ -65,19 +66,21 @@ class Dot_text(object):
     color from blue to red depending on this value.
 
   """
-  def __init__(self,drawing,**kwargs):
-    for k in ['coord','text','label']:
-      setattr(self,k,kwargs[k])
-    self.txt = plt.text(self.coord[0]+40,self.coord[1]+20,self.text,size=16)
-    self.dot = plt.Circle(self.coord,20)
+
+  def __init__(self, drawing, **kwargs):
+    for k in ['coord', 'text', 'label']:
+      setattr(self, k, kwargs[k])
+    self.txt = plt.text(self.coord[0] + 40, self.coord[1] + 20, self.text,
+                        size=16)
+    self.dot = plt.Circle(self.coord, 20)
     drawing.ax.add_artist(self.dot)
-    low,high = drawing.crange
+    low, high = drawing.crange
     self.amp = high-low
     self.low = low
 
-  def update(self,data):
-    self.txt.set_text(self.text%data[self.label])
-    self.dot.set_color(cm.coolwarm((data[self.label]-self.low)/self.amp))
+  def update(self, data):
+    self.txt.set_text(self.text % data[self.label])
+    self.dot.set_color(cm.coolwarm((data[self.label] - self.low) / self.amp))
 
 
 class Time(object):
@@ -91,17 +94,18 @@ class Time(object):
     It will print the time since the t0 of the block.
 
   """
-  def __init__(self,drawing,**kwargs):
+
+  def __init__(self, drawing, **kwargs):
     for k in ['coord']:
-      setattr(self,k,kwargs[k])
-    self.txt = plt.text(self.coord[0],self.coord[1],"00:00",size=38)
+      setattr(self, k, kwargs[k])
+    self.txt = plt.text(self.coord[0], self.coord[1], "00:00", size=38)
     self.block = drawing
 
-  def update(self,data):
+  def update(self, *_):
     self.txt.set_text(str(timedelta(seconds=int(time()-self.block.t0))))
 
 
-elements = {'text':Text,'dot_text':Dot_text,'time':Time}
+elements = {'text': Text, 'dot_text': Dot_text, 'time': Time}
 
 # ========== The block itself ==========
 
@@ -124,9 +128,11 @@ class Drawing(Block):
         other keys as argument.
 
   """
-  def __init__(self,image,draw=[],crange=[20,300],title="Drawing",
-      window_size=(7,5),freq=2,backend="TkAgg"):
+  def __init__(self, image, draw=None, crange=[20, 300], title="Drawing",
+               window_size=(7, 5), freq=2, backend="TkAgg"):
     Block.__init__(self)
+    if draw is None:
+      draw = []
     self.freq = freq
     self.image = image
     self.draw = draw
@@ -149,7 +155,7 @@ class Drawing(Block):
 
     self.elements = []
     for d in self.draw:
-      self.elements.append(elements[d['type']](self,**d))
+      self.elements.append(elements[d['type']](self, **d))
 
   def loop(self):
     data = self.get_last()

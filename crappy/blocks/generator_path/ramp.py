@@ -1,5 +1,4 @@
-#coding: utf-8
-
+# coding: utf-8
 
 from time import time
 
@@ -17,12 +16,13 @@ class Ramp(Path):
     - cmd: If specified, will be the starting value of the ramp.
 
   """
-  def __init__(self,time,cmd,condition,speed):
-    Path.__init__(self,time,cmd)
+
+  def __init__(self, time_, cmd, condition, speed):
+    Path.__init__(self, time_, cmd)
     self.condition = self.parse_condition(condition)
     self.speed = speed
 
-  def get_cmd(self,data):
+  def get_cmd(self, data):
     if self.condition(data):
       raise StopIteration
-    return (time() - self.t0)*self.speed+self.cmd
+    return (time() - self.t0) * self.speed + self.cmd

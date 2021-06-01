@@ -1,14 +1,15 @@
-#coding: utf-8
+# coding: utf-8
+
 from __future__ import print_function
 
-from os import path,makedirs
+from os import path, makedirs
 import numpy as np
 
 from .._global import OptionalModule
 try:
   import tables
 except ModuleNotFoundError:
-  tables = OptionalModule("tables","HDFSaver needs the tables module to "
+  tables = OptionalModule("tables", "HDFSaver needs the tables module to "
       "write hdf files.")
 
 from .block import Block
@@ -55,18 +56,17 @@ class Hdf_saver(Block):
 
   """
 
-  def __init__(self,filename,**kwargs):
+  def __init__(self, filename, **kwargs):
     Block.__init__(self)
     self.filename = filename
-    for arg,default in [("node","table"),
-                        ("expected_rows",10**8),
-                        ("atom",tables.Int16Atom()),
-                        ("label","stream"),
-                        ("metadata",{}),
-                        ]:
-      setattr(self,arg,kwargs.pop(arg,default))
-    assert not kwargs,"Invalid kwarg(s) in Hdf_saver: "+str(kwargs)
-    if not isinstance(self.atom,tables.Atom):
+    for arg, default in [("node", "table"),
+                        ("expected_rows", 10**8),
+                        ("atom", tables.Int16Atom()),
+                        ("label", "stream"),
+                        ("metadata", {})]:
+      setattr(self, arg, kwargs.pop(arg, default))
+    assert not kwargs, "Invalid kwarg(s) in Hdf_saver: " + str(kwargs)
+    if not isinstance(self.atom, tables.Atom):
       self.atom = tables.Atom.from_dtype(np.dtype(self.atom))
 
   def prepare(self):
@@ -79,19 +79,19 @@ class Hdf_saver(Block):
       try:
         makedirs(d)
       except OSError:
-        assert path.exists(d),"Error creating "+d
+        assert path.exists(d), "Error creating " + d
     if path.exists(self.filename):
       # If the file already exists, append a number to the name
-      print("[hdf_saver] WARNING!",self.filename,"already exists !")
-      name,ext = path.splitext(self.filename)
+      print("[hdf_saver] WARNING!", self.filename, "already exists !")
+      name, ext = path.splitext(self.filename)
       i = 1
-      while path.exists(name+"_%05d"%i+ext):
+      while path.exists(name + "_%05d" % i + ext):
         i += 1
-      self.filename = name+"_%05d"%i+ext
-      print("[hdf_saver] Using",self.filename,"instead!")
-    self.hfile = tables.open_file(self.filename,"w")
-    for name,value in self.metadata.items():
-      self.hfile.create_array(self.hfile.root,name,value)
+      self.filename = name+"_%05d" % i + ext
+      print("[hdf_saver] Using", self.filename, "instead!")
+    self.hfile = tables.open_file(self.filename, "w")
+    for name, value in self.metadata.items():
+      self.hfile.create_array(self.hfile.root, name, value)
 
   def begin(self):
     data = self.inputs[0].recv_chunk()
