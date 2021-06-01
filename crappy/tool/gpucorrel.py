@@ -20,13 +20,20 @@ try:
 except ImportError:
   cuda = OptionalModule("pycuda",
       "PyCUDA and CUDA are necessary to use GPUCorrel")
+  SourceModule = OptionalModule("pycuda",
+                        "PyCUDA and CUDA are necessary to use GPUCorrel")
+  gpuarray = OptionalModule("pycuda",
+                        "PyCUDA and CUDA are necessary to use GPUCorrel")
+  ReductionKernel = OptionalModule("pycuda",
+                        "PyCUDA and CUDA are necessary to use GPUCorrel")
 
 
 context = None
 
 
-def interpNearest(ary, ny, nx):
+def interp_nearest(ary, ny, nx):
   """Used to interpolate the mask for each stage."""
+
   if ary.shape == (ny, nx):
     return ary
   y, x = ary.shape
@@ -56,6 +63,7 @@ class CorrelStage:
     Can but is not meant to be used as is.
 
   """
+
   num = 0  # To count the instances so they get a unique number (self.num)
 
   def __init__(self, img_size, **kwargs):
@@ -75,9 +83,9 @@ class CorrelStage:
       cv2.namedWindow("Residual", cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
     self.mul = kwargs.get("mul", 3)
     # These two store the values of the last resampled array
-    # It is meant to allocate output array only once (see resampleD)
+    # It is meant to allocate output array only once (see resample_d)
     self.rX, self.rY = -1, -1
-    # self.loop will be incremented every time getDisp is called
+    # self.loop will be incremented every time get_disp is called
     # It will be used to measure performance and output some info
     self.loop = 0
 
@@ -113,9 +121,9 @@ class CorrelStage:
     # devOut is written with the difference of the images
     self.devOut = gpuarray.empty((self.h, self.w), np.float32)
     # devX stores the value of the parameters (what is actually computed)
-    self.devX = gpuarray.empty((self.Nfields), np.float32)
+    self.devX = gpuarray.empty(self.Nfields, np.float32)
     # to store the research direction
-    self.devVec = gpuarray.empty((self.Nfields), np.float32)
+    self.devVec = gpuarray.empty(self.Nfields, np.float32)
     # To store the original image on the device
     self.devOrig = gpuarray.empty(img_size, np.float32)
     # To store the gradient along X of the original image on the device
@@ -124,18 +132,18 @@ class CorrelStage:
     self.devGradY = gpuarray.empty(img_size, np.float32)
 
     # Locating the kernel file #
-    kernelFile = kwargs.get("kernel_file")
-    if kernelFile is None:
+    kernel_file = kwargs.get("kernel_file")
+    if kernel_file is None:
       self.debug(2, "Kernel file not specified")
-      from crappy import __path__ as crappyPath
-      kernelFile = crappyPath[0] + "/data/kernels.cu"
+      from crappy import __path__ as crappy_path
+      kernel_file = crappy_path[0] + "/data/kernels.cu"
     # Reading kernels and compiling module #
-    with open(kernelFile, "r") as f:
+    with open(kernel_file, "r") as f:
       self.debug(3, "Sourcing module")
       self.mod = SourceModule(f.read() % (self.w, self.h, self.Nfields))
     # Assigning functions to the kernels #
     # These kernels are defined in data/kernels.cu
-    self._resampleOrigKrnl = self.mod.get_function('resampleO')
+    self._resampleOrigKrnl = self.mod.get_function('resampleD')
     self._resampleKrnl = self.mod.get_function('resample')
     self._gradientKrnl = self.mod.get_function('gradient')
     self._makeGKrnl = self.mod.get_function('makeG')
@@ -168,17 +176,18 @@ class CorrelStage:
     self._resampleOrigKrnl.prepare("Pii", texrefs=[self.tex])
     self._resampleKrnl.prepare("Pii", texrefs=[self.tex_d])
     self._gradientKrnl.prepare("PP", texrefs=[self.tex])
-    self._makeDiff.prepare("PPPP",texrefs=[self.tex, self.tex_d, self.texMask])
+    self._makeDiff.prepare("PPPP",
+                           texrefs=[self.tex, self.tex_d, self.texMask])
     self._addKrnl.prepare("PfP")
     # Reading original image if provided #
     if kwargs.get("img") is not None:
-      self.setOrig(kwargs.get("img"))
+      self.set_orig(kwargs.get("img"))
     # Reading fields if provided #
     if kwargs.get("fields") is not None:
-      self.setFields(kwargs.get("fields"))
+      self.set_fields(*kwargs.get("fields"))
     # Reading mask if provided #
     if kwargs.get("mask") is not None:
-      self.setMask(kwargs.get("mask"))
+      self.set_mask(kwargs.get("mask"))
 
   def debug(self, n, *s):
     """
@@ -194,13 +203,14 @@ class CorrelStage:
       the origin and the level of the message.
 
     """
+
     if n <= self.verbose:
       s2 = ()
       for i in range(len(s)):
         s2 += (str(s[i]).replace("\n", "\n" + (10 + n) * " "),)
       print("  " * (n - 1) + "[Stage " + str(self.num) + "]", *s2)
 
-  def setOrig(self, img):
+  def set_orig(self, img):
     """
     To set the original image from a given CPU or GPU array.
 
@@ -209,9 +219,10 @@ class CorrelStage:
 
     Note:
       The most efficient method is to write directly over
-      self.devOrig with some kernel and then run self.updateOrig().
+      self.devOrig with some kernel and then run self.update_orig().
 
     """
+
     assert img.shape == (self.h, self.w), \
       "Got a {} image in a {} correlation routine!".format(
         img.shape, (self.h, self.w))
@@ -222,22 +233,24 @@ class CorrelStage:
       self.debug(3, "Setting original image from GPUArray")
       self.devOrig = img
     else:
-      self.debug(0, "Error ! Unknown type of data given to setOrig()")
+      self.debug(0, "Error ! Unknown type of data given to set_orig()")
       raise ValueError
-    self.updateOrig()
+    self.update_orig()
 
-  def updateOrig(self):
+  def update_orig(self):
     """Needs to be called after self.img_d has been written directly."""
+
     self.debug(3, "Updating original image")
     self.array = cuda.gpuarray_to_array(self.devOrig, 'C')
     # 'C' order implies tex2D(x,y) will fetch matrix(y,x):
-    # this is where x and y are inverted to comlpy with the kernels order
+    # this is where x and y are inverted to comply with the kernels order
     self.tex.set_array(self.array)
-    self._computeGradients()
+    self._compute_gradients()
     self._ready = False
 
-  def _computeGradients(self):
+  def _compute_gradients(self):
     """Wrapper to call the gradient kernel."""
+
     self._gradientKrnl.prepared_call(self.grid, self.block,
                                  self.devGradX.gpudata, self.devGradY.gpudata)
 
@@ -251,26 +264,27 @@ class CorrelStage:
       If not done by the user, it will be done automatically when needed.
 
     """
+
     if not hasattr(self, 'maskArray'):
-      self.debug(2, "No mask set when preparing, using a basic one, \
-with a border of 5% the dimension")
+      self.debug(2, "No mask set when preparing, using a basic one, "
+                    "with a border of 5% the dimension")
       mask = np.zeros((self.h, self.w), np.float32)
       mask[self.h // 20:-self.h // 20, self.w // 20:-self.w // 20] = 1
-      self.setMask(mask)
+      self.set_mask(mask)
     if not self._ready:
       if not hasattr(self, 'array'):
         self.debug(1, "Tried to prepare but original texture is not set !")
       elif not hasattr(self, 'fields'):
         self.debug(1, "Tried to prepare but fields are not set !")
       else:
-        self._makeG()
-        self._makeH()
+        self._make_g()
+        self._make_h()
         self._ready = True
         self.debug(3, "Ready!")
     else:
       self.debug(1, "Tried to prepare when unnecessary, doing nothing...")
 
-  def _makeG(self):
+  def _make_g(self):
     for i in range(self.Nfields):
       # Change to prepared call ?
       self._makeGKrnl(self.devG[i].gpudata, self.devGradX.gpudata,
@@ -278,19 +292,19 @@ with a border of 5% the dimension")
                       self.devFieldsX[i], self.devFieldsY[i],
                       block=self.block, grid=self.grid)
 
-  def _makeH(self):
+  def _make_h(self):
     for i in range(self.Nfields):
       for j in range(i + 1):
         self.H[i, j] = self._mulRedKrnl(self.devG[i], self.devG[j]).get()
         if i != j:
           self.H[j, i] = self.H[i, j]
-    self.debug(3,"Hessian:\n", self.H)
+    self.debug(3, "Hessian:\n", self.H)
     self.devHi.set(np.linalg.inv(self.H))  # *1e-3)
     # Looks stupid but prevents a useless devHi copy if nothing is printed
     if self.verbose >= 3:
       self.debug(3, "Inverted Hessian:\n", self.devHi.get())
 
-  def resampleOrig(self, newY, newX, devOut):
+  def resample_orig(self, new_y, new_x, dev_out):
     """
     To resample the original image.
 
@@ -299,30 +313,32 @@ with a border of 5% the dimension")
       image to the devOut array.
 
     """
-    grid = (int(ceil(newX / 32)), int(ceil(newY / 32)))
-    block = (int(ceil(newX / grid[0])), int(ceil(newY / grid[1])), 1)
+
+    grid = (int(ceil(new_x / 32)), int(ceil(new_y / 32)))
+    block = (int(ceil(new_x / grid[0])), int(ceil(new_y / grid[1])), 1)
     self.debug(3, "Resampling Orig texture, grid:", grid, "block:", block)
     self._resampleOrigKrnl.prepared_call(self.grid, self.block,
-                                         devOut.gpudata,
-                                         np.int32(newX), np.int32(newY))
-    self.debug(3, "Resampled original texture to", devOut.shape)
+                                         dev_out.gpudata,
+                                         np.int32(new_x), np.int32(new_y))
+    self.debug(3, "Resampled original texture to", dev_out.shape)
 
-  def resampleD(self, newY, newX):
+  def resample_d(self, new_y, new_x):
     """Resamples tex_d and returns it in a gpuarray."""
-    if (self.rX, self.rY) != (np.int32(newX), np.int32(newY)):
-      self.rGrid = (int(ceil(newX / 32)), int(ceil(newY / 32)))
-      self.rBlock = (int(ceil(newX / self.rGrid[0])),
-                     int(ceil(newY / self.rGrid[1])), 1)
-      self.rX, self.rY = np.int32(newX), np.int32(newY)
-      self.devROut = gpuarray.empty((newY, newX), np.float32)
-    self.debug(3, "Resampling img_d texture to", (newY, newX),
+
+    if (self.rX, self.rY) != (np.int32(new_x), np.int32(new_y)):
+      self.rGrid = (int(ceil(new_x / 32)), int(ceil(new_y / 32)))
+      self.rBlock = (int(ceil(new_x / self.rGrid[0])),
+                     int(ceil(new_y / self.rGrid[1])), 1)
+      self.rX, self.rY = np.int32(new_x), np.int32(new_y)
+      self.devROut = gpuarray.empty((new_y, new_x), np.float32)
+    self.debug(3, "Resampling img_d texture to", (new_y, new_x),
                " grid:", self.rGrid, "block:", self.rBlock)
     self._resampleKrnl.prepared_call(self.rGrid, self.rBlock,
                                      self.devROut.gpudata,
                                      self.rX, self.rY)
     return self.devROut
 
-  def setFields(self, fieldsX, fieldsY):
+  def set_fields(self, fields_x, fields_y):
     """
     Method to give the fields to identify with the routine.
 
@@ -334,24 +350,26 @@ with a border of 5% the dimension")
       along x and one along y).
 
     """
+
     self.debug(2, "Setting fields")
-    if isinstance(fieldsX, np.ndarray):
-      self.devFieldsX.set(fieldsX)
-      self.devFieldsY.set(fieldsY)
-    elif isinstance(fieldsX, gpuarray.GPUArray):
-      self.devFieldsX = fieldsX
-      self.devFieldsY = fieldsY
+    if isinstance(fields_x, np.ndarray):
+      self.devFieldsX.set(fields_x)
+      self.devFieldsY.set(fields_y)
+    elif isinstance(fields_x, gpuarray.GPUArray):
+      self.devFieldsX = fields_x
+      self.devFieldsY = fields_y
     self.fields = True
 
-  def setImage(self, img_d):
+  def set_image(self, img_d):
     """
     Set the image to compare with the original.
 
     Note:
-      Calling this method is not necessary: you can do .getDisp(image).
+      Calling this method is not necessary: you can do .get_disp(image).
       This will automatically call this method first.
 
     """
+
     assert img_d.shape == (self.h, self.w), \
       "Got a {} image in a {} correlation routine!".format(
         img_d.shape, (self.h, self.w))
@@ -362,12 +380,12 @@ with a border of 5% the dimension")
       self.debug(3, "Creating texture from gpuarray")
       self.array_d = cuda.gpuarray_to_array(img_d, "C")
     else:
-      self.debug(0, "Error ! Unknown type of data given to .setImage()")
+      self.debug(0, "Error ! Unknown type of data given to .set_image()")
       raise ValueError
     self.tex_d.set_array(self.array_d)
     self.devX.set(np.zeros(self.Nfields, dtype=np.float32))
 
-  def setMask(self, mask):
+  def set_mask(self, mask):
     self.debug(3, "Setting the mask")
     assert mask.shape == (self.h, self.w), \
       "Got a {} mask in a {} routine.".format(mask.shape, (self.h, self.w))
@@ -383,18 +401,19 @@ with a border of 5% the dimension")
       raise ValueError
     self.texMask.set_array(self.maskArray)
 
-  def setDisp(self, X):
-    assert X.shape == (self.Nfields,), \
+  def set_disp(self, x):
+    assert x.shape == (self.Nfields,), \
       "Incorrect initialization of the parameters"
-    if isinstance(X, gpuarray.GPUArray):
-      self.devX = X
-    elif isinstance(X, np.ndarray):
-      self.devX.set(X)
+    if isinstance(x, gpuarray.GPUArray):
+      self.devX = x
+    elif isinstance(x, np.ndarray):
+      self.devX.set(x)
     else:
-      self.debug(0, "Error! Unknown type of data given to CorrelStage.setDisp")
+      self.debug(0, "Error! Unknown type of data given to "
+                    "CorrelStage.set_disp")
       raise ValueError
 
-  def writeDiffFile(self):
+  def write_diff_file(self):
     self._makeDiff.prepared_call(self.grid, self.block,
                                  self.devOut.gpudata,
                                  self.devX.gpudata,
@@ -404,7 +423,7 @@ with a border of 5% the dimension")
     cv2.imwrite("/home/vic/diff/diff{}-{}.png"
                 .format(self.num, self.loop), diff)
 
-  def getDisp(self, img_d=None):
+  def get_disp(self, img_d=None):
     """The method that actually computes the weight of the fields."""
     self.debug(3, "Calling main routine")
     self.loop += 1
@@ -413,9 +432,9 @@ with a border of 5% the dimension")
       self.debug(2, "Wasn't ready ! Preparing...")
       self.prepare()
     if img_d is not None:
-      self.setImage(img_d)
+      self.set_image(img_d)
     assert hasattr(self, 'array_d'), \
-      "Did not set the image, use setImage() before calling getDisp \
+      "Did not set the image, use set_image() before calling get_disp \
   or give the image as parameter."
     self.debug(3, "Computing first diff table")
     self._makeDiff.prepared_call(self.grid, self.block,
@@ -429,13 +448,13 @@ with a border of 5% the dimension")
     # Iterating #
     # Note: I know this section is dense and wrappers for kernel calls could
     # have made things clearer, but function calls in python cause a
-    # non-negligeable overhead and this is the critical part.
+    # non-negligible overhead and this is the critical part.
     # The comments are here to guide you !
     for i in range(self.nbIter):
       self.debug(3, "Iteration", i)
-      for i in range(self.Nfields):
+      for j in range(self.Nfields):
         # Computing the direction of the gradient of each parameters
-        self.devVec[i] = self._mulRedKrnl(self.devG[i], self.devOut)
+        self.devVec[j] = self._mulRedKrnl(self.devG[j], self.devOut)
       # Newton method: we multiply the gradient vector by the pre-inverted
       # Hessian, devVec now contains the actual research direction.
       self._dotKrnl(self.devHi, self.devVec,
@@ -472,7 +491,7 @@ with a border of 5% the dimension")
         break
 
       self.debug(3, "res:", self.res / 1e6)
-    # self.writeDiffFile()
+    # self.write_diff_file()
     if self.showDiff:
       cv2.imshow("Residual", (self.devOut.get() + 128).astype(np.uint8))
       cv2.waitKey(1)
@@ -511,7 +530,7 @@ class GPUCorrel:
     faster operation.
 
   # Usage #
-    At initialization, Correl needs only one unammed argument:
+    At initialization, Correl needs only one unnamed argument:
       the working resolution (as a tuple of ints), which is the resolution
       of the images it will be given.
       All the images must have exactly these dimensions.
@@ -553,7 +572,7 @@ class GPUCorrel:
     Use verbose=x to choose the amount of information printed to the console:
     - 0: Nothing except for errors
     - 1: Only important infos and warnings
-    - 2: Major info and a few values periodacally (at a bearable rate)
+    - 2: Major info and a few values periodically (at a bearable rate)
     - 3: Tons of info including details of each iteration
 
     Note that verbose=3 REALLY slows the program down.
@@ -561,7 +580,7 @@ class GPUCorrel:
 
     ## Fields ##
       Use fields=[...] to set the fields.
-        This can be done later with setFields(), however
+        This can be done later with set_fields(), however
         in case when the fields are set later, you need to add Nfields=x
         to specifiy at init the number of expected fields in order to allocate
         all the necessary memory on the device.
@@ -588,7 +607,7 @@ class GPUCorrel:
       Quadratic deformations:
 
       These fields are more complicated to interpret but can be useful
-      for complicated sollicitations such as biaxial stretch.\n
+      for complicated solicitations such as biaxial stretch.\n
       U and V represent the displacement along respectively x and y.
       - 'uxx': U(x,y) = x²
       - 'uyy': U(x,y) = y²
@@ -619,7 +638,7 @@ class GPUCorrel:
       dtype=np.float32. If the dtype of the given image is different,
       it will print a warning and the image will be converted.
       It can be given at init with the kwarg img=MyImage
-      or later with setOrig(MyImage).
+      or later with set_orig(MyImage).
       Note: You can reset it whenever you want, even multiple times but
       it will reset the def parameters to 0.
 
@@ -628,12 +647,12 @@ class GPUCorrel:
       You can do this preparation yourself by using .prepare().
       If not called, it will be done automatically
       when necessary, inducing a slight overhead at the first
-      call of .getDisp() after setting/updating the fields or original image
+      call of .get_disp() after setting/updating the fields or original image
 
     ## Compared image ##
 
     It can be given directly when querying the displacement as a parameter to
-      getDisp() or before, with setImage().
+      get_disp() or before, with set_image().
       You can provide it as a np.ndarray just like orig,
       or as a pycuda.gpuarray.GPUArray.
 
@@ -702,7 +721,7 @@ class GPUCorrel:
       - Allow faster execution by executing the reduction only on a part
       of the images (random or chosen)
       - Add the possibility to return the value of the deformation
-      Exx andd Eyy in a specific point
+      Exx and Eyy in a specific point
       - Add a parameter to return values in %
       - Add a filter to smooth/ignore incorrect values
       - Allow a reset of the reference picture for simple deformations to
@@ -719,7 +738,12 @@ class GPUCorrel:
       context = kwargs.pop('context')
     else:
       cuda.init()
-      from pycuda.tools import make_default_context
+      try:
+        from pycuda.tools import make_default_context
+      except (ImportError, ModuleNotFoundError):
+        make_default_context = OptionalModule("pycuda",
+                                              "PyCUDA and CUDA are necessary "
+                                              "to use GPUCorrel")
       context = make_default_context()
     unknown = []
     for k in kwargs.keys():
@@ -763,12 +787,12 @@ If it is not desired, consider lowering the verbosity: \
 Add Nfields=x or directly set fields with fields=list/tuple")
         raise ValueError
 
-    kernelFile = kwargs.get("kernel_file")
-    if kernelFile is None:
+    kernel_file = kwargs.get("kernel_file")
+    if kernel_file is None:
       self.debug(3, "Kernel file not specified, using the one in crappy dir")
-      from crappy import __path__ as crappyPath
-      kernelFile = crappyPath[0] + "/data/kernels.cu"
-    self.debug(3, "Kernel file:", kernelFile)
+      from crappy import __path__ as crappy_path
+      kernel_file = crappy_path[0] + "/data/kernels.cu"
+    self.debug(3, "Kernel file:", kernel_file)
 
     # Creating a new instance of CorrelStage for each stage #
     self.correl = []
@@ -780,11 +804,11 @@ Add Nfields=x or directly set fields with fields=list/tuple")
                                      show_diff=(i == 0 and kwargs.get(
                                          "show_diff", False)),
                                      mul=kwargs.get("mul", 3),
-                                     kernel_file=kernelFile))
+                                     kernel_file=kernel_file))
 
     # Set original image if provided #
     if kwargs.get("img") is not None:
-      self.setOrig(kwargs.get("img"))
+      self.set_orig(kwargs.get("img"))
 
     s = """
     texture<float, cudaTextureType2D, cudaReadModeElementType> texFx{0};
@@ -802,7 +826,8 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     """
     self.src = ""
     for i in range(self.Nfields):
-      self.src += s.format(i) # Adding textures for the quick fields resampling
+      self.src += s.format(i)  # Adding textures for the quick fields
+      # resampling
 
     self.mod = SourceModule(self.src)
 
@@ -823,26 +848,27 @@ Add Nfields=x or directly set fields with fields=list/tuple")
 
     # Set fields if provided #
     if kwargs.get("fields") is not None:
-      self.setFields(kwargs.get("fields"))
+      self.set_fields(kwargs.get("fields"))
 
     if kwargs.get("mask") is not None:
-      self.setMask(kwargs.get("mask"))
+      self.set_mask(kwargs.get("mask"))
 
-  def getFields(self, y=None, x=None):
-    """Returns the fields, reampled to size (y,x)."""
+  def get_fields(self, y=None, x=None):
+    """Returns the fields, resampled to size (y,x)."""
+
     if x is None or y is None:
       y = self.h[0]
       x = self.w[0]
-    outX = gpuarray.empty((self.Nfields, y, x), np.float32)
-    outY = gpuarray.empty((self.Nfields, y, x), np.float32)
+    out_x = gpuarray.empty((self.Nfields, y, x), np.float32)
+    out_y = gpuarray.empty((self.Nfields, y, x), np.float32)
     grid = (int(ceil(x / 32)), int(ceil(y / 32)))
     block = (int(ceil(x / grid[0])), int(ceil(y / grid[1])), 1)
     for i in range(self.Nfields):
       self.resampleF[i].prepared_call(grid, block,
-                                      outX[i, :, :].gpudata,
-                                      outY[i, :, :].gpudata,
+                                      out_x[i, :, :].gpudata,
+                                      out_y[i, :, :].gpudata,
                                       np.int32(x), np.int32(y))
-    return outX, outY
+    return out_x, out_y
 
   def debug(self, n, *s):
     """
@@ -851,15 +877,17 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     First argument is the level of the message.
     It wil be displayed only if the self.debug is superior or equal.
     """
+
     if n <= self.verbose:
       print("  " * (n - 1) + "[Correl]", *s)
 
-  def setOrig(self, img):
+  def set_orig(self, img):
     """
     To set the original image.
 
     This is the reference with which the second image will be compared.
     """
+
     self.debug(2, "updating original image")
     assert isinstance(img, np.ndarray), "Image must be a numpy array"
     assert len(img.shape) == 2, "Image must have 2 dimensions (got {})" \
@@ -871,20 +899,20 @@ to allow GPU computing (got {}). Converting to float32."
                     .format(img.dtype), RuntimeWarning)
       img = img.astype(np.float32)
 
-    self.correl[0].setOrig(img)
+    self.correl[0].set_orig(img)
     for i in range(1, self.levels):
-      self.correl[i - 1].resampleOrig(self.h[i], self.w[i],
+      self.correl[i - 1].resample_orig(self.h[i], self.w[i],
                                       self.correl[i].devOrig)
-      self.correl[i].updateOrig()
+      self.correl[i].update_orig()
 
-  def setFields(self, fields):
+  def set_fields(self, fields):
     assert self.Nfields == len(fields), \
       "Cannot change the number of fields on the go!"
     # Choosing the right function to copy
     if isinstance(fields[0], str) or isinstance(fields[0][0], np.ndarray):
-      toArray = cuda.matrix_to_array
+      to_array = cuda.matrix_to_array
     elif isinstance(fields[0][0], gpuarray.GPUArray):
-      toArray = cuda.gpuarray_to_array
+      to_array = cuda.gpuarray_to_array
     else:
       self.debug(0, "Error ! Incorrect fields argument. \
 See docstring of Correl")
@@ -896,21 +924,21 @@ See docstring of Correl")
     for i in range(self.Nfields):
       if isinstance(fields[i], str):
         fields[i] = get_field(fields[i].lower(),
-            self.h[0],self.w[0])
+            self.h[0], self.w[0])
 
-      self.fieldsXArray.append(toArray(fields[i][0], "C"))
+      self.fieldsXArray.append(to_array(fields[i][0], "C"))
       self.texFx[i].set_array(self.fieldsXArray[i])
-      self.fieldsYArray.append(toArray(fields[i][1], "C"))
+      self.fieldsYArray.append(to_array(fields[i][1], "C"))
       self.texFy[i].set_array(self.fieldsYArray[i])
     for i in range(self.levels):
-      self.correl[i].setFields(*self.getFields(self.h[i], self.w[i]))
+      self.correl[i].set_fields(*self.get_fields(self.h[i], self.w[i]))
 
   def prepare(self):
     for c in self.correl:
       c.prepare()
     self.debug(2, "Ready!")
 
-  def saveAllImages(self, name="out"):
+  def save_all_images(self, name="out"):
     try:
       import cv2
     except (ModuleNotFoundError, ImportError):
@@ -920,22 +948,22 @@ See docstring of Correl")
       out = self.correl[i].devOrig.get().astype(np.uint8)
       cv2.imwrite(name + str(i) + ".png", out)
 
-  def setImage(self, img_d):
+  def set_image(self, img_d):
     if img_d.dtype != np.float32:
       warnings.warn("Correl() takes arrays with dtype np.float32 \
 to allow GPU computing (got {}). Converting to float32."
                     .format(img_d.dtype), RuntimeWarning)
       img_d = img_d.astype(np.float32)
-    self.correl[0].setImage(img_d)
+    self.correl[0].set_image(img_d)
     for i in range(1, self.levels):
-      self.correl[i].setImage(
-        self.correl[i - 1].resampleD(self.correl[i].h, self.correl[i].w))
+      self.correl[i].set_image(
+        self.correl[i - 1].resample_d(self.correl[i].h, self.correl[i].w))
 
-  def setMask(self, mask):
-    for l in range(self.levels):
-      self.correl[l].setMask(interpNearest(mask, self.h[l], self.w[l]))
+  def set_mask(self, mask):
+    for i in range(self.levels):
+      self.correl[i].set_mask(interp_nearest(mask, self.h[i], self.w[i]))
 
-  def getDisp(self, img_d=None):
+  def get_disp(self, img_d=None):
     """
     To get the displacement.
 
@@ -943,17 +971,18 @@ to allow GPU computing (got {}). Converting to float32."
     the previous values every time it will return the computed parameters
     as a list.
     """
+
     self.loop += 1
     if img_d is not None:
-      self.setImage(img_d)
+      self.set_image(img_d)
     try:
       disp = self.last / (self.resamplingFactor ** self.levels)
     except AttributeError:
       disp = np.array([0] * self.Nfields, dtype=np.float32)
     for i in reversed(range(self.levels)):
       disp *= self.resamplingFactor
-      self.correl[i].setDisp(disp)
-      disp = self.correl[i].getDisp()
+      self.correl[i].set_disp(disp)
+      disp = self.correl[i].get_disp()
       self.last = disp
     # Every 10 images, print the values (if debug >=2)
     if self.loop % 10 == 0:
@@ -961,29 +990,32 @@ to allow GPU computing (got {}). Converting to float32."
                  ", res:", self.correl[0].res / 1e6)
     return disp
 
-  def getRes(self, lvl=0):
+  def get_res(self, lvl=0):
     """
-    Returns the last residual of the sepcified level (0 by default).
+    Returns the last residual of the specified level (0 by default).
 
     Usually, the correlation is correct when res < ~1e9-10 but it really
     depends on the images: you need to find the value that suit your own
     images, depending on the resolution, contrast, correlation method etc...
-    You can use writeDiffFile to visualize the difference between the
+    You can use write_diff_file to visualize the difference between the
     two images after correlation.
     """
+
     return self.correl[lvl].res
 
-  def writeDiffFile(self, level=0):
+  def write_diff_file(self, level=0):
     """
     To see the difference between the two images with the computed parameters.
 
     It writes a single channel picture named "diff.png" where 128 gray is
     exact equality, lighter pixels show positive difference and darker pixels
-    a negative difference. Useful to see if correlation succeded and to
+    a negative difference. Useful to see if correlation succeeded and to
     identify the origin of non convergence.
     """
-    self.correl[level].writeDiffFile()
+    self.correl[level].write_diff_file()
 
-  def clean(self):
+  @staticmethod
+  def clean():
     """Needs to be called at the end, to destroy the context properly."""
+
     context.pop()
