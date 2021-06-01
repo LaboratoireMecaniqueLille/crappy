@@ -10,12 +10,13 @@ Required hardware:
 
 import crappy
 
-graph = crappy.blocks.Grapher(('t(s)', 'x'), ('t(s)', 'y'), ('t(s)', 'r'),
-                              length=50)
+if __name__ == "__main__":
+  graph = crappy.blocks.Grapher(('t(s)', 'x'), ('t(s)', 'y'), ('t(s)', 'r'),
+                                length=50)
 
-correl = crappy.blocks.GPUCorrel(camera="Webcam",
-    fields=['x', 'y', 'r'])  # Rigid body
+  correl = crappy.blocks.GPUCorrel(camera="Webcam",
+      fields=['x', 'y', 'r'])  # Rigid body
 
-crappy.link(correl, graph)
+  crappy.link(correl, graph)
 
-crappy.start()
+  crappy.start()

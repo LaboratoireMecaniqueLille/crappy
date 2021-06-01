@@ -12,12 +12,13 @@ Required hardware:
 
 import crappy
 
-cam1 = crappy.blocks.Camera('Webcam')
+if __name__ == "__main__":
+  cam1 = crappy.blocks.Camera('Webcam')
 
-dis = crappy.blocks.DISCorrel('', input_label='frame')
-crappy.link(cam1, dis)
+  dis = crappy.blocks.DISCorrel('', input_label='frame')
+  crappy.link(cam1, dis)
 
-graph = crappy.blocks.Grapher(('t(s)', 'x(pix)'))
-crappy.link(dis, graph)
+  graph = crappy.blocks.Grapher(('t(s)', 'x(pix)'))
+  crappy.link(dis, graph)
 
-crappy.start()
+  crappy.start()

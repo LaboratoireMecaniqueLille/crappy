@@ -13,11 +13,12 @@ import SimpleITK as Sitk
 
 import crappy
 
-CONFIG = False  # True
+if __name__ == "__main__":
+  CONFIG = False  # True
 
-cam = crappy.camera.Webcam()
-cam.open()
-if CONFIG:
-  crappy.tool.Camera_config(cam).main()
-Sitk.WriteImage(Sitk.GetImageFromArray(cam.get_image()[1]), "photo.tiff")
-cam.close()
+  cam = crappy.camera.Webcam()
+  cam.open()
+  if CONFIG:
+    crappy.tool.Camera_config(cam).main()
+  Sitk.WriteImage(Sitk.GetImageFromArray(cam.get_image()[1]), "photo.tiff")
+  cam.close()

@@ -43,8 +43,9 @@ class MyBlock(crappy.blocks.Block):
     print("==> finish has been called")
 
 
-mb = MyBlock()
-graph = crappy.blocks.Grapher(('t(s)', 'cmd(V)'))
-crappy.link(mb, graph)
+if __name__ == "__main__":
+  mb = MyBlock()
+  graph = crappy.blocks.Grapher(('t(s)', 'cmd(V)'))
+  crappy.link(mb, graph)
 
-crappy.start()
+  crappy.start()

@@ -9,12 +9,13 @@ Required hardware:
 
 import crappy
 
-extenso = crappy.blocks.Video_extenso(camera="Webcam", show_image=True)
+if __name__ == "__main__":
+  extenso = crappy.blocks.Video_extenso(camera="Webcam", show_image=True)
 
-graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
-crappy.link(extenso, graph_extenso)
+  graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
+  crappy.link(extenso, graph_extenso)
 
-gui = crappy.blocks.GUI()
-crappy.link(gui, extenso)
+  gui = crappy.blocks.GUI()
+  crappy.link(gui, extenso)
 
-crappy.start()
+  crappy.start()
