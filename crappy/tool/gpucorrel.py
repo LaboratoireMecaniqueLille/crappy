@@ -143,7 +143,7 @@ class CorrelStage:
       self.mod = SourceModule(f.read() % (self.w, self.h, self.Nfields))
     # Assigning functions to the kernels #
     # These kernels are defined in data/kernels.cu
-    self._resampleOrigKrnl = self.mod.get_function('resampleD')
+    self._resampleOrigKrnl = self.mod.get_function('resampleO')
     self._resampleKrnl = self.mod.get_function('resample')
     self._gradientKrnl = self.mod.get_function('gradient')
     self._makeGKrnl = self.mod.get_function('makeG')
