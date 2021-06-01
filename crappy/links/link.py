@@ -98,16 +98,16 @@ class Link(object):
 
   """
   def __init__(self, input_block=None, output_block=None, condition=None,
-                modifier=[], timeout=0.1, action="warn", name="link"):
+               modifier=[], timeout=0.1, action="warn", name="link"):
 
     # For compatibility (condition is deprecated, use modifier)
     if condition is not None:
       modifier = condition
     # --
     self.name = name
-    self.in_, self.out_ = Pipe(duplex=False)
+    self.in_, self.out_ = Pipe()
     self.external_trigger = None
-    self.modifiers = modifier if isinstance(modifier,list) else [modifier]
+    self.modifiers = modifier if isinstance(modifier, list) else [modifier]
     self.timeout = timeout
     self.action = action
     if None not in [input_block, output_block]:
@@ -206,7 +206,7 @@ class Link(object):
 
   def clear(self):
     while self.in_.poll():
-      self.in_.recv()
+      self.in_.recv_bytes()
 
   def recv_last(self,blocking=False):
     """

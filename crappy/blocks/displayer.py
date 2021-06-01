@@ -57,6 +57,7 @@ class Displayer(Block):
 
   # Matplotlib
   def begin_mpl(self):
+    self.inputs[0].clear()
     plt.ion()
     fig = plt.figure()
     fig.add_subplot(111)
@@ -79,6 +80,7 @@ class Displayer(Block):
 
   # OpenCV
   def begin_cv(self):
+    self.inputs[0].clear()
     try:
       flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
     # WINDOW_KEEPRATIO is not implemented in all opencv versions...
@@ -114,6 +116,7 @@ class Displayer(Block):
         self.w = int(self.img_shape[1]*ratio)
 
   def begin_tk(self):
+    self.inputs[0].clear()
     self.root = tk.Tk()
     self.root.protocol("WM_DELETE_WINDOW",self.end)
     self.imglabel = tk.Label(self.root)
