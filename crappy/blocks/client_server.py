@@ -28,9 +28,10 @@ class Client_server(Block):
                address: Any = 'localhost',
                port: int = 1148,
                init_output: Dict[str, Any] = None,
-               topics: List[Union[str, Tuple[str]]] = None,
-               cmd_labels: List[Union[str, Tuple[str]]] = None,
-               labels_to_send: List[Union[str, Tuple[str]]] = None) -> None:
+               topics: List[Union[str, Tuple[str, str]]] = None,
+               cmd_labels: List[Union[str, Tuple[str, str]]] = None,
+               labels_to_send:
+               List[Union[str, Tuple[str, str]]] = None) -> None:
     """Checks arguments validity and sets the instance attributes
 
     Args:
