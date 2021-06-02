@@ -32,28 +32,28 @@ class Gpio_pwm(InOut):
       duty_cycle (:obj:`float`): If provided, sets a fixed duty cycle for the
         entire assay. Only the frequency can then be tuned. If not provided,
         the block will expect the duty cycle values to be given as the first
-        input. It will also start the PWM with a duty cycle of 0% before the
+        input. It will also start the PWM with a duty cycle of `0%` before the
         first value is received and set.
       frequency (:obj:`float`): If provided, sets a fixed PWM frequency for the
         entire assay. Only the duty cycle can then be tuned. If not provided,
         the block will expect the frequency values to be given as the first
         input if the ``duty_cycle`` argument is provided, or else as the second
-        input. It will also start the PWM with a frequency of 10kHz before the
-        first value is received and set.
+        input. It will also start the PWM with a frequency of `10kHz` before
+        the first value is received and set.
 
     Note:
       - ``duty_cycle``:
-        The duty cycle inputs are clamped between 0 and 100.
+        The duty cycle inputs are clamped between `0` and `100`.
 
       - ``frequency``:
-        The frequency inputs are clamped between 10Hz and 1MhZ. Sending other
-        values to the bloc doesn't raise any error, but the assay may not run
-        as expected.
+        The frequency inputs are clamped between `10Hz` and `1MhZ`. Sending
+        other values to the bloc doesn't raise any error, but the assay may not
+        run as expected.
 
       - **Hardware PWM pins**:
-        On the Raspberry Pi 4, only the GPIO pins 12, 13, 18 and 19 support
-        hardware PWM. Trying to get a PWM output from other pins might work but
-        may decrease the available frequency range.
+        On the Raspberry Pi 4, only the GPIO pins `12`, `13`, `18` and `19`
+        support hardware PWM. Trying to get a PWM output from other pins might
+        work but may decrease the available frequency range.
     """
 
     InOut.__init__(self)

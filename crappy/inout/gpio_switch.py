@@ -13,9 +13,9 @@ class Gpio_switch(InOut):
   """Class for setting a GPIO high or low
 
   The Gpio_switch InOut block is meant for switching a Raspberry Pi GPIO high
-  or low according to the input signal value. When the input signal is 1 the
-  GPIO is turned high, when the signal is 0 it is turned low. Any value other
-  than 0 and 1 raises an error.
+  or low according to the input signal value. When the input signal is `1` the
+  GPIO is turned high, when the signal is `0` it is turned low. Any value other
+  than `0` and `1` raises an error.
 
   Warning:
     Only works on Raspberry Pi !

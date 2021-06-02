@@ -85,31 +85,48 @@ class Mcp9600(InOut):
 
     Args:
       thermocouple_type (:obj:`str`): The type of thermocouple
-        plugged in the MCP9600.
+        plugged in the MCP9600. The available types are:
+        ::
+
+          'J', 'K', 'T', 'N', 'S', 'E', 'B', 'R'
+
       i2c_port(:obj:`int`, optional): The I2C port over which the MCP9600
         should communicate. On most Raspberry Pi models the default I2C port is
         1.
       device_address(:obj:`int`, optional): The I2C address of the MCP9600. The
-        default address is 0x67, but it is possible to change this setting
-        using a specific setup involving the ADDR pin.
+        default address is `0x67`, but it is possible to change this setting
+        using a specific setup involving the `ADDR` pin.
       adc_resolution(:obj:`int`, optional): The number of bits the ADC output
         is encoded on. The greater the resolution, the lower the sample rate.
+        The available resolutions are:
+        ::
+
+          12, 14, 16, 18
+
       sensor_resolution(:obj:`float`, optional): The temperature measurement
-        resolution in °C. It should be either 0.0625 or 0.25 °C. Setting the
-        resolution to 0.25 will increase the sample rate, but the output
+        resolution in °C. It should be either `0.0625` or `0.25`. Setting the
+        resolution to `0.25` will increase the sample rate, but the output
         temperature will be encoded on 2 bits less.
       filter_coefficient(:obj:`int`, optional): The MCP9600 features an
         integrated filter (see its documentation for the exact filter formula).
-        When set to 0, the filter is inactive. When active, the filter will
-        prohibit fast temperature changes, thus limiting noise and smoothening
-        the signal.
+        When set to 0, the filter is inactive. It is maximal when set to 7.
+        When active, the filter will prohibit fast temperature changes, thus
+        limiting noise and smoothening the signal.
       mode(:obj:`str`, optional): 4 different values can be accessed when
         measuring a temperature: the temperature of the thermocouple (hot
         junction temperature), the temperature of the MCP9600 board (cold
         junction temperature), the temperature calculated from the ADC data and
         thermocouple type but not yet cold junction-compensated (junction
         temperature delta), and the raw ADC measurement of the voltage
-        difference in the thermocouple (raw data ADC, in Volts).
+        difference in the thermocouple (raw data ADC, in Volts). The available
+        modes are thus:
+        ::
+
+          'Hot Junction Temperature',
+          'Junction Temperature Delta',
+          'Cold Junction Temperature',
+          'Raw Data ADC'
+
     """
 
     InOut.__init__(self)

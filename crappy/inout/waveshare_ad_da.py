@@ -108,54 +108,68 @@ class Waveshare_ad_da(InOut):
     Args:
       dac_channels (:obj:`list`, optional): A list of strings representing the
         channels to be set. The syntax for each string is 'DACi' with i being
-        either 0 or 1.
+        either `0` or `1`.
       adc_channels (:obj:`list`, optional): A list of strings representing the
         channels to be read. The syntax for all strings is either:
         ::
 
-          'ADi' (i in range(8)) or 'ADi - ADj' (i, j in range(8))
+          'ADi' (i in range(8))
+
+        or else:
+        ::
+
+          'ADi - ADj' (i, j in range(8))
 
       gain_hardware (:obj:`int`, optional): The gain to be used by the
         programmable gain amplifier. Setting a high gain allows to read small
         voltages with a better precision, but it might saturate the sensor for
-        higher voltages.
-      v_ref (:obj:`float`, optional): The voltage reference set by the VREF
+        higher voltages. The available gain values are:
+        ::
+
+          1, 2, 4, 8, 16, 32, 64
+
+      v_ref (:obj:`float`, optional): The voltage reference set by the `VREF`
         jumper. When reading single inputs, ``v_ref`` is the value the ADC
         compares the signals with. In a similar way, the maximum output voltage
-        of the DAC is ``v_ref``. Only two values are possible for this setting,
-        as the Raspberry Pi can only provide 3.3V and 5V.
+        of the DAC is ``v_ref``. `3.3` and `5` are the only possible values for
+        this setting, as the Raspberry Pi can only provide `3.3V` and `5V`.
       gain (:obj:`float`, optional): Allows to tune the output values of the
         DAC according to the formula: output = gain * tension + offset. The
         same gain applies to all of the outputs.
       offset (:obj:`float`, optional): Allows to tune the output values of the
         ADC according to the formula: output = gain * tension + offset. The
         same offset applies to all of the outputs.
-      sample_rate (optional): The ADC data output rate
+      sample_rate (optional): The ADC data output rate in SPS. The available
+        values are:
+        ::
+
+          2.5, 5, 10, 15, 25, 30, 50, 60, 100, 500,
+          1000, 2000, 3750, 7500, 15000, 30000
 
     Warning:
       - ``adc_channels``:
-        For reading single inputs the JMP_AGND jumper should normally be
+        For reading single inputs the `JMP_AGND` jumper should normally be
         connected, whereas it should be disconnected for reading differential
-        inputs. It is however possible to set a different reference than AGND
-        for single input measurements, in which case the JMP_AGND jumper
+        inputs. It is however possible to set a different reference than `AGND`
+        for single input measurements, in which case the `JMP_AGND` jumper
         should not be connected and the voltage reference should be plugged
-        in the AINCOM pin.
+        in the `AINCOM` pin.
 
         The AD/DA offers the possibility to read single inputs or
         differential inputs, but not both at the same time ! This is due to
-        the JMP_AGND jumper.
+        the `JMP_AGND` jumper.
         For measuring both input types simultaneously, is it necessary to
-        connect AGND to one of the channels (for example AD0). Then all
-        single inputs 'ADi' should be replaced by 'ADi - AD0'. They are then
-        considered as differential inputs.
+        connect `AGND` to one of the channels (for example `AD0`). Then all
+        single inputs `'ADi'` should be replaced by `'ADi - AD0'`. They are
+        then considered as differential inputs.
 
-        The ADC channels voltages should not be lower than AGND-0.1V, and not
-        be greater than AGND+5.1V. This is independent from VREF value.
+        The ADC channels voltages should not be lower than `AGND-0.1V`, and not
+        be greater than `AGND+5.1V`. This is independent from `VREF` value.
 
     Note:
       - ``dac_channels``:
-        As there are 2 DAC channels on the AD/DA, only 1 or 2 strings can be
-        given for the dac_channels argument.
+        As there are 2 DAC channels on the AD/DA, only `1` or `2` strings can
+        be given for the dac_channels argument.
 
       - ``adc_channels``:
         If multiple channels to read are given, they are read in a sequential
@@ -165,9 +179,9 @@ class Waveshare_ad_da(InOut):
         read as few channels as possible !
 
       - ``vref``:
-        VREF can be set independently from the chosen VCC value. The VCC
+        `VREF` can be set independently from the chosen `VCC` value. The `VCC`
         value has no influence on the ADC behaviour as it is always powered
-        up with 5V. Same goes for the DAC.
+        up with `5V`. Same goes for the DAC.
     """
 
     InOut.__init__(self)
@@ -240,7 +254,7 @@ class Waveshare_ad_da(InOut):
     GPIO.setup(AD_DA_pins['CS_PIN_DAC'], GPIO.OUT)
 
     # Setting the SPI
-    self._SPI.max_speed_hz = 20000
+    self._SPI.max_speed_hz = 200000
     self._SPI.mode = 1
     self._SPI.no_cs = True
     self._reset()

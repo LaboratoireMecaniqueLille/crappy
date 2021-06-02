@@ -99,7 +99,7 @@ class Nau7802(InOut):
 
   The Nau7802 InOut block is meant for reading output values from a NAU7802
   load cell conditioner, using the I2C protocol. The output is in Volts by
-  default, but can be converted into Newtons using `gain` and `offset`.
+  default, but can be converted into Newtons using ``gain`` and ``offset``.
 
   Warning:
     Only available on Raspberry Pi for now !
@@ -124,9 +124,17 @@ class Nau7802(InOut):
       gain_hardware (:obj:`int`, optional): The gain to be used by the
         programmable gain amplifier. Setting a high gain allows to read small
         voltages with a better precision, but it might saturate the sensor for
-        higher voltages.
+        higher voltages. Available gains are:
+        ::
+
+          1, 2, 4, 8, 16, 32, 64, 128
+
       sample_rate (:obj:`int`, optional): The sample rate for data conversion.
-        The higher the rate, the greater the noise.
+        The higher the rate, the greater the noise. Available sample rates are:
+        ::
+
+          10, 20, 40, 80, 320
+
       gain (:obj:`float`, optional): Allows to tune the output value according
         to the formula: output = gain * tension + offset.
       offset (:obj:`float`, optional): Allows to tune the output value

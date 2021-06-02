@@ -63,26 +63,45 @@ class Ads1115(InOut):
 
     Args:
       device_address (:obj:`int`, optional): The I2C address of the ADS1115.
-        The default address is 0x48, but it is possible to change this setting
-        using the ADDR pin.
+        The default address is `0x48`, but it is possible to change this
+        setting using the `ADDR` pin.
       i2c_port (:obj:`int`, optional): The I2C port over which the ADS1115
         should communicate. On most Raspberry Pi models the default I2C port is
         1.
-      sample_rate (:obj:`int`, optional): The sample rate for data conversion.
+      sample_rate (:obj:`int`, optional): The sample rate for data conversion
+        (in SPS). Available sample rates are:
+        ::
+
+          8, 16, 32, 64, 128, 250, 475, 860
+
       v_range (:obj:`float`, optional): The value (in Volts) of the measured
-        signal corresponding to the 0x7FFF output in bits. A signal of -v_range
-        Volts gives a 0x8000 output in bits.
+        signal corresponding to the `0x7FFF` output in bits. A signal of
+        ``-v_range`` Volts gives a `0x8000` output in bits. Available
+        ``v_range`` values are:
+        ::
+
+          0.256, 0.512, 1.024, 2.048, 4.096, 6.144
+
       multiplexer (:obj:`str`, optional): Choice of the inputs to consider.
-        Single-input modes actually measure Ax - GND.
+        Single-input modes actually measure `Ax - GND`. The available
+        ``multiplexer`` values are:
+        ::
+
+          'A0', 'A1', 'A2', 'A3',
+          'A0 - A1',
+          'A0 - A3',
+          'A1 - A3',
+          'A2 - A3'
+
       gain (:obj:`float`, optional): Allows to tune the output value according
         to the formula: output = gain * tension + offset.
       offset (:obj:`float`, optional): Allows to tune the output value
         according to the formula: output = gain * tension + offset.
 
     Warning:
-      AINx voltages should not be higher than VDD+0.3V nor lower than
-      GND-0.3V. Setting high `v_range` values does not allow to measure
-      voltages higher than VDD !!
+      AINx voltages should not be higher than `VDD+0.3V` nor lower than
+      `GND-0.3V`. Setting high ``v_range`` values does not allow to measure
+      voltages higher than `VDD` !!
     """
 
     InOut.__init__(self)
