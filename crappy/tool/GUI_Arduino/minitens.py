@@ -14,7 +14,7 @@ class MinitensPopups(FrameObjects):
   """
 
   def __init__(self):
-    pass
+    super().__init__()
 
   def create_popup_limits(self):
 
@@ -425,8 +425,9 @@ class MinitensPopups(FrameObjects):
 
 
 class MinitensFrames(FrameObjects):
+
   def __init__(self):
-    pass
+    super().__init__()
 
   def create_frame_display(self):
     """
