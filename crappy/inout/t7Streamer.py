@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from __future__ import print_function, division
-
 from time import time
 import numpy as np
 
