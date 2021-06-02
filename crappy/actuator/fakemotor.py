@@ -23,17 +23,25 @@ class Fake_motor(Actuator):
 
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               inertia: float = 0.5,
+               torque: float = 0.,
+               kv: float = 1000,
+               rv: float = 0.4,
+               fv: float = 2e-5,
+               sim_speed: float = 1,
+               initial_speed: float = 0,
+               initial_pos: float = 0,
+               **kwargs):
     super().__init__()
-    for arg, default in [("inertia", .5),  # Inertia of the motor
-                        ("torque", 0),  # Counter torque on the axis
-                        ("kv", 1000),  # t/min/V
-                        ("rv", .4),  # Solid friction
-                        ("fv", 2e-5),  # Fluid friction
-                        ("sim_speed", 1),  # Speed factor of the simulation
-                        ("initial_speed", 0),
-                        ("initial_pos", 0), ]:
-      setattr(self, arg, kwargs.pop(arg, default))
+    self.inertia = inertia
+    self.torque = torque
+    self.kv = kv
+    self.rv = rv
+    self.fv = fv
+    self.sim_speed = sim_speed
+    self.initial_speed = initial_speed
+    self.initial_pos = initial_pos
     assert not kwargs, "Fake_motor got invalid kwarg(s): " + str(kwargs)
 
   def open(self):
