@@ -12,7 +12,7 @@ class MetaActuator(type):
   """
 
   classes = {}
-  needed_methods = ["open", "stop", ('set_speed', 'set_position')]
+  needed_methods = ["open", "stop", ('set_speed', 'set_position'), 'close']
 
   def __new__(mcs, name, bases, dict_):
     return type.__new__(mcs, name, bases, dict_)
