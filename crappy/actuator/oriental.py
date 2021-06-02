@@ -13,13 +13,19 @@ ACCEL = b'.1'  # Acceleration and deceleration times
 
 
 class Oriental(Actuator):
-  """
-  To drive an axis with an oriental motor through a serial link.
+  """To drive an axis with an oriental motor through a serial link.
 
-  The current setup moves at .07mm/min with "VR 1".
+  The current setup moves at `.07mm/min` with `"VR 1"`.
   """
 
   def __init__(self, baudrate=115200, port='/dev/ttyUSB0', gain=1/.07):
+    """Sets the instance attributes.
+
+    Args:
+      baudrate (:obj:`int`, optional): Set the corresponding baud rate.
+      port (:obj:`str`, optional): Path to connect to the serial port.
+      gain (:obj:`float`, optional): The gain for speed commands.
+    """
 
     Actuator.__init__(self)
     self.baudrate = baudrate
@@ -64,7 +70,7 @@ class Oriental(Actuator):
     self.clear_errors()
 
   def set_speed(self, cmd):
-    """Pilot in speed mode, requires speed in mm/min."""
+    """Pilot in speed mode, requires speed in `mm/min`."""
 
     # speed in mm/min
     # gain can be edited by giving gain=xx to the init
@@ -98,18 +104,16 @@ class Oriental(Actuator):
 
   def set_position(self, position, speed):
     """Pilot in position mode, needs speed and final position to run
-    (in mm/min and mm)."""
+    (in `mm/min` and `mm`)."""
 
     self.ser.write("VR {0}".format(abs(speed)).encode('ASCII'))
     self.ser.write("MA {0}".format(position).encode('ASCII'))
 
   def get_pos(self):
-    """
-    Reads current position.
+    """Reads current position.
 
     Returns:
       Current position of the motor.
-
     """
 
     self.ser.flushInput()

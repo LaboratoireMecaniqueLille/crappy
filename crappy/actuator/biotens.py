@@ -12,8 +12,8 @@ except (ModuleNotFoundError, ImportError):
 
 
 def convert_to_byte(number, length):
-  """
-  This functions converts decimal into bytes or bytes into decimals.
+  """This functions converts decimal into bytes.
+
   Mandatory in order to send or read anything into/from MAC Motors registers.
   """
 
@@ -30,9 +30,9 @@ def convert_to_byte(number, length):
 
 
 def convert_to_dec(sequence):
-  """
-  This functions converts bytes into decimals. Mandatory in order to send
-  or read anything into/from MAC Motors registers.
+  """This functions converts bytes into decimals.
+
+  Mandatory in order to send or read anything into/from MAC Motors registers.
   """
 
   # sequence=sequence[::2] ## cut off "complement byte"
@@ -41,18 +41,19 @@ def convert_to_dec(sequence):
 
 
 class Biotens(Actuator):
-  """
-  Open the connection, and initialise the Biotens.
+  """Open the connection, and initialise the Biotens.
 
   Note:
-    You should always use this Class to communicate with the Biotens.
-
-  Args:
-    - port (str, default: '/dev/ttyUSB0'): Path to the connect serial port.
-
+    You should only use this class to communicate with the Biotens.
   """
 
   def __init__(self, port='/dev/ttyUSB0', baudrate=19200):
+    """Sets the instance attributes
+
+    Args:
+      port (:obj:`str`, optional): Path to connect to the serial port.
+      baudrate (:obj:`int`, optional): Set the corresponding baud rate.
+    """
 
     Actuator.__init__(self)
     self.port = port
@@ -148,9 +149,7 @@ class Biotens(Actuator):
     self.ser.close()
 
   def clear_errors(self):
-    """
-    Clears error in motor registers. Obviously.
-    """
+    """Clears error in motor registers."""
 
     command = b'\x52\x52\x52\xFF\x00' +\
           convert_to_byte(35, 'B') +\
@@ -161,7 +160,7 @@ class Biotens(Actuator):
     self.ser.write(command)
 
   def set_speed(self, speed):
-    """Pilot in speed mode, requires speed in mm/min."""
+    """Pilot in speed mode, requires speed in `mm/min`."""
 
     # converts speed in motors value
     # displacement rate in mm/min, V_SOll in 1/16 encoder counts/sample.
@@ -207,7 +206,7 @@ class Biotens(Actuator):
 
   def set_position(self, position, speed):
     """Pilot in position mode, needs speed and final position to run
-    (in mm/min and mm)."""
+    (in `mm/min` and `mm`)."""
 
     # conversion of position from mm into encoder's count
     position_soll = int(round(position * 4096 / 5))
@@ -264,12 +263,10 @@ class Biotens(Actuator):
                         set_torque, set_acceleration, command])
 
   def get_pos(self):
-    """
-    Reads current position.
+    """Reads current position.
 
     Returns:
       Current position of the motor.
-
     """
 
     for i in range(20):

@@ -6,21 +6,12 @@ from .actuator import Actuator
 
 
 class Fake_motor(Actuator):
-  """
-  To run test programs without a physical actuator.
+  """To run test programs without a physical actuator.
 
   Note:
     A virtual motor driven by a voltage, you can set its properties with the
-    args. It has the same methods as a real motor: open, set_speed, get_speed,
-    get_pos.
-
-  Args:
-    - inertia (float, default: .5): Inertia of the motor.
-    - torque (float, default: 0): A torque applied on the axis.
-    - kv (float, default: 1000): The electrical constant of the motor.
-    - rv (float, default: .4): The solid friction.
-    - fv (float, default: 2e-5): The fluid friction.
-
+    args. It has the same methods as a real motor: ``open``, ``set_speed``,
+    ``get_speed``, ``get_pos``.
   """
 
   def __init__(self,
@@ -33,6 +24,20 @@ class Fake_motor(Actuator):
                initial_speed: float = 0,
                initial_pos: float = 0,
                **kwargs):
+    """Sets the instance attributes.
+
+    Args:
+      inertia (:obj:`float`, optional): Inertia of the motor (`kg.m²`)
+      torque(:obj:`float`, optional): A torque applied on the axis (`N.m`).
+      kv(:obj:`float`, optional): The electrical constant of the motor
+        (`t/min/V`).
+      rv(:obj:`float`, optional): The solid friction.
+      fv(:obj:`float`, optional): The fluid friction.
+      sim_speed(:obj:`float`, optional): Speed factor of the simulation
+      initial_speed(:obj:`float`, optional): (`rpm`)
+      initial_pos(:obj:`float`, optional): (turns)
+    """
+
     super().__init__()
     self.inertia = inertia
     self.torque = torque
@@ -57,12 +62,10 @@ class Fake_motor(Actuator):
     pass
 
   def update(self):
-    """
-    Will update the motor rpm.
+    """Updates the motor rpm.
 
     Note:
-      Supposes u is constant for the interval dt.
-
+      Supposes `u` is constant for the interval `dt`.
     """
 
     t1 = time() * self.sim_speed
@@ -75,25 +78,19 @@ class Fake_motor(Actuator):
     self.rpm += drpm
 
   def get_speed(self):
-    """
-    Return the motor speed (rpm).
-    """
+    """Return the motor speed (rpm)."""
 
     self.update()
     return self.rpm
 
   def get_pos(self):
-    """
-    Returns the motor position.
-    """
+    """Returns the motor position."""
 
     self.update()
     return self.pos
 
   def set_speed(self, u):
-    """
-    Sets the motor cmd in volts.
-    """
+    """Sets the motor `cmd` in volts."""
 
     self.update()
     self.u = u

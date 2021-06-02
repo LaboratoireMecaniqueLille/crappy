@@ -12,11 +12,18 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Servostar(Actuator):
-  """
-  To drive and configure a servostar variator through a serial connection.
-  """
+  """To drive and configure a servostar variator through a serial
+  connection."""
 
   def __init__(self, device, baudrate=38400, mode="serial"):
+    """Sets the instance attributes.
+
+    Args:
+      device (:obj:`str`, optional): Path to connect to the serial port.
+      baudrate (:obj:`int`, optional): Set the corresponding baud rate.
+      mode (:obj:`str`, optional): Can be `'analog'` or `'serial'`
+    """
+
     Actuator.__init__(self)
     self.devname = device
     self.mode = mode
@@ -42,9 +49,7 @@ class Servostar(Actuator):
     self.lock.release()
 
   def set_position(self, pos, speed=20000, acc=200, dec=200):
-    """
-    Go to the position specified at the given speed and acceleration.
-    """
+    """Go to the position specified at the given speed and acceleration."""
 
     if self.last is pos:
       return
@@ -67,8 +72,7 @@ class Servostar(Actuator):
     self.last = pos
 
   def get_position(self):
-    """
-    Reads current position.
+    """Reads current position.
 
     Returns:
       Current position of the motor.
@@ -94,9 +98,7 @@ class Servostar(Actuator):
     return int(r)
 
   def set_mode_serial(self):
-    """
-    Sets the serial input as setpoint.
-    """
+    """Sets the serial input as setpoint."""
 
     self.lock.acquire()
     self.ser.flushInput()
@@ -105,9 +107,7 @@ class Servostar(Actuator):
     self.mode = "serial"
 
   def set_mode_analog(self):
-    """
-    Sets the analog input as setpoint.
-    """
+    """Sets the analog input as setpoint."""
 
     self.last = None
     self.lock.acquire()
@@ -117,15 +117,13 @@ class Servostar(Actuator):
     self.mode = "analog"
 
   def clear_errors(self):
-    """
-    Clears error in motor registers. Obviously.
-    """
+    """Clears error in motor registers."""
 
     self.ser.flushInput()
     self.ser.write("CLRFAULT\r\n")
 
   def stop(self):
-    """Stop the motor."""
+    """Stops the motor."""
 
     self.ser.write("DIS\r\n")
     self.ser.flushInput()

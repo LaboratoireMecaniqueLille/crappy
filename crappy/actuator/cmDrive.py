@@ -10,11 +10,17 @@ except (ModuleNotFoundError, ImportError):
 
 
 class CM_drive(Actuator):
-  """
-  Open a new default serial port for communication with a CMdrive actuator.
+  """Open a new default serial port for communication with a CMdrive actuator.
   """
 
   def __init__(self, port='/dev/ttyUSB0', baudrate=9600):
+    """Sets the instance attributes.
+
+    Args:
+      port (:obj:`str`, optional): Path to connect to the serial port.
+      baudrate (:obj:`int`, optional): Set the corresponding baud rate.
+    """
+
     Actuator.__init__(self)
     self.port = port
     self.baudrate = baudrate
@@ -33,8 +39,8 @@ class CM_drive(Actuator):
     self.ser.close()
 
   def reset(self):
-    """Reset the serial communication, before reopen
-    it to set displacement to zero."""
+    """Reset the serial communication, before reopening it to set displacement
+    to zero."""
 
     self.ser.close()
     self.ser.open()  # open serial port
@@ -71,7 +77,7 @@ class CM_drive(Actuator):
     self.ser.write("OPMODE 0\r\n EN\r\n")
 
   def set_speed(self, speed):
-    """Pilot in speed mode, requires speed in mm/min."""
+    """Pilot in speed mode, requires speed in `mm/min`."""
 
     self.ser.close()  # close serial connection before to avoid errors
     self.ser.open()  # open serial port
@@ -86,7 +92,7 @@ class CM_drive(Actuator):
 
   def set_position(self, position, speed, motion_type='relative'):
     """Pilot in position mode, needs speed and final position to run
-    (in mm/min and mm)."""
+    (in `mm/min` and `mm`)."""
 
     self.ser.close()  # close serial connection before to avoid errors
     self.ser.open()  # open serial port
@@ -110,8 +116,7 @@ class CM_drive(Actuator):
     self.ser.close()  # close serial connection
 
   def get_position(self):
-    """
-    Search for the physical position of the motor.
+    """Search for the physical position of the motor.
 
     Returns:
       Physical position of the motor.

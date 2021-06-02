@@ -4,11 +4,10 @@ from .._global import DefinitionError
 
 
 class MetaActuator(type):
-  """
-  This metaclass will just check if the actuator are defined properly.
+  """This metaclass will just check if the actuator are defined properly.
 
-  They must have at least an open, a stop
-  and either a set_speed or a set_position method.
+  They must have at least an ``open``, a ``stop``, a ``close`` and either a
+  ``set_speed`` or a ``set_position`` method.
   """
 
   classes = {}
