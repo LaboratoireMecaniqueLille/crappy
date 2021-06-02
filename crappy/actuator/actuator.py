@@ -42,5 +42,4 @@ class MetaActuator(type):
 
 
 class Actuator(object, metaclass=MetaActuator):
-  def __init__(self):
-    pass
+  pass
