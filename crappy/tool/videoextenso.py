@@ -57,37 +57,21 @@ class Video_extenso(object):
 
   """
 
-  def __init__(self, **kwargs):
-    for arg, default in [("white_spots", False),
-                        # Set to True if spots are lighter than the
-                        # surroundings, else set to False
-                        ("update_thresh", False),
-                        # Should the threshold be updated in each round ?
-                        # lower chance to loose the spots, but more noise
-                        # in the measurements
-                        ("num_spots", "auto"),
-                        # Can be either 'auto',2,3 or 4
-                        # It will help for spot detection
-                        # it allows to force detection of a given number
-                        # of spots (auto works fine most of the time)
-                        ("safe_mode", False),
-                        # If set to False, it will try hard to catch the
-                        # spots when losing them.
-                        # Could result in incoherent values without crash.
-                        # Set it to True when security is a concern.
-                        ("border", 5),
-                        # The number of pixel that will be added to the limits
-                        # of the boundingbox
-                        ("min_area", 150),
-                        # Filters regions with an area smaller than this values
-                        # among the selected regions
-                        ("blur", 5),
-                        # Median blur to be added to the image
-                        # to smooth out irregularities and make
-                        # detection more reliable
-                         ]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert not kwargs, "Invalid kwarg in ve:" + str(kwargs)
+  def __init__(self,
+               white_spots=False,
+               update_thresh=False,
+               num_spots="auto",
+               safe_mode=False,
+               border=5,
+               min_area=150,
+               blur=5):
+    self.white_spots = white_spots
+    self.update_thresh = update_thresh
+    self.num_spots = num_spots
+    self.safe_mode = safe_mode
+    self.border = border
+    self.min_area = min_area
+    self.blur = blur
     assert self.num_spots in ['auto', 2, 3, 4], "Invalid number of spots!"
     self.spot_list = []
     self.fallback_mode = False

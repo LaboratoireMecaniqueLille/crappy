@@ -12,30 +12,32 @@ from .fields import get_fields, Projector, get_res
 
 
 class DISCorrel:
-  def __init__(self, img0, **kwargs):
+  def __init__(self,
+               img0,
+               bbox=None,
+               fields=None,
+               alpha=3,
+               delta=1,
+               gamma=0,
+               finest_scale=1,
+               init=True,
+               iterations=1,
+               gditerations=10,
+               patch_size=8,
+               patch_stride=3):
     self.img0 = img0
     self.h, self.w = img0.shape
-    for arg, default in [("bbox", None),
-                        # fields: Base of fields to use for the projection
-                        ("fields", ["x", "y", "exx", "eyy"]),
-                        # alpha, delta, gamma: settings for disflow
-                        ("alpha", 3),
-                        ("delta", 1),
-                        ("gamma", 0),
-                        # finest_scale: last scale for disflow (0=fullscale)
-                        ("finest_scale", 1),
-                        # init: Should we use the last field to init ?
-                        ("init", True),
-                        # Variational refinement iterations
-                        ("iterations", 1),
-                        # Gradient descent iterations
-                        ("gditerations", 10),
-                        # DIS patch size
-                        ("patch_size", 8),
-                        # DIS patch stride
-                        ("patch_stride", 3), ]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert not kwargs, "Invalid kwarg in ve:" + str(kwargs)
+    self.bbox = bbox
+    self.fields = ["x", "y", "exx", "eyy"] if fields is None else fields
+    self.alpha = alpha
+    self.delta = delta
+    self.gamma = gamma
+    self.finest_scale = finest_scale
+    self.init = init
+    self.iterations = iterations
+    self.gditerations = gditerations
+    self.patch_size = patch_size
+    self.patch_stride = patch_stride
     if self.bbox is None:
       self.bbox = (0, 0, self.h, self.w)
     self.bh, self.bw = self.bbox[2] - self.bbox[0], self.bbox[3] - self.bbox[1]

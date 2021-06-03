@@ -10,27 +10,31 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DISVE:
-  def __init__(self, img0, patches, **kwargs):
+  def __init__(self,
+               img0,
+               patches,
+               alpha=3,
+               delta=1,
+               gamma=0,
+               finest_scale=1,
+               iterations=1,
+               gditerations=10,
+               patch_size=8,
+               patch_stride=3,
+               border=0.1):
     self.img0 = img0
     self.patches = patches
     self.h, self.w = img0.shape
-    for arg, default in [("alpha", 3),
-                        ("delta", 1),
-                        ("gamma", 0),
-                        # alpha, delta, gamma: settings for disflow
-                        ("finest_scale", 1),
-                        # finest_scale: last scale for disflow (0=fullscale)
-                        ("iterations", 1),
-                        # Gradient descent iterations
-                        ("gditerations", 10),
-                        # DIS patch size
-                        ("patch_size", 8),
-                        # DIS patch stride
-                        ("patch_stride", 3),
-                        # Remove borders 10% of the size of the patch (0 to .5)
-                        ("border", .1)]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert not kwargs, "Invalid kwarg in ve:" + str(kwargs)
+    self.alpha = alpha
+    self.delta = delta
+    self.gamma = gamma
+    self.finest_scale = finest_scale
+    self.iterations = iterations
+    self.gditerations = gditerations
+    self.patch_size = patch_size
+    self.patch_stride = patch_stride
+    self.border = border
+
     self.dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
     self.dis.setVariationalRefinementIterations(self.iterations)
     self.dis.setVariationalRefinementAlpha(self.alpha)
