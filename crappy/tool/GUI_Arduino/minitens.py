@@ -8,8 +8,7 @@ from collections import OrderedDict
 
 
 class MinitensPopups(FrameObjects):
-  """
-  This class contains every popup. That means everything except the frames
+  """This class contains every popup. That means everything except the frames
   in the main window. The popups are called via a command in the menu.
   """
 
@@ -31,9 +30,7 @@ class MinitensPopups(FrameObjects):
     self.create_menu_limits(self.popup_limits)
 
   def create_menubar(self):
-    """
-    A menubar that contains every menu.
-    """
+    """A menubar that contains every menu."""
 
     # 1st menu: contains experience parameters.
     self.menubar = tk.Menu(self)
@@ -83,8 +80,7 @@ class MinitensPopups(FrameObjects):
     #                                                                 "_on"))
 
   def create_menu_limits(self, frame):
-    """
-    A menu to define limits of the minitens machine. It includes limits in
+    """A menu to define limits of the minitens machine. It includes limits in
     every imaginable variable.
     """
 
@@ -140,9 +136,7 @@ class MinitensPopups(FrameObjects):
     self.limits_widgets["quit_window"].grid(row=10, column=1, columnspan=2)
 
   def create_popup_new_cycle(self):
-    """
-    A popup used in the cycle generator.
-    """
+    """A popup used in the cycle generator."""
 
     if hasattr(self, 'cycles_popup'):
       # To make sure the popup is not already created.
@@ -211,9 +205,7 @@ class MinitensPopups(FrameObjects):
     self.cycles_widgets["quit"].grid(row=2, column=2, columnspan=2)
 
   def create_popup_sample_parameters(self):
-    """
-    To define sample parameters. Used to compute strengh(MPa).
-    """
+    """To define sample parameters. Used to compute strengh(MPa)."""
 
     if hasattr(self, 'sample_parameters'):
       self.sample_parameters.deiconify()
@@ -254,9 +246,7 @@ class MinitensPopups(FrameObjects):
                                                      columnspan=2)
 
   def create_popup_command(self):
-    """
-    Popup to show command options.
-    """
+    """Popup to show command options."""
 
     if hasattr(self, 'popup_command'):
       self.popup_command.deiconify()
@@ -312,9 +302,7 @@ class MinitensPopups(FrameObjects):
     self.popup_command_widgets["quit_popup_command"].grid(row=0, column=6)
 
   def create_popup_speed(self):
-    """
-    To define motor speed. Only an entry.
-    """
+    """To define motor speed. Only an entry."""
 
     if hasattr(self, 'popup_speed'):
       self.popup_speed.deiconify()
@@ -357,10 +345,8 @@ class MinitensPopups(FrameObjects):
       value.pack()
 
   def create_popup_length_init(self, **_):
-    """
-    The first popup when program is started. Used to define the distance
-    between jaws (mm).
-    """
+    """The first popup when program is started. Used to define the distance
+    between jaws (mm)."""
 
     self.popup_init = tk.Toplevel()
     self.popup_init.resizable(False, False)
@@ -387,9 +373,7 @@ class MinitensPopups(FrameObjects):
       widg.pack()
 
   def create_popup_calibration(self):
-    """
-    Popup to recreate calibration of the machine.
-    """
+    """Popup to recreate calibration of the machine."""
 
     if hasattr(self, 'popup_calibration'):
       return
@@ -430,10 +414,9 @@ class MinitensFrames(FrameObjects):
     super().__init__()
 
   def create_frame_display(self):
-    """
-    The frame that shows values of positions and efforts. Also includes tare
-    buttons for force and relative positions.
-    """
+    """The frame that shows values of positions and efforts. Also includes tare
+    buttons for force and relative positions."""
+
     for i, (variable, abrg) in enumerate(self.variables.items()):
       self.add_label(widgets_dict=self.displayer_widgets,
                      frame=self.frame_displayer,
@@ -472,9 +455,7 @@ class MinitensFrames(FrameObjects):
     self.displayer_widgets["prct_tare"].grid(row=3, column=0, sticky=tk.W)
 
   def create_frame_action(self):
-    """
-    The frame that shows the action buttons.
-    """
+    """The frame that shows the action buttons."""
 
     self.add_button(widgets_dict=self.action_widgets,
                     frame=self.frame_action,
@@ -564,9 +545,7 @@ class MinitensFrames(FrameObjects):
 
 class MinitensFrame(MinitensFrames, MinitensPopups):
   def __init__(self, parent, **kwargs):
-    """
-    Frame to use with minitens in crappy.
-    """
+    """Frame to use with minitens in crappy."""
 
     tk.Frame.__init__(self, parent)
     # self.grid()
@@ -615,8 +594,8 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     self.position_prct = self.position
 
   def create_widgets(self, **_):
-    """
-    Frames organization
+    """ Frames organization
+
       Frame displayer: to display effort and displacement values.
       Frame position: to start and stop the motor, according to pre-defined
       values.
@@ -634,10 +613,9 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     self.frame_cycles.grid_forget()
 
   def check_limits(self, **kwargs):
-    """
-    A method that checks every variable, and if a limit has been reached. In
-    that case, the stop command is sent to arduino.
-    """
+    """A method that checks every variable, and if a limit has been reached. In
+    that case, the stop command is sent to arduino."""
+
     sens = kwargs.pop("sens")
 
     for variable, abrg in self.variables.items():
@@ -652,10 +630,8 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
         pass
 
   def submit_cycle(self):
-    """
-    To submit new cycles. If the user entered correct parameters, will be
-    added to the cycle generator.
-    """
+    """To submit new cycles. If the user entered correct parameters, will be
+    added to the cycle generator."""
 
     try:
       nb_cycles = self.nombre_entry_var.get()
@@ -677,10 +653,8 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
       getattr(self, widg).set(0.0)
 
   def init_command(self):
-    """
-    Used if the user entered a command. Does nothing if incorrect type is
-    entered.
-    """
+    """Used if the user entered a command. Does nothing if incorrect type is
+    entered."""
 
     try:
       self.command_value_var.get()
@@ -690,10 +664,8 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     self.check_goto_bool = True
 
   def check_go_to(self, **kwargs):
-    """
-    Used if the user entered a command. Checks if the destination has been
-    reached, and sends stop if it's the case.
-    """
+    """Used if the user entered a command. Checks if the destination has been
+    reached, and sends stop if it's the case."""
 
     sens = kwargs.pop("sens")
     var_type = self.command_type_var.get()
@@ -720,9 +692,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
         self.check_goto_bool = False
 
   def start_cycle(self):
-    """
-    Executed when cycle generator is started.
-    """
+    """Executed when cycle generator is started."""
 
     if self.cycles:
       self.cycles_started = True
@@ -733,9 +703,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
         self.recording_state.set(True)
 
   def check_cycle(self, **kwargs):
-    """
-    Executed in case the cycle generator is started.
-    """
+    """Executed in case the cycle generator is started."""
 
     sens = kwargs.pop("sens")
     mode_max, maximum, mode_min, minimum = self.cycles[0][1:]
@@ -772,17 +740,13 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
           self.recording_state.set(False)
 
   def tare(self):
-    """
-    Tare for position_prct variable.
-    """
+    """Tare for position_prct variable."""
 
     self.position_prct = self.position
 
   def calc_speed(self):
-    """
-    Does the conversion between speed and bytes, to send to arduino. Also
-    makes sure the user entered in the right range.
-    """
+    """Does the conversion between speed and bytes, to send to arduino. Also
+    makes sure the user entered in the right range."""
 
     if self.speed.get() < 0.08:
       self.speed.set(0.08)
@@ -791,9 +755,7 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     return int(255 * (-self.speed.get() / 20.8 + 1))
 
   def submit_command(self, arg):
-    """
-    Information to transmit to the arduino.
-    """
+    """Information to transmit to the arduino."""
 
     if arg == "STOP":
       dico = {"s": 0}
@@ -815,10 +777,8 @@ class MinitensFrame(MinitensFrames, MinitensPopups):
     self.queue.put(message)
 
   def update_data(self, new_data):
-    """
-    Retrieves data from the ArduinoHandler, updates the GUI, and sends it to
-    the crappy link.
-    """
+    """Retrieves data from the ArduinoHandler, updates the GUI, and sends it to
+    the crappy link."""
 
     # Retrieved from ArduinoHandler
     effort = new_data.get('e')

@@ -23,7 +23,8 @@ class LostSpotError(Exception):
 
 
 def overlapping(box1, box2):
-  """Returns True if box1 and box2 are overlapping or included in each other"""
+  """Returns :obj:`True` if `box1` and `box2` are overlapping or included in
+  each other"""
 
   for i in box1[::2]:
     if box2[0] < i < box2[2]:
@@ -42,19 +43,17 @@ def overlapping(box1, box2):
 
 
 class Video_extenso(object):
-  """
-  The basic VideoExtenso class.
+  """The basic VideoExtenso class.
 
-  Note:
-    Can take 2,3 or 4 spots.
+  It will detect the spots, save the initial position, and return the measured
+  deformation in the most simple way:
 
-  It will detect the spots, save the initial position, and return the
-  measured deformation in the most simple way:
-
-    - It will always return a list of the spots coordinate (in pixel).
-    - It will return Exx, Eyy, projections of the length of the bounding
+    - It will always return a list of the spots coordinates (in pixel).
+    - It will return `Exx`, `Eyy`, projections of the length of the bounding
       box of the spot on each axis, divided by its original length.
 
+  Note:
+    Can detect 2,3 or 4 spots.
   """
 
   def __init__(self,
@@ -65,6 +64,32 @@ class Video_extenso(object):
                border=5,
                min_area=150,
                blur=5):
+    """Sets the arguments.
+
+    Args:
+      white_spots: Set to :obj:`True` if the spots are lighter than the
+        surroundings, else set to :obj:`False`
+      update_thresh: Should the threshold be updated in each round ? If so
+        there are lower chances to lose the spots but there will be more noise
+        in the measurement
+      num_spots: The number of spots to detect. Helps for spot detection and
+        allows to force detection of a given number of spots (`"auto"` works
+        fine most of the time). Can be set to:
+        ::
+
+          "auto", 2, 3, 4
+
+      safe_mode: If set to :obj:`False`, it will try hard to catch the spots
+        when losing them. Could result in incoherent values without crash. Set
+        to :obj:`True` when security is a concern.
+      border: The number of pixels that will be added to the limits of the
+        boundingbox.
+      min_area: Filters regions with an area smaller than this value among the
+        selected regions.
+      blur: Median blur to be added to the image to smooth out irregularities
+        and make detection more reliable.
+    """
+
     self.white_spots = white_spots
     self.update_thresh = update_thresh
     self.num_spots = num_spots
@@ -80,12 +105,10 @@ class Video_extenso(object):
     # spot image to the process
 
   def detect_spots(self, img, oy, ox):
-    """
-    Detect the spots in img, subframe of the full image.
+    """Detects the spots in `img`, subframe of the full image.
 
     Note:
-      ox and oy represent the offset of the subframe in the full image.
-
+      `ox` and `oy` represent the offset of the subframe in the full image.
     """
 
     # Finding out how many spots we should detect
@@ -193,8 +216,8 @@ class Video_extenso(object):
       self.tracker[-1].start()
 
   def get_def(self, img):
-    """
-    The "heart" of the videoextenso.
+    """The "heart" of the videoextenso.
+
     Will keep track of the spots and return the computed deformation.
     """
 

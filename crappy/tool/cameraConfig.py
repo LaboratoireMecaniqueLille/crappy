@@ -14,14 +14,11 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Hist_generator(Process):
-  """
-  Process to generate the histogram of images.
+  """Process to generate the histogram of images.
 
   Note:
-    It only takes a Pipe at init, all the data will be transferred through it.
-
-    See self.run docstring for more info.
-
+    It only takes a :obj:`Pipe` at ``__init__``, all the data will be
+    transferred through it. See ``run`` for more info.
   """
 
   def __init__(self, pipe):
@@ -31,12 +28,11 @@ class Hist_generator(Process):
   def run(self):
     """
     Expects a tuple of 3 args through the pipe:
-      - out_size (Tuple): The dimensions of the output histogram image.
-      - hist_range (Tuple, eg: (0,256) for full scale uint8): The lower and
-        upper value of the histogram.
+      - out_size (:obj:`tuple`): The dimensions of the output histogram image.
+      - hist_range (:obj:`tuple`, e.g.: `(0,256)` for full scale `uint8`): The
+        lower and upper value of the histogram.
       - img: A numpy array with the image. If not single channel, it will be
         converted to a single channel.
-
     """
 
     while True:
@@ -64,15 +60,17 @@ class Hist_generator(Process):
 
 
 class Camera_config(object):
-  """
-  Class creating a graphical interface to configure a camera.
+  """Class creating a graphical interface to configure a camera.
 
   Note:
-    It will launch create the window when instanciated:
-    just call Cam_config(camera)
+    It will launch ``create_window`` when instanciated.
+    Just call:
+    ::
+
+      Cam_config(camera)
 
     It takes a single arg: The camera class
-    (it must inherit from crappy.sensor._meta.MasterCam).
+    (it must inherit from `crappy.sensor._meta.MasterCam`).
   """
 
   def __init__(self, camera):
@@ -231,7 +229,8 @@ class Camera_config(object):
     return r
 
   def resized(self):
-    """Returns True if window has been resized and saves the new coordinates"""
+    """Returns `True` if window has been resized and saves the new
+    coordinates"""
 
     new = self.get_label_shape()
     # Integer rounding can lead to resizing loop if we compare exact values
@@ -244,7 +243,7 @@ class Camera_config(object):
     return False
 
   def convert_img(self):
-    """Converts the image to uint if necessary, then to a PhotoImage."""
+    """Converts the image to `uint` if necessary, then to a `PhotoImage`."""
 
     if len(self.img.shape) == 3:
       self.img = self.img[:, :, ::-1]  # BGR to RGB
@@ -346,13 +345,11 @@ class Camera_config(object):
     return min(max(miny, y), maxy - 1), min(max(minx, x), maxx - 1)
 
   def make_new_window(self, ey, ex):
-    """
-    Hang on, it is not that complicated: Given the location of the zoom event
-    this will compute the new zoom window.
+    """Hang on, it is not that complicated: Given the location of the zoom
+    event this will compute the new zoom window.
 
-    It is represented by 4 floats
-    between 0 and 1 miny,minx,maxy,maxx, default is 0,0,1,1.
-
+    It is represented by 4 floats between 0 and 1 `miny`, `minx`, `maxy`,
+    `maxx`, default is `0, 0, 1, 1`.
     """
 
     # The zoom factor (%)
@@ -420,7 +417,9 @@ class Camera_config(object):
 
   def apply_settings(self):
     """Callback for the apply button.
-    As its name suggests, it will apply all the edited settings."""
+
+    As its name suggests, it will apply all the edited settings.
+    """
 
     # Applying scales values to the camera
     for name, scale in self.scales.items():

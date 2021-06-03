@@ -23,7 +23,7 @@ Discorrel configuration
    :members:
 
 Disve tool
-+++++++++++
+++++++++++
 .. automodule:: crappy.tool.disve
    :members:
 

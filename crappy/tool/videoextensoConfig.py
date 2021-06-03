@@ -1,5 +1,7 @@
 # coding: utf-8
 
+"""More documentation coming soon !"""
+
 import tkinter as tk
 from PIL import ImageTk, Image
 import numpy as np

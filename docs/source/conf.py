@@ -66,6 +66,7 @@ napoleon_use_rtype = False
 napoleon_preprocess_types = False
 napoleon_type_aliases = None
 napoleon_attr_annotations = True
+napoleon_custom_sections = ['Requirements', 'Presentation', 'Usage']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

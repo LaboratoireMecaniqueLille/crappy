@@ -1,5 +1,7 @@
 # coding: utf-8
 
+"""More documentation coming soon !"""
+
 from ctypes import *
 from sys import platform
 

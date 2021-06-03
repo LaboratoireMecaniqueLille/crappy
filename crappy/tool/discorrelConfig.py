@@ -1,5 +1,7 @@
 # coding: utf-8
 
+"""More documentation coming soon !"""
+
 from PIL import ImageTk, Image
 import numpy as np
 from .cameraConfig import Camera_config

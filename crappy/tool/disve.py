@@ -1,5 +1,7 @@
 # coding: utf-8
 
+"""More documentation coming soon !"""
+
 import numpy as np
 from .._global import OptionalModule
 
@@ -10,6 +12,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DISVE:
+
   def __init__(self,
                img0,
                patches,
@@ -22,6 +25,22 @@ class DISVE:
                patch_size=8,
                patch_stride=3,
                border=0.1):
+    """Sets the disve parameters.
+
+    Args:
+      img0:
+      patches:
+      alpha: Setting for disflow
+      delta: Setting for disflow
+      gamma: Setting for disflow
+      finest_scale: Last scale for disflow (`0` means full scale)
+      iterations: Variational refinement iterations
+      gditerations: Gradient descent iterations
+      patch_size: DIS patch size
+      patch_stride: DIS patch stride
+      border: Remove borders 10% of the size of the patch (`0.` to `0.5`)
+    """
+
     self.img0 = img0
     self.patches = patches
     self.h, self.w = img0.shape

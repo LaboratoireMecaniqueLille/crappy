@@ -11,11 +11,12 @@ from queue import Empty
 
 
 class MonitorFrame(tk.Frame):
-  """
-  A frame that displays everything entering the serial port.
+  """A frame that displays everything entering the serial port.
+
   Everything is handled by ArduinoHandler, so you don't get to modify these
   values.
-  args:
+
+  Args:
     arduino: serial.Serial of arduino board.
     width: size of the text frame
     title: the title of the frame.
@@ -36,13 +37,13 @@ class MonitorFrame(tk.Frame):
     self.create_widgets(**kwargs)
 
   def create_widgets(self, **kwargs):
-    """
-    Widgets shown:
+    """Widgets shown:
+
     - The frame's title,
     - The checkbutton to enable/disable displaying,
     - The textbox.
-
     """
+
     self.top_frame = tk.Frame(self)
     tk.Label(self.top_frame,
         text=kwargs.get('title', '')).grid(row=0, column=0)
@@ -67,10 +68,9 @@ class MonitorFrame(tk.Frame):
 
 
 class SubmitSerialFrame(tk.Frame):
-  """
-  Frame that permits to submit to the serial port of arduino.
+  """Frame that permits to submit to the serial port of arduino.
 
-  args:
+  Args:
     width: width of the frame.
     fontsize: self-explanatory.
   """
@@ -84,8 +84,8 @@ class SubmitSerialFrame(tk.Frame):
     self.create_widgets(**kwargs)
 
   def create_widgets(self, **kwargs):
-    """
-    Widgets shown:
+    """Widgets shown:
+
     - an Input text, to enter what to write on serial port.
     - a submit label, to show previous command submitted.
     - a submit button.

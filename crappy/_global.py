@@ -1,8 +1,7 @@
 # coding:utf-8
 
 class OptionalModule:
-  """
-  Placeholder for optional dependencies when not installed
+  """Placeholder for optional dependencies when not installed
 
   Will print a message and raise an error when trying to use them
   """

@@ -1,5 +1,7 @@
 # coding: utf-8
 
+"""More documentation coming soon !"""
+
 from .._global import OptionalModule
 
 try:
@@ -12,6 +14,7 @@ from .fields import get_fields, Projector, get_res
 
 
 class DISCorrel:
+
   def __init__(self,
                img0,
                bbox=None,
@@ -25,6 +28,23 @@ class DISCorrel:
                gditerations=10,
                patch_size=8,
                patch_stride=3):
+    """Sets the discorrel parameters.
+
+        Args:
+          img0:
+          bbox:
+          fields: Base of fields to use for the projection
+          alpha: Setting for disflow
+          delta: Setting for disflow
+          gamma: Setting for disflow
+          finest_scale: Last scale for disflow (`0` means full scale)
+          init: If :obj:`True`, the last field is used to init
+          iterations: Variational refinement iterations
+          gditerations: Gradient descent iterations
+          patch_size: DIS patch size
+          patch_stride: DIS patch stride
+        """
+
     self.img0 = img0
     self.h, self.w = img0.shape
     self.bbox = bbox
