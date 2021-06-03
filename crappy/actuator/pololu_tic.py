@@ -720,7 +720,7 @@ MODE=\\"0666\\\""" > pololu.rules
         byteorder='little',
         signed=True))
 
-  def set_pos(self, position: float, speed: float = None) -> None:
+  def set_position(self, position: float, speed: float = None) -> None:
     """Sends a position command to the motor
 
     Args:
