@@ -1134,12 +1134,13 @@ MODE=\\"0666\\\""" > pololu.rules
     """
 
     # Setting command timeout to 1000ms
-    self._usb_command(request=Tic_cmd['Set_setting'],
-                      value=0xE8,
-                      index=Tic_settings['Command_timeout_low'])
-    self._usb_command(request=Tic_cmd['Set_setting'],
-                      value=0x03,
-                      index=Tic_settings['Command_timeout_high'])
+    if self._backend == 'USB':
+      self._usb_command(request=Tic_cmd['Set_setting'],
+                        value=0xE8,
+                        index=Tic_settings['Command_timeout_low'])
+      self._usb_command(request=Tic_cmd['Set_setting'],
+                        value=0x03,
+                        index=Tic_settings['Command_timeout_high'])
 
     while not self._close:
       time.sleep(0.01)
