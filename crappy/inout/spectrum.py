@@ -33,20 +33,22 @@ class Spectrum(InOut):
 
   """
 
-  def __init__(self, **kwargs):
-
+  def __init__(self,
+               device=b'/dev/spcm0',
+               channels=None,
+               ranges=None,
+               samplerate=100000,
+               buff_size=2**26,
+               notify_size=2**16,
+               split_chan=False):
     InOut.__init__(self)
-    for arg, default in [('device', b'/dev/spcm0'),
-                         ('channels', [0]),
-                         ('ranges', [10000]),
-                         ('samplerate', 100000),
-                         ('buff_size', 2**26),  # 64 MB
-                         ('notify_size', 2**16),  # 64 kB
-                         ('split_chan', False)  # If False, sends the 2D array
-                         ]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    if kwargs:
-      raise AttributeError("Invalid arg for Spectrum: " + str(kwargs))
+    self.device = device
+    self.channels = [0] if channels is None else channels
+    self.ranges = [10000] if ranges is None else ranges
+    self.samplerate = samplerate
+    self.buff_size = buff_size
+    self.notify_size = notify_size
+    self.split_chan = split_chan
     self.nchan = len(self.channels)
     print("[Spectrum] Will send {} chunks of {} kB per second ({} kB/s)".
           format(2 * self.samplerate * self.nchan / self.notify_size,
