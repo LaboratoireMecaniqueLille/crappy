@@ -59,10 +59,7 @@ class Demux(Modifier):
       else:
         data[n] = data[self.stream][0, i]
     del data[self.stream]
-    try:
-      data[self.time] = data[self.time][0]
-    except Exception:
-      pass
+    data[self.time] = data[self.time][0]
     return data
 
   def evaluate_mean(self, data):
