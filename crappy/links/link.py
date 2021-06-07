@@ -11,7 +11,7 @@ from copy import copy
 from .._global import CrappyStop
 
 
-def error_if_stop(recv):
+def error_if_string(recv: Callable) -> Callable:
   """Decorator to raise an error if the function returns a string."""
 
   def wrapper(*args, **kwargs):
@@ -171,7 +171,7 @@ class Link(object):
         self.out_.close()
       raise
 
-  @error_if_stop  # Recv will raise an error if 'stop' is received
+  @error_if_string  # Recv will raise an error if a string is received
   def recv(self, blocking=True):
     """
     Receive data.
