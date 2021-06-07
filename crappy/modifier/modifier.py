@@ -21,7 +21,7 @@ class MetaModifier(type):
 
     missing_methods = []
     for m in MetaModifier.needed_methods:
-      if m not in dict:
+      if m not in dict_:
         missing_methods.append(m)
     if name != "Modifier" and missing_methods:
       raise DefinitionError("Class " + name + " is missing methods: " + str(
