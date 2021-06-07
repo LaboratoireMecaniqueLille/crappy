@@ -6,33 +6,37 @@ from .modifier import Modifier
 
 
 class Demux(Modifier):
-  """
-  Modifier to change a stream table into a dict with values (to plot streams).
+  """Modifier to change a stream table into a :obj:`dict` with values (to plot
+  streams).
 
-  This modifier turns the array return by a streaming device into a
-  dict with individual values (but only one per table). This allows
-  attaching graphers to HF acquisition devices.
+  This modifier turns the array return by a streaming device into a :obj:`dict`
+  with individual values (but only one per table). This allows attaching
+  graphers to HF acquisition devices.
 
   Note:
     The table will be lost in the process.
-
-  Args:
-    - labels: The names of the labels to use for each column of the array.
-
-  Kwargs:
-    - stream (default: 'stream'): The name of the label containing the stream.
-    - mean: If true, the returned value will be the average of the column
-      else it will be the first value only.
-    - time_label: The name of the label of the time table.
-
   """
 
   def __init__(self,
-               *labels,
+               *labels: str,
                stream="stream",
                mean=False,
                time_label="t(s)",
-               transpose=False):
+               transpose=False) -> None:
+    """Sets the instance attributes.
+
+    Args:
+      *labels (:obj:`str`): The names of the labels to use for each column of
+        the array.
+      stream (:obj:`str`, optional): The name of the label containing the
+        stream.
+      mean (:obj:`bool`, optional): If :obj:`True`, the returned value will be
+        the average of the column.
+      time_label (:obj:`str`, optional): The name of the label of the time
+        table.
+      transpose (:obj:`bool`, optional):
+    """
+
     Modifier.__init__(self)
     if len(labels) == 1 and isinstance(labels[0], list):
       self.labels = labels[0]
@@ -62,7 +66,7 @@ class Demux(Modifier):
     data[self.time] = data[self.time][0]
     return data
 
-  def evaluate_mean(self, data):
+  def evaluate_mean(self, data: dict) -> dict:
     if 0 in data[self.stream].shape:
       return data
     for i, n in enumerate(self.labels):

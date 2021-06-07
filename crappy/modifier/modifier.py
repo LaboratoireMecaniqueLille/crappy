@@ -4,9 +4,7 @@ from .._global import DefinitionError
 
 
 class MetaModifier(type):
-  """
-  To keep track of all Modifiers (former Conditions)
-  """
+  """To keep track of all Modifiers (formerly Conditions)"""
 
   classes = {}
   needed_methods = ["evaluate"]

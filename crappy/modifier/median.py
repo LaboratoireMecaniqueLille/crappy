@@ -6,22 +6,23 @@ from .modifier import Modifier
 
 
 class Median(Modifier):
-  """
-  Median filter.
+  """Median filter.
 
   Returns:
-    The median value every npoints point of data.
-
-  Arg:
-    - npoints (int): The number of points it takes to return 1 value.
-
+    The median value every :attr:`npoints` point of data.
   """
 
-  def __init__(self, npoints=100):
+  def __init__(self, npoints: int = 100) -> None:
+    """Sets the instance attributes.
+
+    Args:
+      npoints (:obj:`int`): The number of points it takes to return `1` value.
+    """
+
     Modifier.__init__(self)
     self.npoints = npoints
 
-  def evaluate(self, data):
+  def evaluate(self, data: dict) -> dict:
     if not hasattr(self, "last"):
       self.last = dict(data)
       for k in self.last:

@@ -10,19 +10,25 @@ from .modifier import Modifier
 
 
 class Apply_strain_img(Modifier):
-  """
-  This modifier reads the strain values along X and Y (in %) and creates an
-  image deformed to match these values
+  """This modifier reads the strain values along X and Y (in %) and creates an
+  image deformed to match these values."""
 
-  img: The image to use (must be a numpy array)
+  def __init__(self,
+               img,
+               exx_label: str = 'Exx(%)',
+               eyy_label: str = 'Eyy(%)',
+               img_label: str = 'frame') -> None:
+    """Sets the instance attributes.
 
-  exx(eyy)_label: the labels containing the strain to apply
+    Args:
+      img: The image to use (must be a numpy array)
+      exx_label (:obj:`str`, optional): The labels containing the strain to
+        apply
+      eyy_label (:obj:`str`, optional): The labels containing the strain to
+        apply
+      img_label (:obj:`str`, optional): The label of the generated image
+    """
 
-  img_label: the label of the generated image
-  """
-
-  def __init__(self, img, exx_label='Exx(%)', eyy_label='Eyy(%)',
-               img_label='frame'):
     self.img = img
     self.lexx = exx_label
     self.leyy = eyy_label
@@ -36,7 +42,7 @@ class Apply_strain_img(Modifier):
     self.xx = xx.astype(np.float32)
     self.yy = yy.astype(np.float32)
 
-  def evaluate(self, d):
+  def evaluate(self, d: dict) -> dict:
     exx, eyy = d[self.lexx] / 100, d[self.leyy] / 100
     tx, ty = (self.xx - (exx / (1 + exx)) * self.exx), \
              (self.yy - (eyy / (1 + eyy)) * self.eyy)

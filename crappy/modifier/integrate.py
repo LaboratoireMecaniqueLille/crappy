@@ -4,15 +4,18 @@ from .modifier import Modifier
 
 
 class Integrate(Modifier):
-  """
-  Integration filter. This will integrate the value at label over time.
+  """Integration filter.
+
+  This will integrate the value at ``label`` over time.
 
   Note:
-    The time label must be specified with time='...'.
-
+    The time label must be specified with `time='...'`.
   """
 
-  def __init__(self, label, time='t(s)', out_label=None):
+  def __init__(self,
+               label: str,
+               time: str = 't(s)',
+               out_label: str = None) -> None:
     Modifier.__init__(self)
     self.label = label
     self.t = time
@@ -23,7 +26,7 @@ class Integrate(Modifier):
     self.last_t = 0
     self.val = 0
 
-  def evaluate(self, data):
+  def evaluate(self, data: dict) -> dict:
     t = data[self.t]
     self.val += (t - self.last_t) * data[self.label]
     self.last_t = t

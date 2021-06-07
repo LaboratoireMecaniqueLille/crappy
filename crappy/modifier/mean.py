@@ -6,23 +6,24 @@ from .modifier import Modifier
 
 
 class Mean(Modifier):
-  """
-  Mean filter.
-
-  Returns:
-    The mean value every npoints point of data.
-
-  Arg:
-    - npoints (int): The number of points it takes to return 1 value.
+  """Mean filter.
 
   Note:
-    Will divide the output freq by npoints.
+    Will divide the output `freq` by ``npoints``.
 
-    If you need the same freq, see :ref:`Moving average`.
+    If you need the same `freq`, see :ref:`Moving average`.
 
+  Returns:
+    The mean value every ``npoints`` point of data.
   """
 
-  def __init__(self, npoints=100):
+  def __init__(self, npoints: int = 100) -> None:
+    """Sets the instance attributes.
+
+    Args:
+      npoints (:obj:`int`): The number of points it takes to return `1` value.
+    """
+
     Modifier.__init__(self)
     self.npoints = npoints
 
