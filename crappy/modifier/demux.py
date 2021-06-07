@@ -27,17 +27,21 @@ class Demux(Modifier):
 
   """
 
-  def __init__(self, *labels, **kwargs):
+  def __init__(self,
+               *labels,
+               stream="stream",
+               mean=False,
+               time_label="t(s)",
+               transpose=False):
     Modifier.__init__(self)
     if len(labels) == 1 and isinstance(labels[0], list):
       self.labels = labels[0]
     else:
       self.labels = labels
-    self.stream = kwargs.pop("stream", "stream")
-    self.mean = kwargs.pop("mean", False)
-    self.time = kwargs.pop("time_label", "t(s)")
-    self.transpose = kwargs.pop("transpose", False)
-    assert not kwargs, "Demux modifier got invalid kwarg:" + str(kwargs)
+    self.stream = stream
+    self.mean = mean
+    self.time = time_label
+    self.transpose = transpose
     if self.mean:
       self.evaluate = self.evaluate_mean
     else:
