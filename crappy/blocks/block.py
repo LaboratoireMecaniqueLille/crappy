@@ -310,7 +310,7 @@ class Block(Process):
     self._MB_loops += 1
     t = time()
     if hasattr(self, 'freq') and self.freq:
-      d = t - self._MB_last_t + 1 / self.freq
+      d = self._MB_last_t + 1 / self.freq - t
       while d > 0:
         t = time()
         d = self._MB_last_t + 1 / self.freq - t
