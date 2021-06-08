@@ -95,7 +95,7 @@ NAU7802_Cal_Status = {'CAL_SUCCESS': 0,
 
 
 class Nau7802(InOut):
-  """Class for controlling Sparkfun's NAU7802 load cell conditioner
+  """Class for controlling Sparkfun's NAU7802 load cell conditioner.
 
   The Nau7802 InOut block is meant for reading output values from a NAU7802
   load cell conditioner, using the I2C protocol. The output is in Volts by
@@ -112,12 +112,12 @@ class Nau7802(InOut):
                sample_rate: int = 80,
                gain: float = 1,
                offset: float = 0) -> None:
-    """Checks the arguments validity
+    """Checks the arguments validity.
 
     Args:
       i2c_port (:obj:`int`, optional): The I2C port over which the NAU7802
         should communicate. On most Raspberry Pi models the default I2C port is
-        1.
+        `1`.
       device_address (:obj:`int`, optional): The I2C address of the NAU7802. It
         is impossible to change this address, so it is not possible to have
         several NAU7802 on the same i2c port.
@@ -136,9 +136,17 @@ class Nau7802(InOut):
           10, 20, 40, 80, 320
 
       gain (:obj:`float`, optional): Allows to tune the output value according
-        to the formula: output = gain * tension + offset.
+        to the formula:
+        ::
+
+          output = gain * tension + offset.
+
       offset (:obj:`float`, optional): Allows to tune the output value
-        according to the formula: output = gain * tension + offset.
+        according to the formula:
+        ::
+
+          output = gain * tension + offset.
+
     """
 
     InOut.__init__(self)

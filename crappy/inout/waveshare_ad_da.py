@@ -83,7 +83,7 @@ AD_DA_pins = {'RST_PIN_ADS': 18,
 
 
 class Waveshare_ad_da(InOut):
-  """Class for controlling Waveshare's AD/DA hat
+  """Class for controlling Waveshare's AD/DA hat.
 
   The Waveshare_ad_da InOut block is meant for communicating with Waveshare's
   AD/DA Raspberry Pi hat, using the SPI protocol and the GPIOs. It allows to
@@ -103,14 +103,15 @@ class Waveshare_ad_da(InOut):
                gain: float = 1,
                offset: float = 0,
                sample_rate: Union[int, float] = 100) -> None:
-    """Checks the arguments validity
+    """Checks the arguments validity.
 
     Args:
-      dac_channels (:obj:`list`, optional): A list of strings representing the
-        channels to be set. The syntax for each string is 'DACi' with i being
-        either `0` or `1`.
-      adc_channels (:obj:`list`, optional): A list of strings representing the
-        channels to be read. The syntax for all strings is either:
+      dac_channels (:obj:`list`, optional): A :obj:`list` of :obj:`str`
+        representing the channels to be set. The syntax for each string is
+        'DACi' with i being either `0` or `1`.
+      adc_channels (:obj:`list`, optional): A :obj:`list` of :obj:`str`
+        representing the channels to be read. The syntax for all strings is
+        either:
         ::
 
           'ADi' (i in range(8))
@@ -134,11 +135,19 @@ class Waveshare_ad_da(InOut):
         of the DAC is ``v_ref``. `3.3` and `5` are the only possible values for
         this setting, as the Raspberry Pi can only provide `3.3V` and `5V`.
       gain (:obj:`float`, optional): Allows to tune the output values of the
-        DAC according to the formula: output = gain * tension + offset. The
-        same gain applies to all of the outputs.
+        DAC according to the formula:
+        ::
+
+          output = gain * tension + offset.
+
+         The same gain applies to all of the outputs.
       offset (:obj:`float`, optional): Allows to tune the output values of the
-        ADC according to the formula: output = gain * tension + offset. The
-        same offset applies to all of the outputs.
+        ADC according to the formula:
+        ::
+
+          output = gain * tension + offset.
+
+        The same offset applies to all of the outputs.
       sample_rate (optional): The ADC data output rate in SPS. The available
         values are:
         ::
@@ -243,7 +252,7 @@ class Waveshare_ad_da(InOut):
     self._channels_read, self._channels_write = [], []
 
   def open(self) -> None:
-    """Sets the SPI communication, the GPIOs and the device"""
+    """Sets the SPI communication, the GPIOs and the device."""
 
     # Setting the GPIOs for communicating with the AD/DA
     GPIO.setmode(GPIO.BCM)
@@ -280,8 +289,9 @@ class Waveshare_ad_da(InOut):
       self._channels_write.append(int(chan[3]))
 
   def get_data(self) -> list:
-    """
-    Reads data from all the user-specified ADC channels, in a sequential way.
+    """Reads data from all the user-specified ADC channels, in a sequential
+    way.
+
     Data is returned in Volts, but this can be tuned using gain and offset.
 
     Returns:
@@ -321,7 +331,7 @@ class Waveshare_ad_da(InOut):
     return out
 
   def set_cmd(self, *cmd: float) -> None:
-    """Sets the user-specified DAC channels according to the input values
+    """Sets the user-specified DAC channels according to the input values.
 
     Args:
       cmd (:obj:`float`): The input values, in Volts
@@ -340,13 +350,13 @@ class Waveshare_ad_da(InOut):
 
   @staticmethod
   def close() -> None:
-    """Releases the GPIOs"""
+    """Releases the GPIOs."""
 
     GPIO.cleanup()
 
   @staticmethod
   def _reset() -> None:
-    """Resets the ADC"""
+    """Resets the ADC."""
 
     GPIO.output(AD_DA_pins['RST_PIN_ADS'], GPIO.HIGH)
     time.sleep(0.2)
@@ -356,7 +366,7 @@ class Waveshare_ad_da(InOut):
 
   @staticmethod
   def _wait_drdy() -> None:
-    """Waits until the DRDY pin is driven low, meaning that an ADC conversion
+    """Waits until the `DRDY` pin is driven low, meaning that an ADC conversion
     is ready."""
 
     t_wait = 0

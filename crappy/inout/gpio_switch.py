@@ -10,7 +10,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Gpio_switch(InOut):
-  """Class for setting a GPIO high or low
+  """Class for setting a GPIO high or low.
 
   The Gpio_switch InOut block is meant for switching a Raspberry Pi GPIO high
   or low according to the input signal value. When the input signal is `1` the
@@ -22,7 +22,7 @@ class Gpio_switch(InOut):
   """
 
   def __init__(self, pin_out: int) -> None:
-    """Checks the argument validity
+    """Checks the argument validity.
 
     Args:
       pin_out (:obj:`int`): The GPIO pin to be controlled (BCM convention).
@@ -34,13 +34,13 @@ class Gpio_switch(InOut):
     self._pin_out = pin_out
 
   def open(self) -> None:
-    """Sets the GPIO"""
+    """Sets the GPIO."""
 
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(self._pin_out, GPIO.OUT)
 
   def set_cmd(self, *cmd: int) -> None:
-    """Drives the GPIO according to the command
+    """Drives the GPIO according to the command.
 
     Args:
       cmd (:obj:`int`): 1 for driving the GPIO high, 0 for driving it low
@@ -53,6 +53,6 @@ class Gpio_switch(InOut):
 
   @staticmethod
   def close() -> None:
-    """Releases the GPIO"""
+    """Releases the GPIO."""
 
     GPIO.cleanup()

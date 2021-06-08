@@ -12,9 +12,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 def get_channel_number(channels):
-  """
-  Register needs to be called with the channel name as int.
-  """
+  """Register needs to be called with the channel name as :obj:`int`."""
 
   for i, channel in enumerate(channels):
     if isinstance(str, channel):
@@ -22,10 +20,8 @@ def get_channel_number(channels):
 
 
 def format_lists(list_to_format, length):
-  """
-  In case the user only specifies one parameter, and wants
-  it applied to all inputs.
-  """
+  """In case the user only specifies one parameter, and wants it applied to all
+  inputs."""
 
   if not isinstance(list_to_format, list):
     list_to_format = [list_to_format]

@@ -18,9 +18,7 @@ def listify(stuff, length):
 
 
 class Opendaq(InOut):
-  """
-  Can read data from an OpenDAQ card.
-  """
+  """Can read data from an OpenDAQ card."""
 
   def __init__(self,
                channels=1,

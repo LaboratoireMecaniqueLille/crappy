@@ -11,28 +11,29 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Agilent34420a(InOut):
-  """
-  Sensor class for Agilent34420A devices.
+  """Sensor class for Agilent34420A devices.
 
-  This class contains method to measure values of resistance or voltage
-  on Agilent34420A devices.
+  This class contains method to measure values of resistance or voltage on
+  Agilent34420A devices.
 
   Note:
     May work for other devices too, but not tested.
 
-    If you have issues with this class returning a lot of 'bad serial', \
-    make sure you have the last version of pySerial.
-
-  Args:
-    - mode ({"VOLT", "RES"}, default: "VOLT"): Desired value to measure.
-    - device (str, default: '/dev/ttyUSB0'): Path to the device.
-    - baudrate (int, default: 9600): Desired baudrate.
-    - timeout (int or float, default: 10): Timeout for the serial connection.
-
+    If you have issues with this class returning a lot of `'bad serial'`, make
+    sure you have the last version of :mod:`serial`.
   """
 
   def __init__(self, mode=b"VOLT", device='/dev/ttyUSB0',
                baudrate=9600, timeout=1):
+    """Sets the args and initializes parent class.
+
+    Args:
+      mode (:obj:`str`, optional): Desired value to measure. Should be either
+        `'VOLT'` or `'RES'`.
+      device (:obj:`str`, optional): Path to the device.
+      baudrate (:obj:`int`, optional): Desired baudrate.
+      timeout (:obj:`float`, optional): Timeout for the serial connection.
+    """
 
     InOut.__init__(self)
     # path to the device
@@ -55,9 +56,8 @@ class Agilent34420a(InOut):
     self.get_data()
 
   def get_data(self):
-    """
-    Read the signal, return False if error and print 'bad serial'.
-    """
+    """Reads the signal, returns :obj:`False` if error and prints
+    `'bad serial'`."""
 
     self.ser.write(b"READ?  \n")
     t = time()
@@ -68,7 +68,6 @@ class Agilent34420a(InOut):
       return [t, 0]
 
   def close(self):
-    """
-    Close the serial port.
-    """
+    """Closes the serial port."""
+
     self.ser.close()

@@ -19,27 +19,26 @@ def data_to_float32(data):
 
 
 class KollMorgenVariator:
-  """
-  Main class to test communication with kollmorgen variator.
+  """Main class to test communication with kollmorgen variator.
 
-  Note:
-    Every variable and its address has been defined in the Kollmorgen
-    Integrated Suite.
+  Every variable and its address has been defined in the Kollmorgen Integrated
+  Suite.
 
-    To add or remove some, update the dictionaries of __init__.
+  To add or remove some, update the dictionaries of :meth:`__init__`.
 
-    There are 3 motors, so the tens are for each motor, the units for the
-    address.
-
-  Args:
-    - host: Variator's IP address.
-    - port (default: 502): Port for modbus communication
-
+  There are 3 motors, so the tens are for each motor, the units for the
+  address.
   """
 
   def __init__(self,
                host='192.168.0.109',
                port=502):
+    """Sets the variator and defines the bits.
+
+    Args:
+      host (:obj:`str`, optional): Variator's IP address.
+      port (:obj:`int`, optional): Port for modbus communication
+    """
 
     self.variator = ModbusTcpClient(host=host, port=port)
     assert self.variator.connect(), "ERROR: could not connect to variator."
@@ -75,18 +74,15 @@ class KollMorgenVariator:
     }
 
   def toggle_power(self, motor):
-    """
-    Toggles power of given motor. Maybe not the most intelligent way to
-    handle power, though...
-    """
+    """Toggles power of given motor. Maybe not the most intelligent way to
+    handle power, though..."""
 
     address = int(str(motor) + str(self.coil_addresses["power"]))
     state = self.variator.read_coils(address)
     self.variator.write_coil(address, not state.bits[0])
 
   def clear_errors(self):
-    """
-    If errors occurred, it must be clear in order to continue the program.
+    """If errors occurred, it must be clear in order to continue the program.
     """
 
     axis_states = self.variator.read_input_registers(address=1, count=3)
@@ -99,10 +95,8 @@ class KollMorgenVariator:
         print('Cleared error (AxisState %i) in motor %i' % (err, motor))
 
   def set_speed(self, motor, speed):
-    """
-    Writes to variator desired speed (signed), and its direction. Applies to
-    every motor movement (rotations, positioning...).
-    """
+    """Writes to variator desired speed (signed), and its direction. Applies to
+    every motor movement (rotations, positioning...)."""
 
     address_hld = int(str(motor) + str(self.hldreg_addresses["velocity"]))
     self.variator.write_register(address_hld, abs(speed))
@@ -114,10 +108,8 @@ class KollMorgenVariator:
       self.variator.write_register(address_hld_direction, 1)
 
   def set_accelerations(self, motor, **kwargs):
-    """
-    To set acceleration, deceleration (for positioning) and fast
-    deceleration (boolean stop).
-    """
+    """To set acceleration, deceleration (for positioning) and fast
+    deceleration (boolean stop)."""
 
     for address, value in kwargs.items():
       self.variator.write_register(int(str(motor) +
@@ -125,25 +117,19 @@ class KollMorgenVariator:
                                    value)
 
   def start_rotation(self, motor):
-    """
-    Sets the rotation of specified motor at specified speed (signed).
-    """
+    """Sets the rotation of specified motor at specified speed (signed)."""
 
     address_coil = int(str(motor) + str(self.coil_addresses["move_vel"]))
     self.variator.write_coil(address_coil, True)
 
   def stop(self, motor):
-    """
-    Stops the motor movement.
-    """
+    """Stops the motor movement."""
 
     address = int(str(motor) + str(self.coil_addresses["stop"]))
     self.variator.write_coil(address, True)
 
   def set_rotation(self, motor, rotation):
-    """
-    To set a rotation (in degrees) of the motor axis. rotation is signed.
-    """
+    """To set a rotation (in degrees) of the motor axis. Rotation is signed."""
 
     address_coil = int(str(motor) + str(self.coil_addresses["move_rel"]))
     address_hld = int(str(motor) + str(self.hldreg_addresses["distance"]))
@@ -153,9 +139,7 @@ class KollMorgenVariator:
     self.variator.write_coil(address_coil, True)
 
   def set_position(self, motor, position):
-    """
-    To set a position (in degrees), absolute value.
-    """
+    """To set a position (in degrees), absolute value."""
 
     address_coil = int(str(motor) + str(self.coil_addresses["move_abs"]))
     address_hld = int(str(motor) + str(self.hldreg_addresses["position"]))
@@ -165,9 +149,7 @@ class KollMorgenVariator:
     self.variator.write_coil(address_coil, True)
 
   def read_position(self, motor):
-    """
-    To read position of motor. Returns a float.
-    """
+    """To read position of motor. Returns a :obj:`float`."""
 
     if not motor == "all":
       # If 1 axis is needed
@@ -189,9 +171,7 @@ class KollMorgenVariator:
     return converted
 
   def read_speed(self, motor):
-    """
-    Reads speed of each motor.
-    """
+    """Reads speed of each motor."""
 
     if not motor == "all":
       address_inpreg = int(str(motor) + str(self.inpreg_addresses[
@@ -212,9 +192,7 @@ class KollMorgenVariator:
 
 
 class Koll(InOut):
-  """
-  Class to communicate to Kollmorgen devices via Crappy.
-  """
+  """Class to communicate to Kollmorgen devices via Crappy."""
 
   def __init__(self,
                data='position',

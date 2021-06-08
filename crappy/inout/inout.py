@@ -6,21 +6,18 @@ from .._global import DefinitionError
 
 
 class MetaIO(type):
-  """
-  Metaclass that will define all IO objects.
+  """ Metaclass that will define all IO objects.
 
-  Note:
-    All IO classes should be of this type.
+  All IO classes should be of this type.
 
-    To do so, simply add __metaclass__ = MetaIO in the class definition.
-    (Obviously, you must import this Metaclass first.)
+  To do so, simply add ``__metaclass__ = MetaIO`` in the class definition.
+  (Obviously, you must import this Metaclass first.)
 
-    MetaIO is a MetaClass: we will NEVER do c = MetaIO(...).
+  MetaIO is a MetaClass: we will NEVER do ``c = MetaIO(...)``.
 
-    The __init__ is used to init the classes of type MetaIO
-    (with __metaclass__ = MetaIO as a class attribute)
-    and NOT an instance of MetaClass.
-
+  The :meth:`__init__` is used to init the classes of type MetaIO (with
+  ``__metaclass__ = MetaIO`` as a class attribute) and NOT an instance of
+  MetaClass.
   """
 
   classes = {}  # This dict will keep track of all the existing cam classes
@@ -41,7 +38,7 @@ class MetaIO(type):
     # print "[MetaIO.__init__] Initializing",cls
     type.__init__(cls, name, bases, dict_)  # This is the important line
     # It creates the class, the same way we could do this:
-    # MyClass = type(name,bases,dict)
+    # MyClass = type(name,bases,dict_)
     # bases is a tuple containing the parents of the class
     # dict is the dict with the methods
 

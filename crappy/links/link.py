@@ -8,7 +8,7 @@ from time import time
 from threading import Thread
 from copy import copy
 from functools import wraps
-from typing import Callable, Any, Union
+from typing import Callable, Union
 
 from .._global import CrappyStop
 
@@ -134,7 +134,7 @@ class Link(object):
     self.in_.close()
     self.out_.close()
 
-  def send(self, value: Any) -> None:
+  def send(self, value: Union[dict, str]) -> None:
     """Sends the value, or a modified value if you pass it through a modifier.
     """
 
