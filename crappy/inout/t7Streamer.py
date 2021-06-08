@@ -76,22 +76,25 @@ class T7_streamer(InOut):
 
       Note:
         10 means -10V>+10V
-
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               device='ANY',
+               connection='ANY',
+               identifier='ANY',
+               channels=None,
+               scan_rate=100000,
+               scan_per_read=10000,
+               resolution=1):
     InOut.__init__(self)
-    for arg, default in [
-       ('device', 'ANY'),  # Model (T7, DIGIT,...)
-       ('connection', 'ANY'),  # Connection (USB,ETHERNET,...)
-       ('identifier', 'ANY'),  # Identifier (serial n°, ip,..)
-       ('channels', [{'name': 'AIN0'}]),
-       ('scan_rate', 100000),
-       ('scan_per_read', 10000),
-       ('resolution', 1)
-     ]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert len(kwargs) == 0, "T7_streamer got unsupported arg(s)" + str(kwargs)
+    self.device = device
+    self.connection = connection
+    self.identifier = identifier
+    self.channels = [{'name': 'AIN0'}] if channels is None else channels
+    self.scan_rate = scan_rate
+    self.scan_per_read = scan_per_read
+    self.resolution = resolution
+
     default = {'gain': 1, 'offset': 0, 'make_zero': False, 'range': 10}
     if len(self.channels) * self.scan_rate > 100000:
       self.scan_rate = 100000 / len(self.channels)

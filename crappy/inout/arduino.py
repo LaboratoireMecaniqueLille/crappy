@@ -44,11 +44,18 @@ class ArduinoHandler(object):
 
   def __init__(self, *args):
 
+    super().__init__()
     kwargs = args[0]  # Because one cannot pass multiple kwargs when creating
     #  a process...
 
-    for key, value in kwargs.items():
-      setattr(self, key, value)
+    self.port = kwargs['port']
+    self.baudrate = kwargs['baudrate']
+    self.queue_process = kwargs['queue_process']
+    self.width = kwargs['width']
+    self.fontsize = kwargs['fontsize']
+    self.frames = kwargs['frames']
+    self.labels = kwargs['labels']
+
     self.arduino_ser = serial.Serial(port=self.port,
                                      baudrate=self.baudrate)
 
@@ -221,23 +228,30 @@ class Arduino(InOut):
 
   """
 
-  def __init__(self, **kwargs):
-    if not kwargs.pop("port", None):
+  def __init__(self,
+               port=None,
+               baudrate=9600,
+               labels=None,
+               frames=None,
+               width=100,
+               fontsize=11):
+
+    super().__init__()
+    if port is None:
       # Tries to open the 5 first ttyACM's, that should be enough.
       for i in range(5):
         if exists('/dev/ttyACM' + str(i)):
           self.port = '/dev/ttyACM' + str(i)
           break
+    else:
+      self.port = port
 
-    for arg, default in [("baudrate", 9600),
-                         ("labels", None),
-                         ("frames", ["monitor", "submit"]),
-                         ("width", 100),
-                         ("fontsize", 11)]:
+    self.baudrate = baudrate
+    self.labels = labels
+    self.frames = ["monitor", "submit"] if frames is None else frames
+    self.width = width
+    self.fontsize = fontsize
 
-      setattr(self, arg, kwargs.pop(arg, default))
-
-    assert not kwargs, "[Arduino]: unknown kwarg(s):" + str(kwargs)
     self.queue_get_data = Queue()
 
   def open(self):

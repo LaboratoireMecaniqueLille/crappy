@@ -37,9 +37,10 @@ class KollMorgenVariator:
 
   """
 
-  def __init__(self, **kwargs):
-    host = kwargs.pop("host", "192.168.0.109")
-    port = kwargs.pop("port", 502)
+  def __init__(self,
+               host='192.168.0.109',
+               port=502):
+
     self.variator = ModbusTcpClient(host=host, port=port)
     assert self.variator.connect(), "ERROR: could not connect to variator."
 
@@ -215,15 +216,22 @@ class Koll(InOut):
   Class to communicate to Kollmorgen devices via Crappy.
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               data='position',
+               axis='all',
+               speed=360,
+               acc=3600,
+               decc=3600,
+               labels=None,
+               host='192.168.0.109',
+               port=502):
     InOut.__init__(self)
 
-    for arg, default in [("data", "position"),
-                         ("axis", "all"),
-                         ("speed", 360),
-                         ("acc", 3600),
-                         ("decc", 3600)]:
-      setattr(self, arg, kwargs.pop(arg, default))
+    self.data = data
+    self.axis = axis
+    self.speed = speed
+    self.acc = acc
+    self.decc = decc
 
     if self.axis == "all":
       default_label = ["t(s)"] + [str(i) for i in range(1, 4)]
@@ -234,10 +242,10 @@ class Koll(InOut):
       #  kwargs doesn't contain "labels", I cannot put another default value
       # than ("t(s)", "1") as defined in InOut parent class...
 
-    self.labels = kwargs.get("labels", default_label)
-    self.variator = KollMorgenVariator(**kwargs)
+    self.labels = default_label if labels is None else labels
+    self.variator = KollMorgenVariator(host=host, port=port)
 
-  def open(self, **kwargs):
+  def open(self):
     pass
 
   def get_data(self):
@@ -252,10 +260,9 @@ class Koll(InOut):
         ret = [time(), self.variator.read_position(self.axis)]
       else:
         ret = [time()] + self.variator.read_position(self.axis)
+    else:
+      return
     return ret
-
-  def set_cmd(self, cmd):
-    pass
 
   def close(self):
     pass

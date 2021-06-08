@@ -102,24 +102,23 @@ class Labjack_t7(InOut):
       Note:
         The tuples can either be (name (str), value (int/float)) or
         (register (int), type (int), value (float/int)).
-
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               device='ANY',
+               connection='ANY',
+               identifier='ANY',
+               channels=None,
+               write_at_open=None,
+               no_led=False):
     InOut.__init__(self)
-    for arg, default in [
-       ('device', 'ANY'),  # Model (T7, DIGIT,...)
-       ('connection', 'ANY'),  # Connection (USB,ETHERNET,...)
-       ('identifier', 'ANY'),  # Identifier (serial n°, ip,..)
-       ('channels', [{'name': 'AIN0'}]),
-       ('write_at_open', []),
-       ('no_led', False)]:
-      if arg in kwargs:
-        setattr(self, arg, kwargs[arg])
-        del kwargs[arg]
-      else:
-        setattr(self, arg, default)
-    assert len(kwargs) == 0, "Labjack_T7 got unsupported arg(s)" + str(kwargs)
+    self.device = device
+    self.connection = connection
+    self.identifier = identifier
+    self.channels = [{'name': 'AIN0'}] if channels is None else channels
+    self.write_at_open = [] if write_at_open is None else write_at_open
+    self.no_led = no_led
+
     if self.no_led:
       self.write_at_open.append(('POWER_LED', 0))
     self.check_chan()

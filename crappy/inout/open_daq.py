@@ -22,25 +22,30 @@ class Opendaq(InOut):
   Can read data from an OpenDAQ card.
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               channels=1,
+               port='/dev/ttyUSB0',
+               gain=1,
+               offset=0,
+               cmd_label='cmd',
+               out_gain=1,
+               out_offset=0,
+               make_zero=True,
+               mode='single',
+               nsamples=20):
+
     InOut.__init__(self)
-    for arg, default in [('channels', 1),
-                         ('port', '/dev/ttyUSB0'),
-                         ('gain', 1),
-                         ('offset', 0),
-                         ('cmd_label', 'cmd'),
-                         ('out_gain', 1),
-                         ('out_offset', 0),
-                         ('make_zero', True),
-                         ('mode', 'single'),
-                         ('nsamples', 20)
-                         ]:
-      if arg in kwargs:
-        setattr(self, arg, kwargs[arg])
-        del kwargs[arg]
-      else:
-        setattr(self, arg, default)
-    assert len(kwargs) == 0, "Open_daq got unsupported kwarg(s)" + str(kwargs)
+    self.channels = channels
+    self.port = port
+    self.gain = gain
+    self.offset = offset
+    self.cmd_label = cmd_label
+    self.out_gain = out_gain
+    self.out_offset = out_offset
+    self.make_zero = make_zero
+    self.mode = mode
+    self.nsamples = nsamples
+
     self.channels = self.channels if isinstance(self.channels, list) else \
       [self.channels]
     n = len(self.channels)

@@ -55,7 +55,10 @@ class Nidaqmx(InOut):
 
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               channels=None,
+               samplerate=100,
+               nsamples=None):
     InOut.__init__(self)
     self.thermocouple_type = {"B": nidaqmx.constants.ThermocoupleType.B,
                               "E": nidaqmx.constants.ThermocoupleType.E,
@@ -72,13 +75,11 @@ class Nidaqmx(InOut):
                   "K": nidaqmx.constants.TemperatureUnits.K,
                   # To be completed...
                   }
-    for arg, default in [
-       ('channels', [{'name': 'Dev1/ai0'}]),
-       ('samplerate', 100),
-       ('nsamples', None)
-     ]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert len(kwargs) == 0, "Nidaqmx got unsupported arg(s)" + str(kwargs)
+
+    self.channels = [{'name': 'Dev1/ai0'}] if channels is None else channels
+    self.samplerate = samplerate
+    self.nsamples = nsamples
+
     if self.nsamples is None:
       self.nsamples = max(1, int(self.samplerate / 5))
     self.streaming = False

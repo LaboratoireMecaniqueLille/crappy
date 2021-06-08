@@ -71,33 +71,35 @@ class Daqmx(InOut):
 
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               device='Dev1',
+               channels=None,
+               gain=1,
+               offset=0,
+               range=5,
+               make_zero=True,
+               nperscan=1000,
+               sample_rate=10000,
+               out_channels=None,
+               out_gain=1,
+               out_offset=0,
+               out_range=5):
     InOut.__init__(self)
     # For now, kwargs like in_gain are equivalent to gain
     # (it is for consistency with out_gain, out_channels, etc...)
-    for arg in kwargs:
-      if arg in kwargs and arg.startswith('in_'):
-        kwargs[arg[3:]] = kwargs[arg]
-        del kwargs[arg]
-    for arg, default in [('device', 'Dev1'),
-                         ('channels', ['ai0']),
-                         ('gain', 1),
-                         ('offset', 0),
-                         ('range', 5),  # Unipolar
-                         ('make_zero', True),
-                         ('nperscan', 1000),
-                         ('sample_rate', 10000),
-                         ('out_channels', []),
-                         ('out_gain', 1),
-                         ('out_offset', 0),
-                         ('out_range', 5)  # Unipolar
-                         ]:
-      if arg in kwargs:
-        setattr(self, arg, kwargs[arg])
-        del kwargs[arg]
-      else:
-        setattr(self, arg, default)
-    assert len(kwargs) == 0, "Daqmx got unsupported arg(s)" + str(kwargs)
+    self.device = device
+    self.channels = ['ai0'] if channels is None else channels
+    self.gain = gain
+    self.offset = offset
+    self.range = range
+    self.make_zero = make_zero
+    self.nperscan = nperscan
+    self.sample_rate = sample_rate
+    self.out_channels = [] if out_channels is None else out_channels
+    self.out_gain = out_gain
+    self.out_offset = out_offset
+    self.out_range = out_range
+
     self.check_vars()
 
   def check_vars(self):
