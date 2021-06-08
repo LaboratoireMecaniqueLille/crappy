@@ -1,11 +1,11 @@
 # coding: utf-8
 
 """
-This program is often used as the starting point when performing tests on
-"Biotens"
+This program is often used as the starting point when performing tests on the
+"Biotens" machine.
 
-It creates a new folder for each experiment and performs tensile tests
-using videoextensometry
+It creates a new folder for each experiment and performs tensile tests using
+videoextensometry.
 """
 
 import time

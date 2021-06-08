@@ -67,7 +67,7 @@ class Jai8(CLCamera):
 
 
 class Jai(Jai8):
-  """This class allows the use of 10 and 12 bts mode for the Jai Cameras.
+  """This class allows the use of 10 and 12 bits mode for the Jai Cameras.
   Obviously, the framerate will be slower than the 8 bits version."""
 
   def __init__(self, **kwargs):

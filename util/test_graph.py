@@ -1,5 +1,5 @@
 """
-To test the correct resampling of the points in the Grapher
+To test the correct resampling of the points in the Grapher.
 """
 
 import crappy

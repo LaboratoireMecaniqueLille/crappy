@@ -1,11 +1,14 @@
 # coding: utf-8
 
 """
-Demonstrates how to use modifiers
+Demonstrates how to use modifiers.
 
-Number of modifiers are already defined une crappy.modifiers, but it can
-also be a function or any class with the .evaluate() method
+Number of modifiers are already defined in ``crappy.modifiers``, but it can
+also be a function or any class containing the ``.evaluate()`` method.
+
+No hardware required.
 """
+
 import crappy
 
 
@@ -15,9 +18,10 @@ class My_offset_modifier:
     self.offset = offset
 
   def evaluate(self, data):
-    """
-    Remember: data is ALWAYS a dict
-    returning None will drop the data
+    """Method returning the modified values
+
+    Remember: data is ALWAYS a :obj:`dict`.
+    Returning :obj:`None` will drop the data.
     """
 
     for k in data:

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Tuple
+from typing import Tuple, Any
 from .camera import Camera
 from .._global import OptionalModule
 from threading import Thread, RLock
@@ -13,13 +13,14 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Picamera_webcam(Camera):
-  """Class for reading images from a PiCamera
+  """Class for reading images from a PiCamera.
 
   The Picamera_webcam Camera block is meant for reading images from a Picamera.
-  It relies on openCV and the V4L2 API just like the Webcam block, hence its
-  name. Faster than the Picamera block, but only the size of the image can be
-  tuned. It is also preferable to set the size in the args of the block, as
-  openCV is quite buggy when tuning it in the graphical interface.
+  It relies on :mod:`cv2` and the V4L2 API just like the :ref:`Webcam` block,
+  hence its name. Faster than the :ref:`Picamera` block, but only the size of
+  the image can be tuned. It is also preferable to set the size in the args of
+  the block, as openCV is quite buggy when tuning it in the graphical
+  interface.
 
   Warning:
     Only works on Raspberry Pi !
@@ -42,8 +43,9 @@ class Picamera_webcam(Camera):
     self._lock = RLock()
     self._thread = Thread(target=self._grab_frame)
 
-  def open(self, **kwargs: any) -> None:
-    """Sets the settings to their default values and starts buffering images"""
+  def open(self, **kwargs: Any) -> None:
+    """Sets the settings to their default values and starts buffering images.
+    """
 
     # Setting the video stream
     if self._cap is not None:
@@ -59,8 +61,8 @@ class Picamera_webcam(Camera):
     # Starting the auxiliary thread
     self._thread.start()
 
-  def get_image(self) -> Tuple[float, any]:
-    """Reads an image from the PiCamera using V4L2
+  def get_image(self) -> Tuple[float, Any]:
+    """Reads an image from the PiCamera using V4L2.
 
     Returns:
       The timeframe and the image
@@ -81,7 +83,7 @@ class Picamera_webcam(Camera):
       return t, frame
 
   def close(self) -> None:
-    """Releases the resources and joins the thread"""
+    """Releases the resources and joins the thread."""
 
     # Joining the auxiliary thread and closing the stream
     self._stop = True
@@ -91,11 +93,12 @@ class Picamera_webcam(Camera):
     self._cap = None
 
   def _grab_frame(self) -> None:
-    """
-    This thread is meant for preventing the accumulation of frames in the
-    video stream. Every 0.01s it tries to grab frames from the stream ; if
-    one is available it is grabbed and otherwise nothing happens. This way
-    only the last captured frame can be accessed by the ``get_image`` method.
+    """This thread is meant for preventing the accumulation of frames in the
+    video stream.
+
+    Every `0.01s` it tries to grab frames from the stream ; if one is available
+    it is grabbed and otherwise nothing happens. This way only the last
+    captured frame can be accessed by the :meth:`get_image` method.
     """
 
     while not self._stop:

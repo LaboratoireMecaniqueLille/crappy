@@ -6,18 +6,19 @@ from .path import Path
 
 
 class Ramp(Path):
-  """
-  Will make a ramp from previous value until condition is reached,
-
-  Args:
-    - speed (in unit/s): The speed of the ramp.
-    - condition (str): Representing the condition to end this path.
-      See Path.parse_condition for more detail.
-    - cmd: If specified, will be the starting value of the ramp.
-
-  """
+  """Will make a ramp from previous value until condition is reached."""
 
   def __init__(self, time_, cmd, condition, speed):
+    """Sets the args and initializes parent class.
+
+    Args:
+      time_:
+      cmd: If specified, will be the starting value of the ramp.
+      condition (:obj:`str`): Representing the condition to end this path. See
+        :ref:`generator path` for more info.
+      speed: The speed of the ramp in `units/s`.
+    """
+
     Path.__init__(self, time_, cmd)
     self.condition = self.parse_condition(condition)
     self.speed = speed

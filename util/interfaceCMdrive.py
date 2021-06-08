@@ -6,10 +6,8 @@ from crappy.actuator import actuator_list
 
 
 class Interface(Frame):
-  """
-  Create a graphic interface that allows to connect the actuator via a serial
-  connection and to send command in terms of speed or position
-  """
+  """Creates a graphic interface that allows to connect the actuator via a
+  serial connection and to send command in terms of speed or position."""
 
   def __init__(self, root, **kwargs):
     Frame.__init__(self, root, width=1000, height=1000, **kwargs)

@@ -4,18 +4,18 @@ import crappy
 from time import sleep, time
 
 """
-This code provides a not-so-stupid method to have an acceptable values
-for PID gains on an output. This will require the ability to send a command
-to the actuator in open loop and this program asserts that it is a
-non-integrating and stable process.
+This code provides a not-so-stupid method to have an acceptable values for PID 
+gains on an output. This will require the ability to send a command to the 
+actuator in open loop and this program asserts that it is a non-integrating and 
+stable process.
 
 It will give a step setpoint and analyse the response to try to deduce the
-gains. Make sure the step size is representative of the utilisation
-domain (and in range) of the actuator.
+gains. Make sure the step size is representative of the utilisation domain (and 
+in range) of the actuator.
 
 Warning:
-  Make sure to review the constants and to have an idea about how this
-  program will perform before running it !
+  Make sure to review the constants and to have an idea of how this program 
+  will perform before running it !
 """
 
 

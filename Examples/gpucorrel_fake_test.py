@@ -1,9 +1,9 @@
 # coding: utf-8
 
 """
-Demonstration of a DIC controlled test
+Demonstration of a DIC controlled test.
 
-This program is intended as a demonstration and is fully virtual
+This program is intended as a demonstration and is fully virtual.
 
 Required hardware:
   - A CUDA compatible GPU (and pycuda installed)

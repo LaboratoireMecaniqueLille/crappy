@@ -14,7 +14,7 @@ class Biaxe(Actuator):
   """This class creates an axis and opens the corresponding serial port."""
 
   def __init__(self, port='/dev/ttyUSB0', baudrate=38400, timeout=1):
-    """Sets the instance attributes
+    """Sets the instance attributes.
 
     Args:
       port (:obj:`str`, optional): Path to the corresponding serial port, e.g

@@ -1,11 +1,13 @@
+# coding: utf-8
+
 """
-Demonstration of a DIC controlled test
+Demonstration of a DIC controlled test.
 
-This program is intended as a demonstration and is fully virtual.
-The strain is measured using DIC and a PID controller drives the machine
-to apply a ramp of strain
+This program is intended as a demonstration and is fully virtual. The strain is
+measured using DIC and a PID controller drives the machine to apply a ramp of
+strain.
 
-No hardware required
+No hardware required.
 """
 
 import crappy

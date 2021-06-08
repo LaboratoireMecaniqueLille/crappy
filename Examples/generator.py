@@ -1,11 +1,11 @@
 # coding: utf-8
 
 """
-Introduction to the generator
+Introduction to the generator.
 
-Shows how to use the Generator block and different paths
+Shows how to use the Generator block and different paths.
 
-No required hardware
+No required hardware.
 """
 
 import crappy

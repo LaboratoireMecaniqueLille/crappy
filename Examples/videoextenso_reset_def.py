@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Example showing how to reset the reference length in the Videoextenso block
+Example showing how to reset the reference length in the Videoextenso block.
 
 Required hardware:
   - Any camera

@@ -1,10 +1,10 @@
 # coding: utf-8
 
 """
-Very simple test demonstrating the video-extensometry
+Very simple test demonstrating the video-extensometry.
 
 To test it, one can draw markers on a paper an move it closer or further to the
-camera. This should induce a strain on both x and y directions
+camera. This should induce a strain on both `x` and `y` directions.
 
 Required hardware:
   - A camera

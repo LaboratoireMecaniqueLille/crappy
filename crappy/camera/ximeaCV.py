@@ -14,15 +14,10 @@ xi_format_dict = {'8 bits': 0, '10 bits': 1, '8 bits RAW': 5, '10 bits RAW': 6}
 
 
 class XimeaCV(Camera):
-  """
-  Camera class for ximeas using openCV.
+  """Camera class for ximeas using openCV.
 
   Note:
-    It requires opencv 3.0 or higher, compiled with WITH_XIMEA flag.
-
-  Args:
-    - numdevice: Device number.
-
+    It requires :mod:`cv2` 3.0 or higher, compiled with WITH_XIMEA flag.
   """
 
   def __init__(self):
@@ -112,8 +107,7 @@ class XimeaCV(Camera):
     return self.cap.set(cv2.CAP_PROP_XI_TIMEOUT, timeout)
 
   def open(self, numdevice=0, **kwargs):
-    """
-    Will actually open the camera, args will be set to default unless
+    """Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs.
     """
 
@@ -128,24 +122,20 @@ class XimeaCV(Camera):
     self.set_all(**kwargs)
 
   def reopen(self, **kwargs):
-    """
-    Will reopen the camera, args will be set to default unless
-    specified otherwise in kwargs.
-    """
+    """Will reopen the camera, args will be set to default unless specified
+    otherwise in kwargs."""
 
     self.close()
     self.cap = cv2.VideoCapture(cv2.CAP_XIAPI + self.numdevice)
     self.set_all(override=True, **kwargs)
 
   def get_image(self):
-    """
-    This method get a frame on the selected camera and return a ndarray.
+    """This method get a frame on the selected camera and return a ndarray.
 
     If the camera breaks down, it reinitializes it, and tries again.
 
     Returns:
-      frame from ximea device (ndarray height*width).
-
+      frame from ximea device (`ndarray height*width`).
     """
 
     ret, frame = self.cap.read()
@@ -160,12 +150,10 @@ class XimeaCV(Camera):
     return t, frame
 
   def close(self):
-    """
-    This method close properly the frame grabber.
+    """This method close properly the frame grabber.
 
     Returns:
       void return function.
-
     """
 
     if self.cap:
@@ -173,18 +161,17 @@ class XimeaCV(Camera):
     self.cap = None
 
   def __str__(self):
-    """
-    __str__ method to prints out main parameter.
+    """Method to prints out main parameter.
 
     Returns:
-        a formatted string with the value of the main parameter.
+      A formatted string with the value of the main parameter.
 
     Example:
-        camera = Ximea(numdevice=0)
-        camera.new(exposure=10000, width=2048, height=2048)
-        print camera
+        >>> camera = XimeaCV(numdevice=0)
+        >>> camera.new(exposure=10000, width=2048, height=2048)
+        >>> print camera
 
-    these lines will print out:
+      these lines will print out:
       ::
 
          Exposure: 10000
@@ -193,8 +180,8 @@ class XimeaCV(Camera):
          Height: 2048
          X offset: 0
          Y offset: 0
-
     """
+
     return " Exposure: {0} \n Numdevice: {1} \n Width: {2} \n Height: {3} " \
            "\n X offset: {4} \n Y offset: {5}".format(self.exposure,
                                   self.numdevice, self.width,

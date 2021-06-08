@@ -14,18 +14,16 @@ class CLCamera(Camera):
   """Cameralink camera sensor."""
 
   def __init__(self, numdevice=0, config_file=None, camera_type=None):
-    """
-    Using the clModule, will open a cameraLink camera.
+    """Using the clModule, will open a cameraLink camera.
 
     Note:
       If a config file is specified, it will be used to configure the camera.
 
-      If not set, it will be asked, unless set to False (or 0).
+      If not set, it will be asked, unless set to :obj:`False` (or 0).
 
-      Else, you must at least provide the camera type (eg: "FullAreaGray8").
+      Else, you must at least provide the camera type (eg: `"FullAreaGray8"`).
 
       Using a config file is recommended over changing all settings manually.
-
     """
 
     # print("config_file:", config_file)
@@ -121,6 +119,7 @@ class CLCamera(Camera):
 
   def configure(self):
     """Configure the frame grabber to trig the camera internally."""
+
     self.cap.set(Cl.FG_TRIGGERMODE, 1)
     self.cap.set(Cl.FG_EXSYNCON, 1)
 

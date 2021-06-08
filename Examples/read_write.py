@@ -1,10 +1,10 @@
 # coding: utf-8
 
 """
-Just like read.py, but with both output and input
+Just like ``read.py``, but with both output and input.
 
-This program will send a sine wave on the first output and read the first input
-The type of board can be chosen when starting the file
+This program will send a sine wave on the first output and read the first
+input. The type of board can be chosen when starting the file.
 
 Required hardware:
   - Any DAQ board

@@ -7,17 +7,22 @@ from .path import Path
 
 
 class Custom(Path):
-  """To generate a custom path from a file.
-
-  Args:
-    - filename: Name of the .csv file.
-
-      Note:
-        It must contain two columns: one with time, the other with the value.
-
-  """
+  """To generate a custom path from a file."""
 
   def __init__(self, time_, cmd, filename, delimiter='\t'):
+    """Loads the file and sets the args.
+
+    Args:
+      time_:
+      cmd:
+      filename: Name of the `.csv` file.
+
+        Note:
+          It must contain two columns: one with time, the other with the value.
+
+      delimiter:
+    """
+
     Path.__init__(self, time_, cmd)
     with open(filename, 'r') as f:
       self.array = np.loadtxt(f, delimiter=delimiter)

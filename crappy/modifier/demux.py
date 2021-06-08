@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import numpy as np
+from typing import Union
 
 from .modifier import Modifier
 
@@ -18,16 +19,17 @@ class Demux(Modifier):
   """
 
   def __init__(self,
-               *labels: str,
-               stream="stream",
-               mean=False,
-               time_label="t(s)",
-               transpose=False) -> None:
+               *labels: Union[str, list],
+               stream: str = "stream",
+               mean: bool = False,
+               time_label: str = "t(s)",
+               transpose: bool = False) -> None:
     """Sets the instance attributes.
 
     Args:
-      *labels (:obj:`str`): The names of the labels to use for each column of
-        the array.
+      *labels (:obj:`str`, :obj:`list`): The names of the labels to use for
+        each column of the array. May be either a list of labels, or the labels
+        given as separate arguments.
       stream (:obj:`str`, optional): The name of the label containing the
         stream.
       mean (:obj:`bool`, optional): If :obj:`True`, the returned value will be
@@ -51,10 +53,10 @@ class Demux(Modifier):
     else:
       self.evaluate = self.evaluate_nomean
 
-  def evaluate(self):
+  def evaluate(self) -> None:
     pass
 
-  def evaluate_nomean(self, data):
+  def evaluate_nomean(self, data: dict) -> dict:
     if 0 in data[self.stream].shape:
       return data
     for i, n in enumerate(self.labels):

@@ -1,5 +1,7 @@
+# coding: utf-8
+
 """
-Shows a more advanced way of using GPUCorrel block
+Shows a more advanced way of using the GPUCorrel block.
 
 Required hardware:
   - Any camera

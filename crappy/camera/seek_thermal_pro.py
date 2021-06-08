@@ -44,7 +44,7 @@ Seek_thermal_pro_dimensions = {'Width': 320,
 
 
 class Seek_thermal_pro(Camera):
-  """Class for reading the Seek Thermal Pro infrared camera
+  """Class for reading the Seek Thermal Pro infrared camera.
 
   The Seek_thermal_pro Camera block is meant for reading images from a Seek
   Thermal Pro infrared camera. It communicates over USB, and gets images by
@@ -64,7 +64,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
   """
 
   def __init__(self) -> None:
-    """Selects the right USB device"""
+    """Selects the right USB device."""
 
     Camera.__init__(self)
     self.name = "seek_thermal_pro"
@@ -83,7 +83,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
       self._dev = devices[0]
 
   def open(self) -> None:
-    """Sets the USB communication and device"""
+    """Sets the USB communication and device."""
 
     try:
       self._dev.set_configuration()
@@ -132,7 +132,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
         raise TimeoutError("Could not set the camera")
 
   def get_image(self) -> Tuple[float, np.array]:
-    """Reads a single image from the camera
+    """Reads a single image from the camera.
 
     Returns:
       The timeframe and the captured image
@@ -151,7 +151,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
       count += 1
 
   def close(self) -> None:
-    """Resets the camera and releases USB resources"""
+    """Resets the camera and releases USB resources."""
 
     for _ in range(3):
       self._write_data(Seek_thermal_pro_commands['Set operation mode'],
@@ -159,7 +159,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
     usb.util.dispose_resources(self._dev)
 
   def _grab(self) -> [bytes, np.array]:
-    """Captures a raw image from the camera
+    """Captures a raw image from the camera.
 
     Returns:
       The status information and the raw image
@@ -189,7 +189,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
       return status, None
 
   def _get_dead_pixels_list(self, data: np.array) -> list:
-    """Identifies the dead pixels on an image
+    """Identifies the dead pixels on an image.
 
     Args:
       data: The image
@@ -205,7 +205,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
 
   @staticmethod
   def _crop(raw_img: np.array) -> np.array:
-    """Simply crops an image to the right dimensions"""
+    """Simply crops an image to the right dimensions."""
 
     return raw_img[4: 4 + Seek_thermal_pro_dimensions['Height'],
            1: 1 + Seek_thermal_pro_dimensions['Width']]
@@ -227,7 +227,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
     return img
 
   def _write_data(self, request: int, data: bytes) -> int:
-    """Wrapper for writing over USB"""
+    """Wrapper for writing over USB."""
 
     try:
       return self._dev.ctrl_transfer(bmRequestType=Seek_therm_usb_req['Write'],
@@ -240,7 +240,7 @@ MODE=\\"0777\\\""" > seek_thermal.rules
       raise IOError("An error occurred during USB communication")
 
   def _read_data(self, request: int, data: bytes) -> int:
-    """Wrapper for reading over USB"""
+    """Wrapper for reading over USB."""
 
     try:
       return self._dev.ctrl_transfer(bmRequestType=Seek_therm_usb_req['Read'],

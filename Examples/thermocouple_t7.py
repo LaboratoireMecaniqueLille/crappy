@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Example demonstrating the use of thermocouples with the Labjack T7 board
+Example demonstrating the use of thermocouples with the Labjack T7 board.
 
 required hardware:
   - Labjack T7 board

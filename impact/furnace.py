@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Program used to control the solidification furnace
+Program used to control the solidification furnace.
 
 It uses a Labjack T7 to send PWN signals to the transistors controlling the
 heating element of each section of the furnace. The temperature of each section

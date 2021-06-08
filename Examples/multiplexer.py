@@ -1,20 +1,19 @@
 # coding: utf-8
 
 """
-Example demonstrating the use of crappy.blocks.Multiplex
+Example demonstrating the use of ``crappy.blocks.Multiplex``.
 
-This block interpolates data from several parents in a common timebase
+This block interpolates data from several parents in a common timebase.
 
-No required hardware
+No required hardware.
 """
 
 import crappy
 
 
 class Delay:
-  """
-  Modifier to add a delay to one of the inputs, demonstrating how Multiplex
-  will wait for data
+  """Modifier to add a delay to one of the inputs, demonstrating how Multiplex
+  will wait for data.
   """
 
   def __init__(self, n):

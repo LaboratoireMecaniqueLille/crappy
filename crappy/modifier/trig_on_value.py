@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from .modifier import Modifier
+from typing import Union
 
 
 class Trig_on_value(Modifier):
@@ -23,6 +24,6 @@ class Trig_on_value(Modifier):
     self.name = name
     self.values = values if isinstance(values, list) else [values]
 
-  def evaluate(self, data: dict) -> dict:
+  def evaluate(self, data: dict) -> Union[dict, None]:
     if data[self.name] in self.values:
       return data

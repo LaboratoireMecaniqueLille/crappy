@@ -1,11 +1,11 @@
 # coding: utf-8
 
 """
-Example demonstrating the use of National instrument daq boards
+Example demonstrating the use of National instrument daq boards.
 
 Required hardware:
-  - NI DAQ board with at least one analog input and one digital
-    input compatible with the nidaqmx module
+  - NI DAQ board with at least one analog input and one digital input
+    compatible with the nidaqmx module
 """
 
 import crappy

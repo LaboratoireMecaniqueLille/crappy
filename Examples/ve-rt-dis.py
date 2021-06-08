@@ -1,11 +1,11 @@
 # coding: utf-8
 
 """
-Example showing how to use the DISVE block
+Example showing how to use the DISVE block.
 
-It performs DIC on the specified patches, and returns the motion along x and y
-in pixels. This example demonstrates the processing to measure strain using
-this method
+It performs DIC on the specified patches, and returns the motion along `x` and
+`y` in pixels. This example demonstrates the processing to measure strain using
+this method.
 
 Required hardware:
   - Any camera

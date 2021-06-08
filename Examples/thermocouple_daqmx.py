@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Example showing how to use thermocouples with an NI daq board
+Example showing how to use thermocouples with an NI daq board.
 
 Required hardware:
   - Nidaqmx compatible board

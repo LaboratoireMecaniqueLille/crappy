@@ -1,9 +1,9 @@
 # coding: utf-8
 
 """
-This program is used to control a biaxial tensile machine
+This program is used to control a biaxial tensile machine.
 
-It demonstrates an equibiaxial cyclic test
+It demonstrates an equibiaxial cyclic test.
 """
 
 import crappy

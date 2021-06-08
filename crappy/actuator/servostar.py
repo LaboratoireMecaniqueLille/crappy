@@ -21,7 +21,7 @@ class Servostar(Actuator):
     Args:
       device (:obj:`str`, optional): Path to connect to the serial port.
       baudrate (:obj:`int`, optional): Set the corresponding baud rate.
-      mode (:obj:`str`, optional): Can be `'analog'` or `'serial'`
+      mode (:obj:`str`, optional): Can be `'analog'` or `'serial'`.
     """
 
     Actuator.__init__(self)
@@ -76,7 +76,6 @@ class Servostar(Actuator):
 
     Returns:
       Current position of the motor.
-
     """
 
     self.lock.acquire()

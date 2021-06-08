@@ -1,13 +1,13 @@
 # coding: utf-8
 
 """
-Detailed example showing a videoextensometry-driven tensile test
+Detailed example showing a videoextensometry-driven tensile test.
 
 This example uses a Labjack T7 board to send the position command to a tensile
 machine. This was tested on an Instron 5882, but any tensile machine taking an
 external command can be used. A camera is used to measure the strain of the
 sample and save the images. Different levels of strain are applied and the
-sample is relaxed between each step
+sample is relaxed between each step.
 
 Required hardware:
   - Tensile machine able to take an external command

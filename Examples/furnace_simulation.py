@@ -1,13 +1,14 @@
 # coding: utf-8
 
 """
-Simulation of a temperature regulated furnace using a PID
+Simulation of a temperature regulated furnace using a PID.
 
 The temperature simulation is performed using a "Fake_motor". With the correct
-parameters, this fake actuator can also represent the temperature in a furnace
+parameters, this fake actuator can also represent the temperature in a furnace.
 
-No hardware required
+No hardware required.
 """
+
 import crappy
 
 SPEED = 20  # Speed multiplier of the simulation
@@ -18,9 +19,8 @@ D = 10 / SPEED
 
 
 class Delay:
-  """
-  Class to add a delay on the feedback
-  """
+  """Class to add a delay on the feedback."""
+
   def __init__(self, delay):
     self.delay = delay
     self.t = 't(s)'

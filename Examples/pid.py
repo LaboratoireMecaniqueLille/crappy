@@ -1,11 +1,13 @@
 # coding: utf-8
 
 """
-Quick example showing how the PID block can be used to control the speed
-of a motor
+Quick example showing how the PID block can be used to control the speed of a
+motor.
 
 The motor is a virtual entity, taking a voltage and returning a speed and
-position
+position.
+
+No hardware required.
 """
 
 import crappy
