@@ -204,9 +204,8 @@ class Client_server(Block):
     # Preparing for receiving data
     if self.topics is not None:
       assert self.outputs, "topics are specified but there's no output link "
-      for i, topic in enumerate(self.topics):
-        if not isinstance(topic, tuple):
-          self.topics[i] = (self.topics[i],)
+      self.topics = [(topic,) if not isinstance(topic, tuple) else topic for
+                     topic in self.topics]
 
       # The buffer for received data is a dictionary of queues
       self.buffer_output = {topic: queue.Queue() for topic in self.topics}
@@ -224,9 +223,8 @@ class Client_server(Block):
     # Preparing for publishing data
     if self.cmd_labels is not None:
       assert self.inputs, "cmd_labels are specified but there's no input link "
-      for i, topic in enumerate(self.cmd_labels):
-        if not isinstance(topic, tuple):
-          self.cmd_labels[i] = (self.cmd_labels[i],)
+      self.cmd_labels = [(topic,) if not isinstance(topic, tuple) else topic
+                         for topic in self.cmd_labels]
       if self.labels_to_send is not None:
         for i, topic in enumerate(self.labels_to_send):
           if not isinstance(topic, tuple):
