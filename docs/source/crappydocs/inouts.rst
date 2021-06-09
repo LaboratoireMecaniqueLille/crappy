@@ -96,3 +96,13 @@ Wavehsare AD/DA
 +++++++++++++++
 .. automodule:: crappy.inout.waveshare_ad_da
    :members:
+  
+GSM
++++
+.. automodule:: crappy.inout.gsm
+   :members:
+   
+PiJuice
++++++++
+.. automodule:: crappy.inout.piJuice
+   :members:
