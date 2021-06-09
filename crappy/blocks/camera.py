@@ -22,20 +22,6 @@ try:
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
-kw = dict([
-  ("save_folder", None),
-  ("verbose", False),
-  ("labels", ['t(s)', 'frame']),
-  ("fps_label", False),
-  ("img_name", "{self.loops:06d}_{t-self.t0:.6f}"),
-  ("ext", "tiff"),
-  ("save_period", 1),
-  ("save_backend", None),
-  ("transform", None),
-  ("input_label", None),
-  ("config", True)]
-)
-
 
 class Camera(Block):
   """
@@ -92,17 +78,34 @@ class Camera(Block):
 
   """
 
-  def __init__(self,  camera, **kwargs):
+  def __init__(self,
+               camera,
+               save_folder=None,
+               verbose=False,
+               labels=None,
+               fps_label=False,
+               img_name="{self.loops:06d}_{t-self.t0:.6f}",
+               ext='tiff',
+               save_period=1,
+               save_backend=None,
+               transform=None,
+               input_label=None,
+               config=True,
+               **kwargs):
     Block.__init__(self)
     self.niceness = -10
-    for arg, default in kw.items():
-      setattr(self, arg, kwargs.get(arg, default))  # Assign these attributes
-      try:
-        del kwargs[arg]
-        # And remove them (if any) to
-        # keep the parameters for the camera
-      except KeyError:
-        pass
+    self.save_folder = save_folder
+    self.verbose = verbose
+    self.labels = ['t(s)', 'frame'] if labels is None else labels
+    self.fps_label = fps_label
+    self.img_name = img_name
+    self.ext = ext
+    self.save_period = save_period
+    self.save_backend = save_backend
+    self.transform = transform
+    self.input_label = input_label
+    self.config = config
+
     self.camera_name = camera.capitalize()
     self.cam_kw = kwargs
     assert self.camera_name in camera_list or self.input_label,\

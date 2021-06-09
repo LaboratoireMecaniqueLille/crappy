@@ -31,25 +31,20 @@ class AutoDrive(Block):
 
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               actuator=None,
+               P=2000,
+               direction='Y-',
+               range=2048,
+               max_speed=200000):
+
     Block.__init__(self)
-    for arg, default in [('actuator', {'name': 'CM_drive'}),
-                         ('P', 2000),
-                         # The gain for commanding the technical/actuator
-                         ('direction', 'Y-'),  # The direction to follow
-                         # (X/Y +/-), depending on camera orientation
-                         ('range', 2048),  # The number of pixels in this
-                         # direction
-                         ('max_speed', 200000)  # To avoid loosing spots
-                         # when going to fast
-                         ]:
-      setattr(self, arg, kwargs.get(arg, default))
-      try:
-        del kwargs[arg]
-      except KeyError:
-        pass
-    if len(kwargs) != 0:
-      raise AttributeError("[AutoDrive] Unknown kwarg(s):" + str(kwargs))
+    self.actuator = {'name': 'CM_drive'} if actuator is None else actuator
+    self.P = P
+    self.direction = direction
+    self.range = range
+    self.max_speed = max_speed
+
     sign = -1 if self.direction[1] == '-' else 1
     self.P *= sign
     self.labels = ['t(s)', 'diff(pix)']

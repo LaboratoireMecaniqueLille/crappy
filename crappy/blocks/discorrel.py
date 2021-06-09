@@ -26,8 +26,8 @@ def draw_box(box, img):
 
 class DISCorrel(Camera):
   def __init__(self, camera,
-               fields=["x", "y", "exx", "eyy"],
-               labels=['t(s)', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)'],
+               fields=None,
+               labels=None,
                alpha=3,
                delta=1,
                gamma=0,
@@ -45,8 +45,9 @@ class DISCorrel(Camera):
     self.cam_kwargs = kwargs
     kwargs['config'] = False  # We have our own config window
     Camera.__init__(self, camera, **kwargs)
-    self.fields = fields
-    self.labels = labels
+    self.fields = ["x", "y", "exx", "eyy"] if fields is None else fields
+    self.labels = ['t(s)', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)'] \
+      if labels is None else labels
     self.show_image = show_image
     self.residual = residual
     self.residual_full = residual_full
@@ -64,7 +65,7 @@ class DISCorrel(Camera):
     if self.residual_full:
       self.labels.append('res_full')
 
-  def prepare(self):
+  def prepare(self, **_):
     Camera.prepare(self, send_img=False)
     config = DISConfig(self.camera)
     config.main()
