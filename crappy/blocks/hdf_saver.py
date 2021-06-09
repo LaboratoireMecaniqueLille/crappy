@@ -54,16 +54,21 @@ class Hdf_saver(Block):
 
   """
 
-  def __init__(self, filename, **kwargs):
+  def __init__(self,
+               filename,
+               node='table',
+               expected_rows=10**8,
+               atom=tables.Int16Atom(),
+               label='stream',
+               metadata=None):
     Block.__init__(self)
     self.filename = filename
-    for arg, default in [("node", "table"),
-                        ("expected_rows", 10**8),
-                        ("atom", tables.Int16Atom()),
-                        ("label", "stream"),
-                        ("metadata", {})]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert not kwargs, "Invalid kwarg(s) in Hdf_saver: " + str(kwargs)
+    self.node = node
+    self.expected_rows = expected_rows
+    self.atom = atom
+    self.label = label
+    self.metadata = {} if metadata is None else metadata
+
     if not isinstance(self.atom, tables.Atom):
       self.atom = tables.Atom.from_dtype(np.dtype(self.atom))
 

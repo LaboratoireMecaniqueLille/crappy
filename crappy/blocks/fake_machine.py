@@ -28,8 +28,7 @@ class Fake_machine(Block):
                # a strain
                # To add normal noise over the data and make things a bit
                # more realistic!
-               sigma={'F(N)': 50, 'x(mm)': 2e-3, 'Exx(%)': 1e-3,
-                      'Eyy(%)': 1e-3},
+               sigma=None,
                nu=.3,
                cmd_label='cmd'):
     Block.__init__(self)
@@ -45,7 +44,8 @@ class Fake_machine(Block):
     self.last_t = None
     self.plastic_elongation = 0
     self.plastic_law = plastic_law
-    self.sigma = sigma
+    self.sigma = {'F(N)': 50, 'x(mm)': 2e-3, 'Exx(%)': 1e-3, 'Eyy(%)': 1e-3} \
+      if sigma is None else sigma
     self.max_seen_strain = 0
 
   def noise(self, d):

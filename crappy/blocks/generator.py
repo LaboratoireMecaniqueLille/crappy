@@ -78,22 +78,29 @@ class Generator(Block):
 
   """
 
-  def __init__(self, path=None, **kwargs):
+  def __init__(self,
+               path=None,
+               freq=200,
+               cmd_label='cmd',
+               cycle_label='cycle',
+               cmd=0,
+               repeat=False,
+               trig_link=None,
+               spam=False,
+               verbose=False,
+               end_delay=2):
     Block.__init__(self)
     self.niceness = -5
-    for arg, default in [('freq', 200),
-                         ('cmd_label', 'cmd'),
-                         ('cycle_label', 'cycle'),
-                         ('cmd', 0),  # First value
-                         ('repeat', False),  # Start over when done ?
-                         ('trig_link', None),
-                         ('spam', False),
-                         ('verbose', False),
-                         ('end_delay', 2),  # Delay before stopping everything
-                         ]:
-      setattr(self, arg, kwargs.pop(arg, default))
+    self.freq = freq
+    self.cmd_label = cmd_label
+    self.cycle_label = cycle_label
+    self.cmd = cmd
+    self.repeat = repeat
+    self.trig_link = trig_link
+    self.spam = spam
+    self.verbose = verbose
+    self.end_delay = end_delay
 
-    assert not kwargs, "generator: unknown kwargs: " + str(kwargs)
     if path is None:
       path = []
     self.path = path

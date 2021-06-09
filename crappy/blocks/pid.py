@@ -52,22 +52,33 @@ class PID(Block):
 
   """
 
-  def __init__(self, kp, ki=0, kd=0, **kwargs):
+  def __init__(self,
+               kp,
+               ki=0,
+               kd=0,
+               freq=500,
+               out_max=float('inf'),
+               out_min=-float('inf'),
+               target_label='cmd',
+               input_label='V',
+               time_label='t(s)',
+               labels=None,
+               reverse=False,
+               i_limit=1,
+               send_terms=False):
     Block.__init__(self)
     self.niceness = -10
-    for arg, default in [('freq', 500),
-                    ('out_max', float('inf')),
-                    ('out_min', -float('inf')),
-                    ('target_label', 'cmd'),
-                    ('input_label', 'V'),
-                    ('time_label', 't(s)'),
-                    ('labels', ['t(s)', 'pid']),
-                    ('reverse', False),
-                    ('i_limit', 1),
-                    ('send_terms', False)  # For debug, mostly
-    ]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert not kwargs, "PID got incorrect kwarg(s): " + str(kwargs)
+    self.freq = freq
+    self.out_max = out_max
+    self.out_min = out_min
+    self.target_label = target_label
+    self.input_label = input_label
+    self.time_label = time_label
+    self.labels = ['t(s)', 'pid'] if labels is None else labels
+    self.reverse = reverse
+    self.i_limit = i_limit
+    self.send_terms = send_terms
+
     self.set_k(kp, ki, kd)
     self.i_term = 0
     self.last_val = 0

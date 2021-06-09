@@ -2,7 +2,7 @@
 
 from ..tool.videoextenso import LostSpotError, Video_extenso as Ve
 from ..tool.videoextensoConfig import VE_config
-from .camera import Camera, kw as default_cam_block_kw
+from .camera import Camera
 from .._global import OptionalModule
 
 try:
@@ -39,40 +39,70 @@ class Video_extenso(Camera):
 
   """
 
-  def __init__(self, camera, **kwargs):
-    self.niceness = -5
+  def __init__(self,
+               camera,
+               save_folder=None,
+               verbose=False,
+               labels=None,
+               fps_label=False,
+               img_name="{self.loops:06d}_{t-self.t0:.6f}",
+               ext='tiff',
+               save_period=1,
+               save_backend=None,
+               transform=None,
+               input_label=None,
+               config=False,
+               show_image=False,
+               wait_l0=False,
+               end=True,
+               white_spots=False,
+               update_thresh=False,
+               num_spots="auto",
+               safe_mode=False,
+               border=5,
+               min_area=150,
+               blur=5,
+               **kwargs):
     cam_kw = {}
+    self.niceness = -5
     # Kwargs to be given to the camera BLOCK
     # ie save_folder, config, etc... but NOT the labels
-    for k, v in default_cam_block_kw.items():
-      if k == 'labels':
-        continue
-      cam_kw[k] = kwargs.pop(k, v)
+
+    cam_kw['save_folder'] = save_folder
+    cam_kw['verbose'] = verbose
+    cam_kw['fps_label'] = fps_label
+    cam_kw['img_name'] = img_name
+    cam_kw['ext'] = ext
+    cam_kw['save_period'] = save_period
+    cam_kw['save_backend'] = save_backend
+    cam_kw['transform'] = transform
+    cam_kw['input_label'] = input_label
+    cam_kw['config'] = config
+
     cam_kw['config'] = False  # VE has its own config window
     self.verbose = cam_kw['verbose']  # Also, we keep the verbose flag
-    default_labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
-    for arg, default in [("labels", default_labels),
-                         ("show_image", False),
-                         ("wait_l0", False),
-                         ("end", True),
-                         ]:
-      try:
-        setattr(self, arg, kwargs[arg])
-        del kwargs[arg]
-      except KeyError:
-        setattr(self, arg, default)
-    self.ve_kwargs = {}
-    for arg in ['white_spots', 'update_thresh', 'num_spots',
-                'safe_mode', 'border', 'min_area']:
-      if arg in kwargs:
-        self.ve_kwargs[arg] = kwargs[arg]
-        del kwargs[arg]
+
+    self.labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)'] \
+      if labels is None else labels
+    self.show_image = show_image
+    self.wait_l0 = wait_l0
+    self.end = end
+
+    self.ve_kwargs = dict()
+    self.ve_kwargs['white_spots'] = white_spots
+    self.ve_kwargs['update_thresh'] = update_thresh
+    self.ve_kwargs['num_spots'] = num_spots
+    self.ve_kwargs['safe_mode'] = safe_mode
+    self.ve_kwargs['border'] = border
+    self.ve_kwargs['min_area'] = min_area
+    self.ve_kwargs['blur'] = blur
+
     self.cam_kw = kwargs
     self.cam_kw.update(cam_kw)
     self.cam_kw['labels'] = self.labels
     Camera.__init__(self, camera, **self.cam_kw)
 
-  def prepare(self):
+  def prepare(self, **_):
     Camera.prepare(self, send_img=False)
     self.ve = Ve(**self.ve_kwargs)
     config = VE_config(self.camera, self.ve)

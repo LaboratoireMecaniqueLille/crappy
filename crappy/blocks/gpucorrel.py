@@ -4,7 +4,7 @@ from time import time
 import numpy as np
 
 from ..tool import GPUCorrel as GPUCorrel_tool
-from .camera import Camera, kw as default_cam_block_kw
+from .camera import Camera
 
 
 class GPUCorrel(Camera):
@@ -27,23 +27,50 @@ class GPUCorrel(Camera):
 
   """
 
-  def __init__(self, camera, fields, **kwargs):
+  def __init__(self,
+               camera,
+               fields,
+               save_folder=None,
+               verbose=False,
+               labels=None,
+               fps_label=False,
+               img_name="{self.loops:06d}_{t-self.t0:.6f}",
+               ext='tiff',
+               save_period=1,
+               save_backend=None,
+               transform=None,
+               input_label=None,
+               config=True,
+               cam_kwargs=None,
+               discard_lim=3,
+               discard_ref=5,
+               imgref=None,
+               **kwargs):
     self.ready = False
     cam_kw = {}
     self.fields = fields
     # Kwargs to be given to the camera BLOCK
     # ie save_folder, config, etc... but NOT the labels
-    for k, v in default_cam_block_kw.items():
-      if k == 'labels':
-        continue
-      cam_kw[k] = kwargs.pop(k, v)
+
+    cam_kw['save_folder'] = save_folder
+    cam_kw['verbose'] = verbose
+    cam_kw['fps_label'] = fps_label
+    cam_kw['img_name'] = img_name
+    cam_kw['ext'] = ext
+    cam_kw['save_period'] = save_period
+    cam_kw['save_backend'] = save_backend
+    cam_kw['transform'] = transform
+    cam_kw['input_label'] = input_label
+    cam_kw['config'] = config
+
     self.verbose = cam_kw['verbose']  # Also, we keep the verbose flag
-    cam_kw.update(kwargs.pop('cam_kwargs', {}))
+    if cam_kwargs is not None:
+      cam_kw.update(cam_kwargs)
     Camera.__init__(self, camera, **cam_kw)
     # A function to apply to the image
     self.transform = cam_kw.get("transform")
-    self.discard_lim = kwargs.pop("discard_lim", 3)
-    self.discard_ref = kwargs.pop("discard_ref", 5)
+    self.discard_lim = discard_lim
+    self.discard_ref = discard_ref
     # If the residual of the image exceeds <discard_lim> times the
     # average of the residual of the last <discard_ref> images,
     # do not send the result (requires res=True)
@@ -52,8 +79,8 @@ class GPUCorrel(Camera):
     self.labels = ('t(s)',)
     for i in range(len(self.fields)):
       # If explicitly named with labels=(...)
-      if kwargs.get("labels") is not None:
-        self.labels += (kwargs.get("labels")[i],)
+      if labels is not None:
+        self.labels += (labels[i],)
       # Else if we got a default field as a string,
       # use this string (ex: fields=('x', 'y', 'r', 'exx', 'eyy'))
       elif isinstance(fields[i], str):
@@ -62,18 +89,15 @@ class GPUCorrel(Camera):
       else:
         self.labels += (str(i),)
 
-    # We don't need to pass these arg to the Correl class
-    if kwargs.get("labels") is not None:
-      del kwargs["labels"]
     # Handle res parameters: if true, also return the residual
     self.res = kwargs.get("res", True)
     if self.res:
       self.labels += ("res",)
-    self.imgref = kwargs.pop('imgref', None)
+    self.imgref = imgref
     self.gpu_correl_kwargs = kwargs
     self.gpu_correl_kwargs['fields'] = self.fields
 
-  def prepare(self):
+  def prepare(self, **_):
     Camera.prepare(self, send_img=False)
     t, img = self.camera.read_image()
     if self.transform is not None:

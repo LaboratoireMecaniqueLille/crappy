@@ -50,25 +50,34 @@ class IOBlock(Block):
       values when Crappy is ending (or crashing).
   """
 
-  def __init__(self, name, **kwargs):
+  def __init__(self,
+               name,
+               freq=None,
+               verbose=False,
+               labels=None,
+               cmd_labels=None,
+               trigger=None,
+               streamer=False,
+               initial_cmd=0,
+               exit_values=None,
+               **kwargs):
     Block.__init__(self)
     self.niceness = -10
-    for arg, default in [('freq', None),
-                         ('verbose', False),
-                         ('labels', None),
-                         ('cmd_labels', []),
-                         ('trigger', None),
-                         ('streamer', False),
-                         ('initial_cmd', 0),
-                         ('exit_values', None)
-                         ]:
-      setattr(self, arg, kwargs.pop(arg, default))
+    self.freq = freq
+    self.verbose = verbose
+    self.labels = labels
+    self.cmd_labels = [] if cmd_labels is None else cmd_labels
+    self.trigger = trigger
+    self.streamer = streamer
+    self.initial_cmd = initial_cmd
+    self.exit_values = exit_values
 
     if self.labels is None:
       if self.streamer:
         self.labels = ['t(s)', 'stream']
       else:
-        self.labels = ['t(s)']+[str(c) for c in kwargs.get("channels", ['1'])]
+        self.labels = ['t(s)'] + \
+                      [str(c) for c in kwargs.get("channels", ['1'])]
     self.device_name = name.capitalize()
     self.device_kwargs = kwargs
     self.stream_idle = True

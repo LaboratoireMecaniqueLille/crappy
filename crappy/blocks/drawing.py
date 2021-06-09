@@ -37,12 +37,13 @@ class Text(object):
 
       Note:
         It will be appended to the constant text.
-
   """
 
   def __init__(self, *_, **kwargs):
-    for k in ['coord', 'text', 'label']:
-      setattr(self, k, kwargs[k])
+    self.coord = kwargs['coord']
+    self.text = kwargs['text']
+    self.label = kwargs['label']
+
     self.txt = plt.text(self.coord[0], self.coord[1], self.text)
 
   def update(self, data):
@@ -66,8 +67,10 @@ class Dot_text(object):
   """
 
   def __init__(self, drawing, **kwargs):
-    for k in ['coord', 'text', 'label']:
-      setattr(self, k, kwargs[k])
+    self.coord = kwargs['coord']
+    self.text = kwargs['text']
+    self.label = kwargs['label']
+
     self.txt = plt.text(self.coord[0] + 40, self.coord[1] + 20, self.text,
                         size=16)
     self.dot = plt.Circle(self.coord, 20)
@@ -94,8 +97,8 @@ class Time(object):
   """
 
   def __init__(self, drawing, **kwargs):
-    for k in ['coord']:
-      setattr(self, k, kwargs[k])
+    self.coord = kwargs['coord']
+
     self.txt = plt.text(self.coord[0], self.coord[1], "00:00", size=38)
     self.block = drawing
 
@@ -126,15 +129,21 @@ class Drawing(Block):
         other keys as argument.
 
   """
-  def __init__(self, image, draw=None, crange=[20, 300], title="Drawing",
-               window_size=(7, 5), freq=2, backend="TkAgg"):
+  def __init__(self,
+               image,
+               draw=None,
+               crange=None,
+               title="Drawing",
+               window_size=(7, 5),
+               freq=2,
+               backend="TkAgg"):
     Block.__init__(self)
     if draw is None:
       draw = []
     self.freq = freq
     self.image = image
     self.draw = draw
-    self.crange = crange
+    self.crange = [20, 300] if crange is None else crange
     self.title = title
     self.window_size = window_size
     self.backend = backend

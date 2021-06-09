@@ -11,8 +11,10 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DISVE(Camera):
-  def __init__(self, camera, patches,
-               fields=["x", "y", "exx", "eyy"],
+  def __init__(self,
+               camera,
+               patches,
+               fields=None,
                labels=None,
                alpha=3,
                delta=1,
@@ -31,6 +33,7 @@ class DISVE(Camera):
     self.camera = camera
     self.patches = patches
     self.show_image = show_image
+    self.fields = ["x", "y", "exx", "eyy"] if fields is None else fields
     if labels is None:
       self.labels = ['t(s)'] + sum(
           [[f'p{i}x', f'p{i}y'] for i in range(len(self.patches))], [])
@@ -46,7 +49,7 @@ class DISVE(Camera):
                   "patch_stride": patch_stride,
                   "border": border}
 
-  def prepare(self):
+  def prepare(self, **_):
     Camera.prepare(self, send_img=False)
     if self.show_image:
       try:

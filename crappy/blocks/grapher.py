@@ -65,19 +65,26 @@ class Grapher(Block):
         data.
   """
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self,
+               *labels,
+               length=0,
+               freq=2,
+               maxpt=20000,
+               window_size=(8, 8),
+               window_pos=None,
+               interp=True,
+               backend=None):
     Block.__init__(self)
     self.niceness = 10
-    self.length = kwargs.pop("length", 0)
-    self.freq = kwargs.pop("freq", 2)
-    self.maxpt = kwargs.pop("maxpt", 20000)
-    self.window_size = kwargs.pop("window_size", (8, 8))
-    self.window_pos = kwargs.pop("window_pos", None)
-    self.interp = kwargs.pop("interp", True)
-    self.backend = kwargs.pop("backend", None)
-    if kwargs:
-      raise AttributeError("Invalid kwarg(s) in Grapher: " + str(kwargs))
-    self.labels = args
+    self.length = length
+    self.freq = freq
+    self.maxpt = maxpt
+    self.window_size = window_size
+    self.window_pos = window_pos
+    self.interp = interp
+    self.backend = backend
+
+    self.labels = labels
 
   def prepare(self):
     if self.backend:
@@ -122,7 +129,7 @@ class Grapher(Block):
     # ALL of the data, even with the same label (so not get_all_last)
     data = self.recv_all_delay()
     for i, (lx, ly) in enumerate(self.labels):
-      x = 0  # So that if we don't find it, we do nothing
+      x, y = 0, 0  # So that if we don't find it, we do nothing
       for d in data:
         if lx in d and ly in d:  # Find the first input with both labels
           dx = d[lx][self.factor[i]-self.counter[i]-1::self.factor[i]]
