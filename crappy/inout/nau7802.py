@@ -258,9 +258,9 @@ class Nau7802(InOut):
     # Converting raw data into Volts or Newtons
     if block[0] >> 7:
       value = (-(2 ** 23 - 1) + (value_raw & 0x7FFFFF)) / (
-                2 ** 23 - 1) * 0.5 * 3.3
+                2 ** 23 - 1) * 0.5 * 3.3 / self._gain_hardware
     else:
-      value = value_raw / (2 ** 23 - 1) * 0.5 * 3.3
+      value = value_raw / (2 ** 23 - 1) * 0.5 * 3.3 / self._gain_hardware
     out.append(self._offset + self._gain * value)
     return out
 
@@ -315,7 +315,7 @@ class Nau7802(InOut):
       value |= (1 << bit_number)
     else:
       value &= ~(1 << bit_number)
-    self._bus.write_word_data(self._device_address, register_address, value)
+    self._bus.write_byte_data(self._device_address, register_address, value)
 
   def _get_bit(self,
                bit_number: int,
