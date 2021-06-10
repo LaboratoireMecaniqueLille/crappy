@@ -25,9 +25,9 @@ These modules are not mandatory but will provide additional functionalities :
 	- niFgen (package from National Instrument, Windows only)
 	- openDAQ (for opendaq boards)
 
-.. note::	- *"If you have Python 2 also installed, you should remplace* ``python`` *and* ``pip`` *by* ``python3`` *and* ``pip3`` *in all the following steps."*
-		- *"Replace* ``module-name`` *by the name of the module you want to install."*
-		- *"See* :ref:`Documentation` *for more details."*
+.. note::	- If you have Python 2 also installed, you should remplace ``python`` and ``pip`` by ``python3`` and ``pip3`` in all the following steps.
+		- Replace ``module-name`` by the name of the module you want to install.
+		- See :ref:`Documentation` for more details.
 
 A. For Linux users
 ------------------
@@ -105,7 +105,7 @@ windows on some desktop environnement. It can be fixed easily by using an other
 backend. Simply specify a functionnal backed in the grapher to fix this issue
 i.e.: ::
 
-  graph = crappy.bocks.Grapher(('t(s)','F(N)'),backend='TkAgg')
+  graph = crappy.bocks.Grapher(('t(s)', 'F(N)'), backend='TkAgg')
 
 Or simply edit the default backend in crappy/blocks/grapher.py by replacing
 None with the desired backend.
