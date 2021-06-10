@@ -24,58 +24,11 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Camera(Block):
-  """
-  Read images from a camera object, save and/or send them to another block.
+  """Reads images from a camera object, saves and/or sends them to another
+  block.
 
-  Note:
-    It can be triggered by an other block, internally,
-    or try to run at a given framerate.
-
-  Kwargs:
-    - camera (str, {"Ximea","Jai","Webcam",...}, mandatory): See
-      crappy.camera.MasterCam.classes for a full list.
-    - save_folder (str or None, default: None): directory to save the images.
-
-      Note:
-        It will be created if necessary.
-
-        If None, it will not save the images.
-
-    - verbose (bool, default: False): If True, the block will print the number
-      of loops/s.
-    - labels (list of strings, default: ['t(s)', 'frame']): The labels for
-      respectively time and the frame.
-    - fps_label: If set, self.max_fps will be set to the value received by
-      the block with this label.
-    - img_name (string, default: "{self.loops:06d}_{t-self.t0:.6f}"): Template
-      for the name of the image to save.
-
-      Note:
-        It will be evaluated as a f-string.
-
-    - ext (str, default: "tiff"): Extension of the image.
-
-      Warning!
-        Make sure it is supported by the image saving backend.
-
-    - save_period (int, default: 1): Will save only one in x images.
-    - save_backend (str, default: None): module to use to save the images
-      supported backends: sitk (SimpleITK), cv2 (OpenCV).
-
-      Note:
-        If None will try sitk, else cv2.
-
-    - transform (func or None, default: None): Function to be applied on the
-      image before sending.
-
-      Warning!
-        It will NOT be applied to the saved image.
-
-    - input_label (str or None, default: None): If specified, the image will
-      not be read from a camera object but from this label
-
-    - config (bool, default: True): Show the popup for config ?
-
+  It can be triggered by an other block, internally, or try to run at a given
+  framerate.
   """
 
   def __init__(self,
@@ -92,6 +45,37 @@ class Camera(Block):
                input_label=None,
                config=True,
                **kwargs):
+    """Sets the args and initializes parent class.
+
+    Args:
+      camera (:obj:`str`): The name of the camera to control. See
+        :ref:`Cameras` for an exhaustive list of available ones.
+      save_folder (:obj:`str`, optional): The directory to save images to. If
+        it doesn't exist it will be created. If :obj:`None` the images won't be
+        saved.
+      verbose (:obj:`bool`, optional): If :obj:`True`, the block will print the
+        number of `loops/s`.
+      labels (:obj:`list`, optional): Names of the labels for respectively time
+        and the frame.
+      fps_label (:obj:`str`, optional): If set, ``self.max_fps`` will be set to
+        the value received by the block with this label.
+      img_name (:obj:`str`, optional): Template for the name of the image to
+        save. It is evaluated as an `f-string`.
+      ext (:obj:`str`, optional): Extension of the image. Make sure it is
+        supported by the saving backend.
+      save_period (:obj:`int`, optional): Will save only one in `x` images.
+      save_backend (:obj:`str`, optional): Module to use to save the images.
+        The supported backends are: :mod:`sitk` (SimpleITK), :mod:`cv2`
+        (OpenCV) and :mod:`pil` (Pillow). If :obj:`None`, will try :mod:`sitk`
+        and then :mod:`cv2` if not successful.
+      transform (:obj:`function`, optional): Function to be applied on the
+        image before sending. It will not be applied on the saved images.
+      input_label (:obj:`str`, optional): If specified, the image will not be
+        read from a camera object but from this label.
+      config (:obj:`bool`, optional): Show the popup for config ?
+      **kwargs: Any additional specific argument to pass to the camera.
+    """
+
     Block.__init__(self)
     self.niceness = -10
     self.save_folder = save_folder
@@ -165,10 +149,8 @@ class Camera(Block):
     PIL.Image.fromarray(img).save(fname)
 
   def get_img(self):
-    """
-    Waits the appropriate time/event to read an image, reads it,
-    saves it if asked to, applies the transformation and increases counter.
-    """
+    """Waits the appropriate time/event to read an image, reads it, saves it if
+    asked to, applies the transformation and increases counter."""
 
     if self.input_label:
       data = self.inputs[0].recv()

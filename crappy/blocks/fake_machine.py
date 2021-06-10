@@ -11,10 +11,9 @@ def plastic(v, yield_strain=.005, rate=.02):
 
 
 class Fake_machine(Block):
-  """
-  Block to simulate the behavior of a tensile testing machine
+  """Block to simulate the behavior of a tensile testing machine.
 
-  By default, it is supposed to represent a material with a plastic behavior
+  By default, it is supposed to represent a material with a plastic behavior.
   """
 
   def __init__(self,

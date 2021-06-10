@@ -8,74 +8,10 @@ from .._global import CrappyStop
 
 
 class Generator(Block):
-  """
-  This block is used to generate a signal.
+  """This block is used to generate a signal.
 
-  Note:
-    It can be used to drive a machine.
-
-    This block can take inputs, and each path can use these inputs to
-    take decisions.
-
-  Args:
-    - path (list of dict): It must be a list of dict, each dict providing
-      the parameters to generate the path.
-
-      Warning:
-
-        Each dict MUST have a key 'type'.
-
-      Note:
-        The Generator will then instantiate generator_path.**type** with all
-        the other keys as kwargs, adding the current cmd and the time.
-
-        On each round, it will call get_cmd method of this class, passing data
-        until it raise StopIteration. It will then skip to the next path.
-
-        When all paths are over, it will stop Crappy by raising CrappyStop
-        unless repeat is set to True. If so, it will start over indefinitely.
-
-  Kwargs:
-    - freq (default: 200): The frequency of the block.
-
-      Note:
-        If set and positive, the generator will try to send the command at this
-        frequency (Hz).
-        Else, it will go as fast as possible.
-        It relies on the Block freq control scheme (see block.py).
-
-        Else, it will go as fast as possible.
-
-        It relies on the Block freq control scheme
-        (see :ref:`block`).
-
-    - cmd_label (default: 'cmd'): The label of the command to send in the links
-    - cmd (default: 0): The first value of the command.
-
-      Note:
-        Some paths may rely on the previous value to guarantee signal
-        continuity.
-
-        This argument sets the initial value for the first signal.
-
-    - repeat (default: False): Loop over the paths or stop when done ?
-
-      Note:
-        If False, the block will raise a CrappyStop exception to end the
-        program when all the paths have been executed.
-
-        If True, the Generator will start over and over again.
-
-    - trig_link (default: None): If given, the block will wait until data
-      is received through the input link with this index. If None, it will try
-      loop at freq.
-
-      Note:
-        It is not necessary but can be really useful for optimization.
-
-    - spam (default: False): If True, the value will be sent on each loop.
-      Else, it will only send it if it was updated or we reached a new step.
-
+  It can be used to drive a machine. This block can take inputs, and each path
+  can use these inputs to take decisions.
   """
 
   def __init__(self,
@@ -89,6 +25,47 @@ class Generator(Block):
                spam=False,
                verbose=False,
                end_delay=2):
+    """Sets the args and initializes parent class.
+
+    Args:
+      path (:obj:`list`, optional): It must be a :obj:`list` of :obj:`dict`,
+        each dict providing the parameters to generate the path. Each dict MUST
+        have a key ``type``.
+
+        Note:
+          The Generator will then instantiate a :ref:`generator path` with all
+          the other keys as `kwargs`, adding the current ``cmd`` and the time.
+
+          On each round, it will call :meth:`Path.get_cmd` method, passing data
+          until it raise :exc:`StopIteration`. It will then skip to the next
+          path.
+
+          When all paths are over, it will stop Crappy by raising
+          :exc:`CrappyStop` unless ``repeat`` is set to :obj:`True`. If so, it
+          will start over indefinitely.
+
+      freq (:obj:`float`, optional): The frequency of the block. If set and
+        positive, the generator will try to send the command at this frequency
+        (in `Hz`). Else, it will go as fast as possible. It relies on the
+        :ref:`Block` `freq` control scheme.
+      cmd_label (:obj:`str`, optional): The label of the command to send in the
+        links
+      cycle_label (:obj:`str`, optional):
+      cmd (:obj:`float`, optional): The first value of the command.
+      repeat (:obj:`bool`, optional): Loop over the paths or stop when done ?
+      trig_link (:obj:`str`, optional): If given, the block will wait until
+        data is received through the input link with this label. If
+        :obj:`None`, it will try loop at ``freq``.
+      spam (:obj:`bool`, optional): If :obj:`True`, the value will be sent on
+        each loop. Else, it will only send it if it was updated or we reached a
+        new step.
+      verbose (:obj:`bool`, optional): if :obj:`True`, displays a message when
+        switching to the next path.
+      end_delay (:obj:`float`, optional): The delay to wait for before raising
+        the :exc:`CrappyStop` exception at the end of the path. This is meant
+        to let enough time to the other blocks to properly terminate.
+    """
+
     Block.__init__(self)
     self.niceness = -5
     self.freq = freq

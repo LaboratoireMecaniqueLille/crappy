@@ -5,49 +5,9 @@ from ..inout import inout_list, in_list, out_list
 
 
 class IOBlock(Block):
-  """
-  This block is used to communicate with inout objects.
+  """This block is used to communicate with :ref:`In / Out` objects.
 
-  Note:
-    Then can be used as sensor, actuators or both.
-
-  It only takes a single argument:
-    - name (str): The name of the inout class to instantiate.
-
-  It can take all the settings as kwargs:
-    - freq (float or None, default: None): The looping frequency
-      (see :ref:`block`).
-
-      Note:
-        Set to None to go as fast as possible.
-
-    - verbose (bool): Will print extra information.
-    - labels (list, default: ['t(s)','1']): The list of the output labels
-      (see :ref:`block`).
-
-      Note:
-        The first label is the time.
-
-    - cmd_label (list): The list of the labels carrying values for the
-      output.
-
-      Note:
-        The block will call ioobject.set_cmd(...) with these values
-        unless it is empty (default).
-
-    - trigger (int or None, default: None): If the block is trigged by another
-      block, this must specify the index of the input considered as a trigger.
-
-      Note:
-        If set to None, it will run at freq if possible.
-
-        The data going through the trig link is discarded. Add another
-        link if necessary.
-
-    - streamer (bool, default: False): If False, will call get_data else, will
-      call get_stream.
-    - exit_values (list): If not None, the outputs will be set to these
-      values when Crappy is ending (or crashing).
+  They can be used as sensor, actuators or both.
   """
 
   def __init__(self,
@@ -61,6 +21,32 @@ class IOBlock(Block):
                initial_cmd=0,
                exit_values=None,
                **kwargs):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      name (:obj:`str`): The name of the :ref:`In / Out` class to instantiate.
+      freq (:obj:`float`, optional): The looping frequency of the block, if
+        :obj:`None` will go as fast as possible.
+      verbose (:obj:`bool`, optional): Prints extra information if :obj:`True`.
+      labels (:obj:`list`, optional): A :obj:`list` of the output labels.
+      cmd_labels (:obj:`list`, optional): The :obj:`list` of the labels
+        considered as inputs for this block. Will call :meth:`set_cmd`  in the
+        :ref:`In / Out` object with the values received on this labels.
+      trigger (:obj:`int`, optional): If the block is triggered by another
+        block, this must specify the index of the input considered as a
+        trigger. The data going through this link is discarded, add another
+        link if the block should also consider it as an input.
+      streamer (:obj:`bool`, optional): If :obj:`False`, will call
+        :meth:`get_data` else, will call :meth:`get_stream` in the
+        :ref:`In / Out` object (only if it has these methods, of course).
+      initial_cmd (:obj:`list`, optional): The initial values for the outputs,
+        sent during :meth:`prepare`. If it is a single value, then it will send
+        this same value for all the output labels.
+      exit_values (:obj:`list`, optional): If not :obj:`None`, the outputs will
+        be set to these values when Crappy is ending (or crashing).
+      **kwargs: The arguments to be passed to the :ref:`In / Out` class.
+    """
+
     Block.__init__(self)
     self.niceness = -10
     self.freq = freq

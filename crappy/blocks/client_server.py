@@ -17,7 +17,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Client_server(Block):
-  """Block for exchanging data on a local network using the MQTT protocol
+  """Block for exchanging data on a local network using the MQTT protocol.
 
   This block can send data to an MQTT broker, receive data from this broker by
   subscribing to its topics, and also launch the Mosquitto broker.
@@ -32,55 +32,55 @@ class Client_server(Block):
                cmd_labels: List[Union[str, Tuple[str, str]]] = None,
                labels_to_send:
                List[Union[str, Tuple[str, str]]] = None) -> None:
-    """Checks arguments validity and sets the instance attributes
+    """Checks arguments validity and sets the instance attributes.
 
     Args:
-      broker (:obj:`bool`, optional): If True, starts the Mosquitto broker
-         during the prepare loop and stops it during the finish loop. If
-         Mosquitto is not installed a :obj:`FileNotFoundError` is raised.
+      broker (:obj:`bool`, optional): If :obj:`True`, starts the Mosquitto 
+        broker during the prepare loop and stops it during the finish loop. If
+        Mosquitto is not installed a :exc:`FileNotFoundError` is raised.
       address (optional): The network address on which the MQTT broker is
         running.
       port (:obj:`int`, optional): A network port on which the MQTT broker is
         listening.
-      init_output (:obj:`dict`, optional): A dictionary containing for each
+      init_output (:obj:`dict`, optional): A :obj:`dict` containing for each
         label in ``topics`` the first value to be sent in the output link. Must
-        be given if ``topics`` is not None.
-      topics (:obj:`list`, optional): A list of strings and/or tuples of
-        strings. Each string corresponds to the name of a crappy label to be
-        received from the broker. Each element of the list is considered to be
-        the name of an MQTT topic, to which the client subscribes. After a
-        message has been received on that topic, the block returns for each
-        label in the topic (i.e. each string in the tuple) the corresponding
-        data from the message.
-      cmd_labels (:obj:`list`, optional): A list of strings and/or tuples of
-        strings. Each string corresponds to the name of a crappy label to send
-        to the broker. Each element of the list is considered to be the name of
-        an MQTT topic, in which the client publishes. Grouping labels in a same
-        topic (i.e. strings in a same tuple) allows to keep the synchronization
-        between signals coming from a same block, as they will be published
-        together in a same message. This is mostly useful for sending a signal
-        along with its timeframe.
-      labels_to_send (:obj:`list`, optional): A list of strings and/or tuples
-        of strings. Allows to rename the labels before publishing data. The
-        structure of ``labels_to_send`` should be the exact same as
-        ``cmd_labels``, with each label in ``labels_to_send`` replacing the
-        corresponding one in ``cmd_labels``. This is especially useful for
-        transferring several signals along with their timestamps, as the label
-        ``'t(s)'`` should not appear more than once in the topics list of the
-        receiving block.
+        be given if ``topics`` is not :obj:`None`.
+      topics (:obj:`list`, optional): A :obj:`list` of :obj:`str` and/or 
+        :obj:`tuple` of :obj:`str`. Each string corresponds to the name of a 
+        crappy label to be received from the broker. Each element of the list 
+        is considered to be the name of an MQTT topic, to which the client 
+        subscribes. After a message has been received on that topic, the block 
+        returns for each label in the topic (i.e. each string in the tuple) the 
+        corresponding data from the message.
+      cmd_labels (:obj:`list`, optional): A :obj:`list` of :obj:`str` and/or 
+        :obj:`tuple` of :obj:`str`. Each string corresponds to the name of a 
+        crappy label to send to the broker. Each element of the list is 
+        considered to be the name of an MQTT topic, in which the client 
+        publishes. Grouping labels in a same topic (i.e. strings in a same 
+        tuple) allows to keep the synchronization between signals coming from a 
+        same block, as they will be published together in a same message. This 
+        is mostly useful for sending a signal along with its timeframe.
+      labels_to_send (:obj:`list`, optional): A :obj:`list` of :obj:`str` 
+        and/or :obj:`tuple` of :obj:`str`. Allows to rename the labels before 
+        publishing data. The structure of ``labels_to_send`` should be the 
+        exact same as ``cmd_labels``, with each label in ``labels_to_send`` 
+        replacing the corresponding one in ``cmd_labels``. This is especially 
+        useful for transferring several signals along with their timestamps, as 
+        the label ``'t(s)'`` should not appear more than once in the topics 
+        list of the receiving block.
 
     Note:
       - ``broker``:
         In order for the block to run, an MQTT broker must be running at the
         specified address on the specified port. If not, an
-        :obj:`ConnectionRefusedError` is raised. The broker can be started and
+        :exc:`ConnectionRefusedError` is raised. The broker can be started and
         stopped manually by the user independently of the execution of crappy.
         It also doesn't need to be Mosquitto, any other MQTT broker can be
         used.
 
       - ``topics``:
-        The presence of the same label in multiple topics will most likely
-        lead to a data loss.
+        The presence of the same label in multiple topics will most likely lead 
+        to a data loss.
 
       - ``cmd_labels``:
         It is not possible to group signals coming from different blocks in a
@@ -199,7 +199,7 @@ class Client_server(Block):
       self.last_out_val = init_output
 
   def prepare(self) -> None:
-    """Reorganizes the labels lists, starts the broker and connects to it"""
+    """Reorganizes the labels lists, starts the broker and connects to it."""
 
     # Preparing for receiving data
     if self.topics is not None:
@@ -263,7 +263,7 @@ class Client_server(Block):
     self.client.loop_start()
 
   def loop(self) -> None:
-    """Receives data from the broker and/or sends data to the broker
+    """Receives data from the broker and/or sends data to the broker.
 
     The received data is then sent to the crappy blocks connected to this one.
     """
@@ -320,7 +320,7 @@ class Client_server(Block):
             break
 
   def finish(self) -> None:
-    """Disconnects from the broker and stops it"""
+    """Disconnects from the broker and stops it."""
 
     # Disconnecting from the broker
     self.client.loop_stop()
@@ -339,7 +339,7 @@ class Client_server(Block):
         self.proc.kill()
 
   def _launch_mosquitto(self) -> None:
-    """Starts Mosquitto in a subprocess"""
+    """Starts Mosquitto in a subprocess."""
 
     try:
       self.proc = subprocess.Popen(['mosquitto', '-p', str(self.port)],
@@ -350,7 +350,7 @@ class Client_server(Block):
       raise
 
   def _output_reader(self) -> None:
-    """Reads the output strings from Mosquitto's subprocess"""
+    """Reads the output strings from Mosquitto's subprocess."""
 
     while not self.stop_mosquitto:
       for line in iter(self.proc.stdout.readline, b''):
@@ -360,7 +360,7 @@ class Client_server(Block):
       time.sleep(0.1)
 
   def _on_message(self, client, userdata, message) -> None:
-    """Buffers the received data
+    """Buffers the received data.
 
     The received message consists in a list of lists of values. Data is placed
     in the right buffer according to the topic, in the form of lists of values.
@@ -371,7 +371,7 @@ class Client_server(Block):
         list(data_points))
 
   def _on_connect(self, client, userdata, flags, rc: Any):
-    """Automatically subscribes to the topics when connecting to the broker"""
+    """Automatically subscribes to the topics when connecting to the broker."""
 
     print("Connected with result code " + str(rc))
 

@@ -1,5 +1,7 @@
 # coding: utf-8
 
+"""More documentation coming soon !"""
+
 import numpy as np
 
 from ..tool import DISCorrel as Dis

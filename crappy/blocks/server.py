@@ -6,19 +6,14 @@ from .block import Block
 
 
 class Server(Block):
-  """
-  This block will only start after nclients are connected.
+  """This block will only start after ``nclients`` are connected.
 
-  Note:
-    The header is a byte sequence to identify the start of a payload.
+  The header is a byte sequence to identify the start of a payload. One byte is
+  appended to the header: the length of the next field, that will hold `n`, the
+  length of the incoming sequence (usually 2 bytes is enough).
 
-    One byte is appended to the header: the length of the next field,
-    that will hold n, the length of the incoming sequence
-    (usually 2 bytes is enough).
-
-    The length of the message is coded in the next n bytes and then the message
-    is appended.
-
+  The length of the message is coded in the next `n` bytes and then the message
+  is appended.
   """
 
   def __init__(self, port=1148, nclient=1, header=b'crappy_h\x01\x02\x03',

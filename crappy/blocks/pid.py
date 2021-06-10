@@ -6,50 +6,10 @@ from .block import Block
 
 
 class PID(Block):
-  """
-  A PID corrector.
+  """A PID corrector.
 
-  Note:
-    A PID will continuously adjust the output based on the target
-    and the actual value, to try to actually reach the target.
-
-  Args:
-    - kp (float): P gain.
-    - ki (float, default: 0): I gain.
-    - kd (float, default: 0): D gain.
-
-  Kwargs:
-    - out_max (float or None, default: None): If not None, it will always keep
-      the output below this value.
-    - out_min (float or None, default: None): If not None, it will always keep
-      the output above this value.
-    - target_label (str, default: "cmd"): The label of the setpoint.
-    - input_label (str, default: "V"): The reading of the actual value to be
-      compared with the setpoint.
-    - time_label (str, default: "t(s)"): The label of the time.
-    - labels (list, default: ['t(s)', 'pid']): The labels of the output of the
-      block.
-
-      Note:
-        It must have TWO strings: the time and the command.
-
-    - reverse (bool, default: False): To reverse the retro action.
-    - i_limit (float / tuple, default: 1): To avoid over integration.
-
-      Note:
-        If it is a tuple, it is the boundaries for the I term.
-
-        If it is a float, the boundaries will be i_limit * out_min,
-        i_limit * out_max (typically between 0 and 1)
-
-    - send_terms (bool, default: False): To get the weight of each term in the
-      output value.
-
-      Note:
-        It will add ['p_term', 'i_term', 'd_term'] to the labels.
-
-        This is particularly useful to tweak the gains.
-
+  A PID will continuously adjust its output based on the target value and the
+  actual measured value, to try to actually reach the target.
   """
 
   def __init__(self,
@@ -66,6 +26,36 @@ class PID(Block):
                reverse=False,
                i_limit=1,
                send_terms=False):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      kp (:obj:`float`): `P` gain.
+      ki (:obj:`float`): `I` gain.
+      kd (:obj:`float`): `D` gain.
+      freq (:obj:`float`, optional): The block will loop at this frequency.
+      out_max (:obj:`float`, optional): A value the output can never be
+        superior to.
+      out_min (:obj:`float`, optional): A value the output can never be
+        inferior to.
+      target_label (:obj:`str`, optional): The label of the setpoint.
+      input_label (:obj:`str`, optional): The reading of the actual value to be
+        compared with the setpoint.
+      time_label (:obj:`str`, optional): The label of the time.
+      labels (:obj:`list`, optional): The labels of the output of the block. It
+        must contain two :obj:`str` : the time label and the actual output.
+      reverse (:obj:`bool`, optional): To reverse the retro-action.
+      i_limit (:obj:`tuple`, optional): To avoid over-integration. If given as
+        a :obj:`tuple` of two values, they will be the boundaries for the `I`
+        term. If given as a single :obj:`float` the boundaries will be:
+        ::
+
+          i_limit * out_min, i_limit * out_max
+
+      send_terms (:obj:`bool`, optional): To get the weight of each term in the
+        output value. It will add ``['p_term', 'i_term', 'd_term']`` to the
+        labels. This is particularly useful to tweak the gains.
+    """
+
     Block.__init__(self)
     self.niceness = -10
     self.freq = freq

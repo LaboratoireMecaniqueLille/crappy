@@ -15,24 +15,17 @@ from .camera import Camera
 
 
 class GPUVE(Camera):
-  """
-  An optical Videoextensometry measuring the displacement of small
-  areas using GPU accelerated DIC.
+  """An optical Videoextensometry measuring the displacement of small areas
+  using GPU accelerated DIC.
 
-  Warning!
-    Patches must be a list of tuples of length 4.
+  This block simply returns the displacement of each region along `x` and `y`
+  in pixel. It will not return the strain as it does not know how the patches
+  are arranged. It should be done by another block or a condition if necessary.
 
-    Each tuple contains the origin and the size of
-    each patch along Y and X respectively (ie Oy,Ox,Ly,Lx).
-
-  Note:
-    This block simply returns the displacement of each region along x and y
-    in pixel.
-
-    This block will not return the strain as it does not know
-    how the patches are arranged.
-
-    It should be done by another block or a condition if necessary.
+  Important:
+    ``patches`` must be a :obj:`list` of :obj:`tuple` of length `4`. Each tuple
+    contains the origin and the size of each patch along `Y` and `X`
+    respectively (i.e. `Oy, Ox, Ly, Lx`).
   """
 
   def __init__(self,

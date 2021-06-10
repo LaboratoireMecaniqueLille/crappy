@@ -1,5 +1,7 @@
 # coding: utf-8
 
+"""More documentation coming soon !"""
+
 from ..tool import DISVE as VE
 from .camera import Camera
 from .._global import OptionalModule

@@ -1,21 +1,22 @@
 # coding: utf-8
 
-
 from .block import Block
 
 
 class Reader(Block):
-  """
-  Read and print the input Link.
+  """Reads and prints the input :ref:`Link`.
 
-  Create a reader that prints the input data continuously.
-
-  Args:
-    - name (str): if set, will be printed to identify the reader.
-
+  Creates a reader that prints the input data continuously.
   """
 
   def __init__(self, name=None):
+    """Sets the arg and initializes the parent class.
+
+    Args:
+      name (:obj:`str`, optional): If set, will be printed to identify the
+        reader.
+    """
+
     Block.__init__(self)
     self.name = name
 
@@ -25,6 +26,6 @@ class Reader(Block):
       if d is not None:
         s = ""
         if self.name:
-          s += self.name+" "
-        s += "got: "+str(d)
+          s += self.name + " "
+        s += "got: " + str(d)
         print(s)

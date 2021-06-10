@@ -14,56 +14,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Grapher(Block):
-  """
-  The grapher receive data from a block (via a Link) and plots it.
-
-  Args:
-    - args (tuple): Tuples of the columns labels of input data for plotting.
-
-      Note:
-        You can add as much as you want, depending on your performances.
-
-    - length=x (int, default: 10, optional): Number of chunks to data to be
-      kept on the graph.
-
-      Note:
-        length=0 will create a static graph: add new values at every refresh.
-
-        If there is too many data (> 20000), delete one out of 2
-        to avoid memory overflow.
-
-    - window_size (tuple: (width, height), in INCHES, optional):
-      *Self explanatory ?*
-    - freq: Defines the refresh rate of the grapher.
-    - window_pos (tuple: (x_position, y_position), in PIXELS, optional):
-      Defines where on the screen the window grapher pops.
-
-      Note:
-        Works with multiple screens.
-
-        The origin is the top left corner.
-
-        For instance, to have a graph that pops on the top right corner:
-        window_pos=(1920, 0).
-
-    - interp (bool, default: True, optional): If True, the points of data will
-      be linked by straight lines. Else, each value wil be displayed as
-      constant until the next update.
-
-      In simple words:
-        It will be linked like so _| if False, and like so / if True.
-
-  Examples:
-    graph = Grapher(('t(s)', 'F(N)'), ('t(s)', 'def(%)')):
-        It will plot a dynamic graph with two lines plot(F=f(t) and def=f(t)).
-
-    graph = Grapher(('def(%)', 'F(N)'), length=0):
-        It will plot a static graph.
-
-    graph = Grapher(('t(s)', 'F(N)'), length=30):
-        It will plot a dynamic graph that will display the last 30 chunks of
-        data.
-  """
+  """The grapher receive data from a block (via a :ref:`Link`) and plots it."""
 
   def __init__(self,
                *labels,
@@ -74,6 +25,49 @@ class Grapher(Block):
                window_pos=None,
                interp=True,
                backend=None):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      *labels (:obj:`tuple`): Tuples of the columns labels of input data for
+        plotting. You can add as much as you want, depending on your
+        performances. The first value is the `x` label, the second is the `y`
+        label.
+      length (:obj:`int`, optional): If `0` the graph is static and displays
+        all data from the start of the assay. Else only displays the last
+        ``length`` received chunks, and drops the previous ones.
+      freq (:obj:`float`, optional): The refresh rate of the graph. May cause
+        high memory consumption if set too high.
+      maxpt (:obj:`int`, optional): The maximum number of points displayed on
+        the graph. When reaching this limit, the block deletes one point out of
+        two but this is almost invisible to the user.
+      window_size (:obj:`tuple`, optional): The size of the graph, in inches.
+      window_pos (:obj:`tuple`, optional): The position of the graph in pixels.
+        The first value is for the `x` direction, the second for the `y`
+        direction. The origin is the top left corner. Works with multiple
+        screens.
+      interp (:obj:`bool`, optional): If :obj:`True`, the points of data will
+        be linked to the following by straight lines. Else, each value wil be
+        displayed as constant until the next update.
+      backend (:obj:`int`, optional): The :mod:`matplotlib` backend to use.
+
+    Example:
+      ::
+
+        graph = Grapher(('t(s)', 'F(N)'), ('t(s)', 'def(%)'))
+
+      will plot a dynamic graph with two lines plot (`F=f(t)` and `def=f(t)`).
+      ::
+
+        graph = Grapher(('def(%)', 'F(N)'), length=0)
+
+      will plot a static graph.
+      ::
+
+        graph = Grapher(('t(s)', 'F(N)'), length=30)
+
+      will plot a dynamic graph displaying the last 30 chunks of data.
+    """
+
     Block.__init__(self)
     self.niceness = 10
     self.length = length
