@@ -196,9 +196,7 @@ class Nau7802(InOut):
         raise TimeoutError
 
     # Setting the Low Drop Out voltage to 3.3V and setting the gain
-    value = 0x00
-    value |= NAU7802_LDO_Values[3.3] << 3
-    value |= NAU7802_Gain_Values[self._gain_hardware]
+    value = NAU7802_Gain_Values[self._gain_hardware]
     self._bus.write_byte_data(self._device_address,
                              NAU7802_Scale_Registers['CTRL1'], value)
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_AVDDS'],
