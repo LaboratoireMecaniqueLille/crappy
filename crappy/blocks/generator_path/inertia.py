@@ -18,12 +18,12 @@ class Inertia(Path):
 
   """
 
-  def __init__(self, time_, cmd, condition, inertia,
+  def __init__(self, time, cmd, condition, inertia,
                flabel, const=30/np.pi, tlabel='t(s)', value=None):
     """Sets the args and initializes parent class.
 
     Args:
-      time_:
+      time:
       cmd:
       condition (:obj:`str`): Condition to meet to end this path. See
         :ref:`generator path` for more info.
@@ -46,7 +46,7 @@ class Inertia(Path):
       value:
     """
 
-    Path.__init__(self, time_, cmd)
+    Path.__init__(self, time, cmd)
     self.condition = self.parse_condition(condition)
     self.inertia = inertia
     self.flabel = flabel

@@ -6,8 +6,8 @@ from time import time
 class Path(object):
   """Parent class for all paths."""
 
-  def __init__(self, time_, cmd):
-    self.t0 = time_
+  def __init__(self, time, cmd):
+    self.t0 = time
     self.cmd = cmd
 
   def get_cmd(self, data):

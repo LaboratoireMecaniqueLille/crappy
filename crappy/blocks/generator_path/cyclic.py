@@ -16,12 +16,12 @@ class Cyclic(Path):
     the first condition).
   """
 
-  def __init__(self, time_, cmd, condition1, condition2, value1, value2,
+  def __init__(self, time, cmd, condition1, condition2, value1, value2,
                cycles=1, verbose=False):
     """Sets the args and initializes parent class.
 
     Args:
-      time_:
+      time:
       cmd:
       condition1 (:obj:`str`): Representing the condition to switch to
         ``value2``. See :ref:`generator path` for more info.
@@ -49,7 +49,7 @@ class Cyclic(Path):
         {'type': 'constant', 'value': 0, 'condition': 'AIN1<1'}] * 5
     """
 
-    Path.__init__(self, time_, cmd)
+    Path.__init__(self, time, cmd)
     self.value = (value1, value2)
     self.condition1 = self.parse_condition(condition1)
     self.condition2 = self.parse_condition(condition2)

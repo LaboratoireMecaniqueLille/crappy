@@ -9,11 +9,11 @@ from .path import Path
 class Custom(Path):
   """To generate a custom path from a file."""
 
-  def __init__(self, time_, cmd, filename, delimiter='\t'):
+  def __init__(self, time, cmd, filename, delimiter='\t'):
     """Loads the file and sets the args.
 
     Args:
-      time_:
+      time:
       cmd:
       filename: Name of the `.csv` file.
 
@@ -23,7 +23,7 @@ class Custom(Path):
       delimiter:
     """
 
-    Path.__init__(self, time_, cmd)
+    Path.__init__(self, time, cmd)
     with open(filename, 'r') as f:
       self.array = np.loadtxt(f, delimiter=delimiter)
     assert len(self.array.shape) == 2 and 2 in self.array.shape,\
