@@ -93,8 +93,8 @@ class PID(Block):
     assert hasattr(self, "feedback_link_id"), \
       "[PID] Error: no link containing input label {} " \
       "and time label {}".format(self.input_label, self.time_label)
-    assert set(range(len(self.inputs))) == {(self.target_link_id,
-                                             self.feedback_link_id)}, \
+    assert set(range(len(self.inputs))) == {self.target_link_id,
+                                            self.feedback_link_id}, \
       "[PID] Error: useless link(s)! Make sure PID block does not " \
       "have extra inputs"
     self.last_target = data[self.target_link_id][self.target_label]
