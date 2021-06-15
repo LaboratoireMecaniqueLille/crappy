@@ -23,8 +23,15 @@ from .waveshare_ad_da import Waveshare_ad_da
 # Win specific
 from .daqmx import Daqmx
 
-inout_list = MetaIO.IOclasses
-in_list = MetaIO.Iclasses
-in_list.update(inout_list)
-out_list = MetaIO.Oclasses
-out_list.update(inout_list)
+# All the inout objects (either in, out or in and out)
+inout_dict = MetaIO.classes
+
+# Only the in AND out classes
+inandout_dict = MetaIO.IOclasses
+# Only the in classes
+in_dict = MetaIO.Iclasses
+# Updating it to have all the classes that can take an input
+in_dict.update(inandout_dict)
+# And same for the out classes
+out_dict = MetaIO.Oclasses
+out_dict.update(inandout_dict)

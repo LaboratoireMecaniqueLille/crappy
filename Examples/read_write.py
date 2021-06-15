@@ -13,9 +13,9 @@ Required hardware:
 import crappy
 
 if __name__ == "__main__":
-  for i, c in enumerate(crappy.inout.inout_list):
+  for i, c in enumerate(crappy.inout.inout_dict):
     print(i, c)
-  name = list(crappy.inout.inout_list.keys())[int(input(
+  name = list(crappy.inout.inout_dict.keys())[int(input(
       "What board do you want to use ?> "))]
 
   sg = crappy.blocks.Generator([{'type': 'sine', 'freq': .5, 'amplitude': 1,

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from .block import Block
-from ..inout import inout_list, in_list, out_list
+from ..inout import inandout_dict, in_dict, out_dict, inout_dict
 
 
 class IOBlock(Block):
@@ -74,6 +74,7 @@ class IOBlock(Block):
     if self.exit_values is not None:
       assert len(self.exit_values) == len(self.cmd_labels),\
           'Invalid number of exit values!'
+    self.device = inout_dict[self.device_name](**self.device_kwargs)
 
   def prepare(self):
     self.to_get = list(range(len(self.inputs)))
@@ -83,14 +84,15 @@ class IOBlock(Block):
     self.mode += 'w' if self.to_get else ''
     assert self.mode != '', "ERROR: IOBlock is neither an input nor an output!"
     if 'w' in self.mode:
-      assert self.cmd_labels, "ERROR: IOBlock has an input block but no" \
+      assert self.cmd_labels, "ERROR: IOBlock has an input block but no " \
                               "cmd_labels specified!"
-    if self.mode == 'rw':
-      self.device = inout_list[self.device_name](**self.device_kwargs)
-    elif self.mode == 'r':
-      self.device = in_list[self.device_name](**self.device_kwargs)
-    elif self.mode == 'w':
-      self.device = out_list[self.device_name](**self.device_kwargs)
+    if self.mode == 'rw' and self.device_name not in inandout_dict:
+      raise IOError("The IOBlock has inputs and outputs but the Inout class "
+                    "is not rw")
+    elif self.mode == 'r' and self.device_name not in in_dict:
+      raise IOError("The IOBlock has inputs but the Inout class is write-only")
+    elif self.mode == 'w' and self.device_name not in out_dict:
+      raise IOError("The IOBlock has outputs but the Inout class is read-only")
     self.device.open()
     if 'w' in self.mode:
       self.device.set_cmd(*self.initial_cmd)
