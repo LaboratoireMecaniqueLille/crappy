@@ -2,14 +2,15 @@
 
 import time
 
-from serial.serialutil import SerialException
 from .inout import InOut
 from .._global import OptionalModule
 
 try:
   import serial
+  from serial.serialutil import SerialException
 except (ModuleNotFoundError, ImportError):
-  serial = OptionalModule("serial")
+  serial = OptionalModule("serial", "Please install the module serial to use "
+      "the Gsm InOut: pip install pyserial")
 
 
 class Gsm(InOut):
