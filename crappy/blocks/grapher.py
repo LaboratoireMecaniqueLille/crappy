@@ -24,7 +24,7 @@ class Grapher(Block):
                window_size=(8, 8),
                window_pos=None,
                interp=True,
-               backend=None):
+               backend="TkAgg"):
     """Sets the args and initializes the parent class.
 
     Args:

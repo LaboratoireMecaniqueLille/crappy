@@ -76,7 +76,7 @@ class GPUVE(Camera):
     # use this string (ex: fields=('x', 'y', 'r', 'exx', 'eyy'))
     else:
       self.labels = ['t(s)'] + sum([
-        [f'p{i}x', f'p{i}y'] for i in range(len(patches))], [])
+          [f'p{i}x', f'p{i}y'] for i in range(len(patches))], [])
     # Handle res parameters: if true, also return the residual
     self.res = kwargs.get("res", True)
     if self.res:
@@ -87,7 +87,7 @@ class GPUVE(Camera):
     self.save_period = 1
     self.kwargs = kwargs
 
-  def prepare(self, **_):
+  def prepare(self):
     cuda_init()
     self.context = make_default_context()
     Camera.prepare(self, send_img=False)
@@ -105,7 +105,7 @@ class GPUVE(Camera):
     t, img = self.camera.read_image()
     for c, (oy, ox, h, w) in zip(self.correl, self.patches):
       c.set_orig(
-          self.transform(img[oy:oy+h, ox:ox+w]).astype(np.float32))
+          self.transform(img[oy:oy + h, ox:ox + w]).astype(np.float32))
       c.prepare()
     self.last_t = time() - 1
     if self.save_folder:
@@ -123,7 +123,7 @@ class GPUVE(Camera):
     #      self.transform(img).astype(np.float32)).tolist()
     for c, (oy, ox, h, w) in zip(self.correl, self.patches):
       out.extend(c.get_disp(self.transform(
-        img[oy:oy+h, ox:ox+w]).astype(np.float32)).tolist())
+          img[oy:oy + h, ox:ox + w]).astype(np.float32)).tolist())
       # out.extend([np.sum(self.transform(
       #   img[oy:oy+h, ox:ox+w]).astype(np.float32)),0])
     if self.res:

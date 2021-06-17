@@ -145,7 +145,7 @@ class Video_extenso(Camera):
     self.cam_kw['labels'] = self.labels
     Camera.__init__(self, camera, **self.cam_kw)
 
-  def prepare(self, **_):
+  def prepare(self):
     Camera.prepare(self, send_img=False)
     self.ve = Ve(**self.ve_kwargs)
     config = VE_config(self.camera, self.ve)
@@ -181,16 +181,16 @@ class Video_extenso(Camera):
     if self.show_image:
       boxes = [r['bbox'] for r in self.ve.spot_list]
       for miny, minx, maxy, maxx in boxes:
-        img[miny:miny+1, minx:maxx] = 255
-        img[maxy:maxy+1, minx:maxx] = 255
-        img[miny:maxy, minx:minx+1] = 255
-        img[miny:maxy, maxx:maxx+1] = 255
+        img[miny:miny + 1, minx:maxx] = 255
+        img[maxy:maxy + 1, minx:maxx] = 255
+        img[miny:maxy, minx:minx + 1] = 255
+        img[miny:maxy, maxx:maxx + 1] = 255
       cv2.imshow("Videoextenso", img)
       cv2.waitKey(5)
 
     centers = [(r['y'], r['x']) for r in self.ve.spot_list]
     if not self.wait_l0:
-      self.send([t-self.t0, centers]+d)
+      self.send([t - self.t0, centers] + d)
     else:
       self.send([t - self.t0, [(0, 0)] * 4, 0, 0])
 

@@ -67,7 +67,7 @@ class DISCorrel(Camera):
     if self.residual_full:
       self.labels.append('res_full')
 
-  def prepare(self, **_):
+  def prepare(self):
     Camera.prepare(self, send_img=False)
     config = DISConfig(self.camera)
     config.main()

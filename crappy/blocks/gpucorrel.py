@@ -92,7 +92,7 @@ class GPUCorrel(Camera):
     self.gpu_correl_kwargs = kwargs
     self.gpu_correl_kwargs['fields'] = self.fields
 
-  def prepare(self, **_):
+  def prepare(self):
     Camera.prepare(self, send_img=False)
     t, img = self.camera.read_image()
     if self.transform is not None:
@@ -132,8 +132,9 @@ class GPUCorrel(Camera):
       out += [self.correl.get_res()]
       if self.discard_lim:
         self.res_hist = self.res_hist + [out[-1]]
-        self.res_hist = self.res_hist[-self.discard_ref-1:]
-        if self.res_hist[-1] > self.discard_lim*np.average(self.res_hist[:-1]):
+        self.res_hist = self.res_hist[-self.discard_ref - 1:]
+        if self.res_hist[-1] > \
+                self.discard_lim * np.average(self.res_hist[:-1]):
           print("[Correl block] Residual too high, not sending values")
           return
     self.send(out)
