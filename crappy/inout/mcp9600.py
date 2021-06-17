@@ -63,11 +63,11 @@ Mcp9600_modes = ['Hot Junction Temperature',
 
 
 class Mcp9600(InOut):
-  """Class for controlling Adafruit's MCP9600 thermocouple reader
+  """Class for controlling Adafruit's MCP9600 thermocouple reader.
 
   The Mcp9600 InOut block is meant for reading temperature from an MCP9600
-  board, using the I2C protocol. The output is in °C, except for one operating
-  mode that returns Volts.
+  board, using the I2C protocol. The output is in `°C`, except for one
+  operating mode that returns Volts.
 
   Warning:
     Only available on Raspberry Pi for now !
@@ -81,18 +81,18 @@ class Mcp9600(InOut):
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
                mode: str = 'Hot Junction Temperature') -> None:
-    """Checks arguments validity
+    """Checks arguments validity.
 
     Args:
-      thermocouple_type (:obj:`str`): The type of thermocouple
-        plugged in the MCP9600. The available types are:
+      thermocouple_type (:obj:`str`): The type of thermocouple plugged in the
+        MCP9600. The available types are:
         ::
 
           'J', 'K', 'T', 'N', 'S', 'E', 'B', 'R'
 
       i2c_port(:obj:`int`, optional): The I2C port over which the MCP9600
         should communicate. On most Raspberry Pi models the default I2C port is
-        1.
+        `1`.
       device_address(:obj:`int`, optional): The I2C address of the MCP9600. The
         default address is `0x67`, but it is possible to change this setting
         using a specific setup involving the `ADDR` pin.
@@ -104,15 +104,15 @@ class Mcp9600(InOut):
           12, 14, 16, 18
 
       sensor_resolution(:obj:`float`, optional): The temperature measurement
-        resolution in °C. It should be either `0.0625` or `0.25`. Setting the
+        resolution in `°C`. It should be either `0.0625` or `0.25`. Setting the
         resolution to `0.25` will increase the sample rate, but the output
-        temperature will be encoded on 2 bits less.
+        temperature will be encoded on two bits less.
       filter_coefficient(:obj:`int`, optional): The MCP9600 features an
         integrated filter (see its documentation for the exact filter formula).
-        When set to 0, the filter is inactive. It is maximal when set to 7.
+        When set to `0`, the filter is inactive. It is maximal when set to `7`.
         When active, the filter will prohibit fast temperature changes, thus
         limiting noise and smoothening the signal.
-      mode(:obj:`str`, optional): 4 different values can be accessed when
+      mode(:obj:`str`, optional): Four different values can be accessed when
         measuring a temperature: the temperature of the thermocouple (hot
         junction temperature), the temperature of the MCP9600 board (cold
         junction temperature), the temperature calculated from the ADC data and
@@ -163,7 +163,7 @@ class Mcp9600(InOut):
       self._mode = mode
 
   def open(self) -> None:
-    """Sets the I2C communication and device"""
+    """Sets the I2C communication and device."""
 
     if not self._is_connected():
       raise IOError("The MCP9600 is not connected")
@@ -186,9 +186,9 @@ class Mcp9600(InOut):
                                   [config_device])
 
   def get_data(self) -> list:
-    """Reads the registers containing the conversion result
+    """Reads the registers containing the conversion result.
 
-    The output is in °C for all modes except the raw data ADC one, which
+    The output is in `°C` for all modes except the raw data ADC one, which
     outputs Volts.
 
     Returns:
@@ -259,7 +259,7 @@ class Mcp9600(InOut):
     return out
 
   def close(self) -> None:
-    """Switches the MCP9600 to shutdown mode"""
+    """Switches the MCP9600 to shutdown mode."""
 
     # switching to shutdown mode, keeping configuration
     value = self._bus.read_i2c_block_data(self._device_address,
@@ -272,9 +272,9 @@ class Mcp9600(InOut):
                                   [value])
 
   def _data_available(self) -> int:
-    """Reads the data available bit
+    """Reads the data available bit.
 
-    Returns: 1 if data is available, else 0
+    Returns: `1` if data is available, else `0`
     """
 
     return self._bus.read_i2c_block_data(self._device_address,
@@ -282,9 +282,9 @@ class Mcp9600(InOut):
                                         >> 6 & 1
 
   def _is_connected(self) -> bool:
-    """Tries reading a byte from the device
+    """Tries reading a byte from the device.
 
-    Returns: True if reading was successful, else False
+    Returns: :obj:`True` if reading was successful, else :obj:`False`
     """
 
     try:

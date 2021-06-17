@@ -17,8 +17,8 @@ class Hist_generator(Process):
   """Process to generate the histogram of images.
 
   Note:
-    It only takes a :obj:`Pipe` at ``__init__``, all the data will be
-    transferred through it. See ``run`` for more info.
+    It only takes a :mod:`Pipe` at :meth:`__init__`, all the data will be
+    transferred through it. See :meth:`run` for more info.
   """
 
   def __init__(self, pipe):
@@ -26,8 +26,8 @@ class Hist_generator(Process):
     self.pipe = pipe
 
   def run(self):
-    """
-    Expects a tuple of 3 args through the pipe:
+    """Expects a tuple of 3 args through the pipe:
+
       - out_size (:obj:`tuple`): The dimensions of the output histogram image.
       - hist_range (:obj:`tuple`, e.g.: `(0,256)` for full scale `uint8`): The
         lower and upper value of the histogram.
@@ -63,14 +63,12 @@ class Camera_config(object):
   """Class creating a graphical interface to configure a camera.
 
   Note:
-    It will launch ``create_window`` when instanciated.
-    Just call:
-    ::
+    It will launch :meth:`create_window` when instanciated. Just call:
 
-      Cam_config(camera)
+    >>> Camera_config(camera)
 
-    It takes a single arg: The camera class
-    (it must inherit from `crappy.sensor._meta.MasterCam`).
+    It takes a single arg: the camera class (it must inherit from
+    `crappy.sensor._meta.MasterCam`).
   """
 
   def __init__(self, camera):
@@ -229,7 +227,7 @@ class Camera_config(object):
     return r
 
   def resized(self):
-    """Returns `True` if window has been resized and saves the new
+    """Returns :obj:`True` if window has been resized and saves the new
     coordinates"""
 
     new = self.get_label_shape()
@@ -345,7 +343,7 @@ class Camera_config(object):
     return min(max(miny, y), maxy - 1), min(max(minx, x), maxx - 1)
 
   def make_new_window(self, ey, ex):
-    """Hang on, it is not that complicated: Given the location of the zoom
+    """Hang on, it is not that complicated: given the location of the zoom
     event this will compute the new zoom window.
 
     It is represented by 4 floats between 0 and 1 `miny`, `minx`, `maxy`,

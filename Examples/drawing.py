@@ -1,9 +1,9 @@
 # coding: utf-8
 
 """
-Demonstrates the use of the Drawing block
+Demonstrates the use of the Drawing block.
 
-No hardware required
+No hardware required.
 """
 
 from time import sleep
@@ -12,9 +12,7 @@ import crappy
 
 
 class TestBlock(crappy.Block):
-  """
-  A stupid block to demonstrate the Drawing block.
-  """
+  """A simple block to demonstrate the Drawing block."""
 
   def __init__(self, labels):
     super().__init__()

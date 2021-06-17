@@ -41,11 +41,11 @@ Ads1115_config_dr = {8: 0x0000,
 
 
 class Ads1115(InOut):
-  """A class for controlling Adafruit's ADS1115 16-bits ADC
+  """A class for controlling Adafruit's ADS1115 16-bits ADC.
 
   The Ads1115 InOut block is meant for reading output values from a 16-bits
   ADS1115 ADC, using the I2C protocol. The output is in Volts by default, but a
-  `gain` and an `offset` can be specified.
+  ``gain`` and an ``offset`` can be specified.
 
   Warning:
     Only available on Raspberry Pi for now !
@@ -59,7 +59,7 @@ class Ads1115(InOut):
                multiplexer: str = 'A1',
                gain: float = 1,
                offset: float = 0) -> None:
-    """Checks arguments validity
+    """Checks arguments validity.
 
     Args:
       device_address (:obj:`int`, optional): The I2C address of the ADS1115.
@@ -67,7 +67,7 @@ class Ads1115(InOut):
         setting using the `ADDR` pin.
       i2c_port (:obj:`int`, optional): The I2C port over which the ADS1115
         should communicate. On most Raspberry Pi models the default I2C port is
-        1.
+        `1`.
       sample_rate (:obj:`int`, optional): The sample rate for data conversion
         (in SPS). Available sample rates are:
         ::
@@ -94,9 +94,16 @@ class Ads1115(InOut):
           'A2 - A3'
 
       gain (:obj:`float`, optional): Allows to tune the output value according
-        to the formula: output = gain * tension + offset.
+        to the formula:
+        ::
+
+          output = gain * tension + offset.
+
       offset (:obj:`float`, optional): Allows to tune the output value
-        according to the formula: output = gain * tension + offset.
+        according to the formula:
+        ::
+
+          output = gain * tension + offset.
 
     Warning:
       AINx voltages should not be higher than `VDD+0.3V` nor lower than
@@ -130,7 +137,7 @@ class Ads1115(InOut):
     self._offset = offset
 
   def open(self) -> None:
-    """Sets the I2C communication and device"""
+    """Sets the I2C communication and device."""
 
     if not self._is_connected():
       raise IOError("The ADS1115 is not connected")
@@ -146,7 +153,7 @@ class Ads1115(InOut):
     self._set_register(Ads1115_pointer_config, init_value)
 
   def get_data(self) -> list:
-    """Reads the registers containing the conversion result
+    """Reads the registers containing the conversion result.
 
     The output is in Volts, unless a gain and offset are applied.
 
@@ -183,7 +190,7 @@ class Ads1115(InOut):
     self._set_register(Ads1115_pointer_conversion, 0x0006)
 
   def _set_register(self, register_address: int, value: int) -> None:
-    """Thin wrapper for writing data to the registers"""
+    """Thin wrapper for writing data to the registers."""
 
     ms_byte = value >> 8 & 0xff
     ls_byte = value & 0xff
@@ -191,10 +198,10 @@ class Ads1115(InOut):
                                   [ms_byte, ls_byte])
 
   def _is_connected(self) -> bool:
-    """Tries reading a byte from the device
+    """Tries reading a byte from the device.
 
     Returns:
-      :obj:`bool`: True if reading was successful, else False
+      :obj:`bool`: :obj:`True` if reading was successful, else :obj:`False`
     """
 
     try:

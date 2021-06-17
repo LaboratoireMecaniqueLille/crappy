@@ -1,9 +1,9 @@
 # coding: utf-8
 
 """
-Example illustrating the use of Spectrum DAQ cards and high-freq saving
+Example illustrating the use of Spectrum DAQ cards and high-freq saving.
 
-The data is saved using the hdf format
+The data is saved using the hdf format.
 
 Required hardware:
   - Spectrum acquisition board

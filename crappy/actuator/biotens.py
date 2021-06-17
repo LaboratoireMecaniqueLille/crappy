@@ -48,7 +48,7 @@ class Biotens(Actuator):
   """
 
   def __init__(self, port='/dev/ttyUSB0', baudrate=19200):
-    """Sets the instance attributes
+    """Sets the instance attributes.
 
     Args:
       port (:obj:`str`, optional): Path to connect to the serial port.

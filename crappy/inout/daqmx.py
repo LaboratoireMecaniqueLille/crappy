@@ -12,12 +12,10 @@ except (ModuleNotFoundError, ImportError):
 
 
 def get_daqmx_devices_names():
-  """
-  Get all connected daqmx devices.
+  """Get all connected daqmx devices.
 
   Returns:
-    A list of all connected daqmx devices.
-
+    A :obj:`list` of all connected daqmx devices.
   """
 
   buffer_size = 4096
@@ -34,83 +32,87 @@ def listify(stuff, length):
 
 
 class Daqmx(InOut):
-  """
-  Class to use DAQmx devices.
+  """Class to use DAQmx devices."""
 
-  Kwargs:
-    - device (str, default: 'Dev1'): Name of the device to open.
-    - channels (list of str/int, default: ['ai0']): Names or ids of the
-      channels to read.
-    - gain (list of floats): Gains to apply to each reading.
-    - offset (list of floats): Offset to apply to each reading.
-    - range (list of floats, [.5, 1., 2.5, 5.], max: 5V, default: 5): Max value
-      for the reading.
+  def __init__(self,
+               device='Dev1',
+               channels=None,
+               gain=1,
+               offset=0,
+               range=5,
+               make_zero=True,
+               nperscan=1000,
+               sample_rate=10000,
+               out_channels=None,
+               out_gain=1,
+               out_offset=0,
+               out_range=5):
+    """Sets the args and initializes the parent class.
 
-      Note:
-        See niDAQ api for more details.
+    Args:
+      device (:obj:`str`, optional): Name of the device to open.
+      channels (:obj:`list`, optional): Names or ids of the channels to read.
+      gain (:obj:`list`, optional): Gains to apply to each reading.
+      offset (:obj:`list`, optional): Offset to apply to each reading.
+      range (:obj:`list`, optional): Max value for the reading. Should be a
+        :obj:`list` of :obj:`float` in:
+        ::
 
-    - make_zero (list of bools, default: True): If True, the average value on
-      the channel at opening will be evaluated and subtracted to the actual
-      reading.
-    - nperscan (int): If using streamer mode, number of readings to acquire
-      on each get_stream call.
-    - samplerate (float): If using streamer mode, frequency of acquisition
-      when calling get_stream.
-    - out_channels (list of str/int, default: []): Names or ids of the output
-      channels.
-    - out_gain (list of floats, default: 1): Gains to apply to the commands.
-    - out_offset (list of floats, default: 0): Offset to apply to the commands.
-    - out_range (list of floats, [.5, 1., 2.5, 5.], max: 5V, default: 5): Max
-      value of the output.
+          0.5, 1., 2.5, 5.
 
-      Note:
-        See niDAQ api for more details.
+        Refer to the niDAQ api for more details.
 
-        If an argument taken as a list is given as a single value, it
-        will be applied to all channels.
+      make_zero (:obj:`list`, optional): If :obj:`True`, the average value on
+        the channel at opening will be evaluated and subtracted to the actual
+        reading.
+      nperscan (:obj:`int`, optional): If using streamer mode, number of
+        readings to acquire on each :meth:`get_stream` call.
+      sample_rate (:obj:`float`, optional): If using streamer mode, frequency
+        of acquisition when calling :meth:`get_stream`.
+      out_channels (:obj:`list`, optional): Names or ids of the output
+        channels.
+      out_gain (:obj:`list`, optional): Gains to apply to the commands.
+      out_offset (:obj:`list`, optional): Offset to apply to the commands.
+      out_range (:obj:`list`, optional): Max value of the output. Should be a
+        :obj:`list` of :obj:`float` in:
+        ::
 
-  """
+          0.5, 1., 2.5, 5.
 
-  def __init__(self, **kwargs):
+        Refer to the niDAQ api for more details.
+
+    Note:
+      If an argument supposed to be a :obj:`list` is given as a single value,
+      this value will be applied to all channels.
+    """
+
     InOut.__init__(self)
     # For now, kwargs like in_gain are equivalent to gain
     # (it is for consistency with out_gain, out_channels, etc...)
-    for arg in kwargs:
-      if arg in kwargs and arg.startswith('in_'):
-        kwargs[arg[3:]] = kwargs[arg]
-        del kwargs[arg]
-    for arg, default in [('device', 'Dev1'),
-                         ('channels', ['ai0']),
-                         ('gain', 1),
-                         ('offset', 0),
-                         ('range', 5),  # Unipolar
-                         ('make_zero', True),
-                         ('nperscan', 1000),
-                         ('sample_rate', 10000),
-                         ('out_channels', []),
-                         ('out_gain', 1),
-                         ('out_offset', 0),
-                         ('out_range', 5)  # Unipolar
-                         ]:
-      if arg in kwargs:
-        setattr(self, arg, kwargs[arg])
-        del kwargs[arg]
-      else:
-        setattr(self, arg, default)
-    assert len(kwargs) == 0, "Daqmx got unsupported arg(s)" + str(kwargs)
+    self.device = device
+    self.channels = ['ai0'] if channels is None else channels
+    self.gain = gain
+    self.offset = offset
+    self.range = range
+    self.make_zero = make_zero
+    self.nperscan = nperscan
+    self.sample_rate = sample_rate
+    self.out_channels = [] if out_channels is None else out_channels
+    self.out_gain = out_gain
+    self.out_offset = out_offset
+    self.out_range = out_range
+
     self.check_vars()
 
   def check_vars(self):
-    """
-    Turns the settings into lists of the same length, each index standing for
-    one channel.
+    """Turns the settings into :obj:`list` of the same length, each index
+    standing for one channel.
 
     Note:
-      If a list is given, simply check the length.
-
-      Else make a list of the correct length containing only the given value.
-
+      If a :obj:`list` is given, simply checks the length. Else make a
+      :obj:`list` of the correct length containing only the given value.
     """
+
     # IN channels
     self.channels = self.channels if isinstance(self.channels, list) \
       else [self.channels]
@@ -166,8 +168,7 @@ class Daqmx(InOut):
       PyDAQmx.DAQmxStartTask(self.out_handle)
 
   def get_data(self):
-    """
-    Returns a tuple of length len(self.channels)+1.
+    """Returns a :obj:`tuple` of length ``len(self.channels) + 1``.
 
     First element is the time, others are readings of each channel.
     """
@@ -175,30 +176,15 @@ class Daqmx(InOut):
     return [i[0] for i in self.get_single(1)]
 
   def get_single(self, npoints=None):
-    """
-    Read the analog voltage on specified channels.
+    """Reads the analog voltage on specified channels.
 
     Args:
-      - channels (List of ints, default: None): The INDEX of the channels to
-        read.
-
-        Example:
-          if self.channels = ['ai1','ai2','ai4'],
-          channels = [1,2] will read ai2 and ai4.
-
-        Note:
-          If None will read all opened channels.
-
-      - npoints: Number of values to read.
-
-        Note:
-          If None, will use the value of self.nperscan.
+      npoints: Number of values to read. If :obj:`None`, will use the value of
+      `self.nperscan`.
 
     Returns:
-      A tuple of len(self.channels)+1 lists of length npoints.
-
-      First list is the time, the others are the read voltages.
-
+      A :obj:`tuple` of `len(self.channels) + 1` :obj:`list` of length
+      `npoints`. First list is the time, the others are the read voltages.
     """
 
     if npoints is None:
@@ -226,14 +212,12 @@ class Daqmx(InOut):
               range(len(self.channels))]
 
   def set_cmd(self, *args):
-    """
-    Set the output(s) to the specified value.
+    """Set the output(s) to the specified value.
 
     Note:
-      Takes n arguments, n being the number of channels open at init.
-
-      ith argument is the value to set to the ith channel.
-
+      Takes `n` arguments, `n` being the number of channels opened at
+      :meth:`__init__`. The ith argument is the value to set to the ith
+      channel.
     """
 
     assert len(args) == len(self.out_channels)
@@ -242,7 +226,7 @@ class Daqmx(InOut):
         PyDAQmx.DAQmx_Val_GroupByChannel, data, None, None)
 
   def close(self):
-    """Close the connection."""
+    """Closes the connection."""
 
     if self.handle:
       PyDAQmx.DAQmxStopTask(self.handle)

@@ -139,7 +139,8 @@ def avg_ampl(f):
 
 
 def remap(a, r):
-  """Remaps a using given r the displacement as a result from correlation."""
+  """Remaps `a` using given `r` the displacement as a result from
+  correlation."""
 
   imy, imx = a.shape
   x, y = np.meshgrid(range(imx), range(imy))

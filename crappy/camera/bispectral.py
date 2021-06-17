@@ -126,6 +126,7 @@ class Bispectral(CLCamera):
   def set_external_trigger(self, val):
     """Sets the external trigger to val by toggling the value of the 3rd bit
     of register 102."""
+
     if val:
       self.send_cmd('@W1027C')  # 3rd bit to 1
     else:

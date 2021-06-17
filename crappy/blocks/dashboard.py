@@ -9,26 +9,21 @@ from .block import Block
 
 
 class Dashboard(Block):
-  """
-  The Dashboard receives data from a link, and prints it on a new popped
-  window.
+  """The Dashboard receives data from a :ref:`Link`, and prints it on a new
+  popped window.
 
-  Note:
-    It can receive either a single point, or a list of points.
-
-    In this case, the displayed value corresponds to the average of points.
-
-  Args:
-    - labels (list): Values to plot on the output window.
-
-      Note:
-        If undefined, will plot every data (with time in first).
-
-    - nb_digits (int): Number of decimals to show, for every value.
-
+  It can receive either a single point, or a :obj:`list` of points. In this
+  case, the displayed value corresponds to the average of points.
   """
 
   def __init__(self, labels=None, nb_digits=3):
+    """Sets the args and initializes parent class.
+
+    Args:
+      labels (:obj:`list`, optional): Values to plot on the output window. If
+        :obj:`None`, will plot every data.
+      nb_digits (:obj:`int`, optional): Number of decimals to show.
+    """
 
     super(Dashboard, self).__init__()
     self.labels = labels
@@ -38,9 +33,7 @@ class Dashboard(Block):
     self.queue = Queue()
 
   class Dashboard:
-    """
-    Dashboard class created, is launched in a new thread.
-    """
+    """Dashboard class created, is launched in a new thread."""
 
     def __init__(self, labels, nb_digits, queue):
       self.root = Tk()
@@ -62,9 +55,7 @@ class Dashboard(Block):
         self.update()
 
     def update(self):
-      """
-      Method to update the output window.
-      """
+      """Method to update the output window."""
 
       values = self.queue.get()
       for row, text in enumerate(values):
@@ -72,9 +63,7 @@ class Dashboard(Block):
       self.root.update()
 
   def main(self):
-    """
-    Main loop.
-    """
+    """Main loop."""
 
     if not self.labels:
       self.labels = list(self.inputs[0].recv(blocking=True).keys())

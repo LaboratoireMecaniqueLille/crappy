@@ -1,9 +1,9 @@
 # coding: utf-8
 
 """
-Using directly the camera object to take a picture
+Using directly the camera object to take a picture.
 
-Use CONFIG=True to open the configuration GUI
+Use `CONFIG=True` to open the configuration GUI.
 
 Required hardware:
   - Any camera (replace Webcam by the desired camera if necessary)

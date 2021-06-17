@@ -1,5 +1,7 @@
 # coding: utf-8
 
+"""More documentation coming soon !"""
+
 import socket
 
 from .block import Block

@@ -1,9 +1,9 @@
 # coding: utf-8
 
 """
-Demonstration of a Videoextensometry controlled test
+Demonstration of a Videoextensometry controlled test.
 
-This program is intended as a demonstration and is fully virtual
+This program is intended as a demonstration and is fully virtual.
 
 No hardware required
 """

@@ -6,24 +6,21 @@ from .block import Block
 
 
 class Mean_block(Block):
-  """
-  Can take multiple inputs, makes an average and send the result every delay s.
-
-  Args:
-    - tlabel (default: 't(s)'): refers to the label that carries the time.
-    - out_labels (default=none): if given, only these labels and the time will
-      be kept and returned.
-
-      Note:
-        If none, all of them will be kept.
-
-    - freq: The block will loop at this freq.
-
-      Note:
-        See the freq argument of :ref:`block`.
-  """
+  """Can take multiple inputs, makes an average and sends the result every
+  ``delay`` `s`."""
 
   def __init__(self, delay, tlabel='t(s)', out_labels=None, freq=50):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      delay (:obj:`float`): The averaged data will be sent each ``delay``
+        seconds.
+      tlabel (:obj:`str`, optional): The label containing the time information.
+      out_labels (:obj:`list`, optional): If given, only the listed labels and
+        the time will be returned. Otherwise all of them are returned.
+      freq: The block will loop at this frequency.
+    """
+
     Block.__init__(self)
     self.delay = delay
     self.tlabel = tlabel

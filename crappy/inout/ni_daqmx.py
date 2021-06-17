@@ -14,48 +14,46 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Nidaqmx(InOut):
+  """Opens National Instrument devices using the NiDAQmx driver (Windows only).
+
+  This class can open `ai`, `ao` and `dio` channels on NI devices. It supports
+  continuous streaming on `ai` channels only. Streaming is not supported with
+  `ai` channels of different types.
+
+  It uses the :mod:`nidaqmx` python module by NI.
   """
-  Opens National Instrument devices using the NiDAQmx driver (Windows only)
 
-  Note:
-    This class can open ai, ao and dio channels on NI devices.
+  def __init__(self,
+               channels=None,
+               samplerate=100,
+               nsamples=None):
+    """Builds the different channels lists.
 
-    It supports continuous streaming on ai channels only.
+    Args:
+      channels (:obj:`list`, optional): A :obj:`list` of :obj:`dict` describing
+        all the channels to open. See the note below for details.
 
-    Streaming is not supported with ai channels of different types.
+        Note:
+          For `dio`, use `DevX/d[i/o] Y` to select `port(Y//8)/line(Y%8)` on
+          `DevX`.
 
-    It uses the nidaqmx python module by NI.
-
-  Args:
-    - channels (list, default: [{'name':'Dev1/ai0'}]): A list of dict
-      describing all the channels to open.
-
-      Note:
-        For a detail on the channel-specific args, see "Channel dict" below.
-
-        For dio, use DevX/d[i/o] Y to select port(Y//8)/line(Y%8) on DevX.
-
-    - samplerate (float, default: 100): If using stream mode, the samplerate
-      of the stream.
-
-    - nsamples (int, default: samplerate//5): If using stream mode,
-      the stream array will be returned after reading nsamples samples.
-
-  Channel dict:
-    - name: The name of the channel to open.
-
-      Note:
-        For dio, use diX for digital input on line X and doX for digital output
-
-    - type (default: 'voltage'): The type of channel to open. Ex: thrmcpl.
+      samplerate (:obj:`float`, optional): If using stream mode, the samplerate
+        of the stream.
+      nsamples (:obj:`int`, optional): If using stream mode, the stream array
+        will be returned after reading ``nsamples`` samples. Defaults to
+        ``samplerate // 5``.
 
     Note:
-      All the other args will be given as kwargs to
-      nidaqmx.Task.add_[a/d][i/o]_[type]_chan.
+      - ``channels`` keys:
 
-  """
+        - name (:obj:`str`): The name of the channel to open. For dio, use
+          `diX` for digital input on line `X` and `doX` for digital output.
+        - type (:obj:`str`, default: 'voltage'): The type of channel to open.
+          Ex: `'thrmcpl'`.
+        - All the other args will be given as kwargs to
+          `nidaqmx.Task.add_[a/d][i/o]_[type]_chan`.
+    """
 
-  def __init__(self, **kwargs):
     InOut.__init__(self)
     self.thermocouple_type = {"B": nidaqmx.constants.ThermocoupleType.B,
                               "E": nidaqmx.constants.ThermocoupleType.E,
@@ -72,13 +70,11 @@ class Nidaqmx(InOut):
                   "K": nidaqmx.constants.TemperatureUnits.K,
                   # To be completed...
                   }
-    for arg, default in [
-       ('channels', [{'name': 'Dev1/ai0'}]),
-       ('samplerate', 100),
-       ('nsamples', None)
-     ]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert len(kwargs) == 0, "Nidaqmx got unsupported arg(s)" + str(kwargs)
+
+    self.channels = [{'name': 'Dev1/ai0'}] if channels is None else channels
+    self.samplerate = samplerate
+    self.nsamples = nsamples
+
     if self.nsamples is None:
       self.nsamples = max(1, int(self.samplerate / 5))
     self.streaming = False

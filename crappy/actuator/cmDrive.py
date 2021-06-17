@@ -120,7 +120,6 @@ class CM_drive(Actuator):
 
     Returns:
       Physical position of the motor.
-
     """
 
     self.ser.close()

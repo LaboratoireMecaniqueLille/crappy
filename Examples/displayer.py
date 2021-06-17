@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Very simple program that displays the output of a chosen camera
+Very simple program that displays the output of a chosen camera.
 
 Required hardware:
   - Any camera (select the desired camera in the terminal)

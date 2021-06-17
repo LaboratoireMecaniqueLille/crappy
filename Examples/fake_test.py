@@ -1,12 +1,12 @@
 # coding: utf-8
 
 """
-A fully autonomous example of a tensile test using a virtual machine
+A fully autonomous example of a tensile test using a virtual machine.
 
-This program is meant to replicate a tensile test without the need of an
-actual machine
+This program is meant to replicate a tensile test without the need for an
+actual machine.
 
-No hardware required
+No hardware required.
 """
 
 import crappy

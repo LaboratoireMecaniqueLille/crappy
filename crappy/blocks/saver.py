@@ -7,35 +7,27 @@ from .block import Block
 
 
 class Saver(Block):
-  """
-  Will save the incoming data to a file (default csv).
+  """Will save the incoming data to a file (default `.csv`).
 
-  Warning!
-    Can only take ONE input.
-
-  Note:
-    If you want multiple readings in a single file,
-    see Multiplex block.
-
-    If the folders do not exist, they will be created.
-
-    If the file exists, the actual file will be named with a trailing number
-    to avoid overriding it.
-
-  Args:
-    - filename: Path and name of the output file
-    - delay (in seconds, default: 5): Delay between each writes.
-    - labels (default: 't(s)'): What labels to save.
-
-      Note:
-        If labels is a string, all the data will be saved, but with this one
-        in first place.
-
-        If it is a list, only these labels will be saved, in that order.
-
+  Important:
+    Can only take ONE input, i.e. save labels from only one block. If you want
+    multiple readings in a single file use the :ref:`Multiplex` block.
   """
 
   def __init__(self, filename, delay=2, labels='t(s)'):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      filename (:obj:`str`): Path and name of the output file. If the folders
+        do not exist, they will be created. If the file already exists, the
+        actual file will be named with a trailing number to avoid overriding
+        it.
+      delay (:obj:`float`, optional): Delay between each write in seconds.
+      labels (:obj:`list`, optional): What labels to save. Can be either a
+        :obj:`str` to save all labels but this one first, or a :obj:`list` to
+        save only these labels.
+    """
+
     Block.__init__(self)
     self.niceness = -5
     self.delay = delay

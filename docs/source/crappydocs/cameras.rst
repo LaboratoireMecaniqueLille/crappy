@@ -7,6 +7,11 @@ Bispectral
 .. automodule:: crappy.camera.bispectral
    :members:
 
+Meta Camera
++++++++++++
+.. automodule:: crappy.camera.camera
+   :members:
+
 Camera link
 +++++++++++
 .. automodule:: crappy.camera.cameralink

@@ -10,7 +10,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Gpio_pwm(InOut):
-  """ Class for performing PWM on a Raspberry Pi
+  """ Class for performing PWM on a Raspberry Pi.
 
   The Gpio_pwn InOut block is meant for controlling a PWM output from a
   Raspberry Pi GPIO. It allows to control the duty cycle, the frequency, or
@@ -25,7 +25,7 @@ class Gpio_pwm(InOut):
                pin_out: int,
                duty_cycle: float = None,
                frequency: float = None) -> None:
-    """Checks the arguments validity
+    """Checks the arguments validity.
 
     Args:
       pin_out (:obj:`int`): The GPIO pin to be controlled (BCM convention).
@@ -74,7 +74,7 @@ class Gpio_pwm(InOut):
     self._duty_cycle = duty_cycle
 
   def open(self) -> None:
-    """Sets the GPIOs and starts the PWM"""
+    """Sets the GPIOs and starts the PWM."""
 
     # Setting the GPIOs
     GPIO.setmode(GPIO.BCM)
@@ -93,7 +93,7 @@ class Gpio_pwm(InOut):
       self._pwm.start(0)
 
   def set_cmd(self, *cmd: float) -> None:
-    """Modifies the PWM frequency and/or duty cycle
+    """Modifies the PWM frequency and/or duty cycle.
 
     Args:
       *cmd (:obj:`float`): Values of duty cycle and/or frequency to set
@@ -122,7 +122,7 @@ class Gpio_pwm(InOut):
       self._pwm.ChangeDutyCycle(dc)
 
   def close(self) -> None:
-    """Stops PWM and releases GPIOs"""
+    """Stops PWM and releases GPIOs."""
 
     self._pwm.stop()
     GPIO.cleanup()

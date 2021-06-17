@@ -1,8 +1,8 @@
 # coding: utf-8
 
 """
-This Example shows how to use the fps_label argument to change the
-frequency of a camera during a test
+This Example shows how to use the ``fps_label`` argument to change the
+frequency of a camera during a test.
 
 Required hardware:
   - Any camera

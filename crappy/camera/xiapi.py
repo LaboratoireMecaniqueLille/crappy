@@ -88,12 +88,11 @@ class Xiapi(Camera):
       self.cam.set_trigger_source('XI_TRG_OFF')
 
   def open(self, sn=None, **kwargs):
-    """
-    Will actually open the camera, args will be set to default unless
+    """Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs.
 
-    If sn is given, it will open the camera with
-    the corresponding serial number.
+    If `sn` is given, it will open the camera with the corresponding serial
+    number.
 
     Else, it will open any camera.
     """
@@ -113,21 +112,18 @@ class Xiapi(Camera):
     self.cam.start_acquisition()
 
   def reopen(self, **kwargs):
-    """
-    Will reopen the camera, args will be set to default unless
-    specified otherwise in kwargs.
+    """Will reopen the camera, args will be set to default unless specified
+    otherwise in kwargs.
     """
 
     self.open()
     self.set_all(override=True, **kwargs)
 
   def get_image(self):
-    """
-    This method get a frame on the selected camera and return a ndarray
+    """This method get a frame on the selected camera and return a ndarray.
 
     Returns:
-        frame from ximea device (ndarray height*width).
-
+        frame from ximea device (`ndarray height*width`).
     """
 
     self.cam.get_image(self.img)
@@ -135,12 +131,10 @@ class Xiapi(Camera):
     return t, self.img.get_image_data_numpy()
 
   def close(self):
-    """
-    This method closes properly the camera
+    """This method closes properly the camera.
 
     Returns:
         void return function.
-
     """
 
     self.cam.close_device()

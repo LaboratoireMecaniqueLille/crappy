@@ -10,8 +10,8 @@ class Fake_motor(Actuator):
 
   Note:
     A virtual motor driven by a voltage, you can set its properties with the
-    args. It has the same methods as a real motor: ``open``, ``set_speed``,
-    ``get_speed``, ``get_pos``.
+    args. It has the same methods as a real motor: :meth:`open`,
+    :meth:`set_speed`, :meth:`get_speed`, :meth:`get_pos`.
   """
 
   def __init__(self,
@@ -27,13 +27,13 @@ class Fake_motor(Actuator):
     """Sets the instance attributes.
 
     Args:
-      inertia (:obj:`float`, optional): Inertia of the motor (`kg.m²`)
+      inertia (:obj:`float`, optional): Inertia of the motor (`kg.m²`).
       torque(:obj:`float`, optional): A torque applied on the axis (`N.m`).
       kv(:obj:`float`, optional): The electrical constant of the motor
         (`t/min/V`).
       rv(:obj:`float`, optional): The solid friction.
       fv(:obj:`float`, optional): The fluid friction.
-      sim_speed(:obj:`float`, optional): Speed factor of the simulation
+      sim_speed(:obj:`float`, optional): Speed factor of the simulation.
       initial_speed(:obj:`float`, optional): (`rpm`)
       initial_pos(:obj:`float`, optional): (turns)
     """

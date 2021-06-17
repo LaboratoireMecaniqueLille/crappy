@@ -16,110 +16,138 @@ def clamp(val, mini, maxi):
 
 
 class Labjack_t7(InOut):
-  """
-  Class for LabJack T7 devices.
+  """Class for LabJack T7 devices.
 
   It can use any channel as input/output, it can be used with an IOBlock.
 
   This class is NOT capable of streaming. For higher frequency, see
-  T7_streamer class.
+  :ref:`T7 Streamer` class.
 
-  The keyword argument "channels" is used to specify the channels.
+  The keyword argument ``channels`` is used to specify the channels.
 
-  Each channel must be represented as a dict including all the parameters.
-  See below for more details on the parameters of the channels.
-
-  Args:
-    - device (str, default: 'ANY'): The type of the device to open. Ex: 'T7'.
-    - connection (str, default: 'ANY'): How is the Labjack connected ?
-      Ex: 'USB', 'ETHERNET',..
-    - identifier (str, default: 'ANY'): Something to identify the Labjack.
-
-      Note:
-        It can be a name, serial number or functionality.
-
-    - channels: Channels to use and their settings. It must be a list of dicts.
-
-  Channel keys:
-    - name (str): The name of the channel according to Labjack's naming
-      convention. Ex: 'AIN0'. This will be used to define the direction
-      (in/out) and the available settings.
-
-      It can be:
-      - AINx: An analog input, if gain and/or offset is given, the integrated
-      slope mechanism will be used with the extended features registers.
-      It can also be used for thermocouples (see below). You can use any
-      EF by using the 'write_at_open' and 'to_read' keys if necessary.
-      - (T)DACx: An analog output, you can specify gain and/or offset.
-      - (E/F/C/M IOx): Digital in/outputs. You can specify the direction.
-
-    - gain (default: 1): A numeric value that will multiply the given value for
-      inputs and outputs.
-    - offset (default: 0): Will be added to the value.
-
-      For inputs:
-        returned_value = gain*measured_value+offset
-
-      For outputs:
-        set_value = gain*given_value+offset.
-
-      Where measured_value and set_values are in Volts.
-
-    - make_zero: AIN only, if True the input value will be evaluated at startup
-      and the offset will be adjusted to return 0 (or the offset if any).
-    - direction: DIO only, if True (or 1), the port will be used as an output
-      else as an input.
-    - resolution (int 1-8(1-12), default: 1 (fastest)): The resolution of the
-      acquisition, see Labjack documentation for more details.
-    - range ({10, 1, .1, .01}, in Volts, default: 10): The range of the
-      acquisition.
-
-      Note:
-        10 means -10V>+10V
-
-    - limits (tuple (mini,maxi), default: None): To clamp the output values to
-      a given range.
-
-      Note:
-        Can be useful to make sure not to go beyond given values.
-
-      Warning!
-        DO NOT CONSIDER THIS AS A SAFETY IMPLEMENTATION.
-        It *should* not go beyond/below the given values,
-        but this is not meant to replace hardware safety!
-
-    - thermocouple (char: {E, J, K, R, T, S, C}): The type of thermocouple
-      (AIN only)
-
-      Note:
-        If specified, it will use the EF to read a temperature directly from
-        the thermocouples.
-
-    - write_at_open (list): If you need to write specific names or registers
-      when opening the channel, you can give them as a list of tuple. They will
-      be written in the order of the list.
-
-      Note:
-        The tuples can either be (name (str), value (int/float)) or
-        (register (int), type (int), value (float/int)).
-
+  Each channel must be represented as a :obj:`dict` including all the
+  parameters. See below for more details on the parameters of the channels.
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               device='ANY',
+               connection='ANY',
+               identifier='ANY',
+               channels=None,
+               write_at_open=None,
+               no_led=False):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      device (:obj:`str`, optional): The type of the device to open. Possible
+        values include:
+        ::
+
+          'ANY', 'T7', 'T4', 'DIGIT'
+
+        Only tested with `'T7'` in Crappy.
+      connection (:obj:`str`, optional): How is the Labjack connected ?
+        Possible values include:
+        ::
+
+          'ANY', 'TCP', 'USB', 'ETHERNET', 'WIFI'
+
+      identifier (:obj:`str`, optional): Something to identify the Labjack. It
+        can be a serial number, an IP address, or a device name.
+      channels (:obj:`list`, optional): Channels to use and their settings. It
+        must be a :obj:`list` of :obj:`dict`.
+      write_at_open (:obj:`list`, optional): If you need to write specific
+        names or registers when opening the channel, you can give them as a
+        :obj:`list` of :obj:`tuple`. They will be written in the order of the
+        list.
+      no_led (:obj:`list`, optional): If :obj:`True`, turns off the LED on the
+        Labjack. This led can cause noise on the channels `AIN0` and `AIN1`.
+
+    Note:
+      - ``channels`` keys:
+
+        - name (:obj:`str`): The name of the channel according to Labjack's
+          naming convention. Ex: `'AIN0'`. This will be used to define the
+          direction (in/out) and the available settings.
+
+          It can be:
+            - `AINx`: An analog input, if gain and/or offset is given, the
+              integrated slope mechanism will be used with the extended
+              features registers. It can also be used for thermocouples (see
+              below). You can use any EF by using the ``write_at_open`` and
+              ``to_read`` keys if necessary.
+            - `(T)DACx`: An analog output, you can specify gain and/or offset.
+            - `(E/F/C/M IOx)`: Digital in/outputs. You can specify the
+              direction.
+
+        - gain (:obj:`float`, default: `1`): A numeric value that will multiply
+          the given value for inputs and outputs.
+        - offset (:obj:`float`, default: `0`): Will be added to the value.
+
+          For inputs:
+          ::
+
+            returned_value = gain * measured_value + offset
+
+          For outputs:
+          ::
+
+            set_value = gain * given_value + offset.
+
+          Where `measured_value` and `set_values` are in Volts.
+
+        - make_zero (:obj:`bool`): AIN only, if :obj:`True` the input value
+          will be evaluated at startup and the offset will be adjusted to
+          return `0` (or the offset if any).
+        - direction (:obj:`bool`): DIO only, if :obj:`True` (or `1`), the port
+          will be used as an output else as an input.
+        - resolution (:obj:`int`, default: `1`): The resolution of the
+          acquisition, see Labjack documentation for more details. The bigger
+          this value the better the resolution, but the lower the speed. The
+          possible range is either `1` to `8` or to `12` according to the
+          model.
+        - range (:obj:`float`, default: `10`): The range of the acquisition in
+          Volts. A range of `x` means that values can be read  between `-x` and
+          `x` Volts. The possible values are:
+          ::
+
+            0.01, 0.1, 1, 10
+
+        - limits (:obj:`tuple`, default: None): To clamp the output values
+          to a given range. The :obj:`tuple` should contain two values: the min
+          and the max limit.
+
+        - thermocouple (:obj:`str`): The type of thermocouple (AIN only).
+          Possible values are:
+          ::
+
+            'E', 'J', 'K', 'R', 'T', 'S', 'C'
+
+          If specified, it will use the EF to read a temperature directly from
+          the thermocouples.
+
+        - write_at_open (:obj:`list`): If you need to write specific names or
+          registers when opening the channel, you can give them as a
+          :obj:`list` of :obj:`tuple`. They will be written in the order of the
+          list.
+
+          The tuples can either be `(name (str), value (int/float))` or
+          `(register (int), type (int), value (float/int))`.
+
+    Warning:
+      DO NOT CONSIDER the ``limits`` KEY AS A SAFETY IMPLEMENTATION. It
+      *should* not go beyond/below the given values, but this is not meant to
+      replace hardware safety!
+    """
+
     InOut.__init__(self)
-    for arg, default in [
-       ('device', 'ANY'),  # Model (T7, DIGIT,...)
-       ('connection', 'ANY'),  # Connection (USB,ETHERNET,...)
-       ('identifier', 'ANY'),  # Identifier (serial n°, ip,..)
-       ('channels', [{'name': 'AIN0'}]),
-       ('write_at_open', []),
-       ('no_led', False)]:
-      if arg in kwargs:
-        setattr(self, arg, kwargs[arg])
-        del kwargs[arg]
-      else:
-        setattr(self, arg, default)
-    assert len(kwargs) == 0, "Labjack_T7 got unsupported arg(s)" + str(kwargs)
+    self.device = device
+    self.connection = connection
+    self.identifier = identifier
+    self.channels = [{'name': 'AIN0'}] if channels is None else channels
+    self.write_at_open = [] if write_at_open is None else write_at_open
+    self.no_led = no_led
+
     if self.no_led:
       self.write_at_open.append(('POWER_LED', 0))
     self.check_chan()
@@ -270,9 +298,7 @@ class Labjack_t7(InOut):
       ljm.eWriteNames(self.handle, len(names), names, values)
 
   def get_data(self):
-    """
-    Read the signal on all pre-defined input channels.
-    """
+    """Read the signal on all pre-defined input channels."""
 
     try:
       return [time()]+ljm.eReadAddresses(self.handle, len(self.read_addresses),
@@ -283,8 +309,7 @@ class Labjack_t7(InOut):
       raise
 
   def set_cmd(self, *cmd):
-    """
-    Convert the tension value to a digital value and send it to the output.
+    """Converts the tension value to a digital value and send it to the output.
 
     Note:
       Once a value has been written, it will not be written again until it
@@ -293,7 +318,6 @@ class Labjack_t7(InOut):
       It relies on the fact that these registers will not change between writes
       (Which is true unless the card runs a lua script writing the same
       registers as the user).
-
     """
 
     # values = []
@@ -319,9 +343,7 @@ class Labjack_t7(InOut):
                           values)
 
   def __getitem__(self, chan):
-    """
-    Allows reading of an input chan by calling lj[chan].
-    """
+    """Allows reading of an input chan by calling ``lj[chan]``."""
 
     # Apply offsets and stuff if this is a channel we know
     try:
@@ -332,9 +354,7 @@ class Labjack_t7(InOut):
       return time(), ljm.eReadName(self.handle, chan)
 
   def __setitem__(self, chan, val):
-    """
-    Allows setting of an output chan by calling lj[chan] = val.
-    """
+    """Allows setting of an output chan by calling ``lj[chan] = val``."""
 
     try:
       ljm.eWriteName(self.handle, chan,
@@ -343,26 +363,20 @@ class Labjack_t7(InOut):
       ljm.eWriteName(self.handle, chan, val)
 
   def write(self, value, address, dtype=None):
-    """
-    To write data directly into a register.
-    """
+    """To write data directly into a register."""
 
     if dtype is None:
       dtype = ljm.constants.FLOAT32
     ljm.eWriteAddress(self.handle, address, dtype, value)
 
   def read(self, address, dtype=None):
-    """
-    To read data directly from a register.
-    """
+    """To read data directly from a register."""
 
     if dtype is None:
       dtype = ljm.constants.FLOAT32
     return ljm.eReadAddress(self.handle, address, dtype)
 
   def close(self):
-    """
-    Close the device.
-    """
+    """Closes the device."""
 
     ljm.close(self.handle)

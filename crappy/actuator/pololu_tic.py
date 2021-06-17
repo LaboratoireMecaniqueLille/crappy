@@ -230,7 +230,7 @@ Tic_pin_polarity = {'Active low': 0,
 
 class Find_serial_number:
   """A class used for finding USB devices matching a given serial number, using
-     the usb.core.find method."""
+     the :meth:`usb.core.find` method."""
 
   def __init__(self, serial_number: str) -> None:
     self.serial_number = serial_number
@@ -240,12 +240,12 @@ class Find_serial_number:
 
 
 class Pololu_tic(Actuator):
-  """Class for controlling Pololu's Tic stepper motor divers
+  """Class for controlling Pololu's Tic stepper motor divers.
 
   The Pololu_tic Actuator block is meant for controlling a Pololu Tic stepper
   motor driver. It can be driven in both speed and position. Several Tic models
-  are supported. The length unit is the millimeter (mm), and time unit is the
-  second (s).
+  are supported. The length unit is the millimeter (`mm`), and time unit is the
+  second (`s`).
 
   Important:
     **Only for Linux users:** In order to drive the Tic, the appropriate udev
@@ -295,23 +295,23 @@ MODE=\\"0666\\\""" > pololu.rules
         manages speed and length conversions so that changing the step mode
         doesn't affect the motor behaviour.
       max_accel (:obj:`float`, optional): The maximum allowed acceleration for
-        the motor, in mm/s². When asked to reach a given speed or position,
+        the motor, in `mm/s²`. When asked to reach a given speed or position,
         the motor accelerates at this rate. It also corresponds to the maximum
         allowed deceleration. Usually doesn't need to be changed.
-      t_shutoff (:obj:`float`, optional): The ``Pololu_tic`` block features an
-        auto-shutoff thread that deenergizes the motor after a period of
-        t_shutoff seconds of inactivity. The timer counts in steps of `0.1s`,
-        which is thus the maximum precision for this setting. When set to `0`,
-        this feature is disabled and the motor remains energized until the
-        ``close`` method is called.
+      t_shutoff (:obj:`float`, optional): The :class:`Pololu_tic` block
+        features an auto-shutoff thread that deenergizes the motor after a
+        period of `t_shutoff` seconds of inactivity. The timer counts in steps
+        of `0.1s`, which is thus the maximum precision for this setting. When
+        set to `0`, this feature is disabled and the motor remains energized
+        until the :meth:`close` method is called.
       config_file (:obj:`str`, optional): The path of the config file to be
         loaded to the Tic. It only works if ``backend`` is 'ticcmd'. The config
         file contains some specific settings that can only be accessed this way
         using the 'ticcmd' backend. Not necessary for most applications.
       serial_number (:obj:`str`, optional): The serial number of the Tic to be
-        controlled. It must be given as a string, and it is an 8-digits number.
-        Allows to control the right device if several Tic of the same model are
-        connected. Otherwise an error is raised.
+        controlled. It must be given as a :obj:`str`, and it is an 8-digits
+        number. Allows to control the right device if several Tic of the same
+        model are connected. Otherwise an error is raised.
       model (:obj:`str`, optional): The model of the Tic to be controlled.
         Available models are:
         ::
@@ -323,11 +323,11 @@ MODE=\\"0666\\\""" > pololu.rules
       reset_command_timeout (:obj:`bool`, optional): Enables or disables the
         `reset_command_timeout` thread. It can only be disabled if ``backend``
         is 'USB'. This thread pings the Tic every `0.5s`, so that it doesn't
-        raise a Command Timeout error. This feature is a safety to prevent the
-        motor from running indefinitely if the USB connection is down, so it is
-        better not to disable it. When disabled the Tic never raises Command
-        Timeout errors, and a bit of memory if freed because of the thread not
-        running.
+        block due to a Command Timeout error. This feature is a safety to
+        prevent the motor from running indefinitely if the USB connection is
+        down, so it is better not to disable it. When disabled the Tic never
+        raises Command Timeout errors, and a bit of memory if freed because of
+        the thread not running.
       backend (:obj:`str`, optional): The backend for communicating with the
         Tic. Available backends are:
         ::
@@ -406,14 +406,14 @@ MODE=\\"0666\\\""" > pololu.rules
         reducing the noise, the electromagnetic interference, or the energy
         consumption.
       - ``serial_number``:
-        Serial numbers can be accessed using the lsusb command in Linux shell,
-        or running ``ticcmd --list`` if `ticcmd` is installed. This number is
-        also printed during ``__init__`` if only one device is connected and
-        ``serial_number`` is :obj:`None`.
+        Serial numbers can be accessed using the `lsusb` command in Linux
+        shell, or running ``ticcmd --list`` if `ticcmd` is installed. This
+        number is also printed during :meth:`__init__` if only one device is
+        connected and ``serial_number`` is :obj:`None`.
       - ``model``:
         The model is written on the Tic board, and can be accessed by running
         ``ticcmd --list`` in a shell if `ticcmd` is installed. It is also
-        printed during ``__init__`` if only one device is connected and
+        printed during :meth:`__init__` if only one device is connected and
         ``model`` is :obj:`None`.
       - **Pins settings**:
         The pin functions and polarity can also be set independently from
@@ -636,7 +636,7 @@ MODE=\\"0666\\\""" > pololu.rules
     self._thrd_shutoff = Thread(target=self._thread_shutoff)
 
   def open(self):
-    """Sets the communication, the motor parameters and starts the threads"""
+    """Sets the communication, the motor parameters and starts the threads."""
 
     if self._backend == 'USB':
       try:
@@ -684,7 +684,7 @@ MODE=\\"0666\\\""" > pololu.rules
       self._thrd_shutoff.start()
 
   def get_speed(self) -> float:
-    """Reads the current motor speed
+    """Reads the current motor speed.
 
         Returns:
           :obj:`float`: The speed in mm/s
@@ -702,7 +702,7 @@ MODE=\\"0666\\\""" > pololu.rules
         signed=True) / 10000)
 
   def get_pos(self) -> float:
-    """Reads the current motor position
+    """Reads the current motor position.
 
     Returns:
       :obj:`float`: The position in mm
@@ -721,12 +721,12 @@ MODE=\\"0666\\\""" > pololu.rules
         signed=True))
 
   def set_position(self, position: float, speed: float = None) -> None:
-    """Sends a position command to the motor
+    """Sends a position command to the motor.
 
     Args:
-      position (:obj:`float`): The position to reach in mm
+      position (:obj:`float`): The position to reach in `mm`
       speed (:obj:`float`, optional): The speed at which the motor should move
-        to the given position, in mm/s
+        to the given position, in `mm/s`
 
     Note:
       - ``speed``:
@@ -752,7 +752,7 @@ MODE=\\"0666\\\""" > pololu.rules
     self._set_position(position)
 
   def set_speed(self, speed: float) -> None:
-    """Sends a speed command to the motor
+    """Sends a speed command to the motor.
 
     Args:
       speed (:obj:`float`): The speed the motor should reach
@@ -787,12 +787,12 @@ MODE=\\"0666\\\""" > pololu.rules
     self._set_velocity(final_speed)
 
   def stop(self) -> None:
-    """Sets the speed to 0"""
+    """Sets the speed to `0`."""
 
     self._set_velocity(0)
 
   def close(self) -> None:
-    """Stops the motor, joins the threads and deenergizes the motor"""
+    """Stops the motor, joins the threads and deenergizes the motor."""
 
     self.stop()
     self._close = True
@@ -806,17 +806,17 @@ MODE=\\"0666\\\""" > pololu.rules
       usb.util.dispose_resources(self._dev)
 
   def _to_steps(self, mm: float) -> float:
-    """Wrapper for converting mm to steps"""
+    """Wrapper for converting `mm` to `steps`."""
 
     return mm * self._steps_per_mm * self._step_mode
 
   def _to_mm(self, steps: float) -> float:
-    """Wrapper for converting mm to steps"""
+    """Wrapper for converting `steps` to `mm`."""
 
     return steps / self._steps_per_mm / self._step_mode
 
   def _reset_command_timeout(self) -> None:
-    """Sends a reset command timeout command"""
+    """Sends a reset command timeout command."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--reset-command-timeout')
@@ -824,7 +824,7 @@ MODE=\\"0666\\\""" > pololu.rules
       self._usb_command(request=Tic_cmd['Reset_command_timeout'])
 
   def _enter_safe_start(self) -> None:
-    """Sends an enter safe start command"""
+    """Sends an enter safe start command."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--enter-safe-start')
@@ -832,7 +832,7 @@ MODE=\\"0666\\\""" > pololu.rules
       self._usb_command(request=Tic_cmd['Enter_safe_start'])
 
   def _exit_safe_start(self) -> None:
-    """Sends an exit safe start command"""
+    """Sends an exit safe start command."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--exit-safe-start')
@@ -840,7 +840,7 @@ MODE=\\"0666\\\""" > pololu.rules
       self._usb_command(request=Tic_cmd['Exit_safe_start'])
 
   def _deenergize(self) -> None:
-    """Sends a deenergize command"""
+    """Sends a deenergize command."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--deenergize')
@@ -848,7 +848,7 @@ MODE=\\"0666\\\""" > pololu.rules
       self._usb_command(request=Tic_cmd['Deenergize'])
 
   def _energize(self) -> None:
-    """Sends an energize command"""
+    """Sends an energize command."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--energize')
@@ -856,7 +856,7 @@ MODE=\\"0666\\\""" > pololu.rules
       self._usb_command(request=Tic_cmd['Energize'])
 
   def _set_step_mode(self) -> None:
-    """Sends a set step mode command"""
+    """Sends a set step mode command."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--step-mode', str(self._step_mode))
@@ -865,7 +865,7 @@ MODE=\\"0666\\\""" > pololu.rules
                           value=Tic_step_mode[self._step_mode])
 
   def _set_current_limit(self) -> None:
-    """Sends a set current limit command"""
+    """Sends a set current limit command."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--current', str(self._current_limit))
@@ -878,7 +878,7 @@ MODE=\\"0666\\\""" > pololu.rules
                         value=self._current_index)
 
   def _set_max_speed(self, speed: float) -> None:
-    """Clamps the speed within the limits and sets it"""
+    """Clamps the speed within the limits and sets it."""
 
     # The given speed may first need to be reduced or increased in order to
     # comply with the Tic ratings
@@ -902,7 +902,7 @@ MODE=\\"0666\\\""" > pololu.rules
                         data=int(max_speed))
 
   def _set_max_accel(self) -> None:
-    """Clamps the acceleration within the limits and sets it"""
+    """Clamps the acceleration within the limits and sets it."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--max-accel', str(int(
@@ -912,7 +912,7 @@ MODE=\\"0666\\\""" > pololu.rules
                        data=int(self._to_steps(self._max_accel * 100)))
 
   def _set_max_decel(self) -> None:
-    """Clamps the deceleration within the limits and sets it"""
+    """Clamps the deceleration within the limits and sets it."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--max-decel', str(int(
@@ -922,7 +922,7 @@ MODE=\\"0666\\\""" > pololu.rules
                        data=int(self._to_steps(self._max_accel * 100)))
 
   def _set_position(self, position: float) -> None:
-    """Sends a set position command"""
+    """Sends a set position command."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--position', str(int(self._to_steps(position))))
@@ -931,7 +931,7 @@ MODE=\\"0666\\\""" > pololu.rules
                        data=int(self._to_steps(position)))
 
   def _set_velocity(self, velocity: float) -> None:
-    """Sends a set velocity command"""
+    """Sends a set velocity command."""
 
     if self._backend == 'ticcmd':
       self._ticcmd('--velocity', str(int(velocity)))
@@ -940,7 +940,7 @@ MODE=\\"0666\\\""" > pololu.rules
                        data=int(velocity))
 
   def _get_max_speed(self) -> float:
-    """Reads the maximum speed from the motor"""
+    """Reads the maximum speed from the motor."""
 
     if self._backend == 'ticcmd':
       return self._to_mm(
@@ -956,7 +956,7 @@ MODE=\\"0666\\\""" > pololu.rules
           signed=False) / 10000)
 
   def _set_pin_function(self, pin_func: Dict[str, str]) -> None:
-    """Sets the pin function bitfields
+    """Sets the pin function bitfields.
 
     Sends a command for setting each pin separately, and three commands for
     setting the Kill switch, Limit switch forward and Limit switch reverse
@@ -1023,7 +1023,7 @@ MODE=\\"0666\\\""" > pololu.rules
                         index=Tic_settings['Limit_switch_reverse_map'])
 
   def _set_pin_polarity(self, pin_pol: Dict[str, str]) -> None:
-    """Sets the switch polarity bitfield"""
+    """Sets the switch polarity bitfield."""
 
     if self._backend == 'ticcmd':
       pass
@@ -1045,7 +1045,7 @@ MODE=\\"0666\\\""" > pololu.rules
                         index=Tic_settings['Switch_polarity_map'])
 
   def _reset(self) -> None:
-    """Resets the Tic and reloads the settings"""
+    """Resets the Tic and reloads the settings."""
 
     if self._backend == 'ticcmd':
       pass
@@ -1058,7 +1058,7 @@ MODE=\\"0666\\\""" > pololu.rules
                    value: int = 0,
                    index: int = 0,
                    data_or_length: int = 0) -> Union[bytearray, int]:
-    """Wrapper for sending a USB control transfer"""
+    """Wrapper for sending a USB control transfer."""
 
     with self._lock:
       try:
@@ -1072,14 +1072,14 @@ MODE=\\"0666\\\""" > pololu.rules
     return result
 
   def _usb_32_bit(self, request: int, data: int) -> None:
-    """Wrapper for sending USB requests containing 32-bits values"""
+    """Wrapper for sending USB requests containing 32-bits values."""
 
     value = data & 0xFFFF
     index = data >> 16 & 0xFFFF
     self._usb_command(request=request, value=value, index=index)
 
   def _ticcmd(self, *args: str) -> bytes:
-    """Wrapper for calling ticcmd in a subprocess"""
+    """Wrapper for calling ticcmd in a subprocess."""
 
     with self._lock:
       return subprocess.check_output(['ticcmd'] + ['-d'] +
@@ -1087,12 +1087,12 @@ MODE=\\"0666\\\""" > pololu.rules
                                        + list(args))
 
   def _thread_shutoff(self) -> None:
-    """Thread for deenergizing the motor after a given period of inactivity
+    """Thread for deenergizing the motor after a given period of inactivity.
 
-    This thread reads the speed every 0.1s, and increases a timer if the speed
-    is 0. Once the timer reaches _t_shutoff, deenergizes the motor. The timer
-    is reset if a speed or position command is issued, or if the speed is not
-    0.
+    This thread reads the speed every 0.1s, and increments a timer if the speed
+    is `0`. Once the timer reaches `_t_shutoff`, deenergizes the motor. The
+    timer is reset if a speed or position command is issued, or if the speed is
+    not `0`.
     """
 
     timer = 0
@@ -1127,7 +1127,7 @@ MODE=\\"0666\\\""" > pololu.rules
           timer = 0
 
   def _thread_rct(self) -> None:
-    """Thread for sending the reset command timeout command every 0.5s
+    """Thread for sending the reset command timeout command every `0.5s`.
 
     This prevents the motor from stopping because of a reset command timeout
     error. Only sends the command when the motor is energized.

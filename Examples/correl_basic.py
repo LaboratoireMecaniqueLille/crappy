@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-A basic example showing how to use the GPUCorrel block
+A basic example showing how to use the GPUCorrel block.
 
 Required hardware:
   - Any camera

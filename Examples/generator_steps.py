@@ -1,12 +1,12 @@
 # coding: utf-8
 
 """
-Example demonstrating the use of the generator with steps
+Example demonstrating the use of the generator with steps.
 
-In this example, we would like to reach different levels of strain
-and relax the sample (return to F=0) between each strain level
+In this example, we would like to reach different levels of strain and relax
+the sample (return to `F=0`) between each strain level.
 
-No required hardware
+No required hardware.
 """
 
 import crappy

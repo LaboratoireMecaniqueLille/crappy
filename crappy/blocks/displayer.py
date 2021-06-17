@@ -19,19 +19,12 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Displayer(Block):
+  """Simple image displayer using :mod:`cv2` or :mod:`matplotlib`.
+
+  Important:
+    One displayer can only display images from one camera.
   """
-  Simple image displayer using openCV or Matplotlib.
 
-  Note:
-    It can be paired with StreamerCamera.
-
-    Use cv=False to use the old, inefficient and deprecated version.
-
-  Warning!
-    You need to use one displayer block per window
-    (in other words, you can only attach one input to the diplayer).
-
-  """
   def __init__(self, framerate=5, backend='cv', title='Displayer'):
     Block.__init__(self)
     self.niceness = 10

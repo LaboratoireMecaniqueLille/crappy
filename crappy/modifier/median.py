@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import numpy as np
+from typing import Union
 
 from .modifier import Modifier
 
@@ -22,7 +23,7 @@ class Median(Modifier):
     Modifier.__init__(self)
     self.npoints = npoints
 
-  def evaluate(self, data: dict) -> dict:
+  def evaluate(self, data: dict) -> Union[dict, None]:
     if not hasattr(self, "last"):
       self.last = dict(data)
       for k in self.last:

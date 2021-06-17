@@ -1,9 +1,11 @@
+# coding: utf-8
+
 """
-Demonstration of a DIC controlled test
+Demonstration of a DIC controlled test.
 
-This program is intended as a demonstration and is fully virtual
+This program is intended as a demonstration and is fully virtual.
 
-No hardware required
+No hardware required.
 """
 
 import crappy

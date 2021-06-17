@@ -12,9 +12,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 def get_channel_number(channels):
-  """
-  Register needs to be called with the channel name as int.
-  """
+  """Register needs to be called with the channel name as :obj:`int`."""
 
   for i, channel in enumerate(channels):
     if isinstance(str, channel):
@@ -22,10 +20,8 @@ def get_channel_number(channels):
 
 
 def format_lists(list_to_format, length):
-  """
-  In case the user only specifies one parameter, and wants
-  it applied to all inputs.
-  """
+  """In case the user only specifies one parameter, and wants it applied to all
+  inputs."""
 
   if not isinstance(list_to_format, list):
     list_to_format = [list_to_format]
@@ -41,27 +37,25 @@ def format_lists(list_to_format, length):
 
 
 class Labjack_ue9(InOut):
-  """Can read data from a LabJack UE9
+  """Can read data from a LabJack UE9.
 
-  Note:
+  Important:
     Streamer mode and DAC are not supported yet.
-
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               channels=0,
+               gain=1,
+               offset=0,
+               make_zero=True,
+               resolution=12):
     InOut.__init__(self)
-    for arg, default in [('channels', 0),
-                         ('gain', 1),
-                         ('offset', 0),
-                         ('make_zero', True),
-                         ('resolution', 12),
-                         ]:
-      if arg in kwargs:
-        setattr(self, arg, kwargs[arg])
-        del kwargs[arg]
-      else:
-        setattr(self, arg, default)
-    assert len(kwargs) == 0, "Labjack_UE9 got unsupported arg(s)" + str(kwargs)
+    self.channels = channels
+    self.gain = gain
+    self.offset = offset
+    self.make_zero = make_zero
+    self.resolution = resolution
+
     self.channels = format_lists(self.channels, 0)
     self.nb_channels = len(self.channels)
     get_channel_number(self.channels)

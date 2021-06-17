@@ -25,30 +25,37 @@ except (ModuleNotFoundError, ImportError):
 
 def collect_serial(arduino, queue):
   """Collect serial information, in a parallel way."""
+
   while True:
     queue.put(arduino.readline())
 
 
 class ArduinoHandler(object):
-  """
-  This class creates every object (GUIs, Arduino) and handles communication
-  between them. inputs/outputs of arduino and GUIs.
+  """This class creates every object (GUIs, Arduino) and handles communication
+  between them. Inputs/outputs of arduino and GUIs.
 
   Note:
     The user doesn't interact directly with it, the Arduino IOBlock will create
     this handler.
 
-    The ArduinoHandler lives on a separate process from the ArduinoIOBlock.
-
+    The ArduinoHandler lives on a separate process from the :class:`Arduino`
+    class.
   """
 
   def __init__(self, *args):
 
+    super().__init__()
     kwargs = args[0]  # Because one cannot pass multiple kwargs when creating
     #  a process...
 
-    for key, value in kwargs.items():
-      setattr(self, key, value)
+    self.port = kwargs['port']
+    self.baudrate = kwargs['baudrate']
+    self.queue_process = kwargs['queue_process']
+    self.width = kwargs['width']
+    self.fontsize = kwargs['fontsize']
+    self.frames = kwargs['frames']
+    self.labels = kwargs['labels']
+
     self.arduino_ser = serial.Serial(port=self.port,
                                      baudrate=self.baudrate)
 
@@ -106,12 +113,10 @@ class ArduinoHandler(object):
       self.minitens_frame.pack()
 
   def update_serial(self):
-    """
-    Collect serial and writes in it (if applicable).
+    """Collects serial and writes in it (if applicable).
 
     Returns:
-      Received information, or None if nothing received in 0.01 secs.
-
+      Received information, or :obj:`None` if nothing received in `0.01` secs.
     """
 
     try:
@@ -131,9 +136,8 @@ class ArduinoHandler(object):
     return serial_received
 
   def send_guis(self, serial_received):
-    """
-    Send to every created GUI information received from arduino (if applicable)
-    """
+    """Send to every created GUI information received from arduino (if
+    applicable)."""
 
     if "monitor" in self.frames:
       self.monitor_frame.update_widgets(serial_received)
@@ -146,15 +150,12 @@ class ArduinoHandler(object):
         pass
 
   def send_crappy(self, serial_received):
-    """
-    Depending on which GUI is created.
+    """Depending on which GUI is created, multiple cases can occur.
 
-    Multiple cases can occur:
-      If monitor and/or submit GUI is created, the arduino string returned
-      must be evaluated as a dict.
+    If monitor and/or submit GUI is created, the arduino string returned must
+    be evaluated as a :obj:`dict`.
 
-      If minitens GUI is created, it returns a dict.
-
+    If minitens GUI is created, it returns a :obj:`dict`.
     """
 
     if isinstance(serial_received, dict):
@@ -168,9 +169,7 @@ class ArduinoHandler(object):
         print("[Arduino] %s: Skipping data" % e)
 
   def main_loop(self):
-    """
-    Update GUI, inputs and outputs.
-    """
+    """Update GUI, inputs and outputs."""
 
     while True and self.bool_loop:
       serial_received = self.update_serial()
@@ -192,58 +191,61 @@ class ArduinoHandler(object):
     self.queue_process.put("STOP")
 
   def close(self):
-    """
-    Exit main loop.
-    """
+    """Exit main loop."""
 
     self.bool_loop = False
 
 
 class Arduino(InOut):
-  """
-  Main class used to interface Arduino, its GUI and crappy.
+  """Main class used to interface Arduino, its GUI and crappy.
 
   Note:
     For reusability, make sure the program inside the arduino sends to the
     serial port a python dictionary formated string.
-
-  Args:
-    - port: Serial port of the arduino.
-    - baudrate: Baudrate defined inside the arduino program.
-    - width: Width of the GUI.
-    - fontsize: Size of the font inside the GUI.
-    - frames: Which frames to show.
-
-      Available:
-        - monitor
-        - submit
-        - minitens
-
   """
 
-  def __init__(self, **kwargs):
-    if not kwargs.pop("port", None):
+  def __init__(self,
+               port=None,
+               baudrate=9600,
+               labels=None,
+               frames=None,
+               width=100,
+               fontsize=11):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      port: Serial port of the arduino.
+      baudrate: Baudrate defined inside the arduino program.
+      labels:
+      frames: Which frames to show. Available frames are :
+        ::
+
+          'monitor', 'submit', 'minitens'
+
+      width: Width of the GUI.
+      fontsize: Size of the font inside the GUI.
+    """
+
+    super().__init__()
+    if port is None:
       # Tries to open the 5 first ttyACM's, that should be enough.
       for i in range(5):
         if exists('/dev/ttyACM' + str(i)):
           self.port = '/dev/ttyACM' + str(i)
           break
+    else:
+      self.port = port
 
-    for arg, default in [("baudrate", 9600),
-                         ("labels", None),
-                         ("frames", ["monitor", "submit"]),
-                         ("width", 100),
-                         ("fontsize", 11)]:
+    self.baudrate = baudrate
+    self.labels = labels
+    self.frames = ["monitor", "submit"] if frames is None else frames
+    self.width = width
+    self.fontsize = fontsize
 
-      setattr(self, arg, kwargs.pop(arg, default))
-
-    assert not kwargs, "[Arduino]: unknown kwarg(s):" + str(kwargs)
     self.queue_get_data = Queue()
 
   def open(self):
-    """
-    Opens ArduinoHandler.
-    """
+    """Opens :class:`ArduinoHandler`."""
 
     args_handler = {"port": self.port,
                     "baudrate": self.baudrate,
@@ -258,9 +260,7 @@ class Arduino(InOut):
     self.arduino_handler.start()
 
   def get_data(self):
-    """
-    Gets data from arduinoHandler, or the minitens GUI.
-    """
+    """Gets data from :class:`ArduinoHandler`, or the minitens GUI."""
 
     retrieved_from_arduino = self.queue_get_data.get()
     if retrieved_from_arduino == "STOP":

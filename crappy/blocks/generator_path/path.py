@@ -4,42 +4,35 @@ from time import time
 
 
 class Path(object):
-  """
-  Parent class for all paths.
-  """
+  """Parent class for all paths."""
 
-  def __init__(self, time_, cmd):
-    self.t0 = time_
+  def __init__(self, time, cmd):
+    self.t0 = time
     self.cmd = cmd
 
   def get_cmd(self, data):
     return self.cmd
 
   def parse_condition(self, condition):
-    """
-    This method turns a string into a function that returns a bool.
+    """This method turns a string into a function that returns a bool.
 
-    Note:
-      It is meant to check if a skip condition is reached.
+    It is meant to check if a skip condition is reached.
 
     The following syntax is supported:
-      - myvar>myvalue
-      - myvar<myvalue
-      - delay=mydelay
+      - ``myvar>myvalue``
+      - ``myvar<myvalue``
+      - ``delay=mydelay``
 
     Note:
-      myvar is the label of an input value.
+      `myvar` must be the label of an input value, `myvalue` should be a
+      :obj:`float`. This will return :obj:`True` when the data under the label
+      `myvar` is larger/smaller than `myvalue`.
 
-      myvalue is a float.
+      The condition will turn :obj:`True` after `mydelay` seconds.
 
-      This will return True when the data under the label myvar will be
-      larger/smaller than myvalue.
-
-      The condition will turn True after mydelay seconds.
-
-      Any other syntax will return True instantly.
-
+      Any other syntax will return :obj:`True`.
     """
+
     if not isinstance(condition, str):
       if condition is None or not condition:
         return lambda _: False  # For never ending conditions

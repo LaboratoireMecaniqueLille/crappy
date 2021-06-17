@@ -48,7 +48,7 @@ class Video_extenso(object):
   It will detect the spots, save the initial position, and return the measured
   deformation in the most simple way:
 
-    - It will always return a list of the spots coordinates (in pixel).
+    - It will always return a :obj:`list` of the spots coordinates (in pixel).
     - It will return `Exx`, `Eyy`, projections of the length of the bounding
       box of the spot on each axis, divided by its original length.
 
@@ -68,10 +68,10 @@ class Video_extenso(object):
 
     Args:
       white_spots: Set to :obj:`True` if the spots are lighter than the
-        surroundings, else set to :obj:`False`
+        surroundings, else set to :obj:`False`.
       update_thresh: Should the threshold be updated in each round ? If so
         there are lower chances to lose the spots but there will be more noise
-        in the measurement
+        in the measurement.
       num_spots: The number of spots to detect. Helps for spot detection and
         allows to force detection of a given number of spots (`"auto"` works
         fine most of the time). Can be set to:

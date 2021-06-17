@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Tuple
+from typing import Tuple, Any
 from .camera import Camera
 from .._global import OptionalModule
 import numpy as np
@@ -20,19 +20,19 @@ picamera_iso = [0, 100, 200, 320, 400, 500, 640, 800]
 
 
 class Picamera(Camera):
-  """Class for reading images from a PiCamera
+  """Class for reading images from a PiCamera.
 
   The Picamera Camera block is meant for reading images from a Picamera.
-  It uses the picamera module for capturing images, and openCV for converting
-  bgr images to black and white. The framerate is not optimal, but it allows to
-  tune a wide variety of image properties.
+  It uses the :mod:`picamera` module for capturing images, and :mod:`cv2` for
+  converting bgr images to black and white. The framerate is not optimal, but
+  it allows to tune a wide variety of image properties.
 
   Warning:
     Only works on Raspberry Pi !
   """
 
   def __init__(self) -> None:
-    """Instantiates the available settings"""
+    """Instantiates the available settings."""
 
     Camera.__init__(self)
     self._cam = PiCamera()
@@ -64,8 +64,8 @@ class Picamera(Camera):
     self.add_setting("Crop: height", self._get_crop_height,
                      self._set_crop_height, (0.0, 1.0), default=1.0)
 
-  def open(self, **kwargs: any) -> None:
-    """Sets the settings to their default values"""
+  def open(self, **kwargs: Any) -> None:
+    """Sets the settings to their default values."""
 
     for k in kwargs:
       assert k in self.available_settings, \
@@ -73,10 +73,10 @@ class Picamera(Camera):
     self.set_all(**kwargs)
 
   def get_image(self) -> Tuple[float, np.ndarray]:
-    """
-    Uses the picamera capture method for capturing an image. The captured image
-    is in bgr format, and converted into black and white if needed. Quite slow
-    since the encoder has to initialize before each capture.
+    """Uses the picamera capture method for capturing an image.
+
+    The captured image is in bgr format, and converted into black and white if
+    needed. Quite slow since the encoder has to initialize before each capture.
 
     Returns:
       The timeframe and the image
@@ -90,7 +90,7 @@ class Picamera(Camera):
     return t, output
 
   def close(self) -> None:
-    """Closes the PiCamera object"""
+    """Closes the :class:`picamera.PiCamera` object."""
 
     self._cam.close()
 

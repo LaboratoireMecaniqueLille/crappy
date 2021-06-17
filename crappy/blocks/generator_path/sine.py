@@ -7,22 +7,24 @@ from .path import Path
 
 
 class Sine(Path):
-  """
-  To generate a sine wave.
+  """To generate a sine wave."""
 
-  Args:
-    - amplitude: Amplitude of the sine wave.
-    - freq (in Hz): Frequency of the sine.
-    - condition (str): Representing the condition to end this path.
-      See Path.parse_condition for more detail.
-    - offset (default: 0): Offset of the sine.
-    - phase (default: 0): phase of the sine.
-
-  """
-
-  def __init__(self, time_, cmd, condition, freq, amplitude, offset=0,
+  def __init__(self, time, cmd, condition, freq, amplitude, offset=0,
                phase=0):
-    Path.__init__(self, time_, cmd)
+    """Sets the args and initializes parent class.
+
+    Args:
+      time:
+      cmd:
+      condition (:obj:`str`): Representing the condition to end this path. See
+        :ref:`generator path` for more info.
+      freq: Frequency of the sine in `Hz`.
+      amplitude: Amplitude of the sine wave.
+      offset (optional): Offset of the sine.
+      phase (optional): Phase of the sine.
+    """
+
+    Path.__init__(self, time, cmd)
     self.condition = self.parse_condition(condition)
     self.amplitude = amplitude / 2
     self.offset = offset

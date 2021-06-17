@@ -7,49 +7,51 @@ from ..actuator import actuator_list
 
 
 class Machine(Block):
-  """
-  To drive a machine with a one or more actuators.
+  """To drive a machine with a one or more :ref:`Actuators`.
 
-  Note:
-    Takes a list of dicts, containing the information to create each actuator.
-
-    Each key will stand for a parameter (see below), else they are transferred
-    to the actuator.
-
-  Args:
-    - actuators (list of dict): The list of the actuators of the machine.
-
-      Note:
-        Each dict must have keys according to the list below and the kwargs
-        you want to send to the actuator.
-
-    - common (dict, default: {}): The keys of this dict will be added to
-      each dict. However, if a same key is in an arg AND in common, the arg
-      will prevail.
-    - freq (float, default: 200): The looping frequency of the block.
-    - time_label (str, default: 't(s)'): If reading data from one or more
-      actuators, the time will also be returned under this label.
-    - spam (bool, default: False): If True, the command is sent on each loop,
-      else, it is sent every time a value is received.
-
-  Note:
-    If you want to forward a parameter to the actuator that has the name of
-    a key below, add an underscore at the end of its key.
-
-  Keys:
-    - type (str): The name of the actuator to instantiate.
-    - cmd (str): The label of the input to drive the axis.
-    - mode ({'speed', 'position'}, default='speed'): Will either call set_speed
-      or set_position on the actuator.
-    - speed: If mode is position, the speed of the axis.
-    - pos_label: If set, the block will return the value of .get_position
-      with this label.
-    - speed_label: same as pos_label but with get_speed.
-
+  Takes a :obj:`list` of :obj:`dict`, containing the information to create each
+  actuator. Each key will either stand for a parameter, or else they are
+  transferred to the actuator.
   """
 
-  def __init__(self, actuators, common=None, freq=200, time_label='t(s)',
+  def __init__(self,
+               actuators,
+               common=None,
+               freq=200,
+               time_label='t(s)',
                spam=False):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      actuators (:obj:`list`): The :obj:`list` of the :ref:`Actuators` of the
+        machine. It contains one or several :obj:`dict`, whose mandatory keys
+        are described below. The other keys will be passed to the actuator as
+        arguments.
+      common (:obj:`dict`, optional): The keys of this :obj:`dict` will be
+        common to all of the actuators. However if this conflicts with an
+        already existing key for an actuator, the latter will prevail.
+      freq (:obj:`float`, optional): The looping frequency of the block.
+      time_label (:obj:`str`, optional): If reading data from one or more
+        actuators, the time will be returned under this label.
+      spam (:obj:`bool`, optional): If :obj:`True`, a command is sent on each
+        loop of the block, else it is sent every time a value is received.
+
+    Note:
+      - ``actuators`` keys:
+
+        - ``type`` (:obj:`str`): The name of the actuator to instantiate.
+        - ``cmd`` (:obj:`str`): The label of the input to drive the axis.
+        - ``mode`` (:obj:`str`, default: `'speed'`): Can be either `'speed'` or
+          `'position'`. Will either call :meth:`set_speed` or
+          :meth:`set_position` to drive the actuator.
+        - ``speed`` (:obj:`float`): If mode is `'position'`, the speed of the
+          axis.
+        - ``pos_label`` (:obj:`str`): If set, the block will return the value
+          of :meth:`get_pos` with this label.
+        - ``speed_label`` (:obj:`str`): If set, the block will return the value
+          of :meth:`get_speed` with this label.
+    """
+
     Block.__init__(self)
     if common is None:
       common = {}

@@ -209,12 +209,12 @@ class CorrelStage:
   def set_orig(self, img):
     """To set the original image from a given CPU or GPU array.
 
-    Warning!
+    Warning:
       If it is a GPU array, it will NOT be copied.
 
     Note:
       The most efficient method is to write directly over `self.devOrig` with
-      some kernel and then run `self.update_orig()`.
+      some kernel and then run :meth:`update_orig`.
     """
 
     assert img.shape == (self.h, self.w), \
@@ -252,7 +252,8 @@ class CorrelStage:
     """Computes all necessary tables to perform correlation.
 
     Note:
-      This method must be called everytime the original image or fields are set
+      This method must be called everytime the original image or fields are
+      set.
 
       If not done by the user, it will be done automatically when needed.
     """
@@ -333,12 +334,11 @@ class CorrelStage:
 
     Note:
       This is necessary only once and can be done multiple times, but the
-      routine have to be initialized with `.prepare()`, causing a slight
-      overhead
+      routine have to be initialized with :meth:`prepare`, causing a slight
+      overhead.
 
-      Takes a tuple/list of 2 `(gpu)arrays[Nfields,x,y]` (one for displacement
-      along `x` and one along `y`).
-
+      Takes a :obj:`tuple` or :obj:`list` of 2 `(gpu)arrays[Nfields,x,y]` (one
+      for displacement along `x` and one along `y`).
     """
 
     self.debug(2, "Setting fields")
@@ -500,7 +500,7 @@ class GPUCorrel:
   This class is the core of the Correl block. It is meant to be efficient
   enough to run in real-time.
 
-  It relies on `CorrelStage` to perform correlation on different scales.
+  It relies on :class:`CorrelStage` to perform correlation on different scales.
 
   Requirements:
     - The computer must have a Nvidia video card with compute capability
@@ -509,7 +509,7 @@ class GPUCorrel:
     - `pycuda 2014.1` or higher (only tested with pycuda `2016.1.1`)
 
   Presentation:
-    This class takes a list of fields. These fields will be the base of
+    This class takes a :obj:`list` of fields. These fields will be the base of
     deformation in which the displacement will be identified. When given two
     images, it will identify the displacement between the original and the
     second image in this base as closely as possible lowering square-residual
@@ -539,7 +539,7 @@ class GPUCorrel:
     This class will resample the images and perform identification on a lower
     resolution, use the result to initialize the next stage, and again util it
     reaches the last stage. It will then return the computed parameters. The
-    number of levels can be set with `levels=x` (see `Usage`)
+    number of levels can be set with ``levels=x``.
 
     The latest parameters returned (if any) are used to initialize computation
     when called again, to help identify large displacement. It is particularly
@@ -547,30 +547,30 @@ class GPUCorrel:
 
     To lower the residual, this program computes the gradient of each parameter
     and uses Newton method to converge as fast as possible. The number of
-    iterations for the resolution can also be set (see `Usage`).
+    iterations for the resolution can also be set.
 
   Args:
     img_size (:obj:`tuple`): tuple of 2 :obj:`int`, `(y,x)`, the working
       resolution
 
-    verbose (:obj:`int`): Use `verbose=x` to choose the amount of information
+    verbose (:obj:`int`): Use ``verbose=x`` to choose the amount of information
       printed to the console:
 
-      - 0: Nothing except for errors
-      - 1: Only important info and warnings
-      - 2: Major info and a few values periodically (at a bearable rate)
-      - 3: Tons of info including details of each iteration
+      - `0`: Nothing except for errors
+      - `1`: Only important info and warnings
+      - `2`: Major info and a few values periodically (at a bearable rate)
+      - `3`: Tons of info including details of each iteration
 
-      Note that verbose=3` REALLY slows the program down. To be used only for
+      Note that `verbose=3` REALLY slows the program down. To be used only for
       debug.
 
-    fields (:obj:`list`): Use `fields=[...]` to set the fields. This can be
-      done later with ``set_fields()``, however in case when the fields are set
-      later, you need to add `Nfields=x` to specify at ``__init__`` the number
-      of expected fields in order to allocate all the necessary memory on the
-      device.
+    fields (:obj:`list`): Use ``fields=[...]`` to set the fields. This can be
+      done later with :meth:`set_fields`, however in case when the fields are
+      set later, you need to add ``Nfields=x`` to specify at :meth:`__init__`
+      the number of expected fields in order to allocate all the necessary
+      memory on the device.
 
-      The fields should be given as a :obj:`list` of tuples of 2
+      The fields should be given as a :obj:`list` of :obj:`tuple` of 2
       `numpy.ndarrays` or `gpuarray.GPUArray` of the size of the image, each
       array corresponds to the displacement in pixel along respectively `X` and
       `Y`.
@@ -625,8 +625,8 @@ class GPUCorrel:
     img: The original image. It must be given as a 2D `numpy.ndarray`. This
       block works with `dtype=np.float32`. If the `dtype` of the given image is
       different, it will print a warning and the image will be converted. It
-      can be given at ``__init__`` with the kwarg `img=MyImage` or later with
-      ``set_orig(MyImage)``.
+      can be given at :meth:`__init__` with the kwarg ``img=MyImage`` or later
+      with ``set_orig(MyImage)``.
 
       Note:
         You can reset it whenever you want, even multiple times but it will
@@ -634,14 +634,14 @@ class GPUCorrel:
 
       Once fields and original image are set, there is a short preparation time
       before correlation can be performed. You can do this preparation yourself
-      by using ``.prepare()``. If not called, it will be done automatically
+      by using :meth:`prepare`. If not called, it will be done automatically
       when necessary, inducing a slight overhead at the first call of
-      ``.get_disp()`` after setting/updating the fields or original image
+      :meth:`get_disp` after setting/updating the fields or original image.
 
     levels (:obj:`int`, optional): Number of levels of the pyramid. More levels
       can help converging with large and quick deformations but may fail on
       images without low spatial frequency. Fewer levels mean that the program
-      will run faster
+      will run faster.
 
     resampling_factor (:obj:`float`, optional): The resolution will be divided
       by this parameter between each stage of the pyramid. Low, can allow
@@ -650,16 +650,16 @@ class GPUCorrel:
       consistency between stages.
 
     iterations (:obj:`int`, optional): The MAXIMUM number of iteration to be
-      run before returning the values. Note that if the residual increases
+      ran before returning the values. Note that if the residual increases
       before reaching `x` iterations, the block will return anyway.
 
     mask (optional): To set the mask, to weight the zone of interest on the
       images. It is particularly useful to prevent undesired effects on the
-      border of the images.If no mask is given, a rectangular mask will be
+      border of the images. If no mask is given, a rectangular mask will be
       used, with border of `5%` the size of the image.
 
-    show_diff (:obj:`bool`, optional): Will open a `cv2` window and print the
-      difference between the original and the displaced image after
+    show_diff (:obj:`bool`, optional): Will open a :mod:`cv2` window and print
+      the difference between the original and the displaced image after
       correlation. `128 Gray` means no difference, lighter means positive and
       darker negative.
 
@@ -675,13 +675,13 @@ class GPUCorrel:
       require more iterations.
 
       After multiple tests, 3 was found to be a pretty acceptable value. Don't
-      hesitate to adapt it to your case. Use `verbose=3` and see if the
+      hesitate to adapt it to your case. Use ``verbose=3`` and see if the
       convergence is too slow or too fast.
 
   Note:
     The compared image can be given directly when querying the displacement
-    as a parameter to ``get_disp()`` or before, with ``set_image()``. You can
-    provide it as a `np.ndarray` just like `orig`, or as a
+    as a parameter to :meth:`get_disp` or before, with :meth:`set_image`. You
+    can provide it as a `np.ndarray` just like `orig`, or as a
     `pycuda.gpuarray.GPUArray`.
   """
 
@@ -964,7 +964,7 @@ to allow GPU computing (got {}). Converting to float32."
     Usually, the correlation is correct when `res < ~1e9-10` but it really
     depends on the images: you need to find the value that suit your own
     images, depending on the resolution, contrast, correlation method etc...
-    You can use `write_diff_file` to visualize the difference between the
+    You can use :meth:`write_diff_file` to visualize the difference between the
     two images after correlation.
     """
 

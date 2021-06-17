@@ -14,56 +14,49 @@ from .block import Block
 
 
 class Hdf_saver(Block):
-  """
-  To save data efficiently in a hdf5 file.
+  """To save data efficiently in a hdf5 file.
 
-  Note:
-    This block is is meant to save data coming by arrays at a high rate (>1kHz)
+  This block is is meant to save data coming by arrays at a high rate
+  (`>1kHz`). It uses the module :mod:`tables`.
 
-    It uses the module tables from pytables.
-
-    Do not forget to specify the type of data to be saved (see atom parameter)
-    to avoid casting the data into another type, as this could result in data
-    loss or inefficient saving.
-
-  Kwargs:
-    - node (str, default: "table"): The name of the node where the data will be
-      saved.
-    - expected_rows (int, default: 10**8): The number of expected rows in the
-      file.
-
-      Note:
-        It is used to optimize the dumping.
-
-    - atom (tables.Atom / numpy.dtype / str, default: tables.Int16Atom()): This
-      represent the type of data to be stored in the table.
-
-      Note:
-        It can be given as a tables.Atom instance.
-
-        Also it can be given as an Numpy type or a str.
-
-    - label (str, default: "stream"): The key of the dict that contains the
-      array to save.
-    - metadata (dict, default: {}): A dict containing additional info to save
-      in the hdf5 file.
-
-      Note:
-        You can add any type of info, they will be written when opening the
-        file at the node corresponding to its key.
-
+  Important:
+    Do not forget to specify the type of data to be saved (see ``atom``
+    parameter) to avoid casting the data into another type, as this could
+    result in data loss or inefficient saving.
   """
 
-  def __init__(self, filename, **kwargs):
+  def __init__(self,
+               filename,
+               node='table',
+               expected_rows=10**8,
+               atom=None,
+               label='stream',
+               metadata=None):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      filename (:obj:`str`): Path of the file where the data should be saved.
+      node (:obj:`str`, optional): The name of the node where the data will be
+        saved.
+      expected_rows (:obj:`int`, optional): The number of expected rows in the
+        file. It is used to optimize the dumping.
+      atom (optional): This represent the type of data to be stored in the
+        table. It can be given as a :class:`tables.Atom` instance, as a
+        :class:`numpy.array` or as a :obj:`str`.
+      label (:obj:`str`, optional): The key of the :obj:`dict` that contains
+        the array to save.
+      metadata (:obj:`dict`, optional): A :obj:`dict` containing additional
+        info to save in the `hdf5` file.
+    """
+
     Block.__init__(self)
     self.filename = filename
-    for arg, default in [("node", "table"),
-                        ("expected_rows", 10**8),
-                        ("atom", tables.Int16Atom()),
-                        ("label", "stream"),
-                        ("metadata", {})]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert not kwargs, "Invalid kwarg(s) in Hdf_saver: " + str(kwargs)
+    self.node = node
+    self.expected_rows = expected_rows
+    self.atom = tables.Int16Atom() if atom is None else atom
+    self.label = label
+    self.metadata = {} if metadata is None else metadata
+
     if not isinstance(self.atom, tables.Atom):
       self.atom = tables.Atom.from_dtype(np.dtype(self.atom))
 

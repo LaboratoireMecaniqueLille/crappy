@@ -4,29 +4,37 @@ from .path import Path
 
 
 class Protection(Path):
+  """Useful to protect samples from being pulled apart when setting up a test.
   """
-  Useful to protect samples from being pulled apart when setting up a test.
 
-  Note:
-    By default will send value0.
-
-    While condition1 is met, will return value1.
-
-    While condition2 is met, will return value2.
-
-    If condition1 and condition2 are met simultaneously, the first one met
-    will prevail. If met at the same time, condition1 will prevail.
-
-  Args:
-    - value0: value to send when no condition is reached.
-    - condition1 (str): Representing the first condition.
-      See Path.parse_condition for more detail.
-    - value1: value to send when condition1 is met.
-    - condition2 (str): Representing the second condition.
-    - value2: value to send when condition2 is met.
-  """
   def __init__(self, time, cmd, condition1, condition2, value1, value2,
                value0=0, verbose=False):
+    """Sets the args and initializes parent class.
+
+    Args:
+      time:
+      cmd:
+      condition1 (:obj:`str`): Representing the first condition. See
+        :ref:`generator path` for more info.
+      condition2 (:obj:`str`): Representing the second condition. See
+        :ref:`generator path` for more info.
+      value1: Value to send when ``condition1`` is met.
+      value2: Value to send when ``condition2`` is met.
+      value0: Value to send when no condition is reached.
+      verbose:
+
+    Note:
+      By default will send ``value0``.
+
+      While ``condition1`` is met, will return ``value1``.
+
+      While ``condition2`` is met, will return ``value2``.
+
+      If ``condition1`` and ``condition2`` are met simultaneously, the first
+      one met will prevail. If met at the same time, ``condition1`` will
+      prevail.
+    """
+
     Path.__init__(self, time, cmd)
     self.value = (value0, value1, value2)
     self.condition1 = self.parse_condition(condition1)

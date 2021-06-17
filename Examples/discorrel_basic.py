@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Basic example demonstrating the use of the DISCorrel block
+Basic example demonstrating the use of the DISCorrel block.
 
 Required hardware:
   - Any camera

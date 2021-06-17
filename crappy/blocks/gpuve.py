@@ -11,47 +11,63 @@ except (ModuleNotFoundError, ImportError):
     raise ModuleNotFoundError("pycuda")
 
 from ..tool import GPUCorrel as GPUCorrel_tool
-from .camera import Camera, kw as default_cam_block_kw
+from .camera import Camera
 
 
 class GPUVE(Camera):
-  """
-  An optical Videoextensometry measuring the displacement of small
-  areas using GPU accelerated DIC.
+  """An optical Videoextensometry measuring the displacement of small areas
+  using GPU accelerated DIC.
 
-  Warning!
-    Patches must be a list of tuples of length 4.
+  This block simply returns the displacement of each region along `x` and `y`
+  in pixel. It will not return the strain as it does not know how the patches
+  are arranged. It should be done by another block or a condition if necessary.
 
-    Each tuple contains the origin and the size of
-    each patch along Y and X respectively (ie Oy,Ox,Ly,Lx).
-
-  Note:
-    This block simply returns the displacement of each region along x and y
-    in pixel.
-
-    This block will not return the strain as it does not know
-    how the patches are arranged.
-
-    It should be done by another block or a condition if necessary.
+  Important:
+    ``patches`` must be a :obj:`list` of :obj:`tuple` of length `4`. Each tuple
+    contains the origin and the size of each patch along `Y` and `X`
+    respectively (i.e. `Oy, Ox, Ly, Lx`).
   """
 
-  def __init__(self, camera, patches, **kwargs):
+  def __init__(self,
+               camera,
+               patches,
+               save_folder=None,
+               verbose=False,
+               labels=None,
+               fps_label=False,
+               img_name="{self.loops:06d}_{t-self.t0:.6f}",
+               ext='tiff',
+               save_period=1,
+               save_backend=None,
+               transform=None,
+               input_label=None,
+               config=True,
+               cam_kwargs=None,
+               **kwargs):
     self.ready = False
-    self.patches = patches
     cam_kw = {}
+    self.patches = patches
     # Kwargs to be given to the camera BLOCK
     # ie save_folder, config, etc... but NOT the labels
-    for k, v in default_cam_block_kw.items():
-      if k == 'labels':
-        continue
-      cam_kw[k] = kwargs.pop(k, v)
+
+    cam_kw['save_folder'] = save_folder
+    cam_kw['verbose'] = verbose
+    cam_kw['fps_label'] = fps_label
+    cam_kw['img_name'] = img_name
+    cam_kw['ext'] = ext
+    cam_kw['save_period'] = save_period
+    cam_kw['save_backend'] = save_backend
+    cam_kw['transform'] = transform
+    cam_kw['input_label'] = input_label
+    cam_kw['config'] = config
+
     self.verbose = cam_kw['verbose']  # Also, we keep the verbose flag
-    cam_kw.update(kwargs.pop('cam_kwargs', {}))
+    if cam_kwargs is not None:
+      cam_kw.update(cam_kwargs)
     Camera.__init__(self, camera, **cam_kw)
     self.transform = cam_kw.get("transform")
 
     # Creating the tuple of labels (to name the outputs)
-    labels = kwargs.pop('labels', None)
     if labels is not None:
       assert len(labels) == len(patches) * 2,\
           "The number of labels must be twice the number of patches (x and y)"
@@ -65,24 +81,13 @@ class GPUVE(Camera):
     self.res = kwargs.get("res", True)
     if self.res:
       self.labels += ("res",)
-    if "cam_kwargs" in kwargs:
-      self.cam_kwargs = kwargs["cam_kwargs"]
-      del kwargs["cam_kwargs"]
-    else:
-      self.cam_kwargs = {}
-    if "save_folder" in kwargs:
-      self.save_folder = kwargs["save_folder"]
-      del kwargs["save_folder"]
-    else:
-      self.save_folder = None
-    if "save_period" in kwargs:
-      self.save_period = kwargs["save_period"]
-      del kwargs["save_period"]
-    else:
-      self.save_period = 1
+
+    self.cam_kwargs = {} if cam_kwargs is None else cam_kwargs
+    self.save_folder = save_folder
+    self.save_period = 1
     self.kwargs = kwargs
 
-  def prepare(self):
+  def prepare(self, **_):
     cuda_init()
     self.context = make_default_context()
     Camera.prepare(self, send_img=False)

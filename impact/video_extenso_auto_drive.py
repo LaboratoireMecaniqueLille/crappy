@@ -1,8 +1,8 @@
 # coding: utf-8
 
 """
-Code demonstrating the use of a linear actuator to follow the
-videoextensometry markers during a test with large strains
+Code demonstrating the use of a linear actuator to follow the videoextensometry
+markers during a test with large strains.
 """
 
 import crappy

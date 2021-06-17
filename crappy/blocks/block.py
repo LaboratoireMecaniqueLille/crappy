@@ -12,17 +12,14 @@ import subprocess
 
 
 def renice(pid, niceness):
-  """
-  Function to renice a process.
+  """Function to renice a process.
 
-  Warning!
-    Only works on Linux.
+  Warning:
+    Only works in Linux.
 
   Note:
-    The user must be allowed to use sudo to renice with a negative value.
-
-    It may ask for a password for negative values.
-
+    The user must be allowed to use ``sudo`` to renice with a negative value.
+    May thus ask for a password for negative values.
   """
 
   if niceness < 0:
@@ -32,52 +29,7 @@ def renice(pid, niceness):
 
 
 class Block(Process):
-  """
-  This represent a Crappy block, it must be parent of all the blocks.
-
-  Methods:
-    - main(): It must not take any arg, it is where you define the main loop of
-      the block.
-
-      Note:
-        If not overridden, will raise an error.
-
-    - add_[in/out]put(Link object): Add a link as in/output.
-    - prepare(): This method will be called inside the new process but before
-      actually starting the main loop of the program.
-
-      Note:
-        Use it for all the tasks to be done before starting the main loop.
-
-        It can be empty.
-
-    - start(): This is the same start method as Process.start: it starts the
-      process, so the initialization (defined in prepare method)
-      will be done, but NOT the main loop.
-    - launch(t0): Once the process is started, calling launch will set the
-      starting time and actually start the main method.
-
-      Note:
-        If the block was not started yet, it will be done automatically.
-
-        t0: Time to set as starting time of the block
-        (mandatory, in seconds after epoch).
-
-    - status: Property that can be accessed both in the process or from the
-      parent.
-
-      It can be:
-        - "idle": Block not started yet.
-        - "initializing": start was called and prepare is not over yet.
-        - "ready": prepare is over, waiting to start main by calling launch.
-        - "running": main is running.
-        - "done": main is over.
-        - "error": An error occurred and the block stopped.
-
-      Note:
-        Start and launch method will return instantly.
-
-  """
+  """This represent a Crappy block, it must be parent of all the blocks."""
 
   instances = WeakSet()
 
@@ -149,25 +101,22 @@ class Block(Process):
 
   @classmethod
   def all_are(cls, s):
-    """
-    Returns true only if all processes status are s.
-    """
+    """Returns :obj:`True` only if all processes status are `s`."""
 
     lst = cls.get_status()
     return len(set(lst)) == 1 and s in lst
 
   @classmethod
   def renice_all(cls, high_prio=True, **_):
-    """
-    Will renice all the blocks processes according to block.niceness value.
+    """Will renice all the blocks processes according to ``block.niceness``
+    value.
 
     Note:
-      If high_prio is False, blocks with a negative niceness value will
-      be ignored.
+      If ``high_prio`` is :obj:`False`, blocks with a negative niceness value
+      will be ignored.
 
-      This is to avoid asking for the sudo password since only
-      root can lower the niceness of processes.
-
+      This is to avoid asking for the ``sudo`` password since only root can
+      lower the niceness of processes.
     """
 
     if "win" in platform:
@@ -180,10 +129,9 @@ class Block(Process):
 
   @classmethod
   def prepare_all(cls, verbose=True):
-    """
-    Starts all
-    the blocks processes (block.prepare), but not the main loop.
-    """
+    """Starts all the blocks processes (``block.prepare``), but not the main
+    loop."""
+
     if verbose:
       def vprint(*args):
         print("[prepare]", *args)
@@ -260,9 +208,7 @@ class Block(Process):
 
   @classmethod
   def stop_all(cls, verbose=True):
-    """
-    Stops all the blocks (crappy.stop).
-    """
+    """Stops all the blocks (``crappy.stop``)."""
 
     if verbose:
       def vprint(*args):
@@ -278,18 +224,14 @@ class Block(Process):
     vprint("All blocks are stopped.")
 
   def begin(self):
-    """
-    If main is not overriden, this method will be called first, before
-    entering the main loop.
-    """
+    """If :meth:`main` is not overridden, this method will be called first,
+    before entering the main loop."""
 
     pass
 
   def finish(self):
-    """
-    If main is not overriden, this method will be called upon exit or after
-    a crash.
-    """
+    """If :meth:`main` is not overridden, this method will be called upon exit
+    or after a crash."""
 
     pass
 
@@ -297,15 +239,20 @@ class Block(Process):
     raise NotImplementedError('You must override loop or main in' + str(self))
 
   def main(self):
+    """This is where you define the main loop of the block.
+
+    Important:
+      If not overridden, will raise an error.
+    """
+
     while not self.pipe2.poll():
       self.loop()
       self.handle_freq()
     print("[%r] Got stop signal, interrupting..." % self)
 
   def handle_freq(self):
-    """
-    For block with a given number of loops/s (use freq attr to set it).
-    """
+    """For block with a given number of `loops/s` (use ``freq`` attribute to
+    set it)."""
 
     self._MB_loops += 1
     t = time()
@@ -324,8 +271,15 @@ class Block(Process):
       self._MB_last_FPS = self._MB_last_t
 
   def launch(self, t0):
-    """
-    To start the main method, will call start if needed.
+    """To start the :meth:`main` method, will call :meth:`Process.start` if
+    needed.
+
+    Once the process is started, calling launch will set the starting time and
+    actually start the main method.
+
+    Args:
+      t0 (:obj:`float`): Time to set as starting time of the block (mandatory,
+        in seconds after epoch).
     """
 
     if self.status == "idle":
@@ -335,8 +289,18 @@ class Block(Process):
 
   @property
   def status(self):
-    """
-    Returns the status of the block, from the process itself or the parent.
+    """Returns the status of the block, from the process itself or the parent.
+
+    It can be:
+
+      - `"idle"`: Block not started yet.
+      - `"initializing"`: :meth:`start` was called and :meth:`prepare` is not
+        over yet.
+      - `"ready"`: :meth:`prepare` is over, waiting to start :meth:`main` by
+        calling :meth:`launch`.
+      - `"running"`: :meth:`main` is running.
+      - `"done"`: :meth:`main` is over.
+      - `"error"`: An error occurred and the block stopped.
     """
 
     if not self.in_process:
@@ -363,32 +327,25 @@ class Block(Process):
     self._status = s
 
   def prepare(self):
-    """
-    This will be run when creating the process, but before the actual start.
+    """This will be run when creating the process, but before the actual start.
 
-    Note:
-      The first code to be run in the new process, will only be called
-      once and before the actual start of the main launch of the blocks.
+    The first code to be run in the new process, will only be called once and
+    before the actual start of the main launch of the blocks.
 
-      It can stay empty to do nothing.
-
+    It can remain empty and do nothing.
     """
 
     pass
 
   def send(self, data):
-    """
-    To send the data to all blocks downstream.
+    """To send the data to all blocks downstream.
 
-    Send has 2 ways to operate:
-      You can either build the ordered dict yourself.
-
-      Or you can define self.labels (usually time first) and call send with a
-      list. It will then map them to the dict.
+    Send has 2 ways to operate. You can either build the :obj:`dict` yourself,
+    or you can define ``self.labels`` (usually time first) and call send with a
+    :obj:`list`. It will then map them to the :obj:`dict`.
 
     Note:
-      That ONLY dict can go through links.
-
+      ONLY :obj:`dict` can go through links.
     """
 
     if isinstance(data, dict):
@@ -403,14 +360,13 @@ class Block(Process):
       o.send(data)
 
   def recv_all(self):
-    """
-    Receive new data from all the inputs (not as chunks).
+    """Receives new data from all the inputs (not as chunks).
 
-    Note:
-      It will simply call recv on all non empty links and return a single dict.
+    It will simply call :meth:`Pipe.recv` on all non empty links and return a
+    single :obj:`dict`.
 
-      If the same label comes from multiple links, it may be overriden.
-
+    Important:
+      If the same label comes from multiple links, it may be overridden !
     """
 
     r = {}
@@ -420,27 +376,25 @@ class Block(Process):
     return r
 
   def get_last(self, num=None):
-    """
-    To get the latest value of each labels from all inputs.
+    """To get the latest value of each labels from all inputs.
 
-    Warning!
-      Unlike the recv methods of Link, get_last is NOT guaranteed to return
-      all the data going through the links!
+    Warning:
+      Unlike the ``recv`` methods of :ref:`Link`, this method is NOT guaranteed
+      to return all the data going through the links!
 
-      It is meant to get the latest values, discarding all the previous one
+      It is meant to get the latest values, discarding all the previous ones
       (for a displayer for example).
 
       Its mode of operation is completely different since it can operate on
       multiple inputs at once.
 
-    Note:
-      num is a list containing all the concerned inputs.
+    Args:
+      num (:obj:`list`, optional): A :obj:`list` containing ll the concerned
+        inputs. If :obj:`None` it will operate on all the input links at once.
 
+    Note:
       The first call may be blocking until it receives data, all the others
       will return instantaneously, giving the latest known reading.
-
-      If num is None, it will operate on all the input link at once.
-
     """
 
     if not hasattr(self, '_last_values'):
@@ -460,16 +414,13 @@ class Block(Process):
     return ret
 
   def get_all_last(self, num=None):
-    """
-    To get the data from all links of the block.
+    """To get the data from all links of the block.
 
-    Note:
-      It is almost the same as get_last, but will return all the data that goes
-      through the links (in lists).
+    It is almost the same as :meth:`get_last`, but will return all the data
+    that goes through the links (as :obj:`list`).
 
-      Also, if multiple links have the same label,
-      only the last link's value will be kept.
-
+    Also, if multiple links have the same label, only the last link's value
+    will be kept.
     """
 
     if not hasattr(self, '_all_last_values'):
@@ -492,12 +443,12 @@ class Block(Process):
     return ret
 
   def recv_all_delay(self, delay=None, poll_delay=.1):
-    """
-    Method to wait for data, but continuously reading all the links
-    to make sure that it does not block
+    """Method to wait for data, but continuously reading all the links to make
+    sure that it does not block.
 
-    Returns a list where each entry is what would have been returned by
-    recv_chunk on each link
+    Return:
+      A :obj:`list` where each entry is what would have been returned by
+      :meth:`Link.recv_chunk` on each link.
     """
 
     if delay is None:
@@ -521,12 +472,10 @@ class Block(Process):
     return r
 
   def drop(self, num=None):
-    """
-    Will clear the inputs of the blocks.
+    """Will clear the inputs of the blocks.
 
-    Note:
-      This method performs like get_last, but returns None instantly.
-
+    This method performs like :meth:`get_last`, but returns :obj:`None`
+    instantly.
     """
 
     if num is None:
@@ -537,9 +486,13 @@ class Block(Process):
       self.inputs[n].clear()
 
   def add_output(self, o):
+    """Adds a :ref:`Link` as an output."""
+
     self.outputs.append(o)
 
   def add_input(self, i):
+    """Adds a :ref:`Link` as an input."""
+
     self.inputs.append(i)
 
   def stop(self):

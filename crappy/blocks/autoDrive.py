@@ -7,49 +7,45 @@ from ..actuator import actuator_list
 
 
 class AutoDrive(Block):
-  """
-  To follow the spots with videoextenso.
+  """To follow the spots with VideoExtenso.
 
-  Note:
-    This blocks takes the output of a Videoextenso block and uses the spots
-    coordinates to drive an actuator, on which the camera is mounted.
+  This blocks takes the output of a :ref:`VideoExtenso` block and uses the
+  spots coordinates to drive an actuator, on which the camera is mounted.
 
-    This will allow the camera to follow the spots along an axis.
+  This will allow the camera to follow the spots along an axis.
 
-    It is simply a P loop: the difference in pixel between the barycenter
-    of the spots and the middle of the image along the given axis is multiplied
-    by P and set as the speed of the actuator.
-
-  Kwargs:
-    - P (float, default: 2000): The gain.
-    - direction (two chars string: {X,Y}{+,-}, default: "Y-"): What axis should
-      be considered, and in which direction ?
-    - range (int, default: 2048): the size in pixel of the image along this
-      axis.
-    - max_speed (float, default: 200000): The absolute max value to send to the
-      actuator.
-
+  It is simply a `P` loop: the difference in pixel between the barycenter
+  of the spots and the middle of the image along the given axis is multiplied
+  by `P` and set as the speed of the actuator.
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               actuator=None,
+               P=2000,
+               direction='Y-',
+               range=2048,
+               max_speed=200000):
+    """Sets the args and initializes parent class.
+
+    Args:
+      actuator (:obj:`str`, optional):
+      P (:obj:`float`, optional): The gain for commanding the actuator.
+      direction (:obj:`str`, optional): What axis should be considered, and in
+        which direction ? A :obj:`str` whose first character is the axis (`X`
+        or `Y`) and second character is the direction (`+` or `-`).
+      range (:obj:`int`, optional): The size in pixel of the image along the
+        chosen axis.
+      max_speed (:obj:`float`, optional): The absolute max value to send to the
+        actuator.
+    """
+
     Block.__init__(self)
-    for arg, default in [('actuator', {'name': 'CM_drive'}),
-                         ('P', 2000),
-                         # The gain for commanding the technical/actuator
-                         ('direction', 'Y-'),  # The direction to follow
-                         # (X/Y +/-), depending on camera orientation
-                         ('range', 2048),  # The number of pixels in this
-                         # direction
-                         ('max_speed', 200000)  # To avoid loosing spots
-                         # when going to fast
-                         ]:
-      setattr(self, arg, kwargs.get(arg, default))
-      try:
-        del kwargs[arg]
-      except KeyError:
-        pass
-    if len(kwargs) != 0:
-      raise AttributeError("[AutoDrive] Unknown kwarg(s):" + str(kwargs))
+    self.actuator = {'name': 'CM_drive'} if actuator is None else actuator
+    self.P = P
+    self.direction = direction
+    self.range = range
+    self.max_speed = max_speed
+
     sign = -1 if self.direction[1] == '-' else 1
     self.P *= sign
     self.labels = ['t(s)', 'diff(pix)']

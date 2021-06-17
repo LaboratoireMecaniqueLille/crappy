@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Demonstrates how to use the stream mode on Labjack T7 boards
+Demonstrates how to use the stream mode on Labjack T7 boards.
 
 Hardware required:
   - Labjack T7
@@ -13,9 +13,9 @@ import numpy as np
 
 
 def my_mean(data):
-  """
-  Average the blocks of data to lower the freq and allow a real-time plot
-  """
+  """Average the blocks of data to lower the freq and allow a real-time
+  plot."""
+
   for k, val in data.items():
     data[k] = np.mean(val)
   return data

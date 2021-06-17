@@ -13,85 +13,114 @@ except ImportError:
 
 
 class T7_streamer(InOut):
-  """
-  Class to use stream mode with Labjack T7 devices.
+  """Class to use stream mode with Labjack T7 devices.
 
   Note:
-    For single modes, see Labjack_t7.
+    For single modes, see :ref:`Labjack T7`.
 
-    You can use IOBlock with streamer=True to read data at high frequency from
-    the Labjack. Streamer mode makes the Labjack unavailable for any other
-    operation (single acq, DAC or DIO).
+    You can use :ref:`IOBlock` with ``streamer=True`` to read data at high
+    frequency from the Labjack. Streamer mode makes the Labjack unavailable for
+    any other operation (single acquisition, `DAC` or `DIO`).
 
-    You can specify each channel as a dict, allowing to set channel-specific
-    settings such as gain, offset (computed on the host machine as this feature
-    is not available on board with streamer mode), range and ability to zero
-    the reading at startup.
-
-  Args:
-    - device (str, default: 'ANY'): The type of the device to open. Ex: 'T7'.
-    - connection (str, default: 'ANY'): How is the Labjack connected ?
-      Ex: 'USB', 'ETHERNET',..
-    - identifier (str, default: 'ANY'): Something to identify the Labjack.
-
-      Note:
-        It can be a name, serial number or functionality.
-
-    - channels: Channels to use and their settings. It must be a list of dicts.
-    - scan_rate (int, default: 100000): The acquisition frequency in Hz for the
-      channels.
-
-      Note:
-        The sample rate (scan_rate*num of chan) cannot exceed 100000
-
-        If too high, it will be lowered to the highest possible value.
-
-    - scan_per_read (default: 10000): The number of points to read on each loop
-    - resolution: The resolution index for all channels. The higher it is,
-      the slower the acquisition will be (but more precise).
-
-      Note:
-        It cannot be set for each channel in streamer mode.
-
-  Channel keys:
-    - name (str): The name of the channel according to Labjack's naming
-      convention. Ex: 'AIN0'. This will be used to define the direction
-      (in/out) and the available settings.
-
-      Note:
-        Only inputs can be used in stream mode.
-
-    - gain (default: 1): A numeric value that will multiply the given value for
-      inputs and outputs.
-    - offset (default: 0): Will be added to the value.
-
-      Note:
-        returned_value = gain*measured_value+offset, where measured_value is
-        in Volts.
-
-    - make_zero: If True the input value will be evaluated at startup
-      and the offset will be adjusted to return 0 (or the offset if any).
-    - range ({10, 1, .1, .01}, in Volts, default: 10): The range of the
-      acquisition.
-
-      Note:
-        10 means -10V>+10V
-
+    You can specify each channel as a :obj:`dict`, allowing to set
+    channel-specific settings such as gain, offset (computed on the host
+    machine as this feature is not available on board with streamer mode),
+    range and ability to zero the reading at startup.
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self,
+               device='ANY',
+               connection='ANY',
+               identifier='ANY',
+               channels=None,
+               scan_rate=100000,
+               scan_per_read=10000,
+               resolution=1):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      device (:obj:`str`, optional): The type of the device to open. Possible
+        values include:
+        ::
+
+          'ANY', 'T7', 'T4', 'DIGIT'
+
+        Only tested with `'T7'` in Crappy.
+      connection (:obj:`str`, optional): How is the Labjack connected ?
+        Possible values include:
+        ::
+
+          'ANY', 'TCP', 'USB', 'ETHERNET', 'WIFI'
+
+      identifier (:obj:`str`, optional): Something to identify the Labjack. It
+        can be a serial number, an IP address, or a device name.
+      channels (:obj:`list`, optional): Channels to use and their settings. It
+        must be a :obj:`list` of :obj:`dict`.
+      scan_rate (:obj:`int`, optional): The acquisition frequency in Hz for the
+        channels. Note that the sample rate (`scan_rate * num of chan`) cannot
+        exceed `100000`. If it is too high it will be lowered to the highest
+        possible value.
+      scan_per_read (:obj:`int`, optional): The number of points to read during
+        each loop.
+      resolution (:obj:`int`, optional): The resolution index for all channels.
+        The bigger this value the better the resolution, but the lower the
+        speed. The possible range is either `1` to `8` or to `12` according to
+        the model.
+
+    Note:
+      - ``channels`` keys:
+
+        - name (:obj:`str`): The name of the channel according to Labjack's
+          naming convention. Ex: `'AIN0'`. This will be used to define the
+          direction (in/out) and the available settings.
+
+          It can be:
+            - `AINx`: An analog input, if gain and/or offset is given, the
+              integrated slope mechanism will be used with the extended
+              features registers. It can also be used for thermocouples (see
+              below). You can use any EF by using the ``write_at_open`` and
+              ``to_read`` keys if necessary.
+            - `(T)DACx`: An analog output, you can specify gain and/or offset.
+            - `(E/F/C/M IOx)`: Digital in/outputs. You can specify the
+              direction.
+
+        - gain (:obj:`float`, default: `1`): A numeric value that will multiply
+          the given value for inputs and outputs.
+        - offset (:obj:`float`, default: `0`): Will be added to the value.
+
+          For inputs:
+          ::
+
+            returned_value = gain * measured_value + offset
+
+          For outputs:
+          ::
+
+            set_value = gain * given_value + offset.
+
+          Where `measured_value` and `set_values` are in Volts.
+
+        - make_zero (:obj:`bool`): AIN only, if :obj:`True` the input value
+          will be evaluated at startup and the offset will be adjusted to
+          return `0` (or the offset if any).
+        - range (:obj:`float`, default: `10`): The range of the acquisition in
+          Volts. A range of `x` means that values can be read  between `-x` and
+          `x` Volts. The possible values are:
+          ::
+
+            0.01, 0.1, 1, 10
+
+    """
+
     InOut.__init__(self)
-    for arg, default in [
-       ('device', 'ANY'),  # Model (T7, DIGIT,...)
-       ('connection', 'ANY'),  # Connection (USB,ETHERNET,...)
-       ('identifier', 'ANY'),  # Identifier (serial n°, ip,..)
-       ('channels', [{'name': 'AIN0'}]),
-       ('scan_rate', 100000),
-       ('scan_per_read', 10000),
-       ('resolution', 1)
-     ]:
-      setattr(self, arg, kwargs.pop(arg, default))
-    assert len(kwargs) == 0, "T7_streamer got unsupported arg(s)" + str(kwargs)
+    self.device = device
+    self.connection = connection
+    self.identifier = identifier
+    self.channels = [{'name': 'AIN0'}] if channels is None else channels
+    self.scan_rate = scan_rate
+    self.scan_per_read = scan_per_read
+    self.resolution = resolution
+
     default = {'gain': 1, 'offset': 0, 'make_zero': False, 'range': 10}
     if len(self.channels) * self.scan_rate > 100000:
       self.scan_rate = 100000 / len(self.channels)
@@ -139,9 +168,7 @@ class T7_streamer(InOut):
     self.n = 0  # Number of data points (to rebuild time)
 
   def get_data(self):
-    """
-    Short version, only used for eval_offset.
-    """
+    """Short version, only used for :meth:`InOut.eval_offset`."""
 
     return [time()] + ljm.eReadNames(self.handle, len(self.chan_list),
                               [c['name'] for c in self.chan_list])

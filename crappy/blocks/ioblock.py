@@ -1,74 +1,69 @@
 # coding: utf-8
 
 from .block import Block
-from ..inout import inout_list, in_list, out_list
+from ..inout import inandout_dict, in_dict, out_dict, inout_dict
 
 
 class IOBlock(Block):
-  """
-  This block is used to communicate with inout objects.
+  """This block is used to communicate with :ref:`In / Out` objects.
 
-  Note:
-    Then can be used as sensor, actuators or both.
-
-  It only takes a single argument:
-    - name (str): The name of the inout class to instantiate.
-
-  It can take all the settings as kwargs:
-    - freq (float or None, default: None): The looping frequency
-      (see :ref:`block`).
-
-      Note:
-        Set to None to go as fast as possible.
-
-    - verbose (bool): Will print extra information.
-    - labels (list, default: ['t(s)','1']): The list of the output labels
-      (see :ref:`block`).
-
-      Note:
-        The first label is the time.
-
-    - cmd_label (list): The list of the labels carrying values for the
-      output.
-
-      Note:
-        The block will call ioobject.set_cmd(...) with these values
-        unless it is empty (default).
-
-    - trigger (int or None, default: None): If the block is trigged by another
-      block, this must specify the index of the input considered as a trigger.
-
-      Note:
-        If set to None, it will run at freq if possible.
-
-        The data going through the trig link is discarded. Add another
-        link if necessary.
-
-    - streamer (bool, default: False): If False, will call get_data else, will
-      call get_stream.
-    - exit_values (list): If not None, the outputs will be set to these
-      values when Crappy is ending (or crashing).
+  They can be used as sensor, actuators or both.
   """
 
-  def __init__(self, name, **kwargs):
+  def __init__(self,
+               name,
+               freq=None,
+               verbose=False,
+               labels=None,
+               cmd_labels=None,
+               trigger=None,
+               streamer=False,
+               initial_cmd=0,
+               exit_values=None,
+               **kwargs):
+    """Sets the args and initializes the parent class.
+
+    Args:
+      name (:obj:`str`): The name of the :ref:`In / Out` class to instantiate.
+      freq (:obj:`float`, optional): The looping frequency of the block, if
+        :obj:`None` will go as fast as possible.
+      verbose (:obj:`bool`, optional): Prints extra information if :obj:`True`.
+      labels (:obj:`list`, optional): A :obj:`list` of the output labels.
+      cmd_labels (:obj:`list`, optional): The :obj:`list` of the labels
+        considered as inputs for this block. Will call :meth:`set_cmd`  in the
+        :ref:`In / Out` object with the values received on this labels.
+      trigger (:obj:`int`, optional): If the block is triggered by another
+        block, this must specify the index of the input considered as a
+        trigger. The data going through this link is discarded, add another
+        link if the block should also consider it as an input.
+      streamer (:obj:`bool`, optional): If :obj:`False`, will call
+        :meth:`get_data` else, will call :meth:`get_stream` in the
+        :ref:`In / Out` object (only if it has these methods, of course).
+      initial_cmd (:obj:`list`, optional): The initial values for the outputs,
+        sent during :meth:`prepare`. If it is a single value, then it will send
+        this same value for all the output labels.
+      exit_values (:obj:`list`, optional): If not :obj:`None`, the outputs will
+        be set to these values when Crappy is ending (or crashing).
+      **kwargs: The arguments to be passed to the :ref:`In / Out` class.
+    """
+
     Block.__init__(self)
     self.niceness = -10
-    for arg, default in [('freq', None),
-                         ('verbose', False),
-                         ('labels', None),
-                         ('cmd_labels', []),
-                         ('trigger', None),
-                         ('streamer', False),
-                         ('initial_cmd', 0),
-                         ('exit_values', None)
-                         ]:
-      setattr(self, arg, kwargs.pop(arg, default))
+    self.freq = freq
+    self.verbose = verbose
+    self.labels = labels
+    self.cmd_labels = [] if cmd_labels is None else cmd_labels
+    self.trigger = trigger
+    self.streamer = streamer
+    self.initial_cmd = initial_cmd
+    self.exit_values = exit_values
 
     if self.labels is None:
       if self.streamer:
         self.labels = ['t(s)', 'stream']
       else:
-        self.labels = ['t(s)']+[str(c) for c in kwargs.get("channels", ['1'])]
+        self.labels = ['t(s)'] + \
+                      [str(c) for c in kwargs.get("channels", ['1'])]
     self.device_name = name.capitalize()
     self.device_kwargs = kwargs
     self.stream_idle = True
@@ -79,6 +74,7 @@ class IOBlock(Block):
     if self.exit_values is not None:
       assert len(self.exit_values) == len(self.cmd_labels),\
           'Invalid number of exit values!'
+    self.device = inout_dict[self.device_name](**self.device_kwargs)
 
   def prepare(self):
     self.to_get = list(range(len(self.inputs)))
@@ -88,14 +84,15 @@ class IOBlock(Block):
     self.mode += 'w' if self.to_get else ''
     assert self.mode != '', "ERROR: IOBlock is neither an input nor an output!"
     if 'w' in self.mode:
-      assert self.cmd_labels, "ERROR: IOBlock has an input block but no" \
+      assert self.cmd_labels, "ERROR: IOBlock has an input block but no " \
                               "cmd_labels specified!"
-    if self.mode == 'rw':
-      self.device = inout_list[self.device_name](**self.device_kwargs)
-    elif self.mode == 'r':
-      self.device = in_list[self.device_name](**self.device_kwargs)
-    elif self.mode == 'w':
-      self.device = out_list[self.device_name](**self.device_kwargs)
+    if self.mode == 'rw' and self.device_name not in inandout_dict:
+      raise IOError("The IOBlock has inputs and outputs but the Inout class "
+                    "is not rw")
+    elif self.mode == 'r' and self.device_name not in in_dict:
+      raise IOError("The IOBlock has inputs but the Inout class is write-only")
+    elif self.mode == 'w' and self.device_name not in out_dict:
+      raise IOError("The IOBlock has outputs but the Inout class is read-only")
     self.device.open()
     if 'w' in self.mode:
       self.device.set_cmd(*self.initial_cmd)

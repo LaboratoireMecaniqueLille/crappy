@@ -18,48 +18,49 @@ from .._global import CrappyStop
 
 
 class Streamer(Camera):
-  """
-  This is a fake sensor meant to stream images that were already saved.
+  """This is a fake sensor meant to stream images that were already saved.
 
   Note:
     It needs a way to locate the time of each frame in the name of the picture.
-
     This is done using regular expressions.
 
-    __init__ takes no args, the arguments must be given when calling open (like
-    all cameras).
-
-  Args:
-    - path (str, mandatory): The path of the folder containing the images.
-    - pattern (str, default= "img _\\d+_(\\d+\\.\\d+)\\.tiff"): The regular
-      expression matching the images and returning the time
-
-      Note:
-        "\\d" matches digits, "\\d+" matches a group of digits.
-        () is a capturing group, returning what is inside. Dot is a special
-        character and needs to be escaped (hence the "\\.").
-
-        The default value is compatible with the naming method of the Camera
-        and Videoextenso blocks.
-
-    - start_delay (float, default: 0): Before actually streaming the image flux
-      you can set a delay in seconds during which the first image will be
-      streamed in a loop.
-
-      Note:
-        This can be useful to give time for spot selection
-        when using videoextenso.
-
-    - modifier: To apply a function to the image before sending it.
-
+    :meth:`__init__` takes no args, the arguments must be given when calling
+    :meth:`open` (like all cameras).
   """
 
   def __init__(self):
     Camera.__init__(self)
     self.frame = 0
 
-  def open(self, path, pattern="img_\\d+_(\\d+\\.\\d+)\\.tiff", start_delay=0,
+  def open(self,
+           path,
+           pattern="img_\\d+_(\\d+\\.\\d+)\\.tiff",
+           start_delay=0,
            modifier=lambda img: img):
+    """Sets the instance arguments.
+
+    Args:
+      path (:obj:`str`): The path of the folder containing the images.
+      pattern (:obj:`str`, optional): The regular expression matching the
+        images and returning the time.
+
+        Note:
+          `"\\d"` matches digits, `"\\d+"` matches a group of digits. `()` is a
+          capturing group, returning what is inside. Dot is a special character
+          and needs to be escaped. The default value is compatible with the
+          naming method of the :ref:`Camera` and :ref:`Videoextenso` blocks.
+
+      start_delay (:obj:`float`, optional): Before actually streaming the image
+        flux you can set a delay in seconds during which the first image will
+        be streamed in a loop.
+
+        Note:
+          This can be useful to give time for spot selection when using
+          videoextenso.
+
+      modifier: To apply a function to the image before sending it.
+    """
+
     self.modifier = modifier
     pattern = "^" + path + pattern + "$"
     regex = re.compile(pattern)

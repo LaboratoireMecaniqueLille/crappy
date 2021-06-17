@@ -1,6 +1,6 @@
 # coding: utf-8
 """
-Base file for tests using videoextensometry and a marker following actuator
+Base file for tests using videoextensometry and a marker following actuator.
 """
 
 from time import ctime

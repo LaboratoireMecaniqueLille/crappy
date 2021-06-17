@@ -11,15 +11,14 @@ class MetaCam(type):
   Note:
     Camera classes should be of this type.
 
-    To do so, simply add __metaclass__ = MetaCam in the class definition.
+    To do so, simply add ``__metaclass__ = MetaCam`` in the class definition.
     (Obviously, you must import this Metaclass first.)
 
-    MetaCam is a MetaClass: We will NEVER do c = MetaCam(...).
+    :class:`MetaCam` is a MetaClass: We will NEVER do ``c = MetaCam(...)``.
 
-    The __init__ is used to init the classes of type MetaCam
-    (with __metaclass__ = MetaCam as a class attribute)
-    and NOT an instance of MetaClass.
-
+    The :meth:`__init__` is used to init the classes of type MetaCam (with
+    ``__metaclass__ = MetaCam`` as a class attribute) and NOT an instance of
+    MetaClass.
   """
 
   classes = {}  # This dict will keep track of all the existing cam classes
@@ -68,38 +67,41 @@ class Cam_setting(object):
   """This class represents an attribute of the camera that can be set."""
 
   def __init__(self, name, getter, setter, limits, default):
-    """Sets the instance attributes
+    """Sets the instance attributes.
 
     Args:
-    name: The name of the setting.
-    default: The default value, if not specified it will be set to this value
-    getter: Function to read this value from the device. If set to None, it
-      will assume that the setting always happened correctly
-    setter: A function that will be called when setting the parameter to a
-      new value. Can do nothing, it will only change its value and nothing else
-    limits: It contains the available values for this parameter.
-
-      The possible types are:
-        None: Values will not be tested and the parameter will not appear in
-        CameraConfig.
-
-        A tuple of 2 ints/floats: Values must be between first and second value
-        CameraConfig will add a scale widget to set it. If they are integers,
-        all the integers between them will be accessible, if they are floats,
-        the range will be divided in 1000 in the scale widget.
-
-        Note:
-          If the upper value is callable (a function or method), it will
-          be set to the return value of this function. It allows reading the
-          max value from the device.
-
-        A Boolean: Possible values will be True or False, CameraConfig will
-        add a checkbox to edit the value.
-        (It can be True or False, it doesn't matter)
-
-        A dict: Possible values are the values of the dict, CameraConfig will
-        add radio buttons showing the keys, to set it to the corresponding
+      name: The name of the setting.
+      default: The default value, if not specified it will be set to this
         value.
+      getter: Function to read this value from the device. If set to
+        :obj:`None`, it will assume that the setting always happened correctly.
+      setter: A function that will be called when setting the parameter to a
+        new value. Can do nothing, it will only change its value and nothing
+        else.
+      limits: It contains the available values for this parameter.
+
+        The possible limit types are:
+
+          - :obj:`None`: Values will not be tested and the parameter will not
+            appear in CameraConfig.
+
+          - A :obj:`tuple` of 2 :obj:`int` or :obj:`float`: Values must be
+            between first and second value. CameraConfig will add a scale
+            widget to set it. If they are integers, all the integers between
+            them will be accessible, if they are floats, the range will be
+            divided in 1000 in the scale widget.
+
+            Note that if the upper value is callable (a function or method), it
+            will be set to the return value of this function. It allows reading
+            the max value from the device.
+
+          - A :obj:`bool`: Possible values will be :obj:`True` or :obj:`False`,
+            CameraConfig will add a checkbox to edit the value (default can be
+            :obj:`True` or :obj:`False`, it doesn't matter).
+
+          - A :obj:`dict`: Possible values are the values of the dict,
+            CameraConfig will add radio buttons showing the keys, to set it to
+            the corresponding value.
     """
 
     self.name = name
@@ -163,21 +165,22 @@ class Cam_setting(object):
 class Camera(object, metaclass=MetaCam):
   """This class represents a camera sensor.
 
-  It may have settings: They represent all that can be set on the
-  camera: height, width, exposure, AEAG, external trigger, etc...
+  It may have settings: They represent all that can be set on the camera:
+  height, width, exposure, AEAG, external trigger, etc...
 
   Note:
-    Each parameter is represented by a Cam_setting object: it includes the
-    default value, a function to set and get parameter, etc...
+    Each parameter is represented by a :class:`Cam_setting` object: it includes
+    the default value, a function to set and get parameter, etc...
 
     This class makes it transparent to the user: you can access a setting by
-    using myinstance.setting = stuff.
+    using ``myinstance.setting = stuff``.
 
-    It will automatically check the validity and try to set it
-    (see Cam_setting).
+    It will automatically check the validity and try to set it (see
+    :class:`Cam_setting`).
 
-    Don't forget to call the __init__ in the children or __getattr__ will
-    fall in an infinite recursion loop looking for settings...
+    Don't forget to call the :meth:`__init__` in the children or
+    :meth:`__getattr__` will fall in an infinite recursion loop looking for
+    settings...
   """
 
   def __init__(self):
@@ -192,7 +195,7 @@ class Camera(object, metaclass=MetaCam):
 
   @max_fps.setter
   def max_fps(self, value):
-    """To compute self.delay again when fps is set."""
+    """To compute :attr:`self.delay` again when fps is set."""
 
     self._max_fps = value
     if value:
@@ -209,14 +212,14 @@ class Camera(object, metaclass=MetaCam):
 
   @property
   def available_settings(self):
-    """Returns a list of available settings."""
+    """Returns a :obj:`list` of available settings."""
 
     return [x.name for x in list(self.settings.values())] + ["max_fps"]
 
   @property
   def settings_dict(self):
-    """Returns settings as a dict, keys are the names of the settings and
-    values are setting.value."""
+    """Returns settings as a :obj:`dict`, keys are the names of the settings
+    and values are `setting.value`."""
 
     d = dict(self.settings)
     for k in d:
@@ -224,14 +227,13 @@ class Camera(object, metaclass=MetaCam):
     return d
 
   def set_all(self, override=False, **kwargs):
-    """Sets all the settings based on kwargs.
+    """Sets all the settings based on `kwargs`.
 
     Note:
       If not specified, the setting will take its default value.
 
-      If override is True, it will not assume a setting and reset it unless
-      it is already default.
-
+      If override is :obj:`True`, it will not assume a setting and reset it
+      unless it is already default.
     """
 
     for s in self.settings:
@@ -254,7 +256,8 @@ class Camera(object, metaclass=MetaCam):
     self.set_all()
 
   def read_image(self):
-    """This method is a wrapper for get_image that will limit fps to max_fps"""
+    """This method is a wrapper for :meth:`get_image` that will limit fps to
+    `max_fps`."""
 
     if self.delay:
       t = time()
@@ -267,17 +270,15 @@ class Camera(object, metaclass=MetaCam):
     return self.get_image()
 
   def __getattr__(self, i):
-    """
-    The idea is simple: if the camera has this attribute: return it
-    (default behavior) else, try to find the corresponding setting and
-    return its value.
-    Note that we made sure to raise an attribute error if it is neither a
+    """The idea is simple: if the camera has this attribute: return it (default
+    behavior) else, try to find the corresponding setting and return its value.
+
+    Note that we made sure to raise an :exc:`AttributeError` if it is neither a
     camera attribute nor a setting.
+
     Example:
-    Camera definition contains self.add_setting("width",1280,set_w)
-    then
-    cam = Camera()
-    cam.width will return 1280
+      If Camera definition contains ``self.add_setting("width",1280,set_w)``,
+      and ``cam = Camera()``, then ``cam.width`` will return `1280`.
     """
 
     try:
@@ -292,13 +293,17 @@ class Camera(object, metaclass=MetaCam):
         raise AttributeError("No such attribute:" + i)
 
   def __setattr__(self, attr, val):
-    """
-    Same as getattr: if it is a setting, then set its value using the
-    setter in the class CamSetting, else use the default behavior
+    """Same as :meth:`__getattr__`: if it is a setting, then set its value
+    using the setter in the :class:`Cam_setting`, else use the default
+    behavior.
+
     It is important to make sure we don't try to set 'settings', it would
-    recursively call getattr and enter an infinite loop, hence the condition.
-    Example: cam.width = 2048 will be like cam.settings['width'].value = 2048.
-    It allows for simple settings of the camera
+    recursively call :meth:`__getattr__` and enter an infinite loop, hence the
+    condition.
+
+    Example:
+      ``cam.width = 2048`` will be like ``cam.settings['width'].value = 2048``.
+      It allows for simple settings of the camera.
     """
 
     if attr != "settings" and attr in self.settings:

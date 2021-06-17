@@ -4,9 +4,7 @@ from .block import Block
 
 
 class Sink(Block):
-  """
-  Test block used to get data and do nothing.
-  """
+  """Test block used to get data and do nothing."""
 
   def __init__(self, *args, **kwargs):
     Block.__init__(self)
