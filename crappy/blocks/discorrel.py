@@ -72,6 +72,9 @@ class DISCorrel(Camera):
     config = DISConfig(self.camera)
     config.main()
     self.bbox = config.box
+    if not all(i > 0 for i in self.bbox):
+      raise AttributeError("Incorrect bounding box sepcified in DISCorrel. "
+          "Was the region selected on the configuration Window ?")
     t, img0 = self.camera.get_image()
     self.correl = Dis(img0, bbox=self.bbox, fields=self.fields, **self.dis_kw)
     if self.show_image:

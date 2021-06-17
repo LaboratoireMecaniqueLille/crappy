@@ -150,6 +150,13 @@ class Video_extenso(Camera):
     self.ve = Ve(**self.ve_kwargs)
     config = VE_config(self.camera, self.ve)
     config.main()
+    if not self.ve.spot_list:
+      print("No markers were detected for videoextenso! "
+          "Please select the markers and make sure they are detected. "
+          "A box should appear around the markers when they are detected. "
+          "If not, make sure the white_spots argument is correctly set "
+          "and the markers are large enough.")
+      raise AttributeError("Missing VE Markers")
     self.ve.start_tracking()
     if self.show_image:
       try:
