@@ -37,7 +37,7 @@ class DISConfig(Camera_config):
     oy, ox = self.box_origin
     y, x = self.get_img_coord(event.y, event.x)
     self.box = (min(oy, y), min(ox, x), max(oy, y), max(ox, x))
-    print(self.box)
+    #print(self.box)
 
   def stop_select(self, event):
     pass

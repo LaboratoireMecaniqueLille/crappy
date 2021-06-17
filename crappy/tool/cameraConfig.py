@@ -59,7 +59,7 @@ class Hist_generator(Process):
       self.pipe.send(out_img)
 
 
-class Camera_config(object):
+class Camera_config():
   """Class creating a graphical interface to configure a camera.
 
   Note:
@@ -87,7 +87,7 @@ class Camera_config(object):
     self.update_img()
     self.start_histogram()
     self.update_histogram()
-    self.refresh_rate = 1/50
+    self.refresh_rate = 1 / 50
     self.low = 0
     self.high = 255
     self.t = time()
@@ -119,7 +119,7 @@ class Camera_config(object):
     # self.img_label.pack(fill=tk.BOTH)
     self.img_label.grid(row=1, column=0,
         rowspan=len(self.camera.settings_dict) + 2,
-                        sticky=tk.N+tk.E+tk.S+tk.W)
+        sticky=tk.N + tk.E + tk.S + tk.W)
     self.create_inputs()
     self.create_infos()
     self.img_label.bind('<Motion>', self.update_reticle)
@@ -145,7 +145,7 @@ class Camera_config(object):
       elif type(s.limits) == dict:
         self.create_radio(s, i)
     self.lower_frame = tk.Frame()
-    self.lower_frame.grid(column=1, row=i+3)
+    self.lower_frame.grid(column=1, row=i + 3)
     self.apply_button = tk.Button(self.lower_frame, text="Apply",
                                   command=self.apply_settings)
     self.apply_button.pack()
@@ -177,9 +177,9 @@ class Camera_config(object):
 
   def create_scale(self, setting, pos):
     f = tk.Frame(self.root)
-    f.grid(row=pos+2, column=1, sticky=tk.E+tk.W)
+    f.grid(row=pos + 2, column=1, sticky=tk.E + tk.W)
     if type(setting.limits[0]) is float:
-      step = (setting.limits[1]-setting.limits[0])/1000
+      step = (setting.limits[1] - setting.limits[0]) / 1000
     else:
       step = 1  # To go through all possible int values
     tk.Label(f, text=setting.name).pack()
@@ -192,8 +192,8 @@ class Camera_config(object):
   def create_radio(self, setting, pos):
     self.radios[setting.name] = tk.IntVar()
     f = tk.Frame(self.root)
-    f.grid(row=pos+2, column=1, sticky=tk.E+tk.W)
-    tk.Label(f, text=setting.name+":").pack(anchor=tk.W)
+    f.grid(row=pos + 2, column=1, sticky=tk.E + tk.W)
+    tk.Label(f, text=setting.name + ":").pack(anchor=tk.W)
     for k, v in setting.limits.items():
       r = tk.Radiobutton(f, text=k, variable=self.radios[setting.name],
                          value=v)
@@ -204,7 +204,7 @@ class Camera_config(object):
   def create_check(self, setting, pos):
     self.checks[setting.name] = tk.IntVar()
     f = tk.Frame(self.root)
-    f.grid(row=pos+2, column=1, sticky=tk.E+tk.W)
+    f.grid(row=pos + 2, column=1, sticky=tk.E + tk.W)
     b = tk.Checkbutton(f, text=setting.name,
                        variable=self.checks[setting.name])
     if setting.value:
@@ -266,7 +266,7 @@ class Camera_config(object):
         self.low = np.percentile(self.img, 1)
         self.high = np.percentile(self.img, 99)
         self.img8 = ((np.clip(self.img, self.low, self.high) -
-                        self.low) * 256 / self.high)
+                      self.low) * 256 / self.high)
       except (AssertionError, AttributeError):
         # ar=False, 8bits
         self.img8 = self.img
@@ -310,7 +310,7 @@ class Camera_config(object):
     self.minmax_label.configure(text="min: {} max: {}".format(self.img.min(),
                                                         self.img.max()))
     self.bits_label.configure(text="detected bits: {} ({} values)".format(
-      self.detect_bits(), 2**self.detect_bits()))
+        self.detect_bits(), 2**self.detect_bits()))
     self.range_label.configure(text='Range: {}-{}'.format(self.low, self.high))
     self.update_reticle(self.last_reticle_pos)
 
