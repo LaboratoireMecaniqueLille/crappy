@@ -16,11 +16,11 @@ class Gsm(InOut):
   """Block for sending any messages by SMS to phone numbers.
 
   Note:
-    This block have to be associated with a modifier to manage 
+    This block have to be associated with a modifier to manage
     which message should be sent.
   """
 
-  def __init__(self, numbers: list = None, port: str = "/dev/ttyUSB0", 
+  def __init__(self, numbers: list = None, port: str = "/dev/ttyUSB0",
                baudrate: int = 115200):
     """Checks arguments validity.
 
@@ -83,7 +83,7 @@ class Gsm(InOut):
             self.ser.write(b"\x1a\r\n")
             # 0x1a : send   0x1b : Cancel send
           num += 1
-          data = "" 
+          data = ""
 
   def _is_connected(self) -> None:
     """Send "AT" to the GSM and wait for an response : "OK". """
@@ -94,13 +94,12 @@ class Gsm(InOut):
     while num < 2:
       while self.ser.inWaiting() > 0:
         data += self.ser.read(self.ser.inWaiting()).decode()
-      if data != "":  
+      if data != "":
         print(data)
         num = num + 1
         data = ""
-      
 
   def close(self) -> None:
     """Close the serial port"""
-    
+
     self.ser.close()
