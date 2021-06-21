@@ -34,14 +34,17 @@ class Displayer(Block):
       self.delay = 1. / framerate  # Framerate (fps)
     self.title = title
     if backend.lower() in ['cv', 'opencv']:
+      self.prepare = self.prepare_cv
       self.loop = self.loop_cv
       self.begin = self.begin_cv
       self.finish = self.finish_cv
     elif backend.lower() in ['matplotlib', 'mpl']:
+      self.prepare = self.prepare_mpl
       self.loop = self.loop_mpl
       self.begin = self.begin_mpl
       self.finish = self.finish_mpl
     elif backend.lower() in ['tk', 'tkinter']:
+      self.prepare = self.prepare_tk
       self.loop = self.loop_tk
       self.begin = self.begin_tk
       self.finish = self.finish_tk
@@ -49,11 +52,14 @@ class Displayer(Block):
       raise AttributeError("Unknown backend: " + str(backend))
 
   # Matplotlib
-  def begin_mpl(self):
-    self.inputs[0].clear()
+  @staticmethod
+  def prepare_mpl():
     plt.ion()
     fig = plt.figure()
     fig.add_subplot(111)
+
+  def begin_mpl(self):
+    self.inputs[0].clear()
 
   @staticmethod
   def cast_8bits(f):
@@ -65,6 +71,7 @@ class Displayer(Block):
 
   def loop_mpl(self):
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
+    plt.clf()
     plt.imshow(data, cmap='gray')
     plt.pause(0.001)
     plt.show()
@@ -74,14 +81,16 @@ class Displayer(Block):
     plt.close('all')
 
   # OpenCV
-  def begin_cv(self):
-    self.inputs[0].clear()
+  def prepare_cv(self):
     try:
       flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
     # WINDOW_KEEPRATIO is not implemented in all opencv versions...
     except AttributeError:
       flags = cv2.WINDOW_NORMAL
     cv2.namedWindow(self.title, flags)
+
+  def begin_cv(self):
+    self.inputs[0].clear()
 
   def loop_cv(self):
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
@@ -111,8 +120,7 @@ class Displayer(Block):
         self.h = int(self.img_shape[0] * ratio)
         self.w = int(self.img_shape[1] * ratio)
 
-  def begin_tk(self):
-    self.inputs[0].clear()
+  def prepare_tk(self):
     self.root = tk.Tk()
     self.root.protocol("WM_DELETE_WINDOW", self.end)
     self.imglabel = tk.Label(self.root)
@@ -121,6 +129,9 @@ class Displayer(Block):
     self.imglabel.pack(expand=1, fill=tk.BOTH)
     self.h = 480
     self.w = 640
+
+  def begin_tk(self):
+    self.inputs[0].clear()
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
     self.img_shape = data.shape
     self.check_resized()
