@@ -6,7 +6,8 @@ The latest version for the branch master can be accessed at: https://laboratoire
 
 To build it yourself, first install ``sphinx``. The steps for the most common OS are detailed here: https://www.sphinx-doc.org/en/master/usage/installation.html
 
-Then open a terminal in the ``/docs/`` directory of crappy and run: ::
+Then open a terminal in the ``/docs/`` directory of crappy and run:
+::
 
 	make html
 

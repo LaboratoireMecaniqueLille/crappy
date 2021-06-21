@@ -11,21 +11,23 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Pijuice(InOut):
-  """Block for knowing the status (plugged or unplugged) and the actual
-  level of charge of the piJuice.
+  """Block getting the status (plugged or unplugged) and the actual level  of
+  charge of the piJuice power platform.
 
   Warning:
     Only available on Raspberry Pi !
   """
 
-  def __init__(self, i2c_port: int = 1, address: int = 0x14) -> None:
+  def __init__(self,
+               i2c_port: int = 1,
+               address: int = 0x14) -> None:
     """Checks arguments validity.
 
     Args:
-      i2c_port(:obj:`int`,optional): The I2C port over which the PiJuice should
-        communicate.
-      address(:obj:`int`,optional): The I2C address of the MCP9600. The default
-        address is 0x14.
+      i2c_port(:obj:`int`, optional): The I2C port over which the PiJuice
+        should communicate.
+      address(:obj:`int`, optional): The I2C address of the piJuice. The
+        default address is 0x14.
     """
 
     super().__init__()
@@ -44,11 +46,11 @@ class Pijuice(InOut):
   def get_data(self) -> list:
     """Reads the status and the charge level.
 
-    The output is 0 if unplugged and 1 if plugged for status and the output is
-    between 0 and 100 for charge.
+    The output is `0` if unplugged and `1` if plugged for status and between
+    `0` and `100` for charge.
 
     Returns:
-      :obj:`list`: A list containing the timeframe and the output value for
+      :obj:`list`: A list containing the timeframe and the output values for
       status and charge.
     """
 

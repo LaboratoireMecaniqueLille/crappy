@@ -14,23 +14,28 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Gsm(InOut):
-  """Block for sending any messages by SMS to phone numbers.
+  """Block for sending any messages by SMS to given phone numbers.
 
-  Note:
-    This block have to be associated with a modifier to manage
-    which message should be sent.
+  Important:
+    This block should be associated with a modifier to manage the messages
+    to send.
   """
 
-  def __init__(self, numbers: list = None, port: str = "/dev/ttyUSB0",
+  def __init__(self,
+               numbers: list = None,
+               port: str = "/dev/ttyUSB0",
                baudrate: int = 115200):
     """Checks arguments validity.
 
     Args:
-      numbers(:obj:`list`): A list of numbers to contact.
+      numbers(:obj:`list`): The list of numbers the messages will be sent to.
+        The syntax is the following :
         ::
-          syntax : "0611223344"
-      port (:obj:`str`,optional): Serial port of the GSM.
-      baudrate(:obj:`int`, optional): Baudrate between 1200 and 115200.
+
+          ["0611223344"]
+
+      port (:obj:`str`, optional): Serial port of the GSM.
+      baudrate(:obj:`int`, optional): Serial baudrate, between 1200 and 115200.
     """
 
     super().__init__()
@@ -48,12 +53,17 @@ class Gsm(InOut):
     self.numbers = [number.encode('utf-8') for number in self.numbers]
 
   def open(self) -> None:
-    """Call the ``_is_connected()`` method."""
+    """Calls the :meth:`_is_connected()` method."""
 
     self._is_connected()
 
-  def set_cmd(self, *cmd) -> None:
-    """Send SMS to all phone numbers if not equal to "". """
+  def set_cmd(self, *cmd: str) -> None:
+    """Sends an SMS whose text is the :obj:`str` received as command to all the
+    phone numbers.
+
+    Doesn't send anything if the string is empty, and raises a :exc:`TypeError`
+    if the command is not a :obj:`str`.
+    """
 
     if not isinstance(cmd[0], str):
       raise TypeError("Message should be a string")
@@ -87,7 +97,7 @@ class Gsm(InOut):
           data = ""
 
   def _is_connected(self) -> None:
-    """Send "AT" to the GSM and wait for an response : "OK". """
+    """Sends ``"AT"`` to the GSM and waits for the response : ``"OK"``. """
 
     self.ser.write(b'AT' + b'\r\n')
     data = ""
@@ -101,6 +111,6 @@ class Gsm(InOut):
         data = ""
 
   def close(self) -> None:
-    """Close the serial port"""
+    """Closes the serial port."""
 
     self.ser.close()
