@@ -113,9 +113,6 @@ class Link(object):
       name (:obj:`str`, optional): Name of a link to recognize it on timeout.
     """
 
-    if modifier is None:
-      modifier = []
-
     # For compatibility (condition is deprecated, use modifier)
     if condition is not None:
       modifier = condition
@@ -123,7 +120,10 @@ class Link(object):
     self.name = name
     self.in_, self.out_ = Pipe()
     self.external_trigger = None
-    self.modifiers = modifier if isinstance(modifier, list) else [modifier]
+    if modifier is not None:
+      self.modifiers = modifier if isinstance(modifier, list) else [modifier]
+    else:
+      self.modifiers = None
     self.timeout = timeout
     self.action = action
     if None not in [input_block, output_block]:
