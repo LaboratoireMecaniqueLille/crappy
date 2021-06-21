@@ -84,7 +84,8 @@ class Multiplex(Block):
         self.hist[k].extend(r[k])  # Add each data to their history
 
   def send_data(self):
-    while all([i and i[-1] > self.t for i in self.t_hist]):  # Send all we can
+    while all([i and i[-1] > self.t for i in self.t_hist]) \
+      and self.t_hist:  # Send all we can
       r = {self.k: self.t}  # First data to return: our new timebase
       for i, l in enumerate(self.label_list):
         if not l:
