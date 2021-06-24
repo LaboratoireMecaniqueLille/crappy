@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from .cameralink import CLCamera
+from .cameralink import Cl_camera
 
 table = (0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
          0xC601, 0x06C0, 0x0780, 0xC741, 0x0500, 0xC5C1, 0xC481, 0x0440,
@@ -59,10 +59,10 @@ def hexlify(n):
   return hex(n).split('x')[1].rjust(2, '0').upper()
 
 
-class Bispectral(CLCamera):
+class Bispectral(Cl_camera):
   def __init__(self, **kwargs):
     kwargs['camera_type'] = "SingleAreaGray2DShading"
-    CLCamera.__init__(self, **kwargs)
+    Cl_camera.__init__(self, **kwargs)
     self.settings['width'].limits = (1, 640)
     self.settings['width'].default = 640
     self.settings['height'].limits = (1, 512)
@@ -79,15 +79,15 @@ class Bispectral(CLCamera):
                      setter=self.set_trigg_freq, limits=(1., 150.))
 
   def _set_w(self, val):
-    CLCamera._set_w(self, val * 2)
+    Cl_camera._set_w(self, val * 2)
     self.set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
                  self.yoffset + self.height - 1)
 
   def _get_w(self):
-    return int(CLCamera._get_w(self) / 2)
+    return int(Cl_camera._get_w(self) / 2)
 
   def _set_h(self, val):
-    CLCamera._set_h(self, val)
+    Cl_camera._set_h(self, val)
     self.set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
                  self.yoffset + self.height - 1)
 
@@ -229,7 +229,7 @@ class Bispectral(CLCamera):
     gain = .01
     lsb = self.send_cmd('@R160')
     msb = self.send_cmd('@R161')
-    return int(msb+lsb, 16) * gain
+    return int(msb + lsb, 16) * gain
 
   def get_ambiant_temperature(self):
     """Returns temperature of the board in °C."""
@@ -238,18 +238,18 @@ class Bispectral(CLCamera):
     return int(t, 16)
 
   def get_image(self):
-    t, frame = CLCamera.get_image(self)
+    t, frame = Cl_camera.get_image(self)
     img = np.ones((self.height, self.width * 2), dtype=np.uint8)
     img[::, :self.width:2] = frame[::, ::4]
     img[::, 1:self.width:2] = frame[::, 1::4]
     img[::, self.width::2] = frame[::, 2::4]
-    img[::, self.width+1::2] = frame[::, 3::4]
+    img[::, self.width + 1::2] = frame[::, 3::4]
     return t, img
 
   def close(self):
-    CLCamera.close(self)
+    Cl_camera.close(self)
 
   def open(self, **kwargs):
-    CLCamera.open(self, **kwargs)
+    Cl_camera.open(self, **kwargs)
     self.send_cmd('@W1A084')  # Restore unwindowed Mode
     self.send_cmd('@W10012')  # Make sure the image is not inverted

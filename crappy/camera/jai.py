@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from .cameralink import CLCamera
+from .cameralink import Cl_camera
 from .._global import OptionalModule
 try:
   from . import clModule as Cl
@@ -8,7 +8,7 @@ except (ModuleNotFoundError, ImportError):
   Cl = OptionalModule("clModule")
 
 
-class Jai8(CLCamera):
+class Jai8(Cl_camera):
   """This class supports Jai GO-5000-PMCL gray cameras.
 
   This one uses FullAreaGray8 module for maximum framerate.
@@ -19,23 +19,23 @@ class Jai8(CLCamera):
       kwargs['camera_type'] = "FullAreaGray8"
     if 'config_file' not in kwargs:
       kwargs['config_file'] = False
-    CLCamera.__init__(self, **kwargs)
+    Cl_camera.__init__(self, **kwargs)
     self.settings['width'].limits = (1, 2560)
     self.settings['width'].default = 2560
     self.settings['height'].limits = (1, 2048)
     self.settings['height'].default = 2048
     self.add_setting('exposure', setter=self._set_exp, getter=self._get_exp,
-                               limits=(10, 800000))
+                     limits=(10, 800000))
 
   def _set_w(self, val):
     self.stopAcq()
-    CLCamera._set_w(self, val)
+    Cl_camera._set_w(self, val)
     self.cap.serialWrite('WTC={}\r\n'.format(val))
     self.startAcq()
 
   def _set_h(self, val):
     self.stopAcq()
-    CLCamera._set_h(self, val)
+    Cl_camera._set_h(self, val)
     self.cap.serialWrite('HTL={}\r\n'.format(val))
     self.startAcq()
 
@@ -53,13 +53,13 @@ class Jai8(CLCamera):
     return int(self.cap.serialWrite('PE?\r\n').strip()[3:])
 
   def get_image(self):
-    return CLCamera.get_image(self)
+    return Cl_camera.get_image(self)
 
   def close(self):
-    CLCamera.close(self)
+    Cl_camera.close(self)
 
   def open(self, **kwargs):
-    CLCamera.open(self, **kwargs)
+    Cl_camera.open(self, **kwargs)
     self.cap.serialWrite('TAGM=5\r\n')  # (default)
     self._set_format(0)  # Set camera to 8 bits
     self.cap.set(Cl.FG_CAMERA_LINK_CAMTYP, 208)  # Set the input to 8 bits
@@ -77,11 +77,11 @@ class Jai(Jai8):
         getter=self._get_format, limits={'10 bits': 1, '12 bits': 2})
 
   def get_image(self):
-    t, f = CLCamera.get_image(self)
+    t, f = Cl_camera.get_image(self)
     return t, f >> 4
 
   def open(self):
-    CLCamera.open(self)
+    Cl_camera.open(self)
     # dual tap (default does not allow 12 bits)
     self.cap.serialWrite('TAGM=1\r\n')
     self._set_format(2)  # 12 bits

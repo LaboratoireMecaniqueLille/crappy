@@ -10,7 +10,7 @@ except ImportError:
 from time import time
 
 
-class CLCamera(Camera):
+class Cl_camera(Camera):
   """Cameralink camera sensor."""
 
   def __init__(self, numdevice=0, config_file=None, camera_type=None):
@@ -50,7 +50,7 @@ class CLCamera(Camera):
     self.add_setting("width", setter=self._set_w, getter=self._get_w)
     self.add_setting("height", setter=self._set_h, getter=self._get_h)
     self.add_setting("framespersec", setter=self._set_framespersec,
-        getter=self._get_framespersec, limits=(1, 200))
+                     getter=self._get_framespersec, limits=(1, 200))
 
   def stopAcq(self):
     self.cap.stopAcq()
@@ -107,7 +107,7 @@ class CLCamera(Camera):
     self.cap.open(self.numdevice, self.camera_type, f)
     for k in kwargs:
       if k not in self.settings:
-        raise AttributeError('Unexpected keyword: '+k)
+        raise AttributeError('Unexpected keyword: ' + k)
     if self.config_file:
       self.cap.loadFile(self.config_file)
     self.set_all(**kwargs)
