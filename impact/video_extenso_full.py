@@ -13,7 +13,7 @@ timestamp = ctime()[:-5].replace(" ", "_").replace(":", "_")
 save_path = "./" + timestamp + "/"
 
 # VideoExtenso and Autodrive blocks
-ve = crappy.blocks.Video_extenso(camera='XimeaCV', show_image=True,
+ve = crappy.blocks.Video_extenso(camera='Ximea_cv', show_image=True,
     white_spots=False, max_fps=30)
 
 ad = crappy.blocks.AutoDrive(

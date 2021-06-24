@@ -7,7 +7,7 @@ markers during a test with large strains.
 
 import crappy
 
-ve = crappy.blocks.Video_extenso(camera='XimeaCV', show_image=True)
+ve = crappy.blocks.Video_extenso(camera='Ximea_cv', show_image=True)
 
 ad = crappy.blocks.AutoDrive(
     actuator={'name': 'CM_drive', 'port': '/dev/ttyUSB0'}, direction='X-')

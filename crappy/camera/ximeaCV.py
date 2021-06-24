@@ -13,7 +13,7 @@ except (ModuleNotFoundError, ImportError):
 xi_format_dict = {'8 bits': 0, '10 bits': 1, '8 bits RAW': 5, '10 bits RAW': 6}
 
 
-class XimeaCV(Camera):
+class Ximea_cv(Camera):
   """Camera class for ximeas using openCV.
 
   Note:
@@ -25,10 +25,10 @@ class XimeaCV(Camera):
       cv2.CAP_PROP_XI_WIDTH
     except AttributeError:
       print("Error: OpenCV was not compiled with -DWITH_XIMEA flag, "
-            "cannot use XimeaCV camera")
+            "cannot use Ximea_cv camera")
       raise
     Camera.__init__(self)
-    self.name = "XimeaCV"
+    self.name = "Ximea_cv"
     self.cap = None
     self.add_setting("width", self._get_w, self._set_w, (1, self._get_w))
     self.add_setting("height", self._get_h, self._set_h, (1, self._get_h))
@@ -167,7 +167,7 @@ class XimeaCV(Camera):
       A formatted string with the value of the main parameter.
 
     Example:
-        >>> camera = XimeaCV(numdevice=0)
+        >>> camera = Ximea_cv(numdevice=0)
         >>> camera.new(exposure=10000, width=2048, height=2048)
         >>> print camera
 
