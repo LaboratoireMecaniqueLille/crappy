@@ -9,6 +9,7 @@ from threading import Thread
 import queue
 import ast
 import pickle
+import socket
 
 try:
   import paho.mqtt.client as mqtt
@@ -366,11 +367,15 @@ class Client_server(Block):
     in the right buffer according to the topic, in the form of lists of values.
     """
 
-    for data_points in zip(*pickle.loads(message.payload)):
-      self.buffer_output[ast.literal_eval(message.topic)].put_nowait(
-        list(data_points))
+    try:
+      for data_points in zip(*pickle.loads(message.payload)):
+        self.buffer_output[ast.literal_eval(message.topic)].put_nowait(
+          list(data_points))
+    except pickle.UnpicklingError:
+      print("[Client_server] Warning ! Message raised UnpicklingError, "
+            "ignoring it")
 
-  def _on_connect(self, client, userdata, flags, rc: Any):
+  def _on_connect(self, client, userdata, flags, rc: Any) -> None:
     """Automatically subscribes to the topics when connecting to the broker."""
 
     print("Connected with result code " + str(rc))
