@@ -193,8 +193,8 @@ class Client_server(Block):
     self.client.reconnect_delay_set(max_delay=10)
 
     if self.topics is None and self.cmd_labels is None:
-      print("WARNING: client-server block is neither an input nor an "
-            "output !")
+      print("[Client_server] WARNING: client-server block is neither an input "
+            "nor an output !")
 
     if self.topics is not None:
       self.last_out_val = init_output
@@ -244,7 +244,7 @@ class Client_server(Block):
       self._launch_mosquitto()
       self.reader.start()
       time.sleep(5)
-      print('Waiting for Mosquitto to start')
+      print('[Client_server] Waiting for Mosquitto to start')
       time.sleep(5)
 
     # Connecting to the broker
@@ -253,11 +253,19 @@ class Client_server(Block):
       try:
         self.client.connect(self.address, port=self.port, keepalive=10)
         break
+      except socket.timeout:
+        print("[Client_server] Impossible to reach the given address, "
+              "aborting")
+        raise
+      except socket.gaierror:
+        print("[Client_server] Invalid address given, please check the "
+              "spelling")
+        raise
       except ConnectionRefusedError:
         try_count -= 1
         if try_count == 0:
-          print("Connection refused, the broker may not be running or you "
-                "may not have the rights to connect")
+          print("[Client_server] Connection refused, the broker may not be "
+                "running or you may not have the rights to connect")
           raise
         time.sleep(1)
 
@@ -332,11 +340,12 @@ class Client_server(Block):
       try:
         self.proc.terminate()
         self.proc.wait(timeout=15)
-        print('Mosquitto terminated with return code', self.proc.returncode)
+        print('[Client_server] Mosquitto terminated with return code',
+              self.proc.returncode)
         self.stop_mosquitto = True
         self.reader.join()
       except subprocess.TimeoutExpired:
-        print('Subprocess did not terminate in time')
+        print('[Client_server] Subprocess did not terminate in time')
         self.proc.kill()
 
   def _launch_mosquitto(self) -> None:
@@ -347,7 +356,7 @@ class Client_server(Block):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
     except FileNotFoundError:
-      print("Mosquitto is not installed !")
+      print("[Client_server] Mosquitto is not installed !")
       raise
 
   def _output_reader(self) -> None:
@@ -378,13 +387,13 @@ class Client_server(Block):
   def _on_connect(self, client, userdata, flags, rc: Any) -> None:
     """Automatically subscribes to the topics when connecting to the broker."""
 
-    print("Connected with result code " + str(rc))
+    print("[Client_server] Connected with result code " + str(rc))
 
     # Subscribing on connect, so that it automatically resubscribes when
     # reconnecting after a connection loss
     if self.topics is not None:
       for topic in self.topics:
         self.client.subscribe(topic=str(topic), qos=0)
-        print("Subscribed to", topic)
+        print("[Client_server] Subscribed to", topic)
 
     self.client.loop_start()
