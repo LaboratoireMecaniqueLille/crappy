@@ -10,7 +10,7 @@ try:
   from serial.serialutil import SerialException
 except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("serial", "Please install the module serial to use "
-      "the Gsm InOut: pip install pyserial")
+                          "the Gsm InOut: pip install pyserial")
 
 
 class Gsm(InOut):
@@ -77,7 +77,7 @@ class Gsm(InOut):
       num = 0
       self.ser.write(b'AT' + b'\r\n')
       w_buff = [b"AT+CMGF=1\r\n",
-            b"AT+CMGS=\"" + number + b"\"\r\n", message.encode()]
+                b"AT+CMGS=\"" + number + b"\"\r\n", message.encode()]
       while num <= 2:
         while self.ser.inWaiting() > 0:
           data += self.ser.read(self.ser.inWaiting()).decode()
