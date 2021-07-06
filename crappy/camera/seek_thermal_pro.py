@@ -57,8 +57,8 @@ class Seek_thermal_pro(Camera):
     possible to add it manually by running:
     ::
 
-      $ echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"289d\", MODE=\"0777\"" |
-sudo tee seek_thermal.rules > /dev/null 2>&1
+      $ echo "SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"289d\\", \
+MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
 
     in a shell opened in ``/etc/udev/rules.d``.
   """
@@ -168,8 +168,8 @@ sudo tee seek_thermal.rules > /dev/null 2>&1
     self._write_data(Seek_thermal_pro_commands['Start get image transfer'],
                      b'\x58\x5b\x01\x00')
     to_read = 2 * \
-              Seek_thermal_pro_dimensions['Raw width'] * \
-              Seek_thermal_pro_dimensions['Raw height']
+        Seek_thermal_pro_dimensions['Raw width'] * \
+        Seek_thermal_pro_dimensions['Raw height']
     ret = bytearray()
 
     while to_read - len(ret) > 512:
@@ -208,7 +208,7 @@ sudo tee seek_thermal.rules > /dev/null 2>&1
     """Simply crops an image to the right dimensions."""
 
     return raw_img[4: 4 + Seek_thermal_pro_dimensions['Height'],
-           1: 1 + Seek_thermal_pro_dimensions['Width']]
+                   1: 1 + Seek_thermal_pro_dimensions['Width']]
 
   def _correct_dead_pixels(self, img: np.array) -> np.array:
     """Corrects the dead pixels values.
