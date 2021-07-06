@@ -10,16 +10,7 @@
 
 
 # Reaching the udev rules directory
-cd ..
-if [ -d "/etc/udev/rules.d" ]; then
-  cd /etc/udev/rules.d
-else
-  echo "The udev rules directory (/etc/udev/rules.d) doesn't seem to exist, aborting";
-  exit
-fi
-
-cd /etc/udev/rules.d
-
+cd /etc/udev/rules.d >/dev/null 2>&1 || { echo "The udev rules directory (/etc/udev/rules.d) doesn't seem to exist, aborting"; exit; }
 
 # The different rules that can be written
 pololu="SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1ffb\", MODE=\"0666\""
@@ -35,8 +26,8 @@ echo "3. Seek Thermal Pro"
 echo "(ctrl + c to escape)"
 echo ""
 
-echo -n "Rule n°: "
-read rule
+printf "Rule n°: "
+read -r rule
 echo ""
 
 
@@ -44,8 +35,8 @@ while { ! echo "$rule" | grep -q '^[0-9]' || [ "$rule" -gt 3 ] || [ "$rule" -le 
   echo "Invalid choice !"
   echo "Which rule should be written ?"
   echo ""
-  echo -n "Rule n°: "
-  read rule
+  printf "Rule n°: "
+  read -r rule
   echo ""
 done
 
@@ -80,12 +71,10 @@ esac
 
 
 # Reloading the udev rules
-udevadm control --reload-rules
-if [ $? -eq 0 ]; then
-  echo "";
+if udevadm control --reload-rules; then
+  echo ""
   echo "The udev rules have been reloaded, please allow a few minutes before the change is effective."
 else
-  echo "";
+  echo ""
   echo "Reloading of the udev rules from the command line was unsuccessful, rebooting will reload them."
 fi
-
