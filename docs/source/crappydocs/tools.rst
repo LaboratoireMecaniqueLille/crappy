@@ -32,6 +32,11 @@ Fields
 .. automodule:: crappy.tool.fields
    :members:
 
+FT232H
+++++++
+.. automodule:: crappy.tool.ft232h
+   :members:
+
 GPU Correl
 ++++++++++
 .. automodule:: crappy.tool.gpucorrel
