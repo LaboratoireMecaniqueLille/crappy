@@ -212,6 +212,8 @@ class Waveshare_ad_da(InOut):
     else:
       self._v_ref = v_ref
 
+    self._channel_set = False
+
     if dac_channels is not None:
       if len(dac_channels) > 2:
         raise ValueError("dac_channels length should not exceed 2")
@@ -263,7 +265,7 @@ class Waveshare_ad_da(InOut):
     GPIO.setup(AD_DA_pins['CS_PIN_DAC'], GPIO.OUT)
 
     # Setting the SPI
-    self._SPI.max_speed_hz = 200000
+    self._SPI.max_speed_hz = 40000
     self._SPI.mode = 1
     self._SPI.no_cs = True
     self._reset()
@@ -274,7 +276,7 @@ class Waveshare_ad_da(InOut):
     buf[1] |= Ads1256_drate[self._sample_rate]
     GPIO.output(AD_DA_pins['CS_PIN_ADS'], GPIO.LOW)
     self._SPI.writebytes([Ads1256_cmd['CMD_WREG'] |
-                         Ads1256_reg['REG_ADCON'], 0x01, buf])
+                         Ads1256_reg['REG_ADCON'], 0x01] + buf)
     GPIO.output(AD_DA_pins['CS_PIN_ADS'], GPIO.HIGH)
     time.sleep(0.001)
 
@@ -304,13 +306,18 @@ class Waveshare_ad_da(InOut):
     # The values are read one channel after the other, not simultaneously
     for chan in self._channels_read:
       GPIO.output(AD_DA_pins['CS_PIN_ADS'], GPIO.LOW)
-      self._SPI.writebytes([Ads1256_cmd['CMD_WREG'] |
-                           Ads1256_reg['REG_MUX'], 0x00,
-                           (chan[0] << 4) | chan[1]])
 
-      # The ADS has to be synchronized again when switching channel
-      self._SPI.writebytes([Ads1256_cmd['CMD_SYNC']])
-      self._SPI.writebytes([Ads1256_cmd['CMD_WAKEUP']])
+      # Switching channel only if necessary, except for the first loop
+      if len(self._channels_read) > 1 or not self._channel_set:
+        self._SPI.writebytes([Ads1256_cmd['CMD_WREG'] |
+                             Ads1256_reg['REG_MUX'], 0x00,
+                             (chan[0] << 4) | chan[1]])
+
+        # The ADS has to be synchronized again when switching channel
+        self._SPI.writebytes([Ads1256_cmd['CMD_SYNC']])
+        self._SPI.writebytes([Ads1256_cmd['CMD_WAKEUP']])
+
+        self._channel_set = True
 
       # Reading the output value
       self._wait_drdy()
