@@ -39,7 +39,8 @@ echo -n "Rule n°: "
 read rule
 echo ""
 
-while { [ $rule -gt 3 ] || [ $rule -le 0 ]; } ; do
+
+while { ! echo "$rule" | grep -q '^[0-9]' || [ "$rule" -gt 3 ] || [ "$rule" -le 0 ]; }; do
   echo "Invalid choice !"
   echo "Which rule should be written ?"
   echo ""
