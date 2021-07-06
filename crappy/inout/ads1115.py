@@ -188,6 +188,7 @@ class Ads1115(InOut):
     """Resets the ADS1115"""
 
     self._set_register(Ads1115_pointer_conversion, 0x0006)
+    self._bus.close()
 
   def _set_register(self, register_address: int, value: int) -> None:
     """Thin wrapper for writing data to the registers."""

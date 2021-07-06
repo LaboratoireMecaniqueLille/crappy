@@ -198,18 +198,18 @@ class Nau7802(InOut):
     # Setting the Low Drop Out voltage to 3.3V and setting the gain
     value = NAU7802_Gain_Values[self._gain_hardware]
     self._bus.write_byte_data(self._device_address,
-                             NAU7802_Scale_Registers['CTRL1'], value)
+                              NAU7802_Scale_Registers['CTRL1'], value)
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_AVDDS'],
                   NAU7802_Scale_Registers['PU_CTRL'], 1)
 
     # Setting the sample rate
     self._bus.write_byte_data(self._device_address,
-                             NAU7802_Scale_Registers['CTRL2'],
-                             NAU7802_SPS_Values[self._sample_rate] << 4)
+                              NAU7802_Scale_Registers['CTRL2'],
+                              NAU7802_SPS_Values[self._sample_rate] << 4)
 
     # Turning off CLK_CHP
     self._bus.write_byte_data(self._device_address,
-                             NAU7802_Scale_Registers['ADC'], 0x30)
+                              NAU7802_Scale_Registers['ADC'], 0x30)
 
     # Enabling 330pF decoupling cap on channel 2
     self._set_bit(NAU7802_PGA_PWR_Bits['PGA_PWR_PGA_CAP_EN'],
@@ -250,7 +250,7 @@ class Nau7802(InOut):
 
     # Reading the output data
     block = self._bus.read_i2c_block_data(self._device_address,
-                                         NAU7802_Scale_Registers['ADCO_B2'], 3)
+                                          NAU7802_Scale_Registers['ADCO_B2'], 3)
     value_raw = (block[0] << 16) | (block[1] << 8) | block[2]
 
     # Converting raw data into Volts or Newtons
@@ -271,6 +271,7 @@ class Nau7802(InOut):
     time.sleep(0.001)
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUA'],
                   NAU7802_Scale_Registers['PU_CTRL'], 0)
+    self._bus.close()
 
   def _is_connected(self) -> bool:
     """Tries reading a byte from the device
@@ -308,7 +309,7 @@ class Nau7802(InOut):
     """
 
     value = self._bus.read_i2c_block_data(self._device_address,
-                                         register_address, 1)[0]
+                                          register_address, 1)[0]
     if bit:
       value |= (1 << bit_number)
     else:
@@ -329,7 +330,7 @@ class Nau7802(InOut):
     """
 
     value = self._bus.read_i2c_block_data(self._device_address,
-                                         register_address, 1)[0]
+                                          register_address, 1)[0]
     value = value >> bit_number & 1
     return bool(value)
 

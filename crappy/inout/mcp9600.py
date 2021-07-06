@@ -182,8 +182,8 @@ class Mcp9600(InOut):
     config_device |= Mcp9600_adc_resolutions[self._adc_resolution]
     config_device |= 0b00  # Normal operating mode
     self._bus.write_i2c_block_data(self._device_address,
-                                  Mcp9600_registers['Device Configuration'],
-                                  [config_device])
+                                   Mcp9600_registers['Device Configuration'],
+                                   [config_device])
 
   def get_data(self) -> list:
     """Reads the registers containing the conversion result.
@@ -197,10 +197,10 @@ class Mcp9600(InOut):
 
     # Starting a conversion
     value = self._bus.read_i2c_block_data(self._device_address,
-                                         Mcp9600_registers['Status'], 1)[0]
+                                          Mcp9600_registers['Status'], 1)[0]
     value &= 0xBF
     self._bus.write_i2c_block_data(self._device_address,
-                                  Mcp9600_registers['Status'], [value])
+                                   Mcp9600_registers['Status'], [value])
 
     # Waiting for the conversion to complete
     t_wait = 0
@@ -212,8 +212,8 @@ class Mcp9600(InOut):
 
     # The MCP9600 features an over-temperature protection
     if self._bus.read_i2c_block_data(self._device_address,
-                                    Mcp9600_registers['Status'], 1)[0] \
-                                    >> 4 & 1:
+                                     Mcp9600_registers['Status'], 1)[0] \
+            >> 4 & 1:
       raise ValueError("Too hot for selected thermocouple !")
 
     out = [time.time()]
@@ -221,9 +221,9 @@ class Mcp9600(InOut):
     # The number of output bits varies according to the selected mode
     # Temperature-modes outputs are 2 bytes long
     if self._mode in ['Hot Junction Temperature', 'Junction Temperature Delta',
-                     'Cold Junction Temperature']:
+                      'Cold Junction Temperature']:
       block = self._bus.read_i2c_block_data(self._device_address,
-                                           Mcp9600_registers[self._mode], 2)
+                                            Mcp9600_registers[self._mode], 2)
       value_raw = (block[0] << 8) | block[1]
 
       # Converting the raw output value into °C
@@ -241,7 +241,7 @@ class Mcp9600(InOut):
     # Raw ADC output is 3 bytes long
     else:
       block = self._bus.read_i2c_block_data(self._device_address,
-                                           Mcp9600_registers[self._mode], 3)
+                                            Mcp9600_registers[self._mode], 3)
       value_raw = (block[0] << 16) | (block[1] << 8) | block[2]
       shift = 18 - self._adc_resolution
 
@@ -263,13 +263,14 @@ class Mcp9600(InOut):
 
     # switching to shutdown mode, keeping configuration
     value = self._bus.read_i2c_block_data(self._device_address,
-                                         Mcp9600_registers[
+                                          Mcp9600_registers[
                                            'Device Configuration'], 1)[0]
     value &= 0xFD
     value |= 0x01
     self._bus.write_i2c_block_data(self._device_address,
-                                  Mcp9600_registers['Device Configuration'],
-                                  [value])
+                                   Mcp9600_registers['Device Configuration'],
+                                   [value])
+    self._bus.close()
 
   def _data_available(self) -> int:
     """Reads the data available bit.
@@ -278,8 +279,8 @@ class Mcp9600(InOut):
     """
 
     return self._bus.read_i2c_block_data(self._device_address,
-                                        Mcp9600_registers['Status'], 1)[0] \
-                                        >> 6 & 1
+                                         Mcp9600_registers['Status'], 1)[0] \
+        >> 6 & 1
 
   def _is_connected(self) -> bool:
     """Tries reading a byte from the device.
