@@ -57,8 +57,8 @@ class Seek_thermal_pro(Camera):
     possible to add it manually by running:
     ::
 
-      $ sudo echo ""SUBSYSTEM==\\"usb\\", ATTR{idVendor}==\\"289d\\", \
-MODE=\\"0777\\\""" > seek_thermal.rules
+      $ echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"289d\", MODE=\"0777\"" |
+sudo tee seek_thermal.rules > /dev/null 2>&1
 
     in a shell opened in ``/etc/udev/rules.d``.
   """
