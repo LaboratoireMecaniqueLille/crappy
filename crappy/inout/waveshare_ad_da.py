@@ -355,10 +355,10 @@ class Waveshare_ad_da(InOut):
                            digit & 0xFF])
       GPIO.output(AD_DA_pins['CS_PIN_DAC'], GPIO.HIGH)
 
-  @staticmethod
-  def close() -> None:
+  def close(self) -> None:
     """Releases the GPIOs."""
 
+    self._SPI.close()
     GPIO.cleanup()
 
   @staticmethod
