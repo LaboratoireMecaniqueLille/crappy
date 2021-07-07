@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from enum import IntEnum
-from threading import RLock
 from collections import namedtuple
 from struct import calcsize, unpack, pack
 
@@ -168,10 +167,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def __init__(self,
                mode: str,
                serial_nr: str = None,
-               i2c_speed: float = 400E3,
-               total_cs_count: int = 1,
-               cs_pin: str = 'D3',
-               spi_reload_config: bool = False,
+               i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:
     """Checks the arguments validity, initializes the device and sets the locks.
 
@@ -191,62 +187,21 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
           100E3, 400E3, 1E6.
 
-      total_cs_count (:obj:`str`, optional): In `SPI` mode, the total number of
-        CS pins the FT232H has to drive. May be different from the actual number
-        of devices sharing the bus. Reserves the corresponding pins, see the
-        Note below.
-      cs_pin (:obj:`str`, optional): In `SPI` mode, the name of the CS pin to
-        drive. One instance of the class can only drive one pin.
-      spi_reload_config (:obj:`str`, optional): In `SPI` mode, indicates whether
-        the SPI parameters (bus speed, mode, CS high or low, etc.) should be
-        reloaded before each communication with the devices. If several devices
-        using different configurations are sharing the bus this parameter must
-        be set to :obj:`True`. If all devices sharing the bus use the same
-        configuration, or if there's only one device on the bus, set this
-        parameter to :obj:`False`. This will greatly improve the max achievable
-        sample rate.
       spi_turbo (:obj:`str`, optional): Increases the achievable bus speed, but
         may not work with some devices.
 
     Note:
-      - **Sharing I2C bus**:
-        Unlike for SPI it is not necessary to have multiple instances of the
-        class to control several I2C slaves, as I2C communication always requires
-        the I2C address to be mentioned. The behaviour of the FT232H remains the
-        same whether one or multiple I2C slaves share the bus.
-
-      - **CS pins management**:
-        One instance of the class can only drive one CS pin, corresponding to
-        one SPI device in most situations. Use multiple instances of the class
-        to drive multiple CS pins and communicate with the associated devices,
-        or drive the pins manually using GPIOs methods instead. A lock system
-        ensures that the communications issued by the different instances of the
-        class controlling the same FT232H do not overlap.
+      - **CS pin**:
+        The CS pin for selecting SPI devices is always `D3`. This pin is
+        reserved and cannot be used as a GPIO. If you want to drive the CS line
+        manually, it is possible not to drive the CS pin by setting the SPI
+        parameter :prop:`no_cs` to :obj:`True` and to drive the CS line from a
+        GPIO instead.
 
       - ``mode``:
         It is not possible to simultaneously control slaves over SPI and I2C,
         due to different hardware requirements for the two protocols. Trying to
         do so will most likely raise an error or lead to inconsistent behavior.
-
-      - ``total_cs_count``:
-        This argument is meant to ensure that the CS pins are all reserved. The
-        first CS pin available is `D3`, then `D4`, etc. So if ``total_cs_count``
-        is `4`, all the pins from `D3` to `D6` will be considered as CS pins. It
-        is up to the user to make sure that the same value is given for all
-        instances of the class controlling the same FT232H.
-
-      - ``cs_pin``:
-        This argument indicates which CS pin should be driven. The pin must be
-        one of those reserved through the ``total_cs_count`` argument. It is up
-        to the user to make sure that two instances of the class do not drive
-        the same CS pin on the same FT232H.
-
-      - ``spi_reload_config``:
-        It is recommended to put only devices sharing the same SPI configuration
-        on the same bus (thus keeping this parameter to :obj:`False`), for
-        performance reasons. It is up to the user to make sure that the use of
-        this argument is consistent for all instances of the class controlling
-        the same FT232H.
 
     """
 
@@ -261,82 +216,42 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("i2c_speed should be in {}".format(list(
         ft232h_i2c_speed.values())))
 
-    if not 0 <= total_cs_count < 14:
-      raise ValueError("total_cs_count should be an integer between 0 and 13")
-
-    if cs_pin is not None and cs_pin not in ft232h_pin_nr:
-      raise ValueError("cs_pin should be in {}".format(
-        list(ft232h_pin_nr.values())))
-    elif cs_pin is not None and cs_pin in ['D0', 'D1', 'D2']:
-      raise ValueError("Invalid value for cs_pin, should be at least D3")
-    elif ft232h_pin_nr[cs_pin] > 2 ** (2 + total_cs_count):
-      raise ValueError("Invalid cs_pin for the given total_cs_count")
-
     self._gpio_low = 0
     self._gpio_high = 0
     self._gpio_dir = 0
-    self._retry_count = 3
+    self._retry_count = 8
 
     self._usb_write_timeout = 5000
     self._usb_read_timeout = 5000
 
     self._serial_nr = serial_nr
-
-    if cs_pin is None:
-      self._cs_pin = 0
-    else:
-      self._cs_pin = ft232h_pin_nr[cs_pin]
-
-    self._total_cs_count = total_cs_count
-    self._spi_reload_config = spi_reload_config
-    self._high_cs_pins = total_cs_count > 5
     self._turbo = spi_turbo
-
     self._i2c_speed = i2c_speed
 
     self._initialize()
 
     if mode == 'Write_serial_nr':
-      with ft232h._get_lock(self._serial_nr):
-        self._set_serial_number(serial_nr)
-        self.close()
+      self._set_serial_number(serial_nr)
+      self.close()
 
   @classmethod
-  def _add_lock(cls, serial_number: str) -> bool:
-    """Adds an :obj:`RLock` to the class locks, corresponding to the FT232H to
-    control.
+  def _is_already_used(cls, serial_number: str) -> bool:
+    """Indicates whether the FT232H is already being used by another Crappy
+    block.
 
     Args:
       serial_number (:obj:`str`): The serial number of the FT232H to control.
 
     Returns:
-      :obj:`True` if the lock was added, *i.e.* if it is the first time that
-      this FT232H is instantiated in the Crappy program, else :obj:`False`.
+      :obj:`True` if the FT232H is already being used, else :obj:`False`.
     """
 
-    if not hasattr(cls, 'Locks'):
-      cls.Locks = dict()
-    if serial_number not in cls.Locks:
-      cls.Locks[serial_number] = RLock()
-      return True
-    return False
-
-  @classmethod
-  def _get_lock(cls, serial_number: str) -> RLock:
-    """Gets the lock corresponding to the FT232H to drive.
-
-    Args:
-      serial_number (:obj:`str`): The serial number of the FT232H to control.
-
-    Returns:
-      The lock for controlling the FT232H.
-    """
-
-    if not hasattr(cls, 'Locks'):
-      print("Warning ! Something went wrong during __init__, the ft232h locks "
-            "are not defined")
-      ft232h._add_lock(serial_number)
-    return cls.Locks[serial_number]
+    if not hasattr(cls, 'used'):
+      cls.used = dict()
+    if serial_number not in cls.used:
+      cls.used[serial_number] = True
+      return False
+    return True
 
   def _initialize(self) -> None:
     """Initializing the FT232H according to the chosen mode.
@@ -379,11 +294,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._threewire = False
       self._spi_param_changed = True
 
-      self._cs_bits = (ft232h_pins['CS'] << self._total_cs_count) - 1 - \
-                      (ft232h_pins['SCK'] | ft232h_pins['DO'] |
-                       ft232h_pins['DI'])
-      self._spi_dir = self._cs_bits | ft232h_pins['SCK'] | ft232h_pins['DO']
-      self._spi_mask = self._cs_bits | ft232h_pins['SCK'] | \
+      self._cs_bit = ft232h_pins['CS']
+      self._spi_dir = self._cs_bit | ft232h_pins['SCK'] | ft232h_pins['DO']
+      self._spi_mask = self._cs_bit | ft232h_pins['SCK'] | \
           ft232h_pins['DO'] | ft232h_pins['DI']
 
     else:
@@ -411,16 +324,18 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._usb_dev = devices[0]
 
     self._serial_nr = self._usb_dev.serial_number
+    if self._is_already_used(self._serial_nr):
+      raise IOError("Cannot control several devices from a single FT232H")
 
     # Configuring the USB device, interface and endpoints
     try:
       if self._usb_dev.is_kernel_driver_active(0):
         self._usb_dev.detach_kernel_driver(0)
-
       self._usb_dev.set_configuration()
     except usb.core.USBError:
       print("You may have to install the udev-rules for this USB device, "
-            "this can be done using an utility in the util folder")
+            "this can be done using the udev_rule_setter utility in the util "
+            "folder")
       raise
     config = self._usb_dev.get_active_configuration()
 
@@ -432,101 +347,96 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     endpoint = self._interface[0]
     self._max_packet_size = endpoint.wMaxPacketSize
 
-    # If this FT232H was already initialized, no need to do it again
-    if not ft232h._add_lock(self._serial_nr):
-      return
+    # Invalidate data in the readbuffer
+    self._readoffset = 0
+    self._readbuffer = bytearray()
+    # Drain input buffer
+    self._purge_buffers()
+    # Shallow reset
 
-    with ft232h._get_lock(self._serial_nr):
+    if self._ctrl_transfer_out(ft232h_sio_req['reset'],
+                               ft232h_sio_args['reset']):
+      raise IOError('Unable to reset FTDI device')
+    # Reset feature mode
+    self._set_bitmode(0, ft232h.BitMode.RESET)
 
-      # Invalidate data in the readbuffer
-      self._readoffset = 0
-      self._readbuffer = bytearray()
-      # Drain input buffer
-      self._purge_buffers()
-      # Shallow reset
-      if self._ctrl_transfer_out(ft232h_sio_req['reset'],
-                                 ft232h_sio_args['reset']):
-        raise IOError('Unable to reset FTDI device')
-      # Reset feature mode
-      self._set_bitmode(0, ft232h.BitMode.RESET)
+    # Set latency timer
+    self._set_latency_timer(latency)
 
-      # Set latency timer
-      self._set_latency_timer(latency)
+    # Set chunk size and invalidate all remaining data
+    self._writebuffer_chunksize = fifo_sizes[0]
+    self._readoffset = 0
+    self._readbuffer = bytearray()
+    self._readbuffer_chunksize = min(fifo_sizes[0], fifo_sizes[1],
+                                     self._max_packet_size)
 
-      # Set chunk size and invalidate all remaining data
-      self._writebuffer_chunksize = fifo_sizes[0]
-      self._readoffset = 0
-      self._readbuffer = bytearray()
-      self._readbuffer_chunksize = min(fifo_sizes[0], fifo_sizes[1],
-                                       self._max_packet_size)
+    # Reset feature mode
+    self._set_bitmode(0, ft232h.BitMode.RESET)
+    # Drain buffers
+    self._purge_buffers()
+    # Disable event and error characters
+    if self._ctrl_transfer_out(ft232h_sio_req['set_event_char'], 0):
+      raise IOError('Unable to set event char')
+    if self._ctrl_transfer_out(ft232h_sio_req['set_error_char'], 0):
+      raise IOError('Unable to set error char')
 
-      # Reset feature mode
-      self._set_bitmode(0, ft232h.BitMode.RESET)
-      # Drain buffers
-      self._purge_buffers()
-      # Disable event and error characters
-      if self._ctrl_transfer_out(ft232h_sio_req['set_event_char'], 0):
-        raise IOError('Unable to set event char')
-      if self._ctrl_transfer_out(ft232h_sio_req['set_error_char'], 0):
-        raise IOError('Unable to set error char')
+    # Enable MPSSE mode
+    if self._ft232h_mode == 'GPIO_only':
+      self._set_bitmode(0xFF, ft232h.BitMode.BITBANG)
+    else:
+      self._set_bitmode(self._direction, ft232h.BitMode.MPSSE)
 
-      # Enable MPSSE mode
-      if self._ft232h_mode == 'GPIO_only':
-        self._set_bitmode(0xFF, ft232h.BitMode.BITBANG)
-      else:
-        self._set_bitmode(self._direction, ft232h.BitMode.MPSSE)
+    # Configure clock
+    if self._ft232h_mode == 'I2C':
+      # Note that bus frequency may differ from clock frequency, when
+      # 3-phase clock is enabled
+      self._set_frequency(3 * frequency / 2)
+    else:
+      self._set_frequency(frequency)
 
-      # Configure clock
-      if self._ft232h_mode == 'I2C':
-        # Note that bus frequency may differ from clock frequency, when
-        # 3-phase clock is enabled
-        self._set_frequency(3 * frequency / 2)
-      else:
-        self._set_frequency(frequency)
+    # Configure pins
+    if self._ft232h_mode == 'I2C':
+      cmd = bytearray(self._idle)
+      cmd.extend((ft232h_cmds['set_bits_high'], 0, 0))
+      self._write_data(cmd)
+    elif self._ft232h_mode == 'SPI':
+      cmd = bytearray((ft232h_cmds['set_bits_low'],
+                       self._cs_bit & 0xFF,
+                       self._direction & 0xFF))
+      cmd.extend((ft232h_cmds['set_bits_high'],
+                  (self._cs_bit >> 8) & 0xFF,
+                  (self._direction >> 8) & 0xFF))
+      self._write_data(cmd)
+    else:
+      cmd = bytearray((ft232h_cmds['set_bits_low'], 0, 0))
+      cmd.extend((ft232h_cmds['set_bits_high'], 0, 0))
+      self._write_data(cmd)
 
-      # Configure pins
-      if self._ft232h_mode == 'I2C':
-        cmd = bytearray(self._idle)
-        cmd.extend((ft232h_cmds['set_bits_high'], 0, 0))
-        self._write_data(cmd)
-      elif self._ft232h_mode == 'SPI':
-        cmd = bytearray((ft232h_cmds['set_bits_low'],
-                         self._cs_bits & 0xFF,
-                         self._direction & 0xFF))
-        cmd.extend((ft232h_cmds['set_bits_high'],
-                    (self._cs_bits >> 8) & 0xFF,
-                    (self._direction >> 8) & 0xFF))
-        self._write_data(cmd)
-      else:
-        cmd = bytearray((ft232h_cmds['set_bits_low'], 0, 0))
-        cmd.extend((ft232h_cmds['set_bits_high'], 0, 0))
-        self._write_data(cmd)
+    # Disable loopback
+    self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
+    # Validate MPSSE
+    bytes_ = bytes(self._read_data_bytes(2))
+    if (len(bytes_) >= 2) and (bytes_[0] == '\xfa'):
+      raise IOError("Invalid command @ %d" % bytes_[1])
 
-      # Disable loopback
-      self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
-      # Validate MPSSE
-      bytes_ = bytes(self._read_data_bytes(2))
-      if (len(bytes_) >= 2) and (bytes_[0] == '\xfa'):
-        raise IOError("Invalid command @ %d" % bytes_[1])
+    # I2C-specific settings
+    if self._ft232h_mode == 'I2C':
+      self._tx_size, self._rx_size = fifo_sizes
 
-      # I2C-specific settings
-      if self._ft232h_mode == 'I2C':
-        self._tx_size, self._rx_size = fifo_sizes
+      # Enable 3-phase clock
+      self._write_data(bytearray([True and
+                                  ft232h_cmds['enable_clk_3phase'] or
+                                  ft232h_cmds['disable_clk_3phase']]))
 
-        # Enable 3-phase clock
-        self._write_data(bytearray([True and
-                                    ft232h_cmds['enable_clk_3phase'] or
-                                    ft232h_cmds['disable_clk_3phase']]))
+      # Enable drivezero mode
+      self._write_data(bytearray([ft232h_cmds['drive_zero'],
+                                  self._i2c_mask & 0xFF,
+                                  (self._i2c_mask >> 8) & 0xFF]))
 
-        # Enable drivezero mode
-        self._write_data(bytearray([ft232h_cmds['drive_zero'],
-                                    self._i2c_mask & 0xFF,
-                                    (self._i2c_mask >> 8) & 0xFF]))
-
-      # Disable adaptative clock
-      self._write_data(bytearray([False and
-                                  ft232h_cmds['enable_clk_adaptative'] or
-                                  ft232h_cmds['disable_clk_adaptative']]))
+    # Disable adaptative clock
+    self._write_data(bytearray([False and
+                                ft232h_cmds['enable_clk_adaptative'] or
+                                ft232h_cmds['disable_clk_adaptative']]))
 
   @staticmethod
   def _compute_delay_cycles(value: float) -> int:
@@ -1223,9 +1133,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if not 0 <= i2c_addr <= 127:
       raise ValueError("Incorrect i2c address, should be between 0 and 127")
 
-    with ft232h._get_lock(self._serial_nr):
-      self._write_i2c(address=i2c_addr,
-                      out=[register] + data)
+    self._write_i2c(address=i2c_addr,
+                    out=[register] + data)
 
   def read_byte(self, i2c_addr: int) -> int:
     """Reads a single byte from an I2C slave, from the register `0`.
@@ -1310,10 +1219,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     if length == 0:
       return []
-    with ft232h._get_lock(self._serial_nr):
-      return [byte for byte in self._exchange_i2c(address=i2c_addr,
-                                                  out=[register],
-                                                  readlen=length)]
+    return [byte for byte in self._exchange_i2c(address=i2c_addr,
+                                                out=[register],
+                                                readlen=length)]
 
   @property
   def bits_per_word(self) -> int:
@@ -1338,11 +1246,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
   @property
   def cshigh(self) -> bool:
-    """If :obj:`True`, the polarity of the CS line is inverted.
-
-    Can only be set to :obj:`True` when the spi_solo_dev parameter is
-    :obj:`True`, *i.e.* when only one CS line has to be driven.
-    """
+    """If :obj:`True`, the polarity of the CS line is inverted."""
 
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
@@ -1354,11 +1258,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
       raise TypeError("cshigh should be either True or False")
-    if value and self._spi_reload_config:
-      raise ValueError("cshigh not implemented when several devices are "
-                       "sharing the bus")
-    if not self._spi_reload_config:
-      self._spi_param_changed = True
+    self._spi_param_changed = True
     self._cshigh = value
 
   @property
@@ -1375,12 +1275,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
       raise TypeError("loop should be either True or False")
-    if not self._spi_reload_config:
-      with ft232h._get_lock(self._serial_nr):
-        if value:
-          self._write_data(bytearray((ft232h_cmds['loopback_start'],)))
-        else:
-          self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
+    if value:
+      self._write_data(bytearray((ft232h_cmds['loopback_start'],)))
+    else:
+      self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
     self._loop = value
 
   @property
@@ -1389,8 +1287,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
-    if self._cs_pin == 0:
-      return True
     return self._no_cs
 
   @no_cs.setter
@@ -1399,8 +1295,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
       raise TypeError("no_cs should be either True or False")
-    if not value and self._cs_pin == 0:
-      raise ValueError("no_cs cannot be False as no cs pin was given")
     self._no_cs = value
 
   @property
@@ -1443,19 +1337,17 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       if not 4800 <= value <= ft232h_clock['high']:
         raise ValueError("max_speed_hz should be between 4.8kHz and 30MHz in "
                          "spi modes 0 and 2")
-    if not self._spi_reload_config:
-      self._spi_param_changed = True
-      with ft232h._get_lock(self._serial_nr):
-        if self.mode in [1, 3]:
-          self._set_frequency(3 * value / 2)
-          self._write_data(bytearray([True and
-                                      ft232h_cmds['enable_clk_3phase'] or
-                                      ft232h_cmds['disable_clk_3phase']]))
-        else:
-          self._set_frequency(value)
-          self._write_data(bytearray([False and
-                                      ft232h_cmds['enable_clk_3phase'] or
-                                      ft232h_cmds['disable_clk_3phase']]))
+    self._spi_param_changed = True
+    if self.mode in [1, 3]:
+      self._set_frequency(3 * value / 2)
+      self._write_data(bytearray([True and
+                                  ft232h_cmds['enable_clk_3phase'] or
+                                  ft232h_cmds['disable_clk_3phase']]))
+    else:
+      self._set_frequency(value)
+      self._write_data(bytearray([False and
+                                  ft232h_cmds['enable_clk_3phase'] or
+                                  ft232h_cmds['disable_clk_3phase']]))
     self._max_speed_hz = value
 
   @property
@@ -1477,8 +1369,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("mode should be an integer between 0 and 3")
     former_mode = self.mode
     self._mode = value
-    if not self._spi_reload_config:
-      self._spi_param_changed = True
+    self._spi_param_changed = True
     if value % 2 != former_mode % 2:
       self.max_speed_hz = self.max_speed_hz
 
@@ -1532,40 +1423,17 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if not isinstance(out, bytearray):
       out = bytearray(out)
 
-    # If several devices on the bus, re-setting chip parameters each time the
-    # method is called, because they might have been modified by another
-    # instance of the class
-    if self._spi_reload_config:
-      if self.loop:
-        self._write_data(bytearray((ft232h_cmds['loopback_start'],)))
-      else:
-        self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
-      if self.mode in [1, 3]:
-        self._set_frequency(3 * self.max_speed_hz / 2)
-        self._write_data(bytearray([True and
-                                    ft232h_cmds['enable_clk_3phase'] or
-                                    ft232h_cmds['disable_clk_3phase']]))
-      else:
-        self._set_frequency(self.max_speed_hz)
-        self._write_data(bytearray([False and
-                                    ft232h_cmds['enable_clk_3phase'] or
-                                    ft232h_cmds['disable_clk_3phase']]))
-      self._write_data(bytes((ft232h_cmds['send_immediate'],)))
-
-    # If several devices on the bus, re-building the _cs_prolog and _cs_epilog
-    # each time the method is called, because they might have been modified by
-    # another instance of the class
-    # Also re-building if the device is alone on the bus but an SPI parameter
-    # has been modified
-    if self._spi_reload_config or self._spi_param_changed:
+    # Re-building the _cs_prolog and _cs_epilog if an SPI parameter has been
+    # modified
+    if self._spi_param_changed:
       cs_hold = 1 + int(1E6 / self.max_speed_hz)
       self._cpol = self.mode & 0x2
       cs_clock = 0xFFFF & ~((~self._cpol & ft232h_pins['SCK']) |
                             ft232h_pins['DO'] |
-                            (self.cshigh and self._cs_pin))
+                            (self.cshigh and self._cs_bit))
       cs_select = 0xFFFF & ~((~self._cpol & ft232h_pins['SCK']) |
                              ft232h_pins['DO'] |
-                             ((not self.cshigh) and self._cs_pin))
+                             ((not self.cshigh) and self._cs_bit))
       self._cs_prolog = [cs_clock, cs_select]
       self._cs_epilog = [cs_select] + [cs_clock] * cs_hold
 
@@ -1580,9 +1448,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         ctrl |= self._gpio_high << 8
         cmd.extend((ft232h_cmds['set_bits_low'], ctrl & 0xFF,
                     self._direction & 0xFF))
-        if self._high_cs_pins:
-          cmd.extend((ft232h_cmds['set_bits_high'], ctrl >> 8,
-                      self._direction >> 8))
 
     # Building the epilog MPSSE command
     epilog = bytearray()
@@ -1592,20 +1457,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       ctrl |= self._gpio_high << 8
       epilog.extend((ft232h_cmds['set_bits_low'], ctrl & 0xFF,
                      self._direction & 0xFF))
-      if self._high_cs_pins:
-        epilog.extend((ft232h_cmds['set_bits_high'], ctrl >> 8,
-                       self._direction >> 8))
 
     # Restore idle state
     if not self.cshigh:
-      cs_high = [ft232h_cmds['set_bits_low'], self._cs_bits |
+      cs_high = [ft232h_cmds['set_bits_low'], self._cs_bit |
                  self._gpio_low & 0xFF,
                  self._direction & 0xFF]
-      cs_high += [ft232h_cmds['set_bits_high'], (self._cs_bits >> 8) |
-                  self._gpio_high,
-                  self._direction >> 8] if self._high_cs_pins else []
     else:
-      cs_high = [ft232h_cmds['set_bits_low'], self._gpio_low,
+      cs_high = [ft232h_cmds['set_bits_low'], self._gpio_low & 0xFF,
                  self._direction & 0xFF]
 
     if not self._turbo:
@@ -1718,12 +1577,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     if self._ft232h_mode != 'SPI':
       raise ValueError("Method only available in SPI mode")
-    with ft232h._get_lock(self._serial_nr):
-      return [byte for byte in self._exchange_spi(readlen=len,
-                                                  out=[],
-                                                  start=start,
-                                                  stop=stop,
-                                                  duplex=False)]
+    return [byte for byte in self._exchange_spi(readlen=len,
+                                                out=[],
+                                                start=start,
+                                                stop=stop,
+                                                duplex=False)]
 
   def writebytes(self,
                  values: list,
@@ -1741,12 +1599,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     if self._ft232h_mode != 'SPI':
       raise ValueError("Method only available in SPI mode")
-    with ft232h._get_lock(self._serial_nr):
-      self._exchange_spi(readlen=0,
-                         out=values,
-                         start=start,
-                         stop=stop,
-                         duplex=False)
+    self._exchange_spi(readlen=0,
+                       out=values,
+                       start=start,
+                       stop=stop,
+                       duplex=False)
 
   def writebytes2(self,
                   values: list,
@@ -1795,12 +1652,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if speed != self.max_speed_hz and speed is not None:
       self.max_speed_hz = speed
 
-    with ft232h._get_lock(self._serial_nr):
-      return [byte for byte in self._exchange_spi(readlen=len(values),
-                                                  out=values,
-                                                  start=start,
-                                                  stop=stop,
-                                                  duplex=True)]
+    return [byte for byte in self._exchange_spi(readlen=len(values),
+                                                out=values,
+                                                start=start,
+                                                stop=stop,
+                                                duplex=True)]
 
   def xfer2(self,
             values: list,
@@ -1866,7 +1722,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if self._ft232h_mode == 'I2C':
       return self._i2c_dir | self._gpio_dir
     elif self._ft232h_mode == 'SPI':
-      no_cs_mask = 0xFFFF - (self._cs_pin if self.no_cs else 0)
+      no_cs_mask = 0xFFFF - (self._cs_bit if self.no_cs else 0)
       return self._spi_dir | self._gpio_dir & no_cs_mask
     else:
       return self._gpio_dir
@@ -1901,19 +1757,18 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       3.3V-logic value corresponding to the input voltage
     """
 
-    with ft232h._get_lock(self._serial_nr):
-      if gpio_str not in ft232h_pin_nr:
-        raise ValueError("gpio_id should be in {}".format(
-          list(ft232h_pin_nr.values())))
-      gpio_bit = ft232h_pin_nr[gpio_str]
-      if not self._gpio_all_pins & gpio_bit:
-        raise ValueError("Cannot use pin {} as a GPIO".format(gpio_str))
+    if gpio_str not in ft232h_pin_nr:
+      raise ValueError("gpio_id should be in {}".format(
+        list(ft232h_pin_nr.values())))
+    gpio_bit = ft232h_pin_nr[gpio_str]
+    if not self._gpio_all_pins & gpio_bit:
+      raise ValueError("Cannot use pin {} as a GPIO".format(gpio_str))
 
-      # Changing the _direction and _gpio_dir bitfields
-      if self._direction & gpio_bit:
-        self._gpio_dir &= 0xFFFF - gpio_bit
+    # Changing the _direction and _gpio_dir bitfields
+    if self._direction & gpio_bit:
+      self._gpio_dir &= 0xFFFF - gpio_bit
 
-      return self._read_gpio_raw() & gpio_bit
+    return self._read_gpio_raw() & gpio_bit
 
   def set_gpio(self, gpio_str: str, value: int) -> None:
     """Sets the specified GPIO as an output and sets its output value.
@@ -1923,50 +1778,47 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       value (:obj:`int`): 1 for setting the GPIO high, 0 for setting it low
     """
 
-    with ft232h._get_lock(self._serial_nr):
-      if value not in [0, 1]:
-        raise ValueError("value should be either 0 or 1")
-      if gpio_str not in ft232h_pin_nr:
-        raise ValueError("gpio_id should be in {}".format(
-          list(ft232h_pin_nr.values())))
-      gpio_bit = ft232h_pin_nr[gpio_str]
-      if not self._gpio_all_pins & gpio_bit:
-        raise ValueError("Cannot use pin {} as a GPIO".format(gpio_str))
+    if value not in [0, 1]:
+      raise ValueError("value should be either 0 or 1")
+    if gpio_str not in ft232h_pin_nr:
+      raise ValueError("gpio_id should be in {}".format(
+        list(ft232h_pin_nr.values())))
+    gpio_bit = ft232h_pin_nr[gpio_str]
+    if not self._gpio_all_pins & gpio_bit:
+      raise ValueError("Cannot use pin {} as a GPIO".format(gpio_str))
 
-      # Changing the _direction and _gpio_dir bitfields
-      if not (self._direction & gpio_bit):
-        self._gpio_dir |= gpio_bit
+    # Changing the _direction and _gpio_dir bitfields
+    if not (self._direction & gpio_bit):
+      self._gpio_dir |= gpio_bit
 
-      data = self._read_gpio_raw()
-      if value == 1:
-        data |= gpio_bit
-      else:
-        data &= 0xFFFF - gpio_bit
-      low_data = data & 0xFF
-      low_dir = self._direction & 0xFF
-      high_data = (data >> 8) & 0xFF
-      high_dir = (self._direction >> 8) & 0xFF
-      cmd = bytes([ft232h_cmds['set_bits_low'], low_data, low_dir,
-                   ft232h_cmds['set_bits_high'], high_data, high_dir])
-      self._write_data(cmd)
-      self._gpio_low = low_data & self._gpio_all_pins
-      self._gpio_high = high_data & self._gpio_all_pins
+    data = self._read_gpio_raw()
+    if value == 1:
+      data |= gpio_bit
+    else:
+      data &= 0xFFFF - gpio_bit
+    low_data = data & 0xFF
+    low_dir = self._direction & 0xFF
+    high_data = (data >> 8) & 0xFF
+    high_dir = (self._direction >> 8) & 0xFF
+    cmd = bytes([ft232h_cmds['set_bits_low'], low_data, low_dir,
+                 ft232h_cmds['set_bits_high'], high_data, high_dir])
+    self._write_data(cmd)
+    self._gpio_low = low_data & self._gpio_all_pins
+    self._gpio_high = high_data & self._gpio_all_pins
 
   def close(self) -> None:
     """Closes the FTDI interface/port."""
 
-    with ft232h._get_lock(self._serial_nr):
-      if self._usb_dev:
-        dev = self._usb_dev
-        if bool(self._usb_dev._ctx.handle):
-          try:
-            self._set_bitmode(0, ft232h.BitMode.RESET)
-            usb.util.release_interface(dev, self._index - 1)
-          except (IOError, ValueError, usb.core.USBError):
-            pass
-          try:
-            self._usb_dev.attach_kernel_driver(self._index - 1)
-          except (NotImplementedError, usb.core.USBError):
-            pass
-        self._usb_dev = None
-        usb.util.dispose_resources(dev)
+    if self._usb_dev:
+      if bool(self._usb_dev._ctx.handle):
+        try:
+          self._set_bitmode(0, ft232h.BitMode.RESET)
+          usb.util.release_interface(self._usb_dev, self._index - 1)
+        except (IOError, ValueError, usb.core.USBError):
+          pass
+        try:
+          self._usb_dev.attach_kernel_driver(self._index - 1)
+        except (NotImplementedError, usb.core.USBError):
+          pass
+      usb.util.dispose_resources(self._usb_dev)
+      self._usb_dev = None
