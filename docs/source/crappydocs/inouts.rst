@@ -97,6 +97,11 @@ Wavehsare AD/DA
 .. automodule:: crappy.inout.waveshare_ad_da
    :members:
 
+Wavehsare AD/DA FT232H
+++++++++++++++++++++++
+.. automodule:: crappy.inout.waveshare_ad_da_ft232h
+   :members:
+
 GSM
 +++
 .. automodule:: crappy.inout.gsm

@@ -19,6 +19,7 @@ from .nau7802 import Nau7802
 from .gpio_switch import Gpio_switch
 from .gpio_pwm import Gpio_pwm
 from .waveshare_ad_da import Waveshare_ad_da
+from .waveshare_ad_da_ft232h import Waveshare_ad_da_ft232h
 from .gsm import Gsm
 from .piJuice import Pijuice
 
