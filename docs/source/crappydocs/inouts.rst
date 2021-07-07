@@ -92,12 +92,12 @@ T7 Streamer
 .. automodule:: crappy.inout.t7Streamer
    :members:
 
-Wavehsare AD/DA
+Waveshare AD/DA
 +++++++++++++++
 .. automodule:: crappy.inout.waveshare_ad_da
    :members:
 
-Wavehsare AD/DA FT232H
+Waveshare AD/DA FT232H
 ++++++++++++++++++++++
 .. automodule:: crappy.inout.waveshare_ad_da_ft232h
    :members:

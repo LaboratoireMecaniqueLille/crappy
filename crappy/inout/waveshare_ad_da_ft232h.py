@@ -135,7 +135,7 @@ class Waveshare_ad_da_ft232h(InOut):
 
           output = gain * tension + offset.
 
-         The same gain applies to all of the outputs.
+        The same gain applies to all of the outputs.
       offset (:obj:`float`, optional): Allows to tune the output values of the
         ADC according to the formula:
         ::
