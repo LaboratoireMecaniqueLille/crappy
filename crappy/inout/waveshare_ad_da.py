@@ -90,9 +90,8 @@ class Waveshare_ad_da(InOut):
   read values from the 8-channels ADC and/or to set the 2-channels DAC.
 
   Warning:
-    This hat is supposed to be used with a Raspberry Pi. It is however possible
-    to use it with any other controller supporting SPI communication using an
-    appropriate wiring.
+    This class is specifically meant to be used on a Raspberry Pi. See
+    :ref:`Waveshare AD/DA FT232H` for use with FTDI's FT232H.
   """
 
   def __init__(self,
@@ -213,6 +212,9 @@ class Waveshare_ad_da(InOut):
       self._v_ref = v_ref
 
     self._channel_set = False
+
+    if dac_channels is None and adc_channels is None:
+      print("Warning ! The AD/DA doesn't read nor write anything.")
 
     if dac_channels is not None:
       if len(dac_channels) > 2:
