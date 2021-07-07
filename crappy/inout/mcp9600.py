@@ -2,6 +2,7 @@
 
 import time
 from .inout import InOut
+from ..tool import ft232h
 from .._global import OptionalModule
 
 try:
@@ -61,6 +62,8 @@ Mcp9600_modes = ['Hot Junction Temperature',
                  'Cold Junction Temperature',
                  'Raw Data ADC']
 
+Mcp9600_backends = ['Pi4', 'ft232h']
+
 
 class Mcp9600(InOut):
   """Class for controlling Adafruit's MCP9600 thermocouple reader.
@@ -74,16 +77,24 @@ class Mcp9600(InOut):
   """
 
   def __init__(self,
+               backend: str,
                thermocouple_type: str,
                i2c_port: int = 1,
                device_address: int = 0x67,
                adc_resolution: int = 18,
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
-               mode: str = 'Hot Junction Temperature') -> None:
+               mode: str = 'Hot Junction Temperature',
+               ft232h_ser_num: str = None) -> None:
     """Checks arguments validity.
 
     Args:
+      backend (:obj:`str`): The backend for communicating with the NAU7802.
+        Should be one of:
+        ::
+
+          'Pi4', 'ft232h'
+
       thermocouple_type (:obj:`str`): The type of thermocouple plugged in the
         MCP9600. The available types are:
         ::
@@ -127,10 +138,19 @@ class Mcp9600(InOut):
           'Cold Junction Temperature',
           'Raw Data ADC'
 
+      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
+        serial number of the ft232h to use for communication.
+
     """
 
     InOut.__init__(self)
-    self._bus = smbus2.SMBus(i2c_port)
+    if backend not in Mcp9600_backends:
+      raise ValueError("backend should be in {}".format(Mcp9600_backends))
+
+    if backend == 'Pi4':
+      self._bus = smbus2.SMBus(i2c_port)
+    else:
+      self._bus = ft232h('I2C', ft232h_ser_num)
     self._device_address = device_address
 
     if sensor_resolution not in Mcp9600_sensor_resolutions:

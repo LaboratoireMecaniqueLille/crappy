@@ -2,6 +2,7 @@
 
 import time
 from .inout import InOut
+from ..tool import ft232h
 from .._global import OptionalModule
 
 try:
@@ -39,6 +40,8 @@ Ads1115_config_dr = {8: 0x0000,
                      475: 0x00C0,
                      860: 0x00E0}
 
+Ads1115_backends = ['Pi4', 'ft232h']
+
 
 class Ads1115(InOut):
   """A class for controlling Adafruit's ADS1115 16-bits ADC.
@@ -52,16 +55,24 @@ class Ads1115(InOut):
   """
 
   def __init__(self,
+               backend: str,
                device_address: int = Ads1115_default_address,
                i2c_port: int = 1,
                sample_rate: int = 128,
                v_range: float = 2.048,
                multiplexer: str = 'A1',
                gain: float = 1,
-               offset: float = 0) -> None:
+               offset: float = 0,
+               ft232h_ser_num: str = None) -> None:
     """Checks arguments validity.
 
     Args:
+      backend (:obj:`str`): The backend for communicating with the NAU7802.
+        Should be one of:
+        ::
+
+          'Pi4', 'ft232h'
+
       device_address (:obj:`int`, optional): The I2C address of the ADS1115.
         The default address is `0x48`, but it is possible to change this
         setting using the `ADDR` pin.
@@ -105,6 +116,9 @@ class Ads1115(InOut):
 
           output = gain * tension + offset.
 
+      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
+        serial number of the ft232h to use for communication.
+
     Warning:
       AINx voltages should not be higher than `VDD+0.3V` nor lower than
       `GND-0.3V`. Setting high ``v_range`` values does not allow to measure
@@ -112,8 +126,14 @@ class Ads1115(InOut):
     """
 
     InOut.__init__(self)
+    if backend not in Ads1115_backends:
+      raise ValueError("backend should be in {}".format(Ads1115_backends))
+
+    if backend == 'Pi4':
+      self._bus = smbus2.SMBus(i2c_port)
+    else:
+      self._bus = ft232h('I2C', ft232h_ser_num)
     self._device_address = device_address
-    self._bus = smbus2.SMBus(i2c_port)
 
     if v_range not in Ads1115_config_gain:
       raise ValueError("v_range should be in {}".format(list(
@@ -172,8 +192,8 @@ class Ads1115(InOut):
     time.sleep(1 / self._sample_rate + 0.00005)
     out = [time.time()]
     ms_byte, ls_byte = self._bus.read_i2c_block_data(self._device_address,
-                                                    Ads1115_pointer_conversion,
-                                                    2)
+                                                     Ads1115_pointer_conversion,
+                                                     2)
 
     # Converting the output value into Volts
     if ms_byte >> 7:
@@ -185,9 +205,8 @@ class Ads1115(InOut):
     return out
 
   def close(self) -> None:
-    """Resets the ADS1115"""
+    """Closes the I2C bus"""
 
-    self._set_register(Ads1115_pointer_conversion, 0x0006)
     self._bus.close()
 
   def _set_register(self, register_address: int, value: int) -> None:
@@ -196,7 +215,7 @@ class Ads1115(InOut):
     ms_byte = value >> 8 & 0xff
     ls_byte = value & 0xff
     self._bus.write_i2c_block_data(self._device_address, register_address,
-                                  [ms_byte, ls_byte])
+                                   [ms_byte, ls_byte])
 
   def _is_connected(self) -> bool:
     """Tries reading a byte from the device.

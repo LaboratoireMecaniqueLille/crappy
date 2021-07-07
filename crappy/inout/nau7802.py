@@ -2,6 +2,7 @@
 
 import time
 from .inout import InOut
+from ..tool import ft232h
 from .._global import OptionalModule
 
 try:
@@ -93,6 +94,8 @@ NAU7802_Cal_Status = {'CAL_SUCCESS': 0,
                       'CAL_IN_PROGRESS': 1,
                       'CAL_FAILURE': 2}
 
+NAU7802_Backends = ['Pi4', 'ft232h']
+
 
 class Nau7802(InOut):
   """Class for controlling Sparkfun's NAU7802 load cell conditioner.
@@ -106,15 +109,23 @@ class Nau7802(InOut):
   """
 
   def __init__(self,
+               backend: str,
                i2c_port: int = 1,
                device_address: int = 0x2A,
                gain_hardware: int = 128,
                sample_rate: int = 80,
                gain: float = 1,
-               offset: float = 0) -> None:
+               offset: float = 0,
+               ft232h_ser_num: str = None) -> None:
     """Checks the arguments validity.
 
     Args:
+      backend (:obj:`str`): The backend for communicating with the NAU7802.
+        Should be one of:
+        ::
+
+          'Pi4', 'ft232h'
+
       i2c_port (:obj:`int`, optional): The I2C port over which the NAU7802
         should communicate. On most Raspberry Pi models the default I2C port is
         `1`.
@@ -147,10 +158,18 @@ class Nau7802(InOut):
 
           output = gain * tension + offset.
 
+      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
+        serial number of the ft232h to use for communication.
     """
 
     InOut.__init__(self)
-    self._bus = smbus2.SMBus(i2c_port)
+    if backend not in NAU7802_Backends:
+      raise ValueError("backend should be in {}".format(NAU7802_Backends))
+
+    if backend == 'Pi4':
+      self._bus = smbus2.SMBus(i2c_port)
+    else:
+      self._bus = ft232h('I2C', ft232h_ser_num)
     self._device_address = device_address
 
     if gain_hardware not in NAU7802_Gain_Values:
