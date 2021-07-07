@@ -469,13 +469,13 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       # Setting self.serial_number and self.device
       if serial_number is None:
         self._serial_number = usb.util.get_string(self._dev,
-                                                 self._dev.iSerialNumber)
+                                                  self._dev.iSerialNumber)
       else:
         self._serial_number = serial_number
       if model is None:
         try:
           self._model = next(key for key, value in Tic_product_id.items() if
-                            value == self._dev.idProduct)
+                             value == self._dev.idProduct)
         except StopIteration:
           raise ValueError("The Tic model automatically found is not "
                            "implemented in crappy")
@@ -510,7 +510,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       if model is None:
         try:
           self._model = next(key for key in Tic_product_id if key in
-                            devices[0][1])
+                             devices[0][1])
         except StopIteration:
           raise ValueError("The Tic model automatically found is not "
                            "implemented in crappy")
@@ -552,8 +552,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
                                   key=lambda x: abs(x[1] - current_limit))[0]
       else:
         self._current_index = round(min(Tic_current_tables[self._model],
-                                      key=lambda x: abs(x - current_limit)) /
-                                  Tic_current_steps[self._model])
+                                    key=lambda x: abs(x - current_limit)) /
+                                    Tic_current_steps[self._model])
 
     if step_mode not in Tic_step_modes[self._model]:
       raise ValueError("step_mode should be in {}".format(
@@ -643,7 +643,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         self._dev.set_configuration()
       except usb.core.USBError:
         print("You may have to install the udev-rules for this USB device, "
-              "this can be done using an utility in the util folder")
+              "this can be done using the udev_rule_setter utility in the util "
+              "folder")
         raise
 
     # Setting the Tic according to the user parameters
@@ -862,7 +863,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       self._ticcmd('--step-mode', str(self._step_mode))
     elif self._backend == 'USB':
       self._usb_command(request=Tic_cmd['Set_step_mode'],
-                          value=Tic_step_mode[self._step_mode])
+                        value=Tic_step_mode[self._step_mode])
 
   def _set_current_limit(self) -> None:
     """Sends a set current limit command."""
@@ -899,7 +900,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       self._ticcmd('--max-speed', str(int(max_speed)))
     elif self._backend == 'USB':
       self._usb_32_bit(request=Tic_cmd['Set_max_speed'],
-                        data=int(max_speed))
+                       data=int(max_speed))
 
   def _set_max_accel(self) -> None:
     """Clamps the acceleration within the limits and sets it."""
@@ -1084,7 +1085,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     with self._lock:
       return subprocess.check_output(['ticcmd'] + ['-d'] +
                                      [self._serial_number]
-                                       + list(args))
+                                     + list(args))
 
   def _thread_shutoff(self) -> None:
     """Thread for deenergizing the motor after a given period of inactivity.

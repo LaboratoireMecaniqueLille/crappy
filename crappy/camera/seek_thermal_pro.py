@@ -89,7 +89,8 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
       self._dev.set_configuration()
     except usb.core.USBError:
       print("You may have to install the udev-rules for this USB device, "
-            "this can be done using an utility in the util folder")
+            "this can be done using the udev_rule_setter utility in the util "
+            "folder")
       raise
 
     self._write_data(Seek_thermal_pro_commands['Set operation mode'],
