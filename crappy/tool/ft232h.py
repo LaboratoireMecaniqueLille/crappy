@@ -171,7 +171,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                i2c_speed: float = 400E3,
                total_cs_count: int = 1,
                cs_pin: str = 'D3',
-               spi_solo_dev: bool = False,
+               spi_reload_config: bool = False,
                spi_turbo: bool = False) -> None:
     """Checks the arguments validity, initializes the device and sets the locks.
 
@@ -193,20 +193,26 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
       total_cs_count (:obj:`str`, optional): In `SPI` mode, the total number of
         CS pins the FT232H has to drive. May be different from the actual number
-        of devices sharing the bus.
+        of devices sharing the bus. Reserves the corresponding pins, see the
+        Note below.
       cs_pin (:obj:`str`, optional): In `SPI` mode, the name of the CS pin to
         drive. One instance of the class can only drive one pin.
-      spi_solo_dev (:obj:`str`, optional): In `SPI` mode, indicates whether the
-        slave is alone on the bus. Some SPI settings are only available for solo
-        devices. Solo devices may achieve way faster speeds.
+      spi_reload_config (:obj:`str`, optional): In `SPI` mode, indicates whether
+        the SPI parameters (bus speed, mode, CS high or low, etc.) should be
+        reloaded before each communication with the devices. If several devices
+        using different configurations are sharing the bus this parameter must
+        be set to :obj:`True`. If all devices sharing the bus use the same
+        configuration, or if there's only one device on the bus, set this
+        parameter to :obj:`False`. This will greatly improve the max achievable
+        sample rate.
       spi_turbo (:obj:`str`, optional): Increases the achievable bus speed, but
         may not work with some devices.
 
     Note:
       - **Sharing I2C bus**:
         Unlike for SPI it is not necessary to have multiple instances of the
-        class to control several I2C slaves, as I2C methods always require the
-        I2C address to be mentioned. The behaviour of the FT232H remains the
+        class to control several I2C slaves, as I2C communication always requires
+        the I2C address to be mentioned. The behaviour of the FT232H remains the
         same whether one or multiple I2C slaves share the bus.
 
       - **CS pins management**:
@@ -218,9 +224,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         class controlling the same FT232H do not overlap.
 
       - ``mode``:
-        It is not possible to simultaneously control slaves in SPI and I2C, due
-        to different hardware requirements of the two protocols. Trying to do so
-        will most likely raise an error or lead to inconsistent behavior.
+        It is not possible to simultaneously control slaves over SPI and I2C,
+        due to different hardware requirements for the two protocols. Trying to
+        do so will most likely raise an error or lead to inconsistent behavior.
 
       - ``total_cs_count``:
         This argument is meant to ensure that the CS pins are all reserved. The
@@ -235,15 +241,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         to the user to make sure that two instances of the class do not drive
         the same CS pin on the same FT232H.
 
-      - ``spi_solo_dev``:
-        This argument indicates that the device is alone on the bus. If not, the
-        SPI parameters associated with the device driven by this instance of the
-        class will be reloaded at each communication, as there's no way to know
-        what parameters the other instances are using. For this reason some SPI
-        settings are only available when ``spi_solo_dev`` is :obj:`True`. In
-        case several devices are sharing the bus, it is up to the user to make
-        sure that this argument is set to :obj:`False` for all instances of the
-        class.
+      - ``spi_reload_config``:
+        It is recommended to put only devices sharing the same SPI configuration
+        on the same bus (thus keeping this parameter to :obj:`False`), for
+        performance reasons. It is up to the user to make sure that the use of
+        this argument is consistent for all instances of the class controlling
+        the same FT232H.
+
     """
 
     if mode not in ft232h_modes:
@@ -268,10 +272,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     elif ft232h_pin_nr[cs_pin] > 2 ** (2 + total_cs_count):
       raise ValueError("Invalid cs_pin for the given total_cs_count")
 
-    if spi_solo_dev and total_cs_count > 1:
-      raise ValueError("If several cs pins have to be driven, then the device "
-                       "isn't alone on the bus !")
-
     self._gpio_low = 0
     self._gpio_high = 0
     self._gpio_dir = 0
@@ -288,7 +288,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._cs_pin = ft232h_pin_nr[cs_pin]
 
     self._total_cs_count = total_cs_count
-    self._spi_solo_dev = spi_solo_dev
+    self._spi_reload_config = spi_reload_config
     self._high_cs_pins = total_cs_count > 5
     self._turbo = spi_turbo
 
@@ -302,17 +302,24 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         self.close()
 
   @classmethod
-  def _add_lock(cls, serial_number: str) -> None:
+  def _add_lock(cls, serial_number: str) -> bool:
     """Adds an :obj:`RLock` to the class locks, corresponding to the FT232H to
     control.
 
     Args:
       serial_number (:obj:`str`): The serial number of the FT232H to control.
+
+    Returns:
+      :obj:`True` if the lock was added, *i.e.* if it is the first time that
+      this FT232H is instantiated in the Crappy program, else :obj:`False`.
     """
+
     if not hasattr(cls, 'Locks'):
       cls.Locks = dict()
     if serial_number not in cls.Locks:
       cls.Locks[serial_number] = RLock()
+      return True
+    return False
 
   @classmethod
   def _get_lock(cls, serial_number: str) -> RLock:
@@ -404,28 +411,32 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._usb_dev = devices[0]
 
     self._serial_nr = self._usb_dev.serial_number
-    ft232h._add_lock(self._serial_nr)
+
+    # Configuring the USB device, interface and endpoints
+    try:
+      if self._usb_dev.is_kernel_driver_active(0):
+        self._usb_dev.detach_kernel_driver(0)
+
+      self._usb_dev.set_configuration()
+    except usb.core.USBError:
+      print("You may have to install the udev-rules for this USB device, "
+            "this can be done using an utility in the util folder")
+      raise
+    config = self._usb_dev.get_active_configuration()
+
+    self._interface = config[(0, 0)]
+    self._index = self._interface.bInterfaceNumber + 1
+    endpoints = sorted([ep.bEndpointAddress for ep in self._interface])
+    self._in_ep, self._out_ep = endpoints[:2]
+
+    endpoint = self._interface[0]
+    self._max_packet_size = endpoint.wMaxPacketSize
+
+    # If this FT232H was already initialized, no need to do it again
+    if not ft232h._add_lock(self._serial_nr):
+      return
 
     with ft232h._get_lock(self._serial_nr):
-      # Configuring the USB device, interface and endpoints
-      try:
-        if self._usb_dev.is_kernel_driver_active(0):
-          self._usb_dev.detach_kernel_driver(0)
-
-        self._usb_dev.set_configuration()
-      except usb.core.USBError:
-        print("You may have to install the udev-rules for this USB device, "
-              "this can be done using an utility in the util folder")
-        raise
-      config = self._usb_dev.get_active_configuration()
-
-      self._interface = config[(0, 0)]
-      self._index = self._interface.bInterfaceNumber + 1
-      endpoints = sorted([ep.bEndpointAddress for ep in self._interface])
-      self._in_ep, self._out_ep = endpoints[:2]
-
-      endpoint = self._interface[0]
-      self._max_packet_size = endpoint.wMaxPacketSize
 
       # Invalidate data in the readbuffer
       self._readoffset = 0
@@ -1343,10 +1354,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
       raise TypeError("cshigh should be either True or False")
-    if value and self._spi_solo_dev:
+    if value and self._spi_reload_config:
       raise ValueError("cshigh not implemented when several devices are "
                        "sharing the bus")
-    if self._spi_solo_dev:
+    if not self._spi_reload_config:
       self._spi_param_changed = True
     self._cshigh = value
 
@@ -1364,11 +1375,12 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
       raise TypeError("loop should be either True or False")
-    if self._spi_solo_dev:
-      if value:
-        self._write_data(bytearray((ft232h_cmds['loopback_start'],)))
-      else:
-        self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
+    if not self._spi_reload_config:
+      with ft232h._get_lock(self._serial_nr):
+        if value:
+          self._write_data(bytearray((ft232h_cmds['loopback_start'],)))
+        else:
+          self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
     self._loop = value
 
   @property
@@ -1431,18 +1443,19 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       if not 4800 <= value <= ft232h_clock['high']:
         raise ValueError("max_speed_hz should be between 4.8kHz and 30MHz in "
                          "spi modes 0 and 2")
-    if self._spi_solo_dev:
+    if not self._spi_reload_config:
       self._spi_param_changed = True
-      if self.mode in [1, 3]:
-        self._set_frequency(3 * value / 2)
-        self._write_data(bytearray([True and
-                                    ft232h_cmds['enable_clk_3phase'] or
-                                    ft232h_cmds['disable_clk_3phase']]))
-      else:
-        self._set_frequency(value)
-        self._write_data(bytearray([False and
-                                    ft232h_cmds['enable_clk_3phase'] or
-                                    ft232h_cmds['disable_clk_3phase']]))
+      with ft232h._get_lock(self._serial_nr):
+        if self.mode in [1, 3]:
+          self._set_frequency(3 * value / 2)
+          self._write_data(bytearray([True and
+                                      ft232h_cmds['enable_clk_3phase'] or
+                                      ft232h_cmds['disable_clk_3phase']]))
+        else:
+          self._set_frequency(value)
+          self._write_data(bytearray([False and
+                                      ft232h_cmds['enable_clk_3phase'] or
+                                      ft232h_cmds['disable_clk_3phase']]))
     self._max_speed_hz = value
 
   @property
@@ -1464,7 +1477,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("mode should be an integer between 0 and 3")
     former_mode = self.mode
     self._mode = value
-    if self._spi_solo_dev:
+    if not self._spi_reload_config:
       self._spi_param_changed = True
     if value % 2 != former_mode % 2:
       self.max_speed_hz = self.max_speed_hz
@@ -1522,7 +1535,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # If several devices on the bus, re-setting chip parameters each time the
     # method is called, because they might have been modified by another
     # instance of the class
-    if not self._spi_solo_dev:
+    if self._spi_reload_config:
       if self.loop:
         self._write_data(bytearray((ft232h_cmds['loopback_start'],)))
       else:
@@ -1544,7 +1557,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # another instance of the class
     # Also re-building if the device is alone on the bus but an SPI parameter
     # has been modified
-    if not self._spi_solo_dev or self._spi_param_changed:
+    if self._spi_reload_config or self._spi_param_changed:
       cs_hold = 1 + int(1E6 / self.max_speed_hz)
       self._cpol = self.mode & 0x2
       cs_clock = 0xFFFF & ~((~self._cpol & ft232h_pins['SCK']) |
