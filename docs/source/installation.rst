@@ -25,27 +25,27 @@ These modules are not mandatory but will provide additional functionalities :
   - niFgen (package from National Instrument, Windows only)
   - openDAQ (for opendaq boards)
 
-.. note::	- If you have Python 2 also installed, you should replace ``python`` and ``pip`` by ``python3`` and ``pip3`` in all the following steps.
-  - Replace ``module-name`` by the name of the module you want to install.
+.. note::
+  - Replace ``<module>`` by the name of the module you want to install.
   - See :ref:`Documentation` for more details.
 
 A. For Linux users
 ------------------
-These steps have been tested for Ubuntu 16.04, 18.04 and 20.04  but should work
+These steps have been tested for Ubuntu 16.04, 18.04 and 20.04 but should work
 with other distros as well.
 
 1a. Install the dependencies in a virtualenv (recommended)
 ::
 
   workon myenv
-  pip install <module>
+  pip3 install <module>
 
 1b. OR Installing the required Python modules on the system
 ::
 
   sudo apt update
-  sudo apt install python-pip
-  sudo pip install <module>
+  sudo apt install python3-pip
+  pip3 install <module>
 
 
 2. You can now install crappy. Get the sources using git and use setup script:
@@ -53,8 +53,7 @@ with other distros as well.
 
   git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
   cd crappy
-  python setup.py install
-  sudo python setup.py install
+  sudo python3 setup.py install
 
 B. For Windows users
 --------------------
@@ -65,7 +64,7 @@ modules will not compile properly.
 1. Install the dependencies:
 ::
 
-  pip install module-name
+  pip3 install module-name
 
 This will works for most modules, but some may fail and need a wheel file
 built for windows. We had to do this for numpy (with mkl) and scikit-image.
@@ -73,7 +72,7 @@ Just find the correct version at http://www.lfd.uci.edu/~gohlke/pythonlibs/
 and simply run:
 ::
 
-  pip install wheel_file.whl
+  pip3 install wheel_file.whl
 
 2. Also, you will need Visual C++ for Python 3.x (your version of python) in
    order to compile C++ modules.  If you want to use Ximea cameras, don't
