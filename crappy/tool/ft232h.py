@@ -19,8 +19,8 @@ try:
 
 except (ModuleNotFoundError, ImportError):
   usb = OptionalModule("pyusb")
-  Ftdi_req_out = usb.util.build_request_type(0x00, 2 << 5, 0)
-  Ftdi_req_in = usb.util.build_request_type(0x80, 2 << 5, 0)
+  Ftdi_req_out = 0x40
+  Ftdi_req_in = 0xC0
 
 from typing import Union
 from collections.abc import Callable
