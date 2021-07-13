@@ -326,7 +326,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     else:
       self._usb_dev = devices[0]
 
-    self._serial_nr = self._usb_dev.serial_number
+    try:
+      self._serial_nr = self._usb_dev.serial_number
+    except ValueError:
+      self._serial_nr = ""
+
     if self._is_already_used(self._serial_nr):
       raise IOError("Cannot control several devices from a single FT232H")
 
