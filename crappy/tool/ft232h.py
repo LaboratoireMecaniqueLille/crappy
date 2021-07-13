@@ -8,8 +8,19 @@ from .._global import OptionalModule
 try:
   import usb.core
   import usb.util
+
+  Ftdi_req_out = usb.util.build_request_type(usb.util.CTRL_OUT,
+                                             usb.util.CTRL_TYPE_VENDOR,
+                                             usb.util.CTRL_RECIPIENT_DEVICE)
+
+  Ftdi_req_in = usb.util.build_request_type(usb.util.CTRL_IN,
+                                            usb.util.CTRL_TYPE_VENDOR,
+                                            usb.util.CTRL_RECIPIENT_DEVICE)
+
 except (ModuleNotFoundError, ImportError):
   usb = OptionalModule("pyusb")
+  Ftdi_req_out = usb.util.build_request_type(0x00, 2 << 5, 0)
+  Ftdi_req_in = usb.util.build_request_type(0x80, 2 << 5, 0)
 
 from typing import Union
 from collections.abc import Callable
@@ -58,14 +69,6 @@ ft232h_sio_req = {'reset': 0x00,
 ft232h_sio_args = {'reset': 0,
                    'purge_RX': 1,
                    'purge_TX': 2}
-
-Ftdi_req_out = usb.util.build_request_type(usb.util.CTRL_OUT,
-                                           usb.util.CTRL_TYPE_VENDOR,
-                                           usb.util.CTRL_RECIPIENT_DEVICE)
-
-Ftdi_req_in = usb.util.build_request_type(usb.util.CTRL_IN,
-                                          usb.util.CTRL_TYPE_VENDOR,
-                                          usb.util.CTRL_RECIPIENT_DEVICE)
 
 Ftdi_vendor_id = 0x0403
 ft232h_product_id = 0x6014
