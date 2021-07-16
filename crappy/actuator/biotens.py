@@ -25,7 +25,7 @@ def convert_to_byte(number, length):
     # x = encoded[0] ^ 0xff  # get the complement to 255
     # x = pack('B', x)  # byte formalism
     # concatenate byte and complement and add it to the sequence
-    c += bytes([encoded[0], encoded[0] ^ 0xFF])
+    c += bytes([encoded[i], encoded[i] ^ 0xFF])
   return c
 
 
