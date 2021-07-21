@@ -375,6 +375,27 @@ class Block(Process):
         r.update(i.recv())
     return r
 
+  def poll(self):
+    """Tells if any input link has pending data
+
+    Returns True if l.poll() is True for any input link l.
+    """
+
+    return any((l.poll for l in self.inputs))
+
+  def recv_all_last(self):
+    """Like recv_all, but drops older data to return only the latest value
+
+    This method avoids Pipe congestion that can be induced by recv_all when the
+    receiving block is slower than the block upstream
+    """
+
+    r = {}
+    for i in self.inputs:
+      while i.poll():
+        r.update(i.recv())
+    return r
+
   def get_last(self, num=None):
     """To get the latest value of each labels from all inputs.
 
