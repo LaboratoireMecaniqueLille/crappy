@@ -104,7 +104,7 @@ class Machine(Block):
     if self.spam:
       recv = self.get_last()
     else:
-      recv = self.recv_all()
+      recv = self.recv_all_last()
     for actuator, setting in zip(self.actuators, self.settings):
       if setting['mode'] == 'speed' and setting['cmd'] in recv:
         actuator.set_speed(recv[setting['cmd']])
