@@ -1,10 +1,9 @@
 # coding: utf-8
 
-from time import time, sleep
+from time import time
 from typing import Tuple, Any
 from .camera import Camera
 from .._global import OptionalModule
-from threading import Thread, RLock
 
 try:
   import cv2
@@ -17,13 +16,12 @@ class Picamera_webcam(Camera):
 
   The Picamera_webcam Camera block is meant for reading images from a Picamera.
   It relies on :mod:`cv2` and the V4L2 API just like the :ref:`Webcam` block,
-  hence its name. Faster than the :ref:`Picamera` block, but only the size of
-  the image can be tuned. It is also preferable to set the size in the args of
-  the block, as openCV is quite buggy when tuning it in the graphical
-  interface.
+  hence its name. The only differences with the :ref:`Webcam` block are that
+  here the height and width must be multiples of 32, and the resolution limits
+  are those of the Picamera.
 
-  Warning:
-    Only works on Raspberry Pi !
+  Note:
+    Actually works with any camera, not only the Picamera.
   """
 
   def __init__(self) -> None:
@@ -38,10 +36,6 @@ class Picamera_webcam(Camera):
     self.add_setting("height", self._get_height, self._set_height, (1, 2464),
                      default=704)
     self.add_setting("channels", limits={1: 1, 3: 3}, default=1)
-
-    # Thread and lock definition
-    self._lock = RLock()
-    self._thread = Thread(target=self._grab_frame)
 
   def open(self, **kwargs: Any) -> None:
     """Sets the settings to their default values and starts buffering images.
@@ -58,9 +52,6 @@ class Picamera_webcam(Camera):
         str(self) + "Unexpected kwarg: " + str(k)
     self.set_all(**kwargs)
 
-    # Starting the auxiliary thread
-    self._thread.start()
-
   def get_image(self) -> Tuple[float, Any]:
     """Reads an image from the PiCamera using V4L2.
 
@@ -71,8 +62,7 @@ class Picamera_webcam(Camera):
     t = time()
 
     # Reading the stream
-    with self._lock:
-      ret, frame = self._cap.read()
+    ret, frame = self._cap.read()
     if not ret:
       raise IOError("Error reading the camera")
 
@@ -86,40 +76,20 @@ class Picamera_webcam(Camera):
     """Releases the resources and joins the thread."""
 
     # Joining the auxiliary thread and closing the stream
-    self._stop = True
-    self._thread.join()
     if self._cap is not None:
       self._cap.release()
     self._cap = None
 
-  def _grab_frame(self) -> None:
-    """This thread is meant for preventing the accumulation of frames in the
-    video stream.
-
-    Every `0.01s` it tries to grab frames from the stream ; if one is available
-    it is grabbed and otherwise nothing happens. This way only the last
-    captured frame can be accessed by the :meth:`get_image` method.
-    """
-
-    while not self._stop:
-      with self._lock:
-        self._cap.grab()
-      sleep(0.01)
-
   def _get_width(self) -> int:
-    with self._lock:
-      return self._cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    return self._cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 
   def _get_height(self) -> int:
-    with self._lock:
-      return self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    return self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
   def _set_width(self, width: float) -> None:
     # The Picamera only accepts width that are multiples of 32
-    with self._lock:
-      self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, 32 * (width // 32))
+    self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, 32 * (width // 32))
 
   def _set_height(self, height: float) -> None:
     # The Picamera only accepts heights that are multiples of 32
-    with self._lock:
-      self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 32 * (height // 32))
+    self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 32 * (height // 32))
