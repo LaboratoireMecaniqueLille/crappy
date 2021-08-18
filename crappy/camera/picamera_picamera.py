@@ -1,10 +1,11 @@
 # coding: utf-8
 
-from time import time
+from time import time, sleep
 from typing import Tuple, Any
 from .camera import Camera
 from .._global import OptionalModule
 import numpy as np
+from threading import Thread, RLock
 
 try:
   import cv2
@@ -13,6 +14,7 @@ except (ModuleNotFoundError, ImportError):
 
 try:
   from picamera import PiCamera
+  from picamera.array import PiRGBArray
 except (ModuleNotFoundError, ImportError):
   PiCamera = OptionalModule("picamera")
 
@@ -24,8 +26,7 @@ class Picamera(Camera):
 
   The Picamera Camera block is meant for reading images from a Picamera.
   It uses the :mod:`picamera` module for capturing images, and :mod:`cv2` for
-  converting bgr images to black and white. The framerate is not optimal, but
-  it allows to tune a wide variety of image properties.
+  converting bgr images to black and white.
 
   Warning:
     Only works on Raspberry Pi !
@@ -64,34 +65,91 @@ class Picamera(Camera):
     self.add_setting("Crop: height", self._get_crop_height,
                      self._set_crop_height, (0.0, 1.0), default=1.0)
 
+    self._frame_grabber = Thread(target=self._grab_frame)
+    self._lock = RLock()
+    self._frame = None
+    self._stop = False
+    self._started = False
+
   def open(self, **kwargs: Any) -> None:
-    """Sets the settings to their default values."""
+    """Sets the settings to their default values and starts the thread."""
 
     for k in kwargs:
       assert k in self.available_settings, \
         str(self) + "Unexpected kwarg: " + str(k)
     self.set_all(**kwargs)
 
+    # Starting the video stream
+    self._capture = PiRGBArray(self._cam, (self._get_width(),
+                                           self._get_height()))
+    self._stream = self._cam.capture_continuous(self._capture, format='bgr',
+                                                use_video_port=True)
+
+    self._frame_grabber.start()
+    sleep(1)
+    self._started = True
+
+  def _stop_stream(self) -> None:
+    """Stops the video stream before changing the image size."""
+
+    if not self._started:
+      return
+
+    self._stop = True
+    self._frame_grabber.join()
+    self._capture.close()
+
+  def _restart_stream(self) -> None:
+    """Restarts the video stream after a change in the image size."""
+
+    if not self._started:
+      return
+
+    self._stop = False
+    self._frame_grabber = Thread(target=self._grab_frame)
+    self._capture = PiRGBArray(self._cam, (self._get_width(),
+                                           self._get_height()))
+    self._stream = self._cam.capture_continuous(self._capture, format='bgr',
+                                                use_video_port=True)
+
+    self._frame_grabber.start()
+    sleep(1)
+
   def get_image(self) -> Tuple[float, np.ndarray]:
-    """Uses the picamera capture method for capturing an image.
+    """Simply returns the last image in the buffer.
 
     The captured image is in bgr format, and converted into black and white if
-    needed. Quite slow since the encoder has to initialize before each capture.
+    needed.
 
     Returns:
-      The timeframe and the image
+      The timeframe and the image.
     """
 
-    output = np.empty((self.Height, self.Width, 3), dtype=np.uint8)
     t = time()
-    self._cam.capture(output, 'bgr', use_video_port=True)
+    with self._lock:
+      output = self._frame
     if self.Black_and_white:
       output = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
     return t, output
 
-  def close(self) -> None:
-    """Closes the :class:`picamera.PiCamera` object."""
+  def _grab_frame(self) -> None:
+    """Thread for grabbing the last image in the video stream and putting it in
+    the buffer"""
 
+    for frame in self._stream:
+      with self._lock:
+        self._frame = frame.array
+      self._capture.truncate(0)
+      if self._stop:
+        break
+
+  def close(self) -> None:
+    """Joins the thread and closes the stream and the :class:`picamera.PiCamera`
+    object."""
+
+    self._stop = True
+    self._frame_grabber.join()
+    self._capture.close()
     self._cam.close()
 
   def _get_width(self) -> int:
@@ -132,11 +190,15 @@ class Picamera(Camera):
 
   def _set_width(self, width: float) -> None:
     # The Picamera only accepts width that are multiples of 32
+    self._stop_stream()
     self._cam.resolution = (32 * (width // 32), self._get_height())
+    self._restart_stream()
 
   def _set_height(self, height: float) -> None:
     # The Picamera only accepts heights that are multiples of 32
+    self._stop_stream()
     self._cam.resolution = (self._get_width(), 32 * (height // 32))
+    self._restart_stream()
 
   def _set_iso(self, iso: float) -> None:
     # The Picamera only accepts a limited range of iso values
@@ -162,16 +224,16 @@ class Picamera(Camera):
 
   def _set_crop_x_offset(self, x_offset: float) -> None:
     self._cam.zoom = (x_offset, self._get_crop_y_offset(),
-                     self._get_crop_width(), self._get_crop_height())
+                      self._get_crop_width(), self._get_crop_height())
 
   def _set_crop_y_offset(self, y_offset: float) -> None:
     self._cam.zoom = (self._get_crop_x_offset(), y_offset,
-                     self._get_crop_width(), self._get_crop_height())
+                      self._get_crop_width(), self._get_crop_height())
 
   def _set_crop_width(self, width: float) -> None:
     self._cam.zoom = (self._get_crop_x_offset(), self._get_crop_y_offset(),
-                     width, self._get_crop_height())
+                      width, self._get_crop_height())
 
   def _set_crop_height(self, height: float) -> None:
     self._cam.zoom = (self._get_crop_x_offset(), self._get_crop_y_offset(),
-                     self._get_crop_width(), height)
+                      self._get_crop_width(), height)
