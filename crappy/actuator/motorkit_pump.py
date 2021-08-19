@@ -28,21 +28,15 @@ class Motorkit_pump(Actuator):
     wiring.
   """
 
-  def __init__(self, initial_speed=0, initial_pos=0) -> None:
-    """Nothing to do here."""
+  def __init__(self) -> None:
+    """Not much to do here."""
 
     super().__init__()
-    self.initial_speed = initial_speed
-    self.initial_pos = initial_pos
     self.kit = None
 
   def open(self) -> None:
     """Simply creates the Motorkit object."""
 
-    self.rpm = self.initial_speed  # checking speed is not available, however
-    # the air pump outflows 2.5LPM with 4.5V
-    self.pos = self.initial_pos
-    self.u = 0  # Volts
     self.kit = MotorKit(i2c=board.I2C())
 
   def stop(self) -> None:
@@ -56,35 +50,31 @@ class Motorkit_pump(Actuator):
     self.stop()
     self.kit = None
 
-  def set_speed(self, u) -> None:
+  def set_speed(self, volt: float) -> None:
     """Controls the pumps and the valve so that they either inflate or deflate.
 
-    The input range is from `-1` (deflate at full speed) to `1` (inflate at full
-    speed).
+    The input range is from `-12` (deflate at full speed) to `12` (inflate at
+    full speed).
 
     Args:
-      u: The desired inflating rate.
+      volt (:obj:`float`): The voltage to supply to the motor.
     """
 
-    u_max = 12  # max allowed voltage of the pump
-    if u == 0:  # shutdown
+    volt_max = 12  # max allowed voltage of the pump
+    volt_clamped = min(abs(volt) / volt_max, 1)
+    # motor only accepts values from 0 to 1, 1 being 12V
+
+    if volt == 0:  # shutdown
       self.kit.motor1.throttle = 0
       self.kit.motor2.throttle = 0
       self.kit.motor3.throttle = 0
-    elif u > 0:  # inflate
-      p = round(u / u_max, 2)  # motor only accepts values from 0 to 1
-      # 1 being 12V
-      if p > 1:  # command saturation
-        p = 1
-      self.kit.motor1.throttle = p  # inflate pump on
+
+    elif volt > 0:  # inflate
+      self.kit.motor1.throttle = volt_clamped  # inflate pump on
       self.kit.motor2.throttle = 0
       self.kit.motor3.throttle = 0
-    elif u < 0:  # deflate
-      u = -u
-      p = round(u / u_max, 2)  # motor only accepts values from 0 to 1
-      # 1 being 12V
-      if p > 1:  # command saturation
-        p = 1
+
+    elif volt < 0:  # deflate
       self.kit.motor1.throttle = 0
-      self.kit.motor2.throttle = p  # deflate pump on
+      self.kit.motor2.throttle = volt_clamped  # deflate pump on
       self.kit.motor3.throttle = 1.0  # open valve
