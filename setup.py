@@ -18,7 +18,7 @@ import platform
 
 # Get the long description from the relevant file
 with open('docs/source/whatiscrappy.rst', encoding='utf-8') as f:
-    long_description = f.read()
+  long_description = f.read()
 
 v = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
 extensions = []
@@ -34,62 +34,68 @@ pyFgenModule = clModule = None
 # extensions.append(helloModule)
 
 if platform.system() == "Linux":
-    try:
-      # Find the latest runtime version of SiliconSoftware install
-      clPath = '/opt/SiliconSoftware/' + \
-          sorted(next(walk('/opt/SiliconSoftware/'))[1])[-1] + '/lib64/'
-    except StopIteration:
-      print("Silicon Software not found, CameraLink will not be supported.")
-      # If the software is installed but not found
-      # just set clPath manually in this file
-      clPath = None
-    if clPath:
-      clModule = Extension('camera.clModule',
+  try:
+    # Find the latest runtime version of SiliconSoftware install
+    clPath = '/opt/SiliconSoftware/' + \
+             sorted(next(walk('/opt/SiliconSoftware/'))[1])[-1] + '/lib64/'
+  except StopIteration:
+    print("Silicon Software not found, CameraLink will not be supported.")
+    # If the software is installed but not found
+    # just set clPath manually in this file
+    clPath = None
+  if clPath:
+    clModule = Extension('camera.clModule',
                          sources=['sources/Cl_lib/CameraLink.cpp',
-                           'sources/Cl_lib/pyCameraLink.cpp',
-                           'sources/Cl_lib/clSerial.cpp'],
+                                  'sources/Cl_lib/pyCameraLink.cpp',
+                                  'sources/Cl_lib/clSerial.cpp'],
                          extra_compile_args=["-std=c++11"],
                          extra_link_args=["-l", "python%sm" % v, "-L", clPath,
-                           "-l", "display", "-l", "clsersis", "-l", "fglib5"],
-                         include_dirs=['/usr/local/lib/python%sm\
-/dist-packages/numpy/core/include' % v])
-      p = popen("lsmod |grep menable")
-      if len(p.read()) != 0:
-        print("menable kernel module found, installing CameraLink module.")
-        extensions.append(clModule)
-      else:
-        print("Cannot find menable kernel module, "
+                                          "-l", "display", "-l", "clsersis",
+                                          "-l", "fglib5"],
+                         include_dirs=['/usr/local/lib/python%sm'
+                                       '/dist-packages/numpy/core/include' % v])
+    p = popen("lsmod |grep menable")
+    if len(p.read()) != 0:
+      print("menable kernel module found, installing CameraLink module.")
+      extensions.append(clModule)
+    else:
+      print("Cannot find menable kernel module, "
             "CameraLink module won't be available.")
 
 if platform.system() == "Windows":
-    pyFgenModule = Extension('sensor.pyFgenModule',
-         include_dirs=[
-           "C:\\python%s\\site-packages\\numpy\\core\\include" % v,
-           "C:\\Program Files (x86)\\IVI Foundation\\VISA\\WinNT\\include",
-           "C:\\Program Files\\IVI Foundation\\IVI\\Include"],
-       sources=['sources/niFgen/pyFgen.cpp'], libraries=["niFgen"],
-       library_dirs=["C:\\Program Files\\IVI Foundation\\IVI\\Lib_x64\\msc"],
-       extra_compile_args=["/EHsc", "/WX"])
-    if input("would you like to install pyFgen module? ([y]/n)") != "n":
-        extensions.append(pyFgenModule)
-    clpath = "C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\"
-    clModule = Extension('sensor.clModule',
-        include_dirs=[clpath+"include",
-          "C:\\python{}\\Lib\\site-packages\\numpy\\core\\include".format(
-            v.replace('.', ''))],
-        sources=['sources/Cl_lib/CameraLink.cpp',
-          'sources/Cl_lib/pyCameraLink.cpp',
-          'sources/Cl_lib/clSerial.cpp'],
-        libraries=["clsersis", "fglib5"],
-        library_dirs=[clpath+"lib\\visualc"],
-        extra_compile_args=["/EHsc", "/WX"])
+  pyFgenModule = Extension('sensor.pyFgenModule',
+                           include_dirs=["C:\\python%s\\site-packages\\numpy\\"
+                                         "core\\include" % v,
+                                         "C:\\Program Files (x86)\\"
+                                         "IVI Foundation\\VISA\\WinNT\\include",
+                                         "C:\\Program Files\\IVI Foundation\\"
+                                         "IVI\\Include"],
+                           sources=['sources/niFgen/pyFgen.cpp'],
+                           libraries=["niFgen"],
+                           library_dirs=["C:\\Program Files\\IVI Foundation\\"
+                                         "IVI\\Lib_x64\\msc"],
+                           extra_compile_args=["/EHsc", "/WX"])
+  if input("would you like to install pyFgen module? ([y]/n)") != "n":
+    extensions.append(pyFgenModule)
+  clpath = "C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\"
+  clModule = Extension('sensor.clModule',
+                       include_dirs=[clpath+"include",
+                                     "C:\\python{}\\Lib\\site-packages\\numpy\\"
+                                     "core\\include".format(
+                                       v.replace('.', ''))],
+                       sources=['sources/Cl_lib/CameraLink.cpp',
+                                'sources/Cl_lib/pyCameraLink.cpp',
+                                'sources/Cl_lib/clSerial.cpp'],
+                       libraries=["clsersis", "fglib5"],
+                       library_dirs=[clpath+"lib\\visualc"],
+                       extra_compile_args=["/EHsc", "/WX"])
 
-    p = popen('driverquery /NH |findstr "me4"')
-    if len(p.read()) != 0:
-        extensions.append(clModule)
-    else:
-        print("Can't find microEnable4 Device driver, "
-              "clModule will not be compiled")
+  p = popen('driverquery /NH |findstr "me4"')
+  if len(p.read()) != 0:
+    extensions.append(clModule)
+  else:
+    print("Can't find microEnable4 Device driver, clModule will not be "
+          "compiled")
 
 setup(
   name='crappy',
@@ -126,8 +132,8 @@ setup(
     'Topic :: Software Development :: Build Tools',
 
     # Pick your license as you wish (should match "license" above)
-    'License :: OSI Approved :: \
-GNU General Public License v2 or later (GPLv2+)',
+    'License :: OSI Approved :: '
+    'GNU General Public License v2 or later (GPLv2+)',
 
     # Specify the Python versions you support here. In particular, ensure
     # that you indicate whether you support Python 2, Python 3 or both.
