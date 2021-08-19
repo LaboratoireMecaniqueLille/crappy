@@ -27,6 +27,11 @@ Fakemotor
 .. automodule:: crappy.actuator.fakemotor
    :members:
 
+Motorkit pump
++++++++++++++
+.. automodule:: crappy.actuator.motorkit_pump
+   :members:
+
 Oriental
 ++++++++
 .. automodule:: crappy.actuator.oriental

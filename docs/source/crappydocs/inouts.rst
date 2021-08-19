@@ -37,6 +37,11 @@ GPIO switch
 .. automodule:: crappy.inout.gpio_switch
    :members:
 
+GSM
++++
+.. automodule:: crappy.inout.gsm
+   :members:
+
 InOut
 +++++
 .. automodule:: crappy.inout.inout
@@ -82,6 +87,11 @@ Opsens
 .. automodule:: crappy.inout.opsens
    :members:
 
+PiJuice
++++++++
+.. automodule:: crappy.inout.piJuice
+   :members:
+
 Spectrum
 ++++++++
 .. automodule:: crappy.inout.spectrum
@@ -100,14 +110,4 @@ Waveshare AD/DA
 Waveshare AD/DA FT232H
 ++++++++++++++++++++++
 .. automodule:: crappy.inout.waveshare_ad_da_ft232h
-   :members:
-
-GSM
-+++
-.. automodule:: crappy.inout.gsm
-   :members:
-
-PiJuice
-+++++++
-.. automodule:: crappy.inout.piJuice
    :members:
