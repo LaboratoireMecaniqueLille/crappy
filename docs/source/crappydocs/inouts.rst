@@ -67,6 +67,11 @@ MCP9600
 .. automodule:: crappy.inout.mcp9600
    :members:
 
+MPRLS
++++++++
+.. automodule:: crappy.inout.mprls
+   :members:
+
 NAU7802
 +++++++
 .. automodule:: crappy.inout.nau7802
