@@ -32,12 +32,12 @@ class Motorkit_pump(Actuator):
     """Not much to do here."""
 
     super().__init__()
-    self.kit = None
+    self._kit = None
 
   def open(self) -> None:
     """Simply creates the Motorkit object."""
 
-    self.kit = MotorKit(i2c=board.I2C())
+    self._kit = MotorKit(i2c=board.I2C())
 
   def stop(self) -> None:
     """Sets the speed to `0`."""
@@ -48,7 +48,7 @@ class Motorkit_pump(Actuator):
     """Just stops the motor."""
 
     self.stop()
-    self.kit = None
+    self._kit = None
 
   def set_speed(self, volt: float) -> None:
     """Controls the pumps and the valve so that they either inflate or deflate.
@@ -65,16 +65,16 @@ class Motorkit_pump(Actuator):
     # motor only accepts values from 0 to 1, 1 being 12V
 
     if volt == 0:  # shutdown
-      self.kit.motor1.throttle = 0
-      self.kit.motor2.throttle = 0
-      self.kit.motor3.throttle = 0
+      self._kit.motor1.throttle = 0
+      self._kit.motor2.throttle = 0
+      self._kit.motor3.throttle = 0
 
     elif volt > 0:  # inflate
-      self.kit.motor1.throttle = volt_clamped  # inflate pump on
-      self.kit.motor2.throttle = 0
-      self.kit.motor3.throttle = 0
+      self._kit.motor1.throttle = volt_clamped  # inflate pump on
+      self._kit.motor2.throttle = 0
+      self._kit.motor3.throttle = 0
 
     elif volt < 0:  # deflate
-      self.kit.motor1.throttle = 0
-      self.kit.motor2.throttle = volt_clamped  # deflate pump on
-      self.kit.motor3.throttle = 1.0  # open valve
+      self._kit.motor1.throttle = 0
+      self._kit.motor2.throttle = volt_clamped  # deflate pump on
+      self._kit.motor3.throttle = 1.0  # open valve

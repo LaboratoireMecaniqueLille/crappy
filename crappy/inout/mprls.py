@@ -21,18 +21,10 @@ class Mprls(InOut):
      InOut.__init__(self)
 
   def open(self) -> None:
-    i2c = board.I2C()
-    # Simplest use, connect to default over I2C
-    self.mpr = adafruit_mprls.MPRLS(i2c, psi_min=0, psi_max=25)
+    self._mpr = adafruit_mprls.MPRLS(board.I2C(), psi_min=0, psi_max=25)
 
   def get_data(self) -> list:
-    out = [time.time()]
-    hpa = self.mpr.pressure
-    out.append(hpa)
-    return out
-
-  def stop(self) -> None:
-    pass
+    return [time.time(), self._mpr.pressure]
 
   def close(self) -> None:
     pass
