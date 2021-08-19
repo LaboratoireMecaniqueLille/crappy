@@ -99,7 +99,7 @@ if platform.system() == "Windows":
 setup(
   name='crappy',
 
-  version='1.4.0',
+  version='1.4.1',
 
   description='Command and Real-time Acquisition Parallelized in Python',
 
