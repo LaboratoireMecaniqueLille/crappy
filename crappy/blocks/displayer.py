@@ -4,8 +4,13 @@ import numpy as np
 from .block import Block
 from .._global import CrappyStop
 import tkinter as tk
-from PIL import ImageTk, Image
 from .._global import OptionalModule
+
+try:
+  from PIL import ImageTk, Image
+except (ModuleNotFoundError, ImportError):
+  ImageTk = OptionalModule("pillow")
+  Image = OptionalModule("pillow")
 
 try:
   import matplotlib.pyplot as plt

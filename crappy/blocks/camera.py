@@ -2,20 +2,21 @@
 
 from sys import platform
 import os
-try:
-  import SimpleITK as Sitk
-except ImportError:
-  Sitk = None
-try:
-  import PIL
-except ImportError:
-  PIL = None
-
 
 from .block import Block
 from ..camera import camera_list
 from ..tool import Camera_config
 from .._global import OptionalModule
+
+try:
+  import SimpleITK as Sitk
+except (ModuleNotFoundError, ImportError):
+  Sitk = None
+
+try:
+  import PIL
+except (ModuleNotFoundError, ImportError):
+  PIL = None
 
 try:
   import cv2

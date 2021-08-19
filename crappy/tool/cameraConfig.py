@@ -1,11 +1,16 @@
 # coding: utf-8
 
 import tkinter as tk
-from PIL import ImageTk, Image
 from time import time
 import numpy as np
 from multiprocessing import Process, Pipe
 from .._global import OptionalModule
+
+try:
+  from PIL import ImageTk, Image
+except (ModuleNotFoundError, ImportError):
+  ImageTk = OptionalModule("pillow")
+  Image = OptionalModule("pillow")
 
 try:
   import cv2
@@ -59,7 +64,7 @@ class Hist_generator(Process):
       self.pipe.send(out_img)
 
 
-class Camera_config():
+class Camera_config:
   """Class creating a graphical interface to configure a camera.
 
   Note:
@@ -118,8 +123,8 @@ class Camera_config():
     self.hist_label.grid(row=0, column=0)
     # self.img_label.pack(fill=tk.BOTH)
     self.img_label.grid(row=1, column=0,
-        rowspan=len(self.camera.settings_dict) + 2,
-        sticky=tk.N + tk.E + tk.S + tk.W)
+                        rowspan=len(self.camera.settings_dict) + 2,
+                        sticky=tk.N + tk.E + tk.S + tk.W)
     self.create_inputs()
     self.create_infos()
     self.img_label.bind('<Motion>', self.update_reticle)
@@ -158,11 +163,13 @@ class Camera_config():
     self.fps_label.pack()
     self.auto_range = tk.IntVar()
     self.range_check = tk.Checkbutton(self.info_frame,
-                      text="Auto range", variable=self.auto_range)
+                                      text="Auto range",
+                                      variable=self.auto_range)
     self.range_check.pack()
     self.auto_apply = tk.IntVar()
     self.auto_apply_check = tk.Checkbutton(self.info_frame,
-                      text="Auto apply", variable=self.auto_apply)
+                                           text="Auto apply",
+                                           variable=self.auto_apply)
     self.auto_apply_check.pack()
     self.minmax_label = tk.Label(self.info_frame, text="min: max:")
     self.minmax_label.pack()
@@ -184,8 +191,10 @@ class Camera_config():
       step = 1  # To go through all possible int values
     tk.Label(f, text=setting.name).pack()
     self.scales[setting.name] = tk.Scale(f, orient='horizontal',
-        resolution=step, length=self.scale_length,
-        from_=setting.limits[0], to=setting.limits[1])
+                                         resolution=step,
+                                         length=self.scale_length,
+                                         from_=setting.limits[0],
+                                         to=setting.limits[1])
     self.scales[setting.name].pack()
     self.scales[setting.name].set(setting.value)
 
@@ -255,7 +264,7 @@ class Camera_config():
         self.low = np.percentile(self.img, 1)
         self.high = np.percentile(self.img, 99)
         self.img8 = ((np.clip(self.img, self.low, self.high) -
-                    self.low) * 256 / self.high).astype(np.uint8)
+                      self.low) * 256 / self.high).astype(np.uint8)
       except (AssertionError, AttributeError):
         # ar=False, 16 bits
         self.img8 = (self.img / 2 ** (self.detect_bits() - 8)).astype(np.uint8)
@@ -271,15 +280,15 @@ class Camera_config():
         # ar=False, 8bits
         self.img8 = self.img
     slx = slice(int(self.img.shape[0] * self.zoom_window[0]),
-        int(self.img.shape[0] * self.zoom_window[2]))
+                int(self.img.shape[0] * self.zoom_window[2]))
     sly = slice(int(self.img.shape[1] * self.zoom_window[1]),
-        int(self.img.shape[1] * self.zoom_window[3]))
+                int(self.img.shape[1] * self.zoom_window[3]))
     self.resize_img((sly, slx))
 
   def resize_img(self, sl):
     self.c_img = ImageTk.PhotoImage(Image.fromarray(
         cv2.resize(self.img8[sl[1], sl[0]], tuple(reversed(self.img_shape)),
-        interpolation=0)))
+                   interpolation=0)))
     # Interpolation=0 means nearest neighbor
     # Resize somehow takes x,y when EVERYTHING else takes y,x thanks numpy !
 
@@ -300,7 +309,7 @@ class Camera_config():
     self.hist_label.configure(image=self.hist)
     self.hist_pipe.send(((80, self.label_shape[1]),
                          (0, 2 ** self.detect_bits()),
-      self.img))
+                         self.img))
 
   def update_img(self):
     self.convert_img()
@@ -308,7 +317,7 @@ class Camera_config():
 
   def update_infos(self):
     self.minmax_label.configure(text="min: {} max: {}".format(self.img.min(),
-                                                        self.img.max()))
+                                                              self.img.max()))
     self.bits_label.configure(text="detected bits: {} ({} values)".format(
         self.detect_bits(), 2**self.detect_bits()))
     self.range_label.configure(text='Range: {}-{}'.format(self.low, self.high))
@@ -338,8 +347,8 @@ class Camera_config():
     miny, maxy = int(miny * self.img.shape[0]), int(maxy * self.img.shape[0])
     minx, maxx = int(minx * self.img.shape[1]), int(maxx * self.img.shape[1])
     ry, rx = ey / self.img_shape[0], ex / self.img_shape[1]
-    y, x = int(ry * (maxy - miny) + miny + .5), \
-           int(rx * (maxx - minx) + minx + .5)
+    y, x = int(ry * (maxy - miny) + miny + .5), int(
+      rx * (maxx - minx) + minx + .5)
     return min(max(miny, y), maxy - 1), min(max(minx, x), maxx - 1)
 
   def make_new_window(self, ey, ex):
@@ -444,9 +453,9 @@ class Camera_config():
     """Recomputes the new shape of the resized image."""
 
     ratio = min(self.label_shape[0] / self.img.shape[0],
-            self.label_shape[1] / self.img.shape[1])
+                self.label_shape[1] / self.img.shape[1])
     self.img_shape = (int(self.img.shape[0] * ratio),
-        int(self.img.shape[1] * ratio))
+                      int(self.img.shape[1] * ratio))
 
   def zoom(self, event):
     """For windows, only one type of wheel event."""

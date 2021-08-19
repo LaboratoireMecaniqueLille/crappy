@@ -3,10 +3,15 @@
 """More documentation coming soon !"""
 
 import tkinter as tk
-from PIL import ImageTk, Image
 import numpy as np
 from .cameraConfig import Camera_config
 from .._global import OptionalModule
+
+try:
+  from PIL import ImageTk, Image
+except (ModuleNotFoundError, ImportError):
+  ImageTk = OptionalModule("pillow")
+  Image = OptionalModule("pillow")
 
 try:
   import cv2
