@@ -25,9 +25,9 @@ copyright = '2021'
 author = 'LaMcube'
 
 # The short X.Y version
-version = '1.3.1'
+version = '1.4'
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = '1.4.2'
 
 
 # -- General configuration ---------------------------------------------------
