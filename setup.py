@@ -96,10 +96,13 @@ if platform.system() == "Windows":
     print("Can't find microEnable4 Device driver, clModule will not be "
           "compiled")
 
+docs_files = [('crappy/' + path, [path + '/' + name for name in paths]) for
+              (path, _, paths) in walk('docs/source')]
+
 setup(
   name='crappy',
 
-  version='1.4.1',
+  version='1.4.2',
 
   description='Command and Real-time Acquisition Parallelized in Python',
 
@@ -137,6 +140,19 @@ setup(
 
   install_requires=['numpy'],
 
-  data_files=[('crappy/data', ['data/'+s for s in listdir('data')]),
-              ('crappy/docs/source', ['docs/source/whatiscrappy.rst'])]
+  data_files=[('crappy/data',
+               ['data/' + filename for filename in listdir('data')]),
+
+              ('crappy/docs', ['docs/Makefile']),
+
+              ('crappy/Examples',
+               ['Examples/' + filename for filename in listdir('Examples')]),
+
+              ('crappy/impact',
+               ['impact/' + filename for filename in listdir('impact')]),
+
+              ('crappy/util',
+               ['util/' + filename for filename in listdir('util')])
+
+              ] + docs_files
 )
