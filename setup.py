@@ -141,18 +141,22 @@ setup(
   install_requires=['numpy'],
 
   data_files=[('crappy/data',
-               ['data/' + filename for filename in listdir('data')]),
+               ['data/' + filename for filename in listdir('data')
+                if not filename.startswith('.')]),
 
               ('crappy/docs', ['docs/Makefile']),
 
               ('crappy/Examples',
-               ['Examples/' + filename for filename in listdir('Examples')]),
+               ['Examples/' + filename for filename in listdir('Examples')
+                if filename.endswith('.py')]),
 
               ('crappy/impact',
-               ['impact/' + filename for filename in listdir('impact')]),
+               ['impact/' + filename for filename in listdir('impact')
+                if filename.endswith('.py')]),
 
               ('crappy/util',
-               ['util/' + filename for filename in listdir('util')])
+               ['util/' + filename for filename in listdir('util')
+                if not filename.startswith('.')])
 
               ] + docs_files
 )
