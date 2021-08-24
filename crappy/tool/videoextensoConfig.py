@@ -2,7 +2,6 @@
 
 """More documentation coming soon !"""
 
-import tkinter as tk
 import numpy as np
 from .cameraConfig import Camera_config
 from .._global import OptionalModule
@@ -17,6 +16,11 @@ try:
   import cv2
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
+
+try:
+  import tkinter as tk
+except (ModuleNotFoundError, ImportError):
+  tk = OptionalModule("tkinter")
 
 
 class VE_config(Camera_config):
@@ -54,7 +58,7 @@ class VE_config(Camera_config):
   def stop_select(self, event):
     self.ve.detect_spots(self.img[self.select_box[0]:self.select_box[2],
                                   self.select_box[1]:self.select_box[3]],
-                                  self.select_box[0], self.select_box[1])
+                         self.select_box[0], self.select_box[1])
     self.select_box = (-1, -1, -1, -1)
     if hasattr(self.ve, "spot_list") and len(self.ve.spot_list) > 0:
       self.boxes = [x['bbox'] for x in self.ve.spot_list]
@@ -78,7 +82,7 @@ class VE_config(Camera_config):
 
   def resize_img(self, sl):
     rimg = cv2.resize(self.img8[sl[1], sl[0]], tuple(reversed(self.img_shape)),
-        interpolation=0)
+                      interpolation=0)
     if self.select_box[0] > 0:
       lbox = [0] * 4
       for i in range(4):

@@ -1,10 +1,15 @@
 # coding: utf-8
 
-import tkinter as tk
 from time import time
 
 from .block import Block
 from .._global import CrappyStop
+from .._global import OptionalModule
+
+try:
+  import tkinter as tk
+except (ModuleNotFoundError, ImportError):
+  tk = OptionalModule("tkinter")
 
 
 class GUI(Block):

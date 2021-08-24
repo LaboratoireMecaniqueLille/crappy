@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import tkinter as tk
 from time import time
 import numpy as np
 from multiprocessing import Process, Pipe
@@ -16,6 +15,11 @@ try:
   import cv2
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
+
+try:
+  import tkinter as tk
+except (ModuleNotFoundError, ImportError):
+  tk = OptionalModule("tkinter")
 
 
 class Hist_generator(Process):

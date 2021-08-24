@@ -5,8 +5,9 @@ from .._global import OptionalModule
 try:
   from . import clModule as Cl
 except ImportError:
-  Cl = OptionalModule("clModule", "CameraLink module was not compiled. "
-"Please make sure /opt/SiliconSoftware/xxx/lib64 exists and reinstall Crappy")
+  Cl = OptionalModule("clModule", "CameraLink module was not compiled. Please "
+                                  "make sure /opt/SiliconSoftware/xxx/lib64 "
+                                  "exists and reinstall Crappy")
 from time import time
 
 

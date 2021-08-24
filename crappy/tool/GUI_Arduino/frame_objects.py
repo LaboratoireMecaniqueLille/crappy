@@ -1,7 +1,13 @@
 # coding: utf-8
 
-import tkinter as tk
-from tkinter import ttk
+from ..._global import OptionalModule
+
+try:
+  import tkinter as tk
+  from tkinter import ttk
+except (ModuleNotFoundError, ImportError):
+  tk = OptionalModule("tkinter")
+  ttk = OptionalModule("tkinter")
 
 
 class FrameObjects(tk.Frame):
@@ -113,8 +119,9 @@ class FrameObjects(tk.Frame):
     if not variable:
       setattr(self, entry_name + '_var', vartype)
       widgets_dict[entry_name] = tk.Entry(frame,
-                                        textvariable=getattr(self, entry_name +
-                                        '_var'),
+                                          textvariable=getattr(self,
+                                                               entry_name +
+                                                               '_var'),
                                           width=width)
     else:
       widgets_dict[entry_name] = tk.Entry(frame,

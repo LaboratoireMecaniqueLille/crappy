@@ -1,19 +1,17 @@
 # coding: utf-8
 
 from threading import Thread
-import tkinter as tk
 from queue import Queue as Queue_threading, Empty
 from time import time
 from collections import OrderedDict
 from multiprocessing import Process, Queue
 from ast import literal_eval
+from os.path import exists
 
 from ..tool.GUI_Arduino.minitens import MinitensFrame
 from ..tool.GUI_Arduino.arduino_basics import MonitorFrame, SubmitSerialFrame
-
 from .inout import InOut
 from .._global import CrappyStop
-from os.path import exists
 
 from .._global import OptionalModule
 
@@ -21,6 +19,11 @@ try:
   import serial
 except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("pyserial")
+
+try:
+  import tkinter as tk
+except (ModuleNotFoundError, ImportError):
+  tk = OptionalModule("tkinter")
 
 
 def collect_serial(arduino, queue):

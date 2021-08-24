@@ -1,10 +1,16 @@
 # coding: utf-8
 
-import tkinter as tk
-from tkinter import ttk
-
 from .frame_objects import FrameObjects
 from collections import OrderedDict
+
+from ..._global import OptionalModule
+
+try:
+  import tkinter as tk
+  from tkinter import ttk
+except (ModuleNotFoundError, ImportError):
+  tk = OptionalModule("tkinter")
+  ttk = OptionalModule("tkinter")
 
 
 class MinitensPopups(FrameObjects):
@@ -42,8 +48,9 @@ class MinitensPopups(FrameObjects):
                                          command=self.create_popup_limits)
     self.menu_exp_parameters.add_command(label='Vitesse',
                                          command=self.create_popup_speed)
-    self.menu_exp_parameters.add_command(label='Paramètres échantillon',
-                                   command=self.create_popup_sample_parameters)
+    self.menu_exp_parameters.add_command(
+      label='Paramètres échantillon',
+      command=self.create_popup_sample_parameters)
 
     # 2nd menu: tools to conduct the experience.
     self.menu_tools = tk.Menu(self.menubar, tearoff=0)
@@ -379,7 +386,8 @@ class MinitensPopups(FrameObjects):
       return
 
     ok = tk.messagebox.askokcancel(title="Confirmation",
-                            message="Changer les paramètres de calibration?")
+                                   message="Changer les paramètres de "
+                                           "calibration?")
     if not ok:
       return
     else:

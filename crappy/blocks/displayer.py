@@ -3,7 +3,6 @@
 import numpy as np
 from .block import Block
 from .._global import CrappyStop
-import tkinter as tk
 from .._global import OptionalModule
 
 try:
@@ -21,6 +20,11 @@ try:
   import cv2
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
+
+try:
+  import tkinter as tk
+except (ModuleNotFoundError, ImportError):
+  tk = OptionalModule("tkinter")
 
 
 class Displayer(Block):
@@ -121,7 +125,7 @@ class Displayer(Block):
       if new[0] > 0 and new[1] > 0:
         self.h, self.w = new
         ratio = min(self.h / self.img_shape[0],
-                self.w / self.img_shape[1])
+                    self.w / self.img_shape[1])
         self.h = int(self.img_shape[0] * ratio)
         self.w = int(self.img_shape[1] * ratio)
 

@@ -5,9 +5,16 @@ A window that replicates the behavior of the serial monitor of the official
 Arduino IDE. One can see the serial port entrances, and can write in it.
 """
 
-import tkinter as tk
-from tkinter import font as tk_font
 from queue import Empty
+
+from ..._global import OptionalModule
+
+try:
+  import tkinter as tk
+  from tkinter import font as tk_font
+except (ModuleNotFoundError, ImportError):
+  tk = OptionalModule("tkinter")
+  tk_font = OptionalModule("tkinter")
 
 
 class MonitorFrame(tk.Frame):
@@ -46,7 +53,7 @@ class MonitorFrame(tk.Frame):
 
     self.top_frame = tk.Frame(self)
     tk.Label(self.top_frame,
-        text=kwargs.get('title', '')).grid(row=0, column=0)
+             text=kwargs.get('title', '')).grid(row=0, column=0)
 
     tk.Checkbutton(self.top_frame,
                    variable=self.enabled_checkbox,
@@ -57,7 +64,7 @@ class MonitorFrame(tk.Frame):
                                   height=int(self.total_width / 10),
                                   width=int(self.total_width),
                                   font=tk_font.Font(size=kwargs.get("fontsize",
-                                                                   13)))
+                                                                    13)))
 
     self.top_frame.grid(row=0)
     self.serial_monitor.grid(row=1)

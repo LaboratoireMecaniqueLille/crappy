@@ -2,10 +2,16 @@
 
 import threading
 from queue import Queue
-from tkinter import Tk, Label
 import numpy as np
 
 from .block import Block
+from .._global import OptionalModule
+
+try:
+  from tkinter import Tk, Label
+except (ModuleNotFoundError, ImportError):
+  Tk = OptionalModule("tkinter")
+  Label = OptionalModule("tkinter")
 
 
 class Dashboard(Block):
