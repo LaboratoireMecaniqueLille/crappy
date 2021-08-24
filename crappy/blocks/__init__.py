@@ -18,14 +18,14 @@ from .gpucorrel import GPUCorrel
 from .gpuve import GPUVE
 from .grapher import Grapher
 from .gui import GUI
-from .hdf_saver import Hdf_saver
+from .hdf_recorder import Hdf_recorder, Hdf_saver
 from .ioblock import IOBlock
 from .machine import Machine
 from .mean import Mean_block
 from .multiplex import Multiplex
 from .pid import PID
 from .reader import Reader
-from .saver import Saver
+from .recorder import Recorder, Saver
 from .server import Server
 from .sink import Sink
 from .videoExtenso import Video_extenso

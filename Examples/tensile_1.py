@@ -45,7 +45,7 @@ if __name__ == "__main__":
   # to use. The block will instantiate it itself ! No need to create it here
   # Then we give the channels, the InOut will automatically detect that it has
   # two inputs and one output
-  # The output labels always start with the time in second, so we need 3 outputs
+  # The output labels always start with the time in second so we need 3 outputs
   daq = crappy.blocks.IOBlock('Labjack_t7', channels=[force, pos, cmd],
                               labels=['t(s)', 'F(N)', 'Position(mm)'],
                               cmd_labels=['cmd'])
@@ -54,8 +54,8 @@ if __name__ == "__main__":
   crappy.link(generator, daq)
 
   # Now we would like to save the measurements from the machine
-  saver = crappy.blocks.Saver('results.csv')
-  crappy.link(daq, saver)
+  rec = crappy.blocks.Recorder('results.csv')
+  crappy.link(daq, rec)
 
   # And why not display the force in real time during the test
   graph = crappy.blocks.Grapher(('t(s)', 'F(N)'))

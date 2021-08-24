@@ -6,7 +6,7 @@ from os import path, makedirs
 from .block import Block
 
 
-class Saver(Block):
+class Recorder(Block):
   """Will save the incoming data to a file (default `.csv`).
 
   Important:
@@ -35,8 +35,9 @@ class Saver(Block):
     self.labels = labels
 
   def prepare(self):
-    assert self.inputs, "No input connected to the saver!"
-    assert len(self.inputs) == 1, "Cannot link more than one block to a saver!"
+    assert self.inputs, "No input connected to the recorder!"
+    assert len(self.inputs) == 1, \
+        "Cannot link more than one block to a recorder!"
     d = path.dirname(self.filename)
     if d and not path.exists(d):
       # Create the folder if it does not exist
@@ -46,13 +47,13 @@ class Saver(Block):
         assert path.exists(d), "Error creating " + d
     if path.exists(self.filename):
       # If the file already exists, append a number to the name
-      print("[saver] WARNING!", self.filename, "already exists !")
+      print("[recorder] WARNING!", self.filename, "already exists !")
       name, ext = path.splitext(self.filename)
       i = 1
-      while path.exists(name+"_%05d" % i + ext):
+      while path.exists(name + "_%05d" % i + ext):
         i += 1
-      self.filename = name+"_%05d" % i + ext
-      print("[saver] Using", self.filename, "instead!")
+      self.filename = name + "_%05d" % i + ext
+      print("[recorder] Using", self.filename, "instead!")
 
   def begin(self):
     """
@@ -96,3 +97,13 @@ class Saver(Block):
     r = self.inputs[0].recv_chunk_nostop()
     if r:
       self.save(r)
+
+
+class Saver(Recorder):
+  def __init__(self, *args, **kwargs):
+    print('#### WARNING ####\n'
+          'The block "Saver" has been renamed to "Recorder".\n'
+          'Please replace the name in your program, '
+          'it will be removed in future versions\n'
+          '#################')
+    Recorder.__init__(self, *args, **kwargs)

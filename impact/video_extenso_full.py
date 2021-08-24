@@ -6,8 +6,8 @@ Base file for tests using videoextensometry and a marker following actuator.
 from time import ctime
 import crappy
 
-out_gain = 1/30  # V/mm
-gains = [50, 1/out_gain]  # N/V mm/V
+out_gain = 1 / 30  # V/mm
+gains = [50, 1 / out_gain]  # N/V mm/V
 
 timestamp = ctime()[:-5].replace(" ", "_").replace(":", "_")
 save_path = "./" + timestamp + "/"
@@ -21,12 +21,12 @@ ad = crappy.blocks.AutoDrive(
 
 graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
 
-saver_extenso = crappy.blocks.Saver(save_path+"extenso.csv",
+rec_extenso = crappy.blocks.Recorder(save_path+"extenso.csv",
     labels=['t(s)', 'Exx(%)', 'Eyy(%)'])
 
 # Linking them
 crappy.link(ve, graph_extenso)
-crappy.link(ve, saver_extenso)
+crappy.link(ve, rec_extenso)
 crappy.link(ve, ad)
 
 # Labjack
@@ -46,13 +46,13 @@ g = crappy.blocks.Generator(path=[
   {'type': 'cyclic_ramp', 'condition1': 'Exx(%)>20',
     'speed1': 20 / 60, 'condition2': 'F(N)<.1', 'speed2': -20 / 60,
    'cycles': 5}, ])
-saver_sensors = crappy.blocks.Saver(save_path + "sensors.csv",
+rec_sensors = crappy.blocks.Recorder(save_path + "sensors.csv",
     labels=['t(s)', 'F(N)', 'x(mm)'])
 
 # Linking the generator to all the blocks
 crappy.link(ve, g)
 crappy.link(lj, g)
 crappy.link(g, lj)
-crappy.link(lj, saver_sensors)
+crappy.link(lj, rec_sensors)
 
 crappy.start()

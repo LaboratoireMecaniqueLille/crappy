@@ -46,9 +46,9 @@ if __name__ == "__main__":
 
   crappy.link(mul, graph)
 
-  save = crappy.blocks.Saver("example_multi.csv",
+  rec = crappy.blocks.Recorder("example_multi.csv",
                              labels=["t(s)", "cmd1", "cmd2"])
 
-  crappy.link(mul, save)
+  crappy.link(mul, rec)
 
   crappy.start()

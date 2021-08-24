@@ -52,9 +52,9 @@ if __name__ == "__main__":
   # It is perfectly fine to make "loops" by linking in both directions
   # like this
 
-  # Saver for the data from the machine
-  saver_daq = crappy.blocks.Saver('results_daq.csv')
-  crappy.link(daq, saver_daq)
+  # Recorder for the data from the machine
+  rec_daq = crappy.blocks.Recorder('results_daq.csv')
+  crappy.link(daq, rec_daq)
 
   # Now let's add our now sensor: videoextensometry
   # We can specify arguments specific to the camera in the block
@@ -67,11 +67,11 @@ if __name__ == "__main__":
 
   # Now we must link this block to the generator
   crappy.link(ve, generator)
-  # and to a saver
-  saver_ve = crappy.blocks.Saver('results_ve.csv')
-  crappy.link(ve, saver_ve)
-  # Quick remark on savers: we used two separate savers for daq and ve. This is
-  # because savers can only take a SINGLE INPUT. Because the input blocks
+  # and to a recorder
+  rec_ve = crappy.blocks.Recorder('results_ve.csv')
+  crappy.link(ve, rec_ve)
+  # Quick remark on recorders: we used two separate blocks for daq and ve.
+  # This is because they can only take a SINGLE INPUT. Because the input blocks
   # may run at different frequencies, it is not possible to build a csv file
   # simply from two or more separate sources.
   # We could interpolate them in the same

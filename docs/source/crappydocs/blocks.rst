@@ -119,9 +119,9 @@ GUI
 .. automodule:: crappy.blocks.gui
    :members:
 
-HDF Saver
-+++++++++
-.. automodule:: crappy.blocks.hdf_saver
+HDF Recorder
+++++++++++++
+.. automodule:: crappy.blocks.hdf_recorder
    :members:
 
 IOBlock
@@ -154,9 +154,9 @@ Reader
 .. automodule:: crappy.blocks.reader
    :members:
 
-Saver
-+++++
-.. automodule:: crappy.blocks.saver
+Recorder
+++++++++
+.. automodule:: crappy.blocks.recorder
    :members:
 
 Server

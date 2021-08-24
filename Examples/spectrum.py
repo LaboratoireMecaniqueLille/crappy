@@ -28,10 +28,10 @@ if __name__ == "__main__":
   graph = crappy.blocks.Grapher(*[('t(s)', i) for i in chan_names])
 
   if save_file:
-    hsaver = crappy.blocks.Hdf_saver("./out.h5",
+    hrec = crappy.blocks.Hdf_recorder("./out.h5",
         metadata={'channels': channels, 'ranges': ranges, 'freq': 100000,
           'factor': [r * g / 32000000 for r, g in zip(ranges, gains)]})
-    crappy.link(spectrum, hsaver)
+    crappy.link(spectrum, hrec)
 
   # The Demux modifier unpacks the stream data so normal blocks can process it
   crappy.link(spectrum, graph,

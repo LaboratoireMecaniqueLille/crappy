@@ -2,18 +2,19 @@
 
 from os import path, makedirs
 import numpy as np
+import warnings
 
 from .._global import OptionalModule
 try:
   import tables
 except ModuleNotFoundError:
-  tables = OptionalModule("tables", "HDFSaver needs the tables module to "
+  tables = OptionalModule("tables", "Hdf_recorder needs the tables module to "
       "write hdf files.")
 
 from .block import Block
 
 
-class Hdf_saver(Block):
+class Hdf_recorder(Block):
   """To save data efficiently in a hdf5 file.
 
   This block is is meant to save data coming by arrays at a high rate
@@ -61,9 +62,9 @@ class Hdf_saver(Block):
       self.atom = tables.Atom.from_dtype(np.dtype(self.atom))
 
   def prepare(self):
-    assert self.inputs, "No input connected to the hdf_saver!"
+    assert self.inputs, "No input connected to the hdf_recorder!"
     assert len(self.inputs) == 1,\
-        "Cannot link more than one block to a hdf_saver!"
+        "Cannot link more than one block to a hdf_recorder!"
     d = path.dirname(self.filename)
     if not path.exists(d):
       # Create the folder if it does not exist
@@ -73,13 +74,13 @@ class Hdf_saver(Block):
         assert path.exists(d), "Error creating " + d
     if path.exists(self.filename):
       # If the file already exists, append a number to the name
-      print("[hdf_saver] WARNING!", self.filename, "already exists !")
+      print("[hdf_recorder] WARNING!", self.filename, "already exists !")
       name, ext = path.splitext(self.filename)
       i = 1
       while path.exists(name + "_%05d" % i + ext):
         i += 1
-      self.filename = name+"_%05d" % i + ext
-      print("[hdf_saver] Using", self.filename, "instead!")
+      self.filename = name + "_%05d" % i + ext
+      print("[hdf_recorder] Using", self.filename, "instead!")
     self.hfile = tables.open_file(self.filename, "w")
     for name, value in self.metadata.items():
       self.hfile.create_array(self.hfile.root, name, value)
@@ -103,3 +104,13 @@ class Hdf_saver(Block):
 
   def finish(self):
     self.hfile.close()
+
+
+class Hdf_saver(Hdf_recorder):
+  def __init__(self, *args, **kwargs):
+    print('#### WARNING ####\n'
+          'The block "Hdf_saver" has been renamed to "Hdf_recorder".\n'
+          'Please replace the name in your program, '
+          'it will be removed in future versions\n'
+          '#################')
+    Hdf_recorder.__init__(self, *args, **kwargs)

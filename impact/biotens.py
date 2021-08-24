@@ -18,15 +18,15 @@ save_path += timestamp + "/"
 
 # Creating F sensor
 effort = crappy.blocks.IOBlock("Comedi", channels=[0], gain=[-48.8],
-    labels=['t(s)', 'F(N)'])
+                               labels=['t(s)', 'F(N)'])
 
 # grapher
 graph_effort = crappy.blocks.Grapher(('t(s)', 'F(N)'))
 crappy.link(effort, graph_effort)
 
-# and saver
-save_effort = crappy.blocks.Saver(save_path+"effort.csv")
-crappy.link(effort, save_effort)
+# and recorder
+rec_effort = crappy.blocks.Recorder(save_path + "effort.csv")
+crappy.link(effort, rec_effort)
 
 # Quick hack to reset the position of the actuator
 b = crappy.actuator.Biotens()
@@ -41,9 +41,9 @@ biotens = crappy.blocks.Machine([{'type': 'biotens',
 # ..graph...
 # graph_pos = crappy.blocks.Grapher(('t(s)', 'position1'))
 # crappy.link(biotens, graph_pos)
-# ...and saver
-save_pos = crappy.blocks.Saver(save_path + 'position.csv')
-crappy.link(biotens, save_pos)
+# ...and recorder
+rec_pos = crappy.blocks.Recorder(save_path + 'position.csv')
+crappy.link(biotens, rec_pos)
 
 # To pilot the biotens
 generator = crappy.blocks.Generator([{'type': 'constant',
@@ -54,10 +54,10 @@ crappy.link(generator, biotens)
 # VideoExtenso
 extenso = crappy.blocks.Video_extenso(camera="Ximea_cv", white_spots=False)
 
-# Saver
-save_extenso = crappy.blocks.Saver(save_path + 'extenso.csv',
+# Recorder
+rec_extenso = crappy.blocks.Recorder(save_path + 'extenso.csv',
     labels=['t(s)', 'Exx(%)', 'Eyy(%)'])
-crappy.link(extenso, save_extenso)
+crappy.link(extenso, rec_extenso)
 # And grapher
 graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
 crappy.link(extenso, graph_extenso)
