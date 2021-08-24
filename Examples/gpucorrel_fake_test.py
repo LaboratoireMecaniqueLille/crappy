@@ -26,15 +26,17 @@ if __name__ == "__main__":
 
   # Our fake machine
   machine = crappy.blocks.Fake_machine(maxstrain=17, k=5000, l0=20,
-      plastic_law=lambda exx: 0, sigma={'F(N)': 0.5})
+                                       plastic_law=lambda exx: 0,
+                                       sigma={'F(N)': 0.5})
 
   crappy.link(generator, machine)
   crappy.link(machine, generator)
 
   # The block performing the DIC
   dis = crappy.blocks.GPUCorrel('', input_label='frame', verbose=True,
-      labels=['x', 'y', 'measured_Exx(%)', 'measured_Eyy(%)'],
-      fields=['x', 'y', 'exx', 'eyy'])
+                                labels=['x', 'y', 'measured_Exx(%)',
+                                        'measured_Eyy(%)'],
+                                fields=['x', 'y', 'exx', 'eyy'])
   # This modifier will generate an image with the values of strain
   # coming from the Fake_machine block
   crappy.link(machine, dis, modifier=crappy.modifier.Apply_strain_img(img))

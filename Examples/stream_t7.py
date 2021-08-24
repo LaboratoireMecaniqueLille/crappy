@@ -23,9 +23,11 @@ def my_mean(data):
 
 if __name__ == "__main__":
   s = crappy.blocks.IOBlock("T7_streamer",
-      channels=[{'name': 'AIN0', 'gain': 2, 'offset': -13},
-        {'name': 'AIN1', 'gain': 2, "make_zero": True}],
-      streamer=True)
+                            channels=[{'name': 'AIN0', 'gain': 2,
+                                       'offset': -13},
+                                      {'name': 'AIN1', 'gain': 2,
+                                       "make_zero": True}],
+                            streamer=True)
 
   g = crappy.blocks.Grapher(('t', 'AIN0'), ('t', 'AIN1'))
   crappy.link(s, g, modifier=my_mean)

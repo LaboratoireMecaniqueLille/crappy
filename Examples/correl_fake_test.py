@@ -24,7 +24,8 @@ if __name__ == "__main__":
 
   # Our fake machine
   machine = crappy.blocks.Fake_machine(maxstrain=17, k=5000, l0=20,
-      plastic_law=lambda exx: 0, sigma={'F(N)': 0.5})
+                                       plastic_law=lambda exx: 0,
+                                       sigma={'F(N)': 0.5})
 
   crappy.link(generator, machine)
   crappy.link(machine, generator)

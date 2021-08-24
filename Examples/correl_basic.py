@@ -15,7 +15,7 @@ if __name__ == "__main__":
                                 length=50)
 
   correl = crappy.blocks.GPUCorrel(camera="Webcam",
-      fields=['x', 'y', 'r'])  # Rigid body
+                                   fields=['x', 'y', 'r'])  # Rigid body
 
   crappy.link(correl, graph)
 

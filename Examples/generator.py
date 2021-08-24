@@ -20,7 +20,7 @@ if __name__ == "__main__":
   # Fourth : cycles of ramps: go down at 1u/s until cmd is <9
   # then go up at 2u/s for 1s. Repeat 5 times
   path4 = {'type': 'cyclic_ramp', 'speed1': -1, 'condition1': 'cmd<9',
-      'speed2': 2, 'condition2': 'delay=1', 'cycles': 5}
+           'speed2': 2, 'condition2': 'delay=1', 'cycles': 5}
 
   # The generator: takes the list of all the paths to be generated
   # cmd_label specifies the name to give the signal
@@ -29,7 +29,8 @@ if __name__ == "__main__":
   #   (so the graph updates continuously)
   # verbose : add some information in the terminal
   gen = crappy.blocks.Generator([path1, path2, path3, path4],
-      cmd_label='cmd', freq=50, spam=True, verbose=True)
+                                cmd_label='cmd', freq=50, spam=True,
+                                verbose=True)
 
   # The graph : we will plot cmd over time
   graph = crappy.blocks.Grapher(('t(s)', 'cmd'))

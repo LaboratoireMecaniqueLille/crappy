@@ -20,11 +20,11 @@ if __name__ == "__main__":
   # And add two paths for each loop: one for loading and one for unloading
   for exx in [.25, .5, .75, 1., 1.5, 2]:
     path.append({'type': 'constant',
-      'value': speed,
-      'condition': 'Exx(%)>{}'.format(exx)})  # Go up to this level
+                 'value': speed,
+                 'condition': 'Exx(%)>{}'.format(exx)})  # Go up to this level
     path.append({'type': 'constant',
-      'value': -speed,
-      'condition': 'F(N)<0'})  # Go down to F=0N
+                 'value': -speed,
+                 'condition': 'F(N)<0'})  # Go down to F=0N
 
   # Now we can simply give our list of paths to the generator
   generator = crappy.blocks.Generator(path=path)

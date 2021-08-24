@@ -27,11 +27,12 @@ if __name__ == "__main__":
   paths = []
   for strain in [.25, .5, .75, 1., 1.5, 2]:
     paths.append({'type': 'constant',
-      'value': SPEED / 60,
-      'condition': 'Exx(%)>{}'.format(strain)})  # Go up to this level
+                  'value': SPEED / 60,
+                  'condition': 'Exx(%)>{}'.format(strain)})
+    # Go up to this level
     paths.append({'type': 'constant',
-      'value': -SPEED / 60,
-      'condition': 'F(N)<1'})  # Go down to F=1N
+                  'value': -SPEED / 60,
+                  'condition': 'F(N)<1'})  # Go down to F=1N
 
   # Just like the previous example, we create the generator with our new path
   gen = crappy.blocks.Generator(paths, cmd_label='cmd')
@@ -41,7 +42,8 @@ if __name__ == "__main__":
   pos = {'name': 'AIN1', 'gain': POS_GAIN, 'make_zero': True}
   cmd = {'name': 'TDAC0', 'gain': POS_GAIN}
   daq = crappy.blocks.IOBlock('Labjack_t7', channels=[force, pos, cmd],
-      labels=['t(s)', 'F(N)', 'Position(mm)'], cmd_labels=['cmd'])
+                              labels=['t(s)', 'F(N)', 'Position(mm)'],
+                              cmd_labels=['cmd'])
 
   crappy.link(gen, daq)
   # And we ALSO need to link the daq to the generator because it takes
@@ -61,7 +63,7 @@ if __name__ == "__main__":
   # save_folder asks the block to save the images
   # It can be useful for further processing after the test
   ve = crappy.blocks.Video_extenso('Webcam', width=1920, height=1080,
-      save_folder='img/')
+                                   save_folder='img/')
   # When the program will start, this will open a windows to preview the
   # video from the camera, adjust the settings and select the markers.
 

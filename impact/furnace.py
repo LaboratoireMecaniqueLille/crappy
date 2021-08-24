@@ -69,7 +69,7 @@ def pwm_config(i):
 # g = crappy.blocks.Generator([dict(type='constant', condition=None,
 # value=200)])
 pwm_chan = [dict(name="DIO%d_EF_CONFIG_A" % i,
-  direction=1, write_at_open=pwm_config(i)) for i in pins]
+                 direction=1, write_at_open=pwm_config(i)) for i in pins]
 # Adding the clock config to the first chan
 pwm_chan[0]['write_at_open'][0:0] = clock_config
 
@@ -77,19 +77,20 @@ th_chan = [dict(name='AIN%d' % i, thermocouple='K') for i in pins]
 
 
 lj = crappy.blocks.IOBlock("Labjack_t7", channels=pwm_chan+th_chan,
-  labels=['t(s)']+['T%d' % i for i in pins],
-  cmd_labels=['pwm%d' % i for i in pins], verbose=True)
+                           labels=['t(s)']+['T%d' % i for i in pins],
+                           cmd_labels=['pwm%d' % i for i in pins], verbose=True)
 
 pid_list = []
 gen_list = []
 graph_cmd = crappy.blocks.Grapher(*[('t(s)', 'pwm%d' % i) for i in pins])
 for i in pins:
   pid_list.append(crappy.blocks.PID(P, I if i != 5 else 0, D,
-    input_label='T%d' % i,
-    out_max=1, out_min=0,
-    i_limit=.5,
-    send_terms=(SHOW_PID is not None and i == SHOW_PID),
-    labels=['t(s)', 'pwm%d' % i]))
+                                    input_label='T%d' % i,
+                                    out_max=1, out_min=0,
+                                    i_limit=.5,
+                                    send_terms=(SHOW_PID is not None
+                                                and i == SHOW_PID),
+                                    labels=['t(s)', 'pwm%d' % i]))
 
   gen_list.append(crappy.blocks.Generator(
     [dict(type='constant', condition=None, value=v[i])]))
@@ -97,12 +98,14 @@ for i in pins:
   crappy.link(gen_list[-1], pid_list[-1])
   crappy.link(pid_list[-1], lj, modifier=dc_to_clk('pwm%d' % i))
   crappy.link(lj, pid_list[-1],
-      modifier=[crappy.modifier.Median(MED), crappy.modifier.Moving_avg(MEAN)])
+              modifier=[crappy.modifier.Median(MED),
+                        crappy.modifier.Moving_avg(MEAN)])
   crappy.link(pid_list[-1], graph_cmd)
 
 graph = crappy.blocks.Grapher(*[('t(s)', 'T%d' % i) for i in pins])
 crappy.link(lj, graph,
-    modifier=[crappy.modifier.Median(MED), crappy.modifier.Moving_avg(MEAN)])
+            modifier=[crappy.modifier.Median(MED),
+                      crappy.modifier.Moving_avg(MEAN)])
 
 
 if SHOW_PID:

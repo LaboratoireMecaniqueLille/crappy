@@ -18,7 +18,7 @@ common = {'type': 'biaxe'}
 
 m = crappy.blocks.Machine([m1, m2, m3, m4], common)
 s = crappy.blocks.IOBlock('Comedi', channels=[1, 3], gain=[3749, 3749],
-      labels=['t(s)', 'F1', 'F3'])
+                          labels=['t(s)', 'F1', 'F3'])
 
 g = crappy.blocks.Grapher(('t(s)', 'F1'), ('t(s)', 'F3'))
 

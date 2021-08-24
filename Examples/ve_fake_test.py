@@ -25,14 +25,15 @@ if __name__ == "__main__":
 
   # Our fake machine
   machine = crappy.blocks.Fake_machine(maxstrain=17, k=5000, l0=20,
-      plastic_law=lambda exx: 0, sigma={'F(N)': 0.5})
+                                       plastic_law=lambda exx: 0,
+                                       sigma={'F(N)': 0.5})
 
   crappy.link(generator, machine)
   crappy.link(machine, generator)
 
   # The block performing the videoextensometry
   ve = crappy.blocks.Video_extenso('', input_label='frame', show_image=True,
-      blur=False)
+                                   blur=False)
   # This modifier will generate an image with the values of strain
   # coming from the Fake_machine block
   crappy.link(machine, ve, modifier=crappy.modifier.Apply_strain_img(img))

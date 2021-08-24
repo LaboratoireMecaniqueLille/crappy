@@ -59,7 +59,7 @@ if __name__ == "__main__":
   )])
 
   pid = crappy.blocks.PID(P, I, D, input_label='T', out_max=1, out_min=0,
-      i_limit=.5, send_terms=True)
+                          i_limit=.5, send_terms=True)
 
   crappy.link(g, pid)
   crappy.link(pid, furnace)

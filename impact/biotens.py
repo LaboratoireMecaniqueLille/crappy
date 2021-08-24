@@ -36,8 +36,9 @@ b.set_position(5, 50)
 
 # Creating Machine block...
 biotens = crappy.blocks.Machine([{'type': 'biotens',
-  'port': '/dev/ttyUSB0', 'pos_label': 'position1',
-  'cmd': 'cmd'}])
+                                  'port': '/dev/ttyUSB0',
+                                  'pos_label': 'position1',
+                                  'cmd': 'cmd'}])
 # ..graph...
 # graph_pos = crappy.blocks.Grapher(('t(s)', 'position1'))
 # crappy.link(biotens, graph_pos)
@@ -47,7 +48,8 @@ crappy.link(biotens, rec_pos)
 
 # To pilot the biotens
 generator = crappy.blocks.Generator([{'type': 'constant',
-  'condition': 'F(N)>90', 'value': 5}], freq=100)
+                                      'condition': 'F(N)>90',
+                                      'value': 5}], freq=100)
 crappy.link(effort, generator)
 crappy.link(generator, biotens)
 
@@ -56,7 +58,7 @@ extenso = crappy.blocks.Video_extenso(camera="Ximea_cv", white_spots=False)
 
 # Recorder
 rec_extenso = crappy.blocks.Recorder(save_path + 'extenso.csv',
-    labels=['t(s)', 'Exx(%)', 'Eyy(%)'])
+                                     labels=['t(s)', 'Exx(%)', 'Eyy(%)'])
 crappy.link(extenso, rec_extenso)
 # And grapher
 graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))

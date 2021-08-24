@@ -45,7 +45,7 @@ class Interface(Frame):
     self.actuatorNameCombo.set("CM_drive")
     # create a combobox, it will contain names of ports
     self.actuatorCombo = Tix.ComboBox(sous_fra, editable=1, dropdown=1,
-                                   variable=self.actuatorNameCombo)
+                                      variable=self.actuatorNameCombo)
     # configure the combobox in read only
     self.actuatorCombo.entry.config(state='readonly')
     for m in actuator_list:
@@ -62,14 +62,14 @@ class Interface(Frame):
     # create a label
     self.num_device_label = Label(sous_fra, text="Device number:")
     self.num_device_entry = Spinbox(sous_fra, from_=1, to=10,
-                                textvariable=self.num_device)
+                                    textvariable=self.num_device)
     self.actuatorNameCombo.trace('w', self.callback)
     # create connect Button
     self.connection = Button(sous_fra, text="Connect", command=self.connection)
     sous_fra1 = Frame(fra1, width=400)  # create a second frame in canvas(p1)
     # create examine location button
     self.location = Button(sous_fra1, text="Examine location",
-        command=self.examine_location, width=10)
+                           command=self.examine_location, width=10)
     self.location.config(state='disabled')  # disable the state of the button
     # create 'location:' label
     location_label = Label(sous_fra1, text="Location:")
@@ -79,7 +79,7 @@ class Interface(Frame):
     # create a label, it will show the variable
     resultat_label = Label(sous_fra1, textvariable=self.Resultat)
     self.resetZero = Button(sous_fra1, text=" Reset ",
-        command=self.reset_servostar)
+                            command=self.reset_servostar)
     # create cancel button
     self.quit = Button(sous_fra1, text="Cancel", command=root.quit)
     # Fin onglet 1
@@ -87,7 +87,7 @@ class Interface(Frame):
     # Début onglet 2
     # create a frame in canvas(p2)
     sous_fra2 = Frame(fra2, width=400)
-    # create a second fram in canvas(p2)
+    # create a second frame in canvas(p2)
     sous_fra2bis = Frame(fra2, width=400)
     # create a variable, it will contain the value of speed_entry
     self.speedVar = StringVar()
@@ -97,25 +97,27 @@ class Interface(Frame):
     speed_entry = Entry(sous_fra2bis, textvariable=self.speedVar, width=5)
     # create a advance button
     self.advanceButton = Button(sous_fra2bis, text="advance",
-          command=self.advance, width=10)
+                                command=self.advance, width=10)
     # disable the state of the button
     self.advanceButton.config(state='disabled')
     # create recoil button
     self.recoilButton = Button(sous_fra2bis, text="recoil",
-        command=self.recoil, width=10)
+                               command=self.recoil, width=10)
     # disable the state of the button
     self.recoilButton.config(state='disabled')
     # create stop button
     self.stopVMButton = Button(sous_fra2bis, text="STOP",
-        command=self.stop_motion, width=10)
+                               command=self.stop_motion, width=10)
     self.stopVMButton.config(state='disabled')
     self.defineZeroButton = Button(sous_fra2bis, text="Define Zero",
-        command=self.define_zero, width=10)
+                                   command=self.define_zero, width=10)
     self.defineZeroButton.config(state='disabled')
     # Début onglet 3
     sous_fra3_2 = Frame(fra3, width=400)  # create a frame in canvas(p3)
     self.moveZeroButton = Button(sous_fra3_2, text="Move Home",
-        command=self.move_zero, width=15)  # create move home button
+                                 command=self.move_zero, width=15)
+    # create move home button
+
     # disable the state of the button
     self.moveZeroButton.config(state='disabled')
 
@@ -148,7 +150,7 @@ class Interface(Frame):
     self.moveButton.config(state='disabled')  # disable the state of the button
     # create STOP button
     self.stopMTButton = Button(sous_sous_fra3, text="STOP",
-        command=self.stop_motion)
+                               command=self.stop_motion)
     self.stopMTButton.config(state='disabled')
     # create a second frame in sous_fra3
     sous_sous_fra3bis = Frame(sous_fra3, width=400)
@@ -196,9 +198,9 @@ class Interface(Frame):
     self.entry2.grid(row=1, column=1, sticky='w')
     self.entry3.grid(row=2, column=1, sticky='w')
     Radiobutton(sous_fra3_2, text="absolute", variable=self.motionType,
-        value=True).grid()
+                value=True).grid()
     Radiobutton(sous_fra3_2, text="relative", variable=self.motionType,
-        value=False).grid()
+                value=False).grid()
     sous_fra3.grid(row=3, column=0)
     sous_sous_fra3.grid(row=0, column=0)
     sous_sous_fra3bis.grid(row=1, column=0)
@@ -210,15 +212,15 @@ class Interface(Frame):
   # function to initialize the connection
   def connection(self):
     if "" in [self.myPortCombo.get(), self.baudCombo.get(),
-                                  self.actuatorNameCombo.get()]:
+              self.actuatorNameCombo.get()]:
       print('you must choose actuator name and configuration.')
     else:
       try:
         actuator = actuator_list[self.actuatorNameCombo.get()]
         if self.actuatorNameCombo.get().capitalize() == "Oriental":
           self.actuator = actuator(port=self.myPortCombo.get(),
-                            num_device=int(self.num_device_entry.get()),
-                            baudrate=self.baudCombo.get())
+                                   num_device=int(self.num_device_entry.get()),
+                                   baudrate=self.baudCombo.get())
         else:
           self.actuator = actuator(port=self.myPortCombo.get(),
                                    baudrate=self.baudCombo.get())
@@ -312,7 +314,7 @@ class Interface(Frame):
   # function to stop a motion
   def stop_motion(self):
     self.actuator.stop()
-    print('Motion has been stoped')
+    print('Motion has been stopped')
 
 
 if __name__ == '__main__':

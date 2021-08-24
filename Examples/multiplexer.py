@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
   g2 = crappy.blocks.Generator([
     dict(type='cyclic_ramp', speed2=-1, speed1=1,
-      condition1='cmd2>1', condition2='cmd2<-1', cycles=1e30)
+         condition1='cmd2>1', condition2='cmd2<-1', cycles=1e30)
       ], freq=50, cmd_label='cmd2')
 
   mul = crappy.blocks.Multiplex()
@@ -47,7 +47,7 @@ if __name__ == "__main__":
   crappy.link(mul, graph)
 
   rec = crappy.blocks.Recorder("example_multi.csv",
-                             labels=["t(s)", "cmd1", "cmd2"])
+                               labels=["t(s)", "cmd1", "cmd2"])
 
   crappy.link(mul, rec)
 

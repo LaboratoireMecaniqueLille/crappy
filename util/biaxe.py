@@ -39,7 +39,7 @@ print(help_string)
 
 user_input = ''
 while True:
-  user_input = raw_input("Axe and speed ?> ").lower()
+  user_input = input("Axe and speed ?> ").lower()
   if user_input == 'q':
     break
   elif user_input in ['h', 'help', '?']:

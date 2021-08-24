@@ -9,7 +9,7 @@ It demonstrates an equibiaxial cyclic test.
 import crappy
 
 path = {'type': 'cyclic', 'value1': 5, 'condition1': 'delay=3',
-                        'value2': -5, 'condition2': 'delay=3', 'cycles': 0}
+        'value2': -5, 'condition2': 'delay=3', 'cycles': 0}
 path2 = dict(path)
 path2['condition1'] = 'delay=5'
 path2['condition2'] = 'delay=5'

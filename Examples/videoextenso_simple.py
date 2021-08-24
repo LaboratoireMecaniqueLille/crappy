@@ -16,7 +16,8 @@ if __name__ == '__main__':
   graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
 
   extenso = crappy.blocks.Video_extenso(camera="Webcam",
-      end=True, show_image=True, white_spots=False)
+                                        end=True, show_image=True,
+                                        white_spots=False)
 
   crappy.link(extenso, graph_extenso)
   crappy.start()

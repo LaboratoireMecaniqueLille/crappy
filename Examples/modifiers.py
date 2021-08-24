@@ -48,20 +48,20 @@ if __name__ == "__main__":
   # We add a moving average to smooth the data
   # and our custom condition that adds and offset of 5
   crappy.link(generator, smooth_graph,
-      # The modifiers will be applied in the order of the list
-      modifier=[
-        # Integrated modifier, will average the values on 100 points
-        crappy.modifier.Moving_avg(100),
-        # Will add an offset
-        My_offset_modifier(5),
-        # Will multiply the result by 10
-        mul_by_10])
+              # The modifiers will be applied in the order of the list
+              modifier=[
+                # Integrated modifier, will average the values on 100 points
+                crappy.modifier.Moving_avg(100),
+                # Will add an offset
+                My_offset_modifier(5),
+                # Will multiply the result by 10
+                mul_by_10])
 
   # This block will simply print "Triggered" followed by the received data
   r = crappy.blocks.Reader('Triggered')
 
   # Only forward data when the label "cycle" changed its value
   crappy.link(generator, r,
-      modifier=crappy.modifier.Trig_on_change('cycle'))
+              modifier=crappy.modifier.Trig_on_change('cycle'))
 
   crappy.start()

@@ -45,11 +45,12 @@ if __name__ == "__main__":
   graphLinDef = crappy.blocks.Grapher(('t(s)', 'Exx'), ('t(s)', 'Exy'))
   graphQuadDef = crappy.blocks.Grapher(('t(s)', 'Ux2'), ('t(s)', 'Vy2'))
   # Creating the correl block
-  correl = crappy.blocks.GPUCorrel(camera=CAMERA, fields=[myX, 'y', 'r',
-                                                       # Rigid body
-                                   'exx', 'eyy', 'exy',   # Linear def
-                                   'uxx', 'uyy', 'uxy',   # Quadratic def (x)
-                                   'vxx', 'vyy', 'vxy'],  # Quadratic def (y)
+  correl = crappy.blocks.GPUCorrel(camera=CAMERA,
+                                   fields=[
+                                     myX, 'y', 'r',  # Rigid body
+                                     'exx', 'eyy', 'exy',   # Linear def
+                                     'uxx', 'uyy', 'uxy',   # Quadratic def (x)
+                                     'vxx', 'vyy', 'vxy'],  # Quadratic def (y)
                                    verbose=2,  # To print info
                                    show_diff=True,  # Display the residual
                                    # (slow!)
@@ -60,9 +61,9 @@ if __name__ == "__main__":
                                    resampling_factor=2.5,  # aggressive
                                    # resampling
                                    labels=(  # Needed to name our custom field
-                                   'x', 'y', 'r', 'Exx', 'Eyy', 'Exy',
-                                   'Ux2', 'Uy2', 'Uxy',
-                                   'Vx2', 'Vy2', 'Vxy'),
+                                     'x', 'y', 'r', 'Exx', 'Eyy', 'Exy',
+                                     'Ux2', 'Uy2', 'Uxy',
+                                     'Vx2', 'Vy2', 'Vxy'),
                                    mul=3.2,  # Scalar to multiply the direction
                                    res=True)  # Ask to return the residual
 
