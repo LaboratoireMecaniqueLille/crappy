@@ -102,7 +102,7 @@ docs_files = [('crappy/' + path, [path + '/' + name for name in paths]) for
 setup(
   name='crappy',
 
-  version='1.5.0',
+  version='1.5.1',
 
   description='Command and Real-time Acquisition Parallelized in Python',
 
