@@ -14,6 +14,7 @@ from os import popen, listdir, walk
 import sys
 from distutils.core import setup, Extension
 import platform
+from crappy import __version__
 
 # Get the long description from the relevant file
 with open('docs/source/whatiscrappy.rst', encoding='utf-8') as f:
@@ -102,7 +103,7 @@ docs_files = [('crappy/' + path, [path + '/' + name for name in paths]) for
 setup(
   name='crappy',
 
-  version='1.5.1',
+  version=__version__,
 
   description='Command and Real-time Acquisition Parallelized in Python',
 

@@ -14,6 +14,7 @@
 #
 import os
 import sys
+from crappy import __version__
 sys.path.insert(0, os.path.abspath('../..'))
 sys.setrecursionlimit(1500)
 
@@ -25,9 +26,9 @@ copyright = '2021'
 author = 'LaMcube'
 
 # The short X.Y version
-version = '1.5'
+version = '.'.join(__version__.split('.')[:2])
 # The full version, including alpha/beta/rc tags
-release = '1.5.1'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------
