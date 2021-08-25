@@ -4,13 +4,14 @@ from ..._global import OptionalModule
 
 try:
   import tkinter as tk
-  from tkinter import ttk
+  from tkinter import ttk, Frame
 except (ModuleNotFoundError, ImportError):
   tk = OptionalModule("tkinter")
   ttk = OptionalModule("tkinter")
+  Frame = object
 
 
-class FrameObjects(tk.Frame):
+class FrameObjects(Frame):
   """A very simple class that should be inherited by frames, to help create and
   maintain in order the file.
 

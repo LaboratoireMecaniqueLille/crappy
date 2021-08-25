@@ -11,13 +11,14 @@ from ..._global import OptionalModule
 
 try:
   import tkinter as tk
-  from tkinter import font as tk_font
+  from tkinter import font as tk_font, Frame
 except (ModuleNotFoundError, ImportError):
   tk = OptionalModule("tkinter")
   tk_font = OptionalModule("tkinter")
+  Frame = object
 
 
-class MonitorFrame(tk.Frame):
+class MonitorFrame(Frame):
   """A frame that displays everything entering the serial port.
 
   Everything is handled by ArduinoHandler, so you don't get to modify these
@@ -31,7 +32,7 @@ class MonitorFrame(tk.Frame):
   """
 
   def __init__(self, parent, **kwargs):
-    tk.Frame.__init__(self, parent)
+    super().__init__(self, parent)
     # self.grid()
     self.total_width = kwargs.get('width', 100 * 5 / 10)
     self.arduino = kwargs.get("arduino")
@@ -74,7 +75,7 @@ class MonitorFrame(tk.Frame):
       self.serial_monitor.insert("0.0", arg)  # To insert at the top
 
 
-class SubmitSerialFrame(tk.Frame):
+class SubmitSerialFrame(Frame):
   """Frame that permits to submit to the serial port of arduino.
 
   Args:
@@ -83,7 +84,7 @@ class SubmitSerialFrame(tk.Frame):
   """
 
   def __init__(self, parent, **kwargs):
-    tk.Frame.__init__(self, parent)
+    super().__init__(self, parent)
     # self.grid()
     self.total_width = kwargs.get("width", 100)
     self.queue = kwargs.get("queue")
