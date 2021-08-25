@@ -138,7 +138,7 @@ setup(
   ext_package='crappy',
   ext_modules=extensions,
 
-  install_requires=['numpy'],
+  install_requires=['numpy>=1.19.0'],
 
   data_files=[('crappy/data',
                ['data/' + filename for filename in listdir('data')
