@@ -45,6 +45,7 @@ class Camera(Block):
                transform=None,
                input_label=None,
                config=True,
+               no_loop=False,
                **kwargs):
     """Sets the args and initializes parent class.
 
@@ -90,6 +91,7 @@ class Camera(Block):
     self.transform = transform
     self.input_label = input_label
     self.config = config
+    self.no_loop = no_loop
 
     self.camera_name = camera.capitalize()
     self.cam_kw = kwargs
@@ -135,6 +137,8 @@ class Camera(Block):
     if send_img:
       t, img = self.get_img()
       self.send([0, img])
+    if self.no_loop:
+      self.loop = self.stop
 
   @staticmethod
   def save_sitk(img, fname):
@@ -155,7 +159,7 @@ class Camera(Block):
 
     if self.input_label:
       data = self.inputs[0].recv()
-      return data['t(s)']+self.t0, data[self.input_label]
+      return data['t(s)'] + self.t0, data[self.input_label]
     if not self.ext_trigger:
       if self.fps_label:
         while self.inputs[0].poll():
@@ -176,7 +180,7 @@ class Camera(Block):
 
   def loop(self):
     t, img = self.get_img()
-    self.send([t-self.t0, img])
+    self.send([t - self.t0, img])
 
   def finish(self):
     if self.input_label is None:
