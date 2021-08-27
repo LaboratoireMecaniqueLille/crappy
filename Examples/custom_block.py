@@ -1,13 +1,23 @@
 import crappy
 from time import time
 
+# This class can be used as a starting point to create a new block
+# All methods except loop are optional
+# To add it to crappy, make the imports relative (refer to any other block),
+# move the class to a file in crappy/blocks and add the corresponding line
+# in crappy/blocks/__init__.py
 
-# A basic example of block
-# It will simply send a sawtooth signal
-class MyBlock(crappy.blocks.Block):
+
+# crappy.Block is a shortcut for crappy.blocks.Block
+class MyBlock(crappy.Block):
+  """
+  A basic example of block
+
+  It will simply send a sawtooth signal
+  """
   def __init__(self, period=1):  # Optional
     # If you define your own constructor, do not forget to init Block !
-    crappy.blocks.Block.__init__(self)
+    crappy.Block.__init__(self)
     # Example argument, here the period of the sawtooth
     self.period = period
 
@@ -26,7 +36,7 @@ class MyBlock(crappy.blocks.Block):
     print("==> begin has been called")
     # Send -1 only on the first loop
     # self.t0 contains the timestamp of the beginning of the test
-    self.send([time()-self.t0, -1])
+    self.send([time() - self.t0, -1])
 
   def loop(self):
     # This loop will be called continuously until the end of the test
@@ -45,6 +55,7 @@ class MyBlock(crappy.blocks.Block):
 
 if __name__ == "__main__":
   mb = MyBlock()
+  # NB: matplotlib must be installed to used the Grapher
   graph = crappy.blocks.Grapher(('t(s)', 'cmd(V)'))
   crappy.link(mb, graph)
 
