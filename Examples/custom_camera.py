@@ -8,7 +8,6 @@ from time import time
 # in crappy/camera/__init__.py
 
 
-# crappy.Block is a shortcut for crappy.blocks.Block
 class My_cam(crappy.camera.Camera):
   """
   A basic example of Camera
@@ -65,5 +64,3 @@ class My_cam(crappy.camera.Camera):
 cam = crappy.blocks.Camera('My_cam', max_fps=60, no_loop=True)
 
 crappy.start()
-
-# Because otherwise, the camera will stream in the background
