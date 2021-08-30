@@ -702,7 +702,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         byteorder='little',
         signed=True) / 10000)
 
-  def get_pos(self) -> float:
+  def get_position(self) -> float:
     """Reads the current motor position.
 
     Returns:

@@ -11,7 +11,7 @@ class Fake_motor(Actuator):
   Note:
     A virtual motor driven by a voltage, you can set its properties with the
     args. It has the same methods as a real motor: :meth:`open`,
-    :meth:`set_speed`, :meth:`get_speed`, :meth:`get_pos`.
+    :meth:`set_speed`, :meth:`get_speed`, :meth:`get_position`.
   """
 
   def __init__(self,
@@ -83,7 +83,7 @@ class Fake_motor(Actuator):
     self.update()
     return self.rpm
 
-  def get_pos(self):
+  def get_position(self):
     """Returns the motor position."""
 
     self.update()

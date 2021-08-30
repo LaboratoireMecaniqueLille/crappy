@@ -47,7 +47,7 @@ class Machine(Block):
         - ``speed`` (:obj:`float`): If mode is `'position'`, the speed of the
           axis.
         - ``pos_label`` (:obj:`str`): If set, the block will return the value
-          of :meth:`get_pos` with this label.
+          of :meth:`get_position` with this label.
         - ``speed_label`` (:obj:`str`): If set, the block will return the value
           of :meth:`get_speed` with this label.
     """
@@ -90,7 +90,7 @@ class Machine(Block):
     to_send = {}
     for actuator, setting in zip(self.actuators, self.settings):
       if 'pos_label' in setting:
-        to_send[setting['pos_label']] = actuator.get_pos()
+        to_send[setting['pos_label']] = actuator.get_position()
       if 'speed_label' in setting:
         to_send[setting['speed_label']] = actuator.get_speed()
     if to_send != {}:

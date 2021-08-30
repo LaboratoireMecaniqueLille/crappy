@@ -108,7 +108,7 @@ class Biotens(Actuator):
     time.sleep(1)
     while position_si != last_position_si:
       last_position_si = position_si
-      position_si = self.get_pos()
+      position_si = self.get_position()
       print("position : ", position_si)
     print("init done")
     self.stop()
@@ -262,7 +262,7 @@ class Biotens(Actuator):
     self.ser.writelines([set_position, set_speed,
                         set_torque, set_acceleration, command])
 
-  def get_pos(self):
+  def get_position(self):
     """Reads current position.
 
     Returns:
@@ -270,13 +270,13 @@ class Biotens(Actuator):
     """
 
     for i in range(20):
-      r = self._get_pos()
+      r = self._get_position()
       if r is not None:
         return r
       time.sleep(.01)
     raise IOError("Could not read biotens pos!")
 
-  def _get_pos(self):
+  def _get_position(self):
     try:
       self.ser.readlines()
     except serial.SerialException:

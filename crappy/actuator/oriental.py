@@ -109,7 +109,7 @@ class Oriental(Actuator):
     self.ser.write("VR {0}".format(abs(speed)).encode('ASCII'))
     self.ser.write("MA {0}".format(position).encode('ASCII'))
 
-  def get_pos(self):
+  def get_position(self):
     """Reads current position.
 
     Returns:
