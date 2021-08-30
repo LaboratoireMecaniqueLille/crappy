@@ -20,6 +20,7 @@ class IOBlock(Block):
                streamer=False,
                initial_cmd=0,
                exit_values=None,
+               spam=False,
                **kwargs):
     """Sets the args and initializes the parent class.
 
@@ -44,6 +45,8 @@ class IOBlock(Block):
         this same value for all the output labels.
       exit_values (:obj:`list`, optional): If not :obj:`None`, the outputs will
         be set to these values when Crappy is ending (or crashing).
+      spam (:obj:`bool`, optional): If False (default), the block will only
+        call set_cmd on the InOut object if the command changed
       **kwargs: The arguments to be passed to the :ref:`In / Out` class.
     """
 
@@ -57,6 +60,7 @@ class IOBlock(Block):
     self.streamer = streamer
     self.initial_cmd = initial_cmd
     self.exit_values = exit_values
+    self.spam = spam
 
     if self.labels is None:
       if self.streamer:
@@ -96,6 +100,7 @@ class IOBlock(Block):
     self.device.open()
     if 'w' in self.mode:
       self.device.set_cmd(*self.initial_cmd)
+      self.last = None
 
   def read(self):
     """Will read the device and send the data."""
@@ -126,10 +131,10 @@ class IOBlock(Block):
         self.read()
     if 'w' in self.mode:
       lst = self.get_last(self.to_get)
-      cmd = []
-      for label in self.cmd_labels:
-        cmd.append(lst[label])
-      self.device.set_cmd(*cmd)
+      cmd = [lst[label] for label in self.cmd_labels]
+      if cmd != self.last or self.spam:
+        self.device.set_cmd(*cmd)
+        self.last = cmd
 
   def finish(self):
     if self.streamer:
