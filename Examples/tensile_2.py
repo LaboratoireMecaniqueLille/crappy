@@ -34,7 +34,7 @@ if __name__ == "__main__":
       'condition': 'F(N)<1'})  # Go down to F=1N
 
   # Just like the previous example, we create the generator with our new path
-  generator = crappy.blocks.Generator(paths, cmd_label='cmd')
+  gen = crappy.blocks.Generator(paths, cmd_label='cmd')
 
   # The DAQ board, this section is identical
   force = {'name': 'AIN0', 'gain': FORCE_GAIN}
@@ -43,12 +43,12 @@ if __name__ == "__main__":
   daq = crappy.blocks.IOBlock('Labjack_t7', channels=[force, pos, cmd],
       labels=['t(s)', 'F(N)', 'Position(mm)'], cmd_labels=['cmd'])
 
-  crappy.link(generator, daq)
+  crappy.link(gen, daq)
   # And we ALSO need to link the daq to the generator because it takes
   # decisions based on the values of the force
   # crappy.link(a,b) and crappy.link(b,a) are NOT equivalent because links are
   # unidirectional ! Data only flows from the first block to the second
-  crappy.link(daq, generator)
+  crappy.link(daq, gen)
   # It is perfectly fine to make "loops" by linking in both directions
   # like this
 
@@ -66,7 +66,7 @@ if __name__ == "__main__":
   # video from the camera, adjust the settings and select the markers.
 
   # Now we must link this block to the generator
-  crappy.link(ve, generator)
+  crappy.link(ve, gen)
   # and to a recorder
   rec_ve = crappy.blocks.Recorder('results_ve.csv')
   crappy.link(ve, rec_ve)

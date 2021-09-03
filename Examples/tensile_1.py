@@ -27,7 +27,7 @@ if __name__ == "__main__":
     "condition": None}  # No exit condition: we will stop the test manually
 
   # Let's create the first block: the generator
-  generator = crappy.blocks.Generator([path], cmd_label='cmd')
+  gen = crappy.blocks.Generator([path], cmd_label='cmd')
 
   # Now the DAQ board we will interact with. Let's define the channels first
   # First input: the force sensor
@@ -51,7 +51,7 @@ if __name__ == "__main__":
                               cmd_labels=['cmd'])
   # Now we link them: the output of the board will be read from the label 'cmd'
   # Note that links are one-way only, so the order is important
-  crappy.link(generator, daq)
+  crappy.link(gen, daq)
 
   # Now we would like to save the measurements from the machine
   rec = crappy.blocks.Recorder('results.csv')
