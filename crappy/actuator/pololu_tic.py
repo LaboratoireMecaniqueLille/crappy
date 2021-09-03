@@ -1,8 +1,8 @@
 # coding: utf-8
 
-import subprocess
+from subprocess import check_output
 from threading import Thread, RLock
-import time
+from time import sleep
 from typing import Union, Dict
 from .actuator import Actuator
 from .._global import OptionalModule
@@ -13,15 +13,15 @@ except (ModuleNotFoundError, ImportError):
   yaml = OptionalModule("pyyaml")
 
 try:
-  import usb.core
-  import usb.util
+  from usb import core
+  from usb import util
 
-  Tic_usb_request = {'Cmd': usb.util.CTRL_OUT |
-                            usb.util.CTRL_TYPE_VENDOR |
-                            usb.util.CTRL_RECIPIENT_DEVICE,
-                     'Var': usb.util.CTRL_IN |
-                            usb.util.CTRL_TYPE_VENDOR |
-                            usb.util.CTRL_RECIPIENT_DEVICE}
+  Tic_usb_request = {'Cmd': util.CTRL_OUT |
+                     util.CTRL_TYPE_VENDOR |
+                     util.CTRL_RECIPIENT_DEVICE,
+                     'Var': util.CTRL_IN |
+                     util.CTRL_TYPE_VENDOR |
+                     util.CTRL_RECIPIENT_DEVICE}
 except (ModuleNotFoundError, ImportError):
   usb = OptionalModule("pyusb")
   Tic_usb_request = {'Cmd': 0x40,
@@ -439,24 +439,24 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       # Finding all devices matching the given inputs
       if model is None:
         if serial_number is None:
-          devices = usb.core.find(find_all=True,
-                                  idVendor=Tic_vendor_id)
+          devices = core.find(find_all=True,
+                              idVendor=Tic_vendor_id)
         else:
-          devices = usb.core.find(find_all=True,
-                                  idVendor=Tic_vendor_id,
-                                  custom_match=Find_serial_number(
-                                    serial_number))
+          devices = core.find(find_all=True,
+                              idVendor=Tic_vendor_id,
+                              custom_match=Find_serial_number(
+                                serial_number))
       else:
         if serial_number is None:
-          devices = usb.core.find(find_all=True,
-                                  idVendor=Tic_vendor_id,
-                                  idProduct=Tic_product_id[model])
+          devices = core.find(find_all=True,
+                              idVendor=Tic_vendor_id,
+                              idProduct=Tic_product_id[model])
         else:
-          devices = usb.core.find(find_all=True,
-                                  idVendor=Tic_vendor_id,
-                                  idProduct=Tic_product_id[model],
-                                  custom_match=Find_serial_number(
-                                    serial_number))
+          devices = core.find(find_all=True,
+                              idVendor=Tic_vendor_id,
+                              idProduct=Tic_product_id[model],
+                              custom_match=Find_serial_number(
+                                serial_number))
       # Making sure there's only one matching device
       devices = list(devices)
       if len(devices) == 0:
@@ -468,8 +468,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         self._dev = devices[0]
       # Setting self.serial_number and self.device
       if serial_number is None:
-        self._serial_number = usb.util.get_string(self._dev,
-                                                  self._dev.iSerialNumber)
+        self._serial_number = util.get_string(self._dev,
+                                              self._dev.iSerialNumber)
       else:
         self._serial_number = serial_number
       if model is None:
@@ -484,7 +484,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     elif backend == 'ticcmd':
       # Finding all devices matching the given inputs
-      devices = subprocess.check_output(['ticcmd'] + ['--list']).\
+      devices = check_output(['ticcmd'] + ['--list']).\
         decode("utf-8").split("\n")
       devices.pop()  # Removing the '' element at the end of devices
       devices = [string.split(',') for string in devices]
@@ -641,7 +641,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     if self._backend == 'USB':
       try:
         self._dev.set_configuration()
-      except usb.core.USBError:
+      except core.USBError:
         print("You may have to install the udev-rules for this USB device, "
               "this can be done using the udev_rule_setter utility in the util "
               "folder")
@@ -804,7 +804,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     self._enter_safe_start()
     self._deenergize()
     if self._backend == 'USB':
-      usb.util.dispose_resources(self._dev)
+      util.dispose_resources(self._dev)
 
   def _to_steps(self, mm: float) -> float:
     """Wrapper for converting `mm` to `steps`."""
@@ -1068,7 +1068,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
                                          wValue=value,
                                          wIndex=index,
                                          data_or_wLength=data_or_length)
-      except usb.core.USBError:
+      except core.USBError:
         raise IOError("An error occurred during USB communication")
     return result
 
@@ -1083,9 +1083,9 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     """Wrapper for calling ticcmd in a subprocess."""
 
     with self._lock:
-      return subprocess.check_output(['ticcmd'] + ['-d'] +
-                                     [self._serial_number]
-                                     + list(args))
+      return check_output(['ticcmd'] + ['-d'] +
+                          [self._serial_number]
+                          + list(args))
 
   def _thread_shutoff(self) -> None:
     """Thread for deenergizing the motor after a given period of inactivity.
@@ -1098,7 +1098,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     timer = 0
     while not self._close:
-      time.sleep(0.01)
+      sleep(0.01)
 
       while self._timer_shutoff:
         # Exit if close flag raised
@@ -1115,7 +1115,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
           timer += 0.1
         else:
           timer = 0
-        time.sleep(0.1)
+        sleep(0.1)
 
         # Finally deenergizing the motor if all the conditions are met
         if timer > self._t_shutoff and \
@@ -1144,9 +1144,9 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
                         index=Tic_settings['Command_timeout_high'])
 
     while not self._close:
-      time.sleep(0.01)
+      sleep(0.01)
       while self._RCT:
         if self._close:
           break
         self._reset_command_timeout()
-        time.sleep(0.5)
+        sleep(0.5)
