@@ -121,7 +121,7 @@ setup(
 
   zip_safe=False,
 
-  classifiers=['Development Status :: 5 - Production/Stable ',
+  classifiers=['Development Status :: 4 - Beta ',
                'Intended Audience :: Science/Research',
                'Topic :: Software Development :: Build Tools',
                'License :: OSI Approved :: GNU General Public License v2 or '
