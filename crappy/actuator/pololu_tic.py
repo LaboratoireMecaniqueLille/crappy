@@ -11,6 +11,11 @@ try:
   import yaml
 except (ModuleNotFoundError, ImportError):
   yaml = OptionalModule("pyyaml")
+try:
+  getattr(yaml, 'FullLoader')
+  full_loader = True
+except AttributeError:
+  full_loader = False
 
 try:
   from usb import core
@@ -692,7 +697,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         """
     if self._backend == 'ticcmd':
       return self._to_mm(yaml.load(self._ticcmd('-s'), Loader=yaml.FullLoader)
-                         ['Current velocity'] / 10000)
+                         ['Current velocity'] / 10000) if full_loader else \
+        self._to_mm(yaml.load(self._ticcmd('-s'))['Current velocity'] / 10000)
     elif self._backend == 'USB':
       return self._to_mm(int.from_bytes(
         self._usb_command(request_type=Tic_usb_request['Var'],
@@ -711,7 +717,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     if self._backend == 'ticcmd':
       return self._to_mm(yaml.load(self._ticcmd('-s'), Loader=yaml.FullLoader)
-                         ['Current position'])
+                         ['Current position']) if full_loader else \
+        self._to_mm(yaml.load(self._ticcmd('-s'))['Current position'])
     elif self._backend == 'USB':
       return self._to_mm(int.from_bytes(
         self._usb_command(request_type=Tic_usb_request['Var'],
@@ -944,9 +951,11 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     """Reads the maximum speed from the motor."""
 
     if self._backend == 'ticcmd':
-      return self._to_mm(
-        yaml.load(self._ticcmd('-s', '--full'), Loader=yaml.FullLoader)
-        ['Max speed'] / 10000)
+      return self._to_mm(yaml.load(self._ticcmd('-s', '--full'),
+                                   Loader=yaml.FullLoader)
+                         ['Max speed'] / 10000) if full_loader else \
+        self._to_mm(yaml.load(self._ticcmd('-s', '--full'))
+                    ['Max speed'] / 10000)
     elif self._backend == 'USB':
       return self._to_mm(int.from_bytes(
           self._usb_command(request_type=Tic_usb_request['Var'],
