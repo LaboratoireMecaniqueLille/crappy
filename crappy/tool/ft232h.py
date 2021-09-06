@@ -236,25 +236,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._set_serial_number(serial_nr)
       self.close()
 
-  @classmethod
-  def _is_already_used(cls, serial_number: str) -> bool:
-    """Indicates whether the FT232H is already being used by another Crappy
-    block.
-
-    Args:
-      serial_number (:obj:`str`): The serial number of the FT232H to control.
-
-    Returns:
-      :obj:`True` if the FT232H is already being used, else :obj:`False`.
-    """
-
-    if not hasattr(cls, 'used'):
-      cls.used = dict()
-    if serial_number not in cls.used:
-      cls.used[serial_number] = True
-      return False
-    return True
-
   def _initialize(self) -> None:
     """Initializing the FT232H according to the chosen mode.
 
@@ -329,9 +310,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._serial_nr = self._usb_dev.serial_number
     except ValueError:
       self._serial_nr = ""
-
-    if self._is_already_used(self._serial_nr):
-      raise IOError("Cannot control several devices from a single FT232H")
 
     # Configuring the USB device, interface and endpoints
     try:
