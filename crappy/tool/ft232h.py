@@ -6,24 +6,23 @@ from struct import calcsize, unpack, pack
 
 from .._global import OptionalModule
 try:
-  import usb.core
-  import usb.util
+  from usb import util
+  from usb.core import find, USBError
 
-  Ftdi_req_out = usb.util.build_request_type(usb.util.CTRL_OUT,
-                                             usb.util.CTRL_TYPE_VENDOR,
-                                             usb.util.CTRL_RECIPIENT_DEVICE)
+  Ftdi_req_out = util.build_request_type(util.CTRL_OUT,
+                                         util.CTRL_TYPE_VENDOR,
+                                         util.CTRL_RECIPIENT_DEVICE)
 
-  Ftdi_req_in = usb.util.build_request_type(usb.util.CTRL_IN,
-                                            usb.util.CTRL_TYPE_VENDOR,
-                                            usb.util.CTRL_RECIPIENT_DEVICE)
+  Ftdi_req_in = util.build_request_type(util.CTRL_IN,
+                                        util.CTRL_TYPE_VENDOR,
+                                        util.CTRL_RECIPIENT_DEVICE)
 
 except (ModuleNotFoundError, ImportError):
-  usb = OptionalModule("pyusb")
+  util = OptionalModule("pyusb")
+  find = OptionalModule("pyusb")
+  USBError = OptionalModule("pyusb")
   Ftdi_req_out = 0x40
   Ftdi_req_in = 0xC0
-
-from typing import Union
-from collections.abc import Callable
 
 # Todo:
 # Check Windows compatibility (is kernel driver active)
@@ -307,15 +306,15 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # Finding the matching USB devices
     if self._serial_nr is not None and self._ft232h_mode != 'Write_serial_nr':
-      devices = usb.core.find(find_all=True,
-                              idVendor=Ftdi_vendor_id,
-                              idProduct=ft232h_product_id,
-                              custom_match=Find_serial_number(
-                                self._serial_nr))
+      devices = find(find_all=True,
+                     idVendor=Ftdi_vendor_id,
+                     idProduct=ft232h_product_id,
+                     custom_match=Find_serial_number(
+                       self._serial_nr))
     else:
-      devices = usb.core.find(find_all=True,
-                              idVendor=Ftdi_vendor_id,
-                              idProduct=ft232h_product_id)
+      devices = find(find_all=True,
+                     idVendor=Ftdi_vendor_id,
+                     idProduct=ft232h_product_id)
 
     # Checking if there's only 1 device matching
     devices = list(devices)
@@ -339,7 +338,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       if self._usb_dev.is_kernel_driver_active(0):
         self._usb_dev.detach_kernel_driver(0)
       self._usb_dev.set_configuration()
-    except usb.core.USBError:
+    except USBError:
       print("You may have to install the udev-rules for this USB device, "
             "this can be done using the udev_rule_setter utility in the util "
             "folder")
@@ -583,7 +582,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       return self._usb_dev.ctrl_transfer(
         Ftdi_req_out, reqtype, value, self._index,
         bytearray(data), self._usb_write_timeout)
-    except usb.core.USBError as ex:
+    except USBError as ex:
       raise IOError('UsbError: %s' % str(ex))
 
   def _set_serial_number(self, serial_number: str) -> None:
@@ -611,7 +610,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         buf = self._usb_dev.ctrl_transfer(
           Ftdi_req_in, ft232h_sio_req['read_eeprom'], 0,
           word_addr, 2, self._usb_read_timeout)
-      except usb.core.USBError as exc:
+      except USBError as exc:
         raise IOError('UsbError: %s' % exc) from exc
       if not buf:
         raise IOError('EEPROM read error @ %d' % (word_addr << 1))
@@ -635,7 +634,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       new_str = str_descriptors[name].encode('utf-16le')
       length = len(new_str) + 2
       stream.append(length)
-      stream.append(usb.util.DESC_TYPE_STRING)  # string descriptor
+      stream.append(util.DESC_TYPE_STRING)  # string descriptor
       stream.extend(new_str)
       new_eeprom[tbl_pos] = data_pos
       tbl_pos += 1
@@ -699,14 +698,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
           length = self._usb_dev.write(self._in_ep,
                                        data[offset:offset + write_size],
                                        self._usb_write_timeout)
-        except usb.core.USBError:
+        except USBError:
           raise
 
         if length <= 0:
-          raise usb.core.USBError("Usb bulk write error")
+          raise USBError("Usb bulk write error")
         offset += length
       return offset
-    except usb.core.USBError:
+    except USBError:
       print("An error occurred while writing to USB")
       raise
 
@@ -759,7 +758,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             tempbuf = self._usb_dev.read(self._out_ep,
                                          self._readbuffer_chunksize,
                                          self._usb_read_timeout)
-          except usb.core.USBError:
+          except USBError:
             raise
 
           retry -= 1
@@ -817,7 +816,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                      self._readoffset + part_size]
             self._readoffset += part_size
             return data
-    except usb.core.USBError:
+    except USBError:
       print("An error occurred while writing to USB")
       raise
     # never reached
