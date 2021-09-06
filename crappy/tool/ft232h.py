@@ -323,12 +323,12 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise
     config = self._usb_dev.get_active_configuration()
 
-    self._interface = config[(0, 0)]
-    self._index = self._interface.bInterfaceNumber + 1
-    endpoints = sorted([ep.bEndpointAddress for ep in self._interface])
+    interface = config[(0, 0)]
+    self._index = interface.bInterfaceNumber + 1
+    endpoints = sorted([ep.bEndpointAddress for ep in interface])
     self._in_ep, self._out_ep = endpoints[:2]
 
-    endpoint = self._interface[0]
+    endpoint = interface[0]
     self._max_packet_size = endpoint.wMaxPacketSize
 
     # Invalidate data in the readbuffer
