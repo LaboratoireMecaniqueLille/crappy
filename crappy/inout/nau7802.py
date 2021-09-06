@@ -1,8 +1,8 @@
 # coding: utf-8
 
-import time
+from time import time, sleep
 from .inout import InOut
-from ..tool import ft232h
+from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
 
 try:
@@ -97,7 +97,7 @@ NAU7802_Cal_Status = {'CAL_SUCCESS': 0,
 NAU7802_Backends = ['Pi4', 'ft232h']
 
 
-class Nau7802(InOut):
+class Nau7802(Usb_server, InOut):
   """Class for controlling Sparkfun's NAU7802 load cell conditioner.
 
   The Nau7802 InOut block is meant for reading output values from a NAU7802
@@ -162,14 +162,28 @@ class Nau7802(InOut):
         serial number of the ft232h to use for communication.
     """
 
-    InOut.__init__(self)
     if backend not in NAU7802_Backends:
       raise ValueError("backend should be in {}".format(NAU7802_Backends))
+
+    Usb_server.__init__(self,
+                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
+                        backend=backend)
+    InOut.__init__(self)
+    queue, block_number, namespace, command_event, \
+        answer_event, next_event, done_event = super().start_server()
 
     if backend == 'Pi4':
       self._bus = smbus2.SMBus(i2c_port)
     else:
-      self._bus = ft232h('I2C', ft232h_ser_num)
+      self._bus = ft232h(mode='I2C',
+                         queue=queue,
+                         namespace=namespace,
+                         command_event=command_event,
+                         answer_event=answer_event,
+                         block_number=block_number,
+                         next_block=next_event,
+                         done_event=done_event,
+                         serial_nr=ft232h_ser_num)
     self._device_address = device_address
 
     if gain_hardware not in NAU7802_Gain_Values:
@@ -196,7 +210,7 @@ class Nau7802(InOut):
     # Resetting the device
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_RR'],
                   NAU7802_Scale_Registers['PU_CTRL'], 1)
-    time.sleep(0.001)
+    sleep(0.001)
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_RR'],
                   NAU7802_Scale_Registers['PU_CTRL'], 0)
 
@@ -209,7 +223,7 @@ class Nau7802(InOut):
     t_wait = 0
     while not self._get_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUR'],
                             NAU7802_Scale_Registers['PU_CTRL']):
-      time.sleep(0.001)
+      sleep(0.001)
       t_wait += 0.001
       if t_wait > 0.1:
         raise TimeoutError
@@ -240,7 +254,7 @@ class Nau7802(InOut):
 
     t_wait = 0
     while self._cal_afe_status() != NAU7802_Cal_Status['CAL_SUCCESS']:
-      time.sleep(0.001)
+      sleep(0.001)
       t_wait += 0.001
       if t_wait > 1:
         raise TimeoutError
@@ -260,12 +274,12 @@ class Nau7802(InOut):
     # Waiting for data to be ready
     t_wait = 0
     while not self._data_available():
-      time.sleep(0.0001)
+      sleep(0.0001)
       t_wait += 0.0001
       if t_wait > 0.1:
         raise TimeoutError
 
-    out = [time.time()]
+    out = [time()]
 
     # Reading the output data
     block = self._bus.read_i2c_block_data(self._device_address,
@@ -287,7 +301,7 @@ class Nau7802(InOut):
     # Powering down the device
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUD'],
                   NAU7802_Scale_Registers['PU_CTRL'], 0)
-    time.sleep(0.001)
+    sleep(0.001)
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUA'],
                   NAU7802_Scale_Registers['PU_CTRL'], 0)
     self._bus.close()

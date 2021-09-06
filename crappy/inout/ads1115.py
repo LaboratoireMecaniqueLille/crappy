@@ -1,8 +1,8 @@
 # coding: utf-8
 
-import time
+from time import time, sleep
 from .inout import InOut
-from ..tool import ft232h
+from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
 
 try:
@@ -43,7 +43,7 @@ Ads1115_config_dr = {8: 0x0000,
 Ads1115_backends = ['Pi4', 'ft232h']
 
 
-class Ads1115(InOut):
+class Ads1115(Usb_server, InOut):
   """A class for controlling Adafruit's ADS1115 16-bits ADC.
 
   The Ads1115 InOut block is meant for reading output values from a 16-bits
@@ -125,14 +125,29 @@ class Ads1115(InOut):
       voltages higher than `VDD` !!
     """
 
-    InOut.__init__(self)
     if backend not in Ads1115_backends:
       raise ValueError("backend should be in {}".format(Ads1115_backends))
+
+    Usb_server.__init__(self,
+                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
+                        backend=backend)
+    InOut.__init__(self)
+    queue, block_number, namespace, command_event, \
+        answer_event, next_event, done_event = super().start_server()
 
     if backend == 'Pi4':
       self._bus = smbus2.SMBus(i2c_port)
     else:
-      self._bus = ft232h('I2C', ft232h_ser_num)
+      self._bus = ft232h(mode='I2C',
+                         queue=queue,
+                         namespace=namespace,
+                         command_event=command_event,
+                         answer_event=answer_event,
+                         block_number=block_number,
+                         next_block=next_event,
+                         done_event=done_event,
+                         serial_nr=ft232h_ser_num)
+
     self._device_address = device_address
 
     if v_range not in Ads1115_config_gain:
@@ -189,8 +204,8 @@ class Ads1115(InOut):
     self._set_register(Ads1115_pointer_config, (ms_byte << 8) | ls_byte)
 
     # Reading the output of the conversion
-    time.sleep(1 / self._sample_rate + 0.00005)
-    out = [time.time()]
+    sleep(1 / self._sample_rate + 0.00005)
+    out = [time()]
     ms_byte, ls_byte = self._bus.read_i2c_block_data(self._device_address,
                                                      Ads1115_pointer_conversion,
                                                      2)

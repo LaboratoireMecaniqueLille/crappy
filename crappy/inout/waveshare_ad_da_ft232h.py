@@ -1,9 +1,9 @@
 # coding: utf-8
 
-import time
+from time import time, sleep
 from typing import List, Union
 from .inout import InOut
-from ..tool import ft232h
+from ..tool import ft232h_server as ft232h, Usb_server
 
 # ADS1256 gain channel
 Ads1256_gain = {1: 0b000,
@@ -72,7 +72,7 @@ AD_DA_pins = {'RST_PIN_ADS': 18,
               'CS_PIN_DAC': 23}
 
 
-class Waveshare_ad_da_ft232h(InOut):
+class Waveshare_ad_da_ft232h(Usb_server, InOut):
   """Class for controlling Waveshare's AD/DA hat from an FTDI FT232H.
 
   The Waveshare_ad_da InOut block is meant for communicating with Waveshare's
@@ -196,7 +196,12 @@ class Waveshare_ad_da_ft232h(InOut):
         up with `5V`. Same goes for the DAC.
     """
 
+    Usb_server.__init__(self,
+                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
+                        backend='ft232h')
     InOut.__init__(self)
+    queue, block_number, namespace, command_event, \
+        answer_event, next_event, done_event = super().start_server()
 
     if gain_hardware not in Ads1256_gain:
       raise ValueError("gain_hardware should be in {}".format(list(
@@ -256,7 +261,15 @@ class Waveshare_ad_da_ft232h(InOut):
     self._gain = gain
     self._offset = offset
 
-    self._SPI = ft232h('SPI', ft232h_ser_num)
+    self._SPI = ft232h(mode='SPI',
+                       queue=queue,
+                       namespace=namespace,
+                       command_event=command_event,
+                       answer_event=answer_event,
+                       block_number=block_number,
+                       next_block=next_event,
+                       done_event=done_event,
+                       serial_nr=ft232h_ser_num)
     self._rst_pin_ads = rst_pin_ads
     self._cs_pin_ads = cs_pin_ads
     self._drdy_pin_ads = drdy_pin_ads
@@ -281,7 +294,7 @@ class Waveshare_ad_da_ft232h(InOut):
     self._SPI.writebytes([Ads1256_cmd['CMD_WREG'] |
                          Ads1256_reg['REG_ADCON'], 0x01] + buf)
     self._SPI.set_gpio(self._cs_pin_ads, True)
-    time.sleep(0.001)
+    sleep(0.001)
 
     # Setting the lists of channels to read and write
     for chan in self._adc_channels:
@@ -304,7 +317,7 @@ class Waveshare_ad_da_ft232h(InOut):
       each channel to read
     """
 
-    out = [time.time()]
+    out = [time()]
 
     # The values are read one channel after the other, not simultaneously
     for chan in self._channels_read:
@@ -367,9 +380,9 @@ class Waveshare_ad_da_ft232h(InOut):
     """Resets the ADC."""
 
     self._SPI.set_gpio(self._cs_pin_ads, True)
-    time.sleep(0.2)
+    sleep(0.2)
     self._SPI.set_gpio(self._cs_pin_ads, False)
-    time.sleep(0.2)
+    sleep(0.2)
     self._SPI.set_gpio(self._cs_pin_ads, True)
 
   def _wait_drdy(self) -> None:
@@ -378,7 +391,7 @@ class Waveshare_ad_da_ft232h(InOut):
 
     t_wait = 0
     while self._SPI.get_gpio(self._drdy_pin_ads):
-      time.sleep(0.0001)
+      sleep(0.0001)
       t_wait += 0.0001
       if t_wait > 1:
         raise TimeoutError("Couldn't get conversion result from the ADC")

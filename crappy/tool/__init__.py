@@ -6,4 +6,5 @@ from .gpucorrel import GPUCorrel
 from .discorrel import DISCorrel
 from .discorrelConfig import DISConfig
 from .disve import DISVE
-from .ft232h import ft232h
+from .ft232h import ft232h, ft232h_server
+from .usb_server import Usb_server

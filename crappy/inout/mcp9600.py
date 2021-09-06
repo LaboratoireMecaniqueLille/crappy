@@ -1,8 +1,8 @@
 # coding: utf-8
 
-import time
+from time import time, sleep
 from .inout import InOut
-from ..tool import ft232h
+from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
 
 try:
@@ -65,7 +65,7 @@ Mcp9600_modes = ['Hot Junction Temperature',
 Mcp9600_backends = ['Pi4', 'ft232h']
 
 
-class Mcp9600(InOut):
+class Mcp9600(Usb_server, InOut):
   """Class for controlling Adafruit's MCP9600 thermocouple reader.
 
   The Mcp9600 InOut block is meant for reading temperature from an MCP9600
@@ -143,14 +143,28 @@ class Mcp9600(InOut):
 
     """
 
-    InOut.__init__(self)
     if backend not in Mcp9600_backends:
       raise ValueError("backend should be in {}".format(Mcp9600_backends))
+
+    Usb_server.__init__(self,
+                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
+                        backend=backend)
+    InOut.__init__(self)
+    queue, block_number, namespace, command_event, \
+        answer_event, next_event, done_event = super().start_server()
 
     if backend == 'Pi4':
       self._bus = smbus2.SMBus(i2c_port)
     else:
-      self._bus = ft232h('I2C', ft232h_ser_num)
+      self._bus = ft232h(mode='I2C',
+                         queue=queue,
+                         namespace=namespace,
+                         command_event=command_event,
+                         answer_event=answer_event,
+                         block_number=block_number,
+                         next_block=next_event,
+                         done_event=done_event,
+                         serial_nr=ft232h_ser_num)
     self._device_address = device_address
 
     if sensor_resolution not in Mcp9600_sensor_resolutions:
@@ -225,7 +239,7 @@ class Mcp9600(InOut):
     # Waiting for the conversion to complete
     t_wait = 0
     while not self._data_available():
-      time.sleep(0.01)
+      sleep(0.01)
       t_wait += 0.01
       if t_wait > 1:
         raise TimeoutError
@@ -236,7 +250,7 @@ class Mcp9600(InOut):
             >> 4 & 1:
       raise ValueError("Too hot for selected thermocouple !")
 
-    out = [time.time()]
+    out = [time()]
 
     # The number of output bits varies according to the selected mode
     # Temperature-modes outputs are 2 bytes long
