@@ -14,7 +14,11 @@ from os import popen, listdir, walk
 import sys
 from distutils.core import setup, Extension
 import platform
-from crappy import __version__
+with open('crappy/__version__.py') as file:
+  for line in file:
+    if line.startswith('__version__'):
+      __version__ = line.split('=')[1].replace(' ', '').\
+        replace('\n', '').replace("'", '')
 
 # Get the long description from the relevant file
 with open('docs/source/whatiscrappy.rst', encoding='utf-8') as f:
