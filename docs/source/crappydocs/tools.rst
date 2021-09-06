@@ -47,6 +47,11 @@ Py SPCM
 .. automodule:: crappy.tool.pyspcm
    :members:
 
+USB server
+++++++++++
+.. automodule:: crappy.tool.usb_server
+   :members:
+
 Video extenso
 +++++++++++++
 .. automodule:: crappy.tool.videoextenso

@@ -1817,6 +1817,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 class ft232h_server:
   """A class for controlling FTDI's USB to Serial FT232H.
 
+  This class is very similar to the :class:`ft232h` except it doesn't
+  directly instantiate the USB device nor send commands to it directly. Instead
+  the commands are sent to a USB server managing communication with the
+  different FT232H devices.
+
   Communication in SPI and I2C are implemented, along with GPIO control. The
   name of the methods for SPI and I2C communication are those of :mod:`smbus`
   and :mod:`spidev` libraries, in order to facilitate the use and the
@@ -1880,8 +1885,35 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
         GPIOs can be driven in any mode, but faster speeds are achievable in
         `GPIO_only` mode.
+
+      block_number (:obj:`int`): The blocks number that was assigned to this
+        instance of the class at the first contact with the USB server.
+
+      queue (:obj:`multiprocessing.Queue`): The queue in which the class
+        will put its block number so that the USB server knows it is requesting
+        control.
+
+      namespace (:obj:`multiprocessing.managers.Namespace`): The Namespace
+        object used by the USB server for receiving commands ans sending
+        answers.
+
+      command_event (:obj:`multiprocessing.Event`): An event object used by the
+        USB server to know when a new command was written by a block.
+
+      answer_event (:obj:`multiprocessing.Event`): An event object used by this
+        class to know when the USB server sent back an answer.
+
+      next_block (:obj:`multiprocessing.Event`): An event object, set by the USB
+        server to tell the blocks waiting for the control that now is maybe
+        their chance.
+
+      done_event (:obj:`multiprocessing.Event`): An event object set by the
+        block currently in control of the server to tell it that it is done
+        sending commands.
+
       serial_nr (:obj:`str`, optional): The serial number of the FT232H to
         drive. In `Write_serial_nr` mode, the serial number to be written.
+
       i2c_speed (:obj:`str`, optional): In I2C mode, the I2C bus clock frequency
         in Hz. Available values are :
         ::
@@ -1947,50 +1979,72 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     managing the FT232H devices.
 
     Args:
-      command: The command to send to the server.
+      command (:obj:`str` or :obj:`list`): The command to send to the server.
 
     Returns:
       The answer from the server.
     """
 
+    # The timestamp of the last interaction with the server is constantly being
+    # saved because the multiprocessing objects timeouts are buggy
     t = time()
     while True:
       try:
+        # Communication with the server is allowed only if the block is the one
+        # currently in control or if a next_block event is set
         if self._namespace.current_block == self._block_number or \
                 self._next_block.wait(timeout=5):
           if self._done_event.is_set():
+            # The previous block is done controlling the server but the server
+            # hasn't chosen the next block yet
             continue
+          # Even if the next_block event is set, only the chosen block is
+          # is allowed to communicate
           if self._namespace.current_block == self._block_number:
+            # The other blocks will have to wait
             self._next_block.clear()
+            # Sending the command
             setattr(self._namespace, 'command' + str(self._block_number),
                     command)
             t = time()
+            # Telling that a command was sent
             self._command_event.set()
           else:
             continue
         else:
+          # Sometimes the wait method doesn't wait for the given timeout...
           if self._next_block.wait(timeout=5):
             continue
+          # Sometimes the timeout check fails twice
           elif time() - t < 2:
             continue
           raise TimeoutError("The server took too long to choose block",
                              (self._block_number,
                               self._namespace.current_block))
 
+        # Retrieving the answer only if the answer_event is set
         if self._answer_event.wait(timeout=5):
           ret = getattr(self._namespace, 'answer' + str(self._block_number))
           t = time()
+          # After a CTRL+C or SIGINT event, some of the namespace attributes
+          # may be buggy so switching to an "emergency" attribute for receiving
+          # the answers
           if ret is None:
             ret = getattr(self._namespace,
                           'answer' + str(self._block_number) + "'")
             if ret is None:
               continue
           self._answer_event.clear()
+          # The answer may be an error that should be raised by a block rather
+          # than by the server
           if isinstance(ret, Exception):
             raise ret
+          # 'ok' is a special answer only received when the block wants to
+          # release control
           elif ret == 'ok':
             self._done_event.set()
         else:
+          # Again the timeouts are sometimes buggy
           if self._answer_event.wait(timeout=5):
             continue
           elif time() - t < 2:
@@ -1999,10 +2053,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                              self._block_number, self._namespace.current_block)
         return ret
       except KeyboardInterrupt:
+        # In case of a CTRL+C or SIGINT event, the block in control simply
+        # resets every event and sends again the command
         if self._namespace.current_block == self._block_number:
           self._command_event.clear()
           self._answer_event.clear()
         continue
+      # If the server is down, exiting
       except (BrokenPipeError, ConnectionResetError):
         break
 
@@ -3593,4 +3650,3 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._send_server([None, 'dispose_resources', 'dev'])
 
     self._send_server('farewell')
-
