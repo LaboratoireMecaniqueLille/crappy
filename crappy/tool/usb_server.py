@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from multiprocessing import Process, Queue, Event, Condition
+from multiprocessing import Process, Queue, Event
 from multiprocessing.managers import SyncManager, Namespace
 from signal import signal, SIGINT, SIG_IGN
 from queue import Empty
@@ -186,8 +186,7 @@ class Usb_server:
     try:
       i = 0
       t = time()
-      condition = Condition()
-      condition.acquire()
+      # A counter recording how many blocks are controlling a same FT232H
       dev_count = {serial_nr: 0 for serial_nr in dev_dict}
       blocks = {}
       block = None
@@ -196,7 +195,6 @@ class Usb_server:
           # Stopping the process when asked to
           if stop_event.is_set() or \
                 (all(block['left'] for block in blocks.values()) and blocks):
-            print("STOP EVENT")
             break
 
           # Queue for acquiring the control over the server
@@ -256,6 +254,7 @@ class Usb_server:
             else:
               setattr(namespace, 'answer' + str(block), TimeoutError(
                 "Previous process took too long to release control"))
+
             # Retrieving the device object
             dev = dev_dict[blocks[block]['serial_nr']]
 
