@@ -18,7 +18,7 @@ class My_offset_modifier:
     self.offset = offset
 
   def evaluate(self, data):
-    """Method returning the modified values
+    """Method returning the modified values.
 
     Remember: data is ALWAYS a :obj:`dict`.
     Returning :obj:`None` will drop the data.

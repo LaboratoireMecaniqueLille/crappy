@@ -4,8 +4,8 @@
 Demonstrates the use of the Mean block.
 
 Not to be mistaken with ``modifier.Mean`` ! The Mean blocks performs the mean
- at a given frequency, whereas the modifier will perform the average over a
- chosen number of points regardless of the frequency.
+at a given frequency, whereas the modifier will perform the average over a
+chosen number of points regardless of the frequency.
 
 No required hardware.
 """

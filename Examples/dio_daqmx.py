@@ -5,17 +5,16 @@ Example demonstrating the use of National instrument daq boards.
 
 Required hardware:
   - NI DAQ board with at least one analog input and one digital input
-    compatible with the nidaqmx module
+    compatible with the nidaqmx module.
 """
 
 import crappy
 
 
 def intify(data):
-  """
-  Used to replace False by 0 and True by 1 in the digital inputs
+  """Used to replace False by 0 and True by 1 in the digital inputs.
 
-  Not doing so results in an error in the grapher
+  Not doing so results in an error in the grapher.
   """
 
   for i, d in enumerate(data):

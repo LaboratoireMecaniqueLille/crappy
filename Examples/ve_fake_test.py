@@ -12,7 +12,7 @@ import crappy
 import cv2
 
 if __name__ == "__main__":
-  img = cv2.imread('data/ve_markers.tif', 0)
+  img = cv2.imread('../data/ve_markers.tif', 0)
 
   speed = 5 / 60  # mm/sec
 

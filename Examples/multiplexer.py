@@ -13,8 +13,7 @@ import crappy
 
 class Delay:
   """Modifier to add a delay to one of the inputs, demonstrating how Multiplex
-  will wait for data.
-  """
+  will wait for data."""
 
   def __init__(self, n):
     self.n = n

@@ -1,6 +1,16 @@
+# coding: utf-8
+
+"""
+Demonstration of how to create a custom Actuator in Crappy.
+
+This actuator is intended to be used as a template, it doesn't actually act on
+any device.
+
+No hardware required.
+"""
+
 import crappy
-import numpy as np
-from time import time, sleep
+from time import sleep
 
 # This class can be used as a starting point to create a new Actuator object
 # To add it to crappy, make the imports relative (refer to any other
@@ -10,9 +20,8 @@ from time import time, sleep
 
 
 class My_actuator(crappy.actuator.Actuator):
-  """
-  A basic example of Actuator object
-  """
+  """A basic example of an Actuator object."""
+
   def __init__(self):
     # Do not forget to init Actuator !
     super().__init__()
@@ -28,36 +37,42 @@ class My_actuator(crappy.actuator.Actuator):
     sleep(.5)
     print("Device closed")
 
-  # At least of the two methods (set_speed and set_postition)
-  # needs to be defined. Getters (get_speed and get_position)
-  # can be defined too if the actuator supports it
+  # At least one of the two following methods (set_speed and set_position) needs
+  # to be defined. Getters (get_speed and get_position) can be defined too if
+  # the actuator supports it.
   def set_position(self, target):
     self.pos = target
 
-  def get_pos(self):
-    return self.pos + 1  # To illustrate the difference with the target
+  def get_position(self):
+    return self.pos + 0.1  # To illustrate the difference with the target
 
   def stop(self):
-    """
-    Called before closing, should stop the actuator
-    """
+    """Called before closing, should stop the actuator."""
+
     print("Stopping the actuator")
 
 
-sine_path = {'type': 'sine', 'amplitude': 1, 'freq': 1, 'condition': None}
+if __name__ == '__main__':
+  sine_path = {'type': 'sine',
+               'amplitude': 1,
+               'freq': 1,
+               'condition': None}
 
-gen = crappy.blocks.Generator([sine_path], cmd_label='sine_label')
+  gen = crappy.blocks.Generator([sine_path],
+                                cmd_label='target_position',)
 
-machine = crappy.blocks.Machine([{
-    'type': 'My_actuator',  # The class to instanciate
-    'mode': 'position',  # set_position will be called
-    'cmd': 'sine_label',  # This actuator will be driven using sine_label
-    'pos_label': 'measured_position'}])  # The label to send the measurements
+  machine = crappy.blocks.Machine([{
+      'type': 'My_actuator',  # The class to instantiate
+      'mode': 'position',  # set_position will be called
+      'cmd': 'target_position',  # This actuator will be driven using sine_label
+      'pos_label': 'measured_position'}])  # The label to send the measurements
 
-crappy.link(gen, machine)
+  crappy.link(gen, machine)
 
-graph = crappy.blocks.Grapher(('t(s)', 'measured_position'))
+  graph = crappy.blocks.Grapher(('t(s)', 'measured_position'),
+                                ('t(s)', 'target_position'))
 
-crappy.link(machine, graph)
+  crappy.link(machine, graph)
+  crappy.link(gen, graph)
 
-crappy.start()
+  crappy.start()

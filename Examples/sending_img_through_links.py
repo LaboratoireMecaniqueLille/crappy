@@ -2,7 +2,7 @@
 
 """
 Example demonstrating how to use the ``input_label`` to send images between
-blocks
+blocks.
 
 This mechanism is useful to perform fake tests by using using generated images
 instead of cameras to read images.

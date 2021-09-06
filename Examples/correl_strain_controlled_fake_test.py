@@ -14,7 +14,7 @@ import crappy
 import cv2
 
 if __name__ == "__main__":
-  img = cv2.imread('data/speckle.png', 0)
+  img = cv2.imread('../data/speckle.png', 0)
 
   speed = .05  # Strain rate (%/s)
 

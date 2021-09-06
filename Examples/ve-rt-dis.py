@@ -7,6 +7,13 @@ It performs DIC on the specified patches, and returns the motion along `x` and
 `y` in pixels. This example demonstrates the processing to measure strain using
 this method.
 
+!! Important !!
+  The w and h values may need to be adjusted to the actual size of your image.
+  Otherwise an error may be raised.
+
+  It was not possible to set them automatically here while still keeping the
+  script short and easily understandable.
+
 Required hardware:
   - Any camera
 """

@@ -1,8 +1,19 @@
+# coding: utf-8
+
+"""
+Demonstration of how to create a custom Block in Crappy.
+
+This block is intended to be used as a template, it doesn't actually act on
+any device nor do anything exceptional.
+
+No hardware required.
+"""
+
 import crappy
 from time import time
 
-# This class can be used as a starting point to create a new block
-# All methods except loop are optional
+# This class can be used as a starting point to create a new block. All methods
+# except loop are optional.
 # To add it to crappy, make the imports relative (refer to any other block),
 # move the class to a file in crappy/blocks and add the corresponding line
 # in crappy/blocks/__init__.py
@@ -10,14 +21,14 @@ from time import time
 
 # crappy.Block is a shortcut for crappy.blocks.Block
 class MyBlock(crappy.Block):
-  """
-  A basic example of block
+  """A basic example of block.
 
-  It will simply send a sawtooth signal
+  It will simply send a sawtooth signal.
   """
+
   def __init__(self, period=1):  # Optional
     # If you define your own constructor, do not forget to init Block !
-    crappy.Block.__init__(self)
+    super().__init__()
     # Example argument, here the period of the sawtooth
     self.period = period
 
