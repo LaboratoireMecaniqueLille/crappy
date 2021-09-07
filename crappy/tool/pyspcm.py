@@ -4,6 +4,7 @@
 
 from ctypes import *
 from sys import platform
+from .._global import OptionalModule
 
 # ======= Constants definition ======
 
@@ -53,82 +54,117 @@ double_reg = [SPC_SAMPLERATE]  # Place here the registers holding 64 bits data
 new_buffer = create_string_buffer  # To allow to create a buffer without ctypes
 
 if "linux" in platform.lower():
-  mod = cdll.LoadLibrary("libspcm_linux.so")
+  msg = "libspcm_linux.so"
+  try:
+    mod = cdll.LoadLibrary("libspcm_linux.so")
+    is_installed = True
+  except OSError:
+    mod = OptionalModule(msg)
+    is_installed = False
 elif "darwin" in platform.lower():
-  mod = cdll.LoadLibrary("libc.so.6")
+  msg = "libc.so.6"
+  try:
+    mod = cdll.LoadLibrary("libc.so.6")
+    is_installed = True
+  except OSError:
+    mod = OptionalModule(msg)
+    is_installed = False
 else:
-  mod = windll.LoadLibrary("C:\\Windows\\system32\\spcm_win64.dll")
+  msg = "spcm_win64.dll"
+  try:
+    mod = windll.LoadLibrary("C:\\Windows\\system32\\spcm_win64.dll")
+    is_installed = True
+  except OSError:
+    mod = OptionalModule(msg)
+    is_installed = False
 
 
 class SpectrumError(Exception):
   pass
 
 
-dwGetErrorInfo_i32 = mod.spcm_dwGetErrorInfo_i32
-dwGetErrorInfo_i32.argtype = [
-    c_void_p, POINTER(c_uint32), POINTER(c_int32), c_char_p]
-dwGetErrorInfo_i32.restype = c_uint32
+if is_installed:
+  dwGetErrorInfo_i32 = mod.spcm_dwGetErrorInfo_i32
+  dwGetErrorInfo_i32.argtype = [
+      c_void_p, POINTER(c_uint32), POINTER(c_int32), c_char_p]
+  dwGetErrorInfo_i32.restype = c_uint32
 
 
-def check(h, code):
-  if code == 0:
-    return
-  print("Error: return code=", code)
-  sz_error_text_buffer = create_string_buffer(ERRORTEXTLEN)
-  dwGetErrorInfo_i32(h, None, None, sz_error_text_buffer)
-  print(sz_error_text_buffer.value)
-  vClose(h)
-  raise SpectrumError(sz_error_text_buffer.value)
+  def check(h, code):
+    if code == 0:
+      return
+    print("Error: return code=", code)
+    sz_error_text_buffer = create_string_buffer(ERRORTEXTLEN)
+    dwGetErrorInfo_i32(h, None, None, sz_error_text_buffer)
+    print(sz_error_text_buffer.value)
+    vClose(h)
+    raise SpectrumError(sz_error_text_buffer.value)
 
 
-hOpen = mod.spcm_hOpen
-hOpen.argtype = [c_char_p]
-hOpen.restype = c_void_p
+  hOpen = mod.spcm_hOpen
+  hOpen.argtype = [c_char_p]
+  hOpen.restype = c_void_p
 
-vClose = mod.spcm_vClose
-vClose.argtype = [c_char_p]
-vClose.restype = None
+  vClose = mod.spcm_vClose
+  vClose.argtype = [c_char_p]
+  vClose.restype = None
 
-my_i64 = c_int64()  # C ints to read args when calling getparam
-my_i32 = c_int32()
+  my_i64 = c_int64()  # C ints to read args when calling getparam
+  my_i32 = c_int32()
 
-mod.spcm_dwGetParam_i32.argtype = [c_void_p, c_int32, POINTER(c_int32)]
-mod.spcm_dwGetParam_i32.restype = c_uint32
+  mod.spcm_dwGetParam_i32.argtype = [c_void_p, c_int32, POINTER(c_int32)]
+  mod.spcm_dwGetParam_i32.restype = c_uint32
 
-mod.spcm_dwGetParam_i64.argtype = [c_void_p, c_int32, POINTER(c_int64)]
-mod.spcm_dwGetParam_i64.restype = c_uint32
-
-
-def dw_get_param(h, reg):
-  if reg in double_reg:
-    check(h, mod.spcm_dwGetParam_i64(h, reg, byref(my_i64)))
-    return my_i64.value
-  else:
-    check(h, mod.spcm_dwGetParam_i32(h, reg, byref(my_i32)))
-    return my_i32.value
+  mod.spcm_dwGetParam_i64.argtype = [c_void_p, c_int32, POINTER(c_int64)]
+  mod.spcm_dwGetParam_i64.restype = c_uint32
 
 
-mod.spcm_dwSetParam_i32.argtype = [c_void_p, c_int32, c_int32]
-mod.spcm_dwSetParam_i32.restype = c_uint32
-
-mod.spcm_dwSetParam_i64.argtype = [c_void_p, c_int32, c_int64]
-mod.spcm_dwSetParam_i64.restype = c_uint32
-
-
-def dw_set_param(h, reg, val):
-  if reg in double_reg:
-    check(h, mod.spcm_dwSetParam_i64(h, reg, val))
-  else:
-    check(h, mod.spcm_dwSetParam_i32(h, reg, val))
+  def dw_get_param(h, reg):
+    if reg in double_reg:
+      check(h, mod.spcm_dwGetParam_i64(h, reg, byref(my_i64)))
+      return my_i64.value
+    else:
+      check(h, mod.spcm_dwGetParam_i32(h, reg, byref(my_i32)))
+      return my_i32.value
 
 
-mod.spcm_dwDefTransfer_i64.argtype = [c_void_p, c_uint32, c_uint32, c_uint32,
-                            c_void_p, c_uint64, c_uint64]
-mod.spcm_dwDefTransfer_i64.restype = c_uint32
+  mod.spcm_dwSetParam_i32.argtype = [c_void_p, c_int32, c_int32]
+  mod.spcm_dwSetParam_i32.restype = c_uint32
+
+  mod.spcm_dwSetParam_i64.argtype = [c_void_p, c_int32, c_int64]
+  mod.spcm_dwSetParam_i64.restype = c_uint32
 
 
-def dw_def_transfer(h, buff_type, direction, notify_size, buff, offset,
-                  buff_size):
-  check(h, mod.spcm_dwDefTransfer_i64(h, buff_type, direction, notify_size,
-                                      buff, c_uint64(offset),
-                                      c_uint64(buff_size)))
+  def dw_set_param(h, reg, val):
+    if reg in double_reg:
+      check(h, mod.spcm_dwSetParam_i64(h, reg, val))
+    else:
+      check(h, mod.spcm_dwSetParam_i32(h, reg, val))
+
+
+  mod.spcm_dwDefTransfer_i64.argtype = [c_void_p, c_uint32, c_uint32, c_uint32,
+                                        c_void_p, c_uint64, c_uint64]
+  mod.spcm_dwDefTransfer_i64.restype = c_uint32
+
+
+  def dw_def_transfer(h, buff_type, direction, notify_size, buff, offset,
+                      buff_size):
+    check(h, mod.spcm_dwDefTransfer_i64(h, buff_type, direction, notify_size,
+                                        buff, c_uint64(offset),
+                                        c_uint64(buff_size)))
+
+else:
+  dwGetErrorInfo_i32 = OptionalModule(msg)
+
+  hOpen = OptionalModule(msg)
+
+  vClose = OptionalModule(msg)
+
+  my_i64 = OptionalModule(msg)
+  my_i32 = OptionalModule(msg)
+
+  dw_get_param = OptionalModule(msg)
+
+  dw_set_param = OptionalModule(msg)
+
+  dw_def_transfer = OptionalModule(msg)
