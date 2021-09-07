@@ -125,7 +125,7 @@ class Comedi(InOut):
       chan['maxdata'] = c.comedi_get_maxdata(self.device, self.out_subdevice,
                                              chan['num'])
       chan['range_ds'] = c.comedi_get_range(self.device, self.out_subdevice,
-                                          chan['num'], chan['range_num'])
+                                            chan['num'], chan['range_num'])
     if any([i['make_zero'] for i in self.channels]):
       off = self.eval_offset()
       for i, chan in enumerate(self.channels):
@@ -141,7 +141,7 @@ class Comedi(InOut):
     Takes as many argument as opened output channels.
     """
     assert len(cmd) == len(self.out_channels), \
-      "set_cmd takes {} args, but got {}".format(
+        "set_cmd takes {} args, but got {}".format(
         len(self.out_channels), len(cmd))
     for val, chan in zip(cmd, self.out_channels):
       val = val * chan['gain'] + chan['offset']

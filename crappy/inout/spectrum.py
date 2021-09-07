@@ -52,8 +52,8 @@ class Spectrum(InOut):
     self.nchan = len(self.channels)
     print("[Spectrum] Will send {} chunks of {} kB per second ({} kB/s)".
           format(2 * self.samplerate * self.nchan / self.notify_size,
-             self.notify_size / 1024,
-             self.samplerate * self.nchan / 512))
+                 self.notify_size / 1024,
+                 self.samplerate * self.nchan / 512))
     self.bs = self.notify_size // (2 * self.nchan)
 
   def open(self):
@@ -78,12 +78,12 @@ class Spectrum(InOut):
     self.buff = spc.new_buffer(self.buff_size)  # Allocating the buffer
 
     spc.dw_def_transfer(self.h,  # Handle
-                      spc.SPCM_BUF_DATA,  # Buff type
-                      spc.SPCM_DIR_CARDTOPC,  # Direction
-                      self.notify_size,  # Notify every x byte
-                      self.buff,  # buffer
-                      0,  # Offset
-                      self.buff_size)  # Buffer size
+                        spc.SPCM_BUF_DATA,  # Buff type
+                        spc.SPCM_DIR_CARDTOPC,  # Direction
+                        self.notify_size,  # Notify every x byte
+                        self.buff,  # buffer
+                        0,  # Offset
+                        self.buff_size)  # Buffer size
 
   def close(self):
     if hasattr(self, "h") and self.h:
@@ -91,8 +91,7 @@ class Spectrum(InOut):
 
   def start_stream(self):
     spc.dw_set_param(self.h, spc.SPC_M2CMD, spc.M2CMD_CARD_START |
-                                            spc.M2CMD_CARD_ENABLETRIGGER |
-                                            spc.M2CMD_DATA_STARTDMA)
+                     spc.M2CMD_CARD_ENABLETRIGGER | spc.M2CMD_DATA_STARTDMA)
     self.t0 = time()
     self.n = 0
 
@@ -104,8 +103,8 @@ class Spectrum(InOut):
     # self.avail = spc.dw_get_param(self.h, spc.SPC_DATA_AVAIL_USER_LEN)
     self.pcpos = spc.dw_get_param(self.h, spc.SPC_DATA_AVAIL_USER_POS)
     a = np.frombuffer(self.buff, dtype=np.int16,
-                          count=self.notify_size//2,
-                          offset=self.pcpos)\
+                      count=self.notify_size//2,
+                      offset=self.pcpos)\
         .reshape(self.notify_size//(2*self.nchan), self.nchan)
     # To return mV as floats (More CPU and memory!)
     # =======================
@@ -128,4 +127,4 @@ class Spectrum(InOut):
 
   def stop_stream(self):
     spc.dw_set_param(self.h, spc.SPC_M2CMD, spc.M2CMD_CARD_STOP |
-                                          spc.M2CMD_DATA_STOPDMA)
+                     spc.M2CMD_DATA_STOPDMA)

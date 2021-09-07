@@ -14,12 +14,12 @@ class OptionalModule:
       self.message = """The module {} is necessary to use this functionality
 Please install it and try again""".format(self.mname)
 
-  def __getattr__(self, arg):
+  def __getattr__(self, _):
     print("Missing module: {}".format(self.mname))
     print(self.message)
     raise RuntimeError(self.message)
 
-  def __call__(self, *args, **kwargs):
+  def __call__(self, *_, **__):
     print("Missing module: {}".format(self.mname))
     print(self.message)
     raise RuntimeError(self.message)
