@@ -3,6 +3,7 @@
 import warnings
 from math import ceil
 import numpy as np
+from pkg_resources import resource_filename
 from .._global import OptionalModule
 
 try:
@@ -133,14 +134,13 @@ class CorrelStage:
     kernel_file = kwargs.get("kernel_file")
     if kernel_file is None:
       self.debug(2, "Kernel file not specified")
-      from crappy import __path__ as crappy_path
-      kernel_file = crappy_path[0] + "/data/kernels.cu"
+      kernel_file = resource_filename('crappy', 'tool/kernels.cu')
     # Reading kernels and compiling module #
     with open(kernel_file, "r") as f:
       self.debug(3, "Sourcing module")
       self.mod = SourceModule(f.read() % (self.w, self.h, self.Nfields))
     # Assigning functions to the kernels #
-    # These kernels are defined in data/kernels.cu
+    # These kernels are defined in tool/kernels.cu
     self._resampleOrigKrnl = self.mod.get_function('resampleO')
     self._resampleKrnl = self.mod.get_function('resample')
     self._gradientKrnl = self.mod.get_function('gradient')
@@ -761,8 +761,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     kernel_file = kwargs.get("kernel_file")
     if kernel_file is None:
       self.debug(3, "Kernel file not specified, using the one in crappy dir")
-      from crappy import __path__ as crappy_path
-      kernel_file = crappy_path[0] + "/data/kernels.cu"
+      kernel_file = resource_filename('crappy', 'tool/kernels.cu')
     self.debug(3, "Kernel file:", kernel_file)
 
     # Creating a new instance of CorrelStage for each stage #
