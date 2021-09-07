@@ -162,7 +162,7 @@ class Drawing(Block):
     image = self.ax.imshow(plt.imread(self.image), cmap=cm.coolwarm)
     image.set_clim(-0.5, 1)
     cbar = self.fig.colorbar(image, ticks=[-0.5, 1], fraction=0.061,
-        orientation='horizontal', pad=0.04)
+                             orientation='horizontal', pad=0.04)
     cbar.set_label('Temperatures(C)')
     cbar.ax.set_xticklabels(self.crange)
     self.ax.set_title(self.title)

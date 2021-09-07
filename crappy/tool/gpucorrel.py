@@ -20,13 +20,15 @@ try:
   from pycuda.reduction import ReductionKernel
 except ImportError:
   cuda = OptionalModule("pycuda",
-      "PyCUDA and CUDA are necessary to use GPUCorrel")
+                        "PyCUDA and CUDA are necessary to use GPUCorrel")
   SourceModule = OptionalModule("pycuda",
-                        "PyCUDA and CUDA are necessary to use GPUCorrel")
+                                "PyCUDA and CUDA are necessary to use "
+                                "GPUCorrel")
   gpuarray = OptionalModule("pycuda",
-                        "PyCUDA and CUDA are necessary to use GPUCorrel")
+                            "PyCUDA and CUDA are necessary to use GPUCorrel")
   ReductionKernel = OptionalModule("pycuda",
-                        "PyCUDA and CUDA are necessary to use GPUCorrel")
+                                   "PyCUDA and CUDA are necessary to use "
+                                   "GPUCorrel")
 
 
 context = None
@@ -150,11 +152,11 @@ class CorrelStage:
     self._addKrnl = self.mod.get_function('kadd')
     # These ones use pyCuda reduction module to generate efficient kernels
     self._mulRedKrnl = ReductionKernel(np.float32, neutral="0",
-                                     reduce_expr="a+b", map_expr="x[i]*y[i]",
-                                     arguments="float *x, float *y")
+                                       reduce_expr="a+b", map_expr="x[i]*y[i]",
+                                       arguments="float *x, float *y")
     self._leastSquare = ReductionKernel(np.float32, neutral="0",
-                                     reduce_expr="a+b", map_expr="x[i]*x[i]",
-                                     arguments="float *x")
+                                        reduce_expr="a+b", map_expr="x[i]*x[i]",
+                                        arguments="float *x")
     # We could have used use mulRedKrnl(x,x), but this is probably faster ?
 
     # Getting texture references #
@@ -218,7 +220,7 @@ class CorrelStage:
     """
 
     assert img.shape == (self.h, self.w), \
-      "Got a {} image in a {} correlation routine!".format(
+        "Got a {} image in a {} correlation routine!".format(
         img.shape, (self.h, self.w))
     if isinstance(img, np.ndarray):
       self.debug(3, "Setting original image from ndarray")
@@ -246,7 +248,8 @@ class CorrelStage:
     """Wrapper to call the gradient kernel."""
 
     self._gradientKrnl.prepared_call(self.grid, self.block,
-                                 self.devGradX.gpudata, self.devGradY.gpudata)
+                                     self.devGradX.gpudata,
+                                     self.devGradY.gpudata)
 
   def prepare(self):
     """Computes all necessary tables to perform correlation.
@@ -359,7 +362,7 @@ class CorrelStage:
     """
 
     assert img_d.shape == (self.h, self.w), \
-      "Got a {} image in a {} correlation routine!".format(
+        "Got a {} image in a {} correlation routine!".format(
         img_d.shape, (self.h, self.w))
     if isinstance(img_d, np.ndarray):
       self.debug(3, "Creating texture from numpy array")
@@ -376,7 +379,7 @@ class CorrelStage:
   def set_mask(self, mask):
     self.debug(3, "Setting the mask")
     assert mask.shape == (self.h, self.w), \
-      "Got a {} mask in a {} routine.".format(mask.shape, (self.h, self.w))
+        "Got a {} mask in a {} routine.".format(mask.shape, (self.h, self.w))
     if not mask.dtype == np.float32:
       self.debug(2, "Converting the mask to float32")
       mask = mask.astype(np.float32)
@@ -423,8 +426,8 @@ class CorrelStage:
     if img_d is not None:
       self.set_image(img_d)
     assert hasattr(self, 'array_d'), \
-      "Did not set the image, use set_image() before calling get_disp \
-  or give the image as parameter."
+        "Did not set the image, use set_image() before calling get_disp or " \
+        "give the image as parameter."
     self.debug(3, "Computing first diff table")
     self._makeDiff.prepared_call(self.grid, self.block,
                                  self.devOut.gpudata,
@@ -859,18 +862,18 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     self.debug(2, "updating original image")
     assert isinstance(img, np.ndarray), "Image must be a numpy array"
     assert len(img.shape) == 2, "Image must have 2 dimensions (got {})" \
-      .format(len(img.shape))
+        .format(len(img.shape))
     assert img.shape == (self.h[0], self.w[0]), "Wrong size!"
     if img.dtype != np.float32:
-      warnings.warn("Correl() takes arrays with dtype np.float32 \
-to allow GPU computing (got {}). Converting to float32."
+      warnings.warn("Correl() takes arrays with dtype np.float32 to allow GPU "
+                    "computing (got {}). Converting to float32."
                     .format(img.dtype), RuntimeWarning)
       img = img.astype(np.float32)
 
     self.correl[0].set_orig(img)
     for i in range(1, self.levels):
       self.correl[i - 1].resample_orig(self.h[i], self.w[i],
-                                      self.correl[i].devOrig)
+                                       self.correl[i].devOrig)
       self.correl[i].update_orig()
 
   def set_fields(self, fields):
@@ -892,7 +895,7 @@ See docstring of Correl")
     for i in range(self.Nfields):
       if isinstance(fields[i], str):
         fields[i] = get_field(fields[i].lower(),
-            self.h[0], self.w[0])
+                              self.h[0], self.w[0])
 
       self.fieldsXArray.append(to_array(fields[i][0], "C"))
       self.texFx[i].set_array(self.fieldsXArray[i])
