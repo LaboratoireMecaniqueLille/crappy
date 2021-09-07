@@ -6,13 +6,13 @@ Demonstration of a Videoextensometry controlled test.
 This program is intended as a demonstration and is fully virtual.
 
 No hardware required
+Requires the cv2 module to be installed.
 """
 
 import crappy
-import cv2
 
 if __name__ == "__main__":
-  img = cv2.imread('../data/ve_markers.tif', 0)
+  img = crappy.resources.ve_markers
 
   speed = 5 / 60  # mm/sec
 

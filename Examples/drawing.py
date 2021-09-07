@@ -4,9 +4,11 @@
 Demonstrates the use of the Drawing block.
 
 No hardware required.
+Requires the cv2 module to be installed.
 """
 
 from time import sleep
+from pkg_resources import resource_filename
 import crappy
 
 
@@ -28,7 +30,7 @@ class TestBlock(crappy.Block):
 
 
 if __name__ == "__main__":
-  img = "../data/Pad.png"
+  img = crappy.resources.paths['pad']
 
   coord = [  # Coordinates for the thermocouples
     (185, 430),  # T1

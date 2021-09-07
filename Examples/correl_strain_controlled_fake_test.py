@@ -8,13 +8,13 @@ measured using DIC and a PID controller drives the machine to apply a ramp of
 strain.
 
 No hardware required.
+Requires the cv2 module to be installed.
 """
 
 import crappy
-import cv2
 
 if __name__ == "__main__":
-  img = cv2.imread('../data/speckle.png', 0)
+  img = crappy.resources.speckle
 
   speed = .05  # Strain rate (%/s)
 

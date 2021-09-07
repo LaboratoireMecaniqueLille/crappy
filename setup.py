@@ -145,11 +145,9 @@ setup(
 
   install_requires=['numpy>=1.19.0'],
 
-  data_files=[('crappy/data',
-               ['data/' + filename for filename in listdir('data')
-                if not filename.startswith('.')]),
+  include_package_data=True,
 
-              ('crappy/docs', ['docs/Makefile']),
+  data_files=[('crappy/docs', ['docs/Makefile']),
 
               ('crappy/Examples',
                ['Examples/' + filename for filename in listdir('Examples')

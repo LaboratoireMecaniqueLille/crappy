@@ -1,0 +1,2 @@
+include crappy/tool/kernels.cu
+include crappy/tool/data/*
