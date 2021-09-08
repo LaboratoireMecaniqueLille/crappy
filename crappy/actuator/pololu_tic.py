@@ -9,13 +9,17 @@ from .._global import OptionalModule
 
 try:
   import yaml
+  is_installed = True
 except (ModuleNotFoundError, ImportError):
-  yaml = OptionalModule("pyyaml")
+  is_installed = False
 try:
   getattr(yaml, 'FullLoader')
   full_loader = True
-except (AttributeError, RuntimeError):
+except (AttributeError, NameError):
   full_loader = False
+if not is_installed:
+  # If it was in the first try/except, an message would be displayed at getattr
+  yaml = OptionalModule("pyyaml")
 
 try:
   from usb import core
