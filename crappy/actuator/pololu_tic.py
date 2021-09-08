@@ -14,7 +14,7 @@ except (ModuleNotFoundError, ImportError):
 try:
   getattr(yaml, 'FullLoader')
   full_loader = True
-except AttributeError:
+except (AttributeError, RuntimeError):
   full_loader = False
 
 try:
