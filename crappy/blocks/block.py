@@ -311,7 +311,7 @@ class Block(Process):
           if self._status == 'running':
             self._status = 'done'
       # If another process tries to get the status
-      if 'linux' in platform:
+      if 'win' not in platform:
         self.pipe2.send(self._status)
 
         # Somehow the previous line makes crappy hang on Windows, no idea why
