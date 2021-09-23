@@ -25,11 +25,11 @@ Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 static int Hello_init(Hello *self, PyObject *args, PyObject *kwds)
 {
-    static char *kwlist[] = {"name", NULL};
+    static char *kwlist[] = {(char*)"name", NULL};
 
-    self->name = "Crappy";
+    self->name = (char*)"Crappy";
     if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &self->name)){
-            return NULL;
+            return 1;
     }
     return 0;
 }
@@ -110,23 +110,23 @@ static PyTypeObject helloType = {
     Hello_new,                 /* tp_new */
 };
 
+static struct PyModuleDef helloClassModule = {
+    PyModuleDef_HEAD_INIT,
+    "helloClassModule",
+    NULL,
+    -1,
+    Hello_methods
+};
 
 PyMODINIT_FUNC
-inithelloModule(void)
+PyInit_helloClassModule(void)
 {
-	try{
-        PyObject* m;
-        if (PyType_Ready(&helloType) < 0)
-            cout << "unable to install ximea module" << endl;
+    PyObject* m;
+    PyType_Ready(&helloType);
 
-        m = Py_InitModule3("helloModule", module_methods,
-                           "hello C++ module.");
+    m = PyModule_Create(&helloClassModule);
 
-        Py_INCREF(&helloType);
-        PyModule_AddObject(m, "Hello", (PyObject *)&helloType);
-    }
-    catch ( const std::exception & e )
-    {
-        std::cerr << e.what();
-    }
+    Py_INCREF(&helloType);
+    PyModule_AddObject(m, "Hello", (PyObject *) &helloType);
+    return m;
 }
