@@ -25,7 +25,6 @@ from .multiplex import Multiplex
 from .pid import PID
 from .reader import Reader
 from .recorder import Recorder, Saver
-from .server import Server
 from .sink import Sink
 from .videoExtenso import Video_extenso
 from .client_server import Client_server
