@@ -4,8 +4,8 @@ from .inout import InOut, MetaIO
 
 from .ads1115 import Ads1115
 from .agilent34420A import Agilent34420a
-from .arduino import Arduino
 from .comedi import Comedi
+from .fake_inout import Fake_inout
 from .gpio_pwm import Gpio_pwm
 from .gpio_switch import Gpio_switch
 from .gsm import Gsm

@@ -22,6 +22,11 @@ DaQMX
 .. automodule:: crappy.inout.daqmx
    :members:
 
+Fake Inout
+----------
+.. automodule:: crappy.inout.fake_inout
+   :members:
+
 GPIO PWM
 ++++++++
 .. automodule:: crappy.inout.gpio_pwm
