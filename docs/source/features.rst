@@ -268,7 +268,7 @@ Supported cameras
 
 - :ref:`JAI`
 
-  Allows reading from a `Jai GO-5000-PMCL <https://www.jai.com/products/
+  Allows reading from a `Jai GO-5000M-PMCL <https://www.jai.com/products/
   go-5000m-pmcl>`_ camera. It relies on the :ref:`Camera Link` object.
 
   .. Important::
