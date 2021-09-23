@@ -61,7 +61,7 @@ class Cyclic(Path):
     if 0 < self.cycles <= self.cycle:
       raise StopIteration
     if not self.cycle % 2 and self.condition1(data) or self.cycle % 2 \
-          and self.condition2(data):
+            and self.condition2(data):
       self.cycle += 1
       if self.verbose:
         print("cyclic path {}/{}".format(self.cycle, self.cycles))

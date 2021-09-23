@@ -8,7 +8,7 @@ try:
   import opendaq
 except (ModuleNotFoundError, ImportError):
   opendaq = OptionalModule("opendaq",
-      "Please install the OpenDAQ Python Module")
+                           "Please install the OpenDAQ Python Module")
 
 
 def listify(stuff, length):
@@ -45,7 +45,7 @@ class Opendaq(InOut):
     self.nsamples = nsamples
 
     self.channels = self.channels if isinstance(self.channels, list) else \
-      [self.channels]
+        [self.channels]
     n = len(self.channels)
     self.gain = listify(self.gain, n)
     self.offset = listify(self.offset, n)

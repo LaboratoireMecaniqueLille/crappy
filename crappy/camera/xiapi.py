@@ -8,7 +8,7 @@ try:
   from ximea import xiapi
 except (ModuleNotFoundError, ImportError):
   xiapi = OptionalModule("ximea", "To use Xiapi cameras, please install the "
-      "official ximea Python module")
+                         "official ximea Python module")
 
 
 class Xiapi(Camera):

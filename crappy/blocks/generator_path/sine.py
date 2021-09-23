@@ -35,4 +35,4 @@ class Sine(Path):
     if self.condition(data):
       raise StopIteration
     return np.sin((time() - self.t0) * self.k - self.phase) * \
-           self.amplitude + self.offset
+        self.amplitude + self.offset

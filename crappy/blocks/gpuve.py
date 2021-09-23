@@ -2,6 +2,8 @@
 
 from time import time
 import numpy as np
+from typing import Callable
+
 try:
   from pycuda.tools import make_default_context
   from pycuda.driver import init as cuda_init
@@ -39,7 +41,7 @@ class GPUVE(Camera):
                ext='tiff',
                save_period=1,
                save_backend=None,
-               transform=None,
+               transform: Callable = None,
                input_label=None,
                config=True,
                cam_kwargs=None,
@@ -87,7 +89,7 @@ class GPUVE(Camera):
     self.save_period = 1
     self.kwargs = kwargs
 
-  def prepare(self):
+  def prepare(self, *_, **__):
     cuda_init()
     self.context = make_default_context()
     Camera.prepare(self, send_img=False)
@@ -97,7 +99,8 @@ class GPUVE(Camera):
     self.correl = []
     for oy, ox, h, w in self.patches:
       self.correl.append(GPUCorrel_tool((h, w),
-        fields=['x', 'y'], context=self.context, levels=1, **self.kwargs))
+                         fields=['x', 'y'], context=self.context,
+                                        levels=1, **self.kwargs))
     self.loops = 0
     self.nloops = 50
 

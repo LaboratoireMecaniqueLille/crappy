@@ -196,9 +196,9 @@ class Video_extenso(object):
     """Returns the slices to get the window around the spot."""
 
     s1 = slice(max(0, window[0] - self.border),
-        min(shape[0], window[2] + self.border))
+               min(shape[0], window[2] + self.border))
     s2 = slice(max(0, window[1] - self.border),
-        min(shape[1], window[3] + self.border))
+               min(shape[1], window[3] + self.border))
     return s1, s2
 
   def start_tracking(self):
@@ -211,8 +211,9 @@ class Video_extenso(object):
       i, o = Pipe()
       self.pipe.append(i)
       self.tracker.append(Tracker(o, white_spots=self.white_spots,
-                      thresh='auto' if self.update_thresh else self.thresh,
-                      safe_mode=self.safe_mode, blur=self.blur))
+                                  thresh='auto' if self.update_thresh
+                                  else self.thresh,
+                                  safe_mode=self.safe_mode, blur=self.blur))
       self.tracker[-1].start()
 
   def get_def(self, img):
@@ -239,7 +240,7 @@ class Video_extenso(object):
       # Please excuse me for the following line,
       # understand: "if this box overlaps any existing box"
       if any([overlapping(a_b[0], a_b[1]['bbox'])
-        for a_b in zip([r['bbox']] * len(lst), lst)]):
+             for a_b in zip([r['bbox']] * len(lst), lst)]):
         if self.safe_mode:
           print("Overlapping!")
           self.stop_tracking()

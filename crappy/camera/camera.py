@@ -204,7 +204,7 @@ class Camera(object, metaclass=MetaCam):
       self.delay = 0
 
   def add_setting(self, name, getter=None, setter=lambda *val: None,
-                                            limits=None, default=None):
+                  limits=None, default=None):
     """Wrapper to simply add a new setting to the camera."""
 
     assert name not in self.settings, "This setting already exists"

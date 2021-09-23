@@ -111,7 +111,7 @@ class Grapher(Block):
     plt.draw()
     plt.pause(.001)
 
-  def clear(self, event=None):
+  def clear(self, *_, **__):
     for line in self.lines:
       line.set_xdata([])
       line.set_ydata([])

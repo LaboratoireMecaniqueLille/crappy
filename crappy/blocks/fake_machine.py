@@ -44,7 +44,7 @@ class Fake_machine(Block):
     self.plastic_elongation = 0
     self.plastic_law = plastic_law
     self.sigma = {'F(N)': 50, 'x(mm)': 2e-3, 'Exx(%)': 1e-3, 'Eyy(%)': 1e-3} \
-      if sigma is None else sigma
+        if sigma is None else sigma
     self.max_seen_strain = 0
 
   def noise(self, d):
@@ -89,7 +89,6 @@ class Fake_machine(Block):
       self.k = 0
     if self.pos / self.l0 > self.max_seen_strain:
       self.max_seen_strain = self.pos / self.l0
-      self.plastic_elongation = self.plastic_law(self.max_seen_strain) * \
-                                self.l0
+      self.plastic_elongation = self.plastic_law(self.max_seen_strain) * self.l0
     self.send_all()
     self.last_t = t

@@ -302,7 +302,7 @@ class Labjack_t7(InOut):
 
     try:
       return [time()]+ljm.eReadAddresses(self.handle, len(self.read_addresses),
-          self.read_addresses, self.read_types)
+                                         self.read_addresses, self.read_types)
     except ljm.LJMError as e:
       print('[Labjack] Error in get_data:', e)
       self.close()
@@ -357,8 +357,9 @@ class Labjack_t7(InOut):
     """Allows setting of an output chan by calling ``lj[chan] = val``."""
 
     try:
-      ljm.eWriteName(self.handle, chan,
-       self.out_chan_dict[chan]['gain']*val+self.out_chan_dict[chan]['offset'])
+      ljm.eWriteName(
+        self.handle, chan,
+        self.out_chan_dict[chan]['gain']*val+self.out_chan_dict[chan]['offset'])
     except KeyError:
       ljm.eWriteName(self.handle, chan, val)
 

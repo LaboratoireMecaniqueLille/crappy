@@ -58,11 +58,9 @@ class Pijuice(InOut):
     value = self.pijuice.status.GetStatus()
     # Reads the battery charge level
     charge = self.pijuice.status.GetChargeLevel()
-    out = [time.time()]  # Date of data recovery
-    out.append(value["data"]["powerInput5vIo"] == "PRESENT")
-    out.append(charge["data"])
 
-    return out
+    return [time.time(), value["data"]["powerInput5vIo"] == "PRESENT",
+            charge["data"]]
 
   def close(self):
     pass

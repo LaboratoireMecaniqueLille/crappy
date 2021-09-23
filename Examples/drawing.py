@@ -8,7 +8,6 @@ Requires the cv2 module to be installed.
 """
 
 from time import sleep
-from pkg_resources import resource_filename
 import crappy
 
 

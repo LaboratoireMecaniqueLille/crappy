@@ -21,7 +21,7 @@ class Fake_camera(Camera):
   def gen_image(self):
     self.img = np.arange(self.height) * 255. / self.height
     self.img = np.repeat(self.img.reshape(self.height, 1),
-                           self.width, axis=1).astype(np.uint8)
+                         self.width, axis=1).astype(np.uint8)
 
   def _set_h(self, _):
     self.gen_image()

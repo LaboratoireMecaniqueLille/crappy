@@ -2,6 +2,7 @@
 
 from time import time
 import numpy as np
+from typing import Callable
 
 from ..tool import GPUCorrel as GPUCorrel_tool
 from .camera import Camera
@@ -33,7 +34,7 @@ class GPUCorrel(Camera):
                ext='tiff',
                save_period=1,
                save_backend=None,
-               transform=None,
+               transform: Callable = None,
                input_label=None,
                config=True,
                cam_kwargs=None,
@@ -92,7 +93,7 @@ class GPUCorrel(Camera):
     self.gpu_correl_kwargs = kwargs
     self.gpu_correl_kwargs['fields'] = self.fields
 
-  def prepare(self):
+  def prepare(self, *_, **__):
     Camera.prepare(self, send_img=False)
     t, img = self.camera.read_image()
     if self.transform is not None:

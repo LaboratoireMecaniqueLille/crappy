@@ -74,7 +74,8 @@ class Jai(Jai8):
     kwargs['camera_type'] = "MediumAreaGray16"
     Jai8.__init__(self, **kwargs)
     self.add_setting("data_format", setter=self._set_format, default=2,
-        getter=self._get_format, limits={'10 bits': 1, '12 bits': 2})
+                     getter=self._get_format,
+                     limits={'10 bits': 1, '12 bits': 2})
 
   def get_image(self):
     t, f = Cl_camera.get_image(self)

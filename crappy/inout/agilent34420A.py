@@ -47,7 +47,7 @@ class Agilent34420a(InOut):
 
   def open(self):
     self.ser = serial.Serial(port=self.device, baudrate=self.baudrate,
-        timeout=self.timeout)
+                             timeout=self.timeout)
     self.ser.write(b"*RST;*CLS;*OPC?\n")
     self.ser.write(b"SENS:FUNC \"" + self.mode + b"\";  \n")
     self.ser.write(b"SENS:" + self.mode + b":NPLC 2  \n")

@@ -94,7 +94,7 @@ class Multiplex(Block):
           r[k] = interp(self.t_hist[i], self.hist[k], self.t)  # Interpolate
         # To know until when we can delete
         last = int(interp(self.t_hist[i], range(len(self.t_hist[i])),
-          self.t + self.dt))
+                   self.t + self.dt))
         # Delete the data we don't need anymore
         self.t_hist[i] = self.t_hist[i][last:]
         for k in l:
@@ -117,7 +117,7 @@ class Multiplex(Block):
           r[k] = interp(self.t_hist[i], self.hist[k], self.t)  # Interpolate
         # To know until when we can delete
         last = int(interp(self.t_hist[i], range(len(self.t_hist[i])),
-          self.t + self.dt))
+                   self.t + self.dt))
         # Delete the data we don't need anymore
         self.t_hist[i] = self.t_hist[i][last:]
         for k in l:

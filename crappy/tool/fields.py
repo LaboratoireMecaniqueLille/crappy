@@ -28,7 +28,7 @@ def z(h, w):
     sh = 1 / (w * w / h / h + 1) ** .5
     sw = w*sh/h
     Z = np.meshgrid(np.linspace(-sw, sw, w, dtype=np.float32),
-                          np.linspace(-sh, sh, h, dtype=np.float32))
+                    np.linspace(-sh, sh, h, dtype=np.float32))
   return Z
 
 
@@ -47,25 +47,31 @@ def get_field(s, h, w):
     return v * r, -u * r
   elif s == 'exx':
     return (np.concatenate((np.linspace(-w / 200, w / 200, w,
-            dtype=np.float32)[np.newaxis, :],) * h, axis=0),
+                                        dtype=np.float32)[np.newaxis, :],) * h,
+                           axis=0),
             zeros(h, w))
   elif s == 'eyy':
     return (zeros(h, w),
             np.concatenate((np.linspace(-h / 200, h / 200, h,
-            dtype=np.float32)[:, np.newaxis],) * w, axis=1))
+                                        dtype=np.float32)[:, np.newaxis],) * w,
+                           axis=1))
   elif s == 'exy':
     return (np.concatenate((np.linspace(-h / 200, h / 200, h,
-            dtype=np.float32)[:, np.newaxis],) * w, axis=1),
+                                        dtype=np.float32)[:, np.newaxis],) * w,
+                           axis=1),
             zeros(h, w))
   elif s == 'eyx':
     return (zeros(h, w),
             np.concatenate((np.linspace(-w / 200, w / 200, w,
-            dtype=np.float32)[np.newaxis, :],) * h, axis=0))
+                                        dtype=np.float32)[np.newaxis, :],) * h,
+                           axis=0))
   elif s == 'exy2':
     return (np.concatenate((np.linspace(-h / 200, h / 200, h,
-            dtype=np.float32)[:, np.newaxis],) * w, axis=1),
+                                        dtype=np.float32)[:, np.newaxis],) * w,
+                           axis=1),
             (np.concatenate((np.linspace(-w / 200, w / 200, w,
-            dtype=np.float32)[np.newaxis, :],) * h, axis=0)))
+                                         dtype=np.float32)[np.newaxis, :],) * h,
+                            axis=0)))
 
   elif s == 'z':
     u, v = z(h, w)
@@ -145,7 +151,7 @@ def remap(a, r):
   imy, imx = a.shape
   x, y = np.meshgrid(range(imx), range(imy))
   return cv2.remap(a.astype(np.float32),
-      (x + r[:, :, 0]).astype(np.float32),
+                   (x + r[:, :, 0]).astype(np.float32),
                    (y + r[:, :, 1]).astype(np.float32), 1)
 
 

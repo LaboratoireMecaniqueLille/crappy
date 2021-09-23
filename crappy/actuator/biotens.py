@@ -67,42 +67,42 @@ class Biotens(Actuator):
     """Actuators goes out completely, in order to set the initial position."""
 
     init_position = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(38, 'B') +\
-          convert_to_byte(4, 'B') +\
-          convert_to_byte(0, 'i') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(38, 'B') + b'\xAA\xAA'
+        convert_to_byte(38, 'B') +\
+        convert_to_byte(4, 'B') +\
+        convert_to_byte(0, 'i') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(38, 'B') + b'\xAA\xAA'
 
     init_speed = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(40, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(-50, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(40, 'B') + b'\xAA\xAA'
+        convert_to_byte(40, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(-50, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(40, 'B') + b'\xAA\xAA'
 
     init_torque = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(41, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(1023, 'i') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(41, 'B') +\
-          b'\xAA\xAA'
+        convert_to_byte(41, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(1023, 'i') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(41, 'B') +\
+        b'\xAA\xAA'
 
     to_init = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(37, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(0, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(37, 'B') + b'\xAA\xAA'
+        convert_to_byte(37, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(0, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(37, 'B') + b'\xAA\xAA'
 
     self.ser.writelines([init_position, init_speed, init_torque, to_init])
     self.ser.write(b'\x52\x52\x52\xFF\x00' +
-          convert_to_byte(2, 'B') +
-          convert_to_byte(2, 'B') +
-          convert_to_byte(12, 'h') +
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +
-          convert_to_byte(2, 'B') +
-          b'\xAA\xAA')
+                   convert_to_byte(2, 'B') +
+                   convert_to_byte(2, 'B') +
+                   convert_to_byte(12, 'h') +
+                   b'\xAA\xAA\x50\x50\x50\xFF\x00' +
+                   convert_to_byte(2, 'B') +
+                   b'\xAA\xAA')
     last_position_si = 0
     position_si = 99
     time.sleep(1)
@@ -115,12 +115,12 @@ class Biotens(Actuator):
     # time.sleep(1)
     # initializes the count when the motors is out.
     start_position = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(10, 'B') +\
-          convert_to_byte(4, 'B') +\
-          convert_to_byte(0, 'i') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(10, 'B') +\
-          b'\xAA\xAA'
+        convert_to_byte(10, 'B') +\
+        convert_to_byte(4, 'B') +\
+        convert_to_byte(0, 'i') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(10, 'B') +\
+        b'\xAA\xAA'
     self.ser.write(start_position)
     # time.sleep(1)
     try:
@@ -136,11 +136,11 @@ class Biotens(Actuator):
     """Stop the motor."""
 
     command = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(0, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(2, 'B') + b'\xAA\xAA'
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(0, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(2, 'B') + b'\xAA\xAA'
     self.ser.write(command)
     # return command
 
@@ -152,11 +152,11 @@ class Biotens(Actuator):
     """Clears error in motor registers."""
 
     command = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(35, 'B') +\
-          convert_to_byte(4, 'B') +\
-          convert_to_byte(0, 'i') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(35, 'B') + b'\xAA\xAA'
+        convert_to_byte(35, 'B') +\
+        convert_to_byte(4, 'B') +\
+        convert_to_byte(0, 'i') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(35, 'B') + b'\xAA\xAA'
     self.ser.write(command)
 
   def set_speed(self, speed):
@@ -168,38 +168,38 @@ class Biotens(Actuator):
     # screw thread=5.
     speed_soll = int(round(16 * 4096 * speed / (520.8 * 60 * 5)))
     set_speed = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(5, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(speed_soll, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(5, 'B') + b'\xAA\xAA'
+        convert_to_byte(5, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(speed_soll, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(5, 'B') + b'\xAA\xAA'
 
     # set torque to default value 1023
     set_torque = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(7, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(1023, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(7, 'B') +\
-          b'\xAA\xAA'
+        convert_to_byte(7, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(1023, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(7, 'B') +\
+        b'\xAA\xAA'
 
     # set acceleration to 10000 mm/s²
     # (default value, arbitrarily chosen, works great so far)
     asoll = int(round(16 * 4096 * 10000 / (520.8 * 520.8 * 5)))
     set_acceleration = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(6, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(asoll, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(6, 'B') + b'\xAA\xAA+'
+        convert_to_byte(6, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(asoll, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(6, 'B') + b'\xAA\xAA+'
 
     command = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(1, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(2, 'B') +\
-          b'\xAA\xAA'
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(1, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(2, 'B') +\
+        b'\xAA\xAA'
 
     # write every parameters in motor's registers
     self.ser.writelines([set_speed, set_torque, set_acceleration, command])
@@ -211,11 +211,11 @@ class Biotens(Actuator):
     # conversion of position from mm into encoder's count
     position_soll = int(round(position * 4096 / 5))
     set_position = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(3, 'B') +\
-          convert_to_byte(4, 'B') +\
-          convert_to_byte(position_soll, 'i') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(3, 'B') + b'\xAA\xAA+'
+        convert_to_byte(3, 'B') +\
+        convert_to_byte(4, 'B') +\
+        convert_to_byte(position_soll, 'i') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(3, 'B') + b'\xAA\xAA+'
 
     # converts speed in motors value
     # displacement rate in mm/min, V_SOll in 1/16 encoder counts/sample.
@@ -223,40 +223,40 @@ class Biotens(Actuator):
     # screw thread=5.
     speed_soll = int(round(16 * 4096 * speed / (520.8 * 60 * 5)))
     set_speed = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(5, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(speed_soll, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(5, 'B') +\
-          b'\xAA\xAA'
+        convert_to_byte(5, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(speed_soll, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(5, 'B') +\
+        b'\xAA\xAA'
 
     # set torque to default value 1023
     set_torque = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(7, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(1023, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(7, 'B') +\
-          b'\xAA\xAA'
+        convert_to_byte(7, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(1023, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(7, 'B') +\
+        b'\xAA\xAA'
 
     # set acceleration to 10000 mm/s²
     # (default value, arbitrarily chosen, works great so far)
     asoll = int(round(16 * 4096 * 10000 / (520.8 * 520.8 * 5)))
     set_acceleration = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(6, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(asoll, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(6, 'B') +\
-          b'\xAA\xAA'
+        convert_to_byte(6, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(asoll, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(6, 'B') +\
+        b'\xAA\xAA'
 
     command = b'\x52\x52\x52\xFF\x00' +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(2, 'B') +\
-          convert_to_byte(2, 'h') +\
-          b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-          convert_to_byte(2, 'B') +\
-          b'\xAA\xAA'
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(2, 'B') +\
+        convert_to_byte(2, 'h') +\
+        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
+        convert_to_byte(2, 'B') +\
+        b'\xAA\xAA'
 
     # write every parameters in motor's registers
     self.ser.writelines([set_position, set_speed,

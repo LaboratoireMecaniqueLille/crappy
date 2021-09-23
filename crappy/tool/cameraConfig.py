@@ -74,10 +74,12 @@ class Camera_config:
   Note:
     It will launch :meth:`create_window` when instanciated. Just call:
 
-    >>> Camera_config(camera)
+    >>> import crappy
+    >>> camera = crappy.camera.Fake_camera()
+    >>> crappy.tool.Camera_config(camera)
 
     It takes a single arg: the camera class (it must inherit from
-    `crappy.sensor._meta.MasterCam`).
+    `crappy.camera.Camera`).
   """
 
   def __init__(self, camera):

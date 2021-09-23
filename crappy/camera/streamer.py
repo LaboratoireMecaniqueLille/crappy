@@ -44,7 +44,7 @@ class Streamer(Camera):
       pattern (:obj:`str`, optional): The regular expression matching the
         images and returning the time.
 
-        Note:
+        ..Note::
           `"\\d"` matches digits, `"\\d+"` matches a group of digits. `()` is a
           capturing group, returning what is inside. Dot is a special character
           and needs to be escaped. The default value is compatible with the
@@ -54,7 +54,7 @@ class Streamer(Camera):
         flux you can set a delay in seconds during which the first image will
         be streamed in a loop.
 
-        Note:
+        ..Note::
           This can be useful to give time for spot selection when using
           videoextenso.
 

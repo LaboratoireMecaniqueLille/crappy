@@ -158,7 +158,7 @@ class Block(Process):
     while not cls.all_are('ready'):
       sleep(.1)
       if not all([i in ['ready', 'initializing', 'idle']
-            for i in cls.get_status()]):
+                 for i in cls.get_status()]):
           print("Crappy failed to start!")
           for i in cls.instances:
             if i.status in ['ready', 'initializing']:
@@ -264,7 +264,7 @@ class Block(Process):
         sleep(max(0, d / 2 - 2e-3))  # Ugly, yet simple and pretty efficient
     self._MB_last_t = t
     if hasattr(self, 'verbose') and self.verbose and \
-                self._MB_last_t - self._MB_last_FPS > 2:
+            self._MB_last_t - self._MB_last_FPS > 2:
       print("[%r] loops/s:" % self,
             self._MB_loops / (self._MB_last_t - self._MB_last_FPS))
       self._MB_loops = 0
@@ -381,7 +381,7 @@ class Block(Process):
     Returns True if l.poll() is True for any input link l.
     """
 
-    return any((l.poll for l in self.inputs))
+    return any((link.poll for link in self.inputs))
 
   def recv_all_last(self):
     """Like recv_all, but drops older data to return only the latest value

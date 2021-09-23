@@ -42,7 +42,7 @@ class DISConfig(Camera_config):
     oy, ox = self.box_origin
     y, x = self.get_img_coord(event.y, event.x)
     self.box = (min(oy, y), min(ox, x), max(oy, y), max(ox, x))
-    #print(self.box)
+    # print(self.box)
 
   def stop_select(self, event):
     pass
@@ -58,7 +58,7 @@ class DISConfig(Camera_config):
 
   def resize_img(self, sl):
     rimg = cv2.resize(self.img8[sl[1], sl[0]], tuple(reversed(self.img_shape)),
-        interpolation=0)
+                      interpolation=0)
     if self.box[0] > 0:
       lbox = [0] * 4
       for i in range(4):

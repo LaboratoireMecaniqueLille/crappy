@@ -11,14 +11,14 @@ try:
   import usb.core
 
   Seek_therm_usb_req = {'Write': usb.util.CTRL_OUT |
-                                 usb.util.CTRL_TYPE_VENDOR |
-                                 usb.util.CTRL_RECIPIENT_INTERFACE,
+                        usb.util.CTRL_TYPE_VENDOR |
+                        usb.util.CTRL_RECIPIENT_INTERFACE,
                         'Read': usb.util.CTRL_IN |
-                                usb.util.CTRL_TYPE_VENDOR |
-                                usb.util.CTRL_RECIPIENT_INTERFACE,
+                        usb.util.CTRL_TYPE_VENDOR |
+                        usb.util.CTRL_RECIPIENT_INTERFACE,
                         'Read_img': usb.util.CTRL_IN |
-                                    usb.util.CTRL_TYPE_STANDARD |
-                                    usb.util.CTRL_RECIPIENT_INTERFACE}
+                        usb.util.CTRL_TYPE_STANDARD |
+                        usb.util.CTRL_RECIPIENT_INTERFACE}
 
 except (ModuleNotFoundError, ImportError):
   usb = OptionalModule("usb")
@@ -144,7 +144,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
       t = time.time()
       status, img = self._grab()
       if status == 1:
-          self._calib = self._crop(img) - 1600
+        self._calib = self._crop(img) - 1600
       elif status == 3 and self._calib is not None:
         return t, self._correct_dead_pixels(self._crop(img) - self._calib)
       elif count == 5:
@@ -200,8 +200,8 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     """
 
     img = self._crop(np.frombuffer(data, dtype=np.uint16).reshape(
-        Seek_thermal_pro_dimensions['Raw height'],
-        Seek_thermal_pro_dimensions['Raw width']))
+      Seek_thermal_pro_dimensions['Raw height'],
+      Seek_thermal_pro_dimensions['Raw width']))
     return list(zip(*np.where(img < 100)))
 
   @staticmethod

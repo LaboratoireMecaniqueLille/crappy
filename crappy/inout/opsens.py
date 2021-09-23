@@ -34,6 +34,7 @@ class Opsens(InOut):
 
   def send_cmd(self, cmd):
     if '\n' in cmd:
+      r = None
       for c in cmd.split('/n'):
         r = self.send_cmd(c)
       return r

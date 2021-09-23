@@ -9,7 +9,7 @@ try:
   from labjack import ljm
 except ImportError:
   ljm = OptionalModule("ljm",
-      "Please install Labjack LJM and the ljm Python module")
+                       "Please install Labjack LJM and the ljm Python module")
 
 
 class T7_streamer(InOut):
@@ -125,7 +125,7 @@ class T7_streamer(InOut):
     if len(self.channels) * self.scan_rate > 100000:
       self.scan_rate = 100000 / len(self.channels)
       print("[Labjack] Warning! scan_rate is too high! Sample rate cannot "
-          "exceed 100kS/s, lowering samplerate to",
+            "exceed 100kS/s, lowering samplerate to",
             self.scan_rate, "samples/s")
     self.chan_list = []
     for d in self.channels:
@@ -157,7 +157,7 @@ class T7_streamer(InOut):
     scan_rate = ljm.eReadName(self.handle, "STREAM_SCANRATE_HZ")
     if scan_rate != self.scan_rate:
       print("[Labjack] Actual scan_rate:", scan_rate,
-          "instead of", self.scan_rate)
+            "instead of", self.scan_rate)
       self.scan_rate = scan_rate
     if any([c.get("make_zero", False) for c in self.chan_list]):
       print("[Labjack] Please wait during offset evaluation...")
@@ -171,11 +171,11 @@ class T7_streamer(InOut):
     """Short version, only used for :meth:`InOut.eval_offset`."""
 
     return [time()] + ljm.eReadNames(self.handle, len(self.chan_list),
-                              [c['name'] for c in self.chan_list])
+                                     [c['name'] for c in self.chan_list])
 
   def start_stream(self):
     ljm.eStreamStart(self.handle, self.scan_per_read, len(self.chan_list),
-        [c['to_read'] for c in self.chan_list], self.scan_rate)
+                     [c['to_read'] for c in self.chan_list], self.scan_rate)
     self.stream_t0 = time()
 
   def stop_stream(self):

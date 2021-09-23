@@ -31,7 +31,7 @@ class Dashboard(Block):
       nb_digits (:obj:`int`, optional): Number of decimals to show.
     """
 
-    super(Dashboard, self).__init__()
+    super().__init__()
     self.labels = labels
     self.nb_display_values = len(self.labels) if self.labels else None
     self.nb_digits = nb_digits

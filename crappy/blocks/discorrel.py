@@ -49,7 +49,7 @@ class DISCorrel(Camera):
     Camera.__init__(self, camera, **kwargs)
     self.fields = ["x", "y", "exx", "eyy"] if fields is None else fields
     self.labels = ['t(s)', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)'] \
-      if labels is None else labels
+        if labels is None else labels
     self.show_image = show_image
     self.residual = residual
     self.residual_full = residual_full
@@ -67,14 +67,15 @@ class DISCorrel(Camera):
     if self.residual_full:
       self.labels.append('res_full')
 
-  def prepare(self):
+  def prepare(self, *_, **__):
     Camera.prepare(self, send_img=False)
     config = DISConfig(self.camera)
     config.main()
     self.bbox = config.box
     if not all(i > 0 for i in self.bbox):
       raise AttributeError("Incorrect bounding box sepcified in DISCorrel. "
-          "Was the region selected on the configuration Window ?")
+                           "Was the region selected on the configuration "
+                           "Window ?")
     t, img0 = self.camera.get_image()
     self.correl = Dis(img0, bbox=self.bbox, fields=self.fields, **self.dis_kw)
     if self.show_image:
@@ -92,7 +93,7 @@ class DISCorrel(Camera):
       self.correl.img0 = self.img0
     if self.save_folder:
       self.save(self.img0,
-          self.save_folder + "img_ref_%.6f.tiff" % (t - self.t0))
+                self.save_folder + "img_ref_%.6f.tiff" % (t - self.t0))
 
   def loop(self):
     t, img = self.get_img()

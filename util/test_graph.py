@@ -1,3 +1,5 @@
+# coding: utf-8
+
 """
 To test the correct resampling of the points in the Grapher.
 """

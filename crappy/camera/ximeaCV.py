@@ -38,7 +38,7 @@ class Ximea_cv(Camera):
                      10000)
     self.add_setting("gain", self._get_gain, self._set_gain, (0., 6.))
     self.add_setting("data_format", self._get_data_format,
-                                   self._set_data_format, xi_format_dict)
+                     self._set_data_format, xi_format_dict)
     self.add_setting("AEAG", self._get_aeag, self._set_aeag, True, False)
     self.add_setting("external_trig", self._get_extt, self._set_extt,
                      True, False)

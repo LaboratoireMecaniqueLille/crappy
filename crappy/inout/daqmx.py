@@ -115,7 +115,7 @@ class Daqmx(InOut):
 
     # IN channels
     self.channels = self.channels if isinstance(self.channels, list) \
-      else [self.channels]
+        else [self.channels]
     nin = len(self.channels)
     for i in range(nin):
       if isinstance(self.channels[i], int):
@@ -146,11 +146,12 @@ class Daqmx(InOut):
       self.nread = PyDAQmx.int32()
       PyDAQmx.DAQmxCreateTask("", PyDAQmx.byref(self.handle))
       for i, chan in enumerate(self.channels):
-        PyDAQmx.DAQmxCreateAIVoltageChan(self.handle,
-                                 self.device + "/" + chan, "",
-                                 PyDAQmx.DAQmx_Val_Cfg_Default,
-                                 0, self.range[i],
-                                 PyDAQmx.DAQmx_Val_Volts, None)
+        PyDAQmx.DAQmxCreateAIVoltageChan(
+          self.handle,
+          self.device + "/" + chan, "",
+          PyDAQmx.DAQmx_Val_Cfg_Default,
+          0, self.range[i],
+          PyDAQmx.DAQmx_Val_Volts, None)
       if any(self.make_zero):
         off = self.eval_offset()
         for i, make_zero in enumerate(self.make_zero):
@@ -161,10 +162,11 @@ class Daqmx(InOut):
       self.out_handle = PyDAQmx.TaskHandle()
       PyDAQmx.DAQmxCreateTask("", PyDAQmx.byref(self.out_handle))
       for i, chan in enumerate(self.out_channels):
-        PyDAQmx.DAQmxCreateAOVoltageChan(self.out_handle,
-                                 self.device + "/" + chan, "",
-                                 0, self.out_range[i],
-                                 PyDAQmx.DAQmx_Val_Volts, None)
+        PyDAQmx.DAQmxCreateAOVoltageChan(
+          self.out_handle,
+          self.device + "/" + chan, "",
+          0, self.out_range[i],
+          PyDAQmx.DAQmx_Val_Volts, None)
       PyDAQmx.DAQmxStartTask(self.out_handle)
 
   def get_data(self):
@@ -190,17 +192,18 @@ class Daqmx(InOut):
     if npoints is None:
       npoints = self.nperscan
     PyDAQmx.DAQmxCfgSampClkTiming(self.handle, "",
-                          self.sample_rate, PyDAQmx.DAQmx_Val_Rising,
-                          PyDAQmx.DAQmx_Val_FiniteSamps,
-                          npoints + 1)
+                                  self.sample_rate,
+                                  PyDAQmx.DAQmx_Val_Rising,
+                                  PyDAQmx.DAQmx_Val_FiniteSamps,
+                                  npoints + 1)
     PyDAQmx.DAQmxStartTask(self.handle)
     data = np.empty((len(self.channels), npoints), dtype=np.float64)
     t0 = time.time()
     # DAQmx Read Code
     PyDAQmx.DAQmxReadAnalogF64(self.handle, npoints, 10.0,
-                       PyDAQmx.DAQmx_Val_GroupByChannel, data,
-                       npoints * len(self.channels),
-                       PyDAQmx.byref(self.nread), None)
+                               PyDAQmx.DAQmx_Val_GroupByChannel, data,
+                               npoints * len(self.channels),
+                               PyDAQmx.byref(self.nread), None)
     t = time.time()
     # DAQmx Stop Code
     PyDAQmx.DAQmxStopTask(self.handle)
@@ -208,8 +211,8 @@ class Daqmx(InOut):
     t1 = ((
           t + t0) - npoints / self.sample_rate) / 2
     return [[t1 + i / self.sample_rate for i in range(npoints)]] \
-           + [data[i, :] * self.gain[i] + self.offset[i] for i in
-              range(len(self.channels))]
+        + [data[i, :] * self.gain[i] + self.offset[i] for i in
+           range(len(self.channels))]
 
   def set_cmd(self, *args):
     """Set the output(s) to the specified value.
@@ -223,7 +226,8 @@ class Daqmx(InOut):
     assert len(args) == len(self.out_channels)
     data = np.array(args, dtype=np.float64) * self.out_gain + self.out_offset
     PyDAQmx.DAQmxWriteAnalogF64(self.out_handle, 1, 1, 10.0,
-        PyDAQmx.DAQmx_Val_GroupByChannel, data, None, None)
+                                PyDAQmx.DAQmx_Val_GroupByChannel,
+                                data, None, None)
 
   def close(self):
     """Closes the connection."""

@@ -2,14 +2,13 @@
 
 from os import path, makedirs
 import numpy as np
-import warnings
 
 from .._global import OptionalModule
 try:
   import tables
 except ModuleNotFoundError:
   tables = OptionalModule("tables", "Hdf_recorder needs the tables module to "
-      "write hdf files.")
+                          "write hdf files.")
 
 from .block import Block
 

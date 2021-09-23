@@ -175,15 +175,17 @@ class Nidaqmx(InOut):
     if len(self.t_in) != 1:
       raise IOError("Stream mode can only open one type of chan!")
     for t in self.t_in.values():  # Only one loop
-      t.timing.cfg_samp_clk_timing(self.samplerate,
-          sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS)
+      t.timing.cfg_samp_clk_timing(
+        self.samplerate,
+        sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS)
     self.streaming = True
 
   def stop_stream(self):
     self.streaming = False
     for t in self.t_in.values():
       t.stop()
-      t.timing.cfg_samp_clk_timing(self.samplerate,
+      t.timing.cfg_samp_clk_timing(
+        self.samplerate,
         sample_mode=nidaqmx.constants.AcquisitionType.FINITE)
 
   def get_stream(self):
@@ -222,7 +224,7 @@ class Nidaqmx(InOut):
   def set_cmd(self, *v):
     if self.ao_channels:
       self.stream_out.write_one_sample(np.array(v[:len(self.ao_channels)],
-        dtype=np.float64))
+                                       dtype=np.float64))
     if self.do_channels:
       self.do_stream.write_one_sample_multi_line(
         np.array(v[len(self.ao_channels):],

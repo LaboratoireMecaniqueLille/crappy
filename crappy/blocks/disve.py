@@ -51,7 +51,7 @@ class DISVE(Camera):
                   "patch_stride": patch_stride,
                   "border": border}
 
-  def prepare(self):
+  def prepare(self, *_, **__):
     Camera.prepare(self, send_img=False)
     if self.show_image:
       try:

@@ -126,7 +126,7 @@ class Video_extenso(Camera):
     self.verbose = cam_kw['verbose']  # Also, we keep the verbose flag
 
     self.labels = ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)'] \
-      if labels is None else labels
+        if labels is None else labels
     self.show_image = show_image
     self.wait_l0 = wait_l0
     self.end = end
@@ -145,17 +145,17 @@ class Video_extenso(Camera):
     self.cam_kw['labels'] = self.labels
     Camera.__init__(self, camera, **self.cam_kw)
 
-  def prepare(self):
+  def prepare(self, *_, **__):
     Camera.prepare(self, send_img=False)
     self.ve = Ve(**self.ve_kwargs)
     config = VE_config(self.camera, self.ve)
     config.main()
     if not self.ve.spot_list:
       print("No markers were detected for videoextenso! "
-          "Please select the markers and make sure they are detected. "
-          "A box should appear around the markers when they are detected. "
-          "If not, make sure the white_spots argument is correctly set "
-          "and the markers are large enough.")
+            "Please select the markers and make sure they are detected. "
+            "A box should appear around the markers when they are detected. "
+            "If not, make sure the white_spots argument is correctly set "
+            "and the markers are large enough.")
       raise AttributeError("Missing VE Markers")
     self.ve.start_tracking()
     if self.show_image:

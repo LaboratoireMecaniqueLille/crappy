@@ -55,7 +55,7 @@ class VE_config(Camera_config):
     y, x = self.get_img_coord(event.y, event.x)
     self.select_box = (min(oy, y), min(ox, x), max(oy, y), max(ox, x))
 
-  def stop_select(self, event):
+  def stop_select(self, *_, **__):
     self.ve.detect_spots(self.img[self.select_box[0]:self.select_box[2],
                                   self.select_box[1]:self.select_box[3]],
                          self.select_box[0], self.select_box[1])
