@@ -18,6 +18,15 @@ static PyMethodDef HelloMethods[] =
     {NULL, NULL, 0, NULL}
 };
 
-PyMODINIT_FUNC inithelloModule(void){
-    (void) Py_InitModule("helloModule", HelloMethods);
+static struct PyModuleDef helloModule = {
+    PyModuleDef_HEAD_INIT,
+    "helloModule",
+    NULL,
+    -1,
+    HelloMethods
+};
+
+PyMODINIT_FUNC PyInit_helloModule(void)
+{
+    return PyModule_Create(&helloModule);
 }
