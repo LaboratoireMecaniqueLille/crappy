@@ -1,328 +1,732 @@
-=======================================================
-How to use C++ designed hardware drivers with Crappy ?
-=======================================================
+====================================
+How to use C or C++ code in Crappy ?
+====================================
 
-There is a lot of hardware only available for C++ or C platforms, but it can be easily bound with Python. Here we will give you an example on how to bind C language to make it object oriented (as used in Python).
+If you want to use hardware that's only available on C or C++ platforms, or if
+you need to run computationally intensive code in an efficient way, it is quite
+easy to bind C/C++ code to Crappy.
 
-How to bind C/C++ with Crappy?
-------------------------------
+1. Using an existing library
+----------------------------
 
-Here is detailed a complete example on how to bind C and C++ language with Python and add it to the Crappy package. Linux and Windows are both used for building.
+If you want to integrate a library from an external source and you already have
+the corresponding file (``.so``, ``.dll``, etc.), different solutions are
+available. We're not going to detail them here, as we could not provide a
+cross-platform compatible example. You can however look into the `pyspcm
+<https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/crappy/tool/
+pyspcm.py>`_ and `comedi_bind <https://github.com/LaboratoireMecaniqueLille/
+crappy/blob/master/crappy/tool/comedi_bind.py>`_ tools for an example using the
+:mod:`ctypes` library and ``.so`` files. Alternative solutions include Cython,
+:mod:`cffi`, PyBind11, and many others.
 
-.. warning::
-   This is not a C++ tutorial, a few programming notions are used here, please refer to the tutorials
-   below if you are not a C or C++ developer. /n C++ tutorials:
+2. Writing your own library
+---------------------------
 
-      - openclassrooms (fr)
-      - cplusplus (en)
+2.1. Prerequisites
+++++++++++++++++++
 
-   C tutorials:
+Here is detailed a complete example on how to bind C and C++ language with
+Python and add it to the Crappy package. Linux and Windows are both used for
+building.
 
-      - openclassroom (fr)
-      - cprogramming (en)
+.. Note::
+  This is not a C++ tutorial, a few programming notions are used here, please
+  refer to the tutorials below if you are not a C or C++ developer.
 
-Under Linux, you must install the python-dev package to ensure that you can use the Python.h library in the C or C++ code::
+  C++ tutorials :
 
-   sudo apt-get install python-dev
+  - `openclassrooms C++ <https://openclassrooms.com/fr/courses/1894236-
+    programmez-avec-le-langage-c>`_ (fr)
+  - `cplusplus <https://www.cplusplus.com/doc/tutorial/>`_ (en)
 
-Under Windows, there is no python-dev package, but the python installer for Windows will install a subdirectory in the python dir directory:
+  C tutorials :
 
-   C:\Python\include which contains the Python.h.
+  - `openclassrooms C <https://openclassrooms.com/fr/courses/19980-apprenez-a-
+    programmer-en-c>`_ (fr)
+  - `cprogramming <https://www.cprogramming.com/tutorial/c-tutorial.html?
+    inl=hp>`_ (en)
 
-First example
---------------
+In Linux, you must install the ``python-dev`` package to ensure that you can use
+the ``Python.h`` library in the C or C++ code :
 
-The C++ code (hello.cpp)
-+++++++++++++++++++++++++
+.. code-block:: shell
 
-::
+  sudo apt install python-dev
 
-   // Python header contains all the functions definitions to handle python object in C/C++.
+In Windows, there is no ``python-dev`` package, but the Python installer for
+Windows will install a subdirectory in the Python directory which contains the
+``Python.h`` (on our Windows machine, this folder is located in
+``C:\Users\<username>\AppData\Local\Programs\Python\``).
+
+.. Important::
+   In this tutorial we'll assume that you're using Crappy from a ``setup``
+   install (see the :ref:`Installation` section for details). Using C++ modules
+   is otherwise not possible using only a ``pip`` install, as we made the choice
+   not to distribute compiled code.
+
+2.2. First example: a simple function
++++++++++++++++++++++++++++++++++++++
+
+2.2.1. Writing the C++ code
+"""""""""""""""""""""""""""
+
+First we need to start with including the ``Python.h`` library, and of course
+any other library we want to use. Then we write our function, that must return a
+``PyObject`` pointer. If the function takes arguments (that's the case in the
+example), they should be passed to ``args``. The arguments then have to be
+parsed using ``PyArgs_ParseTuple``, and we can finally write the main part of
+the function. Do not forget to add ``Py_RETURN_NONE`` at the end if the function
+doesn't return anything.
+
+.. code-block:: c
+
    #include <Python.h>
-   // Header that defines the standard input/output stream objects.
    #include <iostream>
-   // define the namespace to use.
+
    using namespace std;
-   // The functions bound with python have to return a PyObject understandable in Python.
+
    static PyObject* hello(PyObject* self, PyObject* args){
        const char* name;
-       // it parses the args argument and look for a string
-       // and set the name var with the parsed value.
-       // if it fails, PyArg_ParseTuple returns False, True otherwise.
-       // returning NULL directly allows to raise an exception in Python.
        if(!PyArg_ParseTuple(args, "s", &name))
            return NULL;
        cout << "Hello " << name << endl;
-       // This should be a void function, so we return the Python None.
+
        Py_RETURN_NONE;
    }
-   // definition of a PyMethodDef object (defined in the python library)
-   // contains the functions definition to be bound with python.
+
+Then, to bind the ``hello`` function we need to create a ``PyMethodDef`` which
+contains the function definition. If several functions were to be defined, we
+would list them all here. The first element will be the name of the function in
+Python. The second element is the function to bind. The third element is
+``METH_VARARGS`` if the function gets arguments, or ``METH_NOARGS`` otherwise.
+The last element corresponds to a description of the function, that will appear
+in the function help.
+
+.. code-block:: c
+   :emphasize-lines: 15-19
+
+   #include <Python.h>
+   #include <iostream>
+
+   using namespace std;
+
+   static PyObject* hello(PyObject* self, PyObject* args){
+       const char* name;
+       if(!PyArg_ParseTuple(args, "s", &name))
+           return NULL;
+       cout << "Hello " << name << endl;
+
+       Py_RETURN_NONE;
+   }
+
    static PyMethodDef HelloMethods[] =
    {
        {"hello", hello, METH_VARARGS, "Say hello to somebody."},
        {NULL, NULL, 0, NULL}
    };
-   PyMODINIT_FUNC inithelloModule(void){
-       (void) Py_InitModule("helloModule", HelloMethods);
+
+Once all the Python objects have been defined, we need to define the Python
+module itself. This is done using ``PyModuleDef``. It has to be initialized
+with ``PyModuleDef_HEAD_INIT``, then comes the module name, the docstring if
+any, the size to allocate to the module, the methods of the module, anf finally
+the slots.
+
+.. code-block:: c
+   :emphasize-lines: 21-27
+
+   #include <Python.h>
+   #include <iostream>
+
+   using namespace std;
+
+   static PyObject* hello(PyObject* self, PyObject* args){
+       const char* name;
+       if(!PyArg_ParseTuple(args, "s", &name))
+           return NULL;
+       cout << "Hello " << name << endl;
+
+       Py_RETURN_NONE;
    }
 
-Each functions to bind have to return a PyObject pointer. Then, if a function needs to get arguments, they a passed to args, and first parsed in the function with PyArgs_ParseTuple. If the argument parsed is not a char it returns NULL, returning a NULL alows to directly raise a Python error. Here there is no need to return an object, so we return None (equivalent of C++ NULL).
+   static PyMethodDef HelloMethods[] =
+   {
+       {"hello", hello, METH_VARARGS, "Say hello to somebody."},
+       {NULL, NULL, 0, NULL}
+   };
 
-Then, to bind the hello function we need to create a PyMethodDef which contains the function definition::
+   static struct PyModuleDef helloModule = {
+       PyModuleDef_HEAD_INIT,
+       "helloModule",
+       NULL,
+       -1,
+       HelloMethods
+   };
 
-   {"hello", hello, METH_VARARGS, "Say hello to somebody."}
+The last step is to initialize the module, which is done using
+``PyMODINIT_FUNC`` and ``PyModule_Create``. The C++ code is then ready to be
+compiled !
 
-The first element will be the name of the function in Python. The second element is the function to bind. The third element is METH_VARARGS if the function gets arguments, or METH_NOARGS otherwise. The last element corresponds to a description of the function, to appear in the function help.
+.. code-block:: c
+   :emphasize-lines: 29-32
 
-Adding the binding to Crappy
-+++++++++++++++++++++++++++++
+   #include <Python.h>
+   #include <iostream>
 
-To use the hello method defined in hello.cpp, we need to compile our project. This is automatically supported by the distutil package used to create the Crappy package.
+   using namespace std;
 
-We have to use the Extension module in distulil.core.
+   static PyObject* hello(PyObject* self, PyObject* args){
+       const char* name;
+       if(!PyArg_ParseTuple(args, "s", &name))
+           return NULL;
+       cout << "Hello " << name << endl;
 
-Example::
+       Py_RETURN_NONE;
+   }
 
-   helloModule = Extension('technical.helloModule',
-                        sources=['sources/hello/hello.cpp'],
-                        extra_compile_args=["-l", "python2.7"])
-   extentions.append(helloModule)
-   Extension takes several argument, the first one is the full name of the extension, including any
-   packages. Not a filename or pathname, but Python dotted name. Here we want to put the extension in
-   technical, to import our module as crappy.technical.helloModule, so the extension name is
-   'technical.helloModule'.
+   static PyMethodDef HelloMethods[] =
+   {
+       {"hello", hello, METH_VARARGS, "Say hello to somebody."},
+       {NULL, NULL, 0, NULL}
+   };
 
-.. Note::
+   static struct PyModuleDef helloModule = {
+       PyModuleDef_HEAD_INIT,
+       "helloModule",
+       NULL,
+       -1,
+       HelloMethods
+   };
 
-   Here, we called the extension helloModule, so the init method must be defined as follows::
+   PyMODINIT_FUNC PyInit_helloModule(void)
+   {
+       return PyModule_Create(&helloModule);
+   }
 
-      PyMODINIT_FUNC inithelloModule(void){
-          (void) Py_InitModule("helloModule", HelloMethods);
-      }
+2.2.2. Binding the code to Crappy
+"""""""""""""""""""""""""""""""""
 
-   the name of the function must be: init+[the name of your extension]: inithelloModule.
-   Py_initModule must initialize a module with the same name "hellModule".
+Once the C++ code is written, most of the work is done. We only need to modify
+the ``setup.py`` and one of the ``__init__.py`` files. So let's start with the
+``setup.py``. All we have to do is include our ``.cpp`` file as an extension,
+which is achieved by writing :
 
-Extensions is just a list containing all the extensions to build, so we must add the helloModule to it.
+.. code-block:: python
 
-Finally, we import our module in technical/__init__.py.
+   helloModule = Extension('tool.helloModule',
+                           sources=['sources/hello/hello.cpp'],
+                           extra_compile_args=["-l", "python%s" % v],
+                           language='c++')
 
-Now we can build our module with::
+   extensions.append(helloModule)
 
-   sudo python setup.py install
+This should be put around line 30. The first argument indicates where to write
+the binary file that will be generated, the second points to the location(s) of
+the ``.cpp`` and/or ``.hpp`` files to use for the extension, and the two last
+arguments should be left as is.
 
-The module helloModule.so will end up in /usr/local/lib/python2.7/dist-packages/crappy2-X.X.X-py2.7-linux-x86_64.egg/crappy2/technical and a helloModule.py file will be created to allow the import of the module::
+Then the module should be imported in the ``__init__.py`` file of the folder
+where the compiled file will be written, so in our example in ``crappy/tool/``.
+The import is similar to all the regular ones, i.e. in our example we should
+write :
+
+.. code-block:: python
+
+   from .helloModule import hello
+
+The last step is to reinstall Crappy, and that's it ! During install any error
+or warning related to the compilation of the C files will be displayed. After
+completing the install, there should be no notable change in the source folder.
+If you go to the install folder (see :ref:`here <2. Permanently adding custom
+blocks to Crappy>`), there should be a binary file in the ``tool`` folder as
+well as a ``helloModule.py`` file. This file contains the following code :
+
+.. code-block:: python
 
    def __bootstrap__():
        global __bootstrap__, __loader__, __file__
        import sys, pkg_resources, imp
-       __file__ = pkg_resources.resource_filename(__name__, 'helloModule.so')
+       __file__ = pkg_resources.resource_filename(__name__, '<binary_file.xxx>')
        __loader__ = None; del __bootstrap__, __loader__
        imp.load_dynamic(__name__,__file__)
    __bootstrap__()
 
-So we can now simply use our module::
+It's this file that actually allows the import in ``__init__.py`` to happen. So
+the ``hello`` method is now part of Crappy and lives in ``crappy.tool.hello``.
+For using it in a script or in a command line, we can simply write :
 
-   In [1]: import crappy2
-   In [2]: crappy2.technical.helloModule.hello("Crappy")
-   Hello Crappy
+  >>> import crappy
+  >>> crappy.tool.hello('world')
+  Hello world
 
-A more oriented object module
-------------------------------
+2.3. Second example: a simple class
++++++++++++++++++++++++++++++++++++
 
-Let's try to define a class that is similar to the following python class::
+2.3.1 Writing the C++ code
+""""""""""""""""""""""""""
 
-   class Hello:
+Now let's try to build a more advanced Python object in C. We'll define a class
+that is similar to this Python class :
 
-       def __init__(self, name="Crappy"):
-           self.name = name
+.. code-block:: python
 
-       def say_hello(self):
-           print 'hello ', self.name
+  class Hello:
 
-       def get_name(self):
-           return self.name
+      def __init__(self, name="Crappy"):
+          self.name = name
 
-we first need to define the functions to construct our future class:
+      def say_hello(self):
+          print 'hello ', self.name
 
-   - a new method
-   - a constructor
-   - a destructor And a structure which will contain the class attributes.
+      def get_name(self):
+          return self.name
 
-Here, the struct contains two elements. The first, PyObject_HEAD must always be defined, it represent the type of object. The second element represent our attribute 'name'.::
+After including the necessary packages, we first need to define the functions to
+construct our future class :
 
-   // defines a struct to build our Python module, this is similar to the dict of a Python class.
+- a new method
+- a constructor
+- a destructor and a structure which will contain the class attributes.
+
+Here, the ``struct`` contains two elements. The first, ``PyObject_HEAD`` must
+always be defined, it represent the type of object. The second element
+represents our attribute ``'name'``.
+
+.. code-block:: c
+
+   #include <Python.h>
+   #include <iostream>
+
+   using namespace std;
+
    typedef struct {
        PyObject_HEAD
        char *name;
    } Hello;
 
-The new method parses the arguments and keywords arguments, to initialize the structure defined before, which will be passed as first argument for each method (similar to the python self).::
+The next method parses the arguments and keywords arguments, to initialize the
+structure defined before, which will be passed as first argument for each method
+(similar to the Python ``self``).
 
-   // This function will be called at the creation of our Python class, it allocates memory, parses the
-   arguments and returns
-   // the self struct.
-   static PyObject *Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+.. code-block:: c
+   :emphasize-lines: 11-23
+
+   #include <Python.h>
+   #include <iostream>
+
+   using namespace std;
+
+   typedef struct {
+       PyObject_HEAD
+       char *name;
+   } Hello;
+
+   static PyObject* Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
    {
        Hello *self;
        self = (Hello *)type->tp_alloc(type, 0);
-       static char *kwlist[] = {"name", NULL};
+       static char *kwlist[] = {(char*)"name", NULL};
        if (self != NULL) {
-           if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &self->name)){
+           if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist,
+               &self->name)){
                    return NULL;
            }
        }
        return (PyObject *)self;
    }
 
-The constructor parses the arguments and keywords arguments. The "name" argument is optional: "\|s" string or nothing; name is set by default to "Crappy".::
+The constructor parses the arguments and keywords arguments. The ``"name"``
+argument is optional. Here's also the destructor.
+
+.. code-block:: c
+   :emphasize-lines: 25-39
+
+   #include <Python.h>
+   #include <iostream>
+
+   using namespace std;
+
+   typedef struct {
+       PyObject_HEAD
+       char *name;
+   } Hello;
+
+   static PyObject* Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+   {
+       Hello *self;
+       self = (Hello *)type->tp_alloc(type, 0);
+       static char *kwlist[] = {(char*)"name", NULL};
+       if (self != NULL) {
+           if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist,
+               &self->name)){
+                   return NULL;
+           }
+       }
+       return (PyObject *)self;
+   }
 
    static int Hello_init(Hello *self, PyObject *args, PyObject *kwds)
    {
-       static char *kwlist[] = {"name", NULL};
-       self->name = "Crappy";
+       static char *kwlist[] = {(char*)"name", NULL};
+
+       self->name = (char*)"Crappy";
        if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &self->name)){
-               return NULL;
+               return 1;
        }
        return 0;
    }
+
    static void Hello_dealloc(Hello* self)
    {
-       self->ob_type->tp_free((PyObject*)self);
+       Py_TYPE(self)->tp_free((PyObject*)self);
    }
 
-We then define our two methods like before:
+We then define our two methods like previously. To return a value, we need to
+use the ``Py_BuildValue`` function, to convert C++ type to python type: this
+way, we directly get an understandable Python object.
 
-.. Note::
+.. code-block:: c
+   :emphasize-lines: 41-52
 
-   To return a value, we need to use the Py_BuildValue function, to convert C++ type to python type:
-   this way, we directly get a understandable python object.::
+   #include <Python.h>
+   #include <iostream>
 
-     PyObject*
-     Hello_get(Hello *self)
-     {
-         return Py_BuildValue("s", self->name);
-     }
-     PyObject*
-     Hello_print(Hello *self)
-     {
-         cout << "Hello " << self->name << endl;
-         Py_RETURN_NONE;
-     }
+   using namespace std;
 
-To define a class which can be bound with Python, we need to define its structure, with a PyTypeObject. We have to define:
+   typedef struct {
+       PyObject_HEAD
+       char *name;
+   } Hello;
 
-   - which function is the constructor
-   - which one is the destructor, the new method...
-   - what is the name of the class
-   - its size
-   - its methods
+   static PyObject* Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+   {
+       Hello *self;
+       self = (Hello *)type->tp_alloc(type, 0);
+       static char *kwlist[] = {(char*)"name", NULL};
+       if (self != NULL) {
+           if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist,
+               &self->name)){
+                   return NULL;
+           }
+       }
+       return (PyObject *)self;
+   }
 
-::
+   static int Hello_init(Hello *self, PyObject *args, PyObject *kwds)
+   {
+       static char *kwlist[] = {(char*)"name", NULL};
+
+       self->name = (char*)"Crappy";
+       if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &self->name)){
+               return 1;
+       }
+       return 0;
+   }
+
+   static void Hello_dealloc(Hello* self)
+   {
+       Py_TYPE(self)->tp_free((PyObject*)self);
+   }
+
+   PyObject*
+   Hello_get(Hello *self)
+   {
+       return Py_BuildValue("s", self->name);
+   }
+
+   PyObject*
+   Hello_print(Hello *self)
+   {
+       cout << "Hello " << self->name << endl;
+       Py_RETURN_NONE;
+   }
+
+Now just like in the previous example we need to list the different methods of
+our module.
+
+.. code-block:: c
+   :emphasize-lines: 54-60
+
+   #include <Python.h>
+   #include <iostream>
+
+   using namespace std;
+
+   typedef struct {
+       PyObject_HEAD
+       char *name;
+   } Hello;
+
+   static PyObject* Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+   {
+       Hello *self;
+       self = (Hello *)type->tp_alloc(type, 0);
+       static char *kwlist[] = {(char*)"name", NULL};
+       if (self != NULL) {
+           if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist,
+               &self->name)){
+                   return NULL;
+           }
+       }
+       return (PyObject *)self;
+   }
+
+   static int Hello_init(Hello *self, PyObject *args, PyObject *kwds)
+   {
+       static char *kwlist[] = {(char*)"name", NULL};
+
+       self->name = (char*)"Crappy";
+       if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &self->name)){
+               return 1;
+       }
+       return 0;
+   }
+
+   static void Hello_dealloc(Hello* self)
+   {
+       Py_TYPE(self)->tp_free((PyObject*)self);
+   }
+
+   PyObject*
+   Hello_get(Hello *self)
+   {
+       return Py_BuildValue("s", self->name);
+   }
+
+   PyObject*
+   Hello_print(Hello *self)
+   {
+       cout << "Hello " << self->name << endl;
+       Py_RETURN_NONE;
+   }
 
    static PyMethodDef Hello_methods[] = {
-           {"say_hello", (PyCFunction)Hello_print, METH_NOARGS,
+       {"say_hello", (PyCFunction)Hello_print, METH_VARARGS,
         "Say hello to somebody."},
-        {"get_name", (PyCFunction)Hello_get, METH_NOARGS,
-        "Return the name attribute."},
+       {"get_name", (PyCFunction)Hello_get, METH_NOARGS,
+       "Return the name attribute."},
        {NULL}
    };
-   static PyMethodDef module_methods[] = {
-       {NULL}
-   };
-   static PyTypeObject helloType = {
-       PyObject_HEAD_INIT(NULL)
-       0,                         /*ob_size*/
-       "Hello",             /*tp_name*/
-       sizeof(Hello),             /*tp_basicsize*/
-       0,                         /*tp_itemsize*/
-       (destructor)Hello_dealloc, /*tp_dealloc*/
-       0,                         /*tp_print*/
-       0,                         /*tp_getattr*/
-       0,                         /*tp_setattr*/
-       0,                         /*tp_compare*/
-       0,                         /*tp_repr*/
-       0,                         /*tp_as_number*/
-       0,                         /*tp_as_sequence*/
-       0,                         /*tp_as_mapping*/
-       0,                         /*tp_hash */
-       0,                         /*tp_call*/
-       0,                         /*tp_str*/
-       0,                         /*tp_getattro*/
-       0,                         /*tp_setattro*/
-       0,                         /*tp_as_buffer*/
-       Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
-       "Hello objects",           /* tp_doc */
-       0,                     /* tp_traverse */
-       0,                     /* tp_clear */
-       0,                     /* tp_richcompare */
-       0,                     /* tp_weaklistoffset */
-       0,                     /* tp_iter */
-       0,                     /* tp_iternext */
-       Hello_methods,             /* tp_methods */
-       0,             /* tp_members */
-       0,                         /* tp_getset */
-       0,                         /* tp_base */
-       0,                         /* tp_dict */
-       0,                         /* tp_descr_get */
-       0,                         /* tp_descr_set */
-       0,                         /* tp_dictoffset */
-       (initproc)Hello_init,      /* tp_init */
-       0,                         /* tp_alloc */
-       Hello_new,                 /* tp_new */
-   };
 
-Finally, as we did in the first example, the init method has to be defined::
+To define a class which can be bound with Python, we need to define its
+structure, with a ``PyTypeObject``. We have to define:
 
-   Py_InitModule3 creates the module and returns its instance (here empty).
-   We can add our created objects, here helloType which defines our class.
+- the constructor
+- the destructor
+- the new method
+- the name of the class
+- its size
+- its methods
+- etc.
 
-.. Note::
+.. code-block:: c
+   :emphasize-lines: 62-73
 
-   When returning an object, it returns a reference to it, each object has a reference counter that is 
-   automatically created for memory management issue, to know how many different places there are that have
-   a reference to an object. When an object's reference count becomes 0, the object is automatically
-   deallocated. You have to take care of it when dealing with C-C++/Python bindings. (With
-   Py_INCREF, Py_DECREF). Please see Python C-api documentation for more details.
+   #include <Python.h>
+   #include <iostream>
 
-::
+   using namespace std;
 
-   PyMODINIT_FUNC
-   inithelloModule(void)
+   typedef struct {
+       PyObject_HEAD
+       char *name;
+   } Hello;
+
+   static PyObject* Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
    {
-       try{
-           PyObject* m;
-           if (PyType_Ready(&helloType) < 0)
-               cout << "unable to install ximea module" << endl;
-           m = Py_InitModule3("helloModule", module_methods,
-                              "hello C++ module.");
-           Py_INCREF(&helloType);
-           PyModule_AddObject(m, "Hello", (PyObject *)&helloType);
+       Hello *self;
+       self = (Hello *)type->tp_alloc(type, 0);
+       static char *kwlist[] = {(char*)"name", NULL};
+       if (self != NULL) {
+           if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist,
+               &self->name)){
+                   return NULL;
+           }
        }
-       catch ( const std::exception & e )
-       {
-           std::cerr << e.what();
-       }
+       return (PyObject *)self;
    }
 
-Example::
+   static int Hello_init(Hello *self, PyObject *args, PyObject *kwds)
+   {
+       static char *kwlist[] = {(char*)"name", NULL};
 
-   In [2]: hello = crappy2.technical.helloModule.Hello("world")
+       self->name = (char*)"Crappy";
+       if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &self->name)){
+               return 1;
+       }
+       return 0;
+   }
 
-   In [3]: hello.
-   hello.get_name   hello.say_hello
+   static void Hello_dealloc(Hello* self)
+   {
+       Py_TYPE(self)->tp_free((PyObject*)self);
+   }
 
-   In [3]: hello.get_name()
-   Out[3]: 'world'
+   PyObject*
+   Hello_get(Hello *self)
+   {
+       return Py_BuildValue("s", self->name);
+   }
 
-   In [4]: hello.say_hello()
-   Hello world
+   PyObject*
+   Hello_print(Hello *self)
+   {
+       cout << "Hello " << self->name << endl;
+       Py_RETURN_NONE;
+   }
 
-   In [5]: hello = crappy2.technical.helloModule.Hello()
+   static PyMethodDef Hello_methods[] = {
+       {"say_hello", (PyCFunction)Hello_print, METH_VARARGS,
+        "Say hello to somebody."},
+       {"get_name", (PyCFunction)Hello_get, METH_NOARGS,
+       "Return the name attribute."},
+       {NULL}
+   };
 
-   In [6]: hello.say_hello()
-   Hello Crappy
+   static PyTypeObject helloType = {
+       PyObject_HEAD_INIT(NULL)
+       .tp_name = "crappy.tool.Hello",
+       .tp_basicsize = sizeof(Hello),
+       .tp_itemsize = 0,
+       .tp_dealloc = (destructor) Hello_dealloc,
+       .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+       .tp_doc = "Hello objects",
+       .tp_methods = Hello_methods,
+       .tp_init = (initproc) Hello_init,
+       .tp_new = Hello_new,
+   };
 
-   In [7]: hello.get_name()
-   Out[7]: 'Crappy'
+Finally just like in the first example we have to define the module and to
+initialize it. Here the syntax is a bit more complex but the idea remains the
+same.
+
+.. code-block:: c
+   :emphasize-lines: 75-94
+
+   #include <Python.h>
+   #include <iostream>
+
+   using namespace std;
+
+   typedef struct {
+       PyObject_HEAD
+       char *name;
+   } Hello;
+
+   static PyObject* Hello_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+   {
+       Hello *self;
+       self = (Hello *)type->tp_alloc(type, 0);
+       static char *kwlist[] = {(char*)"name", NULL};
+       if (self != NULL) {
+           if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist,
+               &self->name)){
+                   return NULL;
+           }
+       }
+       return (PyObject *)self;
+   }
+
+   static int Hello_init(Hello *self, PyObject *args, PyObject *kwds)
+   {
+       static char *kwlist[] = {(char*)"name", NULL};
+
+       self->name = (char*)"Crappy";
+       if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &self->name)){
+               return 1;
+       }
+       return 0;
+   }
+
+   static void Hello_dealloc(Hello* self)
+   {
+       Py_TYPE(self)->tp_free((PyObject*)self);
+   }
+
+   PyObject*
+   Hello_get(Hello *self)
+   {
+       return Py_BuildValue("s", self->name);
+   }
+
+   PyObject*
+   Hello_print(Hello *self)
+   {
+       cout << "Hello " << self->name << endl;
+       Py_RETURN_NONE;
+   }
+
+   static PyMethodDef Hello_methods[] = {
+       {"say_hello", (PyCFunction)Hello_print, METH_VARARGS,
+        "Say hello to somebody."},
+       {"get_name", (PyCFunction)Hello_get, METH_NOARGS,
+       "Return the name attribute."},
+       {NULL}
+   };
+
+   static PyTypeObject helloType = {
+       PyObject_HEAD_INIT(NULL)
+       .tp_name = "crappy.tool.Hello",
+       .tp_basicsize = sizeof(Hello),
+       .tp_itemsize = 0,
+       .tp_dealloc = (destructor) Hello_dealloc,
+       .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+       .tp_doc = "Hello objects",
+       .tp_methods = Hello_methods,
+       .tp_init = (initproc) Hello_init,
+       .tp_new = Hello_new,
+   };
+
+   static struct PyModuleDef helloClassModule = {
+       PyModuleDef_HEAD_INIT,
+       "helloClassModule",
+       NULL,
+       -1,
+       Hello_methods
+   };
+
+   PyMODINIT_FUNC
+   PyInit_helloClassModule(void)
+   {
+       PyObject* m;
+       PyType_Ready(&helloType);
+
+       m = PyModule_Create(&helloClassModule);
+
+       Py_INCREF(&helloType);
+       PyModule_AddObject(m, "Hello", (PyObject *) &helloType);
+       return m;
+   }
+
+2.3.2 Binding the code to Crappy
+""""""""""""""""""""""""""""""""
+
+Now that the C++ code is ready, let's add it to the extensions in ``setup.py`` :
+
+.. code-block:: python
+
+   helloClassModule = Extension('tool.helloClassModule',
+                                sources=['sources/hello/hello_class.cpp'],
+                                extra_compile_args=["-l", "python%s" % v],
+                                language='c++')
+
+   extensions.append(helloClassModule)
+
+We also need to import it from ``__init__.py`` in ``crappy/tool/`` :
+
+.. code-block:: python
+
+   from .helloClassModule import Hello
+
+After reinstalling Crappy, we can now use our class very simply :
+
+  >>> import crappy
+  >>> default = crappy.tool.Hello()
+  >>> default.get_name()
+  'Crappy'
+  >>> default.say_hello()
+  Hello Crappy
+  >>> with_arg = crappy.tool.Hello('Bob')
+  >>> with_arg.get_name()
+  'bob'
+  >>> with_arg.say_hello()
+  Hello bob

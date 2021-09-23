@@ -4,116 +4,211 @@ Installation
 
 Requirements
 ------------
+
+You can install Crappy on the three main OS : Windows, Mac and Linux. Note that
+Crappy is developed and tested on the latest OS versions, and no particular
+effort is made to ensure compatibility with previous ones. It is thus preferable
+to install it on a recent and up-to-date OS version.
+
 To install Crappy, you will need Python 3 (3.6 or higher) with the following
 modules :
 
-  - Numpy (1.19.0 or higher)
+- `numpy <https://numpy.org/>`_ (1.19.0 or higher)
 
-These modules are not mandatory but will provide additional functionalities :
+The following modules are not mandatory but will provide additional
+functionalities :
 
-  - matplotlib (1.5.3 or higher, for plotting graphs and displaying images)
-  - Opencv (3.0 or higher, to perform image acquisition and analysis)
-  - pyserial (To interface with serial sensors and actuators)
-  - Tk (For the configuration interface of cameras)
-  - Scikit-image (0.11 or higher)
-  - xiApi (for Ximea cameras)
-  - labjack (for Labjack support)
-  - Simple-ITK (for faster image saving)
-  - PyCUDA (for real-time correlation)
-  - Comedi driver (for Comedi acquisition boards, Linux only)
-  - PyDaqmx (for National Instrument boards, Windows only)
-  - niFgen (package from National Instrument, Windows only)
-  - openDAQ (for opendaq boards)
+- `matplotlib <https://matplotlib.org/>`_ (1.5.3 or higher, for plotting graphs
+  and displaying images)
+- `opencv <https://opencv.org/>`_ (3.0 or higher, to perform image acquisition
+  and analysis)
+- `pyserial <https://pypi.org/project/pyserial/>`_ (To interface with serial
+  sensors and actuators)
+- `Tk <https://docs.python.org/3/library/tkinter.html>`_ (For the configuration
+  interface of cameras)
+- `scikit-image <https://scikit-image.org/>`_ (0.11 or higher)
+- `xiApi <https://www.ximea.com/support/wiki/apis/xiapi>`_ (for Ximea cameras)
+- `labjack <https://labjack.com/support/software/examples/ljm/python>`_ (for
+  Labjack support)
+- `Simple-ITK <https://simpleitk.org/>`_ (for faster image saving)
+- `PyCUDA <https://documen.tician.de/pycuda/>`_ (for real-time correlation)
+- `Comedi <https://www.comedi.org/>`_ driver (for Comedi acquisition boards,
+  Linux only)
+- `PyDaqmx <https://pythonhosted.org/PyDAQmx/>`_ (for National Instrument
+  boards, Windows only)
+- `niFgen <https://www.ni.com/fr-fr/support/downloads/drivers/
+  download.ni-fgen.html#346233>`_ (package from National Instrument, Windows
+  only)
+- `openDAQ <https://pypi.org/project/opendaq/>`_ (for opendaq boards)
 
 .. note::
-  - Replace ``<module>`` by the name of the module you want to install.
-  - See :ref:`Documentation` for more details.
+  Knowing which modules are needed for a given setup is easy. Just write the
+  script and start it, if a module is missing Crappy will simply tell you !
 
 A. For Linux users
 ------------------
-These steps have been tested for Ubuntu 16.04, 18.04 and 20.04 but should work
-with other distros as well.
+These steps have been tested for Ubuntu 18.04 and 20.04 but should work on other
+distributions as well, as long as Python 3.6 is installed.
 
-1a. Install the dependencies in a virtualenv (recommended)
-::
+**1.** The first step is to get the required dependencies.
+
+First make sure that you have ``pip`` installed.
+
+.. code-block:: shell-session
+
+   sudo apt update
+   sudo apt upgrade
+   sudo apt install python3-pip
+
+**1.a.** Install the dependencies in a ``virtualenv`` (recommended) :
+
+.. code-block:: shell-session
 
   workon myenv
   pip3 install <module>
 
-1b. OR Installing the required Python modules on the system
-::
+If you're not familiar with virtual environments,
+`here <https://virtualenv.pypa.io/en/latest/>`_'s more documentation.
 
-  sudo apt update
-  sudo apt install python3-pip
+**1.b.** Or install the required Python modules on the system :
+
+.. code-block:: shell-session
+
   pip3 install <module>
 
+**2.** You can now install Crappy. Again, two ways to go.
 
-2. You can now install crappy. Get the sources using git and use setup script:
+**2.a.** For **regular users**, install using ``pip`` (either in a virtualenv or
+on the system) :
+
+.. code-block:: shell-session
+
+  pip3 install crappy
+
+
+**2.b.** For **developers**, get the sources using ``git`` and use ``setup``
+script :
 ::
 
+  cd <path>
   git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
   cd crappy
   sudo python3 setup.py install
 
+If you're not familiar with ``git``, documentation can be found
+`there <https://git-scm.com/doc>`_.
+
+.. important::
+  For adding C/C++ modules to Crappy you **must** run a ``setup`` install, which
+  will be way more convenient if you get Crappy from ``git``.
+
+.. note::
+  - Replace ``<module>`` by the name of the module you want to install.
+  - Replace ``<path>`` by the path where you want Crappy to be located.
+
 B. For Windows users
 --------------------
-These steps have been tested for Windows 8.1 but should work with other
-versions as well. Make sure you are using the x64 version of python or the C++
-modules will not compile properly.
+These steps have been tested for Windows 8.1 and 10 but should work with other
+versions as well. If you want to load C++ modules, make sure to use the x64
+version of Python.
 
-1. Install the dependencies:
-::
+**1.** Install the dependencies :
 
-  pip3 install module-name
+.. code-block:: shell-session
 
-This will works for most modules, but some may fail and need a wheel file
-built for windows. We had to do this for numpy (with mkl) and scikit-image.
-Just find the correct version at http://www.lfd.uci.edu/~gohlke/pythonlibs/
-and simply run:
-::
+  pip install <module>
 
-  pip3 install wheel_file.whl
+This will works for most modules, but some may fail and need a wheel file built
+for Windows. Once you've found a binary wheel, simply run :
 
-2. Also, you will need Visual C++ for Python 3.x (your version of python) in
-   order to compile C++ modules.  If you want to use Ximea cameras, don't
-   forget to install XiAPI and add ``c:\XIMEA\API\x64`` to your path.
+.. code-block:: shell-session
 
-3. Then you can get the source code and install it:
-::
+  pip install <wheel_file.whl>
 
+**2.** Also, you will need Visual C++ for Python 3.x (your version of python) if
+you want to compile C++ modules.  If you want to use Ximea cameras, don't
+forget to install XiAPI and add ``c:\XIMEA\API\x64`` to your path.
+
+**3.** Then you can install Crappy.
+
+If you're a **regular user** :
+
+.. code-block:: shell-session
+
+  pip install crappy
+
+Or if you're a **developer** :
+
+.. code-block:: shell-session
+
+  cd <path>
   git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
   cd crappy
   setup.py install
 
+If you're not familiar with ``git``, documentation can be found
+`there <https://git-scm.com/doc>`_.
+
+.. important::
+  For adding C/C++ modules to Crappy you **must** run a ``setup`` install, which
+  will be way more convenient if you get Crappy from ``git``.
+
+.. note::
+  - Replace ``<module>`` by the name of the module you want to install.
+  - Replace ``<path>`` by the path where you want Crappy to be located.
+
 C. For macOS users
 ------------------
-These steps have been tested on macOS Catalina (10.15.7), but should work with
+These steps have been tested on macOS Sierra (10.12.6), but should work with
 other versions as well.
 
-1. You should install the required modules using pip.
-::
+**1.** Install the dependencies :
 
-  python install pip
-  pip install module-name
+.. code-block:: shell-session
+
+  pip3 install <module>
+
+**2.** Then you can install Crappy.
+
+If you're a **regular user** :
+
+.. code-block:: shell-session
+
+  pip3 install crappy
+
+Or if you're a **developer** :
+
+.. code-block:: shell-session
+
+  cd <path>
+  git clone https://github.com/LaboratoireMecaniqueLille/crappy.git
+  cd crappy
+  setup.py install
+
+If you're not familiar with ``git``, documentation can be found
+`there <https://git-scm.com/doc>`_.
+
+.. note::
+  - Replace ``<module>`` by the name of the module you want to install.
+  - Replace ``<path>`` by the path where you want Crappy to be located.
 
 D. Troubleshooting
 ------------------
 
-The imaging module is not natively included in Tk. Some user may have to
-install it manually to us the camera configuration GUI
+The imaging module is not natively included in Tk. Some user may have to install
+it manually to use the camera configuration GUI.
 
-For Ubuntu, you can do
-::
+For Ubuntu, you can do :
+
+.. code-block:: shell-session
 
   sudo apt install python3-pil.imagetk
 
-Also, the matplotlib backend may have some troubles initializing multiple
-windows on some desktop environment. It can be fixed easily by using an other
-backend. Simply specify a functional backed in the grapher to fix this issue
-i.e.:
-::
+Also, you may face some issues with matplotlib backends not managing to open
+multiple windows in some desktop environment. We set the default backend to
+``TkAgg``, which works fine in most situations. If you encounter backend issues,
+you can specify another backend for matplotlib in the grapher blocks :
 
-  graph = crappy.bocks.Grapher(('t(s)', 'F(N)'), backend='TkAgg')
+.. code-block:: shell-session
 
-Or simply edit the default backend in crappy/blocks/grapher.py by replacing
-None with the desired backend.
+  graph = crappy.bocks.Grapher(<args, kwargs>, backend='TkAgg')

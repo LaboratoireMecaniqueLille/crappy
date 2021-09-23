@@ -4,5 +4,6 @@ Tutorials
 
 .. toctree::
 
-   tutorials/generators
+   tutorials/gettingstarted
+   tutorials/custom_blocks
    tutorials/c

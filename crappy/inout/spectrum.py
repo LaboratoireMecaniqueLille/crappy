@@ -15,23 +15,7 @@ class SpectrumError(Exception):
 
 
 class Spectrum(InOut):
-  """
-  Acquire data from a Spectrum device.
-
-  Args:
-    - device (str, default: "/dev/spcm0"): The address of the device to use.
-    - channels (list, default: [0]): The channels to open. See doc for the
-      allowed combinations!
-    - ranges (list, default: [10000]): The ranges of the channels in mV.
-    - samplerate (int, default: 100000): The samplerate for all channels in Hz.
-    - buff_size (int, default: 2**16 (64MB)): The size of the memory
-      allocated as a rolling buffer to copy the data from the card
-    - notify_size (int, default: 2**16 (64kB)): The size of the chunks of
-      data to copy from the card.
-    - split_chan (bool, default: False): If False, it will return a single
-      2D array, else each chan will be a 1D array.
-
-  """
+  """Acquire data from a Spectrum device."""
 
   def __init__(self,
                device=b'/dev/spcm0',
@@ -41,6 +25,22 @@ class Spectrum(InOut):
                buff_size=2**26,
                notify_size=2**16,
                split_chan=False):
+    """Sets the args and the instance attributes.
+
+    Args:
+      device (str, default: "/dev/spcm0"): The address of the device to use.
+      channels (list, default: [0]): The channels to open. See doc for the
+        allowed combinations!
+      ranges (list, default: [10000]): The ranges of the channels in mV.
+      samplerate (int, default: 100000): The samplerate for all channels in Hz.
+      buff_size (int, default: 2**16 (64MB)): The size of the memory
+        allocated as a rolling buffer to copy the data from the card
+      notify_size (int, default: 2**16 (64kB)): The size of the chunks of
+        data to copy from the card.
+      split_chan: split_chan (bool, default: False): If False, it will return a
+        single 2D array, else each chan will be a 1D array.
+    """
+
     InOut.__init__(self)
     self.device = device
     self.channels = [0] if channels is None else channels

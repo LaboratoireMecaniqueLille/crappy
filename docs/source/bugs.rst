@@ -2,4 +2,5 @@
 Bug reports
 ===========
 
-Please report bugs at : https://github.com/LaboratoireMecaniqueLille/crappy/issues
+Please report bugs on the `dedicated GitHub page
+<https://github.com/LaboratoireMecaniqueLille/crappy/issues>`_ of the project.
