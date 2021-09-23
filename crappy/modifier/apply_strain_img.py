@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import numpy as np
 from .._global import OptionalModule
 
@@ -34,17 +36,19 @@ class Apply_strain_img(Modifier):
     self.leyy = eyy_label
     self.img_label = img_label
     h, w = img.shape
-    self.exx = np.concatenate((np.linspace(-w / 2, w / 2, w,
-          dtype=np.float32)[np.newaxis, :],) * h, axis=0)
-    self.eyy = np.concatenate((np.linspace(-h / 2, h / 2, h,
-      dtype=np.float32)[:, np.newaxis],) * w, axis=1)
+    self.exx = np.concatenate(
+        (np.linspace(-w / 2, w / 2, w,
+                     dtype=np.float32)[np.newaxis, :],) * h, axis=0)
+    self.eyy = np.concatenate(
+        (np.linspace(-h / 2, h / 2, h,
+                     dtype=np.float32)[:, np.newaxis],) * w, axis=1)
     xx, yy = np.meshgrid(range(w), range(h))
     self.xx = xx.astype(np.float32)
     self.yy = yy.astype(np.float32)
 
   def evaluate(self, d: dict) -> dict:
     exx, eyy = d[self.lexx] / 100, d[self.leyy] / 100
-    tx, ty = (self.xx - (exx / (1 + exx)) * self.exx), \
-             (self.yy - (eyy / (1 + eyy)) * self.eyy)
+    tx = (self.xx - (exx / (1 + exx)) * self.exx)
+    ty = (self.yy - (eyy / (1 + eyy)) * self.eyy)
     d[self.img_label] = cv2.remap(self.img, tx, ty, 1)
     return d

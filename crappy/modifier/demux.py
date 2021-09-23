@@ -10,9 +10,9 @@ class Demux(Modifier):
   """Modifier to change a stream table into a :obj:`dict` with values (to plot
   streams).
 
-  This modifier turns the array return by a streaming device into a :obj:`dict`
-  with individual values (but only one per table). This allows attaching
-  graphers to HF acquisition devices.
+  This modifier turns the array returned by a streaming device into a
+  :obj:`dict` with individual values (but only one per table). This allows
+  attaching graphers to HF acquisition devices.
 
   Note:
     The table will be lost in the process.
