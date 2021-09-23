@@ -12,11 +12,6 @@ Agilent 34420A
 .. automodule:: crappy.inout.agilent34420A
    :members:
 
-Arduino
-+++++++
-.. automodule:: crappy.inout.arduino
-   :members:
-
 Comedi
 ++++++
 .. automodule:: crappy.inout.comedi
