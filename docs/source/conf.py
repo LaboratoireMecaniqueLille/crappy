@@ -14,6 +14,7 @@
 #
 import os
 import sys
+from time import asctime
 from crappy import __version__
 sys.path.insert(0, os.path.abspath('../..'))
 sys.setrecursionlimit(1500)
@@ -22,7 +23,7 @@ sys.setrecursionlimit(1500)
 # -- Project information -----------------------------------------------------
 
 project = 'Crappy'
-copyright = '2021'
+copyright = asctime()[-4:]  # The current year
 author = 'LaMcube'
 
 # The short X.Y version
