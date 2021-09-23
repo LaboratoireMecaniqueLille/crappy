@@ -9,23 +9,23 @@ class Reader(Block):
   Creates a reader that prints the input data continuously.
   """
 
-  def __init__(self, name=None):
+  def __init__(self, reader_name=None):
     """Sets the arg and initializes the parent class.
 
     Args:
-      name (:obj:`str`, optional): If set, will be printed to identify the
-        reader.
+      reader_name (:obj:`str`, optional): If set, will be printed to identify
+        the reader.
     """
 
     Block.__init__(self)
-    self.name = name
+    self.reader_name = reader_name
 
   def loop(self):
     for i in self.inputs:
       d = i.recv_last()
       if d is not None:
         s = ""
-        if self.name:
-          s += self.name + " "
+        if self.reader_name:
+          s += self.reader_name + " "
         s += "got: " + str(d)
         print(s)
