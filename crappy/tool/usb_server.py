@@ -150,7 +150,7 @@ class Usb_server:
           Usb_server.command_event, Usb_server.answer_event, \
           Usb_server.next_process, Usb_server.done_event
 
-    return None, None, None, None, None, None
+    return None, None, None, None, None, None, None
 
   def __del__(self) -> None:
     """Stops the server upon deletion of the :ref:`In / Out` object."""
