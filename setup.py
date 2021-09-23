@@ -28,15 +28,6 @@ v = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
 extensions = []
 pyFgenModule = clModule = None
 
-
-# uncomment following lines for testing extension module
-# (see documentation "How to bin C/C++ with Crappy")
-# helloModule = Extension('technical.helloModule',
-#                         sources=['sources/hello/hello_class.cpp'],
-#                         extra_compile_args=["-l", "python%s" % v])
-#
-# extensions.append(helloModule)
-
 if platform.system() == "Linux":
   try:
     # Find the latest runtime version of SiliconSoftware install
@@ -67,7 +58,7 @@ if platform.system() == "Linux":
             "CameraLink module won't be available.")
 
 if platform.system() == "Windows":
-  pyFgenModule = Extension('sensor.pyFgenModule',
+  pyFgenModule = Extension('tool.pyFgenModule',
                            include_dirs=["C:\\python%s\\site-packages\\numpy\\"
                                          "core\\include" % v,
                                          "C:\\Program Files (x86)\\"
@@ -82,7 +73,7 @@ if platform.system() == "Windows":
   if input("would you like to install pyFgen module? ([y]/n)") != "n":
     extensions.append(pyFgenModule)
   clpath = "C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\"
-  clModule = Extension('sensor.clModule',
+  clModule = Extension('tool.clModule',
                        include_dirs=[clpath+"include",
                                      "C:\\python{}\\Lib\\site-packages\\numpy\\"
                                      "core\\include".format(
