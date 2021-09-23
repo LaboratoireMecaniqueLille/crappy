@@ -6,7 +6,6 @@
 from .autoDrive import AutoDrive
 from .block import Block
 from .camera import Camera
-from .client import Client
 from .dashboard import Dashboard
 from .discorrel import DISCorrel
 from .displayer import Displayer
