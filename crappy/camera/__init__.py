@@ -9,8 +9,7 @@ from .streamer import Streamer
 from .webcam import Webcam
 from .xiapi import Xiapi
 from .ximeaCV import Ximea_cv
-from .picamera_picamera import Picamera
-from .picamera_webcam import Picamera_webcam
+from .pi_camera import Picamera
 # Cameralink cameras
 from .cameralink import Cl_camera
 from .bispectral import Bispectral

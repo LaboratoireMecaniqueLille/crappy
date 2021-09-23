@@ -28,13 +28,8 @@ JAI
    :members:
 
 PiCamera
-++++++++
-.. automodule:: crappy.camera.picamera_picamera
-   :members:
-
-PiCamera - Webcam
-+++++++++++++++++
-.. automodule:: crappy.camera.picamera_webcam
+--------
+.. automodule:: crappy.camera.pi_camera
    :members:
 
 Seek Thermal Pro
