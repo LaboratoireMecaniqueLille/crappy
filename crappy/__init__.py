@@ -3,6 +3,7 @@
 from pkg_resources import resource_string, resource_filename
 from numpy import frombuffer, uint8
 from ._global import OptionalModule
+from webbrowser import open
 
 from . import actuator
 from . import camera
@@ -15,6 +16,12 @@ from .__version__ import __version__
 
 # For compatibility (deprecated!)
 condition = modifier
+
+
+# Quick access to documentation
+def doc():
+  open('https://crappy.readthedocs.io/en/latest/')
+
 
 # Useful aliases
 link = links.link
