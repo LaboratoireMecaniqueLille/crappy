@@ -21,13 +21,16 @@ class Diff(Modifier):
     self.t = time
     if out_label is None:
       self.out_label = 'd_' + self.label
+    else:
+      self.out_label = out_label
     self.last_t = 0
     self.last_val = 0
 
   def evaluate(self, data: dict) -> dict:
     t = data[self.t]
     val = data[self.label]
-    data[self.label] = (data[self.label] - self.last_val) / (t - self.last_t)
+    data[self.out_label] = (data[self.label] -
+                            self.last_val) / (t - self.last_t)
     self.last_t = t
     self.last_val = val
     return data
