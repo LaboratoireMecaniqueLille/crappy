@@ -99,20 +99,22 @@ class GPUVE(Camera):
     self.correl = []
     for oy, ox, h, w in self.patches:
       self.correl.append(GPUCorrel_tool((h, w),
-                         fields=['x', 'y'], context=self.context,
+                                        fields=['x', 'y'],
+                                        context=self.context,
                                         levels=1, **self.kwargs))
     self.loops = 0
     self.nloops = 50
-
-  def begin(self):
-    t, img = self.camera.read_image()
     for c, (oy, ox, h, w) in zip(self.correl, self.patches):
-      c.set_orig(
-          self.transform(img[oy:oy + h, ox:ox + w]).astype(np.float32))
+      if self.transform is not None:
+        c.set_orig(
+            self.transform(img[oy:oy + h, ox:ox + w]).astype(np.float32))
+      else:
+        c.set_orig(img[oy:oy + h, ox:ox + w].astype(np.float32))
       c.prepare()
     self.last_t = time() - 1
+    t, img = self.camera.read_image()
     if self.save_folder:
-      self.save(self.save_folder + "img_ref_%.5f.tiff" % (t - self.t0))
+      self.save(img, self.save_folder + "img_ref_%.5f.tiff" % (t - self.t0))
 
   def loop(self):
     if self.verbose and self.loops % self.nloops == 0:
@@ -125,10 +127,12 @@ class GPUVE(Camera):
     # + self.correl.get_disp(
     #      self.transform(img).astype(np.float32)).tolist()
     for c, (oy, ox, h, w) in zip(self.correl, self.patches):
-      out.extend(c.get_disp(self.transform(
-          img[oy:oy + h, ox:ox + w]).astype(np.float32)).tolist())
-      # out.extend([np.sum(self.transform(
-      #   img[oy:oy+h, ox:ox+w]).astype(np.float32)),0])
+      if self.transform is not None:
+        out.extend(c.get_disp(self.transform(
+            img[oy:oy + h, ox:ox + w]).astype(np.float32)).tolist())
+      else:
+        out.extend(c.get_disp(
+            img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
     if self.res:
       pass  # TODO
     self.send(out)
