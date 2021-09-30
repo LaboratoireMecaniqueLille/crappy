@@ -16,8 +16,10 @@ cross-platform compatible example. You can however look into the `pyspcm
 <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/crappy/tool/
 pyspcm.py>`_ and `comedi_bind <https://github.com/LaboratoireMecaniqueLille/
 crappy/blob/master/crappy/tool/comedi_bind.py>`_ tools for an example using the
-:mod:`ctypes` library and ``.so`` files. Alternative solutions include Cython,
-:mod:`cffi`, PyBind11, and many others.
+:mod:`ctypes` library and ``.so`` files. The pyspcm tool is a binding for using
+Spectrum high-speed acquisition boards, and comedi is a binding for using the
+comedi driver. Alternative solutions include Cython, :mod:`cffi`, PyBind11, and
+many others.
 
 2. Writing your own library
 ---------------------------

@@ -814,8 +814,8 @@ elegant solution is to use :mod:`pathlib`, that generates cross-platform
 compatible paths.
 
 Let's say we want to save the data to a ``data.csv`` file in a ``Tutorial``
-folder located where the ``.py`` script file is. The code could look as
-follows :
+folder located where the ``.py`` script file is. Note that the folder will be
+created if it doesn't already exist. The code could look as follows :
 
 .. code-block:: python
 

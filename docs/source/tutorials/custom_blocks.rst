@@ -712,10 +712,13 @@ example let's add the optional methods and the argument :
 
 We're going to use a `threading.Thread <https://docs.python.org/3/library/
 threading.html#threading.Thread>`_ to emulate the behavior of the stepper motor.
-If you're not familiar with it, simply consider that the code of the motor will
-run simultaneously with the code handling the commands. The thread will loop at
-a tunable frequency, and simply update the position according to the target and
-the current speed. So we also need variables to store the current speed,
+If you're not familiar with it, check out `this tutorial <https://realpython.
+com/intro-to-python-threading/>`_ from RealPython which is complete, accessible
+and very well-writen. Or to keep it short, simply consider that two flows of
+execution will run in parallel: the regular one handling the user inputs, and
+another one exclusively dedicated to emulating the motor. The thread will loop
+at a tunable frequency, and simply update the position according to the target
+and the current speed. So we also need variables to store the current speed,
 position, and position target if any. Without going further into detail, after
 adding the thread the code looks this way :
 
