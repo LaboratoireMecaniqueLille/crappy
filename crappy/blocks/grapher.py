@@ -17,14 +17,15 @@ class Grapher(Block):
   """The grapher receive data from a block (via a :ref:`Link`) and plots it."""
 
   def __init__(self,
-               *labels,
-               length=0,
-               freq=2,
-               maxpt=20000,
-               window_size=(8, 8),
-               window_pos=None,
-               interp=True,
-               backend="TkAgg"):
+               *labels: tuple,
+               length: int = 0,
+               freq: float = 2,
+               maxpt: int = 20000,
+               window_size: tuple = (8, 8),
+               window_pos: tuple = None,
+               interp: bool = True,
+               backend: str = "TkAgg",
+               verbose: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -77,6 +78,7 @@ class Grapher(Block):
     self.window_pos = window_pos
     self.interp = interp
     self.backend = backend
+    self.verbose = verbose
 
     self.labels = labels
 
