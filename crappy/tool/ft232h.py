@@ -221,8 +221,12 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("Cannot set serial number if it is not specified !")
 
     if i2c_speed not in ft232h_i2c_speed:
-      raise ValueError("i2c_speed should be in {}".format(list(
-        ft232h_i2c_speed.values())))
+      try:
+        if not 10E3 <= i2c_speed < 100E3:
+          raise ValueError("i2c_speed should be in {} or between 10E3 and 100E3"
+                           .format(list(ft232h_i2c_speed.values())))
+      except TypeError:
+        raise TypeError("i2c_speed should be a float or an int !")
 
     self._gpio_low = 0
     self._gpio_high = 0
@@ -255,7 +259,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # I2C properties
     if self._ft232h_mode == 'I2C':
-      timings = ft232h_i2c_speed[self._i2c_speed]
+      timings = ft232h_i2c_speed[self._i2c_speed if self._i2c_speed in
+                                 ft232h_i2c_speed else 100E3]
       frequency = self._i2c_speed
 
       self._ck_hd_sta = self._compute_delay_cycles(timings.t_hd_sta)
@@ -1946,8 +1951,12 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("Cannot set serial number if it is not specified !")
 
     if i2c_speed not in ft232h_i2c_speed:
-      raise ValueError("i2c_speed should be in {}".format(list(
-        ft232h_i2c_speed.values())))
+      try:
+        if not 10E3 <= i2c_speed < 100E3:
+          raise ValueError("i2c_speed should be in {} or between 10E3 and 100E3"
+                           .format(list(ft232h_i2c_speed.values())))
+      except TypeError:
+        raise TypeError("i2c_speed should be a float or an int !")
 
     self._gpio_low = 0
     self._gpio_high = 0
@@ -2078,7 +2087,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # I2C properties
     if self._ft232h_mode == 'I2C':
-      timings = ft232h_i2c_speed[self._i2c_speed]
+      timings = ft232h_i2c_speed[self._i2c_speed if self._i2c_speed in
+                                 ft232h_i2c_speed else 100E3]
       frequency = self._i2c_speed
 
       self._ck_hd_sta = self._compute_delay_cycles(timings.t_hd_sta)
