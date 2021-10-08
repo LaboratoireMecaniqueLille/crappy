@@ -75,7 +75,7 @@ def win_timeout(timeout: float = None) -> Callable:
   return win_timeout_proxy
 
 
-class Link(object):
+class Link:
   """Link class. All connections between Blocks should be made with this.
 
   It creates a pipe and is used to transfer information between Blocks.

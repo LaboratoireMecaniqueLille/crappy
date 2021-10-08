@@ -27,7 +27,7 @@ except (ModuleNotFoundError, ImportError):
 # by the block
 
 
-class Text(object):
+class Text:
   """A simple text line."""
 
   def __init__(self, *_, **kwargs) -> None:
@@ -49,7 +49,7 @@ class Text(object):
     self.txt.set_text(self.text % data[self.label])
 
 
-class Dot_text(object):
+class Dot_text:
   """Like :class:`Text`, but with a colored dot to visualize a numerical value.
   """
 
@@ -84,7 +84,7 @@ class Dot_text(object):
     self.dot.set_color(cm.coolwarm((data[self.label] - self.low) / self.amp))
 
 
-class Time(object):
+class Time:
   """To print the time of the experiment.
 
   It will print the time since the `t0` of the block.

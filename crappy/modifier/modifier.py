@@ -28,5 +28,5 @@ class MetaModifier(type):
     MetaModifier.classes[name] = cls
 
 
-class Modifier(object):
+class Modifier:
   __metaclass__ = MetaModifier

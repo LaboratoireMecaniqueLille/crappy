@@ -74,7 +74,7 @@ class MetaIO(type):
       MetaIO.classes[name] = cls
 
 
-class InOut(object, metaclass=MetaIO):
+class InOut(metaclass=MetaIO):
   @classmethod
   def is_input(cls) -> bool:
     return hasattr(cls, 'get_data')

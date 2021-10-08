@@ -64,7 +64,7 @@ class MetaCam(type):
     MetaCam.classes[name] = cls
 
 
-class Cam_setting(object):
+class Cam_setting:
   """This class represents an attribute of the camera that can be set."""
 
   def __init__(self,
@@ -168,7 +168,7 @@ class Cam_setting(object):
     return self.__str__()
 
 
-class Camera(object, metaclass=MetaCam):
+class Camera(metaclass=MetaCam):
   """This class represents a camera sensor.
 
   It may have settings: They represent all that can be set on the camera:

@@ -40,5 +40,5 @@ class MetaActuator(type):
     MetaActuator.classes[name] = cls
 
 
-class Actuator(object, metaclass=MetaActuator):
+class Actuator(metaclass=MetaActuator):
   pass
