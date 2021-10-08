@@ -37,7 +37,8 @@ class Path(object):
     if not isinstance(condition, str):
       if condition is None or not condition:
         return lambda _: False  # For never ending conditions
-      return condition
+      elif isinstance(condition, Callable):
+        return condition
     if '<' in condition:
       var, val = condition.split('<')
       return lambda data: any([i < float(val) for i in data[var]])
@@ -48,4 +49,5 @@ class Path(object):
       val = float(condition.split('=')[1])
       return lambda data: time() - self.t0 > val
     else:
-      return lambda data: True
+      raise ValueError("Wrong syntax for the condition, please refer to the "
+                       "documentation")
