@@ -31,8 +31,8 @@ class Agilent34420a(InOut):
     """Sets the args and initializes parent class.
 
     Args:
-      mode (:obj:`str`, optional): Desired value to measure. Should be either
-        `'VOLT'` or `'RES'`.
+      mode (:obj:`bytes`, optional): Desired value to measure. Should be either
+        `b'VOLT'` or `b'RES'`.
       device (:obj:`str`, optional): Path to the device.
       baudrate (:obj:`int`, optional): Desired baudrate.
       timeout (:obj:`float`, optional): Timeout for the serial connection.

@@ -138,6 +138,10 @@ class ft232h:
   USB serial number in the EEPROM, as there's no default serial number on the
   chip.
 
+  Note:
+    The FT232H does not support clock stretching and this may cause bugs with
+    some I2C devices. Lowering the ``i2c_speed`` may solve the problem.
+
   Important:
     If using Adafruit's board, its `I2C Mode` switch should of course be set to
     the correct value according to the chosen mode.
@@ -193,7 +197,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         in Hz. Available values are :
         ::
 
-          100E3, 400E3, 1E6.
+          100E3, 400E3, 1E6
+
+        or any value between `10kHz` and `100kHz`. Lowering below the default
+        value may solve I2C clock stretching issues on some devices.
 
       spi_turbo (:obj:`str`, optional): Increases the achievable bus speed, but
         may not work with some devices.
@@ -1834,6 +1841,10 @@ class ft232h_server:
   USB serial number in the EEPROM, as there's no default serial number on the
   chip.
 
+  Note:
+    The FT232H does not support clock stretching and this may cause bugs with
+    some I2C devices. Lowering the ``i2c_speed`` may solve the problem.
+
   Important:
     If using Adafruit's board, its `I2C Mode` switch should of course be set to
     the correct value according to the chosen mode.
@@ -1923,7 +1934,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         in Hz. Available values are :
         ::
 
-          100E3, 400E3, 1E6.
+          100E3, 400E3, 1E6
+
+        or any value between `10kHz` and `100kHz`. Lowering below the default
+        value may solve I2C clock stretching issues on some devices.
 
       spi_turbo (:obj:`str`, optional): Increases the achievable bus speed, but
         may not work with some devices.

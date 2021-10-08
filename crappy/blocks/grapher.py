@@ -50,6 +50,8 @@ class Grapher(Block):
         be linked to the following by straight lines. Else, each value wil be
         displayed as constant until the next update.
       backend (:obj:`int`, optional): The :mod:`matplotlib` backend to use.
+      verbose (:obj:`bool`, optional): To display the loop frequency of the
+        block.
 
     Example:
       ::
