@@ -164,7 +164,8 @@ class Mcp9600(Usb_server, InOut):
                          block_number=block_number,
                          next_block=next_event,
                          done_event=done_event,
-                         serial_nr=ft232h_ser_num)
+                         serial_nr=ft232h_ser_num,
+                         i2c_speed=20E3)
     self._device_address = device_address
 
     if sensor_resolution not in Mcp9600_sensor_resolutions:
