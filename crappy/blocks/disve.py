@@ -28,6 +28,8 @@ class DISVE(Camera):
                patch_stride: int = 3,
                show_image: bool = False,
                border: float = .1,
+               safe: bool = True,
+               follow: bool = True,
                **kwargs) -> None:
     self.niceness = -5
     self.cam_kwargs = kwargs

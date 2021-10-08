@@ -23,14 +23,15 @@ import crappy
 if __name__ == "__main__":
   w, h = 1280, 720
   ps = 200  # patch size (x and y)
+  m = 100 # Margin
 
   # Patches are defined as such: (y, x, height, width)
   # x and y being the coordinates to the upper-left corner
   patches = [
-      (0, w // 2 - ps // 2, ps, ps),  # Top
-      (h // 2 - ps, w - ps, ps, ps),  # Right
-      (h - ps, w // 2 - ps - 2, ps, ps),  # Bottom
-      (h // 2 - ps, 0, ps, ps)]  # Left
+      (m, w // 2 - ps // 2, ps, ps),  # Top
+      (h // 2 - ps, w - ps - m, ps, ps),  # Right
+      (h - ps - m, w // 2 - ps - 2, ps, ps),  # Bottom
+      (h // 2 - ps, m, ps, ps)]  # Left
 
   cam_kw = dict(
       height=h,
