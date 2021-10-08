@@ -3,13 +3,13 @@
 from .block import Block
 from .._global import OptionalModule
 from typing import Dict, List, Union, Tuple, Any
-import time
-import subprocess
+from time import time, sleep
+from subprocess import Popen, PIPE, STDOUT, TimeoutExpired
 from threading import Thread
-import queue
-import ast
-import pickle
-import socket
+from queue import Queue, Empty
+from ast import literal_eval
+from pickle import loads, dumps, UnpicklingError
+from socket import timeout, gaierror
 
 try:
   import paho.mqtt.client as mqtt
@@ -186,7 +186,7 @@ class Client_server(Block):
     self.cmd_labels = cmd_labels
     self.labels_to_send = labels_to_send
     self.reader = Thread(target=self._output_reader)
-    self.client = mqtt.Client(str(time.time()))
+    self.client = mqtt.Client(str(time()))
 
     self.client.on_connect = self._on_connect
     self.client.on_message = self._on_message
@@ -209,7 +209,7 @@ class Client_server(Block):
                      topic in self.topics]
 
       # The buffer for received data is a dictionary of queues
-      self.buffer_output = {topic: queue.Queue() for topic in self.topics}
+      self.buffer_output = {topic: Queue() for topic in self.topics}
 
       # Placing the initial values in the queues
       assert self.init_output, "init_output values should be provided"
@@ -243,9 +243,9 @@ class Client_server(Block):
     if self.broker:
       self._launch_mosquitto()
       self.reader.start()
-      time.sleep(5)
+      sleep(5)
       print('[Client_server] Waiting for Mosquitto to start')
-      time.sleep(5)
+      sleep(5)
 
     # Connecting to the broker
     try_count = 15
@@ -253,11 +253,11 @@ class Client_server(Block):
       try:
         self.client.connect(self.address, port=self.port, keepalive=10)
         break
-      except socket.timeout:
+      except timeout:
         print("[Client_server] Impossible to reach the given address, "
               "aborting")
         raise
-      except socket.gaierror:
+      except gaierror:
         print("[Client_server] Invalid address given, please check the "
               "spelling")
         raise
@@ -267,7 +267,7 @@ class Client_server(Block):
           print("[Client_server] Connection refused, the broker may not be "
                 "running or you may not have the rights to connect")
           raise
-        time.sleep(1)
+        sleep(1)
 
     self.client.loop_start()
 
@@ -291,7 +291,7 @@ class Client_server(Block):
             data_list = self.buffer_output[topic].get_nowait()
             for label, data in zip(topic, data_list):
               dict_out[label] = data
-          except queue.Empty:
+          except Empty:
             pass
       # Updating the last_out_val buffer, and completing dict_out before
       # sending data if necessary
@@ -318,11 +318,10 @@ class Client_server(Block):
             if self.labels_to_send is not None:
               self.client.publish(
                 str(self.labels_to_send[topic]),
-                payload=pickle.dumps(
-                  [dic[label] for label in topic]), qos=0)
+                payload=dumps([dic[label] for label in topic]), qos=0)
             else:
               self.client.publish(str(topic),
-                                  payload=pickle.dumps(
+                                  payload=dumps(
                                     [dic[label] for label in
                                      topic]),
                                   qos=0)
@@ -344,7 +343,7 @@ class Client_server(Block):
               self.proc.returncode)
         self.stop_mosquitto = True
         self.reader.join()
-      except subprocess.TimeoutExpired:
+      except TimeoutExpired:
         print('[Client_server] Subprocess did not terminate in time')
         self.proc.kill()
 
@@ -352,9 +351,9 @@ class Client_server(Block):
     """Starts Mosquitto in a subprocess."""
 
     try:
-      self.proc = subprocess.Popen(['mosquitto', '-p', str(self.port)],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT)
+      self.proc = Popen(['mosquitto', '-p', str(self.port)],
+                        stdout=PIPE,
+                        stderr=STDOUT)
     except FileNotFoundError:
       print("[Client_server] Mosquitto is not installed !")
       raise
@@ -367,9 +366,9 @@ class Client_server(Block):
         print('[Mosquitto] {0}'.format(line.decode('utf-8')), end='')
         if 'Error: Address already in use' in line.decode('utf-8'):
           print('Mosquitto is already running on this port')
-      time.sleep(0.1)
+      sleep(0.1)
 
-  def _on_message(self, client, userdata, message) -> None:
+  def _on_message(self, _, __, message) -> None:
     """Buffers the received data.
 
     The received message consists in a list of lists of values. Data is placed
@@ -377,14 +376,14 @@ class Client_server(Block):
     """
 
     try:
-      for data_points in zip(*pickle.loads(message.payload)):
-        self.buffer_output[ast.literal_eval(message.topic)].put_nowait(
+      for data_points in zip(*loads(message.payload)):
+        self.buffer_output[literal_eval(message.topic)].put_nowait(
           list(data_points))
-    except pickle.UnpicklingError:
+    except UnpicklingError:
       print("[Client_server] Warning ! Message raised UnpicklingError, "
             "ignoring it")
 
-  def _on_connect(self, client, userdata, flags, rc: Any) -> None:
+  def _on_connect(self, _, __, ___, rc: Any) -> None:
     """Automatically subscribes to the topics when connecting to the broker."""
 
     print("[Client_server] Connected with result code " + str(rc))
