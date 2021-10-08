@@ -16,18 +16,18 @@ from .fields import get_fields, Projector, get_res
 class DISCorrel:
 
   def __init__(self,
-               img0,
-               bbox=None,
-               fields=None,
-               alpha=3,
-               delta=1,
-               gamma=0,
-               finest_scale=1,
-               init=True,
-               iterations=1,
-               gditerations=10,
-               patch_size=8,
-               patch_stride=3):
+               img0: np.ndarray,
+               bbox: tuple = None,
+               fields: list = None,
+               alpha: float = 3,
+               delta: float = 1,
+               gamma: float = 0,
+               finest_scale: int = 1,
+               init: bool = True,
+               iterations: int = 1,
+               gditerations: int = 10,
+               patch_size: int = 8,
+               patch_stride: int = 3) -> None:
     """Sets the discorrel parameters.
 
         Args:
@@ -74,11 +74,11 @@ class DISCorrel:
     self.dis.setPatchStride(self.patch_stride)
     self.dis_flow = np.zeros((self.h, self.w, 2))
 
-  def crop(self, img):
+  def crop(self, img: np.ndarray) -> np.ndarray:
     ymin, xmin, ymax, xmax = self.bbox
     return img[ymin:ymax, xmin:xmax]
 
-  def calc(self, img):
+  def calc(self, img: np.ndarray) -> list:
     self.img = img
     if self.init:
       self.dis_flow = self.dis.calc(self.img0, img, self.dis_flow)
@@ -87,11 +87,11 @@ class DISCorrel:
     self.proj = self.p.get_scal(self.crop(self.dis_flow))
     return self.proj
 
-  def dis_res(self):
+  def dis_res(self) -> np.ndarray:
     return get_res(self.img0, self.img, self.dis_flow)
 
-  def dis_res_scal(self):
+  def dis_res_scal(self) -> float:
     return np.average(np.abs(get_res(self.img0, self.img, self.dis_flow)))
 
-  def proj_flow(self):
+  def proj_flow(self) -> list:
     return self.p.get_full(self.dis_flow)

@@ -23,7 +23,7 @@ class Fake_motor(Actuator):
                sim_speed: float = 1,
                initial_speed: float = 0,
                initial_pos: float = 0,
-               **kwargs):
+               **kwargs) -> None:
     """Sets the instance attributes.
 
     Args:
@@ -49,19 +49,19 @@ class Fake_motor(Actuator):
     self.initial_pos = initial_pos
     assert not kwargs, "Fake_motor got invalid kwarg(s): " + str(kwargs)
 
-  def open(self):
+  def open(self) -> None:
     self.rpm = self.initial_speed
     self.pos = self.initial_pos
     self.u = 0  # V
     self.t = time() * self.sim_speed
 
-  def stop(self):
+  def stop(self) -> None:
     self.set_speed(0)
 
-  def close(self):
+  def close(self) -> None:
     pass
 
-  def update(self):
+  def update(self) -> None:
     """Updates the motor rpm.
 
     Note:
@@ -77,19 +77,19 @@ class Fake_motor(Actuator):
     self.pos += dt * (self.rpm + drpm / 2)
     self.rpm += drpm
 
-  def get_speed(self):
+  def get_speed(self) -> float:
     """Return the motor speed (rpm)."""
 
     self.update()
     return self.rpm
 
-  def get_position(self):
+  def get_position(self) -> float:
     """Returns the motor position."""
 
     self.update()
     return self.pos
 
-  def set_speed(self, u):
+  def set_speed(self, u: float) -> None:
     """Sets the motor `cmd` in volts."""
 
     self.update()

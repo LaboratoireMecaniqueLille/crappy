@@ -13,7 +13,10 @@ except (ModuleNotFoundError, ImportError):
 class Biaxe(Actuator):
   """This class creates an axis and opens the corresponding serial port."""
 
-  def __init__(self, port='/dev/ttyUSB0', baudrate=38400, timeout=1):
+  def __init__(self,
+               port: str = '/dev/ttyUSB0',
+               baudrate: int = 38400,
+               timeout: float = 1) -> None:
     """Sets the instance attributes.
 
     Args:
@@ -28,30 +31,30 @@ class Biaxe(Actuator):
     self.baudrate = baudrate
     self.timeout = timeout
 
-  def open(self):
+  def open(self) -> None:
     self.ser = serial.Serial(self.port, self.baudrate,
                              serial.EIGHTBITS, serial.PARITY_EVEN,
                              serial.STOPBITS_ONE, self.timeout)
     self.clear_errors()
     self.speed = None
 
-  def stop(self):
+  def stop(self) -> None:
     self.set_speed(0)
 
-  def close(self):
+  def close(self) -> None:
     """Close the designated port."""
 
     self.stop()
     sleep(.01)
     self.ser.close()
 
-  def clear_errors(self):
+  def clear_errors(self) -> None:
     """Reset errors."""
 
     self.ser.write(b"CLRFAULT\r\n")
     self.ser.write(b"OPMODE 0\r\n EN\r\n")
 
-  def set_speed(self, speed):
+  def set_speed(self, speed: float) -> None:
     """Re-define the speed of the motor.
     ::
 

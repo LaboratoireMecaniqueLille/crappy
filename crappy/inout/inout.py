@@ -30,11 +30,11 @@ class MetaIO(type):
 
   # methods, it will raise an error
 
-  def __new__(mcs, name, bases, dict_):
+  def __new__(mcs, name: str, bases: tuple, dict_: dict) -> type:
     # print "[MetaIO.__new__] Creating class",name,"from metaclass",mcs
     return type.__new__(mcs, name, bases, dict_)
 
-  def __init__(cls, name, bases, dict_):
+  def __init__(cls, name: str, bases: tuple, dict_: dict) -> None:
     # print "[MetaIO.__init__] Initializing",cls
     type.__init__(cls, name, bases, dict_)  # This is the important line
     # It creates the class, the same way we could do this:
@@ -76,14 +76,14 @@ class MetaIO(type):
 
 class InOut(object, metaclass=MetaIO):
   @classmethod
-  def is_input(cls):
+  def is_input(cls) -> bool:
     return hasattr(cls, 'get_data')
 
   @classmethod
-  def is_output(cls):
+  def is_output(cls) -> bool:
     return hasattr(cls, 'set_cmd')
 
-  def eval_offset(self):
+  def eval_offset(self) -> list:
     assert self.is_input(), "eval_offset only works for inputs!"
     if not hasattr(self, 'eval_offset_delay'):
       self.eval_offset_delay = 2  # Default value

@@ -24,9 +24,9 @@ class Nidaqmx(InOut):
   """
 
   def __init__(self,
-               channels=None,
-               samplerate=100,
-               nsamples=None):
+               channels: list = None,
+               samplerate: float = 100,
+               nsamples: int = None) -> None:
     """Builds the different channels lists.
 
     Args:
@@ -105,7 +105,7 @@ class Nidaqmx(InOut):
         raise AttributeError("Unknown channel in nidaqmx" + str(c))
     self.ai_chan_list = sum(self.ai_channels.values(), [])
 
-  def open(self):
+  def open(self) -> None:
     # AI
     self.t_in = {}
 
@@ -171,7 +171,7 @@ class Nidaqmx(InOut):
       self.do_stream = stream_writers.DigitalMultiChannelWriter(
           self.t_do.out_stream)
 
-  def start_stream(self):
+  def start_stream(self) -> None:
     if len(self.t_in) != 1:
       raise IOError("Stream mode can only open one type of chan!")
     for t in self.t_in.values():  # Only one loop
@@ -180,7 +180,7 @@ class Nidaqmx(InOut):
         sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS)
     self.streaming = True
 
-  def stop_stream(self):
+  def stop_stream(self) -> None:
     self.streaming = False
     for t in self.t_in.values():
       t.stop()
@@ -188,7 +188,7 @@ class Nidaqmx(InOut):
         self.samplerate,
         sample_mode=nidaqmx.constants.AcquisitionType.FINITE)
 
-  def get_stream(self):
+  def get_stream(self) -> list:
     if not self.streaming:
       self.start_stream()
     a = np.empty((len(self.ai_chan_list), self.nsamples))
@@ -196,7 +196,7 @@ class Nidaqmx(InOut):
       s.read_many_sample(a, self.nsamples)
     return [time(), a]
 
-  def close(self):
+  def close(self) -> None:
     for t in self.t_in.values():
       t.stop()
     if self.ao_channels:
@@ -208,7 +208,7 @@ class Nidaqmx(InOut):
     if self.ao_channels:
       self.t_out.close()
 
-  def get_data(self):
+  def get_data(self) -> list:
     a = np.empty((sum([len(i) for i in self.ai_channels.values()]),))
     i = 0
     t = time()
@@ -221,7 +221,7 @@ class Nidaqmx(InOut):
       return [t] + list(a)+list(b[:, 0])
     return [t] + list(a)
 
-  def set_cmd(self, *v):
+  def set_cmd(self, *v: float) -> None:
     if self.ao_channels:
       self.stream_out.write_one_sample(np.array(v[:len(self.ao_channels)],
                                        dtype=np.float64))

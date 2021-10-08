@@ -14,25 +14,24 @@ except (ModuleNotFoundError, ImportError):
 
 class DISVE(Camera):
   def __init__(self,
-               camera,
-               patches,
-               fields=None,
-               labels=None,
-               alpha=3,
-               delta=1,
-               gamma=0,
-               finest_scale=1,
-               iterations=1,
-               gditerations=10,
-               patch_size=8,
-               patch_stride=3,
-               show_image=False,
-               border=.1,
-               **kwargs):
+               camera: str,
+               patches: list,
+               fields: list = None,
+               labels: list = None,
+               alpha: float = 3,
+               delta: float = 1,
+               gamma: float = 0,
+               finest_scale: int = 1,
+               iterations: int = 1,
+               gditerations: int = 10,
+               patch_size: int = 8,
+               patch_stride: int = 3,
+               show_image: bool = False,
+               border: float = .1,
+               **kwargs) -> None:
     self.niceness = -5
     self.cam_kwargs = kwargs
     Camera.__init__(self, camera, **kwargs)
-    self.camera = camera
     self.patches = patches
     self.show_image = show_image
     self.fields = ["x", "y", "exx", "eyy"] if fields is None else fields
@@ -51,7 +50,7 @@ class DISVE(Camera):
                   "patch_stride": patch_stride,
                   "border": border}
 
-  def prepare(self, *_, **__):
+  def prepare(self, *_, **__) -> None:
     Camera.prepare(self, send_img=False)
     if self.show_image:
       try:
@@ -60,11 +59,11 @@ class DISVE(Camera):
         flags = cv2.WINDOW_NORMAL
       cv2.namedWindow("DISVE", flags)
 
-  def begin(self):
+  def begin(self) -> None:
     t, self.img0 = self.camera.read_image()
     self.ve = VE(self.img0, self.patches, **self.ve_kw)
 
-  def loop(self):
+  def loop(self) -> None:
     t, img = self.get_img()
     if self.inputs and not self.input_label and self.inputs[0].poll():
       self.inputs[0].clear()
@@ -77,7 +76,7 @@ class DISVE(Camera):
       cv2.waitKey(5)
     self.send([t - self.t0] + d)
 
-  def finish(self):
+  def finish(self) -> None:
     if self.show_image:
       cv2.destroyAllWindows()
     Camera.finish(self)

@@ -30,12 +30,12 @@ class Labjack_t7(InOut):
   """
 
   def __init__(self,
-               device='ANY',
-               connection='ANY',
-               identifier='ANY',
-               channels=None,
-               write_at_open=None,
-               no_led=False):
+               device: str = 'ANY',
+               connection: str = 'ANY',
+               identifier: str = 'ANY',
+               channels: list = None,
+               write_at_open: list = None,
+               no_led: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -153,7 +153,7 @@ class Labjack_t7(InOut):
     self.check_chan()
     self.handle = None
 
-  def check_chan(self):
+  def check_chan(self) -> None:
     default = {'gain': 1, 'offset': 0, 'make_zero': False, 'resolution': 1,
                'range': 10, 'direction': 1, 'dtype': ljm.constants.FLOAT32,
                'limits': None}
@@ -254,7 +254,7 @@ class Labjack_t7(InOut):
       for c in self.out_chan_list:
         self.out_chan_dict[c["name"]] = c
 
-  def open(self):
+  def open(self) -> None:
     self.handle = ljm.openS(self.device, self.connection, self.identifier)
     # ==== Writing initial config ====
     reg, types, values = [], [], []
@@ -297,7 +297,7 @@ class Labjack_t7(InOut):
           values.append(c['offset'] + off[i])
       ljm.eWriteNames(self.handle, len(names), names, values)
 
-  def get_data(self):
+  def get_data(self) -> list:
     """Read the signal on all pre-defined input channels."""
 
     try:
@@ -308,7 +308,7 @@ class Labjack_t7(InOut):
       self.close()
       raise
 
-  def set_cmd(self, *cmd):
+  def set_cmd(self, *cmd: float) -> None:
     """Converts the tension value to a digital value and send it to the output.
 
     Note:
@@ -342,7 +342,7 @@ class Labjack_t7(InOut):
       ljm.eWriteAddresses(self.handle, len(addresses), addresses, types,
                           values)
 
-  def __getitem__(self, chan):
+  def __getitem__(self, chan: str) -> tuple:
     """Allows reading of an input chan by calling ``lj[chan]``."""
 
     # Apply offsets and stuff if this is a channel we know
@@ -353,7 +353,7 @@ class Labjack_t7(InOut):
     except KeyError:
       return time(), ljm.eReadName(self.handle, chan)
 
-  def __setitem__(self, chan, val):
+  def __setitem__(self, chan: str, val: float) -> None:
     """Allows setting of an output chan by calling ``lj[chan] = val``."""
 
     try:
@@ -363,21 +363,21 @@ class Labjack_t7(InOut):
     except KeyError:
       ljm.eWriteName(self.handle, chan, val)
 
-  def write(self, value, address, dtype=None):
+  def write(self, value: float, address: int, dtype: str = None) -> None:
     """To write data directly into a register."""
 
     if dtype is None:
       dtype = ljm.constants.FLOAT32
     ljm.eWriteAddress(self.handle, address, dtype, value)
 
-  def read(self, address, dtype=None):
+  def read(self, address: int, dtype: str = None):
     """To read data directly from a register."""
 
     if dtype is None:
       dtype = ljm.constants.FLOAT32
     return ljm.eReadAddress(self.handle, address, dtype)
 
-  def close(self):
+  def close(self) -> None:
     """Closes the device."""
 
     ljm.close(self.handle)

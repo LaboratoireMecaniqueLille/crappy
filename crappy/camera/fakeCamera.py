@@ -8,7 +8,7 @@ import numpy as np
 class Fake_camera(Camera):
   """Fake camera sensor object."""
 
-  def __init__(self):
+  def __init__(self) -> None:
     Camera.__init__(self)
     self.name = "fake_camera"
     self.add_setting("width", default=1280, setter=self._set_w,
@@ -18,18 +18,18 @@ class Fake_camera(Camera):
     self.add_setting("speed", default=100., limits=(0., 800.))
     self.add_setting("fps", default=50, limits=(0.1, 500.))
 
-  def gen_image(self):
+  def gen_image(self) -> None:
     self.img = np.arange(self.height) * 255. / self.height
     self.img = np.repeat(self.img.reshape(self.height, 1),
                          self.width, axis=1).astype(np.uint8)
 
-  def _set_h(self, _):
+  def _set_h(self, _) -> None:
     self.gen_image()
 
-  def _set_w(self, _):
+  def _set_w(self, _) -> None:
     self.gen_image()
 
-  def open(self, **kwargs):
+  def open(self, **kwargs) -> None:
     """Opens the fake camera."""
 
     for k in kwargs:
@@ -43,13 +43,13 @@ class Fake_camera(Camera):
     self.t0 = time()
     self.t = self.t0
 
-  def get_image(self):
+  def get_image(self) -> tuple:
     while time() - self.t < 1 / self.fps:
       pass
     self.t = time()
     i = int(self.speed * (time() - self.t0)) % self.height
     return self.t, np.concatenate((self.img[i:, :], self.img[:i, :]), axis=0)
 
-  def close(self):
+  def close(self) -> None:
     sleep(.5)
     self.img = None

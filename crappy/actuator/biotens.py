@@ -1,6 +1,7 @@
 ﻿# coding: utf-8
 
 from struct import pack, unpack
+from typing import Union
 import time
 from .actuator import Actuator
 from .._global import OptionalModule
@@ -11,7 +12,7 @@ except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("pyserial")
 
 
-def convert_to_byte(number, length):
+def convert_to_byte(number: float, length: str) -> bytes:
   """This functions converts decimal into bytes.
 
   Mandatory in order to send or read anything into/from MAC Motors registers.
@@ -29,7 +30,7 @@ def convert_to_byte(number, length):
   return c
 
 
-def convert_to_dec(sequence):
+def convert_to_dec(sequence: bytes) -> float:
   """This functions converts bytes into decimals.
 
   Mandatory in order to send or read anything into/from MAC Motors registers.
@@ -47,7 +48,9 @@ class Biotens(Actuator):
     You should only use this class to communicate with the Biotens.
   """
 
-  def __init__(self, port='/dev/ttyUSB0', baudrate=19200):
+  def __init__(self,
+               port: str = '/dev/ttyUSB0',
+               baudrate: int = 19200) -> None:
     """Sets the instance attributes.
 
     Args:
@@ -59,11 +62,11 @@ class Biotens(Actuator):
     self.port = port
     self.baudrate = baudrate
 
-  def open(self):
+  def open(self) -> None:
     self.ser = serial.Serial(self.port, baudrate=19200, timeout=0.1)
     self.clear_errors()
 
-  def reset_position(self):
+  def reset_position(self) -> None:
     """Actuators goes out completely, in order to set the initial position."""
 
     init_position = b'\x52\x52\x52\xFF\x00' +\
@@ -128,11 +131,11 @@ class Biotens(Actuator):
     except serial.SerialException:
       pass
 
-  def reset(self):
+  def reset(self) -> None:
     # TODO
     pass
 
-  def stop(self):
+  def stop(self) -> None:
     """Stop the motor."""
 
     command = b'\x52\x52\x52\xFF\x00' +\
@@ -144,11 +147,11 @@ class Biotens(Actuator):
     self.ser.write(command)
     # return command
 
-  def close(self):
+  def close(self) -> None:
     self.stop()
     self.ser.close()
 
-  def clear_errors(self):
+  def clear_errors(self) -> None:
     """Clears error in motor registers."""
 
     command = b'\x52\x52\x52\xFF\x00' +\
@@ -159,7 +162,7 @@ class Biotens(Actuator):
         convert_to_byte(35, 'B') + b'\xAA\xAA'
     self.ser.write(command)
 
-  def set_speed(self, speed):
+  def set_speed(self, speed: float) -> None:
     """Pilot in speed mode, requires speed in `mm/min`."""
 
     # converts speed in motors value
@@ -204,7 +207,7 @@ class Biotens(Actuator):
     # write every parameters in motor's registers
     self.ser.writelines([set_speed, set_torque, set_acceleration, command])
 
-  def set_position(self, position, speed):
+  def set_position(self, position: float, speed: float) -> None:
     """Pilot in position mode, needs speed and final position to run
     (in `mm/min` and `mm`)."""
 
@@ -262,7 +265,7 @@ class Biotens(Actuator):
     self.ser.writelines([set_position, set_speed,
                         set_torque, set_acceleration, command])
 
-  def get_position(self):
+  def get_position(self) -> float:
     """Reads current position.
 
     Returns:
@@ -276,7 +279,7 @@ class Biotens(Actuator):
       time.sleep(.01)
     raise IOError("Could not read biotens pos!")
 
-  def _get_position(self):
+  def _get_position(self) -> Union[float, None]:
     try:
       self.ser.readlines()
     except serial.SerialException:

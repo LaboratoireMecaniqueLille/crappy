@@ -40,7 +40,7 @@ class Pijuice(InOut):
     else:
       self.address = address
 
-  def open(self):
+  def open(self) -> None:
     self.pijuice = PiJuice(self.i2c_port, self.address)
 
   def get_data(self) -> list:
@@ -62,5 +62,5 @@ class Pijuice(InOut):
     return [time.time(), value["data"]["powerInput5vIo"] == "PRESENT",
             charge["data"]]
 
-  def close(self):
+  def close(self) -> None:
     pass

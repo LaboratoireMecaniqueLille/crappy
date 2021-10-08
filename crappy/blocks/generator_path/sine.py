@@ -2,6 +2,7 @@
 
 from time import time
 import numpy as np
+from typing import Union, Callable
 
 from .path import Path
 
@@ -9,8 +10,14 @@ from .path import Path
 class Sine(Path):
   """To generate a sine wave."""
 
-  def __init__(self, time, cmd, condition, freq, amplitude, offset=0,
-               phase=0):
+  def __init__(self,
+               time: float,
+               cmd: float,
+               condition: Union[str, bool, Callable],
+               freq: float,
+               amplitude: float,
+               offset: float = 0,
+               phase: float = 0) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -31,7 +38,7 @@ class Sine(Path):
     self.phase = phase
     self.k = 2 * np.pi * freq
 
-  def get_cmd(self, data):
+  def get_cmd(self, data: dict) -> float:
     if self.condition(data):
       raise StopIteration
     return np.sin((time() - self.t0) * self.k - self.phase) * \

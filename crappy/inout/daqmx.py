@@ -2,6 +2,7 @@
 
 import numpy as np
 import time
+from typing import Union
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -11,7 +12,7 @@ except (ModuleNotFoundError, ImportError):
   PyDAQmx = OptionalModule("PyDAQmx")
 
 
-def get_daqmx_devices_names():
+def get_daqmx_devices_names() -> list:
   """Get all connected daqmx devices.
 
   Returns:
@@ -25,7 +26,7 @@ def get_daqmx_devices_names():
   return buffer.value.split(",")
 
 
-def listify(stuff, length):
+def listify(stuff: Union[list, float], length: int) -> list:
   r = stuff if isinstance(stuff, list) else [stuff] * length
   assert len(r) == length, "Invalid list length for " + str(r)
   return r
@@ -35,18 +36,18 @@ class Daqmx(InOut):
   """Class to use DAQmx devices."""
 
   def __init__(self,
-               device='Dev1',
-               channels=None,
-               gain=1,
-               offset=0,
-               range=5,
-               make_zero=True,
-               nperscan=1000,
-               sample_rate=10000,
-               out_channels=None,
-               out_gain=1,
-               out_offset=0,
-               out_range=5):
+               device: str = 'Dev1',
+               channels: Union[list, str] = None,
+               gain: Union[list, float] = 1,
+               offset: Union[list, float] = 0,
+               range: Union[float, list] = 5,
+               make_zero: Union[list, bool] = True,
+               nperscan: int = 1000,
+               sample_rate: float = 10000,
+               out_channels: Union[list, str] = None,
+               out_gain: Union[list, float] = 1,
+               out_offset: Union[list, float] = 0,
+               out_range: Union[list, float] = 5) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -104,7 +105,7 @@ class Daqmx(InOut):
 
     self.check_vars()
 
-  def check_vars(self):
+  def check_vars(self) -> None:
     """Turns the settings into :obj:`list` of the same length, each index
     standing for one channel.
 
@@ -137,7 +138,7 @@ class Daqmx(InOut):
     self.out_range = listify(self.out_range, nout)
     assert nin + nout, "DAQmx has no in nor out channels!"
 
-  def open(self):
+  def open(self) -> None:
     PyDAQmx.DAQmxResetDevice(self.device)
     self.handle, self.out_handle = None, None
     # IN channels
@@ -169,7 +170,7 @@ class Daqmx(InOut):
           PyDAQmx.DAQmx_Val_Volts, None)
       PyDAQmx.DAQmxStartTask(self.out_handle)
 
-  def get_data(self):
+  def get_data(self) -> list:
     """Returns a :obj:`tuple` of length ``len(self.channels) + 1``.
 
     First element is the time, others are readings of each channel.
@@ -177,7 +178,7 @@ class Daqmx(InOut):
 
     return [i[0] for i in self.get_single(1)]
 
-  def get_single(self, npoints=None):
+  def get_single(self, npoints: int = None) -> list:
     """Reads the analog voltage on specified channels.
 
     Args:
@@ -214,7 +215,7 @@ class Daqmx(InOut):
         + [data[i, :] * self.gain[i] + self.offset[i] for i in
            range(len(self.channels))]
 
-  def set_cmd(self, *args):
+  def set_cmd(self, *args: float) -> None:
     """Set the output(s) to the specified value.
 
     Note:
@@ -229,7 +230,7 @@ class Daqmx(InOut):
                                 PyDAQmx.DAQmx_Val_GroupByChannel,
                                 data, None, None)
 
-  def close(self):
+  def close(self) -> None:
     """Closes the connection."""
 
     if self.handle:

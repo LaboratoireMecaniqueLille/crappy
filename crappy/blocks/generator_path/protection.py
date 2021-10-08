@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from typing import Union, Callable
 from .path import Path
 
 
@@ -7,8 +8,15 @@ class Protection(Path):
   """Useful to protect samples from being pulled apart when setting up a test.
   """
 
-  def __init__(self, time, cmd, condition1, condition2, value1, value2,
-               value0=0, verbose=False):
+  def __init__(self,
+               time: float,
+               cmd: float,
+               condition1: Union[str, bool, Callable],
+               condition2: Union[str, bool, Callable],
+               value1: float,
+               value2: float,
+               value0: float = 0,
+               verbose: bool = False) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -46,7 +54,7 @@ class Protection(Path):
     self.verbose = verbose
     self.status = 0
 
-  def get_cmd(self, data):
+  def get_cmd(self, data: dict) -> float:
     if self.status == 0:
       if self.condition1(data):
         self.status = 1

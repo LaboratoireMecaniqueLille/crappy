@@ -29,13 +29,13 @@ class T7_streamer(InOut):
   """
 
   def __init__(self,
-               device='ANY',
-               connection='ANY',
-               identifier='ANY',
-               channels=None,
-               scan_rate=100000,
-               scan_per_read=10000,
-               resolution=1):
+               device: str = 'ANY',
+               connection: str = 'ANY',
+               identifier: str = 'ANY',
+               channels: list = None,
+               scan_rate: int = 100000,
+               scan_per_read: int = 10000,
+               resolution: int = 1) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -140,7 +140,7 @@ class T7_streamer(InOut):
       d['to_read'] = ljm.nameToAddress(d['name'])[0]
       self.chan_list.append(d)
 
-  def open(self):
+  def open(self) -> None:
     self.handle = ljm.openS(self.device, self.connection, self.identifier)
     names, values = [], []
     for c in self.chan_list:
@@ -167,21 +167,21 @@ class T7_streamer(InOut):
           c['offset'] += c['gain']*off[i]
     self.n = 0  # Number of data points (to rebuild time)
 
-  def get_data(self):
+  def get_data(self) -> None:
     """Short version, only used for :meth:`InOut.eval_offset`."""
 
     return [time()] + ljm.eReadNames(self.handle, len(self.chan_list),
                                      [c['name'] for c in self.chan_list])
 
-  def start_stream(self):
+  def start_stream(self) -> None:
     ljm.eStreamStart(self.handle, self.scan_per_read, len(self.chan_list),
                      [c['to_read'] for c in self.chan_list], self.scan_rate)
     self.stream_t0 = time()
 
-  def stop_stream(self):
+  def stop_stream(self) -> None:
     ljm.eStreamStop(self.handle)
 
-  def get_stream(self):
+  def get_stream(self) -> list:
     a = np.array(ljm.eStreamRead(self.handle)[0])
     r = a.reshape(len(a) // len(self.channels), len(self.channels))
     for i, c in enumerate(self.chan_list):
@@ -191,5 +191,5 @@ class T7_streamer(InOut):
     self.n += r.shape[0]
     return [t, r]
 
-  def close(self):
+  def close(self) -> None:
     ljm.close(self.handle)

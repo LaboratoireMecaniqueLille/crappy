@@ -13,7 +13,7 @@ except (ModuleNotFoundError, ImportError):
 class Webcam(Camera):
   """Camera class for webcams, read using opencv."""
 
-  def __init__(self):
+  def __init__(self) -> None:
     Camera.__init__(self)
     self.name = "webcam"
     self.cap = None
@@ -22,19 +22,19 @@ class Webcam(Camera):
     self.add_setting("height", self._get_h, self._set_h, (1, 1080))
     self.add_setting("channels", limits={1: 1, 3: 3}, default=1)
 
-  def _get_w(self):
+  def _get_w(self) -> int:
     return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 
-  def _get_h(self):
+  def _get_h(self) -> int:
     return self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
-  def _set_w(self, width):
+  def _set_w(self, width: int) -> None:
     self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 
-  def _set_h(self, height):
+  def _set_h(self, height: int) -> None:
     self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-  def open(self, numdevice=0, **kwargs):
+  def open(self, numdevice: int = 0, **kwargs) -> None:
     self.numdevice = numdevice
     if self.cap:
       self.cap.release()
@@ -44,7 +44,7 @@ class Webcam(Camera):
                                            "Unexpected kwarg: " + str(k)
     self.set_all(**kwargs)
 
-  def get_image(self):
+  def get_image(self) -> tuple:
     ret, frame = self.cap.read()
     t = time()
     if not ret:
@@ -55,7 +55,7 @@ class Webcam(Camera):
     else:
       return t, frame  # [:, :, [2, 1, 0]]
 
-  def close(self):
+  def close(self) -> None:
     if self.cap:
       self.cap.release()
     self.cap = None

@@ -9,7 +9,11 @@ from .path import Path
 class Custom(Path):
   """To generate a custom path from a file."""
 
-  def __init__(self, time, cmd, filename, delimiter='\t'):
+  def __init__(self,
+               time: float,
+               cmd: float,
+               filename: str,
+               delimiter: str = '\t') -> None:
     """Loads the file and sets the args.
 
     Args:
@@ -35,7 +39,7 @@ class Custom(Path):
       self.t = self.array[0, :]
       self.f = self.array[1, :]
 
-  def get_cmd(self, data):
+  def get_cmd(self, _) -> float:
     t = time()
     if t - self.t0 > max(self.t):
       raise StopIteration

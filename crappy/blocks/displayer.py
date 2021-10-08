@@ -34,7 +34,10 @@ class Displayer(Block):
     One displayer can only display images from one camera.
   """
 
-  def __init__(self, framerate=5, backend='cv', title='Displayer'):
+  def __init__(self,
+               framerate: float = 5,
+               backend: str = 'cv',
+               title: str = 'Displayer') -> None:
     Block.__init__(self)
     self.niceness = 10
     if framerate is None:
@@ -62,23 +65,23 @@ class Displayer(Block):
 
   # Matplotlib
   @staticmethod
-  def prepare_mpl():
+  def prepare_mpl() -> None:
     plt.ion()
     fig = plt.figure()
     fig.add_subplot(111)
 
-  def begin_mpl(self):
+  def begin_mpl(self) -> None:
     self.inputs[0].clear()
 
   @staticmethod
-  def cast_8bits(f):
-    m = f.max()
+  def cast_8bits(f: np.ndarray):
+    m = np.amax(f)
     i = 0
     while m >= 2 ** (8 + i):
       i += 1
     return (f / (2 ** i)).astype(np.uint8)
 
-  def loop_mpl(self):
+  def loop_mpl(self) -> None:
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
     plt.clf()
     plt.imshow(data, cmap='gray')
@@ -86,11 +89,11 @@ class Displayer(Block):
     plt.show()
 
   @staticmethod
-  def finish_mpl():
+  def finish_mpl() -> None:
     plt.close('all')
 
   # OpenCV
-  def prepare_cv(self):
+  def prepare_cv(self) -> None:
     try:
       flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
     # WINDOW_KEEPRATIO is not implemented in all opencv versions...
@@ -98,10 +101,10 @@ class Displayer(Block):
       flags = cv2.WINDOW_NORMAL
     cv2.namedWindow(self.title, flags)
 
-  def begin_cv(self):
+  def begin_cv(self) -> None:
     self.inputs[0].clear()
 
-  def loop_cv(self):
+  def loop_cv(self) -> None:
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
     if data.dtype != np.uint8:
       if data.max() >= 256:
@@ -112,14 +115,14 @@ class Displayer(Block):
     cv2.waitKey(1)
 
   @staticmethod
-  def finish_cv():
+  def finish_cv() -> None:
     cv2.destroyAllWindows()
 
   # TKinter
-  def resize(self, img):
+  def resize(self, img: np.ndarray):
     return cv2.resize(img, (self.w, self.h))
 
-  def check_resized(self):
+  def check_resized(self) -> None:
     new = self.imglabel.winfo_height() - 2, self.imglabel.winfo_width() - 2
     if sum([abs(i - j) for i, j in zip(new, (self.h, self.w))]) >= 5:
       if new[0] > 0 and new[1] > 0:
@@ -129,7 +132,7 @@ class Displayer(Block):
         self.h = int(self.img_shape[0] * ratio)
         self.w = int(self.img_shape[1] * ratio)
 
-  def prepare_tk(self):
+  def prepare_tk(self) -> None:
     self.root = tk.Tk()
     self.root.protocol("WM_DELETE_WINDOW", self.end)
     self.imglabel = tk.Label(self.root)
@@ -139,14 +142,14 @@ class Displayer(Block):
     self.h = 480
     self.w = 640
 
-  def begin_tk(self):
+  def begin_tk(self) -> None:
     self.inputs[0].clear()
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
     self.img_shape = data.shape
     self.check_resized()
     self.go = True
 
-  def loop_tk(self):
+  def loop_tk(self) -> None:
     if not self.go:
       raise CrappyStop
     data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
@@ -161,8 +164,8 @@ class Displayer(Block):
     self.imglabel.configure(image=cimg)
     self.root.update()
 
-  def end(self):
+  def end(self) -> None:
     self.go = False
 
-  def finish_tk(self):
+  def finish_tk(self) -> None:
     self.root.destroy()

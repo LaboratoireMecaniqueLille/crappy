@@ -2,6 +2,7 @@
 
 from time import time
 import struct
+from typing import Union
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -33,8 +34,8 @@ class KollMorgenVariator:
   """
 
   def __init__(self,
-               host='192.168.0.109',
-               port=502):
+               host: str = '192.168.0.109',
+               port: int = 502) -> None:
     """Sets the variator and defines the bits.
 
     Args:
@@ -75,7 +76,7 @@ class KollMorgenVariator:
       'axis_state': 4
     }
 
-  def toggle_power(self, motor):
+  def toggle_power(self, motor: int) -> None:
     """Toggles power of given motor. Maybe not the most intelligent way to
     handle power, though..."""
 
@@ -83,7 +84,7 @@ class KollMorgenVariator:
     state = self.variator.read_coils(address)
     self.variator.write_coil(address, not state.bits[0])
 
-  def clear_errors(self):
+  def clear_errors(self) -> None:
     """If errors occurred, it must be clear in order to continue the program.
     """
 
@@ -96,7 +97,7 @@ class KollMorgenVariator:
         self.variator.write_coil(address, True)
         print('Cleared error (AxisState %i) in motor %i' % (err, motor))
 
-  def set_speed(self, motor, speed):
+  def set_speed(self, motor: int, speed: float) -> None:
     """Writes to variator desired speed (signed), and its direction. Applies to
     every motor movement (rotations, positioning...)."""
 
@@ -109,7 +110,7 @@ class KollMorgenVariator:
     else:
       self.variator.write_register(address_hld_direction, 1)
 
-  def set_accelerations(self, motor, **kwargs):
+  def set_accelerations(self, motor: int, **kwargs) -> None:
     """To set acceleration, deceleration (for positioning) and fast
     deceleration (boolean stop)."""
 
@@ -118,19 +119,19 @@ class KollMorgenVariator:
                                        str(self.hldreg_addresses[address])),
                                    value)
 
-  def start_rotation(self, motor):
+  def start_rotation(self, motor: int) -> None:
     """Sets the rotation of specified motor at specified speed (signed)."""
 
     address_coil = int(str(motor) + str(self.coil_addresses["move_vel"]))
     self.variator.write_coil(address_coil, True)
 
-  def stop(self, motor):
+  def stop(self, motor: int) -> None:
     """Stops the motor movement."""
 
     address = int(str(motor) + str(self.coil_addresses["stop"]))
     self.variator.write_coil(address, True)
 
-  def set_rotation(self, motor, rotation):
+  def set_rotation(self, motor: int, rotation: float) -> None:
     """To set a rotation (in degrees) of the motor axis. Rotation is signed."""
 
     address_coil = int(str(motor) + str(self.coil_addresses["move_rel"]))
@@ -140,7 +141,7 @@ class KollMorgenVariator:
     self.variator.write_registers(address_hld, data)
     self.variator.write_coil(address_coil, True)
 
-  def set_position(self, motor, position):
+  def set_position(self, motor: int, position: float) -> None:
     """To set a position (in degrees), absolute value."""
 
     address_coil = int(str(motor) + str(self.coil_addresses["move_abs"]))
@@ -150,7 +151,7 @@ class KollMorgenVariator:
     self.variator.write_registers(address_hld, data)
     self.variator.write_coil(address_coil, True)
 
-  def read_position(self, motor):
+  def read_position(self, motor: Union[str, int]) -> list:
     """To read position of motor. Returns a :obj:`float`."""
 
     if not motor == "all":
@@ -172,7 +173,7 @@ class KollMorgenVariator:
         converted.append(data_to_float32(data))
     return converted
 
-  def read_speed(self, motor):
+  def read_speed(self, motor: Union[str, int]) -> list:
     """Reads speed of each motor."""
 
     if not motor == "all":
@@ -197,14 +198,14 @@ class Koll(InOut):
   """Class to communicate to Kollmorgen devices via Crappy."""
 
   def __init__(self,
-               data='position',
-               axis='all',
-               speed=360,
-               acc=3600,
-               decc=3600,
-               labels=None,
-               host='192.168.0.109',
-               port=502):
+               data: str = 'position',
+               axis: Union[str, int] = 'all',
+               speed: float = 360,
+               acc: float = 3600,
+               decc: float = 3600,
+               labels: list = None,
+               host: str = '192.168.0.109',
+               port: int = 502) -> None:
     InOut.__init__(self)
 
     self.data = data
@@ -225,10 +226,10 @@ class Koll(InOut):
     self.labels = default_label if labels is None else labels
     self.variator = KollMorgenVariator(host=host, port=port)
 
-  def open(self):
+  def open(self) -> None:
     pass
 
-  def get_data(self):
+  def get_data(self) -> Union[list, None]:
     if self.data == "speed":
       if not self.axis == "all":
         ret = [time(), self.variator.read_speed(self.axis)]
@@ -244,5 +245,5 @@ class Koll(InOut):
       return
     return ret
 
-  def close(self):
+  def close(self) -> None:
     pass

@@ -26,12 +26,12 @@ class Hdf_recorder(Block):
   """
 
   def __init__(self,
-               filename,
-               node='table',
-               expected_rows=10**8,
+               filename: str,
+               node: str = 'table',
+               expected_rows: int = 10**8,
                atom=None,
-               label='stream',
-               metadata=None):
+               label: str = 'stream',
+               metadata: dict = None) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -60,7 +60,7 @@ class Hdf_recorder(Block):
     if not isinstance(self.atom, tables.Atom):
       self.atom = tables.Atom.from_dtype(np.dtype(self.atom))
 
-  def prepare(self):
+  def prepare(self) -> None:
     assert self.inputs, "No input connected to the hdf_recorder!"
     assert len(self.inputs) == 1,\
         "Cannot link more than one block to a hdf_recorder!"
@@ -84,7 +84,7 @@ class Hdf_recorder(Block):
     for name, value in self.metadata.items():
       self.hfile.create_array(self.hfile.root, name, value)
 
-  def begin(self):
+  def begin(self) -> None:
     data = self.inputs[0].recv_chunk()
     w = data[self.label][0].shape[1]
     self.array = self.hfile.create_earray(
@@ -96,17 +96,17 @@ class Hdf_recorder(Block):
     for d in data[self.label]:
       self.array.append(d)
 
-  def loop(self):
+  def loop(self) -> None:
     data = self.inputs[0].recv_chunk()
     for d in data[self.label]:
       self.array.append(d)
 
-  def finish(self):
+  def finish(self) -> None:
     self.hfile.close()
 
 
 class Hdf_saver(Hdf_recorder):
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args, **kwargs) -> None:
     print('#### WARNING ####\n'
           'The block "Hdf_saver" has been renamed to "Hdf_recorder".\n'
           'Please replace the name in your program, '

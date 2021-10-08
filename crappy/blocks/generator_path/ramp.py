@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from typing import Union, Callable
 
 from .path import Path
 
@@ -8,7 +9,11 @@ from .path import Path
 class Ramp(Path):
   """Will make a ramp from previous value until condition is reached."""
 
-  def __init__(self, time, cmd, condition, speed):
+  def __init__(self,
+               time: float,
+               cmd: float,
+               condition: Union[str, bool, Callable],
+               speed: float):
     """Sets the args and initializes parent class.
 
     Args:
@@ -23,7 +28,7 @@ class Ramp(Path):
     self.condition = self.parse_condition(condition)
     self.speed = speed
 
-  def get_cmd(self, data):
+  def get_cmd(self, data: dict) -> float:
     if self.condition(data):
       raise StopIteration
     return (time() - self.t0) * self.speed + self.cmd

@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
+from typing import Callable, Union, Any
 
 from .._global import DefinitionError
 
@@ -26,11 +27,11 @@ class MetaCam(type):
   # If a camera is defined without these methods, it will raise an error
   needed_methods = ["get_image", "open", "close"]
 
-  def __new__(mcs, name, bases, dict_):
+  def __new__(mcs, name: str, bases: tuple, dict_: dict) -> type:
     # print "[MetaCam.__new__] Creating class", name, "from metaclass", mcs
     return type.__new__(mcs, name, bases, dict_)
 
-  def __init__(cls, name, bases, dict_):
+  def __init__(cls, name: str, bases: tuple, dict_: dict) -> None:
     # print "[MetaCam.__init__] Initializing", cls
     type.__init__(cls, name, bases, dict_)  # This is the important line
     # It creates the class, the same way we could do this:
@@ -66,7 +67,12 @@ class MetaCam(type):
 class Cam_setting(object):
   """This class represents an attribute of the camera that can be set."""
 
-  def __init__(self, name, getter, setter, limits, default):
+  def __init__(self,
+               name: str,
+               getter: Callable,
+               setter: Callable,
+               limits: Union[None, tuple, bool, dict],
+               default: Any) -> None:
     """Sets the instance attributes.
 
     Args:
@@ -115,7 +121,7 @@ class Cam_setting(object):
       self.getter = lambda *args: self._value
 
   @property
-  def value(self):
+  def value(self) -> Any:
     if self._value is None:
       self._value = self.getter()
       if type(self.limits) is tuple and callable(self.limits[1]):
@@ -128,7 +134,7 @@ class Cam_setting(object):
   # we will go through all of this, and the new value will be the actual
   # value of the setting after the operation
   @value.setter
-  def value(self, i):
+  def value(self, i: Any) -> None:
     _ = self.value  # Detail: to make sure we called value getter once
     # if type(self.limits) == tuple:
     #  if not self.limits[0] <= i <= self.limits[1]:
@@ -151,14 +157,14 @@ class Cam_setting(object):
             "value is", new_val)
     self._value = new_val
 
-  def __str__(self):
+  def __str__(self) -> str:
     if self.limits:
       return "Setting: " + str(self.name) + ", value:" + str(self._value) + \
              " Limits:" + str(self.limits)
     else:
       return "Setting: " + str(self.name) + ", value:" + str(self._value)
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return self.__str__()
 
 
@@ -183,18 +189,18 @@ class Camera(object, metaclass=MetaCam):
     settings...
   """
 
-  def __init__(self):
+  def __init__(self) -> None:
     self.settings = {}
     self.last = time()
     self.max_fps = None
     self.name = "Camera"
 
   @property
-  def max_fps(self):
+  def max_fps(self) -> float:
     return self._max_fps
 
   @max_fps.setter
-  def max_fps(self, value):
+  def max_fps(self, value: float) -> None:
     """To compute :attr:`self.delay` again when fps is set."""
 
     self._max_fps = value
@@ -203,21 +209,25 @@ class Camera(object, metaclass=MetaCam):
     else:
       self.delay = 0
 
-  def add_setting(self, name, getter=None, setter=lambda *val: None,
-                  limits=None, default=None):
+  def add_setting(self,
+                  name: str,
+                  getter: Callable = None,
+                  setter: Callable = lambda *val: None,
+                  limits: Union[None, tuple, bool, dict] = None,
+                  default: Any = None) -> None:
     """Wrapper to simply add a new setting to the camera."""
 
     assert name not in self.settings, "This setting already exists"
     self.settings[name] = Cam_setting(name, getter, setter, limits, default)
 
   @property
-  def available_settings(self):
+  def available_settings(self) -> list:
     """Returns a :obj:`list` of available settings."""
 
     return [x.name for x in list(self.settings.values())] + ["max_fps"]
 
   @property
-  def settings_dict(self):
+  def settings_dict(self) -> dict:
     """Returns settings as a :obj:`dict`, keys are the names of the settings
     and values are `setting.value`."""
 
@@ -226,7 +236,7 @@ class Camera(object, metaclass=MetaCam):
       d[k] = d[k]._value
     return d
 
-  def set_all(self, override=False, **kwargs):
+  def set_all(self, override: bool = False, **kwargs) -> None:
     """Sets all the settings based on `kwargs`.
 
     Note:
@@ -250,12 +260,12 @@ class Camera(object, metaclass=MetaCam):
     for k, v in kwargs.items():
       setattr(self, k, v)
 
-  def reset_all(self):
+  def reset_all(self) -> None:
     """Reset all the settings to their default values."""
 
     self.set_all()
 
-  def read_image(self):
+  def read_image(self) -> tuple:
     """This method is a wrapper for :meth:`get_image` that will limit fps to
     `max_fps`."""
 
@@ -269,7 +279,7 @@ class Camera(object, metaclass=MetaCam):
       self.last = t
     return self.get_image()
 
-  def __getattr__(self, i):
+  def __getattr__(self, i: str) -> Any:
     """The idea is simple: if the camera has this attribute: return it (default
     behavior) else, try to find the corresponding setting and return its value.
 
@@ -292,7 +302,7 @@ class Camera(object, metaclass=MetaCam):
         print("You have probably forgotten to call Camera.__init__(self)!")
         raise AttributeError("No such attribute:" + i)
 
-  def __setattr__(self, attr, val):
+  def __setattr__(self, attr: str, val: Any) -> None:
     """Same as :meth:`__getattr__`: if it is a setting, then set its value
     using the setter in the :class:`Cam_setting`, else use the default
     behavior.
@@ -311,10 +321,10 @@ class Camera(object, metaclass=MetaCam):
     else:
       super(Camera, self).__setattr__(attr, val)
 
-  def __str__(self):
+  def __str__(self) -> str:
     return self.name + " camera with {} settings".format(len(self.settings))
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     s = self.__str__()
     for i in self.settings.values():
       s += ("\n" + str(i))

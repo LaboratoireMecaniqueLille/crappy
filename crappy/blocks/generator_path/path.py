@@ -1,19 +1,20 @@
 # coding: utf-8
 
 from time import time
+from typing import Callable, Union
 
 
 class Path(object):
   """Parent class for all paths."""
 
-  def __init__(self, time, cmd):
+  def __init__(self, time: float, cmd: float) -> None:
     self.t0 = time
     self.cmd = cmd
 
-  def get_cmd(self, data):
+  def get_cmd(self, data: dict) -> float:
     return self.cmd
 
-  def parse_condition(self, condition):
+  def parse_condition(self, condition: Union[str, bool, Callable]) -> Callable:
     """This method turns a string into a function that returns a bool.
 
     It is meant to check if a skip condition is reached.

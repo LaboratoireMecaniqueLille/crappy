@@ -14,17 +14,17 @@ except (ModuleNotFoundError, ImportError):
 class DISVE:
 
   def __init__(self,
-               img0,
-               patches,
-               alpha=3,
-               delta=1,
-               gamma=0,
-               finest_scale=1,
-               iterations=1,
-               gditerations=10,
-               patch_size=8,
-               patch_stride=3,
-               border=0.1):
+               img0: np.ndarray,
+               patches: list,
+               alpha: float = 3,
+               delta: float = 1,
+               gamma: float = 0,
+               finest_scale: int = 1,
+               iterations: int = 1,
+               gditerations: int = 10,
+               patch_size: int = 8,
+               patch_stride: int = 3,
+               border: float = 0.1) -> None:
     """Sets the disve parameters.
 
     Args:
@@ -66,16 +66,16 @@ class DISVE:
     self.last = [None for _ in self.patches]
 
   @staticmethod
-  def get_patch(img, patch):
+  def get_patch(img: np.ndarray, patch: list) -> np.ndarray:
     ymin, xmin, h, w = patch
     return np.array(img[ymin:ymin + h, xmin:xmin + w])
 
-  def get_center(self, f):
+  def get_center(self, f: np.ndarray) -> np.ndarray:
     h, w, *_ = f.shape
     return f[int(h * self.border):int(h * (1 - self.border)),
         int(w * self.border):int(w * (1 - self.border))]
 
-  def calc(self, img):
+  def calc(self, img: np.ndarray) -> list:
     r = []
     for p in self.patches:
       f = self.dis.calc(

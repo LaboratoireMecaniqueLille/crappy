@@ -40,7 +40,7 @@ class Comedi(InOut):
 
   """
 
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs) -> None:
     InOut.__init__(self)
     self.default = {'device': b'/dev/comedi0',
                     'subdevice': 0,
@@ -105,7 +105,7 @@ class Comedi(InOut):
           d[s[4:]] = self.kwargs[s]
       self.out_channels.append(d)
 
-  def open(self):
+  def open(self) -> None:
     """
     Starts communication with the device, must be called before any
     set_cmd or get_data.
@@ -135,7 +135,7 @@ class Comedi(InOut):
           else:
             chan['offset'] += off[i]
 
-  def set_cmd(self, *cmd):
+  def set_cmd(self, *cmd: float) -> None:
     """
     To set the value of the outputs (when specified).
     Takes as many argument as opened output channels.
@@ -149,7 +149,7 @@ class Comedi(InOut):
       c.comedi_data_write(self.device, self.out_subdevice, chan['num'],
                           chan['range_num'], c.AREF_GROUND, out_a)
 
-  def get_data(self, channel="all"):
+  def get_data(self, channel: str = "all") -> list:
     """
     To read the value on input_channels.
 
@@ -178,7 +178,7 @@ class Comedi(InOut):
       data.append(val * chan['gain'] + chan['offset'])
     return data
 
-  def close(self):
+  def close(self) -> None:
     ret = c.comedi_close(self.device)
     if ret != 0:
       print('Comedi.close failed')

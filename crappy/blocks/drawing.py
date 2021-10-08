@@ -30,7 +30,7 @@ except (ModuleNotFoundError, ImportError):
 class Text(object):
   """A simple text line."""
 
-  def __init__(self, *_, **kwargs):
+  def __init__(self, *_, **kwargs) -> None:
     """Sets the args.
 
     Args:
@@ -45,7 +45,7 @@ class Text(object):
 
     self.txt = plt.text(self.coord[0], self.coord[1], self.text)
 
-  def update(self, data):
+  def update(self, data: dict) -> None:
     self.txt.set_text(self.text % data[self.label])
 
 
@@ -53,7 +53,7 @@ class Dot_text(object):
   """Like :class:`Text`, but with a colored dot to visualize a numerical value.
   """
 
-  def __init__(self, drawing, **kwargs):
+  def __init__(self, drawing, **kwargs) -> None:
     """Sets the args.
 
     Args:
@@ -79,7 +79,7 @@ class Dot_text(object):
     self.amp = high-low
     self.low = low
 
-  def update(self, data):
+  def update(self, data: dict) -> None:
     self.txt.set_text(self.text % data[self.label])
     self.dot.set_color(cm.coolwarm((data[self.label] - self.low) / self.amp))
 
@@ -90,13 +90,13 @@ class Time(object):
   It will print the time since the `t0` of the block.
   """
 
-  def __init__(self, drawing, **kwargs):
+  def __init__(self, drawing, **kwargs) -> None:
     self.coord = kwargs['coord']
 
     self.txt = plt.text(self.coord[0], self.coord[1], "00:00", size=38)
     self.block = drawing
 
-  def update(self, *_):
+  def update(self, *_) -> None:
     self.txt.set_text(str(timedelta(seconds=int(time()-self.block.t0))))
 
 
@@ -110,12 +110,12 @@ class Drawing(Block):
 
   def __init__(self,
                image,
-               draw=None,
-               crange=None,
-               title="Drawing",
-               window_size=(7, 5),
-               freq=2,
-               backend="TkAgg"):
+               draw: dict = None,
+               crange: list = None,
+               title: str = "Drawing",
+               window_size: tuple = (7, 5),
+               freq: float = 2,
+               backend: str = "TkAgg") -> None:
     """Sets the args and initializes the parent block.
 
     Args:
@@ -156,7 +156,7 @@ class Drawing(Block):
     self.window_size = window_size
     self.backend = backend
 
-  def prepare(self):
+  def prepare(self) -> None:
     plt.switch_backend(self.backend)
     self.fig, self.ax = plt.subplots(figsize=self.window_size)
     image = self.ax.imshow(plt.imread(self.image), cmap=cm.coolwarm)
@@ -172,12 +172,12 @@ class Drawing(Block):
     for d in self.draw:
       self.elements.append(elements[d['type']](self, **d))
 
-  def loop(self):
+  def loop(self) -> None:
     data = self.get_last()
     for elt in self.elements:
       elt.update(data)
     self.fig.canvas.draw()
     plt.pause(0.001)
 
-  def finish(self):
+  def finish(self) -> None:
     plt.close()

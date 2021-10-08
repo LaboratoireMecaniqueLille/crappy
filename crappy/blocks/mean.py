@@ -9,7 +9,11 @@ class Mean_block(Block):
   """Can take multiple inputs, makes an average and sends the result every
   ``delay`` `s`."""
 
-  def __init__(self, delay, tlabel='t(s)', out_labels=None, freq=50):
+  def __init__(self,
+               delay: float,
+               tlabel: str = 't(s)',
+               out_labels: list = None,
+               freq: float = 50) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -27,12 +31,12 @@ class Mean_block(Block):
     self.out_labels = out_labels
     self.freq = freq
 
-  def prepare(self):
+  def prepare(self) -> None:
     self.temp = [dict() for _ in self.inputs]  # Will hold all the data
     self.last_t = -self.delay
     self.t = 0
 
-  def loop(self):
+  def loop(self) -> None:
     # loop over all the inputs, receive if needed, and store only
     # what we want to keep
     for i, l in enumerate(self.inputs):

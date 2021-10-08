@@ -15,7 +15,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-def draw_box(box, img):
+def draw_box(box, img) -> None:
   for s in [
       (box[0], slice(box[1], box[3])),
       (box[2], slice(box[1], box[3])),
@@ -27,22 +27,23 @@ def draw_box(box, img):
 
 
 class DISCorrel(Camera):
-  def __init__(self, camera,
-               fields=None,
-               labels=None,
-               alpha=3,
-               delta=1,
-               gamma=0,
-               finest_scale=1,
-               iterations=1,
-               gditerations=10,
-               init=True,
-               patch_size=8,
-               patch_stride=3,
-               show_image=False,
-               residual=False,
-               residual_full=False,
-               **kwargs):
+  def __init__(self,
+               camera: str,
+               fields: list = None,
+               labels: list = None,
+               alpha: float = 3,
+               delta: float = 1,
+               gamma: float = 0,
+               finest_scale: int = 1,
+               iterations: int = 1,
+               gditerations: int = 10,
+               init: bool = True,
+               patch_size: int = 8,
+               patch_stride: int = 3,
+               show_image: bool = False,
+               residual: bool = False,
+               residual_full: bool = False,
+               **kwargs) -> None:
     self.niceness = -5
     self.cam_kwargs = kwargs
     kwargs['config'] = False  # We have our own config window
@@ -67,7 +68,7 @@ class DISCorrel(Camera):
     if self.residual_full:
       self.labels.append('res_full')
 
-  def prepare(self, *_, **__):
+  def prepare(self, *_, **__) -> None:
     Camera.prepare(self, send_img=False)
     config = DISConfig(self.camera)
     config.main()
@@ -85,7 +86,7 @@ class DISCorrel(Camera):
         flags = cv2.WINDOW_NORMAL
       cv2.namedWindow("DISCorrel", flags)
 
-  def begin(self):
+  def begin(self) -> None:
     t, self.img0 = self.camera.read_image()
     if self.transform is not None:
       self.correl.img0 = self.transform(self.img0)
@@ -95,7 +96,7 @@ class DISCorrel(Camera):
       self.save(self.img0,
                 self.save_folder + "img_ref_%.6f.tiff" % (t - self.t0))
 
-  def loop(self):
+  def loop(self) -> None:
     t, img = self.get_img()
     if self.inputs and not self.input_label and self.inputs[0].poll():
       self.inputs[0].clear()
@@ -115,7 +116,7 @@ class DISCorrel(Camera):
       d.append(self.correl.dis_res_scal())
     self.send([t - self.t0] + d)
 
-  def finish(self):
+  def finish(self) -> None:
     if self.show_image:
       cv2.destroyAllWindows()
     Camera.finish(self)

@@ -1,5 +1,6 @@
 ﻿# coding: utf-8
 
+from typing import Callable, Union
 from ..tool.videoextenso import LostSpotError, Video_extenso as Ve
 from ..tool.videoextensoConfig import VE_config
 from .camera import Camera
@@ -25,29 +26,29 @@ class Video_extenso(Camera):
   """
 
   def __init__(self,
-               camera,
-               save_folder=None,
-               verbose=False,
-               labels=None,
-               fps_label=False,
-               img_name="{self.loops:06d}_{t-self.t0:.6f}",
-               ext='tiff',
-               save_period=1,
-               save_backend=None,
-               transform=None,
-               input_label=None,
-               config=False,
-               show_image=False,
-               wait_l0=False,
-               end=True,
-               white_spots=False,
-               update_thresh=False,
-               num_spots="auto",
-               safe_mode=False,
-               border=5,
-               min_area=150,
-               blur=5,
-               **kwargs):
+               camera: str,
+               save_folder: str = None,
+               verbose: bool = False,
+               labels: list = None,
+               fps_label: bool = False,
+               img_name: str = "{self.loops:06d}_{t-self.t0:.6f}",
+               ext: str = 'tiff',
+               save_period: int = 1,
+               save_backend: str = None,
+               transform: Callable = None,
+               input_label: str = None,
+               config: bool = False,
+               show_image: bool = False,
+               wait_l0: bool = False,
+               end: bool = True,
+               white_spots: bool = False,
+               update_thresh: bool = False,
+               num_spots: Union[str, int] = "auto",
+               safe_mode: bool = False,
+               border: int = 5,
+               min_area: float = 150,
+               blur: float = 5,
+               **kwargs) -> None:
     """Sets the args and initializes the camera.
 
     Args:
@@ -145,7 +146,7 @@ class Video_extenso(Camera):
     self.cam_kw['labels'] = self.labels
     Camera.__init__(self, camera, **self.cam_kw)
 
-  def prepare(self, *_, **__):
+  def prepare(self, *_, **__) -> None:
     Camera.prepare(self, send_img=False)
     self.ve = Ve(**self.ve_kwargs)
     config = VE_config(self.camera, self.ve)
@@ -168,7 +169,7 @@ class Video_extenso(Camera):
     self.last_fps_print = 0
     self.last_fps_loops = 0
 
-  def loop(self):
+  def loop(self) -> None:
     t, img = self.get_img()
     if self.inputs and not self.input_label and self.inputs[0].poll():
       self.inputs[0].clear()
@@ -201,13 +202,13 @@ class Video_extenso(Camera):
     else:
       self.send([t - self.t0, [(0, 0)] * 4, 0, 0])
 
-  def lost_loop(self):
+  def lost_loop(self) -> None:
     t, img = self.get_img()
     if self.show_image:
       cv2.imshow("Videoextenso", img)
       cv2.waitKey(5)
 
-  def finish(self):
+  def finish(self) -> None:
     self.ve.stop_tracking()
     if self.show_image:
       cv2.destroyAllWindows()

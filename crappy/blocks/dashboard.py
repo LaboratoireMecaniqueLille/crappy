@@ -22,7 +22,7 @@ class Dashboard(Block):
   case, the displayed value corresponds to the average of points.
   """
 
-  def __init__(self, labels=None, nb_digits=3):
+  def __init__(self, labels: list = None, nb_digits: int = 3) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -41,7 +41,7 @@ class Dashboard(Block):
   class Dashboard:
     """Dashboard class created, is launched in a new thread."""
 
-    def __init__(self, labels, nb_digits, queue):
+    def __init__(self, labels: list, nb_digits: int, queue: Queue) -> None:
       self.root = Tk()
       self.root.title('Dashboard')
       self.root.resizable(width=False, height=False)
@@ -60,7 +60,7 @@ class Dashboard(Block):
       while True:
         self.update()
 
-    def update(self):
+    def update(self) -> None:
       """Method to update the output window."""
 
       values = self.queue.get()
@@ -68,7 +68,7 @@ class Dashboard(Block):
         self.c2[row].configure(text='%.{}f'.format(self.nb_digits) % text)
       self.root.update()
 
-  def main(self):
+  def main(self) -> None:
     """Main loop."""
 
     if not self.labels:

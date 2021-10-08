@@ -20,7 +20,7 @@ class Ximea_cv(Camera):
     It requires :mod:`cv2` 3.0 or higher, compiled with WITH_XIMEA flag.
   """
 
-  def __init__(self):
+  def __init__(self) -> None:
     try:
       cv2.CAP_PROP_XI_WIDTH
     except AttributeError:
@@ -45,68 +45,68 @@ class Ximea_cv(Camera):
     self.add_setting("timeout", self._get_timeout, self._set_timeout,
                      (1, 1e9), 1e5)
 
-  def _get_w(self):
+  def _get_w(self) -> int:
     return int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
-  def _get_h(self):
+  def _get_h(self) -> int:
     return int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-  def _get_ox(self):
+  def _get_ox(self) -> int:
     return int(self.cap.get(cv2.CAP_PROP_XI_OFFSET_X))
 
-  def _get_oy(self):
+  def _get_oy(self) -> int:
     return int(self.cap.get(cv2.CAP_PROP_XI_OFFSET_Y))
 
-  def _get_gain(self):
+  def _get_gain(self) -> float:
     return self.cap.get(cv2.CAP_PROP_XI_GAIN)
 
-  def _get_exp(self):
+  def _get_exp(self) -> int:
     return int(self.cap.get(cv2.CAP_PROP_XI_EXPOSURE))
 
-  def _get_aeag(self):
+  def _get_aeag(self) -> bool:
     return bool(self.cap.get(cv2.CAP_PROP_XI_AEAG))
 
   def _get_data_format(self):
     return self.cap.get(cv2.CAP_PROP_XI_DATA_FORMAT)
 
-  def _get_extt(self):
+  def _get_extt(self) -> float:
     return self.cap.get(cv2.CAP_PROP_XI_GPI_MODE)
 
-  def _get_timeout(self):
+  def _get_timeout(self) -> float:
     return self.cap.get(cv2.CAP_PROP_XI_TIMEOUT)
 
-  def _set_w(self, width):
+  def _set_w(self, width: int) -> None:
     self.cap.set(cv2.CAP_PROP_XI_WIDTH, width)
 
-  def _set_h(self, height):
+  def _set_h(self, height: int) -> None:
     self.cap.set(cv2.CAP_PROP_XI_HEIGHT, height)
 
-  def _set_ox(self, x_offset):
+  def _set_ox(self, x_offset: int) -> None:
     self.cap.set(cv2.CAP_PROP_XI_OFFSET_X, x_offset)
 
-  def _set_oy(self, y_offset):
+  def _set_oy(self, y_offset: int) -> None:
     self.cap.set(cv2.CAP_PROP_XI_OFFSET_Y, y_offset)
 
-  def _set_gain(self, gain):
+  def _set_gain(self, gain: float) -> None:
     self.cap.set(cv2.CAP_PROP_XI_GAIN, gain)
 
-  def _set_exp(self, exposure):
+  def _set_exp(self, exposure: float) -> None:
     self.cap.set(cv2.CAP_PROP_XI_EXPOSURE, exposure)
 
-  def _set_aeag(self, aeag):
+  def _set_aeag(self, aeag: bool) -> None:
     self.cap.set(cv2.CAP_PROP_XI_AEAG, int(bool(aeag)))
 
-  def _set_data_format(self, form):
+  def _set_data_format(self, form) -> None:
     self.cap.set(cv2.CAP_PROP_XI_DATA_FORMAT, form)
 
-  def _set_extt(self, trig):
+  def _set_extt(self, trig: float) -> None:
     self.cap.set(cv2.CAP_PROP_XI_GPI_MODE, int(trig))
     self.cap.set(cv2.CAP_PROP_XI_TRG_SOURCE, int(trig))
 
-  def _set_timeout(self, timeout):
+  def _set_timeout(self, timeout: float) -> None:
     return self.cap.set(cv2.CAP_PROP_XI_TIMEOUT, timeout)
 
-  def open(self, numdevice=0, **kwargs):
+  def open(self, numdevice: int = 0, **kwargs) -> None:
     """Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs.
     """
@@ -121,7 +121,7 @@ class Ximea_cv(Camera):
     self.set_all(**kwargs)
     self.set_all(**kwargs)
 
-  def reopen(self, **kwargs):
+  def reopen(self, **kwargs) -> None:
     """Will reopen the camera, args will be set to default unless specified
     otherwise in kwargs."""
 
@@ -129,7 +129,7 @@ class Ximea_cv(Camera):
     self.cap = cv2.VideoCapture(cv2.CAP_XIAPI + self.numdevice)
     self.set_all(override=True, **kwargs)
 
-  def get_image(self):
+  def get_image(self) -> tuple:
     """This method get a frame on the selected camera and return a ndarray.
 
     If the camera breaks down, it reinitializes it, and tries again.
@@ -149,7 +149,7 @@ class Ximea_cv(Camera):
       return self.get_image()
     return t, frame
 
-  def close(self):
+  def close(self) -> None:
     """This method close properly the frame grabber.
 
     Returns:
@@ -160,7 +160,7 @@ class Ximea_cv(Camera):
       self.cap.release()
     self.cap = None
 
-  def __str__(self):
+  def __str__(self) -> str:
     """Method to prints out main parameter.
 
     Returns:

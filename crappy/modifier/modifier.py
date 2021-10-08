@@ -9,10 +9,10 @@ class MetaModifier(type):
   classes = {}
   needed_methods = ["evaluate"]
 
-  def __new__(mcs, name, bases, dict_):
+  def __new__(mcs, name: str, bases: tuple, dict_: dict) -> type:
     return type.__new__(mcs, name, bases, dict_)
 
-  def __init__(cls, name, bases, dict_):
+  def __init__(cls, name: str, bases: tuple, dict_: dict) -> None:
     type.__init__(cls, name, bases, dict_)
     if name in MetaModifier.classes:
       raise DefinitionError("Cannot redefine " + name + " class")

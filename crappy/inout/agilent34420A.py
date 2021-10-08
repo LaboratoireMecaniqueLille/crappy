@@ -23,8 +23,11 @@ class Agilent34420a(InOut):
     sure you have the last version of :mod:`serial`.
   """
 
-  def __init__(self, mode=b"VOLT", device='/dev/ttyUSB0',
-               baudrate=9600, timeout=1):
+  def __init__(self,
+               mode: bytes = b"VOLT",
+               device: str = '/dev/ttyUSB0',
+               baudrate: int = 9600,
+               timeout: float = 1) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -45,7 +48,7 @@ class Agilent34420a(InOut):
     # desired value to measure
     self.mode = mode
 
-  def open(self):
+  def open(self) -> None:
     self.ser = serial.Serial(port=self.device, baudrate=self.baudrate,
                              timeout=self.timeout)
     self.ser.write(b"*RST;*CLS;*OPC?\n")
@@ -55,7 +58,7 @@ class Agilent34420a(InOut):
     self.ser.write(b"SYST:REM\n")
     self.get_data()
 
-  def get_data(self):
+  def get_data(self) -> list:
     """Reads the signal, returns :obj:`False` if error and prints
     `'bad serial'`."""
 
@@ -67,7 +70,7 @@ class Agilent34420a(InOut):
       self.ser.flush()
       return [t, 0]
 
-  def close(self):
+  def close(self) -> None:
     """Closes the serial port."""
 
     self.ser.close()

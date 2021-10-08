@@ -14,7 +14,7 @@ except (ModuleNotFoundError, ImportError):
 class Xiapi(Camera):
   """Camera class for ximeas using official XiAPI."""
 
-  def __init__(self):
+  def __init__(self) -> None:
     Camera.__init__(self)
     self.name = "Xiapi"
     self.cam = xiapi.Camera()
@@ -30,56 +30,56 @@ class Xiapi(Camera):
     self.add_setting("external_trig", self._get_extt, self._set_extt,
                      True, False)
 
-  def _get_w(self):
+  def _get_w(self) -> int:
     return self.cam.get_width()
 
-  def _get_h(self):
+  def _get_h(self) -> int:
     return self.cam.get_height()
 
-  def _get_ox(self):
+  def _get_ox(self) -> int:
     return self.cam.get_offsetX()
 
-  def _get_oy(self):
+  def _get_oy(self) -> int:
     return self.cam.get_offsetY()
 
-  def _get_gain(self):
+  def _get_gain(self) -> float:
     return self.cam.get_gain()
 
-  def _get_exp(self):
+  def _get_exp(self) -> float:
     return self.cam.get_exposure()
 
-  def _get_aeag(self):
+  def _get_aeag(self) -> float:
     return self.cam.get_param('aeag')
 
-  def _get_extt(self):
+  def _get_extt(self) -> bool:
     r = self.cam.get_trigger_source()
     if r == 'XI_TRG_OFF':
       return False
     else:
       return True
 
-  def _set_w(self, width):
+  def _set_w(self, width: int) -> None:
     self.cam.set_width(width)
 
-  def _set_h(self, height):
+  def _set_h(self, height: int) -> None:
     self.cam.set_height(height)
 
-  def _set_ox(self, x_offset):
+  def _set_ox(self, x_offset: int) -> None:
     self.cam.set_offsetX(x_offset)
 
-  def _set_oy(self, y_offset):
+  def _set_oy(self, y_offset: int) -> None:
     self.cam.set_offsetY(y_offset)
 
-  def _set_gain(self, gain):
+  def _set_gain(self, gain: float) -> None:
     self.cam.set_gain(gain)
 
-  def _set_exp(self, exposure):
+  def _set_exp(self, exposure: float) -> None:
     self.cam.set_exposure(exposure)
 
-  def _set_aeag(self, aeag):
+  def _set_aeag(self, aeag: float) -> None:
     self.cam.set_param('aeag', int(aeag))
 
-  def _set_extt(self, trig):
+  def _set_extt(self, trig: bool) -> None:
     if trig:
       self.cam.set_gpi_mode('XI_GPI_TRIGGER')
       self.cam.set_trigger_source('XI_TRG_EDGE_RISING')
@@ -87,7 +87,7 @@ class Xiapi(Camera):
       self.cam.set_gpi_mode('XI_GPI_OFF')
       self.cam.set_trigger_source('XI_TRG_OFF')
 
-  def open(self, sn=None, **kwargs):
+  def open(self, sn: str = None, **kwargs) -> None:
     """Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs.
 
@@ -111,7 +111,7 @@ class Xiapi(Camera):
     self.set_all(**kwargs)
     self.cam.start_acquisition()
 
-  def reopen(self, **kwargs):
+  def reopen(self, **kwargs) -> None:
     """Will reopen the camera, args will be set to default unless specified
     otherwise in kwargs.
     """
@@ -119,7 +119,7 @@ class Xiapi(Camera):
     self.open()
     self.set_all(override=True, **kwargs)
 
-  def get_image(self):
+  def get_image(self) -> tuple:
     """This method get a frame on the selected camera and return a ndarray.
 
     Returns:
@@ -130,7 +130,7 @@ class Xiapi(Camera):
     t = time.time()
     return t, self.img.get_image_data_numpy()
 
-  def close(self):
+  def close(self) -> None:
     """This method closes properly the camera.
 
     Returns:

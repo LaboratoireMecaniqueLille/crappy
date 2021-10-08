@@ -15,7 +15,10 @@ except (ModuleNotFoundError, ImportError):
 class GUI(Block):
   """Block to send a signal based on a user input."""
 
-  def __init__(self, freq=50, label='step', spam=False):
+  def __init__(self,
+               freq: float = 50,
+               label: str = 'step',
+               spam: bool = False) -> None:
     Block.__init__(self)
     self.freq = freq
     self.spam = spam  # Send the values only once or at each loop ?
@@ -26,7 +29,7 @@ class GUI(Block):
     else:
       self.labels = ['t(s)', label]
 
-  def prepare(self):
+  def prepare(self) -> None:
     self.root = tk.Tk()
     self.root.title("GUI block")
     self.root.protocol("WM_DELETE_WINDOW", self.end)
@@ -36,20 +39,20 @@ class GUI(Block):
     self.button.pack()
     self.send([0, self.i])
 
-  def loop(self):
+  def loop(self) -> None:
     if self.spam:
       self.send([time() - self.t0, self.i])
     if self.abort:
       raise CrappyStop
     self.root.update()
 
-  def end(self):
+  def end(self) -> None:
     self.abort = True
 
-  def callback(self):
+  def callback(self) -> None:
     self.i += 1
     self.send([time()-self.t0, self.i])
     self.label.configure(text='step: %d' % self.i)
 
-  def finish(self):
+  def finish(self) -> None:
     self.root.destroy()

@@ -2,6 +2,7 @@
 
 from time import time, sleep
 import re
+from typing import Callable
 from glob import glob
 from .._global import OptionalModule
 try:
@@ -28,15 +29,15 @@ class Streamer(Camera):
     :meth:`open` (like all cameras).
   """
 
-  def __init__(self):
+  def __init__(self) -> None:
     Camera.__init__(self)
     self.frame = 0
 
   def open(self,
-           path,
-           pattern="img_\\d+_(\\d+\\.\\d+)\\.tiff",
-           start_delay=0,
-           modifier=lambda img: img):
+           path: str,
+           pattern: str = "img_\\d+_(\\d+\\.\\d+)\\.tiff",
+           start_delay: float = 0,
+           modifier: Callable = lambda img: img) -> None:
     """Sets the instance arguments.
 
     Args:
@@ -78,12 +79,12 @@ class Streamer(Camera):
     print("[image streamer] Duration:", self.time_table[-1], "s")
     self.t0 = time() + start_delay
 
-  def close(self):
+  def close(self) -> None:
     self.frame = 0
     self.img_dict = {}
     self.time_table = []
 
-  def get_image(self):
+  def get_image(self) -> tuple:
     if self.frame == len(self.time_table):
       raise CrappyStop
     img_t = self.time_table[self.frame]

@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from typing import Union
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -11,15 +12,16 @@ except (ModuleNotFoundError, ImportError):
   UE9 = OptionalModule("ue9")
 
 
-def get_channel_number(channels):
+def get_channel_number(channels: list) -> None:
   """Register needs to be called with the channel name as :obj:`int`."""
 
   for i, channel in enumerate(channels):
-    if isinstance(str, channel):
+    if isinstance(channel, str):
       channels[i] = int(channel[-1])
 
 
-def format_lists(list_to_format, length):
+def format_lists(list_to_format: Union[list, float, int, bool],
+                 length: int) -> list:
   """In case the user only specifies one parameter, and wants it applied to all
   inputs."""
 
@@ -44,11 +46,11 @@ class Labjack_ue9(InOut):
   """
 
   def __init__(self,
-               channels=0,
-               gain=1,
-               offset=0,
-               make_zero=True,
-               resolution=12):
+               channels: Union[int, list] = 0,
+               gain: Union[float, list] = 1,
+               offset: Union[float, list] = 0,
+               make_zero: Union[bool, list] = True,
+               resolution: Union[int, list] = 12) -> None:
     InOut.__init__(self)
     self.channels = channels
     self.gain = gain
@@ -64,7 +66,7 @@ class Labjack_ue9(InOut):
     self.resolution = format_lists(self.resolution, self.nb_channels)
     self.make_zero = format_lists(self.make_zero, self.nb_channels)
 
-  def open(self):
+  def open(self) -> None:
     self.handle = UE9()
     if any(self.make_zero):
       off = self.eval_offset()
@@ -72,7 +74,7 @@ class Labjack_ue9(InOut):
         if make_zero:
           self.offset[i] += off[i]
 
-  def get_data(self):
+  def get_data(self) -> tuple:
     results = []
     t0 = time()
     for index, channel in enumerate(self.channels):
@@ -82,6 +84,6 @@ class Labjack_ue9(InOut):
     t1 = time()
     return (t0 + t1) / 2, results
 
-  def close(self):
+  def close(self) -> None:
     if hasattr(self, 'handle') and self.handle is not None:
       self.handle.close()

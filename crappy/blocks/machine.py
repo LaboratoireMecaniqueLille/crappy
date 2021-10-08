@@ -15,11 +15,11 @@ class Machine(Block):
   """
 
   def __init__(self,
-               actuators,
-               common=None,
-               freq=200,
-               time_label='t(s)',
-               spam=False):
+               actuators: list,
+               common: dict = None,
+               freq: float = 200,
+               time_label: str = 't(s)',
+               spam: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -78,7 +78,7 @@ class Machine(Block):
           del d[k]
       setting['kwargs'] = d
 
-  def prepare(self):
+  def prepare(self) -> None:
     self.actuators = []
     for setting in self.settings:
       # Open each actuators with its associated dict of settings
@@ -86,7 +86,7 @@ class Machine(Block):
         **setting['kwargs']))
       self.actuators[-1].open()
 
-  def send_data(self):
+  def send_data(self) -> None:
     to_send = {}
     for actuator, setting in zip(self.actuators, self.settings):
       if 'pos_label' in setting:
@@ -97,10 +97,10 @@ class Machine(Block):
       to_send[self.time_label] = time() - self.t0
       self.send(to_send)
 
-  def begin(self):
+  def begin(self) -> None:
     self.send_data()
 
-  def loop(self):
+  def loop(self) -> None:
     if self.spam:
       recv = self.get_last()
     else:
@@ -116,7 +116,7 @@ class Machine(Block):
 
     self.send_data()
 
-  def finish(self):
+  def finish(self) -> None:
     for actuator in self.actuators:
       actuator.stop()
       actuator.close()

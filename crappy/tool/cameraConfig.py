@@ -3,6 +3,7 @@
 from time import time
 import numpy as np
 from multiprocessing import Process, Pipe
+from multiprocessing.connection import Connection
 from .._global import OptionalModule
 
 try:
@@ -30,11 +31,11 @@ class Hist_generator(Process):
     transferred through it. See :meth:`run` for more info.
   """
 
-  def __init__(self, pipe):
+  def __init__(self, pipe: Connection) -> None:
     Process.__init__(self)
     self.pipe = pipe
 
-  def run(self):
+  def run(self) -> None:
     """Expects a tuple of 3 args through the pipe:
 
       - out_size (:obj:`tuple`): The dimensions of the output histogram image.
@@ -82,7 +83,7 @@ class Camera_config:
     `crappy.camera.Camera`).
   """
 
-  def __init__(self, camera):
+  def __init__(self, camera) -> None:
     self.camera = camera
     self.label_shape = 800, 600
     self.scale_length = 350
@@ -106,21 +107,21 @@ class Camera_config:
     self.go = True
     # self.main()
 
-  def stop(self):
+  def stop(self) -> None:
     self.hist_pipe.send((0, 0, 0))
     self.hist_pipe.recv()
     self.hist_process.join()
     self.go = False
     self.root.destroy()
 
-  def start_histogram(self):
+  def start_histogram(self) -> None:
     self.hist_pipe, self.p2 = Pipe()
     self.hist_process = Hist_generator(self.p2)
     self.hist_process.start()
     self.hist_pipe.send(((80, self.label_shape[1]), (0, 256), self.img))
 
 # ============ Initialization of the tkinter window and widgets ============
-  def create_window(self):
+  def create_window(self) -> None:
     self.root.grid_rowconfigure(1, weight=1)
     self.root.grid_columnconfigure(0, weight=1)
     self.img_label = tk.Label(self.root)
@@ -140,7 +141,7 @@ class Camera_config:
     self.img_label.bind('<1>', self.start_move)
     self.img_label.bind('<B1-Motion>', self.move)
 
-  def create_inputs(self):
+  def create_inputs(self) -> None:
     settings = list(self.camera.settings_dict.keys())
     settings.sort(key=lambda e: str(type(self.camera.settings[e].limits)))
     self.scales = {}
@@ -162,7 +163,7 @@ class Camera_config:
     self.apply_button.pack()
     # self.apply_button.grid(column=1, row=i+3)
 
-  def create_infos(self):
+  def create_infos(self) -> None:
     self.info_frame = tk.Frame()
     self.info_frame.grid(row=0, column=1)
     self.fps_label = tk.Label(self.info_frame, text="fps:")
@@ -188,7 +189,7 @@ class Camera_config:
     self.reticle_label = tk.Label(self.info_frame, text="Y:0 X:0 V=0")
     self.reticle_label.pack()
 
-  def create_scale(self, setting, pos):
+  def create_scale(self, setting, pos: int) -> None:
     f = tk.Frame(self.root)
     f.grid(row=pos + 2, column=1, sticky=tk.E + tk.W)
     if type(setting.limits[0]) is float:
@@ -204,7 +205,7 @@ class Camera_config:
     self.scales[setting.name].pack()
     self.scales[setting.name].set(setting.value)
 
-  def create_radio(self, setting, pos):
+  def create_radio(self, setting, pos: int) -> None:
     self.radios[setting.name] = tk.IntVar()
     f = tk.Frame(self.root)
     f.grid(row=pos + 2, column=1, sticky=tk.E + tk.W)
@@ -216,7 +217,7 @@ class Camera_config:
         r.select()
       r.pack(anchor=tk.W)
 
-  def create_check(self, setting, pos):
+  def create_check(self, setting, pos: int) -> None:
     self.checks[setting.name] = tk.IntVar()
     f = tk.Frame(self.root)
     f.grid(row=pos + 2, column=1, sticky=tk.E + tk.W)
@@ -228,7 +229,7 @@ class Camera_config:
 
 # ============ Tools ==============
 
-  def detect_bits(self):
+  def detect_bits(self) -> int:
     b = 8
     o = 256
     m = self.img.max()
@@ -237,11 +238,11 @@ class Camera_config:
       o *= 2
     return b
 
-  def get_label_shape(self):
+  def get_label_shape(self) -> tuple:
     r = self.img_label.winfo_height() - 2, self.img_label.winfo_width() - 2
     return r
 
-  def resized(self):
+  def resized(self) -> bool:
     """Returns :obj:`True` if window has been resized and saves the new
     coordinates"""
 
@@ -255,7 +256,7 @@ class Camera_config:
       return True
     return False
 
-  def convert_img(self):
+  def convert_img(self) -> None:
     """Converts the image to `uint` if necessary, then to a `PhotoImage`."""
 
     if len(self.img.shape) == 3:
@@ -291,7 +292,7 @@ class Camera_config:
                 int(self.img.shape[1] * self.zoom_window[3]))
     self.resize_img((sly, slx))
 
-  def resize_img(self, sl):
+  def resize_img(self, sl: tuple) -> None:
     self.c_img = ImageTk.PhotoImage(Image.fromarray(
         cv2.resize(self.img8[sl[1], sl[0]], tuple(reversed(self.img_shape)),
                    interpolation=0)))
@@ -300,7 +301,7 @@ class Camera_config:
 
 # =============== Update functions ===============
 
-  def update_histogram(self):
+  def update_histogram(self) -> None:
     while not self.hist_pipe.poll():
       pass
     h = self.hist_pipe.recv()
@@ -317,11 +318,11 @@ class Camera_config:
                          (0, 2 ** self.detect_bits()),
                          self.img))
 
-  def update_img(self):
+  def update_img(self) -> None:
     self.convert_img()
     self.img_label.configure(image=self.c_img)
 
-  def update_infos(self):
+  def update_infos(self) -> None:
     self.minmax_label.configure(text="min: {} max: {}".format(self.img.min(),
                                                               self.img.max()))
     self.bits_label.configure(text="detected bits: {} ({} values)".format(
@@ -329,7 +330,7 @@ class Camera_config:
     self.range_label.configure(text='Range: {}-{}'.format(self.low, self.high))
     self.update_reticle(self.last_reticle_pos)
 
-  def update_reticle(self, event):
+  def update_reticle(self, event) -> None:
     if isinstance(event, tuple):
       y, x = event
       if y > self.img.shape[0] or x > self.img.shape[1]:
@@ -342,11 +343,11 @@ class Camera_config:
 
 # ============ Zoom related methods ===============
 
-  def reset_zoom(self):
+  def reset_zoom(self) -> None:
     self.zoom_level = 1
     self.zoom_window = (0, 0, 1, 1)
 
-  def get_img_coord(self, ey, ex):
+  def get_img_coord(self, ey: float, ex: float) -> tuple:
     ey -= (self.label_shape[0] - self.img_shape[0]) / 2
     ex -= (self.label_shape[1] - self.img_shape[1]) / 2
     miny, minx, maxy, maxx = self.zoom_window
@@ -357,7 +358,7 @@ class Camera_config:
       rx * (maxx - minx) + minx + .5)
     return min(max(miny, y), maxy - 1), min(max(minx, x), maxx - 1)
 
-  def make_new_window(self, ey, ex):
+  def make_new_window(self, ey: float, ex: float) -> None:
     """Hang on, it is not that complicated: given the location of the zoom
     event this will compute the new zoom window.
 
@@ -404,7 +405,7 @@ class Camera_config:
       miny = 1 - 1 / z
     self.zoom_window = (miny, minx, maxy, maxx)
 
-  def move_window(self, y, x):
+  def move_window(self, y: int, x: int) -> None:
     """Given the movement of the mouse, it will recompute the zoom_window."""
 
     z = (1 + self.zoom_step) ** self.zoom_level
@@ -428,7 +429,7 @@ class Camera_config:
 
 # ========== Callback functions ===========
 
-  def apply_settings(self):
+  def apply_settings(self) -> None:
     """Callback for the apply button.
 
     As its name suggests, it will apply all the edited settings.
@@ -455,7 +456,7 @@ class Camera_config:
     self.update_img()
     self.on_resize()
 
-  def on_resize(self):
+  def on_resize(self) -> None:
     """Recomputes the new shape of the resized image."""
 
     ratio = min(self.label_shape[0] / self.img.shape[0],
@@ -463,7 +464,7 @@ class Camera_config:
     self.img_shape = (int(self.img.shape[0] * ratio),
                       int(self.img.shape[1] * ratio))
 
-  def zoom(self, event):
+  def zoom(self, event) -> None:
     """For windows, only one type of wheel event."""
 
     # This event is relative to the window!
@@ -473,14 +474,14 @@ class Camera_config:
     elif event.num == 4 or event.delta > 0:
       self.zoom_in(event)
 
-  def zoom_in(self, event):
+  def zoom_in(self, event) -> None:
     """Called when scrolling in."""
 
     self.zoom_level += 1
     ls = self.get_label_shape()
     self.make_new_window(event.y / ls[0], event.x / ls[1])
 
-  def zoom_out(self, event):
+  def zoom_out(self, event) -> None:
     """Called when scrolling out."""
 
     if self.zoom_level == 0:
@@ -492,13 +493,13 @@ class Camera_config:
     ls = self.get_label_shape()
     self.make_new_window(event.y / ls[0], event.x / ls[1])
 
-  def start_move(self, event):
+  def start_move(self, event) -> None:
     """To save the coordinates before actually moving."""
 
     self.mv_start = (event.y, event.x)
     self.previous_window = self.zoom_window
 
-  def move(self, event):
+  def move(self, event) -> None:
     """Moving the image when dragging it with the mouse."""
 
     mvy = (self.mv_start[0] - event.y) / self.img_shape[0]
@@ -507,7 +508,7 @@ class Camera_config:
 
 # ============ And finally, the main loop ===========
 
-  def main(self):
+  def main(self) -> None:
     loop = 0
     while self.go:
       loop += 1  # For the fps counter

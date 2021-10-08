@@ -15,16 +15,16 @@ class Generator(Block):
   """
 
   def __init__(self,
-               path=None,
-               freq=200,
-               cmd_label='cmd',
-               cycle_label='cycle',
-               cmd=0,
-               repeat=False,
-               trig_link=None,
-               spam=False,
-               verbose=False,
-               end_delay=2):
+               path: list = None,
+               freq: float = 200,
+               cmd_label: str = 'cmd',
+               cycle_label: str = 'cycle',
+               cmd: float = 0,
+               repeat: bool = False,
+               trig_link: str = None,
+               spam: bool = False,
+               verbose: bool = False,
+               end_delay: float = 2) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -86,7 +86,7 @@ class Generator(Block):
         str(filter(lambda s: not hasattr(generator_path, s['type']), self.path))
     self.labels = ['t(s)', self.cmd_label, self.cycle_label]
 
-  def prepare(self):
+  def prepare(self) -> None:
     self.path_id = -1  # Will be incremented to 0 on first next_path
     if self.trig_link is not None:
       self.to_get = list(range(len(self.inputs)))
@@ -95,7 +95,7 @@ class Generator(Block):
     self.last_path = -1
     self.next_path()
 
-  def next_path(self):
+  def next_path(self) -> None:
     self.path_id += 1
     if self.path_id >= len(self.path):
       if self.repeat:
@@ -115,11 +115,11 @@ class Generator(Block):
     # Instantiating the new path class for the next step
     self.current_path = getattr(generator_path, name)(**kwargs)
 
-  def begin(self):
+  def begin(self) -> None:
     self.send([self.last_t - self.t0, self.cmd, self.path_id])
     self.current_path.t0 = self.t0
 
-  def loop(self):
+  def loop(self) -> None:
     if self.trig_link is not None:
       da = self.inputs[self.trig_link].recv_chunk()
       data = self.get_all_last(self.to_get)

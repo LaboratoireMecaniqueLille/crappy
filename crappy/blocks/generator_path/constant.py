@@ -1,12 +1,18 @@
 # coding: utf-8
 
+from typing import Union, Callable
 from .path import Path
 
 
 class Constant(Path):
   """Simplest condition. It will send value until condition is reached."""
 
-  def __init__(self, time, cmd, condition, send_one=True, value=None):
+  def __init__(self,
+               time: float,
+               cmd: float,
+               condition: Union[str, bool, Callable],
+               send_one: bool = True,
+               value: float = None) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -27,11 +33,11 @@ class Constant(Path):
     else:
       self.get_cmd = self.get_cmd_condition
 
-  def get_cmd_first(self, _):
+  def get_cmd_first(self, _) -> float:
     self.get_cmd = self.get_cmd_condition
     return self.value
 
-  def get_cmd_condition(self, data):
+  def get_cmd_condition(self, data: dict) -> float:
     if self.condition(data):
       raise StopIteration
     return self.value

@@ -1,6 +1,8 @@
 # coding: utf-8
 
 from multiprocessing import Process, Pipe
+from multiprocessing.connection import Connection
+from typing import Union
 import numpy as np
 from .._global import OptionalModule
 
@@ -22,7 +24,7 @@ class LostSpotError(Exception):
   pass
 
 
-def overlapping(box1, box2):
+def overlapping(box1: np.ndarray, box2: np.ndarray) -> bool:
   """Returns :obj:`True` if `box1` and `box2` are overlapping or included in
   each other"""
 
@@ -42,7 +44,7 @@ def overlapping(box1, box2):
   return False
 
 
-class Video_extenso(object):
+class Video_extenso:
   """The basic VideoExtenso class.
 
   It will detect the spots, save the initial position, and return the measured
@@ -57,13 +59,13 @@ class Video_extenso(object):
   """
 
   def __init__(self,
-               white_spots=False,
-               update_thresh=False,
-               num_spots="auto",
-               safe_mode=False,
-               border=5,
-               min_area=150,
-               blur=5):
+               white_spots: bool = False,
+               update_thresh: bool = False,
+               num_spots: Union[str, int] = "auto",
+               safe_mode: bool = False,
+               border: int = 5,
+               min_area: float = 150,
+               blur: float = 5) -> None:
     """Sets the arguments.
 
     Args:
@@ -104,7 +106,7 @@ class Video_extenso(object):
     # This number of pixel will be added to the window sending the
     # spot image to the process
 
-  def detect_spots(self, img, oy, ox):
+  def detect_spots(self, img: np.ndarray, oy: int, ox: int) -> None:
     """Detects the spots in `img`, subframe of the full image.
 
     Note:
@@ -180,7 +182,7 @@ class Video_extenso(object):
       self.spot_list.append(d)
     print(self.spot_list)
 
-  def save_length(self):
+  def save_length(self) -> None:
     if not hasattr(self, "spot_list"):
       print("You must select the spots first!")
       return
@@ -192,7 +194,7 @@ class Video_extenso(object):
     self.l0x = max(x) - min(x)
     self.num_spots = len(self.spot_list)
 
-  def enlarged_window(self, window, shape):
+  def enlarged_window(self, window: tuple, shape: tuple) -> tuple:
     """Returns the slices to get the window around the spot."""
 
     s1 = slice(max(0, window[0] - self.border),
@@ -201,7 +203,7 @@ class Video_extenso(object):
                min(shape[1], window[3] + self.border))
     return s1, s2
 
-  def start_tracking(self):
+  def start_tracking(self) -> None:
     """Will spawn a process per spot, which goal is to track the spot and
     send the new coordinate after each update."""
 
@@ -216,7 +218,7 @@ class Video_extenso(object):
                                   safe_mode=self.safe_mode, blur=self.blur))
       self.tracker[-1].start()
 
-  def get_def(self, img):
+  def get_def(self, img: np.ndarray) -> list:
     """The "heart" of the videoextenso.
 
     Will keep track of the spots and return the computed deformation.
@@ -275,8 +277,12 @@ class Video_extenso(object):
 class Tracker(Process):
   """Process tracking a spot for videoextensometry."""
 
-  def __init__(self, pipe, white_spots=False, thresh='auto', safe_mode=True,
-               blur=False):
+  def __init__(self,
+               pipe: Connection,
+               white_spots: bool = False,
+               thresh: str = 'auto',
+               safe_mode: bool = True,
+               blur: float = 0):
     Process.__init__(self)
     self.pipe = pipe
     self.white_spots = white_spots
@@ -289,7 +295,7 @@ class Tracker(Process):
       self.auto_thresh = False
       self.thresh = thresh
 
-  def run(self):
+  def run(self) -> None:
     # print("DEBUG: process starting, thresh=", self.thresh)
     while True:
       try:
@@ -318,7 +324,7 @@ class Tracker(Process):
       self.pipe.send(r)
     # print("DEBUG: Process terminating")
 
-  def evaluate(self, img):
+  def evaluate(self, img: np.ndarray) -> Union[dict, int]:
     if self.blur and self.blur > 1:
       img = cv2.medianBlur(img, self.blur)
     if self.auto_thresh:
@@ -348,7 +354,7 @@ class Tracker(Process):
     r['bbox'] = y, x, y + h, x + w
     return r
 
-  def fallback(self, img):
+  def fallback(self, img: np.ndarray) -> Union[dict, int]:
     """Called when the spots are lost."""
 
     if self.safe_mode or self.fallback_mode:

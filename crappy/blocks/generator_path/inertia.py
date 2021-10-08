@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import numpy as np
+from typing import Union, Callable
 
 from .path import Path
 
@@ -18,8 +19,15 @@ class Inertia(Path):
 
   """
 
-  def __init__(self, time, cmd, condition, inertia,
-               flabel, const=30/np.pi, tlabel='t(s)', value=None):
+  def __init__(self,
+               time: float,
+               cmd: float,
+               condition: Union[str, bool, Callable],
+               inertia: float,
+               flabel: str,
+               const: float = 30/np.pi,
+               tlabel: str = 't(s)',
+               value: float = None) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -55,7 +63,7 @@ class Inertia(Path):
     self.value = cmd if value is None else value
     self.last_t = None
 
-  def get_cmd(self, data):
+  def get_cmd(self, data: dict) -> float:
     if self.condition(data):
       raise StopIteration
     if data[self.tlabel]:

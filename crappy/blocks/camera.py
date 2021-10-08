@@ -2,6 +2,9 @@
 
 from sys import platform
 import os
+from typing import Callable, Union
+
+import numpy as np
 
 from .block import Block
 from ..camera import camera_list
@@ -33,20 +36,20 @@ class Camera(Block):
   """
 
   def __init__(self,
-               camera,
-               save_folder=None,
-               verbose=False,
-               labels=None,
-               fps_label=False,
-               img_name="{self.loops:06d}_{t-self.t0:.6f}",
-               ext='tiff',
-               save_period=1,
-               save_backend=None,
-               transform=None,
-               input_label=None,
-               config=True,
-               no_loop=False,
-               **kwargs):
+               camera: str,
+               save_folder: str = None,
+               verbose: bool = False,
+               labels: list = None,
+               fps_label: str = False,
+               img_name: str = "{self.loops:06d}_{t-self.t0:.6f}",
+               ext: str = 'tiff',
+               save_period: int = 1,
+               save_backend: str = None,
+               transform: Callable = None,
+               input_label: str = None,
+               config: bool = True,
+               no_loop: bool = False,
+               **kwargs) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -108,7 +111,7 @@ class Camera(Block):
     self.loops = 0
     self.t0 = 0
 
-  def prepare(self, send_img=True):
+  def prepare(self, send_img: bool = True) -> None:
     sep = '\\' if 'win' in platform else '/'
     if self.save_folder and not self.save_folder.endswith(sep):
       self.save_folder += sep
@@ -141,19 +144,19 @@ class Camera(Block):
       self.loop = self.stop
 
   @staticmethod
-  def save_sitk(img, fname):
+  def save_sitk(img: np.ndarray, fname: str) -> None:
     image = Sitk.GetImageFromArray(img)
     Sitk.WriteImage(image, fname)
 
   @staticmethod
-  def save_cv2(img, fname):
+  def save_cv2(img: np.ndarray, fname: str) -> None:
     cv2.imwrite(fname, img)
 
   @staticmethod
-  def save_pil(img, fname):
+  def save_pil(img: np.ndarray, fname: str) -> None:
     PIL.Image.fromarray(img).save(fname)
 
-  def get_img(self):
+  def get_img(self) -> Union[tuple, None]:
     """Waits the appropriate time/event to read an image, reads it, saves it if
     asked to, applies the transformation and increases counter."""
 
@@ -178,10 +181,10 @@ class Camera(Block):
       img = self.transform(img)
     return t, img
 
-  def loop(self):
+  def loop(self) -> None:
     t, img = self.get_img()
     self.send([t - self.t0, img])
 
-  def finish(self):
+  def finish(self) -> None:
     if self.input_label is None:
       self.camera.close()

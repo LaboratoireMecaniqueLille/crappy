@@ -132,7 +132,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
       elif i == 9:
         raise TimeoutError("Could not set the camera")
 
-  def get_image(self) -> Tuple[float, np.array]:
+  def get_image(self) -> Tuple[float, np.ndarray]:
     """Reads a single image from the camera.
 
     Returns:
@@ -159,7 +159,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
                        b'\x00\x00')
     usb.util.dispose_resources(self._dev)
 
-  def _grab(self) -> [bytes, np.array]:
+  def _grab(self) -> [bytes, np.ndarray]:
     """Captures a raw image from the camera.
 
     Returns:
@@ -189,7 +189,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     else:
       return status, None
 
-  def _get_dead_pixels_list(self, data: np.array) -> list:
+  def _get_dead_pixels_list(self, data: np.ndarray) -> list:
     """Identifies the dead pixels on an image.
 
     Args:
@@ -205,13 +205,13 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     return list(zip(*np.where(img < 100)))
 
   @staticmethod
-  def _crop(raw_img: np.array) -> np.array:
+  def _crop(raw_img: np.ndarray) -> np.ndarray:
     """Simply crops an image to the right dimensions."""
 
     return raw_img[4: 4 + Seek_thermal_pro_dimensions['Height'],
                    1: 1 + Seek_thermal_pro_dimensions['Width']]
 
-  def _correct_dead_pixels(self, img: np.array) -> np.array:
+  def _correct_dead_pixels(self, img: np.ndarray) -> np.ndarray:
     """Corrects the dead pixels values.
 
     The new value is the average value of the surrounding pixels.

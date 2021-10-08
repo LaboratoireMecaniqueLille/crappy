@@ -644,7 +644,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     self._thrd_rct = Thread(target=self._thread_rct)
     self._thrd_shutoff = Thread(target=self._thread_shutoff)
 
-  def open(self):
+  def open(self) -> None:
     """Sets the communication, the motor parameters and starts the threads."""
 
     if self._backend == 'USB':

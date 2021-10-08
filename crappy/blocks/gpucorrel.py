@@ -24,24 +24,24 @@ class GPUCorrel(Camera):
   """
 
   def __init__(self,
-               camera,
-               fields,
-               save_folder=None,
-               verbose=False,
-               labels=None,
-               fps_label=False,
-               img_name="{self.loops:06d}_{t-self.t0:.6f}",
-               ext='tiff',
-               save_period=1,
-               save_backend=None,
+               camera: str,
+               fields: list,
+               save_folder: str = None,
+               verbose: bool = False,
+               labels: list = None,
+               fps_label: str = False,
+               img_name: str = "{self.loops:06d}_{t-self.t0:.6f}",
+               ext: str = 'tiff',
+               save_period: int = 1,
+               save_backend: str = None,
                transform: Callable = None,
-               input_label=None,
-               config=True,
-               cam_kwargs=None,
-               discard_lim=3,
-               discard_ref=5,
+               input_label: str = None,
+               config: bool = True,
+               cam_kwargs: dict = None,
+               discard_lim: int = 3,
+               discard_ref: int = 5,
                imgref=None,
-               **kwargs):
+               **kwargs) -> None:
     self.ready = False
     cam_kw = {}
     self.fields = fields
@@ -93,7 +93,7 @@ class GPUCorrel(Camera):
     self.gpu_correl_kwargs = kwargs
     self.gpu_correl_kwargs['fields'] = self.fields
 
-  def prepare(self, *_, **__):
+  def prepare(self, *_, **__) -> None:
     Camera.prepare(self, send_img=False)
     t, img = self.camera.read_image()
     if self.transform is not None:
@@ -109,7 +109,7 @@ class GPUCorrel(Camera):
         self.correl.set_orig(self.imgref.astype(np.float32))
       self.correl.prepare()
 
-  def begin(self):
+  def begin(self) -> None:
     self.last_t = time() - 1
     if self.imgref is not None:
       return
@@ -122,7 +122,7 @@ class GPUCorrel(Camera):
     if self.save_folder:
       self.save(img, self.save_folder + "img_ref_%.6f.tiff" % (t - self.t0))
 
-  def loop(self):
+  def loop(self) -> None:
     if self.verbose and self.loops % self.nloops == 0:
       t = time()
       print("[Correl block] processed", self.nloops / (t - self.last_t), "ips")
@@ -140,6 +140,6 @@ class GPUCorrel(Camera):
           return
     self.send(out)
 
-  def finish(self):
+  def finish(self) -> None:
     self.correl.clean()
     Camera.finish(self)

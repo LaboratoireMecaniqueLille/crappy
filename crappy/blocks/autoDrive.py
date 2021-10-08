@@ -20,11 +20,11 @@ class AutoDrive(Block):
   """
 
   def __init__(self,
-               actuator=None,
-               P=2000,
-               direction='Y-',
-               range=2048,
-               max_speed=200000):
+               actuator: str = None,
+               P: float = 2000,
+               direction: str = 'Y-',
+               range: int = 2048,
+               max_speed: float = 200000) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -50,20 +50,20 @@ class AutoDrive(Block):
     self.P *= sign
     self.labels = ['t(s)', 'diff(pix)']
 
-  def get_center(self, data):
+  def get_center(self, data: dict) -> float:
     lst = data['Coord(px)']
     i = 0 if self.direction[0].lower() == 'y' else 1
     lst = [x[i] for x in lst]
     return (max(lst) + min(lst)) / 2
 
-  def prepare(self):
+  def prepare(self) -> None:
     actuator_name = self.actuator['name']
     self.actuator.pop('name')
     self.device = actuator_list[actuator_name](**self.actuator)
     self.device.open()
     self.device.set_speed(0)  # Make sure it is stopped
 
-  def loop(self):
+  def loop(self) -> None:
     data = self.inputs[0].recv_last(blocking=True)
     t = time()
     diff = self.get_center(data) - self.range / 2
@@ -71,5 +71,5 @@ class AutoDrive(Block):
         max(-self.max_speed, min(self.max_speed, int(self.P * diff))))
     self.send([t - self.t0, diff])
 
-  def finish(self):
+  def finish(self) -> None:
     self.device.set_speed(0)

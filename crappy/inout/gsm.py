@@ -24,7 +24,7 @@ class Gsm(InOut):
   def __init__(self,
                numbers: list = None,
                port: str = "/dev/ttyUSB0",
-               baudrate: int = 115200):
+               baudrate: int = 115200) -> None:
     """Checks arguments validity.
 
     Args:

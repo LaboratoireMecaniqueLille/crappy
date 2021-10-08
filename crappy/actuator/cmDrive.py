@@ -13,7 +13,7 @@ class CM_drive(Actuator):
   """Open a new default serial port for communication with a CMdrive actuator.
   """
 
-  def __init__(self, port='/dev/ttyUSB0', baudrate=9600):
+  def __init__(self, port: str = '/dev/ttyUSB0', baudrate: int = 9600) -> None:
     """Sets the instance attributes.
 
     Args:
@@ -25,10 +25,10 @@ class CM_drive(Actuator):
     self.port = port
     self.baudrate = baudrate
 
-  def open(self):
+  def open(self) -> None:
     self.ser = serial.Serial(self.port, self.baudrate)
 
-  def stop(self):
+  def stop(self) -> None:
     """Stop the motor motion."""
 
     # close serial connection before to avoid errors
@@ -38,7 +38,7 @@ class CM_drive(Actuator):
     # self.ser.readline()
     self.ser.close()
 
-  def reset(self):
+  def reset(self) -> int:
     """Reset the serial communication, before reopening it to set displacement
     to zero."""
 
@@ -64,19 +64,19 @@ class CM_drive(Actuator):
       # self.ser.close() #close serial connection
       return 0
 
-  def close(self):
+  def close(self) -> None:
     """Close the designated port."""
 
     self.stop()
     self.ser.close()
 
-  def clear_errors(self):
+  def clear_errors(self) -> None:
     """Reset errors."""
 
     self.ser.write("CLRFAULT\r\n")
     self.ser.write("OPMODE 0\r\n EN\r\n")
 
-  def set_speed(self, speed):
+  def set_speed(self, speed: float) -> None:
     """Pilot in speed mode, requires speed in `mm/min`."""
 
     self.ser.close()  # close serial connection before to avoid errors
@@ -90,7 +90,10 @@ class CM_drive(Actuator):
       print('Maximum speed exceeded')
     self.ser.close()  # close serial connection
 
-  def set_position(self, position, speed, motion_type='relative'):
+  def set_position(self,
+                   position: float,
+                   speed: float,
+                   motion_type: str = 'relative') -> None:
     """Pilot in position mode, needs speed and final position to run
     (in `mm/min` and `mm`)."""
 
@@ -106,7 +109,7 @@ class CM_drive(Actuator):
     self.ser.readline()
     self.ser.close()  # close serial connection
 
-  def move_home(self):
+  def move_home(self) -> None:
     """Reset the position to zero."""
 
     self.ser.open()  # open serial port
@@ -115,7 +118,7 @@ class CM_drive(Actuator):
     # self.ser.readline()
     self.ser.close()  # close serial connection
 
-  def get_position(self):
+  def get_position(self) -> float:
     """Search for the physical position of the motor.
 
     Returns:

@@ -19,35 +19,35 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DISConfig(Camera_config):
-  def __init__(self, camera):
+  def __init__(self, camera) -> None:
     self.box = (-1, -1, -1, -1)
     Camera_config.__init__(self, camera)
 
-  def clamp(self, t):
+  def clamp(self, t: tuple) -> tuple:
     if isinstance(t[0], slice):
       return t[0], min(max(0, t[1]), self.img_shape[1] - 1)
     else:
       return min(max(0, t[0]), self.img_shape[0] - 1), t[1]
 
-  def create_window(self):
+  def create_window(self) -> None:
     Camera_config.create_window(self)
     self.img_label.bind('<1>', self.start_select)
     self.img_label.bind('<B1-Motion>', self.update_box)
     self.img_label.bind('<ButtonRelease-1>', self.stop_select)
 
-  def start_select(self, event):
+  def start_select(self, event) -> None:
     self.box_origin = self.get_img_coord(event.y, event.x)
 
-  def update_box(self, event):
+  def update_box(self, event) -> None:
     oy, ox = self.box_origin
     y, x = self.get_img_coord(event.y, event.x)
     self.box = (min(oy, y), min(ox, x), max(oy, y), max(ox, x))
     # print(self.box)
 
-  def stop_select(self, event):
+  def stop_select(self, event) -> None:
     pass
 
-  def draw_box(self, box, img):
+  def draw_box(self, box, img: np.ndarray) -> None:
     for s in [(box[0], slice(box[1], box[3])),
               (box[2], slice(box[1], box[3])),
               (slice(box[0], box[2]), box[1]),
@@ -56,7 +56,7 @@ class DISConfig(Camera_config):
       s = self.clamp(s)
       img[s] = 255 * int(np.mean(img[s]) < 128)
 
-  def resize_img(self, sl):
+  def resize_img(self, sl: tuple) -> None:
     rimg = cv2.resize(self.img8[sl[1], sl[0]], tuple(reversed(self.img_shape)),
                       interpolation=0)
     if self.box[0] > 0:

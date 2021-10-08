@@ -18,13 +18,13 @@ class Spectrum(InOut):
   """Acquire data from a Spectrum device."""
 
   def __init__(self,
-               device=b'/dev/spcm0',
-               channels=None,
-               ranges=None,
-               samplerate=100000,
-               buff_size=2**26,
-               notify_size=2**16,
-               split_chan=False):
+               device: bytes = b'/dev/spcm0',
+               channels: list = None,
+               ranges: list = None,
+               samplerate: int = 100000,
+               buff_size: int = 2**26,
+               notify_size: int = 2**16,
+               split_chan: bool = False) -> None:
     """Sets the args and the instance attributes.
 
     Args:
@@ -56,7 +56,7 @@ class Spectrum(InOut):
                  self.samplerate * self.nchan / 512))
     self.bs = self.notify_size // (2 * self.nchan)
 
-  def open(self):
+  def open(self) -> None:
     self.h = spc.hOpen(self.device)
     if not self.h:
       raise IOError("Could not open " + str(self.device))
@@ -85,17 +85,17 @@ class Spectrum(InOut):
                         0,  # Offset
                         self.buff_size)  # Buffer size
 
-  def close(self):
+  def close(self) -> None:
     if hasattr(self, "h") and self.h:
       spc.vClose(self.h)
 
-  def start_stream(self):
+  def start_stream(self) -> None:
     spc.dw_set_param(self.h, spc.SPC_M2CMD, spc.M2CMD_CARD_START |
                      spc.M2CMD_CARD_ENABLETRIGGER | spc.M2CMD_DATA_STARTDMA)
     self.t0 = time()
     self.n = 0
 
-  def get_stream(self):
+  def get_stream(self) -> list:
     start = self.t0 + self.dt * self.n
     t = np.arange(start, start + (self.bs - 1) * self.dt, self.dt)
     spc.dw_set_param(self.h, spc.SPC_M2CMD, spc.M2CMD_DATA_WAITDMA)
@@ -125,6 +125,6 @@ class Spectrum(InOut):
       return [t, r]
     # total += notify_size
 
-  def stop_stream(self):
+  def stop_stream(self) -> None:
     spc.dw_set_param(self.h, spc.SPC_M2CMD, spc.M2CMD_CARD_STOP |
                      spc.M2CMD_DATA_STOPDMA)

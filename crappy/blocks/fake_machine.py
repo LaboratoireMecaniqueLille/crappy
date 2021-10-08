@@ -1,10 +1,13 @@
+# coding: utf-8
+
 from time import time
 import numpy as np
+from typing import Callable
 
 from .block import Block
 
 
-def plastic(v, yield_strain=.005, rate=.02):
+def plastic(v: float, yield_strain: float = .005, rate: float = .02) -> float:
   if v > yield_strain:
     return ((v - yield_strain) ** 2 + rate ** 2) ** .5 - rate
   return 0
@@ -17,19 +20,19 @@ class Fake_machine(Block):
   """
 
   def __init__(self,
-               k=210000*20*2,  # Global rigidity in N (Force = k*strain)
-               l0=200,  # Initial length of the sample
-               maxstrain=1.51,  # The material breaks above this strain (%)
-               mode='speed',  # Does the machine take the input in speed
+               k: float = 210000*20*2,  # Global rigidity in N (F = k*strain)
+               l0: float = 200,  # Initial length of the sample
+               maxstrain: float = 1.51,  # Material breaks above this strain (%)
+               mode: str = 'speed',  # Does the machine take the input in speed
                # or position
-               max_speed=5,  # mm/s
-               plastic_law=plastic,  # Returns the plastic strain given
-               # a strain
+               max_speed: float = 5,  # mm/s
+               plastic_law: Callable = plastic,  # Returns the plastic strain
+               # given a strain
                # To add normal noise over the data and make things a bit
                # more realistic!
-               sigma=None,
-               nu=.3,
-               cmd_label='cmd'):
+               sigma: dict = None,
+               nu: float = .3,
+               cmd_label: str = 'cmd') -> None:
     Block.__init__(self)
     self.freq = 100
     self.k = k
@@ -47,13 +50,13 @@ class Fake_machine(Block):
         if sigma is None else sigma
     self.max_seen_strain = 0
 
-  def noise(self, d):
+  def noise(self, d: dict) -> dict:
     for k in d:
       if k in self.sigma:
         d[k] = np.random.normal(d[k], self.sigma[k])
     return d
 
-  def send_all(self):
+  def send_all(self) -> None:
     tosend = {
         't(s)': time() - self.t0,
         'F(N)': (self.pos - self.plastic_elongation) / self.l0 * self.k,
@@ -63,15 +66,15 @@ class Fake_machine(Block):
     tosend['Eyy(%)'] = -self.nu*tosend['Exx(%)']
     self.send(self.noise(tosend))
 
-  def prepare(self):
+  def prepare(self) -> None:
     self.t0 = time()
     self.send_all()
 
-  def begin(self):
+  def begin(self) -> None:
     self.last_t = self.t0
     self.send_all()
 
-  def loop(self):
+  def loop(self) -> None:
     cmd = self.get_last()[self.cmd_label]
     t = time()
     dt = t - self.last_t

@@ -9,7 +9,7 @@ class Reader(Block):
   Creates a reader that prints the input data continuously.
   """
 
-  def __init__(self, reader_name=None):
+  def __init__(self, reader_name: str = None) -> None:
     """Sets the arg and initializes the parent class.
 
     Args:
@@ -20,7 +20,7 @@ class Reader(Block):
     Block.__init__(self)
     self.reader_name = reader_name
 
-  def loop(self):
+  def loop(self) -> None:
     for i in self.inputs:
       d = i.recv_last()
       if d is not None:

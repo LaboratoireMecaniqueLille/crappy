@@ -2,6 +2,7 @@
 
 from time import sleep
 from os import path, makedirs
+from typing import Union
 
 from .block import Block
 
@@ -14,7 +15,10 @@ class Recorder(Block):
     multiple readings in a single file use the :ref:`Multiplex` block.
   """
 
-  def __init__(self, filename, delay=2, labels='t(s)'):
+  def __init__(self,
+               filename: str,
+               delay: float = 2,
+               labels: Union[str, list] = 't(s)') -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -34,7 +38,7 @@ class Recorder(Block):
     self.filename = filename
     self.labels = labels
 
-  def prepare(self):
+  def prepare(self) -> None:
     assert self.inputs, "No input connected to the recorder!"
     assert len(self.inputs) == 1, \
         "Cannot link more than one block to a recorder!"
@@ -55,7 +59,7 @@ class Recorder(Block):
       self.filename = name + "_%05d" % i + ext
       print("[recorder] Using", self.filename, "instead!")
 
-  def begin(self):
+  def begin(self) -> None:
     """
     This is meant to receive data once and adapt the label list.
     """
@@ -82,7 +86,7 @@ class Recorder(Block):
       f.write(", ".join(self.labels) + "\n")
     self.save(r)
 
-  def loop(self):
+  def loop(self) -> None:
     self.save(self.inputs[0].recv_delay(self.delay))
 
   def save(self, d):
@@ -92,7 +96,7 @@ class Recorder(Block):
           f.write((", " if j else "") + str(d[k][i]))
         f.write("\n")
 
-  def finish(self):
+  def finish(self) -> None:
     sleep(.5)  # Wait to finish last
     r = self.inputs[0].recv_chunk_nostop()
     if r:
@@ -100,7 +104,7 @@ class Recorder(Block):
 
 
 class Saver(Recorder):
-  def __init__(self, *args, **kwargs):
+  def __init__(self, *args, **kwargs) -> None:
     print('#### WARNING ####\n'
           'The block "Saver" has been renamed to "Recorder".\n'
           'Please replace the name in your program, '

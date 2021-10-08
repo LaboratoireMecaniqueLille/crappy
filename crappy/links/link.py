@@ -8,7 +8,7 @@ from time import time
 from threading import Thread
 from copy import copy
 from functools import wraps
-from typing import Callable, Union
+from typing import Callable, Union, Any
 
 from .._global import CrappyStop
 
@@ -38,13 +38,13 @@ class MethodThread(Thread):
   arguments.
   """
 
-  def __init__(self, target, args, kwargs):
+  def __init__(self, target: Callable, args, kwargs) -> None:
     Thread.__init__(self)
     self.setDaemon(True)
     self.target, self.args, self.kwargs = target, args, kwargs
     self.start()
 
-  def run(self):
+  def run(self) -> None:
     try:
       self.result = self.target(*self.args, **self.kwargs)
     except Exception as e:
@@ -53,12 +53,12 @@ class MethodThread(Thread):
       self.exception = None
 
 
-def win_timeout(timeout: float = None):
+def win_timeout(timeout: float = None) -> Callable:
   """Decorator for adding a timeout to a link send."""
 
   def win_timeout_proxy(f: Callable) -> Callable:
     @wraps(f)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs) -> Any:
       worker = MethodThread(f, args, kwargs)
       if timeout is None:
         return worker

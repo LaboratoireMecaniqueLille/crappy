@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
+from typing import Union
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -11,7 +12,7 @@ except (ModuleNotFoundError, ImportError):
                            "Please install the OpenDAQ Python Module")
 
 
-def listify(stuff, length):
+def listify(stuff: Union[bool, float, int], length: int) -> list:
   r = stuff if isinstance(stuff, list) else [stuff] * length
   assert len(r) == length, "Invalid list length for " + str(r)
   return r
@@ -21,16 +22,16 @@ class Opendaq(InOut):
   """Can read data from an OpenDAQ card."""
 
   def __init__(self,
-               channels=1,
-               port='/dev/ttyUSB0',
-               gain=1,
-               offset=0,
-               cmd_label='cmd',
-               out_gain=1,
-               out_offset=0,
-               make_zero=True,
-               mode='single',
-               nsamples=20):
+               channels: Union[int, list] = 1,
+               port: str = '/dev/ttyUSB0',
+               gain: Union[float, int] = 1,
+               offset: Union[float, list] = 0,
+               cmd_label: str = 'cmd',
+               out_gain: float = 1,
+               out_offset: float = 0,
+               make_zero: Union[bool, list] = True,
+               mode: str = 'single',
+               nsamples: int = 20):
 
     InOut.__init__(self)
     self.channels = channels
@@ -51,7 +52,7 @@ class Opendaq(InOut):
     self.offset = listify(self.offset, n)
     self.make_zero = listify(self.make_zero, n)
 
-  def open(self):
+  def open(self) -> None:
     self.handle = opendaq.DAQ(self.port)
     if any(self.make_zero):
       off = self.eval_offset()
@@ -63,7 +64,7 @@ class Opendaq(InOut):
     if self.mode == 'streamer':
       self.init_stream()
 
-  def init_stream(self):
+  def init_stream(self) -> None:
     self.stream_exp = self.handle.create_stream(mode=opendaq.ExpMode.ANALOG_IN,
                                                 period=1,
                                                 npoints=1,
@@ -77,7 +78,7 @@ class Opendaq(InOut):
     self.generator = self.stream_grabber()
     self.stream_started = False
 
-  def start_stream(self):
+  def start_stream(self) -> None:
     self.handle.start()
     self.stream_started = True
 
@@ -95,7 +96,7 @@ class Opendaq(InOut):
         self.handle.close()
         break
 
-  def get_data(self):
+  def get_data(self) -> list:
     t = [time()]
     if len(self.channels) == 1:
       return t + [self.handle.read_analog()]
@@ -108,10 +109,10 @@ class Opendaq(InOut):
       self.start_stream()
     return next(self.generator)
 
-  def set_cmd(self, v):
+  def set_cmd(self, v: float) -> None:
     self.handle.set_analog(v * self.out_gain + self.out_offset)
 
-  def close(self):
+  def close(self) -> None:
     if hasattr(self, 'handle') and self.handle is not None:
       self.handle.stop()
       self.handle.close()

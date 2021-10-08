@@ -9,5 +9,5 @@ class Sink(Block):
   def __init__(self, *_, **__):
     Block.__init__(self)
 
-  def loop(self):
+  def loop(self) -> None:
     self.drop()

@@ -18,7 +18,10 @@ class Oriental(Actuator):
   The current setup moves at `.07mm/min` with `"VR 1"`.
   """
 
-  def __init__(self, baudrate=115200, port='/dev/ttyUSB0', gain=1/.07):
+  def __init__(self,
+               baudrate: int = 115200,
+               port: str = '/dev/ttyUSB0',
+               gain: float = 1/.07) -> None:
     """Sets the instance attributes.
 
     Args:
@@ -33,7 +36,7 @@ class Oriental(Actuator):
     self.speed = 0
     self.gain = gain  # unit/(mm/min)
 
-  def open(self):
+  def open(self) -> None:
     self.ser = serial.Serial(self.port, baudrate=self.baudrate, timeout=0.1)
     for i in range(1, 5):
       self.ser.write("TALK{}\n".format(i).encode('ASCII'))
@@ -48,14 +51,14 @@ class Oriental(Actuator):
     self.ser.write(b"TA " + ACCEL+b'\n')  # Acceleration time
     self.ser.write(b"TD " + ACCEL+b'\n')  # Deceleration time
 
-  def clear_errors(self):
+  def clear_errors(self) -> None:
     self.ser.write(b"ALMCLR\n")
 
-  def close(self):
+  def close(self) -> None:
     self.stop()
     self.ser.close()
 
-  def stop(self):
+  def stop(self) -> None:
     """Stop the motor."""
 
     self.ser.write(b"SSTOP\n")
@@ -63,13 +66,13 @@ class Oriental(Actuator):
     # sleep(1)
     self.speed = 0
 
-  def reset(self):
+  def reset(self) -> None:
     self.clear_errors()
     self.ser.write(b"RESET\n")
     self.ser.write("TALK{}\n".format(self.num_device).encode('ASCII'))
     self.clear_errors()
 
-  def set_speed(self, cmd):
+  def set_speed(self, cmd: float) -> None:
     """Pilot in speed mode, requires speed in `mm/min`."""
 
     # speed in mm/min
@@ -96,20 +99,20 @@ class Oriental(Actuator):
       self.ser.write(b"MCN\n")
     self.speed = signed_speed
 
-  def set_home(self):
+  def set_home(self) -> None:
     self.ser.write(b'preset\n')
 
-  def move_home(self):
+  def move_home(self) -> None:
     self.ser.write(b'EHOME\n')
 
-  def set_position(self, position, speed):
+  def set_position(self, position: float, speed: float) -> None:
     """Pilot in position mode, needs speed and final position to run
     (in `mm/min` and `mm`)."""
 
     self.ser.write("VR {0}".format(abs(speed)).encode('ASCII'))
     self.ser.write("MA {0}".format(position).encode('ASCII'))
 
-  def get_position(self):
+  def get_position(self) -> float:
     """Reads current position.
 
     Returns:

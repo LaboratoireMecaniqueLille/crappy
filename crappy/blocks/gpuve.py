@@ -31,21 +31,21 @@ class GPUVE(Camera):
   """
 
   def __init__(self,
-               camera,
-               patches,
-               save_folder=None,
-               verbose=False,
-               labels=None,
-               fps_label=False,
-               img_name="{self.loops:06d}_{t-self.t0:.6f}",
-               ext='tiff',
-               save_period=1,
-               save_backend=None,
+               camera: str,
+               patches: list,
+               save_folder: str = None,
+               verbose: bool = False,
+               labels: list = None,
+               fps_label: str = False,
+               img_name: str = "{self.loops:06d}_{t-self.t0:.6f}",
+               ext: str = 'tiff',
+               save_period: int = 1,
+               save_backend: str = None,
                transform: Callable = None,
-               input_label=None,
-               config=True,
-               cam_kwargs=None,
-               **kwargs):
+               input_label: str = None,
+               config: bool = True,
+               cam_kwargs: dict = None,
+               **kwargs) -> None:
     self.ready = False
     cam_kw = {}
     self.patches = patches
@@ -89,7 +89,7 @@ class GPUVE(Camera):
     self.save_period = 1
     self.kwargs = kwargs
 
-  def prepare(self, *_, **__):
+  def prepare(self, *_, **__) -> None:
     cuda_init()
     self.context = make_default_context()
     Camera.prepare(self, send_img=False)
@@ -116,7 +116,7 @@ class GPUVE(Camera):
     if self.save_folder:
       self.save(img, self.save_folder + "img_ref_%.5f.tiff" % (t - self.t0))
 
-  def loop(self):
+  def loop(self) -> None:
     if self.verbose and self.loops % self.nloops == 0:
       t = time()
       print("[VE block] processed", self.nloops / (t - self.last_t), "ips")

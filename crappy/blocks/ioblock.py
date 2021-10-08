@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from typing import Union
 from .block import Block
 from ..inout import inandout_dict, in_dict, out_dict, inout_dict
 
@@ -11,17 +12,17 @@ class IOBlock(Block):
   """
 
   def __init__(self,
-               name,
-               freq=None,
-               verbose=False,
-               labels=None,
-               cmd_labels=None,
-               trigger=None,
-               streamer=False,
-               initial_cmd=0,
-               exit_values=None,
-               spam=False,
-               **kwargs):
+               name: str,
+               freq: float = None,
+               verbose: bool = False,
+               labels: list = None,
+               cmd_labels: list = None,
+               trigger: int = None,
+               streamer: bool = False,
+               initial_cmd: Union[float, list] = 0,
+               exit_values: list = None,
+               spam: bool = False,
+               **kwargs) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -80,7 +81,7 @@ class IOBlock(Block):
           'Invalid number of exit values!'
     self.device = inout_dict[self.device_name](**self.device_kwargs)
 
-  def prepare(self):
+  def prepare(self) -> None:
     self.to_get = list(range(len(self.inputs)))
     if self.trigger is not None:
       self.to_get.remove(self.trigger)
@@ -102,7 +103,7 @@ class IOBlock(Block):
       self.device.set_cmd(*self.initial_cmd)
       self.last = None
 
-  def read(self):
+  def read(self) -> None:
     """Will read the device and send the data."""
 
     if self.streamer:
@@ -120,7 +121,7 @@ class IOBlock(Block):
       data[0] -= self.t0
     self.send(data)
 
-  def loop(self):
+  def loop(self) -> None:
     if 'r' in self.mode:
       if self.trigger is not None:
         # To avoid useless loops if triggered input only
@@ -136,7 +137,7 @@ class IOBlock(Block):
         self.device.set_cmd(*cmd)
         self.last = cmd
 
-  def finish(self):
+  def finish(self) -> None:
     if self.streamer:
       self.device.stop_stream()
     if self.exit_values is not None:

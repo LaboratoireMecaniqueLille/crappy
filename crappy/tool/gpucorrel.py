@@ -4,6 +4,7 @@ import warnings
 from math import ceil
 import numpy as np
 from pkg_resources import resource_filename
+from typing import Any
 from .._global import OptionalModule
 
 try:
@@ -34,7 +35,7 @@ except ImportError:
 context = None
 
 
-def interp_nearest(ary, ny, nx):
+def interp_nearest(ary: np.ndarray, ny: int, nx: int) -> np.ndarray:
   """Used to interpolate the mask for each stage."""
 
   if ary.shape == (ny, nx):
@@ -67,7 +68,7 @@ class CorrelStage:
 
   num = 0  # To count the instances so they get a unique number (self.num)
 
-  def __init__(self, img_size, **kwargs):
+  def __init__(self, img_size: tuple, **kwargs) -> None:
     self.num = CorrelStage.num
     CorrelStage.num += 1
     self.verbose = kwargs.get("verbose", 0)
@@ -189,7 +190,7 @@ class CorrelStage:
     if kwargs.get("mask") is not None:
       self.set_mask(kwargs.get("mask"))
 
-  def debug(self, n, *s):
+  def debug(self, n: int, *s: Any) -> None:
     """To print debug messages.
 
     Note:
@@ -233,7 +234,7 @@ class CorrelStage:
       raise ValueError
     self.update_orig()
 
-  def update_orig(self):
+  def update_orig(self) -> None:
     """Needs to be called after `self.img_d` has been written directly."""
 
     self.debug(3, "Updating original image")
@@ -244,14 +245,14 @@ class CorrelStage:
     self._compute_gradients()
     self._ready = False
 
-  def _compute_gradients(self):
+  def _compute_gradients(self) -> None:
     """Wrapper to call the gradient kernel."""
 
     self._gradientKrnl.prepared_call(self.grid, self.block,
                                      self.devGradX.gpudata,
                                      self.devGradY.gpudata)
 
-  def prepare(self):
+  def prepare(self) -> None:
     """Computes all necessary tables to perform correlation.
 
     Note:
@@ -280,7 +281,7 @@ class CorrelStage:
     else:
       self.debug(1, "Tried to prepare when unnecessary, doing nothing...")
 
-  def _make_g(self):
+  def _make_g(self) -> None:
     for i in range(self.Nfields):
       # Change to prepared call ?
       self._makeGKrnl(self.devG[i].gpudata, self.devGradX.gpudata,
@@ -288,7 +289,7 @@ class CorrelStage:
                       self.devFieldsX[i], self.devFieldsY[i],
                       block=self.block, grid=self.grid)
 
-  def _make_h(self):
+  def _make_h(self) -> None:
     for i in range(self.Nfields):
       for j in range(i + 1):
         self.H[i, j] = self._mulRedKrnl(self.devG[i], self.devG[j]).get()
@@ -300,7 +301,7 @@ class CorrelStage:
     if self.verbose >= 3:
       self.debug(3, "Inverted Hessian:\n", self.devHi.get())
 
-  def resample_orig(self, new_y, new_x, dev_out):
+  def resample_orig(self, new_y: int, new_x: int, dev_out) -> None:
     """To resample the original image.
 
     Note:
@@ -316,7 +317,7 @@ class CorrelStage:
                                          np.int32(new_x), np.int32(new_y))
     self.debug(3, "Resampled original texture to", dev_out.shape)
 
-  def resample_d(self, new_y, new_x):
+  def resample_d(self, new_y: int, new_x: int):
     """Resamples `tex_d` and returns it in a `gpuarray`."""
 
     if (self.rX, self.rY) != (np.int32(new_x), np.int32(new_y)):
@@ -332,7 +333,7 @@ class CorrelStage:
                                      self.rX, self.rY)
     return self.devROut
 
-  def set_fields(self, fields_x, fields_y):
+  def set_fields(self, fields_x, fields_y) -> None:
     """Method to give the fields to identify with the routine.
 
     Note:
@@ -353,7 +354,7 @@ class CorrelStage:
       self.devFieldsY = fields_y
     self.fields = True
 
-  def set_image(self, img_d):
+  def set_image(self, img_d) -> None:
     """Set the image to compare with the original.
 
     Note:
@@ -376,7 +377,7 @@ class CorrelStage:
     self.tex_d.set_array(self.array_d)
     self.devX.set(np.zeros(self.Nfields, dtype=np.float32))
 
-  def set_mask(self, mask):
+  def set_mask(self, mask) -> None:
     self.debug(3, "Setting the mask")
     assert mask.shape == (self.h, self.w), \
         "Got a {} mask in a {} routine.".format(mask.shape, (self.h, self.w))
@@ -392,7 +393,7 @@ class CorrelStage:
       raise ValueError
     self.texMask.set_array(self.maskArray)
 
-  def set_disp(self, x):
+  def set_disp(self, x) -> None:
     assert x.shape == (self.Nfields,), \
       "Incorrect initialization of the parameters"
     if isinstance(x, gpuarray.GPUArray):
@@ -404,7 +405,7 @@ class CorrelStage:
                     "CorrelStage.set_disp")
       raise ValueError
 
-  def write_diff_file(self):
+  def write_diff_file(self) -> None:
     self._makeDiff.prepared_call(self.grid, self.block,
                                  self.devOut.gpudata,
                                  self.devX.gpudata,
@@ -706,7 +707,7 @@ class GPUCorrel:
       incorrect image (Shadow, obstruction, flash, camera failure, ...)
   """
 
-  def __init__(self, img_size, **kwargs):
+  def __init__(self, img_size: tuple, **kwargs) -> None:
     global context
     if 'context' in kwargs:
       context = kwargs.pop('context')
@@ -826,7 +827,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     if kwargs.get("mask") is not None:
       self.set_mask(kwargs.get("mask"))
 
-  def get_fields(self, y=None, x=None):
+  def get_fields(self, y: int = None, x: int = None) -> tuple:
     """Returns the fields, resampled to size `(y,x)`."""
 
     if x is None or y is None:
@@ -843,7 +844,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
                                       np.int32(x), np.int32(y))
     return out_x, out_y
 
-  def debug(self, n, *s):
+  def debug(self, n: int, *s: Any) -> None:
     """To print debug info.
 
     First argument is the level of the message.
@@ -853,7 +854,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
     if n <= self.verbose:
       print("  " * (n - 1) + "[Correl]", *s)
 
-  def set_orig(self, img):
+  def set_orig(self, img) -> None:
     """To set the original image.
 
     This is the reference with which the second image will be compared.
@@ -876,7 +877,7 @@ Add Nfields=x or directly set fields with fields=list/tuple")
                                        self.correl[i].devOrig)
       self.correl[i].update_orig()
 
-  def set_fields(self, fields):
+  def set_fields(self, fields: list) -> None:
     assert self.Nfields == len(fields), \
       "Cannot change the number of fields on the go!"
     # Choosing the right function to copy
@@ -904,12 +905,12 @@ See docstring of Correl")
     for i in range(self.levels):
       self.correl[i].set_fields(*self.get_fields(self.h[i], self.w[i]))
 
-  def prepare(self):
+  def prepare(self) -> None:
     for c in self.correl:
       c.prepare()
     self.debug(2, "Ready!")
 
-  def save_all_images(self, name="out"):
+  def save_all_images(self, name: str = "out") -> None:
     try:
       import cv2
     except (ModuleNotFoundError, ImportError):
@@ -919,7 +920,7 @@ See docstring of Correl")
       out = self.correl[i].devOrig.get().astype(np.uint8)
       cv2.imwrite(name + str(i) + ".png", out)
 
-  def set_image(self, img_d):
+  def set_image(self, img_d) -> None:
     if img_d.dtype != np.float32:
       warnings.warn("Correl() takes arrays with dtype np.float32 \
 to allow GPU computing (got {}). Converting to float32."
@@ -930,7 +931,7 @@ to allow GPU computing (got {}). Converting to float32."
       self.correl[i].set_image(
         self.correl[i - 1].resample_d(self.correl[i].h, self.correl[i].w))
 
-  def set_mask(self, mask):
+  def set_mask(self, mask) -> None:
     for i in range(self.levels):
       self.correl[i].set_mask(interp_nearest(mask, self.h[i], self.w[i]))
 
@@ -960,7 +961,7 @@ to allow GPU computing (got {}). Converting to float32."
                  ", res:", self.correl[0].res / 1e6)
     return disp
 
-  def get_res(self, lvl=0):
+  def get_res(self, lvl: int = 0):
     """Returns the last residual of the specified level (`0` by default).
 
     Usually, the correlation is correct when `res < ~1e9-10` but it really
@@ -972,7 +973,7 @@ to allow GPU computing (got {}). Converting to float32."
 
     return self.correl[lvl].res
 
-  def write_diff_file(self, level=0):
+  def write_diff_file(self, level: int = 0):
     """To see the difference between the two images with the computed
     parameters.
 

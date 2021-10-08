@@ -1,13 +1,14 @@
 # coding: utf-8
 
 import numpy as np
+from typing import Union
 from itertools import chain
 # chain(*l) is MUCH faster than sum(l, []) to concatenate lists
 
 from .block import Block
 
 
-def interp(xp, yp, x):
+def interp(xp: list, yp: Union[range, list], x: float) -> float:
   try:
     return np.interp(x, xp, yp)
   except (TypeError, ValueError):
@@ -29,7 +30,7 @@ class Multiplex(Block):
     input of a decision block!
   """
 
-  def __init__(self, key='t(s)', freq=200):
+  def __init__(self, key: str = 't(s)', freq: float = 200) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -51,7 +52,7 @@ class Multiplex(Block):
     self.t = 0
     self.dt = 1 / self.freq
 
-  def begin(self):
+  def begin(self) -> None:
     """We need to receive the first bit of data from each input to know the
     labels and make lists of what we will read in the main loop."""
 
@@ -74,7 +75,7 @@ class Multiplex(Block):
         self.hist[k] = r[k]  # Put the data in the hist dict
       self.label_list.append(labels)  # Add the label list of this link
 
-  def get_data(self):
+  def get_data(self) -> None:
     for i, l in enumerate(self.label_list):
       r = self.inputs[i].recv_chunk()  # Get the data
       if not l:
@@ -83,7 +84,7 @@ class Multiplex(Block):
       for k in l:
         self.hist[k].extend(r[k])  # Add each data to their history
 
-  def send_data(self):
+  def send_data(self) -> None:
     while all([i and i[-1] > self.t for i in self.t_hist]) \
       and self.t_hist:  # Send all we can
       r = {self.k: self.t}  # First data to return: our new timebase
@@ -102,11 +103,11 @@ class Multiplex(Block):
       self.send(r)  # Send it!
       self.t += self.dt  # And increment our timebase
 
-  def loop(self):
+  def loop(self) -> None:
     self.get_data()
     self.send_data()
 
-  def finish(self):
+  def finish(self) -> None:
     self.send_data()
     while any([len(k) > 1 for k in self.t_hist]):
       r = {self.k: self.t}  # First data to return: our new timebase

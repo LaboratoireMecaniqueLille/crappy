@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from typing import Union
 
 from .block import Block
 
@@ -13,19 +14,19 @@ class PID(Block):
   """
 
   def __init__(self,
-               kp,
-               ki=0,
-               kd=0,
-               freq=500,
-               out_max=float('inf'),
-               out_min=-float('inf'),
-               target_label='cmd',
-               input_label='V',
-               time_label='t(s)',
-               labels=None,
-               reverse=False,
-               i_limit=1,
-               send_terms=False):
+               kp: float,
+               ki: float = 0,
+               kd: float = 0,
+               freq: float = 500,
+               out_max: float = float('inf'),
+               out_min:float = -float('inf'),
+               target_label: str = 'cmd',
+               input_label: str = 'V',
+               time_label: str = 't(s)',
+               labels: list = None,
+               reverse: bool = False,
+               i_limit: Union[float, tuple] = 1,
+               send_terms: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -80,7 +81,7 @@ class PID(Block):
       self.i_limit = (i_min, i_max)
     assert len(self.i_limit) == 2, "Invalid i_limit arg!"
 
-  def begin(self):
+  def begin(self) -> None:
     self.last_t = self.t0
     data = [inp.recv_last(True) for inp in self.inputs]
     for i, r in enumerate(data):
@@ -110,20 +111,20 @@ class PID(Block):
     else:
       self.send([self.last_t, 0])
 
-  def clamp(self, v, limits=None):
+  def clamp(self, v: float, limits: tuple = None) -> float:
     if limits is None:
       mini, maxi = self.out_min, self.out_max
     else:
       mini, maxi = limits
     return max(v if maxi is None else min(v, maxi), mini)
 
-  def set_k(self, kp, ki=0, kd=0):
+  def set_k(self, kp: float, ki: float = 0, kd: float = 0) -> None:
     s = -1 if self.reverse else 1
     self.kp = s * kp
     self.ki = s * kp * ki
     self.kd = s * kp * kd
 
-  def loop(self):
+  def loop(self) -> None:
     data = self.inputs[self.feedback_link_id].recv_last(True)
     t = data[self.time_label]
     dt = t - self.last_t

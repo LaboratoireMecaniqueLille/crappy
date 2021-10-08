@@ -38,7 +38,7 @@ table = (0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
          0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040)
 
 
-def calc_string(st, crc):
+def calc_string(st: str, crc: int) -> int:
     """Given a binary string and starting CRC, Calc a final CRC-16."""
 
     for ch in st:
@@ -46,21 +46,21 @@ def calc_string(st, crc):
     return crc
 
 
-def add_crc(s):
+def add_crc(s: str) -> str:
   return s + hex(calc_string(s, 0xFFFF)).split('x')[1].upper().rjust(4, '0')
 
 
-def check_crc(s):
+def check_crc(s: str) -> bool:
   r = s[:-4]
   return add_crc(r) == s
 
 
-def hexlify(n):
+def hexlify(n: int) -> str:
   return hex(n).split('x')[1].rjust(2, '0').upper()
 
 
 class Bispectral(Cl_camera):
-  def __init__(self, **kwargs):
+  def __init__(self, **kwargs) -> None:
     kwargs['camera_type'] = "SingleAreaGray2DShading"
     Cl_camera.__init__(self, **kwargs)
     self.settings['width'].limits = (1, 640)
@@ -78,52 +78,52 @@ class Bispectral(Cl_camera):
     self.add_setting('fps', getter=self.get_trigg_freq,
                      setter=self.set_trigg_freq, limits=(1., 150.))
 
-  def _set_w(self, val):
+  def _set_w(self, val: int) -> None:
     Cl_camera._set_w(self, val * 2)
     self.set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
                  self.yoffset + self.height - 1)
 
-  def _get_w(self):
+  def _get_w(self) -> int:
     return int(Cl_camera._get_w(self) / 2)
 
-  def _set_h(self, val):
+  def _set_h(self, val: int) -> None:
     Cl_camera._set_h(self, val)
     self.set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
                  self.yoffset + self.height - 1)
 
-  def _set_ox(self, val):
+  def _set_ox(self, val: int) -> None:
     self.set_roi(val, self.yoffset, val + self.width - 1,
                  self.yoffset + self.height - 1)
 
-  def _set_oy(self, val):
+  def _set_oy(self, val: int) -> None:
     self.set_roi(self.xoffset, val, self.xoffset + self.width - 1,
                  val + self.height - 1)
 
-  def _get_ox(self):
+  def _get_ox(self) -> int:
     return self.get_roi()[0]
 
-  def _get_oy(self):
+  def _get_oy(self) -> int:
     return self.get_roi()[1]
 
-  def _get_it1(self):
+  def _get_it1(self) -> int:
     return int(self.get_itT()[0])
 
-  def _get_it2(self):
+  def _get_it2(self) -> int:
     return int(self.get_it()[1])
 
-  def _set_it1(self, val):
+  def _set_it1(self, val: int) -> None:
     self.set_it(val, self._get_it2())
 
-  def _set_it2(self, val):
+  def _set_it2(self, val: int) -> None:
     self.set_it(self._get_it1(), val)
 
-  def send_cmd(self, cmd):
+  def send_cmd(self, cmd: str) -> str:
     r = self.cap.serialWrite(add_crc(cmd))
     if not check_crc(r) or r[1] != 'Y':
       print('WARNING! Incorrect reply!')
     return r[2:4]
 
-  def set_external_trigger(self, val):
+  def set_external_trigger(self, val) -> None:
     """Sets the external trigger to val by toggling the value of the 3rd bit
     of register 102."""
 
@@ -132,7 +132,7 @@ class Bispectral(Cl_camera):
     else:
       self.send_cmd('@W10274')  # 3rd bit to 0
 
-  def get_roi(self):
+  def get_roi(self) -> tuple:
     x1min_lsb = self.send_cmd("@R1D0")
     x1min_msb = self.send_cmd("@R1D1")
     y1min_lsb = self.send_cmd("@R1D2")
@@ -147,7 +147,7 @@ class Bispectral(Cl_camera):
     ymax = int(y1max_msb + y1max_lsb, 16)
     return xmin, ymin, xmax, ymax
 
-  def set_roi(self, xmin, ymin, xmax, ymax):
+  def set_roi(self, xmin: int, ymin: int, xmax: int, ymax: int) -> None:
     if (xmin, xmax, ymin, ymax) != (0, 0, 639, 511):
       self.send_cmd('@W1A080')  # Set to windowed mode
     else:
@@ -170,7 +170,7 @@ class Bispectral(Cl_camera):
     self.send_cmd("@W1D6" + lsb_ymax)
     self.send_cmd("@W1D7" + msb_ymax)
 
-  def get_it(self):
+  def get_it(self) -> tuple:
     mc = 10.35  # MHz
     it1_lsb = self.send_cmd("@R1B4")
     it1_mid = self.send_cmd("@R1B5")
@@ -182,7 +182,7 @@ class Bispectral(Cl_camera):
     it2 = int(it2_msb + it2_mid + it2_lsb, 16)
     return it1 / mc, it2 / mc  # IT in µs
 
-  def set_it(self, it1, it2):
+  def set_it(self, it1: int, it2: int) -> None:
     mc = 10.35
     it1 = int(mc * it1)
     it2 = int(mc * it2)
@@ -203,7 +203,7 @@ class Bispectral(Cl_camera):
     self.send_cmd("@W1B9" + it2_mid)
     self.send_cmd("@W1BA" + it2_msb)
 
-  def get_trigg_freq(self):
+  def get_trigg_freq(self) -> float:
     mc = 10350000  # Hz
     p_lsb = self.send_cmd("@R1B0")
     p_mid = self.send_cmd("@R1B1")
@@ -211,7 +211,7 @@ class Bispectral(Cl_camera):
     p = int(p_msb + p_mid + p_lsb, 16)
     return mc / p
 
-  def set_trigg_freq(self, freq):
+  def set_trigg_freq(self, freq: float) -> None:
     mc = 10350000  # Hz
     period = int(mc / freq)
     p_lsb = hexlify(period % 256)
@@ -223,7 +223,7 @@ class Bispectral(Cl_camera):
     self.send_cmd("@W1B1" + p_mid)
     self.send_cmd("@W1B2" + p_msb)
 
-  def get_sensor_temperature(self):
+  def get_sensor_temperature(self) -> float:
     """Returns sensor temperature in Kelvin."""
 
     gain = .01
@@ -231,13 +231,13 @@ class Bispectral(Cl_camera):
     msb = self.send_cmd('@R161')
     return int(msb + lsb, 16) * gain
 
-  def get_ambiant_temperature(self):
+  def get_ambiant_temperature(self) -> float:
     """Returns temperature of the board in °C."""
 
     t = self.send_cmd('@R173')
     return int(t, 16)
 
-  def get_image(self):
+  def get_image(self) -> tuple:
     t, frame = Cl_camera.get_image(self)
     img = np.ones((self.height, self.width * 2), dtype=np.uint8)
     img[::, :self.width:2] = frame[::, ::4]
@@ -246,10 +246,10 @@ class Bispectral(Cl_camera):
     img[::, self.width + 1::2] = frame[::, 3::4]
     return t, img
 
-  def close(self):
+  def close(self) -> None:
     Cl_camera.close(self)
 
-  def open(self, **kwargs):
+  def open(self, **kwargs) -> None:
     Cl_camera.open(self, **kwargs)
     self.send_cmd('@W1A084')  # Restore unwindowed Mode
     self.send_cmd('@W10012')  # Make sure the image is not inverted

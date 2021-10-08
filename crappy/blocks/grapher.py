@@ -80,7 +80,7 @@ class Grapher(Block):
 
     self.labels = labels
 
-  def prepare(self):
+  def prepare(self) -> None:
     if self.backend:
       plt.switch_backend(self.backend)
     self.f = plt.figure(figsize=self.window_size)
@@ -111,14 +111,14 @@ class Grapher(Block):
     plt.draw()
     plt.pause(.001)
 
-  def clear(self, *_, **__):
+  def clear(self, *_, **__) -> None:
     for line in self.lines:
       line.set_xdata([])
       line.set_ydata([])
     self.factor = [1 for _ in self.labels]
     self.counter = [0 for _ in self.labels]
 
-  def loop(self):
+  def loop(self) -> None:
     # We need to recv data from all the links, but keep
     # ALL of the data, even with the same label (so not get_all_last)
     data = self.recv_all_delay()
@@ -152,5 +152,5 @@ class Grapher(Block):
     self.f.canvas.draw()  # Update the graph
     self.f.canvas.flush_events()
 
-  def finish(self):
+  def finish(self) -> None:
     plt.close("all")

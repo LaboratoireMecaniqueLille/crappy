@@ -24,19 +24,19 @@ except (ModuleNotFoundError, ImportError):
 
 
 class VE_config(Camera_config):
-  def __init__(self, camera, ve):
+  def __init__(self, camera, ve) -> None:
     self.boxes = None
     self.select_box = (-1, -1, -1, -1)
     Camera_config.__init__(self, camera)
     self.ve = ve
 
-  def clamp(self, t):
+  def clamp(self, t: tuple) -> tuple:
     if isinstance(t[0], slice):
       return t[0], min(max(0, t[1]), self.img_shape[1] - 1)
     else:
       return min(max(0, t[0]), self.img_shape[0] - 1), t[1]
 
-  def create_window(self):
+  def create_window(self) -> None:
     Camera_config.create_window(self)
     self.img_label.bind('<1>', self.start_select)
     self.img_label.bind('<B1-Motion>', self.update_box)
@@ -47,15 +47,15 @@ class VE_config(Camera_config):
     #   column=1, row=len(self.camera.settings_dict)+4)
     self.save_length_button.pack()
 
-  def start_select(self, event):
+  def start_select(self, event) -> None:
     self.box_origin = self.get_img_coord(event.y, event.x)
 
-  def update_box(self, event):
+  def update_box(self, event) -> None:
     oy, ox = self.box_origin
     y, x = self.get_img_coord(event.y, event.x)
     self.select_box = (min(oy, y), min(ox, x), max(oy, y), max(ox, x))
 
-  def stop_select(self, *_, **__):
+  def stop_select(self, *_, **__) -> None:
     self.ve.detect_spots(self.img[self.select_box[0]:self.select_box[2],
                                   self.select_box[1]:self.select_box[3]],
                          self.select_box[0], self.select_box[1])
@@ -65,7 +65,7 @@ class VE_config(Camera_config):
     else:
       self.boxes = None
 
-  def save_length(self):
+  def save_length(self) -> None:
     self.ve.save_length()
     print("L0 saved:", (self.ve.l0y, self.ve.l0x))
 
@@ -80,7 +80,7 @@ class VE_config(Camera_config):
       s = self.clamp(s)
       img[s] = 255 * int(np.mean(img[s]) < 128)
 
-  def resize_img(self, sl):
+  def resize_img(self, sl: tuple) -> None:
     rimg = cv2.resize(self.img8[sl[1], sl[0]], tuple(reversed(self.img_shape)),
                       interpolation=0)
     if self.select_box[0] > 0:

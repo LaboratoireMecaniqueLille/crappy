@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from typing import Union, Callable
 
 from .path import Path
 
@@ -17,8 +18,15 @@ class Cyclic_ramp(Path):
     the first condition)
   """
 
-  def __init__(self, time, cmd, condition1, condition2, speed1, speed2,
-               cycles=1, verbose=False):
+  def __init__(self,
+               time: float,
+               cmd: float,
+               condition1: Union[str, bool, Callable],
+               condition2: Union[str, bool, Callable],
+               speed1: float,
+               speed2: float,
+               cycles: float = 1,
+               verbose: bool = False) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -58,7 +66,7 @@ class Cyclic_ramp(Path):
     self.cycle = 0
     self.verbose = verbose
 
-  def get_cmd(self, data):
+  def get_cmd(self, data: dict) -> float:
     if 0 < self.cycles <= self.cycle:
       raise StopIteration
     if not self.cycle % 2 and self.condition1(data) or\

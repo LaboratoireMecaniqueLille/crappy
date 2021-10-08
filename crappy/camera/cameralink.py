@@ -14,7 +14,10 @@ from time import time
 class Cl_camera(Camera):
   """Cameralink camera sensor."""
 
-  def __init__(self, numdevice=0, config_file=None, camera_type=None):
+  def __init__(self,
+               numdevice: int = 0,
+               config_file: str = None,
+               camera_type: str = None) -> None:
     """Using the clModule, will open a cameraLink camera.
 
     Note:
@@ -53,35 +56,35 @@ class Cl_camera(Camera):
     self.add_setting("framespersec", setter=self._set_framespersec,
                      getter=self._get_framespersec, limits=(1, 200))
 
-  def stopAcq(self):
+  def stopAcq(self) -> None:
     self.cap.stopAcq()
 
-  def startAcq(self, *args):
+  def startAcq(self, *args) -> None:
     self.cap.startAcq(*args)
 
-  def _set_framespersec(self, val):
+  def _set_framespersec(self, val: float) -> None:
     self.cap.set(Cl.FG_FRAMESPERSEC, val)
 
-  def _get_framespersec(self):
+  def _get_framespersec(self) -> float:
     return self.cap.get(Cl.FG_FRAMESPERSEC)
 
-  def _set_h(self, val):
+  def _set_h(self, val: int) -> None:
     self.stopAcq()
     self.cap.set(Cl.FG_HEIGHT, val)
     self.startAcq()
 
-  def _set_w(self, val):
+  def _set_w(self, val: int) -> None:
     self.stopAcq()
     self.cap.set(Cl.FG_WIDTH, val)
     self.startAcq()
 
-  def _get_h(self):
+  def _get_h(self) -> int:
     return self.cap.get(Cl.FG_HEIGHT)
 
   def _get_w(self):
     return self.cap.get(Cl.FG_WIDTH)
 
-  def open(self, **kwargs):
+  def open(self, **kwargs) -> None:
     """Opens the camera."""
 
     if 'format' in kwargs:
@@ -118,20 +121,20 @@ class Cl_camera(Camera):
     self.startAcq()
     self.configure()
 
-  def configure(self):
+  def configure(self) -> None:
     """Configure the frame grabber to trig the camera internally."""
 
     self.cap.set(Cl.FG_TRIGGERMODE, 1)
     self.cap.set(Cl.FG_EXSYNCON, 1)
 
-  def get_image(self):
+  def get_image(self) -> tuple:
     r, f = self.cap.read()
     t = time()
     if not r:
       raise IOError("Could not read camera")
     return t, f
 
-  def close(self):
+  def close(self) -> None:
     self.stopAcq()
     self.cap.release()
     self.cap = None

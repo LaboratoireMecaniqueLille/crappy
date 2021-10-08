@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from multiprocessing import Lock
+from typing import Union
 
 from .actuator import Actuator
 from .._global import OptionalModule
@@ -15,11 +16,14 @@ class Servostar(Actuator):
   """To drive and configure a servostar variator through a serial
   connection."""
 
-  def __init__(self, device, baudrate=38400, mode="serial"):
+  def __init__(self,
+               device: str,
+               baudrate: int = 38400,
+               mode: str = "serial") -> None:
     """Sets the instance attributes.
 
     Args:
-      device (:obj:`str`, optional): Path to connect to the serial port.
+      device (:obj:`str`): Path to connect to the serial port.
       baudrate (:obj:`int`, optional): Set the corresponding baud rate.
       mode (:obj:`str`, optional): Can be `'analog'` or `'serial'`.
     """
@@ -31,7 +35,7 @@ class Servostar(Actuator):
     self.lock = Lock()
     self.last = None
 
-  def open(self):
+  def open(self) -> None:
     self.lock.acquire()
     self.ser = serial.Serial(self.devname, baudrate=self.baud, timeout=2)
     self.ser.flushInput()
@@ -48,7 +52,11 @@ class Servostar(Actuator):
     self.ser.write('MH\r\n')
     self.lock.release()
 
-  def set_position(self, pos, speed=20000, acc=200, dec=200):
+  def set_position(self,
+                   pos: float,
+                   speed: float = 20000,
+                   acc: float = 200,
+                   dec: float = 200) -> None:
     """Go to the position specified at the given speed and acceleration."""
 
     if self.last is pos:
@@ -71,7 +79,7 @@ class Servostar(Actuator):
     self.lock.release()
     self.last = pos
 
-  def get_position(self):
+  def get_position(self) -> Union[float, None]:
     """Reads current position.
 
     Returns:
@@ -96,7 +104,7 @@ class Servostar(Actuator):
     self.lock.release()
     return int(r)
 
-  def set_mode_serial(self):
+  def set_mode_serial(self) -> None:
     """Sets the serial input as setpoint."""
 
     self.lock.acquire()
@@ -105,7 +113,7 @@ class Servostar(Actuator):
     self.lock.release()
     self.mode = "serial"
 
-  def set_mode_analog(self):
+  def set_mode_analog(self) -> None:
     """Sets the analog input as setpoint."""
 
     self.last = None
@@ -115,17 +123,17 @@ class Servostar(Actuator):
     self.lock.release()
     self.mode = "analog"
 
-  def clear_errors(self):
+  def clear_errors(self) -> None:
     """Clears error in motor registers."""
 
     self.ser.flushInput()
     self.ser.write("CLRFAULT\r\n")
 
-  def stop(self):
+  def stop(self) -> None:
     """Stops the motor."""
 
     self.ser.write("DIS\r\n")
     self.ser.flushInput()
 
-  def close(self):
+  def close(self) -> None:
     self.ser.close()

@@ -3,6 +3,7 @@
 """More documentation coming soon !"""
 
 import numpy as np
+from typing import Union
 from .._global import OptionalModule
 
 try:
@@ -11,18 +12,18 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-def ones(h, w):
+def ones(h: int, w: int) -> np.ndarray:
   return np.ones((h, w), dtype=np.float32)
 
 
-def zeros(h, w):
+def zeros(h: int, w: int) -> np.ndarray:
   return np.zeros((h, w), dtype=np.float32)
 
 
 Z = None
 
 
-def z(h, w):
+def z(h: int, w: int) -> np.ndarray:
   global Z
   if Z is None or Z[0].shape != (h, w):
     sh = 1 / (w * w / h / h + 1) ** .5
@@ -32,7 +33,7 @@ def z(h, w):
   return Z
 
 
-def get_field(s, h, w):
+def get_field(s: str, h: int, w: int) -> tuple:
   if s == 'x':
     return ones(h, w), zeros(h, w)
   elif s == 'y':
@@ -83,7 +84,7 @@ def get_field(s, h, w):
     raise NameError
 
 
-def get_fields(l, h, w):
+def get_fields(l: list, h: int, w: int) -> np.ndarray:
   r = np.empty((h, w, 2, len(l)), dtype=np.float32)
   for i, s in enumerate(l):
     if isinstance(s, np.ndarray):
@@ -94,19 +95,21 @@ def get_fields(l, h, w):
 
 
 class Fielder:
-  def __init__(self, flist, h, w):
+  def __init__(self, flist: list, h: int, w: int) -> None:
     self.nfields = len(flist)
     self.h = h
     self.w = w
     fields = get_fields(flist, h, w)
     self.fields = [fields[:, :, :, i] for i in range(fields.shape[3])]
 
-  def get(self, *x):
+  def get(self, *x: int) -> list:
     return sum([i * f for i, f in zip(x, self.fields)])
 
 
 class Projector:
-  def __init__(self, base, check_orthogonality=True):
+  def __init__(self,
+               base: Union[np.ndarray, list],
+               check_orthogonality: bool = True) -> None:
     if isinstance(base, list):
       self.base = base
     else:
@@ -123,15 +126,15 @@ class Projector:
         print("WARNING, base does not seem orthogonal!")
         print(s)
 
-  def get_scal(self, flow):
+  def get_scal(self, flow) -> list:
     return [np.sum(vec * flow) / n2 for vec, n2 in zip(self.base, self.norms2)]
 
-  def get_full(self, flow):
+  def get_full(self, flow) -> list:
     return self.fielder.get(*self.get_scal(flow))
 
 
 class OrthoProjector(Projector):
-  def __init__(self, base):
+  def __init__(self, base: np.ndarray) -> None:
     vec = [base[:, :, :, i] for i in range(base.shape[3])]
     new_base = [vec[0]]
     for v in vec[1:]:
@@ -140,11 +143,11 @@ class OrthoProjector(Projector):
     Projector.__init__(self, new_base)
 
 
-def avg_ampl(f):
+def avg_ampl(f: np.ndarray) -> float:
   return (np.sum(f[:, :, 0] ** 2 + f[:, :, 1] ** 2) / f.size * 2) ** .5
 
 
-def remap(a, r):
+def remap(a: np.ndarray, r: np.ndarray) -> np.ndarray:
   """Remaps `a` using given `r` the displacement as a result from
   correlation."""
 
@@ -155,6 +158,6 @@ def remap(a, r):
                    (y + r[:, :, 1]).astype(np.float32), 1)
 
 
-def get_res(a, b, r):
+def get_res(a: np.ndarray, b: np.ndarray, r: np.ndarray) -> np.ndarray:
   # return b - remap(a, -r)
   return a - remap(b, r)

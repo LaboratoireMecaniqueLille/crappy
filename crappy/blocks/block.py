@@ -5,13 +5,14 @@ from multiprocessing import Process, Pipe
 from time import sleep, time, localtime, strftime
 from weakref import WeakSet
 from pickle import UnpicklingError
+from typing import Union
 
 from .._global import CrappyStop
 
 import subprocess
 
 
-def renice(pid, niceness):
+def renice(pid: int, niceness: int) -> None:
   """Function to renice a process.
 
   Warning:
@@ -33,7 +34,7 @@ class Block(Process):
 
   instances = WeakSet()
 
-  def __init__(self):
+  def __init__(self) -> None:
     Process.__init__(self)
     # Block.instances.append(self)
     self.outputs = []
@@ -46,16 +47,16 @@ class Block(Process):
     self.in_process = False  # To know if we are in the process or not
     self.niceness = 0
 
-  def __new__(cls, *args, **kwargs):
+  def __new__(cls, *args, **kwargs) -> Process:
     instance = super().__new__(cls)
     Block.instances.add(instance)
     return instance
 
   @classmethod
-  def reset(cls):
+  def reset(cls) -> None:
     cls.instances = WeakSet()
 
-  def run(self):
+  def run(self) -> None:
     self.in_process = True  # we are in the process
     self.status = "initializing"
     try:
@@ -96,18 +97,18 @@ class Block(Process):
     self.status = "done"
 
   @classmethod
-  def get_status(cls):
+  def get_status(cls) -> list:
     return [x.status for x in cls.instances]
 
   @classmethod
-  def all_are(cls, s):
+  def all_are(cls, s: str) -> bool:
     """Returns :obj:`True` only if all processes status are `s`."""
 
     lst = cls.get_status()
     return len(set(lst)) == 1 and s in lst
 
   @classmethod
-  def renice_all(cls, high_prio=True, **_):
+  def renice_all(cls, high_prio: bool = True, **_) -> None:
     """Will renice all the blocks processes according to ``block.niceness``
     value.
 
@@ -128,7 +129,7 @@ class Block(Process):
         renice(b.pid, b.niceness)
 
   @classmethod
-  def prepare_all(cls, verbose=True):
+  def prepare_all(cls, verbose: bool = True) -> None:
     """Starts all the blocks processes (``block.prepare``), but not the main
     loop."""
 
@@ -146,7 +147,10 @@ class Block(Process):
     vprint("All processes are started.")
 
   @classmethod
-  def launch_all(cls, t0=None, verbose=True, bg=False):
+  def launch_all(cls,
+                 t0: float = None,
+                 verbose: bool = True,
+                 bg: bool = False) -> None:
     if verbose:
       def vprint(*args):
         print("[launch]", *args)
@@ -199,7 +203,11 @@ class Block(Process):
         print(b, b.status)
 
   @classmethod
-  def start_all(cls, t0=None, verbose=True, bg=False, high_prio=False):
+  def start_all(cls,
+                t0: float = None,
+                verbose: bool = True,
+                bg: bool = False,
+                high_prio: bool = False) -> None:
     cls.prepare_all(verbose)
     if high_prio and any([b.niceness < 0 for b in cls.instances]):
       print("[start] High prio: root permission needed to renice")
@@ -207,7 +215,7 @@ class Block(Process):
     cls.launch_all(t0, verbose, bg)
 
   @classmethod
-  def stop_all(cls, verbose=True):
+  def stop_all(cls, verbose: bool = True) -> None:
     """Stops all the blocks (``crappy.stop``)."""
 
     if verbose:
@@ -223,22 +231,22 @@ class Block(Process):
         instance.stop()
     vprint("All blocks are stopped.")
 
-  def begin(self):
+  def begin(self) -> None:
     """If :meth:`main` is not overridden, this method will be called first,
     before entering the main loop."""
 
     pass
 
-  def finish(self):
+  def finish(self) -> None:
     """If :meth:`main` is not overridden, this method will be called upon exit
     or after a crash."""
 
     pass
 
-  def loop(self):
+  def loop(self) -> None:
     raise NotImplementedError('You must override loop or main in' + str(self))
 
-  def main(self):
+  def main(self) -> None:
     """This is where you define the main loop of the block.
 
     Important:
@@ -250,7 +258,7 @@ class Block(Process):
       self.handle_freq()
     print("[%r] Got stop signal, interrupting..." % self)
 
-  def handle_freq(self):
+  def handle_freq(self) -> None:
     """For block with a given number of `loops/s` (use ``freq`` attribute to
     set it)."""
 
@@ -270,7 +278,7 @@ class Block(Process):
       self._MB_loops = 0
       self._MB_last_FPS = self._MB_last_t
 
-  def launch(self, t0):
+  def launch(self, t0: float) -> None:
     """To start the :meth:`main` method, will call :meth:`Process.start` if
     needed.
 
@@ -288,7 +296,7 @@ class Block(Process):
     self.pipe1.send(t0)  # asking to start main in the process
 
   @property
-  def status(self):
+  def status(self) -> None:
     """Returns the status of the block, from the process itself or the parent.
 
     It can be:
@@ -321,12 +329,12 @@ class Block(Process):
     return self._status
 
   @status.setter
-  def status(self, s):
+  def status(self, s: str) -> None:
     assert self.in_process, "Cannot set status from outside of the process!"
     self.pipe2.send(s)
     self._status = s
 
-  def prepare(self):
+  def prepare(self) -> None:
     """This will be run when creating the process, but before the actual start.
 
     The first code to be run in the new process, will only be called once and
@@ -337,7 +345,7 @@ class Block(Process):
 
     pass
 
-  def send(self, data):
+  def send(self, data: Union[dict, list]) -> None:
     """To send the data to all blocks downstream.
 
     Send has 2 ways to operate. You can either build the :obj:`dict` yourself,
@@ -359,7 +367,7 @@ class Block(Process):
     for o in self.outputs:
       o.send(data)
 
-  def recv_all(self):
+  def recv_all(self) -> dict:
     """Receives new data from all the inputs (not as chunks).
 
     It will simply call :meth:`Pipe.recv` on all non empty links and return a
@@ -375,7 +383,7 @@ class Block(Process):
         r.update(i.recv())
     return r
 
-  def poll(self):
+  def poll(self) -> bool:
     """Tells if any input link has pending data
 
     Returns True if l.poll() is True for any input link l.
@@ -383,7 +391,7 @@ class Block(Process):
 
     return any((link.poll for link in self.inputs))
 
-  def recv_all_last(self):
+  def recv_all_last(self) -> dict:
     """Like recv_all, but drops older data to return only the latest value
 
     This method avoids Pipe congestion that can be induced by recv_all when the
@@ -396,7 +404,7 @@ class Block(Process):
         r.update(i.recv())
     return r
 
-  def get_last(self, num=None):
+  def get_last(self, num: list = None) -> dict:
     """To get the latest value of each labels from all inputs.
 
     Warning:
@@ -434,7 +442,7 @@ class Block(Process):
       ret.update(self._last_values[i])
     return ret
 
-  def get_all_last(self, num=None):
+  def get_all_last(self, num: list = None) -> dict:
     """To get the data from all links of the block.
 
     It is almost the same as :meth:`get_last`, but will return all the data
@@ -463,7 +471,7 @@ class Block(Process):
       ret.update(self._all_last_values[i])
     return ret
 
-  def recv_all_delay(self, delay=None, poll_delay=.1):
+  def recv_all_delay(self, delay: float = None, poll_delay: float = .1) -> list:
     """Method to wait for data, but continuously reading all the links to make
     sure that it does not block.
 
@@ -492,7 +500,7 @@ class Block(Process):
         break
     return r
 
-  def drop(self, num=None):
+  def drop(self, num: Union[list, str] = None) -> None:
     """Will clear the inputs of the blocks.
 
     This method performs like :meth:`get_last`, but returns :obj:`None`
@@ -506,17 +514,17 @@ class Block(Process):
     for n in num:
       self.inputs[n].clear()
 
-  def add_output(self, o):
+  def add_output(self, o) -> None:
     """Adds a :ref:`Link` as an output."""
 
     self.outputs.append(o)
 
-  def add_input(self, i):
+  def add_input(self, i) -> None:
     """Adds a :ref:`Link` as an input."""
 
     self.inputs.append(i)
 
-  def stop(self):
+  def stop(self) -> None:
     if self.status != 'running':
       return
     print('[%r] Stopping' % self)
@@ -537,5 +545,5 @@ class Block(Process):
     else:
       print("[%r] Stopped correctly" % self)
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return str(type(self)) + " (" + str(self.pid or "Not running") + ")"
