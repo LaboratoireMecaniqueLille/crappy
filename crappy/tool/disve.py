@@ -12,7 +12,6 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DISVE:
-
   def __init__(self,
                img0: np.ndarray,
                patches: list,
@@ -80,25 +79,25 @@ class DISVE:
   def get_center(self, f: np.ndarray) -> np.ndarray:
     h, w, *_ = f.shape
     return f[int(h * self.border):int(h * (1 - self.border)),
-        int(w * self.border):int(w * (1 - self.border))]
+             int(w * self.border):int(w * (1 - self.border))]
 
   def adjust_offsets(self):
     for i, (patch, (ox, oy)) in enumerate(zip(self.patches, self.offsets)):
       ymin, xmin, h, w = patch
       print("DEBUG", self.h, self.w, patch)
-      if ox < -xmin: # Left
+      if ox < -xmin:  # Left
         if self.safe:
           raise RuntimeError("Region exiting the ROI (left)")
         ox = -xmin
-      elif ox > self.w - xmin - w: # Right
+      elif ox > self.w - xmin - w:  # Right
         if self.safe:
           raise RuntimeError("Region exiting the ROI (right)")
         ox = self.w - xmin - w
-      if oy < -ymin: # Top
+      if oy < -ymin:  # Top
         if self.safe:
           raise RuntimeError("Region exiting the ROI (top)")
         oy = -ymin
-      elif oy > self.h - ymin - h: # Bottom
+      elif oy > self.h - ymin - h:  # Bottom
         if self.safe:
           raise RuntimeError("Region exiting the ROI (bottom)")
         oy = self.h - ymin - h
@@ -110,8 +109,8 @@ class DISVE:
     r = []
     for patch, offset in zip(self.patches, self.offsets):
       f = self.dis.calc(
-        self.get_patch(self.img0, patch),
-        self.get_patch(img, patch, offset), None)
+          self.get_patch(self.img0, patch),
+          self.get_patch(img, patch, offset), None)
       r.append(np.average(self.get_center(f), axis=(0, 1)).tolist())
     if self.follow:
       for disp, (ox, oy) in zip(r, self.offsets):
