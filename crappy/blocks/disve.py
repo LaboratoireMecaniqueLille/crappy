@@ -13,6 +13,11 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DISVE(Camera):
+  """
+  Used to track the motion of specific regions using Disflow
+
+  It uses the class crappy.tool.DISVE to compute the displacement of regions
+  """
   def __init__(self,
                camera: str,
                patches: list,

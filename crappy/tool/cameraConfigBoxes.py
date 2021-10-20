@@ -17,6 +17,11 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Camera_config_with_boxes(Camera_config):
+  """
+  Config window for camera, with lines to highlight boxes on the image
+
+  Used for VE blocks when the selection is not interactive (unlike ve_config)
+  """
   def __init__(self, camera, boxes):
     self.boxes = boxes
     Camera_config.__init__(self, camera)

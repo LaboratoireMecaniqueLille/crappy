@@ -30,8 +30,9 @@ class DISVE:
     """Sets the disve parameters.
 
     Args:
-      img0:
-      patches:
+      img0: Reference image for the DIC
+      patches: Regions to track, should be a tuple of 4 values
+        (pos x, pos y, height, width)
       alpha: Setting for disflow
       delta: Setting for disflow
       gamma: Setting for disflow
