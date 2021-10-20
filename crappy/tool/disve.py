@@ -25,7 +25,8 @@ class DISVE:
                patch_stride: int = 3,
                border: float = 0.1,
                safe: bool = True,
-               follow: bool = True) -> None:
+               follow: bool = True,
+               show_image: bool = False) -> None:
     """Sets the disve parameters.
 
     Args:
@@ -56,6 +57,7 @@ class DISVE:
     self.border = border
     self.safe = safe
     self.follow = follow
+    self.show_image = show_image
 
     self.dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
     self.dis.setVariationalRefinementIterations(self.iterations)
@@ -67,6 +69,9 @@ class DISVE:
     self.dis.setPatchSize(self.patch_size)
     self.dis.setPatchStride(self.patch_stride)
     self.offsets = [(0, 0) for _ in self.patches]
+    self.adjust_offsets()
+    if show_image:
+      cv2.namedWindow('DISVE', cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
 
   @staticmethod
   def get_patch(img: np.ndarray, patch: list,
@@ -82,9 +87,14 @@ class DISVE:
              int(w * self.border):int(w * (1 - self.border))]
 
   def adjust_offsets(self):
+    """
+    Check if the patches are within the image
+
+    If safe=True, will raise an error if a patch is out of bounds
+    else, it will clamp it to the border of the image
+    """
     for i, (patch, (ox, oy)) in enumerate(zip(self.patches, self.offsets)):
       ymin, xmin, h, w = patch
-      print("DEBUG", self.h, self.w, patch)
       if ox < -xmin:  # Left
         if self.safe:
           raise RuntimeError("Region exiting the ROI (left)")
@@ -102,10 +112,16 @@ class DISVE:
           raise RuntimeError("Region exiting the ROI (bottom)")
         oy = self.h - ymin - h
 
+  def update_img(self, img: np.ndarray) -> None:
+    for (ymin, xmin, h, w), (ox, oy) in zip(self.patches, self.offsets):
+      img[ymin + oy:ymin + oy + 1, xmin + ox: xmin + ox + w] = 255
+      img[ymin + h + oy:ymin + h + oy + 1, xmin + ox: xmin + ox + w] = 255
+      img[ymin + oy: ymin + h + oy, xmin + ox:xmin + ox + 1] = 255
+      img[ymin + oy: ymin + h + oy, xmin + h + ox:xmin + h + ox + 1] = 255
+    cv2.imshow("DISVE", img)
+    cv2.waitKey(5)
+
   def calc(self, img: np.ndarray) -> list:
-    print("DEBUG before adjust", self.offsets)
-    self.adjust_offsets()
-    print("DEBUG after adjust", self.offsets)
     r = []
     for patch, offset in zip(self.patches, self.offsets):
       f = self.dis.calc(
@@ -117,4 +133,11 @@ class DISVE:
         disp[0] += ox
         disp[1] += oy
       self.offsets = [(round(ox), round(oy)) for ox, oy in r]
+      self.adjust_offsets()
+    if self.show_image:
+      self.update_img(img)
     return sum(r, [])
+
+  def close(self):
+    if self.show_image:
+      cv2.destroyWindow("DISVE")

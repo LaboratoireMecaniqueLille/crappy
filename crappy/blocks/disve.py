@@ -50,16 +50,11 @@ class DISVE(Camera):
                   "gditerations": gditerations,
                   "patch_size": patch_size,
                   "patch_stride": patch_stride,
-                  "border": border}
+                  "border": border,
+                  "show_image": show_image}
 
   def prepare(self, *_, **__) -> None:
     Camera.prepare(self, send_img=False)
-    if self.show_image:
-      try:
-        flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
-      except AttributeError:
-        flags = cv2.WINDOW_NORMAL
-      cv2.namedWindow("DISVE", flags)
 
   def begin(self) -> None:
     t, self.img0 = self.camera.read_image()
@@ -73,12 +68,8 @@ class DISVE(Camera):
       self.img0 = img
       print("[DISVE block] : Resetting L0")
     d = self.ve.calc(img)
-    if self.show_image:
-      cv2.imshow("DISVE", img)
-      cv2.waitKey(5)
     self.send([t - self.t0] + d)
 
   def finish(self) -> None:
-    if self.show_image:
-      cv2.destroyAllWindows()
+    self.ve.close()
     Camera.finish(self)
