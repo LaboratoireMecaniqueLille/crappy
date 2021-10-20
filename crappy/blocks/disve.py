@@ -2,7 +2,7 @@
 
 """More documentation coming soon !"""
 
-from ..tool import DISVE as VE
+from ..tool import DISVE as VE, Camera_config_with_boxes
 from .camera import Camera
 from .._global import OptionalModule
 
@@ -54,7 +54,13 @@ class DISVE(Camera):
                   "show_image": show_image}
 
   def prepare(self, *_, **__) -> None:
+    config = self.config
+    self.config = False
     Camera.prepare(self, send_img=False)
+    self.config = config
+    if config:
+      conf = Camera_config_with_boxes(self.camera, self.patches)
+      conf.main()
 
   def begin(self) -> None:
     t, self.img0 = self.camera.read_image()

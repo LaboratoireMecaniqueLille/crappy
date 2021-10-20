@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from .cameraConfig import Camera_config
+from .cameraConfigBoxes import Camera_config_with_boxes
 from .videoextensoConfig import VE_config
 from .gpucorrel import GPUCorrel
 from .discorrel import DISCorrel
