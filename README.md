@@ -12,7 +12,7 @@ modules :
 - [Numpy](https://numpy.org/) (1.19.0 or higher)
 
 These modules are not mandatory but will provide additional functionalities:
-- [Matplotlib](https://matplotlib.org/) (1.5.3 or higher, for plotting graphs 
+- [Matplotlib](https://matplotlib.org/) (**Recommended**, 1.5.3 or higher, for plotting graphs 
   and displaying images)
 - [openCV](https://opencv.org/) (3.0 or higher, to perform image acquisition and 
   analysis)
