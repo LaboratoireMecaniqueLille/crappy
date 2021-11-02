@@ -110,7 +110,7 @@ class Drawing(Block):
 
   def __init__(self,
                image,
-               draw: dict = None,
+               draw: list = None,
                crange: list = None,
                title: str = "Drawing",
                window_size: tuple = (7, 5),
