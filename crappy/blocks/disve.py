@@ -56,7 +56,9 @@ class DISVE(Camera):
                   "patch_size": patch_size,
                   "patch_stride": patch_stride,
                   "border": border,
-                  "show_image": show_image}
+                  "show_image": show_image,
+                  "safe": safe,
+                  "follow": follow}
 
   def prepare(self, *_, **__) -> None:
     config = self.config
