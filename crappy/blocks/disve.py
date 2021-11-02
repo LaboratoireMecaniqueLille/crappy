@@ -77,7 +77,7 @@ class DISVE(Camera):
     t, img = self.get_img()
     if self.inputs and not self.input_label and self.inputs[0].poll():
       self.inputs[0].clear()
-      self.ve.img0 = img
+      self.ve = VE(img, self.patches, **self.ve_kw)
       self.img0 = img
       print("[DISVE block] : Resetting L0")
     d = self.ve.calc(img)
