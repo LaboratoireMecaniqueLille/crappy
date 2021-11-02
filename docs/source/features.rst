@@ -38,8 +38,6 @@ Data plotting
   Prints received values in a popup window and with a nicer formatting than
   :ref:`Reader`.
 
-  .. Important:: This block hasn't been tested on recent releases !
-
   No example featuring a Dashboard block is currently distributed.
 
 - :ref:`Displayer`
