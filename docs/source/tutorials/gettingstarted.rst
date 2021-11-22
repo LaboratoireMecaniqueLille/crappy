@@ -144,7 +144,7 @@ in our program this would give :
        crappy.link(machine, graph_pos)
        crappy.link(machine, graph_force)
 
-Llet's have a look at how data is exchanged between the blocks. First an
+Let's have a look at how data is exchanged between the blocks. First an
 ``'input_speed'`` signal is created by the generator, then transmitted to the
 fake machine. It uses it as an input, and outputs four signals with the labels
 ``'t(s)', 'F(N)', 'x(mm)', 'Exx(%)'``. This is not obvious reading the script,
@@ -156,7 +156,7 @@ Notice the syntax in the arguments of each block. In each block an argument
 specifies either the labels of the inputs or the labels of the outputs (except
 for the fake machine which is a special block). It is easy to keep track of the
 information flow throughout the code ! You can also notice the ``filename``
-argument of the saver block, indicating where to save the data. Here it will
+argument of the recorder block, indicating where to save the data. Here it will
 be in a new file located where our ``.py`` file is.
 
 So is our program reading to run ? Almost ! We just need to add the method that
