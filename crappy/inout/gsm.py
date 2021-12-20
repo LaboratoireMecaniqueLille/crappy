@@ -1,12 +1,12 @@
 # coding: utf-8
 
-import time
+from time import sleep
 
 from .inout import InOut
 from .._global import OptionalModule
 
 try:
-  import serial
+  from serial import Serial
   from serial.serialutil import SerialException
 except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("serial", "Please install the module serial to use "
@@ -14,7 +14,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Gsm(InOut):
-  """Block for sending any messages by SMS to given phone numbers.
+  """Block for sending messages by SMS to given phone numbers.
 
   Important:
     This block should be associated with a modifier to manage the messages
@@ -22,7 +22,7 @@ class Gsm(InOut):
   """
 
   def __init__(self,
-               numbers: list = None,
+               numbers: list,
                port: str = "/dev/ttyUSB0",
                baudrate: int = 115200) -> None:
     """Checks arguments validity.
@@ -34,28 +34,33 @@ class Gsm(InOut):
 
           ["0611223344"]
 
-      port (:obj:`str`, optional): Serial port of the GSM.
+      port (:obj:`str`, optional): Serial port the GSM is connected to.
       baudrate(:obj:`int`, optional): Serial baudrate, between 1200 and 115200.
     """
 
     super().__init__()
     try:
-      self.ser = serial.Serial(port, baudrate)
+      self._ser = Serial(port, baudrate)
     except SerialException:
       raise SerialException("GSM not connected or wrong port")
 
-    if numbers is None:
-      raise ValueError("numbers should not be None")
-    else:
-      self.numbers = numbers
-
     # Change the type of numbers to bytes rather than string
-    self.numbers = [number.encode('utf-8') for number in self.numbers]
+    self._numbers = [number.encode('utf-8') for number in numbers]
 
   def open(self) -> None:
-    """Calls the :meth:`_is_connected()` method."""
+    """Sends ``"AT"`` to the GSM and waits for the response : ``"OK"``. """
 
-    self._is_connected()
+    self._ser.write(b'AT' + b'\r\n')
+    count = 0
+    while count <= 2:
+      sleep(0.1)
+      data = ""
+      while self._ser.inWaiting() > 0:
+        data += self._ser.read(self._ser.inWaiting()).decode()
+      if "OK" in data:
+        return
+      count += 1
+    raise TimeoutError("GSM is not responding")
 
   def set_cmd(self, *cmd: str) -> None:
     """Sends an SMS whose text is the :obj:`str` received as command to all the
@@ -71,46 +76,36 @@ class Gsm(InOut):
       self._send_mess(cmd[0])
 
   def _send_mess(self, message: str) -> None:
-    print(self.numbers)
-    for number in self.numbers:
-      data = ""
-      num = 0
-      self.ser.write(b'AT' + b'\r\n')
+    """Commands the GSM to send a message to all the phone numbers.
+
+    Args:
+      message: The text message to send.
+    """
+
+    for number in self._numbers:
+      count = 0
+      self._ser.write(b'AT' + b'\r\n')
       w_buff = [b"AT+CMGF=1\r\n",
                 b"AT+CMGS=\"" + number + b"\"\r\n", message.encode()]
-      while num <= 2:
-        while self.ser.inWaiting() > 0:
-          data += self.ser.read(self.ser.inWaiting()).decode()
+      while count <= 2:
+        data = ""
+        while self._ser.inWaiting() > 0:
+          data += self._ser.read(self._ser.inWaiting()).decode()
           # Get all the answers in Waiting
-        if data != "":
-          if num < 2:
-            time.sleep(1)
-            self.ser.write(w_buff[num])
+        if data:
+          if count < 2:
+            sleep(1)
+            self._ser.write(w_buff[count])
             # Put the message in text mode then enter the
             # number to contact
-          if num == 2:
-            time.sleep(0.5)
-            self.ser.write(w_buff[2])  # Write the message
-            self.ser.write(b"\x1a\r\n")
+          if count == 2:
+            sleep(0.5)
+            self._ser.write(w_buff[2])  # Write the message
+            self._ser.write(b"\x1a\r\n")
             # 0x1a : send   0x1b : Cancel send
-          num += 1
-          data = ""
-
-  def _is_connected(self) -> None:
-    """Sends ``"AT"`` to the GSM and waits for the response : ``"OK"``. """
-
-    self.ser.write(b'AT' + b'\r\n')
-    data = ""
-    num = 0
-    while num < 2:
-      while self.ser.inWaiting() > 0:
-        data += self.ser.read(self.ser.inWaiting()).decode()
-      if data != "":
-        print(data)
-        num = num + 1
-        data = ""
+          count += 1
 
   def close(self) -> None:
     """Closes the serial port."""
 
-    self.ser.close()
+    self._ser.close()

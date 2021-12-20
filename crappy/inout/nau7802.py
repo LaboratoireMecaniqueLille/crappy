@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
+from typing import Union
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
@@ -9,6 +10,11 @@ try:
   import smbus2
 except (ModuleNotFoundError, ImportError):
   smbus2 = OptionalModule("smbus2")
+
+try:
+  import RPi.GPIO as GPIO
+except (ModuleNotFoundError, ImportError):
+  GPIO = OptionalModule("RPi.GPIO")
 
 # Register Map
 NAU7802_Scale_Registers = {'PU_CTRL': 0x00,
@@ -96,16 +102,15 @@ NAU7802_Cal_Status = {'CAL_SUCCESS': 0,
 
 NAU7802_Backends = ['Pi4', 'ft232h']
 
+NAU7802_VREF = 3.3
+
 
 class Nau7802(Usb_server, InOut):
   """Class for controlling Sparkfun's NAU7802 load cell conditioner.
 
   The Nau7802 InOut block is meant for reading output values from a NAU7802
   load cell conditioner, using the I2C protocol. The output is in Volts by
-  default, but can be converted into Newtons using ``gain`` and ``offset``.
-
-  Warning:
-    Only available on Raspberry Pi for now !
+  default, but can be converted to Newtons using ``gain`` and ``offset``.
   """
 
   def __init__(self,
@@ -114,10 +119,11 @@ class Nau7802(Usb_server, InOut):
                device_address: int = 0x2A,
                gain_hardware: int = 128,
                sample_rate: int = 80,
+               int_pin: Union[str, int] = None,
                gain: float = 1,
                offset: float = 0,
                ft232h_ser_num: str = None) -> None:
-    """Checks the arguments validity.
+    """Checks the validity of the arguments..
 
     Args:
       backend (:obj:`str`): The backend for communicating with the NAU7802.
@@ -126,14 +132,17 @@ class Nau7802(Usb_server, InOut):
 
           'Pi4', 'ft232h'
 
+        to use the device from a Raspberry Pi or from a PC through an FT232H
+        USB to I2C converter, respectively. See :ref:`Crappy for embedded
+        hardware` for details.
       i2c_port (:obj:`int`, optional): The I2C port over which the NAU7802
         should communicate. On most Raspberry Pi models the default I2C port is
         `1`.
       device_address (:obj:`int`, optional): The I2C address of the NAU7802. It
         is impossible to change this address, so it is not possible to have
-        several NAU7802 on the same i2c port.
+        several NAU7802 on the same i2c bus.
       gain_hardware (:obj:`int`, optional): The gain to be used by the
-        programmable gain amplifier. Setting a high gain allows to read small
+        programmable gain amplifier. Setting a high gain allows reading small
         voltages with a better precision, but it might saturate the sensor for
         higher voltages. Available gains are:
         ::
@@ -146,6 +155,12 @@ class Nau7802(Usb_server, InOut):
 
           10, 20, 40, 80, 320
 
+      int_pin (:obj:`int` or :obj:`str`, optional): Optionally, reads the end
+        of conversion signal from a GPIO rather than from an I2C message.
+        Speeds up the reading and decreases the traffic on the bus, but
+        requires one extra wire. With the backend `'Pi4'`, give the index of
+        the GPIO in BCM convention. With the `'ft232h'` backend, give the name
+        of the GPIO in the format `Dx` or `Cx`.
       gain (:obj:`float`, optional): Allows to tune the output value according
         to the formula:
         ::
@@ -185,6 +200,7 @@ class Nau7802(Usb_server, InOut):
                          done_event=done_event,
                          serial_nr=ft232h_ser_num)
     self._device_address = device_address
+    self._backend = backend
 
     if gain_hardware not in NAU7802_Gain_Values:
       raise ValueError("gain_hardware should be in {}".format(list(
@@ -198,11 +214,20 @@ class Nau7802(Usb_server, InOut):
     else:
       self._sample_rate = sample_rate
 
+    if int_pin is not None:
+      if backend == 'ft232h' and not isinstance(int_pin, str):
+        raise TypeError('int_pin should be a string when using the ft232h '
+                        'backend !')
+      elif backend == 'Pi4' and not isinstance(int_pin, int):
+        raise TypeError('int_pin should be an int when using the Pi4 '
+                        'backend !')
+    self._int_pin = int_pin
+
     self._gain = gain
     self._offset = offset
 
   def open(self) -> None:
-    """Sets the I2C communication and device"""
+    """Sets the I2C communication and device."""
 
     if not self._is_connected():
       raise IOError("The NAU7802 is not connected")
@@ -220,13 +245,11 @@ class Nau7802(Usb_server, InOut):
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUA'],
                   NAU7802_Scale_Registers['PU_CTRL'], 1)
 
-    t_wait = 0
+    t0 = time()
     while not self._get_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUR'],
                             NAU7802_Scale_Registers['PU_CTRL']):
-      sleep(0.001)
-      t_wait += 0.001
-      if t_wait > 0.1:
-        raise TimeoutError
+      if time() - t0 > 0.1:
+        raise TimeoutError("Waited too long for the device to power up !")
 
     # Setting the Low Drop Out voltage to 3.3V and setting the gain
     value = NAU7802_Gain_Values[self._gain_hardware]
@@ -252,19 +275,21 @@ class Nau7802(Usb_server, InOut):
     self._set_bit(NAU7802_CTRL2_Bits['CTRL2_CALS'],
                   NAU7802_Scale_Registers['CTRL2'], 1)
 
-    t_wait = 0
+    t0 = time()
     while self._cal_afe_status() != NAU7802_Cal_Status['CAL_SUCCESS']:
-      sleep(0.001)
-      t_wait += 0.001
-      if t_wait > 1:
-        raise TimeoutError
+      if time() - t0 > 1:
+        raise TimeoutError("Waited too long for the calibration to occur !")
       if self._cal_afe_status() == NAU7802_Cal_Status['CAL_FAILURE']:
         raise IOError("Calibration failed !")
 
-  def get_data(self) -> list:
-    """Reads the registers containing the conversion result
+    if self._backend == 'Pi4' and self._int_pin is not None:
+      GPIO.setmode(GPIO.BCM)
+      GPIO.setup(self._int_pin, GPIO.IN)
 
-    The output is in Volts by default, and can be converted into Newtons using
+  def get_data(self) -> list:
+    """Reads the registers containing the conversion result.
+
+    The output is in Volts by default, and can be converted to Newtons using
     gain and offset.
 
     Returns:
@@ -272,31 +297,28 @@ class Nau7802(Usb_server, InOut):
     """
 
     # Waiting for data to be ready
-    t_wait = 0
+    t0 = time()
     while not self._data_available():
-      sleep(0.0001)
-      t_wait += 0.0001
-      if t_wait > 0.1:
-        raise TimeoutError
+      if time() - t0 > 0.5:
+        raise TimeoutError('Waited too long for data to be ready !')
 
     out = [time()]
 
     # Reading the output data
     block = self._bus.read_i2c_block_data(self._device_address,
-                                          NAU7802_Scale_Registers['ADCO_B2'], 3)
+                                          NAU7802_Scale_Registers['ADCO_B2'],
+                                          3)
     value_raw = (block[0] << 16) | (block[1] << 8) | block[2]
 
     # Converting raw data into Volts or Newtons
     if block[0] >> 7:
-      value = (-(2 ** 23 - 1) + (value_raw & 0x7FFFFF)) / (
-                2 ** 23 - 1) * 0.5 * 3.3 / self._gain_hardware
-    else:
-      value = value_raw / (2 ** 23 - 1) * 0.5 * 3.3 / self._gain_hardware
+      value_raw -= 2 ** 24
+    value = value_raw / 2 ** 23 * 0.5 * NAU7802_VREF / self._gain_hardware
     out.append(self._offset + self._gain * value)
     return out
 
   def close(self) -> None:
-    """Powers down the device"""
+    """Powers down the device."""
 
     # Powering down the device
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUD'],
@@ -306,11 +328,14 @@ class Nau7802(Usb_server, InOut):
                   NAU7802_Scale_Registers['PU_CTRL'], 0)
     self._bus.close()
 
+    if self._backend == 'Pi4' and self._int_pin is not None:
+      GPIO.cleanup()
+
   def _is_connected(self) -> bool:
-    """Tries reading a byte from the device
+    """Tries reading a byte from the device.
 
     Returns:
-      :obj:`bool`: True if reading was successful, else False
+      :obj:`bool`: :obj:`True` if reading was successful, else :obj:`False`
     """
 
     try:
@@ -319,21 +344,24 @@ class Nau7802(Usb_server, InOut):
     except IOError:
       return False
 
-  def _data_available(self) -> int:
-    """Reads the data available bit
+  def _data_available(self) -> bool:
+    """Returns :obj:`True` if data is available, :obj:`False` otherwise."""
 
-    Returns:
-      :obj:`int`: 1 if data is available, else 0
-    """
-
-    return self._get_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_CR'],
-                         NAU7802_Scale_Registers['PU_CTRL'])
+    # EOC signal from the I2C communication
+    if self._int_pin is None:
+      return self._get_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_CR'],
+                           NAU7802_Scale_Registers['PU_CTRL'])
+    # EOC signal from a GPIO
+    elif self._backend == 'ft232h':
+      return bool(self._bus.get_gpio(self._int_pin))
+    else:
+      return bool(GPIO.input(self._int_pin))
 
   def _set_bit(self,
                bit_number: int,
                register_address: int,
                bit: int) -> None:
-    """Sets a given bit in the specified register
+    """Sets a given bit in the specified register.
 
     Args:
       bit_number (:obj:`int`): Position of the bit in the register
@@ -352,14 +380,14 @@ class Nau7802(Usb_server, InOut):
   def _get_bit(self,
                bit_number: int,
                register_address: int) -> bool:
-    """Reads a given bit in the specified register
+    """Reads a given bit in the specified register.
 
     Args:
       bit_number (:obj:`int`): Position of the bit in the register
       register_address (:obj:`int`): Index of the register
 
     Returns:
-      :obj:`bool`: True if bit value is 1, else False
+      :obj:`bool`: True if the bit value is 1, else False
     """
 
     value = self._bus.read_i2c_block_data(self._device_address,
@@ -368,7 +396,7 @@ class Nau7802(Usb_server, InOut):
     return bool(value)
 
   def _cal_afe_status(self) -> int:
-    """Reads the calibration status bits
+    """Reads the calibration status bits.
 
     Returns:
       :obj:`int`: The int value corresponding to the current calibration status
