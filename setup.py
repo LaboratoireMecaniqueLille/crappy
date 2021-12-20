@@ -134,9 +134,9 @@ setup(
   ext_package='crappy',
   ext_modules=extensions,
 
-  install_requires=["numpy>=1.19.0; python_version >= '3.8'"
-                    "numpy>=1.19.0,<=1.21.4; python_version <= '3.7'"
-                    "numpy>=1.19.0,<=1.19.5; python_version <= '3.6'"],
+  install_requires=["numpy>=1.19.0;python_version>='3.8'",
+                    "numpy>=1.19.0,<=1.21.4;python_version<='3.7'",
+                    "numpy>=1.19.0,<=1.19.5;python_version<='3.6'"],
 
   include_package_data=True,
 
