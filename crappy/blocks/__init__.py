@@ -6,6 +6,7 @@
 from .autoDrive import AutoDrive
 from .block import Block
 from .camera import Camera
+from .client_server import Client_server
 from .dashboard import Dashboard
 from .discorrel import DISCorrel
 from .displayer import Displayer
@@ -26,5 +27,5 @@ from .pid import PID
 from .reader import Reader
 from .recorder import Recorder, Saver
 from .sink import Sink
+from .ucontroller import UController
 from .videoExtenso import Video_extenso
-from .client_server import Client_server
