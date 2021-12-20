@@ -114,7 +114,8 @@ class IOBlock(Block):
     else:
       data = self.device.get_data()
     if isinstance(data, dict):
-      pass
+      if 't(s)' in data:
+        data['t(s)'] -= self.t0
     elif isinstance(data[0], list):
       data[0] = [i - self.t0 for i in data[0]]
     else:
