@@ -4,7 +4,7 @@ from enum import IntEnum
 from collections import namedtuple
 from struct import calcsize, unpack, pack
 from typing import Union, Any
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from multiprocessing import Queue, Event
 from multiprocessing.managers import Namespace
 from time import time
@@ -115,6 +115,105 @@ ft232h_pin_nr = {pin: index for pin, index in zip(
 ft232h_i2c_speed = {100E3: ft232h_i2c_timings(4.0E-6, 4.7E-6, 4.0E-6, 4.7E-6),
                     400E3: ft232h_i2c_timings(0.6E-6, 0.6E-6, 0.6E-6, 1.3E-6),
                     1E6: ft232h_i2c_timings(0.26E-6, 0.26E-6, 0.26E-6, 0.5E-6)}
+
+
+class i2c_msg_ft232h:
+  """Class that mimics the :obj:`i2c_msg` class of the :mod:`smbus2` module."""
+
+  def __init__(self,
+               type_: str,
+               address: int,
+               length: int = None,
+               buf: list = None) -> None:
+    """Simply sets the attributes of the class, that characterise the i2c
+    message.
+
+    Args:
+      type_ (:obj:`str`): Either a read (`'r'`) or a write (`'w'`) message
+      address (:obj:`int`): The address of the I2C slave.
+      length (:obj:`int`, optional): For a read message, the number of bytes to
+        read.
+      buf (:obj:`list`, optional): For a write message, the list of bytes to be
+        written.
+    """
+
+    if type_ not in ['r', 'w']:
+      raise ValueError("type_ should be either 'r' or 'w' !")
+
+    self.type = type_
+    self.addr = address
+    self.len = length if length else 0
+    self.buf = buf if buf else []
+
+  @classmethod
+  def read(cls, address: int, length: int) -> Iterable:
+    """Instantiates an :class:`i2c_msg_ft232h` object for reading bytes.
+
+    Args:
+      address (:obj:`int`): The address of the I2C slave.
+      length (:obj:`int`): The number of bytes to read.
+    """
+
+    return cls(type_='r', address=address, length=length)
+
+  @classmethod
+  def write(cls, address: int, buf: list) -> object:
+    """Instantiates an :class:`i2c_msg_ft232h` object for writing bytes.
+
+    Args:
+      address (:obj:`int`): The address of the I2C slave.
+      buf (:obj:`list`): The list of bytes to be written.
+    """
+
+    return cls(type_='w', address=address, buf=buf)
+
+  @property
+  def addr(self) -> int:
+    """The address of the I2C slave."""
+
+    return self._addr
+
+  @addr.setter
+  def addr(self, addr_) -> None:
+    if not isinstance(addr_, int) or not 0 <= addr_ <= 127:
+      raise ValueError("addr should be an integer between 0 and 127 !")
+    self._addr = addr_
+
+  @property
+  def buf(self) -> list:
+    """The list of bytes to be written, or the list of bytes read."""
+
+    return self._buf
+
+  @buf.setter
+  def buf(self, buf_: list) -> None:
+    if self.type == 'w' and not buf_:
+      raise ValueError("buf can't be empty for a write operation !")
+    self._buf = buf_
+
+  @property
+  def len(self) -> int:
+    """The number of bytes to read."""
+
+    return self._len
+
+  @len.setter
+  def len(self, len_) -> None:
+    if self.type == 'r' and (not isinstance(len_, int) or not len_ > 0):
+      raise ValueError("len cannot be zero for a read operation !")
+    self._len = len_
+
+  def __iter__(self) -> object:
+    self._n = 0
+    return self
+
+  def __next__(self) -> int:
+    try:
+      item = self._buf[self._n]
+    except IndexError:
+      raise StopIteration
+    self._n += 1
+    return item
 
 
 class Find_serial_number:
@@ -1001,12 +1100,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if ack[0] & 0x01:
       raise IOError('NACK from slave')
 
-  def _write_i2c(self, address: int, out: list) -> None:
+  def _write_i2c(self, address: int, out: list, stop: bool = True) -> None:
     """Writes bytes to an I2C slave.
 
     Args:
       address (:obj:`int`): I2C address of the slave
       out (:obj:`list`): List of bytes to send
+      stop (:obj:`bool`, optional): Should the stop condition be sent at the
+        end of the message ?
     """
 
     i2caddress = (address << 1) & 0xFF
@@ -1021,7 +1122,36 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         if not retries:
           raise
       finally:
-        self._write_data(bytearray(self._stop))
+        if stop:
+          self._write_data(bytearray(self._stop))
+
+  def _read_i2c(self,
+                address: int,
+                length: int,
+                stop: bool = True) -> bytearray:
+    """Reads bytes from an I2C slave.
+
+    Args:
+      address (:obj:`int`): I2C address of the slave
+      length (:obj:`int`): Number of bytes to read
+      stop (:obj:`bool`, optional): Should the stop condition be sent at the
+        end of the message ?
+    """
+
+    i2caddress = (address << 1) & 0xFF
+    retries = self._retry_count
+    while True:
+      try:
+        self._do_prolog(i2caddress | 0x01)
+        data = self._do_read(length)
+        return data
+      except IOError:
+        retries -= 1
+        if not retries:
+          raise
+      finally:
+        if stop:
+          self._write_data(bytearray(self._stop))
 
   def _exchange_i2c(self,
                     address: int,
@@ -1224,6 +1354,26 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return [byte for byte in self._exchange_i2c(address=i2c_addr,
                                                 out=[register],
                                                 readlen=length)]
+
+  def i2c_rdwr(self, *i2c_msgs) -> None:
+    """Exchanges messages with a slave that doesn't feature registers.
+
+    A start condition is sent at the beginning of each transaction, but only
+    one stop condition is sent after the last transaction.
+
+    Args:
+      *i2c_msgs: Messages to exchange with the slave. They are either read or
+        write messages.
+    """
+
+    nr = len(i2c_msgs)
+    for i, msg in enumerate(i2c_msgs):
+      if msg.type == 'w':
+        self._write_i2c(address=msg.addr, out=msg.buf, stop=(i == nr))
+      elif msg.type == 'r':
+        msg.buf = [byte for byte in self._read_i2c(address=msg.addr,
+                                                   length=msg.len,
+                                                   stop=(i == nr))]
 
   @property
   def bits_per_word(self) -> int:
@@ -2830,7 +2980,36 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         if not retries:
           raise
       finally:
-        self._write_data(bytearray(self._stop))
+        if stop:
+          self._write_data(bytearray(self._stop))
+
+  def _read_i2c(self,
+                address: int,
+                length: int,
+                stop: bool = True) -> bytearray:
+    """Reads bytes from an I2C slave.
+
+    Args:
+      address (:obj:`int`): I2C address of the slave
+      length (:obj:`int`): Number of bytes to read
+      stop (:obj:`bool`, optional): Should the stop condition be sent at the
+        end of the message ?
+    """
+
+    i2caddress = (address << 1) & 0xFF
+    retries = self._retry_count
+    while True:
+      try:
+        self._do_prolog(i2caddress | 0x01)
+        data = self._do_read(length)
+        return data
+      except IOError:
+        retries -= 1
+        if not retries:
+          raise
+      finally:
+        if stop:
+          self._write_data(bytearray(self._stop))
 
   def _exchange_i2c(self,
                     address: int,
@@ -3042,6 +3221,30 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                                readlen=length)]
     self._send_server('stop')
     return ret
+
+  def i2c_rdwr(self, *i2c_msgs) -> None:
+    """Exchanges messages with a slave that doesn't feature registers.
+
+    A start condition is sent at the beginning of each transaction, but only
+    one stop condition is sent after the last transaction.
+
+    Args:
+      *i2c_msgs: Messages to exchange with the slave. They are either read or
+        write messages.
+    """
+
+    self._queue.put_nowait(self._block_number)
+
+    nr = len(i2c_msgs)
+    for i, msg in enumerate(i2c_msgs):
+      if msg.type == 'w':
+        self._write_i2c(address=msg.addr, out=msg.buf, stop=(i == nr))
+      elif msg.type == 'r':
+        msg.buf = [byte for byte in self._read_i2c(address=msg.addr,
+                                                   length=msg.len,
+                                                   stop=(i == nr))]
+
+    self._send_server('stop')
 
   @property
   def bits_per_word(self) -> int:
