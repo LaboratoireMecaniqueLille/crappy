@@ -164,6 +164,11 @@ Sink
 .. automodule:: crappy.blocks.sink
    :members:
 
+UController
+-----------
+.. automodule:: crappy.blocks.ucontroller
+   :members:
+
 VideoExtenso
 ------------
 .. automodule:: crappy.blocks.videoExtenso

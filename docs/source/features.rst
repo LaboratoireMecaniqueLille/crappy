@@ -195,6 +195,16 @@ Hardware control
   github.com/LaboratoireMecaniqueLille/crappy/blob/master/Examples/
   custom_in.py>`_ examples for use cases.
 
+- :ref:`UController`
+
+  Controls a microcontroller over serial. A template of a MicroPython script
+  to run on the microcontroller is provided in Crappy. This block can start or
+  stop the script on the microcontroller, send commands, and receive data.
+
+  Refer to the `microcontroller.py <https://github.com/LaboratoireMecanique
+  Lille/crappy/blob/master/Examples/microcontroller.py>`_ example for a use
+  case.
+
 - :ref:`Camera`
 
   Controls one :ref:`camera <Cameras>` and reads images from it.

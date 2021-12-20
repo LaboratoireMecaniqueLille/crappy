@@ -11,6 +11,7 @@ acquisition on complex experimental setups.
   whatiscrappy
   installation
   tutorials
+  embedded
   features
   blocklist
   documentation
