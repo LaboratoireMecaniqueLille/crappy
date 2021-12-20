@@ -8,6 +8,8 @@ from struct import pack
 
 """To use this template, replace the lines between the >>> and <<< by your own 
 code.
+This template is directly usable in combination with the microcontroller.py 
+example of Crappy.
 Here, this example simply sets a GPIO low and high at a given frequency and 
 sends back the number of cycles to the PC every 10 cycles. Connect a LED to the
 GPIO to see the result !
