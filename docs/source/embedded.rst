@@ -459,7 +459,7 @@ on Blinka, but this is also true for any similar module.
 
 For the sake of the example, let's create from scratch a minimal version of
 the :ref:`MPRLS` code. It is a pressure sensor, so it belongs to the
-:ref:`InOut` category of Crappy. Let's start from the template for InOuts
+:ref:`In / Out` category of Crappy. Let's start from the template for InOuts
 provided :ref:`here <1.d. inouts>`. Here we only want to acquire data, so the
 ``set_cmd`` method should be removed.
 
