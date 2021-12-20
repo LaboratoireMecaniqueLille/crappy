@@ -128,8 +128,7 @@ Video-extensometry
   Can be used to replace :ref:`VideoExtenso` on speckled samples, each area
   playing the same role as a dot.
 
-  Refer to the `ve-rt-dis.py <https://github.com/LaboratoireMecaniqueLille/
-  crappy/blob/master/Examples/ve-rt-dis.py>`_ example for a use case.
+  No example featuring a Disve block is currently distributed.
 
 - :ref:`GPUve`
 
@@ -277,7 +276,7 @@ Supported cameras
 - :ref:`JAI`
 
   Allows reading from a `Jai GO-5000M-PMCL <https://www.jai.com/products/
-  go-5000m-pmcl>`_ camera. It relies on the :ref:`Camera Link` object.
+  go-5000c-pmcl>`_ camera. It relies on the :ref:`Camera Link` object.
 
   .. Important::
      This camera object relies on C++ libraries, which are not distributed with
@@ -344,10 +343,10 @@ Supported Actuators
 
 - :ref:`CM Drive`
 
-  Drives Schneider Electric's `MDrive 23 <https://motion.schneider-electric.com
-  /downloads/quickreference/mdi23plus_qr.pdf>`_ stepper motor in speed or in
-  position. Probably works with other stepper motors in the same range of
-  products, although it hasn't been tested.
+  Drives Schneider Electric's `MDrive 23 <https://www.novantaims.com/downloads
+  /quickreference/mdi23plus_qr.pdf>`_ stepper motor in speed or in position.
+  Probably works with other stepper motors in the same range of products,
+  although it hasn't been tested.
 
   .. Important::
      This actuator was written for a specific application, so it may not be

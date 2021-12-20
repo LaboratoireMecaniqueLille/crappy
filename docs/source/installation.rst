@@ -37,8 +37,7 @@ functionalities :
 - `PyDaqmx <https://pythonhosted.org/PyDAQmx/>`_ (for National Instrument
   boards, Windows only)
 - `niFgen <https://www.ni.com/fr-fr/support/downloads/drivers/
-  download.ni-fgen.html#346233>`_ (package from National Instrument, Windows
-  only)
+  download.ni-fgen.html>`_ (package from National Instrument, Windows only)
 - `openDAQ <https://pypi.org/project/opendaq/>`_ (for opendaq boards)
 
 .. note::

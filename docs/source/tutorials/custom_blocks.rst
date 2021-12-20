@@ -1034,8 +1034,9 @@ and ``get_data`` methods :
        def close(self):
            pass
 
-Now we'll use the :mod:`psutil` module to monitor the memory consumption. This
-will only affect the ``get_data`` method :
+Note that if the class only uses ``get_data`` or ``set_cmd``, the unused method
+should be removed. Now we'll use the :mod:`psutil` module to monitor the memory
+consumption. This will only affect the ``get_data`` method :
 
 .. code-block:: python
    :emphasize-lines: 3,14
