@@ -57,8 +57,11 @@ class Dashboard_window:
     # Updating the display
     for label in self.labels:
       try:
-        self.c2[label].configure(text='%.{}f'.format(self.nb_digits) %
-                                      values[label])
+        if isinstance(values[label], str):
+          self.c2[label].configure(text=values[label])
+        else:
+          self.c2[label].configure(text='%.{}f'.format(self.nb_digits) %
+                                        values[label])
       except KeyError:
         # If a wrong label is given it just won't be updated
         pass
