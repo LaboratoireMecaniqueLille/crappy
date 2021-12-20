@@ -30,7 +30,8 @@ def _return_config_info(device) -> tuple:
     device: A :obj:`usb.core.Device`
 
   Returns:
-    The index, in endpoint, out endpoint and maximum packet size of a USB device
+    The index, in endpoint, out endpoint and maximum packet size of a USB
+    device
   """
 
   interface = device.get_active_configuration()[(0, 0)]
@@ -53,8 +54,8 @@ class Usb_server:
 
     Args:
       serial_nr (:obj:`int`): The serial number of the :ref:`FT232H` to use.
-      backend (:obj:`str`): The server won't be started if the chosen backend is
-        not ``'ft232h'``.
+      backend (:obj:`str`): The server won't be started if the chosen backend
+        is not ``'ft232h'``.
     """
 
     self._serial_nr = serial_nr
@@ -185,10 +186,10 @@ class Usb_server:
         :ref:`In / Out`.
       command_event (:obj:`multiprocessing.Event`): An event, set  when a block
         has written a command in the Namespace.
-      answer_event (:obj:`multiprocessing.Event`): An event, set when the server
-        has written an answer in the Namespace.
-      next_process (:obj:`multiprocessing.Event`): An event, set when the server
-        is ready to switch to the next block
+      answer_event (:obj:`multiprocessing.Event`): An event, set when the
+        server has written an answer in the Namespace.
+      next_process (:obj:`multiprocessing.Event`): An event, set when the
+        server is ready to switch to the next block
       done_event (:obj:`multiprocessing.Event`): An event, set when a block is
         done controlling the server.
     """
@@ -233,7 +234,8 @@ class Usb_server:
             try:
               blocks[i] = block
               blocks[i]['left'] = False
-              # Checking if the serial number associated with the block is valid
+              # Checking if the serial number associated with the block
+              # is valid
               if blocks[i]['serial_nr'] not in dev_dict:
                 namespace.current_block = ValueError(
                   "FT232H with specified serial number ({}) is not "
@@ -261,8 +263,8 @@ class Usb_server:
 
           try:
             namespace.current_block = block
-            # Resetting the commands and answers to make sure old ones cannot be
-            # used
+            # Resetting the commands and answers to make sure old ones
+            # cannot be used
             setattr(namespace, 'answer' + str(block), None)
             setattr(namespace, 'answer' + str(block) + "'", None)
             # Can only switch to the next block if the previous one signals
@@ -281,8 +283,8 @@ class Usb_server:
 
           except KeyboardInterrupt:
             namespace.current_block = block
-            # Resetting the commands and answers to make sure old ones cannot be
-            # used
+            # Resetting the commands and answers to make sure old ones
+            # cannot be used
             setattr(namespace, 'answer' + str(block), None)
             setattr(namespace, 'answer' + str(block) + "'", None)
             # Can only switch to the next block if the previous one signals
@@ -370,9 +372,9 @@ class Usb_server:
                   break
                 if command_event.is_set():
                   # Won't send an answer if a command_event is set
-                  # This is for avoiding confusion when switching from one block
-                  # to the next as the command and answer events are shared by
-                  # all the blocks
+                  # This is for avoiding confusion when switching from one
+                  # block to the next as the command and answer events are
+                  # shared by all the blocks
                   continue
                 if out is None:
                   # The None commands and answers have a special meaning, so

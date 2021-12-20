@@ -176,7 +176,7 @@ class Camera(Block):
     self.loops += 1
     if self.save_folder and self.loops % self.save_period == 0:
       self.save(img, self.save_folder +
-          eval('f"{}"'.format(self.img_name)) + f".{self.ext}")
+                eval('f"{}"'.format(self.img_name)) + f".{self.ext}")
     if self.transform:
       img = self.transform(img)
     return t, img

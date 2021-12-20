@@ -258,9 +258,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     in a shell opened in ``/etc/udev/rules.d``.
 
   Important:
-    For controlling several FT232H from the same computer, it is first necessary
-    to set their USB serial numbers. Otherwise an error will be raised. This can
-    be done using the crappy utility ``Set_ft232h_serial_nr.py``.
+    For controlling several FT232H from the same computer, it is first
+    necessary to set their USB serial numbers. Otherwise, an error will be
+    raised. This can be done using the crappy utility
+    ``Set_ft232h_serial_nr.py``.
   """
 
   class BitMode(IntEnum):
@@ -280,7 +281,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                serial_nr: str = None,
                i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:
-    """Checks the arguments validity, initializes the device and sets the locks.
+    """Checks the arguments validity, initializes the device and sets the
+    locks.
 
     Args:
       mode (:obj:`str`): The communication mode, can be :
@@ -292,8 +294,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         `GPIO_only` mode.
       serial_nr (:obj:`str`, optional): The serial number of the FT232H to
         drive. In `Write_serial_nr` mode, the serial number to be written.
-      i2c_speed (:obj:`str`, optional): In I2C mode, the I2C bus clock frequency
-        in Hz. Available values are :
+      i2c_speed (:obj:`str`, optional): In I2C mode, the I2C bus clock
+        frequency in Hz. Available values are :
         ::
 
           100E3, 400E3, 1E6
@@ -329,8 +331,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if i2c_speed not in ft232h_i2c_speed:
       try:
         if not 10E3 <= i2c_speed < 100E3:
-          raise ValueError("i2c_speed should be in {} or between 10E3 and 100E3"
-                           .format(list(ft232h_i2c_speed.values())))
+          raise ValueError("i2c_speed should be in {} or between 10E3 and "
+                           "100E3".format(list(ft232h_i2c_speed.values())))
       except TypeError:
         raise TypeError("i2c_speed should be a float or an int !")
 
@@ -1865,7 +1867,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def _direction(self) -> int:
     """Provides the FTDI pin direction.
 
-    A :obj:`True` bit represents an output pin, a :obj:`False` bit an input pin.
+    A :obj:`True` bit represents an output pin, a :obj:`False` bit an input
+    pin.
 
     Returns:
       Bitfield of pins direction.
@@ -1880,8 +1883,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       return self._gpio_dir
 
   def _read_gpio_raw(self) -> int:
-    """Sends the MPSSE commands for reading all the FT232H pins, and returns the
-    bitmap of read values. Values are determined using 3.3V logic.
+    """Sends the MPSSE commands for reading all the FT232H pins, and returns
+    the bitmap of read values. Values are determined using 3.3V logic.
 
     Returns:
       Bitmap of pins values
@@ -1980,9 +1983,9 @@ class ft232h_server:
   """A class for controlling FTDI's USB to Serial FT232H.
 
   This class is very similar to the :class:`ft232h` except it doesn't
-  directly instantiate the USB device nor send commands to it directly. Instead
-  the commands are sent to a USB server managing communication with the
-  different FT232H devices.
+  directly instantiate the USB device nor send commands to it directly.
+  Instead, the commands are sent to a USB server managing communication with
+  the different FT232H devices.
 
   Communication in SPI and I2C are implemented, along with GPIO control. The
   name of the methods for SPI and I2C communication are those of :mod:`smbus`
@@ -2012,9 +2015,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     in a shell opened in ``/etc/udev/rules.d``.
 
   Important:
-    For controlling several FT232H from the same computer, it is first necessary
-    to set their USB serial numbers. Otherwise an error will be raised. This can
-    be done using the crappy utility ``Set_ft232h_serial_nr.py``.
+    For controlling several FT232H from the same computer, it is first
+    necessary to set their USB serial numbers. Otherwise, an error will be
+    raised. This can be done using the crappy utility
+    ``Set_ft232h_serial_nr.py``.
   """
 
   class BitMode(IntEnum):
@@ -2041,7 +2045,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                serial_nr: str = None,
                i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:
-    """Checks the arguments validity, initializes the device and sets the locks.
+    """Checks the arguments validity, initializes the device and sets the
+    locks.
 
     Args:
       mode (:obj:`str`): The communication mode, can be :
@@ -2069,8 +2074,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       answer_event (:obj:`multiprocessing.Event`): An event object used by this
         class to know when the USB server sent back an answer.
 
-      next_block (:obj:`multiprocessing.Event`): An event object, set by the USB
-        server to tell the blocks waiting for the control that now is maybe
+      next_block (:obj:`multiprocessing.Event`): An event object, set by the
+        USB server to tell the blocks waiting for the control that now is maybe
         their chance.
 
       done_event (:obj:`multiprocessing.Event`): An event object set by the
@@ -2080,8 +2085,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       serial_nr (:obj:`str`, optional): The serial number of the FT232H to
         drive. In `Write_serial_nr` mode, the serial number to be written.
 
-      i2c_speed (:obj:`str`, optional): In I2C mode, the I2C bus clock frequency
-        in Hz. Available values are :
+      i2c_speed (:obj:`str`, optional): In I2C mode, the I2C bus clock
+        frequency in Hz. Available values are :
         ::
 
           100E3, 400E3, 1E6
@@ -2117,8 +2122,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if i2c_speed not in ft232h_i2c_speed:
       try:
         if not 10E3 <= i2c_speed < 100E3:
-          raise ValueError("i2c_speed should be in {} or between 10E3 and 100E3"
-                           .format(list(ft232h_i2c_speed.values())))
+          raise ValueError("i2c_speed should be in {} or between 10E3 and "
+                           "100E3".format(list(ft232h_i2c_speed.values())))
       except TypeError:
         raise TypeError("i2c_speed should be a float or an int !")
 
@@ -2561,8 +2566,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     while word_count:
       try:
         buf = self._send_server(['ctrl_transfer', Ftdi_req_in,
-                                 ft232h_sio_req['read_eeprom'], 0, word_addr, 2,
-                                 self._usb_read_timeout])
+                                 ft232h_sio_req['read_eeprom'], 0, word_addr,
+                                 2, self._usb_read_timeout])
       except USBError as exc:
         raise IOError('UsbError: %s' % exc) from exc
       if not buf:
@@ -2960,12 +2965,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if ack[0] & 0x01:
       raise IOError('NACK from slave')
 
-  def _write_i2c(self, address: int, out: list) -> None:
+  def _write_i2c(self, address: int, out: list, stop: bool = True) -> None:
     """Writes bytes to an I2C slave.
 
     Args:
       address (:obj:`int`): I2C address of the slave
       out (:obj:`list`): List of bytes to send
+      stop (:obj:`bool`, optional): Should the stop condition be sent at the
+        end of the message ?
     """
 
     i2caddress = (address << 1) & 0xFF
@@ -3755,7 +3762,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def _direction(self) -> int:
     """Provides the FTDI pin direction.
 
-    A :obj:`True` bit represents an output pin, a :obj:`False` bit an input pin.
+    A :obj:`True` bit represents an output pin, a :obj:`False` bit an input
+    pin.
 
     Returns:
       Bitfield of pins direction.
@@ -3770,8 +3778,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       return self._gpio_dir
 
   def _read_gpio_raw(self) -> int:
-    """Sends the MPSSE commands for reading all the FT232H pins, and returns the
-    bitmap of read values. Values are determined using 3.3V logic.
+    """Sends the MPSSE commands for reading all the FT232H pins, and returns
+    the bitmap of read values. Values are determined using 3.3V logic.
 
     Returns:
       Bitmap of pins values

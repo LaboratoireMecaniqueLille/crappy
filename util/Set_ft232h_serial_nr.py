@@ -5,8 +5,8 @@ from crappy.tool import ft232h
 """
 Utility for writing a serial number to an FT32H.
 
-Simply run this program, it will ask you for the serial number to write and will 
-then write it.
+Simply run this program, it will ask you for the serial number to write and 
+will then write it.
 """
 
 serial_number = None

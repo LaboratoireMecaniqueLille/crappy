@@ -320,7 +320,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       serial_number (:obj:`str`, optional): The serial number of the Tic to be
         controlled. It must be given as a :obj:`str`, and it is an 8-digits
         number. Allows to control the right device if several Tic of the same
-        model are connected. Otherwise an error is raised.
+        model are connected. Otherwise, an error is raised.
       model (:obj:`str`, optional): The model of the Tic to be controlled.
         Available models are:
         ::
@@ -328,7 +328,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
           'T825', 'T824', 'T500', 'N825', 'T249', '36v4'
 
         Allows to control the right device if several Tic of different models
-        are connected. Otherwise an error is raised.
+        are connected. Otherwise, an error is raised.
       reset_command_timeout (:obj:`bool`, optional): Enables or disables the
         `reset_command_timeout` thread. It can only be disabled if ``backend``
         is 'USB'. This thread pings the Tic every `0.5s`, so that it doesn't
@@ -404,7 +404,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
       - ``step_mode``:
         Increasing the number of microsteps allows to reduce the noise, the
-        vibrations, and improve the precision. However the more microsteps, the
+        vibrations, and improve the precision. However, the more microsteps, the
         lower the maximum achievable speed for the motor. Chances that the
         motor misses microsteps are also higher when the number of microsteps
         is high.
@@ -425,7 +425,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         printed during :meth:`__init__` if only one device is connected and
         ``model`` is :obj:`None`.
       - **Pins settings**:
-        The pin functions and polarity can also be set independently from
+        The pin functions and polarity can also be set independently of
         ``crappy`` before starting the assay, in the `ticgui`.
     """
 

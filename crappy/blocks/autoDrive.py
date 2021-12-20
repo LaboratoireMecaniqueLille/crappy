@@ -20,7 +20,7 @@ class AutoDrive(Block):
   """
 
   def __init__(self,
-               actuator: str = None,
+               actuator: dict = None,
                P: float = 2000,
                direction: str = 'Y-',
                range: int = 2048,
@@ -28,7 +28,7 @@ class AutoDrive(Block):
     """Sets the args and initializes parent class.
 
     Args:
-      actuator (:obj:`str`, optional):
+      actuator (:obj:`dict`, optional):
       P (:obj:`float`, optional): The gain for commanding the actuator.
       direction (:obj:`str`, optional): What axis should be considered, and in
         which direction ? A :obj:`str` whose first character is the axis (`X`

@@ -13,7 +13,8 @@ import numpy as np
 
 
 def my_mean(data):
-  """Average the blocks of data to lower the freq and allow a real-time plot."""
+  """Average the blocks of data to lower the freq and allow a real-time
+  plot."""
 
   for k, val in data.items():
     data[k] = np.mean(val)

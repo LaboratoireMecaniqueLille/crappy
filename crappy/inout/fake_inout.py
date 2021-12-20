@@ -6,7 +6,6 @@ from .._global import OptionalModule
 
 try:
   from psutil import virtual_memory
-  import psutil
 except (ModuleNotFoundError, ImportError):
   psutil = OptionalModule("psutil")
 

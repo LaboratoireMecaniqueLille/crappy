@@ -71,7 +71,8 @@ def get_field(s: str, h: int, w: int) -> tuple:
                                         dtype=np.float32)[:, np.newaxis],) * w,
                            axis=1),
             (np.concatenate((np.linspace(-w / 200, w / 200, w,
-                                         dtype=np.float32)[np.newaxis, :],) * h,
+                                         dtype=np.float32)[np.newaxis, :],) *
+                            h,
                             axis=0)))
 
   elif s == 'z':

@@ -37,9 +37,9 @@ class My_actuator(crappy.actuator.Actuator):
     sleep(.5)
     print("Device closed")
 
-  # At least one of the two following methods (set_speed and set_position) needs
-  # to be defined. Getters (get_speed and get_position) can be defined too if
-  # the actuator supports it.
+  # At least one of the two following methods (set_speed and set_position)
+  # needs to be defined. Getters (get_speed and get_position) can be defined
+  # too if the actuator supports it.
   def set_position(self, target):
     self.pos = target
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
   machine = crappy.blocks.Machine([{
       'type': 'My_actuator',  # The class to instantiate
       'mode': 'position',  # set_position will be called
-      'cmd': 'target_position',  # This actuator will be driven using sine_label
+      'cmd': 'target_position',  # This actuator will be driven using the sine
       'pos_label': 'measured_position'}])  # The label to send the measurements
 
   crappy.link(gen, machine)

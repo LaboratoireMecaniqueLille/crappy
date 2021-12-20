@@ -22,7 +22,7 @@ class Fake_machine(Block):
   def __init__(self,
                k: float = 210000*20*2,  # Global rigidity in N (F = k*strain)
                l0: float = 200,  # Initial length of the sample
-               maxstrain: float = 1.51,  # Material breaks above this strain (%)
+               maxstrain: float = 1.51,  # Max strain before failure (%)
                mode: str = 'speed',  # Does the machine take the input in speed
                # or position
                max_speed: float = 5,  # mm/s
@@ -92,6 +92,7 @@ class Fake_machine(Block):
       self.k = 0
     if self.pos / self.l0 > self.max_seen_strain:
       self.max_seen_strain = self.pos / self.l0
-      self.plastic_elongation = self.plastic_law(self.max_seen_strain) * self.l0
+      self.plastic_elongation = self.plastic_law(self.max_seen_strain) * \
+          self.l0
     self.send_all()
     self.last_t = t

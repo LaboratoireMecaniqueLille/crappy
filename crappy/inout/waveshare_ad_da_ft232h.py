@@ -78,7 +78,7 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
 
   The Waveshare_ad_da InOut block is meant for communicating with Waveshare's
   AD/DA Raspberry Pi hat from an FT232H, using the SPI protocol and the GPIOs.
-  It allows to read values from the 8-channels ADC and/or to set the 2-channels
+  It allows reading values from the 8-channels ADC and/or to set the 2-channels
   DAC.
 
   Warning:
@@ -99,14 +99,14 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
                cs_pin_ads: str = 'D4',
                drdy_pin_ads: str = 'D6',
                cs_pin_dac: str = 'D5') -> None:
-    """Checks the arguments validity.
+    """Checks the validity of the arguments.
 
     Args:
       dac_channels (:obj:`list`, optional): A :obj:`list` of :obj:`str`
         representing the channels to be set. The syntax for each string is
         'DACi' with i being either `0` or `1`.
       adc_channels (:obj:`list`, optional): A :obj:`list` of :obj:`str`
-        representing the channels to be read. The syntax for all strings is
+        representing the channels to read. The syntax for all strings is
         either:
         ::
 
@@ -118,7 +118,7 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
           'ADi - ADj' (i, j in range(8))
 
       gain_hardware (:obj:`int`, optional): The gain to be used by the
-        programmable gain amplifier. Setting a high gain allows to read small
+        programmable gain amplifier. Setting a high gain allows reading small
         voltages with a better precision, but it might saturate the sensor for
         higher voltages. The available gain values are:
         ::
@@ -136,14 +136,14 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
 
           output = gain * tension + offset.
 
-        The same gain applies to all of the outputs.
+        The same gain applies to all the outputs.
       offset (:obj:`float`, optional): Allows to tune the output values of the
         ADC according to the formula:
         ::
 
           output = gain * tension + offset.
 
-        The same offset applies to all of the outputs.
+        The same offset applies to all the outputs.
       sample_rate (optional): The ADC data output rate in SPS. The available
         values are:
         ::
@@ -151,12 +151,12 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
           2.5, 5, 10, 15, 25, 30, 50, 60, 100, 500,
           1000, 2000, 3750, 7500, 15000, 30000
 
-      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
-        serial number of the ft232h to use for communication.
+      ft232h_ser_num (:obj:`str`, optional): The serial number of the ft232h to
+        use for communication.
       rst_pin_ads (:obj:`str`, optional): The pin for resetting the ADS1256.
       cs_pin_ads (:obj:`str`, optional): The chip select pin for the ADS1256.
-      drdy_pin_ads (:obj:`str`, optional): The pin for knowing when a conversion
-        result in ready.
+      drdy_pin_ads (:obj:`str`, optional): The pin for knowing when a
+        conversion result in ready.
       cs_pin_dac (:obj:`str`, optional): The chip select pin for the DAC8552.
 
     Warning:
@@ -177,13 +177,9 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
         then considered as differential inputs.
 
         The ADC channels voltages should not be lower than `AGND-0.1V`, and not
-        be greater than `AGND+5.1V`. This is independent from `VREF` value.
+        be greater than `AGND+5.1V`. This is independent of `VREF` value.
 
     Note:
-      - ``dac_channels``:
-        As there are 2 DAC channels on the AD/DA, only `1` or `2` strings can
-        be given for the dac_channels argument.
-
       - ``adc_channels``:
         If multiple channels to read are given, they are read in a sequential
         way. This means that there's a small delay between each acquisition,
@@ -192,7 +188,7 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
         read as few channels as possible !
 
       - ``vref``:
-        `VREF` can be set independently from the chosen `VCC` value. The `VCC`
+        `VREF` can be set independently of the chosen `VCC` value. The `VCC`
         value has no influence on the ADC behaviour as it is always powered
         up with `5V`. Same goes for the DAC.
     """
@@ -271,8 +267,6 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
     self._cs_pin_ads = cs_pin_ads
     self._drdy_pin_ads = drdy_pin_ads
     self._cs_pin_dac = cs_pin_dac
-
-    self._channels_read, self._channels_write = [], []
 
   def open(self) -> None:
     """Sets the SPI communication, the GPIOs and the device."""

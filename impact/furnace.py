@@ -78,7 +78,8 @@ th_chan = [dict(name='AIN%d' % i, thermocouple='K') for i in pins]
 
 lj = crappy.blocks.IOBlock("Labjack_t7", channels=pwm_chan+th_chan,
                            labels=['t(s)']+['T%d' % i for i in pins],
-                           cmd_labels=['pwm%d' % i for i in pins], verbose=True)
+                           cmd_labels=['pwm%d' % i for i in pins],
+                           verbose=True)
 
 pid_list = []
 gen_list = []

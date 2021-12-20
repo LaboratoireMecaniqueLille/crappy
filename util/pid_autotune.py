@@ -33,8 +33,8 @@ def stable(data):
 
 
 graph = crappy.blocks.Grapher(('t(s)', 'speed'))
-l = crappy.links.Link()
-graph.inputs.append(l)
+link = crappy.links.Link()
+graph.inputs.append(link)
 # graph.start()
 graph.launch(time())
 act = actuator_class(**actuator_kwargs)
@@ -47,7 +47,7 @@ d = []
 while True:
   speed = act.get_speed()
   print("speed=", speed)
-  l.send({'t(s)': time(), 'speed': speed})
+  link.send({'t(s)': time(), 'speed': speed})
   d.append(speed)
   if stable(d):
     break
@@ -64,12 +64,12 @@ a1 = sum([i - v0 for i in d[:int(tar / loop_delay)]]) * loop_delay
 print("A1=", a1)
 t = 2.7 * a1 / (v1 - v0)
 print("T=", t)
-l = tar - t
-print("L=", l)
+L = tar - t
+print("L=", L)
 
-kp = (.2 + .45 * t / l) / k
-ti = (.4 * l + .8 * t) / (l + .1 * t) * l
-td = .5 * l * t / (.3 * l + t)
+kp = (.2 + .45 * t / L) / k
+ti = (.4 * L + .8 * t) / (L + .1 * t) * L
+td = .5 * L * t / (.3 * L + t)
 
 graph.stop()
 print("***** GAINS: ******")

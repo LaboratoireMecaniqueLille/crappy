@@ -29,7 +29,8 @@ class Picamera(Camera):
   converting bgr images to black and white.
 
   Warning:
-    Only works on Raspberry Pi !
+    Only works on Raspberry Pi, with the picamera API. On the latest OS release
+    "Bullseye", it has to be specifically activated in the configuration menu.
   """
 
   def __init__(self) -> None:
@@ -134,7 +135,7 @@ class Picamera(Camera):
 
   def _grab_frame(self) -> None:
     """Thread for grabbing the last image in the video stream and putting it in
-    the buffer"""
+    the buffer."""
 
     for frame in self._stream:
       with self._lock:
@@ -144,8 +145,8 @@ class Picamera(Camera):
         break
 
   def close(self) -> None:
-    """Joins the thread and closes the stream and the :class:`picamera.PiCamera`
-    object."""
+    """Joins the thread and closes the stream and the
+    :class:`picamera.PiCamera` object."""
 
     self._stop = True
     self._frame_grabber.join()

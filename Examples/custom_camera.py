@@ -22,7 +22,8 @@ from time import time
 class My_cam(crappy.camera.Camera):
   """A basic example of Camera.
 
-  It will simply send a gray image, the level can be set using a Camera_setting.
+  It will simply send a gray image, the level can be set using a
+  Camera_setting.
   """
 
   def __init__(self, resolution=(480, 640)):

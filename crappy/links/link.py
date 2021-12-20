@@ -25,12 +25,6 @@ def error_if_string(recv: Callable) -> Callable:
   return wrapper
 
 
-class TimeoutError(Exception):
-  """Custom error to raise in case of timeout."""
-
-  pass
-
-
 class MethodThread(Thread):
   """ThreadMethodThread, daemonic descendant class of :mod:`threading`.
 

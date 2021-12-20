@@ -359,7 +359,8 @@ class Labjack_t7(InOut):
     try:
       ljm.eWriteName(
         self.handle, chan,
-        self.out_chan_dict[chan]['gain']*val+self.out_chan_dict[chan]['offset'])
+        self.out_chan_dict[chan]['gain'] * val +
+        self.out_chan_dict[chan]['offset'])
     except KeyError:
       ljm.eWriteName(self.handle, chan, val)
 

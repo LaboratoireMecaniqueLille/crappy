@@ -16,7 +16,7 @@ try:
   from skimage.measure import regionprops
 except (ModuleNotFoundError, ImportError):
   label = OptionalModule("skimage", "Please install scikit-image to use"
-  "Video-extenso")
+                         "Video-extenso")
   threshold_otsu = regionprops = label
 
 

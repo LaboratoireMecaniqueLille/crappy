@@ -2,7 +2,7 @@
 
 from time import time
 import numpy as np
-from typing import Callable
+from typing import Callable, Union
 
 from ..tool import GPUCorrel as GPUCorrel_tool
 from .camera import Camera
@@ -27,8 +27,8 @@ class GPUCorrel(Camera):
                camera: str,
                fields: list,
                save_folder: str = None,
-               verbose: bool = False,
-               labels: list = None,
+               verbose: int = False,
+               labels: Union[list, tuple] = None,
                fps_label: str = False,
                img_name: str = "{self.loops:06d}_{t-self.t0:.6f}",
                ext: str = 'tiff',

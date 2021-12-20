@@ -83,7 +83,8 @@ class Generator(Block):
     self.path = path
     assert all([hasattr(generator_path, d['type']) for d in self.path]), \
         "Invalid path in signal generator:" + \
-        str(filter(lambda s: not hasattr(generator_path, s['type']), self.path))
+        str(filter(lambda s: not hasattr(generator_path, s['type']),
+                   self.path))
     self.labels = ['t(s)', self.cmd_label, self.cycle_label]
 
   def prepare(self) -> None:

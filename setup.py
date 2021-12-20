@@ -47,8 +47,8 @@ if platform.system() == "Linux":
                          extra_link_args=["-l", "python%sm" % v, "-L", clPath,
                                           "-l", "display", "-l", "clsersis",
                                           "-l", "fglib5"],
-                         include_dirs=['/usr/local/lib/python%sm'
-                                       '/dist-packages/numpy/core/include' % v])
+                         include_dirs=['/usr/local/lib/python%sm/dist-packages'
+                                       '/numpy/core/include' % v])
     p = popen("lsmod |grep menable")
     if len(p.read()) != 0:
       print("menable kernel module found, installing CameraLink module.")
@@ -61,8 +61,8 @@ if platform.system() == "Windows":
   pyFgenModule = Extension('tool.pyFgenModule',
                            include_dirs=["C:\\python%s\\site-packages\\numpy\\"
                                          "core\\include" % v,
-                                         "C:\\Program Files (x86)\\"
-                                         "IVI Foundation\\VISA\\WinNT\\include",
+                                         "C:\\Program Files (x86)\\IVI "
+                                         "Foundation\\VISA\\WinNT\\include",
                                          "C:\\Program Files\\IVI Foundation\\"
                                          "IVI\\Include"],
                            sources=['sources/niFgen/pyFgen.cpp'],
@@ -75,8 +75,8 @@ if platform.system() == "Windows":
   clpath = "C:\\Program Files\\SiliconSoftware\\Runtime5.2.1\\"
   clModule = Extension('tool.clModule',
                        include_dirs=[clpath+"include",
-                                     "C:\\python{}\\Lib\\site-packages\\numpy\\"
-                                     "core\\include".format(
+                                     "C:\\python{}\\Lib\\site-packages\\numpy"
+                                     "\\core\\include".format(
                                        v.replace('.', ''))],
                        sources=['sources/Cl_lib/CameraLink.cpp',
                                 'sources/Cl_lib/pyCameraLink.cpp',

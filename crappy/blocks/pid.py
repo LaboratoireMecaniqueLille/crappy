@@ -19,7 +19,7 @@ class PID(Block):
                kd: float = 0,
                freq: float = 500,
                out_max: float = float('inf'),
-               out_min:float = -float('inf'),
+               out_min: float = -float('inf'),
                target_label: str = 'cmd',
                input_label: str = 'V',
                time_label: str = 't(s)',
