@@ -52,7 +52,8 @@ class Client_server(Block):
         is considered to be the name of an MQTT topic, to which the client 
         subscribes. After a message has been received on that topic, the block 
         returns for each label in the topic (i.e. each string in the tuple) the 
-        corresponding data from the message.
+        corresponding data from the message. It also returns the current
+        timestamp in the label `'t(s)'`.
       cmd_labels (:obj:`list`, optional): A :obj:`list` of :obj:`str` and/or 
         :obj:`tuple` of :obj:`str`. Each string corresponds to the name of a 
         crappy label to send to the broker. Each element of the list is 
@@ -302,6 +303,8 @@ class Client_server(Block):
               dict_out[label] = self.last_out_val[label]
             else:
               self.last_out_val[label] = dict_out[label]
+        # Adding the timestamp before sending
+        dict_out['t(s)'] = time() - self.t0
         self.send(dict_out)
 
     """Loop for sending data
