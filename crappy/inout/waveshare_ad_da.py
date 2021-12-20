@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import time
+from time import sleep, time
+from re import fullmatch, findall
 from typing import List, Union
 from .inout import InOut
 from .._global import OptionalModule
@@ -216,44 +218,39 @@ class Waveshare_ad_da(InOut):
     if dac_channels is None and adc_channels is None:
       print("Warning ! The AD/DA doesn't read nor write anything.")
 
+    self._channels_write = []
     if dac_channels is not None:
-      if len(dac_channels) > 2:
-        raise ValueError("dac_channels length should not exceed 2")
       for chan in dac_channels:
-        if chan not in ["DAC0", "DAC1"]:
+        # Checking if the format matches
+        if fullmatch(r'DAC[0-1]', chan) is None:
           raise ValueError("Valid format for dac_channels values is 'DACi' "
                            "with i either 0 or 1")
-      self._dac_channels = dac_channels
-    else:
-      self._dac_channels = []
+        else:
+          self._channels_write.append(int(findall(r'\d', chan)[0]))
 
+    self._channels_read = []
     if adc_channels is not None:
-      not_valid_message = "Valid formats for adc_channels values are " \
-                          "either 'ADi' (i in range(8)) or 'ADi - ADj'"
       for chan in adc_channels:
-        if len(chan) not in [3, 9]:
-          raise ValueError(not_valid_message)
-        if not chan.startswith("AD"):
-          raise ValueError(not_valid_message)
-        elif len(chan) == 9:
-          if not chan.startswith("-", 4):
-            raise ValueError(not_valid_message)
-          if not chan.startswith("AD", 6):
-            raise ValueError(not_valid_message)
-      if not (all(len(chan) == 3 for chan in adc_channels) or
-              all(len(chan) == 9 for chan in adc_channels)):
-        raise ValueError("It is not possible to have both single and "
-                         "differential inputs, see documentation for more "
-                         "info")
-      self._adc_channels = adc_channels
-    else:
-      self._adc_channels = []
+        # Checking if the format matches
+        if fullmatch(r'AD[0-7]', chan) is None and \
+              fullmatch(r'AD[0-7]\s?-\s?AD[0-7]', chan) is None:
+          raise ValueError("Valid formats for adc_channels values are "
+                           "either 'ADi' (i in range(8)) or 'ADi - ADj'")
+        else:
+          # Extracting the channel numbers
+          chan = [int(i) for i in findall(r'\d', chan)]
+          # If only one channel provided, it has to be compared to GND
+          if len(chan) == 1:
+            chan.append(8)
+          # Making sure the two channels are not identical
+          if chan[0] == chan[1]:
+            raise ValueError("The two channels are the same !")
+          self._channels_read.append(chan)
 
     self._gain = gain
     self._offset = offset
 
-    self._SPI = spidev.SpiDev(0, 0)
-    self._channels_read, self._channels_write = [], []
+    self._bus = spidev.SpiDev(0, 0)
 
   def open(self) -> None:
     """Sets the SPI communication, the GPIOs and the device."""
@@ -267,30 +264,18 @@ class Waveshare_ad_da(InOut):
     GPIO.setup(AD_DA_pins['CS_PIN_DAC'], GPIO.OUT)
 
     # Setting the SPI
-    self._SPI.max_speed_hz = 40000
-    self._SPI.mode = 1
-    self._SPI.no_cs = True
+    self._bus.max_speed_hz = 40000
+    self._bus.mode = 1
+    self._bus.no_cs = True
     self._reset()
 
     # Setting the ADS according to the user parameters
-    buf = [0x00, 0x00]
-    buf[0] |= Ads1256_gain[self._gain_hardware]
-    buf[1] |= Ads1256_drate[self._sample_rate]
+    buf = [Ads1256_gain[self._gain_hardware], Ads1256_drate[self._sample_rate]]
     GPIO.output(AD_DA_pins['CS_PIN_ADS'], GPIO.LOW)
-    self._SPI.writebytes([Ads1256_cmd['CMD_WREG'] |
-                         Ads1256_reg['REG_ADCON'], 0x01] + buf)
+    self._bus.writebytes([Ads1256_cmd['CMD_WREG'] |
+                          Ads1256_reg['REG_ADCON'], 0x01] + buf)
     GPIO.output(AD_DA_pins['CS_PIN_ADS'], GPIO.HIGH)
-    time.sleep(0.001)
-
-    # Setting the lists of channels to read and write
-    for chan in self._adc_channels:
-      if len(chan) == 3:
-        self._channels_read.append([int(chan[2]), 8])
-      else:
-        self._channels_read.append([int(chan[2]), int(chan[8])])
-
-    for chan in self._dac_channels:
-      self._channels_write.append(int(chan[3]))
+    sleep(0.001)
 
   def get_data(self) -> list:
     """Reads data from all the user-specified ADC channels, in a sequential
@@ -303,7 +288,7 @@ class Waveshare_ad_da(InOut):
       each channel to read
     """
 
-    out = [time.time()]
+    out = [time()]
 
     # The values are read one channel after the other, not simultaneously
     for chan in self._channels_read:
@@ -311,30 +296,27 @@ class Waveshare_ad_da(InOut):
 
       # Switching channel only if necessary, except for the first loop
       if len(self._channels_read) > 1 or not self._channel_set:
-        self._SPI.writebytes([Ads1256_cmd['CMD_WREG'] |
-                             Ads1256_reg['REG_MUX'], 0x00,
-                             (chan[0] << 4) | chan[1]])
+        self._bus.writebytes([Ads1256_cmd['CMD_WREG'] |
+                              Ads1256_reg['REG_MUX'], 0x00,
+                              (chan[0] << 4) | chan[1]])
 
         # The ADS has to be synchronized again when switching channel
-        self._SPI.writebytes([Ads1256_cmd['CMD_SYNC']])
-        self._SPI.writebytes([Ads1256_cmd['CMD_WAKEUP']])
+        self._bus.writebytes([Ads1256_cmd['CMD_SYNC']])
+        self._bus.writebytes([Ads1256_cmd['CMD_WAKEUP']])
 
         self._channel_set = True
 
       # Reading the output value
       self._wait_drdy()
-      self._SPI.writebytes([Ads1256_cmd['CMD_RDATA']])
-      buf = self._SPI.readbytes(3)
+      self._bus.writebytes([Ads1256_cmd['CMD_RDATA']])
+      buf = self._bus.readbytes(3)
       GPIO.output(AD_DA_pins['CS_PIN_ADS'], GPIO.HIGH)
 
       # Converting the raw output into Volts
       out_raw = (buf[0] << 16) | (buf[1] << 8) | buf[2]
-      if out_raw >> 23:
-        value = self._v_ref / self._gain_hardware * (-(2 ** 23 - 1) + (
-                out_raw & 0x7FFFFF)) / (2 ** 23 - 1)
-      else:
-        value = self._v_ref / self._gain_hardware * out_raw / (
-                2 ** 23 - 1)
+      if out_raw & 0x800000:
+        out_raw -= 2 ** 24
+      value = self._v_ref / self._gain_hardware * out_raw / 2 ** 23
       out.append(self._offset + self._gain * value)
 
     return out
@@ -353,14 +335,14 @@ class Waveshare_ad_da(InOut):
                          "v_ref")
       digit = int((2 ** 16 - 1) * val / self._v_ref)
       GPIO.output(AD_DA_pins['CS_PIN_DAC'], GPIO.LOW)
-      self._SPI.writebytes([Dac8532_chan[channel], digit >> 8,
-                           digit & 0xFF])
+      self._bus.writebytes([Dac8532_chan[channel], digit >> 8,
+                            digit & 0xFF])
       GPIO.output(AD_DA_pins['CS_PIN_DAC'], GPIO.HIGH)
 
   def close(self) -> None:
     """Releases the GPIOs."""
 
-    self._SPI.close()
+    self._bus.close()
     GPIO.cleanup()
 
   @staticmethod
@@ -368,9 +350,9 @@ class Waveshare_ad_da(InOut):
     """Resets the ADC."""
 
     GPIO.output(AD_DA_pins['RST_PIN_ADS'], GPIO.HIGH)
-    time.sleep(0.2)
+    sleep(0.2)
     GPIO.output(AD_DA_pins['RST_PIN_ADS'], GPIO.LOW)
-    time.sleep(0.2)
+    sleep(0.2)
     GPIO.output(AD_DA_pins['RST_PIN_ADS'], GPIO.HIGH)
 
   @staticmethod
@@ -378,9 +360,7 @@ class Waveshare_ad_da(InOut):
     """Waits until the `DRDY` pin is driven low, meaning that an ADC conversion
     is ready."""
 
-    t_wait = 0
+    t0 = time()
     while GPIO.input(AD_DA_pins['DRDY_PIN_ADS']):
-      time.sleep(0.0001)
-      t_wait += 0.0001
-      if t_wait > 1:
+      if time() - t0 > 1:
         raise TimeoutError("Couldn't get conversion result from the ADC")
