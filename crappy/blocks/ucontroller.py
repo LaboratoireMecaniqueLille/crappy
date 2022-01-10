@@ -160,6 +160,17 @@ class UController(Block):
     if self._labels is not None and self._t_device:
       self._labels_table.update({'t(s)': 0})
 
+    # Emptying the read buffer before starting
+    while True:
+      try:
+        recv = self._bus.read()
+      except SerialException:
+        raise IOError("Reading from the device on port {} failed, it may"
+                      "have been disconnected.".format(self._port))
+
+      if not recv:
+        break
+
     # Sending the 'go' command to start the device
     try:
       self._bus.write(b'go' +
