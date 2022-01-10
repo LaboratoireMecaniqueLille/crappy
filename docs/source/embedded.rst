@@ -68,11 +68,14 @@ interface with embedded electronics:
 - The :ref:`FT232H` tool allows interfacing over SPi or I2C directly from a PC,
   using Adafruit's FT232H USB to I2C and SPI adapter. Examples of code are
   provided below.
-- The :ref:`UController` block and the `microcontroller.py <https://github.com
-  /LaboratoireMecaniqueLille/crappy/blob/master/crappy/tool/
-  microcontroller.py>`_ template are provided for controlling the execution of
-  a script on a microcontroller from a PC, sending commands and receiving data.
-- The :ref:`Client Server` block allows to receive from and send data to a
+- The :ref:`UController` block, along with the `microcontroller.py
+  <https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/crappy/tool/
+  microcontroller.py>`_ and `microcontroller.ino <https://github.com/
+  LaboratoireMecaniqueLille/crappy/blob/master/crappy/tool/
+  microcontroller.ino>`_ templates are provided for controlling the execution
+  of a script on a microcontroller from a PC, sending commands and receiving
+  data.
+- The :ref:`Client Server` block allows receiving from and sending data to a
   remote device connected on a common network, e.g. a microcontroller acquiring
   data in an enclosed area.
 
@@ -138,9 +141,9 @@ using embedded sensors or actuators on an SBC. Wiring the devices to the GPIOs
 may be new to beginners, but it is actually extremely simple and much
 documentation about it can be found on internet. There's also nothing special to
 consider when writing Crappy's script, except that the keyword argument
-`backend` should be set to ``Pi4``. Here's a basic example of code for reading
-data from an NAU7802 load cell conditioner on a Raspberry Pi 4, and displaying
-it on a graph.
+`backend` should be set to ``Pi4`` or ``Blinka``. Here's a basic example of
+code for reading data from an NAU7802 load cell conditioner on a Raspberry
+Pi 4, and displaying it on a graph.
 
 .. code-block:: python
 
@@ -284,19 +287,21 @@ Microcontrollers in Crappy
 Usually, microcontrollers are meant to run a script as soon they're powered on,
 independently from any external input. It means that they cannot be started or
 stopped by Crappy, which may be problematic. To address this issue, we developed
-a MicroPython template and the UController Crappy block for the situations when
-a microcontroller is linked to a PC through a serial connection (USB cable).
-They allow communication between the microcontroller and the PC during a test,
-and they also manage the beginning and the end of the test.
+a MicroPython template, an Arduino template, and the UController Crappy block
+for the situations when a microcontroller is linked to a PC through a serial
+connection (USB cable). They allow communication between the microcontroller
+and the PC during a test, and they also manage the beginning and the end of the
+test.
 
-The Micropython template and the UController block actually work in very similar
-ways. They regularly listen to the serial connection, and read any data sent
-from the other side. A specific syntax allows sending labeled inputs to the
-microcontroller, for example to modify the value of a parameter. Reversely, this
-syntax also allows the microcontroller to send back data or feedback. On
-startup, a blocking call prevents the microcontroller from doing anything until
-the UController block pings it, during `crappy.prepare()`. At the end of the
-test, the microcontroller is reset to stop the script currently running.
+The Micropython and Arduino templates and the UController block actually work
+in very similar ways. They regularly listen to the serial connection, and read
+any data sent from the other side. A specific syntax allows sending labeled
+inputs to the microcontroller, for example to modify the value of a parameter.
+Reversely, this syntax also allows the microcontroller to send back data or
+feedback. On startup, a blocking call prevents the microcontroller from doing
+anything until the UController block pings it, during `crappy.prepare()`. At
+the end of the test, the microcontroller is reset to stop the script currently
+running.
 
 .. Note::
    This documentation is not meant to explain how to flash MicroPython on a
@@ -366,7 +371,7 @@ computers over a university network.
 
 The Client Server block uses the MQTT protocol to send and receive messages. It
 can subscribe to topics, and receive the associated messages, and also publish
-messages into topics. The program that manages the messages from the different
+messages in topics. The program that manages the messages from the different
 devices is the MQTT broker, which runs on one machine only. Many brokers exist,
 with each their strengths and weaknesses. The broker runs independently from
 Crappy, although we added the possibility to start and stop the `Mosquitto

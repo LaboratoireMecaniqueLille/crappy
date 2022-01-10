@@ -142,7 +142,7 @@ class PID(Block):
         self.last_target = target
     diff = target-feedback
 
-    p_term = self.kp*diff
+    p_term = self.kp * diff
     self.last_t = t
 
     # Classical approach

@@ -40,10 +40,11 @@ class UController(Block):
         device. Only these labels should be given as argument to the
         :meth:`send_to_pc` method in the MicroPython script. If this argument
         is not :obj:`None`, then the``init_output`` argument should be given as
-        well.
+        well. No more than 9 labels should be given.
       cmd_labels (:obj:`list`, optional): The list of the command labels that
         will be sent to the device upon reception from an upstream block. The
-        variables in the MicroPython script should have these exact names.
+        variables in the MicroPython script should have these exact names. No
+        more than 9 cmd_labels should be given.
       init_output (:obj:`dict`, optional): If the ``labels`` argument is not
         :obj:`None`, the values to output to downstream blocks for each label
         as long as no value has been received from the device. An initial
