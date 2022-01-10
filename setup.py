@@ -110,7 +110,7 @@ setup(
                 'https://crappy.readthedocs.io/en/latest/index.html'},
 
   author='LaMcube',
-  author_email='victor.couty@centralelille.fr',
+  author_email='antoine.weisrock1@centralelille.fr',
 
   license='GPL V2',
 
