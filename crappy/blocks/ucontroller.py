@@ -233,7 +233,7 @@ class UController(Block):
                 if self.verbose:
                   print("[UController] Sent {} on the "
                         "port {}".format((str(self._cmd_table[label]) +
-                                          str('%.2f' % value)).encode() +
+                                          str('%.3f' % value)).encode() +
                                          b'\r\n',
                                          self._port))
 
