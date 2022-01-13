@@ -2176,7 +2176,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             # The previous block is done controlling the server but the server
             # hasn't chosen the next block yet
             continue
-          # Even if the next_block event is set, only the chosen block is
+          # Even if the next_block event is set, only the chosen block
           # is allowed to communicate
           if self._namespace.current_block == self._block_number:
             # The other blocks will have to wait
