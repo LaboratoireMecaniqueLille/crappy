@@ -1902,7 +1902,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     value, = unpack(fmt, data)
     return value
 
-  def get_gpio(self, gpio_str: str) -> int:
+  def get_gpio(self, gpio_str: str) -> bool:
     """Reads the 3.3V-logic voltage value of the specified pin.
 
     Args:
@@ -1923,7 +1923,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if self._direction & gpio_bit:
       self._gpio_dir &= 0xFFFF - gpio_bit
 
-    return self._read_gpio_raw() & gpio_bit
+    return bool(self._read_gpio_raw() & gpio_bit)
 
   def set_gpio(self, gpio_str: str, value: int) -> None:
     """Sets the specified GPIO as an output and sets its output value.
@@ -3797,7 +3797,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     value, = unpack(fmt, data)
     return value
 
-  def get_gpio(self, gpio_str: str) -> int:
+  def get_gpio(self, gpio_str: str) -> bool:
     """Reads the 3.3V-logic voltage value of the specified pin.
 
     Args:
@@ -3820,7 +3820,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if self._direction & gpio_bit:
       self._gpio_dir &= 0xFFFF - gpio_bit
 
-    ret = self._read_gpio_raw() & gpio_bit
+    ret = bool(self._read_gpio_raw() & gpio_bit)
     self._send_server('stop')
     return ret
 
