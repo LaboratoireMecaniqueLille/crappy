@@ -3,11 +3,10 @@
 from enum import IntEnum
 from collections import namedtuple
 from struct import calcsize, unpack, pack
-from typing import Union, Any
-from collections.abc import Callable, Iterable
-from multiprocessing import Queue, Event
-from multiprocessing.managers import Namespace
-from time import time
+from typing import Union, List, Tuple, Callable, Iterable, NoReturn, Optional
+from _io import FileIO
+from multiprocessing.synchronize import RLock
+from time import time, sleep
 
 from .._global import OptionalModule
 try:
@@ -123,8 +122,8 @@ class i2c_msg_ft232h:
   def __init__(self,
                type_: str,
                address: int,
-               length: int = None,
-               buf: list = None) -> None:
+               length: Optional[int] = None,
+               buf: Optional[list] = None) -> None:
     """Simply sets the attributes of the class, that characterise the i2c
     message.
 
@@ -174,7 +173,7 @@ class i2c_msg_ft232h:
     return self._addr
 
   @addr.setter
-  def addr(self, addr_) -> None:
+  def addr(self, addr_) -> NoReturn:
     if not isinstance(addr_, int) or not 0 <= addr_ <= 127:
       raise ValueError("addr should be an integer between 0 and 127 !")
     self._addr = addr_
@@ -186,7 +185,7 @@ class i2c_msg_ft232h:
     return self._buf
 
   @buf.setter
-  def buf(self, buf_: list) -> None:
+  def buf(self, buf_: list) -> NoReturn:
     if self.type == 'w' and not buf_:
       raise ValueError("buf can't be empty for a write operation !")
     self._buf = buf_
@@ -198,7 +197,7 @@ class i2c_msg_ft232h:
     return self._len
 
   @len.setter
-  def len(self, len_) -> None:
+  def len(self, len_) -> NoReturn:
     if self.type == 'r' and (not isinstance(len_, int) or not len_ > 0):
       raise ValueError("len cannot be zero for a read operation !")
     self._len = len_
@@ -220,7 +219,7 @@ class Find_serial_number:
   """A class used for finding USB devices matching a given serial number, using
      the usb.core.find method."""
 
-  def __init__(self, serial_number: str) -> None:
+  def __init__(self, serial_number: str) -> NoReturn:
     self.serial_number = serial_number
 
   def __call__(self, device) -> bool:
@@ -278,7 +277,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
   def __init__(self,
                mode: str,
-               serial_nr: str = None,
+               serial_nr: Optional[str] = None,
                i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:
     """Checks the arguments validity, initializes the device and sets the
@@ -354,7 +353,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._set_serial_number(serial_nr)
       self.close()
 
-  def _initialize(self) -> None:
+  def _initialize(self) -> NoReturn:
     """Initializing the FT232H according to the chosen mode.
 
     The main differences are for the choice of the clock frequency and
@@ -555,7 +554,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     bit_delay = ft232h_mpsse_bit_delay
     return max(1, int((value + bit_delay) / bit_delay))
 
-  def _set_latency_timer(self, latency: int) -> None:
+  def _set_latency_timer(self, latency: int) -> NoReturn:
     """Sets the latency timer.
 
     Sets the latency timer, i.e. the delay the chip waits before sending the
@@ -623,7 +622,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     return actual_freq
 
-  def _set_bitmode(self, bitmask: int, mode: BitMode) -> None:
+  def _set_bitmode(self, bitmask: int, mode: BitMode) -> NoReturn:
     """Sets the bitbang mode.
 
     Args:
@@ -636,13 +635,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if self._ctrl_transfer_out(ft232h_sio_req['set_bitmode'], value):
       raise IOError('Unable to set bitmode')
 
-  def _purge_buffers(self) -> None:
+  def _purge_buffers(self) -> NoReturn:
     """Clears the buffers on the chip and the internal read buffer."""
 
     self._purge_rx_buffer()
     self._purge_tx_buffer()
 
-  def _purge_rx_buffer(self) -> None:
+  def _purge_rx_buffer(self) -> NoReturn:
     """Clears the USB receive buffer on the chip (host-to-ftdi) and the
        internal read buffer."""
 
@@ -653,7 +652,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._readoffset = 0
     self._readbuffer = bytearray()
 
-  def _purge_tx_buffer(self) -> None:
+  def _purge_tx_buffer(self) -> NoReturn:
     """Clears the USB transmit buffer on the chip (ftdi-to-host)."""
 
     if self._ctrl_transfer_out(ft232h_sio_req['reset'],
@@ -682,7 +681,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     except USBError as ex:
       raise IOError('UsbError: %s' % str(ex))
 
-  def _set_serial_number(self, serial_number: str) -> None:
+  def _set_serial_number(self, serial_number: str) -> NoReturn:
     """(Over)Writes the serial number.
 
     Writes the desired serial number to the EEPROM. It is then accessible to
@@ -809,7 +808,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def _read_data_bytes(self,
                        size: int,
                        attempt: int = 2,
-                       request_gen: Callable = None) -> bytes:
+                       request_gen: Optional[
+                         Callable[[int], Union[bytearray,
+                                               bytes]]] = None) -> bytes:
     """Reads data from the FT232H.
 
     Reads data from the FTDI interface. The data buffer is rebuilt from
@@ -980,7 +981,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         self._clk_hi_data_lo * self._ck_su_sto + \
         self._idle * self._ck_idle
 
-  def _do_prolog(self, i2caddress: int) -> None:
+  def _do_prolog(self, i2caddress: int) -> Optional[None]:
     """Sends the MPSSE commands for starting an I2C transaction.
 
     Args:
@@ -998,7 +999,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     except IOError:
       raise
 
-  def _do_write(self, out: list) -> None:
+  def _do_write(self, out: list) -> Optional[None]:
     """Sends the MPSSE commands for writing bytes to an I2C slave.
 
     Args:
@@ -1082,7 +1083,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       chunks.append(buf)
     return bytearray(b''.join(chunks))
 
-  def _send_check_ack(self, cmd: bytearray) -> None:
+  def _send_check_ack(self, cmd: bytearray) -> NoReturn:
     """Actually sends the MPSSE commands generated by :meth:`_do_prolog` and
     :meth:`_do_write` methods, and checks whether the slave ACKs it.
 
@@ -1102,7 +1103,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if ack[0] & 0x01:
       raise IOError('NACK from slave')
 
-  def _write_i2c(self, address: int, out: list, stop: bool = True) -> None:
+  def _write_i2c(self,
+                 address: int,
+                 out: list,
+                 stop: bool = True) -> Optional[None]:
     """Writes bytes to an I2C slave.
 
     Args:
@@ -1194,7 +1198,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       finally:
         self._write_data(bytearray(self._stop))
 
-  def write_byte(self, i2c_addr: int, value: int) -> None:
+  def write_byte(self, i2c_addr: int, value: int) -> NoReturn:
     """Writes a single byte to an I2C slave, in register 0.
 
     Args:
@@ -1206,7 +1210,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                               register=0x00,
                               data=[value & 0xFF])
 
-  def write_byte_data(self, i2c_addr: int, register: int, value: int) -> None:
+  def write_byte_data(self,
+                      i2c_addr: int,
+                      register: int,
+                      value: int) -> NoReturn:
     """Writes a single byte to an I2C slave, in the specified register.
 
     Args:
@@ -1219,7 +1226,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                               register=register,
                               data=[value & 0xFF])
 
-  def write_word_data(self, i2c_addr: int, register: int, value: int) -> None:
+  def write_word_data(self,
+                      i2c_addr: int,
+                      register: int,
+                      value: int) -> NoReturn:
     """Writes 2 bytes to an I2C slave from a single int value, starting at the
     specified register.
 
@@ -1236,7 +1246,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                               register=register,
                               data=[(value >> 8) & 0xFF, value & 0xFF])
 
-  def write_block_data(self, i2c_addr: int, register: int, data: list) -> None:
+  def write_block_data(self,
+                       i2c_addr: int,
+                       register: int,
+                       data: list) -> NoReturn:
     """Actually calls :meth:`write_i2c_block_data`.
 
     Args:
@@ -1252,7 +1265,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def write_i2c_block_data(self,
                            i2c_addr: int,
                            register: int,
-                           data: list) -> None:
+                           data: list) -> NoReturn:
     """Writes bytes from a :obj:`list` to an I2C slave, starting at the
     specified register.
 
@@ -1357,7 +1370,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                                 out=[register],
                                                 readlen=length)]
 
-  def i2c_rdwr(self, *i2c_msgs) -> None:
+  def i2c_rdwr(self, *i2c_msgs) -> NoReturn:
     """Exchanges messages with a slave that doesn't feature registers.
 
     A start condition is sent at the beginning of each transaction, but only
@@ -1389,7 +1402,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._bits_per_word
 
   @bits_per_word.setter
-  def bits_per_word(self, value: int) -> None:
+  def bits_per_word(self, value: int) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, int):
@@ -1407,7 +1420,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._cshigh
 
   @cshigh.setter
-  def cshigh(self, value: bool) -> None:
+  def cshigh(self, value: bool) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
@@ -1424,7 +1437,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._loop
 
   @loop.setter
-  def loop(self, value: bool) -> None:
+  def loop(self, value: bool) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
@@ -1444,7 +1457,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._no_cs
 
   @no_cs.setter
-  def no_cs(self, value: bool) -> None:
+  def no_cs(self, value: bool) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
@@ -1460,7 +1473,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._lsbfirst
 
   @lsbfirst.setter
-  def lsbfirst(self, value: bool) -> None:
+  def lsbfirst(self, value: bool) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
@@ -1480,7 +1493,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._max_speed_hz
 
   @max_speed_hz.setter
-  def max_speed_hz(self, value: float) -> None:
+  def max_speed_hz(self, value: float) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if self.mode in [1, 3]:
@@ -1516,7 +1529,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._mode
 
   @mode.setter
-  def mode(self, value: int) -> None:
+  def mode(self, value: int) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if value not in range(4):
@@ -1537,7 +1550,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._threewire
 
   @threewire.setter
-  def threewire(self, value: bool) -> None:
+  def threewire(self, value: bool) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
@@ -1740,7 +1753,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def writebytes(self,
                  values: list,
                  start: bool = True,
-                 stop: bool = True) -> None:
+                 stop: bool = True) -> NoReturn:
     """Write bytes from a list to an SPI slave.
 
     Args:
@@ -1762,7 +1775,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def writebytes2(self,
                   values: list,
                   start: bool = True,
-                  stop: bool = True) -> None:
+                  stop: bool = True) -> NoReturn:
     """Actually calls the :meth:`writebytes` method with the same arguments."""
 
     self.writebytes(values=values,
@@ -1771,7 +1784,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
   def xfer(self,
            values: list,
-           speed: float = None,
+           speed: Optional[float] = None,
            delay: float = 0.0,
            bits: int = 8,
            start: bool = True,
@@ -1925,7 +1938,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     return bool(self._read_gpio_raw() & gpio_bit)
 
-  def set_gpio(self, gpio_str: str, value: int) -> None:
+  def set_gpio(self, gpio_str: str, value: int) -> NoReturn:
     """Sets the specified GPIO as an output and sets its output value.
 
     Args:
@@ -1961,7 +1974,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._gpio_low = low_data & self._gpio_all_pins
     self._gpio_high = high_data & self._gpio_all_pins
 
-  def close(self) -> None:
+  def close(self) -> NoReturn:
     """Closes the FTDI interface/port."""
 
     if self._usb_dev:
@@ -2036,81 +2049,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def __init__(self,
                mode: str,
                block_number: int,
-               queue: Queue,
-               namespace: Namespace,
-               command_event: Event,
-               answer_event: Event,
-               next_block: Event,
-               done_event: Event,
-               serial_nr: str = None,
+               current_file: FileIO,
+               command_file: FileIO,
+               answer_file: FileIO,
+               block_lock: RLock,
+               current_lock: RLock,
+               serial_nr: Optional[str] = None,
                i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:
-    """Checks the arguments validity, initializes the device and sets the
-    locks.
-
-    Args:
-      mode (:obj:`str`): The communication mode, can be :
-        ::
-
-          'SPI', 'I2C', 'GPIO_only', 'Write_serial_nr'
-
-        GPIOs can be driven in any mode, but faster speeds are achievable in
-        `GPIO_only` mode.
-
-      block_number (:obj:`int`): The blocks number that was assigned to this
-        instance of the class at the first contact with the USB server.
-
-      queue (:obj:`multiprocessing.Queue`): The queue in which the class
-        will put its block number so that the USB server knows it is requesting
-        control.
-
-      namespace (:obj:`multiprocessing.managers.Namespace`): The Namespace
-        object used by the USB server for receiving commands ans sending
-        answers.
-
-      command_event (:obj:`multiprocessing.Event`): An event object used by the
-        USB server to know when a new command was written by a block.
-
-      answer_event (:obj:`multiprocessing.Event`): An event object used by this
-        class to know when the USB server sent back an answer.
-
-      next_block (:obj:`multiprocessing.Event`): An event object, set by the
-        USB server to tell the blocks waiting for the control that now is maybe
-        their chance.
-
-      done_event (:obj:`multiprocessing.Event`): An event object set by the
-        block currently in control of the server to tell it that it is done
-        sending commands.
-
-      serial_nr (:obj:`str`, optional): The serial number of the FT232H to
-        drive. In `Write_serial_nr` mode, the serial number to be written.
-
-      i2c_speed (:obj:`str`, optional): In I2C mode, the I2C bus clock
-        frequency in Hz. Available values are :
-        ::
-
-          100E3, 400E3, 1E6
-
-        or any value between `10kHz` and `100kHz`. Lowering below the default
-        value may solve I2C clock stretching issues on some devices.
-
-      spi_turbo (:obj:`str`, optional): Increases the achievable bus speed, but
-        may not work with some devices.
-
-    Note:
-      - **CS pin**:
-        The CS pin for selecting SPI devices is always `D3`. This pin is
-        reserved and cannot be used as a GPIO. If you want to drive the CS line
-        manually, it is possible not to drive the CS pin by setting the SPI
-        parameter :attr:`no_cs` to :obj:`True` and to drive the CS line from a
-        GPIO instead.
-
-      - ``mode``:
-        It is not possible to simultaneously control slaves over SPI and I2C,
-        due to different hardware requirements for the two protocols. Trying to
-        do so will most likely raise an error or lead to inconsistent behavior.
-
-    """
 
     if mode not in ft232h_modes:
       raise ValueError("mode should be in {}".format(ft232h_modes))
@@ -2130,7 +2076,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._gpio_low = 0
     self._gpio_high = 0
     self._gpio_dir = 0
-    self._retry_count = 8
+    self._retry_count = 16
 
     self._usb_write_timeout = 5000
     self._usb_read_timeout = 5000
@@ -2139,12 +2085,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._i2c_speed = i2c_speed
 
     self._block_number = block_number
-    self._queue = queue
-    self._namespace = namespace
-    self._command_event = command_event
-    self._answer_event = answer_event
-    self._next_block = next_block
-    self._done_event = done_event
+    self._current_file = current_file
+    self._command_file = command_file
+    self._answer_file = answer_file
+    self._block_lock = block_lock
+    self._current_lock = current_lock
 
     self._initialize()
 
@@ -2152,107 +2097,236 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._set_serial_number(serial_nr)
       self.close()
 
-  def _send_server(self, command: Union[list, str]) -> Any:
-    """Method for sending commands and receiving answers from the server
-    managing the FT232H devices.
+  def _handle_command(self, command: list) -> bytes:
+    """Parses the command and sends it to the device.
 
     Args:
-      command (:obj:`str` or :obj:`list`): The command to send to the server.
+      command: The :obj:`list` containing the command type and the arguments if
+        any.
 
     Returns:
-      The answer from the server.
+      The index of the command.
     """
 
-    # The timestamp of the last interaction with the server is constantly being
-    # saved because the multiprocessing objects timeouts are buggy
-    t = time()
+    # Control transfer out
+    if command[0] == 'ctrl_transfer_out':
+      self._command_file.write(b'00' + b',' +
+                               str(command[1]).encode() + b',' +
+                               str(command[2]).encode() + b',' +
+                               str(command[3]).encode() + b',' +
+                               str(command[4]).encode() + b',' +
+                               bytes(command[5]) + b',' +
+                               str(command[6]).encode())
+      cmd = b'00'
+    # Control transfer in
+    elif command[0] == 'ctrl_transfer_in':
+      self._command_file.write(b'01' + b',' +
+                               str(command[1]).encode() + b',' +
+                               str(command[2]).encode() + b',' +
+                               str(command[3]).encode() + b',' +
+                               str(command[4]).encode() + b',' +
+                               str(command[5]).encode() + b',' +
+                               str(command[6]).encode())
+      cmd = b'01'
+    # Write operation
+    elif command[0] == 'write':
+      self._command_file.write(b'02' + b',' +
+                               str(command[1]).encode() + b',' +
+                               bytes(command[2]) + b',' +
+                               str(command[3]).encode())
+      cmd = b'02'
+    # Read operation
+    elif command[0] == 'read':
+      self._command_file.write(b'03' + b',' +
+                               str(command[1]).encode() + b',' +
+                               str(command[2]).encode() + b',' +
+                               str(command[3]).encode())
+      cmd = b'03'
+    # Checks whether the kernel driver is active
+    # It doesn't actually interact with the device
+    elif command[0] == 'is_kernel_driver_active':
+      self._command_file.write(b'04' + b',' +
+                               str(command[1]).encode())
+      cmd = b'04'
+    # Detaches the kernel driver
+    # It doesn't actually interact with the device
+    elif command[0] == 'detach_kernel_driver':
+      self._command_file.write(b'05' + b',' +
+                               str(command[1]).encode())
+      cmd = b'05'
+    # Sets the device configuration
+    elif command[0] == 'set_configuration':
+      self._command_file.write(b'06')
+      cmd = b'06'
+    # Custom command getting information from the current configuration
+    elif command[0] == 'get_active_configuration':
+      self._command_file.write(b'07')
+      cmd = b'07'
+    # Should the block close the device when leaving ?
+    # It doesn't actually interact with the device
+    elif command[0] == 'close?':
+      self._command_file.write(b'08')
+      cmd = b'08'
+    # Checks whether the internal resources have been released or not
+    # It doesn't actually interact with the device
+    elif command[0] == '_ctx.handle':
+      self._command_file.write(b'09')
+      cmd = b'09'
+    # Releases the USB interface
+    # It doesn't actually interact with the device
+    elif command[0] == 'release_interface':
+      self._command_file.write(b'10' + b',' +
+                               str(command[1]).encode())
+      cmd = b'10'
+    # Detaches the kernel driver
+    # It doesn't actually interact with the device
+    elif command[0] == 'attach_kernel_driver':
+      self._command_file.write(b'11' + b',' +
+                               str(command[1]).encode())
+      cmd = b'11'
+    # Releases all the resources used by :mod:`pyusb` for a given device
+    # It doesn't actually interact with the device
+    elif command[0] == 'dispose_resources':
+      self._command_file.write(b'12')
+      cmd = b'12'
+    # Registers a block as gone
+    # It doesn't actually interact with the device
+    elif command[0] == 'farewell':
+      self._command_file.write(b'13')
+      cmd = b'13'
+    else:
+      raise ValueError("Wrong command type !")
+
+    return cmd
+
+  def _send_server(self, command: list) -> Union[int, bytes, None, Tuple[int]]:
+    """Sends a command to the server and gets the corresponding answer.
+
+    Args:
+      command: A :obj:`list` containing the command type as a first element,
+        and then the arguments if any.
+    """
+
+    raise_kbi = False  # Flag for postponing the raise of the exception
+    retries = 3  # Number of retries for acquiring the lock
     while True:
       try:
-        # Communication with the server is allowed only if the block is the one
-        # currently in control or if a next_block event is set
-        if self._namespace.current_block == self._block_number or \
-                self._next_block.wait(timeout=5):
-          if self._done_event.is_set():
-            # The previous block is done controlling the server but the server
-            # hasn't chosen the next block yet
-            continue
-          # Even if the next_block event is set, only the chosen block
-          # is allowed to communicate
-          if self._namespace.current_block == self._block_number:
-            # The other blocks will have to wait
-            self._next_block.clear()
-            # Sending the command
-            setattr(self._namespace, 'command' + str(self._block_number),
-                    command)
-            t = time()
-            # Telling that a command was sent
-            self._command_event.set()
-          else:
-            continue
-        else:
-          # Sometimes the wait method doesn't wait for the given timeout...
-          if self._next_block.wait(timeout=5):
-            continue
-          # Sometimes the timeout check fails twice
-          elif time() - t < 2:
-            continue
-          raise TimeoutError("The server took too long to choose block",
-                             (self._block_number,
-                              self._namespace.current_block))
+        # Acquires the lock assigned to this block only
+        if not self._block_lock.acquire(timeout=1):
+          retries -= 1
+          if not retries:
+            raise TimeoutError("Couldn't acquire the lock in a reasonable "
+                               "delay !")
+          continue
+        # Acquires the lock common to all blocks, to start communicating with
+        # the server
+        if self._current_lock.acquire(timeout=1):
+          while True:
+            release = True  # Should the common lock be released ?
+            try:
 
-        # Retrieving the answer only if the answer_event is set
-        if self._answer_event.wait(timeout=5):
-          ret = getattr(self._namespace, 'answer' + str(self._block_number))
-          t = time()
-          # After a CTRL+C or SIGINT event, some of the namespace attributes
-          # may be buggy so switching to an "emergency" attribute for receiving
-          # the answers
-          if ret is None:
-            ret = getattr(self._namespace,
-                          'answer' + str(self._block_number) + "'")
-            if ret is None:
+              # Writing the block number in the file
+              self._current_file.seek(0)
+              self._current_file.truncate(0)
+              self._current_file.write(str(self._block_number).encode())
+
+              self._command_file.seek(0)
+              self._command_file.truncate(0)
+
+              # Writes the command and its arguments to the command file
+              cmd = self._handle_command(command)
+
+              # Releases the lock to indicate the server that the command is
+              # ready
+              self._block_lock.release()
+
+              # Waits for the answer to be written in the answer file
+              # It prevents the block from re-acquiring the lock it just
+              # released
+              try:
+                t = time()
+                while not self._answer_file.tell():
+                  sleep(0.00001)
+                  if time() - t > 1:
+                    raise TimeoutError
+              except (KeyboardInterrupt, TimeoutError):
+                raise_kbi = True
+                self._block_lock.acquire(timeout=1)
+                raise
+
+              # When the lock is re-acquired, the server has written the answer
+              # in the answer file
+              if self._block_lock.acquire(timeout=1):
+                # Reading the answer
+                self._answer_file.seek(0)
+                answer: List[bytes] = self._answer_file.read().split(b',')
+                self._answer_file.seek(0)
+                self._answer_file.truncate(0)
+
+                # Making sure we're reading the answer corresponding to our
+                # command
+                if cmd != answer[0]:
+                  raise KeyboardInterrupt
+
+                # The different answers have to be handled in various ways
+                if command[0] in ['ctrl_transfer_out',
+                                  'write',
+                                  'is_kernel_driver_active',
+                                  'close?',
+                                  '_ctx.handle']:
+                  return int(answer[1])
+                if command[0] in ['ctrl_transfer_in', 'read']:
+                  return answer[1]
+                elif command[0] == 'get_active_configuration':
+                  return tuple(int(rep) for rep in answer[1:])
+
+                return
+
+              else:
+                raise TimeoutError("Couldn't acquire the lock in a reasonable "
+                                   "delay !")
+
+            except KeyboardInterrupt:
+              # When interrupted, resend the same command to the server without
+              # releasing the common lock
+              raise_kbi = True
+              release = False
               continue
-          self._answer_event.clear()
-          # The answer may be an error that should be raised by a block rather
-          # than by the server
-          if isinstance(ret, Exception):
-            raise ret
-          # 'ok' is a special answer only received when the block wants to
-          # release control
-          elif ret == 'ok':
-            self._done_event.set()
-        else:
-          # Again the timeouts are sometimes buggy
-          if self._answer_event.wait(timeout=5):
-            continue
-          elif time() - t < 2:
-            continue
-          raise TimeoutError("The server took too long to reply",
-                             self._block_number, self._namespace.current_block)
-        return ret
-      except KeyboardInterrupt:
-        # In case of a CTRL+C or SIGINT event, the block in control simply
-        # resets every event and sends again the command
-        if self._namespace.current_block == self._block_number:
-          self._command_event.clear()
-          self._answer_event.clear()
-        continue
-      # If the server is down, exiting
-      except (BrokenPipeError, ConnectionResetError):
-        break
+            finally:
+              # Releasing the locks if needed
+              if release:
+                try:
+                  self._current_lock.release()
+                except AssertionError:
+                  pass
+                try:
+                  self._block_lock.release()
+                except AssertionError:
+                  pass
 
-  def _initialize(self) -> None:
+        else:
+          raise TimeoutError("Couldn't acquire the lock in a reasonable "
+                             "delay !")
+
+      except KeyboardInterrupt:
+        # Still try to send the command despite the KeyboardInterrupt
+        # This way the block can stop properly
+        continue
+      finally:
+        # Raise the KeyboardInterrupt that was postponed if needed
+        if raise_kbi:
+          raise KeyboardInterrupt
+
+  def _initialize(self) -> NoReturn:
     """Initializing the FT232H according to the chosen mode.
 
     The main differences are for the choice of the clock frequency and
     parameters.
     """
 
-    self._queue.put_nowait(self._block_number)
-
     # FT232H properties
     fifo_sizes = (1024, 1024)
-    latency = 16
+    latency = 2
 
     # I2C properties
     if self._ft232h_mode == 'I2C':
@@ -2398,8 +2472,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                 ft232h_cmds['enable_clk_adaptative'] or
                                 ft232h_cmds['disable_clk_adaptative']]))
 
-    self._send_server('stop')
-
   @staticmethod
   def _compute_delay_cycles(value: float) -> int:
     """Approximates the number of clock cycles over a given delay.
@@ -2414,7 +2486,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     bit_delay = ft232h_mpsse_bit_delay
     return max(1, int((value + bit_delay) / bit_delay))
 
-  def _set_latency_timer(self, latency: int) -> None:
+  def _set_latency_timer(self, latency: int) -> NoReturn:
     """Sets the latency timer.
 
     Sets the latency timer, i.e. the delay the chip waits before sending the
@@ -2482,7 +2554,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     return actual_freq
 
-  def _set_bitmode(self, bitmask: int, mode: BitMode) -> None:
+  def _set_bitmode(self, bitmask: int, mode: BitMode) -> NoReturn:
     """Sets the bitbang mode.
 
     Args:
@@ -2495,13 +2567,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if self._ctrl_transfer_out(ft232h_sio_req['set_bitmode'], value):
       raise IOError('Unable to set bitmode')
 
-  def _purge_buffers(self) -> None:
+  def _purge_buffers(self) -> NoReturn:
     """Clears the buffers on the chip and the internal read buffer."""
 
     self._purge_rx_buffer()
     self._purge_tx_buffer()
 
-  def _purge_rx_buffer(self) -> None:
+  def _purge_rx_buffer(self) -> NoReturn:
     """Clears the USB receive buffer on the chip (host-to-ftdi) and the
        internal read buffer."""
 
@@ -2512,7 +2584,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._readoffset = 0
     self._readbuffer = bytearray()
 
-  def _purge_tx_buffer(self) -> None:
+  def _purge_tx_buffer(self) -> NoReturn:
     """Clears the USB transmit buffer on the chip (ftdi-to-host)."""
 
     if self._ctrl_transfer_out(ft232h_sio_req['reset'],
@@ -2535,13 +2607,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """
 
     try:
-      return self._send_server(['ctrl_transfer', Ftdi_req_out, reqtype, value,
-                                self._index, bytearray(data),
+      return self._send_server(['ctrl_transfer_out', Ftdi_req_out, reqtype,
+                                value, self._index, bytearray(data),
                                 self._usb_write_timeout])
     except USBError as ex:
       raise IOError('UsbError: %s' % str(ex))
 
-  def _set_serial_number(self, serial_number: str) -> None:
+  def _set_serial_number(self, serial_number: str) -> NoReturn:
     """(Over)Writes the serial number.
 
     Writes the desired serial number to the EEPROM. It is then accessible to
@@ -2551,8 +2623,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     Args:
       serial_number (:obj:`str`): Serial number to be written in the EEPROM
     """
-
-    self._queue.put_nowait(self._block_number)
 
     if not isinstance(serial_number, str):
       serial_number = str(serial_number)
@@ -2565,7 +2635,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     data = bytearray()
     while word_count:
       try:
-        buf = self._send_server(['ctrl_transfer', Ftdi_req_in,
+        buf = self._send_server(['ctrl_transfer_in', Ftdi_req_in,
                                  ft232h_sio_req['read_eeprom'], 0, word_addr,
                                  2, self._usb_read_timeout])
       except USBError as exc:
@@ -2624,14 +2694,12 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # Updating the eeprom
     addr = 0
     for word in unpack('<%dH' % (len(new_eeprom) // 2), new_eeprom):
-      out = self._send_server(['ctrl_transfer', Ftdi_req_out,
+      out = self._send_server(['ctrl_transfer_out', Ftdi_req_out,
                                ft232h_sio_req['write_eeprom'], word, addr >> 1,
                                b'', self._usb_write_timeout])
       if out:
         raise IOError('EEPROM Write Error @ %d' % addr)
       addr += 2
-
-    self._send_server('stop')
 
   def _write_data(self, data: Union[bytearray, bytes]) -> int:
     """Writes data to the FT232H.
@@ -2672,7 +2740,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def _read_data_bytes(self,
                        size: int,
                        attempt: int = 2,
-                       request_gen: Callable = None) -> bytes:
+                       request_gen: Optional[
+                         Callable[[int], Union[bytearray,
+                                               bytes]]] = None) -> bytes:
     """Reads data from the FT232H.
 
     Reads data from the FTDI interface. The data buffer is rebuilt from
@@ -2843,7 +2913,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         self._clk_hi_data_lo * self._ck_su_sto + \
         self._idle * self._ck_idle
 
-  def _do_prolog(self, i2caddress: int) -> None:
+  def _do_prolog(self, i2caddress: int) -> Optional[None]:
     """Sends the MPSSE commands for starting an I2C transaction.
 
     Args:
@@ -2861,7 +2931,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     except IOError:
       raise
 
-  def _do_write(self, out: list) -> None:
+  def _do_write(self, out: list) -> Optional[None]:
     """Sends the MPSSE commands for writing bytes to an I2C slave.
 
     Args:
@@ -2941,11 +3011,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       cmd.extend((ft232h_cmds['send_immediate'],))
       size = rem
       self._write_data(cmd)
-      buf = self._read_data_bytes(size, 8)
+      buf = self._read_data_bytes(size, 2)
       chunks.append(buf)
     return bytearray(b''.join(chunks))
 
-  def _send_check_ack(self, cmd: bytearray) -> None:
+  def _send_check_ack(self, cmd: bytearray) -> NoReturn:
     """Actually sends the MPSSE commands generated by :meth:`_do_prolog` and
     :meth:`_do_write` methods, and checks whether the slave ACKs it.
 
@@ -2965,7 +3035,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if ack[0] & 0x01:
       raise IOError('NACK from slave')
 
-  def _write_i2c(self, address: int, out: list, stop: bool = True) -> None:
+  def _write_i2c(self,
+                 address: int,
+                 out: list,
+                 stop: bool = True) -> Optional[None]:
     """Writes bytes to an I2C slave.
 
     Args:
@@ -3009,8 +3082,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       try:
         self._do_prolog(i2caddress | 0x01)
         data = self._do_read(length)
+        if len(data) < length:
+          raise IOError
         return data
-      except IOError:
+      except (IOError, OSError):
         retries -= 1
         if not retries:
           raise
@@ -3049,15 +3124,17 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         self._do_write(out)
         self._do_prolog(i2caddress | 0x01)
         data = self._do_read(readlen)
+        if len(data) < readlen:
+          raise IOError
         return data
-      except IOError:
+      except (IOError, OSError):
         retries -= 1
         if not retries:
           raise
       finally:
         self._write_data(bytearray(self._stop))
 
-  def write_byte(self, i2c_addr: int, value: int) -> None:
+  def write_byte(self, i2c_addr: int, value: int) -> NoReturn:
     """Writes a single byte to an I2C slave, in register 0.
 
     Args:
@@ -3069,7 +3146,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                               register=0x00,
                               data=[value & 0xFF])
 
-  def write_byte_data(self, i2c_addr: int, register: int, value: int) -> None:
+  def write_byte_data(self,
+                      i2c_addr: int,
+                      register: int,
+                      value: int) -> NoReturn:
     """Writes a single byte to an I2C slave, in the specified register.
 
     Args:
@@ -3082,7 +3162,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                               register=register,
                               data=[value & 0xFF])
 
-  def write_word_data(self, i2c_addr: int, register: int, value: int) -> None:
+  def write_word_data(self,
+                      i2c_addr: int,
+                      register: int,
+                      value: int) -> NoReturn:
     """Writes 2 bytes to an I2C slave from a single int value, starting at the
     specified register.
 
@@ -3099,7 +3182,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                               register=register,
                               data=[(value >> 8) & 0xFF, value & 0xFF])
 
-  def write_block_data(self, i2c_addr: int, register: int, data: list) -> None:
+  def write_block_data(self,
+                       i2c_addr: int,
+                       register: int,
+                       data: list) -> NoReturn:
     """Actually calls :meth:`write_i2c_block_data`.
 
     Args:
@@ -3115,7 +3201,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def write_i2c_block_data(self,
                            i2c_addr: int,
                            register: int,
-                           data: list) -> None:
+                           data: list) -> NoReturn:
     """Writes bytes from a :obj:`list` to an I2C slave, starting at the
     specified register.
 
@@ -3125,8 +3211,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       data (:obj:`list`): List of bytes to write
     """
 
-    self._queue.put_nowait(self._block_number)
-
     if self._ft232h_mode != 'I2C':
       raise ValueError("Method only available in I2C mode")
     if not 0 <= i2c_addr <= 127:
@@ -3134,8 +3218,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     self._write_i2c(address=i2c_addr,
                     out=[register] + data)
-
-    self._send_server('stop')
 
   def read_byte(self, i2c_addr: int) -> int:
     """Reads a single byte from an I2C slave, from the register `0`.
@@ -3211,8 +3293,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       Values of read registers as a :obj:`list`
     """
 
-    self._queue.put_nowait(self._block_number)
-
     if self._ft232h_mode != 'I2C':
       raise ValueError("Method only available in I2C mode")
     if not 0 <= i2c_addr <= 127:
@@ -3221,15 +3301,20 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("length should be a positive integer")
 
     if length == 0:
-      self._send_server('stop')
       return []
-    ret = [byte for byte in self._exchange_i2c(address=i2c_addr,
-                                               out=[register],
-                                               readlen=length)]
-    self._send_server('stop')
-    return ret
+    retries = 2
+    while True:
+      try:
+        ret = [byte for byte in self._exchange_i2c(address=i2c_addr,
+                                                   out=[register],
+                                                   readlen=length)]
+        return ret
+      except (IOError, OSError):
+        retries -= 1
+        if not retries:
+          raise
 
-  def i2c_rdwr(self, *i2c_msgs) -> None:
+  def i2c_rdwr(self, *i2c_msgs) -> NoReturn:
     """Exchanges messages with a slave that doesn't feature registers.
 
     A start condition is sent at the beginning of each transaction, but only
@@ -3240,8 +3325,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         write messages.
     """
 
-    self._queue.put_nowait(self._block_number)
-
     nr = len(i2c_msgs)
     for i, msg in enumerate(i2c_msgs):
       if msg.type == 'w':
@@ -3250,8 +3333,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         msg.buf = [byte for byte in self._read_i2c(address=msg.addr,
                                                    length=msg.len,
                                                    stop=(i == nr))]
-
-    self._send_server('stop')
 
   @property
   def bits_per_word(self) -> int:
@@ -3265,7 +3346,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._bits_per_word
 
   @bits_per_word.setter
-  def bits_per_word(self, value: int) -> None:
+  def bits_per_word(self, value: int) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, int):
@@ -3283,7 +3364,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._cshigh
 
   @cshigh.setter
-  def cshigh(self, value: bool) -> None:
+  def cshigh(self, value: bool) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
@@ -3300,8 +3381,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._loop
 
   @loop.setter
-  def loop(self, value: bool) -> None:
-    self._queue.put_nowait(self._block_number)
+  def loop(self, value: bool) -> NoReturn:
 
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
@@ -3313,8 +3393,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
     self._loop = value
 
-    self._send_server('stop')
-
   @property
   def no_cs(self) -> bool:
     """If :obj:`True`, the CS line is not driven."""
@@ -3324,7 +3402,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._no_cs
 
   @no_cs.setter
-  def no_cs(self, value: bool) -> None:
+  def no_cs(self, value: bool) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
@@ -3340,7 +3418,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._lsbfirst
 
   @lsbfirst.setter
-  def lsbfirst(self, value: bool) -> None:
+  def lsbfirst(self, value: bool) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
@@ -3360,8 +3438,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._max_speed_hz
 
   @max_speed_hz.setter
-  def max_speed_hz(self, value: float) -> None:
-    self._queue.put_nowait(self._block_number)
+  def max_speed_hz(self, value: float) -> NoReturn:
 
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
@@ -3386,8 +3463,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                   ft232h_cmds['disable_clk_3phase']]))
     self._max_speed_hz = value
 
-    self._send_server('stop')
-
   @property
   def mode(self) -> int:
     """The SPI mode used for communicating with the slave.
@@ -3400,7 +3475,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._mode
 
   @mode.setter
-  def mode(self, value: int) -> None:
+  def mode(self, value: int) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if value not in range(4):
@@ -3421,7 +3496,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     return self._threewire
 
   @threewire.setter
-  def threewire(self, value: bool) -> None:
+  def threewire(self, value: bool) -> NoReturn:
     if self._ft232h_mode != 'SPI':
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
@@ -3613,8 +3688,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       List of read bytes
     """
 
-    self._queue.put_nowait(self._block_number)
-
     if self._ft232h_mode != 'SPI':
       raise ValueError("Method only available in SPI mode")
     ret = [byte for byte in self._exchange_spi(readlen=len,
@@ -3622,13 +3695,12 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                                start=start,
                                                stop=stop,
                                                duplex=False)]
-    self._send_server('stop')
     return ret
 
   def writebytes(self,
                  values: list,
                  start: bool = True,
-                 stop: bool = True) -> None:
+                 stop: bool = True) -> NoReturn:
     """Write bytes from a list to an SPI slave.
 
     Args:
@@ -3639,8 +3711,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         reading data, and remains in its previous state.
     """
 
-    self._queue.put_nowait(self._block_number)
-
     if self._ft232h_mode != 'SPI':
       raise ValueError("Method only available in SPI mode")
     self._exchange_spi(readlen=0,
@@ -3648,12 +3718,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                        start=start,
                        stop=stop,
                        duplex=False)
-    self._send_server('stop')
 
   def writebytes2(self,
                   values: list,
                   start: bool = True,
-                  stop: bool = True) -> None:
+                  stop: bool = True) -> NoReturn:
     """Actually calls the :meth:`writebytes` method with the same arguments."""
 
     self.writebytes(values=values,
@@ -3662,7 +3731,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
   def xfer(self,
            values: list,
-           speed: float = None,
+           speed: Optional[float] = None,
            delay: float = 0.0,
            bits: int = 8,
            start: bool = True,
@@ -3687,8 +3756,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       List of read bytes
     """
 
-    self._queue.put_nowait(self._block_number)
-
     if self._ft232h_mode != 'SPI':
       raise ValueError("Method only available in SPI mode")
     if bits != 8:
@@ -3704,7 +3771,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                                start=start,
                                                stop=stop,
                                                duplex=True)]
-    self._send_server('stop')
     return ret
 
   def xfer2(self,
@@ -3807,8 +3873,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       3.3V-logic value corresponding to the input voltage
     """
 
-    self._queue.put_nowait(self._block_number)
-
     if gpio_str not in ft232h_pin_nr:
       raise ValueError("gpio_id should be in {}".format(
         list(ft232h_pin_nr.values())))
@@ -3821,18 +3885,15 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._gpio_dir &= 0xFFFF - gpio_bit
 
     ret = bool(self._read_gpio_raw() & gpio_bit)
-    self._send_server('stop')
     return ret
 
-  def set_gpio(self, gpio_str: str, value: int) -> None:
+  def set_gpio(self, gpio_str: str, value: int) -> NoReturn:
     """Sets the specified GPIO as an output and sets its output value.
 
     Args:
       gpio_str (:obj:`str`): Name of the GPIO to be set
       value (:obj:`int`): 1 for setting the GPIO high, 0 for setting it low
     """
-
-    self._queue.put_nowait(self._block_number)
 
     if value not in [0, 1]:
       raise ValueError("value should be either 0 or 1")
@@ -3862,26 +3923,21 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._gpio_low = low_data & self._gpio_all_pins
     self._gpio_high = high_data & self._gpio_all_pins
 
-    self._send_server('stop')
-
-  def close(self) -> None:
+  def close(self) -> NoReturn:
     """Closes the FTDI interface/port."""
 
-    self._queue.put_nowait(self._block_number)
+    if self._send_server(['close?']):
 
-    if self._send_server('close?'):
-
-      if self._send_server('_ctx.handle'):
+      if self._send_server(['_ctx.handle']):
         try:
           self._set_bitmode(0, ft232h_server.BitMode.RESET)
-          self._send_server([None, 'release_interface', 'dev',
-                             self._index - 1])
+          self._send_server(['release_interface', self._index - 1])
         except (IOError, ValueError, USBError):
           pass
         try:
           self._send_server(['attach_kernel_driver', self._index - 1])
         except (NotImplementedError, USBError):
           pass
-      self._send_server([None, 'dispose_resources', 'dev'])
+      self._send_server(['dispose_resources'])
 
-    self._send_server('farewell')
+    self._send_server(['farewell'])

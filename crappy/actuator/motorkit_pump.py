@@ -209,19 +209,18 @@ class Motorkit_pump(Usb_server, Actuator):
                         serial_nr=ft232h_ser_num if ft232h_ser_num else '',
                         backend=backend)
     Actuator.__init__(self)
-    queue, block_number, namespace, command_event, \
-        answer_event, next_event, done_event = super().start_server()
+    current_file, block_number, command_file, answer_file, block_lock, \
+        current_lock = super().start_server()
 
     if self._backend == 'ft232h':
       self._bus = ft232h(mode='I2C',
-                         queue=queue,
-                         namespace=namespace,
-                         command_event=command_event,
-                         answer_event=answer_event,
                          block_number=block_number,
-                         next_block=next_event,
-                         done_event=done_event,
-                         serial_nr=ft232h_ser_num)
+                         current_file=current_file,
+                         command_file=command_file,
+                         answer_file=answer_file,
+                         block_lock=block_lock,
+                         current_lock=current_lock,
+                         serial_nr='')
     else:
       self._bus = None
 

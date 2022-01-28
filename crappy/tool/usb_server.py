@@ -1,44 +1,271 @@
 # coding: utf-8
 
-from time import time, sleep
-from multiprocessing import Process, Queue, Event
-from multiprocessing.managers import SyncManager, Namespace
-from signal import signal, SIGINT, SIG_IGN
-from queue import Empty
+from multiprocessing import Process, Pipe, RLock
+from multiprocessing.connection import Connection
+import multiprocessing.synchronize
+from _io import FileIO
+from tempfile import TemporaryFile
+from typing import List, Dict
 from .._global import OptionalModule
 try:
-  from usb.core import find
+  from usb.core import find, Device, USBTimeoutError
   from usb import util
 except (FileNotFoundError, ModuleNotFoundError):
   find = OptionalModule('pyusb')
+  Device = OptionalModule('pyusb')
+  USBTimeoutError = OptionalModule('pyusb')
   util = OptionalModule('pyusb')
 
 
-def _int_handler() -> None:
-  """Method for handling the :obj:`signal.SIGINT` signal in the
-  :obj:`multiprocessing.managers.SyncManager` process."""
+class Server_process(Process):
+  """Process actually communicating with the FT232H device.
 
-  signal(SIGINT, SIG_IGN)
-
-
-def _return_config_info(device) -> tuple:
-  """Returns some configuration information from a USB object.
-
-  It is meant to send back only pickable data to the :ref:`FT232H` object.
-
-  Args:
-    device: A :obj:`usb.core.Device`
-
-  Returns:
-    The index, in endpoint, out endpoint and maximum packet size of a USB
-    device
+  It receives the commands, sends them to the device, and returns the answer.
+  This architecture is necessary as :mod:`pyusb` doesn't support
+  multiprocessing.
   """
 
-  interface = device.get_active_configuration()[(0, 0)]
-  index = interface.bInterfaceNumber + 1
-  in_ep, out_ep = sorted([ep.bEndpointAddress for ep in interface])[:2]
-  max_packet_size = interface[0].wMaxPacketSize
-  return index, in_ep, out_ep, max_packet_size
+  def __init__(self,
+               new_block_recv: Connection,
+               current_file: FileIO,
+               command_file: FileIO,
+               answer_file: FileIO,
+               lock_pool: List[multiprocessing.synchronize.RLock],
+               current_lock: multiprocessing.synchronize.RLock,
+               dev_dict: Dict[str, Device]):
+    """Simply passes the args as instance attributes.
+
+    Args:
+      new_block_recv: A pipe connection through which new blocks send
+        information.
+      current_file: A temporary file in which the index of the block currently
+        communicating with the server is written.
+      command_file: A temporary file containing the command the server has to
+        send to the ft232h.
+      answer_file: A temporary file containing the answer from the device after
+        a command was sent.
+      lock_pool: A :obj:`list` of RLocks, with each one affected to a different
+        block. They indicate to the server that a command is ready, or to the
+        block that an answer is ready.
+      current_lock: A unique RLock that determines which block has control over
+        the server. The different blocks all try to acquire this lock.
+      dev_dict: A :obj:`dict` whose keys are the serial numbers of the
+        connected ft232h and values are the associated :mod:`pyusb` Device
+        objects.
+    """
+
+    super().__init__()
+
+    self.new_block_recv = new_block_recv
+    self.current_file = current_file
+    self.command_file = command_file
+    self.answer_file = answer_file
+    self.lock_pool = lock_pool
+    self.current_lock = current_lock
+    self.dev_dict = dev_dict
+
+  def _send_command(self,
+                    command: bytes,
+                    device: Device,
+                    serial_nr: str,
+                    current_block: int) -> bytes:
+    """Sends commands to the USB devices and returns the answer.
+
+    Args:
+      command: The command to send to the device. The bytes are arranged in a
+        specific way for each type of command.
+      device: The :mod:`pyusb` Device to which the commands are sent.
+      serial_nr: The serial number of the :mod:`pyusb` device.
+      current_block: The index of the block currently controlling the server.
+
+    Returns:
+      The number of the command, followed by the answer from the USB device if
+      any.
+    """
+
+    command = command.split(b',')
+
+    # Control transfer out
+    if command[0] == b'00':
+      return b'00,' + str(device.ctrl_transfer(int(command[1]),
+                                               int(command[2]),
+                                               int(command[3]),
+                                               int(command[4]),
+                                               command[5],
+                                               int(command[6]))).encode()
+    # Control transfer in
+    elif command[0] == b'01':
+      return b'01,' + bytes(device.ctrl_transfer(*[int(arg) for arg in
+                                                   command[1:]]))
+    # Write operation
+    elif command[0] == b'02':
+      return b'02,' + str(device.write(int(command[1]), command[2],
+                                       int(command[3]))).encode()
+    # Read operation
+    elif command[0] == b'03':
+        return b'03,' + bytes(device.read(*[int(arg) for arg in command[1:]]))
+    # Checks whether the kernel driver is active
+    # It doesn't actually interact with the device
+    elif command[0] == b'04':
+      return b'04,' + (b'1' if device.is_kernel_driver_active(int(command[1]))
+                       else b'0')
+    # Detaches the kernel driver
+    # It doesn't actually interact with the device
+    elif command[0] == b'05':
+      device.detach_kernel_driver(int(command[1]))
+      return b'05,'
+    # Sets the device configuration
+    elif command[0] == b'06':
+      device.set_configuration()
+      return b'06,'
+    # Custom command getting information from the current configuration
+    elif command[0] == b'07':
+      info = self._return_config_info(device)
+      return b'07,' + str(info[0]).encode() + b',' + str(info[1]).encode() + \
+             b',' + str(info[2]).encode() + b',' + str(info[3]).encode()
+    # When a block is leaving, if it's the last one associated with a given
+    # ft232h then it should release the internal resources
+    # It doesn't actually interact with the device
+    elif command[0] == b'08':
+      self.dev_count[serial_nr] -= 1
+      return b'08,' + (b'1' if not self.dev_count[serial_nr] else b'0')
+    # Checks whether the internal resources have been released or not
+    # It doesn't actually interact with the device
+    elif command[0] == b'09':
+      return b'09,' + (b'1' if device._ctx.handle else b'0')
+    # Releases the USB interface
+    # It doesn't actually interact with the device
+    elif command[0] == b'10':
+      util.release_interface(device, int(command[1]))
+      return b'10,'
+    # Detaches the kernel driver
+    # It doesn't actually interact with the device
+    elif command[0] == b'11':
+      device.attach_kernel_driver(int(command[1]))
+      return b'11,'
+    # Releases all the resources used by :mod:`pyusb` for a given device
+    # It doesn't actually interact with the device
+    elif command[0] == b'12':
+      util.dispose_resources(device)
+      return b'12,'
+    # Registers a block as gone
+    # It doesn't actually interact with the device
+    elif command[0] == b'13':
+      self.left[current_block] = True
+      return b'13,'
+
+  def run(self) -> None:
+    """Main loop of the server.
+
+    It runs an infinite loop for receiving the commands and sending back the
+    answers to the blocks.
+    """
+
+    block_count = 0  # The count of blocks registered with the server
+    num_to_dev = {}  # Associates each block index to a ft232h device
+    num_to_ser = {}  # Associates each block index to a serial number
+    self.left = {}  # For each block index, tells whether the block has left
+    # Counts the number of blocks controlling a given device
+    self.dev_count = {serial_nr: 0 for serial_nr in self.dev_dict}
+    while True:
+      try:
+        # If all the blocks have left, stop the server
+        if self.left and all(val for val in self.left.values()):
+          break
+
+        # A new block wants to register
+        if self.new_block_recv.poll():
+          try:
+            # It sends a Connection object
+            temp_pipe = self.new_block_recv.recv()
+            if temp_pipe.poll(timeout=1):
+              # The serial number of the ft232h the block wants to control is
+              # sent
+              serial_nr = temp_pipe.recv()
+              # The different dicts are updated accordingly
+              num_to_dev[block_count] = self.dev_dict[serial_nr]
+              num_to_ser[block_count] = serial_nr
+              self.dev_count[serial_nr] += 1
+              self.left[block_count] = False
+            else:
+              raise TimeoutError("A block took too long to send the serial nr")
+            # Sending back the index the block was assigned
+            temp_pipe.send(block_count)
+            block_count += 1
+          except KeyboardInterrupt:
+            # The program was interrupted during __init__, no choice but to
+            # stop abruptly
+            break
+
+        # A block has acquired the lock and wrote its index in the file
+        if self.current_file.tell() > 0:
+          self.current_file.seek(0)
+          # Reads the index of the block currently in control
+          current_block = int(self.current_file.read())
+          self.current_file.seek(0)
+          self.current_file.truncate(0)
+
+          # The block has finished writing the command
+          if self.lock_pool[current_block].acquire(timeout=1):
+            try:
+              # Reads the command
+              self.command_file.seek(0)
+              command = self.command_file.read()
+              self.command_file.seek(0)
+              self.command_file.truncate(0)
+
+              try:
+                # Sends the command to the device and returns the answer
+                answer = self._send_command(command,
+                                            num_to_dev[current_block],
+                                            num_to_ser[current_block],
+                                            current_block)
+              except (USBTimeoutError, TimeoutError):
+                # Double-checking the timeout error
+                answer = self._send_command(command,
+                                            num_to_dev[current_block],
+                                            num_to_ser[current_block],
+                                            current_block)
+
+              # Writing the answer in the file
+              self.answer_file.seek(0)
+              self.answer_file.truncate(0)
+              try:
+                self.answer_file.write(answer)
+              except TypeError:
+                # Sometimes for an unknown reason the answer is None
+                raise KeyboardInterrupt
+
+            except KeyboardInterrupt:
+              # If the command wasn't sent it's no big deal, the block will
+              # send it again anyway
+              pass
+            finally:
+              # Releasing the lock so that the block can go on
+              self.lock_pool[current_block].release()
+
+      except KeyboardInterrupt:
+        # The server should never raise exceptions, as it must keep running to
+        # allow the blocks to finish properly
+        continue
+
+  @staticmethod
+  def _return_config_info(device) -> tuple:
+    """Returns some configuration information from a USB object.
+
+    Args:
+      device: A :obj:`usb.core.Device`
+
+    Returns:
+      The index, in endpoint, out endpoint and maximum packet size of a USB
+      device
+    """
+
+    interface = device.get_active_configuration()[(0, 0)]
+    index = interface.bInterfaceNumber + 1
+    in_ep, out_ep = sorted([ep.bEndpointAddress for ep in interface])[:2]
+    max_packet_size = interface[0].wMaxPacketSize
+    return index, in_ep, out_ep, max_packet_size
 
 
 class Usb_server:
@@ -47,6 +274,11 @@ class Usb_server:
 
   The :ref:`In / Out` objects wishing to communicate through an :ref:`FT232H`
   inherit from this class.
+
+  Note:
+    There is a limitation to 10 blocks accessing ft232h devices from the same
+    machine in Crappy. This limit can be increased at will, but it is necessary
+    to change the code of this class and build Crappy yourself.
   """
 
   def __init__(self, serial_nr: str, backend: str) -> None:
@@ -76,9 +308,9 @@ class Usb_server:
       # The server should only be started once
       if not hasattr(Usb_server, 'server'):
         # Finding all connected FT232H
-        devices = list(find(find_all=True,
-                            idVendor=0x0403,
-                            idProduct=0x6014))
+        devices: List[Device] = list(find(find_all=True,
+                                          idVendor=0x0403,
+                                          idProduct=0x6014))
         if not devices:
           raise IOError("No FT232H connected")
 
@@ -105,317 +337,54 @@ class Usb_server:
               else:
                 dev_dict[''] = device
 
-        Usb_server._queue = Queue()  # One unique queue for all the InOuts
-        Usb_server.stop_event = Event()  # Event for stopping the server
-        manager = SyncManager()  # Manager for sending commands and answers
-        manager.start(_int_handler)  # For ignoring the SIGINT signal
-        Usb_server.namespace = manager.Namespace()
-        # Different events for synchronization of the server and the InOuts
-        Usb_server.command_event = Event()
-        Usb_server.answer_event = Event()
-        Usb_server.next_process = Event()
-        Usb_server.done_event = Event()
-        Usb_server.namespace.current_block = None
+        # This pipe is used by each new block to send a Connection object
+        # Through this connection the server receives the information of the
+        # new block
+        Usb_server.new_block_send, new_block_recv = Pipe()
+        # In this file will be written the number of the block currently owning
+        # the lock
+        Usb_server.current_file = TemporaryFile(buffering=0)
+        # In this file will be written the command from the block to the server
+        Usb_server.command_file = TemporaryFile(buffering=0)
+        # In this file will be written the answer from the server to the block
+        Usb_server.answer_file = TemporaryFile(buffering=0)
+        # Each new block is assigned one of these locks
+        # It is used by the block to indicate the server that the command is
+        # ready, and by the server to indicate the block that the answer is
+        # ready
+        Usb_server.lock_pool = [RLock() for _ in range(10)]
+        # The block owning this lock is the only one that can communicate with
+        # the server
+        Usb_server.current_lock = RLock()
+
         # Starting the server process
-        Usb_server.server = Process(target=self._run,
-                                    kwargs={'queue': Usb_server._queue,
-                                            'stop_event':
-                                                Usb_server.stop_event,
-                                            'dev_dict': dev_dict,
-                                            'namespace':
-                                                Usb_server.namespace,
-                                            'command_event':
-                                                Usb_server.command_event,
-                                            'answer_event':
-                                                Usb_server.answer_event,
-                                            'next_process':
-                                                Usb_server.next_process,
-                                            'done_event':
-                                                Usb_server.done_event},
-                                    daemon=True)
+        Usb_server.server = Server_process(
+          new_block_recv, Usb_server.current_file,
+          Usb_server.command_file,
+          Usb_server.answer_file, Usb_server.lock_pool,
+          Usb_server.current_lock, dev_dict)
         Usb_server.server.start()
 
-      # Sending the list of connected devices to the server
-      Usb_server._queue.put_nowait({'serial_nr': self._serial_nr})
-      # Receiving the block number from the server
-      if Usb_server.next_process.wait(timeout=5):
-        block_number = Usb_server.namespace.current_block
-        Usb_server.next_process.clear()
-        if isinstance(block_number, Exception):
-          raise block_number
-        self.block_number = block_number
+      # Sending the server the serial number of the ft232h to use
+      temp_pipe_block, temp_pipe_server = Pipe()
+      Usb_server.new_block_send.send(temp_pipe_server)
+      temp_pipe_block.send(self._serial_nr)
+      if temp_pipe_block.poll(timeout=1):
+        # Receiving the block number from the server
+        self.block_number = temp_pipe_block.recv()
+        self.block_lock = Usb_server.lock_pool[self.block_number]
       else:
         raise TimeoutError('The USB server took too long to reply')
 
-      return Usb_server._queue, self.block_number, Usb_server.namespace, \
-          Usb_server.command_event, Usb_server.answer_event, \
-          Usb_server.next_process, Usb_server.done_event
+      # Transmitting the necessary information to the InOut or Actuator object
+      return Usb_server.current_file, self.block_number, \
+          Usb_server.command_file, Usb_server.answer_file, \
+          self.block_lock, Usb_server.current_lock
 
-    return None, None, None, None, None, None, None
+    return None, None, None, None, None, None
 
   def __del__(self) -> None:
     """Stops the server upon deletion of the :ref:`In / Out` object."""
 
-    if hasattr(Usb_server,
-               'stop_event') and not Usb_server.stop_event.is_set():
-      Usb_server.stop_event.set()
-      sleep(1)
     if hasattr(Usb_server, 'server') and Usb_server.server.is_alive():
       Usb_server.server.kill()
-
-  @staticmethod
-  def _run(queue: Queue, stop_event: Event, dev_dict: dict,
-           namespace: Namespace, command_event: Event, answer_event: Event,
-           next_process: Event, done_event: Event) -> None:
-    """The loop of the USB server.
-
-    First registers the new blocks trying to connect and assigns them a number.
-    Then grants control to one block at a time, executes its commands and sends
-    back the corresponding answers. Many securities are implemented to ensure
-    that the right message is sent at the right time.
-
-    Args:
-      queue (:obj:`multiprocessing.Queue`): The blocks put their number in a
-        queue that determines in which order they can control the server.
-      stop_event (:obj:`multiprocessing.Event`): An event that can stop the
-        server when set.
-      dev_dict (:obj:`dict`): A dictionary containing all the connected devices
-        and their serial numbers.
-      namespace (:obj:`multiprocessing.managers.Namespace`): A Namespace
-        allowing to share both the commands and the answers with the
-        :ref:`In / Out`.
-      command_event (:obj:`multiprocessing.Event`): An event, set  when a block
-        has written a command in the Namespace.
-      answer_event (:obj:`multiprocessing.Event`): An event, set when the
-        server has written an answer in the Namespace.
-      next_process (:obj:`multiprocessing.Event`): An event, set when the
-        server is ready to switch to the next block
-      done_event (:obj:`multiprocessing.Event`): An event, set when a block is
-        done controlling the server.
-    """
-
-    try:
-      i = 0  # The block counter
-      # The timestamp of the last interaction with the blocks is constantly
-      # being saved because the multiprocessing objects timeouts are buggy
-      t = time()
-      # A counter recording how many blocks are controlling a same FT232H
-      dev_count = {serial_nr: 0 for serial_nr in dev_dict}
-      blocks = {}
-      block = None
-      while True:
-        # This first loop grants the blocks control over the USB server
-        try:
-          # Stopping the process either when the stop_event is set or when all
-          # the registered blocks have sent a 'farewell' command
-          if stop_event.is_set() or \
-                (all(block['left'] for block in blocks.values()) and blocks):
-            break
-
-          # Getting the next block that will control the server from the queue
-          if block is None:
-            try:
-              block = queue.get(block=True, timeout=1)
-              t = time()
-              # It may happen that a block in the queue has actually already
-              # left
-              if isinstance(block, int) and blocks[block]['left']:
-                block = None
-                continue
-            except Empty:
-              block = None
-        except KeyboardInterrupt:
-          continue
-
-        # One block wants control over the server
-        if block is not None:
-          # At first interaction with the server the block sends a dict
-          if isinstance(block, dict):
-            try:
-              blocks[i] = block
-              blocks[i]['left'] = False
-              # Checking if the serial number associated with the block
-              # is valid
-              if blocks[i]['serial_nr'] not in dev_dict:
-                namespace.current_block = ValueError(
-                  "FT232H with specified serial number ({}) is not "
-                  "connected".format(blocks[i]['serial_nr']))
-                next_process.set()
-                break
-              # Assigning a number to the new block
-              namespace.current_block = i
-              t = time()
-              # Ready to switch to the next process
-              next_process.set()
-            except KeyboardInterrupt:
-              continue
-            try:
-              # Increasing the counters by 1
-              block = None
-              dev_count[blocks[i]['serial_nr']] += 1
-              i += 1
-              continue
-            except KeyboardInterrupt:
-              block = None
-              dev_count[blocks[i]['serial_nr']] += 1
-              i += 1
-              continue
-
-          try:
-            namespace.current_block = block
-            # Resetting the commands and answers to make sure old ones
-            # cannot be used
-            setattr(namespace, 'answer' + str(block), None)
-            setattr(namespace, 'answer' + str(block) + "'", None)
-            # Can only switch to the next block if the previous one signals
-            # itself as done
-            if done_event.wait(timeout=1):
-              next_process.set()
-              done_event.clear()
-            elif time() - t < 1:
-              continue
-            else:
-              setattr(namespace, 'answer' + str(block), TimeoutError(
-                "Previous process took too long to release control"))
-
-            # Retrieving the device object
-            dev = dev_dict[blocks[block]['serial_nr']]
-
-          except KeyboardInterrupt:
-            namespace.current_block = block
-            # Resetting the commands and answers to make sure old ones
-            # cannot be used
-            setattr(namespace, 'answer' + str(block), None)
-            setattr(namespace, 'answer' + str(block) + "'", None)
-            # Can only switch to the next block if the previous one signals
-            # itself as done
-            if done_event.wait(timeout=1):
-              next_process.set()
-              done_event.clear()
-            elif time() - t < 1:
-              continue
-            else:
-              setattr(namespace, 'answer' + str(block), TimeoutError(
-                "Previous process took too long to release control"))
-
-            # Retrieving the device object
-            dev = dev_dict[blocks[block]['serial_nr']]
-          while True:
-            # This second loop receives commands and sends back answers
-            try:
-              if command_event.wait(timeout=3):
-                # Getting the command from the block
-                command = getattr(namespace, 'command' + str(block))
-                t = time()
-                if command is None:
-                  # The command shouldn't be None
-                  continue
-                command_event.clear()
-                if command == 'stop':
-                  # The block wants to release control
-                  setattr(namespace, 'answer' + str(block), 'ok')
-                  setattr(namespace, 'answer' + str(block) + "'", 'ok')
-                  setattr(namespace, 'command' + str(block), None)
-                  answer_event.set()
-                  break
-                if command == 'farewell':
-                  # the block wants to leave forever
-                  setattr(namespace, 'answer' + str(block), 'ok')
-                  setattr(namespace, 'answer' + str(block) + "'", 'ok')
-                  setattr(namespace, 'command' + str(block), None)
-                  answer_event.set()
-                  blocks[block]['left'] = True
-                  break
-                # Specific type for device attributes
-                elif isinstance(command, str):
-                  # Cannot send handle object in pipes, so here's a workaround
-                  if command == '_ctx.handle':
-                    out = bool(dev._ctx.handle)
-                  elif command == 'close?':
-                    # The block wants to know if it should close the FT232H
-                    # It can do so if it is the last block in control of it to
-                    # leave
-                    out = dev_count[blocks[block]['serial_nr']] <= 1
-                    dev_count[blocks[block]['serial_nr']] -= 1
-                  else:
-                    command = command.split('.')
-                    out = dev
-                    while command:
-                      out = getattr(out, command[0])
-                      command = command[1:]
-                elif isinstance(command, list):
-                  if not isinstance(command[0], str):
-                    # Specific syntax for usb.util methods
-                    # Syntax for telling the server to use the dev object
-                    command = [item if item != 'dev' else dev
-                               for item in command[1:]]
-                    out = getattr(util, command[0])(*command[1:])
-                  elif command[0] == 'get_active_configuration':
-                    # Cannot send usb configuration objects in pipes, so here's
-                    # a workaround
-                    out = _return_config_info(dev)
-                  elif command[0] == 'set_configuration':
-                    # Cannot set configuration twice on a same device
-                    try:
-                      out = getattr(dev, command[0])(*command[1:])
-                    except IOError:
-                      out = None
-                  else:
-                    # Specific syntax for device methods
-                    out = getattr(dev, command[0])(*command[1:])
-                else:
-                  # If command is not str or list, there's an issue
-                  out = TypeError("Wrong type for the command")
-                  setattr(namespace, 'answer' + str(block), out)
-                  setattr(namespace, 'answer' + str(block) + "'", out)
-                  answer_event.set()
-                  break
-                if command_event.is_set():
-                  # Won't send an answer if a command_event is set
-                  # This is for avoiding confusion when switching from one
-                  # block to the next as the command and answer events are
-                  # shared by all the blocks
-                  continue
-                if out is None:
-                  # The None commands and answers have a special meaning, so
-                  # changing the Nones into ''
-                  out = ''
-                # Actually sending the answer
-                setattr(namespace, 'answer' + str(block), out)
-                setattr(namespace, 'answer' + str(block) + "'", out)
-                answer_event.set()
-              elif stop_event.is_set() or \
-                  (all(block['left'] for key, block in blocks.items())
-                   and blocks):
-                # Exiting if necessary
-                break
-              else:
-                # The timeouts are buggy so double-checking
-                if command_event.wait(timeout=1):
-                  continue
-                # The timeouts are buggy so triple-checking
-                elif time() - t < 1:
-                  continue
-                # In case a block doesn't respond, moving to the next one
-                # Before that the command and answers are reset
-                setattr(namespace, 'answer' + str(block), None)
-                setattr(namespace, 'answer' + str(block) + "'", None)
-                answer_event.clear()
-                done_event.set()
-                # And the block is put back in queue to give it another chance
-                queue.put_nowait(block)
-                break
-
-            except KeyboardInterrupt:
-              # Looping again in case of a CTRL+C or SIGINT
-              command_event.clear()
-              answer_event.clear()
-              continue
-        try:
-          block = None
-        except KeyboardInterrupt:
-          block = None
-    except (RuntimeError, ConnectionResetError,
-            BrokenPipeError, AssertionError):
-      # The USB server never raises errors itself, it just stops silently
-      pass
