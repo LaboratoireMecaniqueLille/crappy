@@ -7,7 +7,7 @@ from .._global import OptionalModule
 try:
   from psutil import virtual_memory
 except (ModuleNotFoundError, ImportError):
-  psutil = OptionalModule("psutil")
+  virtual_memory = OptionalModule("psutil")
 
 
 class Fake_inout(InOut):
