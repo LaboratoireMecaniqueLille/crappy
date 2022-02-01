@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import numpy as np
+from typing import NoReturn, Optional, Tuple
+from _tkinter import TclError
 
 from .block import Block
 from .._global import OptionalModule
@@ -14,42 +16,54 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Grapher(Block):
-  """The grapher receive data from a block (via a :ref:`Link`) and plots it."""
+  """The grapher receive data from a block and plots it.
+
+  Multiple curves can be plotted on a same graph, and the data can come from
+  different blocks.
+
+  Note:
+    To reduce the memory and CPU usage of graphs, try lowering the ``maxpt``
+    parameter (2-3000 is already enough to follow a short test), or set the
+    ``length`` parameter to a non-zero value (again, 2-3000 is fine). Lowering
+    the ``freq`` is also a good option to limit the CPU use.
+  """
 
   def __init__(self,
-               *labels: tuple,
+               *labels: Tuple[str, str],
                length: int = 0,
                freq: float = 2,
                maxpt: int = 20000,
-               window_size: tuple = (8, 8),
-               window_pos: tuple = None,
+               window_size: Tuple[int, int] = (8, 8),
+               window_pos: Optional[Tuple[int, int]] = None,
                interp: bool = True,
                backend: str = "TkAgg",
                verbose: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      *labels (:obj:`tuple`): Tuples of the columns labels of input data for
-        plotting. You can add as much as you want, depending on your
-        performances. The first value is the `x` label, the second is the `y`
-        label.
+      *labels (:obj:`tuple`): Each :obj:`tuple` corresponds to a curve to plot,
+        and should contain two values: the first will be the label of the `x`
+        values, the second the label of the `y` values. There's no limit to the
+        number of curves. Note that all the curves are displayed in a same
+        graph.
       length (:obj:`int`, optional): If `0` the graph is static and displays
         all data from the start of the assay. Else only displays the last
         ``length`` received chunks, and drops the previous ones.
       freq (:obj:`float`, optional): The refresh rate of the graph. May cause
-        high memory consumption if set too high.
+        high CPU use if set too high.
       maxpt (:obj:`int`, optional): The maximum number of points displayed on
         the graph. When reaching this limit, the block deletes one point out of
-        two but this is almost invisible to the user.
+        two to avoid using too much memory and CPU.
       window_size (:obj:`tuple`, optional): The size of the graph, in inches.
       window_pos (:obj:`tuple`, optional): The position of the graph in pixels.
         The first value is for the `x` direction, the second for the `y`
-        direction. The origin is the top left corner. Works with multiple
+        direction. The origin is the top-left corner. Works with multiple
         screens.
-      interp (:obj:`bool`, optional): If :obj:`True`, the points of data will
-        be linked to the following by straight lines. Else, each value wil be
-        displayed as constant until the next update.
+      interp (:obj:`bool`, optional): If :obj:`True`, the data points are
+        linked together by straight lines. Else, only the points are displayed.
       backend (:obj:`int`, optional): The :mod:`matplotlib` backend to use.
+        Performance may vary according to the chosen backend. Also, every
+        backend may not be available depending on your machine.
       verbose (:obj:`bool`, optional): To display the loop frequency of the
         block.
 
@@ -73,88 +87,195 @@ class Grapher(Block):
 
     Block.__init__(self)
     self.niceness = 10
-    self.length = length
+    self._length = length
     self.freq = freq
-    self.maxpt = maxpt
-    self.window_size = window_size
-    self.window_pos = window_pos
-    self.interp = interp
-    self.backend = backend
+    self._maxpt = maxpt
+    self._window_size = window_size
+    self._window_pos = window_pos
+    self._interp = interp
+    self._backend = backend
     self.verbose = verbose
 
-    self.labels = labels
+    self._labels = labels
 
-  def prepare(self) -> None:
-    if self.backend:
-      plt.switch_backend(self.backend)
-    self.f = plt.figure(figsize=self.window_size)
-    self.ax = self.f.add_subplot(111)
-    self.lines = []
-    for _ in self.labels:
-      if self.interp:
-        self.lines.append(self.ax.plot([], [])[0])
+  def prepare(self) -> NoReturn:
+
+    # Switch to the required backend
+    if self._backend:
+      plt.switch_backend(self._backend)
+
+    # Blitting improves performance, but doesn't render well on every backend
+    self._blit = self._backend.lower() == "TkAgg".lower()
+
+    # Create the figure and the subplot
+    self._figure = plt.figure(figsize=self._window_size)
+    self._canvas = self._figure.canvas
+    self._ax = self._figure.add_subplot(111)
+    if self._blit:
+      self._ax.xaxis.set_animated(True)
+      self._ax.yaxis.set_animated(True)
+
+    # Add the lines or the dots
+    self._lines = []
+    for _ in self._labels:
+      if self._interp:
+        if self._blit:
+          self._lines.append(self._ax.plot([0], [0], animated=True)[0])
+        else:
+          self._lines.append(self._ax.plot([0], [0])[0])
       else:
-        self.lines.append(self.ax.step([], [])[0])
+        if self._blit:
+          self._lines.append(self._ax.plot([0], [0], 'o', markersize=3,
+                                           animated=True)[0])
+        else:
+          self._lines.append(self._ax.plot([0], [0], 'o', markersize=3)[0])
+
     # Keep only 1/factor points on each line
-    self.factor = [1 for _ in self.labels]
+    self._factor = [1 for _ in self._labels]
     # Count to drop exactly 1/factor points, no more and no less
-    self.counter = [0 for _ in self.labels]
-    legend = [y for x, y in self.labels]
+    self._counter = [0 for _ in self._labels]
+
+    # Add the legend
+    legend = [y for x, y in self._labels]
     plt.legend(legend, bbox_to_anchor=(-0.03, 1.02, 1.06, .102), loc=3,
                ncol=len(legend), mode="expand", borderaxespad=1)
-    plt.xlabel(self.labels[0][0])
-    plt.ylabel(self.labels[0][1])
-    plt.grid()
-    self.axclear = plt.axes([.8, .02, .15, .05])
-    self.bclear = Button(self.axclear, 'Clear')
-    self.bclear.on_clicked(self.clear)
+    plt.xlabel(self._labels[0][0])
+    plt.ylabel(self._labels[0][1])
 
-    if self.window_pos:
+    # Add a grid
+    plt.grid()
+
+    # Adds a button for clearing the graph
+    self._clear_button = Button(plt.axes([.8, .02, .15, .05]), 'Clear')
+    self._clear_button.on_clicked(self._clear)
+
+    # Set the dimensions if required
+    if self._window_pos:
       mng = plt.get_current_fig_manager()
-      mng.window.wm_geometry("+%s+%s" % self.window_pos)
-    plt.draw()
+      mng.window.wm_geometry("+%s+%s" % self._window_pos)
+
+    # Set variables for blitting
+    if self._blit:
+      self._background = None
+
+      self._loopback = self._canvas.mpl_connect("draw_event", self._on_draw)
+
+    # Ready to show the window
+    plt.show(block=False)
     plt.pause(.001)
 
-  def clear(self, *_, **__) -> None:
-    for line in self.lines:
+  def loop(self) -> NoReturn:
+
+    # Receives the data sent by the upstream blocks
+    if self.freq >= 10:
+      # Assuming that above 10Hz the data won't saturate the links
+      data = self.recv_all_delay()
+    else:
+      # Below 10Hz, making sure to flush the pipes at least every 0.1s
+      data = self.recv_all_delay(delay=1 / 2 / self.freq,
+                                 poll_delay=min(0.1, 1 / 2 / self.freq))
+
+    update = False  # Should the graph be updated ?
+
+    # For each curve, looking for the corresponding labels in the received data
+    for i, (lx, ly) in enumerate(self._labels):
+      x, y = None, None
+      for dict_ in data:
+        if lx in dict_ and ly in dict_:
+          # Found the corresponding data, getting the new data according to the
+          # current resampling factors
+          dx = dict_[lx][self._factor[i] - self._counter[i] -
+                         1::self._factor[i]]
+          dy = dict_[ly][self._factor[i] - self._counter[i] -
+                         1::self._factor[i]]
+          # Recalculating the counter
+          self._counter[i] = (self._counter[i] +
+                              len(dict_[lx])) % self._factor[i]
+          # Adding the new points to the arrays
+          x = np.hstack((self._lines[i].get_xdata(), dx))
+          y = np.hstack((self._lines[i].get_ydata(), dy))
+          # the graph will need to be updated
+          update = True
+          # As we found the data, no need to search any further
+          break
+
+      # In case no matching labels were found, aborting for this curve
+      if x is None:
+        continue
+
+      # Adjusting the number of points to remain below the length limit
+      if self._length and len(x) >= self._length:
+        x = x[-self._length:]
+        y = y[-self._length:]
+
+      # Dividing the number of points by two to remain below the maxpt limit
+      elif len(x) > self._maxpt:
+        print(f"[Grapher] Too many points on the graph "
+              f"{i} ({len(x)}>{self._maxpt})")
+        x, y = x[::2], y[::2]
+        self._factor[i] *= 2
+        print(f"[Grapher] Resampling factor is now {self._factor[i]}")
+
+      # Finally, updating the data on the graph
+      self._lines[i].set_xdata(x)
+      self._lines[i].set_ydata(y)
+
+    # Updating the graph if necessary
+    if update:
+      self._ax.relim()
+      self._ax.autoscale()
+      if self._blit:
+        self._update()
+      else:
+        try:
+          self._canvas.draw()
+        except TclError:
+          pass
+        self._canvas.flush_events()
+
+  def finish(self) -> NoReturn:
+    plt.close("all")
+
+  def _update(self) -> None:
+    canvas = self._canvas
+
+    if self._background is None:
+      return
+
+    canvas.restore_region(self._background)
+    self._draw_animated()
+    try:
+      canvas.blit(
+        self._ax.bbox.union([label.get_window_extent() for label in
+                             self._ax.get_xticklabels()] +
+                            [label.get_window_extent() for label in
+                             self._ax.get_yticklabels()] +
+                            [self._ax.bbox]))
+    except TclError:
+      pass
+    canvas.flush_events()
+
+  def _draw_animated(self) -> NoReturn:
+
+    for line in self._lines:
+      self._canvas.figure.draw_artist(line)
+    self._canvas.figure.draw_artist(self._ax.xaxis)
+    self._canvas.figure.draw_artist(self._ax.yaxis)
+
+  def _on_draw(self, *_, **__) -> NoReturn:
+
+    canvas = self._canvas
+    self._background = canvas.copy_from_bbox(
+      self._ax.bbox.union([label.get_window_extent() for label in
+                           self._ax.get_xticklabels()] +
+                          [label.get_window_extent() for label in
+                           self._ax.get_yticklabels()] +
+                          [self._ax.bbox]))
+    self._draw_animated()
+
+  def _clear(self, *_, **__) -> NoReturn:
+    for line in self._lines:
       line.set_xdata([])
       line.set_ydata([])
-    self.factor = [1 for _ in self.labels]
-    self.counter = [0 for _ in self.labels]
-
-  def loop(self) -> None:
-    # We need to recv data from all the links, but keep
-    # ALL of the data, even with the same label (so not get_all_last)
-    data = self.recv_all_delay()
-    for i, (lx, ly) in enumerate(self.labels):
-      x, y = 0, 0  # So that if we don't find it, we do nothing
-      for d in data:
-        if lx in d and ly in d:  # Find the first input with both labels
-          dx = d[lx][self.factor[i]-self.counter[i]-1::self.factor[i]]
-          dy = d[ly][self.factor[i]-self.counter[i]-1::self.factor[i]]
-          self.counter[i] = (self.counter[i]+len(d[lx])) % self.factor[i]
-          x = np.hstack((self.lines[i].get_xdata(), dx))
-          y = np.hstack((self.lines[i].get_ydata(), dy))
-          break
-      if isinstance(x, int):
-        break
-      if self.length and len(x) >= self.length:
-        # Remove the beginning if the graph is dynamic
-        x = x[-self.length:]
-        y = y[-self.length:]
-      elif len(x) > self.maxpt:
-        # Reduce the number of points if we have to many to display
-        print("[Grapher] Too many points on the graph {} ({}>{})".format(
-          i, len(x), self.maxpt))
-        x, y = x[::2], y[::2]
-        self.factor[i] *= 2
-        print("[Grapher] Resampling factor is now {}".format(self.factor[i]))
-      self.lines[i].set_xdata(x)
-      self.lines[i].set_ydata(y)
-    self.ax.relim()  # Update the window
-    self.ax.autoscale_view(True, True, True)
-    self.f.canvas.draw()  # Update the graph
-    self.f.canvas.flush_events()
-
-  def finish(self) -> None:
-    plt.close("all")
+    self.factor = [1 for _ in self._labels]
+    self.counter = [0 for _ in self._labels]

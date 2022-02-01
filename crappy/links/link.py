@@ -8,7 +8,7 @@ from time import time
 from threading import Thread
 from copy import copy
 from functools import wraps
-from typing import Callable, Union, Any
+from typing import Callable, Union, Any, Dict, NoReturn
 
 from .._global import CrappyStop
 
@@ -174,7 +174,7 @@ class Link:
       raise
 
   @error_if_string  # Recv will raise an error if a string is received
-  def recv(self, blocking: bool = True) -> Union[dict, None]:
+  def recv(self, blocking: bool = True) -> Dict[str, list]:
     """Receives data.
 
     Note:
@@ -216,11 +216,11 @@ class Link:
   def poll(self) -> bool:
     return self.in_.poll()
 
-  def clear(self) -> None:
+  def clear(self) -> NoReturn:
     while self.in_.poll():
       self.in_.recv_bytes()
 
-  def recv_last(self, blocking: bool = False) -> Union[dict, None]:
+  def recv_last(self, blocking: bool = False) -> Dict[str, list]:
     """Returns only the LAST value in the pipe, dropping all the others.
 
     Note:
@@ -241,7 +241,7 @@ class Link:
       data = self.recv()
     return data
 
-  def recv_chunk(self, length: int = 0) -> dict:
+  def recv_chunk(self, length: int = 0) -> Dict[str, list]:
     """Allows you to receive a chunk of data.
 
     If ``length`` `> 0` it will return a :obj:`dict` containing :obj:`list` of
