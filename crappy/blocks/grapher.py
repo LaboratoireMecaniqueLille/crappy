@@ -120,15 +120,15 @@ class Grapher(Block):
     for _ in self._labels:
       if self._interp:
         if self._blit:
-          self._lines.append(self._ax.plot([0], [0], animated=True)[0])
+          self._lines.append(self._ax.plot([], [], animated=True)[0])
         else:
-          self._lines.append(self._ax.plot([0], [0])[0])
+          self._lines.append(self._ax.plot([], [])[0])
       else:
         if self._blit:
-          self._lines.append(self._ax.plot([0], [0], 'o', markersize=3,
+          self._lines.append(self._ax.plot([], [], 'o', markersize=3,
                                            animated=True)[0])
         else:
-          self._lines.append(self._ax.plot([0], [0], 'o', markersize=3)[0])
+          self._lines.append(self._ax.plot([], [], 'o', markersize=3)[0])
 
     # Keep only 1/factor points on each line
     self._factor = [1 for _ in self._labels]
