@@ -691,22 +691,20 @@ class GPUCorrel:
   """
 
   # Todo
-  """
-    This section lists all the considered improvements for this program.
-    These features may NOT all be implemented in the future.
-    They are sorted by priority.
-    - Allow faster execution by executing the reduction only on a part
-      of the images (random or chosen)
-    - Add the possibility to return the value of the deformation `Exx` and
-      `Eyy` in a specific point
-    - Add a parameter to return values in `%`
-    - Add a filter to smooth/ignore incorrect values
-    - Allow a reset of the reference picture for simple deformations to
-      enhance robustness in case of large deformations or lightning changes
-    - Restart iterating from `0` once in a while to see if the residual is
-      lower. Can be useful to recover when diverged critically due to an
-      incorrect image (Shadow, obstruction, flash, camera failure, ...)
-  """
+  #  This section lists all the considered improvements for this program.
+  #  These features may NOT all be implemented in the future.
+  #  They are sorted by priority.
+  #  - Allow faster execution by executing the reduction only on a part
+  #    of the images (random or chosen)
+  #  - Add the possibility to return the value of the deformation `Exx` and
+  #    `Eyy` in a specific point
+  #  - Add a parameter to return values in `%`
+  #  - Add a filter to smooth/ignore incorrect values
+  #  - Allow a reset of the reference picture for simple deformations to
+  #    enhance robustness in case of large deformations or lightning changes
+  #  - Restart iterating from `0` once in a while to see if the residual is
+  #    lower. Can be useful to recover when diverged critically due to an
+  #    incorrect image (Shadow, obstruction, flash, camera failure, ...)
 
   def __init__(self, img_size: tuple, **kwargs) -> None:
     global context

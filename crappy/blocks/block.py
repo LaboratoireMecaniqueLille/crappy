@@ -12,6 +12,10 @@ from .._global import CrappyStop
 
 import subprocess
 
+# Todo:
+#   Add a clean way to stop the blocks, using the keyboard or a button
+#   Rethink the communication between blocks when stopping
+
 
 def renice(pid: int, niceness: int) -> NoReturn:
   """Function to renice a process.

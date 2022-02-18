@@ -29,8 +29,8 @@ except (ModuleNotFoundError, ImportError):
   Ftdi_req_in = 0xC0
 
 # Todo:
-# Check Windows compatibility (is kernel driver active)
-# Add fast FT232H mode ?
+#   Check Windows compatibility (is kernel driver active)
+#   Add fast FT232H mode for use with a single device ?
 
 ft232h_cmds = {'write_bytes_PVE_MSB': 0x10,
                'write_bytes_NVE_MSB': 0x11,

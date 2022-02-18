@@ -26,6 +26,10 @@ try:
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
+# Todo:
+#   Improve the overall architecture of the code handling images
+#   Add a camera block handling GStreamer
+
 
 class Camera(Block):
   """Reads images from a camera object, saves and/or sends them to another

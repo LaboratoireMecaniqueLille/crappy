@@ -1,5 +1,9 @@
 # coding: utf-8
 
+# Todo:
+#   Add downsampling ( self.cam.set_downsampling('XI_DWN_2x2') )
+#   Add region of interest selection
+
 import time
 
 from .camera import Camera
