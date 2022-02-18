@@ -400,7 +400,7 @@ class Block(Process):
 
     return any((link.poll for link in self.inputs))
 
-  def recv_all_last(self) -> Dict[str, list]:
+  def recv_all_last(self) -> Dict[str, float]:
     """Like recv_all, but drops older data to return only the latest value
 
     This method avoids Pipe congestion that can be induced by recv_all when the
@@ -414,7 +414,7 @@ class Block(Process):
     return r
 
   def get_last(self, num: Union[Optional[list],
-                                Optional[int]] = None) -> Dict[str, list]:
+                                Optional[int]] = None) -> Dict[str, float]:
     """To get the latest value of each labels from all inputs.
 
     Warning:
