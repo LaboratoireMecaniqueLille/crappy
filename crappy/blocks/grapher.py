@@ -104,31 +104,18 @@ class Grapher(Block):
     if self._backend:
       plt.switch_backend(self._backend)
 
-    # Blitting improves performance, but doesn't render well on every backend
-    self._blit = self._backend.lower() == "TkAgg".lower()
-
     # Create the figure and the subplot
     self._figure = plt.figure(figsize=self._window_size)
     self._canvas = self._figure.canvas
     self._ax = self._figure.add_subplot(111)
-    if self._blit:
-      self._ax.xaxis.set_animated(True)
-      self._ax.yaxis.set_animated(True)
 
     # Add the lines or the dots
     self._lines = []
     for _ in self._labels:
       if self._interp:
-        if self._blit:
-          self._lines.append(self._ax.plot([], [], animated=True)[0])
-        else:
-          self._lines.append(self._ax.plot([], [])[0])
+        self._lines.append(self._ax.plot([], [])[0])
       else:
-        if self._blit:
-          self._lines.append(self._ax.plot([], [], 'o', markersize=3,
-                                           animated=True)[0])
-        else:
-          self._lines.append(self._ax.plot([], [], 'o', markersize=3)[0])
+        self._lines.append(self._ax.plot([], [], 'o', markersize=3)[0])
 
     # Keep only 1/factor points on each line
     self._factor = [1 for _ in self._labels]
@@ -153,12 +140,6 @@ class Grapher(Block):
     if self._window_pos:
       mng = plt.get_current_fig_manager()
       mng.window.wm_geometry("+%s+%s" % self._window_pos)
-
-    # Set variables for blitting
-    if self._blit:
-      self._background = None
-
-      self._loopback = self._canvas.mpl_connect("draw_event", self._on_draw)
 
     # Ready to show the window
     plt.show(block=False)
@@ -224,54 +205,14 @@ class Grapher(Block):
     if update:
       self._ax.relim()
       self._ax.autoscale()
-      if self._blit:
-        self._update()
-      else:
-        try:
-          self._canvas.draw()
-        except TclError:
-          pass
-        self._canvas.flush_events()
+      try:
+        self._canvas.draw()
+      except TclError:
+        pass
+      self._canvas.flush_events()
 
   def finish(self) -> NoReturn:
     plt.close("all")
-
-  def _update(self) -> None:
-    canvas = self._canvas
-
-    if self._background is None:
-      return
-
-    canvas.restore_region(self._background)
-    self._draw_animated()
-    try:
-      canvas.blit(
-        self._ax.bbox.union([label.get_window_extent() for label in
-                             self._ax.get_xticklabels()] +
-                            [label.get_window_extent() for label in
-                             self._ax.get_yticklabels()] +
-                            [self._ax.bbox]))
-    except TclError:
-      pass
-    canvas.flush_events()
-
-  def _draw_animated(self) -> NoReturn:
-
-    for line in self._lines:
-      self._canvas.figure.draw_artist(line)
-    self._canvas.figure.draw_artist(self._ax.xaxis)
-    self._canvas.figure.draw_artist(self._ax.yaxis)
-
-  def _on_draw(self, *_, **__) -> NoReturn:
-
-    canvas = self._canvas
-    self._background = canvas.copy_from_bbox(
-      self._ax.bbox.union([label.get_window_extent() for label in
-                           self._ax.get_xticklabels()] +
-                          [label.get_window_extent() for label in
-                           self._ax.get_yticklabels()] +
-                          [self._ax.bbox]))
-    self._draw_animated()
 
   def _clear(self, *_, **__) -> NoReturn:
     for line in self._lines:
