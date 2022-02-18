@@ -31,6 +31,7 @@ except (ModuleNotFoundError, ImportError):
 # Todo:
 #   Check Windows compatibility (is kernel driver active)
 #   Add fast FT232H mode for use with a single device ?
+#   Prevent user from opening the same device in different modes
 
 ft232h_cmds = {'write_bytes_PVE_MSB': 0x10,
                'write_bytes_NVE_MSB': 0x11,

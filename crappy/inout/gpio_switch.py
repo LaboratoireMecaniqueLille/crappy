@@ -8,6 +8,9 @@ try:
 except (ModuleNotFoundError, ImportError):
   GPIO = OptionalModule("RPi.GPIO")
 
+# Todo:
+#  Allow this block to work on other boards (blinka) and on the FT232H
+
 
 class Gpio_switch(InOut):
   """Class for setting a GPIO high or low.
