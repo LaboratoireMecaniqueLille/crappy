@@ -2,8 +2,8 @@
 
 """Example showing the use of the UController block.
 
-This example is meant to be used in combination with the microcontroller.py
-template in the tools of Crappy.
+This example is meant to be used in combination with the microcontroller.py or
+microcontroller.ino templates in the tools of Crappy.
 
 Required hardware:
   - A microcontroller
