@@ -136,6 +136,25 @@ setup(
 
   install_requires=["numpy>=1.21.0"],
 
+  extras_require={'SBC': ['smbus2',
+                          'spidev',
+                          'Adafruit-Blinka',
+                          'Adafruit-ADS1x15',
+                          'adafruit-circuitpython-motorkit',
+                          'adafruit-circuitpython-mprls',
+                          'adafruit-circuitpython-busdevice'],
+                  'image': ['opencv-python>=4.0',
+                            'Pillow>=8.0.0',
+                            'matplotlib>=3.3.0',
+                            'SimpleITK>=2.0.0',
+                            'scikit-image>=0.18.0'],
+                  'hardware': ['pyusb>=1.1.0',
+                               'pyserial>=3.4',
+                               'pyyaml>=5.3'],
+                  'main': ['matplotlib>=3.3.0',
+                           'opencv-python>=4.0',
+                           'pyserial>=3.4']},
+
   include_package_data=True,
 
   data_files=[('crappy/docs', ['docs/Makefile']),
