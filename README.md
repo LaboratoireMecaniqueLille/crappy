@@ -1,6 +1,10 @@
 Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)
 =================================================================
 
+[![Downloads](https://pepy.tech/badge/crappy)](https://pepy.tech/project/crappy)
+[![Documentation Status](https://readthedocs.org/projects/crappy/badge/?version=latest)](https://crappy.readthedocs.io/en/latest/?badge=latest)
+[![PyPi version](https://badgen.net/pypi/v/crappy/)](https://pypi.com/project/crappy)
+
 This package aims to provide an open-source software canvas for developing 
 experimental tests in a versatile and accessible way.
 
