@@ -38,7 +38,7 @@ building.
   C++ tutorials :
 
   - `openclassrooms C++ <https://openclassrooms.com/fr/courses/1894236-
-    programmez-avec-le-langage-c>`_ (fr)
+    apprenez-a-programmer-en-c>`_ (fr)
   - `cplusplus <https://www.cplusplus.com/doc/tutorial/>`_ (en)
 
   C tutorials :

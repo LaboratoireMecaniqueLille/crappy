@@ -618,16 +618,18 @@ one on the Raspberry Pi.
            self._bus.close()
 
 Now we need to have a look at the datasheet to know exactly how to communicate
-with the sensor. The datasheet can be found at `this address <https://sensing.
-honeywell.com/honeywell-sensing-micropressure-board-mount-pressure-mpr-series-
-datasheet-32332628-en.pdf>`_, the section of interest starts on page 15. First,
-there's no need to initialize any parameter during ``open``, it can then be left
-as is. According to the datasheet, two steps are mandatory when reading the
-pressure from the sensor: first the three bytes ``0xAA, 0x00, 0x00`` should be
-written to the device, and when the data is ready it can be retrieved by reading
-4 bytes from the sensor. After the writing operation, reading only 1 byte from
-the device allows to know if data is ready, or it is also possible to simply
-wait for 5ms and the data will then be ready for sure.
+with the sensor. The datasheet can be found at `this address <https://prod-
+edam.honeywell.com/content/dam/honeywell-edam/sps/siot/en-us/products/sensors/
+pressure-sensors/board-mount-pressure-sensors/micropressure-mpr-series/
+documents/sps-siot-mpr-series-datasheet-32332628-ciid-172626.pdf>`_, the
+section of interest starts on page 15. First, there's no need to initialize any
+parameter during ``open``, it can then be left as is. According to the
+datasheet, two steps are mandatory when reading the pressure from the sensor:
+first the three bytes ``0xAA, 0x00, 0x00`` should be written to the device, and
+when the data is ready it can be retrieved by reading 4 bytes from the sensor.
+After the writing operation, reading only 1 byte from the device allows to know
+if data is ready, or it is also possible to simply wait for 5ms and the data
+will then be ready for sure.
 
 The commands of the :mod:`smbus2` module won't be detailed here, but more
 information can be found on its `PyPi page <https://pypi.org/project/smbus2/>`_

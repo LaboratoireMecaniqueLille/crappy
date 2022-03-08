@@ -201,8 +201,8 @@ Hardware control
   stop the script on the microcontroller, send commands, and receive data.
 
   Refer to the `microcontroller.py <https://github.com/LaboratoireMecanique
-  Lille/crappy/blob/master/Examples/microcontroller.py>`_ example for a use
-  case.
+  Lille/crappy/blob/master/Examples/microcontroller_example.py>`_ example for a
+  use case.
 
 - :ref:`Camera`
 
@@ -481,8 +481,8 @@ Sensors
 - :ref:`Spectrum`
 
   Reads voltages from Spectrum's `M2i 4711 EXP <https://spectrum-
-  instrumentation.com/en/m2i4711-exp>`_ high-speed ADC communicating over
-  PCIexpress.
+  instrumentation.com/products/details/M2i4711.php>`_ high-speed ADC
+  communicating over PCIexpress.
 
 Multi-device drivers
 """"""""""""""""""""

@@ -99,4 +99,4 @@ won't be able to help you. So Crappy is **NOT for you** if :
    :target: https://crappy.readthedocs.io/en/latest/?badge=latest
 
 .. |PyPi version| image:: https://badgen.net/pypi/v/crappy/
-   :target: https://pypi.com/project/crappy
+   :target: https://pypi.org/project/crappy
