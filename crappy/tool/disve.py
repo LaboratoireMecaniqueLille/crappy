@@ -1,7 +1,5 @@
 # coding: utf-8
 
-"""More documentation coming soon !"""
-
 import numpy as np
 from .._global import OptionalModule
 

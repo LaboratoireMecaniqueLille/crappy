@@ -1,5 +1,8 @@
 # coding: utf-8
 
+# Todo:
+#   Improve the config window
+
 from time import time
 import numpy as np
 from multiprocessing import Process, Pipe

@@ -23,7 +23,7 @@ class Ximea_cv(Camera):
   def __init__(self) -> None:
 
     # Todo : replace try/except with something else to detect when ximea
-    #  should be recompiled
+    #  should be recompiled (cv2.getBuildInformation())
     
     try:
       cv2.CAP_PROP_XI_WIDTH
