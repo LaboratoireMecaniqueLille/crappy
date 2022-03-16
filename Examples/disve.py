@@ -29,9 +29,9 @@ if __name__ == "__main__":
   # x and y being the coordinates to the upper-left corner
   patches = [
       (m, w // 2 - ps // 2, ps, ps),  # Top
-      (h // 2 - ps, w - ps - m, ps, ps),  # Right
+      (h // 2 - ps // 2, w - ps - m, ps, ps),  # Right
       (h - ps - m, w // 2 - ps // 2, ps, ps),  # Bottom
-      (h // 2 - ps, m, ps, ps)]  # Left
+      (h // 2 - ps // 2, m, ps, ps)]  # Left
 
   ve = crappy.blocks.DISVE('Webcam', patches, verbose=True,
                            show_image=True)
