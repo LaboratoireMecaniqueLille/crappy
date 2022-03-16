@@ -1,6 +1,8 @@
 # coding: utf-8
 
 from time import time
+from typing import Tuple, NoReturn, Optional
+from numpy import ndarray
 from .camera import Camera
 from .._global import OptionalModule
 
@@ -11,51 +13,60 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Webcam(Camera):
-  """Camera class for webcams, read using opencv."""
+  """A basic class for reading images from a USB camera (including webcams).
+
+  It relies on the OpenCv library. Note that it was purposely kept extremely
+  simple as it is mainly used as a demo. See :ref:`Camera OpenCV` and
+  :ref:`Camera GStreamer` for classes giving a finer control over the device.
+  """
 
   def __init__(self) -> None:
+    """Sets variables and adds the channels setting."""
+
     Camera.__init__(self)
     self.name = "webcam"
-    self.cap = None
-    # No sliders for the camera: they usually only allow a few resolutions
-    self.add_setting("width", self._get_w, self._set_w, (1, 1920))
-    self.add_setting("height", self._get_h, self._set_h, (1, 1080))
+    self._cap = None
     self.add_setting("channels", limits={1: 1, 3: 3}, default=1)
 
-  def _get_w(self) -> int:
-    return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+  def open(self, device_num: Optional[int] = 0, **kwargs) -> None:
+    """Opens the video stream and sets any user-specified settings.
 
-  def _get_h(self) -> int:
-    return self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    Args:
+      device_num (:obj:`int`, optional): The number of the device to open.
+      **kwargs: Any additional setting to set before opening the graphical
+        interface.
+    """
 
-  def _set_w(self, width: int) -> None:
-    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    # Opening the videocapture device
+    self._cap = cv2.VideoCapture(device_num)
 
-  def _set_h(self, height: int) -> None:
-    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-
-  def open(self, numdevice: int = 0, **kwargs) -> None:
-    self.numdevice = numdevice
-    if self.cap:
-      self.cap.release()
-    self.cap = cv2.VideoCapture(self.numdevice)
-    for k in kwargs:
-      assert k in self.available_settings, str(self) + \
-                                           "Unexpected kwarg: " + str(k)
+    # Setting the kwargs if any, and making sure they exist
+    for kwarg in kwargs:
+      if kwarg not in self.available_settings:
+        raise ValueError(f"Unexpected argument {kwarg} for camera "
+                         f"{type(self).__name__}.")
     self.set_all(**kwargs)
 
-  def get_image(self) -> tuple:
-    ret, frame = self.cap.read()
+  def get_image(self) -> Tuple[float, ndarray]:
+    """Grabs a frame from the videocapture object and returns it along with a
+    timestamp."""
+
+    # Grabbing the frame and the timestamp
     t = time()
+    ret, frame = self._cap.read()
+
+    # Checking the integrity of the frame
     if not ret:
-      print("Error reading the camera")
-      raise IOError
+      raise IOError("Error reading the camera")
+
+    # Returning the image in the right format, and its timestamp
     if self.channels == 1:
       return t, cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     else:
-      return t, frame  # [:, :, [2, 1, 0]]
+      return t, frame
 
-  def close(self) -> None:
-    if self.cap:
-      self.cap.release()
-    self.cap = None
+  def close(self) -> NoReturn:
+    """Releases the videocapture object."""
+
+    if self._cap is not None:
+      self._cap.release()

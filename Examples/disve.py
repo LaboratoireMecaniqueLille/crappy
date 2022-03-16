@@ -21,7 +21,7 @@ Required hardware:
 import crappy
 
 if __name__ == "__main__":
-  w, h = 1280, 720
+  w, h = 640, 480
   ps = 100  # patch size (x and y)
   m = 100  # Margin
 
@@ -33,12 +33,8 @@ if __name__ == "__main__":
       (h - ps - m, w // 2 - ps // 2, ps, ps),  # Bottom
       (h // 2 - ps, m, ps, ps)]  # Left
 
-  cam_kw = dict(
-      height=h,
-      width=w)
-
   ve = crappy.blocks.DISVE('Webcam', patches, verbose=True,
-                           show_image=True, **cam_kw)
+                           show_image=True)
   graphy = crappy.blocks.Grapher(('t(s)', 'p0y'), ('t(s)', 'p2y'))
   graphx = crappy.blocks.Grapher(('t(s)', 'p1x'), ('t(s)', 'p3x'))
 

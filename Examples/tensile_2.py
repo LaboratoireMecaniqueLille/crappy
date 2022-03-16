@@ -62,8 +62,7 @@ if __name__ == "__main__":
   # We can specify arguments specific to the camera in the block
   # save_folder asks the block to save the images
   # It can be useful for further processing after the test
-  ve = crappy.blocks.Video_extenso('Webcam', width=1920, height=1080,
-                                   save_folder='img/')
+  ve = crappy.blocks.Video_extenso('Webcam', save_folder='img/')
   # When the program will start, this will open a windows to preview the
   # video from the camera, adjust the settings and select the markers.
 
