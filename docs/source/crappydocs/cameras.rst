@@ -12,6 +12,16 @@ Meta Camera
 .. automodule:: crappy.camera.camera
    :members:
 
+Camera GStreamer
+----------------
+.. automodule:: crappy.camera.gstreamer
+   :members:
+
+Camera OpenCV
+-------------
+.. automodule:: crappy.camera.opencv
+   :members:
+
 Camera link
 -----------
 .. automodule:: crappy.camera.cameralink

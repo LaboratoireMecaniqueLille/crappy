@@ -253,6 +253,26 @@ Supported cameras
      Only intended for an internal use in our laboratory as it is not
      commercially available.
 
+- :ref:`Camera GStreamer`
+
+  This camera object opens video streams using the Python binding of `Gstreamer
+  <https://gstreamer.freedesktop.org/>`_. It can open a camera by path (in
+  Linux) or number (in Windows and Mac), in which case the GStreamer pipeline
+  is generated automatically. Alternatively, it can also open a stream
+  following a custom pipeline given by the user.
+
+  Compared to the :ref:`Camera OpenCV` camera, the GStreamer one is less
+  CPU-intensive and is compatible with more devices. Its dependencies are
+  however harder to install (especially on Windows) and it is harder to make it
+  work properly.
+
+- :ref:`Camera OpenCV`
+
+  This camera object opens video streams using OpenCV. It allows tuning the
+  device number, as well as the image format and the number of channels. It is
+  mostly compatible with USB cameras, and its dependencies are straightforward
+  to install.
+
 - :ref:`Camera link`
 
   Allows reading from a camera communicating over Camera Link plugged to a
@@ -305,7 +325,10 @@ Supported cameras
 - :ref:`Webcam`
 
   Reads images from a video device recognized by OpenCV. Usually webcams fall
-  into this category, but some other cameras as well.
+  into this category, but some other cameras as well. This class is really
+  basic and is intended for demonstration, see :ref:`Camera OpenCV` and
+  :ref:`Camera GStreamer` for classes providing a finer controls over the
+  devices.
 
 - :ref:`Xi API`
 
