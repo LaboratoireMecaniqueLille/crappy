@@ -36,7 +36,7 @@ if __name__ == "__main__":
   dis = crappy.blocks.GPUCorrel('', input_label='frame', verbose=True,
                                 labels=['x', 'y', 'measured_Exx(%)',
                                         'measured_Eyy(%)'],
-                                fields=['x', 'y', 'exx', 'eyy'])
+                                fields=['x', 'y', 'exx', 'eyy'], levels=3)
   # This modifier will generate an image with the values of strain
   # coming from the Fake_machine block
   crappy.link(machine, dis, modifier=crappy.modifier.Apply_strain_img(img))
