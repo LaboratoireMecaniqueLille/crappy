@@ -20,7 +20,7 @@ try:
   require_version('Gst', '1.0')
   require_version('GstApp', '1.0')
   from gi.repository import Gst, GstApp
-except (ImportError, ModuleNotFoundError):
+except (ImportError, ModuleNotFoundError, ValueError):
   Gst = GstApp = OptionalModule('gi', 'You need to install the python bindings'
                                       ' for GStreamer ! ')
 
