@@ -3,7 +3,7 @@
 import numpy as np
 from typing import Union
 from itertools import chain
-# chain(*l) is MUCH faster than sum(l, []) to concatenate lists
+# Todo: interp nearest
 
 from .block import Block
 

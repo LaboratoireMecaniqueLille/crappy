@@ -28,7 +28,7 @@ except (ModuleNotFoundError, ImportError):
 
 # Todo:
 #   Improve the overall architecture of the code handling images
-#   Add a camera block handling GStreamer
+#   Add an argument for not sending the frame during prepare
 
 
 class Camera(Block):

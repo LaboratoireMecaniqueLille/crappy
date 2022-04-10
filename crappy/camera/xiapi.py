@@ -3,6 +3,7 @@
 # Todo:
 #   Add downsampling ( self.cam.set_downsampling('XI_DWN_2x2') )
 #   Add region of interest selection
+#   Add possibility to adjust the timeout
 
 import time
 

@@ -24,6 +24,8 @@ except (ImportError, ModuleNotFoundError):
   Gst = GstApp = OptionalModule('gi', 'You need to install the python bindings'
                                       ' for GStreamer ! ')
 
+# Todo: Error with a getter
+
 
 class Camera_gstreamer(Camera):
   """A class for reading images from a video device using Gstreamer.

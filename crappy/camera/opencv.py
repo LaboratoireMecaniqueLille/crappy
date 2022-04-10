@@ -14,6 +14,8 @@ try:
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
+# Todo: Manage frame rate
+
 
 class Camera_opencv(Camera):
   """A class for reading images from any camera able to interface with OpenCv.

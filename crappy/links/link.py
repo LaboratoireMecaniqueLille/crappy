@@ -1,6 +1,7 @@
 # coding: utf-8
 
 # Link class. All connection between Blocks should be made with this.
+# Todo: kwargs in link
 
 
 from multiprocessing import Pipe
