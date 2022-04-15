@@ -335,12 +335,6 @@ Supported cameras
   Allows reading images from any `Ximea <https://www.ximea.com/>`_ camera. The
   backend is the official Ximea API.
 
-- :ref:`Ximea CV`
-
-  Same as :ref:`Xi API` except here the backend used is OpenCV compiled with a
-  specific flag. We recommend you to use XI API, the block Ximea CV is mainly
-  kept for compatibility reason.
-
 Supported Actuators
 +++++++++++++++++++
 

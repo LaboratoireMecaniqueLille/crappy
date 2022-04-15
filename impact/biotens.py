@@ -54,7 +54,7 @@ crappy.link(effort, generator)
 crappy.link(generator, biotens)
 
 # VideoExtenso
-extenso = crappy.blocks.Video_extenso(camera="Ximea_cv", white_spots=False)
+extenso = crappy.blocks.Video_extenso(camera="Xiapi", white_spots=False)
 
 # Recorder
 rec_extenso = crappy.blocks.Recorder(save_path + 'extenso.csv',

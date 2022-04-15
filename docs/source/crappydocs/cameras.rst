@@ -61,8 +61,3 @@ Xi API
 ------
 .. automodule:: crappy.camera.xiapi
    :members:
-
-Ximea CV
---------
-.. automodule:: crappy.camera.ximeaCV
-   :members:
