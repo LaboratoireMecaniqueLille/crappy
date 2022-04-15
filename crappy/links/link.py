@@ -1,7 +1,9 @@
 # coding: utf-8
 
-# Link class. All connection between Blocks should be made with this.
-# Todo: kwargs in link
+# Todo:
+#   Allow to actually set the timeout for sending
+#   Allow to set the timeout for receiving
+#   Assign different names to the links with a class attribute
 
 
 from multiprocessing import Pipe
@@ -9,9 +11,11 @@ from time import time
 from threading import Thread
 from copy import copy
 from functools import wraps
-from typing import Callable, Union, Any, Dict, NoReturn
+from typing import Callable, Union, Any, Dict, NoReturn, Optional, Literal, \
+  List
 
 from .._global import CrappyStop
+from ..modifier import Modifier
 
 
 def error_if_string(recv: Callable) -> Callable:
@@ -71,57 +75,63 @@ def win_timeout(timeout: float = None) -> Callable:
 
 
 class Link:
-  """Link class. All connections between Blocks should be made with this.
+  """This class is used for transferring information between the blocks.
 
-  It creates a pipe and is used to transfer information between Blocks.
+  The created link is unidirectional, from the input block to the output block.
+  Under the hood, a link is basically a :class:`multiprocessing.Pipe` with
+  extra features.
 
   Note:
     You can add one or multiple :ref:`Modifiers` to modify the transferred
-    value.
+    value. The modifiers should either be children of :ref:`Modifier` or
+    callables taking a :obj:`dict` as argument and returning a :obj:`dict`.
   """
 
   def __init__(self,
                input_block=None,
                output_block=None,
-               condition=None,
-               modifier=None,
+               conditions: List[Union[Callable, Modifier]] = None,
+               modifiers: List[Union[Callable, Modifier]] = None,
                timeout: float = 0.1,
-               action: str = "warn",
+               action: Literal['warn', 'kill', 'NoWarn'] = "warn",
                name: str = "link") -> None:
     """Sets the instance attributes.
 
     Args:
-      input_block:
-      output_block:
-      condition: Children class of :class:`links.Condition`, for backward
-        compatibility only. Can be a single condition or a :obj:`list` of
-        conditions that will be executed in the given order.
-      modifier:
-      timeout (:obj:`float`, optional): Timeout for the :meth:`send` method.
-      action (:obj:`str`, optional): Action to perform in case of a
-        :exc:`TimeoutError` during the :meth:`send` method. Should be in:
+      input_block: The Block sending data through the link.
+      output_block: The Block receiving data through the link.
+      conditions: Deprecated, kept only for backward-compatibility.
+      modifiers: A :obj:`list` containing children of :ref:`Modifier` and/or
+        callables. If several objects given ,they will be called in the given
+        order. See :ref:`Modifiers` for more information.
+      timeout: Sets a timeout for sending the data in the link.
+      action: Action to perform in case of a :exc:`TimeoutError` during the
+        :meth:`send` method. Should be in:
         ::
 
           'warn', 'kill', 'NoWarn',
 
         any other value would be for debugging.
-      name (:obj:`str`, optional): Name of a link to recognize it on timeout.
+      name (:obj:`str`, optional): Name of the link, to differentiate it from
+        the others when debugging.
     """
 
     # For compatibility (condition is deprecated, use modifier)
-    if condition is not None:
-      modifier = condition
-    # --
+    if conditions is not None:
+      if modifiers is not None:
+        modifiers += conditions
+      else:
+        modifiers = conditions
+
+    # Setting the attributes
     self.name = name
     self.in_, self.out_ = Pipe()
     self.external_trigger = None
-    if modifier is not None:
-      self.modifiers = modifier if isinstance(modifier, list) else [modifier]
-    else:
-      self.modifiers = None
+    self.modifiers = modifiers
     self.timeout = timeout
     self.action = action
-    if None not in [input_block, output_block]:
+
+    if input_block is not None and output_block is not None:
       input_block.add_output(self)
       output_block.add_input(self)
 
@@ -322,11 +332,51 @@ class Link:
     return r
 
 
-def link(in_block, out_block, **kwargs) -> None:
-  """Function that links two blocks.
+def link(in_block,
+         out_block,
+         condition: Optional[Union[List[Union[Modifier, Callable]],
+                                   Union[Modifier, Callable]]] = None,
+         modifier: Optional[Union[List[Union[Modifier, Callable]],
+                                  Union[Modifier, Callable]]] = None,
+         timeout: float = 0.1,
+         action: Literal['warn', 'kill', 'NoWarn'] = "warn",
+         name: str = "link") -> None:
+  """Function linking two blocks, allowing to send data from one to the other.
 
-  Note:
-    For the object, see :ref:`Link`.
+  The created link is unidirectional, from the input block to the output block.
+  Under the hood, a link is basically a :class:`multiprocessing.Pipe` with
+  extra features.
+
+  Args:
+    in_block: The Block sending data through the link.
+    out_block: The Block receiving data through the link.
+    condition: Deprecated, kept only for backward-compatibility.
+    modifier: Either a child class of :ref:`Modifier`, or a callable, or a
+      :obj:`list` containing such objects. If several given (in a list), calls
+      them in the  given order. See :ref:`Modifiers` for more information.
+    timeout: Sets a timeout for sending the data in the link.
+    action: Action to perform in case of a :exc:`TimeoutError` during the
+      :meth:`send` method. Should be in:
+      ::
+
+        'warn', 'kill', 'NoWarn',
+
+      any other value would be for debugging.
+    name (:obj:`str`, optional): Name of the link, to differentiate it from
+      the others when debugging.
   """
 
-  Link(input_block=in_block, output_block=out_block, **kwargs)
+  # Forcing the conditions and modifiers into lists
+  if condition is not None and not isinstance(condition, list):
+    condition = [condition]
+  if modifier is not None and not isinstance(modifier, list):
+    modifier = [modifier]
+
+  # Actually creating the Link object
+  Link(input_block=in_block,
+       output_block=out_block,
+       conditions=condition,
+       modifiers=modifier,
+       timeout=timeout,
+       action=action,
+       name=name)
