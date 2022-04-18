@@ -98,7 +98,7 @@ class Recorder(Block):
 
   def finish(self) -> None:
     sleep(.5)  # Wait to finish last
-    r = self.inputs[0].recv_chunk_nostop()
+    r = self.inputs[0].recv_chunk_no_stop()
     if r:
       self.save(r)
 

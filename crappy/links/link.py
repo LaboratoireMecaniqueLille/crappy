@@ -18,8 +18,8 @@ from .._global import CrappyStop
 from ..modifier import Modifier
 
 
-def error_if_string(recv: Callable) -> Callable:
-  """Decorator to raise an error if the function returns a string."""
+def _error_if_string(recv: Callable) -> Callable:
+  """Decorator to raise an error if a callable returns a string."""
 
   @wraps(recv)
   def wrapper(*args, **kwargs):
@@ -31,19 +31,23 @@ def error_if_string(recv: Callable) -> Callable:
 
 
 class MethodThread(Thread):
-  """ThreadMethodThread, daemonic descendant class of :mod:`threading`.
-
-  Thread which simply runs the specified target method with the specified
+  """Thread that simply runs the specified target method with the specified
   arguments.
+
+  Stores the result of the target, as well as any raised exception.
   """
 
   def __init__(self, target: Callable, args, kwargs) -> None:
+    """Initializes the thread running the target and starts it."""
+
     Thread.__init__(self)
     self.setDaemon(True)
     self.target, self.args, self.kwargs = target, args, kwargs
     self.start()
 
-  def run(self) -> None:
+  def run(self) -> NoReturn:
+    """Runs the target, stores its result and any raised exception."""
+
     try:
       self.result = self.target(*self.args, **self.kwargs)
     except Exception as e:
@@ -52,20 +56,35 @@ class MethodThread(Thread):
       self.exception = None
 
 
-def win_timeout(timeout: float = None) -> Callable:
-  """Decorator for adding a timeout to a link send."""
+def _timeout_decorator(timeout: Optional[float] = None) -> Callable:
+  """Decorator for adding a timeout to a send operation on a link.
 
-  def win_timeout_proxy(f: Callable) -> Callable:
-    @wraps(f)
+  It prevents the send operation from blocking the code.
+  """
+
+  def win_timeout_proxy(send: Callable) -> Callable:
+    @wraps(send)
     def wrapper(*args, **kwargs) -> Any:
-      worker = MethodThread(f, args, kwargs)
+
+      # Starts the target
+      worker = MethodThread(send, args, kwargs)
+
+      # Just returns the worker if no timeout specified
       if timeout is None:
         return worker
+
+      # Waits for the worker to return
       worker.join(timeout)
+
+      # If it's taking too long, raising an exception
       if worker.is_alive():
         raise TimeoutError("timeout error in pipe send")
+
+      # Transmitting any exception raised by the worker
       elif worker.exception is not None:
         raise worker.exception
+
+      # If everything went fine, returning the result
       else:
         return worker.result
 
@@ -92,7 +111,7 @@ class Link:
                output_block=None,
                conditions: List[Union[Callable, Modifier]] = None,
                modifiers: List[Union[Callable, Modifier]] = None,
-               timeout: float = 0.1,
+               timeout: float = 1,
                action: Literal['warn', 'kill', 'NoWarn'] = "warn",
                name: str = "link") -> None:
     """Sets the instance attributes.
@@ -124,69 +143,84 @@ class Link:
         modifiers = conditions
 
     # Setting the attributes
-    self.name = name
-    self.in_, self.out_ = Pipe()
-    self.external_trigger = None
-    self.modifiers = modifiers
-    self.timeout = timeout
-    self.action = action
+    self._name = name
+    self._in, self._out = Pipe()
+    self._modifiers = modifiers
+    self._action = action
 
+    # Associating the link with the input and output blocks if they are given
     if input_block is not None and output_block is not None:
       input_block.add_output(self)
       output_block.add_input(self)
 
-  def close(self) -> None:
-    self.in_.close()
-    self.out_.close()
+  def send(self, value: Union[Dict[str, Any], str]) -> NoReturn:
+    """Sends a value through the link.
 
-  def send(self, value: Union[dict, str]) -> None:
-    """Sends the value, or a modified value if you pass it through a modifier.
+    In case of a timeout exception, executes the user-defined action. Raises
+    any other exception caught.
     """
 
+    # Trying to send a value through a link
     try:
-      self.send_timeout(value)
-    except TimeoutError as e:
-      if self.action == "warn":
-        print(
-            "WARNING : Timeout error in pipe send! Link name: %s" % self.name)
-      elif self.action == "kill":
-        print("Killing Link : ", e)
-        raise
-      elif self.action == "NoWarn":
+      self._send_timeout(value)
+
+    # If a timeout exception is raised, handling it according to the action
+    except TimeoutError as exc:
+      # Warning the user
+      if self._action == "warn":
+        print(f"WARNING : Timeout error in pipe send! Link name: {self._name}")
+      # Stopping the program
+      elif self._action == "kill":
+        raise TimeoutError("Killing Link : " + str(exc))
+      # Simply ignoring
+      elif self._action == "NoWarn":
         pass
-      else:  # for debugging !!
-        print(self.action)
-    except Exception as e:
-      print("Exception in link send %s : %s " % (self.name, str(e)))
+      # Printing the user-defined message
+      else:
+        print(self._action)
+
+    # Raising any other caught exception
+    except Exception as exc:
+      print(f"Exception in link send {self._name} : {str(exc)}")
       raise
 
-  @win_timeout(1)
-  def send_timeout(self, value: dict) -> None:
+  @_timeout_decorator(1)
+  def _send_timeout(self, value: Union[Dict[str, Any], str]) -> None:
     """Method for sending data with a given timeout on the link."""
 
     try:
-      if self.modifiers is None or isinstance(value, str):
-        self.out_.send(value)
+      # Sending if the value is None or a string
+      if self._modifiers is None or isinstance(value, str):
+        self._out.send(value)
+
+      # Else, first applying the modifiers
       else:
-        for mod in self.modifiers:
+        for mod in self._modifiers:
+          # Case when the modifier is a class
           if hasattr(mod, 'evaluate'):
             value = mod.evaluate(copy(value))
+          # Case when the modifier is a method
           else:
             value = mod(copy(value))
+          # Exiting the for loop if nothing left in the dict to send
           if value is None:
             break
+
+        # Finally, sending the dict to the link
         if value is not None:
-          self.out_.send(value)
-    except Exception as e:
-      print("Exception in link %s : %s " % (self.name, str(e)))
-      if not self.out_.closed:
-        self.out_.send('close')
-        self.out_.close()
+          self._out.send(value)
+
+    # Raising any exception caught, but first sending a stop message downstream
+    except Exception as exc:
+      print(f"Exception in link {self._name} : {str(exc)}")
+      if not self._out.closed:
+        self._out.send('close')
+        self._out.close()
       raise
 
-  @error_if_string  # Recv will raise an error if a string is received
-  def recv(self, blocking: bool = True) -> Dict[str, list]:
-    """Receives data.
+  @_error_if_string
+  def recv(self, blocking: bool = True) -> Optional[Dict[str, Any]]:
+    """Receives data from a link and returns it as a dict.
 
     Note:
       If ``blocking`` is :obj:`False`, returns :obj:`None` if there is no
@@ -203,36 +237,44 @@ class Link:
       pipe is empty.
     """
 
+    # Simply collecting the data to receive
     try:
-      if blocking or self.in_.poll():
-        return self.in_.recv()
+      if blocking or self.poll():
+        return self._in.recv()
 
-    except TimeoutError as e:
-      if self.action == "warn":
-        print(
-            "WARNING : Timeout error in pipe send! Link name: %s" % self.name)
-      elif self.action == "kill":
-        print("Killing Link %s : %s" % (self.name, str(e)))
-        raise
-      elif self.action == "NoWarn":
+    # If a timeout exception is raised, handling it according to the action
+    except TimeoutError as exc:
+      # Warning the user
+      if self._action == "warn":
+        print(f"WARNING : Timeout error in pipe recv! Link name: {self._name}")
+      # Stopping the program
+      elif self._action == "kill":
+        raise TimeoutError("Killing Link : " + str(exc))
+      # Simply ignoring
+      elif self._action == "NoWarn":
         pass
-      else:  # for debugging !!
-        print(self.action)
-    except Exception as e:
-      print("EXCEPTION in link %s : %s " % (self.name, str(e)))
-      if not self.in_.closed:
-        self.in_.close()
+      # Printing the user-defined message
+      else:
+        print(self._action)
+
+    # Raising any other caught exception
+    except Exception as exc:
+      print(f"Exception in link recv {self._name} : {str(exc)}")
       raise
 
   def poll(self) -> bool:
-    return self.in_.poll()
+    """Simple wrapper telling whether there's data in the link or not."""
+
+    return self._in.poll()
 
   def clear(self) -> NoReturn:
-    while self.in_.poll():
-      self.in_.recv_bytes()
+    """Flushes the link."""
 
-  def recv_last(self, blocking: bool = False) -> Dict[str, list]:
-    """Returns only the LAST value in the pipe, dropping all the others.
+    while self.poll():
+      self._in.recv_bytes()
+
+  def recv_last(self, blocking: bool = False) -> Optional[Dict[str, Any]]:
+    """Returns only the last value in the pipe, dropping all the others.
 
     Note:
       If ``blocking`` is :obj:`False`, will return :obj:`None` if there is no
@@ -241,95 +283,122 @@ class Link:
       If ``blocking`` is :obj:`True`, will wait for at least one data.
 
     Warning:
-      Unlike :meth:`recv`, default is NON blocking.
+      Unlike :meth:`recv`, default is non blocking.
     """
 
-    if blocking:
-      data = self.recv()
-    else:
-      data = None
-    while self.in_.poll():
-      data = self.recv()
-    return data
+    # First, block if necessary
+    data = self.recv(blocking)
 
-  def recv_chunk(self, length: int = 0) -> Dict[str, list]:
-    """Allows you to receive a chunk of data.
+    # Then, flush the pipe and keep only the last value
+    while True:
+      new = self.recv(blocking=False)
+      if new is None:
+        return data
+      data = new
 
-    If ``length`` `> 0` it will return a :obj:`dict` containing :obj:`list` of
-    the last length received data.
-
-    If ``length`` `= 0`, it will return all the waiting data until the pipe is
-    empty.
-
-    If the pipe is already empty, it will wait to return at least one value.
-    """
-
-    ret = self.recv()
-    for k in ret:
-      ret[k] = [ret[k]]
-    c = 0
-    while c < length or (length <= 0 and self.poll()):
-      c += 1
-      try:
-        data = self.recv()  # Here, we need to send our data first
-      except CrappyStop:
-        self.out_.send("stop")  # To re-raise on next call
-        break
-      for k in ret:
-        try:
-          ret[k].append(data[k])
-        except KeyError:
-          raise IOError(str(self) + " Got data without label " + k)
-    return ret
-
-  def recv_delay(self, delay: float) -> dict:
-    """Useful for blocks that don't need data all so frequently.
-
-    It will continuously receive data for a given delay and return them as a
-    single :obj:`dict` containing :obj:`list` of the values.
+  def recv_chunk(self, blocking: bool = True) -> Optional[Dict[str, list]]:
+    """Returns all the data waiting in a link.
 
     Note:
-      All the :meth:`recv` calls are blocking so this method will take AT LEAST
+      If ``blocking`` is :obj:`False`, will return :obj:`None` if there is no
+      data waiting.
+
+      If ``blocking`` is :obj:`True`, will wait for at least one data.
+    """
+
+    # First, block if necessary and return if the link is empty
+    ret = self.recv(blocking)
+    if ret is None:
+      return
+
+    # Putting the received values in lists
+    for label, value in ret.items():
+      ret[label] = [value]
+
+    while True:
+      try:
+        data = self.recv(blocking=False)
+
+      # Sending a stop message if a CrappyStop is raised
+      except CrappyStop:
+        self._out.send("stop")
+        return ret
+
+      # Return when the link is empty
+      if data is None:
+        return ret
+
+      # Adding the received data to the created lists
+      for label in ret:
+        try:
+          ret[label].append(data[label])
+        # Raising an exception in case a label is missing
+        except KeyError:
+          raise IOError(f"{str(self)} Got data without label {label}")
+
+  def recv_delay(self, delay: float) -> Dict[str, Any]:
+    """Same as :meth:`recv_chunk` except it runs for a given delay no matter
+    if the link is empty or not.
+
+    Useful for blocks with a low looping frequency that don't need data so
+    frequently.
+
+    Note:
+      All the :meth:`recv` calls are blocking so this method will take at least
       ``delay`` seconds to return, but it could be more since it may wait for
       data.
 
       Also, it will return at least one reading.
     """
 
-    t = time()
-    ret = self.recv()  # If we get CrappyStop at this instant, no data loss
-    for k in ret:
-      ret[k] = [ret[k]]
-    while time() - t < delay:
+    t_init = time()
+    # This first call to recv is blocking
+    ret = self.recv(blocking=True)
+
+    # Putting the received values in lists
+    for label, value in ret.items():
+      ret[label] = [value]
+
+    while time() - t_init < delay:
       try:
-        data = self.recv()  # Here, we need to send our data first
+        data = self.recv(blocking=True)
+
+      # Sending a stop message if a CrappyStop is raised
       except CrappyStop:
-        self.out_.send("stop")  # To re-raise on next call
+        self._out.send("stop")
         break
-      for k in ret:
+
+      # Adding the received data to the created lists
+      for label in ret:
         try:
-          ret[k].append(data[k])
+          ret[label].append(data[label])
+        # Raising an exception in case a label is missing
         except KeyError:
-          raise IOError(str(self) + " Got data without label " + k)
+          raise IOError(f"{str(self)} Got data without label {label}")
+
     return ret
 
-  def recv_chunk_nostop(self) -> Union[dict, None]:
+  def recv_chunk_no_stop(self) -> Optional[Dict[str, Any]]:
     """Experimental feature, to be used in :meth:`finish` methods to recover
     the final remaining data (possibly after a stop signal)."""
 
-    lst = []
-    while self.in_.poll():
-      data = self.in_.recv()
+    # First, collecting all the remaining data
+    recv = []
+    while self.poll():
+      data = self._in.recv()
       if isinstance(data, dict):
-        lst.append(data)
-    r = {}
-    for d in lst:
-      for k, v in d.items():
-        if k in r:
-          r[k].append(v)
+        recv.append(data)
+
+    # Then, organizing it into a nice dict to return
+    ret = {}
+    for data in recv:
+      for label, value in data.items():
+        if label in ret:
+          ret[label].append(value)
         else:
-          r[k] = [v]
-    return r
+          ret[label] = [value]
+
+    return ret if ret else None
 
 
 def link(in_block,
@@ -338,9 +407,9 @@ def link(in_block,
                                    Union[Modifier, Callable]]] = None,
          modifier: Optional[Union[List[Union[Modifier, Callable]],
                                   Union[Modifier, Callable]]] = None,
-         timeout: float = 0.1,
+         timeout: float = 1,
          action: Literal['warn', 'kill', 'NoWarn'] = "warn",
-         name: str = "link") -> None:
+         name: str = "link") -> NoReturn:
   """Function linking two blocks, allowing to send data from one to the other.
 
   The created link is unidirectional, from the input block to the output block.
