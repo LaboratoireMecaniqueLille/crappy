@@ -261,7 +261,7 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
                        answer_file=answer_file,
                        block_lock=block_lock,
                        current_lock=current_lock,
-                       serial_nr='')
+                       serial_nr=ft232h_ser_num)
     self._rst_pin_ads = rst_pin_ads
     self._cs_pin_ads = cs_pin_ads
     self._drdy_pin_ads = drdy_pin_ads

@@ -104,7 +104,7 @@ class Mprls(Usb_server, InOut):
                          answer_file=answer_file,
                          block_lock=block_lock,
                          current_lock=current_lock,
-                         serial_nr='')
+                         serial_nr=ft232h_ser_num)
 
     if not isinstance(device_address, int):
       raise TypeError("device_address should be an integer.")

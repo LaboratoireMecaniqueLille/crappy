@@ -190,7 +190,7 @@ class Mcp9600(Usb_server, InOut):
                          answer_file=answer_file,
                          block_lock=block_lock,
                          current_lock=current_lock,
-                         serial_nr='',
+                         serial_nr=ft232h_ser_num,
                          i2c_speed=20E3)
     elif backend == 'blinka':
       self._i2c = busio.I2C(board.SCL, board.SDA, frequency=200000)

@@ -192,7 +192,7 @@ class Ads1115(Usb_server, InOut):
                          answer_file=answer_file,
                          block_lock=block_lock,
                          current_lock=current_lock,
-                         serial_nr='')
+                         serial_nr=ft232h_ser_num)
     elif backend == 'blinka':
       i2c = busio.I2C(board.SCL, board.SDA)
       self._ads = ads.ADS1115(i2c)
