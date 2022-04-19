@@ -2058,6 +2058,56 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                serial_nr: Optional[str] = None,
                i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:
+    """Checks the argument validity and initializes the device.
+
+    Args:
+      mode: The communication mode, can be :
+        ::
+
+          'SPI', 'I2C', 'GPIO_only', 'Write_serial_nr'
+
+        GPIOs can be driven in any mode, but faster speeds are achievable in
+        `GPIO_only` mode.
+      block_number: The index the block driving this ft232h_server instance has
+        been assigned.
+      current_file: A file in which the index of the block currently allowed to
+        drive the USB server is written.
+      command_file: A file in which the current command to be executed by the
+        USB server is written.
+      answer_file: A file in which the answer to the current command is
+        written.
+      block_lock: A lock assigned to this block only, for signaling the USB
+        server when the command has been written in the command_file.
+      current_lock: A lock common to all the blocks that allows the one block
+        holding it to communicate with the USB server.
+      serial_nr (:obj:`str`, optional): The serial number of the FT232H to
+        drive. In `Write_serial_nr` mode, the serial number to be written.
+      i2c_speed: In I2C mode, the I2C bus clock frequency in Hz. Available
+        values are :
+        ::
+
+          100E3, 400E3, 1E6
+
+        or any value between `10kHz` and `100kHz`. Lowering below the default
+        value may solve I2C clock stretching issues on some devices.
+
+      spi_turbo: Increases the achievable bus speed, but may not work with some
+        devices.
+
+    Note:
+      - **CS pin**:
+        The CS pin for selecting SPI devices is always `D3`. This pin is
+        reserved and cannot be used as a GPIO. If you want to drive the CS line
+        manually, it is possible not to drive the CS pin by setting the SPI
+        parameter :attr:`no_cs` to :obj:`True` and to drive the CS line from a
+        GPIO instead.
+
+      - ``mode``:
+        It is not possible to simultaneously control slaves over SPI and I2C,
+        due to different hardware requirements for the two protocols. Trying to
+        do so will most likely raise an error or lead to inconsistent behavior.
+
+        """
 
     if mode not in ft232h_modes:
       raise ValueError("mode should be in {}".format(ft232h_modes))
