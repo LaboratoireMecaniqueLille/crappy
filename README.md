@@ -8,6 +8,26 @@ Command and Real-time Acquisition in Parallelized PYthon (CRAPPY)
 This package aims to provide an open-source software canvas for developing 
 experimental tests in a versatile and accessible way.
 
+Presentation
+------------
+
+Crappy is developed at the [LaMCube](https://lamcube.univ-lille.fr/), a
+mechanical research laboratory based in Lille, France to provide a powerful and
+easy-to-use framework for materials testing.
+
+In order to understand the mechanical behaviour of materials, we tend to perform
+tests with more and more sensors and actuators from various suppliers. There's
+thus an increasing need to drive these devices in a synchronized way while
+managing the high complexity of the setups.
+
+As we are one step ahead of industrials, the commercially available testing
+solutions may also not be well-suited to our objectives. Custom software
+solutions thus need to be developed in order to further improve our tests.
+
+These are the original purposes of Crappy : providing a framework for
+controlling tests and driving hardware in a synchronized and
+supplier-independent software environment.
+
 Requirements
 ------------
 
@@ -15,32 +35,16 @@ To install Crappy you will need Python 3 (3.6 or higher) with the following
 modules :
 - [Numpy](https://numpy.org/) (1.19.0 or higher)
 
-These modules are not mandatory but will provide additional functionalities:
-- [Matplotlib](https://matplotlib.org/) (**Recommended**, 1.5.3 or higher, for plotting graphs 
-  and displaying images)
-- [openCV](https://opencv.org/) (3.0 or higher, to perform image acquisition and 
-  analysis)
-- [pyserial](https://pypi.org/project/pyserial/) (to interface with serial 
-  sensors and actuators)
-- [Tk](https://docs.python.org/3/library/tkinter.html) (For the configuration
-  interface of cameras)
-- [scikit-image](https://scikit-image.org/) (0.11 or higher)
-- [Ximea API](https://www.ximea.com/support/wiki/apis/xiapi) (for ximea cameras)
-- [Labjack LJM](https://labjack.com/support/software/examples/ljm/python) (for 
-  labjack support)
-- [Simple-ITK](https://simpleitk.org/) (for faster image saving)
-- [pycuda](https://documen.tician.de/pycuda/) (for real-time correlation)
-- [Comedi](https://www.comedi.org/) driver (Linux Only, for comedi acquisition 
-  boards)
-- [PyDaqmx](https://pythonhosted.org/PyDAQmx/) (Windows only, for NI boards)
-- [openDAQ](https://pypi.org/project/opendaq/) (for opendaq board)
-- [niFgen](https://www.ni.com/fr-fr/support/downloads/drivers/download.ni-fgen.html#346233) 
-  (package from National Instrument, Windows only)
+In addition, other modules are necessary for a wide range of applications in Crappy 
+without being mandatory for installing the module. The main ones are [Matplotlib](https://matplotlib.org/),
+[openCV](https://opencv.org/), [pyserial](https://pypi.org/project/pyserial/)
+and [Tk](https://docs.python.org/3/library/tkinter.html).
 
 Installation
 ------------
 
-Tested on Windows 10, Ubuntu 18.04 and 20.04, and MacOS Sierra :
+Tested on Windows 10, Ubuntu 18.04 and 20.04, and MacOS Sierra.
+Simply run in a terminal (with Python installed) :
 
     pip install crappy
 
@@ -48,23 +52,24 @@ or
 
     pip3 install crappy
 
-See [documentation](https://crappy.readthedocs.io/en/latest/installation.html) 
-for more details.
+Refer to the dedicated [installation section](https://crappy.readthedocs.io/en/latest/installation.html) 
+of the documentation for more details.
 
 Documentation
 -------------
 
-The latest version of the documentation can be accessed 
-[here](https://crappy.readthedocs.io/).
+The latest versions of the documentation can be accessed on our
+[ReadTheDocs](https://crappy.readthedocs.io/) page. It contains descriptions of
+Crappy's features, tutorials, and other useful information.
 
 Bug reports
 -----------
 
-Please report bugs in the [dedicated github section](https://github.com/LaboratoireMecaniqueLille/crappy/issues).
+Please report bugs, issues, ask for help or give feedback in the [dedicated github section](https://github.com/LaboratoireMecaniqueLille/crappy/issues).
 
 License information
 -------------------
 
 Refer to the file [``LICENSE.txt``](https://github.com/LaboratoireMecaniqueLille/crappy/blob/master/LICENSE) 
 for information on the history of this software, terms & conditions for usage, 
-and a DISCLAIMER OF ALL WARRANTIES.
+and a disclaimer of all warranties.
