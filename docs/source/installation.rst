@@ -16,7 +16,7 @@ modules :
 - `numpy <https://numpy.org/>`_ (1.19.0 or higher)
 
 The following modules are not mandatory but will provide additional
-functionalities :
+functionalities (this list is not exhaustive) :
 
 - `matplotlib <https://matplotlib.org/>`_ (1.5.3 or higher, for plotting graphs
   and displaying images)
@@ -49,9 +49,7 @@ A. For Linux users
 These steps have been tested for Ubuntu 18.04 and 20.04 but should work on other
 distributions as well, as long as Python 3.6 is installed.
 
-**1.** The first step is to get the required dependencies.
-
-First make sure that you have ``pip`` installed.
+**1.** First make sure that you have ``pip`` installed.
 
 .. code-block:: shell-session
 
@@ -59,33 +57,25 @@ First make sure that you have ``pip`` installed.
    sudo apt upgrade
    sudo apt install python3-pip
 
-**1.a.** Install the dependencies in a ``virtualenv`` (recommended) :
+**2.** Then it's time to install Crappy ! There are three possible ways.
+
+**2.a.** For **regular users**, install Crappy in a ``virtualenv`` (recommended) :
 
 .. code-block:: shell-session
 
   workon myenv
-  pip3 install <module>
+  pip3 install crappy
 
 If you're not familiar with virtual environments,
 `here <https://virtualenv.pypa.io/en/latest/>`_'s more documentation.
 
-**1.b.** Or install the required Python modules on the system :
-
-.. code-block:: shell-session
-
-  pip3 install <module>
-
-**2.** You can now install Crappy. Again, two ways to go.
-
-**2.a.** For **regular users**, install using ``pip`` (either in a virtualenv or
-on the system) :
+**2.b.** For **regular users**, install Crappy on the system :
 
 .. code-block:: shell-session
 
   pip3 install crappy
 
-
-**2.b.** For **developers**, get the sources using ``git`` and use ``setup``
+**2.c.** For **developers**, get the sources using ``git`` and use ``setup``
 script :
 ::
 
@@ -94,16 +84,46 @@ script :
   cd crappy
   sudo python3 setup.py install
 
+This installation can also be done in a virtual environment.
 If you're not familiar with ``git``, documentation can be found
 `there <https://git-scm.com/doc>`_.
 
 .. important::
-  For adding C/C++ modules to Crappy you **must** run a ``setup`` install, which
-  will be way more convenient if you get Crappy from ``git``.
+  For adding C/C++ modules to Crappy you **must** run a ``setup`` install, so
+  you need to get Crappy from ``git``.
+
+**3.** Finally, you can install additional packages to extend Crappy's functionalities.
+
+**3.a.** In a ``virtualenv`` :
+
+.. code-block:: shell-session
+
+  workon myenv
+  pip3 install <module>
+
+**3.b.** Or system-wide :
+
+.. code-block:: shell-session
+
+  pip3 install <module>
+
+**3.c** It is also possible to use the extras for installing additional
+dependencies directly along with Crappy :
+
+.. code-block:: shell-session
+
+  pip3 install crappy[<extra>]
+
+Currently, the available extras are ``SBC``, ``image``, ``hardware`` and ``main``.
+They contain respectively modules for interfacing with single board computers,
+for recording and displaying images and videos, for interfacing with hardware over
+serial or USB, and ``main`` contains the three most used modules in Crappy
+after the mandatory Numpy.
 
 .. note::
   - Replace ``<module>`` by the name of the module you want to install.
   - Replace ``<path>`` by the path where you want Crappy to be located.
+  - Replace ``<extra>`` by the name of the extra to install.
 
 B. For Windows users
 --------------------

@@ -21,7 +21,6 @@ sys.setrecursionlimit(1500)
 
 # Todo:
 #   Include the link to the scientific article in the documentation
-#   Talk about the extras for install
 
 
 # -- Project information -----------------------------------------------------
