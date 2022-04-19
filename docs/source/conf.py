@@ -19,10 +19,6 @@ from crappy import __version__
 sys.path.insert(0, os.path.abspath('../..'))
 sys.setrecursionlimit(1500)
 
-# Todo:
-#   Include the link to the scientific article in the documentation
-
-
 # -- Project information -----------------------------------------------------
 
 project = 'Crappy'

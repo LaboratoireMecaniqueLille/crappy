@@ -16,5 +16,6 @@ acquisition on complex experimental setups.
   blocklist
   documentation
   developers
+  citing
   bugs
   license
