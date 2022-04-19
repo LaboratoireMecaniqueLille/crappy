@@ -1,15 +1,10 @@
 # coding: utf-8
 
-# Todo:
-#   Allow to actually set the timeout for sending
-#   Allow to set the timeout for receiving
-
 
 from multiprocessing import Pipe
 from time import time
 from threading import Thread
 from copy import copy
-from functools import wraps
 from typing import Callable, Union, Any, Dict, NoReturn, Optional, Literal, \
   List
 
@@ -17,96 +12,7 @@ from .._global import CrappyStop
 from ..modifier import Modifier
 
 
-def _error_if_string(recv: Callable) -> Callable:
-  """Decorator to raise an error if a callable returns a string."""
-
-  @wraps(recv)
-  def wrapper(*args, **kwargs):
-    ret = recv(*args, **kwargs)
-    if isinstance(ret, str):
-      raise CrappyStop
-    return ret
-  return wrapper
-
-
-class MethodThread(Thread):
-  """Thread that simply runs the specified target method with the specified
-  arguments.
-
-  Stores the result of the target, as well as any raised exception.
-  """
-
-  def __init__(self, target: Callable, args, kwargs) -> None:
-    """Initializes the thread running the target and starts it."""
-
-    Thread.__init__(self)
-    self.setDaemon(True)
-    self.target, self.args, self.kwargs = target, args, kwargs
-    self.start()
-
-  def run(self) -> NoReturn:
-    """Runs the target, stores its result and any raised exception."""
-
-    try:
-      self.result = self.target(*self.args, **self.kwargs)
-    except Exception as e:
-      self.exception = e
-    else:
-      self.exception = None
-
-
-def _timeout_decorator(timeout: Optional[float] = None) -> Callable:
-  """Decorator for adding a timeout to a send operation on a link.
-
-  It prevents the send operation from blocking the code.
-  """
-
-  def win_timeout_proxy(send: Callable) -> Callable:
-    @wraps(send)
-    def wrapper(*args, **kwargs) -> Any:
-
-      # Starts the target
-      worker = MethodThread(send, args, kwargs)
-
-      # Just returns the worker if no timeout specified
-      if timeout is None:
-        return worker
-
-      # Waits for the worker to return
-      worker.join(timeout)
-
-      # If it's taking too long, raising an exception
-      if worker.is_alive():
-        raise TimeoutError("timeout error in pipe send")
-
-      # Transmitting any exception raised by the worker
-      elif worker.exception is not None:
-        raise worker.exception
-
-      # If everything went fine, returning the result
-      else:
-        return worker.result
-
-    return wrapper
-
-  return win_timeout_proxy
-
-
-class Count_links:
-  """This class is a parent of the Link class and allows numbering the links
-  in the order in which they are instantiated."""
-
-  count = 0
-
-  @classmethod
-  def link_count(cls) -> int:
-    """Simply increments the link count and returns it."""
-
-    cls.count += 1
-    return cls.count
-
-
-class Link(Count_links):
+class Link:
   """This class is used for transferring information between the blocks.
 
   The created link is unidirectional, from the input block to the output block.
@@ -118,6 +24,8 @@ class Link(Count_links):
     value. The modifiers should either be children of :ref:`Modifier` or
     callables taking a :obj:`dict` as argument and returning a :obj:`dict`.
   """
+
+  count = 0
 
   def __init__(self,
                input_block=None,
@@ -149,8 +57,6 @@ class Link(Count_links):
         in the order in which they are instantiated in the code.
     """
 
-    count = super().link_count()
-
     # For compatibility (condition is deprecated, use modifier)
     if conditions is not None:
       if modifiers is not None:
@@ -159,16 +65,24 @@ class Link(Count_links):
         modifiers = conditions
 
     # Setting the attributes
+    count = self._count_links()
     self._name = name if name is not None else f'link{count}'
-    print(self._name)
     self._in, self._out = Pipe()
     self._modifiers = modifiers
     self._action = action
+    self._timeout = timeout
 
     # Associating the link with the input and output blocks if they are given
     if input_block is not None and output_block is not None:
       input_block.add_output(self)
       output_block.add_input(self)
+
+  @classmethod
+  def _count_links(cls) -> int:
+    """Simply increments the link count and returns it."""
+
+    cls.count += 1
+    return cls.count
 
   def send(self, value: Union[Dict[str, Any], str]) -> NoReturn:
     """Sends a value through the link.
@@ -179,7 +93,15 @@ class Link(Count_links):
 
     # Trying to send a value through a link
     try:
-      self._send_timeout(value)
+      send_job = Thread(target=self._send_timeout, args=(value,), daemon=True)
+      send_job.start()
+
+      # Waits for the thread to return
+      send_job.join(self._timeout)
+
+      # If it's taking too long, raising an exception
+      if send_job.is_alive():
+        raise TimeoutError
 
     # If a timeout exception is raised, handling it according to the action
     except TimeoutError as exc:
@@ -201,7 +123,6 @@ class Link(Count_links):
       print(f"Exception in link send {self._name} : {str(exc)}")
       raise
 
-  @_timeout_decorator(1)
   def _send_timeout(self, value: Union[Dict[str, Any], str]) -> None:
     """Method for sending data with a given timeout on the link."""
 
@@ -235,7 +156,6 @@ class Link(Count_links):
         self._out.close()
       raise
 
-  @_error_if_string
   def recv(self, blocking: bool = True) -> Optional[Dict[str, Any]]:
     """Receives data from a link and returns it as a dict.
 
@@ -254,10 +174,16 @@ class Link(Count_links):
       pipe is empty.
     """
 
-    # Simply collecting the data to receive
     try:
       if blocking or self.poll():
-        return self._in.recv()
+        # Simply collecting the data to receive
+        ret = self._in.recv()
+
+        # Raising a CrappyStop in case a string is received
+        if isinstance(ret, str):
+          raise CrappyStop
+
+        return ret
 
     # If a timeout exception is raised, handling it according to the action
     except TimeoutError as exc:
@@ -274,7 +200,11 @@ class Link(Count_links):
       else:
         print(self._action)
 
-    # Raising any other caught exception
+    # Raising any CrappyStop
+    except CrappyStop:
+      raise
+
+    # Raising any other caught exception and displaying message
     except Exception as exc:
       print(f"Exception in link recv {self._name} : {str(exc)}")
       raise
