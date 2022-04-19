@@ -3,7 +3,6 @@
 # Todo:
 #   Allow to actually set the timeout for sending
 #   Allow to set the timeout for receiving
-#   Assign different names to the links with a class attribute
 
 
 from multiprocessing import Pipe
@@ -93,7 +92,21 @@ def _timeout_decorator(timeout: Optional[float] = None) -> Callable:
   return win_timeout_proxy
 
 
-class Link:
+class Count_links:
+  """This class is a parent of the Link class and allows numbering the links
+  in the order in which they are instantiated."""
+
+  count = 0
+
+  @classmethod
+  def link_count(cls) -> int:
+    """Simply increments the link count and returns it."""
+
+    cls.count += 1
+    return cls.count
+
+
+class Link(Count_links):
   """This class is used for transferring information between the blocks.
 
   The created link is unidirectional, from the input block to the output block.
@@ -113,7 +126,7 @@ class Link:
                modifiers: List[Union[Callable, Modifier]] = None,
                timeout: float = 1,
                action: Literal['warn', 'kill', 'NoWarn'] = "warn",
-               name: str = "link") -> None:
+               name: Optional[str] = None) -> None:
     """Sets the instance attributes.
 
     Args:
@@ -131,9 +144,12 @@ class Link:
           'warn', 'kill', 'NoWarn',
 
         any other value would be for debugging.
-      name (:obj:`str`, optional): Name of the link, to differentiate it from
-        the others when debugging.
+      name: Name of the link, to differentiate it from the others when
+        debugging. If no specific name is given, the links are anyway numbered
+        in the order in which they are instantiated in the code.
     """
+
+    count = super().link_count()
 
     # For compatibility (condition is deprecated, use modifier)
     if conditions is not None:
@@ -143,7 +159,8 @@ class Link:
         modifiers = conditions
 
     # Setting the attributes
-    self._name = name
+    self._name = name if name is not None else f'link{count}'
+    print(self._name)
     self._in, self._out = Pipe()
     self._modifiers = modifiers
     self._action = action
@@ -409,7 +426,7 @@ def link(in_block,
                                   Union[Modifier, Callable]]] = None,
          timeout: float = 1,
          action: Literal['warn', 'kill', 'NoWarn'] = "warn",
-         name: str = "link") -> NoReturn:
+         name: Optional[str] = None) -> NoReturn:
   """Function linking two blocks, allowing to send data from one to the other.
 
   The created link is unidirectional, from the input block to the output block.
@@ -431,8 +448,9 @@ def link(in_block,
         'warn', 'kill', 'NoWarn',
 
       any other value would be for debugging.
-    name (:obj:`str`, optional): Name of the link, to differentiate it from
-      the others when debugging.
+    name: Name of the link, to differentiate it from the others when debugging.
+      If no specific name is given, the links are anyway numbered in the order
+      in which they are instantiated in the code.
   """
 
   # Forcing the conditions and modifiers into lists
