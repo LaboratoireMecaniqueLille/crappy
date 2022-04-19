@@ -5,7 +5,7 @@ from multiprocessing.connection import Connection
 import multiprocessing.synchronize
 from _io import FileIO
 from tempfile import TemporaryFile
-from typing import List, Dict
+from typing import List, Dict, Any
 from .._global import OptionalModule
 try:
   from usb.core import find, Device, USBTimeoutError
@@ -32,7 +32,7 @@ class Server_process(Process):
                answer_file: FileIO,
                lock_pool: List[multiprocessing.synchronize.RLock],
                current_lock: multiprocessing.synchronize.RLock,
-               dev_dict: Dict[str, Device]):
+               dev_dict: Dict[str, Any]):
     """Simply passes the args as instance attributes.
 
     Args:
@@ -66,7 +66,7 @@ class Server_process(Process):
 
   def _send_command(self,
                     command: bytes,
-                    device: Device,
+                    device,
                     serial_nr: str,
                     current_block: int) -> bytes:
     """Sends commands to the USB devices and returns the answer.
