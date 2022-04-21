@@ -34,7 +34,7 @@ Citing Crappy
 If Crappy has been of help in your research, please reference it in your 
 academic publications by citing the following article :
 
-- Couty V, Witz J-F., Martel C. et al., *Command and Real-Time Acquisition in 
+- Couty V., Witz J-F., Martel C. et al., *Command and Real-Time Acquisition in 
 Parallelized Python, a Python module for experimental setups*, SoftwareX 16, 
 2021, DOI: 10.1016/j.softx.2021.100848. 
 ([publisher link](https://www.sciencedirect.com/science/article/pii/S2352711021001278))
