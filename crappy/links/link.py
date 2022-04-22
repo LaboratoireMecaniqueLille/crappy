@@ -66,7 +66,7 @@ class Link:
 
     # Setting the attributes
     count = self._count_links()
-    self._name = name if name is not None else f'link{count}'
+    self.name = name if name is not None else f'link{count}'
     self._in, self._out = Pipe()
     self._modifiers = modifiers
     self._action = action
@@ -107,7 +107,7 @@ class Link:
     except TimeoutError as exc:
       # Warning the user
       if self._action == "warn":
-        print(f"WARNING : Timeout error in pipe send! Link name: {self._name}")
+        print(f"WARNING : Timeout error in pipe send! Link name: {self.name}")
       # Stopping the program
       elif self._action == "kill":
         raise TimeoutError("Killing Link : " + str(exc))
@@ -120,7 +120,7 @@ class Link:
 
     # Raising any other caught exception
     except Exception as exc:
-      print(f"Exception in link send {self._name} : {str(exc)}")
+      print(f"Exception in link send {self.name} : {str(exc)}")
       raise
 
   def _send_timeout(self, value: Union[Dict[str, Any], str]) -> None:
@@ -150,7 +150,7 @@ class Link:
 
     # Raising any exception caught, but first sending a stop message downstream
     except Exception as exc:
-      print(f"Exception in link {self._name} : {str(exc)}")
+      print(f"Exception in link {self.name} : {str(exc)}")
       if not self._out.closed:
         self._out.send('close')
         self._out.close()
@@ -189,7 +189,7 @@ class Link:
     except TimeoutError as exc:
       # Warning the user
       if self._action == "warn":
-        print(f"WARNING : Timeout error in pipe recv! Link name: {self._name}")
+        print(f"WARNING : Timeout error in pipe recv! Link name: {self.name}")
       # Stopping the program
       elif self._action == "kill":
         raise TimeoutError("Killing Link : " + str(exc))
@@ -206,7 +206,7 @@ class Link:
 
     # Raising any other caught exception and displaying message
     except Exception as exc:
-      print(f"Exception in link recv {self._name} : {str(exc)}")
+      print(f"Exception in link recv {self.name} : {str(exc)}")
       raise
 
   def poll(self) -> bool:

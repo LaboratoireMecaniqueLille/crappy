@@ -11,11 +11,12 @@ No required hardware.
 import crappy
 
 
-class Delay:
+class Delay(crappy.modifier.Modifier):
   """Modifier to add a delay to one of the inputs, demonstrating how Multiplex
   will wait for data."""
 
   def __init__(self, n):
+    super().__init__()
     self.n = n
     self.hist = []
 
@@ -35,7 +36,7 @@ if __name__ == "__main__":
          condition1='cmd2>1', condition2='cmd2<-1', cycles=1e30)
       ], freq=50, cmd_label='cmd2')
 
-  mul = crappy.blocks.Multiplex()
+  mul = crappy.blocks.Multiplex(verbose=True)
 
   # crappy.link(g1, mul)
   crappy.link(g1, mul, modifier=Delay(50))
