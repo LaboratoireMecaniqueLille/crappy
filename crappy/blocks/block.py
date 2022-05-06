@@ -49,7 +49,6 @@ class Block(Process):
     # pipe2->pipe1 to set process status to the parent
     self.pipe1, self.pipe2 = Pipe()
     self._status = "idle"
-    self.in_process = False  # To know if we are in the process or not
     self.niceness = 0
     self.labels = []
 
@@ -63,7 +62,6 @@ class Block(Process):
     cls.instances = WeakSet()
 
   def run(self) -> None:
-    self.in_process = True  # we are in the process
     self.status = "initializing"
     try:
       self.prepare()
@@ -317,7 +315,7 @@ class Block(Process):
       - `"error"`: An error occurred and the block stopped.
     """
 
-    if not self.in_process:
+    if self.pid is not None:
       while self.pipe1.poll():
         try:
           self._status = self.pipe1.recv()
@@ -336,7 +334,8 @@ class Block(Process):
 
   @status.setter
   def status(self, s: str) -> NoReturn:
-    assert self.in_process, "Cannot set status from outside of the process!"
+    assert self.pid is not None, "Cannot set status from outside of the " \
+                                 "process!"
     self.pipe2.send(s)
     self._status = s
 
