@@ -511,12 +511,13 @@ class Block(Process):
       for link, dict_ in zip(inputs, rcv):
         if not link.poll():
           continue
-        new = link.recv_chunk()
-        for key, value in new.items():
-          if key in dict_:
-            dict_[key].extend(value)
-          else:
-            dict_[key] = value
+        new = link.recv_chunk(blocking=False)
+        if new is not None:
+          for key, value in new.items():
+            if key in dict_:
+              dict_[key].extend(value)
+            else:
+              dict_[key] = value
 
     received = [{} for _ in self.inputs]
 
@@ -526,11 +527,11 @@ class Block(Process):
 
     # Poll the pipes and read the data every poll_delay until delay has expired
     else:
-      last_t = t = time()
+      last_t = time()
       while True:
         sleep(max(0., poll_delay - time() + last_t))
         poll(self.inputs, received)
-        if time() - t > delay:
+        if time() - last_t > delay:
           break
 
     return received
