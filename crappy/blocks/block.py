@@ -52,6 +52,8 @@ class Block(Process):
     self.niceness = 0
     self.labels = []
 
+    self._all_last_values = None
+
   def __new__(cls, *args, **kwargs) -> Process:
     instance = super().__new__(cls)
     Block.instances.add(instance)
@@ -451,9 +453,7 @@ class Block(Process):
       ret.update(self._last_values[i])
     return ret
 
-  def get_all_last(self,
-                   num: Union[Optional[List[int]],
-                              Optional[int]] = None) -> Dict[str, list]:
+  def get_all_last(self, blocking: bool = True) -> Dict[str, list]:
     """To get the data from all links of the block.
 
     It is almost the same as :meth:`get_last`, but will return all the data
@@ -461,25 +461,24 @@ class Block(Process):
 
     Also, if multiple links have the same label, only the last link's value
     will be kept.
+
+    Args:
+      blocking: If :obj:`True`, blocks until there's at least one value
+        received for each label.
     """
 
-    if not hasattr(self, '_all_last_values'):
-      self._all_last_values = [{}] * len(self.inputs)
-    if num is None:
-      num = range(len(self.inputs))
-    elif not isinstance(num, list):
-      num = [num]
-    for i in num:
-      if not self._all_last_values[i] or self.inputs[i].poll():
-        self._all_last_values[i] = self.inputs[i].recv_chunk()
-      else:
-        # Dropping all data (already sent on last call) except the last
-        # to make sure the block has at least one value
-        for key in self._all_last_values[i]:
-          self._all_last_values[i][key][:-1] = []
-    ret = {}
-    for i in num:
-      ret.update(self._all_last_values[i])
+    if self._all_last_values is None:
+      self._all_last_values = {link: dict() for link in self.inputs}
+
+    for link in self.inputs:
+      new_values = link.recv_chunk(blocking=blocking)
+      if new_values is not None:
+        self._all_last_values[link].update(new_values)
+
+    ret = dict()
+    for link in self.inputs:
+      ret.update(self._all_last_values[link])
+
     return ret
 
   def recv_all_delay(self,
