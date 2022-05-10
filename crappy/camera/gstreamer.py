@@ -25,6 +25,7 @@ except (ImportError, ModuleNotFoundError, ValueError):
                                       ' for GStreamer ! ')
 
 # Todo: Error with a getter
+#   Return copy of array
 
 
 class Camera_gstreamer(Camera):
@@ -194,11 +195,11 @@ videoconvert ! autovideosink
         check = check.stdout if check is not None else ''
 
         # Trying to find the exposure parameters in the returned string
-        expo = findall(r'exposure\s0x[0-9A-Fa-f]+\s\(\w+\)\s+:'
+        expo = findall(r'exposure\s0x[\dA-Fa-f]+\s\(\w+\)\s+:'
                        r'\smin=\d+\smax=\d+', check)
-        expo_auto = findall(r'exposure_auto\s0x[0-9A-Fa-f]+\s\(\w+\)\s+:'
+        expo_auto = findall(r'exposure_auto\s0x[\dA-Fa-f]+\s\(\w+\)\s+:'
                             r'\smin=\d+\smax=\d+', check)
-        expo_abso = findall(r'exposure_absolute\s0x[0-9A-Fa-f]+\s\(\w+\)\s+:'
+        expo_abso = findall(r'exposure_absolute\s0x[\dA-Fa-f]+\s\(\w+\)\s+:'
                             r'\smin=\d+\smax=\d+', check)
 
         # If there's an exposure parameter, getting its upper and lower limits
