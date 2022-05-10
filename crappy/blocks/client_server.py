@@ -16,7 +16,7 @@ try:
 except (ModuleNotFoundError, ImportError):
   mqtt = OptionalModule("paho.mqtt.client")
 
-topics_type = List[Union[str, Tuple[str, str]]]
+topics_type = List[Union[str, Tuple[str, ...]]]
 
 
 class Client_server(Block):
@@ -29,7 +29,7 @@ class Client_server(Block):
   def __init__(self,
                broker: bool = False,
                address: Any = 'localhost',
-               port: int = 1148,
+               port: int = 1883,
                init_output: Optional[Dict[str, Any]] = None,
                topics: Optional[topics_type] = None,
                cmd_labels: Optional[topics_type] = None,
