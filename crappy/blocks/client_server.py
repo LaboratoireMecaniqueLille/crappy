@@ -33,7 +33,10 @@ class Client_server(Block):
                init_output: Optional[Dict[str, Any]] = None,
                topics: Optional[topics_type] = None,
                cmd_labels: Optional[topics_type] = None,
-               labels_to_send: Optional[topics_type] = None) -> None:
+               labels_to_send: Optional[topics_type] = None,
+               verbose: bool = False,
+               freq: float = 200,
+               spam: bool = False) -> None:
     """Checks arguments validity and sets the instance attributes.
 
     Args:
@@ -71,6 +74,10 @@ class Client_server(Block):
         useful for transferring several signals along with their timestamps, as 
         the label ``'t(s)'`` should not appear more than once in the topics 
         list of the receiving block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
+      freq: The block will try to loop at this frequency.
+      spam: If :obj:`True`, sends the last received values at each loop even if
+        no new values were received from the broker.
 
     Note:
       - ``broker``:
@@ -179,11 +186,14 @@ class Client_server(Block):
 
     Block.__init__(self)
     self.niceness = -10
+    self.verbose = verbose
+    self.freq = freq
 
     # Setting the args
     self._broker = broker
     self._address = address
     self._port = port
+    self._spam = spam
     self._reader = Thread(target=self._output_reader)
 
     self._stop_mosquitto = False
@@ -313,7 +323,7 @@ class Client_server(Block):
             pass
       # Updating the _last_out_val buffer, and completing dict_out before
       # sending data if necessary
-      if dict_out:
+      if dict_out or self._spam:
         for topic in self._buffer_output:
           for label in topic:
             if label not in dict_out:
@@ -334,14 +344,11 @@ class Client_server(Block):
       for topic in self._cmd_labels:
         for dic in received_data:
           if dic is not None and all(label in dic for label in topic):
-            if self._labels_to_send is not None:
-              self._client.publish(
-                str(self._labels_to_send[topic]),
-                payload=dumps([dic[label] for label in topic]), qos=0)
-            else:
-              self._client.publish(
-                str(topic), payload=dumps([dic[label] for label in topic]),
-                qos=0)
+            self._client.publish(
+              topic=str(self._labels_to_send[topic]) if
+              self._labels_to_send is not None else str(topic),
+              payload=dumps([dic[label] for label in topic]),
+              qos=0)
             break
 
   def finish(self) -> None:
