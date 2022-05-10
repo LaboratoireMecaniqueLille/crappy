@@ -485,7 +485,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # Enable MPSSE mode
     if self._ft232h_mode == 'GPIO_only':
-      self._set_bitmode(0xFF, ft232h.BitMode.BITBANG)
+      self._set_bitmode(0xFF, ft232h.BitMode.MPSSE)
     else:
       self._set_bitmode(self._direction, ft232h.BitMode.MPSSE)
 
@@ -2467,7 +2467,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # Enable MPSSE mode
     if self._ft232h_mode == 'GPIO_only':
-      self._set_bitmode(0xFF, ft232h_server.BitMode.BITBANG)
+      self._set_bitmode(0xFF, ft232h_server.BitMode.MPSSE)
     else:
       self._set_bitmode(self._direction, ft232h_server.BitMode.MPSSE)
 
