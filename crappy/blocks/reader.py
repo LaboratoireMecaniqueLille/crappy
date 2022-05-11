@@ -1,31 +1,44 @@
 # coding: utf-8
 
+from typing import Optional
 from .block import Block
 
 
 class Reader(Block):
-  """Reads and prints the input :ref:`Link`.
+  """Reads and prints the data flowing through the input :ref:`Link`."""
 
-  Creates a reader that prints the input data continuously.
-  """
+  _index = 0
 
-  def __init__(self, reader_name: str = None) -> None:
+  def __init__(self,
+               name: Optional[str] = None,
+               freq: float = 500,
+               verbose: bool = False) -> None:
     """Sets the arg and initializes the parent class.
 
     Args:
-      reader_name (:obj:`str`, optional): If set, will be printed to identify
-        the reader.
+      name: If set, will be printed to identify the reader.
+      freq: The block will try to loop at this frequency.
+      verbose: If :obj:`True`, the looping frequency will be printed every 2s.
     """
 
     Block.__init__(self)
-    self.reader_name = reader_name
+    self.freq = freq
+    self.verbose = verbose
+
+    index = self._instance_index()
+    self._name = name if name is not None else f'Reader {index}'
 
   def loop(self) -> None:
-    for i in self.inputs:
-      d = i.recv_last()
-      if d is not None:
-        s = ""
-        if self.reader_name:
-          s += self.reader_name + " "
-        s += "got: " + str(d)
-        print(s)
+    """Simply flushes the link and prints its data."""
+
+    for link in self.inputs:
+      data = link.recv_chunk(blocking=False)
+      if data is not None:
+        print(f'{self._name} got: {data}')
+
+  @classmethod
+  def _instance_index(cls) -> int:
+    """Returns the index of the current instance."""
+
+    cls._index += 1
+    return cls._index
