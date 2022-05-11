@@ -1,48 +1,45 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Callable
+from typing import Union, Dict
+from itertools import cycle, islice
 
-from .path import Path
+from .path import Path, condition_type
 
 
 class Cyclic(Path):
-  """A "boosted" :ref:`constant` path: will take TWO values and conditions.
+  """The path cyclically alternates between two constant values, based on two
+  different conditions.
 
-  Note:
-    It will set the first value, switch to the second when the first condition
-    is reached and return to the first when the second condition is reached.
-
-    This will be done ``cycles`` times (supporting half cycles for ending after
-    the first condition).
+  It can for example be used as a trigger, or used to drive an actuator
+  cyclically. It is equivalent to a succession of :ref:`constant` paths.
   """
 
   def __init__(self,
-               time: float,
-               cmd: float,
-               condition1: Union[str, bool, Callable],
-               condition2: Union[str, bool, Callable],
+               _last_time: float,
+               _last_cmd: float,
+               condition1: Union[str, condition_type],
+               condition2: Union[str, condition_type],
                value1: float,
                value2: float,
-               cycles: float = 1,
-               verbose: bool = False) -> None:
-    """Sets the args and initializes parent class.
+               cycles: float = 1) -> None:
+    """Sets the args and initializes the parent class.
+
+    The path always starts with ``value1``, and then switches to ``value2``.
 
     Args:
-      time:
-      cmd:
-      condition1 (:obj:`str`): Representing the condition to switch to
-        ``value2``. See :ref:`generator path` for more info.
-      condition2 (:obj:`str`): Representing the condition to switch to
-        ``value1``. See :ref:`generator path` for more info.
+      _last_time: The last timestamp when a command was generated. For internal
+        use only, do not overwrite.
+      _last_cmd: The last sent command. For internal use only, do not
+        overwrite.
+      condition1: The condition for switching to ``value2``. Refer to
+        :ref:`generator path` for more info.
+      condition2: The condition for switching to ``value1``. Refer to
+        :ref:`generator path` for more info.
       value1: First value to send.
       value2: Second value to send.
-      cycles: Number of time we should be doing this.
-
-        Note:
-          ``cycles = 0`` will make it loop forever.
-
-      verbose:
+      cycles: Number of cycles. Half cycles are accepted. If `0`, loops
+        forever.
 
     Note:
       ::
@@ -57,21 +54,50 @@ class Cyclic(Path):
         {'type': 'constant', 'value': 0, 'condition': 'AIN1<1'}] * 5
     """
 
-    Path.__init__(self, time, cmd)
-    self.value = (value1, value2)
-    self.condition1 = self.parse_condition(condition1)
-    self.condition2 = self.parse_condition(condition2)
-    self.cycles = int(2 * cycles)  # Logic in this class will be in half-cycle
-    self.cycle = 0
-    self.verbose = verbose
+    Path.__init__(self, _last_time, _last_cmd)
 
-  def get_cmd(self, data: dict) -> float:
-    if 0 < self.cycles <= self.cycle:
-      raise StopIteration
-    if not self.cycle % 2 and self.condition1(data) or self.cycle % 2 \
-            and self.condition2(data):
-      self.cycle += 1
-      if self.verbose:
-        print("cyclic path {}/{}".format(self.cycle, self.cycles))
+    # Creates an interator object with a given length
+    if cycles > 0:
+      cycles = int(2 * cycles)
+      self._values = islice(cycle((value1, value2)), cycles)
+      self._conditions = islice(cycle((self.parse_condition(condition1),
+                                       self.parse_condition(condition2))),
+                                cycles)
+
+    # Creates an endless iterator object
+    else:
+      self._values = cycle((value1, value2))
+      self._conditions = cycle((self.parse_condition(condition1),
+                                self.parse_condition(condition2)))
+
+    # The current condition object and value
+    self._condition = None
+    self._value = None
+
+  def get_cmd(self, data: Dict[str, list]) -> float:
+    """Returns either the first or second value depending on the current state
+    of the cycle. Raises :exc:`StopIteration` when the cycles are exhausted.
+
+    Also manages the switch between the values and conditions 1 and 2.
+    """
+
+    # During the first loop, getting the first condition and value
+    if self._value is None and self._condition is None:
+      try:
+        self._value = self._values.__next__()
+        self._condition = self._conditions.__next__()
+      except StopIteration:
+        raise
+
+    # During other loops, getting the next condition and value if the current
+    # condition is met
+    if self._condition(data):
       self.t0 = time()
-    return self.value[self.cycle % 2]
+      try:
+        self._value = self._values.__next__()
+        self._condition = self._conditions.__next__()
+      except StopIteration:
+        raise
+
+    # Finally, returning the current value
+    return self._value

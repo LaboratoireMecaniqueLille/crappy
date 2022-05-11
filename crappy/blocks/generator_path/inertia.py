@@ -1,87 +1,95 @@
 # coding: utf-8
 
-import numpy as np
-from typing import Union, Callable
+from numpy import trapz
+from typing import Union, Dict
 
-from .path import Path
+from .path import Path, condition_type
 
 
 class Inertia(Path):
-  """Used to lower/higher the output command by integrating an input over time.
+  """This path integrates an incoming label over time and returns the
+  integration as an output signal.
 
   Let `f(t)` be the input signal, `v(t)` the value of the output, `m` the
-  inertia and `t0` the beginning of this path. `K` is a chosen constant.
+  inertia and `t0` the timestamp of the beginning of this path.
 
   Then the output value for this path will be:
   ::
 
-    v(t) = v(t0) - K * [I(t0 -> t)f(t)dt] / m
+    v(t) = v(t0) - [I(t0 -> t)f(t)dt] / m
 
   """
 
   def __init__(self,
-               time: float,
-               cmd: float,
-               condition: Union[str, bool, Callable],
+               _last_time: float,
+               _last_cmd: float,
+               condition: Union[str, condition_type],
                inertia: float,
-               flabel: str,
-               const: float = 30/np.pi,
-               tlabel: str = 't(s)',
-               value: float = None) -> None:
-    """Sets the args and initializes parent class.
+               func_label: str,
+               time_label: str = 't(s)',
+               init_value: float = None) -> None:
+    """Sets the args and initializes the parent class.
 
     Args:
-      time:
-      cmd:
-      condition (:obj:`str`): Condition to meet to end this path. See
+      _last_time: The last timestamp when a command was generated. For internal
+        use only, do not overwrite.
+      _last_cmd: The last sent command. For internal use only, do not
+        overwrite.
+      condition: The condition for switching to the next path. Refer to
         :ref:`generator path` for more info.
-      inertia (:obj:`float`): This is the virtual inertia of the process. The
-        higher it is, the slower the `(in/de)` crease will be. In the above
-        formula, it is the value of `m`.
-      flabel (:obj:`str`): The name of the label of the value to integrate.
-      const (:obj:`float`, optional): The value of `K` in the formula above.
-        The default value is meant to send `rpm` with inertia in `kg.m²` and
-        torque in `N.m`. If sending `rad/s`, use ``const=1``.
-      tlabel (:obj:`str`, optional): The name of the label of time for the
-        integration.
-
-        Note:
-          The data received by ``flabel`` and ``tlabel`` must correspond. In
-          other word, there must be exactly the same number of values received
-          by these two labels at any instant (i.e. they must come from the same
-          parent block).
-
-      value:
+      inertia: Value of the equivalent inertia to use for driving the signal.
+        In the above formula, it is the value of `m`. The larger this value,
+        the slower the changes in the signal value.
+      func_label: The name of the label of the input value to integrate.
+      time_label: The name of the time label for the integration.
+      init_value: If given, overwrites the last value of the signal as the
+        starting point for the inertia path. In the specific case when this
+        path is the first one in the list of dicts, this argument must be
+        given !
     """
 
-    Path.__init__(self, time, cmd)
-    self.condition = self.parse_condition(condition)
-    self.inertia = inertia
-    self.flabel = flabel
-    self.tlabel = tlabel
-    self.const = const / self.inertia
-    self.value = cmd if value is None else value
-    self.last_t = None
+    Path.__init__(self, _last_time, _last_cmd)
 
-  def get_cmd(self, data: dict) -> float:
-    if self.condition(data):
+    if init_value is None and _last_cmd is None:
+      raise ValueError('For the first path, an init_value must be given !')
+
+    # Setting the attributes
+    self._condition = self.parse_condition(condition)
+    self._time_label = time_label
+    self._func_label = func_label
+    self._inertia = inertia
+    self._value = _last_cmd if init_value is None else init_value
+    self._last_t = None
+    self._last_val = None
+
+  def get_cmd(self, data: Dict[str, list]) -> float:
+    """Gets the latest values of the incoming label, integrates them and
+    changes the output accordingly.
+
+    Also raises :exc:`StopIteration` in case the stop condition is met.
+    """
+
+    # Checking if the stop condition is met
+    if self._condition(data):
       raise StopIteration
-    if data[self.tlabel]:
-      if self.last_t is None:
-        # If it is the first call, we cannot use the first data point, since we
-        # don't have the previous time (I use left rectangle integration)
-        t = data[self.tlabel]
-        if len(t) == 1:
-          # If we have only one point, save it and return,
-          # first value will be returned on the next call
-          self.last_t = t[0]
-          return self.value
-        # else: drop the first point and keep going
-        f = np.array(data[self.flabel][1:])
-      else:
-        t = [self.last_t]+data[self.tlabel]  # We have a previous point: use it
-        f = np.array(data[self.flabel])
-      dt = np.array([j - i for i, j in zip(t[:-1], t[1:])])
-      self.value -= self.const * sum(dt * f)  # The actual integration
-      self.last_t = t[-1]
-    return self.value
+
+    if self._time_label in data and self._func_label in data:
+      # Getting the last values from the received data
+      times = data[self._time_label]
+      values = data[self._func_label]
+
+      # Including the last values from the last loop
+      if self._last_val is not None and self._last_t is not None:
+        times = [self._last_t] + times
+        values = [self._last_val] + values
+
+      # Keeping in memory the last values from this loop
+      if times and values:
+        self._last_t = times[-1]
+        self._last_val = values[-1]
+
+      # Performing the integration and subtracting from the previous value
+      self._value -= trapz(values, times) / self._inertia
+
+    # Returning the current value
+    return self._value

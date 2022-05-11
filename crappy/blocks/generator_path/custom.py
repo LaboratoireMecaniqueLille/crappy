@@ -1,46 +1,61 @@
 # coding: utf-8
 
 from time import time
-import numpy as np
+from numpy import loadtxt, interp
+from typing import Dict, Union
+import pathlib
 
 from .path import Path
 
 
 class Custom(Path):
-  """To generate a custom path from a file."""
+  """Generates a custom path from a text file, until the file is exhausted.
+
+  The file can be in any text format, including the most common `.csv` and
+  `.txt` extensions.
+  """
 
   def __init__(self,
-               time: float,
-               cmd: float,
-               filename: str,
-               delimiter: str = '\t') -> None:
+               _last_time: float,
+               _last_cmd: float,
+               filename: Union[str, pathlib.Path],
+               delimiter: str = ',') -> None:
     """Loads the file and sets the args.
 
+    The stop condition is simply to reach the last timestamp given in the
+    file.
+
     Args:
-      time:
-      cmd:
-      filename: Name of the `.csv` file.
-
-        Note:
-          It must contain two columns: one with time, the other with the value.
-
-      delimiter:
+      _last_time: The last timestamp when a command was generated. For internal
+        use only, do not overwrite.
+      _last_cmd: The last sent command. For internal use only, do not
+        overwrite.
+      filename: Path to the file to read the path from. Can be either a
+        :obj:`str` or a :mod:`pathlib` Path. The file must contain two columns:
+        the first one containing timestamps (starting from 0), the other one
+        containing the values.
+      delimiter: The delimiter between columns in the file, usually a coma.
     """
 
-    Path.__init__(self, time, cmd)
-    with open(filename, 'r') as f:
-      self.array = np.loadtxt(f, delimiter=delimiter)
-    assert len(self.array.shape) == 2 and 2 in self.array.shape,\
-        "Custom array must have shape (N,2) or (2,N)"
-    if self.array.shape[1] == 2:
-      self.t = self.array[:, 0]
-      self.f = self.array[:, 1]
-    else:
-      self.t = self.array[0, :]
-      self.f = self.array[1, :]
+    Path.__init__(self, _last_time, _last_cmd)
 
-  def get_cmd(self, _) -> float:
+    array = loadtxt(pathlib.Path(filename), delimiter=delimiter)
+
+    if array.shape[1] != 2:
+      raise ValueError(f'The file {filename} should contain exactly two'
+                       f'columns !')
+
+    self._timestamps = array[:, 0]
+    self._values = array[:, 1]
+
+  def get_cmd(self, _: Dict[str, list]) -> float:
+    """Returns the value to send or raises :exc:`StopIteration` if the stop
+    condition is met.
+
+    The value is interpolated from the given file.
+    """
+
     t = time()
-    if t - self.t0 > max(self.t):
+    if t - self.t0 > self._timestamps[-1]:
       raise StopIteration
-    return np.interp(t - self.t0, self.t, self.f)
+    return interp(t - self.t0, self._timestamps, self._values)

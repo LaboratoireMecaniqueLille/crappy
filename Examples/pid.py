@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
   g = crappy.blocks.Generator([
     {'type': 'constant', 'value': 1000, 'condition': 'delay=3'},
-    {'type': 'ramp', 'speed': 100, 'condition': 'delay=5', 'cmd': 0},
+    {'type': 'ramp', 'speed': 100, 'condition': 'delay=5', 'init_value': 0},
     {'type': 'constant', 'value': 1800, 'condition': 'delay=3'},
     {'type': 'constant', 'value': 500, 'condition': 'delay=3'},
     {'type': 'sine', 'amplitude': 2000, 'offset': 1000, 'freq': .3,

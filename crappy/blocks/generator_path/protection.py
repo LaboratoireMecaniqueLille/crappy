@@ -1,68 +1,79 @@
 # coding: utf-8
 
-from typing import Union, Callable
-from .path import Path
+from typing import Union, Dict
+from .path import Path, condition_type
 
 
 class Protection(Path):
-  """Useful to protect samples from being pulled apart when setting up a test.
+  """Depending on two different conditions checked at each loop, this path can
+  output one between 3 constant values.
+
+  It is especially useful for controlling processes that need to behave
+  differently based on given conditions, e.g. for preventing a heating element
+  from overheating or a motor from driving too far.
   """
 
   def __init__(self,
-               time: float,
-               cmd: float,
-               condition1: Union[str, bool, Callable],
-               condition2: Union[str, bool, Callable],
+               _last_time: float,
+               _last_cmd: float,
+               condition1: Union[str, condition_type],
+               condition2: Union[str, condition_type],
                value1: float,
                value2: float,
-               value0: float = 0,
-               verbose: bool = False) -> None:
-    """Sets the args and initializes parent class.
+               value0: float = 0) -> None:
+    """Sets the args and initializes the parent class.
 
     Args:
-      time:
-      cmd:
-      condition1 (:obj:`str`): Representing the first condition. See
+      _last_time: The last timestamp when a command was generated. For internal
+        use only, do not overwrite.
+      _last_cmd: The last sent command. For internal use only, do not
+        overwrite.
+      condition1: The first condition checked by the path. Refer to
         :ref:`generator path` for more info.
-      condition2 (:obj:`str`): Representing the second condition. See
+      condition2: The second condition checked by the path. Refer to
         :ref:`generator path` for more info.
       value1: Value to send when ``condition1`` is met.
-      value2: Value to send when ``condition2`` is met.
-      value0: Value to send when no condition is reached.
-      verbose:
+      value2: Value to send when ``condition2`` is met and ``condition1`` is
+        not met.
+      value0: Value to send when neither ``condition1`` nor ``condition2`` are
+        met.
 
     Note:
-      By default will send ``value0``.
-
-      While ``condition1`` is met, will return ``value1``.
-
-      While ``condition2`` is met, will return ``value2``.
-
-      If ``condition1`` and ``condition2`` are met simultaneously, the first
-      one met will prevail. If met at the same time, ``condition1`` will
-      prevail.
+      This generator path never ends, it doesn't have a stop condition.
     """
 
-    Path.__init__(self, time, cmd)
-    self.value = (value0, value1, value2)
-    self.condition1 = self.parse_condition(condition1)
-    self.condition2 = self.parse_condition(condition2)
-    s = '<' if '<' in condition1 else '>'
-    self.lbl1 = condition1.split(s)[0]
-    s = '<' if '<' in condition2 else '>'
-    self.lbl2 = condition2.split(s)[0]
-    self.verbose = verbose
-    self.status = 0
+    Path.__init__(self, _last_time, _last_cmd)
 
-  def get_cmd(self, data: dict) -> float:
-    if self.status == 0:
-      if self.condition1(data):
-        self.status = 1
-      elif self.condition2(data):
-        self.status = 2
-      return self.value[self.status]
-    if self.status == 1 and data[self.lbl1] and not self.condition1(data):
-      self.status = 0
-    elif self.status == 2 and data[self.lbl2] and not self.condition2(data):
-      self.status = 0
-    return self.value[self.status]
+    # Setting the attributes
+    self._value0 = value0
+    self._value1 = value1
+    self._value2 = value2
+    self._condition1 = self.parse_condition(condition1)
+    self._condition2 = self.parse_condition(condition2)
+    self._prev = self._value0
+
+  def get_cmd(self, data: Dict[str, list]) -> float:
+    """Sends either value1 if condition1 is met, or value2 if only condition2
+    is met, or value0 if none of the conditions are met."""
+
+    # Case when data has been received
+    if any(data.values()):
+
+      # Send value1 if the first condition is met
+      if self._condition1(data):
+        self._prev = self._value1
+        return self._value1
+
+      # Send value2 if only the second condition is met
+      elif self._condition2(data):
+        self._prev = self._value2
+        return self._value2
+
+      # Send value0 if no condition is met
+      else:
+        self._prev = self._value0
+        return self._value0
+
+    # If no data received, return the last sent value
+    else:
+      return self._prev

@@ -1,49 +1,48 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Callable
+from typing import Union, Dict, Optional
+from itertools import cycle, islice
 
-from .path import Path
+from .path import Path, condition_type
 
 
 class Cyclic_ramp(Path):
-  """A "boosted" :ref:`ramp` path: will take TWO values and conditions.
+  """The path cyclically alternates between two ramps with different slopes,
+  based on two different conditions.
 
-  Note:
-    It will make a ramp of speed ``speed1``, switch to the second when the
-    first condition is reached and return to the first when the second
-    condition is reached.
-
-    This will be done ``cycles`` times (supporting half cycles for ending after
-    the first condition)
+  It is equivalent to a succession of :ref:`ramp` paths.
   """
 
   def __init__(self,
-               time: float,
-               cmd: float,
-               condition1: Union[str, bool, Callable],
-               condition2: Union[str, bool, Callable],
+               _last_time: float,
+               _last_cmd: float,
+               condition1: Union[str, condition_type],
+               condition2: Union[str, condition_type],
                speed1: float,
                speed2: float,
                cycles: float = 1,
-               verbose: bool = False) -> None:
-    """Sets the args and initializes parent class.
+               init_value: Optional[float] = None) -> None:
+    """Sets the args and initializes the parent class.
+
+    The path always starts with ``speed1``, and then switches to ``speed2``.
 
     Args:
-      time:
-      cmd:
-      condition1 (:obj:`str`): Representing the condition to switch to
-        ``speed2``. See :ref:`generator path` for more info.
-      condition2 (:obj:`str`): Representing the condition to switch to
-        ``speed1``. See :ref:`generator path` for more info.
-      speed1: Speed of the first ramp.
-      speed2: Speed of the second ramp.
-      cycles: Number of time we should be doing this.
-
-        Note:
-          ``cycles = 0`` will make it loop forever.
-
-      verbose:
+      _last_time: The last timestamp when a command was generated. For internal
+        use only, do not overwrite.
+      _last_cmd: The last sent command. For internal use only, do not
+        overwrite.
+      condition1: The condition for switching to ``speed2``. Refer to
+        :ref:`generator path` for more info.
+      condition2: The condition for switching to ``speed1``. Refer to
+        :ref:`generator path` for more info.
+      speed1: Slope of the first generated ramp, in `units/s`.
+      speed2: Slope of the second generated ramp, in `units/s`.
+      cycles: Number of cycles. Half cycles are accepted. If `0`, loops
+        forever.
+      init_value: If given, overwrites the last value of the signal as the
+        starting point for the first ramp. In the specific case when this path
+        is the first one in the list of dicts, this argument must be given !
 
     Note:
       ::
@@ -58,23 +57,58 @@ class Cyclic_ramp(Path):
         {'type': 'ramp', 'value': -2, 'condition': 'AIN1<1'}] * 5
     """
 
-    Path.__init__(self, time, cmd)
-    self.speed = (speed1, speed2)
-    self.condition1 = self.parse_condition(condition1)
-    self.condition2 = self.parse_condition(condition2)
-    self.cycles = int(2 * cycles)  # Logic in this class will be in half-cycle
-    self.cycle = 0
-    self.verbose = verbose
+    Path.__init__(self, _last_time, _last_cmd)
 
-  def get_cmd(self, data: dict) -> float:
-    if 0 < self.cycles <= self.cycle:
-      raise StopIteration
-    if not self.cycle % 2 and self.condition1(data) or\
-          self.cycle % 2 and self.condition2(data):
+    if init_value is None and _last_cmd is None:
+      raise ValueError('For the first path, an init_value must be given !')
+
+    # Creates an interator object with a given length
+    if cycles > 0:
+      cycles = int(2 * cycles)
+      self._speeds = islice(cycle((speed1, speed2)), cycles)
+      self._conditions = islice(cycle((self.parse_condition(condition1),
+                                       self.parse_condition(condition2))),
+                                cycles)
+
+    # Creates an endless iterator object
+    else:
+      self._speeds = cycle((speed1, speed2))
+      self._conditions = cycle((self.parse_condition(condition1),
+                                self.parse_condition(condition2)))
+
+    # The current condition object and value
+    self._condition = None
+    self._speed = None
+
+    # The last extreme command sent
+    self._last_peak_cmd = _last_cmd if init_value is None else init_value
+
+  def get_cmd(self, data: Dict[str, list]) -> float:
+    """Returns the current value of the signal and raises :exc:`StopIteration`
+    when the cycles are exhausted.
+
+    Also manages the switch between the speeds and conditions 1 and 2.
+    """
+
+    # During the first loop, getting the first condition and speed
+    if self._speed is None and self._condition is None:
+      try:
+        self._speed = self._speeds.__next__()
+        self._condition = self._conditions.__next__()
+      except StopIteration:
+        raise
+
+    # During other loops, getting the next condition and speed if the current
+    # condition is met
+    if self._condition(data):
       t = time()
-      self.cmd += self.speed[self.cycle % 2] * (t - self.t0)
+      self._last_peak_cmd += self._speed * (t - self.t0)
       self.t0 = t
-      self.cycle += 1
-      if self.verbose:
-        print("cyclic ramp {}/{}".format(self.cycle, self.cycles))
-    return self.speed[self.cycle % 2] * (time() - self.t0) + self.cmd
+      try:
+        self._speed = self._speeds.__next__()
+        self._condition = self._conditions.__next__()
+      except StopIteration:
+        raise
+
+    # Finally, returning the current value
+    return self._last_peak_cmd + self._speed * (time() - self.t0)

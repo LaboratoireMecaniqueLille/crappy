@@ -18,7 +18,6 @@ if __name__ == "__main__":
                                   'value': i,
                                   'condition': 'delay=10'}
                                  for i in range(1, 6)],
-                                cmd=1,
                                 cmd_label='freq',
                                 freq=50)
 
