@@ -25,46 +25,37 @@ class MetaCam(type):
     MetaClass.
   """
 
-  classes = {}  # This dict will keep track of all the existing cam classes
-  # Attention: It keeps track of the CLASSES, not the instances !
-  # If a camera is defined without these methods, it will raise an error
+  classes = {}
+
   needed_methods = ["get_image", "open", "close"]
 
-  def __new__(mcs, name: str, bases: tuple, dict_: dict) -> type:
-    # print "[MetaCam.__new__] Creating class", name, "from metaclass", mcs
-    return type.__new__(mcs, name, bases, dict_)
+  def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
 
-  def __init__(cls, name: str, bases: tuple, dict_: dict) -> None:
-    # print "[MetaCam.__init__] Initializing", cls
-    type.__init__(cls, name, bases, dict_)  # This is the important line
-    # It creates the class, the same way we could do this:
-    # MyClass = type(name, bases, dict)
-    # bases is a tuple containing the parents of the class
-    # dict is the dict with the methods
+    return super().__new__(mcs, name, bases, dct)
 
-    # MyClass = type("MyClass", (object,), {'method': do_stuff})
-    # is equivalent to
-    # class MyClass(object):
-    #   def method():
-    #     do_stuff()
+  def __init__(cls, name: str, bases: tuple, dct: dict) -> None:
 
-    # Check if this class hasn't already been created
-    if name in MetaCam.classes:
-      raise DefinitionError("Cannot redefine "+name+" class")
-    # Check if mandatory methods are defined
-    defined_methods = list(dict_.keys())
-    for b in bases:
-      defined_methods += list(b.__dict__.keys())
-    missing_methods = []
-    for m in MetaCam.needed_methods:
-      if m not in defined_methods:
-        missing_methods.append(m)
-    if name != "Camera" and missing_methods:
-      raise DefinitionError("Class "+name+" is missing methods: "+str(
-        missing_methods))
+    super().__init__(name, bases, dct)
 
-    del missing_methods
-    MetaCam.classes[name] = cls
+    # Checking that a Camera with the same name doesn't already exist
+    if name in cls.classes:
+      raise DefinitionError(f"The {name} class is already defined !")
+
+    # Gathering all the defined methods
+    defined_methods = list(dct.keys())
+    defined_methods += [base.__dict__.keys() for base in bases]
+
+    # Checking for missing methods
+    missing_methods = [meth for meth in cls.needed_methods
+                       if meth not in defined_methods]
+
+    # Raising if there are unexpected missing methods
+    if missing_methods and name != "Camera":
+      raise DefinitionError(f'Class {name} is missing the required method(s): '
+                            f'{", ".join(missing_methods)}')
+
+    # Otherwise, saving the class
+    cls.classes[name] = cls
 
 
 class Cam_setting:
