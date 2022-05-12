@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Tuple, NoReturn, Optional
+from typing import Tuple, Optional
 from numpy import ndarray
 from .camera import Camera
 from .._global import OptionalModule
@@ -65,7 +65,7 @@ class Webcam(Camera):
     else:
       return t, frame
 
-  def close(self) -> NoReturn:
+  def close(self) -> None:
     """Releases the videocapture object."""
 
     if self._cap is not None:

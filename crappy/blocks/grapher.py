@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import NoReturn, Optional, Tuple
+from typing import Optional, Tuple
 from _tkinter import TclError
 
 from .block import Block
@@ -98,7 +98,7 @@ class Grapher(Block):
 
     self._labels = labels
 
-  def prepare(self) -> NoReturn:
+  def prepare(self) -> None:
 
     # Switch to the required backend
     if self._backend:
@@ -145,7 +145,7 @@ class Grapher(Block):
     plt.show(block=False)
     plt.pause(.001)
 
-  def loop(self) -> NoReturn:
+  def loop(self) -> None:
 
     # Receives the data sent by the upstream blocks
     if self.freq >= 10:
@@ -211,10 +211,10 @@ class Grapher(Block):
         pass
       self._canvas.flush_events()
 
-  def finish(self) -> NoReturn:
+  def finish(self) -> None:
     plt.close("all")
 
-  def _clear(self, *_, **__) -> NoReturn:
+  def _clear(self, *_, **__) -> None:
     for line in self._lines:
       line.set_xdata([])
       line.set_ydata([])

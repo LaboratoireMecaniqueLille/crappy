@@ -5,7 +5,7 @@ from multiprocessing import Process, Pipe
 from time import sleep, time, localtime, strftime
 from weakref import WeakSet
 from pickle import UnpicklingError
-from typing import Union, Optional, NoReturn, List, Dict
+from typing import Union, Optional, List, Dict
 
 from ..links import Link
 from .._global import CrappyStop
@@ -17,7 +17,7 @@ import subprocess
 #   Rethink the communication between blocks when stopping
 
 
-def renice(pid: int, niceness: int) -> NoReturn:
+def renice(pid: int, niceness: int) -> None:
   """Function to renice a process.
 
   Warning:
@@ -60,7 +60,7 @@ class Block(Process):
     return instance
 
   @classmethod
-  def reset(cls) -> NoReturn:
+  def reset(cls) -> None:
     cls.instances = WeakSet()
 
   def run(self) -> None:
@@ -213,7 +213,7 @@ class Block(Process):
                 t0: float = None,
                 verbose: bool = True,
                 bg: bool = False,
-                high_prio: bool = False) -> NoReturn:
+                high_prio: bool = False) -> None:
     cls.prepare_all(verbose)
     if high_prio and any([b.niceness < 0 for b in cls.instances]):
       print("[start] High prio: root permission needed to renice")
@@ -221,7 +221,7 @@ class Block(Process):
     cls.launch_all(t0, verbose, bg)
 
   @classmethod
-  def stop_all(cls, verbose: bool = True) -> NoReturn:
+  def stop_all(cls, verbose: bool = True) -> None:
     """Stops all the blocks (``crappy.stop``)."""
 
     if verbose:
@@ -237,22 +237,22 @@ class Block(Process):
         instance.stop()
     vprint("All blocks are stopped.")
 
-  def begin(self) -> NoReturn:
+  def begin(self) -> None:
     """If :meth:`main` is not overridden, this method will be called first,
     before entering the main loop."""
 
     pass
 
-  def finish(self) -> NoReturn:
+  def finish(self) -> None:
     """If :meth:`main` is not overridden, this method will be called upon exit
     or after a crash."""
 
     pass
 
-  def loop(self) -> NoReturn:
+  def loop(self) -> None:
     raise NotImplementedError('You must override loop or main in' + str(self))
 
-  def main(self) -> NoReturn:
+  def main(self) -> None:
     """This is where you define the main loop of the block.
 
     Important:
@@ -264,7 +264,7 @@ class Block(Process):
       self.handle_freq()
     print("[%r] Got stop signal, interrupting..." % self)
 
-  def handle_freq(self) -> NoReturn:
+  def handle_freq(self) -> None:
     """For block with a given number of `loops/s` (use ``freq`` attribute to
     set it)."""
 
@@ -284,7 +284,7 @@ class Block(Process):
       self._MB_loops = 0
       self._MB_last_FPS = self._MB_last_t
 
-  def launch(self, t0: float) -> NoReturn:
+  def launch(self, t0: float) -> None:
     """To start the :meth:`main` method, will call :meth:`Process.start` if
     needed.
 
@@ -335,13 +335,13 @@ class Block(Process):
     return self._status
 
   @status.setter
-  def status(self, s: str) -> NoReturn:
+  def status(self, s: str) -> None:
     assert self.pid is not None, "Cannot set status from outside of the " \
                                  "process!"
     self.pipe2.send(s)
     self._status = s
 
-  def prepare(self) -> NoReturn:
+  def prepare(self) -> None:
     """This will be run when creating the process, but before the actual start.
 
     The first code to be run in the new process, will only be called once and
@@ -352,7 +352,7 @@ class Block(Process):
 
     pass
 
-  def send(self, data: Union[Dict[str, list], list]) -> NoReturn:
+  def send(self, data: Union[Dict[str, list], list]) -> None:
     """To send the data to all blocks downstream.
 
     Send has 2 ways to operate. You can either build the :obj:`dict` yourself,
@@ -499,7 +499,7 @@ class Block(Process):
     """
 
     def poll(inputs: List[Link],
-             rcv: List[Dict[str, list]]) -> NoReturn:
+             rcv: List[Dict[str, list]]) -> None:
       """Polls all the incoming links and saves the received values.
 
       Args:
@@ -535,7 +535,7 @@ class Block(Process):
 
     return received
 
-  def drop(self, num: Optional[Union[list, str]] = None) -> NoReturn:
+  def drop(self, num: Optional[Union[list, str]] = None) -> None:
     """Will clear the inputs of the blocks.
 
     This method performs like :meth:`get_last`, but returns :obj:`None`
@@ -549,17 +549,17 @@ class Block(Process):
     for n in num:
       self.inputs[n].clear()
 
-  def add_output(self, out: Link) -> NoReturn:
+  def add_output(self, out: Link) -> None:
     """Adds a :ref:`Link` as an output."""
 
     self.outputs.append(out)
 
-  def add_input(self, in_: Link) -> NoReturn:
+  def add_input(self, in_: Link) -> None:
     """Adds a :ref:`Link` as an input."""
 
     self.inputs.append(in_)
 
-  def stop(self) -> NoReturn:
+  def stop(self) -> None:
     if self.status != 'running':
       return
     print('[%r] Stopping' % self)

@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from numpy import interp, array, searchsorted, concatenate
-from typing import NoReturn
 from itertools import chain
 
 from .block import Block
@@ -54,7 +53,7 @@ class Multiplex(Block):
     self._labels_to_get = dict()
     self._label_to_link = dict()
 
-  def begin(self) -> NoReturn:
+  def begin(self) -> None:
     """Receiving the first data from the upstream blocks, and checking that it
     is valid.
 
@@ -95,19 +94,19 @@ class Multiplex(Block):
       self._values.update({label: array(values) for label, values in
                            data.items() if label in self._labels_to_get[link]})
 
-  def loop(self) -> NoReturn:
+  def loop(self) -> None:
     """Receives data, interpolates it, and sends it to the downstream
     blocks."""
 
     self._get_data()
     self._send_data()
 
-  def finish(self) -> NoReturn:
+  def finish(self) -> None:
     """Just sending any remaining data."""
 
     self._send_data()
 
-  def _get_data(self) -> NoReturn:
+  def _get_data(self) -> None:
     """Receives data from the upstream links."""
 
     for link in self.inputs:
@@ -123,7 +122,7 @@ class Multiplex(Block):
           self._values[label] = concatenate((self._values[label],
                                              array(data[label])))
 
-  def _send_data(self) -> NoReturn:
+  def _send_data(self) -> None:
     """Interpolates the previously received data, and sends the result to the
     downstream blocks."""
 

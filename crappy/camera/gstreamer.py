@@ -4,7 +4,7 @@ from .camera import Camera
 from .._global import OptionalModule
 from time import time, sleep
 from numpy import uint8, ndarray, uint16
-from typing import NoReturn, Tuple, Optional, Union
+from typing import Tuple, Optional, Union
 from subprocess import Popen, PIPE, run
 from platform import system
 from re import findall, split
@@ -64,7 +64,7 @@ class Camera_gstreamer(Camera):
            user_pipeline: Optional[str] = None,
            nb_channels: Optional[int] = None,
            img_depth: Optional[int] = None,
-           **kwargs) -> NoReturn:
+           **kwargs) -> None:
     """Opens the pipeline, sets the settings and starts the acquisition of
     images.
 
@@ -127,7 +127,7 @@ videoconvert ! autovideosink
       raise ValueError("In Windows and Mac, device should be an integer !")
 
     if img_depth is not None and img_depth not in [8, 16]:
-      return ValueError('The img_depth must be either 8 or 16 (bits)')
+      raise ValueError('The img_depth must be either 8 or 16 (bits)')
 
     if user_pipeline is not None and nb_channels is None:
       raise ValueError('nb_channels must be given if user_pipeline is !')
@@ -333,7 +333,7 @@ videoconvert ! autovideosink
 
     return time(), self._img
 
-  def close(self) -> NoReturn:
+  def close(self) -> None:
     """Simply stops the image acquisition."""
 
     self._pipeline.set_state(Gst.State.NULL)
@@ -345,7 +345,7 @@ videoconvert ! autovideosink
 
   def _restart_pipeline(self,
                         pipeline: str,
-                        exposure: Optional[int] = None) -> NoReturn:
+                        exposure: Optional[int] = None) -> None:
     """Stops the current pipeline, redefines it, and restarts it.
 
     Args:
@@ -505,27 +505,27 @@ videoconvert ! autovideosink
 
     return Gst.FlowReturn.OK
 
-  def _set_brightness(self, brightness) -> NoReturn:
+  def _set_brightness(self, brightness) -> None:
     """Sets the image brightness."""
 
     self._restart_pipeline(self._get_pipeline(brightness=brightness))
 
-  def _set_contrast(self, contrast) -> NoReturn:
+  def _set_contrast(self, contrast) -> None:
     """Sets the image contrast."""
 
     self._restart_pipeline(self._get_pipeline(contrast=contrast))
 
-  def _set_hue(self, hue) -> NoReturn:
+  def _set_hue(self, hue) -> None:
     """Sets the image hue."""
 
     self._restart_pipeline(self._get_pipeline(hue=hue))
 
-  def _set_saturation(self, saturation) -> NoReturn:
+  def _set_saturation(self, saturation) -> None:
     """Sets the image saturation."""
 
     self._restart_pipeline(self._get_pipeline(saturation=saturation))
 
-  def _set_exposure(self, exposure: int) -> NoReturn:
+  def _set_exposure(self, exposure: int) -> None:
     """Sets the exposure using v4l2.
 
     Only works when the platform is Linux.
@@ -561,7 +561,7 @@ videoconvert ! autovideosink
     else:
       raise IOError("Couldn't read exposure value from v4l2 !")
 
-  def _set_format(self, img_format) -> NoReturn:
+  def _set_format(self, img_format) -> None:
     """Sets the image encoding and dimensions."""
 
     self._restart_pipeline(self._get_pipeline(img_format=img_format))

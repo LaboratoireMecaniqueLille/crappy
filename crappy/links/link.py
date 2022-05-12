@@ -1,12 +1,10 @@
 # coding: utf-8
 
-
 from multiprocessing import Pipe
 from time import time
 from threading import Thread
 from copy import copy
-from typing import Callable, Union, Any, Dict, NoReturn, Optional, Literal, \
-  List
+from typing import Callable, Union, Any, Dict, Optional, Literal, List
 
 from .._global import CrappyStop
 from ..modifier import Modifier
@@ -84,7 +82,7 @@ class Link:
     cls.count += 1
     return cls.count
 
-  def send(self, value: Union[Dict[str, Any], str]) -> NoReturn:
+  def send(self, value: Union[Dict[str, Any], str]) -> None:
     """Sends a value through the link.
 
     In case of a timeout exception, executes the user-defined action. Raises
@@ -214,7 +212,7 @@ class Link:
 
     return self._in.poll()
 
-  def clear(self) -> NoReturn:
+  def clear(self) -> None:
     """Flushes the link."""
 
     while self.poll():
@@ -356,7 +354,7 @@ def link(in_block,
                                   Union[Modifier, Callable]]] = None,
          timeout: float = 1,
          action: Literal['warn', 'kill', 'NoWarn'] = "warn",
-         name: Optional[str] = None) -> NoReturn:
+         name: Optional[str] = None) -> None:
   """Function linking two blocks, allowing to send data from one to the other.
 
   The created link is unidirectional, from the input block to the output block.

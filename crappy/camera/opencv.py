@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import NoReturn, Tuple
+from typing import Tuple
 from numpy import ndarray
 from platform import system
 from subprocess import run
@@ -151,7 +151,7 @@ class Camera_opencv(Camera):
     else:
       return t, frame
 
-  def close(self) -> NoReturn:
+  def close(self) -> None:
     """Releases the videocapture object."""
 
     if self._cap is not None:
@@ -174,17 +174,17 @@ class Camera_opencv(Camera):
 
     return self._cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
-  def _set_width(self, width: int) -> NoReturn:
+  def _set_width(self, width: int) -> None:
     """Tries to set the image width."""
 
     self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 
-  def _set_height(self, height: int) -> NoReturn:
+  def _set_height(self, height: int) -> None:
     """Tries to set the image height."""
 
     self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-  def _set_format(self, img_format) -> NoReturn:
+  def _set_format(self, img_format) -> None:
     """Sets the format of the image according to the user's choice."""
 
     # Converting the index to a string using the dict build at open()

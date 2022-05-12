@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, NoReturn, Union, Literal
+from typing import Optional, Union, Literal
 from .inout import InOut
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h, Usb_server, ft232h_pin_nr
@@ -99,7 +99,7 @@ class Gpio_switch(Usb_server, InOut):
     elif backend == 'blinka':
       self._pin_out = digitalio.DigitalInOut(getattr(board, pin_out))
 
-  def open(self) -> NoReturn:
+  def open(self) -> None:
     """Sets the GPIO."""
 
     if self._backend == 'Pi4':
@@ -109,7 +109,7 @@ class Gpio_switch(Usb_server, InOut):
     elif self._backend == 'blinka':
       self._pin_out.direction = digitalio.Direction.OUTPUT
 
-  def set_cmd(self, *cmd: int) -> NoReturn:
+  def set_cmd(self, *cmd: int) -> None:
     """Drives the GPIO according to the command.
 
     Args:
@@ -126,7 +126,7 @@ class Gpio_switch(Usb_server, InOut):
     elif self._backend == 'ft232h':
       self._ft232h.set_gpio(self._pin_out, cmd[0])
 
-  def close(self) -> NoReturn:
+  def close(self) -> None:
     """Releases the GPIO."""
 
     if self._backend == 'Pi4':

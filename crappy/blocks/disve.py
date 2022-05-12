@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import NoReturn, Literal, List, Tuple, Optional
+from typing import Literal, List, Tuple, Optional
 from ..tool import DISVE as VE, Camera_config_with_boxes
 from .camera import Camera
 from .._global import OptionalModule
@@ -110,7 +110,7 @@ class DISVE(Camera):
                        "safe": safe,
                        "follow": follow}
 
-  def prepare(self, *_, **__) -> NoReturn:
+  def prepare(self, *_, **__) -> None:
     """Opens the camera for acquiring images and displays the corresponding
     settings window."""
 
@@ -121,14 +121,14 @@ class DISVE(Camera):
     if config:
       Camera_config_with_boxes(self.camera, self._patches).main()
 
-  def begin(self) -> NoReturn:
+  def begin(self) -> None:
     """Takes a first image from the camera and uses it to initialize the Disve
     tool."""
 
     _, img = self.camera.read_image()
     self._ve = VE(img0=img, patches=self._patches, **self._ve_kwargs)
 
-  def loop(self) -> NoReturn:
+  def loop(self) -> None:
     """Acquires an image, uses the Disve tool to calculate the displacement
     of the patches, and sends the timestamp as well as the patches
     positions."""
@@ -143,7 +143,7 @@ class DISVE(Camera):
     ret = self._ve.calculate_displacement(img)
     self.send([t - self.t0] + ret)
 
-  def finish(self) -> NoReturn:
+  def finish(self) -> None:
     """Closes the Disve tool and the camera acquiring the images."""
 
     self._ve.close()

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import NoReturn, Literal, List, Tuple
+from typing import Literal, List, Tuple
 from .._global import OptionalModule
 
 try:
@@ -152,7 +152,7 @@ class DISVE:
     displacements = [coord for disp in displacements for coord in disp]
     return displacements
 
-  def close(self) -> NoReturn:
+  def close(self) -> None:
     """Closes the window for following the patches."""
 
     if self._show_image:
@@ -299,7 +299,7 @@ class DISVE:
                  int(width * self._border / 2):
                  int(width * (1 - self._border / 2))]
 
-  def _check_offsets(self) -> NoReturn:
+  def _check_offsets(self) -> None:
     """Check if the patches are still within the image, and raises an error if
     one of them is out."""
 
@@ -322,7 +322,7 @@ class DISVE:
       elif y_offset + y_min + height > self._height:
         raise RuntimeError("Region exiting the ROI (bottom)")
 
-  def _update_img(self, img: np.ndarray) -> NoReturn:
+  def _update_img(self, img: np.ndarray) -> None:
     """Updates the display of the window for following thr patches."""
 
     for (y_min, x_min, height, width), \
