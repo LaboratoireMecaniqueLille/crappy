@@ -11,7 +11,7 @@ class Reader(Block):
 
   def __init__(self,
                name: Optional[str] = None,
-               freq: float = 500,
+               freq: float = 50,
                verbose: bool = False) -> None:
     """Sets the arg and initializes the parent class.
 
@@ -34,7 +34,9 @@ class Reader(Block):
     for link in self.inputs:
       data = link.recv_chunk(blocking=False)
       if data is not None:
-        print(f'{self._name} got: {data}')
+        for dic in (dict(i) for i in zip(*([(key, value) for value in values]
+                                           for key, values in data.items()))):
+          print(f'{self._name} got: {dic}')
 
   @classmethod
   def _instance_index(cls) -> int:
