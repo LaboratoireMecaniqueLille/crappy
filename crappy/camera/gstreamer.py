@@ -3,7 +3,7 @@
 from .camera import Camera
 from .._global import OptionalModule
 from time import time, sleep
-from numpy import uint8, ndarray, uint16
+from numpy import uint8, ndarray, uint16, copy
 from typing import Tuple, Optional, Union
 from subprocess import Popen, PIPE, run
 from platform import system
@@ -25,7 +25,6 @@ except (ImportError, ModuleNotFoundError, ValueError):
                                       ' for GStreamer ! ')
 
 # Todo: Error with a getter
-#   Return copy of array
 
 
 class Camera_gstreamer(Camera):
@@ -331,7 +330,7 @@ videoconvert ! autovideosink
 
     self._last_frame_nr = self._frame_nr
 
-    return time(), self._img
+    return time(), copy(self._img)
 
   def close(self) -> None:
     """Simply stops the image acquisition."""
