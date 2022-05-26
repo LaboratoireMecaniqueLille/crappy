@@ -241,7 +241,8 @@ class Link:
         return data
       data = new
 
-  def recv_chunk(self, blocking: bool = True) -> Optional[Dict[str, list]]:
+  def recv_chunk(self,
+                 blocking: bool = True) -> Optional[Dict[str, List[Any]]]:
     """Returns all the data waiting in a link.
 
     Note:
@@ -281,7 +282,7 @@ class Link:
         except KeyError:
           raise IOError(f"{str(self)} Got data without label {label}")
 
-  def recv_delay(self, delay: float) -> Dict[str, Any]:
+  def recv_delay(self, delay: float) -> Dict[str, List[Any]]:
     """Same as :meth:`recv_chunk` except it runs for a given delay no matter
     if the link is empty or not.
 
@@ -323,7 +324,7 @@ class Link:
 
     return ret
 
-  def recv_chunk_no_stop(self) -> Optional[Dict[str, Any]]:
+  def recv_chunk_no_stop(self) -> Optional[Dict[str, List[Any]]]:
     """Experimental feature, to be used in :meth:`finish` methods to recover
     the final remaining data (possibly after a stop signal)."""
 
