@@ -8,12 +8,14 @@ class Sink(Block):
 
   def __init__(self,
                verbose: bool = False,
-               freq: float = 10,
-               *_,
-               **__) -> None:
-    Block.__init__(self)
+               freq: float = 10) -> None:
+    """Sets the args and initializes the parent class."""
+
+    super().__init__()
     self.verbose = verbose
     self.freq = freq
 
   def loop(self) -> None:
+    """Simply drops all received data."""
+
     self.drop()
