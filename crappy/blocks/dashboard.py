@@ -1,71 +1,51 @@
 # coding: utf-8
 
-import threading
-from queue import Queue, Empty
+from typing import List
+import tkinter as tk
 
 from .block import Block
-from .._global import OptionalModule
-
-try:
-  from tkinter import Tk, Label
-except (ModuleNotFoundError, ImportError):
-  Tk = OptionalModule("tkinter")
-  Label = OptionalModule("tkinter")
 
 
-class Dashboard_window:
-  """Dashboard class created, is launched in a new thread."""
+class Dashboard_window(tk.Tk):
+  """The GUI for displaying the label values."""
 
-  def __init__(self, labels: list, nb_digits: int, queue: Queue) -> None:
-    self.root = Tk()
-    self.root.title('Dashboard')
-    self.root.resizable(width=False, height=False)
-    self.nb_digits = nb_digits
-    self.labels = labels
-    self.c1 = {}
-    self.c2 = {}
-    self.queue = queue
-    self.stop = False
-    row = 0
-    # Creating the first and second column. Second column will be updated.
-    for label in self.labels:
-      self.c1[label] = Label(self.root, text=label, borderwidth=15,
-                             font=("Courier bold", 48))
-      self.c1[label].grid(row=row, column=0)
-      self.c2[label] = (Label(self.root, text='', borderwidth=15,
-                              font=("Courier bold", 48)))
-      self.c2[label].grid(row=row, column=1)
-      row += 1
-    # Updating the second column until told to stop
-    while not self.stop:
-      self.update()
+  def __init__(self, labels: List[str]) -> None:
+    """Initializes the GUI and sets the layout."""
 
-  def update(self) -> None:
-    """Method to update the output window."""
+    super().__init__()
+    self.title('Dashboard')
+    self.resizable(False, False)
 
-    try:
-      values = self.queue.get(timeout=0.1)
-    except Empty:
-      # Re-looping if nothing to display
-      return
+    self._labels = labels
 
-    # Stopping and closing the window
-    if values == 'stop':
-      self.stop = True
-      self.root.destroy()
-      return
-    # Updating the display
-    for label in self.labels:
-      try:
-        if isinstance(values[label], str):
-          self.c2[label].configure(text=values[label])
-        else:
-          self.c2[label].configure(text='%.{}f'.format(self.nb_digits) %
-                                        values[label])
-      except KeyError:
-        # If a wrong label is given it just won't be updated
-        pass
-    self.root.update()
+    # Attributes storing the tkinter objects
+    self._tk_labels = {}
+    self._tk_values = {}
+    self.tk_var = {}
+
+    # Setting the GUI
+    self._set_variables()
+    self._set_layout()
+
+  def _set_variables(self) -> None:
+    """Attributes one StringVar per label."""
+
+    for label in self._labels:
+      self.tk_var[label] = tk.StringVar(value='')
+
+  def _set_layout(self) -> None:
+    """Creates the Labels and places them on the GUI."""
+
+    for row, label in enumerate(self._labels):
+      # The name of the labels on the left
+      self._tk_labels[label] = tk.Label(self, text=label, borderwidth=15,
+                                        font=("Courier bold", 48))
+      self._tk_labels[label].grid(row=row, column=0)
+      # Their values on the right
+      self._tk_values[label] = tk.Label(self, borderwidth=15,
+                                        textvariable=self.tk_var[label],
+                                        font=("Courier bold", 48))
+      self._tk_values[label].grid(row=row, column=1)
 
 
 class Dashboard(Block):
@@ -76,48 +56,64 @@ class Dashboard(Block):
   """
 
   def __init__(self,
-               labels: list,
+               labels: List[str],
                nb_digits: int = 2,
                verbose: bool = False,
                freq: float = 30) -> None:
     """Sets the args and initializes parent class.
 
     Args:
-      labels (:obj:`list`): Values to plot on the output window.
-      nb_digits (:obj:`int`, optional): Number of decimals to show.
-      verbose (:obj:`bool`, optional): Display loop frequency ?
-      freq (:obj:`float`, optional): If set, the block will loop at this
-        frequency.
+      labels: Only the data from these labels will be printed on the window.
+      nb_digits: Number of decimals to show.
+      verbose: If :obj:`True`, prints the looping frequency of the block.
+      freq: If set, the block will try to loop at this frequency.
     """
 
     super().__init__()
     self.verbose = verbose
     self.freq = freq
-    self.labels = labels
-    self.nb_digits = nb_digits
-    # global queue
-    self.queue = Queue()
+
+    self._labels = labels
+    self._nb_digits = nb_digits
 
   def prepare(self) -> None:
-    """Creates the window in a new thread."""
+    """Checks that there's only one incoming link, and starts the GUI."""
 
     if len(self.inputs) == 0:
       raise IOError("No link pointing towards the Dashboard block !")
     elif len(self.inputs) > 1:
       raise IOError("Too many links pointing towards the Dashboard block !")
-    self.dash_thread = threading.Thread(target=Dashboard_window,
-                                        args=(self.labels, self.nb_digits,
-                                              self.queue))
-    self.dash_thread.start()
+    self._link, = self.inputs
+
+    self._dashboard = Dashboard_window(self._labels)
+    self._dashboard.update()
 
   def loop(self) -> None:
-    """Simply transmits the received data to the thread."""
+    """Receives the data from the incoming link and displays it."""
 
-    received_data = [link.recv_last() for link in self.inputs]
-    if received_data[0] is not None:
-      self.queue.put_nowait(received_data[0])
+    data = self._link.recv_last()
+
+    if data is not None:
+      for label, value in data.items():
+        # Only print the required labels
+        if label in self._labels:
+          # Possibility to display str values carried by the links
+          if isinstance(value, str):
+            self._dashboard.tk_var[label].set(value)
+          elif isinstance(value, int) or isinstance(value, float):
+            self._dashboard.tk_var[label].set(f'{value:.{self._nb_digits}f}')
+
+    # In case the GUI has been destroyed, don't raise an error
+    try:
+      self._dashboard.update()
+    except tk.TclError:
+      pass
 
   def finish(self) -> None:
-    """Closes the thread."""
-    self.queue.put_nowait('stop')
-    self.dash_thread.join(timeout=0.1)
+    """"""
+
+    # In case the GUI has been destroyed, don't raise an error
+    try:
+      self._dashboard.destroy()
+    except tk.TclError:
+      pass
