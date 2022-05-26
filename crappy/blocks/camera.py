@@ -134,7 +134,7 @@ class Camera(Block):
       self.ref_img = self.inputs[0].recv()[self.input_label]
       self.camera = camera_list['Camera']()
       self.camera.max_fps = 30
-      self.camera.get_image = lambda: (0, self.ref_img)
+      self.camera.get_image = lambda: (0, np.copy(self.ref_img))
       return
     self.camera = camera_list[self.camera_name]()
     self.camera.open(**self.cam_kw)
