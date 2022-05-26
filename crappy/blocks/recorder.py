@@ -1,106 +1,116 @@
 # coding: utf-8
 
 from time import sleep
-from os import path, makedirs
-from typing import Union
+from typing import List, Optional, Dict, Any, Union
+from pathlib import Path
 
 from .block import Block
 
 
 class Recorder(Block):
-  """Will save the incoming data to a file (default `.csv`).
+  """Saves data from an upstream block to a text file, with values separated by
+  a coma and lines by a newline character.
 
-  Important:
-    Can only take ONE input, i.e. save labels from only one block. If you want
-    multiple readings in a single file use the :ref:`Multiplex` block.
+  The first row of the file contains the names of the saved labels.
+  This block can only save data coming from one upstream block. To save data
+  from multiple blocks, use several instances of Recorder (recommended) or a
+  :ref:`Multiplex` block.
   """
 
   def __init__(self,
-               filename: str,
+               filename: Union[str, Path],
                delay: float = 2,
-               labels: Union[str, list] = 't(s)') -> None:
+               labels: Optional[List[str]] = None) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      filename (:obj:`str`): Path and name of the output file. If the folders
-        do not exist, they will be created. If the file already exists, the
-        actual file will be named with a trailing number to avoid overriding
-        it.
-      delay (:obj:`float`, optional): Delay between each write in seconds.
-      labels (:obj:`list`, optional): What labels to save. Can be either a
-        :obj:`str` to save all labels but this one first, or a :obj:`list` to
-        save only these labels.
+      filename: Path to the output file, either relative or absolute. If the
+        parent folders of the file do not exist, they will be created. If the
+        file already exists, the actual file where data will be written will be
+        renamed with a trailing index to avoid overriding it.
+      delay: Delay between each write in seconds.
+      labels: If provided, only the data carried by these labels will be saved.
+        Otherwise, all the received data is saved.
     """
 
-    Block.__init__(self)
+    super().__init__()
     self.niceness = -5
-    self.delay = delay
-    self.filename = filename
-    self.labels = labels
+
+    self._delay = delay
+    self._path = Path(filename)
+    self._labels = labels
 
   def prepare(self) -> None:
-    assert self.inputs, "No input connected to the recorder!"
-    assert len(self.inputs) == 1, \
-        "Cannot link more than one block to a recorder!"
-    d = path.dirname(self.filename)
-    if d and not path.exists(d):
-      # Create the folder if it does not exist
-      try:
-        makedirs(d)
-      except OSError:
-        assert path.exists(d), "Error creating " + d
-    if path.exists(self.filename):
-      # If the file already exists, append a number to the name
-      print("[recorder] WARNING!", self.filename, "already exists !")
-      name, ext = path.splitext(self.filename)
+    """Checking that the block has the right number of inputs, creates the
+    folder containing the file if it doesn't already exist, and changes the
+    name of the file if it already exists."""
+
+    # Making sure there's the right number of incoming links
+    if not self.inputs:
+      raise ValueError('The Recorder block does not have inputs !')
+    elif len(self.inputs) > 1:
+      raise ValueError('Cannot link more than one block to a Recorder block !')
+    self._link, = self.inputs
+
+    parent_folder = self._path.parent
+
+    # Creating the folder for storing the data if it does not already exist
+    if not Path.is_dir(parent_folder):
+      Path.mkdir(parent_folder, exist_ok=True, parents=True)
+
+    # Changing the name of the file if it already exists
+    if Path.exists(self._path):
+      print(f'[Recorder] Warning ! The file {self._path} already exists !')
+      stem, suffix = self._path.stem, self._path.suffix
       i = 1
-      while path.exists(name + "_%05d" % i + ext):
+      # Adding an integer at the end of the name to identify the file
+      while Path.exists(parent_folder / f'{stem}_{i:05d}{suffix}'):
         i += 1
-      self.filename = name + "_%05d" % i + ext
-      print("[recorder] Using", self.filename, "instead!")
+      self._path = parent_folder / f'{stem}_{i:05d}{suffix}'
+      print(f'[Recorder] Using {self._path} instead !')
 
   def begin(self) -> None:
-    """
-    This is meant to receive data once and adapt the label list.
-    """
+    """Receives the first chunk of data, writes the labels names in the first
+    row of the file and starts saving the actual data."""
 
-    self.last_save = self.t0
-    r = self.inputs[0].recv_delay(self.delay)  # To know the actual labels
-    if self.labels:
-      if not isinstance(self.labels, list):
-        if self.labels in r.keys():
-          # If one label is specified, place it first and
-          # add the others alphabetically
-          self.labels = [self.labels]
-          for k in sorted(r.keys()):
-            if k not in self.labels:
-              self.labels.append(k)
-        else:
-          # If not a list but not in labels, forget it and take all the labels
-          self.labels = list(sorted(r.keys()))
-        # if it is a list, keep it untouched
-    else:
-      # If we did not give them (False, [] or None):
-      self.labels = list(sorted(r.keys()))
-    with open(self.filename, 'w') as f:
-      f.write(", ".join(self.labels) + "\n")
-    self.save(r)
+    data = self._link.recv_delay(self._delay)
+
+    # If no labels are given, save everything that's received
+    if self._labels is None:
+      self._labels = list(data.keys())
+
+    # The first row of the file contains the names of the labels
+    with open(self._path, 'w') as file:
+      file.write(f"{', '.join(self._labels)}\n")
+
+    # The following rows contain data
+    self._save(data)
 
   def loop(self) -> None:
-    self.save(self.inputs[0].recv_delay(self.delay))
+    """Simply receives data from the upstream block and saves it."""
 
-  def save(self, d):
-    with open(self.filename, 'a') as f:
-      for i in range(len(d[self.labels[0]])):
-        for j, k in enumerate(self.labels):
-          f.write((", " if j else "") + str(d[k][i]))
-        f.write("\n")
+    self._save(self._link.recv_delay(self._delay))
 
   def finish(self) -> None:
-    sleep(.5)  # Wait to finish last
-    r = self.inputs[0].recv_chunk_no_stop()
-    if r:
-      self.save(r)
+    """Gathers any data left in the links, and saves it."""
+
+    sleep(0.5)
+    data = self._link.recv_chunk_no_stop()
+    if data is not None:
+      self._save(data)
+
+  def _save(self, data: Dict[str, List[Any]]):
+    """Saves only the data carried by the specified labels to the file."""
+
+    # Keeping only the data that needs to be saved
+    data = {key: val for key, val in data.items() if key in self._labels}
+
+    with open(self._path, 'a') as file:
+      # Sorting the lists of values in the same order as the labels
+      sorted_data = [data[label] for label in self._labels]
+      # Actually writing the values
+      for values in zip(*sorted_data):
+        file.write(f"{', '.join(map(str, values))}\n")
 
 
 class Saver(Recorder):
@@ -110,4 +120,4 @@ class Saver(Recorder):
           'Please replace the name in your program, '
           'it will be removed in future versions\n'
           '#################')
-    Recorder.__init__(self, *args, **kwargs)
+    super().__init__(*args, **kwargs)
