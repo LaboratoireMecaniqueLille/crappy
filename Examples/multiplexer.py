@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
   g2 = crappy.blocks.Generator([
     dict(type='cyclic_ramp', speed2=-1, speed1=1,
-         condition1='cmd2>1', condition2='cmd2<-1', cycles=1e30)
+         condition1='cmd2>1', condition2='cmd2<-1', cycles=0, init_value=0)
       ], freq=50, cmd_label='cmd2')
 
   mul = crappy.blocks.Multiplex(verbose=True)
