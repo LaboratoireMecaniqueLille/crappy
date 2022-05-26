@@ -23,10 +23,12 @@ class Webcam(Camera):
   def __init__(self) -> None:
     """Sets variables and adds the channels setting."""
 
-    Camera.__init__(self)
+    super().__init__()
     self.name = "webcam"
     self._cap = None
-    self.add_setting("channels", limits={1: 1, 3: 3}, default=1)
+    self.add_choice_setting(name="channels",
+                            choices=('1', '3'),
+                            default='1')
 
   def open(self, device_num: Optional[int] = 0, **kwargs) -> None:
     """Opens the video stream and sets any user-specified settings.
@@ -40,11 +42,7 @@ class Webcam(Camera):
     # Opening the videocapture device
     self._cap = cv2.VideoCapture(device_num)
 
-    # Setting the kwargs if any, and making sure they exist
-    for kwarg in kwargs:
-      if kwarg not in self.available_settings:
-        raise ValueError(f"Unexpected argument {kwarg} for camera "
-                         f"{type(self).__name__}.")
+    # Setting the kwargs if any
     self.set_all(**kwargs)
 
   def get_image(self) -> Tuple[float, ndarray]:
@@ -60,7 +58,7 @@ class Webcam(Camera):
       raise IOError("Error reading the camera")
 
     # Returning the image in the right format, and its timestamp
-    if self.channels == 1:
+    if self.channels == '1':
       return t, cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     else:
       return t, frame

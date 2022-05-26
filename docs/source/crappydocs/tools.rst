@@ -27,6 +27,11 @@ Disve tool
 .. automodule:: crappy.tool.disve
    :members:
 
+Disve configuration
+-------------------
+.. automodule:: crappy.tool.disveConfig
+   :members:
+
 Fields
 ------
 .. automodule:: crappy.tool.fields

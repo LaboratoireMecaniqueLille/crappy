@@ -54,10 +54,8 @@ class Cl_camera(Camera):
       raise AttributeError("No camera type or valid config file specified!")
     self.name = "cl_camera"
     self.numdevice = numdevice
-    self.add_setting("width", setter=self._set_w, getter=self._get_w)
-    self.add_setting("height", setter=self._set_h, getter=self._get_h)
-    self.add_setting("framespersec", setter=self._set_framespersec,
-                     getter=self._get_framespersec, limits=(1, 200))
+    self.add_scale_setting("framespersec", 1, 200, self._get_framespersec,
+                           self._set_framespersec)
 
   def stopAcq(self) -> None:
     self.cap.stopAcq()

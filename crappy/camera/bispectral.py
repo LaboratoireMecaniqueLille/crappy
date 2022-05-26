@@ -62,21 +62,15 @@ def hexlify(n: int) -> str:
 class Bispectral(Cl_camera):
   def __init__(self, **kwargs) -> None:
     kwargs['camera_type'] = "SingleAreaGray2DShading"
-    Cl_camera.__init__(self, **kwargs)
-    self.settings['width'].limits = (1, 640)
-    self.settings['width'].default = 640
-    self.settings['height'].limits = (1, 512)
-    self.settings['height'].default = 512
-    self.add_setting('xoffset', limits=(0, 639 * 2), default=0,
-                     setter=self._set_ox, getter=self._get_ox)
-    self.add_setting('yoffset', limits=(0, 511), default=0,
-                     setter=self._set_oy, getter=self._get_oy)
-    self.add_setting('IT1', limits=(10, 10000),  # default=self._get_it1,
-                     setter=self._set_it1, getter=self._get_it1)
-    self.add_setting('IT2', limits=(10, 10000),  # default=self._get_it2,
-                     setter=self._set_it2, getter=self._get_it2)
-    self.add_setting('fps', getter=self.get_trigg_freq,
-                     setter=self.set_trigg_freq, limits=(1., 150.))
+    super().__init__(**kwargs)
+    self.add_scale_setting('width', 1, 640, self._get_w, self._set_w, 640)
+    self.add_scale_setting('height', 1, 512, self._get_h, self._set_h, 512)
+    self.add_scale_setting('xoffset', 0, 1278, self._get_ox, self._set_ox, 0)
+    self.add_scale_setting('yoffset', 0, 511, self._get_oy, self._set_oy, 0)
+    self.add_scale_setting('IT1', 10, 10000, self._get_it1, self._set_it1)
+    self.add_scale_setting('IT2', 10, 10000, self._get_it2, self._set_it2)
+    self.add_scale_setting('fps', 1., 150., self.get_trigg_freq,
+                           self.set_trigg_freq)
 
   def _set_w(self, val: int) -> None:
     Cl_camera._set_w(self, val * 2)

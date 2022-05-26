@@ -7,7 +7,7 @@ from numpy import uint8, ndarray, uint16, copy
 from typing import Tuple, Optional, Union
 from subprocess import Popen, PIPE, run
 from platform import system
-from re import findall, split
+from re import findall, split, search
 
 try:
   import cv2
@@ -194,23 +194,21 @@ videoconvert ! autovideosink
         check = check.stdout if check is not None else ''
 
         # Trying to find the exposure parameters in the returned string
-        expo = findall(r'exposure\s0x[\dA-Fa-f]+\s\(\w+\)\s+:'
-                       r'\smin=\d+\smax=\d+', check)
-        expo_auto = findall(r'exposure_auto\s0x[\dA-Fa-f]+\s\(\w+\)\s+:'
-                            r'\smin=\d+\smax=\d+', check)
-        expo_abso = findall(r'exposure_absolute\s0x[\dA-Fa-f]+\s\(\w+\)\s+:'
-                            r'\smin=\d+\smax=\d+', check)
+        expo = search(r'exposure\s0x[\dA-Fa-f]+\s\(\w+\)\s+:\s'
+                      r'min=(?P<min>\d+)\smax=(?P<max>\d+)', check)
+        expo_auto = search(r'exposure_auto\s0x[\dA-Fa-f]+\s\(\w+\)\s+:\s'
+                           r'min=(?P<min>\d+)\smax=(?P<max>\d+)', check)
+        expo_abso = search(r'exposure_absolute\s0x[\dA-Fa-f]+\s\(\w+\)\s+:\s'
+                           r'min=(?P<min>\d+)\smax=(?P<max>\d+)', check)
 
         # If there's an exposure parameter, getting its upper and lower limits
         if expo:
-          expo_min = findall(r'\d+', expo[0])[-2]
-          expo_max = findall(r'\d+', expo[0])[-1]
+          expo_min, expo_max = map(int, expo.groups())
           self._exposure_mode = 'direct'
 
         # If there's an exposure parameter, getting its upper and lower limits
         elif expo_auto and expo_abso:
-          expo_min = findall(r'\d+', expo_abso[0])[-2]
-          expo_max = findall(r'\d+', expo_abso[0])[-1]
+          expo_min, expo_max = map(int, expo_abso.groups())
           self._exposure_mode = 'auto'
 
         else:
@@ -219,14 +217,14 @@ videoconvert ! autovideosink
 
         # Creating the parameter if applicable
         if expo_min is not None:
-          self.add_setting("exposure", self._get_exposure, self._set_exposure,
-                           (expo_min, expo_max))
+          self.add_scale_setting(name='exposure', lowest=expo_min,
+                                 highest=expo_max, getter=self._get_exposure,
+                                 setter=self._set_exposure)
 
       # Then, trying to get the available image encodings and formats
       if system() == 'Linux':
 
-        self._format_to_index = {}
-        self._index_to_format = {}
+        self._formats = []
 
         # Trying to run v4l2-ctl to get the available formats
         command = ['v4l2-ctl', '--list-formats-ext'] if device is None \
@@ -248,44 +246,45 @@ videoconvert ! autovideosink
         if check:
           for img_format in check:
             # For each encoding, finding its name
-            name = findall(r"'\w+'", img_format)[0].replace("'", '')
+            name, *_ = search(r"'(\w+)'", img_format).groups()
             sizes = findall(r'\d+x\d+', img_format)
 
             # For each name, finding the available sizes
             for size in sizes:
-              self._format_to_index.update(
-                {name + ' ' + size: len(self._format_to_index)})
-              self._index_to_format.update(
-                {len(self._index_to_format): name + ' ' + size})
+              self._formats.append(f'{name} {size}')
 
         else:
           # If v4l-utils is not installed, proposing two encodings without
           # further detail
-          self._format_to_index = {'Default': 0, 'MJPG': 1}
-          self._index_to_format = {0: 'Default', 1: 'MJPG'}
+          self._formats = ['Default', 'MJPG']
 
       # For Windows and Mac proposing two encodings without further detail
       else:
-        self._format_to_index = {'Default': 0, 'MJPG': 1}
-        self._index_to_format = {0: 'Default', 1: 'MJPG'}
+        self._formats = ['Default', 'MJPG']
 
       # Finally, creating the parameter if applicable
-      if self._format_to_index:
+      if self._formats:
         # The format integrates the size selection
-        if ' ' in self._index_to_format[0]:
-          self.add_setting("format", self._get_format, self._set_format,
-                           self._format_to_index)
+        if ' ' in self._formats[0]:
+          self.add_choice_setting(name='format',
+                                  choices=tuple(self._formats),
+                                  getter=self._get_format,
+                                  setter=self._set_format)
         # The size is independent of the format
         else:
-          self.add_setting("format", None, self._set_format,
-                           self._format_to_index, 0)
+          self.add_choice_setting(name='format', choices=tuple(self._formats),
+                                  setter=self._set_format)
 
       # These settings are always available no matter the platform
-      self.add_setting("channels", limits={1: 1, 3: 3}, default=1)
-      self.add_setting("brightness", None, self._set_brightness, (-1., 1.), 0)
-      self.add_setting("contrast", None, self._set_contrast, (0., 2.), 1)
-      self.add_setting("hue", None, self._set_hue, (-1., 1.), 0)
-      self.add_setting("saturation", None, self._set_saturation, (0., 2.), 1)
+      self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
+      self.add_scale_setting(name='brightness', lowest=-1., highest=1.,
+                             setter=self._set_brightness, default=0.)
+      self.add_scale_setting(name='contrast', lowest=0., highest=2.,
+                             setter=self._set_contrast, default=1.)
+      self.add_scale_setting(name='hue', lowest=-1., highest=1.,
+                             setter=self._set_hue, default=0.)
+      self.add_scale_setting(name='saturation', lowest=0., highest=2.,
+                             setter=self._set_saturation, default=1.)
 
     # Setting up GStreamer and the callback
     self._pipeline = Gst.parse_launch(self._get_pipeline())
@@ -306,11 +305,7 @@ videoconvert ! autovideosink
           "unexpected, in which case you can try specifying it.")
       sleep(0.01)
 
-    # Setting the kwargs if any, and making sure they exist
-    for kwarg in kwargs:
-      if kwarg not in self.available_settings:
-        raise ValueError(f"Unexpected argument {kwarg} for camera "
-                         f"{type(self).__name__}.")
+    # Setting the kwargs if any
     self.set_all(**kwargs)
 
   def get_image(self) -> Tuple[float, ndarray]:
@@ -429,18 +424,21 @@ videoconvert ! autovideosink
 
     # Getting the format index
     img_format = img_format if img_format is not None else self.format
-    # Converting the index to a string using the dict build at open()
-    raw_format = self._index_to_format[img_format].split(' ')
 
-    # isolating the name from the size
-    img_format = raw_format[0]
-    img_size = raw_format[1] if len(raw_format) > 1 else None
+    try:
+      format_name, img_size = img_format.split(' ')
+    except ValueError:
+      format_name, img_size = img_format, None
+
     # Adding a mjpeg decoder to the pipeline if needed
-    img_format = '! jpegdec' if img_format == 'MJPG' else ''
+    img_format = '! jpegdec' if format_name == 'MJPG' else ''
 
     # Getting the width and height from the second half of the string
-    width = img_size.split('x')[0] if img_size is not None else ''
-    height = img_size.split('x')[1] if img_size is not None else ''
+    if img_size is not None:
+      width, height = map(int, img_size.split('x'))
+    else:
+      width, height = None, None
+
     # Including the dimensions in the pipeline
     img_size = f',width={width},height={height}' if width else ''
 
@@ -493,7 +491,7 @@ videoconvert ! autovideosink
                       "the format.\n(here BGR would be for 3 channels)")
 
     # Converting to gray level if needed
-    if self._user_pipeline is None and self.channels == 1:
+    if self._user_pipeline is None and self.channels == '1':
       numpy_frame = cv2.cvtColor(numpy_frame, cv2.COLOR_BGR2GRAY)
 
     # Cleaning up the buffer mapping
@@ -538,7 +536,7 @@ videoconvert ! autovideosink
     Only works when the platform is Linux.
     """
 
-    # trying to run v4l2-ctl to get the exposure value
+    # Trying to run v4l2-ctl to get the exposure value
     if self._device is not None:
       command = ['v4l2-ctl', '-d', self._device, '-C',
                  'exposure_absolute' if self._exposure_mode == 'auto' else
@@ -554,9 +552,9 @@ videoconvert ! autovideosink
 
     # Extracting the exposure from the returned string
     expo = expo.stdout if expo is not None else ''
-    expo = findall(r'\d+', expo)
+    expo = search(r'\d+', expo)
     if expo:
-      return expo[0]
+      return int(expo[0])
     else:
       raise IOError("Couldn't read exposure value from v4l2 !")
 
@@ -565,7 +563,7 @@ videoconvert ! autovideosink
 
     self._restart_pipeline(self._get_pipeline(img_format=img_format))
 
-  def _get_format(self) -> int:
+  def _get_format(self) -> str:
     """Parses the v4l2-ctl -V command to get the current image format as an
     index."""
 
@@ -578,15 +576,9 @@ videoconvert ! autovideosink
 
     # Parsing the answer
     format_ = width = height = ''
-    if findall(r"'\w+'", check):
-      format_ = findall(r"'\w+'", check)[0].replace("'", "")
-    if findall(r"\d+/\d+", check):
-      width = findall(r"\d+/\d+", check)[0].split('/')[0]
-      height = findall(r"\d+/\d+", check)[0].split('/')[1]
+    if search(r"'(\w+)'", check) is not None:
+      format_, *_ = search(r"'(\w+)'", check).groups()
+    if search(r"(\d+)/(\d+)", check):
+      width, height = search(r"(\d+)/(\d+)", check).groups()
 
-    # Returning the corresponding index
-    try:
-      index = self._format_to_index[format_ + ' ' + width + 'x' + height]
-      return index
-    except KeyError:
-      raise KeyError("Couldn't retrieve the current image format.")
+    return f'{format_} {width}x{height}'

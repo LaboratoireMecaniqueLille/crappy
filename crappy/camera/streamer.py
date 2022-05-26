@@ -30,7 +30,7 @@ class Streamer(Camera):
   """
 
   def __init__(self) -> None:
-    Camera.__init__(self)
+    super().__init__()
     self.frame = 0
 
   def open(self,

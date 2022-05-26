@@ -1,105 +1,127 @@
 # coding: utf-8
 
-"""More documentation coming soon !"""
-
-import numpy as np
-from .cameraConfig import Camera_config
-from .._global import OptionalModule
-
-try:
-  from PIL import ImageTk, Image
-except (ModuleNotFoundError, ImportError):
-  ImageTk = OptionalModule("pillow")
-  Image = OptionalModule("pillow")
-
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
-
-try:
-  import tkinter as tk
-except (ModuleNotFoundError, ImportError):
-  tk = OptionalModule("tkinter")
+import tkinter as tk
+from typing import Optional
+from .cameraConfigBoxes import Camera_config_with_boxes
+from .cameraConfigTools import Box
 
 
-class VE_config(Camera_config):
-  def __init__(self, camera, ve) -> None:
-    self.boxes = None
-    self.select_box = (-1, -1, -1, -1)
-    Camera_config.__init__(self, camera)
-    self.ve = ve
+class VE_config(Camera_config_with_boxes):
+  """Class similar to :ref:`Camera configuration` but also displaying the
+  bounding boxes of the detected spots, and allowing to select the area where
+  to detect the spots by drawing a box with the left mouse button.
 
-  def clamp(self, t: tuple) -> tuple:
-    if isinstance(t[0], slice):
-      return t[0], min(max(0, t[1]), self.img_shape[1] - 1)
-    else:
-      return min(max(0, t[0]), self.img_shape[0] - 1), t[1]
+  It is meant to be used for configuring the :ref:`VideoExtenso` block.
+  """
 
-  def create_window(self) -> None:
-    Camera_config.create_window(self)
-    self.img_label.bind('<1>', self.start_select)
-    self.img_label.bind('<B1-Motion>', self.update_box)
-    self.img_label.bind('<ButtonRelease-1>', self.stop_select)
-    self.save_length_button = tk.Button(self.lower_frame, text="Save L0",
-                                        command=self.save_length)
-    # self.save_length_button.grid(
-    #   column=1, row=len(self.camera.settings_dict)+4)
-    self.save_length_button.pack()
+  def __init__(self, camera, video_extenso) -> None:
+    """Sets the args and initializes the parent class.
 
-  def start_select(self, event) -> None:
-    self.box_origin = self.get_img_coord(event.y, event.x)
+    Args:
+      camera: The camera object in charge of acquiring the images.
+      video_extenso: The video extenso tool in charge of tracking the spots.
+    """
 
-  def update_box(self, event) -> None:
-    oy, ox = self.box_origin
-    y, x = self.get_img_coord(event.y, event.x)
-    self.select_box = (min(oy, y), min(ox, x), max(oy, y), max(ox, x))
+    self._video_extenso = video_extenso
+    super().__init__(camera)
 
-  def stop_select(self, *_, **__) -> None:
-    self.ve.detect_spots(self.img[self.select_box[0]:self.select_box[2],
-                                  self.select_box[1]:self.select_box[3]],
-                         self.select_box[0], self.select_box[1])
-    self.select_box = (-1, -1, -1, -1)
-    if hasattr(self.ve, "spot_list") and len(self.ve.spot_list) > 0:
-      self.boxes = [x['bbox'] for x in self.ve.spot_list]
-    else:
-      self.boxes = None
+  def _bind_canvas_left_click(self) -> None:
+    """Binds the left mouse button click for drawing the box in which the spots
+    will be searched."""
 
-  def save_length(self) -> None:
-    self.ve.save_length()
-    print("L0 saved:", (self.ve.l0y, self.ve.l0x))
+    self._img_canvas.bind('<ButtonPress-1>', self._start_box)
+    self._img_canvas.bind('<B1-Motion>', self._extend_box)
+    self._img_canvas.bind('<ButtonRelease-1>', self._stop_box)
 
-  def draw_box(self, box, img):
-    for s in [
-        (box[0], slice(box[1], box[3])),
-        (box[2], slice(box[1], box[3])),
-        (slice(box[0], box[2]), box[1]),
-        (slice(box[0], box[2]), box[3])
-     ]:
-      # Turn these pixels white or black for highest possible contrast
-      s = self.clamp(s)
-      img[s] = 255 * int(np.mean(img[s]) < 128)
+  def _create_buttons(self) -> None:
+    """Compared with the parent class, creates an extra button for saving the
+    original position of the spots."""
 
-  def resize_img(self, sl: tuple) -> None:
-    rimg = cv2.resize(self.img8[sl[1], sl[0]], tuple(reversed(self.img_shape)),
-                      interpolation=0)
-    if self.select_box[0] > 0:
-      lbox = [0] * 4
-      for i in range(4):
-        n = self.select_box[i] - self.zoom_window[i % 2] * \
-            self.img.shape[i % 2]
-        n /= (self.zoom_window[2 + i % 2] - self.zoom_window[i % 2])
-        lbox[i] = int(n / self.img.shape[i % 2] *
-                      self.img_shape[i % 2])
-      self.draw_box(lbox, rimg)
-    if self.boxes:
-      for b in self.boxes:
-        lbox = [0] * 4
-        for i in range(4):
-          n = b[i] - self.zoom_window[i % 2] * self.img.shape[i % 2]
-          n /= (self.zoom_window[2 + i % 2] - self.zoom_window[i % 2])
-          lbox[i] = int(n / self.img.shape[i % 2] *
-                        self.img_shape[i % 2])
-        self.draw_box(lbox, rimg)
+    self._update_button = tk.Button(self._sets_frame, text="Apply Settings",
+                                    command=self._update_settings)
+    self._update_button.pack(expand=False, fill='none', ipadx=5, ipady=5,
+                             padx=5, pady=5, anchor='n', side='top')
 
-    self.c_img = ImageTk.PhotoImage(Image.fromarray(rimg))
+    self._update_button = tk.Button(self._sets_frame, text="Save L0",
+                                    command=self._save_l0)
+    self._update_button.pack(expand=False, fill='none', ipadx=5, ipady=5,
+                             padx=5, pady=5, anchor='n', side='top')
+
+  def _stop_box(self, _: tk.Event) -> None:
+    """When the user releases the mouse, searches for spots in the selected
+    area and displays them if any were found."""
+
+    # If it's just a regular click with no dragging, do nothing
+    if self._img is None or self._select_box.no_points():
+      self._select_box.reset()
+      return
+
+    # The sides need to be sorted before slicing numpy array
+    y_left, y_right, x_top, x_bottom = self._select_box.sorted()
+
+    # If the box is flat, resetting it
+    if y_left == y_right or x_top == x_bottom:
+      self._select_box.reset()
+      return
+
+    # Now actually trying to detect the spots
+    try:
+      self._video_extenso.detect_spots(
+        self._original_img[x_top: x_bottom, y_left: y_right], x_top, y_left)
+    except IndexError:
+      # Highly unlikely but always better to be careful
+      self._spots.reset()
+      return
+
+    # This box is not needed anymore
+    self._select_box.reset()
+
+    # If spots were found, updating the display
+    if hasattr(self._video_extenso, "spot_list") and \
+            len(self._video_extenso.spot_list) > 0:
+      self._spots.reset()
+      self._spots.set_spots([dic['bbox'] for dic
+                             in self._video_extenso.spot_list])
+
+  def _save_l0(self) -> None:
+    """Saves the original positions of the spots on the image."""
+
+    self._video_extenso.save_length()
+    print("L0 saved:", (self._video_extenso.l0y, self._video_extenso.l0x))
+
+  def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
+    """Same as in the parent class except it also draws the patches and the
+    select box on top of the displayed image."""
+
+    self._draw_box(self._select_box)
+    self._draw_spots()
+    self._resize_img()
+    self._display_img()
+    self.update()
+
+  def _update_img(self) -> None:
+    """Same as in the parent class except it also draws the patches and the
+    select box on top of the displayed image."""
+
+    _, img = self._camera.get_image()
+
+    self._cast_img(img)
+    self._draw_box(self._select_box)
+    self._draw_spots()
+    self._resize_img()
+
+    self._calc_hist()
+    self._resize_hist()
+
+    self._display_img()
+    self._display_hist()
+
+    self._update_pixel_value()
+
+    self.update()
+
+  def _handle_box_outside_img(self, _: Box) -> None:
+    """If a patch is outside the image, it means that the image size has been
+    modified. Simply resetting the spots then."""
+
+    self._spots.reset()

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from typing import Literal, List, Tuple, Optional
-from ..tool import DISVE as VE, Camera_config_with_boxes
+from ..tool import DISVE as VE, DISVE_config
 from .camera import Camera
 from .._global import OptionalModule
 
@@ -119,7 +119,7 @@ class DISVE(Camera):
     super().prepare(send_img=False)
 
     if config:
-      Camera_config_with_boxes(self.camera, self._patches).main()
+      DISVE_config(self.camera, self._patches).main()
 
   def begin(self) -> None:
     """Takes a first image from the camera and uses it to initialize the Disve

@@ -1,40 +1,25 @@
 # coding: utf-8
 
-# Todo
-#   The interface doesn't update when setting the parameters as arguments
-
-from time import time, sleep
-from typing import Callable, Union, Any
+from typing import Callable, Optional, Tuple, Union, Any, Dict
+import numpy as np
 
 from .._global import DefinitionError
 
+nbr_type = Union[int, float]
+
 
 class MetaCam(type):
-  """Metaclass that will define all cameras.
-
-  Note:
-    Camera classes should be of this type.
-
-    To do so, simply add ``__metaclass__ = MetaCam`` in the class definition.
-    (Obviously, you must import this Metaclass first.)
-
-    :class:`MetaCam` is a MetaClass: We will NEVER do ``c = MetaCam(...)``.
-
-    The :meth:`__init__` is used to init the classes of type MetaCam (with
-    ``__metaclass__ = MetaCam`` as a class attribute) and NOT an instance of
-    MetaClass.
-  """
+  """Metaclass ensuring that two cameras don't have the same name, and that all
+  cameras define the required methods."""
 
   classes = {}
 
   needed_methods = ["get_image", "open", "close"]
 
   def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
-
     return super().__new__(mcs, name, bases, dct)
 
   def __init__(cls, name: str, bases: tuple, dct: dict) -> None:
-
     super().__init__(name, bases, dct)
 
     # Checking that a Camera with the same name doesn't already exist
@@ -59,267 +44,297 @@ class MetaCam(type):
 
 
 class Cam_setting:
-  """This class represents an attribute of the camera that can be set."""
+  """Base class for each camera setting.
+
+  It is meant to be subclassed and should not be used as is.
+  """
 
   def __init__(self,
                name: str,
-               getter: Callable,
-               setter: Callable,
-               limits: Union[None, tuple, bool, dict],
+               getter: Callable[[], Any],
+               setter: Callable[[Any], None],
                default: Any) -> None:
-    """Sets the instance attributes.
+    """Sets the attributes.
 
     Args:
-      name: The name of the setting.
-      default: The default value, if not specified it will be set to this
-        value.
-      getter: Function to read this value from the device. If set to
-        :obj:`None`, it will assume that the setting always happened correctly.
-      setter: A function that will be called when setting the parameter to a
-        new value. Can do nothing, it will only change its value and nothing
-        else.
-      limits: It contains the available values for this parameter.
-
-        The possible limit types are:
-
-          - :obj:`None`: Values will not be tested and the parameter will not
-            appear in CameraConfig.
-
-          - A :obj:`tuple` of 2 :obj:`int` or :obj:`float`: Values must be
-            between first and second value. CameraConfig will add a scale
-            widget to set it. If they are integers, all the integers between
-            them will be accessible, if they are floats, the range will be
-            divided in 1000 in the scale widget.
-
-            Note that if the upper value is callable (a function or method), it
-            will be set to the return value of this function. It allows reading
-            the max value from the device.
-
-          - A :obj:`bool`: Possible values will be :obj:`True` or :obj:`False`,
-            CameraConfig will add a checkbox to edit the value (default can be
-            :obj:`True` or :obj:`False`, it doesn't matter).
-
-          - A :obj:`dict`: Possible values are the values of the dict,
-            CameraConfig will add radio buttons showing the keys, to set it to
-            the corresponding value.
+      name: The name of the setting, that will be displayed in the GUI.
+      getter: The method for getting the current value of the setting.
+      setter: The method for setting the current value of the setting.
+      default: The default value to assign to the setting.
     """
 
+    # Attributes shared by all the settings
     self.name = name
-    self.getter = getter
-    self.setter = setter
-    self.limits = limits
     self.default = default
-    self._value = None
-    if getter is None:
-      self._value = default
-      self.getter = lambda *args: self._value
+    self.type = type(default)
+
+    # Attributes used in the GUI
+    self.tk_var = None
+    self.tk_obj = None
+
+    # Attributes for internal use only
+    self._value_no_getter = default
+    self._getter = getter
+    self._setter = setter
 
   @property
   def value(self) -> Any:
-    if self._value is None:
-      self._value = self.getter()
-      if type(self.limits) is tuple and callable(self.limits[1]):
-          self.limits = (self.limits[0], self.limits[1]())
-      if self.default is None:
-        self.default = self._value
-    return self._value
+    """Returns the current value of the setting, by calling the getter if one
+    was provided or else by returning the stored value."""
 
-  # Here is the interesting part: When we set value (setting.value = x),
-  # we will go through all of this, and the new value will be the actual
-  # value of the setting after the operation
-  @value.setter
-  def value(self, i: Any) -> None:
-    _ = self.value  # Detail: to make sure we called value getter once
-    # if type(self.limits) == tuple:
-    #  if not self.limits[0] <= i <= self.limits[1]:
-    #    print("[Cam_setting] Parameter", i, "out of range ", self.limits)
-    #    return
-    if isinstance(self.limits, dict):
-      if i not in self.limits.values():
-        print("[Cam_setting] Parameter", i, "not available", self.limits)
-        return
-    elif isinstance(self.limits, bool):
-      i = bool(i)
-    # We could actually wait to see if setter is successful before setting the
-    # value, but if setter uses self.parameter, it will still be set to its old
-    # value until it returns...
-    self.setter(i)
-    self._value = i
-    new_val = self.getter()
-    if new_val != i:
-      print("[Cam_setting] Could not set", self.name, "to", i,
-            "value is", new_val)
-    self._value = new_val
-
-  def __str__(self) -> str:
-    if self.limits:
-      return "Setting: " + str(self.name) + ", value:" + str(self._value) + \
-             " Limits:" + str(self.limits)
+    if self._getter is not None:
+      return self._getter()
     else:
-      return "Setting: " + str(self.name) + ", value:" + str(self._value)
+      return self._value_no_getter
 
-  def __repr__(self) -> str:
-    return self.__str__()
+  @value.setter
+  def value(self, val: Any) -> None:
+    self._value_no_getter = val
+    if self._setter is not None:
+      self._setter(val)
+
+    if self.value != val:
+      print(f'[Cam settings] Could not set {self.name} to {val}, the value '
+            f'is {self.value} !')
+
+
+class Cam_bool_setting(Cam_setting):
+  """Camera setting that can only be :obj:`True` or :obj:`False`."""
+
+  def __init__(self,
+               name: str,
+               getter: Optional[Callable[[], bool]] = None,
+               setter: Optional[Callable[[bool], None]] = None,
+               default: bool = True) -> None:
+    """Sets the attributes.
+
+    Args:
+      name: The name of the setting, that will be displayed in the GUI.
+      getter: The method for getting the current value of the setting.
+      setter: The method for setting the current value of the setting.
+      default: The default value to assign to the setting.
+    """
+
+    super().__init__(name, getter, setter, default)
+
+
+class Cam_scale_setting(Cam_setting):
+  """Camera setting that can take any value between a lower and an upper
+  boundary.
+
+  This class can handle settings that should only take :obj:`int` values as
+  well as settings that can take :obj:`float` value.
+  """
+
+  def __init__(self,
+               name: str,
+               lowest: nbr_type,
+               highest: nbr_type,
+               getter: Optional[Callable[[], nbr_type]] = None,
+               setter: Optional[Callable[[nbr_type], None]] = None,
+               default: Optional[nbr_type] = None) -> None:
+    """Sets the attributes.
+
+    Args:
+      name: The name of the setting, that will be displayed in the GUI.
+      lowest: The lower boundary for the setting values.
+      highest: The upper boundary for the setting values.
+      getter: The method for getting the current value of the setting.
+      setter: The method for setting the current value of the setting.
+      default: The default value to assign to the setting.
+    """
+
+    self.lowest = lowest
+    self.highest = highest
+    self.type = int if isinstance(lowest + highest, int) else float
+
+    if default is None:
+      default = self.type((lowest + highest) / 2)
+
+    super().__init__(name, getter, setter, default)
+
+  @property
+  def value(self) -> nbr_type:
+    """Returns the current value of the setting, by calling the getter if one
+    was provided or else by returning the stored value."""
+
+    if self._getter is not None:
+      return self.type(min(max(self._getter(), self.lowest), self.highest))
+    else:
+      return self.type(self._value_no_getter)
+
+  @value.setter
+  def value(self, val: nbr_type) -> None:
+    val = min(max(val, self.lowest), self.highest)
+
+    self._value_no_getter = self.type(val)
+    if self._setter is not None:
+      self._setter(self.type(val))
+
+    if self.value != val:
+      print(f'[Cam settings] Could not set {self.name} to {val}, the value '
+            f'is {self.value} !')
+
+
+class Cam_choice_setting(Cam_setting):
+  """Camera setting that can take any value from a predefined list of
+  values."""
+
+  def __init__(self,
+               name: str,
+               choices: Tuple[str, ...],
+               getter: Optional[Callable[[], str]] = None,
+               setter: Optional[Callable[[str], None]] = None,
+               default: Optional[str] = None) -> None:
+    """Sets the attributes.
+
+    Args:
+      name: The name of the setting, that will be displayed in the GUI.
+      choices: A tuple listing the possible values for the setting.
+      getter: The method for getting the current value of the setting.
+      setter: The method for setting the current value of the setting.
+      default: The default value to assign to the setting.
+    """
+
+    self.choices = choices
+
+    if default is None:
+      default = choices[0]
+
+    super().__init__(name, getter, setter, default)
 
 
 class Camera(metaclass=MetaCam):
-  """This class represents a camera sensor.
+  """Base class for every camera object.
 
-  It may have settings: They represent all that can be set on the camera:
-  height, width, exposure, AEAG, external trigger, etc...
-
-  Note:
-    Each parameter is represented by a :class:`Cam_setting` object: it includes
-    the default value, a function to set and get parameter, etc...
-
-    This class makes it transparent to the user: you can access a setting by
-    using ``myinstance.setting = stuff``.
-
-    It will automatically check the validity and try to set it (see
-    :class:`Cam_setting`).
-
-    Don't forget to call the :meth:`__init__` in the children or
-    :meth:`__getattr__` will fall in an infinite recursion loop looking for
-    settings...
+  It contains all the methods shared by these classes and sets MetaCam as their
+  metaclass.
   """
 
   def __init__(self) -> None:
-    self.settings = {}
-    self.last = time()
-    self.max_fps = None
-    self.name = "Camera"
+    """Simply sets the dict containing the settings."""
 
-  @property
-  def max_fps(self) -> float:
-    return self._max_fps
+    self.settings: Dict[str, Cam_setting] = dict()
 
-  @max_fps.setter
-  def max_fps(self, value: float) -> None:
-    """To compute :attr:`self.delay` again when fps is set."""
+  def read_image(self) -> Tuple[float, np.ndarray]:
+    """To be removed, temporarily ensures the compatibility with the blocks
+    that haven't been updated yet."""
 
-    self._max_fps = value
-    if value:
-      self.delay = 1/value
-    else:
-      self.delay = 0
-
-  def add_setting(self,
-                  name: str,
-                  getter: Callable = None,
-                  setter: Callable = lambda *val: None,
-                  limits: Union[None, tuple, bool, dict] = None,
-                  default: Any = None) -> None:
-    """Wrapper to simply add a new setting to the camera."""
-
-    assert name not in self.settings, "This setting already exists"
-    self.settings[name] = Cam_setting(name, getter, setter, limits, default)
-
-  @property
-  def available_settings(self) -> list:
-    """Returns a :obj:`list` of available settings."""
-
-    return [x.name for x in list(self.settings.values())] + ["max_fps"]
-
-  @property
-  def settings_dict(self) -> dict:
-    """Returns settings as a :obj:`dict`, keys are the names of the settings
-    and values are `setting.value`."""
-
-    d = dict(self.settings)
-    for k in d:
-      d[k] = d[k]._value
-    return d
-
-  def set_all(self, override: bool = False, **kwargs) -> None:
-    """Sets all the settings based on `kwargs`.
-
-    Note:
-      If not specified, the setting will take its default value.
-
-      If override is :obj:`True`, it will not assume a setting and reset it
-      unless it is already default.
-    """
-
-    for s in self.settings:
-      if s in kwargs:
-        if self.settings[s].value != kwargs[s] or override:
-          self.settings[s].value = kwargs[s]
-        else:
-          pass
-        del kwargs[s]
-      elif self.settings[s].value != self.settings[s].default:
-        self.settings[s].value = self.settings[s].default
-      else:
-        pass
-    for k, v in kwargs.items():
-      setattr(self, k, v)
-
-  def reset_all(self) -> None:
-    """Reset all the settings to their default values."""
-
-    self.set_all()
-
-  def read_image(self) -> tuple:
-    """This method is a wrapper for :meth:`get_image` that will limit fps to
-    `max_fps`."""
-
-    if self.delay:
-      t = time()
-      wait = self.last - t + self.delay
-      while wait > 0:
-        t = time()
-        wait = self.last - t + self.delay
-        sleep(max(0., wait / 10))
-      self.last = t
     return self.get_image()
 
-  def __getattr__(self, i: str) -> Any:
-    """The idea is simple: if the camera has this attribute: return it (default
-    behavior) else, try to find the corresponding setting and return its value.
+  def add_bool_setting(self,
+                       name: str,
+                       getter: Optional[Callable[[], bool]] = None,
+                       setter: Optional[Callable[[bool], None]] = None,
+                       default: bool = True) -> None:
+    """Adds a boolean setting, whose value is either :obj:`True` or
+    :obj:`False`.
 
-    Note that we made sure to raise an :exc:`AttributeError` if it is neither a
-    camera attribute nor a setting.
-
-    Example:
-      If Camera definition contains ``self.add_setting("width",1280,set_w)``,
-      and ``cam = Camera()``, then ``cam.width`` will return `1280`.
+    Args:
+      name: The name of the setting, that will be displayed in the GUI and can
+        be used to directly get the value of the setting by calling
+        ``self.<name>``
+      getter: The method for getting the current value of the setting. If not
+        given, the returned value is simply the last one that was set.
+      setter: The method for setting the current value of the setting. If not
+        given, the value to be set is simply stored.
+      default: The default value to assign to the setting.
     """
+
+    if name in self.settings:
+      raise ValueError('This setting already exists !')
+    self.settings[name] = Cam_bool_setting(name, getter, setter, default)
+
+  def add_scale_setting(self,
+                        name: str,
+                        lowest: nbr_type,
+                        highest: nbr_type,
+                        getter: Optional[Callable[[], nbr_type]] = None,
+                        setter: Optional[Callable[[nbr_type], None]] = None,
+                        default: Optional[nbr_type] = None) -> None:
+    """Adds a scale setting, whose value is an :obj:`int` or a :obj:`float`
+    clamped between two boundaries.
+
+    Note:
+      If any of ``lowest`` or ``highest`` is a :obj:`float`, then the setting
+      is considered to be of type float and can take float values. Otherwise,
+      it is considered of type int and can only take integer values.
+
+    Args:
+      name: The name of the setting, that will be displayed in the GUI and can
+        be used to directly get the value of the setting by calling
+        ``self.<name>``
+      lowest: The lowest possible value for the setting.
+      highest: The highest possible value for the setting.
+      getter: The method for getting the current value of the setting. If not
+        given, the returned value is simply the last one that was set.
+      setter: The method for setting the current value of the setting. If not
+        given, the value to be set is simply stored.
+      default: The default value to assign to the setting. If not given, will
+        be the average of ``lowest`` and ``highest``.
+    """
+
+    if name in self.settings:
+      raise ValueError('This setting already exists !')
+    self.settings[name] = Cam_scale_setting(name, lowest, highest, getter,
+                                            setter, default)
+
+  def add_choice_setting(self,
+                         name: str,
+                         choices: Tuple[str, ...],
+                         getter: Optional[Callable[[], str]] = None,
+                         setter: Optional[Callable[[str], None]] = None,
+                         default: Optional[str] = None) -> None:
+    """Adds a choice setting, that can take a limited number of predefined
+    :obj:`str` values.
+
+    Args:
+      name: The name of the setting, that will be displayed in the GUI and can
+        be used to directly get the value of the setting by calling
+        ``self.<name>``
+      choices: A :obj:`tuple` containing the possible values for the setting.
+      getter: The method for getting the current value of the setting. If not
+        given, the returned value is simply the last one that was set.
+      setter: The method for setting the current value of the setting. If not
+        given, the value to be set is simply stored.
+      default: The default value to assign to the setting. If not given, will
+        be the fist item in ``choices``.
+    """
+
+    if name in self.settings:
+      raise ValueError('This setting already exists !')
+    self.settings[name] = Cam_choice_setting(name, choices, getter, setter,
+                                             default)
+
+  def set_all(self, **kwargs) -> None:
+    """Checks if the kwargs are valid, sets them, and for settings that are not
+    in kwargs sets them to their default value."""
+
+    unexpected = tuple(kwarg for kwarg in kwargs if kwarg not in self.settings)
+    if unexpected:
+      raise ValueError(f'Unexpected argument(s) {", ".join(unexpected)} for '
+                       f'camera {type(self).__name__}.')
+
+    for name, setting in self.settings.items():
+      setting.value = kwargs[name] if name in kwargs else setting.default
+
+  def __getattr__(self, item: str) -> Any:
+    """Method for getting the value of a setting directly by calling
+    ``self.<setting name>``.
+
+    It is called in case __getattribute__ doesn't work properly, and tries to
+    return the corresponding setting value."""
 
     try:
-      return self.__getattribute__(i)
-    except AttributeError:
-      try:
-        return self.settings[i].value
-      except KeyError:
-        raise AttributeError("No such attribute: " + i)
-      except RuntimeError:
-        print("You have probably forgotten to call Camera.__init__(self)!")
-        raise AttributeError("No such attribute:" + i)
+      return self.settings[item].value
+    except (AttributeError, KeyError):
+      raise AttributeError(f'No attribute nor setting named {item}')
 
-  def __setattr__(self, attr: str, val: Any) -> None:
-    """Same as :meth:`__getattr__`: if it is a setting, then set its value
-    using the setter in the :class:`Cam_setting`, else use the default
-    behavior.
+  def __setattr__(self, key: str, val: Any) -> None:
+    """Method for setting the value of a setting directly by calling
+    ``self.<setting name> = <value>``."""
 
-    It is important to make sure we don't try to set 'settings', it would
-    recursively call :meth:`__getattr__` and enter an infinite loop, hence the
-    condition.
-
-    Example:
-      ``cam.width = 2048`` will be like ``cam.settings['width'].value = 2048``.
-      It allows for simple settings of the camera.
-    """
-
-    if attr != "settings" and attr in self.settings:
-      self.settings[attr].value = val
+    if key != 'settings' and key in self.settings:
+      self.settings[key].value = val
     else:
-      super(Camera, self).__setattr__(attr, val)
-
-  def __str__(self) -> str:
-    return self.name + " camera with {} settings".format(len(self.settings))
-
-  def __repr__(self) -> str:
-    s = self.__str__()
-    for i in self.settings.values():
-      s += ("\n" + str(i))
-    return s
+      super().__setattr__(key, val)

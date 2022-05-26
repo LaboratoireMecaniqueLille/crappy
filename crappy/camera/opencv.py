@@ -5,7 +5,7 @@ from typing import Tuple
 from numpy import ndarray
 from platform import system
 from subprocess import run
-from re import findall, split
+from re import findall, split, search
 from .camera import Camera
 from .._global import OptionalModule
 
@@ -35,11 +35,13 @@ class Camera_opencv(Camera):
   def __init__(self) -> None:
     """Sets variables and adds the channels setting."""
 
-    Camera.__init__(self)
+    super().__init__()
     self.name = "camera_opencv"
     self._cap = None
 
-    self.add_setting("channels", limits={1: 1, 3: 3}, default=1)
+    self.add_choice_setting(name="channels",
+                            choices=('1', '3'),
+                            default='1')
 
   def open(self, device_num: int = 0, **kwargs) -> None:
     """Opens the video stream and sets any user-specified settings.
@@ -59,9 +61,7 @@ class Camera_opencv(Camera):
     fourcc = self._get_fourcc()
 
     if system() == 'Linux':
-
-      self._format_to_index = {}
-      self._index_to_format = {}
+      self._formats = []
 
       # Trying to run v4l2-ctl to get the available formats
       command = ['v4l2-ctl', '-d', str(device_num), '--list-formats-ext']
@@ -86,51 +86,50 @@ class Camera_opencv(Camera):
       if check:
         for img_format in check:
           # For each encoding, finding its name
-          name = findall(r"'\w+'", img_format)[0].replace("'", '')
+          name, *_ = search(r"'(\w+)'", img_format).groups()
           sizes = findall(r'\d+x\d+', img_format)
 
           # For each name, finding the available sizes
           for size in sizes:
-            self._format_to_index.update(
-              {name + ' ' + size: len(self._format_to_index)})
-            self._index_to_format.update(
-              {len(self._index_to_format): name + ' ' + size})
+            self._formats.append(f'{name} {size}')
 
       else:
         # If v4l-utils is not installed, proposing two encodings without
         # further detail
-        self._format_to_index = {fourcc: 0, 'MJPG': 1}
-        self._index_to_format = {0: fourcc, 1: 'MJPG'}
+        self._formats = [fourcc, 'MJPG']
 
         # Still letting the user choose the size
-        self.add_setting("width", self._get_width, self._set_width, (1, 1920))
-        self.add_setting("height", self._get_height, self._set_height,
-                         (1, 1080))
+        self.add_scale_setting(name='width', lowest=1, highest=1920,
+                               getter=self._get_width, setter=self._set_width)
+        self.add_scale_setting(name='height', lowest=1, highest=1080,
+                               getter=self._get_height,
+                               setter=self._set_height)
 
     else:
       # On Windows the fourcc management is even messier than on Linux
-      self._format_to_index = {}
+      self._formats = []
 
       # Still letting the user choose the size
-      self.add_setting("width", self._get_width, self._set_width, (1, 1920))
-      self.add_setting("height", self._get_height, self._set_height, (1, 1080))
+      self.add_scale_setting(name='width', lowest=1, highest=1920,
+                             getter=self._get_width, setter=self._set_width)
+      self.add_scale_setting(name='height', lowest=1, highest=1080,
+                             getter=self._get_height, setter=self._set_height)
 
-    # Finally, creating the format parameter if applicable
-    if self._format_to_index:
+    if self._formats:
       # The format integrates the size selection
-      if ' ' in self._index_to_format[0]:
-        self.add_setting("format", self._get_format_size, self._set_format,
-                         self._format_to_index)
+      if ' ' in self._formats[0]:
+        self.add_choice_setting(name='format',
+                                choices=tuple(self._formats),
+                                getter=self._get_format_size,
+                                setter=self._set_format)
       # The size is independent of the format
       else:
-        self.add_setting("format", self._get_format_fourcc, self._set_format,
-                         self._format_to_index)
+        self.add_choice_setting(name='format',
+                                choices=tuple(self._formats),
+                                getter=self._get_fourcc,
+                                setter=self._set_format)
 
-    # Setting the kwargs if any, and making sure they exist
-    for kwarg in kwargs:
-      if kwarg not in self.available_settings:
-        raise ValueError(f"Unexpected argument {kwarg} for camera "
-                         f"{type(self).__name__}.")
+    # Setting the kwargs if any
     self.set_all(**kwargs)
 
   def get_image(self) -> Tuple[float, ndarray]:
@@ -146,7 +145,7 @@ class Camera_opencv(Camera):
       raise IOError("Error reading the camera")
 
     # Returning the image in the right format, and its timestamp
-    if self.channels == 1:
+    if self.channels == '1':
       return t, cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     else:
       return t, frame
@@ -184,29 +183,27 @@ class Camera_opencv(Camera):
 
     self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-  def _set_format(self, img_format) -> None:
+  def _set_format(self, img_format: str) -> None:
     """Sets the format of the image according to the user's choice."""
 
-    # Converting the index to a string using the dict build at open()
-    raw_format = self._index_to_format[img_format].split(' ')
-
-    # isolating the name from the size
-    img_format = raw_format[0]
-    img_size = raw_format[1] if len(raw_format) > 1 else None
+    # The format might be made of a name and a dimension, or just a name
+    try:
+      format_name, img_size = img_format.split(' ')
+    except ValueError:
+      format_name, img_size = img_format, None
 
     # Setting the format
-    self._cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*img_format))
+    self._cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*format_name))
 
     if img_size is not None:
       # Getting the width and height from the second half of the string
-      width = int(img_size.split('x')[0])
-      height = int(img_size.split('x')[1])
+      width, height = map(int, img_size.split('x'))
 
       # Setting the size
       self._set_width(width),
       self._set_height(height)
 
-  def _get_format_size(self) -> int:
+  def _get_format_size(self) -> str:
     """Parses the v4l2-ctl -V command to get the current image format as an
     index."""
 
@@ -216,23 +213,9 @@ class Camera_opencv(Camera):
 
     # Parsing the answer
     format_ = width = height = ''
-    if findall(r"'\w+'", check):
-      format_ = findall(r"'\w+'", check)[0].replace("'", "")
-    if findall(r"\d+/\d+", check):
-      width = findall(r"\d+/\d+", check)[0].split('/')[0]
-      height = findall(r"\d+/\d+", check)[0].split('/')[1]
+    if search(r"'(\w+)'", check) is not None:
+      format_, *_ = search(r"'(\w+)'", check).groups()
+    if search(r"(\d+)/(\d+)", check):
+      width, height = search(r"(\d+)/(\d+)", check).groups()
 
-    # Returning the corresponding index
-    try:
-      index = self._format_to_index[format_ + ' ' + width + 'x' + height]
-      return index
-    except KeyError:
-      raise KeyError("Couldn't retrieve the current image format.")
-
-  def _get_format_fourcc(self) -> int:
-    """Returns the current video encoding vas an index according to opencv."""
-
-    try:
-      return self._format_to_index[self._get_fourcc()]
-    except KeyError:
-      raise KeyError("Couldn't retrieve the current image format.")
+    return f'{format_} {width}x{height}'

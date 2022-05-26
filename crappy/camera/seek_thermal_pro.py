@@ -66,7 +66,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
   def __init__(self) -> None:
     """Selects the right USB device."""
 
-    Camera.__init__(self)
+    super().__init__()
     self.name = "seek_thermal_pro"
     self._calib = None
 

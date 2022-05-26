@@ -1,55 +1,67 @@
 # coding: utf-8
 
 from .camera import Camera
-from time import time, sleep
+from time import time
 import numpy as np
+from typing import Tuple, Optional
 
 
 class Fake_camera(Camera):
-  """Fake camera sensor object."""
+  """This camera class generates images without requiring any actual camera or
+  existing image file.
+
+  The generated images are just a gradient of grey levels, with a line moving
+  as a function of time. It is possible to tune the dimension of the image, the
+  frame rate and the speed of the line.
+  """
 
   def __init__(self) -> None:
-    Camera.__init__(self)
+    """Initializes the parent class and instantiates the settings."""
+
+    super().__init__()
     self.name = "fake_camera"
-    self.add_setting("width", default=1280, setter=self._set_w,
-                     limits=(1, 4096))
-    self.add_setting("height", default=1024, setter=self._set_h,
-                     limits=(1, 4096))
-    self.add_setting("speed", default=100., limits=(0., 800.))
-    self.add_setting("fps", default=50, limits=(0.1, 500.))
 
-  def gen_image(self) -> None:
-    self.img = np.arange(self.height) * 255. / self.height
-    self.img = np.repeat(self.img.reshape(self.height, 1),
-                         self.width, axis=1).astype(np.uint8)
-
-  def _set_h(self, _) -> None:
-    self.gen_image()
-
-  def _set_w(self, _) -> None:
-    self.gen_image()
+    self.add_scale_setting('width', 1, 4096, None, self._gen_image, 1280)
+    self.add_scale_setting('height', 1, 4096, None, self._gen_image, 1024)
+    self.add_scale_setting('speed', 0., 800., None, None, 100.)
+    self.add_scale_setting('fps', 0.1, 100., None, None, 50.)
 
   def open(self, **kwargs) -> None:
-    """Opens the fake camera."""
+    """Sets the settings, generates the first image and initializes the time
+    counter."""
 
-    for k in kwargs:
-      if k not in self.settings:
-        print("Unexpected keyword:", k)
-        continue
-      print("Setting", k, "to", kwargs[k])
-      setattr(self, k, kwargs[k])
-    self.gen_image()
-    sleep(1)
-    self.t0 = time()
-    self.t = self.t0
+    self.set_all(**kwargs)
 
-  def get_image(self) -> tuple:
-    while time() - self.t < 1 / self.fps:
+    self._gen_image()
+
+    self._t0 = time()
+    self._t = self._t0
+
+  def get_image(self) -> Tuple[float, np.ndarray]:
+    """Returns the updated image, depending only on the current timestamp.
+
+    Also includes a waiting loop in order to achieve the right frame rate.
+    """
+
+    # Waiting in order to achieve the right frame rate
+    while time() - self._t < 1 / self.fps:
       pass
-    self.t = time()
-    i = int(self.speed * (time() - self.t0)) % self.height
-    return self.t, np.concatenate((self.img[i:, :], self.img[:i, :]), axis=0)
+
+    self._t = time()
+
+    # Splitting the image to make a moving line
+    row = int(self.speed * (self._t - self._t0)) % self.height
+    return self._t, np.concatenate((self._img[row:], self._img[:row]), axis=0)
 
   def close(self) -> None:
-    sleep(.5)
-    self.img = None
+    """Nothing to close, actually."""
+
+    self._img = None
+
+  def _gen_image(self, _: Optional[float] = None) -> None:
+    """Generates the base gradient image, that will be splitted and returned
+    in the :meth:`get_image` method"""
+
+    self._img = np.arange(self.height) * 255. / self.height
+    self._img = np.repeat(self._img.reshape(self.height, 1),
+                          self.width, axis=1).astype(np.uint8)

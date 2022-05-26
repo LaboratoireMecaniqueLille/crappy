@@ -1,60 +1,84 @@
 # coding: utf-8
 
 import numpy as np
+import tkinter as tk
 from .cameraConfig import Camera_config
-from .._global import OptionalModule
-
-try:
-  from PIL import ImageTk, Image
-except (ModuleNotFoundError, ImportError):
-  ImageTk = OptionalModule("pillow")
-  Image = OptionalModule("pillow")
-
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+from .cameraConfigTools import Box, Spot_boxes
 
 
 class Camera_config_with_boxes(Camera_config):
+  """This class is a basis for the configuration GUIs featuring boxes to
+  display or to draw.
+
+  It implements useful methods for drawing the boxes. If instantiated, this
+  class behaves the exact same way as its parent class. It is not used as is by
+  any block in Crappy.
   """
-  Config window for camera, with lines to highlight boxes on the image
 
-  Used for VE blocks when the selection is not interactive (unlike ve_config)
-  """
-  def __init__(self, camera, boxes):
-    self.boxes = boxes
-    Camera_config.__init__(self, camera)
+  def __init__(self, camera) -> None:
+    """Initializes the parent class and sets the spots container."""
 
-  def clamp(self, t: tuple) -> tuple:
-    if isinstance(t[0], slice):
-      return t[0], min(max(0, t[1]), self.img_shape[1] - 1)
-    else:
-      return min(max(0, t[0]), self.img_shape[0] - 1), t[1]
+    self._spots = Spot_boxes()
+    self._select_box = Box()
+    super().__init__(camera)
 
-  def draw_box(self, box, img):
-    miny, minx, h, w = box
-    maxy = miny + h
-    maxx = minx + w
-    for s in [
-        (miny, slice(minx, maxx)),
-        (maxy, slice(minx, maxx)),
-        (slice(miny, maxy), minx),
-        (slice(miny, maxy), maxx)
-     ]:
-      # Turn these pixels white or black for highest possible contrast
-      s = self.clamp(s)
-      img[s] = 255 * int(np.mean(img[s]) < 128)
+  def _draw_box(self, box: Box) -> None:
+    """Draws one line of the box after the other, making sure they fit in the
+    image."""
 
-  def resize_img(self, sl: tuple) -> None:
-    rimg = cv2.resize(self.img8[sl[1], sl[0]], tuple(reversed(self.img_shape)),
-                      interpolation=0)
-    for b in self.boxes:
-      lbox = [0] * 4
-      for i in range(4):
-        n = b[i] - self.zoom_window[i % 2] * self.img.shape[i % 2]
-        n /= (self.zoom_window[2 + i % 2] - self.zoom_window[i % 2])
-        lbox[i] = int(n / self.img.shape[i % 2] * self.img_shape[i % 2])
-      self.draw_box(lbox, rimg)
+    if self._img is None or box.no_points():
+      return
 
-    self.c_img = ImageTk.PhotoImage(Image.fromarray(rimg))
+    # The sides need to be sorted before slicing numpy array
+    y_left, y_right, x_top, x_bottom = box.sorted()
+
+    # Drawing one line after the other
+    for slice_ in ((slice(x_top, x_bottom), y_left),
+                   (slice(x_top, x_bottom), y_right),
+                   (x_top, slice(y_left, y_right)),
+                   (x_bottom, slice(y_left, y_right))):
+      try:
+        # The color of the line is adjusted according to the background
+        # The original image must be used as no lines are already drawn on it
+        if np.size(self._original_img[slice_]) > 0:
+          self._img[slice_] = 255 * np.rint(np.mean(self._img[slice_] < 128))
+      except IndexError:
+        self._handle_box_outside_img(box)
+        return
+
+  def _handle_box_outside_img(self, _: Box) -> None:
+    """This method is meant to simplify the customization of the action to
+    perform when a patch is outside the image in subclasses."""
+
+    pass
+
+  def _draw_spots(self) -> None:
+    """Simply draws every spot on top of the image."""
+
+    if self._img is None:
+      return
+
+    for spot in self._spots:
+      if spot is not None:
+        self._draw_box(spot)
+
+  def _start_box(self, event: tk.Event) -> None:
+    """Simply saves the position of the user click."""
+
+    # If the mouse is on the canvas but not on the image, do nothing
+    if not self._check_event_pos(event):
+      return
+
+    self._select_box.x_start, \
+        self._select_box.y_start = self._coord_to_pix(event.x, event.y)
+
+  def _extend_box(self, event: tk.Event) -> None:
+    """Draws a box as the user drags the mouse while maintaining the left
+    button clicked."""
+
+    # If the mouse is on the canvas but not on the image, do nothing
+    if not self._check_event_pos(event):
+      return
+
+    self._select_box.x_end, \
+        self._select_box.y_end = self._coord_to_pix(event.x, event.y)
