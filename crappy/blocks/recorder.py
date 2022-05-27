@@ -20,7 +20,9 @@ class Recorder(Block):
   def __init__(self,
                filename: Union[str, Path],
                delay: float = 2,
-               labels: Optional[List[str]] = None) -> None:
+               labels: Optional[List[str]] = None,
+               freq: float = 200,
+               verbose: bool = True) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -31,10 +33,14 @@ class Recorder(Block):
       delay: Delay between each write in seconds.
       labels: If provided, only the data carried by these labels will be saved.
         Otherwise, all the received data is saved.
+      freq: The block will try to loop at this frequency.
+      verbose: If :obj:`True`, prints the looping frequency of the block.
     """
 
     super().__init__()
     self.niceness = -5
+    self.freq = freq
+    self.verbose = verbose
 
     self._delay = delay
     self._path = Path(filename)
@@ -50,7 +56,7 @@ class Recorder(Block):
       raise ValueError('The Recorder block does not have inputs !')
     elif len(self.inputs) > 1:
       raise ValueError('Cannot link more than one block to a Recorder block !')
-    self._link, = self.inputs
+    self._link = self.inputs[0]
 
     parent_folder = self._path.parent
 
