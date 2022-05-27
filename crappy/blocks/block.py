@@ -56,6 +56,7 @@ class Block(Process):
     self.labels = []
 
     self._all_last_values = None
+    self._last_values = None
 
   def __new__(cls, *args, **kwargs) -> Process:
     instance = super().__new__(cls)
@@ -417,8 +418,7 @@ class Block(Process):
         r.update(i.recv())
     return r
 
-  def get_last(self, num: Union[Optional[list],
-                                Optional[int]] = None) -> Dict[str, float]:
+  def get_last(self, num: Optional[List[int]] = None) -> Dict[str, float]:
     """To get the latest value of each labels from all inputs.
 
     Warning:
@@ -440,17 +440,19 @@ class Block(Process):
       will return instantaneously, giving the latest known reading.
     """
 
-    if not hasattr(self, '_last_values'):
-      self._last_values = [{}] * len(self.inputs)
+    if self._last_values is None:
+      self._last_values = [dict() for _ in self.inputs]
+
     if num is None:
       num = range(len(self.inputs))
-    elif not isinstance(num, list):
-      num = [num]
+
     for i in num:
       if not self._last_values[i]:
-        self._last_values[i] = self.inputs[i].recv()
-      while self.inputs[i].poll():
-        self._last_values[i] = self.inputs[i].recv()
+        self._last_values[i] = self.inputs[i].recv(blocking=True)
+      data = self.inputs[i].recv_last(blocking=False)
+      if data is not None:
+        self._last_values[i] = data
+
     ret = {}
     for i in num:
       ret.update(self._last_values[i])
