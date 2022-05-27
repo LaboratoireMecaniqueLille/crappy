@@ -1,7 +1,7 @@
 # coding: utf-8
 
 # Todo :
-#   Add the Tra6ppd and its documentation
+#  Add the Tra6ppd and its documentation
 
 from .actuator import MetaActuator, Actuator
 from .biaxe import Biaxe

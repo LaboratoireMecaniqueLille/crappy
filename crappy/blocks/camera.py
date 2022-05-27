@@ -27,9 +27,9 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 # Todo:
-#   Improve the overall architecture of the code handling images
-#   Add an argument for not sending the frame during prepare
-#   Improve the documentation
+#  Improve the overall architecture of the code handling images
+#  Add an argument for not sending the frame during prepare
+#  Improve the documentation
 
 
 class Camera(Block):

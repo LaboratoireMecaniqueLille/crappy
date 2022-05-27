@@ -13,8 +13,11 @@ from .._global import CrappyStop
 import subprocess
 
 # Todo:
-#   Add a clean way to stop the blocks, using the keyboard or a button
-#   Rethink the communication between blocks when stopping
+#  Add a clean way to stop the blocks, using the keyboard or a button
+#  Rethink the communication between blocks when stopping
+#  Switch from dicts to structured arrays
+#  Make sure that a variable number of labels never raises errors
+#  Replace lists with tuples in arguments
 
 
 def renice(pid: int, niceness: int) -> None:

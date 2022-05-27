@@ -1,7 +1,7 @@
 # coding: utf-8
 
 # Todo:
-#   Update with recent Python bindings
+#  Update with recent Python bindings
 
 from .camera import Camera
 from .._global import OptionalModule
