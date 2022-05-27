@@ -30,6 +30,7 @@ except (ModuleNotFoundError, ImportError):
 #  Improve the overall architecture of the code handling images
 #  Add an argument for not sending the frame during prepare
 #  Improve the documentation
+#  Replace compute strain img with a getter in the camera block
 
 
 class Camera(Block):
