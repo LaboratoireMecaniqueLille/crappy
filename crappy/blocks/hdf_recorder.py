@@ -1,9 +1,11 @@
 # coding: utf-8
 
-from os import path, makedirs
 import numpy as np
+from typing import Union, Optional
+from pathlib import Path
 
 from .._global import OptionalModule
+
 try:
   import tables
 except ModuleNotFoundError:
@@ -14,10 +16,10 @@ from .block import Block
 
 
 class Hdf_recorder(Block):
-  """To save data efficiently in a hdf5 file.
+  """This block saves data efficiently into a hdf5 file.
 
-  This block is is meant to save data coming by arrays at a high rate
-  (`>1kHz`). It uses the module :mod:`tables`.
+  This block is meant to save data coming as arrays at a high rate
+  (`>1kHz`). It relies on the module :mod:`tables`.
 
   Important:
     Do not forget to specify the type of data to be saved (see ``atom``
@@ -26,83 +28,117 @@ class Hdf_recorder(Block):
   """
 
   def __init__(self,
-               filename: str,
+               filename: Union[str, Path],
                node: str = 'table',
                expected_rows: int = 10**8,
                atom=None,
                label: str = 'stream',
-               metadata: dict = None) -> None:
+               metadata: Optional[dict] = None,
+               freq: Optional[float] = None,
+               verbose: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      filename (:obj:`str`): Path of the file where the data should be saved.
-      node (:obj:`str`, optional): The name of the node where the data will be
-        saved.
-      expected_rows (:obj:`int`, optional): The number of expected rows in the
-        file. It is used to optimize the dumping.
-      atom (optional): This represent the type of data to be stored in the
-        table. It can be given as a :class:`tables.Atom` instance, as a
-        :class:`numpy.array` or as a :obj:`str`.
-      label (:obj:`str`, optional): The key of the :obj:`dict` that contains
-        the array to save.
-      metadata (:obj:`dict`, optional): A :obj:`dict` containing additional
-        info to save in the `hdf5` file.
+      filename: Path to the output file, either relative or absolute. If the
+        parent folders of the file do not exist, they will be created. If the
+        file already exists, the actual file where data will be written will be
+        renamed with a trailing index to avoid overriding it.
+      expected_rows: The number of expected rows in the file. It is used to
+        optimize the dumping.
+      atom: This represents the type of data to be stored in the table. It can
+        be given as a :class:`tables.Atom` instance, as a :class:`numpy.array`
+        or as a :obj:`str`.
+      label: The label carrying the data to be saved
+      metadata: A :obj:`dict` containing additional information to save in the
+        `hdf5` file.
+      freq: The block will try to loop at this frequency.
+      verbose: If :obj:`True`, prints the looping frequency of the block.
     """
 
     Block.__init__(self)
-    self.filename = filename
-    self.node = node
-    self.expected_rows = expected_rows
-    self.atom = tables.Int16Atom() if atom is None else atom
-    self.label = label
-    self.metadata = {} if metadata is None else metadata
+    if freq is not None:
+      self.freq = freq
+    self.verbose = verbose
 
-    if not isinstance(self.atom, tables.Atom):
-      self.atom = tables.Atom.from_dtype(np.dtype(self.atom))
+    self._path = Path(filename)
+    self._label = label
+    self._metadata = {} if metadata is None else metadata
+    self._expected_rows = expected_rows
+
+    self._node = node
+    atom = tables.Int16Atom() if atom is None else atom
+    if not isinstance(atom, tables.Atom):
+      self._atom = tables.Atom.from_dtype(np.dtype(atom))
+    else:
+      self._atom = atom
 
   def prepare(self) -> None:
-    assert self.inputs, "No input connected to the hdf_recorder!"
-    assert len(self.inputs) == 1,\
-        "Cannot link more than one block to a hdf_recorder!"
-    d = path.dirname(self.filename)
-    if not path.exists(d):
-      # Create the folder if it does not exist
-      try:
-        makedirs(d)
-      except OSError:
-        assert path.exists(d), "Error creating " + d
-    if path.exists(self.filename):
-      # If the file already exists, append a number to the name
-      print("[hdf_recorder] WARNING!", self.filename, "already exists !")
-      name, ext = path.splitext(self.filename)
+    """Checking that the block has the right number of inputs, creates the
+    folder containing the file if it doesn't already exist, changes the name of
+    the file if it already exists, and initializes the HDF file."""
+
+    # Making sure there's the right number of incoming links
+    if not self.inputs:
+      raise ValueError('The HDF Recorder block does not have inputs !')
+    elif len(self.inputs) > 1:
+      raise ValueError('Cannot link more than one block to an HDF Recorder '
+                       'block !')
+    self._link = self.inputs[0]
+
+    parent_folder = self._path.parent
+
+    # Creating the folder for storing the data if it does not already exist
+    if not Path.is_dir(parent_folder):
+      Path.mkdir(parent_folder, exist_ok=True, parents=True)
+
+    # Changing the name of the file if it already exists
+    if Path.exists(self._path):
+      print(f'[HDF Recorder] Warning ! The file {self._path} already exists !')
+      stem, suffix = self._path.stem, self._path.suffix
       i = 1
-      while path.exists(name + "_%05d" % i + ext):
+      # Adding an integer at the end of the name to identify the file
+      while Path.exists(parent_folder / f'{stem}_{i:05d}{suffix}'):
         i += 1
-      self.filename = name + "_%05d" % i + ext
-      print("[hdf_recorder] Using", self.filename, "instead!")
-    self.hfile = tables.open_file(self.filename, "w")
-    for name, value in self.metadata.items():
-      self.hfile.create_array(self.hfile.root, name, value)
+      self._path = parent_folder / f'{stem}_{i:05d}{suffix}'
+      print(f'[HDF Recorder] Using {self._path} instead !')
+
+    # Initializing the file to save data to
+    self._hfile = tables.open_file(str(self._path), "w")
+    for name, value in self._metadata.items():
+      self._hfile.create_array(self._hfile.root, name, value)
 
   def begin(self) -> None:
-    data = self.inputs[0].recv_chunk()
-    w = data[self.label][0].shape[1]
-    self.array = self.hfile.create_earray(
-        self.hfile.root,
-        self.node,
-        self.atom,
-        (0, w),
-        expectedrows=self.expected_rows)
-    for d in data[self.label]:
-      self.array.append(d)
+    """Receives the first chunk of data, makes sure that it contains the label
+    to save, and initializes the HDF array with it."""
+
+    data = self._link.recv_chunk(blocking=True)
+
+    if self._label not in data:
+      raise KeyError(f'The data received by the HDF Recorder block does not '
+                     f'contain the label {self._label} !')
+
+    _, width, *_ = data[self._label][0].shape
+    self._array = self._hfile.create_earray(self._hfile.root,
+                                            self._node,
+                                            self._atom,
+                                            (0, width),
+                                            expectedrows=self._expected_rows)
+    for elt in data[self._label]:
+      self._array.append(elt)
 
   def loop(self) -> None:
-    data = self.inputs[0].recv_chunk()
-    for d in data[self.label]:
-      self.array.append(d)
+    """Simply receives data from the upstream block and saves it."""
+
+    data = self._link.recv_chunk(blocking=False)
+
+    if data is not None:
+      for elt in data[self._label]:
+        self._array.append(elt)
 
   def finish(self) -> None:
-    self.hfile.close()
+    """Simply closes the HDF file."""
+
+    self._hfile.close()
 
 
 class Hdf_saver(Hdf_recorder):
