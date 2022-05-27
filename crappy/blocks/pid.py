@@ -115,6 +115,12 @@ class PID(Block):
       raise IOError(f'No link containing the input label {self._input_label} '
                     f'and the time label {self._time_label} !')
 
+    # Sending the values to the downstream blocks
+    if self._send_terms:
+      self.send([self._last_t, 0, 0, 0, 0])
+    else:
+      self.send([self._last_t, 0])
+
   def loop(self) -> None:
     """Receives the latest target and input values, calculates the P, I and D
     terms and sends the output to the downstream blocks."""
