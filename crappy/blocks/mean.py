@@ -1,64 +1,97 @@
 # coding: utf-8
 
 import numpy as np
+from typing import List, Optional
 
 from .block import Block
 
 
 class Mean_block(Block):
-  """Can take multiple inputs, makes an average and sends the result every
-  ``delay`` `s`."""
+  """This block computes the average values over a given delay of each label
+  received, and returns them.
+
+  It can take any number of inputs, provided that they share a common time
+  label. If the same label (except time) is received from several blocks, it
+  may lead to unexpected results.
+
+  Warning:
+    If the delay for averaging is too short compared with the looping frequency
+    of the upstream blocks, this block may not always return the same number of
+    labels ! This can cause errors in downstream blocks expecting a fixed
+    number of labels.
+  """
 
   def __init__(self,
                delay: float,
-               tlabel: str = 't(s)',
-               out_labels: list = None,
+               time_label: str = 't(s)',
+               out_labels: Optional[List[str]] = None,
+               verbose: bool = False,
                freq: float = 50) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      delay (:obj:`float`): The averaged data will be sent each ``delay``
-        seconds.
-      tlabel (:obj:`str`, optional): The label containing the time information.
-      out_labels (:obj:`list`, optional): If given, only the listed labels and
-        the time will be returned. Otherwise all of them are returned.
-      freq: The block will loop at this frequency.
+      delay: The averaged data will be sent each ``delay`` seconds.
+      time_label: The label containing the time information.
+      out_labels: If given, only the listed labels and the time will be
+        returned. Otherwise, all of them are returned.
+      verbose: If :obj:`True`, prints the looping frequency of the block.
+      freq: The block will try to loop at this frequency.
     """
 
-    Block.__init__(self)
-    self.delay = delay
-    self.tlabel = tlabel
-    self.out_labels = out_labels
+    super().__init__()
+    self.verbose = verbose
     self.freq = freq
 
+    self._delay = delay
+    self._time_label = time_label
+    self._out_labels = out_labels
+
   def prepare(self) -> None:
-    self.temp = [dict() for _ in self.inputs]  # Will hold all the data
-    self.last_t = -self.delay
-    self.t = 0
+    """Initializes the buffer and the time counters."""
+
+    self._buffer = {link: dict() for link in self.inputs}
+    self._last_sent_t = -self._delay
+    self._last_recv_t = 0
 
   def loop(self) -> None:
-    # loop over all the inputs, receive if needed, and store only
-    # what we want to keep
-    for i, l in enumerate(self.inputs):
-      while l.poll():
-        r = l.recv()
-        for k in r:
-          if k == self.tlabel:
-            self.t = max(self.t, r[k])
-          elif self.out_labels is None or k in self.out_labels:
-            if k in self.temp[i]:
-              self.temp[i][k].append(r[k])
+    """Receives all available data from the upstream blocks, and averages it
+    and sends it if the time delay is reached."""
+
+    # Receiving data from each incoming link
+    for link in self.inputs:
+      data = link.recv_chunk(blocking=False)
+
+      if data is not None:
+        # Updating the last received time attribute
+        if self._time_label in data:
+          self._last_recv_t = max(self._last_recv_t,
+                                  data[self._time_label][-1])
+          data.pop(self._time_label)
+
+        # Storing the incoming data into dicts
+        for label in data:
+          if self._out_labels is None or label in self._out_labels:
+            if label in self._buffer[link]:
+              self._buffer[link][label].extend(data[label])
             else:
-              self.temp[i][k] = [r[k]]
-    # If we passed delay seconds, make ;he average and send
-    if self.t-self.last_t > self.delay:
-      ret = {self.tlabel: (self.t + self.last_t) / 2}
-      for d in self.temp:
-        for k, v in d.items():
+              self._buffer[link][label] = data[label]
+
+    # Sending the mean value when the delay is reached
+    if self._last_recv_t - self._last_sent_t > self._delay:
+      ret = dict()
+
+      # For each label of each dict, getting it mean value
+      for dic in self._buffer.values():
+        for label, values in dic.items():
           try:
-            ret[k] = np.mean(v)
+            ret[label] = np.mean(values)
           except TypeError:
-            ret[k] = v[-1]
-        d.clear()
-      self.last_t = self.t
-      self.send(ret)
+            ret[label] = values[-1]
+        # Finally, clearing the buffer
+        dic.clear()
+
+      # Sending only if there was data to send
+      if ret:
+        ret[self._time_label] = np.mean((self._last_recv_t, self._last_sent_t))
+        self.send(ret)
+      self._last_sent_t = self._last_recv_t
