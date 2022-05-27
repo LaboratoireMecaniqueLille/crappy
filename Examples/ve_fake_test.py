@@ -24,7 +24,7 @@ if __name__ == "__main__":
     for i in range(1, 5)], []), spam=False)
 
   # Our fake machine
-  machine = crappy.blocks.Fake_machine(maxstrain=17, k=5000, l0=20,
+  machine = crappy.blocks.Fake_machine(max_strain=17, k=5000, l0=20,
                                        plastic_law=lambda exx: 0,
                                        sigma={'F(N)': 0.5})
 

@@ -29,7 +29,7 @@ if __name__ == "__main__":
   crappy.link(generator, generator)
 
   # Our fake machine
-  machine = crappy.blocks.Fake_machine(maxstrain=1.7, k=5000, l0=20,
+  machine = crappy.blocks.Fake_machine(max_strain=1.7, k=5000, l0=20,
                                        plastic_law=lambda exx: 0,
                                        sigma={'F(N)': 0.5},
                                        cmd_label='pid')
