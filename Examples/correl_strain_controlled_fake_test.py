@@ -22,8 +22,11 @@ if __name__ == "__main__":
   # Note that this generator takes no feedback
   generator = crappy.blocks.Generator(path=[
     {'type': 'cyclic_ramp', 'speed1': speed, 'condition1': 'target_Exx(%)>1',
-     'speed2': -speed, 'condition2': 'target_Exx(%)<0', 'cycles': 100}, ],
-                                      cmd_label='target_Exx(%)')
+     'speed2': -speed, 'condition2': 'target_Exx(%)<0', 'cycles': 100,
+     'init_value': 0}],
+     cmd_label='target_Exx(%)')
+
+  crappy.link(generator, generator)
 
   # Our fake machine
   machine = crappy.blocks.Fake_machine(maxstrain=1.7, k=5000, l0=20,
