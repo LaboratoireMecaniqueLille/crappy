@@ -1,13 +1,13 @@
 # coding: utf-8
 
 from time import time
-from typing import Union
+from typing import List, Optional, Tuple
 
 from .block import Block
 
 
 class PID(Block):
-  """A PID corrector.
+  """A basic implementation of a PID corrector.
 
   A PID will continuously adjust its output based on the target value and the
   actual measured value, to try to actually reach the target.
@@ -17,147 +17,155 @@ class PID(Block):
                kp: float,
                ki: float = 0,
                kd: float = 0,
-               freq: float = 500,
                out_max: float = float('inf'),
                out_min: float = -float('inf'),
                target_label: str = 'cmd',
                input_label: str = 'V',
                time_label: str = 't(s)',
-               labels: list = None,
+               labels: Optional[List[str]] = None,
                reverse: bool = False,
-               i_limit: Union[float, tuple] = 1,
-               send_terms: bool = False) -> None:
+               i_limit: Tuple[Optional[float], Optional[float]] = (None, None),
+               send_terms: bool = False,
+               freq: float = 500,
+               verbose: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      kp (:obj:`float`): `P` gain.
-      ki (:obj:`float`): `I` gain.
-      kd (:obj:`float`): `D` gain.
-      freq (:obj:`float`, optional): The block will loop at this frequency.
-      out_max (:obj:`float`, optional): A value the output can never be
-        superior to.
-      out_min (:obj:`float`, optional): A value the output can never be
-        inferior to.
-      target_label (:obj:`str`, optional): The label of the setpoint.
-      input_label (:obj:`str`, optional): The reading of the actual value to be
+      kp: The `P` gain.
+      ki: The `I` gain.
+      kd: The `D` gain.
+      out_max: Ensures the output is always inferior to this value.
+      out_min: Ensures the output is always superior to this value.
+      target_label: The label carrying the setpoint value.
+      input_label: The label carrying the reading of the actual value, to be
         compared with the setpoint.
-      time_label (:obj:`str`, optional): The label of the time.
-      labels (:obj:`list`, optional): The labels of the output of the block. It
-        must contain two :obj:`str` : the time label and the actual output.
-      reverse (:obj:`bool`, optional): To reverse the retro-action.
-      i_limit (:obj:`tuple`, optional): To avoid over-integration. If given as
-        a :obj:`tuple` of two values, they will be the boundaries for the `I`
-        term. If given as a single :obj:`float` the boundaries will be:
-        ::
-
-          i_limit * out_min, i_limit * out_max
-
-      send_terms (:obj:`bool`, optional): To get the weight of each term in the
-        output value. It will add ``['p_term', 'i_term', 'd_term']`` to the
-        labels. This is particularly useful to tweak the gains.
+      time_label: The label carrying the time information in the incoming
+        links.
+      labels: The two labels that will be sent to downstream blocks. The first
+        one is the time label, the second one is the output of the PID. If this
+        argument is not given, they default to ``'t(s)'`` and ``'pid'``.
+      reverse: If :obj:`True`, reverses the action of the PID.
+      i_limit: A :obj:`tuple` containing respectively the lower and upper
+        boundaries for the `I` term.
+      send_terms: If :obj:`True`, returns the weight of each term in the output
+        value. It adds ``'p_term', 'i_term', 'd_term'`` to the output labels.
+        This is particularly useful to tweak the gains.
+      freq: The block will try to loop at this frequency.
+      verbose: If :obj:`True`, prints the looping frequency of the block.
     """
 
-    Block.__init__(self)
+    # Attributes of the parent class
+    super().__init__()
     self.niceness = -10
     self.freq = freq
-    self.out_max = out_max
-    self.out_min = out_min
-    self.target_label = target_label
-    self.input_label = input_label
-    self.time_label = time_label
+    self.verbose = verbose
     self.labels = ['t(s)', 'pid'] if labels is None else labels
-    self.reverse = reverse
-    self.i_limit = i_limit
-    self.send_terms = send_terms
-
-    self.set_k(kp, ki, kd)
-    self.i_term = 0
-    self.last_val = 0
-    if self.send_terms:
+    if send_terms:
       self.labels.extend(['p_term', 'i_term', 'd_term'])
-    if not isinstance(self.i_limit, tuple):
-      i_min = self.i_limit * self.out_min if self.out_min is not None else None
-      i_max = self.i_limit * self.out_max if self.out_max is not None else None
-      self.i_limit = (i_min, i_max)
-    assert len(self.i_limit) == 2, "Invalid i_limit arg!"
+
+    # Setting the gains
+    sign = -1 if reverse else 1
+    self._kp = sign * kp
+    self._ki = sign * kp * ki
+    self._kd = sign * kp * kd
+
+    # Setting the limits
+    self._out_max = out_max
+    self._out_min = out_min
+    self._i_min, self._i_max = i_limit
+
+    # Setting the labels
+    self._target_label = target_label
+    self._input_label = input_label
+    self._time_label = time_label
+
+    self._send_terms = send_terms
+
+    # Setting the variables
+    self._target = None
+    self._last_input = None
+    self._last_t = None
+    self._i_term = 0
 
   def begin(self) -> None:
-    self.last_t = self.t0
-    data = [inp.recv_last(True) for inp in self.inputs]
-    for i, r in enumerate(data):
-      if self.target_label in r:
-        self.target_link_id = i
-      if self.input_label in r and self.time_label in r:
-        self.feedback_link_id = i
-    assert hasattr(self, "target_link_id"), "[PID] Error: no link containing"\
-        " target label {}".format(self.target_label)
-    assert hasattr(self, "feedback_link_id"), \
-        "[PID] Error: no link containing input label {} " \
-        "and time label {}".format(self.input_label, self.time_label)
-    assert set(range(len(self.inputs))) == {self.target_link_id,
-                                            self.feedback_link_id}, \
-        "[PID] Error: useless link(s)! Make sure PID block does not " \
-        "have extra inputs"
-    self.last_target = data[self.target_link_id][self.target_label]
-    self.last_t = data[self.feedback_link_id][self.time_label]
-    # For the classical D approach:
-    # self.last_val = self.last_target -\
-    #    data[self.feedback_link_id][self.input_label]
-    # When ignore setpoint mode
-    self.last_val = data[self.feedback_link_id][self.input_label]
+    """Receives the first target and input values and makes sure the given
+    labels are correct."""
 
-    if self.send_terms:
-      self.send([self.last_t, 0, 0, 0, 0])
-    else:
-      self.send([self.last_t, 0])
+    # Waiting for the first data to arrive
+    data = [link.recv(blocking=True) for link in self.inputs]
 
-  def clamp(self, v: float, limits: tuple = None) -> float:
-    if limits is None:
-      mini, maxi = self.out_min, self.out_max
-    else:
-      mini, maxi = limits
-    return max(v if maxi is None else min(v, maxi), mini)
+    # Getting the first target value
+    for dic in data:
+      if self._target_label in dic:
+        self._target = dic[self._target_label]
+        break
 
-  def set_k(self, kp: float, ki: float = 0, kd: float = 0) -> None:
-    s = -1 if self.reverse else 1
-    self.kp = s * kp
-    self.ki = s * kp * ki
-    self.kd = s * kp * kd
+    # Getting the first input value
+    for dic in data:
+      if self._input_label in dic and self._time_label in dic:
+        self._last_input = dic[self._input_label]
+        self._last_t = dic[self._time_label]
+        break
+
+    # Making sure the given labels are correct
+    if self._target is None:
+      raise IOError(f'No link containing the target label '
+                    f'{self._target_label} !')
+    if self._last_input is None:
+      raise IOError(f'No link containing the input label {self._input_label} '
+                    f'and the time label {self._time_label} !')
 
   def loop(self) -> None:
-    data = self.inputs[self.feedback_link_id].recv_last(True)
-    t = data[self.time_label]
-    dt = t - self.last_t
-    if dt <= 0:
+    """Receives the latest target and input values, calculates the P, I and D
+    terms and sends the output to the downstream blocks."""
+
+    # Looping in a non-blocking way
+    data = [link.recv_last(blocking=False) for link in self.inputs]
+
+    input_ = None
+    t = None
+
+    # Updating the target value
+    for dic in data:
+      if dic is not None and self._target_label in dic:
+        self._target = dic[self._target_label]
+        break
+
+    # Getting the latest input value
+    for dic in data:
+      if dic is not None and self._input_label in dic \
+            and self._time_label in dic:
+        input_ = dic[self._input_label]
+        t = dic[self._time_label]
+        break
+
+    # If there's no new input, do nothing
+    if input_ is None or t is None:
       return
-    feedback = data[self.input_label]
-    if self.feedback_link_id == self.target_link_id:
-      target = data[self.target_label]
-    else:
-      data = self.inputs[self.target_link_id].recv_last()
-      if data is None:
-        target = self.last_target
-      else:
-        target = data[self.target_label]
-        self.last_target = target
-    diff = target-feedback
 
-    p_term = self.kp * diff
-    self.last_t = t
+    delta_t = t - self._last_t
+    diff = self._target - input_
 
-    # Classical approach
-    # d_term = self.kd * (diff - self.last_val)
-    # self.last_val = diff
-    # Alternative: ignore setpoint to avoid derivative kick
-    d_term = -self.kd * (feedback - self.last_val) / dt
-    self.last_val = feedback
+    # Calculating the three PID terms
+    p_term = self._kp * diff
+    self._i_term += self._ki * diff * delta_t
+    d_term = - self._kd * (input_ - self._last_input) / delta_t
 
-    self.i_term += self.ki * diff * dt
-    out = p_term + self.i_term + d_term
-    if not self.out_min < out < self.out_max:
-      out = self.clamp(out)
-    self.i_term = self.clamp(self.i_term, self.i_limit)
-    if self.send_terms:
-      self.send([time() - self.t0, out, p_term, self.i_term, d_term])
+    self._last_t = t
+    self._last_input = input_
+
+    # Clamping the i term if required
+    if self._i_min is not None:
+      self._i_term = max(self._i_min, self._i_term)
+    if self._i_max is not None:
+      self._i_term = min(self._i_max, self._i_term)
+
+    # Clamping the output if required
+    out = p_term + self._i_term + d_term
+    out = min(self._out_max, max(self._out_min, out))
+
+    # Sending the values to the downstream blocks
+    if self._send_terms:
+      self.send([time() - self.t0, out, p_term, self._i_term, d_term])
     else:
       self.send([time() - self.t0, out])

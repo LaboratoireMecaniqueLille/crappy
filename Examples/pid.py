@@ -53,7 +53,7 @@ if __name__ == "__main__":
                           kd=d,
                           out_max=10,
                           out_min=-10,
-                          i_limit=.5,
+                          i_limit=(-5, 5),
                           input_label='speed',
                           send_terms=True)
 
