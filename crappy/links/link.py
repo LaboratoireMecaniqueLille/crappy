@@ -190,7 +190,7 @@ class Link:
         print(f"WARNING : Timeout error in pipe recv! Link name: {self.name}")
       # Stopping the program
       elif self._action == "kill":
-        raise TimeoutError("Killing Link : " + str(exc))
+        raise TimeoutError(f"Killing Link : {exc}")
       # Simply ignoring
       elif self._action == "NoWarn":
         pass
@@ -233,6 +233,8 @@ class Link:
 
     # First, block if necessary
     data = self.recv(blocking)
+    if data is None:
+      return
 
     # Then, flush the pipe and keep only the last value
     while True:
