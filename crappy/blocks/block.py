@@ -355,7 +355,7 @@ class Block(Process):
 
     pass
 
-  def send(self, data: Union[Dict[str, list], list]) -> None:
+  def send(self, data: Union[Dict[str, float], List[float]]) -> None:
     """To send the data to all blocks downstream.
 
     Send has 2 ways to operate. You can either build the :obj:`dict` yourself,
