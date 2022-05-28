@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 from time import time
+from typing import Tuple, List, Dict, Any, Optional
 
 from .block import Block
 from .._global import OptionalModule
@@ -14,52 +15,56 @@ except (ModuleNotFoundError, ImportError):
   cm = OptionalModule("matplotlib")
 
 
-# ======= Visual objects =========
-# These classes represent all that can be drawn on the canvas
-# Common arg:
-#  drawing: The drawing itself. It is used to access its attributes when needed
-# Common kwargs:
-#   coord: The coordinates of the object on the Canvas
-#
-# Update method will be called frequently by the Drawing block, you can
-# define here what it will do on each update
-# It gives the argument "data" containing all the latest data received
-# by the block
-
-
 class Text:
-  """A simple text line."""
+  """Displays a simple text line on the drawing."""
 
-  def __init__(self, *_, **kwargs) -> None:
-    """Sets the args.
+  def __init__(self,
+               _,
+               coord: Tuple[int, int],
+               text: str,
+               label: str,
+               **__: str) -> None:
+    """Simply sets the args.
 
     Args:
-      *_: Contains the :class:`Drawing` object, unused.
-      **kwargs: Contains the coordinates, the text and the label to be
-        displayed. Also contains the type of drawing, but unused.
+      _: The parent drawing block.
+      coord: The coordinates of the text on the drawing.
+      text: The text to display.
+      label: The label carrying the information for updating the text.
+      **__: Other unused arguments.
     """
 
-    self.coord = kwargs['coord']
-    self.text = kwargs['text']
-    self.label = kwargs['label']
+    x, y = coord
+    self._text = text
+    self._label = label
 
-    self.txt = plt.text(self.coord[0], self.coord[1], self.text)
+    self._txt = plt.text(x, y, text)
 
-  def update(self, data: dict) -> None:
-    self.txt.set_text(self.text % data[self.label])
+  def update(self, data: Dict[str, float]) -> None:
+    """Updates the text according to the received values."""
+
+    self._txt.set_text(self._text % data[self._label])
 
 
 class Dot_text:
   """Like :class:`Text`, but with a colored dot to visualize a numerical value.
   """
 
-  def __init__(self, drawing, **kwargs) -> None:
-    """Sets the args.
+  def __init__(self,
+               drawing,
+               coord: Tuple[int, int],
+               text: str,
+               label: str,
+               **__: str) -> None:
+    """Simply sets the args.
 
     Args:
-      drawing: The :class:`Drawing` object.
-      **kwargs: Contains the coordinates, the text and the label to be
-        displayed. Also contains the type of drawing, but unused.
+      drawing: The parent drawing block.
+      coord: The coordinates of the text and the color dot on the drawing.
+      text: The text to display.
+      label: The label carrying the information for updating the text and the
+        color of the dot.
+      **__: Other unused arguments.
 
         Important:
           The value received in label must be a numeric value. It will be
@@ -67,117 +72,158 @@ class Dot_text:
           color from blue to red depending on this value.
     """
 
-    self.coord = kwargs['coord']
-    self.text = kwargs['text']
-    self.label = kwargs['label']
+    x, y = coord
+    self._text = text
+    self._label = label
 
-    self.txt = plt.text(self.coord[0] + 40, self.coord[1] + 20, self.text,
-                        size=16)
-    self.dot = plt.Circle(self.coord, 20)
-    drawing.ax.add_artist(self.dot)
-    low, high = drawing.crange
-    self.amp = high-low
-    self.low = low
+    self._txt = plt.text(x + 40, y + 20, text, size=16)
+    self._dot = plt.Circle(coord, 20)
 
-  def update(self, data: dict) -> None:
-    self.txt.set_text(self.text % data[self.label])
-    self.dot.set_color(cm.coolwarm((data[self.label] - self.low) / self.amp))
+    drawing.ax.add_artist(self._dot)
+    low, high = drawing.color_range
+
+    self._amp = high - low
+    self._low = low
+
+  def update(self, data: Dict[str, float]) -> None:
+    """Updates the text and the color dot according to the received values."""
+
+    self._txt.set_text(self._text % data[self._label])
+    self._dot.set_color(cm.coolwarm((data[self._label] -
+                                     self._low) / self._amp))
 
 
 class Time:
-  """To print the time of the experiment.
+  """Displays a time counter on the drawing, starting at the beginning of the
+  test."""
 
-  It will print the time since the `t0` of the block.
-  """
+  def __init__(self, drawing, coord: Tuple[int, int], **__) -> None:
+    """Simply sets the args.
 
-  def __init__(self, drawing, **kwargs) -> None:
-    self.coord = kwargs['coord']
+    Args:
+      drawing: The parent drawing block.
+      coord: The coordinates of the time counter on the drawing.
+      **__: Other unused arguments.
+    """
 
-    self.txt = plt.text(self.coord[0], self.coord[1], "00:00", size=38)
-    self.block = drawing
+    self._block = drawing
+    x, y = coord
 
-  def update(self, *_) -> None:
-    self.txt.set_text(str(timedelta(seconds=int(time()-self.block.t0))))
+    self._txt = plt.text(x, y, "00:00", size=38)
 
+  def update(self, _: Dict[str, float]) -> None:
+    """Updates the time counter, independently of the received values."""
 
-elements = {'text': Text, 'dot_text': Dot_text, 'time': Time}
-
-# ========== The block itself ==========
+    self._txt.set_text(str(timedelta(seconds=int(time() - self._block.t0))))
 
 
 class Drawing(Block):
-  """Block to make a visual representation of data."""
+  """This block allows displaying a real-time visual representation of data.
+
+  It displays the data on top of a background image and updates it according to
+  the values received through the incoming links.
+
+  It is possible to display simple text, a time counter, ot text associated
+  with a color dot evolving depending on a predefined color bar and the
+  received values.
+  """
 
   def __init__(self,
-               image,
-               draw: list = None,
-               crange: list = None,
+               image: str,
+               draw: Optional[List[Dict[str, Any]]] = None,
+               color_range: Tuple[float, float] = (20, 300),
                title: str = "Drawing",
-               window_size: tuple = (7, 5),
+               window_size: Tuple[int, int] = (7, 5),
+               backend: str = "TkAgg",
                freq: float = 2,
-               backend: str = "TkAgg") -> None:
-    """Sets the args and initializes the parent block.
+               verbose: bool = False) -> None:
+    """Sets the args and initializes the parent class.
 
     Args:
-      image: This image will be the background for the Canvas.
-      draw (:obj:`dict`, optional): A :obj:`list` of :obj:`dict` defining what
-        to draw. See below for more details.
-      crange:
-      title:
-      window_size:
-      freq:
-      backend:
+      image: Path to the image that will be the background of the canvas, as a
+        :obj:`str`.
+      draw: A :obj:`list` of :obj:`dict` defining what to draw. See below for
+        more details.
+      color_range: A :obj:`tuple` containing the lowest and highest values for
+        the color bar.
+      title: The title of the window containing the drawing.
+      window_size: The x and y dimension of the window, following
+        :mod:`matplotlib` nomenclature.
+      backend: The :mod:`matplotlib` backend to use.
+      freq: The block will try to loop at this frequency.
+      verbose: If :obj:`True`, prints the looping frequency of the block.
 
     Note:
-      - ``draw`` keys:
+      - Information about the ``draw`` keys:
 
-        - ``type`` (:obj:`str`): Mandatory, the type of drawing to display. It
-          can be either `'Text'`, `'Dot_text'` or `''Time`.
+        - ``type``: Mandatory, the type of drawing to display. It can be either
+          `'text'`, `'dot_text'` or `'time'`.
 
-        - ``coord`` (:obj:`list`): Mandatory, a :obj:`list` containing the `x`
-          and `y` coordinates where the drawing should be displayed.
+        - ``coord``: Mandatory, a :obj:`tuple` containing the `x` and `y`
+          coordinates where the element should be displayed on the drawing.
 
         - ``text``: Mandatory for :class:`Text` and :class:`Dot_text` only, the
-          left part of the displayed string.
+          text to display on the drawing. It must follow the %-formatting, and
+          contain exactly one %-field. This field will be updated using the
+          value carried by ``label``.
 
-        - ``label`` (:obj:`str`): Mandatory for :class:`Text` and
-          :class:`Dot_text` only, the label of the data to display. It will be
-          append to the ``text``.
+        - ``label``: Mandatory for :class:`Text` and :class:`Dot_text` only,
+          the label of the data to display. It will try to retrieve this data
+          in the incoming links. The ``text`` will then be updated with this
+          data.
     """
 
-    Block.__init__(self)
-    if draw is None:
-      draw = []
+    super().__init__()
     self.freq = freq
-    self.image = image
-    self.draw = draw
-    self.crange = [20, 300] if crange is None else crange
-    self.title = title
-    self.window_size = window_size
-    self.backend = backend
+    self.verbose = verbose
+
+    self._image = image
+    self._draw = [] if draw is None else draw
+    self.color_range = color_range
+    self._title = title
+    self._window_size = window_size
+    self._backend = backend
 
   def prepare(self) -> None:
-    plt.switch_backend(self.backend)
-    self.fig, self.ax = plt.subplots(figsize=self.window_size)
-    image = self.ax.imshow(plt.imread(self.image), cmap=cm.coolwarm)
+    """Initializes the different elements of the drawing."""
+
+    # Initializing the window and the background image
+    plt.switch_backend(self._backend)
+    self._fig, self.ax = plt.subplots(figsize=self._window_size)
+    image = self.ax.imshow(plt.imread(self._image), cmap=cm.coolwarm)
     image.set_clim(-0.5, 1)
-    cbar = self.fig.colorbar(image, ticks=[-0.5, 1], fraction=0.061,
-                             orientation='horizontal', pad=0.04)
+
+    # Initializing the color bar
+    cbar = self._fig.colorbar(image, ticks=[-0.5, 1], fraction=0.061,
+                              orientation='horizontal', pad=0.04)
     cbar.set_label('Temperatures(C)')
-    cbar.ax.set_xticklabels(self.crange)
-    self.ax.set_title(self.title)
+    cbar.ax.set_xticklabels(self.color_range)
+
+    # Setting the title and the axes
+    self.ax.set_title(self._title)
     self.ax.set_axis_off()
 
-    self.elements = []
-    for d in self.draw:
-      self.elements.append(elements[d['type']](self, **d))
+    # Adding the elements to the drawing
+    self._drawing_elements = []
+    for dic in self._draw:
+      if dic['type'] == 'text':
+        self._drawing_elements.append(Text(self, **dic))
+      elif dic['type'] == 'dot_text':
+        self._drawing_elements.append(Dot_text(self, **dic))
+      elif dic['type'] == 'time':
+        self._drawing_elements.append(Time(self, **dic))
 
   def loop(self) -> None:
+    """Receives the latest data from upstream blocks and updates the drawing
+    accordingly."""
+
     data = self.get_last()
-    for elt in self.elements:
+    for elt in self._drawing_elements:
       elt.update(data)
-    self.fig.canvas.draw()
+    self._fig.canvas.draw()
     plt.pause(0.001)
 
   def finish(self) -> None:
+    """Simply closes the window containing the drawing."""
+
     plt.close()
