@@ -46,3 +46,9 @@ Servostar
 ---------
 .. automodule:: crappy.actuator.servostar
    :members:
+
+TRA6PPD
+-------
+
+.. automodule:: crappy.actuator.tra6ppd
+   :members:

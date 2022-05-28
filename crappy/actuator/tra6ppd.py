@@ -1,7 +1,7 @@
 # coding: utf-8
+
 from time import sleep
 from re import findall
-from typing import NoReturn
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -29,15 +29,15 @@ class Tra6ppd(Actuator):
     """Sets the instance attributes.
 
     Args:
-      baudrate (:obj:`int`, optional): The serial baud rate.
-      port (:obj:`str`, optional): Path to the serial port to connect to.
+      baudrate: The serial baud rate.
+      port: Path to the serial port to connect to.
     """
     self._max_speed = 0.2
     self._min_position = 0
     self._max_position = 6
     self._ser = Serial(port, baudrate=baudrate, timeout=0.1)
 
-  def open(self) -> NoReturn:
+  def open(self) -> None:
     """Resets the device and performs homing."""
 
     # First, reset the device
@@ -50,24 +50,12 @@ class Tra6ppd(Actuator):
       print(f"[TRA6PPD] Performing homing, {10 * i} seconds left.")
       sleep(10)
 
-  def homing(self) :
-      # First, reset the device
-      self._ser.write(b'1RS\r\n')
-      sleep(5)
-
-      # Then, perform homing (may take up to 45s)
-      self._ser.write(b'1OR\r\n')
-      for i in range(5, 0, -1):
-        print(f"[TRA6PPD] Performing homing, {10 * i} seconds left.")
-        sleep(10)
-      
-
-  def close(self) -> NoReturn:
+  def close(self) -> None:
     """Just closes the serial port."""
 
     self._ser.close()
 
-  def stop(self) -> NoReturn:
+  def stop(self) -> None:
     """Stops the motor and sets the device to "disable" state."""
 
     self._ser.write(b'ST\r\n')
@@ -75,16 +63,15 @@ class Tra6ppd(Actuator):
 
   def set_position(self,
                    position: float,
-                   speed: float = 0.2) -> NoReturn:
+                   speed: float = 0.2) -> None:
     """Sends the actuator a command to reach a given position.
 
     The command is ignored if the actuator is already moving.
 
     Args:
-      position (:obj:`float`): The position to reach. Should be between 0 and
-        6 mm.
-      speed (:obj:`float`, optional): The speed at which the actuator should
-        move. Should be between 0 and 0.2 mm/s.
+      position: The position to reach. Should be between 0 and 6 mm.
+      speed: The speed at which the actuator should move. Should be between 0
+        and 0.2 mm/s.
     """
 
     # Clamping the speed command into the allowed interval
