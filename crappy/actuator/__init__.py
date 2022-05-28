@@ -12,5 +12,6 @@ from .motorkit_pump import Motorkit_pump
 from .oriental import Oriental
 from .servostar import Servostar
 from .pololu_tic import Pololu_tic
+from .tra6ppd import Tra6ppd
 
 actuator_list = MetaActuator.classes
