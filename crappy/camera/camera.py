@@ -10,7 +10,8 @@ nbr_type = Union[int, float]
 
 class MetaCam(type):
   """Metaclass ensuring that two cameras don't have the same name, and that all
-  cameras define the required methods."""
+  cameras define the required methods. Also keeps track of all the Camera
+  classes, including the custom user-defined ones."""
 
   classes = {}
 
