@@ -191,11 +191,12 @@ class Generator(Block):
       **next_path_dict)
 
   @staticmethod
-  def _check_path_validity(path: Iterator) -> None:
+  def _check_path_validity(path: Iterator[Dict[str, Any]]) -> None:
     """Simply instantiates all the paths in a row to check no error is
     raised."""
 
     for i, next_dict in enumerate(path):
+      next_dict = deepcopy(next_dict)
       path_name = next_dict.pop('type').capitalize()
       path_type = getattr(generator_path, path_name)
       path_type(_last_time=0, _last_cmd=None if i == 0 else 0, **next_dict)
