@@ -1,26 +1,38 @@
 # coding: utf-8
 
-from typing import Union
+from typing import Optional, Dict, Any
 from .modifier import Modifier
 
 
 class Trig_on_change(Modifier):
-  """Can be used to trig an event when the value of a given label changes."""
+  """Modifier passing the data to the downstream block only when the value of
+  a given label changes.
 
-  def __init__(self, name: str) -> None:
-    """Sets the instance attributes.
+  It also transmits the first received data. Can be used to trig a block upon
+  change of a label value.
+  """
+
+  def __init__(self, label: str) -> None:
+    """Sets the args and initializes the parent class.
 
     Args:
-      name (:obj:`str`): The name of the label to monitor.
+      label: The name of the label to monitor.
     """
 
-    self.name = name
+    super().__init__()
+    self._label = label
+    self._last = None
 
-  def evaluate(self, data: dict) -> Union[dict, None]:
-    if not hasattr(self, 'last'):
-      self.last = data[self.name]
+  def evaluate(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Compares the received value with the last sent one, and if they're
+    different sends the received data and stores the latest value."""
+
+    # Storing the first received value and returning the data
+    if self._last is None:
+      self._last = data[self._label]
       return data
-    if data[self.name] == self.last:
-      return None
-    self.last = data[self.name]
-    return data
+
+    # Returning the data if the label value is different from the stored value
+    if data[self._label] != self._last:
+      self._last = data[self._label]
+      return data

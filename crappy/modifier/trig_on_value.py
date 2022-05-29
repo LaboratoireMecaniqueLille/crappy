@@ -1,29 +1,38 @@
 # coding: utf-8
 
 from .modifier import Modifier
-from typing import Union
+from typing import Optional, Tuple, Dict, Any, Union, List
 
 
 class Trig_on_value(Modifier):
-  """Can be used to send data (an empty :obj:`dict`) when the input reached a
-  given value.
+  """Modifier passing the data to the downstream only if the value carried by a
+  given label matches a given set of accepted values.
 
-  Note:
-    The modifier will trig if `data[name]` is in ``values``.
+  Mostly useful to trig blocks.
   """
 
-  def __init__(self, name: str, values: list) -> None:
-    """Sets the instance attributes.
+  def __init__(self,
+               label: str,
+               values: Union[Any, Tuple[Any], List[Any]]) -> None:
+    """Sets the args and initializes the parent class.
 
     Args:
-      name (:obj:`str`): The name of the label to monitor.
-      values (:obj:`list`): A list containing the possible values to send the
-        signal.
+      label: The name of the label to monitor.
+      values: The values of ``label`` for which the data will be transmitted.
+        Can be a single value, a :obj:`list` or a :obj:`tuple`.
     """
 
-    self.name = name
-    self.values = values if isinstance(values, list) else [values]
+    super().__init__()
 
-  def evaluate(self, data: dict) -> Union[dict, None]:
-    if data[self.name] in self.values:
+    self._label = label
+    if isinstance(values, list) or isinstance(values, tuple):
+      self._values = values
+    else:
+      self._values = (values,)
+
+  def evaluate(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Checks if the value of ``label`` is in the predefined set of accepted
+    values, and if so transmits the data."""
+
+    if data[self._label] in self._values:
       return data

@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import numpy as np
+from typing import Dict, Any
 from .._global import OptionalModule
 
 try:
@@ -12,43 +13,55 @@ from .modifier import Modifier
 
 
 class Apply_strain_img(Modifier):
-  """This modifier reads the strain values along X and Y (in %) and creates an
-  image deformed to match these values."""
+  """This modifier reads the strain values along X and Y (in %) and returns an
+  image deformed according to these values."""
 
   def __init__(self,
-               img,
+               img: np.ndarray,
                exx_label: str = 'Exx(%)',
                eyy_label: str = 'Eyy(%)',
                img_label: str = 'frame') -> None:
-    """Sets the instance attributes.
+    """Sets the args and initializes the parent class.
 
     Args:
-      img: The image to use (must be a numpy array)
-      exx_label (:obj:`str`, optional): The labels containing the strain to
-        apply
-      eyy_label (:obj:`str`, optional): The labels containing the strain to
-        apply
-      img_label (:obj:`str`, optional): The label of the generated image
+      img: The base image to be deformed, as a :mod:`numpy` array.
+      exx_label: The labels carrying the strain value to apply in the X
+        direction.
+      eyy_label: The labels carrying the strain value to apply in the Y
+        direction.
+      img_label: The label carrying the deformed image.
     """
 
-    self.img = img
-    self.lexx = exx_label
-    self.leyy = eyy_label
-    self.img_label = img_label
-    h, w = img.shape
-    self.exx = np.concatenate(
-        (np.linspace(-w / 2, w / 2, w,
-                     dtype=np.float32)[np.newaxis, :],) * h, axis=0)
-    self.eyy = np.concatenate(
-        (np.linspace(-h / 2, h / 2, h,
-                     dtype=np.float32)[:, np.newaxis],) * w, axis=1)
-    xx, yy = np.meshgrid(range(w), range(h))
-    self.xx = xx.astype(np.float32)
-    self.yy = yy.astype(np.float32)
+    super().__init__()
 
-  def evaluate(self, d: dict) -> dict:
-    exx, eyy = d[self.lexx] / 100, d[self.leyy] / 100
-    tx = (self.xx - (exx / (1 + exx)) * self.exx)
-    ty = (self.yy - (eyy / (1 + eyy)) * self.eyy)
-    d[self.img_label] = cv2.remap(self.img, tx, ty, 1)
-    return d
+    # Setting the args
+    self._img = img
+    self._exx_label = exx_label
+    self._eyy_label = eyy_label
+    self._img_label = img_label
+
+    # Building the lookup arrays for the cv2.remap method
+    height, width, *_ = img.shape
+    orig_x, orig_y = np.meshgrid(range(width), range(height))
+    # These arrays correspond to the original state of the image
+    self._orig_x = orig_x.astype(np.float32)
+    self._orig_y = orig_y.astype(np.float32)
+
+    # These arrays are meant to be added to the original image ones
+    # If added as is, they correspond to a 100% strain state in both directions
+    self._x_strain = self._orig_x * width / (width - 1) - width / 2
+    self._y_strain = self._orig_y * height / (height - 1) - height / 2
+
+  def evaluate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    """Reads the X and Y strain values sent through the link, resizes the image
+    accordingly and returns it along with the received data."""
+
+    exx, eyy = data[self._exx_label] / 100, data[self._eyy_label] / 100
+
+    # The final lookup table is the sum of the original state ones plus the
+    # 100% strain one weighted by a ratio
+    transform_x = self._orig_x - (exx / (1 + exx)) * self._x_strain
+    transform_y = self._orig_y - (eyy / (1 + eyy)) * self._y_strain
+
+    data[self._img_label] = cv2.remap(self._img, transform_x, transform_y, 1)
+    return data

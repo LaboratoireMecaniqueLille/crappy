@@ -1,43 +1,56 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Union
+from typing import Dict, Any, Optional
 
 from .modifier import Modifier
 
 
 class Median(Modifier):
-  """Median filter.
+  """Modifier waiting for a given number of data points to be received, then
+  returning their median, and starting all over again.
 
-  Returns:
-    The median value every :attr:`npoints` point of data.
+  Unlike :ref:`Moving med`, it only returns a value once every ``n_points``
+  points.
   """
 
-  def __init__(self, npoints: int = 100) -> None:
-    """Sets the instance attributes.
+  def __init__(self, n_points: int = 100) -> None:
+    """Sets the args and initializes the parent class.
 
     Args:
-      npoints (:obj:`int`): The number of points it takes to return `1` value.
+      n_points: The number of points on which to compute the median.
     """
 
-    Modifier.__init__(self)
-    self.npoints = npoints
+    super().__init__()
+    self._n_points = n_points
+    self._buf = None
 
-  def evaluate(self, data: dict) -> Union[dict, None]:
-    if not hasattr(self, "last"):
-      self.last = dict(data)
-      for k in self.last:
-        self.last[k] = [self.last[k]]
-      return data
-    r = {}
-    for k in data:
-      self.last[k].append(data[k])
-      if len(self.last[k]) == self.npoints:
+  def evaluate(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Receives data from the upstream block, and computes the median of every
+    label once the right number of points have been received. Then empties the
+    buffer and returns the medians.
+
+    If there are not enough points, doesn't return anything.
+    """
+
+    # Initializing the buffer
+    if self._buf is None:
+      self._buf = {key: [value] for key, value in data.items()}
+
+    ret = {}
+    for label in data:
+      # Updating the buffer with the newest data
+      self._buf[label].append(data[label])
+
+      # Once there's enough data in the buffer, calculating the median value
+      if len(self._buf[label]) == self._n_points:
         try:
-          r[k] = np.median(self.last[k])
+          ret[label] = np.median(self._buf[label])
         except TypeError:
-          r[k] = self.last[k][-1]
-      elif len(self.last[k]) > self.npoints:
-        self.last[k] = []
-    if r:
-      return r
+          ret[label] = self._buf[label][-1]
+
+        # Resetting the buffer
+        self._buf[label].clear()
+
+    if ret:
+      return ret
