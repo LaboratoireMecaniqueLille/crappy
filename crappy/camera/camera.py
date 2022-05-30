@@ -24,7 +24,7 @@ class MetaCam(type):
     super().__init__(name, bases, dct)
 
     # Checking that a Camera with the same name doesn't already exist
-    if name in cls.classes:
+    if name in cls.classes or name == "Modifier":
       raise DefinitionError(f"The {name} class is already defined !")
 
     # Gathering all the defined methods
@@ -41,7 +41,8 @@ class MetaCam(type):
                             f'{", ".join(missing_methods)}')
 
     # Otherwise, saving the class
-    cls.classes[name] = cls
+    if name != "Camera":
+      cls.classes[name] = cls
 
 
 class Cam_setting:

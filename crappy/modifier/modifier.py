@@ -18,7 +18,7 @@ class MetaModifier(type):
     super().__init__(name, bases, dct)
 
     # Checking that a Modifier with the same name doesn't already exist
-    if name in cls.classes:
+    if name in cls.classes or name == "Modifier":
       raise DefinitionError(f"The {name} class is already defined !")
 
     # Gathering all the defined methods
@@ -36,7 +36,8 @@ class MetaModifier(type):
         f'{", ".join(missing_methods)}')
 
     # Otherwise, saving the class
-    cls.classes[name] = cls
+    if name != "Modifier":
+      cls.classes[name] = cls
 
 
 class Modifier:
