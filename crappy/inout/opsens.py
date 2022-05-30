@@ -15,6 +15,7 @@ class Opsens(InOut):
 
   def __init__(self, device: str = '/dev/ttyUSB0') -> None:
     self.device = device
+    super().__init__()
 
   def open(self) -> None:
     self.s = serial.Serial(port=self.device, baudrate=57600)
