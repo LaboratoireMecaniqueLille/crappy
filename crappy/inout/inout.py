@@ -4,96 +4,89 @@ from time import time
 
 from .._global import DefinitionError
 
+# Todo: Implement get_data, get_stream and set_cmd in all InOut but returning
+#  nothing
+
 
 class MetaIO(type):
-  """ Metaclass that will define all IO objects.
+  """Metaclass ensuring that two InOuts don't have the same name, and that all
+  InOuts define the required methods. Also keeps track of all the InOut
+  classes, including the custom user-defined ones, and sorts them as read_only,
+  write-only, or read-write."""
 
-  All IO classes should be of this type.
-
-  To do so, simply add ``__metaclass__ = MetaIO`` in the class definition.
-  (Obviously, you must import this Metaclass first.)
-
-  MetaIO is a MetaClass: we will NEVER do ``c = MetaIO(...)``.
-
-  The :meth:`__init__` is used to init the classes of type MetaIO (with
-  ``__metaclass__ = MetaIO`` as a class attribute) and NOT an instance of
-  MetaClass.
-  """
-
-  classes = {}  # This dict will keep track of all the existing cam classes
-  # Attention: It keeps track of the CLASSES, not the instances !
-  # If a class is defined without these
-  IOclasses = {}  # Classes that are inputs and outputs
-  Oclasses = {}  # Classes that only outputs
-  Iclasses = {}  # Classes that only inputs
+  classes = {}  # All the InOut classes
+  IO_classes = {}  # Read-write InOut classes
+  O_classes = {}  # Write-only InOut classes
+  I_classes = {}  # Read-only InOut classes
   needed_methods = ["open", "close"]
 
-  # methods, it will raise an error
+  def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
+    return super().__new__(mcs, name, bases, dct)
 
-  def __new__(mcs, name: str, bases: tuple, dict_: dict) -> type:
-    # print "[MetaIO.__new__] Creating class",name,"from metaclass",mcs
-    return type.__new__(mcs, name, bases, dict_)
+  def __init__(cls, name: str, bases: tuple, dct: dict) -> None:
+    super().__init__(name, bases, dct)
 
-  def __init__(cls, name: str, bases: tuple, dict_: dict) -> None:
-    # print "[MetaIO.__init__] Initializing",cls
-    type.__init__(cls, name, bases, dict_)  # This is the important line
-    # It creates the class, the same way we could do this:
-    # MyClass = type(name,bases,dict_)
-    # bases is a tuple containing the parents of the class
-    # dict is the dict with the methods
+    # Checking that an InOut with the same name doesn't already exist
+    if name in cls.classes:
+      raise DefinitionError(f"The {name} class is already defined !")
 
-    # MyClass = type("MyClass",(object,),{'method': do_stuff})
-    # is equivalent to
-    # class MyClass(object):
-    #   def method():
-    #       do_stuff()
+    # Gathering all the defined methods
+    defined_methods = list(dct.keys())
+    defined_methods += [base.__dict__.keys() for base in bases]
 
-    # Check if this class hasn't already been created
-    if name in MetaIO.classes:
-      raise DefinitionError("Cannot redefine " + name + " class")
-    # Check if mandatory methods are defined
-    missing_methods = []
-    for m in MetaIO.needed_methods:
-      if m not in dict_:
-        missing_methods.append(m)
-    if name != "InOut":
-      if missing_methods:
-        raise DefinitionError("Class " + name + " is missing methods: " + str(
-          missing_methods))
-      i = ("get_data" in dict_ or "get_stream" in dict_)
-      o = ("set_cmd" in dict_)
-      if i and o:
-        MetaIO.IOclasses[name] = cls
-      elif i:
-        MetaIO.Iclasses[name] = cls
-      elif o:
-        MetaIO.Oclasses[name] = cls
+    # Checking for missing methods
+    missing_methods = [meth for meth in cls.needed_methods
+                       if meth not in defined_methods]
+
+    # Raising if there are unexpected missing methods
+    if missing_methods and name != "InOut":
+      raise DefinitionError(
+        f'Class {name} is missing the required method(s): '
+        f'{", ".join(missing_methods)}')
+
+    # Checking that the class has at least one of the necessary methods
+    if name != 'InOut':
+      in_flag = ("get_data" in dct or "get_stream" in dct)
+      out_flag = ("set_cmd" in dct)
+      if in_flag and out_flag:
+        cls.IO_classes[name] = cls
+      elif in_flag:
+        cls.I_classes[name] = cls
+      elif out_flag:
+        cls.O_classes[name] = cls
       else:
-        raise DefinitionError(
-          name + " needs at least get_data, get_stream or set_cmd method")
-      MetaIO.classes[name] = cls
+        raise DefinitionError(f'{name} must define at least set_cmd, '
+                              f'get_data or get_stream !')
+      cls.classes[name] = cls
 
 
 class InOut(metaclass=MetaIO):
-  @classmethod
-  def is_input(cls) -> bool:
-    return hasattr(cls, 'get_data')
+  """Base class for all InOut objects. Implements methods shared by all the
+  these objects, and ensures their dataclass is MetaIO."""
 
-  @classmethod
-  def is_output(cls) -> bool:
-    return hasattr(cls, 'set_cmd')
+  def eval_offset(self, delay: float = 2) -> list:
+    """Method formerly used for offsetting the output of an InOut object.
+    Kept for backwards-compatibility reason only.
 
-  def eval_offset(self) -> list:
-    assert self.is_input(), "eval_offset only works for inputs!"
-    if not hasattr(self, 'eval_offset_delay'):
-      self.eval_offset_delay = 2  # Default value
+    Acquires data for a given delay and returns for each label the opposite of
+    the average of the acquired values. It is then up to the user to use this
+    output to offset the data.
+    """
+
+    if not hasattr(self, 'get_data'):
+      raise IOError("The eval_offset method cannot be called by an InOut that "
+                    "doesn't implement the get_data method.")
+
     t0 = time()
-    table = []
-    while True:
-      if time() > t0 + self.eval_offset_delay:
-        break
-      table.append(self.get_data()[1:])
+    buf = []
+
+    # Acquiring data for a given delay
+    while time() < t0 + delay:
+      buf.append(self.get_data()[1:])
+
+    # Averaging the acquired values
     ret = []
-    for i in zip(*table):
-      ret.append(-sum(i) / len(i))
+    for label_values in zip(*buf):
+      ret.append(-sum(label_values) / len(label_values))
+
     return ret
