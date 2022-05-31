@@ -15,7 +15,7 @@ Required hardware:
 import crappy
 
 if __name__ == "__main__":
-  lst = list(crappy.inout.in_dict.keys())
+  lst = list(crappy.inout.inout_dict.keys())
   for i, c in enumerate(lst):
     print(i, c)
   name = lst[int(input("What board do you want to use ?> "))]

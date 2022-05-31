@@ -9,6 +9,7 @@ Required hardware:
 """
 
 import crappy
+from functools import partial
 
 
 def intify(data):
@@ -23,6 +24,16 @@ def intify(data):
   return data
 
 
+def change_name(data, prev: str, new: str):
+  """Modifier for changing the name of a label."""
+
+  val = data[prev]
+  del data[prev]
+  data[new] = val
+
+  return data
+
+
 if __name__ == "__main__":
   gen = crappy.blocks.Generator([dict(type='cyclic', value1=0, value2=1,
                                       condition1="delay=1",
@@ -32,8 +43,9 @@ if __name__ == "__main__":
                                        dict(name='ao0'), dict(name='do1')],
                              samplerate=100,
                              labels=['t(s)', 'ai0', 'di0'],
-                             cmd_labels=['cmd', 'cmd'])
+                             cmd_labels=['cmd', 'cmd2'])
   crappy.link(gen, io)
+  crappy.link(gen, io, modifier=partial(change_name, prev='cmd', new='cmd2'))
   graph = crappy.blocks.Grapher(('t(s)', 'di0'), ('t(s)', 'ai0'))
   crappy.link(io, graph, modifier=intify)
   crappy.start()
