@@ -52,8 +52,7 @@ class Fake_inout(InOut):
       except IndexError:
         return
 
-  @staticmethod
-  def get_data() -> list:
+  def get_data(self) -> list:
     """Just returns time and the current memory usage."""
 
     return [time(), virtual_memory().percent]

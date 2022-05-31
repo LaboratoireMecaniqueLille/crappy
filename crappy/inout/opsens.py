@@ -24,8 +24,8 @@ class Opsens(InOut):
   def close(self) -> None:
     self.s.close()
 
-  def get_data(self) -> tuple:
-    return time(), float(self.send_cmd("ch1:data? 1")[:-3])
+  def get_data(self) -> list:
+    return [time(), float(self.send_cmd("ch1:data? 1")[:-3])]
 
   def read_reply(self) -> str:
     r = ''

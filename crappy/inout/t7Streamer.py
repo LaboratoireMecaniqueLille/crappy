@@ -167,7 +167,7 @@ class T7_streamer(InOut):
           c['offset'] += c['gain']*off[i]
     self.n = 0  # Number of data points (to rebuild time)
 
-  def get_data(self) -> None:
+  def get_data(self) -> list:
     """Short version, only used for :meth:`InOut.eval_offset`."""
 
     return [time()] + ljm.eReadNames(self.handle, len(self.chan_list),

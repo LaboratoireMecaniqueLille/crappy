@@ -74,7 +74,7 @@ class Labjack_ue9(InOut):
         if make_zero:
           self.offset[i] += off[i]
 
-  def get_data(self) -> tuple:
+  def get_data(self) -> list:
     results = []
     t0 = time()
     for index, channel in enumerate(self.channels):
@@ -82,7 +82,7 @@ class Labjack_ue9(InOut):
         self.handle.getAIN(channel, Resolution=self.resolution[index]) *
         self.gain[index] + self.offset[index])
     t1 = time()
-    return (t0 + t1) / 2, results
+    return [(t0 + t1) / 2] + results
 
   def close(self) -> None:
     if hasattr(self, 'handle') and self.handle is not None:
