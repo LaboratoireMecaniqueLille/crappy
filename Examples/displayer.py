@@ -11,7 +11,6 @@ import crappy
 
 if __name__ == "__main__":
   cam_list = list(crappy.camera.MetaCam.classes.keys())
-  cam_list.remove("Camera")
   for i, c in enumerate(cam_list):
     print(i, c)
   r = int(input("What cam do you want to use ?> "))
