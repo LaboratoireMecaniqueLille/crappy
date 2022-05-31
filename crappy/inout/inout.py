@@ -1,23 +1,17 @@
 # coding: utf-8
 
-from time import time
+from time import time, sleep
+from typing import Optional, Dict, Any, Union
 
 from .._global import DefinitionError
-
-# Todo: Implement get_data, get_stream and set_cmd in all InOut but returning
-#  nothing
 
 
 class MetaIO(type):
   """Metaclass ensuring that two InOuts don't have the same name, and that all
   InOuts define the required methods. Also keeps track of all the InOut
-  classes, including the custom user-defined ones, and sorts them as read_only,
-  write-only, or read-write."""
+  classes, including the custom user-defined ones."""
 
-  classes = {}  # All the InOut classes
-  IO_classes = {}  # Read-write InOut classes
-  O_classes = {}  # Write-only InOut classes
-  I_classes = {}  # Read-only InOut classes
+  classes = {}
   needed_methods = ["open", "close"]
 
   def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
@@ -44,25 +38,53 @@ class MetaIO(type):
         f'Class {name} is missing the required method(s): '
         f'{", ".join(missing_methods)}')
 
-    # Checking that the class has at least one of the necessary methods
+    # Otherwise, saving the class
     if name != 'InOut':
-      in_flag = ("get_data" in dct or "get_stream" in dct)
-      out_flag = ("set_cmd" in dct)
-      if in_flag and out_flag:
-        cls.IO_classes[name] = cls
-      elif in_flag:
-        cls.I_classes[name] = cls
-      elif out_flag:
-        cls.O_classes[name] = cls
-      else:
-        raise DefinitionError(f'{name} must define at least set_cmd, '
-                              f'get_data or get_stream !')
       cls.classes[name] = cls
 
 
 class InOut(metaclass=MetaIO):
   """Base class for all InOut objects. Implements methods shared by all the
   these objects, and ensures their dataclass is MetaIO."""
+
+  def get_data(self) -> Optional[Union[list, Dict[str, Any]]]:
+    """"""
+
+    print(f"WARNING ! The InOut {type(self).__name__} has downstream links but"
+          f" its get_data method is not defined !\nNo data sent to downstream "
+          f"links.")
+    sleep(1)
+    return
+
+  def set_cmd(self, *_, **__) -> None:
+    """"""
+
+    print(f"WARNING ! The InOut {type(self).__name__} has incoming links but"
+          f" its set_cmd method is not defined !\nThe data received from the "
+          f"incoming links is discarded.")
+    sleep(1)
+    return
+
+  def start_stream(self) -> None:
+    """"""
+
+    print(f"WARNING ! The InOut {type(self).__name__} does not define the "
+          f"start_stream method !")
+
+  def get_stream(self) -> Optional[Union[list, Dict[str, Any]]]:
+    """"""
+
+    print(f"WARNING ! The InOut {type(self).__name__} has downstream links but"
+          f" its get_stream method is not defined !\nNo data sent to "
+          f"downstream links.")
+    sleep(1)
+    return
+
+  def stop_stream(self) -> None:
+    """"""
+
+    print(f"WARNING ! The InOut {type(self).__name__} does not define the "
+          f"stop_stream method !")
 
   def eval_offset(self, delay: float = 2) -> list:
     """Method formerly used for offsetting the output of an InOut object.

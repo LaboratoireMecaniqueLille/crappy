@@ -27,15 +27,5 @@ from .waveshare_ad_da_ft232h import Waveshare_ad_da_ft232h
 # Win specific
 from .daqmx import Daqmx
 
-# All the inout objects (either in, out or in and out)
+# All the inout objects
 inout_dict = MetaIO.classes
-
-# Only the in AND out classes
-inandout_dict = MetaIO.IO_classes
-# Only the in classes
-in_dict = MetaIO.I_classes
-# Updating it to have all the classes that can take an input
-in_dict.update(inandout_dict)
-# And same for the out classes
-out_dict = MetaIO.O_classes
-out_dict.update(inandout_dict)

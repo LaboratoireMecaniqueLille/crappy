@@ -1,146 +1,220 @@
 # coding: utf-8
 
-from typing import Union
+from typing import Union, List, Optional
 from .block import Block
-from ..inout import inandout_dict, in_dict, out_dict, inout_dict
+from ..inout import inout_dict
 
 
 class IOBlock(Block):
-  """This block is used to communicate with :ref:`In / Out` objects.
+  """This block is meant to drive :ref:`In / Out` objects. It can acquire data,
+  and/or set commands. One IOBlock can only drive a single InOut.
 
-  They can be used as sensor, actuators or both.
+  If it has incoming links, it will set the commands received over the labels
+  given in ``cmd_labels``. Additional commands to set at the very beginning or
+  the very end of the test can also be specified.
+
+  If it has outgoing links, it will acquire data and send it downstream over
+  the labels given in ``labels``. It is possible to trigger the acquisition
+  using a predefined label.
+
+
   """
 
   def __init__(self,
                name: str,
-               freq: float = None,
-               verbose: bool = False,
-               labels: list = None,
-               cmd_labels: list = None,
-               trigger: int = None,
+               labels: Optional[List[str]] = None,
+               cmd_labels: Optional[List[str]] = None,
+               trigger_label: Optional[str] = None,
                streamer: bool = False,
-               initial_cmd: Union[float, list] = 0,
-               exit_values: list = None,
+               initial_cmd: Optional[Union[list]] = None,
+               exit_cmd: Optional[list] = None,
                spam: bool = False,
+               freq: Optional[float] = None,
+               verbose: bool = False,
                **kwargs) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      name (:obj:`str`): The name of the :ref:`In / Out` class to instantiate.
-      freq (:obj:`float`, optional): The looping frequency of the block, if
-        :obj:`None` will go as fast as possible.
-      verbose (:obj:`bool`, optional): Prints extra information if :obj:`True`.
-      labels (:obj:`list`, optional): A :obj:`list` of the output labels.
-      cmd_labels (:obj:`list`, optional): The :obj:`list` of the labels
-        considered as inputs for this block. Will call :meth:`set_cmd`  in the
-        :ref:`In / Out` object with the values received on this labels.
-      trigger (:obj:`int`, optional): If the block is triggered by another
-        block, this must specify the index of the input considered as a
-        trigger. The data going through this link is discarded, add another
-        link if the block should also consider it as an input.
-      streamer (:obj:`bool`, optional): If :obj:`False`, will call
-        :meth:`get_data` else, will call :meth:`get_stream` in the
-        :ref:`In / Out` object (only if it has these methods, of course).
-      initial_cmd (:obj:`list`, optional): The initial values for the outputs,
-        sent during :meth:`prepare`. If it is a single value, then it will send
-        this same value for all the output labels.
-      exit_values (:obj:`list`, optional): If not :obj:`None`, the outputs will
-        be set to these values when Crappy is ending (or crashing).
-      spam (:obj:`bool`, optional): If False (default), the block will only
-        call set_cmd on the InOut object if the command changed
+      name: The name of the :ref:`In / Out` class to instantiate.
+      labels: A :obj:`list` containing the output labels for InOuts that
+        acquire data. They correspond to the values returned by the InOut's
+        :meth:`get_data` method, so there should be as many labels as values
+        returned, and given in the appropriate order. The first label must
+        always be the timestamp, preferably called ``'t(s)'``. This argument
+        can be omitted if :meth:`get_data` returns a :obj:`dict` instead of a
+        :obj:`list`. Ignored if the block has no output link.
+      cmd_labels: A :obj:`list` of the labels considered as inputs for this
+        block, for InOuts that set commands. The values received from these
+        labels will be passed to the InOut's :meth:`set_cmd` method, in the
+        same order as the labels are given. Usually, time is not part of the
+        cmd_labels. Ignored if the block has no input link.
+      trigger_label: If given, the block will only read data whenever a value
+        (can be any value) is received on this label. Ignored if the block has
+        no output link. A trigger label can also be a cmd label.
+      streamer: If :obj:`False`, the :meth:`get_data` method of the InOut
+        object is called for acquiring data, else it's the :meth:`get_stream`
+        method.
+      initial_cmd: An initial command for the InOut, set during
+        :meth:`prepare`. If given, there must be as many values as in
+        cmd_labels.
+      exit_cmd: A final command for the InOut, set during :obj:`finish`. If
+        given, there must be as many values as in cmd_labels.
+      spam: If :obj:`False`, the block will call :meth:`set_cmd` on the
+        InOut object only if the current command is different from the
+        previous.
+      freq: The block will try to loop as this frequency, or as fast as
+        possible if no value is given.
+      verbose: If :obj:`True`, prints the looping frequency of the block.
       **kwargs: The arguments to be passed to the :ref:`In / Out` class.
     """
 
-    Block.__init__(self)
+    super().__init__()
     self.niceness = -10
-    self.freq = freq
+    if freq is not None:
+      self.freq = freq
     self.verbose = verbose
-    self.labels = labels
-    self.cmd_labels = [] if cmd_labels is None else cmd_labels
-    self.trigger = trigger
-    self.streamer = streamer
-    self.initial_cmd = initial_cmd
-    self.exit_values = exit_values
-    self.spam = spam
 
-    if self.labels is None:
-      if self.streamer:
-        self.labels = ['t(s)', 'stream']
-      else:
-        self.labels = ['t(s)'] + \
-                      [str(c) for c in kwargs.get("channels", ['1'])]
-    self.device_name = name.capitalize()
-    self.device_kwargs = kwargs
-    self.stream_idle = True
-    if not isinstance(self.initial_cmd, list):
-      self.initial_cmd = [self.initial_cmd] * len(self.cmd_labels)
-    if not isinstance(self.exit_values, list) and self.exit_values is not None:
-      self.exit_values = [self.exit_values] * len(self.cmd_labels)
-    if self.exit_values is not None:
-      assert len(self.exit_values) == len(self.cmd_labels),\
-          'Invalid number of exit values!'
-    self.device = inout_dict[self.device_name](**self.device_kwargs)
+    # The label argument can be omitted for streaming
+    if labels is None and streamer:
+      self.labels = ['t(s)', 'stream']
+    else:
+      self.labels = labels
+
+    # The labels to get
+    self._cmd_labels = cmd_labels
+    self._trig_label = trigger_label
+
+    # Checking that the initial_cmd and exit_cmd length are consistent
+    if cmd_labels is not None:
+      if initial_cmd is not None and len(initial_cmd) != len(cmd_labels):
+        raise ValueError("There should be as many values in initial_cmd as "
+                         "there are in cmd_labels !")
+      if exit_cmd is not None and len(exit_cmd) != len(cmd_labels):
+        raise ValueError("There should be as many values in exit_cmd as "
+                         "there are in cmd_labels !")
+
+    self._initial_cmd = initial_cmd
+    self._exit_cmd = exit_cmd
+
+    self._streamer = streamer
+    self._spam = spam
+
+    self._stream_started = False
+    self._last_cmd = None
+    self._prev_value = dict()
+
+    # Instantiating the device
+    self._device = inout_dict[name.capitalize()](**kwargs)
 
   def prepare(self) -> None:
-    self.to_get = list(range(len(self.inputs)))
-    if self.trigger is not None:
-      self.to_get.remove(self.trigger)
-    self.mode = 'r' if self.outputs else ''
-    self.mode += 'w' if self.to_get else ''
-    assert self.mode != '', "ERROR: IOBlock is neither an input nor an output!"
-    if 'w' in self.mode:
-      assert self.cmd_labels, "ERROR: IOBlock has an input block but no " \
-                              "cmd_labels specified!"
-    if self.mode == 'rw' and self.device_name not in inandout_dict:
-      raise IOError("The IOBlock has inputs and outputs but the Inout class "
-                    "is not rw")
-    elif self.mode == 'r' and self.device_name not in in_dict:
-      raise IOError("The IOBlock has inputs but the Inout class is write-only")
-    elif self.mode == 'w' and self.device_name not in out_dict:
-      raise IOError("The IOBlock has outputs but the Inout class is read-only")
-    self.device.open()
-    if 'w' in self.mode:
-      self.device.set_cmd(*self.initial_cmd)
-      self.last = None
+    """Checks the consistency of the link layout, opens the device and sets the
+    initial command if required."""
 
-  def read(self) -> None:
-    """Will read the device and send the data."""
+    # Checking that the block has inputs or outputs
+    if not self.inputs and not self.outputs:
+      raise IOError('Error ! The IOBlock is neither an input nor an output !')
 
-    if self.streamer:
-      if self.stream_idle:
-        self.device.start_stream()
-        self.stream_idle = False
-      data = self.device.get_stream()
-    else:
-      data = self.device.get_data()
-    if isinstance(data, dict):
-      if 't(s)' in data:
-        data['t(s)'] -= self.t0
-    elif isinstance(data[0], list):
-      data[0] = [i - self.t0 for i in data[0]]
-    else:
-      data[0] -= self.t0
-    self.send(data)
+    # cmd_labels must be defined when the block has inputs
+    if self.inputs and self._cmd_labels is None:
+      raise ValueError('Error ! The IOBlock has incoming links but no '
+                       'cmd_labels have been given !')
+
+    self._read = bool(self.outputs)
+    self._write = bool(self.inputs)
+
+    # Now opening the device
+    self._device.open()
+
+    # Writing the first command before the beginning of the test if required
+    if self._write and self._initial_cmd is not None:
+      self._device.set_cmd(*self._initial_cmd)
+      self._last_cmd = self._initial_cmd
 
   def loop(self) -> None:
-    if 'r' in self.mode:
-      if self.trigger is not None:
-        # To avoid useless loops if triggered input only
-        if self.mode == 'r' or self.inputs[self.trigger].poll():
-          self.inputs[self.trigger].recv()
-          self.read()
-      else:
-        self.read()
-    if 'w' in self.mode:
-      lst = self.get_last(self.to_get)
-      cmd = [lst[label] for label in self.cmd_labels]
-      if cmd != self.last or self.spam:
-        self.device.set_cmd(*cmd)
-        self.last = cmd
+    """Gets the latest command, reads data from the device and sets the
+    command.
+
+    Also handles the trig label if one was given, and manages the buffer for
+    the previously received commands.
+    """
+
+    # Receiving all the latest data waiting in the links
+    # Cannot use self.get_last because trig_label needs a special handling
+    recv_data = dict()
+    for link in self.inputs:
+      latest = link.recv_last(blocking=False)
+      if latest is not None:
+        recv_data.update(latest)
+
+    # Reading data from the device if there's no trig_label or if data has been
+    # received on this trig_label
+    if self._read:
+      if self._trig_label is None or self._trig_label in recv_data:
+        self._read_data()
+
+    # Storing the latest received values in the buffer
+    self._prev_value.update(recv_data)
+    # Completing the values that may be missing in recv_data
+    recv_data.update(self._prev_value)
+
+    if self._write:
+      # At the very beginning of the test, there may not be any received value
+      if not recv_data:
+        return
+
+      # Keeping only the labels in cmd_labels
+      cmd = [val for label, val in recv_data.items()
+             if label in self._cmd_labels]
+
+      # If not all cmd_labels have a value, returning without calling set_cmd
+      if len(cmd) != len(self._cmd_labels):
+        print(f"WARNING ! Not enough values received in the "
+              f"{type(self._device).__name__} InOut to set the cmd, cmd "
+              f"not set !")
+        return
+
+      # Setting the command if it's different from the previous or spam is True
+      if cmd != self._last_cmd or self._spam:
+        self._device.set_cmd(*cmd)
+        self._last_cmd = cmd
 
   def finish(self) -> None:
-    if self.streamer:
-      self.device.stop_stream()
-    if self.exit_values is not None:
-      self.device.set_cmd(*self.exit_values)
-    self.device.close()
+    """Stops the stream, sets the exit command if necessary, and closes the
+    device."""
+
+    # Stopping the stream
+    if self._streamer:
+      self._device.stop_stream()
+
+    # Setting the exit command
+    if self._write and self._exit_cmd is not None:
+      self._device.set_cmd(*self._exit_cmd)
+
+    # Closing the device
+    self._device.close()
+
+  def _read_data(self) -> None:
+    """Reads the data or the stream, offsets the timestamp and sends the data
+    to downstream blocks."""
+
+    if self._streamer:
+      # Starting the stream if needed
+      if not self._stream_started:
+        self._device.start_stream()
+        self._stream_started = True
+      # Actually getting the stream
+      data = self._device.get_stream()
+    else:
+      # Regular reading of data
+      data = self._device.get_data()
+
+    if data is None:
+      return
+
+    # Making time relative to the beginning of the test
+    if isinstance(data, dict) and 't(s)' in data:
+      data['t(s)'] -= self.t0
+    else:
+      data[0] -= self.t0
+
+    self.send(data)
