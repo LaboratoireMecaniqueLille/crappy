@@ -17,7 +17,7 @@ class Demux(Modifier):
   """
 
   def __init__(self,
-               labels: Union[str, List[str], Tuple[str]],
+               labels: Union[str, List[str], Tuple[str, ...]],
                stream_label: str = "stream",
                mean: bool = False,
                time_label: str = "t(s)",

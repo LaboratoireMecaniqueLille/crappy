@@ -13,7 +13,7 @@ class Trig_on_value(Modifier):
 
   def __init__(self,
                label: str,
-               values: Union[Any, Tuple[Any], List[Any]]) -> None:
+               values: Union[Any, Tuple[Any, ...], List[Any]]) -> None:
     """Sets the args and initializes the parent class.
 
     Args:

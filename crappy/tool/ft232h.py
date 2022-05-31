@@ -2250,7 +2250,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     return cmd
 
-  def _send_server(self, command: list) -> Union[int, bytes, None, Tuple[int]]:
+  def _send_server(self, command: list) -> Union[int, bytes, None,
+                                                 Tuple[int, ...]]:
     """Sends a command to the server and gets the corresponding answer.
 
     Args:
