@@ -28,6 +28,7 @@ class IOBlock(Block):
                streamer: bool = False,
                initial_cmd: Optional[Union[list]] = None,
                exit_cmd: Optional[list] = None,
+               make_zero_delay: Optional[float] = None,
                spam: bool = False,
                freq: Optional[float] = None,
                verbose: bool = False,
@@ -59,6 +60,10 @@ class IOBlock(Block):
         cmd_labels.
       exit_cmd: A final command for the InOut, set during :obj:`finish`. If
         given, there must be as many values as in cmd_labels.
+      make_zero_delay: If set, will acquire data before the beginning of the
+        test and use it to offset all the labels to zero. The data will be
+        acquired during the given number of seconds. Ignored if the block has
+        no output links.
       spam: If :obj:`False`, the block will call :meth:`set_cmd` on the
         InOut object only if the current command is different from the
         previous.
@@ -98,6 +103,7 @@ class IOBlock(Block):
 
     self._streamer = streamer
     self._spam = spam
+    self._make_zero_delay = make_zero_delay
 
     self._stream_started = False
     self._last_cmd = None
@@ -124,6 +130,10 @@ class IOBlock(Block):
 
     # Now opening the device
     self._device.open()
+
+    # Acquiring data for offsetting the output
+    if self._make_zero_delay is not None:
+      self._device.make_zero(self._make_zero_delay)
 
     # Writing the first command before the beginning of the test if required
     if self._write and self._initial_cmd is not None:
@@ -206,7 +216,7 @@ class IOBlock(Block):
       data = self._device.get_stream()
     else:
       # Regular reading of data
-      data = self._device.get_data()
+      data = self._device.return_data()
 
     if data is None:
       return
