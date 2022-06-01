@@ -132,7 +132,7 @@ class IOBlock(Block):
     self._device.open()
 
     # Acquiring data for offsetting the output
-    if self._make_zero_delay is not None:
+    if self._read and self._make_zero_delay is not None:
       self._device.make_zero(self._make_zero_delay)
 
     # Writing the first command before the beginning of the test if required
