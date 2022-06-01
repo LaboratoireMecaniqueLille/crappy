@@ -48,6 +48,12 @@ Moving med
 .. automodule:: crappy.modifier.moving_med
    :members:
 
+Offset
+------
+.. automodule:: crappy.modifier.offset
+   :members:
+
+
 Trig on change
 --------------
 .. automodule:: crappy.modifier.trig_on_change
