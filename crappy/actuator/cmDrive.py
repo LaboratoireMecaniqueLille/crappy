@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from typing import Optional
+
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -92,7 +94,7 @@ class CM_drive(Actuator):
 
   def set_position(self,
                    position: float,
-                   speed: float,
+                   _: Optional[float] = None,
                    motion_type: str = 'relative') -> None:
     """Pilot in position mode, needs speed and final position to run
     (in `mm/min` and `mm`)."""

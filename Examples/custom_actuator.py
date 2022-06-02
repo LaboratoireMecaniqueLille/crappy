@@ -40,7 +40,7 @@ class My_actuator(crappy.actuator.Actuator):
   # At least one of the two following methods (set_speed and set_position)
   # needs to be defined. Getters (get_speed and get_position) can be defined
   # too if the actuator supports it.
-  def set_position(self, target):
+  def set_position(self, target, _=None):
     self.pos = target
 
   def get_position(self):

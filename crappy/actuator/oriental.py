@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import sleep
+from typing import Optional
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -105,9 +106,15 @@ class Oriental(Actuator):
   def move_home(self) -> None:
     self.ser.write(b'EHOME\n')
 
-  def set_position(self, position: float, speed: float) -> None:
+  def set_position(self,
+                   position: float,
+                   speed: Optional[float] = None) -> None:
     """Pilot in position mode, needs speed and final position to run
     (in `mm/min` and `mm`)."""
+
+    if speed is None:
+      raise ValueError("The Oriental actuator needs both a position and a "
+                       "speed command when driven in position mode !")
 
     self.ser.write("VR {0}".format(abs(speed)).encode('ASCII'))
     self.ser.write("MA {0}".format(position).encode('ASCII'))

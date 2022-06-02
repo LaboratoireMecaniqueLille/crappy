@@ -404,8 +404,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
       - ``step_mode``:
         Increasing the number of microsteps allows to reduce the noise, the
-        vibrations, and improve the precision. However, the more microsteps, the
-        lower the maximum achievable speed for the motor. Chances that the
+        vibrations, and improve the precision. However, the more microsteps,
+        the lower the maximum achievable speed for the motor. Chances that the
         motor misses microsteps are also higher when the number of microsteps
         is high.
       - ``t_shutoff``:
@@ -652,8 +652,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         self._dev.set_configuration()
       except core.USBError:
         print("You may have to install the udev-rules for this USB device, "
-              "this can be done using the udev_rule_setter utility in the util "
-              "folder")
+              "this can be done using the udev_rule_setter utility in the util"
+              " folder")
         raise
 
     # Setting the Tic according to the user parameters

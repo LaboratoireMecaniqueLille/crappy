@@ -1,44 +1,93 @@
 # coding: utf-8
 
+from time import sleep
+from typing import Optional
+
 from .._global import DefinitionError
 
 
 class MetaActuator(type):
-  """This metaclass will just check if the actuator are defined properly.
-
-  They must have at least an ``open``, a ``stop``, a ``close`` and either a
-  ``set_speed`` or a ``set_position`` method.
-  """
+  """Metaclass ensuring that two Actuators don't have the same name, and that
+  all Actuators define the required methods. Also keeps track of all the
+  Actuator classes, including the custom user-defined ones."""
 
   classes = {}
-  needed_methods = ["open", "stop", ('set_speed', 'set_position'), 'close']
+  needed_methods = ['open', 'stop', 'close']
 
-  def __new__(mcs, name: str, bases: tuple, dict_: dict) -> type:
-    return type.__new__(mcs, name, bases, dict_)
+  def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
+    return super().__new__(mcs, name, bases, dct)
 
-  def __init__(cls, name: str, bases: tuple, dict_: dict) -> None:
-    type.__init__(cls, name, bases, dict_)  # This is the important line
-    if name in MetaActuator.classes:
-      raise DefinitionError("Cannot redefine " + name + " class")
+  def __init__(cls, name: str, bases: tuple, dct: dict) -> None:
+    super().__init__(name, bases, dct)
 
-    if name == "Actuator":
-      return
-    for m in MetaActuator.needed_methods:
-      if isinstance(m, tuple):
-        ok = False
-        for n in m:
-          if n in dict_:
-            ok = True
-            break
-        if not ok:
-          raise DefinitionError(
-              name + " class needs at least one of these methods: " + str(m))
-      else:
-        if m not in dict_:
-          raise DefinitionError(name + " class needs the method " + str(m))
+    # Checking that an InOut with the same name doesn't already exist
+    if name in cls.classes:
+      raise DefinitionError(f"The {name} class is already defined !")
 
-    MetaActuator.classes[name] = cls
+    # Gathering all the defined methods
+    defined_methods = list(dct.keys())
+    defined_methods += [base.__dict__.keys() for base in bases]
+
+    # Checking for missing methods
+    missing_methods = [meth for meth in cls.needed_methods
+                       if meth not in defined_methods]
+
+    # Raising if there are unexpected missing methods
+    if missing_methods and name != "Actuator":
+      raise DefinitionError(
+        f'Class {name} is missing the required method(s): '
+        f'{", ".join(missing_methods)}')
+
+    # Otherwise, saving the class
+    if name != 'Actuator':
+      cls.classes[name] = cls
 
 
 class Actuator(metaclass=MetaActuator):
-  pass
+  """The base class for all actuator classes, allowing to keep track of them
+  and defining methods shared by all of them."""
+
+  def set_speed(self, speed: float) -> None:
+    """This method should drive the actuator so that it reaches the desired
+    speed."""
+
+    print(f"WARNING ! Trying to drive the Actuator {type(self).__name__} in "
+          f"speed but it does not define a set_speed method !\nNo command "
+          f"sent to the actuator.")
+    sleep(1)
+    return
+
+  def set_position(self,
+                   position: float,
+                   speed: Optional[float] = None) -> None:
+    """This method should drive the actuator so that it reaches the desired
+    position. A speed value can optionally be provided for specifying the speed
+    at which the actuator should move for getting to the desired position."""
+
+    print(f"WARNING ! Trying to drive the Actuator {type(self).__name__} in "
+          f"position but it does not define a set_position method !\n"
+          f"No command sent to the actuator.")
+    sleep(1)
+    return
+
+  def get_speed(self) -> Optional[float]:
+    """This method should return the current speed of the actuator. It is also
+    fine for this method to return :obj:`None`."""
+
+    print(f"WARNING ! Trying to get the speed of the Actuator "
+          f"{type(self).__name__}, but it does not define a get_speed "
+          f"method !\nDefine such a method or remove the output links of this "
+          f"block.")
+    sleep(1)
+    return
+
+  def get_position(self) -> Optional[float]:
+    """This method should return the current position of the actuator. It is
+    also fine for this method to return :obj:`None`."""
+
+    print(f"WARNING ! Trying to get the position of the Actuator "
+          f"{type(self).__name__}, but it does not define a get_position "
+          f"method !\nDefine such a method or remove the output links of this "
+          f"block.")
+    sleep(1)
+    return

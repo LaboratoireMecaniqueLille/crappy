@@ -1,7 +1,7 @@
 ﻿# coding: utf-8
 
 from struct import pack, unpack
-from typing import Union
+from typing import Union, Optional
 import time
 from .actuator import Actuator
 from .._global import OptionalModule
@@ -207,9 +207,15 @@ class Biotens(Actuator):
     # write every parameters in motor's registers
     self.ser.writelines([set_speed, set_torque, set_acceleration, command])
 
-  def set_position(self, position: float, speed: float) -> None:
+  def set_position(self,
+                   position: float,
+                   speed: Optional[float] = None) -> None:
     """Pilot in position mode, needs speed and final position to run
     (in `mm/min` and `mm`)."""
+
+    if speed is None:
+      raise ValueError("The Biotens actuator needs both a position and a speed"
+                       " command when driven in position mode !")
 
     # conversion of position from mm into encoder's count
     position_soll = int(round(position * 4096 / 5))
