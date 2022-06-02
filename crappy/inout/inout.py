@@ -74,7 +74,7 @@ class InOut(metaclass=MetaIO):
     sleep(1)
     return
 
-  def set_cmd(self, *_) -> None:
+  def set_cmd(self, *cmd) -> None:
     """This method should handle commands received from the upstream blocks.
 
     Usually the command is meant to be set on a device, but any other behavior
