@@ -1,122 +1,170 @@
 # coding: utf-8
 
 from time import time
+from typing import Dict, List, Any, Optional
 
 from .block import Block
 from ..actuator import actuator_list
 
 
 class Machine(Block):
-  """To drive a machine with a one or more :ref:`Actuators`.
+  """This block is meant to drive one or several :ref:`Actuators`.
 
-  Takes a :obj:`list` of :obj:`dict`, containing the information to create each
-  actuator. Each key will either stand for a parameter, or else they are
-  transferred to the actuator.
+  The possibility to drive several Actuators from a unique block is given so
+  that they can be driven in a synchronized way. If synchronization is not
+  needed, it is preferable to drive the Actuators from separate Machine blocks.
   """
 
   def __init__(self,
-               actuators: list,
-               common: dict = None,
-               freq: float = 200,
+               actuators: List[Dict[str, Any]],
+               common: Optional[List[Dict[str, Any]]] = None,
                time_label: str = 't(s)',
-               spam: bool = False) -> None:
+               spam: bool = False,
+               freq: float = 200,
+               verbose: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      actuators (:obj:`list`): The :obj:`list` of the :ref:`Actuators` of the
-        machine. It contains one or several :obj:`dict`, whose mandatory keys
-        are described below. The other keys will be passed to the actuator as
-        arguments.
-      common (:obj:`dict`, optional): The keys of this :obj:`dict` will be
-        common to all of the actuators. However if this conflicts with an
-        already existing key for an actuator, the latter will prevail.
-      freq (:obj:`float`, optional): The looping frequency of the block.
-      time_label (:obj:`str`, optional): If reading data from one or more
-        actuators, the time will be returned under this label.
-      spam (:obj:`bool`, optional): If :obj:`True`, a command is sent on each
-        loop of the block, else it is sent every time a value is received.
+      actuators: The :obj:`list` of all the :ref:`Actuators` this block needs
+        to drive. It contains one :obj:`dict` for every Actuator, with
+        mandatory and optional keys. The keys providing information on how to
+        drive the Actuator are listed below. Any other key will be passed to
+        the Actuator object as argument when instantiating it.
+      common: The keys of this :obj:`dict` will be common to all the Actuators.
+        If it conflicts with an existing key for an Actuator, the common one
+        will prevail.
+      time_label: If reading speed or position from one or more Actuators, the
+        time information will be carried by this label.
+      spam: If :obj:`True`, a command is sent to the Actuators on each loop of
+        the block, else it is sent every time a command is received.
+      freq: The block will try to loop at this frequency.
+      verbose: If :obj:`True`, prints the looping frequency of the block.
 
     Note:
       - ``actuators`` keys:
 
-        - ``type`` (:obj:`str`): The name of the actuator to instantiate.
-        - ``cmd`` (:obj:`str`): The label of the input to drive the axis.
-        - ``mode`` (:obj:`str`, default: `'speed'`): Can be either `'speed'` or
-          `'position'`. Will either call :meth:`set_speed` or
-          :meth:`set_position` to drive the actuator.
-        - ``speed`` (:obj:`float`): If mode is `'position'`, the speed of the
-          axis.
-        - ``pos_label`` (:obj:`str`): If set, the block will return the value
-          of :meth:`get_position` with this label.
-        - ``speed_label`` (:obj:`str`): If set, the block will return the value
-          of :meth:`get_speed` with this label.
+        - ``type``: The name of the Actuator class to instantiate.
+        - ``cmd``: The label carrying the command for driving the Actuator.
+        - ``mode``: Can be either `'speed'` or `'position'`. Will either call
+          :meth:`set_speed` or :meth:`set_position` to drive the actuator, and
+          :meth:`get_speed` or :meth:`get_position` for acquiring the current
+          speed or position.
+        - ``speed``: If mode is `'position'`, the speed at which the Actuator
+          should move. This key is not mandatory, even in the `'position'`
+          mode.
+        - ``pos_label``: If given and the mode is `'position'`, the block will
+          return the value of :meth:`get_position` under this label. This key
+          is not mandatory.
+        - ``speed_label``: If given and the mode is `'speed'`, the block will
+          return the value of :meth:`get_speed` under this label. This key is
+          not mandatory.
     """
 
-    Block.__init__(self)
-    if common is None:
-      common = {}
+    super().__init__()
     self.freq = freq
-    self.time_label = time_label
-    self.spam = spam
-    self.settings = [{} for _ in actuators]
-    for setting, d in zip(self.settings, actuators):
-      d.update(common)
-      for k in ('type', 'cmd'):
-        setting[k] = d[k]
-        del d[k]
-      if 'mode' in d:
-        assert d['mode'].lower() in ('position', 'speed')
-        setting['mode'] = d['mode'].lower()
-        del d['mode']
-        if 'speed' in d:
-          setting['speed'] = d['speed']
-      else:
-        setting['mode'] = 'speed'
-      for k in ('pos_label', 'speed_label'):
-        if k in d:
-          setting[k] = d[k]
-          del d[k]
-      setting['kwargs'] = d
+    self.verbose = verbose
+
+    if common is None:
+      common = dict()
+
+    self._time_label = time_label
+    self._spam = spam
+
+    self._settings = list()
+
+    # For each actuator, parsing the given settings
+    for actuator in actuators:
+      actuator.update(common)
+      settings = dict()
+
+      # Getting all the possible arguments from the actuator dict
+      for arg in ('type', 'cmd', 'mode', 'speed', 'pos_label', 'speed_label'):
+        try:
+          settings[arg] = actuator.pop(arg)
+        except KeyError:
+          # If an arg is not given, setting it to None
+          settings[arg] = None
+
+      # Putting all the remaining settings together under the kwargs key
+      settings['kwargs'] = actuator
+
+      # Making sure that the mandatory arguments are given
+      for arg in ('type', 'cmd', 'mode'):
+        if settings[arg] is None:
+          raise ValueError(f"An actuator given as argument of the Machine "
+                           f"block doesn't define the {arg} setting !")
+
+      # Making sure that the given mode is valid
+      if settings['mode'].lower() not in ('position', 'speed'):
+        raise ValueError(f"The 'mode' setting for the actuators should be "
+                         f"either 'position' or 'speed' !")
+
+      # Storing the settings dict
+      self._settings.append(settings)
+
+    # Instantiating the actuators
+    self._actuators = [actuator_list[settings['type'].capitalize()]
+                       (**settings['kwargs']) for settings in self._settings]
 
   def prepare(self) -> None:
-    self.actuators = []
-    for setting in self.settings:
-      # Open each actuators with its associated dict of settings
-      self.actuators.append(actuator_list[setting['type'].capitalize()](
-        **setting['kwargs']))
-      self.actuators[-1].open()
+    """Checks the validity of the linking and initializes all the Actuator
+    objects to drive."""
 
-  def send_data(self) -> None:
-    to_send = {}
-    for actuator, setting in zip(self.actuators, self.settings):
-      if 'pos_label' in setting:
-        to_send[setting['pos_label']] = actuator.get_position()
-      if 'speed_label' in setting:
-        to_send[setting['speed_label']] = actuator.get_speed()
-    if to_send != {}:
-      to_send[self.time_label] = time() - self.t0
-      self.send(to_send)
+    # Checking the consistency of the linking
+    if not self.inputs and not self.outputs:
+      raise IOError("The Machine block is neither an input nor an output !")
 
-  def begin(self) -> None:
-    self.send_data()
+    # Opening each actuator
+    for actuator in self._actuators:
+      actuator.open()
 
   def loop(self) -> None:
-    if self.spam:
-      recv = self.get_last()
+    """Receives the commands from upstream blocks, sets them on the actuators
+    to drive, and sends the read positions and speed to the downstream
+    blocks."""
+
+    # Receiving the latest command
+    if self._spam:
+      recv = self.get_last(blocking=False)
     else:
       recv = self.recv_all_last()
-    for actuator, setting in zip(self.actuators, self.settings):
-      if setting['mode'] == 'speed' and setting['cmd'] in recv:
-        actuator.set_speed(recv[setting['cmd']])
-      elif setting['mode'] == 'position' and setting['cmd'] in recv:
-        try:
-          actuator.set_position(recv[setting['cmd']], setting['speed'])
-        except (TypeError, KeyError):
-          actuator.set_position(recv[setting['cmd']])
 
-    self.send_data()
+    # Iterating over the actuators for setting the commands
+    if recv:
+      for actuator, settings in zip(self._actuators, self._settings):
+        mode, cmd = settings['mode'], settings['cmd']
+
+        # If a command was received, setting it
+        if cmd in recv:
+          if mode == 'speed':
+            actuator.set_speed(recv[cmd])
+          elif mode == 'position':
+            actuator.set_position(recv[cmd], settings['speed'])
+
+    to_send = {}
+
+    # Iterating over the actuators to get the speeds and the positions
+    for actuator, settings in zip(self._actuators, self._settings):
+      pos_label, speed_label = settings['pos_label'], settings['speed_label']
+      mode = settings['mode']
+      if mode == 'position' and pos_label is not None:
+        position = actuator.get_position()
+        if position is not None:
+          to_send[pos_label] = position
+      elif mode == 'speed' and speed_label is not None:
+        speed = actuator.get_speed()
+        if speed is not None:
+          to_send[speed_label] = speed
+
+    # Sending the speed and position values if any
+    if to_send:
+      to_send[self._time_label] = time() - self.t0
+      self.send(to_send)
 
   def finish(self) -> None:
-    for actuator in self.actuators:
+    """Stops and closes all the actuators to drive."""
+
+    for actuator in self._actuators:
       actuator.stop()
+    for actuator in self._actuators:
       actuator.close()
