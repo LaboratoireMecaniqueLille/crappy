@@ -76,8 +76,8 @@ class Actuator(metaclass=MetaActuator):
 
     print(f"WARNING ! Trying to get the speed of the Actuator "
           f"{type(self).__name__}, but it does not define a get_speed "
-          f"method !\nDefine such a method or remove the output links of this "
-          f"block.")
+          f"method !\nDefine such a method, don't set the speed_label, or "
+          f"remove the output links of this block.")
     sleep(1)
     return
 
@@ -87,7 +87,7 @@ class Actuator(metaclass=MetaActuator):
 
     print(f"WARNING ! Trying to get the position of the Actuator "
           f"{type(self).__name__}, but it does not define a get_position "
-          f"method !\nDefine such a method or remove the output links of this "
-          f"block.")
+          f"method !\nDefine such a method, don't set the pos_label, or remove"
+          f" the output links of this block.")
     sleep(1)
     return
