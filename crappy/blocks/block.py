@@ -5,7 +5,7 @@ from multiprocessing import Process, Pipe
 from time import sleep, time, localtime, strftime
 from weakref import WeakSet
 from pickle import UnpicklingError
-from typing import Union, Optional, List, Dict
+from typing import Union, Optional, List, Dict, Any
 
 from ..links import Link
 from .._global import CrappyStop
@@ -412,13 +412,14 @@ class Block(Process):
     receiving block is slower than the block upstream
     """
 
-    r = {}
-    for i in self.inputs:
-      while i.poll():
-        r.update(i.recv())
-    return r
+    ret = {}
+    for link in self.inputs:
+      data = link.recv_last(blocking=False)
+      if data is not None:
+        ret.update(data)
+    return ret
 
-  def get_last(self, num: Optional[List[int]] = None) -> Dict[str, float]:
+  def get_last(self, blocking: bool = True) -> Dict[str, Any]:
     """To get the latest value of each labels from all inputs.
 
     Warning:
@@ -431,31 +432,29 @@ class Block(Process):
       Its mode of operation is completely different since it can operate on
       multiple inputs at once.
 
-    Args:
-      num (:obj:`list`, optional): A :obj:`list` containing ll the concerned
-        inputs. If :obj:`None` it will operate on all the input links at once.
-
     Note:
       The first call may be blocking until it receives data, all the others
       will return instantaneously, giving the latest known reading.
     """
 
+    # Initializing the buffer
     if self._last_values is None:
       self._last_values = [dict() for _ in self.inputs]
 
-    if num is None:
-      num = range(len(self.inputs))
+    for link, values in zip(self.inputs, self._last_values):
+      # If blocking is True, acquiring a sample from each link at the beginning
+      if not values and blocking:
+        values.update(link.recv(blocking=True))
 
-    for i in num:
-      if not self._last_values[i]:
-        self._last_values[i] = self.inputs[i].recv(blocking=True)
-      data = self.inputs[i].recv_last(blocking=False)
+      # Then updating the buffers with the last received values
+      data = link.recv_last(blocking=False)
       if data is not None:
-        self._last_values[i] = data
+        values.update(data)
 
+    # Finally, gathering data from all the buffers and returning it
     ret = {}
-    for i in num:
-      ret.update(self._last_values[i])
+    for values in self._last_values:
+      ret.update(values)
     return ret
 
   def get_all_last(self, blocking: bool = True) -> Dict[str, list]:
