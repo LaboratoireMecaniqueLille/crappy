@@ -23,6 +23,7 @@ from .spectrum import Spectrum
 from .t7Streamer import T7_streamer
 from .waveshare_ad_da import Waveshare_ad_da
 from .waveshare_ad_da_ft232h import Waveshare_ad_da_ft232h
+from .waveshare_high_precision import Waveshare_high_precision
 
 # Win specific
 from .daqmx import Daqmx

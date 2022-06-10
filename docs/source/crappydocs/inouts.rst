@@ -116,3 +116,8 @@ Waveshare AD/DA FT232H
 ----------------------
 .. automodule:: crappy.inout.waveshare_ad_da_ft232h
    :members:
+
+Waveshare High Precision
+------------------------
+.. automodule:: crappy.inout.waveshare_high_precision
+   :members:

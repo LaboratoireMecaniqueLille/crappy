@@ -454,6 +454,14 @@ Acquisition boards
   Almost the same code as :ref:`Waveshare AD/DA`, except it's been optimized for
   use with a :ref:`FT232H` USB to SPI adapter. Communicates over SPI.
 
+- :ref:`Waveshare High Precision`
+
+  Controls Waveshare's `High Precision HAT
+  <https://www.waveshare.com/18983.htm>`_ Raspberry Pi acquisition hat. It
+  features a 10-channels 32 bits ADC. It may be used from any device able to
+  communicate over SPI, but is originally meant for interfacing with a
+  Raspberry Pi.
+
 Sensors
 """""""
 
