@@ -3,7 +3,7 @@
 from .camera import Camera
 from .._global import OptionalModule
 from time import time, sleep
-from numpy import uint8, ndarray, uint16, copy
+from numpy import uint8, ndarray, uint16, copy, squeeze
 from typing import Tuple, Optional, Union
 from subprocess import Popen, PIPE, run
 from platform import system
@@ -497,7 +497,7 @@ videoconvert ! autovideosink
     # Cleaning up the buffer mapping
     buffer.unmap(map_info)
 
-    self._img = numpy_frame
+    self._img = squeeze(numpy_frame)
     self._frame_nr += 1
 
     return Gst.FlowReturn.OK
