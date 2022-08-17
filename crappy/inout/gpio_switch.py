@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Union, Literal
+from typing import Optional, Union
 from .inout import InOut
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h, Usb_server, ft232h_pin_nr
@@ -35,7 +35,7 @@ class Gpio_switch(Usb_server, InOut):
 
   def __init__(self,
                pin_out: Union[int, str],
-               backend: Literal['Pi4', 'ft232h', 'blinka'],
+               backend: str,
                ft232h_ser_num: Optional[int] = None) -> None:
     """Checks the argument validity.
 

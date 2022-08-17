@@ -2,7 +2,7 @@
 
 from time import time
 import numpy as np
-from typing import Callable, Literal, Dict, Optional
+from typing import Callable, Dict, Optional
 
 from .block import Block
 
@@ -34,7 +34,7 @@ class Fake_machine(Block):
                nu: float = 0.3,
                plastic_law: Callable[[float], float] = plastic,
                max_speed: float = 5,
-               mode: Literal['speed', 'position'] = 'speed',
+               mode: str = 'speed',
                cmd_label: str = 'cmd',
                freq: float = 100,
                verbose: bool = False) -> None:

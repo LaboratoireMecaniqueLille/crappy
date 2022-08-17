@@ -1,12 +1,10 @@
 # coding: utf-8
 
 from time import time
-from typing import Dict, Any, Optional, Literal
+from typing import Dict, Any, Optional
 
 from .block import Block
 from ..actuator import actuator_list
-
-possible_directions = Literal['X+', 'X-', 'x+', 'x-', 'Y+', 'Y-', 'y+', 'y-']
 
 
 class AutoDrive(Block):
@@ -25,7 +23,7 @@ class AutoDrive(Block):
   def __init__(self,
                actuator: Optional[Dict[str, Any]] = None,
                gain: float = 2000,
-               direction: possible_directions = 'Y-',
+               direction: str = 'Y-',
                pixel_range: int = 2048,
                max_speed: float = 200000,
                freq: float = 200,

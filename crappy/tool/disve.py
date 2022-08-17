@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Literal, List, Tuple
+from typing import List, Tuple
 from .._global import OptionalModule
 
 try:
@@ -23,10 +23,7 @@ class DISVE:
   def __init__(self,
                img0: np.ndarray,
                patches: List[Tuple[int, int, int, int]],
-               method: Literal['Disflow',
-                               'Pixel precision',
-                               'Parabola',
-                               'Lucas Kanade'] = 'Disflow',
+               method: str = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,

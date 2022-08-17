@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Literal, List, Tuple, Optional
+from typing import List, Tuple, Optional
 from ..tool import DISVE as VE, DISVE_config
 from .camera import Camera
 from .._global import OptionalModule
@@ -28,10 +28,7 @@ class DISVE(Camera):
                camera: str,
                patches: List[Tuple[int, int, int, int]],
                labels: Optional[List[str]] = None,
-               method: Literal['Disflow',
-                               'Pixel precision',
-                               'Parabola',
-                               'Lucas Kanade'] = 'Disflow',
+               method: str = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,

@@ -4,7 +4,7 @@ from multiprocessing import Pipe
 from time import time
 from threading import Thread
 from copy import copy
-from typing import Callable, Union, Any, Dict, Optional, Literal, List
+from typing import Callable, Union, Any, Dict, Optional, List
 
 from .._global import CrappyStop
 from ..modifier import Modifier
@@ -31,7 +31,7 @@ class Link:
                conditions: List[Union[Callable, Modifier]] = None,
                modifiers: List[Union[Callable, Modifier]] = None,
                timeout: float = 1,
-               action: Literal['warn', 'kill', 'NoWarn'] = "warn",
+               action: str = "warn",
                name: Optional[str] = None) -> None:
     """Sets the instance attributes.
 
@@ -356,7 +356,7 @@ def link(in_block,
          modifier: Optional[Union[List[Union[Modifier, Callable]],
                                   Union[Modifier, Callable]]] = None,
          timeout: float = 1,
-         action: Literal['warn', 'kill', 'NoWarn'] = "warn",
+         action: str = "warn",
          name: Optional[str] = None) -> None:
   """Function linking two blocks, allowing to send data from one to the other.
 
