@@ -10,6 +10,7 @@ from queue import Queue, Empty
 from ast import literal_eval
 from pickle import loads, dumps, UnpicklingError
 from socket import timeout, gaierror
+from itertools import chain
 
 try:
   import paho.mqtt.client as mqtt
@@ -17,8 +18,6 @@ except (ModuleNotFoundError, ImportError):
   mqtt = OptionalModule("paho.mqtt.client")
 
 topics_type = List[Union[str, Tuple[str, ...]]]
-
-# Todo: don't send init if not necessary
 
 
 class Client_server(Block):
@@ -49,9 +48,10 @@ class Client_server(Block):
         running.
       port (:obj:`int`, optional): A network port on which the MQTT broker is
         listening.
-      init_output (:obj:`dict`, optional): A :obj:`dict` containing for each
-        label in ``topics`` the first value to be sent in the output link. Must
-        be given if ``topics`` is not :obj:`None`.
+      init_output (:obj:`dict`, optional): A :obj:`dict` containing for labels
+        in ``topics`` the first value to be sent in the output links. Should be
+        given in case the data comes from several sources and data for all
+        labels may not be available during the first loops.
       topics (:obj:`list`, optional): A :obj:`list` of :obj:`str` and/or 
         :obj:`tuple` of :obj:`str`. Each string corresponds to the name of a 
         crappy label to be received from the broker. Each element of the list 
@@ -196,6 +196,7 @@ class Client_server(Block):
     self._address = address
     self._port = port
     self._spam = spam
+    self._init_output = init_output if init_output is not None else dict()
     self._reader = Thread(target=self._output_reader)
 
     self._stop_mosquitto = False
@@ -212,26 +213,17 @@ class Client_server(Block):
 
     # Preparing for receiving data
     if topics is not None:
-      self._last_out_val = init_output
       # Replacing strings with tuples
       self._topics = [topic if isinstance(topic, tuple) else (topic,) for
                       topic in topics]
 
+      # The last out vals are given for each label, not each topic
+      self._last_out_val = {label: None for label in chain(*self._topics)}
+      print(self._last_out_val)
+
       # The buffer for received data is a dictionary of queues
       self._buffer_output = {topic: Queue() for topic in topics}
 
-      # Checking that the initial values are provided
-      if init_output is None:
-        raise ValueError('init_output values should be provided !')
-
-      # Placing the initial values in the queues
-      for topic in self._buffer_output:
-        try:
-          self._buffer_output[topic].put_nowait([init_output[label]
-                                                 for label in topic])
-        except KeyError:
-          print("init_output values should be provided for each label !")
-          raise
     else:
       self._topics = None
       self._buffer_output = None
@@ -312,7 +304,9 @@ class Client_server(Block):
     of data is popped. This data is then associated to the corresponding 
     labels in dict_out. dict_out is finally returned if not empty. All the 
     labels should be returned at each loop iteration, so a buffer stores the 
-    last value for each label and returns it if no other value was received."""
+    last value for each label and returns it if no other value was received. In 
+    case no value was received yet for a given label, the user can also provide 
+    init values to be sent at the beginning."""
     if self._topics is not None:
       dict_out = {}
       for topic in self._buffer_output:
@@ -325,11 +319,18 @@ class Client_server(Block):
             pass
       # Updating the _last_out_val buffer, and completing dict_out before
       # sending data if necessary
-      if dict_out or self._spam:
+      if dict_out or (self._spam and all(val is not None for val in
+                                         self._last_out_val.values())):
         for topic in self._buffer_output:
           for label in topic:
             if label not in dict_out:
-              dict_out[label] = self._last_out_val[label]
+              if self._last_out_val[label] is not None:
+                dict_out[label] = self._last_out_val[label]
+              elif label in self._init_output:
+                dict_out[label] = self._init_output[label]
+              else:
+                raise ValueError(f"No value received for the topic {label} and"
+                                 f" no init value given !")
             else:
               self._last_out_val[label] = dict_out[label]
         # Adding the timestamp before sending
