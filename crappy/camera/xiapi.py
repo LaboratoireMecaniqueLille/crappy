@@ -25,20 +25,6 @@ class Xiapi(Camera):
     self.cam = xiapi.Camera()
     self.img = xiapi.Image()
 
-    self.add_scale_setting('width', 1, self._get_w(), self._get_w, self._set_w)
-    self.add_scale_setting('height', 1, self._get_h(), self._get_h,
-                           self._set_h)
-    self.add_scale_setting('xoffset', 1, self._get_w(), self._get_ox,
-                           self._set_ox)
-    self.add_scale_setting('yoffset', 1, self._get_h(), self._get_oy,
-                           self._set_oy)
-    self.add_scale_setting('exposure', 28, 500000, self._get_exp,
-                           self._set_exp, 10000)
-    self.add_scale_setting('gain', 0., 6., self._get_gain, self._set_gain)
-    self.add_bool_setting('AEAG', self._get_aeag, self._set_aeag, False)
-    self.add_bool_setting('external_trig', self._get_extt,
-                          self._set_extt, False)
-
   def _get_w(self) -> int:
     return self.cam.get_width()
 
@@ -111,6 +97,21 @@ class Xiapi(Camera):
       self.cam.open_device_by_SN(self.sn)
     else:
       self.cam.open_device()
+
+    self.add_scale_setting('width', 1, self._get_w(), self._get_w, self._set_w,
+                           self._get_w())
+    self.add_scale_setting('height', 1, self._get_h(), self._get_h,
+                           self._set_h, self._get_h())
+    self.add_scale_setting('xoffset', 0, self._get_w(), self._get_ox,
+                           self._set_ox, 0)
+    self.add_scale_setting('yoffset', 0, self._get_h(), self._get_oy,
+                           self._set_oy, 0)
+    self.add_scale_setting('exposure', 28, 500000, self._get_exp,
+                           self._set_exp, 10000)
+    self.add_scale_setting('gain', 0., 6., self._get_gain, self._set_gain)
+    self.add_bool_setting('AEAG', self._get_aeag, self._set_aeag, False)
+    self.add_bool_setting('external_trig', self._get_extt,
+                          self._set_extt, False)
 
     self.set_all(**kwargs)
     self.set_all(**kwargs)
