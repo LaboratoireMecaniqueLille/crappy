@@ -39,12 +39,22 @@ Fields
 
 FT232H
 ------
-.. automodule:: crappy.tool.ft232h
+.. automodule:: crappy.tool.ft232h.ft232h
+   :members:
+
+FT232H Server
+-------------
+.. automodule:: crappy.tool.ft232h.ft232h_server
    :members:
 
 GPU Correl
 ----------
 .. automodule:: crappy.tool.gpucorrel
+   :members:
+
+I2C Message FT232H
+------------------
+.. automodule:: crappy.tool.ft232h.i2c_message_ft232h
    :members:
 
 Py SPCM
@@ -54,7 +64,7 @@ Py SPCM
 
 USB server
 ----------
-.. automodule:: crappy.tool.usb_server
+.. automodule:: crappy.tool.ft232h.usb_server
    :members:
 
 Video extenso

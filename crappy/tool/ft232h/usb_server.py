@@ -6,7 +6,7 @@ import multiprocessing.synchronize
 from _io import FileIO
 from tempfile import TemporaryFile
 from typing import List, Dict, Any
-from .._global import OptionalModule
+from ..._global import OptionalModule
 try:
   from usb.core import find, Device, USBTimeoutError
   from usb import util
