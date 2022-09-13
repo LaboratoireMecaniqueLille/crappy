@@ -132,7 +132,8 @@ class Biotens(Actuator):
       pass
 
   def reset(self) -> None:
-    # Todo:
+    """"""
+
     pass
 
   def stop(self) -> None:

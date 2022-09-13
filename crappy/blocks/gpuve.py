@@ -134,5 +134,5 @@ class GPUVE(Camera):
         out.extend(c.get_disp(
             img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
     if self.res:
-      pass  # TODO
+      pass
     self.send(out)

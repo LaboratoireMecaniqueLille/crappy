@@ -18,6 +18,8 @@ except (ModuleNotFoundError, ImportError):
 
 topics_type = List[Union[str, Tuple[str, ...]]]
 
+# Todo: don't send init if not necessary
+
 
 class Client_server(Block):
   """Block for exchanging data on a local network using the MQTT protocol.
