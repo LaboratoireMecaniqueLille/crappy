@@ -18,10 +18,11 @@ I = .1 * SPEED
 D = 10 / SPEED
 
 
-class Delay:
+class Delay(crappy.modifier.Modifier):
   """Class to add a delay on the feedback."""
 
   def __init__(self, delay):
+    super().__init__()
     self.delay = delay
     self.t = 't(s)'
     self.v = 'T'
@@ -59,7 +60,7 @@ if __name__ == "__main__":
   )])
 
   pid = crappy.blocks.PID(P, I, D, input_label='T', out_max=1, out_min=0,
-                          i_limit=.5, send_terms=True)
+                          i_limit=(0.5, 0.5), send_terms=True)
 
   crappy.link(g, pid)
   crappy.link(pid, furnace)

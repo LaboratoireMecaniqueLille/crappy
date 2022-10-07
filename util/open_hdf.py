@@ -18,12 +18,9 @@ start = 0  # Start to read from
 stop = None  # Where to stop (leave none to read the whole file)
 step = None  # Step (if None, will be computed and suggested)
 
-if sys.version_info.major > 2:
-  raw_input = input
-
 filename = filename if len(sys.argv) == 1 else sys.argv[-1]
 if not filename:
-  filename = raw_input("File name?")
+  filename = input("File name?")
 h = tables.open_file(filename)
 print(h)
 

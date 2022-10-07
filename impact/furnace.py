@@ -32,8 +32,9 @@ v[4] = T
 v[5] = T
 
 
-class dc_to_clk:
+class dc_to_clk(crappy.modifier.Modifier):
   def __init__(self, lbl):
+    super().__init__()
     self.lbl = lbl
 
   def evaluate(self, data):
@@ -88,7 +89,7 @@ for i in pins:
   pid_list.append(crappy.blocks.PID(P, I if i != 5 else 0, D,
                                     input_label='T%d' % i,
                                     out_max=1, out_min=0,
-                                    i_limit=.5,
+                                    i_limit=(0.5, -0.5),
                                     send_terms=(SHOW_PID is not None
                                                 and i == SHOW_PID),
                                     labels=['t(s)', 'pwm%d' % i]))
@@ -97,7 +98,7 @@ for i in pins:
     [dict(type='constant', condition=None, value=v[i])]))
 
   crappy.link(gen_list[-1], pid_list[-1])
-  crappy.link(pid_list[-1], lj, modifier=dc_to_clk('pwm%d' % i))
+  crappy.link(pid_list[-1], lj, modifier=[dc_to_clk('pwm%d' % i)])
   crappy.link(lj, pid_list[-1],
               modifier=[crappy.modifier.Median(MED),
                         crappy.modifier.Moving_avg(MEAN)])

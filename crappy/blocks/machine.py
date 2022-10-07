@@ -17,7 +17,7 @@ class Machine(Block):
 
   def __init__(self,
                actuators: List[Dict[str, Any]],
-               common: Optional[List[Dict[str, Any]]] = None,
+               common: Optional[Dict[str, Any]] = None,
                time_label: str = 't(s)',
                spam: bool = False,
                freq: float = 200,
