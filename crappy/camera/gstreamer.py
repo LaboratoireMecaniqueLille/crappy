@@ -372,7 +372,7 @@ videoconvert ! autovideosink
       # Setting the exposure is done via the 'extra-controls' property of the
       # 'v4l2src' source
       self._app_source = self._pipeline.get_by_name('source')
-      structure, _ = Gst.structure_from_string(extra_args)
+      structure, _ = Gst.Structure.from_string(extra_args)
       self._app_source.set_property('extra-controls', structure)
 
     # Restarts the pipeline
