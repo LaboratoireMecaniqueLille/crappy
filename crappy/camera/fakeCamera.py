@@ -37,7 +37,7 @@ class Fake_camera(Camera):
     self._t0 = time()
     self._t = self._t0
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> (float, np.ndarray):
     """Returns the updated image, depending only on the current timestamp.
 
     Also includes a waiting loop in order to achieve the right frame rate.

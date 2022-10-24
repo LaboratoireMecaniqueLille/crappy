@@ -66,8 +66,10 @@ class VE_config(Camera_config_with_boxes):
 
     # Now actually trying to detect the spots
     try:
-      self._video_extenso.detect_spots(
-        self._original_img[x_top: x_bottom, y_left: y_right], x_top, y_left)
+      spots = self._video_extenso.detect_spots(
+          self._original_img[x_top: x_bottom, y_left: y_right], x_top, y_left)
+      if spots is not None:
+        self._spots = spots
     except IndexError:
       # Highly unlikely but always better to be careful
       self._spots.reset()
@@ -76,18 +78,13 @@ class VE_config(Camera_config_with_boxes):
     # This box is not needed anymore
     self._select_box.reset()
 
-    # If spots were found, updating the display
-    if hasattr(self._video_extenso, "spot_list") and \
-            len(self._video_extenso.spot_list) > 0:
-      self._spots.reset()
-      self._spots.set_spots([dic['bbox'] for dic
-                             in self._video_extenso.spot_list])
-
   def _save_l0(self) -> None:
     """Saves the original positions of the spots on the image."""
 
-    self._video_extenso.save_length()
-    print("L0 saved:", (self._video_extenso.l0y, self._video_extenso.l0x))
+    if self._video_extenso.save_length():
+      print(f"[VideoExtenso] Successfully saved L0 :\n"
+            f"L0 x : {self._video_extenso.x_l0}\n"
+            f"L0 y : {self._video_extenso.y_l0}")
 
   def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
     """Same as in the parent class except it also draws the patches and the
@@ -104,6 +101,8 @@ class VE_config(Camera_config_with_boxes):
     select box on top of the displayed image."""
 
     _, img = self._camera.get_image()
+    if img is None:
+      return
 
     self._cast_img(img)
     self._draw_box(self._select_box)

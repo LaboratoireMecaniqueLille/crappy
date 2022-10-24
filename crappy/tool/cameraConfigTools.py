@@ -104,7 +104,8 @@ class Box:
   y_start: Optional[int] = None
   y_end: Optional[int] = None
 
-  _index = -1
+  x_centroid: Optional[float] = None
+  y_centroid: Optional[float] = None
 
   def no_points(self) -> bool:
     """Returns whether all four sides of the box are defined or not."""
@@ -120,14 +121,17 @@ class Box:
     self.y_start = None
     self.y_end = None
 
-  def get_patch(self) -> Tuple[int, int, int, int]:
+    self.x_centroid = None
+    self.y_centroid = None
+
+  def get_patch(self) -> (int, int, int, int):
     """Returns the information of the box in the patch format, for
     compatibility with other blocks."""
 
     return (self.y_start, self.x_start, self.y_end - self.y_start,
             self.x_end - self.x_start)
 
-  def sorted(self) -> Tuple[int, int, int, int]:
+  def sorted(self) -> (int, int, int, int):
     """Returns the four sides values but sorted in the order : min x, max x,
     min y, max y."""
 
@@ -183,15 +187,18 @@ class Spot_boxes:
       raise IndexError
 
   def __iter__(self):
+    self._index = -1
     return self
 
-  def __next__(self) -> Optional[Box]:
+  def __next__(self) -> Box:
     self._index += 1
     try:
       return self[self._index]
     except IndexError:
-      self._index = -1
       raise StopIteration
+
+  def __len__(self) -> int:
+    return len([spot for spot in self if spot is not None])
 
   def set_spots(self,
                 spots: List[Tuple[int, int, int, int]]) -> None:
@@ -199,7 +206,13 @@ class Spot_boxes:
     objects."""
 
     for i, spot in enumerate(spots):
-      self[i] = Box(spot[1], spot[3], spot[0], spot[2])
+      self[i] = Box(x_start=spot[1], x_end=spot[1] + spot[3],
+                    y_start=spot[0], y_end=spot[0] + spot[2])
+
+  def empty(self) -> bool:
+    """Returns :obj:`True` if all spots are :obj:`None`, else :obj:`False`."""
+
+    return all(spot is None for spot in self)
 
   def reset(self) -> None:
     """Resets the boxes to :obj:`None`."""

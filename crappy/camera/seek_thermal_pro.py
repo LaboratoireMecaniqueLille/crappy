@@ -132,7 +132,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
       elif i == 9:
         raise TimeoutError("Could not set the camera")
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> (float, np.ndarray):
     """Reads a single image from the camera.
 
     Returns:

@@ -9,3 +9,4 @@ from .discorrelConfig import DISConfig
 from .disve import DISVE
 from .ft232h import ft232h, i2c_msg_ft232h, ft232h_pin_nr, ft232h_server
 from .ft232h import Usb_server
+from .cameraConfigTools import Box, Spot_boxes

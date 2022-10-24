@@ -29,17 +29,17 @@ class My_cam(crappy.camera.Camera):
   def __init__(self, resolution=(480, 640)):
     # Do not forget to init Camera !
     super().__init__()
-    self.resolution = resolution
-    self.frame = None
+    self._resolution = resolution
+    self._frame = None
 
     # Optional: add settings to the camera
     # Here we will set the gray level of the image
-    self.add_setting('level', self._get_lvl, self._set_lvl, limits=(0, 255))
+    self.add_scale_setting('level', 0, 255, self._get_lvl, self._set_lvl, 128)
 
   def _get_lvl(self):
     """The gray level getter."""
 
-    return self.frame[0, 0]
+    return self._frame[0, 0]
 
   def _set_lvl(self, val):
     """The gray level setter.
@@ -47,29 +47,32 @@ class My_cam(crappy.camera.Camera):
     Recreates the image with the new level.
     """
 
-    self.frame = np.ones(self.resolution, dtype=np.uint8) * val
+    self._frame = np.ones(self._resolution, dtype=np.uint8) * val
     return val
 
   def open(self, **kwargs):
     """Will be called in the .prepare() of the block."""
 
     # Let's create our image
-    self.frame = np.zeros(self.resolution, dtype=np.uint8)
+    self._frame = np.zeros(self._resolution, dtype=np.uint8)
     # Allow delegation of generic camera args such as max_fps
     self.set_all(**kwargs)
 
   def get_image(self):
     """The method that returns the frame. It must also return the time."""
 
-    return time(), self.frame
+    return time(), self._frame
 
   def close(self):
     """Will be called on exit or crash."""
 
-    del self.frame
+    del self._frame
 
 
 if __name__ == '__main__':
-  cam = crappy.blocks.Camera('My_cam', max_fps=60, no_loop=True)
+  cam = crappy.blocks.Camera('My_cam',
+                             freq=60,
+                             display_images=True,
+                             verbose=True)
 
   crappy.start()

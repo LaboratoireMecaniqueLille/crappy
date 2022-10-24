@@ -113,7 +113,7 @@ class Picamera(Camera):
     self._frame_grabber.start()
     sleep(1)
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> (float, np.ndarray):
     """Simply returns the last image in the buffer.
 
     The captured image is in bgr format, and converted into black and white if

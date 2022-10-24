@@ -387,7 +387,7 @@ class Camera_config(tk.Tk):
       self._reticle_val.set(np.average(self._original_img[self._y_pos.get(),
                                                           self._x_pos.get()]))
 
-  def _coord_to_pix(self, x: int, y: int) -> Tuple[int, int]:
+  def _coord_to_pix(self, x: int, y: int) -> (int, int):
     """Converts the coordinates of the mouse in the GUI referential to
     coordinates on the original image."""
 
@@ -794,6 +794,8 @@ class Camera_config(tk.Tk):
     histogram, displays them and updates the image information."""
 
     _, img = self._camera.get_image()
+    if img is None:
+      return
 
     self._cast_img(img)
     self._resize_img()

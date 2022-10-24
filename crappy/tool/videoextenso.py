@@ -2,9 +2,12 @@
 
 from multiprocessing import Process, Pipe
 from multiprocessing.connection import Connection
-from typing import Union
+from typing import Optional, Tuple, List
 import numpy as np
+from itertools import combinations
+from time import sleep
 from .._global import OptionalModule
+from .cameraConfigBoxes import Spot_boxes, Box
 
 try:
   import cv2
@@ -21,350 +24,515 @@ except (ModuleNotFoundError, ImportError):
 
 
 class LostSpotError(Exception):
+  """Exception raised when a spot is lost, or when there's too much
+  overlapping."""
+
   pass
 
 
-def overlapping(box1: np.ndarray, box2: np.ndarray) -> bool:
-  """Returns :obj:`True` if `box1` and `box2` are overlapping or included in
-  each other"""
+class VideoExtenso:
+  """This class tracks up to 4 spots on successive images, and computes the
+  strain on the material based on the displacement of the spots from their
+  original position.
 
-  for i in box1[::2]:
-    if box2[0] < i < box2[2]:
-      if not (box1[3] <= box2[1] or box2[3] <= box1[1]):
-        return True
-  for i in box1[1::2]:
-    if box2[1] < i < box2[3]:
-      if not (box1[2] <= box2[0] or box2[2] <= box1[0]):
-        return True
-  # Inclusion
-  for b1, b2 in ((box1, box2), (box2, box1)):
-    if (b1[0] <= b2[0] <= b2[2] <= b1[2]) and \
-         (b1[1] <= b2[1] <= b2[3] <= b1[3]):
-      return True
-  return False
+  The first step is to detect the spots to track. Once this is done, the
+  initial distances in x and y between the spots is saved. For each spot, a
+  Process in charge of tracking it is started. When a new image is received,
+  subframes based on the last known positions of the spots are sent to the
+  tracker processes, and they return the new positions of the detected spots.
+  Based on these new positions, updated strain values are returned.
 
-
-class Video_extenso:
-  """The basic VideoExtenso class.
-
-  It will detect the spots, save the initial position, and return the measured
-  deformation in the most simple way:
-
-    - It will always return a :obj:`list` of the spots coordinates (in pixel).
-    - It will return `Exx`, `Eyy`, projections of the length of the bounding
-      box of the spot on each axis, divided by its original length.
-
-  Note:
-    Can detect 2,3 or 4 spots.
+  It is possible to track only one spot, in which case only the position of its
+  center is returned and the strain values are left to 0.
   """
 
   def __init__(self,
                white_spots: bool = False,
                update_thresh: bool = False,
-               num_spots: Union[str, int] = "auto",
+               num_spots: Optional[int] = None,
                safe_mode: bool = False,
                border: int = 5,
-               min_area: float = 150,
-               blur: float = 5) -> None:
-    """Sets the arguments.
+               min_area: int = 150,
+               blur: Optional[int] = 5) -> None:
+    """Sets the args and the other instance attributes.
 
     Args:
-      white_spots: Set to :obj:`True` if the spots are lighter than the
-        surroundings, else set to :obj:`False`.
-      update_thresh: Should the threshold be updated in each round ? If so
-        there are lower chances to lose the spots but there will be more noise
-        in the measurement.
-      num_spots: The number of spots to detect. Helps for spot detection and
-        allows to force detection of a given number of spots (`"auto"` works
-        fine most of the time). Can be set to:
-        ::
-
-          "auto", 2, 3, 4
-
-      safe_mode: If set to :obj:`False`, it will try hard to catch the spots
-        when losing them. Could result in incoherent values without crash. Set
-        to :obj:`True` when security is a concern.
-      border: The number of pixels that will be added to the limits of the
-        boundingbox.
-      min_area: Filters regions with an area smaller than this value among the
-        selected regions.
-      blur: Median blur to be added to the image to smooth out irregularities
-        and make detection more reliable.
+      white_spots: If :obj:`True`, detects white objects on a black background,
+        else black objects on a white background.
+      update_thresh: If :obj:`True`, the threshold for detecting the spots is
+        re-calculated for each new image. Otherwise, the first calculated
+        threshold is kept for the entire test. The spots are less likely to be
+        lost with adaptive threshold, but the measurement will be more noisy.
+        Adaptive threshold may also yield inconsistent results when spots are
+        lost.
+      num_spots: The number of spots to detect, between 1 and 4. The class will
+        then try to detect this exact number of spots, and won't work if not
+        enough spots can be found. If this argument is not given, at most 4
+        spots can be detected but the class will work with any number of
+        detected spots between 1 and 4.
+      safe_mode: If :obj:`True`, the class will stop and raise an exception as
+        soon as overlapping is detected. Otherwise, it will first try to reduce
+        the detection window to get rid of overlapping. This argument should be
+        used when inconsistency in the results may have critical consequences.
+      border: When searching for the new position of a spot, the class will
+        search in the last known bounding box of this spot plus a few
+        additional pixels in each direction. This argument sets the number of
+        additional pixels to use. It should be greater than the expected
+        "speed" of the spots, in pixels / frame. But if it's too big, noise or
+        other spots might hinder the detection.
+      min_area: The minimum area an object should have to be potentially
+        detected as a spot. The value is given in pixels, as a surface unit.
+        It must of course be adapted depending on the resolution of camera and
+        the size of the spots to detect.
+      blur: The size in pixels of the kernel to use for applying a median blur
+        to the image before the spot detection. If not given, no blurring is
+        performed. A slight blur improves the spot detection by smoothening the
+        noise, but also takes a bit more time compared to no blurring.
     """
 
-    self.white_spots = white_spots
-    self.update_thresh = update_thresh
-    self.num_spots = num_spots
-    self.safe_mode = safe_mode
-    self.border = border
-    self.min_area = min_area
-    self.blur = blur
-    assert self.num_spots in ['auto', 2, 3, 4], "Invalid number of spots!"
-    self.spot_list = []
-    self.fallback_mode = False
-    self.consecutive_overlaps = 0
-    # This number of pixel will be added to the window sending the
-    # spot image to the process
+    if num_spots is not None and num_spots not in range(1, 5):
+      raise ValueError("num_spots should be either None, 1, 2, 3 or 4 !")
+    self._num_spots = num_spots
 
-  def detect_spots(self, img: np.ndarray, oy: int, ox: int) -> None:
-    """Detects the spots in `img`, subframe of the full image.
+    # Setting the args
+    self._white_spots = white_spots
+    self._update_thresh = update_thresh
+    self._safe_mode = safe_mode
+    self._border = border
+    self._min_area = min_area
+    self._blur = blur
 
-    Note:
-      `ox` and `oy` represent the offset of the subframe in the full image.
+    # Setting the other attributes
+    self._consecutive_overlaps = 0
+    self.spots = Spot_boxes()
+    self._thresh = 0 if white_spots else 255
+    self.x_l0 = None
+    self.y_l0 = None
+    self._trackers = list()
+    self._pipes = list()
+
+  def __del__(self) -> None:
+    """Security to ensure there are no zombie processes left when exiting."""
+
+    self.stop_tracking()
+
+  def detect_spots(self,
+                   img: np.ndarray,
+                   y_orig: int,
+                   x_orig: int) -> Optional[Spot_boxes]:
+    """Transforms the image to improve spot detection, detects up to 4 spots
+    and return a Spot_boxes object containing all the detected spots.
+
+    Args:
+      img: The sub-image on which the spots should be detected.
+      y_orig: The y coordinate of the top-left pixel of the sub-image on the
+        entire image.
+      x_orig: The x coordinate of the top-left pixel of the sub-image on the
+        entire image.
+
+    Returns:
+      A Spot_boxes object containing all the detected spots.
     """
 
-    # Finding out how many spots we should detect
-    # If L0 is already saved, we have already counted the spots, else
-    # see the num_spot parameter
-    # img = rank.median(img, np.ones((15, 15), dtype=img.dtype))
-    if self.blur and self.blur > 1:
-      img = cv2.medianBlur(img, self.blur)
-    self.thresh = threshold_otsu(img)
-    if self.white_spots:
-      bw = img > self.thresh
-    else:
-      bw = img <= self.thresh
-    # bw = dilation(bw,np.ones((3, 3), dtype=img.dtype))
-    # bw = erosion(bw,np.ones((3, 3), dtype=img.dtype))
-    bw = label(bw)
-    # Is it really useful?
-    # bw[0, :] = bw[-1, :] = bw[:, 0] = bw[:, -1] = -1
-    reg_prop = regionprops(bw)
-    # Remove the regions that are clearly not spots
-    reg_prop = [r for r in reg_prop if r.solidity > .8]
-    # Remove the too small regions (150 is reeally tiny)
-    reg_prop = [r for r in reg_prop if r.area > self.min_area]
-    reg_prop = sorted(reg_prop, key=lambda r: r.area, reverse=True)
-    i = 0
-    while i < len(reg_prop) - 1:
-      r1 = reg_prop[i]
-      for j in range(i + 1, len(reg_prop)):
-        r2 = reg_prop[j]
-        if overlapping(r1['bbox'], r2['bbox']):
-          print("Overlap")
-          if r1.area > r2.area:
-            del reg_prop[j]
-          else:
-            del reg_prop[i]
-          i -= 1
-          break
-      i += 1
-    if self.num_spots == 'auto':
-      # Remove the smallest region until we have a valid number
-      # and all of them are larger than "min_area" pix
-      while len(reg_prop) not in [0, 2, 3, 4]:
-        del reg_prop[-1]
-      if len(reg_prop) == 0:
-        print("Not spots found!")
-        return
-    else:
-      if len(reg_prop) < self.num_spots:
-        print("Found only", len(reg_prop),
-              "spots when expecting", self.num_spots)
-        return
-      reg_prop = reg_prop[:self.num_spots]  # Keep the largest ones
-    print("Detected", len(reg_prop), "spots")
-    self.spot_list = []
-    for r in reg_prop:
-      d = {}
-      y, x = r.centroid
-      d['y'] = oy + y
-      d['x'] = ox + x
-      # l1 = r.major_axis_length
-      # l2 = r.minor_axis_length
-      # s, c = np.sin(r.orientation) ** 2, np.cos(r.orientation) ** 2
-      # lx = (l1 * c + l2 * s) / 2
-      # ly = (l1 * s + l2 * c) / 2
-      # d['bbox'] = d['y'] - ly,d['x'] - lx,d['y'] + ly,d['x'] + lx
-      # d['bbox'] = d['min_col'], d['min_row'], d['max_col'], d['max_row']
-      # d['bbox'] = tuple([int(i + .5) for i in d['bbox']])
-      d['bbox'] = tuple([r['bbox'][i] + (oy, ox)[i % 2] for i in range(4)])
-      self.spot_list.append(d)
-    print(self.spot_list)
+    # First, blurring the image if asked to
+    if self._blur is not None and self._blur > 1:
+      img = cv2.medianBlur(img, self._blur)
 
-  def save_length(self) -> None:
-    if not hasattr(self, "spot_list"):
-      print("You must select the spots first!")
+    # Determining the best threshold for the image
+    self._thresh = threshold_otsu(img)
+
+    # Getting all pixels superior or inferior to threshold
+    if self._white_spots:
+      black_white = img > self._thresh
+    else:
+      black_white = img <= self._thresh
+
+    # The original image is not needed anymore
+    del img
+
+    # Detecting the spots on the image
+    props = regionprops(label(black_white))
+
+    # The black and white image is not needed anymore
+    del black_white
+
+    # Removing regions that are too small or not circular
+    props = [prop for prop in props if prop.solidity > 0.8
+             and prop.area > self._min_area]
+
+    # Detecting overlapping spots and storing the ones that should be removed
+    to_remove = list()
+    for prop_1, prop_2 in combinations(props, 2):
+      if self._overlap_bbox(prop_1, prop_2):
+        to_remove.append(prop_2 if prop_1.area > prop_2.area else prop_1)
+
+    # Now removing the overlapping spots
+    if to_remove:
+      print("[VideoExtenso] Overlapping spots found, removing the smaller "
+            "overlapping ones")
+    for prop in to_remove:
+      props.remove(prop)
+
+    # Sorting the regions by area
+    props = sorted(props, key=lambda prop: prop.area, reverse=True)
+
+    # Keeping only the biggest areas to match the target number of spots
+    if self._num_spots is not None:
+      props = props[:self._num_spots]
+    else:
+      props = props[:4]
+
+    # Indicating the user if not enough spots were found
+    if not props:
+      print("[VideoExtenso] No spots found !")
       return
-    if not hasattr(self, "tracker"):
-      self.start_tracking()
-    y = [s['y'] for s in self.spot_list]
-    x = [s['x'] for s in self.spot_list]
-    self.l0y = max(y) - min(y)
-    self.l0x = max(x) - min(x)
-    self.num_spots = len(self.spot_list)
+    elif self._num_spots is not None and len(props) != self._num_spots:
+      print(f"[VideoExtenso] Expected {self._num_spots} spots, "
+            f"found only {len(props)}")
+      return
 
-  def enlarged_window(self, window: tuple, shape: tuple) -> tuple:
-    """Returns the slices to get the window around the spot."""
+    # Replacing the previously detected spots with the new ones
+    self.spots.reset()
+    for i, prop in enumerate(props):
+      # Extracting the properties of interest
+      y, x = prop.centroid
+      y_min, x_min, y_max, x_max = prop.bbox
+      # Adjusting with the offset given as argument
+      x += x_orig
+      x_min += x_orig
+      x_max += x_orig
+      y += y_orig
+      y_min += y_orig
+      y_max += y_orig
 
-    s1 = slice(max(0, window[0] - self.border),
-               min(shape[0], window[2] + self.border))
-    s2 = slice(max(0, window[1] - self.border),
-               min(shape[1], window[3] + self.border))
-    return s1, s2
+      self.spots[i] = Box(x_start=x_min, x_end=x_max,
+                          y_start=y_min, y_end=y_max,
+                          x_centroid=x, y_centroid=y)
+
+    return self.spots
+
+  def save_length(self) -> bool:
+    """Saves the initial length in x and y between the detected spots."""
+
+    # Cannot determine a length if no spots was detected
+    if self.spots.empty():
+      print("[VideoExtenso] Cannot save L0, no spots selected yet !")
+      return False
+
+    # Simply taking the distance between the extrema as the initial length
+    if len(self.spots) > 1:
+      x_centers = [spot.x_centroid for spot in self.spots if spot is not None]
+      y_centers = [spot.y_centroid for spot in self.spots if spot is not None]
+      self.x_l0 = max(x_centers) - min(x_centers)
+      self.y_l0 = max(y_centers) - min(y_centers)
+
+    # If only one spot detected, setting the initial lengths to 0
+    else:
+      self.x_l0 = 0
+      self.y_l0 = 0
+
+    return True
 
   def start_tracking(self) -> None:
-    """Will spawn a process per spot, which goal is to track the spot and
-    send the new coordinate after each update."""
+    """Creates a Tracker process for each detected spot, and starts it.
 
-    self.tracker = []
-    self.pipe = []
-    for _ in self.spot_list:
-      i, o = Pipe()
-      self.pipe.append(i)
-      self.tracker.append(Tracker(o, white_spots=self.white_spots,
-                                  thresh='auto' if self.update_thresh
-                                  else self.thresh,
-                                  safe_mode=self.safe_mode, blur=self.blur))
-      self.tracker[-1].start()
-
-  def get_def(self, img: np.ndarray) -> list:
-    """The "heart" of the videoextenso.
-
-    Will keep track of the spots and return the computed deformation.
+    Also creates a Pipe for each spot to communicate with the Tracker process.
     """
 
-    if not hasattr(self, "l0x"):
-      print("L0 not saved, saving it now.")
-      self.save_length()
-    for p, s in zip(self.pipe, self.spot_list):
-      win = self.enlarged_window(s['bbox'], img.shape)
-      # print("DEBUG: win is", s['bbox'], "sending", win)
-      p.send(((win[0].start, win[1].start), img[win]))
-    ol = False
-    for p, s in zip(self.pipe, self.spot_list):
-      r = p.recv()
-      if isinstance(r, str):
-        self.stop_tracking()
-        raise LostSpotError("Tracker returned"+r)
-      lst = list(self.spot_list)
-      lst.remove(s)
-      # Please excuse me for the following line,
-      # understand: "if this box overlaps any existing box"
-      if any([overlapping(a_b[0], a_b[1]['bbox'])
-             for a_b in zip([r['bbox']] * len(lst), lst)]):
-        if self.safe_mode:
-          print("Overlapping!")
-          self.stop_tracking()
-          raise LostSpotError("[safe mode] Overlap")
-        print("Overlap! Reducing spot window...")
-        ol = True
-        s['bbox'] = (min(s['bbox'][0] + 1, int(s['y']) - 2),
-                     min(s['bbox'][1] + 1, int(s['x']) - 2),
-                     max(s['bbox'][2] - 1, int(s['y']) + 2),
-                     max(s['bbox'][3] - 1, int(s['x']) + 2))
-        continue
-      s.update(r)
-      # print("DEBUG updating spot to", s)
-    if ol:
-      self.consecutive_overlaps += 1
-      if self.consecutive_overlaps >= 10:
-        print("Too many overlaps, I give up!")
-        raise LostSpotError("Multiple overlaps")
-    else:
-      self.consecutive_overlaps = 0
-    y = [s['y'] for s in self.spot_list]
-    x = [s['x'] for s in self.spot_list]
-    eyy = (max(y) - min(y)) / self.l0y - 1
-    exx = (max(x) - min(x)) / self.l0x - 1
-    return [100 * eyy, 100 * exx]
+    if self.spots.empty():
+      raise AttributeError("[VideoExtenso] No spots selected, aborting !")
 
-  def stop_tracking(self):
-    for p in self.pipe:
-      p.send(("", "stop"))
+    for spot in self.spots:
+      if spot is None:
+        continue
+
+      inlet, outlet = Pipe()
+      tracker = Tracker(pipe=outlet,
+                        white_spots=self._white_spots,
+                        thresh=None if self._update_thresh else self._thresh,
+                        blur=self._blur)
+      self._pipes.append(inlet)
+      self._trackers.append(tracker)
+      tracker.start()
+
+  def stop_tracking(self) -> None:
+    """Stops all the active Tracker processes, either gently or by terminating
+    them if they don't stop by themselves."""
+
+    if any((tracker.is_alive() for tracker in self._trackers)):
+      # First, gently asking the trackers to stop
+      for pipe, tracker in zip(self._pipes, self._trackers):
+        if tracker.is_alive():
+          pipe.send(('stop', 'stop', 'stop'))
+      sleep(0.05)
+
+      # If they're not stopping, killing the trackers
+      for tracker in self._trackers:
+        if tracker.is_alive():
+          tracker.terminate()
+
+  def get_data(self,
+               img: np.ndarray) -> Optional[Tuple[List[Tuple[float, ...]],
+                                                  float, float]]:
+    """Takes an image as an input, performs spot detection on it, computes the
+    strain from the newly detected spots, and returns the spot positions and
+    strain values.
+
+    Args:
+      img: The image on which the spots should be detected.
+
+    Returns:
+      A :obj:`list` containing tuples with the coordinates of the centers of
+      the detected spots, and the calculated x and y strain values.
+    """
+
+    # First, saving the initial length if not already saved
+    if self.x_l0 is None or self.y_l0 is None:
+       if not self.save_length():
+         # If no spots are selected, it should be detected here
+         raise IOError("[VideoExtenso] No spots selected, aborting !")
+
+    # Sending the latest sub-image containing the spot to track
+    # Also sending the coordinates of the top left pixel
+    for pipe, spot in zip(self._pipes, self.spots):
+      x_top, x_bottom, y_left, y_right = spot.sorted()
+      slice_y = slice(max(0, y_left - self._border),
+                      min(img.shape[0], y_right + self._border))
+      slice_x = slice(max(0, x_top - self._border),
+                      min(img.shape[1], x_bottom + self._border))
+      pipe.send((slice_y.start, slice_x.start, img[slice_y, slice_x]))
+
+    for i, (pipe, spot) in enumerate(zip(self._pipes, self.spots)):
+
+      # Receiving the data from the tracker, if there's any
+      if pipe.poll(timeout=0.5):
+        box = pipe.recv()
+
+        # In case a tracker faced an error, stopping them all and raising
+        if isinstance(box, str):
+          self.stop_tracking()
+          raise LostSpotError(f"[VideoExtenso] Tracker returned error : {box}")
+
+        self.spots[i] = box
+
+    overlap = False
+
+    # Checking if the newly received boxes overlaps with each other
+    for box_1, box_2 in combinations(self.spots, 2):
+      if self._overlap_box(box_1, box_2):
+
+        # If there's overlapping in safe mode, raising directly
+        if self._safe_mode:
+          self.stop_tracking()
+          raise LostSpotError("[VideoExtenso] Overlapping detected in safe"
+                              " mode, raising exception directly")
+
+        print("[VideoExtenso] Overlapping detected ! Reducing spot window")
+
+        # If we're not in safe mode, simply reduce the boxes by 1 pixel
+        # Also, make sure the box is not being reduced too much
+        overlap = True
+        x_top_1, x_bottom_1, y_left_1, y_right_1 = box_1.sorted()
+        x_top_2, x_bottom_2, y_left_2, y_right_2 = box_2.sorted()
+        box_1.x_start = min(x_top_1 + 1, box_1.x_centroid - 2)
+        box_1.y_start = min(y_left_1 + 1, box_1.y_centroid - 2)
+        box_1.x_end = max(x_bottom_1 - 1, box_1.x_centroid + 2)
+        box_1.y_end = max(y_right_1 - 1, box_1.y_centroid + 2)
+        box_2.x_start = min(x_top_2 + 1, box_2.x_centroid - 2)
+        box_2.y_start = min(y_left_2 + 1, box_2.y_centroid - 2)
+        box_2.x_end = max(x_bottom_2 - 1, box_2.x_centroid + 2)
+        box_2.y_end = max(y_right_2 - 1, box_2.y_centroid + 2)
+
+    if overlap:
+      self._consecutive_overlaps += 1
+      if self._consecutive_overlaps > 10:
+        raise LostSpotError("[VideoExtenso] Too many consecutive "
+                            "overlaps !")
+    else:
+      self._consecutive_overlaps = 0
+
+    # If there are multiple spots, the x and y strains can be computed
+    if len(self.spots) > 1:
+      x = [spot.x_centroid for spot in self.spots if spot is not None]
+      y = [spot.y_centroid for spot in self.spots if spot is not None]
+      try:
+        # The strain is calculated based on the positions of the extreme
+        # spots in each direction
+        exx = ((max(x) - min(x)) / self.x_l0 - 1) * 100
+        eyy = ((max(y) - min(y)) / self.y_l0 - 1) * 100
+      except ZeroDivisionError:
+        # Shouldn't happen but adding a safety just in case
+        exx, eyy = 0, 0
+      centers = list(zip(y, x))
+      return centers, eyy, exx
+
+    # If only one spot was detected, the strain isn't computed
+    else:
+      x = self.spots[0].x_centroid
+      y = self.spots[0].y_centroid
+      return [(y, x)], 0, 0
+
+  @staticmethod
+  def _overlap_box(box_1: Box, box_2: Box) -> bool:
+    """Determines whether two boxes are overlapping or not."""
+
+    x_min_1, x_max_1, y_min_1, y_max_1 = box_1.sorted()
+    x_min_2, x_max_2, y_min_2, y_max_2 = box_2.sorted()
+
+    return max((min(x_max_1, x_max_2) - max(x_min_1, x_min_2)), 0) * max(
+      (min(y_max_1, y_max_2) - max(y_min_1, y_min_2)), 0) > 0
+
+  @staticmethod
+  def _overlap_bbox(prop_1, prop_2) -> bool:
+    """Determines whether two bboxes are overlapping or not."""
+
+    y_min_1, x_min_1, y_max_1, x_max_1 = prop_1.bbox
+    y_min_2, x_min_2, y_max_2, x_max_2 = prop_2.bbox
+
+    return max((min(x_max_1, x_max_2) - max(x_min_1, x_min_2)), 0) * max(
+      (min(y_max_1, y_max_2) - max(y_min_1, y_min_2)), 0) > 0
 
 
 class Tracker(Process):
-  """Process tracking a spot for videoextensometry."""
+  """Process whose task is to track a spot on an image.
+
+  It receives a subframe centered on the last known position of the spot, and
+  returns the updated position of the detected spot.
+  """
 
   def __init__(self,
                pipe: Connection,
                white_spots: bool = False,
-               thresh: str = 'auto',
-               safe_mode: bool = True,
-               blur: float = 0):
-    Process.__init__(self)
-    self.pipe = pipe
-    self.white_spots = white_spots
-    self.safe_mode = safe_mode
-    self.blur = blur
-    self.fallback_mode = False
-    if thresh == 'auto':
-      self.auto_thresh = True
-    else:
-      self.auto_thresh = False
-      self.thresh = thresh
+               thresh: Optional[int] = None,
+               blur: Optional[float] = 5) -> None:
+    """Sets the args.
+
+    Args:
+      pipe: The :obj:`multiprocessing.connection.Connection` object through
+        which the image is received and the updated coordinates of the spot
+        are sent back.
+      white_spots: If :obj:`True`, detects white objects on a black background,
+        else black objects on a white background.
+      thresh: If given, this threshold value will always be used for isolating
+        the spot from the background. If not given (:obj:`None`), a new
+        threshold is recalculated for each new subframe. Spots are less likely
+        to be lost with an adaptive threshold, but it takes a bit more time.
+      blur: If not :obj:`None`, the subframe is first blurred before trying to
+        detect the spot. This argument gives the size of the kernel to use for
+        blurring. Better results are obtained with blurring, but it takes a bit
+        more time.
+    """
+
+    super().__init__()
+
+    self._pipe = pipe
+    self._white_spots = white_spots
+    self._thresh = thresh
+    self._blur = blur
+
+    self._n = 0
 
   def run(self) -> None:
-    # print("DEBUG: process starting, thresh=", self.thresh)
-    while True:
-      try:
-        offset, img = self.pipe.recv()
-      except KeyboardInterrupt:
-        break
-      if type(img) != np.ndarray:
-        break
-      oy, ox = offset
-      try:
-        r = self.evaluate(img)
-      except Exception:
-        raise LostSpotError
-      if not isinstance(r, dict):
-        r = self.fallback(img)
-        if not isinstance(r, dict):
-          raise LostSpotError
-      else:
-        self.fallback_mode = False
-      r['y'] += oy
-      r['x'] += ox
-      miny, minx, maxy, maxx = r['bbox']
-      # print("DEBUG: bbox=", r['bbox'])
-      r['bbox'] = miny + oy, minx + ox, maxy + oy, maxx + ox
-      # print("DEBUG: new bbox=", r['bbox'])
-      self.pipe.send(r)
-    # print("DEBUG: Process terminating")
+    """Continuously reads incoming subframes, tries to detect a spot and sends
+    back the coordinates of the detected spot.
 
-  def evaluate(self, img: np.ndarray) -> Union[dict, int]:
-    if self.blur and self.blur > 1:
-      img = cv2.medianBlur(img, self.blur)
-    if self.auto_thresh:
-      self.thresh = threshold_otsu(img)
-    if self.white_spots:
-      bw = (img > self.thresh).astype(np.uint8)
-    else:
-      bw = (img <= self.thresh).astype(np.uint8)
-    # cv2.imshow(self.name, bw * 255)
-    # cv2.waitKey(5)
-    if not .1 * img.size < np.count_nonzero(bw) < .8 * img.size:
-      print("reevaluating threshold!!")
-      print("Ratio:", np.count_nonzero(bw) / img.size)
-      print("old:", self.thresh)
-      self.thresh = threshold_otsu(img)
-      print("new:", self.thresh)
-    m = cv2.moments(bw)
-    r = {}
+    Can only be stopped either with a :exc:`KeyboardInterrupt` or when
+    receiving a text message from the parent VideoExtenso class.
+    """
+
+    # Looping forever for receiving data
     try:
-      r['x'] = m['m10'] / m['m00']
-      r['y'] = m['m01'] / m['m00']
-    except ZeroDivisionError:
-      return -1
-    x, y, w, h = cv2.boundingRect(bw)
-    # if (h, w) == img.shape:
-    #  return -1
-    r['bbox'] = y, x, y + h, x + w
-    return r
+      while True:
+        # Making sure the call to recv is not blocking
+        if self._pipe.poll(0.5):
+          y_start, x_start, img = self._pipe.recv()
+          self._n += 1
 
-  def fallback(self, img: np.ndarray) -> Union[dict, int]:
-    """Called when the spots are lost."""
+          # If a string is received, always means the process has to stop
+          if isinstance(img, str):
+            break
 
-    if self.safe_mode or self.fallback_mode:
-      if self.fallback_mode:
-        self.pipe.send("Fallback failed")
+          # Simply sending back the new Box containing the spot
+          try:
+            self._pipe.send(self._evaluate(x_start, y_start, img))
+
+          # If the caught exception is a KeyboardInterrupt, simply stopping
+          except KeyboardInterrupt:
+            break
+          # Sending back the exception if anything else unexpected happened
+          except (Exception,) as exc:
+            self._pipe.send(str(exc))
+
+    # In case the user presses CTRL+C, simply stopping the process
+    except KeyboardInterrupt:
+      pass
+
+  def _evaluate(self, x_start: int, y_start: int, img: np.ndarray) -> Box:
+    """Takes a sub-image, applies a threshold on it and tries to detect the new
+    position of the spot.
+
+    Args:
+      x_start: The x position of the top left pixel of the subframe on the
+        entire image.
+      y_start: The y position of the top left pixel of the subframe on the
+        entire image.
+      img: The subframe on which to search for a spot.
+
+    Returns:
+      A Box object containing the x and y start and end positions of the
+      detected spot, as well as the coordinates of the centroid.
+    """
+
+    # First, blurring the image if asked to
+    if self._blur is not None and self._blur > 1:
+      img = cv2.medianBlur(img, self._blur)
+
+    # Determining the best threshold for the image if required
+    thresh = self._thresh if self._thresh is not None else threshold_otsu(img)
+
+    # Getting all pixels superior or inferior to threshold
+    if self._white_spots:
+      black_white = (img > thresh).astype('uint8')
+    else:
+      black_white = (img <= thresh).astype('uint8')
+
+    # Checking that the detected spot is large enough
+    if np.count_nonzero(black_white) < 0.1 * img.size:
+
+      # If the threshold is pre-defined, trying again with an updated one
+      if self._thresh is not None:
+        print("[VideoExtenso Tracker] Detected spot too small compared with "
+              "overall box size, recalculating threshold")
+        thresh = threshold_otsu(img)
+        if self._white_spots:
+          black_white = (img > thresh).astype('uint8')
+        else:
+          black_white = (img <= thresh).astype('uint8')
+
+        # If the spot still cannot be detected, aborting
+        if np.count_nonzero(black_white) < 0.1 * img.size:
+          raise LostSpotError("Couldn't detect spot with adaptive threshold, "
+                              "aborting !")
+
+      # If an adaptive threshold is already used, nothing more can be done
       else:
-        self.pipe.send("[safe mode] Could not compute barycenter")
-      self.fallback_mode = False
-      return -1
-    self.fallback_mode = True
-    print("Loosing spot! Trying to reevaluate threshold...")
-    self.thresh = threshold_otsu(img)
-    return self.evaluate(img)
+        raise LostSpotError("Couldn't detect spot with adaptive threshold, "
+                            "aborting !")
+
+    # Calculating the coordinates of the centroid using the image moments
+    moments = cv2.moments(black_white)
+    try:
+      x = moments['m10'] / moments['m00']
+      y = moments['m01'] / moments['m00']
+    except ZeroDivisionError:
+      raise ZeroDivisionError("Couldn't compute the centroid because the "
+                              "moment of order 0, 0 is zero !")
+
+    # Getting the updated centroid and coordinates of the spot
+    x_min, y_min, width, height = cv2.boundingRect(black_white)
+    return Box(x_start=x_start + x_min,
+               y_start=y_start + y_min,
+               x_end=x_start + x_min + width,
+               y_end=y_start + y_min + height,
+               x_centroid=x_start + x,
+               y_centroid=y_start + y)

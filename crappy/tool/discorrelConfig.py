@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import tkinter as tk
-from typing import Optional, Tuple
+from typing import Optional
 from copy import deepcopy
 from .cameraConfigBoxes import Camera_config_with_boxes
 from .cameraConfigTools import Box
@@ -23,15 +23,10 @@ class DISConfig(Camera_config_with_boxes):
     super().__init__(camera)
 
   @property
-  def box(self) -> Tuple[int, int, int, int]:
-    """Returns the four sides of the correl box in the right format for the
-    Discorrel block to read it."""
+  def box(self) -> Box:
+    """Returns the Box object containing the region of interest."""
 
-    if self._correl_box.no_points():
-      return -1, -1, -1, -1
-
-    x_top, x_bottom, y_left, y_right = self._correl_box.sorted()
-    return y_left, x_top, y_right, x_bottom
+    return self._correl_box
 
   def _bind_canvas_left_click(self) -> None:
     """Binds the left mouse button click for drawing the box on which the

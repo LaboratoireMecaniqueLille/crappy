@@ -308,7 +308,7 @@ videoconvert ! autovideosink
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, ndarray]:
+  def get_image(self) -> (float, ndarray):
     """Reads the last image acquired from the camera.
 
     Returns:

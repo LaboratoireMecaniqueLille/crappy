@@ -2,12 +2,6 @@
 Modifiers
 =========
 
-Apply Strain
-------------
-
-.. automodule:: crappy.modifier.apply_strain_img
-   :members:
-
 Modifier
 --------
 .. automodule:: crappy.modifier.modifier

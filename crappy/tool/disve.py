@@ -3,6 +3,7 @@
 import numpy as np
 from typing import List, Tuple
 from .._global import OptionalModule
+from .cameraConfigTools import Spot_boxes, Box
 
 try:
   import cv2
@@ -21,8 +22,7 @@ class DISVE:
   """
 
   def __init__(self,
-               img0: np.ndarray,
-               patches: List[Tuple[int, int, int, int]],
+               patches: Spot_boxes,
                method: str = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
@@ -34,15 +34,12 @@ class DISVE:
                patch_stride: int = 3,
                border: float = 0.2,
                safe: bool = True,
-               follow: bool = True,
-               show_image: bool = False) -> None:
+               follow: bool = True) -> None:
     """Sets a few attributes and initializes Disflow if this method was
     selected.
 
     Args:
-      img0: The reference image for the cross-correlation.
-      patches: The regions to track, should be a tuple of 4 values
-        (pos y, pos x, height, width).
+      patches: The regions to track, given as a :class:`Spot_boxes` object.
       method: The method to use to calculate the displacement. `Disflow` uses
         opencv's DISOpticalFlow and `Lucas Kanade` uses opencv's
         calcOpticalFlowPyrLK, while all other methods are based on a basic
@@ -52,33 +49,41 @@ class DISVE:
         meant for debugging. `Parabola` refines the result of
         `Pixel precision` by interpolating the neighborhood of the maximum, and
         have thus sub-pixel resolutions.
-      alpha: Setting for Disflow.
-      delta: Setting for Disflow.
-      gamma: Setting for Disflow.
-      finest_scale: The last scale for Disflow (`0` means full scale).
-      iterations: Variational refinement iterations for Disflow.
-      gradient_iterations: Gradient descent iterations for Disflow.
-      patch_size: Correlation patch size for Disflow.
-      patch_stride: Correlation patch stride for Disflow.
+      alpha: Weight of the smoothness term in DisFlow.
+      delta: Weight of the color constancy term in DisFlow.
+      gamma: Weight of the gradient constancy term in DisFlow.
+      finest_scale: Finest level of the Gaussian pyramid on which the flow
+        is computed in DisFlow (`0` means full scale).
+      iterations: Maximum number of gradient descent iterations in the
+        patch inverse search stage in DisFlow.
+      gradient_iterations: Maximum number of gradient descent iterations
+        in the patch inverse search stage in DisFlow.
+      patch_size: Size of an image patch for matching in DisFlow
+        (in pixels).
+      patch_stride: Stride between neighbor patches in DisFlow. Must be
+        less than patch size.
       border: Crop the patch on each side according to this value before
         calculating the displacements. 0 means no cropping, 1 means the entire
         patch is cropped.
-      safe: Checks whether the patches aren't exiting the image, and raises an
-        error if that's the case.
+      safe: If :obj:`True`, checks whether the patches aren't exiting the
+        image, and raises an error if that's the case.
       follow: It :obj:`True`, the patches will move to follow the displacement
         of the image.
-      show_image: If :obj:`True`, displays the real-time position of the
-        patches on the image. This feature is mainly meant for debugging.
     """
 
-    self._img0 = img0
+    # These attributes are accessed by the parent class
     self._patches = patches
+    self._offsets = [(0, 0) for _ in patches]
+
+    # Other attributes to set
     self._method = method
-    self._height, self._width = img0.shape
     self._border = border
     self._safe = safe
     self._follow = follow
-    self._show_image = show_image
+
+    # These attributes will be set later
+    self._img0 = None
+    self._height, self._width = None, None
 
     # Initialize Disflow if it is the selected method
     if self._method == 'Disflow':
@@ -94,13 +99,15 @@ class DISVE:
     else:
       self._dis = None
 
-    self._offsets = [(0, 0) for _ in self._patches]
+  def set_img0(self, img0: np.ndarray) -> None:
+    """Sets the reference image for the cross-correlation."""
+
+    self._img0 = img0
+    self._height, self._width, *_ = img0.shape
+
+    # Now that there's an initial image, checking that the patches are valid
     if self._safe:
       self._check_offsets()
-
-    # Initializing the window for following the patches
-    if self._show_image:
-      cv2.namedWindow('DISVE', cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
 
   def calculate_displacement(self, img: np.ndarray) -> List[float]:
     """Returns the displacement of every patch, calculated according to the
@@ -110,7 +117,12 @@ class DISVE:
     following the patches if any.
     """
 
-    # first, compute the displacement for each patch
+    # Making sure the reference image exists
+    if self._img0 is None:
+      raise ValueError("The method set_img0 must be called first for setting "
+                       "the reference image !")
+
+    # Compute the displacement for each patch
     displacements = []
     for patch, offset in zip(self._patches, self._offsets):
 
@@ -131,64 +143,61 @@ class DISVE:
 
     # If required, updates the patch offsets
     if self._follow:
-      for disp, (y_offset, x_offset) in zip(displacements, self._offsets):
+      for disp, (y_offset, x_offset), patch in zip(displacements,
+                                                   self._offsets,
+                                                   self._patches):
+
+        patch.x_start = round(patch.x_start + disp[0])
+        patch.x_end = round(patch.x_end + disp[0])
+        patch.y_start = round(patch.y_start + disp[1])
+        patch.y_end = round(patch.y_end + disp[1])
+
         disp[0] += x_offset
         disp[1] += y_offset
 
-      self._offsets = [(int(y_disp), int(x_disp)) for
+      self._offsets = [(round(y_disp), round(x_disp)) for
                        x_disp, y_disp in displacements]
 
       # Check that the patches are not exiting the image
       if self._safe:
         self._check_offsets()
 
-    # Update the display
-    if self._show_image:
-      self._update_img(img)
-
     displacements = [coord for disp in displacements for coord in disp]
     return displacements
 
-  def close(self) -> None:
-    """Closes the window for following the patches."""
-
-    if self._show_image:
-      cv2.destroyWindow("DISVE")
-
   def _calc_disflow(self,
-                    patch: Tuple[int, int, int, int],
+                    patch: Box,
                     img: np.ndarray,
                     offset: Tuple[int, int]) -> List[float]:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using Disflow."""
 
-    disp_img = self._dis.calc(self._get_patch(self._img0, patch),
-                              self._get_patch(img, patch, offset),
-                              None)
+    disp_img = self._dis.calc(self._get_patch(self._img0, patch, offset),
+                              self._get_patch(img, patch), None)
     return np.average(self._trim_patch(disp_img), axis=(0, 1)).tolist()
 
   def _calc_pixel_precision(self,
-                            patch: Tuple[int, int, int, int],
+                            patch: Box,
                             img: np.ndarray,
                             offset: Tuple[int, int]) -> List[float]:
     """Returns the displacement between the original and the current image with
     a precision limited to 1 pixel."""
 
     cross_correl, max_width, max_height = self._cross_correlation(
-      self._get_patch(self._img0, patch), self._get_patch(img, patch, offset))
+      self._get_patch(self._img0, patch, offset), self._get_patch(img, patch))
 
     height, width = cross_correl.shape[0], cross_correl.shape[1]
     return [-(max_width - width / 2), -(max_height - height / 2)]
 
   def _calc_parabola(self,
-                     patch: Tuple[int, int, int, int],
+                     patch: Box,
                      img: np.ndarray,
                      offset: Tuple[int, int]) -> List[float]:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using two parabola fits (one in x and one in y)."""
 
     cross_correl, max_width, max_height = self._cross_correlation(
-      self._get_patch(self._img0, patch), self._get_patch(img, patch, offset))
+      self._get_patch(self._img0, patch, offset), self._get_patch(img, patch))
 
     height, width = cross_correl.shape[0], cross_correl.shape[1]
     y_disp = -(max_height - height / 2)
@@ -202,17 +211,18 @@ class DISVE:
     return [x_disp, y_disp]
 
   def _calc_lucas_kanade(self,
-                         patch: Tuple[int, int, int, int],
+                         patch: Box,
                          img: np.ndarray,
                          offset: Tuple[int, int]) -> List[float]:
     """Returns the displacement between the original and the current image with
     a sub-pixel precision, using the Lucas Kanade algorithm."""
 
     # Getting the center of the patch
-    center_y, center_x = patch[2] // 2, patch[3] // 2
+    x_top, x_bottom, y_left, y_right = patch.sorted()
+    center_y, center_x = (y_right - y_left) // 2, (x_bottom - x_top) // 2
 
     next_, _, _ = cv2.calcOpticalFlowPyrLK(
-      self._get_patch(self._img0, patch), self._get_patch(img, patch, offset),
+      self._get_patch(self._img0, patch, offset), self._get_patch(img, patch),
       np.array([[center_x, center_y]]).astype('float32'), None)
     new_x, new_y = np.squeeze(next_)
 
@@ -231,7 +241,7 @@ class DISVE:
 
   @staticmethod
   def _cross_correlation(img0: np.ndarray,
-                         img1: np.ndarray) -> Tuple[np.ndarray, int, int]:
+                         img1: np.ndarray) -> (np.ndarray, int, int):
     """Performs a cross-correlation operation on two patches in the Fourier
     domain.
 
@@ -277,14 +287,15 @@ class DISVE:
 
   @staticmethod
   def _get_patch(img: np.ndarray,
-                 patch: Tuple[int, int, int, int],
+                 patch: Box,
                  offset: Tuple[int, int] = (0, 0)) -> np.ndarray:
     """Returns the part of the image corresponding to the given patch at the
     given offset."""
 
-    (y_min, x_min, height, width), (y_offset, x_offset) = patch, offset
-    return np.array(img[y_min + y_offset:y_min + height + y_offset,
-                        x_min + x_offset:x_min + width + x_offset])
+    y_off, x_off = offset
+    x_top, x_bottom, y_left, y_right = patch.sorted()
+    return np.array(img[y_left - y_off: y_right - y_off,
+                        x_top - x_off: x_bottom - x_off])
 
   def _trim_patch(self, patch: np.ndarray) -> np.ndarray:
     """Trims the border of a patch according to the value set by the user, and
@@ -300,39 +311,21 @@ class DISVE:
     """Check if the patches are still within the image, and raises an error if
     one of them is out."""
 
-    for (y_min, x_min, height, width), \
-            (y_offset, x_offset) in zip(self._patches, self._offsets):
+    for patch in self._patches:
+      x_top, x_bottom, y_left, y_right = patch.sorted()
 
       # Checking the left border
-      if x_offset + x_min < 0:
+      if x_top < 0:
         raise RuntimeError("Region exiting the ROI (left)")
 
       # Checking the right border
-      elif x_offset + x_min + width > self._width:
+      elif x_bottom > self._width:
         raise RuntimeError("Region exiting the ROI (right)")
 
       # Checking the top border
-      if y_offset + y_min < 0:
+      if y_left < 0:
         raise RuntimeError("Region exiting the ROI (top)")
 
       # Checking the bottom border
-      elif y_offset + y_min + height > self._height:
+      elif y_right > self._height:
         raise RuntimeError("Region exiting the ROI (bottom)")
-
-  def _update_img(self, img: np.ndarray) -> None:
-    """Updates the display of the window for following thr patches."""
-
-    for (y_min, x_min, height, width), \
-            (y_offset, x_offset) in zip(self._patches, self._offsets):
-
-      img[y_min + y_offset:y_min + y_offset + 1,
-          x_min + x_offset: x_min + x_offset + width] = 255
-      img[y_min + height + y_offset:y_min + height + y_offset + 1,
-          x_min + x_offset: x_min + x_offset + width] = 255
-      img[y_min + y_offset: y_min + height + y_offset,
-          x_min + x_offset:x_min + x_offset + 1] = 255
-      img[y_min + y_offset: y_min + height + y_offset,
-          x_min + height + x_offset:x_min + height + x_offset + 1] = 255
-
-    cv2.imshow("DISVE", img)
-    cv2.waitKey(5)

@@ -1,9 +1,9 @@
 # coding: utf-8
 
-from typing import Tuple, List, Optional
+from typing import Optional
 import tkinter as tk
 from .cameraConfigBoxes import Camera_config_with_boxes
-from .cameraConfigTools import Box
+from .cameraConfigTools import Box, Spot_boxes
 
 
 class DISVE_config(Camera_config_with_boxes):
@@ -13,7 +13,7 @@ class DISVE_config(Camera_config_with_boxes):
   It is meant to be used for configuring the :ref:`Disve` block.
   """
 
-  def __init__(self, camera, patches: List[Tuple[int, int, int, int]]) -> None:
+  def __init__(self, camera, patches: Spot_boxes) -> None:
     """Sets the patches and initializes the parent class.
 
     Args:
@@ -23,11 +23,8 @@ class DISVE_config(Camera_config_with_boxes):
 
     super().__init__(camera)
 
-    # Adjusting the patches to match the syntax of the Box class
-    patches = [(patch[0], patch[1], patch[0] + patch[2], patch[1] + patch[3])
-               for patch in patches]
     # Setting the patches
-    self._spots.set_spots(patches)
+    self._spots = patches
 
   def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
     """Same as in the parent class except it also draws the patches on top of

@@ -24,7 +24,7 @@ class MetaCam(type):
     super().__init__(name, bases, dct)
 
     # Checking that a Camera with the same name doesn't already exist
-    if name in cls.classes or name == "Modifier":
+    if name in cls.classes:
       raise DefinitionError(f"The {name} class is already defined !")
 
     # Gathering all the defined methods
@@ -218,7 +218,7 @@ class Camera(metaclass=MetaCam):
 
     self.settings: Dict[str, Cam_setting] = dict()
 
-  def read_image(self) -> Tuple[float, np.ndarray]:
+  def read_image(self) -> (float, np.ndarray):
     """To be removed, temporarily ensures the compatibility with the blocks
     that haven't been updated yet."""
 

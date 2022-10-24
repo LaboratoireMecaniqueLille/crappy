@@ -580,13 +580,6 @@ Enhanced actuators
 Real-time data processing (Modifiers)
 -------------------------------------
 
-- :ref:`Apply Strain`
-
-  Stretches a given image according to the received strain and adds it in the
-  link with the chosen label. The image is a parameter of the modifier, as well
-  as the labels for the strains and the label of the stretched image. Used in
-  the examples for emulating video-extensometry images.
-
 - :ref:`Demux`
 
   Takes the signal returned by a streaming device and transforms it into a

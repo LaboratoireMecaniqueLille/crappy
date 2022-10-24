@@ -34,7 +34,7 @@ if __name__ == "__main__":
       (h // 2 - ps // 2, m, ps, ps)]  # Left
 
   ve = crappy.blocks.DISVE('Webcam', patches, verbose=True,
-                           show_image=True)
+                           display_images=True)
   graphy = crappy.blocks.Grapher(('t(s)', 'p0y'), ('t(s)', 'p2y'))
   graphx = crappy.blocks.Grapher(('t(s)', 'p1x'), ('t(s)', 'p3x'))
 

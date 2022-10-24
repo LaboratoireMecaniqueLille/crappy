@@ -1,15 +1,15 @@
 # coding: utf-8
 
 import numpy as np
-from .block import Block
-from .._global import CrappyStop
+from typing import Optional
+from time import time
 from .._global import OptionalModule
 
 try:
   from PIL import ImageTk, Image
 except (ModuleNotFoundError, ImportError):
-  ImageTk = OptionalModule("pillow")
-  Image = OptionalModule("pillow")
+  ImageTk = OptionalModule("Pillow")
+  Image = OptionalModule("Pillow")
 
 try:
   import matplotlib.pyplot as plt
@@ -21,151 +21,152 @@ try:
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
-try:
-  import tkinter as tk
-except (ModuleNotFoundError, ImportError):
-  tk = OptionalModule("tkinter")
 
+class Displayer:
+  """This class manages the display of images captured by a camera object.
 
-class Displayer(Block):
-  """Simple image displayer using :mod:`cv2` or :mod:`matplotlib`.
+  It can either work with Matplotlib or OpenCV as a backend, OpenCV being the
+  fastest. It tries to display images at a given framerate, dropping part of
+  the received frames if necessary.
 
-  Important:
-    One displayer can only display images from one camera.
+  The images are displayed with a maximum resolution of 640x480, and are
+  resized to match that resolution if necessary. Similarly, the maximum bit
+  depth is 8 bits, and the images are cast if necessary. Resizing and casting
+  are anyway less demanding on the CPU than displaying big images.
   """
 
   def __init__(self,
-               framerate: float = 5,
-               backend: str = 'cv',
-               title: str = 'Displayer') -> None:
-    Block.__init__(self)
-    self.niceness = 10
-    if framerate is None:
-      self.delay = 0
-    else:
-      self.delay = 1. / framerate  # Framerate (fps)
-    self.title = title
-    if backend.lower() in ['cv', 'opencv']:
-      self.prepare = self.prepare_cv
-      self.loop = self.loop_cv
-      self.begin = self.begin_cv
-      self.finish = self.finish_cv
-    elif backend.lower() in ['matplotlib', 'mpl']:
-      self.prepare = self.prepare_mpl
-      self.loop = self.loop_mpl
-      self.begin = self.begin_mpl
-      self.finish = self.finish_mpl
-    elif backend.lower() in ['tk', 'tkinter']:
-      self.prepare = self.prepare_tk
-      self.loop = self.loop_tk
-      self.begin = self.begin_tk
-      self.finish = self.finish_tk
-    else:
-      raise AttributeError("Unknown backend: " + str(backend))
+               title: str,
+               framerate: float,
+               backend: Optional[str] = None) -> None:
+    """Sets the args and the other instance attributes, and looks for an
+    available display backend if none was specified.
 
-  # Matplotlib
-  @staticmethod
-  def prepare_mpl() -> None:
+    Args:
+      title: The title to display on the display window.
+      framerate: The maximum framerate for displaying the images. To achieve
+        this framerate, part of the received frames are simply dropped.
+      backend: The backend to use for displaying the images. Should be one of:
+        ::
+
+          'cv2', 'mpl'
+    """
+
+    self._title = title
+    self._framerate = framerate
+
+    # Selecting the backend if no backend was specified
+    if backend is None:
+      if not isinstance(cv2, OptionalModule):
+        self._backend = 'cv2'
+      elif not isinstance(plt, OptionalModule):
+        self._backend = 'mpl'
+      else:
+        raise ModuleNotFoundError("Neither opencv-python nor matplotlib could "
+                                  "be imported, no backend found for "
+                                  "displaying the images")
+
+    elif backend in ('cv2', 'mpl'):
+      self._backend = backend
+    else:
+      raise ValueError("The backend argument should be either 'cv2' or "
+                       "'mpl' !")
+
+    # Setting other instance attributes
+    self._ax = None
+    self._fig = None
+    self._last_upd = time()
+
+  def prepare(self) -> None:
+    """Calls the right prepare method depending on the chosen backend."""
+
+    if self._backend == 'cv2':
+      self._prepare_cv2()
+    elif self._backend == 'mpl':
+      self._prepare_mpl()
+
+  def update(self, img: np.ndarray) -> None:
+    """Ensures the target framerate is respected, and calls the right update
+    method depending on the chosen backend.
+
+    Args:
+      img: The image to display on the displayer.
+    """
+
+    # Making sure the image is not being refreshed too often
+    if time() - self._last_upd < 1 / self._framerate:
+      return
+    else:
+      self._last_upd = time()
+
+    # Casts the image to uint8 if it's not already in this format
+    if img.dtype != np.uint8:
+      if np.max(img) > 255:
+        factor = min((i for i in range(1, 10) if np.max(img) / 2 ** i < 256))
+        img = (img / 2 ** factor).astype(np.uint8)
+      else:
+        img = img.astype(np.uint8)
+
+    # Calling the right prepare method
+    if self._backend == 'cv2':
+      self._update_cv2(img)
+    elif self._backend == 'mpl':
+      self._update_mpl(img)
+
+  def finish(self) -> None:
+    """Calls the right finish method depending on the chosen backend."""
+
+    if self._backend == 'cv2':
+      self._finish_cv2()
+    elif self._backend == 'mpl':
+      self._finish_mpl()
+
+  def _prepare_cv2(self) -> None:
+    """Instantiates the display window of cv2."""
+
+    try:
+      flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
+    except AttributeError:
+      flags = cv2.WINDOW_NORMAL
+    cv2.namedWindow(self._title, flags)
+
+  def _prepare_mpl(self) -> None:
+    """Creates a Matplotlib figure."""
+
     plt.ion()
-    fig = plt.figure()
-    fig.add_subplot(111)
+    self._fig, self._ax = plt.subplots()
 
-  def begin_mpl(self) -> None:
-    self.inputs[0].clear()
+  def _update_cv2(self, img: np.ndarray) -> None:
+    """Reshapes the image to a maximum shape of 640x480 and displays it."""
 
-  @staticmethod
-  def cast_8bits(f: np.ndarray):
-    m = np.amax(f)
-    i = 0
-    while m >= 2 ** (8 + i):
-      i += 1
-    return (f / (2 ** i)).astype(np.uint8)
+    if img.shape[0] > 480 or img.shape[1] > 640:
+      factor = min(480 / img.shape[0], 640 / img.shape[1])
+      img = cv2.resize(img, (int(img.shape[1] * factor),
+                             int(img.shape[0] * factor)))
 
-  def loop_mpl(self) -> None:
-    data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
-    plt.clf()
-    plt.imshow(data, cmap='gray')
+    cv2.imshow(self._title, img)
+    cv2.waitKey(1)
+
+  def _update_mpl(self, img: np.ndarray) -> None:
+    """Reshapes the image to a dimension inferior or equal to 640x480 and
+    displays it."""
+
+    if img.shape[0] > 480 or img.shape[1] > 640:
+      factor = min((i for i in range(2, 10) if img.shape[0] / i <= 480
+                    and img.shape[1] / i <= 640))
+      img = img[::factor, ::factor]
+
+    self._ax.clear()
+    self._ax.imshow(img, cmap='gray')
     plt.pause(0.001)
     plt.show()
 
-  @staticmethod
-  def finish_mpl() -> None:
-    plt.close('all')
+  def _finish_cv2(self) -> None:
+    """Destroys the opened cv2 window."""
 
-  # OpenCV
-  def prepare_cv(self) -> None:
-    try:
-      flags = cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO
-    # WINDOW_KEEPRATIO is not implemented in all opencv versions...
-    except AttributeError:
-      flags = cv2.WINDOW_NORMAL
-    cv2.namedWindow(self.title, flags)
+    cv2.destroyWindow(self._title)
 
-  def begin_cv(self) -> None:
-    self.inputs[0].clear()
+  def _finish_mpl(self) -> None:
+    """Destroys the opened Matplotlib window."""
 
-  def loop_cv(self) -> None:
-    data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
-    if data.dtype != np.uint8:
-      if data.max() >= 256:
-        data = self.cast_8bits(data)
-      else:
-        data = data.astype(np.uint8)
-    cv2.imshow(self.title, data)
-    cv2.waitKey(1)
-
-  @staticmethod
-  def finish_cv() -> None:
-    cv2.destroyAllWindows()
-
-  # TKinter
-  def resize(self, img: np.ndarray):
-    return cv2.resize(img, (self.w, self.h))
-
-  def check_resized(self) -> None:
-    new = self.imglabel.winfo_height() - 2, self.imglabel.winfo_width() - 2
-    if sum([abs(i - j) for i, j in zip(new, (self.h, self.w))]) >= 5:
-      if new[0] > 0 and new[1] > 0:
-        self.h, self.w = new
-        ratio = min(self.h / self.img_shape[0],
-                    self.w / self.img_shape[1])
-        self.h = int(self.img_shape[0] * ratio)
-        self.w = int(self.img_shape[1] * ratio)
-
-  def prepare_tk(self) -> None:
-    self.root = tk.Tk()
-    self.root.protocol("WM_DELETE_WINDOW", self.end)
-    self.imglabel = tk.Label(self.root)
-    self.imglabel.pack()
-    # self.imglabel.grid(row=0, column=0, sticky=tk.N + tk.E + tk.S + tk.W)
-    self.imglabel.pack(expand=1, fill=tk.BOTH)
-    self.h = 480
-    self.w = 640
-
-  def begin_tk(self) -> None:
-    self.inputs[0].clear()
-    data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
-    self.img_shape = data.shape
-    self.check_resized()
-    self.go = True
-
-  def loop_tk(self) -> None:
-    if not self.go:
-      raise CrappyStop
-    data = self.inputs[0].recv_delay(self.delay)['frame'][-1]
-    self.img_shape = data.shape
-    self.check_resized()
-    if data.dtype != np.uint8:
-      if data.max() >= 256:
-        data = self.cast_8bits(data)
-      else:
-        data = data.astype(np.uint8)
-    cimg = ImageTk.PhotoImage(Image.fromarray(self.resize(data)))
-    self.imglabel.configure(image=cimg)
-    self.root.update()
-
-  def end(self) -> None:
-    self.go = False
-
-  def finish_tk(self) -> None:
-    self.root.destroy()
+    plt.close(self._fig)

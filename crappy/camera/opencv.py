@@ -132,7 +132,7 @@ class Camera_opencv(Camera):
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> Tuple[float, ndarray]:
+  def get_image(self) -> (float, ndarray):
     """Grabs a frame from the videocapture object and returns it along with a
     timestamp."""
 
