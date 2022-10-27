@@ -33,15 +33,15 @@ what companies like `National Instruments <https://www.ni.com/en-us.html>`_
 (NI), that are explicitly intended for researchers, also sell. But 10 to 100
 times cheaper. This price difference can be explained, let's take the example of
 an ADC. On the one hand NI sells an `8-channels 12-bits ADC <https://www.ni.com
-/pdf/manuals/373783a_02.pdf>`_ with a nice packaging, that can interface over
-USB with a PC, can acquire voltages from -10 to 10V, and is controlled from a
-user-friendly Graphical User Interface (GUI). It can also acquire data at
-frequencies up to 500k samples per second. On the other hand Adafruit sells a
-`4-channels 16-bits ADC <https://www.adafruit.com/product/1085>`_ on a raw PCB,
-that can interface with SBCs or microcontrollers, can only acquire voltages from
-0 to 3.3V, and is controlled using a Python script. It can read data at 'only'
-around 800 samples per second. But NI's costs 600$ while Adafruit's costs 15$,
-20 times cheaper.
+/docs/en-US/bundle/ni-9201-specs/page/specifications.html>`_ with a nice
+packaging, that can interface over USB with a PC, can acquire voltages from -10
+to 10V, and is controlled from a user-friendly Graphical User Interface (GUI).
+It can also acquire data at frequencies up to 500k samples per second. On the
+other hand Adafruit sells a `4-channels 16-bits ADC
+<https://www.adafruit.com/product/1085>`_ on a raw PCB, that can interface with
+SBCs or microcontrollers, can only acquire voltages from 0 to 3.3V, and is
+controlled using a Python script. It can read data at 'only' around 800 samples
+per second. But NI's costs 600$ while Adafruit's costs 15$, 20 times cheaper.
 
 While NI's ADC is definitely more user-friendly and can acquire at tremendous
 sample rates, Adafruit's is actually theoretically more precise (16 bits instead

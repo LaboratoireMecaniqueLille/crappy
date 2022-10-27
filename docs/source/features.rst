@@ -276,9 +276,9 @@ Supported cameras
 - :ref:`Camera link`
 
   Allows reading from a camera communicating over Camera Link plugged to a
-  `microEnable 5 ironman AD8-PoCL <https://www.baslerweb.com/en/products/frame-
-  grabber-portfolio/frame-grabber/microenable-5-ironman-ad8-pocl/>`_ PCIexpress
-  board. May as well work with similar boards.
+  `microEnable 5 ironman AD8-PoCL <https://www.baslerweb.com/en/products/
+  acquisition-cards/microenable-5-ironman/>`_ PCIexpress board. May as well
+  work with similar boards.
 
   .. Important::
      This camera object relies on C++ libraries, which are not distributed with
@@ -429,8 +429,8 @@ Acquisition boards
 
 - :ref:`Labjack UE9`
 
-  Controls Labjack's `UE9 <https://labjack.com/products/ue9>`_ acquisition
-  board.
+  Controls Labjack's `UE9 <https://labjack.com/products/calibration-service-
+  with-cert-u6-ue9-t7>`_ acquisition board.
 
 - :ref:`T7 Streamer`
 

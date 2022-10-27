@@ -39,7 +39,7 @@ building.
 
   - `openclassrooms C++ <https://openclassrooms.com/fr/courses/1894236-
     apprenez-a-programmer-en-c>`_ (fr)
-  - `cplusplus <https://www.cplusplus.com/doc/tutorial/>`_ (en)
+  - `cplusplus <https://cplusplus.com/doc/tutorial/>`_ (en)
 
   C tutorials :
 

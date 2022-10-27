@@ -92,8 +92,8 @@ won't be able to help you. So Crappy is **NOT for you** if :
 - You don't want to code in Python (you should really give it a try, it's
   great and easy to learn :) )
 
-.. |Downloads| image:: https://pepy.tech/badge/crappy
-   :target: https://pepy.tech/badge/crappy
+.. |Downloads| image:: https://static.pepy.tech/badge/crappy
+   :target: https://static.pepy.tech/badge/crappy
 
 .. |Documentation status| image:: https://readthedocs.org/projects/crappy/badge/?version=latest
    :target: https://crappy.readthedocs.io/en/latest/?badge=latest

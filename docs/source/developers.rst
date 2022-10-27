@@ -26,7 +26,7 @@ shouldn't have much trouble following them.
 
 **1.** PEP8 consideration
   We try to respect, as much as possible, the `PEP8
-  <https://www.python.org/dev/peps/pep-0008/>`_ convention, except on one
+  <https://peps.python.org/pep-0008/>`_ convention, except on one
   specific point. Indents in Crappy are 2 spaces wide, while they should be 4
   spaces wide following the PEP8. This choice was made to improve readability.
 

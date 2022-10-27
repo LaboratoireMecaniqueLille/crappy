@@ -28,8 +28,8 @@ functionalities (this list is not exhaustive) :
   interface of cameras)
 - `scikit-image <https://scikit-image.org/>`_ (0.11 or higher)
 - `xiApi <https://www.ximea.com/support/wiki/apis/xiapi>`_ (for Ximea cameras)
-- `labjack <https://labjack.com/support/software/examples/ljm/python>`_ (for
-  Labjack support)
+- `labjack <https://labjack.com/pages/support?doc=/software-driver/example-
+  codewrappers/python-for-ljm-windows-mac-linux/>`_ (for Labjack support)
 - `Simple-ITK <https://simpleitk.org/>`_ (for faster image saving)
 - `PyCUDA <https://documen.tician.de/pycuda/>`_ (for real-time correlation)
 - `Comedi <https://www.comedi.org/>`_ driver (for Comedi acquisition boards,
