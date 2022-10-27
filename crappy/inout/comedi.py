@@ -1,184 +1,245 @@
 # coding: utf-8
 
 from time import time
+from typing import Optional, List
+from dataclasses import dataclass
 
 from .inout import InOut
-from .._global import OptionalModule
-try:
-  from ..tool import comedi_bind as c
-except OSError:  # Will be raised if unable to locate the .so file
-  c = OptionalModule("comedi_bind", """Could not import comedi_lib, make sure 
-  libcomedi.so is installed""")
+from ..tool import comedi_bind as comedi
+
+
+@dataclass
+class _Channel:
+  """This class is a simple structure holding all the attributes a Comedi
+  channel can have."""
+
+  num: int
+  range_num: int = 0
+  gain: float = 1
+  offset: float = 0
+  make_zero: bool = False
+  max_data: int = 0
+  range_ds: int = 0
 
 
 class Comedi(InOut):
-  """
-  Comedi object, for IO with cards using comedi driver.
+  """This class can control acquisition boards relying on the Comedi driver.
 
-  Note:
-    The channel-specific args can be given as a list to set it for each channel
-    or as a single value to apply it to every channel.
-
-  Args:
-    - device (str, default: "/dev/comedi0"): The address of the device.
-    - subdevice (int, default: 0): The id of the subdevice.
-    - channels (list, default: [0]): The list of the input channels.
-    - range_num (list/int, default: 0): The range to use on each channel.
-    - gain (list/float, default: 1): The return value for each chan will be
-      multiplied by the gain.
-    - offset (list/float, default: 0): The offset will be added to the return
-      value for each chan.
-    - make_zero (list/bool, default: True): If True, the value read at the
-      beginning will be removed to the offset to take it as a reference.
-    - channels (list, default: []): The list of the output channels.
-    - out_range_num (list/int, default: 0): The range to use on each output.
-    - out_gain (list/float, default: 1): The output value for each chan will be
-      multiplied by the gain.
-    - out_offset (list/float, default: 0): The offset will be added to the
-      output value for each chan.
-    - out_subdevice (int, default: 1): The id of the output subdevice.
-
+  It can read data from ADCs on input channels, and set voltages of DACs on
+  output channels. Each channel can be tuned independently in terms of range,
+  gan, offset, and for input channels it's possible to decide whether they
+  should be offset to `0` at the beginning of the test.
   """
 
-  def __init__(self, **kwargs) -> None:
-    InOut.__init__(self)
-    self.default = {'device': b'/dev/comedi0',
-                    'subdevice': 0,
-                    'channels': [0],
-                    'range_num': 0,
-                    'gain': 1,
-                    'offset': 0,
-                    'make_zero': True,
-                    'out_channels': [],
-                    'out_range_num': 0,
-                    'out_gain': 1,
-                    'out_offset': 0,
-                    'out_subdevice': 1
-                    }
-    self.kwargs = self.default
-    # For consistency with out_*, in_xxx is equivalent to xxx:
-    for arg in kwargs:
-      if arg.startswith('in_'):
-        kwargs[arg[3:]] = kwargs[arg]
-        del kwargs[arg]
-    self.kwargs.update(kwargs)
-    self.device_name = self.kwargs['device']
-    if isinstance(self.device_name, str):
-      self.device_name = bytes(self.device_name, 'utf-8')
-      # We need to give this to a c function, so convert it to bytes
-    self.subdevice = self.kwargs['subdevice']
-    self.out_subdevice = self.kwargs['out_subdevice']
-    if not isinstance(self.kwargs['channels'], list):
-      self.kwargs['channels'] = [self.kwargs['channels']]
-    self.channels = []
-    self.channels_dict = {}
-    # Turning in channels kwargs into a list of dict with each channel setting
-    for i, chan in enumerate(self.kwargs['channels']):
-      d = {'num': chan}
-      for s in ['range_num', 'gain', 'offset', 'make_zero']:
-        if isinstance(self.kwargs[s], list):
-          try:
-            d[s] = self.kwargs[s][i]
-          except IndexError:
-            print("Lists length differ in Comedi constructor!")
-            raise
-        else:
-          d[s] = self.kwargs[s]
-      # To quickly get the channel settings with its number (for get_data)
-      self.channels_dict[chan] = len(self.channels)
-      self.channels.append(d)
+  def __init__(self,
+               device: str = '/dev/comedi0',
+               subdevice: int = 0,
+               channels: Optional[List[int]] = None,
+               range_num: Optional[List[int]] = None,
+               gain: Optional[List[float]] = None,
+               offset: Optional[List[float]] = None,
+               make_zero: Optional[List[bool]] = None,
+               out_subdevice: int = 1,
+               out_channels: Optional[List[int]] = None,
+               out_range_num: Optional[List[int]] = None,
+               out_gain: Optional[List[float]] = None,
+               out_offset: Optional[List[float]] = None) -> None:
+    """Sets the args and initializes the parent class.
 
-    # Same as above, but for out_channels
-    if not isinstance(self.kwargs['out_channels'], list):
-      self.kwargs['out_channels'] = [self.kwargs['out_channels']]
-    self.out_channels = []
-    for i, chan in enumerate(self.kwargs['out_channels']):
-      d = {'num': chan}
-      for s in ['out_range_num', 'out_gain', 'out_offset']:
-        if isinstance(self.kwargs[s], list):
-          try:
-            d[s[4:]] = self.kwargs[s][i]
-          except IndexError:
-            print("Lists length differ in Comedi constructor!")
-            raise
-        else:
-          d[s[4:]] = self.kwargs[s]
-      self.out_channels.append(d)
+    Args:
+      device: The address of the device, as a :obj:`str`.
+      subdevice: The id of the subdevice to use for input channels, as an
+        :obj:`int`.
+      channels: A :obj:`list` containing the indexes of the channels to use as
+        inputs, given as :obj:`int`.
+      range_num: A :obj:`list` containing for each input channel the index of
+        the range to set for that channel, as an :obj:`int`. Refer to the
+        documentation of the board to get the correspondence between range
+        indexes and Volts. If not given, all input channels will be set to the
+        range `0`.
+      gain: A :obj:`list` containing for each input channel the gain to apply
+        to the measured voltage, as a :obj:`float`. The returned voltage is
+        calculated as follows :
+        ::
+
+          returned_voltage = gain * measured_voltage + offset
+
+        If not given, no gain is applied to the measured values.
+      offset: A :obj:`list` containing for each input channel the offset to
+        apply to the measured voltage, as a :obj:`float`. The returned voltage
+        is calculated as follows :
+        ::
+
+          returned_voltage = gain * measured_voltage + offset
+
+        If not given, no offset is applied to the measured values.
+      make_zero: A :obj:`list` containing for each input channel a :obj:`bool`
+        indicating whether the channel should be zeroed or not. If so, data
+        will be acquired on this channel before the test starts, and a
+        compensation value will be deduced so that the offset of this channel
+        is `0`. **It will only take effect if the ``make_zero_delay`` argument
+        of the :ref:`IOBlock` controlling the Comedi is set** ! If not given,
+        the channels are by default not zeroed.
+      out_subdevice: The id of the subdevice to use for output channels, as an
+        :obj:`int`.
+      out_channels: A :obj:`list` containing the indexes of the channels to use
+        as outputs, given as :obj:`int`.
+      out_range_num: A :obj:`list` containing for each output channel the index
+        of the range to set for that channel, as an :obj:`int`. Refer to the
+        documentation of the board to get the correspondence between range
+        indexes and Volts. If not given, all output channels will be set to the
+        range `0`.
+      out_gain: A :obj:`list` containing for each output channel the gain to
+        apply to the command voltage, as a :obj:`float`. The set voltage is
+        calculated as follows :
+        ::
+
+          set_voltage = out_gain * command_voltage + out_offset
+
+        If not given, no gain is applied to the command values.
+      out_offset: A :obj:`list` containing for each output channel the offset
+        to apply to the command voltage, as a :obj:`float`. The set voltage is
+        calculated as follows :
+        ::
+
+          set_voltage = out_gain * command_voltage + out_offset
+
+        If not given, no offset is applied to the command values.
+
+    Note:
+      All the :obj:`list` given as arguments for the input channels should have
+      the same length, and same for the output channels. If that's not the
+      case, all the given lists are treated as if they had the same length
+      as the shortest given list.
+    """
+
+    super().__init__()
+
+    self._device_name = device.encode()
+    self._subdevice = subdevice
+    self._out_subdevice = out_subdevice
+
+    # Setting the defaults for arguments that are not given
+    if channels is None:
+      channels = list()
+    if out_channels is None:
+      channels = list()
+
+    if range_num is None:
+      range_num = [0 for _ in channels]
+    if gain is None:
+      gain = [1 for _ in channels]
+    if offset is None:
+      offset = [0 for _ in channels]
+    if make_zero is None:
+      make_zero = [False for _ in channels]
+
+    if out_range_num is None:
+      out_range_num = [0 for _ in out_channels]
+    if out_gain is None:
+      out_gain = [1 for _ in out_channels]
+    if out_offset is None:
+      out_offset = [0 for _ in out_channels]
+
+    # Creating the channel objects
+    self._channels = [_Channel(num=chan, range_num=r_num, gain=g,
+                               offset=off, make_zero=make_z)
+                      for chan, r_num, g, off, make_z in
+                      zip(channels, range_num, gain, offset, make_zero)]
+
+    self._out_channels = [_Channel(num=chan, range_num=r_num, gain=g,
+                                   offset=off) for chan, r_num, g, off in
+                          zip(out_channels, out_range_num,
+                              out_gain, out_offset)]
+
+    self._device = None
 
   def open(self) -> None:
-    """
-    Starts communication with the device, must be called before any
-    set_cmd or get_data.
+    """Opening the Comedi board and setting up the input and output
+    channels."""
 
-    Note:
-      It reads channel properties from the device, those will be used
-      in data_read/data_write.
+    # Opening the Comedi board
+    self._device = comedi.comedi_open(self._device_name)
 
+    # Setting up the input channels
+    for chan in self._channels:
+      chan.max_data = comedi.comedi_get_maxdata(self._device, self._subdevice,
+                                                chan.num)
+      chan.range_ds = comedi.comedi_get_range(self._device, self._subdevice,
+                                              chan.num, chan.range_num)
+
+    # Setting up the output channels
+    for chan in self._out_channels:
+      chan.max_data = comedi.comedi_get_maxdata(self._device,
+                                                self._out_subdevice,
+                                                chan.num)
+      chan.range_ds = comedi.comedi_get_range(self._device,
+                                              self._out_subdevice,
+                                              chan.num, chan.range_num)
+
+  def make_zero(self, delay: float) -> None:
+    """Overriding of the method of the parent class, because the user can
+    choose which channels should be zeroed or not.
+
+    It simply performs the regular zeroing, and resets the compensation to
+    zero for the channels that shouldn't be zeroed.
     """
-    self.device = c.comedi_open(self.device_name)
-    for chan in self.channels:
-      chan['maxdata'] = c.comedi_get_maxdata(self.device, self.subdevice,
-                                             chan['num'])
-      chan['range_ds'] = c.comedi_get_range(self.device, self.subdevice,
-                                            chan['num'], chan['range_num'])
-    for chan in self.out_channels:
-      chan['maxdata'] = c.comedi_get_maxdata(self.device, self.out_subdevice,
-                                             chan['num'])
-      chan['range_ds'] = c.comedi_get_range(self.device, self.out_subdevice,
-                                            chan['num'], chan['range_num'])
-    if any([i['make_zero'] for i in self.channels]):
-      off = self.eval_offset()
-      for i, chan in enumerate(self.channels):
-        if chan['make_zero']:
-          if off[i] != off[i]:  # True if off[i] is a nan
-            print("WARNING: could not measure offset on channel", chan['num'])
-          else:
-            chan['offset'] += off[i]
+
+    # No need to acquire data if no channel should be zeroed
+    if any(chan.make_zero for chan in self._channels):
+
+      # Acquiring the data
+      super().make_zero(delay)
+
+      # Proceed only if the acquisition went fine
+      if self._compensations:
+
+        # Resetting the compensation for channels that shouldn't be zeroed
+        self._compensations = [comp if chan.make_zero else 0 for comp, chan
+                               in zip(self._compensations, self._channels)]
 
   def set_cmd(self, *cmd: float) -> None:
-    """
-    To set the value of the outputs (when specified).
-    Takes as many argument as opened output channels.
-    """
-    assert len(cmd) == len(self.out_channels), \
-        "set_cmd takes {} args, but got {}".format(
-        len(self.out_channels), len(cmd))
-    for val, chan in zip(cmd, self.out_channels):
-      val = val * chan['gain'] + chan['offset']
-      out_a = c.comedi_from_phys(val, chan['range_ds'], chan['maxdata'])
-      c.comedi_data_write(self.device, self.out_subdevice, chan['num'],
-                          chan['range_num'], c.AREF_GROUND, out_a)
+    """Sets the command value on the output channels.
 
-  def get_data(self, channel: str = "all") -> list:
+    There should be as many commands as there are output channels. In case
+    there would be fewer commands or channels, the extra commands/channels
+    wouldn't be considered/set.
     """
-    To read the value on input_channels.
 
-    Note:
-      If channel is specified, it will only read and return these channels.
+    for val, chan in zip(cmd, self._out_channels):
 
-      'all' (default) will read all opened channels.
+      # Adjusting with the provided gain and offset
+      val = val * chan.gain + chan.offset
 
-    """
-    if channel == 'all':
-      to_read = self.channels
-    else:
-      if not isinstance(channel, list):
-        channel = [channel]
-      to_read = [self.channels[self.channels_dict[i]] for i in channel]
+      # Converting voltage to numeric
+      out_a = comedi.comedi_from_phys(val, chan.range_ds, chan.max_data)
+
+      # Sending the command
+      comedi.comedi_data_write(self._device, self._out_subdevice, chan.num,
+                               chan.range_num, comedi.AREF_GROUND, out_a)
+
+  def get_data(self) -> List[float]:
+    """Simply reads and returns the value of each channel, adjusted with the
+    given gain and offset."""
 
     data = [time()]
-    for chan in to_read:
-      data_read = c.comedi_data_read(self.device,
-                                     self.subdevice,
-                                     chan['num'],
-                                     chan['range_num'],
-                                     c.AREF_GROUND)
 
-      val = c.comedi_to_phys(data_read, chan['range_ds'], chan['maxdata'])
-      data.append(val * chan['gain'] + chan['offset'])
+    for chan in self._channels:
+
+      # Reading the numeric values
+      data_read = comedi.comedi_data_read(self._device, self._subdevice,
+                                          chan.num, chan.range_num,
+                                          comedi.AREF_GROUND)
+
+      # Converting numeric to a voltage
+      val = comedi.comedi_to_phys(data_read, chan.range_ds, chan.max_data)
+
+      # Adjusting with the provided gain and offset
+      data.append(val * chan.gain + chan.offset)
     return data
 
   def close(self) -> None:
-    ret = c.comedi_close(self.device)
-    if ret != 0:
-      print('Comedi.close failed')
+    """Simply closes the Comedi board and warns the user in case of failure."""
+
+    if comedi.comedi_close(self._device):
+      print('[Comedi] Device close failed !')

@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import Union
+from typing import Optional, List
+from dataclasses import dataclass
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -9,81 +10,123 @@ from .._global import OptionalModule
 try:
   from ue9 import UE9
 except (ModuleNotFoundError, ImportError):
-  UE9 = OptionalModule("ue9")
+  UE9 = OptionalModule("LabJackPython")
 
 
-def get_channel_number(channels: list) -> None:
-  """Register needs to be called with the channel name as :obj:`int`."""
+@dataclass
+class _Channel:
+  """This class is a simple structure holding all the attributes a Labjack UE9
+  channel can have."""
 
-  for i, channel in enumerate(channels):
-    if isinstance(channel, str):
-      channels[i] = int(channel[-1])
-
-
-def format_lists(list_to_format: Union[list, float, int, bool],
-                 length: int) -> list:
-  """In case the user only specifies one parameter, and wants it applied to all
-  inputs."""
-
-  if not isinstance(list_to_format, list):
-    list_to_format = [list_to_format]
-  if length != 0:
-    if len(list_to_format) == 1:
-      return list_to_format * length
-    elif len(list_to_format) == length:
-      return list_to_format
-    else:
-      raise TypeError('Wrong Labjack Parameter definition.')
-  else:
-    return list_to_format
+  num: int
+  range_num: int = 12
+  gain: float = 1
+  offset: float = 0
+  make_zero: bool = False
 
 
 class Labjack_ue9(InOut):
-  """Can read data from a LabJack UE9.
-
-  Important:
-    Streamer mode and DAC are not supported yet.
-  """
+  """"""
 
   def __init__(self,
-               channels: Union[int, list] = 0,
-               gain: Union[float, list] = 1,
-               offset: Union[float, list] = 0,
-               make_zero: Union[bool, list] = True,
-               resolution: Union[int, list] = 12) -> None:
-    InOut.__init__(self)
-    self.channels = channels
-    self.gain = gain
-    self.offset = offset
-    self.make_zero = make_zero
-    self.resolution = resolution
+               channels: List[int],
+               gain: Optional[List[float]] = None,
+               offset: Optional[List[float]] = None,
+               make_zero: Optional[List[bool]] = None,
+               resolution: Optional[List[int]] = None) -> None:
+    """Sets the args and initializes the parent class.
 
-    self.channels = format_lists(self.channels, 0)
-    self.nb_channels = len(self.channels)
-    get_channel_number(self.channels)
-    self.gain = format_lists(self.gain, self.nb_channels)
-    self.offset = format_lists(self.offset, self.nb_channels)
-    self.resolution = format_lists(self.resolution, self.nb_channels)
-    self.make_zero = format_lists(self.make_zero, self.nb_channels)
+    Args:
+      channels: A :obj:`list` containing all the channels to read, given as
+        :obj:`int`. Only the `AIN` channels can be read by this class, so to
+        read the channel `AIN2` the integer `2` should be added to the list.
+      gain: A :obj:`list` containing for each channel the gain to apply to the
+        measured voltage, as a :obj:`float`. The returned voltage is
+        calculated as follows :
+        ::
+
+          returned_voltage = gain * measured_voltage + offset
+
+        If not given, no gain is applied to the measured values.
+      offset: A :obj:`list` containing for each channel the offset to apply to
+        the measured voltage, as a :obj:`float`. The returned voltage is
+        calculated as follows :
+        ::
+
+          returned_voltage = gain * measured_voltage + offset
+
+        If not given, no offset is applied to the measured values.
+      make_zero: A :obj:`list` containing for each channel a :obj:`bool`
+        indicating whether the channel should be zeroed or not. If so, data
+        will be acquired on this channel before the test starts, and a
+        compensation value will be deduced so that the offset of this channel
+        is `0`. **It will only take effect if the ``make_zero_delay`` argument
+        of the :ref:`IOBlock` controlling the Labjack is set** ! If not given,
+        the channels are by default not zeroed.
+      resolution: A :obj:`list` containing for each channel the resolution of
+        the acquisition as an integer. Refer to Labjack documentation for more
+        details. The higher this value the better the resolution, but the lower
+        the speed. The possible range is `1` to `12`, and the default is `12`.
+
+    Note:
+      All the :obj:`list` given as arguments for the channels should have the
+      same length. If that's not the case, all the given lists are treated as
+      if they had the same length as the shortest given list.
+    """
+
+    super().__init__()
+
+    # Setting the defaults for arguments that are not given
+    if resolution is None:
+      resolution = [12 for _ in channels]
+    if gain is None:
+      gain = [1 for _ in channels]
+    if offset is None:
+      offset = [0 for _ in channels]
+    if make_zero is None:
+      make_zero = [False for _ in channels]
+
+    self._channels = [_Channel(num=chan, range_num=r_num, gain=g,
+                               offset=off, make_zero=make_z)
+                      for chan, r_num, g, off, make_z in
+                      zip(channels, resolution, gain, offset, make_zero)]
+
+    self._handle = None
 
   def open(self) -> None:
-    self.handle = UE9()
-    if any(self.make_zero):
-      off = self.eval_offset()
-      for i, make_zero in enumerate(self.make_zero):
-        if make_zero:
-          self.offset[i] += off[i]
+    """Simply opens the connection to the Labjack."""
 
-  def get_data(self) -> list:
-    results = []
-    t0 = time()
-    for index, channel in enumerate(self.channels):
-      results.append(
-        self.handle.getAIN(channel, Resolution=self.resolution[index]) *
-        self.gain[index] + self.offset[index])
-    t1 = time()
-    return [(t0 + t1) / 2] + results
+    self._handle = UE9()
+
+  def make_zero(self, delay: float) -> None:
+    """Overriding of the method of the parent class, because the user can
+    choose which channels should be zeroed or not.
+
+    It simply performs the regular zeroing, and resets the compensation to
+    zero for the channels that shouldn't be zeroed.
+    """
+
+    # No need to acquire data if no channel should be zeroed
+    if any(chan.make_zero for chan in self._channels):
+
+      # Acquiring the data
+      super().make_zero(delay)
+
+      # Proceed only if the acquisition went fine
+      if self._compensations:
+        # Resetting the compensation for channels that shouldn't be zeroed
+        self._compensations = [comp if chan.make_zero else 0 for comp, chan
+                               in zip(self._compensations, self._channels)]
+
+  def get_data(self) -> List[float]:
+    """Simply reads sequentially the channels and returns the acquired values,
+    corrected by the given gains and offsets."""
+
+    return [time()] + [self._handle.getAIN(chan.num, Resolution=chan.range_num)
+                       * chan.gain + chan.offset for chan in self._channels]
 
   def close(self) -> None:
-    if hasattr(self, 'handle') and self.handle is not None:
-      self.handle.close()
+    """Closes the Labjack if it was already opened."""
+
+    if self._handle is not None:
+      self._handle.close()

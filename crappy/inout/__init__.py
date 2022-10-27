@@ -16,7 +16,6 @@ from .mcp9600 import Mcp9600
 from .mprls import Mprls
 from .nau7802 import Nau7802
 from .ni_daqmx import Nidaqmx
-from .open_daq import Opendaq
 from .opsens import Opsens
 from .piJuice import Pijuice
 from .spectrum import Spectrum

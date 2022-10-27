@@ -1,384 +1,428 @@
 # coding: utf-8
 
 from time import time
+from typing import List, Optional, Dict, Any, Union, Tuple
+from itertools import chain
+from dataclasses import dataclass, field
 
 from .inout import InOut
 from .._global import OptionalModule
+
 try:
   from labjack import ljm
 except (ModuleNotFoundError, ImportError):
-  ljm = OptionalModule("ljm",
-      "Please install Labjack LJM and the ljm Python module")
+  ljm = OptionalModule("ljm", "Please install Labjack LJM and the ljm "
+                              "Python module")
+
+# Map of thermocouple types vs indexes for the Labjack T7
+thcp_map = {'E': 20, 'J': 21, 'K': 22, 'R': 23, 'T': 24, 'S': 25, 'C': 30}
 
 
-def clamp(val, mini, maxi):
-  return max(min(val, maxi), mini)
+@dataclass
+class _Channel:
+  """This class is a simple structure holding all the attributes a Labjack
+  channel can have.
+
+  Not all the attributes are used by every channel, but they all have a use for
+  at least on type of channel.
+  """
+
+  name: Union[str, int]
+
+  direction: bool = True
+  dtype: Optional[int] = None
+  address: int = 1
+  gain: float = 1
+  offset: float = 0
+  make_zero: bool = False
+  range: float = 10
+  limits: Optional[Tuple[float, float]] = None
+  resolution: int = 1
+  thermocouple: Optional[str] = None
+  write_at_open: List[Tuple[str, float]] = field(default_factory=list)
+
+  def update(self, dic_in: Dict[str, Any]) -> None:
+    """Updates the channel keys based on the user input."""
+
+    for key, val in dic_in.items():
+      if hasattr(self, key):
+        setattr(self, key, val)
+
+      # Handling the case when the user enters a wrong key
+      else:
+        print(f"[Labjack T7] Unknown channel key : {key}, ignoring it")
 
 
 class Labjack_t7(InOut):
-  """Class for LabJack T7 devices.
+  """This InOut object allows controlling a Labjack T7 device. It can use any
+  channel as input/output.
 
-  It can use any channel as input/output, it can be used with an IOBlock.
+  The Labjack T7 is a very complete DAQ board. It features several ADC, several
+  DAC, as well as multiple GPIOs. It can also read thermocouples, and run LUA
+  code on an integrated microcontroller. These features can all be controlled
+  from Crappy.
 
-  This class is NOT capable of streaming. For higher frequency, see
+  This class is not capable of streaming. For higher frequency, refer to the
   :ref:`T7 Streamer` class.
-
-  The keyword argument ``channels`` is used to specify the channels.
-
-  Each channel must be represented as a :obj:`dict` including all the
-  parameters. See below for more details on the parameters of the channels.
   """
 
   def __init__(self,
+               channels: List[Dict[str, Any]],
                device: str = 'ANY',
                connection: str = 'ANY',
                identifier: str = 'ANY',
-               channels: list = None,
-               write_at_open: list = None,
+               write_at_open: Optional[List[tuple]] = None,
                no_led: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      device (:obj:`str`, optional): The type of the device to open. Possible
-        values include:
+      channels: A :obj:`list` of the channels to interface with on the Labjack.
+        Each object in this list should be a :obj:`dict` representing a single
+        channel, and whose keys provide information on the channel to use.
+        Refer to the note below for more information on the possible keys.
+      device: The type of Labjack to open. Possible values include :
         ::
 
           'ANY', 'T7', 'T4', 'DIGIT'
 
         Only tested with `'T7'` in Crappy.
-      connection (:obj:`str`, optional): How is the Labjack connected ?
-        Possible values include:
+      connection: The type of connection used for interfacing with the Labjack.
+        Possible values include :
         ::
 
           'ANY', 'TCP', 'USB', 'ETHERNET', 'WIFI'
 
-      identifier (:obj:`str`, optional): Something to identify the Labjack. It
-        can be a serial number, an IP address, or a device name.
-      channels (:obj:`list`, optional): Channels to use and their settings. It
-        must be a :obj:`list` of :obj:`dict`.
-      write_at_open (:obj:`list`, optional): If you need to write specific
-        names or registers when opening the channel, you can give them as a
-        :obj:`list` of :obj:`tuple`. They will be written in the order of the
-        list.
-      no_led (:obj:`list`, optional): If :obj:`True`, turns off the LED on the
-        Labjack. This led can cause noise on the channels `AIN0` and `AIN1`.
+      identifier: Any extra information allowing to further identify the
+        Labjack to open, like a serial number, an IP address, or a device name.
+      write_at_open: If specific names or registers have to be written when
+        opening the channel, they can be given here as a :obj:`list` of
+        :obj:`tuple`. They will be written in the same order as in the given
+        list. Refer to the note below for the accepted formats.
+      no_led: If :obj:`True`, turns off the LED on the Labjack. This led can
+        generate noise on the channels `AIN0` and `AIN1`.
 
     Note:
       - ``channels`` keys:
 
-        - name (:obj:`str`): The name of the channel according to Labjack's
-          naming convention. Ex: `'AIN0'`. This will be used to define the
-          direction (in/out) and the available settings.
+        - name: The name of the channel to interface with, as written on the
+          Labjack's case. Ex: `'AIN0'`. The available settings as well as the
+          direction of the channel depend on the given name.
 
-          It can be:
-            - `AINx`: An analog input, if gain and/or offset is given, the
-              integrated slope mechanism will be used with the extended
-              features registers. It can also be used for thermocouples (see
-              below). You can use any EF by using the ``write_at_open`` and
-              ``to_read`` keys if necessary.
-            - `(T)DACx`: An analog output, you can specify gain and/or offset.
-            - `(E/F/C/M IOx)`: Digital in/outputs. You can specify the
-              direction.
+          The name can be:
+            - `AINx`: Analog input, linked to an ADC. A gain and offset can be
+              provided, and the range and resolution can be adjusted. It is
+              always an input. These channels can also be used with
+              thermocouples (see below).
+            - `(T)DACx`: Analog output, linked to a DAC. A gain and an offset
+              can be specified. It is always an output.
+            - `(E/F/C/M IOx)`: Digital inputs/outputs. A gain and an offset
+              can be specified. It can be either an input or an output, the
+              default is output.
 
-        - gain (:obj:`float`, default: `1`): A numeric value that will multiply
-          the given value for inputs and outputs.
-        - offset (:obj:`float`, default: `0`): Will be added to the value.
-
-          For inputs:
+        - gain: If the channel is an input, the measured value will be
+          modified directly by the Labjack as follows :
           ::
 
             returned_value = gain * measured_value + offset
 
-          For outputs:
+          If the channel is an output, the command value will be modified in
+          Crappy as follows before being sent to the Labjack :
           ::
 
-            set_value = gain * given_value + offset.
+            sent_value = gain * command + offset.
 
-          Where `measured_value` and `set_values` are in Volts.
+        - offset: If the channel is an input, the measured value will be
+          modified directly by the Labjack as follows :
+          ::
 
-        - make_zero (:obj:`bool`): AIN only, if :obj:`True` the input value
-          will be evaluated at startup and the offset will be adjusted to
-          return `0` (or the offset if any).
-        - direction (:obj:`bool`): DIO only, if :obj:`True` (or `1`), the port
-          will be used as an output else as an input.
-        - resolution (:obj:`int`, default: `1`): The resolution of the
-          acquisition, see Labjack documentation for more details. The bigger
-          this value the better the resolution, but the lower the speed. The
-          possible range is either `1` to `8` or to `12` according to the
-          model.
-        - range (:obj:`float`, default: `10`): The range of the acquisition in
-          Volts. A range of `x` means that values can be read  between `-x` and
-          `x` Volts. The possible values are:
+            returned_value = gain * measured_value + offset
+
+          If the channel is an output, the command value will be modified in
+          Crappy as follows before being sent to the Labjack :
+          ::
+
+            sent_value = gain * command + offset
+
+        - make_zero: If :obj:`True`, data will be acquired on this channel
+          before the test starts, and a compensation value will be deduced
+          so that the offset of this channel is `0`. The compensation is
+          performed directly by the Labjack. This setting only has effect for
+          `AIN` channels defined as inputs. **It will only take effect if the
+          ``make_zero_delay`` argument of the :ref:`IOBlock` controlling the
+          Labjack is set** !
+
+        - direction: If :obj:`True`, the channel is considered as an output,
+          else as an input. Only has effect for `IO` channels, the default is
+          output.
+
+        - resolution: The resolution of the acquisition as an integer, refer to
+          Labjack documentation for more details. The higher this value the
+          better the resolution, but the lower the speed. The possible range is
+          either `1` to `8` or to `12` depending on the model. The default is
+          `1`. Only has effect for `AIN` channels.
+
+        - range: The range of the acquisition in Volts. A range of `x` means
+          that values can be read  between `-x` and `x` Volts. The possible
+          values are :
           ::
 
             0.01, 0.1, 1, 10
 
-        - limits (:obj:`tuple`, default: None): To clamp the output values
-          to a given range. The :obj:`tuple` should contain two values: the min
-          and the max limit.
+          Only has effect for `AIN` channels.
 
-        - thermocouple (:obj:`str`): The type of thermocouple (AIN only).
-          Possible values are:
+        - limits: A :obj:`tuple` containing the minimum and maximum allowed
+          command values to set for this channel. After applying the gain and
+          offset to the command, it is then clamped between these two values
+          before being sent to the Labjack. Only has effect for output
+          channels.
+
+        - thermocouple: The type of thermocouple to read data from. Possible
+          values are:
           ::
 
             'E', 'J', 'K', 'R', 'T', 'S', 'C'
 
           If specified, it will use the EF to read a temperature directly from
-          the thermocouples.
+          the thermocouples. Only has effect for `AIN` channels.
 
-        - write_at_open (:obj:`list`): If you need to write specific names or
-          registers when opening the channel, you can give them as a
-          :obj:`list` of :obj:`tuple`. They will be written in the order of the
-          list.
-
-          The tuples can either be `(name (str), value (int/float))` or
+        - write_at_open: A :obj:`list` containing commands for writing specific
+          names or registers when opening the channel. The commands should be
+          given as :obj:`tuple` either in the format
+          `(name (str), value (int/float))` or
           `(register (int), type (int), value (float/int))`.
 
     Warning:
-      DO NOT CONSIDER the ``limits`` KEY AS A SAFETY IMPLEMENTATION. It
-      *should* not go beyond/below the given values, but this is not meant to
-      replace hardware safety!
+      Do not consider the ``limits`` key as a safety feature. It *should* not
+      go beyond/below the given values, but this is not meant to replace
+      hardware safety !
     """
 
-    InOut.__init__(self)
-    self.device = device
-    self.connection = connection
-    self.identifier = identifier
-    self.channels = [{'name': 'AIN0'}] if channels is None else channels
-    self.write_at_open = [] if write_at_open is None else write_at_open
-    self.no_led = no_led
+    super().__init__()
 
-    if self.no_led:
-      self.write_at_open.append(('POWER_LED', 0))
-    self.check_chan()
-    self.handle = None
+    # Identifiers for the device to open
+    self._device = device
+    self._connection = connection
+    self._identifier = identifier
 
-  def check_chan(self) -> None:
-    default = {'gain': 1, 'offset': 0, 'make_zero': False, 'resolution': 1,
-               'range': 10, 'direction': 1, 'dtype': ljm.constants.FLOAT32,
-               'limits': None}
-    if not isinstance(self.channels, list):
-      self.channels = [self.channels]
-    # Let's loop over all the channels to set everything we need
-    self.in_chan_list = []
-    self.out_chan_list = []
-    for d in self.channels:
-      if isinstance(d, str):
-        d = {'name': d}
+    # List of commands to send when opening the Labjack
+    self._write_at_open = [] if write_at_open is None else write_at_open
+    if no_led:
+      self._write_at_open.append(('POWER_LED', 0))
 
-      # === Modbus registers ===
-      if isinstance(d['name'], int):
-        for k in ['direction', 'dtype', 'limits']:
-          if k not in d:
-            d[k] = default[k]
-        if d['direction']:
-          d['to_write'] = d['name']
-          d['gain'] = 1
-          d['offset'] = 0
-          self.out_chan_list.append(d)
+    self._channels_in = list()
+    self._channels_out = list()
+
+    # Parsing the setting dict given for each channel
+    for channel in channels:
+
+      # Checking that the name was given as it's the most important attribute
+      if 'name' not in channel:
+        raise AttributeError("[Labjack T7] The given channels must contain "
+                             "the 'name' key !")
+      name = channel['name']
+
+      # Modbus registers
+      if isinstance(name, int):
+        chan = _Channel(name=name, dtype=ljm.constants.FLOAT32)
+        chan.update(channel)
+
+        # Can be either input or output, the user has to specify
+        if chan.direction:
+          self._channels_out.append(chan)
         else:
-          d['to_read'] = d['name']
-          self.in_chan_list.append(d)
+          self._channels_in.append(chan)
 
-      # === AIN channels ===
-      elif d['name'].startswith("AIN"):
-        for k in ['gain', 'offset', 'make_zero', 'resolution', 'range']:
-          if k not in d:
-            d[k] = default[k]
-        if 'write_at_open' not in d:
-          d['write_at_open'] = []
-        d['write_at_open'].extend([  # What is written when opening the chan
-          ljm.nameToAddress(d['name'] + "_RANGE") + (d['range'],),
-          ljm.nameToAddress(d['name'] + "_RESOLUTION_INDEX") +
-          (d['resolution'],)])
-        if 'thermocouple' in d:
-          therm = {'E': 20, 'J': 21, 'K': 22, 'R': 23, 'T': 24,
-                   'S': 25, 'C': 30}
-          d['write_at_open'].extend([
-            ljm.nameToAddress(d['name'] + "_EF_INDEX") +
-            (therm[d['thermocouple']],),
-            ljm.nameToAddress(d['name'] + "_EF_CONFIG_A") + (1,),
-            # for degrees C
-            ljm.nameToAddress(d['name'] + "_EF_CONFIG_B") + (60052,),
-            # CJC config
-            ljm.nameToAddress(d['name'] + "_EF_CONFIG_D") + (1,),  # CJC config
-            ljm.nameToAddress(d['name'] + "_EF_CONFIG_E") + (0,)  # CJC config
-            ])
-          d['to_read'], d['dtype'] = ljm.nameToAddress(d['name'] +
-                                                       "_EF_READ_A")
-        elif d["gain"] == 1 and d['offset'] == 0 and not d['make_zero']:
-          # No gain/offset
-          # We can read directly of the AIN register
-          d['to_read'], d['dtype'] = ljm.nameToAddress(d['name'])
-        else:  # With gain and offset: let's use Labjack's built in slope
-          d['write_at_open'].extend([
-            ljm.nameToAddress(d['name'] + "_EF_INDEX") + (1,),  # for slope
-            ljm.nameToAddress(d['name'] + "_EF_CONFIG_D") + (d['gain'],),
-            ljm.nameToAddress(d['name'] + "_EF_CONFIG_E") +
-            (d['offset'] if not d['make_zero'] else 0,),
-          ])  # To configure slope in the device
-          d['to_read'], d['dtype'] = ljm.nameToAddress(d['name'] +
-                                                       "_EF_READ_A")
+      # Analog inputs
+      elif isinstance(name, str) and name.startswith('AIN'):
+        chan = _Channel(name=name)
+        chan.update(channel)
 
-        self.in_chan_list.append(d)
+        # Setting the range and the resolution
+        chan.write_at_open.extend([
+          (*self._parse(f'{name}_RANGE'), chan.range),
+          (*self._parse(f'{name}_RESOLUTION_INDEX'), chan.resolution)])
 
-      # === DAC/TDAC channels ===
-      elif "DAC" in d['name']:
-        for k in ['gain', 'offset', 'limits']:
-          if k not in d:
-            d[k] = default[k]
-        d['to_write'], d['dtype'] = ljm.nameToAddress(d['name'])
-        self.out_chan_list.append(d)
+        # Specific commands for thermocouples
+        if chan.thermocouple is not None:
+          chan.write_at_open.extend([
+            (*self._parse(f'{name}_EF_INDEX'), thcp_map[chan.thermocouple]),
+            (*self._parse(f'{name}_EF_CONFIG_A'), 1),
+            (*self._parse(f'{name}_EF_CONFIG_B'), 60052),
+            (*self._parse(f'{name}_EF_CONFIG_D'), 1),
+            (*self._parse(f'{name}_EF_CONFIG_E'), 0)])
 
-      # === FIO/EIO/CIO/MIO channels ===
-      elif "IO" in d['name']:
-        if "direction" not in d:
-          d["direction"] = default["direction"]
-        if d["direction"]:  # 1/True => output, 0/False => input
-          d['gain'] = 1
-          d['offset'] = 0
-          d['limits'] = None
-          d['to_write'], d['dtype'] = ljm.nameToAddress(d['name'])
-          self.out_chan_list.append(d)
+          chan.address, chan.dtype = self._parse(f'{name}_EF_READ_A')
+
+        # Simplest case with no gain and offset
+        elif chan.gain == 1 and chan.offset == 0 and not chan.make_zero:
+          chan.address, chan.dtype = self._parse(name)
+
+        # Setting the gain and offset if provided
         else:
-          d['to_read'], d['dtype'] = ljm.nameToAddress(d['name'])
-          self.in_chan_list.append(d)
+          chan.write_at_open.extend([
+            (*self._parse(f'{name}_EF_INDEX'), 1),
+            (*self._parse(f'{name}_EF_CONFIG_D'), chan.gain),
+            (*self._parse(f'{name}_EF_CONFIG_E'), chan.offset
+             if not chan.make_zero else 0)])
+
+          chan.address, chan.dtype = self._parse(f'{name}_EF_READ_A')
+
+        self._channels_in.append(chan)
+
+      # Digital to analog converters
+      elif isinstance(name, str) and 'DAC' in name:
+        chan = _Channel(name=name)
+        chan.update(channel)
+
+        chan.address, chan.dtype = self._parse(name)
+        self._channels_out.append(chan)
+
+      # Digital inputs and outputs
+      elif isinstance(name, str) and 'IO' in name:
+        chan = _Channel(name=name)
+        chan.update(channel)
+
+        chan.address, chan.dtype = self._parse(name)
+
+        # Can be either input or output, the user has to specify
+        if chan.direction:
+          self._channels_out.append(chan)
+        else:
+          self._channels_in.append(chan)
 
       else:
-        raise AttributeError("[labjack] Invalid chan name: " + str(d['name']))
+        raise AttributeError(f"[Labjack T7] Invalid chan name: {name}")
 
-      self.in_chan_dict = {}
-      for c in self.in_chan_list:
-        self.in_chan_dict[c["name"]] = c
-      self.out_chan_dict = {}
-      for c in self.out_chan_list:
-        self.out_chan_dict[c["name"]] = c
+    # Extracting the addresses and data types from all channels
+    self._read_addresses = [chan.address for chan in self._channels_in]
+    self._read_types = [chan.dtype for chan in self._channels_in]
+    self._write_addresses = [chan.address for chan in self._channels_out]
+    self._write_types = [chan.dtype for chan in self._channels_out]
+
+    # These attributes will come in use later
+    self._last_sent_val = [None for _ in self._write_addresses]
+    self._handle = None
 
   def open(self) -> None:
-    self.handle = ljm.openS(self.device, self.connection, self.identifier)
-    # ==== Writing initial config ====
-    reg, types, values = [], [], []
-    for t in self.write_at_open:
-      if len(t) == 2:
-        r, typ = ljm.nameToAddress(t[0])
-        value = t[1]
-      else:
-        r, typ, value = t
-      reg.append(r)
-      types.append(typ)
-      values.append(value)
-    for c in self.in_chan_list + self.out_chan_list:
-      # Turn (name, val) tuples to (addr, type, val)
-      for i, t in enumerate(c.get('write_at_open', [])):
-        if len(t) == 2:
-          c['write_at_open'][i] = ljm.nameToAddress(t[0]) + (t[1],)
-      # Write everything we need
-      for r, t, v in c.get('write_at_open', []):
-        reg.append(r)
-        types.append(t)
-        values.append(v)
+    """Opening the Labjack, parsing the commands to write at open, and sending
+    them."""
 
-    if reg:
-      ljm.eWriteAddresses(self.handle, len(reg), reg, types, values)
-    # ==== Recap of the addresses to read/write ====
-    self.read_addresses = [c['to_read'] for c in self.in_chan_list]
-    self.read_types = [c['dtype'] for c in self.in_chan_list]
-    self.write_addresses = [c['to_write'] for c in self.out_chan_list]
-    self.write_types = [c['dtype'] for c in self.out_chan_list]
-    self.last_values = [None] * len(self.write_addresses)
-    # ==== Measuring zero to add to the offset (if asked to) ====
-    if any([c.get("make_zero", False) for c in self.in_chan_list]):
-      print("[Labjack] Please wait during offset evaluation...")
-      off = self.eval_offset()
-      names, values = [], []
-      for i, c in enumerate(self.in_chan_list):
-        if 'make_zero' in c and c['make_zero']:
-          names.append(c['name'] + '_EF_CONFIG_E')
-          values.append(c['offset'] + off[i])
-      ljm.eWriteNames(self.handle, len(names), names, values)
+    # Opening the Labjack
+    self._handle = ljm.openS(self._device, self._connection, self._identifier)
 
-  def get_data(self) -> list:
-    """Read the signal on all pre-defined input channels."""
+    # Gathering all the data to write at open
+    self._write_at_open.extend(chain(*(chan.write_at_open for chan
+                                       in chain(self._channels_in,
+                                                self._channels_out))))
 
-    try:
-      return [time()]+ljm.eReadAddresses(self.handle, len(self.read_addresses),
-                                         self.read_addresses, self.read_types)
-    except ljm.LJMError as e:
-      print('[Labjack] Error in get_data:', e)
-      self.close()
-      raise
+    # Parsing all the commands given as a tuple of two values
+    self._write_at_open = [t if len(t) == 3 else (*self._parse(t[0]), t[1])
+                           for t in self._write_at_open]
 
-  def set_cmd(self, *cmd: float) -> None:
-    """Converts the tension value to a digital value and send it to the output.
+    # Getting the registers, data types and values in separate tuples
+    if self._write_at_open:
+      reg, types, values = tuple(zip(*self._write_at_open))
+    else:
+      reg = types = values = None
 
-    Note:
-      Once a value has been written, it will not be written again until it
-      changes! This is meant to lower the communication and Labjack activity.
+    # Finally, writing the commands to write at open
+    if reg is not None:
+      ljm.eWriteAddresses(handle=self._handle,
+                          numFrames=len(reg),
+                          aAddresses=reg,
+                          aDataTypes=types,
+                          aValues=values)
 
-      It relies on the fact that these registers will not change between writes
-      (Which is true unless the card runs a lua script writing the same
-      registers as the user).
+  def make_zero(self, delay: float) -> None:
+    """Overriding of the method of the parent class, because the Labjack T7
+    allows setting offsets directly on the board.
+
+    Setting the offsets on the Labjack is slightly quicker than correcting the
+    received values afterwards.
+
+    Args:
+      delay: The delay during which the data should be acquired for determining
+        the offset.
     """
 
-    # values = []
-    # for val,chan in zip(cmd, self.out_chan_list):
-    #   values.append(chan['gain'] * val + chan['offset'])
-    # ljm.eWriteAddresses(self.handle,len(self.write_addresses),
-    #    self.write_addresses,self.write_types,values)
-    addresses, types, values = [], [], []
-    for i, (a, t, v, o, c) in enumerate(zip(self.write_addresses,
-                                            self.write_types, cmd,
-                                            self.last_values,
-                                            self.out_chan_list)):
-      if v != o:
-        new_v = c['gain'] * v + c['offset']
-        if c['limits']:
-          new_v = clamp(new_v, c['limits'][0], c['limits'][1])
-        self.last_values[i] = v
-        addresses.append(a)
-        types.append(t)
-        values.append(new_v)
-    if addresses:
-      ljm.eWriteAddresses(self.handle, len(addresses), addresses, types,
-                          values)
+    # No need to acquire data if no channel should be zeroed
+    # Also, the IO channels shouldn't be zeroed
+    if any(chan.make_zero and 'AIN' in chan.name
+           for chan in self._channels_in):
 
-  def __getitem__(self, chan: str) -> tuple:
-    """Allows reading of an input chan by calling ``lj[chan]``."""
+      # Acquiring the data
+      super().make_zero(delay)
 
-    # Apply offsets and stuff if this is a channel we know
-    try:
-      return time(), ljm.eReadName(
-          self.handle, self.in_chan_dict[chan]['to_read'])
-    # Else: let the user access it directly
-    except KeyError:
-      return time(), ljm.eReadName(self.handle, chan)
+      # Proceed only if the acquisition went fine
+      if self._compensations:
+        names, values = tuple(zip(*(
+          (f"{chan.name}_EF_CONFIG_E", chan.offset + off)
+          for off, chan in zip(self._compensations, self._channels_in)
+          if chan.make_zero and 'AIN' in chan.name)))
 
-  def __setitem__(self, chan: str, val: float) -> None:
-    """Allows setting of an output chan by calling ``lj[chan] = val``."""
+        # Setting the offsets on the Labjack
+        ljm.eWriteNames(handle=self._handle,
+                        numFrames=len(names),
+                        aNames=names,
+                        aValues=values)
 
-    try:
-      ljm.eWriteName(
-        self.handle, chan,
-        self.out_chan_dict[chan]['gain'] * val +
-        self.out_chan_dict[chan]['offset'])
-    except KeyError:
-      ljm.eWriteName(self.handle, chan, val)
+        # Resetting the software offsets to avoid double compensation
+        self._compensations = list()
 
-  def write(self, value: float, address: int, dtype: str = None) -> None:
-    """To write data directly into a register."""
+  def get_data(self) -> Optional[Union[list, Dict[str, Any]]]:
+    """Read the signal on all pre-defined input channels."""
 
-    if dtype is None:
-      dtype = ljm.constants.FLOAT32
-    ljm.eWriteAddress(self.handle, address, dtype, value)
+    return [time()] + ljm.eReadAddresses(handle=self._handle,
+                                         numFrames=len(self._read_addresses),
+                                         aAddresses=self._read_addresses,
+                                         aDataTypes=self._read_types)
 
-  def read(self, address: int, dtype: str = None):
-    """To read data directly from a register."""
+  def set_cmd(self, *cmd) -> None:
+    """Sets the tension commands on the output channels.
 
-    if dtype is None:
-      dtype = ljm.constants.FLOAT32
-    return ljm.eReadAddress(self.handle, address, dtype)
+    The given gain and offset are first applied, then the commands are clamped
+    to the given limits. The commands are then written to the Labjack, only if
+    they differ from the last ones.
+    """
+
+    # First, applying the given gain and offsets to the commands
+    cmd = [chan.gain * val + chan.offset
+           for val, chan in zip(cmd, self._channels_out)]
+
+    # Then, clamping the commands if limits were given
+    cmd = [val if chan.limits is None
+           else max(min(val, chan.limits[1]), chan.limits[0])
+           for val, chan in zip(cmd, self._channels_out)]
+
+    # Checking which values have to be updated and which are unchanged
+    to_upd = [not val == prev for val, prev in zip(cmd, self._last_sent_val)]
+
+    # Updating the list of last sent values
+    self._last_sent_val = list(cmd)
+
+    # No use continuing if there's nothing to update
+    if any(to_upd):
+
+      # Getting the addresses, data types and values to send
+      addresses, types, values = tuple(zip(*(
+        (addr, typ, val) for addr, typ, val, upd in
+        zip(self._write_addresses, self._write_types, cmd, to_upd) if upd)))
+
+      # Sending the commands
+      if addresses:
+        ljm.eWriteAddresses(handle=self._handle,
+                            numFrames=len(addresses),
+                            aAddresses=addresses,
+                            aDataTypes=types,
+                            aValues=values)
 
   def close(self) -> None:
-    """Closes the device."""
+    """Closes the Labjack."""
 
-    ljm.close(self.handle)
+    ljm.close(self._handle)
+
+  @staticmethod
+  def _parse(name: str) -> (int, int):
+    """Wrapper around :meth:`ljm.nameToAddress` to make the code clearer."""
+
+    return ljm.nameToAddress(name)

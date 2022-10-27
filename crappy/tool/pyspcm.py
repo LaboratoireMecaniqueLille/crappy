@@ -1,6 +1,9 @@
 # coding: utf-8
 
-"""More documentation coming soon !"""
+"""This file contains the code for binding the C++ Spectrum library in Python.
+
+The bindings haven't been tested for a while.
+"""
 
 from ctypes import *
 from sys import platform

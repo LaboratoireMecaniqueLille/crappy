@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from typing import Dict, Any, List
 from time import time
 from .inout import InOut
 from .._global import OptionalModule
@@ -90,7 +91,7 @@ class Pijuice(InOut):
     elif self._backend == 'pijuice':
       self._pijuice = PiJuice(self._i2c_port, self._address)
 
-  def get_data(self) -> dict:
+  def get_data(self) -> Dict[str, Any]:
     """Reads all the available information on the battery status.
 
     Returns:
@@ -198,7 +199,7 @@ class Pijuice(InOut):
       self._bus.close()
 
   @staticmethod
-  def _checksum(data: list) -> list:
+  def _checksum(data: List[int]) -> List[int]:
     """Compares the received checksum (last byte) to the one calculated over
     the other bytes.
 

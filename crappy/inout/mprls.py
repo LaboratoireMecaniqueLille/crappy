@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Union
+from typing import Union, Optional, List
 from .inout import InOut
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h, Usb_server, i2c_msg_ft232h
@@ -47,10 +47,10 @@ class Mprls(Usb_server, InOut):
 
   def __init__(self,
                backend: str,
-               eoc_pin: Union[str, int] = None,
+               eoc_pin: Optional[Union[str, int]] = None,
                device_address: int = 0x18,
                i2c_port: int = 1,
-               ft232h_ser_num: str = None) -> None:
+               ft232h_ser_num: Optional[str] = None) -> None:
     """Initializes the parent class and opens the I2C bus.
 
     Args:
@@ -147,7 +147,7 @@ class Mprls(Usb_server, InOut):
 
     self._i2c_msg = i2c_msg_ft232h if self._backend == 'ft232h' else i2c_msg
 
-  def get_data(self) -> list:
+  def get_data(self) -> List[float]:
     """Reads the pressure value.
 
     Returns:
@@ -183,7 +183,7 @@ class Mprls(Usb_server, InOut):
 
     return [time(), pres]
 
-  def close(self):
+  def close(self) -> None:
     """Closes the I2C bus."""
 
     if self._backend != 'blinka':

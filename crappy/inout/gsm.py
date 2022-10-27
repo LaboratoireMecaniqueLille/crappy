@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import sleep
+from typing import List
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -22,7 +23,7 @@ class Gsm(InOut):
   """
 
   def __init__(self,
-               numbers: list,
+               numbers: List[str],
                port: str = "/dev/ttyUSB0",
                baudrate: int = 115200) -> None:
     """Checks arguments validity.

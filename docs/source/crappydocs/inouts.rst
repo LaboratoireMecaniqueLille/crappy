@@ -82,11 +82,6 @@ NI DaQMX
 .. automodule:: crappy.inout.ni_daqmx
    :members:
 
-Open DaQ
---------
-.. automodule:: crappy.inout.open_daq
-   :members:
-
 Opsens
 ------
 .. automodule:: crappy.inout.opsens

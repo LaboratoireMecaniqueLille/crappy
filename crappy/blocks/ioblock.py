@@ -16,8 +16,6 @@ class IOBlock(Block):
   If it has outgoing links, it will acquire data and send it downstream over
   the labels given in ``labels``. It is possible to trigger the acquisition
   using a predefined label.
-
-
   """
 
   def __init__(self,
@@ -213,7 +211,7 @@ class IOBlock(Block):
         self._device.start_stream()
         self._stream_started = True
       # Actually getting the stream
-      data = self._device.get_stream()
+      data = self._device.return_stream()
     else:
       # Regular reading of data
       data = self._device.return_data()

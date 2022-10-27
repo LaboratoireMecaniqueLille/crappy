@@ -2,9 +2,12 @@
 
 from time import time
 import numpy as np
-
+from typing import List, Dict, Any, Optional, Tuple
+from dataclasses import dataclass, field
+from itertools import chain
 from .inout import InOut
 from .._global import OptionalModule
+
 try:
   from labjack import ljm
 except ImportError:
@@ -12,184 +15,264 @@ except ImportError:
                        "Please install Labjack LJM and the ljm Python module")
 
 
+@dataclass
+class _Channel:
+  """This class is a simple structure holding all the attributes a Labjack
+  channel can have for streaming."""
+
+  name: str
+
+  address: Optional[int] = None
+  gain: float = 1
+  offset: float = 0
+  make_zero: bool = False
+  range: float = 10
+  write_at_open: List[Tuple[str, Any]] = field(default_factory=list)
+
+  def update(self, dic_in: Dict[str, Any]) -> None:
+    """Updates the channel keys based on the user input."""
+
+    for key, val in dic_in.items():
+      if hasattr(self, key):
+        setattr(self, key, val)
+
+      # Handling the case when the user enters a wrong key
+      else:
+        print(f"[Labjack T7] Unknown channel key : {key}, ignoring it")
+
+
 class T7_streamer(InOut):
-  """Class to use stream mode with Labjack T7 devices.
+  """This InOut object allows controlling a Labjack T7 device in stream mode.
 
-  Note:
-    For single modes, see :ref:`Labjack T7`.
+  It can only acquire data on the `AIN` channels. For single point mode, and
+  acquisition on all channels, use the :ref:`Labjack T7` InOut.
 
-    You can use :ref:`IOBlock` with ``streamer=True`` to read data at high
-    frequency from the Labjack. Streamer mode makes the Labjack unavailable for
-    any other operation (single acquisition, `DAC` or `DIO`).
+  Compared with single point acquisition, the streaming mode can achieve much
+  higher data rates and has a much greater regularity in the frequency of the
+  acquisition. However, fewer options are available and not all types of
+  channels can be read in the streamer mode.
 
-    You can specify each channel as a :obj:`dict`, allowing to set
-    channel-specific settings such as gain, offset (computed on the host
-    machine as this feature is not available on board with streamer mode),
-    range and ability to zero the reading at startup.
+  For each channel, the voltage range can be tuned, and a gain and offset can
+  be defined. Also, the user can decide whether the channel should be zeroed
+  before starting the test or not.
+
+  Important:
+    The ``streamer`` argument of the IOBlock controlling this InOut must be set
+    to :obj:`True` to enable streaming in this class. Otherwise, only single
+    point acquisition can be performed.
   """
 
   def __init__(self,
+               channels: List[Dict[str, Any]],
                device: str = 'ANY',
                connection: str = 'ANY',
                identifier: str = 'ANY',
-               channels: list = None,
                scan_rate: int = 100000,
                scan_per_read: int = 10000,
                resolution: int = 1) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
-      device (:obj:`str`, optional): The type of the device to open. Possible
-        values include:
+      channels: A :obj:`list` of the channels to interface with on the Labjack.
+        Each object in this list should be a :obj:`dict` representing a single
+        channel, and whose keys provide information on the channel to use.
+        Refer to the note below for more information on the possible keys.
+      device: The type of Labjack to open. Possible values include :
         ::
 
           'ANY', 'T7', 'T4', 'DIGIT'
 
         Only tested with `'T7'` in Crappy.
-      connection (:obj:`str`, optional): How is the Labjack connected ?
-        Possible values include:
+      connection: The type of connection used for interfacing with the Labjack.
+        Possible values include :
         ::
 
           'ANY', 'TCP', 'USB', 'ETHERNET', 'WIFI'
 
-      identifier (:obj:`str`, optional): Something to identify the Labjack. It
-        can be a serial number, an IP address, or a device name.
-      channels (:obj:`list`, optional): Channels to use and their settings. It
-        must be a :obj:`list` of :obj:`dict`.
-      scan_rate (:obj:`int`, optional): The acquisition frequency in Hz for the
-        channels. Note that the sample rate (`scan_rate * num of chan`) cannot
-        exceed `100000`. If it is too high it will be lowered to the highest
-        possible value.
-      scan_per_read (:obj:`int`, optional): The number of points to read during
-        each loop.
-      resolution (:obj:`int`, optional): The resolution index for all channels.
-        The bigger this value the better the resolution, but the lower the
-        speed. The possible range is either `1` to `8` or to `12` according to
-        the model.
+      identifier: Any extra information allowing to further identify the
+        Labjack to open, like a serial number, an IP address, or a device name.
+      scan_rate: The acquisition frequency in Hz for all channels. Note that
+        the sample rate (`scan_rate * num of chan`) cannot exceed `100000`. If
+        it is too high it will be lowered to the highest possible value.
+      scan_per_read: The number of points to read at each loop.
+      resolution: The resolution of the acquisition as an integer for all
+        channels. Refer to Labjack documentation for more details. The higher
+        this value the better the resolution, but the lower the speed. The
+        possible range is either `1` to `8` or to `12` depending on the model.
+        The default is `1`.
 
     Note:
       - ``channels`` keys:
 
-        - name (:obj:`str`): The name of the channel according to Labjack's
-          naming convention. Ex: `'AIN0'`. This will be used to define the
-          direction (in/out) and the available settings.
+        - name: The name of the channel to interface with, as written on the
+          Labjack's case. Ex: `'AIN0'`. In streamer mode, only the `AIN`
+          channels, i.e. the analog inputs, are available.
 
-          It can be:
-            - `AINx`: An analog input, if gain and/or offset is given, the
-              integrated slope mechanism will be used with the extended
-              features registers. It can also be used for thermocouples (see
-              below). You can use any EF by using the ``write_at_open`` and
-              ``to_read`` keys if necessary.
-            - `(T)DACx`: An analog output, you can specify gain and/or offset.
-            - `(E/F/C/M IOx)`: Digital in/outputs. You can specify the
-              direction.
-
-        - gain (:obj:`float`, default: `1`): A numeric value that will multiply
-          the given value for inputs and outputs.
-        - offset (:obj:`float`, default: `0`): Will be added to the value.
-
-          For inputs:
+        - gain: The measured value will be modified in Crappy as follows :
           ::
 
             returned_value = gain * measured_value + offset
 
-          For outputs:
+        - offset: The measured value will be modified in Crappy as follows :
           ::
 
-            set_value = gain * given_value + offset.
+            returned_value = gain * measured_value + offset
 
-          Where `measured_value` and `set_values` are in Volts.
+        - make_zero: If :obj:`True`, data will be acquired on this channel
+          before the test starts, and a compensation value will be deduced
+          so that the offset of this channel is `0`. **It will only take effect
+          if the ``make_zero_delay`` argument of the :ref:`IOBlock` controlling
+          the Labjack is set** !
 
-        - make_zero (:obj:`bool`): AIN only, if :obj:`True` the input value
-          will be evaluated at startup and the offset will be adjusted to
-          return `0` (or the offset if any).
-        - range (:obj:`float`, default: `10`): The range of the acquisition in
-          Volts. A range of `x` means that values can be read  between `-x` and
-          `x` Volts. The possible values are:
+        - range: The range of the acquisition in Volts. A range of `x` means
+          that values can be read  between `-x` and `x` Volts. The possible
+          values are :
           ::
 
             0.01, 0.1, 1, 10
 
     """
 
-    InOut.__init__(self)
-    self.device = device
-    self.connection = connection
-    self.identifier = identifier
-    self.channels = [{'name': 'AIN0'}] if channels is None else channels
-    self.scan_rate = scan_rate
-    self.scan_per_read = scan_per_read
-    self.resolution = resolution
+    super().__init__()
 
-    default = {'gain': 1, 'offset': 0, 'make_zero': False, 'range': 10}
-    if len(self.channels) * self.scan_rate > 100000:
-      self.scan_rate = 100000 / len(self.channels)
-      print("[Labjack] Warning! scan_rate is too high! Sample rate cannot "
-            "exceed 100kS/s, lowering samplerate to",
-            self.scan_rate, "samples/s")
-    self.chan_list = []
-    for d in self.channels:
-      if isinstance(d, str):
-        d = {'name': d}
-      for k in ['gain', 'offset', 'make_zero', 'range']:
-        if k not in d:
-          d[k] = default[k]
-      if 'to_write' not in d:
-        d['to_write'] = []
-      d['to_write'].append(("_RANGE", d['range']))
-      d['to_read'] = ljm.nameToAddress(d['name'])[0]
-      self.chan_list.append(d)
+    if len(channels) * scan_rate > 100000:
+      scan_rate = 100000 / len(channels)
+      print(f"[Labjack T7] Warning ! scan_rate is too high! Sample rate cannot"
+            f" exceed 100kS/s, lowering samplerate to {scan_rate} samples/s")
+
+    self._device = device
+    self._connection = connection
+    self._identifier = identifier
+    self._scan_rate = scan_rate
+    self._scan_per_read = scan_per_read
+    self._resolution = resolution
+
+    self._channels = list()
+
+    # Parsing the setting dict given for each channel
+    for channel in channels:
+
+      # Checking that the name was given as it's the most important attribute
+      if 'name' not in channel:
+        raise AttributeError("[Labjack T7] The given channels must contain "
+                             "the 'name' key !")
+
+      # Instantiating the channel and its attributes
+      chan = _Channel(name=channel['name'])
+      chan.update(channel)
+      chan.write_at_open.append((f"{chan.name}_RANGE", chan.range))
+      chan.address, _ = ljm.nameToAddress(chan.name)
+
+      self._channels.append(chan)
+
+    # these attributes will be set later
+    self._handle = None
+    self._n_points = 0
+    self._stream_t0 = 0
+    self._stream_started = False
 
   def open(self) -> None:
-    self.handle = ljm.openS(self.device, self.connection, self.identifier)
-    names, values = [], []
-    for c in self.chan_list:
-      if "to_write" in c:
-        for n, v in c['to_write']:
-          names.append(c['name'] + n)
-          values.append(v)
-    # names.append("STREAM_NUM_ADDRESSES"); values.append(len(self.channels))
-    names.append("STREAM_SCANRATE_HZ")
-    values.append(self.scan_rate)
-    names.append("STREAM_RESOLUTION_INDEX")
-    values.append(self.resolution)
-    ljm.eWriteNames(self.handle, len(names), names, values)
-    scan_rate = ljm.eReadName(self.handle, "STREAM_SCANRATE_HZ")
-    if scan_rate != self.scan_rate:
-      print("[Labjack] Actual scan_rate:", scan_rate,
-            "instead of", self.scan_rate)
-      self.scan_rate = scan_rate
-    if any([c.get("make_zero", False) for c in self.chan_list]):
-      print("[Labjack] Please wait during offset evaluation...")
-      off = self.eval_offset()
-      for i, c in enumerate(self.chan_list):
-        if 'make_zero' in c and c['make_zero']:
-          c['offset'] += c['gain']*off[i]
-    self.n = 0  # Number of data points (to rebuild time)
+    """Opens the Labjack, parses the commands to write at open, and sends them.
 
-  def get_data(self) -> list:
-    """Short version, only used for :meth:`InOut.eval_offset`."""
+    Also checks whether the scan rate chose nby the Labjack is the same as
+    requested by the user.
+    """
 
-    return [time()] + ljm.eReadNames(self.handle, len(self.chan_list),
-                                     [c['name'] for c in self.chan_list])
+    # Opening the Labjack
+    self._handle = ljm.openS(self._device, self._connection, self._identifier)
+
+    # Setting the different channels to read from on the Labjack
+    write_at_open = list(chain(*(chan.write_at_open
+                                 for chan in self._channels)))
+    write_at_open.extend([("STREAM_SCANRATE_HZ", self._scan_rate),
+                          ("STREAM_RESOLUTION_INDEX", self._resolution)])
+    names, values = tuple(zip(*write_at_open))
+    ljm.eWriteNames(handle=self._handle,
+                    numFrames=len(names),
+                    aNames=names,
+                    aValues=values)
+
+    # Checking if the scan rate that will be used is the same as requested
+    scan_rate = ljm.eReadName(handle=self._handle, name="STREAM_SCANRATE_HZ")
+    if scan_rate != self._scan_rate:
+      print(f"[Labjack T7] Actual scan_rate: {scan_rate} "
+            f"instead of {self._scan_rate}")
+      self._scan_rate = scan_rate
+
+  def make_zero(self, delay: float) -> None:
+    """Overriding of the method of the parent class, because the user can
+    choose which channels should be zeroed or not.
+
+    It simply performs the regular zeroing, and resets the compensation for the
+    channels that shouldn't be zeroed.
+    """
+
+    # No need to acquire data if no channel should be zeroed
+    if any(chan.make_zero for chan in self._channels):
+
+      # Acquiring the data
+      super().make_zero(delay)
+
+      # Proceed only if the acquisition went fine
+      if self._compensations:
+
+        # Resetting the compensation for channels that shouldn't be zeroed
+        self._compensations = [comp if chan.make_zero else 0 for comp, chan
+                               in zip(self._compensations, self._channels)]
 
   def start_stream(self) -> None:
-    ljm.eStreamStart(self.handle, self.scan_per_read, len(self.chan_list),
-                     [c['to_read'] for c in self.chan_list], self.scan_rate)
-    self.stream_t0 = time()
+    """Starts the stream, and saves the timestamp chen the stream started."""
+
+    ljm.eStreamStart(handle=self._handle,
+                     scansPerRead=self._scan_per_read,
+                     numAddresses=len(self._channels),
+                     aScanList=[chan.address for chan in self._channels],
+                     scanRate=self._scan_rate)
+    self._stream_t0 = time()
+    self._stream_started = True
+
+  def get_data(self) -> List[float]:
+    """Reads single data points, applies the given gains and offsets, and
+    returns the data."""
+
+    data = ljm.eReadNames(handle=self._handle,
+                          numFrames=len(self._channels),
+                          aNames=[chan.name for chan in self._channels])
+
+    return [time()] + [val * chan.gain + chan.offset for chan, val
+                       in zip(self._channels, data)]
+
+  def get_stream(self) -> Optional[List[np.ndarray]]:
+    """Acquires the stream, reshapes the data, applies the gains and offsets,
+    and returns the data along with a time array."""
+
+    if not self._stream_started:
+      return
+
+    # Acquiring the data from the Labjack and reshaping it
+    raw_data, *_ = ljm.eStreamRead(self._handle)
+    data = np.array(raw_data)
+    data = data.reshape(len(data) // len(self._channels), len(self._channels))
+
+    # Applying the given gains and offsets
+    for i, chan in enumerate(self._channels):
+      data[:, i] = chan.gain * data[:, i] + chan.offset
+
+    # Generating the array of time values
+    t = self._stream_t0 + np.arange(self._n_points, self._n_points +
+                                    data.shape[0]) / self._scan_rate
+    self._n_points += data.shape[0]
+
+    return [t, data]
 
   def stop_stream(self) -> None:
-    ljm.eStreamStop(self.handle)
+    """Stops the stream if it was started."""
 
-  def get_stream(self) -> list:
-    a = np.array(ljm.eStreamRead(self.handle)[0])
-    r = a.reshape(len(a) // len(self.channels), len(self.channels))
-    for i, c in enumerate(self.chan_list):
-      r[:, i] = c['gain'] * r[:, i] + c['offset']
-    t = self.stream_t0 + \
-        np.arange(self.n, self.n + r.shape[0]) / self.scan_rate
-    self.n += r.shape[0]
-    return [t, r]
+    if self._stream_started:
+      ljm.eStreamStop(self._handle)
 
   def close(self) -> None:
-    ljm.close(self.handle)
+    """Closes the Labjack if it was opened."""
+
+    if self._handle is not None:
+      ljm.close(self._handle)

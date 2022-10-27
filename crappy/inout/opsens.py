@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from typing import List
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -11,34 +12,46 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Opsens(InOut):
-  """Sensor class for opsens conditioner."""
+  """This class allows reading data from an Opsens PicoSens fiber optics signal
+  conditioner.
 
-  def __init__(self, device: str = '/dev/ttyUSB0') -> None:
-    self.device = device
+  It can read data from various fiber optics sensors like temperature,
+  pressure, position or strain.
+  """
+
+  def __init__(self,
+               device: str = '/dev/ttyUSB0') -> None:
+    """Sets the arg and initializes the parent class.
+
+    Args:
+      device: Address of the serial connection for communicating with the
+        PicoSens.
+    """
+
     super().__init__()
 
+    self._addr = device
+    self._dev = None
+
   def open(self) -> None:
-    self.s = serial.Serial(port=self.device, baudrate=57600)
-    self.send_cmd("meas:rate min")
+    """Opens the serial connection and configures the PicoSens."""
+
+    self._dev = serial.Serial(port=self._addr, baudrate=57600)
+    self._send_cmd("meas:rate min")
+
+  def get_data(self) -> List[float]:
+    """Reads data from the PicoSens and returns it."""
+
+    return [time(), float(self._send_cmd("ch1:data? 1")[:-3])]
 
   def close(self) -> None:
-    self.s.close()
+    """Closes the serial connection if it was opened."""
 
-  def get_data(self) -> list:
-    return [time(), float(self.send_cmd("ch1:data? 1")[:-3])]
+    if self._dev is not None:
+      self._dev.close()
 
-  def read_reply(self) -> str:
-    r = ''
-    while r[-2:] != '\x04\n':
-      r += self.s.read()
-    return r
+  def _send_cmd(self, cmd: str) -> str:
+    """Sends a command and returns the received answer."""
 
-  def send_cmd(self, cmd: str) -> str:
-    if '\n' in cmd:
-      r = None
-      for c in cmd.split('/n'):
-        r = self.send_cmd(c)
-      return r
-    if cmd:
-      self.s.write(cmd + '\n')
-    return self.read_reply()
+    self._dev.write(cmd + '\n')
+    return self._dev.read_until(b'\x04\n').decode()

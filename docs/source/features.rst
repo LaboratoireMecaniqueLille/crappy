@@ -437,11 +437,6 @@ Acquisition boards
   Controls Labjack's `T7 <https://labjack.com/products/t7>`_ acquisition board
   in streaming mode.
 
-- :ref:`Open DaQ`
-
-  Controls the `Open-DAQ <https://www.open-daq.com/>`_ acquisition board.
-  Communicates over USB.
-
 - :ref:`Waveshare AD/DA`
 
   Controls Waveshare's `AD/DA <https://www.waveshare.com/product/raspberry-pi/

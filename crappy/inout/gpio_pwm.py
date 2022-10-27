@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from typing import Optional
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -23,8 +24,8 @@ class Gpio_pwm(InOut):
 
   def __init__(self,
                pin_out: int,
-               duty_cycle: float = None,
-               frequency: float = None) -> None:
+               duty_cycle: Optional[float] = None,
+               frequency: Optional[float] = None) -> None:
     """Checks the arguments validity.
 
     Args:
@@ -56,7 +57,7 @@ class Gpio_pwm(InOut):
         work but may decrease the available frequency range.
     """
 
-    InOut.__init__(self)
+    super().__init__()
 
     if pin_out not in range(2, 28):
       raise ValueError("pin_out should be an integer between 2 and 28")

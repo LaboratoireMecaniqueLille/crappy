@@ -2,7 +2,7 @@
 
 from time import time, sleep
 from re import fullmatch, findall
-from typing import List, Union
+from typing import List, Union, Optional
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 
@@ -87,14 +87,14 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
   """
 
   def __init__(self,
-               dac_channels: List[str] = None,
-               adc_channels: List[str] = None,
+               dac_channels: Optional[List[str]] = None,
+               adc_channels: Optional[List[str]] = None,
                gain_hardware: int = 1,
                v_ref: float = 3.3,
                gain: float = 1,
                offset: float = 0,
                sample_rate: Union[int, float] = 100,
-               ft232h_ser_num: str = None,
+               ft232h_ser_num: Optional[str] = None,
                rst_pin_ads: str = 'D7',
                cs_pin_ads: str = 'D4',
                drdy_pin_ads: str = 'D6',
@@ -284,7 +284,7 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
     self._bus.set_gpio(self._cs_pin_ads, True)
     sleep(0.001)
 
-  def get_data(self) -> list:
+  def get_data(self) -> List[float]:
     """Reads data from all the user-specified ADC channels, in a sequential
     way.
 

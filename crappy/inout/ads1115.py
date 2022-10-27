@@ -2,7 +2,7 @@
 
 from time import time
 from re import findall
-from typing import Union
+from typing import Union, List, Optional
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
@@ -92,10 +92,10 @@ class Ads1115(Usb_server, InOut):
                sample_rate: int = 128,
                v_range: float = 2.048,
                multiplexer: str = 'A1',
-               dry_pin: Union[str, int] = None,
+               dry_pin: Optional[Union[str, int]] = None,
                gain: float = 1,
                offset: float = 0,
-               ft232h_ser_num: str = None) -> None:
+               ft232h_ser_num: Optional[str] = None) -> None:
     """Checks arguments validity.
 
     Args:
@@ -271,7 +271,7 @@ class Ads1115(Usb_server, InOut):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self._dry_pin, GPIO.IN)
 
-  def get_data(self) -> list:
+  def get_data(self) -> List[float]:
     """Reads the registers containing the conversion result.
 
     The output is in Volts, unless a gain and offset are applied.

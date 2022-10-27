@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Union
+from typing import Union, Optional, List
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
@@ -119,10 +119,10 @@ class Nau7802(Usb_server, InOut):
                device_address: int = 0x2A,
                gain_hardware: int = 128,
                sample_rate: int = 80,
-               int_pin: Union[str, int] = None,
+               int_pin: Optional[Union[str, int]] = None,
                gain: float = 1,
                offset: float = 0,
-               ft232h_ser_num: str = None) -> None:
+               ft232h_ser_num: Optional[str] = None) -> None:
     """Checks the validity of the arguments..
 
     Args:
@@ -285,7 +285,7 @@ class Nau7802(Usb_server, InOut):
       GPIO.setmode(GPIO.BCM)
       GPIO.setup(self._int_pin, GPIO.IN)
 
-  def get_data(self) -> list:
+  def get_data(self) -> List[float]:
     """Reads the registers containing the conversion result.
 
     The output is in Volts by default, and can be converted to Newtons using

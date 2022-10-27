@@ -1,249 +1,133 @@
 # coding: utf-8
 
 from time import time
-import struct
-from typing import Union
+from struct import pack, unpack
+from typing import List
 
 from .inout import InOut
 from .._global import OptionalModule
 try:
-  from pymodbus.client.sync import ModbusTcpClient
+  from pymodbus.client.tcp import ModbusTcpClient
 except (ModuleNotFoundError, ImportError):
   ModbusTcpClient = OptionalModule("pymodbus", "Cannot use KollMorgenVariator")
 
 
-def float32_to_data(num):
-  return struct.unpack("=HH", struct.pack("=f", num))[::-1]
+coil_addr = {'power': 0,
+             'move_abs': 1,
+             'move_rel': 2,
+             'move_vel': 3,
+             'stop': 4,
+             'ack_error': 5}
 
+reg_addr = {'position': 0,
+            'distance': 2,
+            'velocity': 4,
+            'acc': 5,
+            'dec': 6,
+            'fstdec': 7,
+            'direction': 8}
 
-def data_to_float32(data):
-  assert len(data) == 2, "float32 expects 2 registers"
-  return struct.unpack("=f", struct.pack("=HH", *data[::-1]))[0]
-
-
-class KollMorgenVariator:
-  """Main class to test communication with kollmorgen variator.
-
-  Every variable and its address has been defined in the Kollmorgen Integrated
-  Suite.
-
-  To add or remove some, update the dictionaries of :meth:`__init__`.
-
-  There are 3 motors, so the tens are for each motor, the units for the
-  address.
-  """
-
-  def __init__(self,
-               host: str = '192.168.0.109',
-               port: int = 502) -> None:
-    """Sets the variator and defines the bits.
-
-    Args:
-      host (:obj:`str`, optional): Variator's IP address.
-      port (:obj:`int`, optional): Port for modbus communication
-    """
-
-    self.variator = ModbusTcpClient(host=host, port=port)
-    assert self.variator.connect(), "ERROR: could not connect to variator."
-
-    self.motor_addresses = [1, 2, 3, 4]
-
-    # R/W bits: coils
-    self.coil_addresses = {
-      'power': 0,
-      'move_abs': 1,
-      'move_rel': 2,
-      'move_vel': 3,
-      'stop': 4,
-      'ack_error': 5}
-
-    # R/W int32: holding registers
-    self.hldreg_addresses = {
-      'position': 0,
-      'distance': 2,
-      'velocity': 4,
-      'acc': 5,
-      'dec': 6,
-      'fstdec': 7,
-      'direction': 8}
-
-    # R bits: input bits, not used.
-    # R int32: input registers.
-
-    self.inpreg_addresses = {
-      'act_speed': 0,
-      'act_position': 2,
-      'axis_state': 4
-    }
-
-  def toggle_power(self, motor: int) -> None:
-    """Toggles power of given motor. Maybe not the most intelligent way to
-    handle power, though..."""
-
-    address = int(str(motor) + str(self.coil_addresses["power"]))
-    state = self.variator.read_coils(address)
-    self.variator.write_coil(address, not state.bits[0])
-
-  def clear_errors(self) -> None:
-    """If errors occurred, it must be clear in order to continue the program.
-    """
-
-    axis_states = self.variator.read_input_registers(address=1, count=3)
-
-    for index, err in enumerate(axis_states.registers):
-      if not err == 1:
-        motor = index + 1
-        address = int(str(motor) + str(self.coil_addresses["ack_error"]))
-        self.variator.write_coil(address, True)
-        print('Cleared error (AxisState %i) in motor %i' % (err, motor))
-
-  def set_speed(self, motor: int, speed: float) -> None:
-    """Writes to variator desired speed (signed), and its direction. Applies to
-    every motor movement (rotations, positioning...)."""
-
-    address_hld = int(str(motor) + str(self.hldreg_addresses["velocity"]))
-    self.variator.write_register(address_hld, abs(speed))
-    address_hld_direction = int(str(motor) + str(self.hldreg_addresses[
-      "direction"]))
-    if speed > 0:
-      self.variator.write_register(address_hld_direction, 0)
-    else:
-      self.variator.write_register(address_hld_direction, 1)
-
-  def set_accelerations(self, motor: int, **kwargs) -> None:
-    """To set acceleration, deceleration (for positioning) and fast
-    deceleration (boolean stop)."""
-
-    for address, value in kwargs.items():
-      self.variator.write_register(int(str(motor) +
-                                       str(self.hldreg_addresses[address])),
-                                   value)
-
-  def start_rotation(self, motor: int) -> None:
-    """Sets the rotation of specified motor at specified speed (signed)."""
-
-    address_coil = int(str(motor) + str(self.coil_addresses["move_vel"]))
-    self.variator.write_coil(address_coil, True)
-
-  def stop(self, motor: int) -> None:
-    """Stops the motor movement."""
-
-    address = int(str(motor) + str(self.coil_addresses["stop"]))
-    self.variator.write_coil(address, True)
-
-  def set_rotation(self, motor: int, rotation: float) -> None:
-    """To set a rotation (in degrees) of the motor axis. Rotation is signed."""
-
-    address_coil = int(str(motor) + str(self.coil_addresses["move_rel"]))
-    address_hld = int(str(motor) + str(self.hldreg_addresses["distance"]))
-
-    data = float32_to_data(rotation)
-    self.variator.write_registers(address_hld, data)
-    self.variator.write_coil(address_coil, True)
-
-  def set_position(self, motor: int, position: float) -> None:
-    """To set a position (in degrees), absolute value."""
-
-    address_coil = int(str(motor) + str(self.coil_addresses["move_abs"]))
-    address_hld = int(str(motor) + str(self.hldreg_addresses["position"]))
-
-    data = float32_to_data(position)
-    self.variator.write_registers(address_hld, data)
-    self.variator.write_coil(address_coil, True)
-
-  def read_position(self, motor: Union[str, int]) -> list:
-    """To read position of motor. Returns a :obj:`float`."""
-
-    if not motor == "all":
-      # If 1 axis is needed
-      address_inpreg = int(str(motor) + str(self.inpreg_addresses[
-        "act_position"]))
-      read = self.variator.read_input_registers(address_inpreg, 2)
-      converted = data_to_float32(read.registers)
-    else:
-      converted = []
-      # Reads 40 first addresses, and then extracts values from the length 40
-      #  list. Much more efficient, limits communication time.
-      read = self.variator.read_input_registers(0, 44)
-      for motor_adr in self.motor_addresses:
-        address_inpreg = int(str(motor_adr) + str(self.inpreg_addresses[
-         "act_position"]))
-
-        data = read.registers[address_inpreg:address_inpreg + 2]
-        converted.append(data_to_float32(data))
-    return converted
-
-  def read_speed(self, motor: Union[str, int]) -> list:
-    """Reads speed of each motor."""
-
-    if not motor == "all":
-      address_inpreg = int(str(motor) + str(self.inpreg_addresses[
-          "act_speed"]))
-      read = self.variator.read_input_registers(address_inpreg, 2)
-      converted = data_to_float32(read.registers)
-
-    else:
-      converted = []
-      read = self.variator.read_input_registers(0, 44)
-      for motor_adr in self.motor_addresses:
-        address_inpreg = int(str(motor_adr) + str(self.inpreg_addresses[
-          "act_speed"]))
-
-        data = read.registers[address_inpreg:address_inpreg + 2]
-        converted.append(data_to_float32(data))
-    return converted
+input_reg_addr = {'act_speed': 0,
+                  'act_position': 2,
+                  'axis_state': 4}
 
 
 class Koll(InOut):
-  """Class to communicate to Kollmorgen devices via Crappy."""
+  """This class can communicate with a KollMorgen AKD PDMM programmable
+   multi-axis controller.
+
+   It can either drive it in speed or in position. Multiple axes can be driven.
+   The values of the current speeds or positions can also be retrieved.
+   """
 
   def __init__(self,
-               data: str = 'position',
-               axis: Union[str, int] = 'all',
-               speed: float = 360,
-               acc: float = 3600,
-               decc: float = 3600,
-               labels: list = None,
+               axes: List[int],
+               mode: str = 'position',
                host: str = '192.168.0.109',
                port: int = 502) -> None:
-    InOut.__init__(self)
+    """Sets the args and initializes the parent class.
 
-    self.data = data
-    self.axis = axis
-    self.speed = speed
-    self.acc = acc
-    self.decc = decc
+    Args:
+      axes: A :obj:`list` containing the motors/axes to drive, given as
+        :obj:`int`.
+      mode: Should be either `'speed'` or `'position'`. Whether the axes
+        should be driven in speed or in position.
+      host: The IP address of the variator, given as a :obj:`str`.
+      port: The network port over which to communicate with the variator, as
+        an :obj:`int`.
+    """
 
-    if self.axis == "all":
-      default_label = ["t(s)"] + [str(i) for i in range(1, 4)]
-    else:
-      default_label = ["t(s)", str(self.axis)]
+    super().__init__()
 
-      # NB: I have trouble defining default args for labels. It seems that if
-      #  kwargs doesn't contain "labels", I cannot put another default value
-      # than ("t(s)", "1") as defined in InOut parent class...
+    # Making sure the given mode is correct
+    if mode not in ('speed', 'position'):
+      raise ValueError("[KollMorgen] the mode argument should be either "
+                       "'speed' or 'position' !")
 
-    self.labels = default_label if labels is None else labels
-    self.variator = KollMorgenVariator(host=host, port=port)
+    self._axes = axes
+    self._mode = mode
+
+    self._variator = ModbusTcpClient(host=host, port=port)
 
   def open(self) -> None:
-    pass
+    """Connects to the variator over modbus."""
 
-  def get_data(self) -> Union[list, None]:
-    if self.data == "speed":
-      if not self.axis == "all":
-        ret = [time(), self.variator.read_speed(self.axis)]
-      else:
-        ret = [time()] + self.variator.read_speed(self.axis)
+    self._variator.connect()
 
-    elif self.data == "position":
-      if not self.axis == "all":
-        ret = [time(), self.variator.read_position(self.axis)]
+  def get_data(self) -> List[float]:
+    """For each motor, reads its current speed or position depending on the
+    selected mode.
+
+    The positions or speeds are returned in the same order as the motors were
+    given in the ``axes`` argument.
+    """
+
+    ret = [time()]
+
+    for axis in self._axes:
+
+      # Selecting the register to read depending on the selected mode
+      if self._mode == 'speed':
+        reg = 10 * axis + input_reg_addr["act_speed"]
       else:
-        ret = [time()] + self.variator.read_position(self.axis)
-    else:
-      return
+        reg = 10 * axis + input_reg_addr["act_position"]
+
+      # Actually reading the data and converting it
+      read = self._variator.read_input_registers(address=reg, count=2)
+      converted, *_ = unpack("=f", pack("=HH", *read.registers[::-1]))
+
+      ret.append(converted)
+
     return ret
 
+  def set_cmd(self, *cmd: float) -> None:
+    """Sets either the speed or the position of all motors depending on the
+    selected mode.
+
+    If more commands than motors are given, the extra commands are ignored. If
+    there are more motors than commands, only part of the motors will be set.
+    """
+
+    for axis, val in zip(self._axes, cmd):
+
+      # Setting the speed of each motor
+      if self._mode == 'speed':
+        reg = 10 * axis + reg_addr['velocity']
+        self._variator.write_register(reg, abs(val))
+
+        direction = 10 * axis + reg_addr['direction']
+        self._variator.write_register(direction, 0 if val > 0 else 1)
+
+      # Setting the target position of each motor
+      else:
+        coil = 10 * axis + coil_addr['move_abs']
+        reg = 10 * axis + reg_addr['position']
+        data = unpack("=HH", pack("=f", val))[::-1]
+
+        self._variator.write_registers(reg, list(data))
+        self._variator.write_coil(coil, True)
+
   def close(self) -> None:
-    pass
+    """Closes the modbus connection to the variator."""
+
+    self._variator.close()

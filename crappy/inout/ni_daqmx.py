@@ -2,6 +2,11 @@
 
 from time import time
 import numpy as np
+from typing import List, Optional, Dict, Any
+from dataclasses import dataclass, field
+from re import fullmatch
+from collections import defaultdict
+from itertools import chain
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -12,220 +17,366 @@ except (ModuleNotFoundError, ImportError):
   nidaqmx = OptionalModule("nidaqmx")
   stream_readers = stream_writers = nidaqmx
 
+thcp_map = {"B": 10047,
+            "E": 10055,
+            "J": 10072,
+            "K": 10073,
+            "N": 10077,
+            "R": 10082,
+            "S": 10085,
+            "T": 10086}
+
+unit_map = {"C": 10143,
+            "F": 10144,
+            "R": 10145,
+            "K": 10325}
+
+
+@dataclass
+class _Channel:
+  """This class is a simple structure holding all the attributes a NI DAQmx
+  channel can have."""
+
+  meas_type: str = 'voltage'
+  name: Optional[str] = None
+  kwargs: Dict[str, Any] = field(default_factory=dict)
+
+  def update(self, dic_in: Dict[str, Any]) -> None:
+    """Updates the channel keys based on the user input."""
+
+    for key, val in dic_in.items():
+      # The 'name' and 'type' keys are handled separately
+      if key == 'name':
+        self.name = val
+      elif key == 'type':
+        self.meas_type = val
+
+      # All the other keys are put together in the kwargs attribute
+      else:
+        self.kwargs.update({key: val})
+
 
 class Nidaqmx(InOut):
-  """Opens National Instrument devices using the NiDAQmx driver (Windows only).
+  """This class can communicate with NI DAQmx devices using the :mod:`pydaqmx`
+  module.
 
-  This class can open `ai`, `ao` and `dio` channels on NI devices. It supports
-  continuous streaming on `ai` channels only. Streaming is not supported with
-  `ai` channels of different types.
-
-  It uses the :mod:`nidaqmx` python module by NI.
+  It can read single data points from digital and analog channels, read streams
+  of data from analog channels, and set the voltage of analog and digital
+  output channels. For analog input channels, several types of acquisition can
+  be performed, like voltage, resistance, current, etc.
   """
 
   def __init__(self,
-               channels: list = None,
-               samplerate: float = 100,
-               nsamples: int = None) -> None:
-    """Builds the different channels lists.
+               channels: List[Dict[str, Any]],
+               sample_rate: float = 100,
+               n_samples: Optional[int] = None) -> None:
+    """Sets the args and initializes the parent class.
 
     Args:
-      channels (:obj:`list`, optional): A :obj:`list` of :obj:`dict` describing
-        all the channels to open. See the note below for details.
+      channels: A :obj:`list` containing :obj:`dict` holding information on the
+        channels to read data from or write data to. See below for the
+        mandatory and optional keys for the dicts. Note that in streamer mode,
+        the digital input channels are not available for reading. Also, only
+        one type of analog input channel at a time can be read in streamer
+        mode, with no restriction on the number of channels of this type.
+      sample_rate: The target sample rate for data acquisition in streamer
+        mode, given as a :obj:`float`. Default is `100` SPS.
+      n_samples: The number of samples to acquire per chunk of data in streamer
+        mode. Default is 20% of ``sample_rate``.
 
-        Note:
-          For `dio`, use `DevX/d[i/o] Y` to select `port(Y//8)/line(Y%8)` on
-          `DevX`.
-
-      samplerate (:obj:`float`, optional): If using stream mode, the samplerate
-        of the stream.
-      nsamples (:obj:`int`, optional): If using stream mode, the stream array
-        will be returned after reading ``nsamples`` samples. Defaults to
-        ``samplerate // 5``.
 
     Note:
       - ``channels`` keys:
 
-        - name (:obj:`str`): The name of the channel to open. For dio, use
-          `diX` for digital input on line `X` and `doX` for digital output.
-        - type (:obj:`str`, default: 'voltage'): The type of channel to open.
-          Ex: `'thrmcpl'`.
-        - All the other args will be given as kwargs to
-          `nidaqmx.Task.add_[a/d][i/o]_[type]_chan`.
+        - name: The name of the channel to interface with, given with the
+          following syntax :
+          ::
+
+            'DevX/[a/d][i/o]Y'
+
+          With `X` the index of the device, and `Y` the line on which the
+          channel is. `d` stands for digital, `a` for analog, `i` for input and
+          `o` for output. For digital channels, `DevX/d[i/o]Y` is internally
+          converted to `DevX/port<Y // 8>/line<Y % 8>`. Example of a valid
+          name : `Dev1/ao3`.
+
+        - type: The type of data to read, for analog input channels. This field
+          can take many different values, refer to the documentation of the
+          :mod:`nidaqmx` for more details. This field is internally used for
+          calling the method : :meth:`nidaqmx.task.add_ai_[type]_chan`. The
+          default for this field is `'voltage'`, possible values include
+          `'thrmcpl'`, `'bridge'`, `'current'` and `'resistance'`.
+
+        - All the other keys will be given as kwargs to the
+          :meth:`nidaqmx.task.add_ai_[type]_chan` method for analog input
+          channels, to the :meth:`nidaqmx.task.add_ao_voltage_chan` for analog
+          output channels, to :meth:`nidaqmx.task.add_do_chan` for digital
+          output channels, and to :meth:`nidaqmx.task.add_di_chan` for digital
+          input channels. Refer to :mod:`nidaqmx` documentation for the
+          possible arguments and values. Note that for the `'thrmcpl'` analog
+          input channel type, the `'thermocouple_type'` argument must be given
+          as a letter, same for the `'units'` argument. They will be parsed
+          internally. Also note that for the analog output channels and the
+          analog input channels of type `'voltage'`, the `'min_val'` and
+          `'max_val'` arguments are internally set by default to `0` and `5`.
     """
 
-    InOut.__init__(self)
-    self.thermocouple_type = {"B": nidaqmx.constants.ThermocoupleType.B,
-                              "E": nidaqmx.constants.ThermocoupleType.E,
-                              "J": nidaqmx.constants.ThermocoupleType.J,
-                              "K": nidaqmx.constants.ThermocoupleType.K,
-                              "N": nidaqmx.constants.ThermocoupleType.N,
-                              "R": nidaqmx.constants.ThermocoupleType.R,
-                              "S": nidaqmx.constants.ThermocoupleType.S,
-                              "T": nidaqmx.constants.ThermocoupleType.T,
-                              }
-    self.units = {"C": nidaqmx.constants.TemperatureUnits.DEG_C,
-                  "F": nidaqmx.constants.TemperatureUnits.DEG_F,
-                  "R": nidaqmx.constants.TemperatureUnits.DEG_R,
-                  "K": nidaqmx.constants.TemperatureUnits.K,
-                  # To be completed...
-                  }
+    super().__init__()
 
-    self.channels = [{'name': 'Dev1/ai0'}] if channels is None else channels
-    self.samplerate = samplerate
-    self.nsamples = nsamples
+    # Setting the number of samples per acquisition for streamer mode
+    if n_samples is None:
+      self._n_samples = max(1, int(sample_rate / 5))
+    else:
+      self._n_samples = n_samples
 
-    if self.nsamples is None:
-      self.nsamples = max(1, int(self.samplerate / 5))
-    self.streaming = False
-    self.ao_channels = []
-    self.ai_channels = {}
-    self.di_channels = []
-    self.do_channels = []
-    for c in self.channels:
-      c['type'] = c.get('type', 'voltage').lower()
-      if c['name'].split('/')[-1].startswith('ai'):
-        if c['type'] in self.ai_channels:
-          self.ai_channels[c['type']].append(c)
-        else:
-          self.ai_channels[c['type']] = [c]
-      elif c['name'].split('/')[-1].startswith('ao'):
-        self.ao_channels.append(c)
-      elif c['name'].split('/')[-1].startswith('di'):
-        i = int(c['name'].split('/')[-1][2:])
-        c['name'] = "/".join(
-            [c['name'].split("/")[0], 'port%d' % (i // 8), 'line%d' % (i % 8)])
-        self.di_channels.append(c)
-      elif c['name'].split('/')[-1].startswith('do'):
-        i = int(c['name'].split('/')[-1][2:])
-        c['name'] = "/".join(
-            [c['name'].split("/")[0], 'port%d' % (i // 8), 'line%d' % (i % 8)])
-        self.do_channels.append(c)
+    self._sample_rate = sample_rate
+
+    # These attributes will be set later
+    self._task_ao = None
+    self._stream_ao = None
+    self._task_di = None
+    self._stream_di = None
+    self._task_do = None
+    self._stream_do = None
+    self._stream_started = False
+    # For analog inputs a dict is needed as each type is handled separately
+    self._tasks_ai = dict()
+    self._stream_ai = dict()
+
+    self._digital_in = list()
+    self._digital_out = list()
+    self._analog_out = list()
+    # Here as well a dict is needed for handling each analog input type
+    self._analog_in = defaultdict(list)
+
+    for channel in channels:
+
+      # Making sure each channel has a 'name' attribute
+      if 'name' not in channel:
+        raise AttributeError("[NI DAQmx] The given channels must contain "
+                             "the 'name' key !")
+
+      # Parsing the channel name to retrieve info from it
+      match = fullmatch(r'(.+)/(.+)(\d+)', channel['name'])
+      if match is not None:
+        dev, type_, num = match.groups()
+        num = int(num)
       else:
-        raise AttributeError("Unknown channel in nidaqmx" + str(c))
-    self.ai_chan_list = sum(self.ai_channels.values(), [])
+        raise AttributeError(f"[NI DAQmx] Invalid format for the channel name "
+                             f": {channel['name']} !\nIt should be "
+                             f"'Dev<dev num>/[a/d][i/o]<chan num>'")
+
+      # Creating a _Channel object holding the information on the channel
+      chan = _Channel()
+      chan.update(channel)
+
+      # Saving the channel to the right place and performing specific actions
+      if type_ == 'ai':
+        self._analog_in[chan.meas_type].append(chan)
+      elif type_ == 'ao':
+        self._analog_out.append(chan)
+      elif type_ == 'di':
+        chan.name = f"{dev}/port{num // 8}/line{num % 8}"
+        self._digital_in.append(chan)
+      elif type_ == 'do':
+        chan.name = f"{dev}/port{num // 8}/line{num % 8}"
+        self._digital_out.append(chan)
+      else:
+        raise ValueError(f"[NI DAQmx] Wrong channel type : {type_} !\nIt "
+                         f"should be either 'ai', 'ao', 'di', or 'do'.")
 
   def open(self) -> None:
-    # AI
-    self.t_in = {}
+    """Creates tasks and streams for analog output, digital input, digital
+    output, and each type of analog input channels."""
 
-    for c in self.ai_chan_list:
-      kwargs = dict(c)
-      kwargs.pop("name", None)
-      kwargs.pop("type", None)
-      if c['type'] == 'voltage':
-        kwargs['max_val'] = kwargs.get('max_val', 5)
-        kwargs['min_val'] = kwargs.get('min_val', 0)
-      for k in kwargs:
-        if isinstance(kwargs[k], str):
-          if k == "thermocouple_type":
-            kwargs[k] = self.thermocouple_type[kwargs[k]]
-          elif k == "units":
-            kwargs[k] = self.units[kwargs[k]]
-      if not c['type'] in self.t_in:
-        self.t_in[c['type']] = nidaqmx.Task()
-      try:
-        getattr(self.t_in[c['type']].ai_channels,
-                "add_ai_%s_chan" % c['type'])(c['name'], **kwargs)
-      except Exception:
-        print("Invalid channel settings in nidaqmx:" + str(c))
-        raise
-    self.stream_in = {}
-    for chan_type, t in self.t_in.items():
-      self.stream_in[chan_type] = \
-          stream_readers.AnalogMultiChannelReader(t.in_stream)
-    # AO
-    if self.ao_channels:
-      self.t_out = nidaqmx.Task()
-      self.stream_out = stream_writers.AnalogMultiChannelWriter(
-          self.t_out.out_stream, auto_start=True)
+    # Creating one task for each type of analog input channel
+    self._tasks_ai = {type_: nidaqmx.Task() for type_ in self._analog_in}
 
-    for c in self.ao_channels:
-      kwargs = dict(c)
-      kwargs.pop("name", None)
-      kwargs.pop("type", None)
-      kwargs['max_val'] = kwargs.get('max_val', 5)
-      kwargs['min_val'] = kwargs.get('min_val', 0)
-      self.t_out.ao_channels.add_ao_voltage_chan(c['name'], **kwargs)
-    # DI
-    if self.di_channels:
-      self.t_di = nidaqmx.Task()
-    for c in self.di_channels:
-      kwargs = dict(c)
-      kwargs.pop("name", None)
-      kwargs.pop("type", None)
-      self.t_di.di_channels.add_di_chan(c['name'], **kwargs)
-    if self.di_channels:
-      self.di_stream = stream_readers.DigitalMultiChannelReader(
-          self.t_di.in_stream)
+    # Iterating over all the analog input channels
+    for type_, channels in self._analog_in.items():
+      for chan in channels:
 
-    # DO
-    if self.do_channels:
-      self.t_do = nidaqmx.Task()
-    for c in self.do_channels:
-      kwargs = dict(c)
-      kwargs.pop("name", None)
-      kwargs.pop("type", None)
-      self.t_do.do_channels.add_do_chan(c['name'], **kwargs)
-    if self.do_channels:
-      self.do_stream = stream_writers.DigitalMultiChannelWriter(
-          self.t_do.out_stream)
+        # Setting the min and max voltage for the voltage analog input channels
+        if type_ == 'voltage':
+          chan.kwargs['max_val'] = chan.kwargs.get('max_val', 5)
+          chan.kwargs['min_val'] = chan.kwargs.get('min_val', 0)
+
+        # Parsing the thermocouple related arguments
+        if 'thermocouple_type' in chan.kwargs:
+          chan.kwargs['thermocouple_type'] = thcp_map[
+            chan.kwargs['thermocouple_type']]
+          # Included in the if as 'units' is an arg for other types of channels
+          if 'units' in chan.kwargs:
+            chan.kwargs['units'] = thcp_map[chan.kwargs['units']]
+
+        # Adding the channel to the task with the given kwargs
+        try:
+          func = getattr(self._tasks_ai[type_].ai_channels,
+                         f'add_ai_{type_}_chan')
+          func(chan.name, **chan.kwargs)
+        except AttributeError:
+          raise ValueError(f"[NI DAQmx] Invalid channel type : {type_}")
+
+    # Opening a stream for each analog input task
+    self._stream_ai = {
+      type_: stream_readers.AnalogMultiChannelReader(task.in_stream)
+      for type_, task in self._tasks_ai.items()}
+
+    # Creating a task and a stream for all the analog output channels
+    if self._analog_out:
+      self._task_ao = nidaqmx.Task()
+      self._stream_ao = stream_writers.AnalogMultiChannelWriter(
+        self._task_ao.out_stream, auto_start=True)
+
+      # Setting the min and max voltage for all the analog output channels
+      for chan in self._analog_out:
+        chan.kwargs['max_val'] = chan.kwargs.get('max_val', 5)
+        chan.kwargs['min_val'] = chan.kwargs.get('min_val', 0)
+        self._task_ao.ao_channels.add_ao_voltage_chan(chan.name, **chan.kwargs)
+
+    # Creating a task and a stream for all the digital input channels
+    if self._digital_in:
+      self._task_di = nidaqmx.Task()
+
+      for chan in self._digital_in:
+        self._task_di.di_channels.add_di_chan(chan.name, **chan.kwargs)
+
+      self._stream_di = stream_readers.DigitalMultiChannelReader(
+        self._task_di.in_stream)
+
+    # Creating a task and a stream for all the digital output channels
+    if self._digital_out:
+      self._task_do = nidaqmx.Task()
+
+      for chan in self._digital_out:
+        self._task_do.do_channels.add_do_chan(chan.name, **chan.kwargs)
+
+      self._stream_do = stream_writers.DigitalMultiChannelWriter(
+        self._task_do.out_stream)
 
   def start_stream(self) -> None:
-    if len(self.t_in) != 1:
-      raise IOError("Stream mode can only open one type of chan!")
-    for t in self.t_in.values():  # Only one loop
-      t.timing.cfg_samp_clk_timing(
-        self.samplerate,
+    """Starts the streaming task for analog input channels.
+
+    Data can be acquired via streaming for multiple channels, but only for one
+    type of channel.
+    """
+
+    # Making sure there's only one type of channel to read data from
+    if len(self._tasks_ai) > 1:
+      raise IOError("[NI DAQmx] Stream mode can only open one type of "
+                    "channel !")
+    elif len(self._tasks_ai) < 1:
+      raise IOError("[NI DAQmx] There's no analog in channel to read data "
+                    "from !")
+
+    # Starting the streaming task, there should be only one
+    for task in self._tasks_ai.values():
+      task.timing.cfg_samp_clk_timing(
+        self._sample_rate,
         sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS)
-    self.streaming = True
+
+    self._stream_started = True
+
+  def get_data(self) -> List[float]:
+    """Reads data from the analog and digital input channels, and returns it
+    along with a timestamp.
+
+    Data from the analog channels is read first, and then data from the digital
+    channels. Data is returned in the same order as it was acquired.
+    """
+
+    ret = [time()]
+
+    # Reading the analog channels
+    if self._analog_in:
+      data = np.empty(len(list(chain(*self._analog_in.values()))))
+      i = 0
+      for type_, stream in self._stream_ai.items():
+        stream.read_one_sample(data[i:i + len(self._analog_in[type_])])
+        i += len(self._analog_in[type_])
+
+      ret.extend(list(data))
+
+    # Reading the digital channels
+    if self._digital_in:
+      data = np.empty((len(self._digital_in), 1), dtype=np.bool)
+      self._stream_di.read_one_sample_multi_line(data)
+
+      ret.extend(list(data[:, 0]))
+
+    return ret
+
+  def get_stream(self) -> Optional[List[np.ndarray]]:
+    """Reads data from the NI DAQmx, and returns it in an array along with an
+    array holding the timestamps.
+
+    Only data from analog input channels can be read, this method cannot read
+    stream data from digital input channels.
+    """
+
+    if not self._stream_started:
+      return
+
+    # Creating the container for the data
+    data = np.empty((len(list(chain(*self._analog_in.values()))),
+                     self._n_samples))
+    # # Creating the array holding the timestamps
+    t = time() + np.arange(0, self._n_samples) / self._sample_rate
+    # Actually reading the data from the device
+    for type_, stream in self._stream_ai.items():
+      stream.read_many_sample(data, self._n_samples)
+
+    return [t, data]
+
+  def set_cmd(self, *cmd: float) -> None:
+    """Sets the analog and digital output channels according to the given
+    command values.
+
+    The first command values correspond to the analog channels, the remaining
+    ones correspond the the digital channels. It might be that not all channels
+    are set if the number of commands doesn't match the number of channels.
+    """
+
+    # Setting the analog channels
+    if self._analog_out:
+      self._stream_ao.write_one_sample(np.array(cmd[:len(self._analog_out)],
+                                       dtype=np.float64))
+
+    # Setting the digital channels
+    if self._digital_out:
+      self._stream_do.write_one_sample_multi_line(
+        np.array(cmd[len(self._analog_out):],
+                 dtype=np.bool).reshape(len(self._digital_out), 1))
 
   def stop_stream(self) -> None:
-    self.streaming = False
-    for t in self.t_in.values():
-      t.stop()
-      t.timing.cfg_samp_clk_timing(
-        self.samplerate,
-        sample_mode=nidaqmx.constants.AcquisitionType.FINITE)
+    """Stops all the acquisition tasks."""
 
-  def get_stream(self) -> list:
-    if not self.streaming:
-      self.start_stream()
-    a = np.empty((len(self.ai_chan_list), self.nsamples))
-    for chan_type, s in self.stream_in.items():  # Will only loop once
-      s.read_many_sample(a, self.nsamples)
-    return [time(), a]
+    if self._stream_started:
+      for task in self._tasks_ai.values():
+        task.stop()
+        task.timing.cfg_samp_clk_timing(
+          self._sample_rate,
+          sample_mode=nidaqmx.constants.AcquisitionType.FINITE)
+
+    self._stream_started = False
 
   def close(self) -> None:
-    for t in self.t_in.values():
-      t.stop()
-    if self.ao_channels:
-      self.t_out.stop()
-    if self.streaming:
+    """Stops all the acquisition tasks, and closes the connections to the
+    device."""
+
+    if self._analog_in:
+      for task in self._tasks_ai.values():
+        task.stop()
+
+    if self._analog_out:
+      self._task_ao.stop()
+
+    if self._stream_started:
       self.stop_stream()
-    for t in self.t_in.values():
-      t.close()
-    if self.ao_channels:
-      self.t_out.close()
 
-  def get_data(self) -> list:
-    a = np.empty((sum([len(i) for i in self.ai_channels.values()]),))
-    i = 0
-    t = time()
-    for chan_type, s in self.stream_in.items():
-      s.read_one_sample(a[i:i+len(self.ai_channels[chan_type])])
-      i += len(self.ai_channels[chan_type])
-    if self.di_channels:
-      b = np.empty((len(self.di_channels), 1), dtype=np.bool)
-      self.di_stream.read_one_sample_multi_line(b)
-      return [t] + list(a)+list(b[:, 0])
-    return [t] + list(a)
+    if self._analog_in:
+      for task in self._tasks_ai.values():
+        task.close()
 
-  def set_cmd(self, *v: float) -> None:
-    if self.ao_channels:
-      self.stream_out.write_one_sample(np.array(v[:len(self.ao_channels)],
-                                       dtype=np.float64))
-    if self.do_channels:
-      self.do_stream.write_one_sample_multi_line(
-        np.array(v[len(self.ao_channels):],
-                 dtype=np.bool).reshape(len(self.do_channels), 1))
+    if self._analog_out:
+      self._task_ao.close()

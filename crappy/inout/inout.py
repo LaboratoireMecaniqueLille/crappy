@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Union, List
+import numpy as np
 
 from .._global import DefinitionError
 
@@ -12,7 +13,6 @@ class MetaIO(type):
   classes, including the custom user-defined ones."""
 
   classes = {}
-  needed_methods = ["open", "close"]
 
   def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
     return super().__new__(mcs, name, bases, dct)
@@ -24,21 +24,7 @@ class MetaIO(type):
     if name in cls.classes:
       raise DefinitionError(f"The {name} class is already defined !")
 
-    # Gathering all the defined methods
-    defined_methods = list(dct.keys())
-    defined_methods += [base.__dict__.keys() for base in bases]
-
-    # Checking for missing methods
-    missing_methods = [meth for meth in cls.needed_methods
-                       if meth not in defined_methods]
-
-    # Raising if there are unexpected missing methods
-    if missing_methods and name != "InOut":
-      raise DefinitionError(
-        f'Class {name} is missing the required method(s): '
-        f'{", ".join(missing_methods)}')
-
-    # Otherwise, saving the class
+    # Saving the class
     if name != 'InOut':
       cls.classes[name] = cls
 
@@ -51,6 +37,18 @@ class InOut(metaclass=MetaIO):
     """Sets the attributes."""
 
     self._compensations = list()
+
+  def open(self) -> None:
+    """This method should perform any action that's required for initializing
+    the hardware and the communication with it.
+
+    Communication with hardware should be avoided in the :meth:`__init__`
+    method, and this method is where it should start happening. This method is
+    called after Crappy's processes start, i.e. when the associated IOBlock
+    already runs separately from all the other blocks.
+    """
+
+    ...
 
   def get_data(self) -> Optional[Union[list, Dict[str, Any]]]:
     """This method should acquire data from a device and return it in a
@@ -68,9 +66,10 @@ class InOut(metaclass=MetaIO):
     acquire.
     """
 
-    print(f"WARNING ! The InOut {type(self).__name__} has downstream links but"
-          f" its get_data method is not defined !\nNo data sent to downstream "
-          f"links.")
+    print(f"WARNING ! The get_data method is not defined for the InOut "
+          f"{type(self).__name__} !\n To get rid of this warning, define a "
+          f"get_data method, or remove all the downstream links and make sure "
+          f"the make_zero_delay argument of the IOBlock is set to None.")
     sleep(1)
     return
 
@@ -114,7 +113,7 @@ class InOut(metaclass=MetaIO):
     print(f"WARNING ! The InOut {type(self).__name__} does not define the "
           f"start_stream method !")
 
-  def get_stream(self) -> Optional[Union[list, Dict[str, Any]]]:
+  def get_stream(self) -> Optional[List[np.ndarray]]:
     """This method should acquire a stream as a numpy array, and return it in a
     :obj:`list` along with an array carrying the timestamps.
 
@@ -143,10 +142,24 @@ class InOut(metaclass=MetaIO):
     print(f"WARNING ! The InOut {type(self).__name__} does not define the "
           f"stop_stream method !")
 
+  def close(self) -> None:
+    """This method should perform any action required for properly ending the
+    test and closing the communication with hardware.
+
+    It will be called when the associated IOBlock receives the order to stop,
+    either because the user hit CTRL+C, or because a Generator block reached
+    the end of its path, or because an exception was raised in any of the
+    blocks.
+    """
+
+    ...
+
   def make_zero(self, delay: float) -> None:
-    """Acquires data over a given number of points or for a given delay,
-    averages it for each channel, and stores the average. Does not work for
-    streams.
+    """Acquires data for a given delay, averages it for each channel, and
+    stores the average.
+
+    Does not work for pure streams, as it requires a :meth:`get_data` for
+    acquiring the data.
 
     The average values will then be used to remove the offset of the acquired
     data during the test.
@@ -160,6 +173,12 @@ class InOut(metaclass=MetaIO):
       data = self.get_data()
       if data is not None and len(data) > 1:
         buf.append(data[1:])
+
+    # If no data could be acquired, abort
+    if not buf:
+      print(f"No data acquired when zeroing the channels of the InOut "
+            f"{type(self).__name__}, aborting the zeroing.")
+      return
 
     # Averaging the values and storing them
     for values in zip(*buf):
@@ -176,7 +195,7 @@ class InOut(metaclass=MetaIO):
 
   def return_data(self) -> Optional[Union[list, Dict[str, Any]]]:
     """Returns the data from :meth:`get_data`, corrected by an offset if the
-    ``make_zero`` argument of the IOBlock is set."""
+    ``make_zero_delay`` argument of the IOBlock is set."""
 
     data = self.get_data()
 
@@ -198,29 +217,25 @@ class InOut(metaclass=MetaIO):
       raise ValueError("The number of offsets doesn't match the number of "
                        "acquired values.")
 
-  def eval_offset(self, delay: float = 2) -> list:
-    """Method formerly used for offsetting the output of an InOut object.
-    Kept for backwards-compatibility reason only.
+  def return_stream(self) -> Optional[List[np.ndarray]]:
+    """Returns the data from :meth:`get_stream`, corrected by an offset if the
+    ``make_zero_delay`` argument of the IOBlock is set."""
 
-    Acquires data for a given delay and returns for each label the opposite of
-    the average of the acquired values. It is then up to the user to use this
-    output to offset the data.
-    """
+    data = self.get_stream()
 
-    if not hasattr(self, 'get_data'):
-      raise IOError("The eval_offset method cannot be called by an InOut that "
-                    "doesn't implement the get_data method.")
+    # If there's no offsetting, just return the data
+    if data is None or not self._compensations:
+      return data
 
-    t0 = time()
-    buf = []
+    # Otherwise, offset the acquired data except for time
+    elif data[1].shape[1] == len(self._compensations):
+      try:
+        return [data[0], data[1] + self._compensations]
+      # Shouldn't happen but doesn't harm to be careful
+      except TypeError:
+        return data
 
-    # Acquiring data for a given delay
-    while time() < t0 + delay:
-      buf.append(self.get_data()[1:])
-
-    # Averaging the acquired values
-    ret = []
-    for label_values in zip(*buf):
-      ret.append(-sum(label_values) / len(label_values))
-
-    return ret
+    # There's a problem with the shape of the output data
+    else:
+      raise ValueError("The number of offsets doesn't match the shape of the "
+                       "acquired array.")

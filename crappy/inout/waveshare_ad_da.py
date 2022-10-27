@@ -3,7 +3,7 @@
 import time
 from time import sleep, time
 from re import fullmatch, findall
-from typing import List, Union
+from typing import Union, Optional, List
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -97,8 +97,8 @@ class Waveshare_ad_da(InOut):
   """
 
   def __init__(self,
-               dac_channels: List[str] = None,
-               adc_channels: List[str] = None,
+               dac_channels: Optional[List[str]] = None,
+               adc_channels: Optional[List[str]] = None,
                gain_hardware: int = 1,
                v_ref: float = 3.3,
                gain: float = 1,
@@ -273,7 +273,7 @@ class Waveshare_ad_da(InOut):
     GPIO.output(AD_DA_pins['CS_PIN_ADS'], GPIO.HIGH)
     sleep(0.001)
 
-  def get_data(self) -> list:
+  def get_data(self) -> List[float]:
     """Reads data from all the user-specified ADC channels, in a sequential
     way.
 

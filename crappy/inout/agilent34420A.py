@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from typing import List
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -31,46 +32,45 @@ class Agilent34420a(InOut):
     """Sets the args and initializes parent class.
 
     Args:
-      mode (:obj:`bytes`, optional): Desired value to measure. Should be either
-        `b'VOLT'` or `b'RES'`.
-      device (:obj:`str`, optional): Path to the device.
-      baudrate (:obj:`int`, optional): Desired baudrate.
-      timeout (:obj:`float`, optional): Timeout for the serial connection.
+      mode: Desired value to measure. Should be either `b'VOLT'` or `b'RES'`.
+      device: Path to the device to open, as a :obj:`str`.
+      baudrate: Desired baudrate for serial communication.
+      timeout: Timeout for the serial connection, as a :obj:`float`.
     """
 
-    InOut.__init__(self)
-    # path to the device
-    self.device = device
-    # desired baudrate
-    self.baudrate = baudrate
-    # timeout for the serial connection
-    self.timeout = timeout
-    # desired value to measure
-    self.mode = mode
+    super().__init__()
+
+    self._device = device
+    self._baudrate = baudrate
+    self._timeout = timeout
+    self._mode = mode
+
+    self._ser = None
 
   def open(self) -> None:
-    self.ser = serial.Serial(port=self.device, baudrate=self.baudrate,
-                             timeout=self.timeout)
-    self.ser.write(b"*RST;*CLS;*OPC?\n")
-    self.ser.write(b"SENS:FUNC \"" + self.mode + b"\";  \n")
-    self.ser.write(b"SENS:" + self.mode + b":NPLC 2  \n")
-    # ser.readline()
-    self.ser.write(b"SYST:REM\n")
-    self.get_data()
+    """Opens the serial connection, resets the Agilent and configures it to the
+    desired mode."""
 
-  def get_data(self) -> list:
-    """Reads the signal, returns :obj:`False` if error and prints
-    `'bad serial'`."""
+    self._ser = serial.Serial(port=self._device, baudrate=self._baudrate,
+                              timeout=self._timeout)
+    self._ser.write(b"*RST;*CLS;*OPC?\n")
+    self._ser.write(b"SENS:FUNC \"" + self._mode + b"\";  \n")
+    self._ser.write(b"SENS:" + self._mode + b":NPLC 2  \n")
+    self._ser.write(b"SYST:REM\n")
 
-    self.ser.write(b"READ?  \n")
+  def get_data(self) -> List[float]:
+    """Asks the Agilent to acquire a reading and returns it, except if an error
+    occurs in which case `0` is returned."""
+
+    self._ser.write(b"READ?  \n")
     t = time()
     try:
-      return [t, float(self.ser.readline())]
+      return [t, float(self._ser.readline())]
     except (serial.SerialException, ValueError):
-      self.ser.flush()
+      self._ser.flush()
       return [t, 0]
 
   def close(self) -> None:
     """Closes the serial port."""
 
-    self.ser.close()
+    self._ser.close()

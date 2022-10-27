@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from time import time
+from typing import List
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -52,7 +53,7 @@ class Fake_inout(InOut):
       except IndexError:
         return
 
-  def get_data(self) -> list:
+  def get_data(self) -> List[float]:
     """Just returns time and the current memory usage."""
 
     return [time(), virtual_memory().percent]
