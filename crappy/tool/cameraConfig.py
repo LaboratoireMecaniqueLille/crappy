@@ -673,7 +673,8 @@ class Camera_config(tk.Tk):
     self._min_pixel.set(int(np.min(img)))
 
   def _resize_img(self) -> None:
-    """"""
+    """Resizes the received image so that it fits in the image canvas and
+    complies with the chosen zoom level."""
 
     if self._img is None:
       return
