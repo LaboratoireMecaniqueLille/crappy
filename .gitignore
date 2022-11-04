@@ -16,3 +16,4 @@ crappy.egg-info/
 docs/build/
 tests/
 .directory
+venv/
