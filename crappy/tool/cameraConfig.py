@@ -6,6 +6,8 @@ import numpy as np
 from time import time, sleep
 from typing import Optional
 from functools import partial
+from pkg_resources import resource_string
+from io import BytesIO
 
 from .._global import OptionalModule
 from .cameraConfigTools import Zoom
@@ -77,7 +79,7 @@ class Camera_config(tk.Tk):
     self.update()
 
     # Displaying the first image
-    self._update_img()
+    self._update_img(init=True)
 
   def main(self) -> None:
     """Constantly updates the image and the information on the GUI, until asked
@@ -88,7 +90,7 @@ class Camera_config(tk.Tk):
 
     while self._run:
       # Update the image, the histogram and the information
-      self._update_img()
+      self._update_img(init=False)
 
       # Update the FPS counter
       n_loops += 1
@@ -702,9 +704,9 @@ class Camera_config(tk.Tk):
 
     if zoomed_img_ratio >= img_label_ratio:
       new_width = img_canvas_width
-      new_height = int(img_canvas_width / zoomed_img_ratio)
+      new_height = max(int(img_canvas_width / zoomed_img_ratio), 1)
     else:
-      new_width = int(img_canvas_height * zoomed_img_ratio)
+      new_width = max(int(img_canvas_height * zoomed_img_ratio), 1)
       new_height = img_canvas_height
 
     self._pil_img = pil_img.resize((new_width, new_height))
@@ -792,13 +794,28 @@ class Camera_config(tk.Tk):
     self._display_hist()
     self.update()
 
-  def _update_img(self) -> None:
+  def _update_img(self, init: bool = False) -> None:
     """Acquires an image from the camera, casts and resizes it, calculates its
-    histogram, displays them and updates the image information."""
+    histogram, displays them and updates the image information.
+
+    Args:
+      init: If :obj:`True`, means that the method is called during
+        :meth:`__init__` and if the image cannot be obtained it should be
+        replaced with a dummy one.
+    """
 
     ret = self._camera.get_image()
+
+    # If no frame could be grabbed from the camera
     if ret is None:
-      return
+      # If it's the first call, generate error image to initialize the window
+      if init:
+        ret = None, np.array(Image.open(BytesIO(resource_string(
+          'crappy', 'tool/data/no_image.png'))))
+      # Otherwise, just pass
+      else:
+        return
+
     _, img = ret
 
     if img.dtype != self.dtype:

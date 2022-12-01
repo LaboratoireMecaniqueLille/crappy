@@ -3,8 +3,17 @@
 import tkinter as tk
 from typing import Optional
 from copy import deepcopy
+import numpy as np
+from io import BytesIO
+from pkg_resources import resource_string
 from .cameraConfigBoxes import Camera_config_with_boxes
 from .cameraConfigTools import Box
+from .._global import OptionalModule
+
+try:
+  from PIL import Image
+except (ModuleNotFoundError, ImportError):
+  Image = OptionalModule("pillow")
 
 
 class DISConfig(Camera_config_with_boxes):
@@ -87,13 +96,28 @@ class DISConfig(Camera_config_with_boxes):
     self._display_img()
     self.update()
 
-  def _update_img(self) -> None:
+  def _update_img(self, init: bool = False) -> None:
     """Same as in the parent class except it also draws the select box on top
-    of the displayed image."""
+    of the displayed image.
+
+    Args:
+      init: If :obj:`True`, means that the method is called during
+        :meth:`__init__` and if the image cannot be obtained it should be
+        replaced with a dummy one.
+    """
 
     ret = self._camera.get_image()
+
+    # If no frame could be grabbed from the camera
     if ret is None:
-      return
+      # If it's the first call, generate error image to initialize the window
+      if init:
+        ret = None, np.array(Image.open(BytesIO(resource_string(
+          'crappy', 'tool/data/no_image.png'))))
+      # Otherwise, just pass
+      else:
+        return
+
     _, img = ret
 
     if img.dtype != self.dtype:
