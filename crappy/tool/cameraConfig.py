@@ -796,9 +796,10 @@ class Camera_config(tk.Tk):
     """Acquires an image from the camera, casts and resizes it, calculates its
     histogram, displays them and updates the image information."""
 
-    _, img = self._camera.get_image()
-    if img is None:
+    ret = self._camera.get_image()
+    if ret is None:
       return
+    _, img = ret
 
     if img.dtype != self.dtype:
       self.dtype = img.dtype

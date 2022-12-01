@@ -39,7 +39,10 @@ class DISVE_config(Camera_config_with_boxes):
     """Same as in the parent class except it also draws the patches on top of
     the displayed image."""
 
-    _, img = self._camera.get_image()
+    ret = self._camera.get_image()
+    if ret is None:
+      return
+    _, img = ret
 
     self._cast_img(img)
     self._draw_spots()

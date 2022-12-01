@@ -100,9 +100,10 @@ class VE_config(Camera_config_with_boxes):
     """Same as in the parent class except it also draws the patches and the
     select box on top of the displayed image."""
 
-    _, img = self._camera.get_image()
-    if img is None:
+    ret = self._camera.get_image()
+    if ret is None:
       return
+    _, img = ret
 
     self._cast_img(img)
     self._draw_box(self._select_box)
