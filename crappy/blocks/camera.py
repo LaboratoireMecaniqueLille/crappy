@@ -1,9 +1,9 @@
 # coding: utf-8
 
-from typing import Callable, Union, Optional
+from typing import Callable, Union, Optional, Tuple, Dict, Any
 from pathlib import Path
 import numpy as np
-from time import time
+from time import time, strftime, gmtime
 from re import fullmatch
 from types import MethodType
 
@@ -225,7 +225,7 @@ class Camera(Block):
       self._camera.add_scale_setting('Eyy', 0., 100., None, None, 0.)
       self._camera.set_all()
 
-      def get_image(self_) -> (float, np.ndarray):
+      def get_image(self_) -> Tuple[float, np.ndarray]:
         return time(), self._image_generator(self_.Exx, self_.Eyy)
 
       self._camera.get_image = MethodType(get_image, self._camera)
@@ -260,9 +260,19 @@ class Camera(Block):
         self._camera.Eyy = data['Eyy(%)']
 
     # Actually getting the image from the camera object
-    t, img = self._camera.get_image()
-    if img is None:
+    ret = self._camera.get_image()
+    if ret is None:
       return
+    metadata, img = ret
+
+    # Building the metadata if it was not provided
+    if isinstance(metadata, float):
+      metadata = {'t(s)': metadata,
+                  'DateTimeOriginal': strftime("%Y:%m:%d %H:%M:%S",
+                                               gmtime(metadata)),
+                  'SubsecTimeOriginal': f'{metadata % 1:.6f}',
+                  'ImageUniqueID': self._n_loops}
+    metadata['t(s)'] -= self.t0
 
     self._n_loops += 1
 
@@ -280,7 +290,7 @@ class Camera(Block):
       self._save(img, path)
 
     # Performing the additional actions for subclasses
-    self._additional_loop(t, img)
+    self._additional_loop(metadata, img)
 
   def finish(self) -> None:
     """Closes the camera and the displayer."""
@@ -304,7 +314,7 @@ class Camera(Block):
     elif self._save_backend == 'pil':
       PIL.Image.fromarray(img).save(path)
 
-  def _additional_loop(self, t: float, img: np.ndarray) -> None:
+  def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Additional action to perform in the loop, used by subclasses of the
     Camera block."""
 

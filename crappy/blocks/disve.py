@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import List, Tuple, Optional, Callable, Union
+from typing import List, Tuple, Optional, Callable, Union, Dict, Any
 import numpy as np
 from pathlib import Path
 from ..tool import DISVE as VE, DISVE_config, Spot_boxes
@@ -112,9 +112,9 @@ class DISVE(Camera):
         an image. It is only used for demonstration without camera in the
         examples, and isn't meant to be used in an actual test.
       labels: The labels associated with the timestamp and the displacement of
-        the patches. If not given, the time label is ``t(s)``, the first patch
-        displacement labels are ``p0x`` and ``p0y``, the second ``p1x`` and
-        ``p1y``, etc.
+        the patches. If not given, the time label is ``t(s)``, the metadata
+        label is ``'meta'``, the first patch displacement labels are ``p0x``
+        and ``p0y``, the second ``p1x`` and ``p1y``, etc.
       method: The method to use to calculate the displacement. `Disflow` uses
         opencv's DISOpticalFlow and `Lucas Kanade` uses opencv's
         calcOpticalFlowPyrLK, while all other methods are based on a basic
@@ -185,9 +185,9 @@ class DISVE(Camera):
 
     # Setting the labels
     if labels is None:
-      self.labels = ['t(s)'] + [elt
-                                for i, _ in enumerate(patches)
-                                for elt in [f'p{i}x', f'p{i}y']]
+      self.labels = ['t(s)', 'meta'] + [elt
+                                        for i, _ in enumerate(patches)
+                                        for elt in [f'p{i}x', f'p{i}y']]
     else:
       self.labels = labels
 
@@ -228,11 +228,11 @@ class DISVE(Camera):
 
     super().finish()
 
-  def _additional_loop(self, t: float, img: np.ndarray) -> None:
+  def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Simply calculates the displacement and sends it to downstream blocks."""
 
     ret = self._ve.calculate_displacement(img)
-    self.send([t - self.t0] + ret)
+    self.send([meta['t(s)'], meta] + ret)
 
     if self._displayer_dis is not None:
       for patch in self._patches:

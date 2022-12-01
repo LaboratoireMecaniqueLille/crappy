@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Callable, Optional, Union, List
+from typing import Callable, Optional, Union, List, Dict, Any
 from pathlib import Path
 
 from ..tool import DISCorrel as Dis
@@ -123,11 +123,12 @@ class DISCorrel(Camera):
           ["x", "y", "exx", "eyy"]
 
       labels: A :obj:`list` containing the labels to send to downstream blocks.
-        The first label should be time, and there should then be one label per
-        field. If not given, the default labels are :
+        The first label should be time, the second the metadata, and there
+        should then be one label per field. If not given, the default labels
+        are :
         ::
 
-          ['t(s)', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)']
+          ['t(s)', 'meta', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)']
 
       alpha: Weight of the smoothness term in DisFlow.
       delta: Weight of the color constancy term in DisFlow.
@@ -180,13 +181,13 @@ class DISCorrel(Camera):
 
     # Managing the fields and labels lists
     fields = ["x", "y", "exx", "eyy"] if fields is None else fields
-    self.labels = ['t(s)', 'x(pix)', 'y(pix)',
+    self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)',
                    'Exx(%)', 'Eyy(%)'] if labels is None else labels
     if residual:
       self.labels.append('res')
 
     # Making sure a coherent number of labels and fields was given
-    if 1 + len(fields) + int(residual) != len(self.labels):
+    if 2 + len(fields) + int(residual) != len(self.labels):
       raise ValueError("The number of fields is inconsistent with the number "
                        "of labels !\nMake sure that the time label was given")
 
@@ -238,12 +239,12 @@ class DISCorrel(Camera):
 
     super().finish()
 
-  def _additional_loop(self, t: float, img: np.ndarray) -> None:
+  def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Getting the updated values from the correlation and updating the
     displayer."""
 
     data = self._dis.get_data(img, self._residual)
-    self.send([t - self.t0] + data)
+    self.send([meta['t(s)'], meta] + data)
 
     if self._displayer_dis is not None:
       self._draw_box(img, self._bbox)

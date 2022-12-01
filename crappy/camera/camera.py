@@ -227,13 +227,15 @@ class Camera(metaclass=MetaCam):
 
     self.set_all(**kwargs)
 
-  def get_image(self) -> Optional[Tuple[Dict[str, Any], np.ndarray]]:
-    """Acquires an image and returns it along with its metadata.
+  def get_image(self) -> Optional[Union[Tuple[Dict[str, Any], float],
+                                        np.ndarray]]:
+    """Acquires an image and returns it along with its metadata or timestamp.
 
     It is also fine for this method to return :obj:`None`. The image should be
-    returned as a numpy array, and the metadata as a :obj:`dict`. The keys of
-    this dictionary should preferably be valid Exif tags, so that the metadata
-    can be embedded into the image file when saving.
+    returned as a numpy array, and the metadata as a :obj:`dict` or the
+    timestamp as a :obj:`float`. The keys of the metadata dictionary should
+    preferably be valid Exif tags, so that the metadata can be embedded into
+    the image file when saving.
 
     In order for the recording of images to run, the metadata dict must
     contain at least the ``'t(s)'`` and ``''ImageUniqueID''`` keys, whose

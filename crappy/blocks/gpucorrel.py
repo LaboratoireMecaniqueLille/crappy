@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Callable, Union, Optional, List
+from typing import Callable, Union, Optional, List, Dict, Any
 from pathlib import Path
 
 from ..tool import GPUCorrel as GPUCorrel_tool
@@ -109,8 +109,8 @@ class GPUCorrel(Camera):
       labels: A :obj:`list` containing the labels to send to downstream blocks,
         carrying the displacement projected on the given basis of fields. If
         not given, the labels list is just a copy of the fields list, with
-        ``'t(s)'`` added in position 0 and ``'res'`` added in last position if
-        the ``res`` argument is :obj:`True`.
+        ``'t(s)'`` added in position 0, ``'meta'`` in position 1, and ``'res'``
+        added in last position if the ``res`` argument is :obj:`True`.
       discard_limit: If given, the data is sent to downstream blocks only if
         the residuals are lower than the average of the last few residuals
         multiplied by this value.
@@ -178,7 +178,7 @@ class GPUCorrel(Camera):
 
     # Setting the labels
     if labels is None:
-      self.labels = ['t(s)'] + fields
+      self.labels = ['t(s)', 'meta'] + fields
     else:
       self.labels = labels
 
@@ -186,7 +186,7 @@ class GPUCorrel(Camera):
       self.labels.append('res')
     self._calc_res = res
 
-    if 1 + len(fields) + int(res) != len(self.labels):
+    if 2 + len(fields) + int(res) != len(self.labels):
       raise ValueError("The number of fields is inconsistent with the number "
                        "of labels !\nMake sure that the time label was given")
 
@@ -238,7 +238,7 @@ class GPUCorrel(Camera):
     self._correl.clean()
     super().finish()
 
-  def _additional_loop(self, t: float, img: np.ndarray) -> None:
+  def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Gets the updated fields of displacement, and sends them to downstream
     blocks.
 
@@ -246,7 +246,7 @@ class GPUCorrel(Camera):
     the data.
     """
 
-    out = [t - self.t0]
+    out = [meta['t(s)'], meta]
     out += self._correl.get_disp(img.astype(np.float32)).tolist()
 
     if self._calc_res:

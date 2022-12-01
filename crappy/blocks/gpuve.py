@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Callable, Optional, List, Union, Tuple
+from typing import Callable, Optional, List, Union, Tuple, Dict, Any
 from pathlib import Path
 
 from .._global import OptionalModule
@@ -93,7 +93,7 @@ class GPUVE(Camera):
         not given, the default labels are :
         ::
 
-          ['t(s)', 'p0x', 'p0y', ..., pix, piy]
+          ['t(s)', 'meta', 'p0x', 'p0y', ..., pix, piy]
 
         with `i` the number of given patches.
       img_ref: The reference image to which all the acquired images will be
@@ -152,15 +152,16 @@ class GPUVE(Camera):
 
     # Setting the labels
     if labels is None:
-      self.labels = ['t(s)'] + [elt
-                                for i, _ in enumerate(patches)
-                                for elt in [f'p{i}x', f'p{i}y']]
+      self.labels = ['t(s)', 'meta'] + [elt
+                                        for i, _ in enumerate(patches)
+                                        for elt in [f'p{i}x', f'p{i}y']]
     else:
       self.labels = labels
 
-    if 1 + 2 * len(patches) != len(self.labels):
+    if 2 + 2 * len(patches) != len(self.labels):
       raise ValueError("The number of fields is inconsistent with the number "
-                       "of labels !\nMake sure that the time label was given")
+                       "of labels !\nMake sure that the time and metadata "
+                       "labels were given")
 
     # We can already set the sizes of the images as they are already known
     for correl, (_, __, h, w) in zip(self._correls, self._patches):
@@ -196,11 +197,11 @@ class GPUVE(Camera):
 
     super().finish()
 
-  def _additional_loop(self, t: float, img: np.ndarray) -> None:
+  def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Gets the updated positions of the patches, and sends it to the
     downstream blocks."""
 
-    out = [t - self.t0]
+    out = [meta['t(s)'], meta]
     for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
       out.extend(correl.get_disp(img[oy:oy + h,
                                  ox:ox + w].astype(np.float32)).tolist())

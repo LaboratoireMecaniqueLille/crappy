@@ -1,6 +1,6 @@
 ﻿# coding: utf-8
 
-from typing import Callable, Union, Optional, List
+from typing import Callable, Union, Optional, List, Dict, Any
 import numpy as np
 from pathlib import Path
 
@@ -111,7 +111,7 @@ class Video_extenso(Camera):
         the strain values. If not given, the default labels are :
         ::
 
-          ['t(s)', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
+          ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
 
       raise_on_lost_spot: If :obj:`True`, an exception is raised as soon as
         the block is losing track of a spot, what causes the test to stop.
@@ -176,7 +176,7 @@ class Video_extenso(Camera):
                   min_area=min_area,
                   blur=blur)
 
-    self.labels = ['t(s)', 'Coord(px)',
+    self.labels = ['t(s)', 'meta', 'Coord(px)',
                    'Eyy(%)', 'Exx(%)'] if labels is None else labels
 
     # Setting the args
@@ -219,7 +219,7 @@ class Video_extenso(Camera):
 
     super().finish()
 
-  def _additional_loop(self, t: float, img: np.ndarray) -> None:
+  def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
     """Gets the data from the latest image, sends it, and updates the
     display."""
 
@@ -228,7 +228,7 @@ class Video_extenso(Camera):
       try:
         data = self._ve.get_data(img)
         if data is not None:
-          self.send([t - self.t0, *data])
+          self.send([meta['t(s)'], meta, *data])
       except LostSpotError:
         self._ve.stop_tracking()
         # Raising if specified by the user
