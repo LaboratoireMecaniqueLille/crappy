@@ -32,6 +32,11 @@ Fake Camera
 .. automodule:: crappy.camera.fakeCamera
    :members:
 
+File Reader
+-----------
+.. automodule:: crappy.camera.file_reader
+   :members:
+
 JAI
 ---
 .. automodule:: crappy.camera.jai
@@ -45,11 +50,6 @@ PiCamera
 Seek Thermal Pro
 ----------------
 .. automodule:: crappy.camera.seek_thermal_pro
-   :members:
-
-Streamer
---------
-.. automodule:: crappy.camera.streamer
    :members:
 
 Webcam

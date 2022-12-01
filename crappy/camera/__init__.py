@@ -4,7 +4,7 @@
 from .camera import Camera, MetaCam
 # Virtual cameras
 from .fakeCamera import Fake_camera
-from .streamer import Streamer
+from .file_reader import File_reader
 # Physical cameras
 from .webcam import Webcam
 from .xiapi import Xiapi

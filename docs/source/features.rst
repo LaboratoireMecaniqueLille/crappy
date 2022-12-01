@@ -293,6 +293,11 @@ Supported cameras
   Simply displays an animated image of a chosen size and at a given frequency.
   Doesn't require any hardware, used mainly for debugging and prototyping.
 
+- :ref:`File Reader`
+
+  Successively reads images already saved in a folder, and returns them. No
+  image acquisition is performed and no hardware is required.
+
 - :ref:`JAI`
 
   Allows reading from a `Jai GO-5000M-PMCL <https://www.jai.com/products/
@@ -316,11 +321,6 @@ Supported cameras
 
   Allows reading images from a Seek Thermal `Compact Pro <https://www.thermal.
   com/compact-series.html>`_ infrared camera.
-
-- :ref:`Streamer`
-
-  Successively reads images already saved in a folder, and returns them. No
-  image acquisition is performed and no hardware is required.
 
 - :ref:`Webcam`
 
