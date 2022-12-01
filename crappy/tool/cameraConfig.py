@@ -4,7 +4,7 @@ import tkinter as tk
 from platform import system
 import numpy as np
 from time import time, sleep
-from typing import Optional, Tuple
+from typing import Optional
 from functools import partial
 
 from .._global import OptionalModule
@@ -41,6 +41,8 @@ class Camera_config(tk.Tk):
 
     super().__init__()
     self._camera = camera
+    self.shape = None
+    self.dtype = None
 
     # Attributes containing the several images and histograms
     self._img = None
@@ -797,6 +799,11 @@ class Camera_config(tk.Tk):
     _, img = self._camera.get_image()
     if img is None:
       return
+
+    if img.dtype != self.dtype:
+      self.dtype = img.dtype
+    if self.shape != img.shape:
+      self.shape = img.shape
 
     self._cast_img(img)
     self._resize_img()
