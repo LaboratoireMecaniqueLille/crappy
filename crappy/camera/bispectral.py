@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-
+from typing import Tuple
 from .cameralink import Cl_camera
 
 table = (0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
@@ -60,9 +60,12 @@ def hexlify(n: int) -> str:
 
 
 class Bispectral(Cl_camera):
-  def __init__(self, **kwargs) -> None:
-    kwargs['camera_type'] = "SingleAreaGray2DShading"
-    super().__init__(**kwargs)
+  """"""
+
+  def __init__(self) -> None:
+    """"""
+
+    super().__init__()
     self.add_scale_setting('width', 1, 640, self._get_w, self._set_w, 640)
     self.add_scale_setting('height', 1, 512, self._get_h, self._set_h, 512)
     self.add_scale_setting('xoffset', 0, 1278, self._get_ox, self._set_ox, 0)
@@ -72,16 +75,37 @@ class Bispectral(Cl_camera):
     self.add_scale_setting('fps', 1., 150., self.get_trigg_freq,
                            self.set_trigg_freq)
 
+  def open(self,
+           camera_type: str = 'SingleAreaGray2DShading',
+           **kwargs) -> None:
+    """"""
+
+    super().open(camera_type=camera_type,
+                 **kwargs)
+    self.send_cmd('@W1A084')  # Restore unwindowed Mode
+    self.send_cmd('@W10012')  # Make sure the image is not inverted
+
+  def get_image(self) -> Tuple[float, np.ndarray]:
+    """"""
+
+    metadata, frame = super().get_image()
+    img = np.ones((self.height, self.width * 2), dtype=np.uint8)
+    img[::, :self.width:2] = frame[::, ::4]
+    img[::, 1:self.width:2] = frame[::, 1::4]
+    img[::, self.width::2] = frame[::, 2::4]
+    img[::, self.width + 1::2] = frame[::, 3::4]
+    return metadata, img
+
   def _set_w(self, val: int) -> None:
-    Cl_camera._set_w(self, val * 2)
+    super()._set_w(val * 2)
     self.set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
                  self.yoffset + self.height - 1)
 
   def _get_w(self) -> int:
-    return int(Cl_camera._get_w(self) / 2)
+    return int(super()._get_w() / 2)
 
   def _set_h(self, val: int) -> None:
-    Cl_camera._set_h(self, val)
+    super()._set_h(val)
     self.set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
                  self.yoffset + self.height - 1)
 
@@ -230,20 +254,3 @@ class Bispectral(Cl_camera):
 
     t = self.send_cmd('@R173')
     return int(t, 16)
-
-  def get_image(self) -> tuple:
-    t, frame = Cl_camera.get_image(self)
-    img = np.ones((self.height, self.width * 2), dtype=np.uint8)
-    img[::, :self.width:2] = frame[::, ::4]
-    img[::, 1:self.width:2] = frame[::, 1::4]
-    img[::, self.width::2] = frame[::, 2::4]
-    img[::, self.width + 1::2] = frame[::, 3::4]
-    return t, img
-
-  def close(self) -> None:
-    Cl_camera.close(self)
-
-  def open(self, **kwargs) -> None:
-    Cl_camera.open(self, **kwargs)
-    self.send_cmd('@W1A084')  # Restore unwindowed Mode
-    self.send_cmd('@W10012')  # Make sure the image is not inverted

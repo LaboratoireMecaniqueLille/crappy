@@ -51,7 +51,6 @@ class Camera_gstreamer(Camera):
     super().__init__()
     Gst.init(None)
 
-    self.name = "camera_gstreamer"
     self._last_frame_nr = 0
     self._frame_nr = 0
     self._img = None
@@ -308,7 +307,7 @@ videoconvert ! autovideosink
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> (float, ndarray):
+  def get_image(self) -> Tuple[float, ndarray]:
     """Reads the last image acquired from the camera.
 
     Returns:

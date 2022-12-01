@@ -36,7 +36,6 @@ class Camera_opencv(Camera):
     """Sets variables and adds the channels setting."""
 
     super().__init__()
-    self.name = "camera_opencv"
     self._cap = None
 
     self.add_choice_setting(name="channels",
@@ -132,7 +131,7 @@ class Camera_opencv(Camera):
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
-  def get_image(self) -> (float, ndarray):
+  def get_image(self) -> Tuple[float, ndarray]:
     """Grabs a frame from the videocapture object and returns it along with a
     timestamp."""
 

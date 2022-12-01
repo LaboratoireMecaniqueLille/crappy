@@ -1,10 +1,10 @@
 # coding: utf-8
 
-from typing import Tuple
+from typing import Tuple, List, Any
 from .camera import Camera
 from .._global import OptionalModule
 import numpy as np
-import time
+from time import time
 
 try:
   import usb.util
@@ -67,13 +67,15 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     """Selects the right USB device."""
 
     super().__init__()
-    self.name = "seek_thermal_pro"
     self._calib = None
 
+    # Listing all the matching USB devices
     devices = usb.core.find(find_all=True,
                             idVendor=Seek_thermal_pro_vendor,
                             idProduct=Seek_thermal_pro_product)
     devices = list(devices)
+
+    # Making sure there's exactly one possible camera to read images from
     if len(devices) > 1:
       raise IOError("Several matching cameras found, impossible to "
                     "differentiate between them")
@@ -85,6 +87,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
   def open(self) -> None:
     """Sets the USB communication and device."""
 
+    # Setting the USB configuration on the camera
     try:
       self._dev.set_configuration()
     except usb.core.USBError:
@@ -93,6 +96,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
             "folder")
       raise
 
+    # Initializing the camera by sending various commands to it
     self._write_data(Seek_thermal_pro_commands['Set operation mode'],
                      b'\x00\x00')
     self._write_data(
@@ -115,6 +119,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     self._write_data(Seek_thermal_pro_commands['Set operation mode'],
                      b'\x01\x00')
 
+    # Acquiring the dead pixels image and saving the dead pixes map
     for i in range(5):
       status, ret = self._grab()
       if status == 4:
@@ -124,6 +129,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
         print("Could not get the dead pixels frame")
         self._dead_pixels = []
 
+    # Acquiring the calibration image and calibrating the camera
     for i in range(10):
       status, img = self._grab()
       if status == 1:
@@ -132,27 +138,36 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
       elif i == 9:
         raise TimeoutError("Could not set the camera")
 
-  def get_image(self) -> (float, np.ndarray):
+  def get_image(self) -> Tuple[float, np.ndarray]:
     """Reads a single image from the camera.
 
     Returns:
-      The timeframe and the captured image
+      The dict containing the metadata, and the captured image
     """
 
     count = 0
+    # Looping until a valid frame is acquired
     while True:
-      t = time.time()
+
+      # Capturing one frame
+      t = time()
       status, img = self._grab()
+
+      # If a calibration frame is acquired, recalibrating
       if status == 1:
         self._calib = self._crop(img) - 1600
+
+      # If a valid frame is acquired, returning it along with its metadata
       elif status == 3 and self._calib is not None:
-        return t, self._correct_dead_pixels(self._crop(img) - self._calib)
+        return t, self._correct_dead_pixels(self._crop(img)-self._calib)
+
+      # If no valid image can be read, that's bad news
       elif count == 5:
         raise TimeoutError("Unable to read image")
       count += 1
 
   def close(self) -> None:
-    """Resets the camera and releases USB resources."""
+    """Resets the camera and releases the USB resources."""
 
     for _ in range(3):
       self._write_data(Seek_thermal_pro_commands['Set operation mode'],
@@ -166,21 +181,24 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
       The status information and the raw image
     """
 
+    # Sending the read command
     self._write_data(Seek_thermal_pro_commands['Start get image transfer'],
                      b'\x58\x5b\x01\x00')
+
     to_read = 2 * \
         Seek_thermal_pro_dimensions['Raw width'] * \
         Seek_thermal_pro_dimensions['Raw height']
     ret = bytearray()
 
+    # Reading all the chunks containing the frame information
     while to_read - len(ret) > 512:
-      ret += self._dev.read(endpoint=Seek_therm_usb_req['Read_img'],
-                            size_or_buffer=int(
-                              to_read /
-                              (Seek_thermal_pro_dimensions['Raw height']
-                               / 20)),
-                            timeout=1000)
+      ret += self._dev.read(
+        endpoint=Seek_therm_usb_req['Read_img'],
+        size_or_buffer=int(to_read / (Seek_thermal_pro_dimensions['Raw height']
+                           / 20)),
+        timeout=1000)
 
+    # Returning the read image in the right format and the associated status
     status = ret[4]
     if len(ret) == to_read:
       return status, np.frombuffer(ret, dtype=np.uint16).reshape(
@@ -189,7 +207,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     else:
       return status, None
 
-  def _get_dead_pixels_list(self, data: np.ndarray) -> list:
+  def _get_dead_pixels_list(self, data: np.ndarray) -> List[Tuple[Any]]:
     """Identifies the dead pixels on an image.
 
     Args:

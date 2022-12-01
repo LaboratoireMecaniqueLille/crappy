@@ -3,6 +3,10 @@
 # Todo:
 #  Update with recent Python bindings
 
+from time import time
+from typing import Optional, Tuple
+import numpy as np
+
 from .camera import Camera
 from .._global import OptionalModule
 try:
@@ -11,16 +15,12 @@ except (ImportError, ModuleNotFoundError):
   Cl = OptionalModule("clModule", "CameraLink module was not compiled. Please "
                                   "make sure /opt/SiliconSoftware/xxx/lib64 "
                                   "exists and reinstall Crappy")
-from time import time
 
 
 class Cl_camera(Camera):
   """Cameralink camera sensor."""
 
-  def __init__(self,
-               numdevice: int = 0,
-               config_file: str = None,
-               camera_type: str = None) -> None:
+  def __init__(self) -> None:
     """Using the clModule, will open a cameraLink camera.
 
     Note:
@@ -33,35 +33,78 @@ class Cl_camera(Camera):
       Using a config file is recommended over changing all settings manually.
     """
 
-    # print("config_file:", config_file)
-    Camera.__init__(self)
-    self.config_file = config_file
-    self.camera_type = camera_type
-    if config_file is None:
-      import tkinter
-      import tkinter.filedialog
-      root = tkinter.Tk()
-      root.withdraw()
-      self.config_file = tkinter.filedialog.askopenfilename(parent=root)
-      root.destroy()
-    if self.camera_type is None and self.config_file:
-      with open(self.config_file, 'r') as f:
-        r = f.readlines()
-      r = [s for s in r if s[:5] == "Typ='"]
-      if len(r) != 0:
-        self.camera_type = r[0][5:-3]
-    if self.camera_type is None:
-      raise AttributeError("No camera type or valid config file specified!")
-    self.name = "cl_camera"
-    self.numdevice = numdevice
+    super().__init__()
+
     self.add_scale_setting("framespersec", 1, 200, self._get_framespersec,
                            self._set_framespersec)
 
-  def stopAcq(self) -> None:
-    self.cap.stopAcq()
+  def open(self,
+           numdevice: int = 0,
+           config_file: Optional[str] = None,
+           camera_type: Optional[str] = None,
+           **kwargs) -> None:
+    """Opens the camera."""
 
-  def startAcq(self, *args) -> None:
-    self.cap.startAcq(*args)
+    if camera_type is None and config_file is not None:
+      with open(config_file, 'r') as file:
+        r = file.readlines()
+      r = [s for s in r if s[:5] == "Typ='"]
+      if r:
+        camera_type = r[0][5:-3]
+
+    if camera_type is None:
+      raise AttributeError("No camera type or valid config file specified!")
+
+    if 'format' in kwargs:
+      f = kwargs['format']
+
+    else:
+      if camera_type[-1] == '8':
+        f = Cl.FG_GRAY
+      elif camera_type[-2:] == '16':
+        f = Cl.FG_GRAY16
+      elif camera_type[-2:] == '24':
+        f = Cl.FG_COL24
+
+      else:
+        if config_file:
+          with open(config_file, 'r') as file:
+            r = file.readlines()
+          r = [s for s in r if s[:10] == "FG_FORMAT="]
+          if len(r) != 0:
+            f = int(r[0].split('=')[1])
+          else:
+            raise ValueError("Could not determine the format")
+        else:
+          raise ValueError("Could not determine the format")
+
+    self.cap = Cl.VideoCapture()
+    self.cap.open(numdevice, camera_type, f)
+
+    if config_file:
+      self.cap.loadFile(config_file)
+
+    self.set_all(**kwargs)
+
+    self.cap.startAcq()
+    self.cap.set(Cl.FG_TRIGGERMODE, 1)
+    self.cap.set(Cl.FG_EXSYNCON, 1)
+
+  def get_image(self) -> Tuple[float, np.ndarray]:
+    """"""
+
+    ret, frame = self.cap.read()
+    t = time()
+    if not ret:
+      raise IOError("Could not read camera")
+
+    return t, frame
+
+  def close(self) -> None:
+    """"""
+
+    self.cap.stopAcq()
+    self.cap.release()
 
   def _set_framespersec(self, val: float) -> None:
     self.cap.set(Cl.FG_FRAMESPERSEC, val)
@@ -70,72 +113,17 @@ class Cl_camera(Camera):
     return self.cap.get(Cl.FG_FRAMESPERSEC)
 
   def _set_h(self, val: int) -> None:
-    self.stopAcq()
+    self.cap.stopAcq()
     self.cap.set(Cl.FG_HEIGHT, val)
-    self.startAcq()
+    self.cap.startAcq()
 
   def _set_w(self, val: int) -> None:
-    self.stopAcq()
+    self.cap.stopAcq()
     self.cap.set(Cl.FG_WIDTH, val)
-    self.startAcq()
+    self.cap.startAcq()
 
   def _get_h(self) -> int:
     return self.cap.get(Cl.FG_HEIGHT)
 
   def _get_w(self):
     return self.cap.get(Cl.FG_WIDTH)
-
-  def open(self, **kwargs) -> None:
-    """Opens the camera."""
-
-    if 'format' in kwargs:
-      f = kwargs['format']
-    else:
-      if self.camera_type[-1] == '8':
-        f = Cl.FG_GRAY
-      elif self.camera_type[-2:] == '16':
-        f = Cl.FG_GRAY16
-      elif self.camera_type[-2:] == '24':
-        f = Cl.FG_COL24
-      else:
-        if self.config_file:
-          with open(self.config_file, 'r') as f:
-            r = f.readlines()
-          r = [s for s in r if s[:10] == "FG_FORMAT="]
-          if len(r) != 0:
-            f = int(r[0].split('=')[1])
-          else:
-            raise ValueError("Could not determine the format")
-        else:
-          raise ValueError("Could not determine the format")
-    self.cap = Cl.VideoCapture()
-    self.cap.open(self.numdevice, self.camera_type, f)
-    for k in kwargs:
-      if k not in self.settings:
-        raise AttributeError('Unexpected keyword: ' + k)
-    if self.config_file:
-      self.cap.loadFile(self.config_file)
-    self.set_all(**kwargs)
-    # To make sure ROI is properly set up on first call
-    for i in ['framespersec', 'height', 'width']:
-      setattr(self, i, getattr(self, i))
-    self.startAcq()
-    self.configure()
-
-  def configure(self) -> None:
-    """Configure the frame grabber to trig the camera internally."""
-
-    self.cap.set(Cl.FG_TRIGGERMODE, 1)
-    self.cap.set(Cl.FG_EXSYNCON, 1)
-
-  def get_image(self) -> tuple:
-    r, f = self.cap.read()
-    t = time()
-    if not r:
-      raise IOError("Could not read camera")
-    return t, f
-
-  def close(self) -> None:
-    self.stopAcq()
-    self.cap.release()
-    self.cap = None

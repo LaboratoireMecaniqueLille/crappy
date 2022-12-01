@@ -1,9 +1,9 @@
 # coding: utf-8
 
-from .camera import Camera
-from time import time
+from time import time, strftime, gmtime
+from typing import Tuple, Optional, Dict, Any
 import numpy as np
-from typing import Tuple, Optional
+from .camera import Camera
 
 
 class Fake_camera(Camera):
@@ -19,7 +19,7 @@ class Fake_camera(Camera):
     """Initializes the parent class and instantiates the settings."""
 
     super().__init__()
-    self.name = "fake_camera"
+    self._frame_nr = -1
 
     self.add_scale_setting('width', 1, 4096, None, self._gen_image, 1280)
     self.add_scale_setting('height', 1, 4096, None, self._gen_image, 1024)
@@ -37,7 +37,7 @@ class Fake_camera(Camera):
     self._t0 = time()
     self._t = self._t0
 
-  def get_image(self) -> (float, np.ndarray):
+  def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
     """Returns the updated image, depending only on the current timestamp.
 
     Also includes a waiting loop in order to achieve the right frame rate.
@@ -48,15 +48,16 @@ class Fake_camera(Camera):
       pass
 
     self._t = time()
+    self._frame_nr += 1
 
     # Splitting the image to make a moving line
     row = int(self.speed * (self._t - self._t0)) % self.height
-    return self._t, np.concatenate((self._img[row:], self._img[:row]), axis=0)
-
-  def close(self) -> None:
-    """Nothing to close, actually."""
-
-    self._img = None
+    metadata = {'t(s)': self._t,
+                'DateTimeOriginal': strftime("%Y:%m:%d %H:%M:%S",
+                                             gmtime(self._t)),
+                'SubsecTimeOriginal': f'{self._t % 1:.6f}',
+                'ImageUniqueID': self._frame_nr}
+    return metadata, np.concatenate((self._img[row:], self._img[:row]), axis=0)
 
   def _gen_image(self, _: Optional[float] = None) -> None:
     """Generates the base gradient image, that will be splitted and returned

@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from time import time, sleep, strftime, gmtime
-from typing import Dict, Tuple, Any, Union, Optional
+from time import time, sleep
+from typing import Tuple, Union, Optional
 import numpy as np
 from pathlib import Path
 from re import fullmatch
@@ -41,7 +41,6 @@ class File_reader(Camera):
     super().__init__()
 
     # These attributes will come in use later on
-    self._frame_nr = -1
     self._images = None
     self._stop_at_end = True
     self._backend = None
@@ -110,7 +109,7 @@ class File_reader(Camera):
     # The images are stored as an iterator
     self._images = iter(images)
 
-  def get_image(self) -> Optional[Tuple[Dict[str, Any], np.ndarray]]:
+  def get_image(self) -> Tuple[float, np.ndarray]:
     """Reads the next image in the image folder, and returns it at the right
     time so that the achieved framerate matches the original framerate.
 
@@ -142,15 +141,7 @@ class File_reader(Camera):
       if t - self._t0 < timestamp:
         sleep(timestamp - (t - self._t0))
 
-      # Gathering the image metadata
-      t = time()
-      self._frame_nr += 1
-      metadata = {'t(s)': t,
-                  'DateTimeOriginal': strftime("%Y:%m:%d %H:%M:%S", gmtime(t)),
-                  'SubsecTimeOriginal': f'{t % 1:.6f}',
-                  'ImageUniqueID': self._frame_nr}
-
-      return metadata, img
+      return t, img
 
     # Raised when there's no more image to read
     except StopIteration:
