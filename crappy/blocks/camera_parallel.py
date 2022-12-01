@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 from time import time, sleep, strftime, gmtime
 from types import MethodType
-from multiprocessing import Array, Manager, Event, RLock
+from multiprocessing import Array, Manager, Event, RLock, Pipe
 from multiprocessing.sharedctypes import SynchronizedArray
 from math import prod
 
@@ -99,6 +99,7 @@ class Camera_parallel(Block):
     self._manager = Manager()
     self._metadata = self._manager.dict()
     self._stop_event = Event()
+    self._box_conn_in, self._box_conn_out = Pipe()
     self._save_lock = RLock()
     self._disp_lock = RLock()
     self._proc_lock = RLock()
@@ -177,7 +178,8 @@ class Camera_parallel(Block):
                                     lock=self._disp_lock,
                                     event=self._stop_event,
                                     shape=self._img_shape,
-                                    dtype=self._img_dtype)
+                                    dtype=self._img_dtype,
+                                    box_conn=self._box_conn_out)
       self._display_proc.start()
 
   def loop(self) -> None:

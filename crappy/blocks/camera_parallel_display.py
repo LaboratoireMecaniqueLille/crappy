@@ -3,11 +3,14 @@
 from multiprocessing import Process, managers
 from multiprocessing.synchronize import Event, RLock
 from multiprocessing.sharedctypes import SynchronizedArray
+from multiprocessing.connection import Connection
+from threading import Thread
 from math import log2, ceil
 import numpy as np
-from typing import Optional, Tuple
-from time import time
+from typing import Optional, Tuple, List
+from time import time, sleep
 from .._global import OptionalModule
+from ..tool import Box
 
 try:
   from PIL import ImageTk, Image
@@ -67,10 +70,25 @@ class Displayer(Process):
     self._lock: Optional[RLock] = None
     self._stop_event: Optional[Event] = None
     self._shape: Optional[Tuple[int, int]] = None
+    self._box_conn: Optional[Connection] = None
 
     self._img: Optional[np.ndarray] = None
     self._last_nr = None
     self._dtype = None
+
+    self._box_thread = Thread(target=self._thread_target)
+    self._boxes: List[Box] = list()
+    self._stop_thread = False
+
+  def __del__(self) -> None:
+    """"""
+
+    if self._box_thread.is_alive():
+      self._stop_thread = True
+      try:
+        self._box_thread.join(0.05)
+      except RuntimeError:
+        pass
 
   def set_shared(self,
                  array: SynchronizedArray,
@@ -78,7 +96,8 @@ class Displayer(Process):
                  lock: RLock,
                  event: Event,
                  shape: Tuple[int, int],
-                 dtype) -> None:
+                 dtype,
+                 box_conn: Connection) -> None:
     """"""
 
     self._img_array = array
@@ -87,8 +106,10 @@ class Displayer(Process):
     self._stop_event = event
     self._shape = shape
     self._dtype = dtype
+    self._box_conn = box_conn
 
     self._img = np.empty(shape=shape, dtype=dtype)
+    self._box_thread.start()
 
   def run(self) -> None:
     """"""
@@ -107,7 +128,7 @@ class Displayer(Process):
             continue
 
           if self._data_dict['ImageUniqueID'] != self._last_nr and \
-                time() - self._last_upd >= 1 / self._framerate:
+              time() - self._last_upd >= 1 / self._framerate:
             self._last_nr = self._data_dict['ImageUniqueID']
             display = True
 
@@ -127,6 +148,10 @@ class Displayer(Process):
           else:
             img = self._img.copy()
 
+          # Drawing the latest known position of the boxes
+          for box in self._boxes:
+            self._draw_box(img, box)
+
           # Calling the right prepare method
           if self._backend == 'cv2':
             self._update_cv2(img)
@@ -141,6 +166,48 @@ class Displayer(Process):
         self._finish_cv2()
       elif self._backend == 'mpl':
         self._finish_mpl()
+
+      if self._box_thread.is_alive():
+        self._stop_thread = True
+        try:
+          self._box_thread.join(0.05)
+        except RuntimeError:
+          pass
+
+  def _thread_target(self) -> None:
+    """"""
+
+    while not self._stop_event.is_set() and not self._stop_thread:
+
+      boxes = None
+      while self._box_conn.poll():
+        boxes = self._box_conn.recv()
+
+      if boxes is not None:
+        self._boxes = list(boxes)
+
+      else:
+        sleep(0.005)
+
+  @staticmethod
+  def _draw_box(img: np.ndarray, box: Box) -> None:
+    """Draws a box on top of an image."""
+
+    if box.no_points():
+      return
+
+    x_top, x_bottom, y_left, y_right = box.sorted()
+
+    for line in ((box.y_start, slice(x_top, x_bottom)),
+                 (box.y_end, slice(x_top, x_bottom)),
+                 (slice(y_left, y_right), x_top),
+                 (slice(y_left, y_right), x_bottom),
+                 (box.y_start + 1, slice(x_top, x_bottom)),
+                 (box.y_end - 1, slice(x_top, x_bottom)),
+                 (slice(y_left, y_right), x_top + 1),
+                 (slice(y_left, y_right), x_bottom - 1)
+                 ):
+      img[line] = 255 * int(np.mean(img[line]) < 128)
 
   def _prepare_cv2(self) -> None:
     """Instantiates the display window of cv2."""
