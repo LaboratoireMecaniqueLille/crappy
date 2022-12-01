@@ -653,12 +653,12 @@ class Camera_config(tk.Tk):
                    (self._high_thresh - self._low_thresh)).astype('uint8')
 
       # The original image still needs to be saved as 8-bits
-      bit_depth = np.ceil(np.log2(np.max(img)))
+      bit_depth = np.ceil(np.log2(np.max(img) + 1))
       self._original_img = (img / 2 ** (bit_depth - 8)).astype('uint8')
 
     # Or if the image is not already 8 bits, casting to 8 bits
     elif img.dtype != np.uint8:
-      bit_depth = np.ceil(np.log2(np.max(img)))
+      bit_depth = np.ceil(np.log2(np.max(img) + 1))
       self._img = (img / 2 ** (bit_depth - 8)).astype('uint8')
       self._original_img = np.copy(self._img)
 
@@ -668,7 +668,7 @@ class Camera_config(tk.Tk):
       self._original_img = np.copy(img)
 
     # Updating the information
-    self._nb_bits.set(int(np.ceil(np.log2(np.max(img)))))
+    self._nb_bits.set(int(np.ceil(np.log2(np.max(img) + 1))))
     self._max_pixel.set(int(np.max(img)))
     self._min_pixel.set(int(np.min(img)))
 
