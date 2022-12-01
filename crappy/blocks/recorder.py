@@ -87,7 +87,7 @@ class Recorder(Block):
 
     # The first row of the file contains the names of the labels
     with open(self._path, 'w') as file:
-      file.write(f"{', '.join(self._labels)}\n")
+      file.write(f"{','.join(self._labels)}\n")
 
     # The following rows contain data
     self._save(data)
@@ -116,7 +116,7 @@ class Recorder(Block):
       sorted_data = [data[label] for label in self._labels]
       # Actually writing the values
       for values in zip(*sorted_data):
-        file.write(f"{', '.join(map(str, values))}\n")
+        file.write(f"{','.join(map(str, values))}\n")
 
 
 class Saver(Recorder):
