@@ -96,6 +96,11 @@ class DISConfig(Camera_config_with_boxes):
       return
     _, img = ret
 
+    if img.dtype != self.dtype:
+      self.dtype = img.dtype
+    if self.shape != img.shape:
+      self.shape = img.shape
+
     self._cast_img(img)
     # Do not draw the correl box if the user is creating the select box
     if self._draw_correl_box:

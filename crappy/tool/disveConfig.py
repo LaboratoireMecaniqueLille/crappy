@@ -44,6 +44,11 @@ class DISVE_config(Camera_config_with_boxes):
       return
     _, img = ret
 
+    if img.dtype != self.dtype:
+      self.dtype = img.dtype
+    if self.shape != img.shape:
+      self.shape = img.shape
+
     self._cast_img(img)
     self._draw_spots()
     self._resize_img()
