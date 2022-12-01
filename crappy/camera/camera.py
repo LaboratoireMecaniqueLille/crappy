@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Callable, Optional, Tuple, Union, Any, Dict
+from time import sleep
 import numpy as np
 
 from .._global import DefinitionError
@@ -15,8 +16,6 @@ class MetaCam(type):
 
   classes = {}
 
-  needed_methods = ["get_image", "open", "close"]
-
   def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
     return super().__new__(mcs, name, bases, dct)
 
@@ -26,19 +25,6 @@ class MetaCam(type):
     # Checking that a Camera with the same name doesn't already exist
     if name in cls.classes:
       raise DefinitionError(f"The {name} class is already defined !")
-
-    # Gathering all the defined methods
-    defined_methods = list(dct.keys())
-    defined_methods += [base.__dict__.keys() for base in bases]
-
-    # Checking for missing methods
-    missing_methods = [meth for meth in cls.needed_methods
-                       if meth not in defined_methods]
-
-    # Raising if there are unexpected missing methods
-    if missing_methods and name != "Camera":
-      raise DefinitionError(f'Class {name} is missing the required method(s): '
-                            f'{", ".join(missing_methods)}')
 
     # Otherwise, saving the class
     if name != "Camera":
@@ -218,11 +204,59 @@ class Camera(metaclass=MetaCam):
 
     self.settings: Dict[str, Cam_setting] = dict()
 
-  def read_image(self) -> (float, np.ndarray):
-    """To be removed, temporarily ensures the compatibility with the blocks
-    that haven't been updated yet."""
+  def open(self, **kwargs) -> None:
+    """This method should initialize the connection to the camera, configure
+    the camera, and start the image acquisition.
 
-    return self.get_image()
+    This method also takes as arguments all the kwargs that were passed to the
+    Camera block but not used by it. Some may be used directly, e.g. for
+    choosing which camera to open out of several possible ones, and the others
+    should indicate values to set for available settings. It is fine not to
+    provide any values for the settings here, as each setting has a default.
+
+    To effectively set the setting values, the method :meth:`set_all` has to
+    be called at the end of open (e.g. ``self.set_all(**kwargs)``). This is
+    true even if no value to set was given in the kwargs. If it is not called,
+    the settings won't actually be set on the camera.
+
+    If some camera settings require values from the camera for their
+    instantiation (e.g.
+    ``self.add_setting(..., highest=self.cam.max_width(), ...)``), they should
+    be instantiated here. And of course before calling :meth:`set_all`.
+    """
+
+    self.set_all(**kwargs)
+
+  def get_image(self) -> Optional[Tuple[Dict[str, Any], np.ndarray]]:
+    """Acquires an image and returns it along with its metadata.
+
+    It is also fine for this method to return :obj:`None`. The image should be
+    returned as a numpy array, and the metadata as a :obj:`dict`. The keys of
+    this dictionary should preferably be valid Exif tags, so that the metadata
+    can be embedded into the image file when saving.
+
+    In order for the recording of images to run, the metadata dict must
+    contain at least the ``'t(s)'`` and ``''ImageUniqueID''`` keys, whose
+    values should be the timestamp when the frame was acquired (as returned by
+    ``time.time()``) and the frame number as an :obj:`int`.
+    """
+
+    print(f"WARNING ! The get_img method is not defined for the Camera "
+          f"{type(self).__name__} !\nNo image can be acquired if this method "
+          f"isn't defined !")
+    sleep(1)
+    return
+
+  def close(self) -> None:
+    """This method should perform any action required for properly stopping the
+    image acquisition and/or closing the connection to the camera.
+
+    This step is usually extremely important in order for the camera resources
+    to be released. Otherwise, it might be impossible to re-open the camera
+    from Crappy without resetting the hardware connection with it.
+    """
+
+    ...
 
   def add_bool_setting(self,
                        name: str,
