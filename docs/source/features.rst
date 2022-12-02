@@ -160,9 +160,7 @@ Signal generation
   Generates a signal when the user clicks on a button in a GUI. Useful for
   triggering a behavior during an assay.
 
-  Refer to the `videoextenso_reset_def.py <https://github.com/Laboratoire
-  MecaniqueLille/crappy/blob/master/Examples/videoextenso_reset_def.py>`_
-  example for a use case.
+  No example featuring a GUI block is currently distributed.
 
 - :ref:`PID`
 
