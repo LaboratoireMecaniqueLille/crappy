@@ -29,6 +29,9 @@ class Xiapi(Camera):
     self._cam = xiapi.Camera()
     self._img = xiapi.Image()
 
+    # Stores the last requested or read trigger mode value
+    self._trig = 'Free run'
+
   def open(self, sn: Optional[str] = None, **kwargs) -> None:
     """Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs.
@@ -56,8 +59,7 @@ class Xiapi(Camera):
                            self._set_exp, 10000)
     self.add_scale_setting('gain', 0., 6., self._get_gain, self._set_gain)
     self.add_bool_setting('AEAG', self._get_aeag, self._set_aeag, False)
-    self.add_bool_setting('external_trig', self._get_extt,
-                          self._set_extt, False)
+    self.add_trigger_setting(self._get_extt, self._set_extt)
 
     self.set_all(**kwargs)
     self._cam.start_acquisition()
@@ -104,12 +106,16 @@ class Xiapi(Camera):
   def _get_aeag(self) -> bool:
     return self._cam.get_param('aeag')
 
-  def _get_extt(self) -> bool:
+  def _get_extt(self) -> str:
+    """Returns the current trigger mode value, and updates the last read
+    trigger mode value if needed."""
+
     r = self._cam.get_trigger_source()
-    if r == 'XI_TRG_OFF':
-      return False
-    else:
-      return True
+    if r == 'XI_TRG_OFF' and self._trig == 'Hardware':
+      self._trig = 'Free run'
+    elif r != 'XI_TRG_OFF' and self._trig != 'Hardware':
+      self._trig = 'Hardware'
+    return self._trig
 
   def _set_w(self, width: int) -> None:
     self._cam.set_width(width)
@@ -132,10 +138,14 @@ class Xiapi(Camera):
   def _set_aeag(self, aeag: bool) -> None:
     self._cam.set_param('aeag', int(aeag))
 
-  def _set_extt(self, trig: bool) -> None:
-    if trig:
+  def _set_extt(self, trig: str) -> None:
+    """Sets the requested trigger mode value, and updates the last requested
+    trigger mode value."""
+
+    if trig == 'Hardware':
       self._cam.set_gpi_mode('XI_GPI_TRIGGER')
       self._cam.set_trigger_source('XI_TRG_EDGE_RISING')
     else:
       self._cam.set_gpi_mode('XI_GPI_OFF')
       self._cam.set_trigger_source('XI_TRG_OFF')
+    self._trig = trig

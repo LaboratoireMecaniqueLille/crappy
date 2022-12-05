@@ -200,9 +200,11 @@ class Camera(metaclass=MetaCam):
   """
 
   def __init__(self) -> None:
-    """Simply sets the dict containing the settings."""
+    """Simply sets the dict containing the settings and the name of the
+    trigger setting."""
 
     self.settings: Dict[str, Cam_setting] = dict()
+    self.trigger_name = 'Trigger'
 
   def open(self, **kwargs) -> None:
     """This method should initialize the connection to the camera, configure
@@ -279,6 +281,10 @@ class Camera(metaclass=MetaCam):
       default: The default value to assign to the setting.
     """
 
+    # Checking if the given name is valid
+    if name == self.trigger_name:
+      raise ValueError(f"The name {self.trigger_name} is reserved for the "
+                       f"trigger setting !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.settings[name] = Cam_bool_setting(name, getter, setter, default)
@@ -312,6 +318,10 @@ class Camera(metaclass=MetaCam):
         be the average of ``lowest`` and ``highest``.
     """
 
+    # Checking if the given name is valid
+    if name == self.trigger_name:
+      raise ValueError(f"The name {self.trigger_name} is reserved for the "
+                       f"trigger setting !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.settings[name] = Cam_scale_setting(name, lowest, highest, getter,
@@ -339,10 +349,56 @@ class Camera(metaclass=MetaCam):
         be the fist item in ``choices``.
     """
 
+    # Checking if the given name is valid
+    if name == self.trigger_name:
+      raise ValueError(f"The name {self.trigger_name} is reserved for the "
+                       f"trigger setting !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.settings[name] = Cam_choice_setting(name, choices, getter, setter,
                                              default)
+
+  def add_trigger_setting(self,
+                          getter: Optional[Callable[[], str]] = None,
+                          setter: Optional[Callable[[str], None]] = None
+                          ) -> None:
+    """Adds a specific choice setting for controlling the trigger mode of the
+    camera. The reserved name for this setting is ``'Trigger'``.
+
+    This setting is mainly intended for cameras that can run either in free run
+    mode or in hardware trig mode. The three possible choices for this setting
+    are : ``'Free run'``, ``'Hdw after config'`` and ``'Hardware'``. Default is
+    ``'Free run'``.
+
+    The setter method is expected to set the camera to free run mode in
+    ``'Free run'`` and ``'Hdw after config'`` choices, and to hardware trigger
+    mode in the ``'Hardware'`` choice. The getter method should return either
+    ``'Free run'`` or ``'Hdw after config'`` in free run mode, depending on the
+    last set value for the setting, and ``'Hardware'`` in hardware trig mode.
+    It can also be left to :obj:`None`.
+
+    The rationale behind the ``'Hdw after config'`` choice is to allow the user
+    to tune settings in the configuration window with the camera in free run
+    mode, and to switch afterwards to the hardware trigger mode for the actual
+    test. It proves extremely useful if the hardware triggers are generated
+    from Crappy, as they're not started yet when the configuration window is
+    running.
+
+    Args:
+      getter: The method for getting the current value of the setting. If not
+        given, the returned value is simply the last one that was set.
+      setter: The method for setting the current value of the setting. If not
+        given, the value to be set is simply stored.
+    """
+
+    if self.trigger_name in self.settings:
+      raise ValueError("There can only be one trigger setting per camera !")
+
+    self.settings[self.trigger_name] = Cam_choice_setting(
+      name=self.trigger_name, choices=('Free run',
+                                       'Hdw after config',
+                                       'Hardware'),
+      getter=getter, setter=setter, default='Free run')
 
   def set_all(self, **kwargs) -> None:
     """Checks if the kwargs are valid, sets them, and for settings that are not

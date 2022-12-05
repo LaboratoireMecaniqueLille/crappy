@@ -74,6 +74,7 @@ class Bispectral(Cl_camera):
     self.add_scale_setting('IT2', 10, 10000, self._get_it2, self._set_it2)
     self.add_scale_setting('fps', 1., 150., self.get_trigg_freq,
                            self.set_trigg_freq)
+    self.add_trigger_setting(setter=self.set_external_trigger)
 
   def open(self,
            camera_type: str = 'SingleAreaGray2DShading',
@@ -141,11 +142,11 @@ class Bispectral(Cl_camera):
       print('WARNING! Incorrect reply!')
     return r[2:4]
 
-  def set_external_trigger(self, val) -> None:
+  def set_external_trigger(self, val: str) -> None:
     """Sets the external trigger to val by toggling the value of the 3rd bit
     of register 102."""
 
-    if val:
+    if val == 'Hardware':
       self.send_cmd('@W1027C')  # 3rd bit to 1
     else:
       self.send_cmd('@W10274')  # 3rd bit to 0

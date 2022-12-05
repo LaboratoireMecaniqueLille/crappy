@@ -152,6 +152,12 @@ class Camera_parallel(Block):
       if config.dtype is not None:
         self._img_dtype = config.dtype
 
+    # Setting the camera to 'Hardware' trig if it's in 'Hdw after config' mode
+    if self._camera.trigger_name in self._camera.settings and \
+        getattr(self._camera,
+                self._camera.trigger_name) == 'Hdw after config':
+      setattr(self._camera, self._camera.trigger_name, 'Hardware')
+
     if self._img_dtype is None or self._img_shape is None:
       raise ValueError(f"Cannot launch the Camera processes for camera "
                        f"{self._camera_name} as the image shape and/or dtype "
