@@ -814,6 +814,8 @@ class Camera_config(tk.Tk):
           'crappy', 'tool/data/no_image.png'))))
       # Otherwise, just pass
       else:
+        self.update()
+        sleep(0.001)
         return
 
     _, img = ret

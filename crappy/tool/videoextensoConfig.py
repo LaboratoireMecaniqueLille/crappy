@@ -5,6 +5,7 @@ from typing import Optional
 import numpy as np
 from io import BytesIO
 from pkg_resources import resource_string
+from time import sleep
 from .cameraConfigBoxes import Camera_config_with_boxes
 from .cameraConfigTools import Box
 from .._global import OptionalModule
@@ -125,6 +126,8 @@ class VE_config(Camera_config_with_boxes):
           'crappy', 'tool/data/no_image.png'))))
       # Otherwise, just pass
       else:
+        self.update()
+        sleep(0.001)
         return
 
     _, img = ret
