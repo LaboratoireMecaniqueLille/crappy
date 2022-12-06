@@ -12,6 +12,7 @@ from math import prod
 from .block import Block
 from .camera_parallel_display import Displayer
 from .camera_parallel_record import Image_saver
+from .ve_parallel_process import Ve_parallel_process
 from ..camera import camera_list, Camera as BaseCam
 from ..tool import Camera_config
 
@@ -68,24 +69,6 @@ class Camera_parallel(Block):
     else:
       Camera_parallel.cam_count[self._camera_name] += 1
 
-    # Cannot start process from __main__
-    if not save_images:
-      self._save_proc_kw = None
-    else:
-      self._save_proc_kw = dict(img_extension=img_extension,
-                                save_folder=save_folder,
-                                save_period=save_period,
-                                save_backend=save_backend)
-
-    # Instantiating the displayer window if requested
-    if not display_images:
-      self._display_proc_kw = None
-    else:
-      self._display_proc_kw = dict(
-        title=f"Displayer {camera} "
-              f"{Camera_parallel.cam_count[self._camera_name]}",
-        framerate=displayer_framerate, backend=displayer_backend)
-
     # Setting the other attributes
     self._trig_label = software_trig_label
     self._config_cam = config
@@ -107,8 +90,31 @@ class Camera_parallel(Block):
 
     self._n_loops = 0
 
+    # Cannot start process from __main__
+    if not save_images:
+      self._save_proc_kw = None
+    else:
+      self._save_proc_kw = dict(img_extension=img_extension,
+                                save_folder=save_folder,
+                                save_period=save_period,
+                                save_backend=save_backend)
+
+    # Instantiating the displayer window if requested
+    if not display_images:
+      self._display_proc_kw = None
+    else:
+      self._display_proc_kw = dict(
+        title=f"Displayer {camera} "
+              f"{Camera_parallel.cam_count[self._camera_name]}",
+        framerate=displayer_framerate, backend=displayer_backend)
+
+    self._process_proc_kw = None
+
   def __del__(self) -> None:
     """"""
+
+    if self._process_proc is not None and self._process_proc.is_alive():
+      self._process_proc.terminate()
 
     if self._save_proc is not None and self._save_proc.is_alive():
       self._save_proc.terminate()
@@ -146,12 +152,7 @@ class Camera_parallel(Block):
       self._camera.open(**self._camera_kwargs)
 
     if self._config_cam:
-      config = Camera_config(self._camera)
-      config.main()
-      if config.shape is not None:
-        self._img_shape = config.shape
-      if config.dtype is not None:
-        self._img_dtype = config.dtype
+      self._configure()
 
     # Setting the camera to 'Hardware' trig if it's in 'Hdw after config' mode
     if self._camera.trigger_name in self._camera.settings and \
@@ -169,6 +170,18 @@ class Camera_parallel(Block):
                             prod(self._img_shape))
     self._img = np.frombuffer(self._img_array.get_obj(),
                               dtype=self._img_dtype).reshape(self._img_shape)
+
+    if self._process_proc is not None:
+      self._process_proc.set_shared(array=self._img_array,
+                                    data_dict=self._metadata,
+                                    lock=self._proc_lock,
+                                    event=self._stop_event,
+                                    shape=self._img_shape,
+                                    dtype=self._img_dtype,
+                                    box_conn=self._box_conn_in,
+                                    outputs=self.outputs,
+                                    labels=self.labels)
+      self._process_proc.start()
 
     if self._save_proc is not None:
       self._save_proc.set_shared(array=self._img_array,
@@ -240,9 +253,21 @@ class Camera_parallel(Block):
 
     self._stop_event.set()
     sleep(0.1)
+    if self._process_proc is not None and self._process_proc.is_alive():
+      self._process_proc.terminate()
     if self._save_proc is not None and self._save_proc.is_alive():
       self._save_proc.terminate()
     if self._display_proc is not None and self._display_proc.is_alive():
       self._display_proc.terminate()
 
     self._manager.shutdown()
+
+  def _configure(self) -> None:
+    """"""
+
+    config = Camera_config(self._camera)
+    config.main()
+    if config.shape is not None:
+      self._img_shape = config.shape
+    if config.dtype is not None:
+      self._img_dtype = config.dtype
