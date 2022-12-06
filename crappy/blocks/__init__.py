@@ -33,3 +33,4 @@ from .videoExtenso import Video_extenso
 from .camera_parallel_display import Displayer
 from .camera_parallel_record import Image_saver
 from .camera_parallel import Camera_parallel
+from .videoExtenso_parallel import Video_extenso_parallel
