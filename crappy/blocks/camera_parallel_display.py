@@ -109,17 +109,18 @@ class Displayer(Process):
     self._box_conn = box_conn
 
     self._img = np.empty(shape=shape, dtype=dtype)
-    self._box_thread.start()
 
   def run(self) -> None:
     """"""
 
-    if self._backend == 'cv2':
-      self._prepare_cv2()
-    elif self._backend == 'mpl':
-      self._prepare_mpl()
-
     try:
+      self._box_thread.start()
+
+      if self._backend == 'cv2':
+        self._prepare_cv2()
+      elif self._backend == 'mpl':
+        self._prepare_mpl()
+
       while not self._stop_event.is_set():
         display = False
         with self._lock:
