@@ -198,16 +198,20 @@ class Displayer(Process):
 
     x_top, x_bottom, y_left, y_right = box.sorted()
 
-    for line in ((box.y_start, slice(x_top, x_bottom)),
-                 (box.y_end, slice(x_top, x_bottom)),
-                 (slice(y_left, y_right), x_top),
-                 (slice(y_left, y_right), x_bottom),
-                 (box.y_start + 1, slice(x_top, x_bottom)),
-                 (box.y_end - 1, slice(x_top, x_bottom)),
-                 (slice(y_left, y_right), x_top + 1),
-                 (slice(y_left, y_right), x_bottom - 1)
-                 ):
-      img[line] = 255 * int(np.mean(img[line]) < 128)
+    try:
+      for line in ((box.y_start, slice(x_top, x_bottom)),
+                   (box.y_end, slice(x_top, x_bottom)),
+                   (slice(y_left, y_right), x_top),
+                   (slice(y_left, y_right), x_bottom),
+                   (box.y_start + 1, slice(x_top, x_bottom)),
+                   (box.y_end - 1, slice(x_top, x_bottom)),
+                   (slice(y_left, y_right), x_top + 1),
+                   (slice(y_left, y_right), x_bottom - 1)
+                   ):
+        img[line] = 255 * int(np.mean(img[line]) < 128)
+    except (Exception,) as exc:
+      print(f"[Displayer process] Encountered exception while drawing boxes: "
+            f"{exc}, ignoring")
 
   def _prepare_cv2(self) -> None:
     """Instantiates the display window of cv2."""
