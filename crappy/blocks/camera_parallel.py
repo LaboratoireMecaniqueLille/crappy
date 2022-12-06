@@ -38,13 +38,14 @@ class Camera_parallel(Block):
                save_backend: Optional[str] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Tuple[int, ...]] = None,
+               img_shape: Optional[Tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
                **kwargs) -> None:
     """"""
 
-    self._save_proc = None
-    self._display_proc = None
+    self._save_proc: Optional[Image_saver] = None
+    self._display_proc: Optional[Displayer] = None
+    self._process_proc: Optional[Ve_parallel_process] = None
 
     super().__init__()
 
