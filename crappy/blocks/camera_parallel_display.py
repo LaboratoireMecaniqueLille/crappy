@@ -7,10 +7,10 @@ from multiprocessing.connection import Connection
 from threading import Thread
 from math import log2, ceil
 import numpy as np
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple
 from time import time, sleep
 from .._global import OptionalModule
-from ..tool import Box
+from ..tool import Spot_boxes, Box
 
 try:
   from PIL import ImageTk, Image
@@ -77,7 +77,7 @@ class Displayer(Process):
     self._dtype = None
 
     self._box_thread = Thread(target=self._thread_target)
-    self._boxes: List[Box] = list()
+    self._boxes: Spot_boxes = Spot_boxes()
     self._stop_thread = False
 
   def __del__(self) -> None:
@@ -150,7 +150,8 @@ class Displayer(Process):
 
           # Drawing the latest known position of the boxes
           for box in self._boxes:
-            self._draw_box(img, box)
+            if box is not None:
+              self._draw_box(img, box)
 
           # Calling the right prepare method
           if self._backend == 'cv2':
@@ -184,7 +185,7 @@ class Displayer(Process):
         boxes = self._box_conn.recv()
 
       if boxes is not None:
-        self._boxes = list(boxes)
+        self._boxes = boxes
 
       else:
         sleep(0.005)
