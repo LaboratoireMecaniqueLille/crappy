@@ -172,13 +172,14 @@ class Camera_parallel(Block):
                               dtype=self._img_dtype).reshape(self._img_shape)
 
     if self._process_proc is not None:
+      box_conn = self._box_conn_in if self._display_proc is not None else None
       self._process_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._proc_lock,
                                     event=self._stop_event,
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
-                                    box_conn=self._box_conn_in,
+                                    box_conn=box_conn,
                                     outputs=self.outputs,
                                     labels=self.labels)
       self._process_proc.start()

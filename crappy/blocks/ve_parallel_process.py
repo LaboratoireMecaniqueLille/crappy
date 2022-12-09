@@ -44,7 +44,7 @@ class Ve_parallel_process(Process):
                  event: Event,
                  shape: Tuple[int, int],
                  dtype,
-                 box_conn: Connection,
+                 box_conn: Optional[Connection],
                  outputs: List[Link],
                  labels: List[str]) -> None:
     """"""
@@ -89,7 +89,8 @@ class Ve_parallel_process(Process):
             if data is not None:
               self._send([self._metadata['t(s)'], self._metadata, *data])
 
-            self._box_conn.send(self._ve.spots)
+            if self._box_conn is not None:
+              self._box_conn.send(self._ve.spots)
 
           except LostSpotError:
             self._ve.stop_tracking()
