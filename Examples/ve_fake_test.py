@@ -49,6 +49,12 @@ class Apply_strain_img:
     return cv2.remap(self._img, transform_x, transform_y, 1)
 
 
+def elastic_law(_: float) -> float:
+  """No elastic law in this simple example."""
+
+  return 0.
+
+
 if __name__ == "__main__":
   img = crappy.resources.ve_markers
 
@@ -63,7 +69,7 @@ if __name__ == "__main__":
 
   # Our fake machine
   machine = crappy.blocks.Fake_machine(max_strain=17, k=5000, l0=20,
-                                       plastic_law=lambda exx: 0,
+                                       plastic_law=elastic_law,
                                        sigma={'F(N)': 0.5})
 
   crappy.link(generator, machine)
