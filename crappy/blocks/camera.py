@@ -221,8 +221,8 @@ class Camera(Block):
     # Case when the images are generated and not acquired
     if self._image_generator is not None:
       self._camera = BaseCam()
-      self._camera.add_scale_setting('Exx', 0., 100., None, None, 0.)
-      self._camera.add_scale_setting('Eyy', 0., 100., None, None, 0.)
+      self._camera.add_scale_setting('Exx', -100., 100., None, None, 0.)
+      self._camera.add_scale_setting('Eyy', -100., 100., None, None, 0.)
       self._camera.set_all()
 
       def get_image(self_) -> Tuple[float, np.ndarray]:
