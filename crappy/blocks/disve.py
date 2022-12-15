@@ -167,19 +167,20 @@ class DISVE(Camera):
                      image_generator=image_generator,
                      **kwargs)
 
-    self._ve = VE(patches=self._patches,
-                  method=method,
-                  alpha=alpha,
-                  delta=delta,
-                  gamma=gamma,
-                  finest_scale=finest_scale,
-                  iterations=iterations,
-                  gradient_iterations=gradient_iterations,
-                  patch_size=patch_size,
-                  patch_stride=patch_stride,
-                  border=border,
-                  safe=safe,
-                  follow=follow)
+    # The Disve tool has to be initialized later for Windows compatibility
+    self._ve_kwargs = dict(patches=self._patches,
+                           method=method,
+                           alpha=alpha,
+                           delta=delta,
+                           gamma=gamma,
+                           finest_scale=finest_scale,
+                           iterations=iterations,
+                           gradient_iterations=gradient_iterations,
+                           patch_size=patch_size,
+                           patch_stride=patch_stride,
+                           border=border,
+                           safe=safe,
+                           follow=follow)
 
     self._config_dis = config
 
@@ -203,6 +204,8 @@ class DISVE(Camera):
   def prepare(self) -> None:
     """Opens the camera for acquiring images and displays the corresponding
     settings window."""
+
+    self._ve = VE(**self._ve_kwargs)
 
     super().prepare()
 
