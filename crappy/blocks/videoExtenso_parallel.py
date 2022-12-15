@@ -66,21 +66,20 @@ class Video_extenso_parallel(Camera_parallel):
                    'Eyy(%)', 'Exx(%)'] if labels is None else labels
 
     self._raise_on_lost_spot = raise_on_lost_spot
-    self._process_proc_kw = dict(white_spots=white_spots,
-                                 update_thresh=update_thresh,
-                                 num_spots=num_spots,
-                                 safe_mode=safe_mode,
-                                 border=border,
-                                 min_area=min_area,
-                                 blur=blur)
+    self._ve_kw = dict(white_spots=white_spots,
+                       update_thresh=update_thresh,
+                       num_spots=num_spots,
+                       safe_mode=safe_mode,
+                       border=border,
+                       min_area=min_area,
+                       blur=blur)
 
   def prepare(self) -> None:
     """"""
 
-    if self._process_proc_kw is not None:
-      self._ve = VideoExtenso(**self._process_proc_kw)
-      self._process_proc = Ve_parallel_process(self._ve,
-                                               self._raise_on_lost_spot)
+    self._ve = VideoExtenso(**self._ve_kw)
+    self._process_proc = Ve_parallel_process(self._ve,
+                                             self._raise_on_lost_spot)
 
     super().prepare()
 
