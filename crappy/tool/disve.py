@@ -72,7 +72,7 @@ class DISVE:
     """
 
     # These attributes are accessed by the parent class
-    self._patches = patches
+    self.patches = patches
     self._offsets = [(0, 0) for _ in patches]
 
     # Other attributes to set
@@ -124,7 +124,7 @@ class DISVE:
 
     # Compute the displacement for each patch
     displacements = []
-    for patch, offset in zip(self._patches, self._offsets):
+    for patch, offset in zip(self.patches, self._offsets):
 
       if self._method == 'Disflow':
         displacements.append(self._calc_disflow(patch, img, offset))
@@ -145,7 +145,7 @@ class DISVE:
     if self._follow:
       for disp, (y_offset, x_offset), patch in zip(displacements,
                                                    self._offsets,
-                                                   self._patches):
+                                                   self.patches):
 
         patch.x_start = round(patch.x_start + disp[0])
         patch.x_end = round(patch.x_end + disp[0])
@@ -311,7 +311,7 @@ class DISVE:
     """Check if the patches are still within the image, and raises an error if
     one of them is out."""
 
-    for patch in self._patches:
+    for patch in self.patches:
       x_top, x_bottom, y_left, y_right = patch.sorted()
 
       # Checking the left border
