@@ -20,10 +20,18 @@ Required hardware:
 
 import crappy
 
+w, h = 640, 480
+ps = 100  # patch size (x and y)
+m = 100  # Margin
+
+
+def compute_strain(d):
+  d['Exx(%)'] = (d['p3x'] - d['p1x']) / (w - ps) * 100
+  d['Eyy(%)'] = (d['p0y'] - d['p2y']) / (h - ps) * 100
+  return d
+
+
 if __name__ == "__main__":
-  w, h = 640, 480
-  ps = 100  # patch size (x and y)
-  m = 100  # Margin
 
   # Patches are defined as such: (y, x, height, width)
   # x and y being the coordinates to the upper-left corner
@@ -40,11 +48,6 @@ if __name__ == "__main__":
 
   crappy.link(ve, graphx)
   crappy.link(ve, graphy)
-
-  def compute_strain(d):
-    d['Exx(%)'] = (d['p3x'] - d['p1x']) / (w - ps) * 100
-    d['Eyy(%)'] = (d['p0y'] - d['p2y']) / (h - ps) * 100
-    return d
 
   graphstrain = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
   crappy.link(ve, graphstrain, modifier=compute_strain)
