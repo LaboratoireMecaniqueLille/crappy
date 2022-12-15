@@ -108,8 +108,6 @@ class Camera_parallel(Block):
               f"{Camera_parallel.cam_count[self._camera_name]}",
         framerate=displayer_framerate, backend=displayer_backend)
 
-    self._process_proc_kw = None
-
   def __del__(self) -> None:
     """"""
 
