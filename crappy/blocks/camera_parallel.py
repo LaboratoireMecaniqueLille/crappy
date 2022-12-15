@@ -7,6 +7,7 @@ from time import time, sleep, strftime, gmtime
 from types import MethodType
 from multiprocessing import Array, Manager, Event, RLock, Pipe
 from multiprocessing.sharedctypes import SynchronizedArray
+from multiprocessing import managers, synchronize, connection
 from math import prod
 
 from .block import Block
@@ -78,15 +79,17 @@ class Camera_parallel(Block):
     self._img_dtype = img_dtype
     self._camera_kwargs = kwargs
 
+    # The objects must be initialized later for Windows compatibility
     self._img_array: Optional[SynchronizedArray] = None
     self._img: Optional[np.ndarray] = None
-    self._manager = Manager()
-    self._metadata = self._manager.dict()
-    self._stop_event = Event()
-    self._box_conn_in, self._box_conn_out = Pipe()
-    self._save_lock = RLock()
-    self._disp_lock = RLock()
-    self._proc_lock = RLock()
+    self._manager: Optional[managers.SyncManager] = None
+    self._metadata: Optional[managers.DictProxy] = None
+    self._stop_event: Optional[synchronize.Event] = None
+    self._box_conn_in: Optional[connection.Connection] = None
+    self._box_conn_out: Optional[connection.Connection] = None
+    self._save_lock: Optional[synchronize.RLock] = None
+    self._disp_lock: Optional[synchronize.RLock] = None
+    self._proc_lock: Optional[synchronize.RLock] = None
 
     self._n_loops = 0
 
@@ -120,11 +123,21 @@ class Camera_parallel(Block):
     if self._display_proc is not None and self._display_proc.is_alive():
       self._display_proc.terminate()
 
-    self._manager.shutdown()
+    if self._manager is not None:
+      self._manager.shutdown()
 
   def prepare(self) -> None:
     """Preparing the save folder, opening the camera and displaying the
     configuration GUI."""
+
+    # Instantiating the multiprocessing objects
+    self._manager = Manager()
+    self._metadata = self._manager.dict()
+    self._stop_event = Event()
+    self._box_conn_in, self._box_conn_out = Pipe()
+    self._save_lock = RLock()
+    self._disp_lock = RLock()
+    self._proc_lock = RLock()
 
     if self._save_proc_kw is not None:
       self._save_proc = Image_saver(**self._save_proc_kw)

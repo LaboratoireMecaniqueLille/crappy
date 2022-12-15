@@ -76,14 +76,16 @@ class Displayer(Process):
     self._last_nr = None
     self._dtype = None
 
-    self._box_thread = Thread(target=self._thread_target)
+    # The thread must be initialized later for compatibility with Windows
+    self._box_thread: Optional[Thread] = None
+
     self._boxes: Spot_boxes = Spot_boxes()
     self._stop_thread = False
 
   def __del__(self) -> None:
     """"""
 
-    if self._box_thread.is_alive():
+    if self._box_thread is not None and self._box_thread.is_alive():
       self._stop_thread = True
       try:
         self._box_thread.join(0.05)
@@ -114,6 +116,7 @@ class Displayer(Process):
     """"""
 
     try:
+      self._box_thread = Thread(target=self._thread_target)
       self._box_thread.start()
 
       if self._backend == 'cv2':
