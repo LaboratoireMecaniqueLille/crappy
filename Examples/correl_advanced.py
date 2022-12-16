@@ -59,10 +59,9 @@ if __name__ == "__main__":
                                    iterations=3,  # and of iteration
                                    resampling_factor=2.5,  # aggressive
                                    # resampling
-                                   labels=[  # Needed to name our custom field
-                                     'x', 'y', 'r', 'Exx', 'Eyy', 'Exy',
-                                     'Ux2', 'Uy2', 'Uxy',
-                                     'Vx2', 'Vy2', 'Vxy'],
+                                   labels=['t(s)', 'meta', 'x', 'y', 'r',
+                                           'Exx', 'Eyy', 'Exy', 'Ux2', 'Uy2',
+                                           'Uxy', 'Vx2', 'Vy2', 'Vxy'],
                                    mul=3.2,  # Scalar to multiply the direction
                                    res=True)  # Ask to return the residual
 
