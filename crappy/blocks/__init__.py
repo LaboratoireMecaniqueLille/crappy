@@ -33,3 +33,4 @@ from .videoExtenso import Video_extenso
 from .camera_parallel import Camera_parallel
 from .videoExtenso_parallel import Video_extenso_parallel
 from .disve_parallel import Disve_parallel
+from .discorrel_parallel import Discorrel_parallel
