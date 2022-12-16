@@ -213,6 +213,7 @@ class GPUCorrel(Camera):
 
     if self._img_ref is not None:
       self._correl.set_img_size(self._img_ref.shape)
+      self._correl.set_orig(self._img_ref.astype(np.float32))
       self._correl.prepare()
 
     if self._displayer_gpu is not None:
