@@ -74,8 +74,8 @@ if __name__ == "__main__":
 
   # The block performing the DIC
   dis = crappy.blocks.DISCorrel('', display_images=True,
-                                labels=['t(s)', 'x', 'y', 'measured_Exx(%)',
-                                        'measured_Eyy(%)'],
+                                labels=['t(s)', 'meta', 'x', 'y',
+                                        'measured_Exx(%)', 'measured_Eyy(%)'],
                                 verbose=True, iterations=0, finest_scale=2,
                                 image_generator=Apply_strain_img(img))
 
