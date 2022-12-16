@@ -9,7 +9,7 @@ Required hardware:
 """
 
 import numpy as np
-
+from itertools import product
 import crappy
 
 
@@ -27,10 +27,9 @@ if __name__ == "__main__":
   # Generating a circular weighted mask: the further from the center,
   # the lower the weight will be
   # Because why not ?
-  for i in range(x):
-    for j in range(y):
-      mask[j, i] = max(0., 1 - ((i - x / 2) ** 2 + (j - x / 2) ** 2) /
-                       (min(x, y) / 2.1) ** 2)
+  for i, j in product(range(x), range(y)):
+    mask[j, i] = max(0., 1 - ((i - x / 2) ** 2 + (j - x / 2) ** 2) /
+                     (min(x, y) / 2.1) ** 2)
 
   # Generating your own displacement field:
   # It is simply a tuple of numpy arrays: one for the disp along X, one for Y
