@@ -7,13 +7,12 @@ from time import time, sleep, strftime, gmtime
 from types import MethodType
 from multiprocessing import Array, Manager, Event, RLock, Pipe
 from multiprocessing.sharedctypes import SynchronizedArray
-from multiprocessing import managers, synchronize, connection
+from multiprocessing import managers, synchronize, connection, context
 from math import prod
 
 from .block import Block
 from .camera_parallel_display import Displayer
 from .camera_parallel_record import Image_saver
-from .ve_parallel_process import Ve_parallel_process
 from ..camera import camera_list, Camera as BaseCam
 from ..tool import Camera_config
 
@@ -47,7 +46,7 @@ class Camera_parallel(Block):
 
     self._save_proc: Optional[Image_saver] = None
     self._display_proc: Optional[Displayer] = None
-    self._process_proc: Optional[Ve_parallel_process] = None
+    self._process_proc: Optional[context.Process] = None
 
     super().__init__()
 
