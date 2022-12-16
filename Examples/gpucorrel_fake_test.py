@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
   # The block performing the DIC
   dis = crappy.blocks.GPUCorrel('', verbose=True,
-                                labels=['t(s)', 'x', 'y', 'measured_Exx(%)',
-                                        'measured_Eyy(%)'],
+                                labels=['t(s)', 'meta', 'x', 'y',
+                                        'measured_Exx(%)', 'measured_Eyy(%)'],
                                 fields=['x', 'y', 'exx', 'eyy'], levels=3,
                                 image_generator=Apply_strain_img(img))
   # This modifier will generate an image with the values of strain
