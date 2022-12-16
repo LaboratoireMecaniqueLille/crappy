@@ -139,17 +139,6 @@ class GPUVE(Camera):
                      image_generator=image_generator,
                      **kwargs)
 
-    self._correls = [GPUCorrel_tool(context=context,
-                                    verbose=verbose,
-                                    levels=1,
-                                    resampling_factor=2,
-                                    kernel_file=kernel_file,
-                                    iterations=iterations,
-                                    mask=None,
-                                    ref_img=img_ref,
-                                    mul=mul,
-                                    fields=['x', 'y']) for _ in self._patches]
-
     # Setting the labels
     if labels is None:
       self.labels = ['t(s)', 'meta'] + [elt
@@ -162,6 +151,17 @@ class GPUVE(Camera):
       raise ValueError("The number of fields is inconsistent with the number "
                        "of labels !\nMake sure that the time and metadata "
                        "labels were given")
+
+    self._correls = [GPUCorrel_tool(context=context,
+                                    verbose=verbose,
+                                    levels=1,
+                                    resampling_factor=2,
+                                    kernel_file=kernel_file,
+                                    iterations=iterations,
+                                    mask=None,
+                                    ref_img=img_ref,
+                                    mul=mul,
+                                    fields=['x', 'y']) for _ in self._patches]
 
     # We can already set the sizes of the images as they are already known
     for correl, (_, __, h, w) in zip(self._correls, self._patches):
