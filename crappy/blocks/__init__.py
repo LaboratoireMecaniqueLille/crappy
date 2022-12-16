@@ -30,7 +30,6 @@ from .sink import Sink
 from .ucontroller import UController
 from .videoExtenso import Video_extenso
 
-from .camera_parallel_display import Displayer
-from .camera_parallel_record import Image_saver
 from .camera_parallel import Camera_parallel
 from .videoExtenso_parallel import Video_extenso_parallel
+from .disve_parallel import Disve_parallel
