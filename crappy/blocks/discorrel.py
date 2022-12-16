@@ -168,6 +168,19 @@ class DISCorrel(Camera):
                      image_generator=image_generator,
                      **kwargs)
 
+    # Managing the fields and labels lists
+    fields = ["x", "y", "exx", "eyy"] if fields is None else fields
+    self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)',
+                   'Exx(%)', 'Eyy(%)'] if labels is None else labels
+    if residual:
+      self.labels.append('res')
+
+    # Making sure a coherent number of labels and fields was given
+    if 2 + len(fields) + int(residual) != len(self.labels):
+      raise ValueError(
+        "The number of fields is inconsistent with the number "
+        "of labels !\nMake sure that the time label was given")
+
     self._dis = Dis(fields=fields,
                     alpha=alpha,
                     delta=delta,
@@ -178,18 +191,6 @@ class DISCorrel(Camera):
                     gradient_iterations=gradient_iterations,
                     patch_size=patch_size,
                     patch_stride=patch_stride)
-
-    # Managing the fields and labels lists
-    fields = ["x", "y", "exx", "eyy"] if fields is None else fields
-    self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)',
-                   'Exx(%)', 'Eyy(%)'] if labels is None else labels
-    if residual:
-      self.labels.append('res')
-
-    # Making sure a coherent number of labels and fields was given
-    if 2 + len(fields) + int(residual) != len(self.labels):
-      raise ValueError("The number of fields is inconsistent with the number "
-                       "of labels !\nMake sure that the time label was given")
 
     self._residual = residual
     self._config_dis = config
