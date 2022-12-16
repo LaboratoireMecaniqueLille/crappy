@@ -31,7 +31,8 @@ class DISCorrel:
                iterations: int = 1,
                gradient_iterations: int = 10,
                patch_size: int = 8,
-               patch_stride: int = 3) -> None:
+               patch_stride: int = 3,
+               box: Optional[Box] = None) -> None:
     """Sets the parameters of DisFlow.
 
     Args:
@@ -68,10 +69,13 @@ class DISCorrel:
     # These attributes will be set later
     self._img0 = None
     self._height, self._width = None, None
-    self._box = None
+    self.box = None
     self._dis_flow = None
     self._base = None
     self._norm2 = None
+
+    if box is not None:
+      self.set_box(box)
 
     # Setting the parameters of Disflow
     self._dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
@@ -96,7 +100,7 @@ class DISCorrel:
     other attributes."""
 
     # Sets the bounding box
-    self._box = box
+    self.box = box
     x_top, x_bottom, y_left, y_right = box.sorted()
     box_height = y_right - y_left
     box_width = x_bottom - x_top
@@ -155,5 +159,5 @@ class DISCorrel:
   def _crop(self, img: np.ndarray) -> np.ndarray:
     """Crops the image to the given region of interest."""
 
-    x_min, x_max, y_min, y_max = self._box.sorted()
+    x_min, x_max, y_min, y_max = self.box.sorted()
     return img[y_min:y_max, x_min:x_max]
