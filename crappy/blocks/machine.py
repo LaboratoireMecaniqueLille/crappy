@@ -2,9 +2,23 @@
 
 from time import time
 from typing import Dict, List, Any, Optional
+from dataclasses import dataclass, fields
 
 from .block import Block
-from ..actuator import actuator_list
+from ..actuator import actuator_list, Actuator
+
+
+@dataclass
+class Actuator_instance:
+  """"""
+
+  actuator: Actuator
+  speed: Optional[float] = None
+  position_label: Optional[str] = None
+  speed_label: Optional[str] = None
+  mode: str = 'speed'
+  cmd_label: str = 'cmd'
+  speed_cmd_label: Optional[str] = None
 
 
 class Machine(Block):
@@ -36,75 +50,83 @@ class Machine(Block):
       time_label: If reading speed or position from one or more Actuators, the
         time information will be carried by this label.
       spam: If :obj:`True`, a command is sent to the Actuators on each loop of
-        the block, else it is sent every time a command is received.
+        the block, else it is sent every time a new command is received.
       freq: The block will try to loop at this frequency.
       verbose: If :obj:`True`, prints the looping frequency of the block.
 
     Note:
       - ``actuators`` keys:
 
-        - ``type``: The name of the Actuator class to instantiate.
-        - ``cmd``: The label carrying the command for driving the Actuator.
+        - ``type``: The name of the Actuator class to instantiate. This key is
+          mandatory.
+        - ``cmd_label``: The label carrying the command for driving the
+          Actuator. It defaults to `'cmd'`.
         - ``mode``: Can be either `'speed'` or `'position'`. Will either call
-          :meth:`set_speed` or :meth:`set_position` to drive the actuator, and
-          :meth:`get_speed` or :meth:`get_position` for acquiring the current
-          speed or position.
+          :meth:`set_speed` or :meth:`set_position` to drive the actuator. When
+          driven in `'position'` mode, the speed of the actuator can also be
+          adjusted, see the ``speed_cmd_label`` key. The default mode is
+          `'speed'`.
         - ``speed``: If mode is `'position'`, the speed at which the Actuator
-          should move. This key is not mandatory, even in the `'position'`
-          mode.
-        - ``pos_label``: If given and the mode is `'position'`, the block will
-          return the value of :meth:`get_position` under this label. This key
-          is not mandatory.
-        - ``speed_label``: If given and the mode is `'speed'`, the block will
-          return the value of :meth:`get_speed` under this label. This key is
-          not mandatory.
+          should move. This speed is passed as second argument to the
+          :meth:`set_position` method of the Actuator. If the
+          ``speed_cmd_label`` key is not specified, this speed will remain the
+          same for the entire test. This key is not mandatory.
+        - ``position_label``: If given, the block will return the value of
+          :meth:`get_position` under this label. This key is not mandatory.
+        - ``speed_label``: If given, the block will return the value of
+          :meth:`get_speed` under this label. This key is not mandatory.
+        - ``speed_cmd_label``: The label carrying the speed to set when driving
+          in position mode. Each time a value is received, the stored speed
+          value is updated. It will also overwrite the ``speed`` key if given.
+
     """
 
     super().__init__()
     self.freq = freq
     self.verbose = verbose
 
-    if common is None:
-      common = dict()
-
     self._time_label = time_label
     self._spam = spam
 
-    self._settings = list()
+    # No extra information to add to the main dicts
+    if common is None:
+      common = dict()
 
-    # For each actuator, parsing the given settings
+    # Updating the settings with the common information
     for actuator in actuators:
       actuator.update(common)
-      settings = dict()
 
-      # Getting all the possible arguments from the actuator dict
-      for arg in ('type', 'cmd', 'mode', 'speed', 'pos_label', 'speed_label'):
-        try:
-          settings[arg] = actuator.pop(arg)
-        except KeyError:
-          # If an arg is not given, setting it to None
-          settings[arg] = None
+    # Making sure all the dicts contain the 'type' key
+    if not all('type' in dic for dic in actuators):
+      raise ValueError("The 'type' key must be provided for all the "
+                       "actuators !")
 
-      # Putting all the remaining settings together under the kwargs key
-      settings['kwargs'] = actuator
+    # The names of the possible settings, to avoid typos and reduce verbosity
+    actuator_settings = [field.name for field in fields(Actuator_instance)
+                         if field.type is not Actuator]
 
-      # Making sure that the mandatory arguments are given
-      for arg in ('type', 'cmd', 'mode'):
-        if settings[arg] is None:
-          raise ValueError(f"An actuator given as argument of the Machine "
-                           f"block doesn't define the {arg} setting !")
+    # The list of all the Actuator types to instantiate
+    types = [actuator['type'] for actuator in actuators]
 
-      # Making sure that the given mode is valid
-      if settings['mode'].lower() not in ('position', 'speed'):
-        raise ValueError(f"The 'mode' setting for the actuators should be "
-                         f"either 'position' or 'speed' !")
+    if not all(type_ in actuator_list for type_ in types):
+      unknown = tuple(type_ for type_ in types if type_ not in actuator_list)
+      raise ValueError(f"[Machine] Unknown actuator type(s) : {unknown}\n"
+                       f"The possible types are : {actuator_list}")
 
-      # Storing the settings dict
-      self._settings.append(settings)
+    # The settings that won't be passed to the Actuator objects
+    settings = [{key: value for key, value in actuator.items()
+                 if key in actuator_settings}
+                for actuator in actuators]
 
-    # Instantiating the actuators
-    self._actuators = [actuator_list[settings['type'].capitalize()]
-                       (**settings['kwargs']) for settings in self._settings]
+    # The settings that will be passed as kwargs to the Actuator objects
+    actuators_kw = [{key: value for key, value in actuator.items()
+                     if key not in ('type', *actuator_settings)}
+                    for actuator in actuators]
+
+    # Instantiating the actuators and storing them
+    self._actuators = [Actuator_instance(
+      actuator=actuator_list[type_](**actuator_kw), **setting)
+      for type_, setting, actuator_kw in zip(types, settings, actuators_kw)]
 
   def prepare(self) -> None:
     """Checks the validity of the linking and initializes all the Actuator
@@ -112,11 +134,11 @@ class Machine(Block):
 
     # Checking the consistency of the linking
     if not self.inputs and not self.outputs:
-      raise IOError("The Machine block is neither an input nor an output !")
+      raise IOError("The Machine block isn't linked to any other block !")
 
     # Opening each actuator
     for actuator in self._actuators:
-      actuator.open()
+      actuator.actuator.open()
 
   def loop(self) -> None:
     """Receives the commands from upstream blocks, sets them on the actuators
@@ -131,30 +153,34 @@ class Machine(Block):
 
     # Iterating over the actuators for setting the commands
     if recv:
-      for actuator, settings in zip(self._actuators, self._settings):
-        mode, cmd = settings['mode'], settings['cmd']
+      for actuator in self._actuators:
+        # Setting the speed attribute if it was received
+        if actuator.speed_cmd_label is not None and \
+            actuator.speed_cmd_label in recv:
+          actuator.speed = recv[actuator.speed_cmd_label]
 
-        # If a command was received, setting it
-        if cmd in recv:
-          if mode == 'speed':
-            actuator.set_speed(recv[cmd])
-          elif mode == 'position':
-            actuator.set_position(recv[cmd], settings['speed'])
+        # Setting only the commands that were received
+        if actuator.cmd_label in recv:
+          # Setting the speed command
+          if actuator.mode == 'speed':
+            actuator.actuator.set_speed(recv[actuator.cmd_label])
+          # Setting the position command
+          else:
+            actuator.actuator.set_position(recv[actuator.cmd_label],
+                                           actuator.speed)
 
     to_send = {}
 
     # Iterating over the actuators to get the speeds and the positions
-    for actuator, settings in zip(self._actuators, self._settings):
-      pos_label, speed_label = settings['pos_label'], settings['speed_label']
-      mode = settings['mode']
-      if mode == 'position' and pos_label is not None:
-        position = actuator.get_position()
+    for actuator in self._actuators:
+      if actuator.position_label is not None:
+        position = actuator.actuator.get_position()
         if position is not None:
-          to_send[pos_label] = position
-      elif mode == 'speed' and speed_label is not None:
-        speed = actuator.get_speed()
+          to_send[actuator.position_label] = position
+      if actuator.speed_label is not None:
+        speed = actuator.actuator.get_speed()
         if speed is not None:
-          to_send[speed_label] = speed
+          to_send[actuator.speed_label] = speed
 
     # Sending the speed and position values if any
     if to_send:
@@ -165,6 +191,6 @@ class Machine(Block):
     """Stops and closes all the actuators to drive."""
 
     for actuator in self._actuators:
-      actuator.stop()
+      actuator.actuator.stop()
     for actuator in self._actuators:
-      actuator.close()
+      actuator.actuator.close()
