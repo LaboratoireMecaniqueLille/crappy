@@ -64,8 +64,8 @@ if __name__ == '__main__':
   machine = crappy.blocks.Machine([{
       'type': 'My_actuator',  # The class to instantiate
       'mode': 'position',  # set_position will be called
-      'cmd': 'target_position',  # This actuator will be driven using the sine
-      'pos_label': 'measured_position'}])  # The label to send the measurements
+      'cmd_label': 'target_position',  # The sine is the target position
+      'position_label': 'measured_position'}])  # Label carrying the position
 
   crappy.link(gen, machine)
 

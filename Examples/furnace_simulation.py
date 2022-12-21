@@ -45,19 +45,17 @@ if __name__ == "__main__":
     # dict(type='constant', condition="delay=20", value=400),
     dict(type='constant', condition=None, value=500)])
 
-  furnace = crappy.blocks.Machine([dict(
-    type='Fake_motor',
-    cmd='pid',
-    sim_speed=SPEED,
-    mode='speed',
-    speed_label='T',
-    kv=1000,
-    inertia=500,
-    rv=.01,
-    torque=-18,
-    initial_speed=20,
-    fv=1e-5
-  )])
+  furnace = crappy.blocks.Machine([dict(type='Fake_motor',
+                                        cmd_label='pid',
+                                        sim_speed=SPEED,
+                                        mode='speed',
+                                        speed_label='T',
+                                        kv=1000,
+                                        inertia=500,
+                                        rv=.01,
+                                        torque=-18,
+                                        initial_speed=20,
+                                        fv=1e-5)])
 
   pid = crappy.blocks.PID(P, I, D, input_label='T', out_max=1, out_min=0,
                           i_limit=(0.5, 0.5), send_terms=True)

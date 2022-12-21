@@ -26,15 +26,14 @@ if __name__ == "__main__":
   kv = 1000
 
   mot = crappy.blocks.Machine([{'type': 'Fake_motor',
-                                'cmd': 'pid',
+                                'cmd_label': 'pid',
                                 'mode': 'speed',
                                 'speed_label': 'speed',
                                 # Motor properties:
                                 'kv': kv,
                                 'inertia': 4,
                                 'rv': .2,
-                                'fv': 1e-5
-                                }])
+                                'fv': 1e-5}])
   graph_m = crappy.blocks.Grapher(('t(s)', 'speed'), ('t(s)', 'cmd'))
   # , interp=False)
 
