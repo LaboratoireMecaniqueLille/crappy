@@ -12,7 +12,6 @@ class MetaActuator(type):
   Actuator classes, including the custom user-defined ones."""
 
   classes = {}
-  needed_methods = ['open', 'stop', 'close']
 
   def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
     return super().__new__(mcs, name, bases, dct)
@@ -24,20 +23,6 @@ class MetaActuator(type):
     if name in cls.classes:
       raise DefinitionError(f"The {name} class is already defined !")
 
-    # Gathering all the defined methods
-    defined_methods = list(dct.keys())
-    defined_methods += [base.__dict__.keys() for base in bases]
-
-    # Checking for missing methods
-    missing_methods = [meth for meth in cls.needed_methods
-                       if meth not in defined_methods]
-
-    # Raising if there are unexpected missing methods
-    if missing_methods and name != "Actuator":
-      raise DefinitionError(
-        f'Class {name} is missing the required method(s): '
-        f'{", ".join(missing_methods)}')
-
     # Otherwise, saving the class
     if name != 'Actuator':
       cls.classes[name] = cls
@@ -46,6 +31,12 @@ class MetaActuator(type):
 class Actuator(metaclass=MetaActuator):
   """The base class for all actuator classes, allowing to keep track of them
   and defining methods shared by all of them."""
+
+  def open(self) -> None:
+    """This method should initialize the connection to the actuator, and
+    configure the actuator."""
+
+    ...
 
   def set_speed(self, speed: float) -> None:
     """This method should drive the actuator so that it reaches the desired
@@ -91,3 +82,24 @@ class Actuator(metaclass=MetaActuator):
           f" the output links of this block.")
     sleep(1)
     return
+
+  def stop(self) -> None:
+    """This method should stop all movements of the actuator, and if possible
+    make sure that the actuator cannot move anymore.
+
+    That includes for example de-energizing the actuator, or switching it to a
+    locked state.
+
+    This method will only be called once at the very end of the test. The
+    default behavior is to call :meth:`set_speed` to set the speed to `0`. This
+    method doesn't need to be overriden if the actuator doesn't have any
+    feature for stopping other than speed control.
+    """
+
+    self.set_speed(0)
+
+  def close(self) -> None:
+    """This method should perform any action required for properly closing the
+    connection to the actuator."""
+
+    ...
