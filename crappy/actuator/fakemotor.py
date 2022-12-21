@@ -6,12 +6,10 @@ from .actuator import Actuator
 
 
 class Fake_motor(Actuator):
-  """To run test programs without a physical actuator.
+  """Emulates the behavior of a DC electric machine, driven through its input
+  voltage.
 
-  Note:
-    A virtual motor driven by a voltage, you can set its properties with the
-    args. It has the same methods as a real motor: :meth:`open`,
-    :meth:`set_speed`, :meth:`get_speed`, :meth:`get_position`.
+  It is mainly intended for testing scripts without requiring any hardware.
   """
 
   def __init__(self,
@@ -22,75 +20,71 @@ class Fake_motor(Actuator):
                fv: float = 2e-5,
                sim_speed: float = 1,
                initial_speed: float = 0,
-               initial_pos: float = 0,
-               **kwargs) -> None:
+               initial_pos: float = 0) -> None:
     """Sets the instance attributes.
 
     Args:
-      inertia (:obj:`float`, optional): Inertia of the motor (`kg.m²`).
-      torque(:obj:`float`, optional): A torque applied on the axis (`N.m`).
-      kv(:obj:`float`, optional): The electrical constant of the motor
-        (`t/min/V`).
-      rv(:obj:`float`, optional): The solid friction.
-      fv(:obj:`float`, optional): The fluid friction.
-      sim_speed(:obj:`float`, optional): Speed factor of the simulation.
-      initial_speed(:obj:`float`, optional): (`rpm`)
-      initial_pos(:obj:`float`, optional): (turns)
+      inertia: The inertia of the motor, in `kg.m²`.
+      torque: A constant torque applied on the shaft of the motor in `N.m`.
+      kv: The electrical constant of the motor, in`t/min/V`.
+      rv: The internal solid friction coefficient of the motor, no unit.
+      fv: The internal fluid friction coefficient of the motor, no unit.
+      sim_speed: Speed factor of the simulation, to speed it up or slow it
+        down.
+      initial_speed: The initial speed of the motor, in RPM.
+      initial_pos: The initial position of the motor, in rounds.
     """
 
     super().__init__()
-    self.inertia = inertia
-    self.torque = torque
-    self.kv = kv
-    self.rv = rv
-    self.fv = fv
-    self.sim_speed = sim_speed
-    self.initial_speed = initial_speed
-    self.initial_pos = initial_pos
-    assert not kwargs, "Fake_motor got invalid kwarg(s): " + str(kwargs)
+
+    self._inertia = inertia
+    self._torque = torque
+    self._kv = kv
+    self._rv = rv
+    self._fv = fv
+    self._sim_speed = sim_speed
+    self._initial_speed = initial_speed
+    self._initial_pos = initial_pos
 
   def open(self) -> None:
-    self.rpm = self.initial_speed
-    self.pos = self.initial_pos
-    self.u = 0  # V
-    self.t = time() * self.sim_speed
+    """Sets the variables describing the state of the motor."""
 
-  def stop(self) -> None:
-    self.set_speed(0)
-
-  def close(self) -> None:
-    pass
-
-  def update(self) -> None:
-    """Updates the motor rpm.
-
-    Note:
-      Supposes `u` is constant for the interval `dt`.
-    """
-
-    t1 = time() * self.sim_speed
-    dt = (t1 - self.t)
-    self.t = t1
-    f = self.u * self.kv - self.torque - self.rpm * \
-        (1 + self.rv + self.rpm * self.fv)
-    drpm = f / self.inertia * dt
-    self.pos += dt * (self.rpm + drpm / 2)
-    self.rpm += drpm
+    self._rpm = self._initial_speed
+    self._pos = self._initial_pos
+    self._volt = 0
+    self._t = time() * self._sim_speed
 
   def get_speed(self) -> float:
-    """Return the motor speed (rpm)."""
+    """Return the speed of the motor, in RPM."""
 
-    self.update()
-    return self.rpm
+    self._update()
+    return self._rpm
 
   def get_position(self) -> float:
-    """Returns the motor position."""
+    """Returns the position of the motor, in rounds."""
 
-    self.update()
-    return self.pos
+    self._update()
+    return self._pos
 
-  def set_speed(self, u: float) -> None:
-    """Sets the motor `cmd` in volts."""
+  def set_speed(self, volt: float) -> None:
+    """Sets the command of the motor, in volts."""
 
-    self.update()
-    self.u = u
+    self._update()
+    self._volt = volt
+
+  def _update(self) -> None:
+    """Updates the motor variables based on the timestamp and their previous
+    values.
+
+    It supposes that the voltage has been constant since the last update.
+    """
+
+    t1 = time() * self._sim_speed
+    dt = (t1 - self._t)
+    self._t = t1
+
+    f = self._volt * self._kv - self._torque - self._rpm * \
+        (1 + self._rv + self._rpm * self._fv)
+    drpm = f / self._inertia * dt
+    self._pos += dt * (self._rpm + drpm / 2)
+    self._rpm += drpm

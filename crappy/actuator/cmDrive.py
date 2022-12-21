@@ -12,130 +12,94 @@ except (ModuleNotFoundError, ImportError):
 
 
 class CM_drive(Actuator):
-  """Open a new default serial port for communication with a CMdrive actuator.
+  """This class can drive Schneider Electric MDrive 23 stepper motor in speed
+  and in position.
+
+  It communicates with the motor over a serial connection.
   """
 
-  def __init__(self, port: str = '/dev/ttyUSB0', baudrate: int = 9600) -> None:
-    """Sets the instance attributes.
+  def __init__(self,
+               port: str = '/dev/ttyUSB0',
+               baudrate: int = 9600) -> None:
+    """Sets the instance attributes and initializes the parent class.
 
     Args:
-      port (:obj:`str`, optional): Path to connect to the serial port.
-      baudrate (:obj:`int`, optional): Set the corresponding baud rate.
+      port: The path to the serial port to open for the serial connection.
+      baudrate: The baudrate to use for serial communication.
     """
 
-    Actuator.__init__(self)
-    self.port = port
-    self.baudrate = baudrate
+    super().__init__()
+
+    self._port = port
+    self._baudrate = baudrate
 
   def open(self) -> None:
-    self.ser = serial.Serial(self.port, self.baudrate)
+    """Opens the serial connection to the actuator."""
 
-  def stop(self) -> None:
-    """Stop the motor motion."""
-
-    # close serial connection before to avoid errors
-    self.ser.close()
-    self.ser.open()
-    self.ser.write('SL 0\r')
-    # self.ser.readline()
-    self.ser.close()
-
-  def reset(self) -> int:
-    """Reset the serial communication, before reopening it to set displacement
-    to zero."""
-
-    self.ser.close()
-    self.ser.open()  # open serial port
-    result = input("Reset the system ? This will erase recorded trajectories")
-    # send request to the user if he would reset the system
-    if result.lower()[0] in ['y', 'o']:
-      # send 'DIS' ASCII characters to disable the motor
-      self.ser.write('DIS\r')
-      # send 'SAVE' ASCII characters to SAVE servostar values
-      self.ser.write('SAVE\r')
-      # send 'COLDSTART' ASCII characters to reboot servostar
-      self.ser.write('COLDSTART\r')
-      k = 0
-      # print different stages of booting
-      while k < 24:
-        print(self.ser.readline())
-        k += 1
-      # self.ser.close() #close serial connection
-      return 1
-    else:
-      # self.ser.close() #close serial connection
-      return 0
-
-  def close(self) -> None:
-    """Close the designated port."""
-
-    self.stop()
-    self.ser.close()
-
-  def clear_errors(self) -> None:
-    """Reset errors."""
-
-    self.ser.write("CLRFAULT\r\n")
-    self.ser.write("OPMODE 0\r\n EN\r\n")
+    self._ser = serial.Serial(self._port, self._baudrate)
 
   def set_speed(self, speed: float) -> None:
-    """Pilot in speed mode, requires speed in `mm/min`."""
+    """Sets the target speed on the actuator.
 
-    self.ser.close()  # close serial connection before to avoid errors
-    self.ser.open()  # open serial port
-    # velocity = input ('Velocity: \n')#request to the user about velocity
+    Args:
+      speed: The target speed to set, in `mm/min`.
+    """
+
+    # Closing and reopening to get rid of errors
+    self._ser.close()
+    self._ser.open()
+
+    # Sending the command only if it's below the maximum allowed value
     if abs(speed) < 1000000:
-      # send ASCII characters to the servostar to apply velocity task
-      self.ser.write('SL ' + str(int(speed)) + '\r')
-      self.ser.read(self.ser.inWaiting())
+      self._ser.write(f'SL {int(speed)}\r')
+      self._ser.read(self._ser.inWaiting())
     else:
-      print('Maximum speed exceeded')
-    self.ser.close()  # close serial connection
+      print('[CMDrive] Maximum speed exceeded !')
 
   def set_position(self,
                    position: float,
-                   _: Optional[float] = None,
-                   motion_type: str = 'relative') -> None:
-    """Pilot in position mode, needs speed and final position to run
-    (in `mm/min` and `mm`)."""
+                   _: Optional[float] = None) -> None:
+    """Sets the target position for the actuator.
 
-    self.ser.close()  # close serial connection before to avoid errors
-    self.ser.open()  # open serial port
-
-    if motion_type == 'relative':
-      # send ASCII characters to apply the selected motion task
-      self.ser.write('MR %i\r' % position)
-    if motion_type == 'absolute':
-      # send ASCII characters to apply the selected motion task
-      self.ser.write('MA %i\r' % position)
-    self.ser.readline()
-    self.ser.close()  # close serial connection
-
-  def move_home(self) -> None:
-    """Reset the position to zero."""
-
-    self.ser.open()  # open serial port
-    # send 'MH' ASCII characters for requesting to the motor to return at pos 0
-    self.ser.write('MA 0\r')
-    # self.ser.readline()
-    self.ser.close()  # close serial connection
-
-  def get_position(self) -> float:
-    """Search for the physical position of the motor.
-
-    Returns:
-      Physical position of the motor.
+    Args:
+      position: The target position to reach, in `mm`.
+      _: If also given, the speed is ignored.
     """
 
-    self.ser.close()
-    # ser=self.setConnection(self.myPort, self.baudrate)
-    # initialise serial port
-    self.ser.open()
-    # send 'PFB' ASCII characters to request the location of the motor
-    self.ser.write('PR P \r')
-    pfb = self.ser.readline()  # read serial data from the buffer
-    pfb1 = self.ser.readline()  # read serial data from the buffer
-    print('%s %i' % (pfb, (int(pfb1))))  # print location
-    print('\n')
-    self.ser.close()  # close serial connection
+    # Closing and reopening to get rid of errors
+    self._ser.close()
+    self._ser.open()
+
+    # Sending the position command
+    self._ser.write(f'MR {int(position)}\r')
+    self._ser.readline()
+
+  def get_position(self) -> float:
+    """Reads, prints and returns the current position in `mm`."""
+
+    # Closing and reopening to get rid of errors
+    self._ser.close()
+    self._ser.open()
+
+    # Asking for a position reading
+    self._ser.write('PR P \r')
+    pfb = self._ser.readline()
+    pfb1 = self._ser.readline()
+
+    # Printing and returning the read position
+    print(f'{pfb} {int(pfb1)}\n')
     return int(pfb1)
+
+  def stop(self) -> None:
+    """Sends a command for stopping the motor."""
+
+    # Closing and reopening to get rid of errors
+    self._ser.close()
+    self._ser.open()
+
+    self._ser.write('SL 0\r')
+
+  def close(self) -> None:
+    """Close the serial connection."""
+
+    self._ser.close()

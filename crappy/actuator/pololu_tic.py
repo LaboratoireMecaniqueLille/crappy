@@ -3,7 +3,7 @@
 from subprocess import check_output
 from threading import Thread, RLock
 from time import sleep
-from typing import Union, Dict
+from typing import Union, Dict, Optional
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -18,7 +18,7 @@ try:
 except (AttributeError, NameError):
   full_loader = False
 if not is_installed:
-  # If it was in the first try/except, an message would be displayed at getattr
+  # If it was in the first try/except, a message would be displayed at getattr
   yaml = OptionalModule("pyyaml")
 
 try:
@@ -287,74 +287,71 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     tables.
 
     Args:
-      steps_per_mm (:obj:`float`): The number of full steps needed for the
-        motor to travel `1mm`. This varies according to the motor model, and
-        can be deduced from the datasheet or directly measured. This value is
-        usually between `50` and `500`.
-      current_limit (:obj:`float`): The maximum current the motor is able to
-        withstand, in mA. It is usually around `1A` for small stepper motors,
-        and can go up to a few Amps. The maximum allowed ``current_limit``
-        value depends on the Tic model. The Tic 36v4 default maximum current
-        limit can be increased using the ``unrestricted_current_limit``
-        parameter.
-      step_mode (:obj:`int`, optional): Sets the number of microsteps used for
-        driving the motor. This number is always a power of `2`. The minimum
-        number of microsteps is `1` (full steps), and the maximum depends on
-        the Tic model. All models however support modes `1` to `8`. The block
-        manages speed and length conversions so that changing the step mode
-        doesn't affect the motor behaviour.
-      max_accel (:obj:`float`, optional): The maximum allowed acceleration for
-        the motor, in `mm/s²`. When asked to reach a given speed or position,
-        the motor accelerates at this rate. It also corresponds to the maximum
-        allowed deceleration. Usually doesn't need to be changed.
-      t_shutoff (:obj:`float`, optional): The :class:`Pololu_tic` block
-        features an auto-shutoff thread that deenergizes the motor after a
-        period of `t_shutoff` seconds of inactivity. The timer counts in steps
-        of `0.1s`, which is thus the maximum precision for this setting. When
-        set to `0`, this feature is disabled and the motor remains energized
-        until the :meth:`close` method is called.
-      config_file (:obj:`str`, optional): The path of the config file to be
-        loaded to the Tic. It only works if ``backend`` is 'ticcmd'. The config
-        file contains some specific settings that can only be accessed this way
-        using the 'ticcmd' backend. Not necessary for most applications.
-      serial_number (:obj:`str`, optional): The serial number of the Tic to be
-        controlled. It must be given as a :obj:`str`, and it is an 8-digits
-        number. Allows to control the right device if several Tic of the same
-        model are connected. Otherwise, an error is raised.
-      model (:obj:`str`, optional): The model of the Tic to be controlled.
-        Available models are:
+      steps_per_mm: The number of full steps needed for the motor to travel
+        `1 mm`. This varies according to the motor model, and can be deduced
+        from the datasheet or directly measured. This value is usually between
+        `50` and `500`.
+      current_limit: The maximum current the motor is able to withstand, in mA.
+        It is usually around `1A` for small stepper motors, and can go up to a
+        few Amps. The maximum allowed ``current_limit`` value depends on the
+        Tic model. The Tic 36v4 default maximum current limit can be increased
+        using the ``unrestricted_current_limit`` parameter.
+      step_mode: Sets the number of microsteps used for driving the motor. This
+        number is always a power of `2`. The minimum number of microsteps is
+        `1` (full steps), and the maximum depends on the Tic model. All models
+        however support modes `1` to `8`. The block manages speed and length
+        conversions so that changing the step mode doesn't affect the motor
+        behaviour.
+      max_accel: The maximum allowed acceleration for the motor, in `mm/s²`.
+        When asked to reach a given speed or position, the motor accelerates at
+        this rate. It also corresponds to the maximum allowed deceleration.
+        Usually doesn't need to be changed.
+      t_shutoff: The :class:`Pololu_tic` class features an auto-shutoff thread
+        that deenergizes the motor after a period of `t_shutoff` seconds of
+        inactivity. The timer counts in steps of `0.1s`, which is thus the
+        maximum precision for this setting. When set to `0`, this feature is
+        disabled and the motor remains energized until the :meth:`close` method
+        is called.
+      config_file: The path of the config file to be loaded to the Tic. It only
+        works if ``backend`` is 'ticcmd'. The config file contains some
+        specific settings that can only be accessed this way using the 'ticcmd'
+        backend. Not necessary for most applications.
+      serial_number: The serial number of the Tic to be controlled. It must be
+        given as a :obj:`str`, and it is an 8-digits number. Allows to control
+        the right device if several Tic of the same model are connected.
+        Otherwise, an error is raised.
+      model: The model of the Tic to be controlled. Available models are:
         ::
 
           'T825', 'T824', 'T500', 'N825', 'T249', '36v4'
 
         Allows to control the right device if several Tic of different models
         are connected. Otherwise, an error is raised.
-      reset_command_timeout (:obj:`bool`, optional): Enables or disables the
-        `reset_command_timeout` thread. It can only be disabled if ``backend``
-        is 'USB'. This thread pings the Tic every `0.5s`, so that it doesn't
-        block due to a Command Timeout error. This feature is a safety to
-        prevent the motor from running indefinitely if the USB connection is
-        down, so it is better not to disable it. When disabled the Tic never
-        raises Command Timeout errors, and a bit of memory if freed because of
-        the thread not running.
-      backend (:obj:`str`, optional): The backend for communicating with the
-        Tic. Available backends are:
+      reset_command_timeout: Enables or disables the `reset_command_timeout`
+        thread. It can only be disabled if ``backend`` is 'USB'. This thread
+        pings the Tic every `0.5s`, so that it doesn't block due to a Command
+        Timeout error. This feature is a safety to prevent the motor from
+        running indefinitely if the USB connection is down, so it is better not
+        to disable it. When disabled the Tic never raises Command Timeout
+        errors, and a bit of memory if freed because of the thread not running.
+      backend: The backend for communicating with the Tic. Available backends
+        are:
         ::
 
           'USB', 'ticcmd'
 
         They both communicate over USB, but 'ticcmd' requires Pololu's firmware
         to be installed. Some features are specific to each backend.
-      unrestricted_current_limit (:obj:`bool`, optional): Enables or disables
-        the unrestricted current limit feature. Only works if ``backend`` is
-        'USB', and for the 36v4 Tic model. When disabled, the maximum current
-        allowed is `3939mA`. If enabled, it goes up to `9095mA`. The Tic should
-        however be cooled in order to withstand currents higher than `3939mA`.
-      pin_function (:obj:`dict`, optional): Allows setting the Tic GPIO
-        functions. It is a :obj:`dict` whose keys are the pin names, and values
-        are the functions. Only works if ``backend`` is `'USB'`. Only the pins
-        indicated in ``pin_function`` are set, the others are left in their
-        previous state. The available pins are:
+      unrestricted_current_limit: Enables or disables the unrestricted current
+        limit feature. Only works if ``backend`` is 'USB', and for the 36v4 Tic
+        model. When disabled, the maximum current allowed is `3939mA`. If
+        enabled, it goes up to `9095mA`. The Tic should however be cooled in
+        order to withstand currents higher than `3939mA`.
+      pin_function: Allows setting the Tic GPIO functions. It is a :obj:`dict`
+        whose keys are the pin names, and values are the functions. Only works
+        if ``backend`` is `'USB'`. Only the pins indicated in ``pin_function``
+        are set, the others are left in their previous state. The available
+        pins are:
         ::
 
           'SCL', 'SDA', 'TX', 'RX', 'RC'
@@ -367,11 +364,11 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
         The GPIO functions remain set as long as they are not changed by the
         user, so for a given setup it is only necessary to set them once.
-      pin_polarity (:obj:`dict`, optional): Allows setting the polarity of the
-        GPIOs used as switches. It is a :obj:`dict`, whose keys are the pin
-        names, and values are the pin polarities. Only works if ``backend`` is
-        `'USB'`. Only the pins indicated in ``pin_function`` are set, the
-        others are left in their previous state. The available pins are:
+      pin_polarity: Allows setting the polarity of the GPIOs used as switches.
+        It is a :obj:`dict`, whose keys are the pin names, and values are the
+        pin polarities. Only works if ``backend`` is `'USB'`. Only the pins
+        indicated in ``pin_function`` are set, the others are left in their
+        previous state. The available pins are:
         ::
 
           'SCL', 'SDA', 'TX', 'RX', 'RC'
@@ -393,7 +390,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       - ``steps_per_mm``:
         If you have to measure this value, it can be done easily following this
         procedure. Set ``steps_per_mm`` to `spm` (`100` should be fine), and
-        ``step_mode`` to `sm` (`8` should be fine). Run a crappy program
+        ``step_mode`` to `sm` (`8` should be fine). Run a Crappy script
         for moving the motor from position `0` to position `p` (a few tenth of
         millimeters should be fine). The motor will reach an actual position
         `ap` that can be measured. The actual ``steps_per_mm`` value `aspm` for
@@ -429,7 +426,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         ``crappy`` before starting the assay, in the `ticgui`.
     """
 
-    Actuator.__init__(self)
+    super().__init__()
 
     if backend not in Tic_backends:
       raise ValueError("backend should be in {}".format(Tic_backends))
@@ -493,8 +490,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     elif backend == 'ticcmd':
       # Finding all devices matching the given inputs
-      devices = check_output(['ticcmd'] + ['--list']).\
-        decode("utf-8").split("\n")
+      devices = check_output(['ticcmd', '--list']).decode("utf-8").split("\n")
       devices.pop()  # Removing the '' element at the end of devices
       devices = [string.split(',') for string in devices]
       if model is not None:
@@ -732,7 +728,9 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         byteorder='little',
         signed=True))
 
-  def set_position(self, position: float, speed: float = None) -> None:
+  def set_position(self,
+                   position: float,
+                   speed: Optional[float] = None) -> None:
     """Sends a position command to the motor.
 
     Args:
@@ -806,7 +804,6 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def close(self) -> None:
     """Stops the motor, joins the threads and deenergizes the motor."""
 
-    self.stop()
     self._close = True
     if self._rct_on:
       self._thrd_rct.join()

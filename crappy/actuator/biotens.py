@@ -1,8 +1,8 @@
 ﻿# coding: utf-8
 
 from struct import pack, unpack
-from typing import Union, Optional
-import time
+from typing import Optional, Tuple
+from time import sleep
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -12,297 +12,183 @@ except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("pyserial")
 
 
-def convert_to_byte(number: float, length: str) -> bytes:
-  """This functions converts decimal into bytes.
-
-  Mandatory in order to send or read anything into/from MAC Motors registers.
-  """
-
-  # get hex byte sequence in required '\xXX\xXX', big endian format.
-  encoded = pack('%s' % length, number)
-  # b = bytearray(encoded, 'hex')
-  c = b''
-  for i in range(0, len(encoded)):
-    # x = encoded[0] ^ 0xff  # get the complement to 255
-    # x = pack('B', x)  # byte formalism
-    # concatenate byte and complement and add it to the sequence
-    c += bytes([encoded[i], encoded[i] ^ 0xFF])
-  return c
-
-
-def convert_to_dec(sequence: bytes) -> float:
-  """This functions converts bytes into decimals.
-
-  Mandatory in order to send or read anything into/from MAC Motors registers.
-  """
-
-  # sequence=sequence[::2] ## cut off "complement byte"
-  decim = unpack('i', sequence)  # convert to signed int value
-  return decim[0]
+cmd_header = b'\x52\x52\x52\xFF\x00'
+cmd_tail = b'\xAA\xAA\x50\x50\x50\xFF\x00'
+msg_tail_last = b'\xAA\xAA'
+msg_tail_not_last = b'\xAA\xAA+'
 
 
 class Biotens(Actuator):
-  """Open the connection, and initialise the Biotens.
+  """This class allows driving JVL's MAC140 integrated servomotor in speed or
+  in position.
 
-  Note:
-    You should only use this class to communicate with the Biotens.
+  It interfaces with the servomotor over a serial connection.
   """
 
   def __init__(self,
-               port: str = '/dev/ttyUSB0',
-               baudrate: int = 19200) -> None:
-    """Sets the instance attributes.
+               port: str = '/dev/ttyUSB0') -> None:
+    """Initializes the parent class.
 
     Args:
-      port (:obj:`str`, optional): Path to connect to the serial port.
-      baudrate (:obj:`int`, optional): Set the corresponding baud rate.
+      port: Path to the serial port to use for communication.
     """
 
-    Actuator.__init__(self)
-    self.port = port
-    self.baudrate = baudrate
+    super().__init__()
+
+    self._port = port
 
   def open(self) -> None:
-    self.ser = serial.Serial(self.port, baudrate=19200, timeout=0.1)
-    self.clear_errors()
-
-  def reset_position(self) -> None:
-    """Actuators goes out completely, in order to set the initial position."""
-
-    init_position = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(38, 'B') +\
-        convert_to_byte(4, 'B') +\
-        convert_to_byte(0, 'i') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(38, 'B') + b'\xAA\xAA'
-
-    init_speed = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(40, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(-50, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(40, 'B') + b'\xAA\xAA'
-
-    init_torque = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(41, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(1023, 'i') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(41, 'B') +\
-        b'\xAA\xAA'
-
-    to_init = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(37, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(0, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(37, 'B') + b'\xAA\xAA'
-
-    self.ser.writelines([init_position, init_speed, init_torque, to_init])
-    self.ser.write(b'\x52\x52\x52\xFF\x00' +
-                   convert_to_byte(2, 'B') +
-                   convert_to_byte(2, 'B') +
-                   convert_to_byte(12, 'h') +
-                   b'\xAA\xAA\x50\x50\x50\xFF\x00' +
-                   convert_to_byte(2, 'B') +
-                   b'\xAA\xAA')
-    last_position_si = 0
-    position_si = 99
-    time.sleep(1)
-    while position_si != last_position_si:
-      last_position_si = position_si
-      position_si = self.get_position()
-      print("position : ", position_si)
-    print("init done")
-    self.stop()
-    # time.sleep(1)
-    # initializes the count when the motors is out.
-    start_position = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(10, 'B') +\
-        convert_to_byte(4, 'B') +\
-        convert_to_byte(0, 'i') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(10, 'B') +\
-        b'\xAA\xAA'
-    self.ser.write(start_position)
-    # time.sleep(1)
-    try:
-      self.ser.readlines()
-    except serial.SerialException:
-      pass
-
-  def reset(self) -> None:
-    """"""
-
-    pass
-
-  def stop(self) -> None:
-    """Stop the motor."""
-
-    command = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(0, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(2, 'B') + b'\xAA\xAA'
-    self.ser.write(command)
-    # return command
-
-  def close(self) -> None:
-    self.stop()
-    self.ser.close()
-
-  def clear_errors(self) -> None:
-    """Clears error in motor registers."""
-
-    command = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(35, 'B') +\
-        convert_to_byte(4, 'B') +\
-        convert_to_byte(0, 'i') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(35, 'B') + b'\xAA\xAA'
-    self.ser.write(command)
+    """Initializes the serial connection and clears any serial error."""
+    
+    self._ser = serial.Serial(self._port, baudrate=19200, timeout=0.1)
+    # Clearing any error in the motor registers
+    self._ser.write(self._make_cmd((35, 4, 0, 35), ('B', 'B', 'i', 'B'), True))
 
   def set_speed(self, speed: float) -> None:
-    """Pilot in speed mode, requires speed in `mm/min`."""
+    """Sets the desired speed on the actuator.
 
-    # converts speed in motors value
-    # displacement rate in mm/min, V_SOll in 1/16 encoder counts/sample.
-    # 4096 encounter counts/revolution, sampling frequency = 520.8Hz,
-    # screw thread=5.
-    speed_soll = int(round(16 * 4096 * speed / (520.8 * 60 * 5)))
-    set_speed = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(5, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(speed_soll, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(5, 'B') + b'\xAA\xAA'
+    Args:
+      speed: The target speed, in `mm/min`.
+    """
 
-    # set torque to default value 1023
-    set_torque = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(7, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(1023, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(7, 'B') +\
-        b'\xAA\xAA'
+    # For the conversions, there are 4096 counts/motor revolution, 1/16 encoder
+    # counts/sample, and the screw thread is 5
+    speed = int(round(16 * 4096 * speed / (520.8 * 60 * 5)))
+    acc = int(round(16 * 4096 * 10000 / (520.8 * 520.8 * 5)))
 
-    # set acceleration to 10000 mm/s²
-    # (default value, arbitrarily chosen, works great so far)
-    asoll = int(round(16 * 4096 * 10000 / (520.8 * 520.8 * 5)))
-    set_acceleration = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(6, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(asoll, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(6, 'B') + b'\xAA\xAA+'
+    # Generating the commands to send
+    # The torque is set to 1023, the acceleration to 10000mm/s²
+    set_speed = self._make_cmd((5, 2, speed, 5), ('B', 'B', 'h', 'B'), True)
+    set_torque = self._make_cmd((7, 7, 1023, 7), ('B', 'B', 'h', 'B'), True)
+    set_acc = self._make_cmd((6, 2, acc, 6), ('B', 'B', 'h', 'B'), False)
+    command = self._make_cmd((2, 2, 1, 2), ('B', 'B', 'h', 'B'), True)
 
-    command = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(1, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(2, 'B') +\
-        b'\xAA\xAA'
-
-    # write every parameters in motor's registers
-    self.ser.writelines([set_speed, set_torque, set_acceleration, command])
+    # Writing the command values to the motor registers
+    self._ser.writelines([set_speed, set_torque, set_acc, command])
 
   def set_position(self,
                    position: float,
                    speed: Optional[float] = None) -> None:
-    """Pilot in position mode, needs speed and final position to run
-    (in `mm/min` and `mm`)."""
+    """Sets the desired target position on the actuator.
+
+    Args:
+      position: The target position, in `mm`.
+      speed: The target speed for reaching the desired position, in `mm/min`.
+    """
 
     if speed is None:
       raise ValueError("The Biotens actuator needs both a position and a speed"
                        " command when driven in position mode !")
 
-    # conversion of position from mm into encoder's count
-    position_soll = int(round(position * 4096 / 5))
-    set_position = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(3, 'B') +\
-        convert_to_byte(4, 'B') +\
-        convert_to_byte(position_soll, 'i') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(3, 'B') + b'\xAA\xAA+'
+    # For the conversions, there are 4096 counts/motor revolution, 1/16 encoder
+    # counts/sample, and the screw thread is 5
+    pos = int(round(position * 4096 / 5))
+    speed = int(round(16 * 4096 * speed / (520.8 * 60 * 5)))
+    acc = int(round(16 * 4096 * 10000 / (520.8 * 520.8 * 5)))
 
-    # converts speed in motors value
-    # displacement rate in mm/min, V_SOll in 1/16 encoder counts/sample.
-    # 4096 encounter counts/revolution, sampling frequency = 520.8Hz
-    # screw thread=5.
-    speed_soll = int(round(16 * 4096 * speed / (520.8 * 60 * 5)))
-    set_speed = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(5, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(speed_soll, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(5, 'B') +\
-        b'\xAA\xAA'
+    # Generating the commands to send
+    # The torque is set to 1023, the acceleration to 10000mm/s²
+    set_position = self._make_cmd((3, 4, pos, 3), ('B', 'B', 'i', 'B'), False)
+    set_speed = self._make_cmd((5, 2, speed, 5), ('B', 'B', 'h', 'B'), True)
+    set_torque = self._make_cmd((7, 7, 1023, 7), ('B', 'B', 'h', 'B'), True)
+    set_acc = self._make_cmd((6, 2, acc, 6), ('B', 'B', 'h', 'B'), True)
+    command = self._make_cmd((2, 2, 2, 2), ('B', 'B', 'h', 'B'), True)
 
-    # set torque to default value 1023
-    set_torque = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(7, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(1023, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(7, 'B') +\
-        b'\xAA\xAA'
-
-    # set acceleration to 10000 mm/s²
-    # (default value, arbitrarily chosen, works great so far)
-    asoll = int(round(16 * 4096 * 10000 / (520.8 * 520.8 * 5)))
-    set_acceleration = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(6, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(asoll, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(6, 'B') +\
-        b'\xAA\xAA'
-
-    command = b'\x52\x52\x52\xFF\x00' +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(2, 'B') +\
-        convert_to_byte(2, 'h') +\
-        b'\xAA\xAA\x50\x50\x50\xFF\x00' +\
-        convert_to_byte(2, 'B') +\
-        b'\xAA\xAA'
-
-    # write every parameters in motor's registers
-    self.ser.writelines([set_position, set_speed,
-                        set_torque, set_acceleration, command])
+    # Writing the command values to the motor registers
+    self._ser.writelines([set_position, set_speed, set_torque, set_acc,
+                          command])
 
   def get_position(self) -> float:
-    """Reads current position.
+    """Reads and returns the current position of the actuator, in `mm`."""
 
-    Returns:
-      Current position of the motor.
+    # We have 20 attempts for reading the position
+    for _ in range(20):
+      try:
+        # Emptying the read buffer
+        self._ser.readlines()
+        # Sending command to return position
+        self._ser.write(b''.join((b'\x50\x50\x50\xFF\x00',
+                                  self._to_bytes(10, 'B'),
+                                  msg_tail_last)))
+        # Reading the position
+        position = self._ser.read(19)
+        # Might return fewer characters than expected due to the timeout
+        if len(position) != 19:
+          continue
+        # Parsing the position value and returning it
+        return unpack('i', position[9:17:2])[0] * 5 / 4096.
+      # Catching serial errors
+      except serial.SerialException:
+        pass
+      sleep(0.1)
+
+    # In case no value was received after 20 attempts
+    raise IOError("Could not read the position for the Biotens actuator!")
+
+  def stop(self) -> None:
+    """Sends a command for stopping the actuator."""
+
+    self._ser.write(self._make_cmd((2, 2, 0, 2), ('B', 'B', 'h', 'B'), True))
+
+  def close(self) -> None:
+    """Closes the serial connection to the actuator."""
+
+    self._ser.close()
+
+  def reset_position(self) -> None:
+    """Makes the servomotor reach its limit position, in order to re-calibrate
+    the position readout."""
+
+    init_pos = self._make_cmd((38, 4, 0, 38), ('B', 'B', 'i', 'B'), True)
+    init_speed = self._make_cmd((40, 2, -50, 40), ('B', 'B', 'h', 'B'), True)
+    init_torque = self._make_cmd((41, 2, 1023, 41), ('B', 'B', 'i', 'B'), True)
+    to_init = self._make_cmd((37, 2, 0, 37), ('B', 'B', 'h', 'B'), True)
+
+    self._ser.writelines([init_pos, init_speed, init_torque, to_init])
+    self._ser.write(self._make_cmd((2, 2, 12, 2), ('B', 'B', 'h', 'B'), True))
+
+    sleep(1)
+
+    last_pos = 0
+    pos = 99
+
+    # Loop while the actuator is still moving
+    while pos != last_pos:
+      last_pos = pos
+      pos = self.get_position()
+      print(f"position : {pos}")
+    print("[Biotens] Init done")
+    self.stop()
+
+    self._ser.write(self._make_cmd((10, 4, 0, 10), ('B', 'B', 'i', 'B'), True))
+
+    # Emptying the serial read buffer
+    try:
+      self._ser.readlines()
+    except serial.SerialException:
+      pass
+
+  def _make_cmd(self,
+                values: Tuple[int, int, int, int],
+                encodings: Tuple[str, str, str, str],
+                last_cmd: bool) -> bytes:
+    """Builds a command to send to the servomotor, from the given arguments.
+
+    This method is meant to simplify the code in the main methods of the class.
     """
 
-    for i in range(20):
-      r = self._get_position()
-      if r is not None:
-        return r
-      time.sleep(.01)
-    raise IOError("Could not read biotens pos!")
+    return b''.join((cmd_header,
+                     self._to_bytes(values[0], encodings[0]),
+                     self._to_bytes(values[1], encodings[1]),
+                     self._to_bytes(values[2], encodings[2]),
+                     cmd_tail,
+                     self._to_bytes(values[3], encodings[3]),
+                     msg_tail_last if last_cmd else msg_tail_not_last))
 
-  def _get_position(self) -> Union[float, None]:
-    try:
-      self.ser.readlines()
-    except serial.SerialException:
-      # print "readlines failed"
-      pass
-    # print "position read"
-    command = b'\x50\x50\x50\xFF\x00' + convert_to_byte(10, 'B') + b'\xAA\xAA'
+  @staticmethod
+  def _to_bytes(value: float, encoding: str) -> bytes:
+    """Generates bytes carrying a given value with the given encoding, and
+    following the correct syntax for communicating with the servomotor."""
 
-    self.ser.write(command)
-    # time.sleep(0.01)
-    # print "reading..."
-    # print self.ser.inWaiting()
-    position_ = self.ser.read(19)
-    if len(position_) != 19:
-      return None
-    # print "read"
-    position = position_[9:len(position_) - 2:2]
-    position = convert_to_dec(position) * 5 / 4096.
-    return position
+    encoded = pack(encoding, value)
+    return b''.join((bytes((enc, enc ^ 0xFF)) for enc in encoded))

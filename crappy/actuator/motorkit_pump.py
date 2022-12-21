@@ -2,7 +2,7 @@
 
 from struct import pack_into
 from time import sleep
-from typing import Union
+from typing import Union, List, Optional
 from .actuator import Actuator
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h, Usb_server
@@ -59,26 +59,24 @@ class DC_motor_hat:
   """
 
   def __init__(self,
-               motor_nrs: list,
+               motor_nrs: List[int],
                device_address: int = 0x60,
                i2c_port: int = 1,
-               bus: ft232h = None) -> None:
+               bus: Optional[ft232h] = None) -> None:
     """Resets the HAT and initializes it.
 
     Args:
-      motor_nrs (:obj:`list`): The list of the motors to drive. Its elements
-        should be integers between 1 and 4, corresponding to the number of the
-        motors.
-      device_address (:obj:`int`, optional): The I2C address of the HAT.
-        The default address is `0x60`, but it is possible to change this
-        setting by cutting traces on the board.
-      i2c_port (:obj:`int`, optional): The I2C port over which the ADS1115
-        should communicate. On most Raspberry Pi models the default I2C port is
-        `1`.
-      bus (:obj:`ft232h_server`, optional): If given, the I2C commands are sent
-        by the corresponding :class:`ft232h_server` instance, in the situation
-        when the hat is controlled from a PC through an FT232H rather than by a
-        board.
+      motor_nrs: The list of the motors to drive. Its elements should be
+        integers between 1 and 4, corresponding to the indexes of the motors to
+        drive.
+      device_address: The I2C address of the HAT. The default address is
+        `0x60`, but it is possible to change this setting by cutting traces on
+        the board.
+      i2c_port: The I2C port over which the HAT should communicate. On most
+        Raspberry Pi models the default I2C port is `1`.
+      bus: If given, the I2C commands are sent by the corresponding
+        :class:`ft232h_server` instance, in the situation when the hat is
+        controlled from a PC through an FT232H.
     """
 
     if not all(i in range(1, 5) for i in motor_nrs):
@@ -120,8 +118,8 @@ class DC_motor_hat:
     """Sets the PWMs associated with a given motor.
 
     Args:
-      nr (:obj:`int`): The number of the motor to drive.
-      cmd (:obj:`float`): The command, that should be between -1 and 1.
+      nr: The index of the motor to drive.
+      cmd: The command as a :obj:`float`, that should be between -1 and 1.
     """
 
     # Validity checks
@@ -175,11 +173,11 @@ class Motorkit_pump(Usb_server, Actuator):
                backend: str,
                device_address: int = 0x60,
                i2c_port: int = 1,
-               ft232h_ser_num: str = None) -> None:
+               ft232h_ser_num: Optional[str] = None) -> None:
     """Checks the validity of the arguments.
 
     Args:
-      backend (:obj:`str`): Should be one of :
+      backend: Should be one of :
         ::
 
           'Pi4', 'blinka', 'ft232h'
@@ -191,14 +189,13 @@ class Motorkit_pump(Usb_server, Actuator):
         variety of boards. The `'ft232h'` backend allows controlling the hat
         from a PC using Adafruit's FT232H USB to I2C adapter. See
         :ref:`Crappy for embedded hardware` for details.
-      device_address (:obj:`int`, optional): The I2C address of the HAT.
-        The default address is `0x60`, but it is possible to change this
-        setting by cutting traces on the board.
-      i2c_port (:obj:`int`, optional): The I2C port over which the HAT should
-        communicate. On most Raspberry Pi models the default I2C port is
-        `1`.
-      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
-        serial number of the ft232h to use for communication.
+      device_address: The I2C address of the HAT. The default address is
+        `0x60`, but it is possible to change this setting by cutting traces on
+          the board.
+      i2c_port: The I2C port over which the HAT should communicate. On most
+        Raspberry Pi models the default I2C port is `1`.
+      ft232h_ser_num: If backend is `'ft232h'`, the serial number of the ft232h
+        to use for communication.
     """
 
     if not isinstance(backend, str) or backend not in motor_hat_backends:
@@ -239,7 +236,7 @@ class Motorkit_pump(Usb_server, Actuator):
       self._hat = MotorKit(i2c=board.I2C())
 
       def set_motor(nr: int, cmd: float) -> None:
-        setattr(getattr(self._hat, 'motor{}'.format(nr)), 'throttle', cmd)
+        setattr(getattr(self._hat, f'motor{nr}'), 'throttle', cmd)
 
       self._hat.set_motor = set_motor
 
@@ -250,10 +247,9 @@ class Motorkit_pump(Usb_server, Actuator):
     """Inflates or deflates the setup according to the command.
 
     Args:
-      volt (:obj:`float`): The voltage to supply to the pumps. If positive,
-        will inflate, if negative will deflate, and if 0 won't do anything. The
-        voltage is clamped between -12 and 12 Volts, as it is the limit of the
-        HAT.
+      volt: The voltage to supply to the pumps. If positive, will inflate, if
+        negative will deflate, and if `0` won't do anything. The voltage is
+        clamped between `-12` and `12` Volts, as it is the limit of the HAT.
     """
 
     volt_clamped = min(abs(volt) / motor_hat_max_volt, 1.0)
@@ -276,14 +272,8 @@ class Motorkit_pump(Usb_server, Actuator):
       self._hat.set_motor(2, 1.0)
       self._hat.set_motor(3, volt_clamped)
 
-  def stop(self) -> None:
-    """Simply sets the voltage to 0."""
-
-    self.set_speed(0.0)
-
   def close(self) -> None:
     """Stops the pumps and closes the HAT object."""
 
-    self.stop()
     if self._backend != 'blinka':
       self._hat.close()
