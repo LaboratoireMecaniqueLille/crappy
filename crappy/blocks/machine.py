@@ -146,10 +146,7 @@ class Machine(Block):
     blocks."""
 
     # Receiving the latest command
-    if self._spam:
-      recv = self.get_last(blocking=False)
-    else:
-      recv = self.recv_all_last()
+    recv = self.recv_last_data(fill_missing=self._spam)
 
     # Iterating over the actuators for setting the commands
     if recv:

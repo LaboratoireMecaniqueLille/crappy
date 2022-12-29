@@ -1,7 +1,6 @@
 # coding: utf-8
 
-from time import sleep
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Union
 from pathlib import Path
 
 from .block import Block
@@ -21,6 +20,7 @@ class Recorder(Block):
                filename: Union[str, Path],
                delay: float = 2,
                labels: Optional[List[str]] = None,
+               time_label: str = 't(s)',
                freq: float = 200,
                verbose: bool = True) -> None:
     """Sets the args and initializes the parent class.
@@ -33,6 +33,7 @@ class Recorder(Block):
       delay: Delay between each write in seconds.
       labels: If provided, only the data carried by these labels will be saved.
         Otherwise, all the received data is saved.
+      time_label: The label carrying the time information, by default `'t(s)'`.
       freq: The block will try to loop at this frequency.
       verbose: If :obj:`True`, prints the looping frequency of the block.
     """
@@ -45,6 +46,9 @@ class Recorder(Block):
     self._delay = delay
     self._path = Path(filename)
     self._labels = labels
+    self._time_label = time_label
+
+    self._file_initialized = False
 
   def prepare(self) -> None:
     """Checking that the block has the right number of inputs, creates the
@@ -56,7 +60,6 @@ class Recorder(Block):
       raise ValueError('The Recorder block does not have inputs !')
     elif len(self.inputs) > 1:
       raise ValueError('Cannot link more than one block to a Recorder block !')
-    self._link = self.inputs[0]
 
     parent_folder = self._path.parent
 
@@ -75,38 +78,28 @@ class Recorder(Block):
       self._path = parent_folder / f'{stem}_{i:05d}{suffix}'
       print(f'[Recorder] Using {self._path} instead !')
 
-  def begin(self) -> None:
-    """Receives the first chunk of data, writes the labels names in the first
-    row of the file and starts saving the actual data."""
-
-    data = self._link.recv_delay(self._delay)
-
-    # If no labels are given, save everything that's received
-    if self._labels is None:
-      self._labels = list(data.keys())
-
-    # The first row of the file contains the names of the labels
-    with open(self._path, 'w') as file:
-      file.write(f"{','.join(self._labels)}\n")
-
-    # The following rows contain data
-    self._save(data)
-
   def loop(self) -> None:
     """Simply receives data from the upstream block and saves it."""
 
-    self._save(self._link.recv_delay(self._delay))
+    if not self._file_initialized:
+      if self.data_available():
 
-  def finish(self) -> None:
-    """Gathers any data left in the links, and saves it."""
+        data = self.recv_all_data(delay=self._delay)
 
-    sleep(0.5)
-    data = self._link.recv_chunk_no_stop()
-    if data is not None:
-      self._save(data)
+        # If no labels are given, save everything that's received
+        if self._labels is None:
+          self._labels = list(data.keys())
 
-  def _save(self, data: Dict[str, List[Any]]):
-    """Saves only the data carried by the specified labels to the file."""
+        # The first row of the file contains the names of the labels
+        with open(self._path, 'w') as file:
+          file.write(f"{','.join(self._labels)}\n")
+
+        self._file_initialized = True
+      else:
+        return
+
+    else:
+      data = self.recv_all_data(delay=self._delay)
 
     # Keeping only the data that needs to be saved
     data = {key: val for key, val in data.items() if key in self._labels}
@@ -117,13 +110,3 @@ class Recorder(Block):
       # Actually writing the values
       for values in zip(*sorted_data):
         file.write(f"{','.join(map(str, values))}\n")
-
-
-class Saver(Recorder):
-  def __init__(self, *args, **kwargs) -> None:
-    print('#### WARNING ####\n'
-          'The block "Saver" has been renamed to "Recorder".\n'
-          'Please replace the name in your program, '
-          'it will be removed in future versions\n'
-          '#################')
-    super().__init__(*args, **kwargs)

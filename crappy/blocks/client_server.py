@@ -17,7 +17,7 @@ try:
 except (ModuleNotFoundError, ImportError):
   mqtt = OptionalModule("paho.mqtt.client")
 
-topics_type = List[Union[str, Tuple[str, ...]]]
+Topics_type = List[Union[str, Tuple[str, ...]]]
 
 
 class Client_server(Block):
@@ -32,9 +32,9 @@ class Client_server(Block):
                address: Any = 'localhost',
                port: int = 1883,
                init_output: Optional[Dict[str, Any]] = None,
-               topics: Optional[topics_type] = None,
-               cmd_labels: Optional[topics_type] = None,
-               labels_to_send: Optional[topics_type] = None,
+               topics: Optional[Topics_type] = None,
+               cmd_labels: Optional[Topics_type] = None,
+               labels_to_send: Optional[Topics_type] = None,
                verbose: bool = False,
                freq: float = 200,
                spam: bool = False) -> None:
@@ -186,7 +186,7 @@ class Client_server(Block):
 
     """
 
-    Block.__init__(self)
+    super().__init__()
     self.niceness = -10
     self.verbose = verbose
     self.freq = freq
@@ -343,7 +343,7 @@ class Client_server(Block):
     dictionary has been found, its data is published as a list of list of 
     values."""
     if self._cmd_labels is not None:
-      received_data = [link.recv_chunk(blocking=False) for link in self.inputs]
+      received_data = self.recv_all_data_raw()
       for topic in self._cmd_labels:
         for dic in received_data:
           if dic is not None and all(label in dic for label in topic):

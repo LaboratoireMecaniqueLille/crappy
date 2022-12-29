@@ -90,7 +90,7 @@ class Camera_parallel(Block):
     self._disp_lock: Optional[synchronize.RLock] = None
     self._proc_lock: Optional[synchronize.RLock] = None
 
-    self._n_loops = 0
+    self._loop_count = 0
 
     # Cannot start process from __main__
     if not save_images:
@@ -217,7 +217,7 @@ class Camera_parallel(Block):
     """Receives the incoming data, acquires an image, displays it, saves it,
     and finally processes it if needed."""
 
-    data = self.recv_all_last()
+    data = self.recv_last_data(fill_missing=False)
 
     # Waiting for the trig label if it was given
     if self._trig_label is not None and self._trig_label not in data:
@@ -242,11 +242,11 @@ class Camera_parallel(Block):
                   'DateTimeOriginal': strftime("%Y:%m:%d %H:%M:%S",
                                                gmtime(metadata)),
                   'SubsecTimeOriginal': f'{metadata % 1:.6f}',
-                  'ImageUniqueID': self._n_loops}
+                  'ImageUniqueID': self._loop_count}
 
     metadata['t(s)'] -= self.t0
 
-    self._n_loops += 1
+    self._loop_count += 1
 
     # Applying the transform function
     if self._transform is not None:

@@ -72,8 +72,6 @@ class AutoDrive(Block):
     elif len(self.inputs) > 1:
       raise IOError("The AUtoDrive block can only have one input link !")
 
-    self._link = self.inputs[0]
-
     # Opening and initializing the actuator to drive
     actuator_name = self._actuator.pop('name')
     self._device = actuator_list[actuator_name](**self._actuator)
@@ -86,8 +84,8 @@ class AutoDrive(Block):
     accordingly."""
 
     # Receiving the latest data
-    data = self._link.recv_last(blocking=False)
-    if data is None:
+    data = self.recv_last_data(fill_missing=False)
+    if not data:
       return
 
     # Extracting the coordinates of the spots

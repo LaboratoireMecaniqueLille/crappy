@@ -55,9 +55,8 @@ class Hdf_recorder(Block):
       verbose: If :obj:`True`, prints the looping frequency of the block.
     """
 
-    Block.__init__(self)
-    if freq is not None:
-      self.freq = freq
+    super().__init__()
+    self.freq = freq
     self.verbose = verbose
 
     self._path = Path(filename)
@@ -72,6 +71,8 @@ class Hdf_recorder(Block):
     else:
       self._atom = atom
 
+    self._array_initialized = False
+
   def prepare(self) -> None:
     """Checking that the block has the right number of inputs, creates the
     folder containing the file if it doesn't already exist, changes the name of
@@ -83,7 +84,6 @@ class Hdf_recorder(Block):
     elif len(self.inputs) > 1:
       raise ValueError('Cannot link more than one block to an HDF Recorder '
                        'block !')
-    self._link = self.inputs[0]
 
     parent_folder = self._path.parent
 
@@ -107,11 +107,36 @@ class Hdf_recorder(Block):
     for name, value in self._metadata.items():
       self._hfile.create_array(self._hfile.root, name, value)
 
-  def begin(self) -> None:
-    """Receives the first chunk of data, makes sure that it contains the label
-    to save, and initializes the HDF array with it."""
+  def loop(self) -> None:
+    """Simply receives data from the upstream block and saves it.
 
-    data = self._link.recv_chunk(blocking=True)
+    Also creates the array for recording data when the first values are
+    received.
+    """
+
+    # Do nothing until the first value to save are received
+    if not self._array_initialized:
+      if self.data_available():
+        self._first_loop()
+        self._array_initialized = True
+      else:
+        return
+
+    data = self.recv_all_data()
+
+    if self._label in data:
+      for elt in data[self._label]:
+        self._array.append(elt)
+
+  def finish(self) -> None:
+    """Simply closes the HDF file."""
+
+    self._hfile.close()
+
+  def _first_loop(self) -> None:
+    """Initializes the array for saving data."""
+
+    data = self.recv_all_data()
 
     if self._label not in data:
       raise KeyError(f'The data received by the HDF Recorder block does not '
@@ -125,27 +150,3 @@ class Hdf_recorder(Block):
                                             expectedrows=self._expected_rows)
     for elt in data[self._label]:
       self._array.append(elt)
-
-  def loop(self) -> None:
-    """Simply receives data from the upstream block and saves it."""
-
-    data = self._link.recv_chunk(blocking=False)
-
-    if data is not None:
-      for elt in data[self._label]:
-        self._array.append(elt)
-
-  def finish(self) -> None:
-    """Simply closes the HDF file."""
-
-    self._hfile.close()
-
-
-class Hdf_saver(Hdf_recorder):
-  def __init__(self, *args, **kwargs) -> None:
-    print('#### WARNING ####\n'
-          'The block "Hdf_saver" has been renamed to "Hdf_recorder".\n'
-          'Please replace the name in your program, '
-          'it will be removed in future versions\n'
-          '#################')
-    Hdf_recorder.__init__(self, *args, **kwargs)

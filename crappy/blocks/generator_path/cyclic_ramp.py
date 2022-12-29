@@ -4,7 +4,7 @@ from time import time
 from typing import Union, Dict, Optional
 from itertools import cycle, islice
 
-from .path import Path, condition_type
+from .path import Path, Condition_type
 
 
 class Cyclic_ramp(Path):
@@ -17,8 +17,8 @@ class Cyclic_ramp(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               condition1: Union[str, condition_type],
-               condition2: Union[str, condition_type],
+               condition1: Union[str, Condition_type],
+               condition2: Union[str, Condition_type],
                speed1: float,
                speed2: float,
                cycles: float = 1,
@@ -93,8 +93,8 @@ class Cyclic_ramp(Path):
     # During the first loop, getting the first condition and speed
     if self._speed is None and self._condition is None:
       try:
-        self._speed = self._speeds.__next__()
-        self._condition = self._conditions.__next__()
+        self._speed = next(self._speeds)
+        self._condition = next(self._conditions)
       except StopIteration:
         raise
 
@@ -105,8 +105,8 @@ class Cyclic_ramp(Path):
       self._last_peak_cmd += self._speed * (t - self.t0)
       self.t0 = t
       try:
-        self._speed = self._speeds.__next__()
-        self._condition = self._conditions.__next__()
+        self._speed = next(self._speeds)
+        self._condition = next(self._conditions)
       except StopIteration:
         raise
 

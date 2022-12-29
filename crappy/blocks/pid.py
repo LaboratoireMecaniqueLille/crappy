@@ -84,72 +84,38 @@ class PID(Block):
     # Setting the variables
     self._target = None
     self._last_input = None
-    self._last_t = None
+    self._prev_t = 0
     self._i_term = 0
-
-  def begin(self) -> None:
-    """Receives the first target and input values and makes sure the given
-    labels are correct."""
-
-    # Waiting for the first data to arrive
-    data = [link.recv(blocking=True) for link in self.inputs]
-
-    # Getting the first target value
-    for dic in data:
-      if self._target_label in dic:
-        self._target = dic[self._target_label]
-        break
-
-    # Getting the first input value
-    for dic in data:
-      if self._input_label in dic and self._time_label in dic:
-        self._last_input = dic[self._input_label]
-        self._last_t = dic[self._time_label]
-        break
-
-    # Making sure the given labels are correct
-    if self._target is None:
-      raise IOError(f'No link containing the target label '
-                    f'{self._target_label} !')
-    if self._last_input is None:
-      raise IOError(f'No link containing the input label {self._input_label} '
-                    f'and the time label {self._time_label} !')
-
-    # Sending the values to the downstream blocks
-    if self._send_terms:
-      self.send([self._last_t, 0, 0, 0, 0])
-    else:
-      self.send([self._last_t, 0])
 
   def loop(self) -> None:
     """Receives the latest target and input values, calculates the P, I and D
     terms and sends the output to the downstream blocks."""
 
     # Looping in a non-blocking way
-    data = [link.recv_last(blocking=False) for link in self.inputs]
+    data = self.recv_last_data(fill_missing=False)
 
-    input_ = None
-    t = None
+    # Updating the target value if provided
+    if self._target_label in data:
+      self._target = data[self._target_label]
 
-    # Updating the target value
-    for dic in data:
-      if dic is not None and self._target_label in dic:
-        self._target = dic[self._target_label]
-        break
+    # Checking if a new input was received
+    if self._time_label in data and self._input_label in data:
+      input_ = data[self._input_label]
+      t = data[self._time_label]
 
-    # Getting the latest input value
-    for dic in data:
-      if dic is not None and self._input_label in dic \
-            and self._time_label in dic:
-        input_ = dic[self._input_label]
-        t = dic[self._time_label]
-        break
+      # For the first loops, setting the target to the first inout by default
+      if self._target is None:
+        self._target = input_
 
-    # If there's no new input, do nothing
-    if input_ is None or t is None:
+      # For the first loops, initializing the inout history
+      if self._last_input is None:
+        self._last_input = input_
+
+    # No new input was received
+    else:
       return
 
-    delta_t = t - self._last_t
+    delta_t = t - self._prev_t
     diff = self._target - input_
 
     # Calculating the three PID terms
@@ -157,7 +123,7 @@ class PID(Block):
     self._i_term += self._ki * diff * delta_t
     d_term = - self._kd * (input_ - self._last_input) / delta_t
 
-    self._last_t = t
+    self._prev_t = t
     self._last_input = input_
 
     # Clamping the i term if required

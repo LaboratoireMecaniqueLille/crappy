@@ -145,8 +145,7 @@ class UController(Block):
                          timeout=0,
                          write_timeout=0)
     except SerialException:
-      raise IOError("Couldn't connect to the device on the port "
-                    "{}".format(self._port))
+      raise IOError(f"Couldn't connect to the device on the port {self._port}")
 
     # Assigning indexes to the cmd_labels and labels, to identify them easily
     # and reduce the traffic on the bus
@@ -162,52 +161,45 @@ class UController(Block):
       self._labels_table.update({'t(s)': 0})
 
     # Emptying the read buffer before starting
-    while True:
-      try:
-        recv = self._bus.read()
-      except SerialException:
-        raise IOError("Reading from the device on port {} failed, it may"
-                      "have been disconnected.".format(self._port))
-
-      if not recv:
-        break
+    try:
+      self._bus.reset_input_buffer()
+      self._bus.reset_output_buffer()
+    except SerialException:
+      raise IOError(f"Reading from the device on port {self._port} failed, "
+                    f"it may have been disconnected.")
 
     # Sending the 'go' command to start the device
     try:
-      self._bus.write(b'go' +
-                      str(len(self._cmd_table)).encode() +
-                      str(len(self._labels_table)).encode() +
-                      b'\r\n')
+      msg = b''.join((b'go', str(len(self._cmd_table)).encode(),
+                      str(len(self._labels_table)).encode(), b'\r\n'))
+      self._bus.write(msg)
       if self.verbose:
-        print('[UController] Sent {} on the port '
-              '{}'.format(b'go' + str(len(self._cmd_table)).encode() +
-                          str(len(self._labels_table)).encode() +
-                          b'\r\n', self._port))
+        print(f'[UController] Sent {msg} on the port {self._port}')
     except SerialException:
-      raise IOError("Writing to the device on port {} failed, it may"
-                    "have been disconnected.".format(self._port))
+      raise IOError(f"Writing to the device on port {self._port} failed, "
+                    f"it may have been disconnected.")
 
     # Sending the table of cmd_labels and their indexes
     for cmd, i in self._cmd_table.items():
       try:
-        self._bus.write(str(i).encode() + cmd.encode() + b'\r\n')
+        msg = b''.join((str(i).encode(), cmd.encode(), b'\r\n'))
+        self._bus.write(msg)
         if self.verbose:
-          print('[UController] Sent {} on the port {}'.format(
-              str(i).encode() + cmd.encode() + b'\r\n', self._port))
+          print(f'[UController] Sent {msg} on the port {self._port}')
       except SerialException:
-        raise IOError("Writing to the device on port {} failed, it may"
-                      "have been disconnected.".format(self._port))
+        raise IOError(f"Writing to the device on port {self._port} failed, "
+                      f"it may have been disconnected.")
 
     # Sending the table of labels and their indexes
     for label, i in self._labels_table.items():
       try:
-        self._bus.write(str(i).encode() + label.encode() + b'\r\n')
+        msg = b''.join((str(i).encode(), label.encode(), b'\r\n'))
+        self._bus.write(msg)
         if self.verbose:
-          print('[UController] Sent {} on the port {}'.format(
-            str(i).encode() + label.encode() + b'\r\n', self._port))
+          print(f'[UController] Sent {msg} on the port {self._port}')
       except SerialException:
-        raise IOError("Writing to the device on port {} failed, it may"
-                      "have been disconnected.".format(self._port))
+        raise IOError(f"Writing to the device on port {self._port} failed, "
+                      f"it may have been disconnected.")
 
   def loop(self) -> None:
     """First sends the commands from upstream blocks to the device, then reads
@@ -233,33 +225,24 @@ class UController(Block):
     is then stored as the last value of the label.
     """
     if self._cmd_labels is not None:
-      received_cmd = [link.recv_chunk() if link.poll() else {} for link
-                      in self.inputs]
+      cmd = self.recv_last_data()
       for label in self._cmd_labels:
-        for dic in received_cmd:
-          if label in dic:
-            for value in dic[label]:
-              if value != self._prev_cmd[label]:
+        if label in cmd and cmd[label] != self._prev_cmd[label]:
+          msg = b''.join((f'{self._cmd_table[label]}'
+                          f'{cmd[label]:.3f}'.encode(),
+                          b'\r\n'))
 
-                # Information for debugging
-                if self.verbose:
-                  print("[UController] Sent {} on the "
-                        "port {}".format((str(self._cmd_table[label]) +
-                                          str('%.3f' % value)).encode() +
-                                         b'\r\n',
-                                         self._port))
+          # Information for debugging
+          if self.verbose:
+            print(f"[UController] Sent {msg} on the port {self._port}")
 
-                # Sending the actual message to the device
-                try:
-                  self._bus.write((str(self._cmd_table[label]) +
-                                   str('%.3f' % value)).encode() +
-                                  b'\r\n')
-                except SerialException:
-                  raise IOError("Writing to the device on port {} failed, it "
-                                "may have been "
-                                "disconnected.".format(self._port))
-                self._prev_cmd[label] = value
-            break
+          # Sending the actual message to the device
+          try:
+            self._bus.write(msg)
+          except SerialException:
+            raise IOError(f"Writing to the device on port {self._port} "
+                          f"failed, it may have been disconnected.")
+          self._prev_cmd[label] = cmd[label]
 
     """Loop for receiving data from the device.
     
@@ -272,37 +255,33 @@ class UController(Block):
     if self._labels is not None:
       # Reading the message from the device
       retries = 3
-      while True:
+      while retries:
         try:
           recv = self._bus.read()
         except SerialException:
-          raise IOError("Reading from the device on port {} failed, it may"
-                        "have been disconnected.".format(self._port))
+          raise IOError(f"Reading from the device on port {self._port} "
+                        f"failed, it may have been disconnected.")
 
         # This prevents the loop from staying stuck with an incomplete reading
         if not recv:
           retries -= 1
-          if not retries:
-           break
           continue
 
         self._buffer += recv
         # Exiting the loop when the desired number of bytes is reached
-        if (self._t_device and
-            len(self._buffer) == 9) or (not self._t_device and
-                                        len(self._buffer) == 5):
+        if (self._t_device and len(self._buffer) == 9) or \
+            (not self._t_device and len(self._buffer) == 5):
           break
 
       # There was no message from the device, or it was incomplete
-      if (self._t_device and
-          len(self._buffer) != 9) or (not self._t_device and
-                                      len(self._buffer) != 5):
+      if (self._t_device and len(self._buffer) != 9) or \
+          (not self._t_device and len(self._buffer) != 5):
         return
 
       # Information for debugging
       if self.verbose:
-        print("[UController] Received {} on the port {}".format(self._buffer,
-                                                                self._port))
+        print(f"[UController] Received {self._buffer} on the "
+              f"port {self._port}")
 
       # Parsing the received bytes
       read = unpack('<ibf' if self._t_device else '<bf', self._buffer)
@@ -326,29 +305,22 @@ class UController(Block):
 
     # Emptying the port buffer even if the messages are not processed
     else:
-      while True:
-        try:
-          recv = self._bus.read()
-        except SerialException:
-          raise IOError("Reading from the device on port {} failed, it may"
-                        "have been disconnected.".format(self._port))
-
-        if not recv:
-          break
-
-        if self.verbose:
-          print("[UController] Received {} on the port {}".format(recv,
-                                                                  self._port))
+      try:
+        self._bus.reset_input_buffer()
+        print(f"[UController] Flushed input buffer on port {self._port}")
+      except SerialException:
+        raise IOError(f"Reading from the device on port {self._port} "
+                      f"failed, it may have been disconnected.")
 
   def finish(self) -> None:
     """Closes the serial port, and sends a `'stop!'` message to the device."""
 
     # Sending a 'stop!' message to the device
     try:
-      self._bus.write(b'stop!' + b'\r\n')
+      msg = b'stop!\r\n'
+      self._bus.write(msg)
       if self.verbose:
-        print("[UController] Sent {} on the port {}".format(b'stop!' + b'\r\n',
-                                                            self._port))
+        print(f"[UController] Sent {msg} on the port {self._port}")
     except SerialException:
       pass
 

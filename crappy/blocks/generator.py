@@ -76,16 +76,18 @@ class Generator(Block):
       the documentation of each signal shape to which information to give.
     """
 
-    Block.__init__(self)
+    super().__init__()
 
     # Instantiating a few attributes based on the arguments
     self.niceness = -5
     self.freq = freq
     self.verbose = verbose
     self.labels = ['t(s)', cmd_label, cycle_label]
+
     self._end_delay = end_delay
     self._spam = spam
     self._safe_start = safe_start
+    self._safe_started = False
 
     # Checking the validity of the path
     try:
@@ -110,25 +112,27 @@ class Generator(Block):
     blocking."""
 
     self._update_path()
-    self.loop(blocking=self._safe_start)
 
-  def loop(self, blocking: bool = False) -> None:
+  def loop(self) -> None:
     """First reads data from upstream blocks, then gets the next command to
     send, and finally sends it to downstream blocks.
 
     It also manages the transitions between the paths.
-
-    Args:
-      blocking: It :obj:`True`, waits blocks until there's data available from
-        the upstream blocks before getting the next command to send.
     """
 
     # Case when the Generator shouldn't raise CrappyStop after it ended
     if self._ended_no_raise:
       return
 
+    # If self start requested, do nothing until the first values are received
+    if self._safe_start and not self._safe_started:
+      if self.data_available():
+        self._safe_started = True
+      else:
+        return
+
     # Getting the data from upstream blocks
-    data = self.get_all_last(blocking=blocking)
+    data = self.recv_all_data()
     try:
       # Getting the next command to send
       self._last_t = time()
@@ -160,7 +164,7 @@ class Generator(Block):
 
     try:
       # Getting the next path from the list of paths
-      next_path_dict = deepcopy(self._path.__next__())
+      next_path_dict = deepcopy(next(self._path))
       # Updating the path index
       if self._path_id is not None:
         self._path_id += 1

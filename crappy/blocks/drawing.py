@@ -43,7 +43,8 @@ class Text:
   def update(self, data: Dict[str, float]) -> None:
     """Updates the text according to the received values."""
 
-    self._txt.set_text(self._text % data[self._label])
+    if self._label in data:
+      self._txt.set_text(self._text % data[self._label])
 
 
 class Dot_text:
@@ -88,9 +89,10 @@ class Dot_text:
   def update(self, data: Dict[str, float]) -> None:
     """Updates the text and the color dot according to the received values."""
 
-    self._txt.set_text(self._text % data[self._label])
-    self._dot.set_color(cm.coolwarm((data[self._label] -
-                                     self._low) / self._amp))
+    if self._label in data:
+      self._txt.set_text(self._text % data[self._label])
+      self._dot.set_color(cm.coolwarm((data[self._label] -
+                                       self._low) / self._amp))
 
 
 class Time:
@@ -217,7 +219,10 @@ class Drawing(Block):
     """Receives the latest data from upstream blocks and updates the drawing
     accordingly."""
 
-    data = self.get_last()
+    data = self.recv_last_data(fill_missing=False)
+    if not data:
+      return
+
     for elt in self._drawing_elements:
       elt.update(data)
     self._fig.canvas.draw()

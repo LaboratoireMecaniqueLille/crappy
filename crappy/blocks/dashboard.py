@@ -83,7 +83,6 @@ class Dashboard(Block):
       raise IOError("No link pointing towards the Dashboard block !")
     elif len(self.inputs) > 1:
       raise IOError("Too many links pointing towards the Dashboard block !")
-    self._link, = self.inputs
 
     self._dashboard = Dashboard_window(self._labels)
     self._dashboard.update()
@@ -91,17 +90,16 @@ class Dashboard(Block):
   def loop(self) -> None:
     """Receives the data from the incoming link and displays it."""
 
-    data = self._link.recv_last()
+    data = self.recv_last_data(fill_missing=False)
 
-    if data is not None:
-      for label, value in data.items():
-        # Only print the required labels
-        if label in self._labels:
-          # Possibility to display str values carried by the links
-          if isinstance(value, str):
-            self._dashboard.tk_var[label].set(value)
-          elif isinstance(value, int) or isinstance(value, float):
-            self._dashboard.tk_var[label].set(f'{value:.{self._nb_digits}f}')
+    for label, value in data.items():
+      # Only print the required labels
+      if label in self._labels:
+        # Possibility to display str values carried by the links
+        if isinstance(value, str):
+          self._dashboard.tk_var[label].set(value)
+        elif isinstance(value, int) or isinstance(value, float):
+          self._dashboard.tk_var[label].set(f'{value:.{self._nb_digits}f}')
 
     # In case the GUI has been destroyed, don't raise an error
     try:

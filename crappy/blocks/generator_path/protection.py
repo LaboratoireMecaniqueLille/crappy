@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from typing import Union, Dict
-from .path import Path, condition_type
+from .path import Path, Condition_type
 
 
 class Protection(Path):
@@ -16,8 +16,8 @@ class Protection(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               condition1: Union[str, condition_type],
-               condition2: Union[str, condition_type],
+               condition1: Union[str, Condition_type],
+               condition2: Union[str, Condition_type],
                value1: float,
                value2: float,
                value0: float = 0) -> None:

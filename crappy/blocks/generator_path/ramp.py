@@ -3,7 +3,7 @@
 from time import time
 from typing import Union, Dict, Optional
 
-from .path import Path, condition_type
+from .path import Path, Condition_type
 
 
 class Ramp(Path):
@@ -13,7 +13,7 @@ class Ramp(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               condition: Union[str, condition_type],
+               condition: Union[str, Condition_type],
                speed: float,
                init_value: Optional[float] = None):
     """Sets the args and initializes the parent class.

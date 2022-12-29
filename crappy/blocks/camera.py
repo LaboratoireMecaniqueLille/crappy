@@ -246,7 +246,7 @@ class Camera(Block):
     """Receives the incoming data, acquires an image, displays it, saves it,
     and finally processes it if needed."""
 
-    data = self.recv_all_last()
+    data = self.recv_last_data(fill_missing=False)
 
     # Waiting for the trig label if it was given
     if self._trig_label is not None and self._trig_label not in data:

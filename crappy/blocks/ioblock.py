@@ -28,7 +28,7 @@ class IOBlock(Block):
                exit_cmd: Optional[list] = None,
                make_zero_delay: Optional[float] = None,
                spam: bool = False,
-               freq: Optional[float] = None,
+               freq: Optional[float] = 200,
                verbose: bool = False,
                **kwargs) -> None:
     """Sets the args and initializes the parent class.
@@ -73,8 +73,7 @@ class IOBlock(Block):
 
     super().__init__()
     self.niceness = -10
-    if freq is not None:
-      self.freq = freq
+    self.freq = freq
     self.verbose = verbose
 
     # The label argument can be omitted for streaming
@@ -147,31 +146,26 @@ class IOBlock(Block):
     """
 
     # Receiving all the latest data waiting in the links
-    # Cannot use self.get_last because trig_label needs a special handling
-    recv_data = dict()
-    for link in self.inputs:
-      latest = link.recv_last(blocking=False)
-      if latest is not None:
-        recv_data.update(latest)
+    data = self.recv_last_data(fill_missing=False)
 
     # Reading data from the device if there's no trig_label or if data has been
     # received on this trig_label
     if self._read:
-      if self._trig_label is None or self._trig_label in recv_data:
+      if self._trig_label is None or self._trig_label in data:
         self._read_data()
 
-    # Storing the latest received values in the buffer
-    self._prev_value.update(recv_data)
-    # Completing the values that may be missing in recv_data
-    recv_data.update(self._prev_value)
+    # The missing values are completed here, because the trig label must not be
+    # artificially created
+    self._prev_value.update(data)
+    data.update(self._prev_value)
 
     if self._write:
       # At the very beginning of the test, there may not be any received value
-      if not recv_data:
+      if not data:
         return
 
       # Keeping only the labels in cmd_labels
-      cmd = [val for label, val in recv_data.items()
+      cmd = [val for label, val in data.items()
              if label in self._cmd_labels]
 
       # If not all cmd_labels have a value, returning without calling set_cmd

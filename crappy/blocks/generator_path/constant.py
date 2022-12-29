@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from typing import Union, Dict
-from .path import Path, condition_type
+from .path import Path, Condition_type
 
 
 class Constant(Path):
@@ -11,7 +11,7 @@ class Constant(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               condition: Union[str, condition_type],
+               condition: Union[str, Condition_type],
                value: float = None) -> None:
     """Sets the args and initializes the parent class.
 

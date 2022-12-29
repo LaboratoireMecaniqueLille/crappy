@@ -27,7 +27,7 @@ class GUI(Block):
                spam: bool = False,) -> None:
     """Sets the args and initializes the parent class."""
 
-    Block.__init__(self)
+    super().__init__()
     self.freq = freq
     self.spam = spam
     self.labels = [time_label, label]

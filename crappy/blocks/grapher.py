@@ -41,31 +41,28 @@ class Grapher(Block):
     """Sets the args and initializes the parent class.
 
     Args:
-      *labels (:obj:`tuple`): Each :obj:`tuple` corresponds to a curve to plot,
-        and should contain two values: the first will be the label of the `x`
-        values, the second the label of the `y` values. There's no limit to the
-        number of curves. Note that all the curves are displayed in a same
-        graph.
-      length (:obj:`int`, optional): If `0` the graph is static and displays
-        all data from the start of the assay. Else only displays the last
-        ``length`` received chunks, and drops the previous ones.
-      freq (:obj:`float`, optional): The refresh rate of the graph. May cause
-        high CPU use if set too high.
-      maxpt (:obj:`int`, optional): The maximum number of points displayed on
-        the graph. When reaching this limit, the block deletes one point out of
-        two to avoid using too much memory and CPU.
-      window_size (:obj:`tuple`, optional): The size of the graph, in inches.
-      window_pos (:obj:`tuple`, optional): The position of the graph in pixels.
-        The first value is for the `x` direction, the second for the `y`
-        direction. The origin is the top-left corner. Works with multiple
-        screens.
-      interp (:obj:`bool`, optional): If :obj:`True`, the data points are
-        linked together by straight lines. Else, only the points are displayed.
-      backend (:obj:`int`, optional): The :mod:`matplotlib` backend to use.
-        Performance may vary according to the chosen backend. Also, every
-        backend may not be available depending on your machine.
-      verbose (:obj:`bool`, optional): To display the loop frequency of the
-        block.
+      *labels: Each :obj:`tuple` corresponds to a curve to plot, and should
+        contain two values: the first will be the label of the `x`values, the
+        second the label of the `y` values. There's no limit to the number of
+        curves. Note that all the curves are displayed in a same graph.
+      length: If `0` the graph is static and displays all data from the start
+        of the assay. Else only displays the last ``length`` received chunks,
+        and drops the previous ones.
+      freq: The refresh rate of the graph. May cause high CPU use if set too
+        high.
+      maxpt: The maximum number of points displayed on the graph. When reaching
+        this limit, the block deletes one point out of two to avoid using too
+        much memory and CPU.
+      window_size: The size of the graph, in inches.
+      window_pos: The position of the graph in pixels. The first value is for
+        the `x` direction, the second for the `y` direction. The origin is the
+        top-left corner. Works with multiple screens.
+      interp: If :obj:`True`, the data points are linked together by straight
+        lines. Else, only the points are displayed.
+      backend: The :mod:`matplotlib` backend to use. Performance may vary
+        according to the chosen backend. Also, every backend may not be
+        available depending on your machine.
+      verbose: To display the loop frequency of the block.
 
     Example:
       ::
@@ -85,20 +82,22 @@ class Grapher(Block):
       will plot a dynamic graph displaying the last 30 chunks of data.
     """
 
-    Block.__init__(self)
+    super().__init__()
     self.niceness = 10
-    self._length = length
     self.freq = freq
+    self.verbose = verbose
+
+    self._length = length
     self._maxpt = maxpt
     self._window_size = window_size
     self._window_pos = window_pos
     self._interp = interp
     self._backend = backend
-    self.verbose = verbose
 
     self._labels = labels
 
   def prepare(self) -> None:
+    """Configures the figure for displaying data."""
 
     # Switch to the required backend
     if self._backend:
@@ -146,32 +145,34 @@ class Grapher(Block):
     plt.pause(.001)
 
   def loop(self) -> None:
+    """Receives the upcoming data, puts in the display buffer and updates the
+    graph."""
 
     # Receives the data sent by the upstream blocks
     if self.freq >= 10:
       # Assuming that above 10Hz the data won't saturate the links
-      data = self.recv_all_delay()
+      data = self.recv_all_data_raw()
     else:
       # Below 10Hz, making sure to flush the pipes at least every 0.1s
-      data = self.recv_all_delay(delay=1 / 2 / self.freq,
-                                 poll_delay=min(0.1, 1 / 2 / self.freq))
+      data = self.recv_all_data_raw(delay=1 / 2 / self.freq,
+                                    poll_delay=min(0.1, 1 / 2 / self.freq))
 
     update = False  # Should the graph be updated ?
 
     # For each curve, looking for the corresponding labels in the received data
     for i, (lx, ly) in enumerate(self._labels):
       x, y = None, None
-      for dict_ in data:
-        if lx in dict_ and ly in dict_:
+      for dic in data:
+        if lx in dic and ly in dic:
           # Found the corresponding data, getting the new data according to the
           # current resampling factors
-          dx = dict_[lx][self._factor[i] - self._counter[i] -
-                         1::self._factor[i]]
-          dy = dict_[ly][self._factor[i] - self._counter[i] -
-                         1::self._factor[i]]
+          dx = dic[lx][self._factor[i] - self._counter[i] -
+                       1::self._factor[i]]
+          dy = dic[ly][self._factor[i] - self._counter[i] -
+                       1::self._factor[i]]
           # Recalculating the counter
           self._counter[i] = (self._counter[i] +
-                              len(dict_[lx])) % self._factor[i]
+                              len(dic[lx])) % self._factor[i]
           # Adding the new points to the arrays
           x = np.hstack((self._lines[i].get_xdata(), dx))
           y = np.hstack((self._lines[i].get_ydata(), dy))
@@ -212,9 +213,13 @@ class Grapher(Block):
       self._canvas.flush_events()
 
   def finish(self) -> None:
+    """Closes all the opened Matplotlib windows."""
+
     plt.close("all")
 
   def _clear(self, *_, **__) -> None:
+    """Resets the display by emptying the data buffers."""
+    
     for line in self._lines:
       line.set_xdata([])
       line.set_ydata([])

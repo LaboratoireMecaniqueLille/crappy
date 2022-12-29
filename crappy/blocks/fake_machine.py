@@ -78,22 +78,14 @@ class Fake_machine(Block):
 
     # Creating the mechanical variables
     self._current_pos = 0
-    self._last_t = None
+    self._prev_t = None
     self._plastic_elongation = 0
     self._max_recorded_strain = 0
-
-  def prepare(self) -> None:
-    """Sends a value so that the camera gets an image during prepare for the
-    fake test examples. To be removed at some point."""
-
-    # Todo: To be removed when compute_strain_img is replaced with a getter
-    self.t0 = time()
-    self._send_values()
 
   def begin(self) -> None:
     """Sends a first value that should be 0."""
 
-    self._last_t = self.t0
+    self._prev_t = self.t0
     self._send_values()
 
   def loop(self) -> None:
@@ -102,10 +94,14 @@ class Fake_machine(Block):
     is, and finally returns the data"""
 
     # Getting the latest command
-    cmd = self.get_last()[self._cmd_label]
+    data = self.recv_last_data(fill_missing=True)
+    if self._cmd_label not in data:
+      return
+    else:
+      cmd = data[self._cmd_label]
     t = time()
-    delta_t = t - self._last_t
-    self._last_t = t
+    delta_t = t - self._prev_t
+    self._prev_t = t
 
     # Calculating the speed based on the command and the mode
     if self._mode == 'speed':

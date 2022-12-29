@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import List, Optional
+from time import time
 
 from .block import Block
 
@@ -47,51 +48,37 @@ class Mean_block(Block):
     self._out_labels = out_labels
 
   def prepare(self) -> None:
-    """Initializes the buffer and the time counters."""
+    """Initializes the buffer."""
 
     self._buffer = {link: dict() for link in self.inputs}
-    self._last_sent_t = -self._delay
-    self._last_recv_t = 0
+
+  def begin(self) -> None:
+    """Initializes the time counter."""
+
+    self._last_sent_t = self.t0
 
   def loop(self) -> None:
     """Receives all available data from the upstream blocks, and averages it
     and sends it if the time delay is reached."""
 
     # Receiving data from each incoming link
-    for link in self.inputs:
-      data = link.recv_chunk(blocking=False)
+    data = self.recv_all_data(delay=self._delay, poll_delay=self._delay / 10)
+    to_send = dict()
 
-      if data is not None:
-        # Updating the last received time attribute
-        if self._time_label in data:
-          self._last_recv_t = max(self._last_recv_t,
-                                  data[self._time_label][-1])
-          data.pop(self._time_label)
+    # Removing the time label from the received data
+    if self._time_label in data:
+      data.pop(self._time_label)
 
-        # Storing the incoming data into dicts
-        for label in data:
-          if self._out_labels is None or label in self._out_labels:
-            if label in self._buffer[link]:
-              self._buffer[link][label].extend(data[label])
-            else:
-              self._buffer[link][label] = data[label]
+    # Building the output dict with the averaged values
+    for label, values in data.items():
+      if self._out_labels is None or label in self._out_labels:
+        try:
+          to_send[label] = np.mean(values)
+        except (ValueError, TypeError):
+          to_send[label] = values[-1]
 
-    # Sending the mean value when the delay is reached
-    if self._last_recv_t - self._last_sent_t > self._delay:
-      ret = dict()
-
-      # For each label of each dict, getting it mean value
-      for dic in self._buffer.values():
-        for label, values in dic.items():
-          try:
-            ret[label] = np.mean(values)
-          except TypeError:
-            ret[label] = values[-1]
-        # Finally, clearing the buffer
-        dic.clear()
-
-      # Sending only if there was data to send
-      if ret:
-        ret[self._time_label] = np.mean((self._last_recv_t, self._last_sent_t))
-        self.send(ret)
-      self._last_sent_t = self._last_recv_t
+    # Sending the output dict
+    if to_send:
+      to_send[self._time_label] = (time() + self._last_sent_t) / 2 - self.t0
+      self._last_sent_t = time()
+      self.send(to_send)

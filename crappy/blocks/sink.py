@@ -18,4 +18,4 @@ class Sink(Block):
   def loop(self) -> None:
     """Simply drops all received data."""
 
-    self.drop()
+    self.recv_all_data_raw()

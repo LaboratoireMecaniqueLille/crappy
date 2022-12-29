@@ -4,7 +4,7 @@ from time import time
 from typing import Callable, Union, Dict, Optional
 from re import split, IGNORECASE, match
 
-condition_type = Callable[[Dict[str, list]], bool]
+Condition_type = Callable[[Dict[str, list]], bool]
 
 
 class Path:
@@ -28,7 +28,7 @@ class Path:
 
   def parse_condition(
         self,
-        condition: Optional[Union[str, condition_type]]) -> condition_type:
+        condition: Optional[Union[str, Condition_type]]) -> Condition_type:
     """This method returns a function allowing to check whether the stop
     condition is met or not.
 

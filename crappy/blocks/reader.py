@@ -21,26 +21,30 @@ class Reader(Block):
       verbose: If :obj:`True`, the looping frequency will be printed every 2s.
     """
 
-    Block.__init__(self)
+    super().__init__()
     self.freq = freq
     self.verbose = verbose
 
-    index = self._instance_index()
-    self._name = name if name is not None else f'Reader {index}'
+    self._name = name if name is not None else f'Reader {self._get_index()}'
+
+  def __new__(cls, *args, **kwargs):
+    """"""
+
+    cls._index += 1
+    return super().__new__(cls)
+
+  @classmethod
+  def _get_index(cls) -> int:
+    """Returns the current number of instantiates Links, as an :obj:`int`."""
+
+    return cls._index
 
   def loop(self) -> None:
     """Simply flushes the link and prints its data."""
 
-    for link in self.inputs:
-      data = link.recv_chunk(blocking=False)
-      if data is not None:
-        for dic in (dict(i) for i in zip(*([(key, value) for value in values]
-                                           for key, values in data.items()))):
-          print(f'{self._name} got: {dic}')
-
-  @classmethod
-  def _instance_index(cls) -> int:
-    """Returns the index of the current instance."""
-
-    cls._index += 1
-    return cls._index
+    data = self.recv_all_data_raw()
+    for link_data in data:
+      for dic in (dict(i) for i in
+                  zip(*([(key, value) for value in values]
+                        for key, values in link_data.items()))):
+        print(f'{self._name} got: {dic}')

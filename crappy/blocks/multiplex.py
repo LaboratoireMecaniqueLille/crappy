@@ -1,7 +1,8 @@
 # coding: utf-8
 
-from numpy import interp, array, searchsorted, concatenate
-from itertools import chain
+import numpy as np
+from typing import Dict, Optional, List
+from collections import defaultdict
 
 from .block import Block
 
@@ -25,12 +26,18 @@ class Multiplex(Block):
 
   def __init__(self,
                time_label: str = 't(s)',
-               freq: float = 200,
+               out_labels: Optional[List[str]] = None,
+               interp_freq: float = 200,
+               freq: float = 50,
                verbose: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
       time_label: The label carrying the time information.
+      out_labels: If given, the Block won't output anything until data has been
+        received on all these labels. The time label should not be included in
+        this list, as it is already given in the ``time_label`` argument. It is
+        recommended to always specify this argument.
       freq : The sample rate for the interpolation, and the target looping
         frequency for the block. If this value is set too high and your machine
         cannot keep up, the block will most likely lag.
@@ -38,130 +45,96 @@ class Multiplex(Block):
         of the block.
     """
 
-    Block.__init__(self)
+    super().__init__()
+    self.freq = freq
+    self.verbose = verbose
 
     # Initializing the attributes
     self._time_label = time_label
-    self.freq = freq
-    self.verbose = verbose
-    self._t = 0
-    self._dt = 1 / self.freq
-
-    # Creating the different dicts holding information
-    self._values = dict()
-    self._timestamps = dict()
-    self._labels_to_get = dict()
-    self._label_to_link = dict()
-
-  def begin(self) -> None:
-    """Receiving the first data from the upstream blocks, and checking that it
-    is valid.
-
-    If part of the data is not valid, warning the user. For the valid data,
-    initializing the different dicts with it.
-    """
-
-    for link in self.inputs:
-      # First, receiving data from each incoming link
-      data = link.recv_chunk()
-
-      # Handling the case when the time label is absent from the data
-      if self._time_label not in data:
-        print(f'WARNING : Cannot multiplex data coming from link {link.name} '
-              f'as it does not contain the time label ({self._time_label})')
-        continue
-
-      # Extracting the timestamps from the received data
-      timestamp = data.pop(self._time_label)
-
-      # Determining which labels to use for multiplexing and warning the user
-      # if two similar labels found
-      self._labels_to_get[link] = [label for label in data if label not in
-                                   chain(*self._labels_to_get.values())]
-      if len(self._labels_to_get[link]) != len(data):
-        print(f"WARNING : Got identical label(s)" 
-              f"""{tuple(label for label in data if label 
-                         not in self._labels_to_get[link])}""" 
-              f"from at least two different links, on of them won't be used "
-              f"for multiplexing.")
-
-      self._label_to_link.update({label: link for label in
-                                  self._labels_to_get[link]})
-
-      # Storing the timestamps for the link
-      self._timestamps[link] = array(timestamp)
-      # Storing the values for the labels that were kept
-      self._values.update({label: array(values) for label, values in
-                           data.items() if label in self._labels_to_get[link]})
+    self._out_labels = out_labels
+    self._interp_freq = interp_freq
+    self._data: Dict[str, np.ndarray] = defaultdict(self._default_array)
 
   def loop(self) -> None:
     """Receives data, interpolates it, and sends it to the downstream
     blocks."""
 
-    self._get_data()
-    self._send_data()
+    # Receiving all the upcoming data
+    data = self.recv_all_data_raw()
 
-  def finish(self) -> None:
-    """Just sending any remaining data."""
+    # Iterating over all the links
+    for link_data in data:
+      # Only data associated with a time label can be multiplexed
+      if self._time_label not in link_data:
+        continue
+      # Extracting the time information from the data
+      timestamps = link_data[self._time_label]
 
-    self._send_data()
+      # Adding data from each label in the buffer
+      for label, values in link_data.items():
+        # The time information is handled differently
+        if label == self._time_label:
+          continue
+        # Only the labels specified in out_labels is considered
+        elif self._out_labels is not None and label not in self._out_labels:
+          continue
 
-  def _get_data(self) -> None:
-    """Receives data from the upstream links."""
+        # Adding the received values to the buffered ones
+        self._data[label] = np.concatenate((self._data[label],
+                                            np.array((timestamps, values))),
+                                           axis=1)
+        # Sorting the buffered data, if a same label comes from multiple Links
+        self._data[label] = self._data[label][
+          :, self._data[label][0].argsort()]
 
-    for link in self.inputs:
-      # Receiving data from each link, non-blocking to prevent accumulation
-      data = link.recv_chunk(blocking=False)
-      # Processing only the valid labels
-      if data is not None and link in self._labels_to_get:
-        # Saving the timestamps
-        self._timestamps[link] = concatenate((self._timestamps[link],
-                                              array(data[self._time_label])))
-        # Saving the other values
-        for label in self._labels_to_get[link]:
-          self._values[label] = concatenate((self._values[label],
-                                             array(data[label])))
+    # Making sure there's data for all the requested labels
+    if self._out_labels is not None:
+      if not all(label in self._data for label in self._out_labels):
+        return
+      elif not all(np.any(self._data[label]) for label in self._out_labels):
+        return
 
-  def _send_data(self) -> None:
-    """Interpolates the previously received data, and sends the result to the
-    downstream blocks."""
+    # Making sure there's data for all the labels
+    if not self ._data or all(not np.any(data)
+                              for data in self._data.values()):
+      return
 
-    # Making sure all the necessary data has been received for interpolating
-    if all(timestamp[-1] > self._t for timestamp
-           in self._timestamps.values()) and any(
-      timestamp.size for timestamp in self._timestamps.values()):
+    # Getting the minimum time for the interpolation
+    min_t = min(np.min(data[0]) for data in self._data.values())
+    # Correcting to the closest lower multiple of the time interval
+    min_t = min_t - min_t % (1 / self._interp_freq)
 
-      # Getting the maximum timestamp common to all the labels
-      max_t = min(times[-1] for times in self._timestamps.values())
-      # Deducing the number of time intervals to interpolate on
-      n_samples = int((max_t - self._t) // self._dt) + 1
-      # Creating the array of timestamps for interpolation
-      new_times = [self._t + i * self._dt for i in range(n_samples)]
+    # Getting the maximum time for the interpolation
+    max_t = min(np.max(data[0]) for data in self._data.values())
 
-      # For each link, getting the index for trimming data after interpolation
-      last_indexes = {link: searchsorted(self._timestamps[link], new_times[-1],
-                                         side='right')
-                      for link in self.inputs}
+    # The array containing the timestamps for interpolating
+    interp_times = np.arange(min_t, max_t, 1 / self._interp_freq)
 
-      # This dict stores the values to send
-      to_send = {self._time_label: new_times}
+    # Correcting to the closest lower multiple of the time interval
+    max_t = max_t - max_t % (1 / self._interp_freq)
 
-      # For each label, interpolating the data
-      for label in self._values:
-        link = self._label_to_link[label]
-        to_send[label] = list(interp(new_times, self._timestamps[link],
-                                     self._values[label]))
+    # Making sure there are points to interpolate
+    if not np.any(interp_times):
+      return
 
-        # Trimming the values to save some memory
-        self._values[label] = self._values[label][last_indexes[link]:]
+    to_send = dict()
 
-      # Also trimming the timestamps to save some memory
-      for link in self.inputs:
-        self._timestamps[link] = self._timestamps[link][last_indexes[link]:]
+    # Building the dict of values to send
+    for label, values in self._data.items():
+      to_send[label] = list(np.interp(interp_times, values[0], values[1]))
+      # Removing the used values from the buffer
+      self._data[label] = values[:, values[0] > max_t]
 
-      # Updating the current time value
-      self._t = new_times[-1] + self._dt
+    if to_send:
+      # Adding the time values to the dict of values to send
+      to_send[self._time_label] = list(interp_times)
 
-      # Finally, sending the data to downstream blocks
-      while any(to_send.values()):
-        self.send({label: values.pop(0) for label, values in to_send.items()})
+      # Sending the values
+      for i, _ in enumerate(interp_times):
+        self.send({label: values[i] for label, values in to_send.items()})
+
+  @staticmethod
+  def _default_array() -> np.ndarray:
+    """Helper function for the default dict."""
+
+    return np.array(([], []))
