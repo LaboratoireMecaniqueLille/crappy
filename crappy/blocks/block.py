@@ -1,588 +1,580 @@
 # coding: utf-8
 
-from sys import platform
-from multiprocessing import Process, Pipe
-from time import sleep, time, localtime, strftime
+from platform import system
+from multiprocessing import Process, Value, Barrier, Event
+from multiprocessing.sharedctypes import Synchronized
+from multiprocessing import synchronize
+from threading import BrokenBarrierError
+from time import sleep, time
 from weakref import WeakSet
-from pickle import UnpicklingError
 from typing import Union, Optional, List, Dict, Any
+from collections import defaultdict
+import subprocess
 
 from ..links import Link
 from .._global import CrappyStop
 
-import subprocess
-
 # Todo:
 #  Add a clean way to stop the blocks, using the keyboard or a button
-#  Rethink the communication between blocks when stopping
-#  Switch from dicts to structured arrays
-#  Make sure that a variable number of labels never raises errors
-#  Replace lists with tuples in arguments
-
-
-def renice(pid: int, niceness: int) -> None:
-  """Function to renice a process.
-
-  Warning:
-    Only works in Linux.
-
-  Note:
-    The user must be allowed to use ``sudo`` to renice with a negative value.
-    May thus ask for a password for negative values.
-  """
-
-  if niceness < 0:
-    subprocess.call(['sudo', 'renice', str(niceness), '-p', str(pid)])
-  else:
-    subprocess.call(['renice', str(niceness), '-p', str(pid)])
 
 
 class Block(Process):
-  """This represent a Crappy block, it must be parent of all the blocks."""
+  """This class constitutes the base object in Crappy.
+
+  It is extremely versatile, an can perform a wide variety of actions during a
+  test. Many Blocks are already defined in Crappy, but it is possible to define
+  custom ones for specific purposes.
+
+  It is a subclass of :obj:`multiprocessing.Process`, and is thus an
+  independent process in Python. It communicates with other Blocks via
+  :mod:`multiprocessing` objects.
+  """
 
   instances = WeakSet()
 
-  def __init__(self) -> None:
-    Process.__init__(self)
-    # Block.instances.append(self)
-    self.outputs: List[Link] = []
-    self.inputs: List[Link] = []
-    # This pipe allows to send 2 essential signals:
-    # pipe1->pipe2 is to start the main function and set t0
-    # pipe2->pipe1 to set process status to the parent
-    self.pipe1, self.pipe2 = Pipe()
-    self._status = "idle"
-    self.niceness = 0
-    self.labels = []
+  # The synchronization objects will be set later
+  shared_t0: Optional[Synchronized] = None
+  ready_barrier: Optional[synchronize.Barrier] = None
+  start_event: Optional[synchronize.Event] = None
+  stop_event: Optional[synchronize.Event] = None
 
-    self._all_last_values = None
+  def __init__(self) -> None:
+    """Sets the attributes and initializes the parent class."""
+
+    super().__init__()
+
+    # The lists of input and output links
+    self.outputs: List[Link] = list()
+    self.inputs: List[Link] = list()
+
+    # Various objects that should be set by child classes
+    self.niceness: int = 0
+    self.labels: Optional[List[str]] = None
+    self.freq = None
+    self.verbose = False
+
+    # The synchronization objects will be set later
+    self._instance_t0: Optional[Synchronized] = None
+    self._ready_barrier: Optional[synchronize.Barrier] = None
+    self._start_event: Optional[synchronize.Event] = None
+    self._stop_event: Optional[synchronize.Event] = None
+
+    # Objects for displaying performance information about the block
+    self._last_t: Optional[float] = None
+    self._last_fps: Optional[float] = None
+    self._n_loops: int = 0
+
     self._last_values = None
 
-  def __new__(cls, *args, **kwargs) -> Process:
+  def __new__(cls, *args, **kwargs):
+    """Called when instantiating a new instance of a Block. Adds itself to
+    the WeakSet of all blocks."""
+
     instance = super().__new__(cls)
-    Block.instances.add(instance)
+    print('new')
+    cls.instances.add(instance)
     return instance
 
   @classmethod
+  def start_all(cls, allow_root: bool = False) -> None:
+    """Method for starting a script with Crappy.
+
+    It sets the synchronization objects for all the blocks, renices the
+    corresponding processes and starts the blocks.
+
+    The call to this method is blocking until Crappy finishes.
+
+    Note:
+      It is possible to have a finer grained control of the start of a Crappy
+      script with the methods :meth:`prepare_all`, :meth:`renice_all` and
+      :meth:`launch_all`.
+
+    Args:
+      allow_root: If set tu :obj:`True`, tries to renice the processes niceness
+        with sudo privilege in Linux. It requires the Python script to be run
+        with sudo privilege, otherwise it has no effect.
+    """
+
+    cls.prepare_all()
+    cls.renice_all(allow_root)
+    cls.launch_all()
+
+  @classmethod
+  def prepare_all(cls) -> None:
+    """Creates the synchronization objects, shares them with the blocks, and
+    starts the processes associated to the blocks.
+
+    Once started with this method, the blocks will call their :meth:`prepare`
+    method and then be blocked by a :obj:`multiprocessing.Barrier`.
+    """
+
+    # Setting all the synchronization objects at the class level
+    cls.ready_barrier = Barrier(len(cls.instances) + 1)
+    cls.start_event = Event()
+    cls.stop_event = Event()
+    cls.shared_t0 = Value('d', -1.0)
+
+    # Passing the synchronization objects to each block
+    for instance in cls.instances:
+      instance._ready_barrier = cls.ready_barrier
+      instance._instance_t0 = cls.shared_t0
+      instance._stop_event = cls.stop_event
+      instance._start_event = cls.start_event
+
+    # Starting all the blocks
+    for instance in cls.instances:
+      instance.start()
+
+  @classmethod
+  def renice_all(cls, allow_root: bool) -> None:
+    """On Linux and MacOS, renices the processes associated with the blocks.
+
+    On Windows, does nothing.
+
+    Args:
+      allow_root: If set tu :obj:`True`, tries to renice the processes niceness
+        with sudo privilege in Linux. It requires the Python script to be run
+        with sudo privilege, otherwise it has no effect.
+    """
+
+    # There's no niceness on Windows
+    if system() == "Windows":
+      return
+
+    # Renicing all the blocks
+    for inst in cls.instances:
+      # If root is not allowed then the minimum niceness is 0
+      niceness = max(inst.niceness, 0 if not allow_root else -20)
+
+      # System call for setting the niceness
+      if niceness < 0:
+        subprocess.call(['sudo', 'renice', str(niceness), '-p', str(inst.pid)])
+      else:
+        subprocess.call(['renice', str(niceness), '-p', str(inst.pid)])
+
+  @classmethod
+  def launch_all(cls) -> None:
+    """The final method being called by the main process running a Crappy
+    script.
+
+    It unlocks all the Blocks by releasing the synchronization barrier, sets
+    the shared t0 value, and then waits for all the Blocks to finish.
+
+    In case an exception is raised, sets the stop event for warning the Blocks,
+    waits for the Blocks to finish, and if they don't, terminates them.
+    """
+
+    try:
+      # The barrier waits for the main process to be ready so that the
+      # prepare_all and launch_all methods can be used separately for a finer
+      # grained control
+      print('waiting')
+      cls.ready_barrier.wait()
+      print('waited')
+
+      # Setting t0 and telling all the block to start
+      cls.shared_t0.value = time()
+      cls.start_event.set()
+
+      # The main process mustn't finish before all the blocks are done running
+      print('joining')
+      for inst in cls.instances:
+        inst.join()
+
+    except (BrokenBarrierError, KeyboardInterrupt):
+      # Warning all the blocks if an exception was caught
+      print('exception')
+      cls.stop_event.set()
+      t = time()
+
+      # Waiting at most 3 seconds for all the blocks to finish
+      while not all(not inst.is_alive() for inst in cls.instances):
+        sleep(0.1)
+
+        # After 3 seconds, killing the blocks that didn't stop
+        if time() - t > 3:
+          for inst in cls.instances:
+            if inst.is_alive():
+              inst.terminate()
+
+  @classmethod
+  def stop_all(cls) -> None:
+    """Method for stopping all the Blocks by setting the stop event."""
+
+    cls.stop_event.set()
+
+  @classmethod
   def reset(cls) -> None:
+    """Resets Crappy by emptying the WeakSet containing references to all the
+    Blocks. Only useful for restarting Crappy from a script where Crappy was
+    already started."""
+
     cls.instances = WeakSet()
 
   def run(self) -> None:
-    self.status = "initializing"
-    try:
-      self.prepare()
-      self.status = "ready"
-      # Wait for parent to tell me to start the main
-      self.t0 = self.pipe2.recv()
-      if self.t0 < 0:
-        try:
-          self.finish()
-        except (Exception,):
-          pass
-        return
-      self.status = "running"
-      self.begin()
-      self._MB_last_t = time()
-      self._MB_last_FPS = self._MB_last_t
-      self._MB_loops = 0
-      self.main()
-      self.status = "done"
-    except CrappyStop:
-      print("[%r] Encountered CrappyStop Exception, terminating" % self)
-      self.status = "done"
-      self.stop_all()
-    except KeyboardInterrupt:
-      print("[%r] Keyboard interrupt received" % self)
-    except Exception as e:
-      print("[%r] Exception caught:" % self, e)
-      try:
-        self.finish()
-      except (Exception,):
-        pass
-      self.status = "error"
-      sleep(1)  # To let downstream blocks process the data and avoid loss
-      self.stop_all()
-      raise
-    self.finish()
-    self.status = "done"
+    """The method run by the Blocks when their process is started.
 
-  @classmethod
-  def get_status(cls) -> List[str]:
-    return [x.status for x in cls.instances]
-
-  @classmethod
-  def all_are(cls, s: str) -> bool:
-    """Returns :obj:`True` only if all processes status are `s`."""
-
-    lst = cls.get_status()
-    return len(set(lst)) == 1 and s in lst
-
-  @classmethod
-  def renice_all(cls, high_prio: bool = True, **_) -> None:
-    """Will renice all the blocks processes according to ``block.niceness``
-    value.
-
-    Note:
-      If ``high_prio`` is :obj:`False`, blocks with a negative niceness value
-      will be ignored.
-
-      This is to avoid asking for the ``sudo`` password since only root can
-      lower the niceness of processes.
+    It first calls :meth:`prepare`, then waits at the
+    :obj:`multiprocessing.Barrier` for all Blocks to be ready, then calls
+    :meth:`begin`, then :meth:`main`, and finally :meth:`finish`.
+    
+    If an exception is raised, sets the shared stop event to warn all the other
+    Blocks.
     """
 
-    if "win" in platform:
-      # Not supported on Windows yet
-      return
-    for b in cls.instances:
-      if b.niceness < 0 and high_prio or b.niceness > 0:
-        print("[renice] Renicing", b.pid, "to", b.niceness)
-        renice(b.pid, b.niceness)
-
-  @classmethod
-  def prepare_all(cls, verbose: bool = True) -> None:
-    """Starts all the blocks processes (``block.prepare``), but not the main
-    loop."""
-
-    if verbose:
-      def vprint(*args):
-        print("[prepare]", *args)
-    else:
-      def vprint(*_):
-        return
-    vprint("Starting the blocks...")
-    for instance in cls.instances:
-      vprint("Starting", instance)
-      instance.start()
-      vprint("Started, PID:", instance.pid)
-    vprint("All processes are started.")
-
-  @classmethod
-  def launch_all(cls,
-                 t0: Optional[float] = None,
-                 verbose: bool = True,
-                 bg: bool = False) -> None:
-    if verbose:
-      def vprint(*args):
-        print("[launch]", *args)
-    else:
-      def vprint(*_):
-        return
-    if not cls.all_are('ready'):
-      vprint("Waiting for all blocks to be ready...")
-    while not cls.all_are('ready'):
-      sleep(.1)
-      if not all([i in ['ready', 'initializing', 'idle']
-                  for i in cls.get_status()]):
-        print("Crappy failed to start!")
-        for i in cls.instances:
-          if i.status in ['ready', 'initializing']:
-            i.launch(-1)
-        cls.stop_all()
-        return
-        # raise RuntimeError("Crappy failed to start!")
-    vprint("All blocks ready, let's go !")
-    if not t0:
-      t0 = time()
-    vprint("Setting t0 to", strftime("%d %b %Y, %H:%M:%S", localtime(t0)))
-    for instance in cls.instances:
-      instance.launch(t0)
-    t1 = time()
-    vprint("All blocks loop started. It took", (t1 - t0) * 1000, "ms")
-    if bg:
-      return
     try:
-      # Keep running
-      lst = cls.get_status()
-      while not ("done" in lst or "error" in lst):
-        lst = cls.get_status()
-        sleep(1)
-    except KeyboardInterrupt:
-      print("Main process got keyboard interrupt!")
-      cls.stop_all()
-      # It will automatically propagate to the blocks processes
-    if not cls.all_are('running'):
-      print('Waiting for all processes to finish')
-    t = time()
-    while 'running' in cls.get_status() and time() - t < 3:
-      sleep(.1)
-    if cls.all_are('done'):
-      print("Crappy terminated gracefully")
-    else:
-      print("Crappy terminated, blocks status:")
-      for b in cls.instances:
-        print(b, b.status)
 
-  @classmethod
-  def start_all(cls,
-                t0: float = None,
-                verbose: bool = True,
-                bg: bool = False,
-                high_prio: bool = False) -> None:
-    cls.prepare_all(verbose)
-    if high_prio and any([b.niceness < 0 for b in cls.instances]):
-      print("[start] High prio: root permission needed to renice")
-    cls.renice_all(high_prio, verbose=verbose)
-    cls.launch_all(t0, verbose, bg)
+      # Running the preliminary actions before the test starts
+      try:
+        self.prepare()
+      except (Exception,):
+        # If exception is raised, breaking the barrier to warn the other blocks
+        self._ready_barrier.abort()
+        raise
 
-  @classmethod
-  def stop_all(cls, verbose: bool = True) -> None:
-    """Stops all the blocks (``crappy.stop``)."""
+      # Waiting for all blocks to be ready, except if the barrier was broken
+      try:
+        print('proc waiting')
+        self._ready_barrier.wait()
+        print('proc waited')
+      except BrokenBarrierError:
+        print('proc broken barrier')
+        raise IOError
 
-    if verbose:
-      def vprint(*args):
-        print("[stop]", *args)
-    else:
-      def vprint(*_):
-        return
-    vprint("Stopping the blocks...")
-    for instance in cls.instances:
-      if instance.status == 'running':
-        vprint("Stopping", instance)
-        instance.stop()
-    vprint("All blocks are stopped.")
+      # Waiting for t0 to be set, should take a few milliseconds at most
+      self._start_event.wait(timeout=1)
+      if not self._start_event.is_set():
+        raise TimeoutError
 
-  def begin(self) -> None:
-    """If :meth:`main` is not overridden, this method will be called first,
-    before entering the main loop."""
+      # Running the first loop
+      self.begin()
 
-    pass
+      # Setting the attributes for counting the performance
+      self._last_t = time()
+      self._last_fps = self._last_t
+      self._n_loops = 0
 
-  def finish(self) -> None:
-    """If :meth:`main` is not overridden, this method will be called upon exit
-    or after a crash."""
+      # Running the main loop until told to stop
+      self.main()
 
-    pass
+    # In case of an exception, telling the other blocks to stop
+    except (IOError, Exception) as e:
+      print('proc stop event', e)
+      self._stop_event.set()
+      raise
+    except (KeyboardInterrupt, CrappyStop) as e:
+      print('proc stop event', e)
+      self._stop_event.set()
 
-  def loop(self) -> None:
-    raise NotImplementedError('You must override loop or main in' + str(self))
+    # In all cases, trying to properly close the block
+    finally:
+      print('proc finished')
+      self.finish()
 
   def main(self) -> None:
-    """This is where you define the main loop of the block.
+    """The main loop of the :meth:`run` method. Repeatedly calls the
+    :meth:`loop` method and manages the looping frequency."""
 
-    Important:
-      If not overridden, will raise an error.
-    """
-
-    while not self.pipe2.poll():
+    # Looping until told to stop or an error occurs
+    while not self._stop_event.is_set():
       self.loop()
-      self.handle_freq()
-    print("[%r] Got stop signal, interrupting..." % self)
-
-  def handle_freq(self) -> None:
-    """For block with a given number of `loops/s` (use ``freq`` attribute to
-    set it)."""
-
-    self._MB_loops += 1
-    t = time()
-    if hasattr(self, 'freq') and self.freq:
-      d = self._MB_last_t + 1 / self.freq - t
-      while d > 0:
-        t = time()
-        d = self._MB_last_t + 1 / self.freq - t
-        sleep(max(0, d / 2 - 2e-3))  # Ugly, yet simple and pretty efficient
-    self._MB_last_t = t
-    if hasattr(self, 'verbose') and self.verbose and \
-            self._MB_last_t - self._MB_last_FPS > 2:
-      print("[%r] loops/s:" % self,
-            self._MB_loops / (self._MB_last_t - self._MB_last_FPS))
-      self._MB_loops = 0
-      self._MB_last_FPS = self._MB_last_t
-
-  def launch(self, t0: float) -> None:
-    """To start the :meth:`main` method, will call :meth:`Process.start` if
-    needed.
-
-    Once the process is started, calling launch will set the starting time and
-    actually start the main method.
-
-    Args:
-      t0 (:obj:`float`): Time to set as starting time of the block (mandatory,
-        in seconds after epoch).
-    """
-
-    if self.status == "idle":
-      print(self, ": Called launch on unprepared process!")
-      self.start()
-    self.pipe1.send(t0)  # asking to start main in the process
-
-  @property
-  def status(self) -> str:
-    """Returns the status of the block, from the process itself or the parent.
-
-    It can be:
-
-      - `"idle"`: Block not started yet.
-      - `"initializing"`: :meth:`start` was called and :meth:`prepare` is not
-        over yet.
-      - `"ready"`: :meth:`prepare` is over, waiting to start :meth:`main` by
-        calling :meth:`launch`.
-      - `"running"`: :meth:`main` is running.
-      - `"done"`: :meth:`main` is over.
-      - `"error"`: An error occurred and the block stopped.
-    """
-
-    if self.pid is not None:
-      while self.pipe1.poll():
-        try:
-          self._status = self.pipe1.recv()
-        except (EOFError, UnpicklingError):
-          if self._status == 'running':
-            self._status = 'done'
-      # If another process tries to get the status
-      if 'win' not in platform:
-        self.pipe2.send(self._status)
-
-        # Somehow the previous line makes crappy hang on Windows, no idea why
-        # It is not critical, but it means that process status can now only
-        # be read from the process itself and ONE other process.
-        # Luckily, only the parent (the main process) needs the status for now
-    return self._status
-
-  @status.setter
-  def status(self, s: str) -> None:
-    assert self.pid is not None, "Cannot set status from outside of the " \
-                                 "process!"
-    self.pipe2.send(s)
-    self._status = s
+      self._handle_freq()
+    print('proc exiting main')
 
   def prepare(self) -> None:
-    """This will be run when creating the process, but before the actual start.
+    """This method should perform any action required for initializing the
+    Block before the test starts.
 
-    The first code to be run in the new process, will only be called once and
-    before the actual start of the main launch of the blocks.
+    For example, it can open a network connection, create a file, etc. It is
+    also fine for this method not to be overriden if there's no particular
+    action to perform.
 
-    It can remain empty and do nothing.
+    Note that this method is called once the process associated to the Block
+    has been started.
     """
 
-    pass
+    ...
 
-  def send(self, data: Union[Dict[str, float], List[float]]) -> None:
-    """To send the data to all blocks downstream.
+  def begin(self) -> None:
+    """This method can be considered as the first loop of the test, and is
+    called before the :meth:`loop` method.
 
-    Send has 2 ways to operate. You can either build the :obj:`dict` yourself,
-    or you can define ``self.labels`` (usually time first) and call send with a
-    :obj:`list`. It will then map them to the :obj:`dict`.
-
-    Note:
-      ONLY :obj:`dict` can go through links.
+    It allows to perform initialization actions that cannot be achieved in the
+    :meth:`prepare` method.
     """
 
-    if isinstance(data, dict):
-      pass
-    elif isinstance(data, list):
+    ...
+
+  def loop(self) -> None:
+    """This method is the core of the Block. It is called repeatedly during the
+    test, until the test stops or an error occurs.
+
+    Only in this method should data be sent to downstream blocks, or received
+    from upstream blocks.
+
+    Although it is possible not to override this method, that has no practical
+    interest and this method should always be rewritten.
+    """
+
+    print(f"[Block {type(self).__name__}] Loop method not defined, this block "
+          f"does nothing !")
+
+  def finish(self) -> None:
+    """This method should perform any action required for properly ending the
+    test.
+
+    For example, it can close a file or disconnect from a network. It is also
+    fine for this method not to be overriden if no particular action needs to
+    be performed.
+
+    Note that this method should normally be called even in case an error
+    occurs, although that cannot be guaranteed.
+    """
+
+    ...
+
+  def _handle_freq(self) -> None:
+    """This method ensures that the Block loops at the desired frequency, or as
+    fast as possible if the requested frequency cannot be achieved.
+
+    It also displays the looping frequency of the Block if requested by the
+    user. If no looping frequency is specified, the Block will loop as fast as
+    possible.
+    """
+
+    self._n_loops += 1
+
+    # Only handling frequency if requested
+    if self.freq is not None:
+      t = time()
+
+      # Correcting the error of the sleep function through a recursive approach
+      # The last 2 milliseconds are in free loop
+      remaining = self._last_t + 1 / self.freq - t
+      while remaining > 0:
+        t = time()
+        remaining = self._last_t + 1 / self.freq - t
+        sleep(max(0., remaining / 2 - 2e-3))
+
+      self._last_t = t
+
+    # Printing frequency every 2 seconds
+    if self.verbose and self._last_t - self._last_fps > 2:
+      print(f"{self} loops/s: "
+            f"{self._n_loops / (self._last_t - self._last_fps)}")
+      self._n_loops = 0
+      self._last_fps = self._last_t
+
+  @property
+  def t0(self) -> float:
+    """Returns the value of t0, the exact moment when the test started that is
+    shared between all the Blocks."""
+
+    if self._instance_t0 is not None and self._instance_t0.value > 0:
+      return self._instance_t0.value
+    else:
+      raise ValueError("t0 not set yet !")
+
+  def add_output(self, link: Link) -> None:
+    """Adds an output link to the list of output links of the Block."""
+
+    self.outputs.append(link)
+
+  def add_input(self, link: Link) -> None:
+    """Adds an input link to the list of input links of the Block."""
+
+    self.inputs.append(link)
+
+  def send(self, data: Union[Dict[str, Any], List[Any]]) -> None:
+    """Ensures that the data to send is formatted as a :obj:`dict`, and sends
+    it in all the downstream links."""
+
+    # Building the dict to send from the data and labels if the data is a list
+    if isinstance(data, list):
       if not self.labels:
         raise IOError("trying to send data as a list but no labels are "
                       "specified ! Please add a self.labels attribute.")
       data = dict(zip(self.labels, data))
-    elif data == 'stop':
-      pass
-    else:
-      raise IOError("Trying to send a " + str(type(data)) + " in a link!")
-    for o in self.outputs:
-      o.send(data)
 
-  def recv_all(self) -> Dict[str, list]:
-    """Receives new data from all the inputs (not as chunks).
+    # Making sure the data is being sent as a dict
+    elif not isinstance(data, dict):
+      raise IOError(f"Trying to send a {type(data)} in a link!")
 
-    It will simply call :meth:`Pipe.recv` on all non empty links and return a
-    single :obj:`dict`.
+    # Sending the data to the downstream blocks
+    for link in self.outputs:
+      link.send(data)
+
+  def data_available(self) -> bool:
+    """Returns :obj:`True` if there's data available for reading in at least
+    one of the input Links."""
+
+    return self.inputs and any(link.poll() for link in self.inputs)
+
+  def recv_data(self) -> Dict[str, Any]:
+    """Reads the first available values from each incoming Link and returns
+    them all in a single dict.
+
+    The returned :obj:`dict` might not always have a fixed number of keys,
+    depending on the availability of incoming data.
+
+    Also, the returned values are the oldest available in the links. See
+    :meth:`recv_last_data` for getting the newest available values.
 
     Important:
-      If the same label comes from multiple links, it may be overridden !
+      If data is received over a same label from different links, part of it
+      will be lost ! Always avoid using a same label twice in a Crappy script.
+
+    Returns:
+      A :obj:`dict` whose keys are the received labels and with a single value
+      for each key (usually a :obj:`float` or a :obj:`str`).
     """
 
-    r = {}
-    for i in self.inputs:
-      if i.poll():
-        r.update(i.recv())
-    return r
+    ret = dict()
 
-  def poll(self) -> bool:
-    """Tells if any input link has pending data
-
-    Returns True if l.poll() is True for any input link l.
-    """
-
-    return any((link.poll for link in self.inputs))
-
-  def recv_all_last(self) -> Dict[str, float]:
-    """Like recv_all, but drops older data to return only the latest value
-
-    This method avoids Pipe congestion that can be induced by recv_all when the
-    receiving block is slower than the block upstream
-    """
-
-    ret = {}
     for link in self.inputs:
-      data = link.recv_last(blocking=False)
-      if data is not None:
-        ret.update(data)
+      ret.update(link.recv())
+
     return ret
 
-  def get_last(self, blocking: bool = True) -> Dict[str, Any]:
-    """To get the latest value of each labels from all inputs.
+  def recv_last_data(self, fill_missing: bool = True) -> Dict[str, Any]:
+    """Reads all the available values from each incoming Link, and returns
+    the newest ones in a single dict.
 
-    Warning:
-      Unlike the ``recv`` methods of :ref:`Link`, this method is NOT guaranteed
-      to return all the data going through the links!
+    The returned :obj:`dict` might not always have a fixed number of keys,
+    depending on the availability of incoming data.
 
-      It is meant to get the latest values, discarding all the previous ones
-      (for a displayer for example).
+    Important:
+      If data is received over a same label from different links, part of it
+      will be lost ! Always avoid using a same label twice in a Crappy script.
 
-      Its mode of operation is completely different since it can operate on
-      multiple inputs at once.
+    Args:
+      fill_missing: If :obj:`True`, fills up the missing data for the known
+        labels. This way, the last value received from all known labels is
+        always returned. It can of course not fill up missing data for labels
+        that haven(t been received yet.
 
-    Note:
-      The first call may be blocking until it receives data, all the others
-      will return instantaneously, giving the latest known reading.
+    Returns:
+      A :obj:`dict` whose keys are the received labels and with a single value
+      for each key (usually a :obj:`float` or a :obj:`str`).
     """
 
-    # Initializing the buffer
+    # Initializing the buffer storing the last received values
     if self._last_values is None:
       self._last_values = [dict() for _ in self.inputs]
 
-    for link, values in zip(self.inputs, self._last_values):
-      # If blocking is True, acquiring a sample from each link at the beginning
-      if not values and blocking:
-        values.update(link.recv(blocking=True))
-
-      # Then updating the buffers with the last received values
-      data = link.recv_last(blocking=False)
-      if data is not None:
-        values.update(data)
-
-    # Finally, gathering data from all the buffers and returning it
-    ret = {}
-    for values in self._last_values:
-      ret.update(values)
-    return ret
-
-  def get_all_last(self, blocking: bool = True) -> Dict[str, list]:
-    """To get the data from all links of the block.
-
-    It is almost the same as :meth:`get_last`, but will return all the data
-    that goes through the links (as :obj:`list`).
-
-    Also, if multiple links have the same label, only the last link's value
-    will be kept.
-
-    Args:
-      blocking: If :obj:`True`, blocks until there's at least one value
-        received for each label.
-    """
-
-    if self._all_last_values is None:
-      self._all_last_values = {link: dict() for link in self.inputs}
-
-    for link in self.inputs:
-      new_values = link.recv_chunk(blocking=blocking)
-      if new_values is not None:
-        self._all_last_values[link].update(new_values)
-
     ret = dict()
-    for link in self.inputs:
-      ret.update(self._all_last_values[link])
+
+    # Storing the received values in the return dict and in the buffer
+    for link, buffer in zip(self.inputs, self._last_values):
+      data = link.recv_last()
+      ret.update(data)
+      buffer.update(data)
+
+    # If requested, filling up the missing values in the return dict
+    if fill_missing:
+      for buffer in self._last_values:
+        ret.update(buffer)
 
     return ret
 
-  def recv_all_delay(self,
-                     delay: Optional[float] = None,
-                     poll_delay: float = .1) -> List[Dict[str, list]]:
-    """Method to wait for data, but continuously reading all the links to make
-    sure they do not saturate.
+  def recv_all_data(self,
+                    delay: Optional[float] = None,
+                    poll_delay: float = 0.1) -> Dict[str, List[Any]]:
+    """Reads all the available values from each incoming Link, and returns
+    them all in a single dict.
+
+    The returned :obj:`dict` might not always have a fixed number of keys,
+    depending on the availability of incoming data.
+
+    Important:
+      If data is received over a same label from different links, part of it
+      will be lost ! Always avoid using a same label twice in a Crappy script.
+      See the :meth:`recv_all_data_raw` method for receiving data with no loss.
+
+    Warning:
+      As the time label is (normally) shared between all Blocks, the values
+      returned for this label will be inconsistent and shouldn't be used !
 
     Args:
-      delay: The method only returns after this delay (in seconds). If
-        :obj:`None` or `0`, it returns after polling the pipes just once.
-      poll_delay: The delay (in seconds) between two pipe polls. It is safer to
-        keep it lower than 0.1s. Not used when ``delay`` is :obj:`None` or `0`.
+      delay: If given specifies a delay, as a :obj:`float`, during which the
+        method acquired data before returning. All the data received during
+        this delay is saved and returned. Otherwise, just reads all the
+        available data and returns as soon as it is exhausted.
+      poll_delay: If the ``delay`` argument is given, the Links will be polled
+        once every this value seconds. It ensures that the method doesn't spam
+        the CPU in vain.
 
-    Return:
-      A :obj:`list` where each entry is what would have been returned by
-      :meth:`Link.recv_chunk` on each link.
+    Returns:
+      A :obj:`dict` whose keys are the received labels and with a :obj:`list`
+      of received values for each key. The first item in the list is the oldest
+      one available in the link, the last item is the newest available.
     """
 
-    def poll(inputs: List[Link],
-             rcv: List[Dict[str, list]]) -> None:
-      """Polls all the incoming links and saves the received values.
+    ret = defaultdict(list)
+    t0 = time()
 
-      Args:
-        inputs: The upcoming links.
-        rcv: The :obj:`list` storing the received values.
-      """
+    # If simple recv_all, just receiving from all input links
+    if delay is None:
+      for link in self.inputs:
+        ret.update(link.recv_chunk())
 
-      for link, dict_ in zip(inputs, rcv):
-        if not link.poll():
-          continue
-        new = link.recv_chunk(blocking=False)
-        if new is not None:
-          for key, value in new.items():
-            if key in dict_:
-              dict_[key].extend(value)
-            else:
-              dict_[key] = value
-
-    received = [{} for _ in self.inputs]
-
-    # Just poll the pipes, read the data and return
-    if not delay:
-      poll(self.inputs, received)
-
-    # Poll the pipes and read the data every poll_delay until delay has expired
+    # Otherwise, receiving during the given period
     else:
-      last_t = time()
-      while True:
-        sleep(max(0., poll_delay - time() + last_t))
-        poll(self.inputs, received)
-        if time() - last_t > delay:
-          break
+      while time() - t0 < delay:
+        last_t = time()
+        # Updating the list of received values
+        for link in self.inputs:
+          data = link.recv_chunk()
+          for label, values in data.items():
+            ret[label].extend(values)
+        # Sleeping to avoid useless CPU usage
+        sleep(max(0., last_t + poll_delay - time()))
 
-    return received
+    # Returning a dict, not a defaultdict
+    return dict(ret)
 
-  def drop(self, num: Optional[Union[list, str]] = None) -> None:
-    """Will clear the inputs of the blocks.
+  def recv_all_data_raw(self,
+                        delay: Optional[float] = None,
+                        poll_delay: float = 0.1) -> List[Dict[str, List[Any]]]:
+    """Reads all the available values from each incoming Link, and returns
+    them separately in a list of dicts.
 
-    This method performs like :meth:`get_last`, but returns :obj:`None`
-    instantly.
+    Unlike :meth:`recv_all_data` this method does not fuse the received data
+    into a single :obj:`dict`, so it is guaranteed to return all the available
+    data with no loss.
+
+    Args:
+      delay: If given specifies a delay, as a :obj:`float`, during which the
+        method acquired data before returning. All the data received during
+        this delay is saved and returned. Otherwise, just reads all the
+        available data and returns as soon as it is exhausted.
+      poll_delay: If the ``delay`` argument is given, the Links will be polled
+        once every this value seconds. It ensures that the method doesn't spam
+        the CPU in vain.
+
+    Returns:
+      A :obj:`list` containing :obj:`dict`, whose keys are the received labels
+      and with a :obj:`list` of received value for each key.
     """
 
-    if num is None:
-      num = range(len(self.inputs))
-    elif not isinstance(num, list):
-      num = [num]
-    for n in num:
-      self.inputs[n].clear()
+    ret = [defaultdict(list) for _ in self.inputs]
+    t0 = time()
 
-  def add_output(self, out: Link) -> None:
-    """Adds a :ref:`Link` as an output."""
+    # If simple recv_all, just receiving from all input links
+    if delay is None:
+      for dic, link in zip(ret, self.inputs):
+        dic.update(link.recv_chunk())
 
-    self.outputs.append(out)
-
-  def add_input(self, in_: Link) -> None:
-    """Adds a :ref:`Link` as an input."""
-
-    self.inputs.append(in_)
-
-  def stop(self) -> None:
-    if self.status != 'running':
-      return
-    print('[%r] Stopping' % self)
-    self.pipe1.send(0)
-    for i in self.inputs:
-      i.send('stop')
-    for i in range(10):
-      if self.status == "done":
-        break
-      sleep(.05)
-    # if self.status != "done":
-    if self.status not in ['done', 'idle', 'error']:
-      print('[%r] Could not stop properly, terminating' % self)
-      try:
-        self.terminate()
-      except (Exception,):
-        pass
+    # Otherwise, receiving during the given period
     else:
-      print("[%r] Stopped correctly" % self)
+      while time() - t0 < delay:
+        last_t = time()
+        # Updating the list of received values
+        for dic, link in zip(ret, self.inputs):
+          data = link.recv_chunk()
+          for label, values in data.items():
+            dic[label].extend(values)
+        # Sleeping to avoid useless CPU usage
+        sleep(max(0., last_t + poll_delay - time()))
 
-  def __repr__(self) -> str:
-    return str(type(self)) + " (" + str(self.pid or "Not running") + ")"
+    return [dict(dic) for dic in ret]
