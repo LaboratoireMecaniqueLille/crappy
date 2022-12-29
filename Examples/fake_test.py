@@ -18,7 +18,7 @@ if __name__ == "__main__":
     {'type': 'constant', 'value': speed,
      'condition': 'Exx(%)>{}'.format(i / 3)},
     {'type': 'constant', 'value': -speed, 'condition': 'F(N)<0'}]
-    for i in range(5)], []), spam=False, cmd_label='cmd')
+    for i in range(1, 6)], []), spam=False, cmd_label='cmd')
 
   machine = crappy.blocks.Fake_machine()
 
