@@ -32,6 +32,9 @@ if __name__ == "__main__":
                                 cmd_label='cmd', freq=50, spam=True,
                                 verbose=True)
 
+  # As cmd is in one of the conditions, need to link the Generator to itself
+  crappy.link(gen, gen)
+
   # The graph : we will plot cmd over time
   graph = crappy.blocks.Grapher(('t(s)', 'cmd'))
 
