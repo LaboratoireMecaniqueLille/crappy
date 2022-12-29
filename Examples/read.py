@@ -24,6 +24,6 @@ if __name__ == "__main__":
 
   g = crappy.blocks.Grapher(('t(s)', 'chan0'))
 
-  crappy.link(m, g)
+  crappy.link(m, g, modifier=crappy.modifier.Mean(10))
 
   crappy.start()

@@ -36,7 +36,8 @@ if __name__ == "__main__":
          condition1='cmd2>1', condition2='cmd2<-1', cycles=0, init_value=0)
       ], freq=50, cmd_label='cmd2')
 
-  mul = crappy.blocks.Multiplex(verbose=True)
+  mul = crappy.blocks.Multiplex(verbose=True,
+                                out_labels=['cmd1', 'cmd2'])
 
   # crappy.link(g1, mul)
   crappy.link(g1, mul, modifier=Delay(50))
@@ -44,7 +45,7 @@ if __name__ == "__main__":
 
   graph = crappy.blocks.Grapher(('t(s)', 'cmd1'), ('t(s)', 'cmd2'))
 
-  crappy.link(mul, graph)
+  crappy.link(mul, graph, modifier=crappy.modifier.Mean(10))
 
   rec = crappy.blocks.Recorder("example_multi.csv",
                                labels=["t(s)", "cmd1", "cmd2"])

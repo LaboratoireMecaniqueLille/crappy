@@ -37,8 +37,8 @@ if __name__ == "__main__":
   graph_m = crappy.blocks.Grapher(('t(s)', 'speed'), ('t(s)', 'cmd'))
   # , interp=False)
 
-  crappy.link(mot, graph_m)
-  crappy.link(g, graph_m)
+  crappy.link(mot, graph_m, modifier=crappy.modifier.Mean(10))
+  crappy.link(g, graph_m, modifier=crappy.modifier.Mean(10))
   # To see what happens without PID
   # crappy.link(g, mot)
   # crappy.start()
@@ -62,12 +62,12 @@ if __name__ == "__main__":
   crappy.link(mot, pid, modifier=crappy.modifier.Moving_avg(15))
 
   graph_pid = crappy.blocks.Grapher(('t(s)', 'pid'))
-  crappy.link(pid, graph_pid)
+  crappy.link(pid, graph_pid, modifier=crappy.modifier.Mean(10))
 
   graph_pid2 = crappy.blocks.Grapher(('t(s)', 'p_term'),
                                      ('t(s)', 'i_term'),
                                      ('t(s)', 'd_term'))
 
-  crappy.link(pid, graph_pid2)
+  crappy.link(pid, graph_pid2, modifier=crappy.modifier.Mean(10))
 
   crappy.start()
