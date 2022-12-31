@@ -6,8 +6,11 @@ from copy import deepcopy
 from typing import Callable, Union, Any, Dict, Optional, List
 from collections import defaultdict
 from select import select
+from multiprocessing import current_process
+import logging
 
 from ..modifier import Modifier
+from .._global import LinkDataError
 
 Modifier_type = Callable[[Dict[str, Any]], Dict[str, Any]]
 
@@ -59,6 +62,7 @@ class Link:
     output_block.add_input(self)
 
     self._last_warn = time()
+    self._logger: Optional[logging.Logger] = None
 
   def __new__(cls, *args, **kwargs):
     """When instantiating a new Link, increments the Link counter."""
@@ -71,6 +75,19 @@ class Link:
     """Returns the current number of instantiates Links, as an :obj:`int`."""
 
     return cls._count
+
+  def log(self, log_level: int, msg: str) -> None:
+    """Method for recording log messages from the Link.
+
+    Args:
+      log_level: An :obj:`int` indicating the logging level of the message.
+      msg: The message to log, as a :obj:`str`.
+    """
+
+    if self._logger is None:
+      self._logger = logging.getLogger(f"crappy.{current_process().name}")
+
+    self._logger.log(log_level, msg)
 
   def poll(self) -> bool:
     """Returns :obj:`True` if there's data available for reading."""
@@ -96,8 +113,9 @@ class Link:
       return
 
     if not isinstance(value, dict):
-      print(f"Warning in Link {self.name}: trying to send object of type "
-            f"{type(value)} instead of dict, not sending !")
+      self.log(logging.ERROR, f"Link {self.name}: trying to send object of "
+                              f"type {type(value)} instead of dict !")
+      raise LinkDataError
 
     # Finally, sending the dict to the link
     if select([], [self._out], [], 0)[1]:
@@ -105,9 +123,8 @@ class Link:
     else:
       if time() - self._last_warn > 1:
         self._last_warn = time()
-        print(f"Cannot send values in Link {self.name}, the Link is full !\n"
-              f"Maybe the values are not being read by the downstream block, "
-              f"or too much data is being sent.")
+        self.log(logging.WARNING, f"Link {self.name}: Cannot send the values, "
+                                  f"the Link is full !")
 
   def recv(self) -> Dict[str, Any]:
     """Reads a single value from the Link and returns it.

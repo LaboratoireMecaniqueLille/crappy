@@ -25,17 +25,38 @@ Please install it and try again""".format(self.mname)
     raise RuntimeError(self.message)
 
 
-class CrappyStop(Exception):
-  """Error to raise when Crappy is terminating"""
+class LinkDataError(ValueError):
+  """Error to raise when trying to send a wrong data type through a Link."""
 
-  pass
+
+class StartTimeout(TimeoutError):
+  """Exception raised when the start event takes too long to be set."""
+
+
+class PrepareError(IOError):
+  """Error raised in a Block when waiting for all Blocks to be ready but
+  another Block fails to prepare."""
+
+
+class T0NotSetError(ValueError):
+  """Exception raised when requesting the t0 value when it is not set."""
 
 
 class DefinitionError(Exception):
     """Error to raise when classes are not defined correctly"""
 
     def __init__(self, msg=""):
-        self.msg = msg
+      super().__init__()
+      self.msg = msg
 
     def __str__(self):
-        return self.msg
+      return self.msg
+
+
+class GeneratorStop(Exception):
+  """Exception raised when a Generator block reaches the end of its path."""
+
+
+class ReaderStop(Exception):
+  """Exception raised when a File_reader camera has exhausted all the images
+  to read."""
