@@ -22,7 +22,7 @@ class MetaModifier(type):
     super().__init__(name, bases, dct)
 
     # Checking that a Modifier with the same name doesn't already exist
-    if name in cls.classes or name == "Modifier":
+    if name in cls.classes:
       raise DefinitionError(f"The {name} class is already defined !")
 
     # Gathering all the defined methods
