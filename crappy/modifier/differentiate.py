@@ -1,7 +1,9 @@
 # coding: utf-8
 
-from .modifier import Modifier
 from typing import Optional, Dict, Any
+import logging
+
+from .modifier import Modifier
 
 
 class Diff(Modifier):
@@ -33,6 +35,8 @@ class Diff(Modifier):
     """Gets the data from the upstream block, updates the differentiation value
     and returns it."""
 
+    self.log(logging.DEBUG, f"Received {data}")
+
     # For the first received data, storing it and returning 0
     if self._last_t is None or self._last_val is None:
       self._last_t = data[self._time_label]
@@ -50,4 +54,5 @@ class Diff(Modifier):
 
     # Returning the updated data
     data[self._out_label] = diff
+    self.log(logging.DEBUG, f"Sending {data}")
     return data

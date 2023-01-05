@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import Dict, Any, Union, List, Tuple
+import logging
 
 from .modifier import Modifier
 
@@ -54,6 +55,8 @@ class Demux(Modifier):
     """Retrieves for each label its value in the stream, also gets the
     corresponding timestamp, and returns them."""
 
+    self.log(logging.DEBUG, f"Received {data}")
+
     # If there are no rows or no column, cannot perform the demux
     if 0 in data[self._stream_label].shape:
       return data
@@ -81,5 +84,7 @@ class Demux(Modifier):
       data[self._time_label] = np.mean(data[self._time_label])
     else:
       data[self._time_label] = data[self._time_label][0]
+
+    self.log(logging.DEBUG, f"Sending {data}")
 
     return data

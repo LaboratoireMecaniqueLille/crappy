@@ -2,6 +2,8 @@
 
 import numpy as np
 from typing import Dict, Any
+import logging
+
 from .modifier import Modifier
 
 
@@ -28,6 +30,8 @@ class Moving_avg(Modifier):
     """Receives data from the upstream block, computes the average of every
     label and replaces the original data with it."""
 
+    self.log(logging.DEBUG, f"Received {data}")
+
     # Initializing the buffer
     if self._buf is None:
       self._buf = {key: [value] for key, value in data.items()}
@@ -47,4 +51,5 @@ class Moving_avg(Modifier):
       except TypeError:
         ret[label] = self._buf[label][-1]
 
+    self.log(logging.DEBUG, f"Sending {ret}")
     return ret

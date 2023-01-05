@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Dict, Any, List, Union, Tuple
+import logging
 
 from .modifier import Modifier
 
@@ -57,6 +58,8 @@ class Offset(Modifier):
     """If the compensations are not set, sets them, anf then offsets the
     required labels."""
 
+    self.log(logging.DEBUG, f"Received {data}")
+
     # During the first loop, calculating the compensation values
     if not self._compensated:
       self._compensations = {label: -data[label] + offset for label, offset in
@@ -67,4 +70,5 @@ class Offset(Modifier):
     for label in self._offsets:
       data[label] += self._compensations[label]
 
+    self.log(logging.DEBUG, f"Sending {data}")
     return data

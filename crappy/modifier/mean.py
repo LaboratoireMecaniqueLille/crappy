@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import Dict, Any, Optional
+import logging
 
 from .modifier import Modifier
 
@@ -33,6 +34,8 @@ class Mean(Modifier):
     If there are not enough points, doesn't return anything.
     """
 
+    self.log(logging.DEBUG, f"Received {data}")
+
     # Initializing the buffer
     if self._buf is None:
       self._buf = {key: [value] for key, value in data.items()}
@@ -53,4 +56,7 @@ class Mean(Modifier):
         self._buf[label].clear()
 
     if ret:
+      self.log(logging.DEBUG, f"Sending {ret}")
       return ret
+
+    self.log(logging.DEBUG, "Not returning any data")

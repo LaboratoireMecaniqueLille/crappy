@@ -1,7 +1,9 @@
 # coding: utf-8
 
-from .modifier import Modifier
 from typing import Optional, Tuple, Dict, Any, Union, List
+import logging
+
+from .modifier import Modifier
 
 
 class Trig_on_value(Modifier):
@@ -34,5 +36,10 @@ class Trig_on_value(Modifier):
     """Checks if the value of ``label`` is in the predefined set of accepted
     values, and if so transmits the data."""
 
+    self.log(logging.DEBUG, f"Received {data}")
+
     if data[self._label] in self._values:
+      self.log(logging.DEBUG, f"Sending {data}")
       return data
+
+    self.log(logging.DEBUG, "Not returning any data")
