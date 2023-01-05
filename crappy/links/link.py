@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from multiprocessing import Pipe
-from time import time, sleep
+from time import time
 from copy import deepcopy
 from typing import Callable, Union, Any, Dict, Optional, List
 from collections import defaultdict
@@ -163,19 +163,8 @@ class Link:
 
     return data
 
-  def recv_chunk(self,
-                 delay: Optional[float] = None,
-                 poll_delay: float = 0.01) -> Dict[str, list]:
+  def recv_chunk(self) -> Dict[str, list]:
     """Reads all the available values in the Link, and returns them all.
-
-    Args:
-      delay: If given specifies a delay, as a :obj:`float`, during which the
-        method acquired data before returning. All the data received during
-        this delay is saved and returned. Otherwise, just reads all the
-        available data and returns as soon as it is exhausted.
-      poll_delay: If the ``delay`` argument is given, corresponds to the time
-        to sleep between two Link polls. It ensures that the method doesn't
-        spam the CPU in vain.
 
     Returns:
       A :obj:`dict` whose keys are the labels being sent, and for each key a
@@ -184,25 +173,11 @@ class Link:
     """
 
     ret = defaultdict(list)
-    t_init = time()
 
-    # Case when no delay is specified
-    if delay is None:
-      while self._in.poll():
-        data = self._in.recv()
-        for label, value in data.items():
-          ret[label].append(value)
-
-    # Case when a delay is specified
-    else:
-      # Looping until the delay is exhausted
-      while time() - t_init < delay:
-        if self._in.poll():
-          data = self._in.recv()
-          for label, value in data.items():
-            ret[label].append(value)
-        else:
-          sleep(poll_delay)
+    while self._in.poll():
+      data = self._in.recv()
+      for label, value in data.items():
+        ret[label].append(value)
 
     return dict(ret)
 
