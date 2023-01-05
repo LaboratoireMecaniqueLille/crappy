@@ -84,7 +84,7 @@ class Camera_parallel(Block):
     self._img: Optional[np.ndarray] = None
     self._manager: Optional[managers.SyncManager] = None
     self._metadata: Optional[managers.DictProxy] = None
-    self._stop_event: Optional[synchronize.Event] = None
+    self._stop_event_cam: Optional[synchronize.Event] = None
     self._box_conn_in: Optional[connection.Connection] = None
     self._box_conn_out: Optional[connection.Connection] = None
     self._save_lock: Optional[synchronize.RLock] = None
@@ -135,7 +135,7 @@ class Camera_parallel(Block):
                             "synchronization objects")
     self._manager = Manager()
     self._metadata = self._manager.dict()
-    self._stop_event = Event()
+    self._stop_event_cam = Event()
     self._box_conn_in, self._box_conn_out = Pipe()
     self._save_lock = RLock()
     self._disp_lock = RLock()
@@ -206,7 +206,7 @@ class Camera_parallel(Block):
       self._process_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._proc_lock,
-                                    event=self._stop_event,
+                                    event=self._stop_event_cam,
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
                                     box_conn=box_conn,
@@ -221,7 +221,7 @@ class Camera_parallel(Block):
       self._save_proc.set_shared(array=self._img_array,
                                  data_dict=self._metadata,
                                  lock=self._save_lock,
-                                 event=self._stop_event,
+                                 event=self._stop_event_cam,
                                  shape=self._img_shape,
                                  dtype=self._img_dtype)
       self.log(logging.INFO, "Starting the image saver process")
@@ -233,7 +233,7 @@ class Camera_parallel(Block):
       self._display_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._disp_lock,
-                                    event=self._stop_event,
+                                    event=self._stop_event_cam,
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
                                     box_conn=self._box_conn_out)
@@ -295,9 +295,11 @@ class Camera_parallel(Block):
     if self._image_generator is None:
       self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
       self._camera.close()
+      self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
 
-    self._stop_event.set()
-    sleep(0.1)
+    self.log(logging.DEBUG, "Asking all the children processes to stop")
+    self._stop_event_cam.set()
+    sleep(0.5)
     if self._process_proc is not None and self._process_proc.is_alive():
       self.log(logging.WARNING, "Image processing process not stopped, "
                                 "killing it !")
