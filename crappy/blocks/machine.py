@@ -107,31 +107,34 @@ class Machine(Block):
                          if field.type is not Actuator]
 
     # The list of all the Actuator types to instantiate
-    types = [actuator['type'] for actuator in actuators]
+    self._types = [actuator['type'] for actuator in actuators]
 
-    if not all(type_ in actuator_list for type_ in types):
-      unknown = tuple(type_ for type_ in types if type_ not in actuator_list)
+    if not all(type_ in actuator_list for type_ in self._types):
+      unknown = tuple(type_ for type_ in self._types if type_
+                      not in actuator_list)
       raise ValueError(f"[Machine] Unknown actuator type(s) : {unknown}\n"
                        f"The possible types are : {actuator_list}")
 
     # The settings that won't be passed to the Actuator objects
-    settings = [{key: value for key, value in actuator.items()
-                 if key in actuator_settings}
-                for actuator in actuators]
+    self._settings = [{key: value for key, value in actuator.items()
+                       if key in actuator_settings}
+                      for actuator in actuators]
 
     # The settings that will be passed as kwargs to the Actuator objects
-    actuators_kw = [{key: value for key, value in actuator.items()
-                     if key not in ('type', *actuator_settings)}
-                    for actuator in actuators]
-
-    # Instantiating the actuators and storing them
-    self._actuators = [Actuator_instance(
-      actuator=actuator_list[type_](**actuator_kw), **setting)
-      for type_, setting, actuator_kw in zip(types, settings, actuators_kw)]
+    self._actuators_kw = [{key: value for key, value in actuator.items()
+                           if key not in ('type', *actuator_settings)}
+                          for actuator in actuators]
 
   def prepare(self) -> None:
     """Checks the validity of the linking and initializes all the Actuator
     objects to drive."""
+
+    # Instantiating the actuators and storing them
+    self._actuators = [Actuator_instance(
+      actuator=actuator_list[type_](**actuator_kw), **setting)
+      for type_, setting, actuator_kw in zip(self._types,
+                                             self._settings,
+                                             self._actuators_kw)]
 
     # Checking the consistency of the linking
     if not self.inputs and not self.outputs:
