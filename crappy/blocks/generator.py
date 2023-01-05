@@ -8,10 +8,10 @@ import logging
 
 from .block import Block
 from . import generator_path
-from .._global import CrappyStop
+from .._global import GeneratorStop
 
 
-class _GeneratorStop(Exception):
+class GeneratorNoStop(Exception):
   """A custom exception for handling the case when the Generator should not
   raise a :exc:`CrappyStop` exception when it terminates."""
 
@@ -152,7 +152,9 @@ class Generator(Block):
         self._update_path()
         self.loop()
         return
-      except _GeneratorStop:
+      except GeneratorNoStop:
+        self.log(logging.WARNING, f"Generator path exhausted, staying idle "
+                                  f"until the script ends")
         # Case when the Generator shouldn't raise CrappyStop after it ended
         self._ended_no_raise = True
         return
@@ -180,20 +182,18 @@ class Generator(Block):
       else:
         self._path_id = 0
 
+    # Raised when the list of paths is exhausted
     except StopIteration:
-      # Raised when the list of paths is exhausted
-      print("Signal generator terminated !")
       # First option, stopping the program after a delay
       if self._end_delay is not None:
         sleep(self._end_delay)
-        raise CrappyStop("Signal Generator terminated")
+        raise GeneratorStop
       # Second option, not stopping the program and looping forever
       else:
-        raise _GeneratorStop
+        raise GeneratorNoStop
 
-    # Warning the user that the path ended if spam is True
-    if self.verbose:
-      print(f"[Signal Generator] Next step({self._path_id}): {next_path_dict}")
+    self.log(logging.INFO, f"Next generator path (id: {self._path_id}): "
+                           f"{next_path_dict['type']}")
 
     # Instantiating the next generator path object
     path_name = next_path_dict.pop('type').capitalize()
