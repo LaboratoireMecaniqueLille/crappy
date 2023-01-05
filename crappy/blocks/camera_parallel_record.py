@@ -1,16 +1,15 @@
 # coding: utf-8
 
-from multiprocessing import Process, managers, get_start_method
-from multiprocessing.synchronize import Event, RLock
-from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing.queues import Queue
 from csv import DictWriter
 from time import strftime, gmtime
 import numpy as np
-from typing import Optional, Union, Tuple
+from typing import Optional, Union
 from pathlib import Path
 import logging
 import logging.handlers
+
+from .camera_process import Camera_process
 from .._global import OptionalModule
 
 try:
@@ -32,7 +31,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class Image_saver(Process):
+class Image_saver(Camera_process):
   """"""
 
   def __init__(self,
@@ -45,12 +44,9 @@ class Image_saver(Process):
                save_backend: Optional[str] = None) -> None:
     """"""
 
-    super().__init__()
-
-    self._log_queue = log_queue
-    self._logger: Optional[logging.Logger] = None
-    self._log_level = log_level
-    self._parent_name = parent_name
+    super().__init__(log_queue=log_queue,
+                     parent_name=parent_name,
+                     log_level=log_level)
 
     # Trying the different possible backends and checking if the given one
     # is correct
@@ -81,86 +77,54 @@ class Image_saver(Process):
 
     self._save_period = int(save_period)
 
-    self._img_array: Optional[SynchronizedArray] = None
-    self._data_dict: Optional[managers.DictProxy] = None
-    self._lock: Optional[RLock] = None
-    self._stop_event: Optional[Event] = None
-    self._shape: Optional[Tuple[int, int]] = None
-
-    self._metadata = {'ImageUniqueID': -float('inf')}
-    self._img: Optional[np.ndarray] = None
-    self._dtype = None
-
     self._csv_created = False
     self._csv_path = None
 
-  def set_shared(self,
-                 array: SynchronizedArray,
-                 data_dict: managers.DictProxy,
-                 lock: RLock,
-                 event: Event,
-                 shape: Tuple[int, int],
-                 dtype) -> None:
+  def _init(self) -> None:
     """"""
 
-    self._img_array = array
-    self._data_dict = data_dict
-    self._lock = lock
-    self._stop_event = event
-    self._shape = shape
-    self._dtype = dtype
+    if self._save_folder is not None and not self._save_folder.exists():
+      self._log(logging.INFO, f"Creating the folder for saving images at: "
+                              f"{self._save_folder}")
+      Path.mkdir(self._save_folder, exist_ok=True, parents=True)
 
-    self._img = np.empty(shape=shape, dtype=dtype)
-
-    # Creating the folder for saving the images if it doesn't exist
-    if self._save_folder is not None:
-      if not self._save_folder.exists():
-        Path.mkdir(self._save_folder, exist_ok=True, parents=True)
-
-  def run(self) -> None:
+  def _get_data(self) -> bool:
     """"""
 
-    try:
-      self._set_logger()
-      self._log(logging.INFO, "Logger configured")
+    with self._lock:
 
-      while not self._stop_event.is_set():
-        save = False
-        with self._lock:
+      if 'ImageUniqueID' not in self._data_dict:
+        return False
 
-          if 'ImageUniqueID' not in self._data_dict:
-            continue
+      if self._data_dict['ImageUniqueID'] == self._metadata['ImageUniqueID']:
+        return False
 
-          if self._data_dict['ImageUniqueID'] != \
-              self._metadata['ImageUniqueID'] and \
-              self._data_dict['ImageUniqueID'] - \
-              self._metadata['ImageUniqueID'] >= self._save_period:
-            self._metadata = self._data_dict.copy()
-            save = True
+      if self._metadata['ImageUniqueID'] is not None and \
+          self._data_dict['ImageUniqueID'] - self._metadata['ImageUniqueID'] \
+          < self._save_period:
+        return False
 
-            self._log(logging.DEBUG, f"Got new image to save with id "
-                                     f"{self._metadata['ImageUniqueID']}")
+      self._metadata = self._data_dict.copy()
 
-            np.copyto(self._img,
-                      np.frombuffer(self._img_array.get_obj(),
-                                    dtype=self._dtype).reshape(self._shape))
+      self._log(logging.DEBUG, f"Got new image to process with id "
+                               f"{self._metadata['ImageUniqueID']}")
 
-        if save:
-          self._save()
+      np.copyto(self._img,
+                np.frombuffer(self._img_array.get_obj(),
+                              dtype=self._dtype).reshape(self._shape))
 
-      self._log(logging.INFO, "Stop event set, stopping the recording")
+    return True
 
-    except KeyboardInterrupt:
-      self._log(logging.INFO, "KeyboardInterrupt caught, stopping the "
-                              "recording")
+  def _loop(self) -> None:
+    """"""
 
-  def _save(self) -> None:
-    """Simply saves the given image to the given path using the selected
-    backend."""
+    if not self._get_data():
+      return
 
     if not self._csv_created:
-      self._csv_path = self._save_folder / \
-          f'metadata_{strftime("%d_%m_%y %H:%M:%S", gmtime())}.csv'
+      self._csv_path = (self._save_folder /
+                        f'metadata_'
+                        f'{strftime("%d_%m_%y %H:%M:%S", gmtime())}.csv')
 
       self._log(logging.INFO, f"Creating file for saving the metadata: "
                               f"{self._csv_path}")
@@ -191,31 +155,3 @@ class Image_saver(Process):
       PIL.Image.fromarray(self._img).save(
         path, exif={TAGS_INV[key]: val for key, val in self._metadata.items()
                     if key in TAGS_INV})
-
-  def _set_logger(self) -> None:
-    """"""
-
-    log_level = 10 * int(round(self._log_level / 10, 0))
-
-    logger = logging.getLogger(f'crappy.{self._parent_name}.Recorder')
-    logger.setLevel(min(log_level, logging.INFO))
-
-    # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn":
-      queue_handler = logging.handlers.QueueHandler(self._log_queue)
-      queue_handler.setLevel(min(log_level, logging.INFO))
-      logger.addHandler(queue_handler)
-
-    self._logger = logger
-
-  def _log(self, level: int, msg: str) -> None:
-    """Sends a log message to the logger.
-
-    Args:
-      level: The logging level, as an :obj:`int`.
-      msg: The message to log, as a :obj:`str`.
-    """
-
-    if self._logger is None:
-      return
-    self._logger.log(level, msg)

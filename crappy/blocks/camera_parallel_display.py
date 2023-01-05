@@ -1,17 +1,15 @@
 # coding: utf-8
 
-from multiprocessing import Process, managers, get_start_method
-from multiprocessing.synchronize import Event, RLock
-from multiprocessing.sharedctypes import SynchronizedArray
-from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 from threading import Thread
 from math import log2, ceil
 import numpy as np
-from typing import Optional, Tuple
+from typing import Optional
 from time import time, sleep
 import logging
 import logging.handlers
+
+from .camera_process import Camera_process
 from .._global import OptionalModule
 from ..tool import Spot_boxes, Box
 
@@ -32,7 +30,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class Displayer(Process):
+class Displayer(Camera_process):
   """"""
 
   def __init__(self,
@@ -44,15 +42,12 @@ class Displayer(Process):
                backend: Optional[str] = None) -> None:
     """"""
 
-    super().__init__()
+    super().__init__(log_queue=log_queue,
+                     parent_name=parent_name,
+                     log_level=log_level)
 
     self._title = title
     self._framerate = framerate
-
-    self._log_queue = log_queue
-    self._logger: Optional[logging.Logger] = None
-    self._log_level = log_level
-    self._parent_name = parent_name
 
     # Selecting the backend if no backend was specified
     if backend is None:
@@ -76,20 +71,8 @@ class Displayer(Process):
     self._fig = None
     self._last_upd = time()
 
-    self._img_array: Optional[SynchronizedArray] = None
-    self._data_dict: Optional[managers.DictProxy] = None
-    self._lock: Optional[RLock] = None
-    self._stop_event: Optional[Event] = None
-    self._shape: Optional[Tuple[int, int]] = None
-    self._box_conn: Optional[Connection] = None
-
-    self._img: Optional[np.ndarray] = None
-    self._last_nr = None
-    self._dtype = None
-
     # The thread must be initialized later for compatibility with Windows
     self._box_thread: Optional[Thread] = None
-
     self._boxes: Spot_boxes = Spot_boxes()
     self._stop_thread = False
 
@@ -103,112 +86,94 @@ class Displayer(Process):
       except RuntimeError:
         pass
 
-  def set_shared(self,
-                 array: SynchronizedArray,
-                 data_dict: managers.DictProxy,
-                 lock: RLock,
-                 event: Event,
-                 shape: Tuple[int, int],
-                 dtype,
-                 box_conn: Connection) -> None:
+  def _init(self) -> None:
     """"""
 
-    self._img_array = array
-    self._data_dict = data_dict
-    self._lock = lock
-    self._stop_event = event
-    self._shape = shape
-    self._dtype = dtype
-    self._box_conn = box_conn
+    self._log(logging.INFO, "Instantiating the thread for getting the boxes "
+                            "to display")
+    self._box_thread = Thread(target=self._thread_target)
+    self._log(logging.INFO, "Starting the thread for getting the boxes to "
+                            "display")
+    self._box_thread.start()
 
-    self._img = np.empty(shape=shape, dtype=dtype)
+    self._log(logging.INFO, f"Opening the displayer window with the backend "
+                            f"{self._backend}")
+    if self._backend == 'cv2':
+      self._prepare_cv2()
+    elif self._backend == 'mpl':
+      self._prepare_mpl()
 
-  def run(self) -> None:
+  def _get_data(self) -> bool:
     """"""
 
-    try:
-      self._set_logger()
-      self._log(logging.INFO, "Logger configured")
+    with self._lock:
 
-      self._log(logging.INFO, "Instantiating the thread for getting the boxes "
-                              "to display")
-      self._box_thread = Thread(target=self._thread_target)
-      self._log(logging.INFO, "Starting the thread for getting the boxes to "
-                              "display")
-      self._box_thread.start()
+      if 'ImageUniqueID' not in self._data_dict:
+        return False
 
-      self._log(logging.INFO, f"Opening the displayer window with the backend "
-                              f"{self._backend}")
-      if self._backend == 'cv2':
-        self._prepare_cv2()
-      elif self._backend == 'mpl':
-        self._prepare_mpl()
+      if self._data_dict['ImageUniqueID'] == self._metadata['ImageUniqueID'] \
+          or time() - self._last_upd < 1 / self._framerate:
+        return False
 
-      while not self._stop_event.is_set():
-        display = False
-        with self._lock:
+      self._metadata = self._data_dict.copy()
+      self._last_upd = time()
 
-          if 'ImageUniqueID' not in self._data_dict:
-            continue
+      self._log(logging.DEBUG, f"Got new image to process with id "
+                               f"{self._metadata['ImageUniqueID']}")
 
-          if self._data_dict['ImageUniqueID'] != self._last_nr and \
-              time() - self._last_upd >= 1 / self._framerate:
-            self._last_nr = self._data_dict['ImageUniqueID']
-            display = True
+      np.copyto(self._img,
+                np.frombuffer(self._img_array.get_obj(),
+                              dtype=self._dtype).reshape(self._shape))
 
-            self._log(logging.DEBUG, f"Got new image to display with id "
-                                     f"{self._last_nr}")
+    return True
 
-            np.copyto(self._img,
-                      np.frombuffer(self._img_array.get_obj(),
-                                    dtype=self._dtype).reshape(self._shape))
+  def _loop(self) -> None:
+    """"""
 
-        if display:
+    if not self._get_data():
+      return
 
-          # Casts the image to uint8 if it's not already in this format
-          if self._img.dtype != np.uint8:
-            self._log(logging.DEBUG, f"Casting displayed image from "
-                                     f"{self._img.dtype} to uint8")
-            if np.max(self._img) > 255:
-              factor = max(ceil(log2(np.max(self._img) + 1) - 8), 0)
-              img = (self._img / 2 ** factor).astype(np.uint8)
-            else:
-              img = self._img.astype(np.uint8)
-          else:
-            img = self._img.copy()
+    # Casts the image to uint8 if it's not already in this format
+    if self._img.dtype != np.uint8:
+      self._log(logging.DEBUG, f"Casting displayed image from "
+                               f"{self._img.dtype} to uint8")
+      if np.max(self._img) > 255:
+        factor = max(ceil(log2(np.max(self._img) + 1) - 8), 0)
+        img = (self._img / 2 ** factor).astype(np.uint8)
+      else:
+        img = self._img.astype(np.uint8)
+    else:
+      img = self._img.copy()
 
-          # Drawing the latest known position of the boxes
-          for box in self._boxes:
-            if box is not None:
-              self._log(logging.DEBUG, "Drawing boxes on top of the image to "
-                                       "display")
-              self._draw_box(img, box)
+    # Drawing the latest known position of the boxes
+    for box in self._boxes:
+      if box is not None:
+        self._log(logging.DEBUG, "Drawing boxes on top of the image to "
+                                 "display")
+        self._draw_box(img, box)
 
-          # Calling the right prepare method
-          if self._backend == 'cv2':
-            self._update_cv2(img)
-          elif self._backend == 'mpl':
-            self._update_mpl(img)
+    # Calling the right prepare method
+    if self._backend == 'cv2':
+      self._update_cv2(img)
+    elif self._backend == 'mpl':
+      self._update_mpl(img)
 
-      self._log(logging.INFO, "Stop event set, stopping the display")
+  def _finish(self) -> None:
+    """"""
 
-    except KeyboardInterrupt:
-      self._log(logging.INFO, "KeyboardInterrupt caught, stopping the display")
+    self._log(logging.INFO, "Closing the displayer window")
+    if self._backend == 'cv2':
+      self._finish_cv2()
+    elif self._backend == 'mpl':
+      self._finish_mpl()
 
-    finally:
-      self._log(logging.INFO, "Closing the displayer window")
-      if self._backend == 'cv2':
-        self._finish_cv2()
-      elif self._backend == 'mpl':
-        self._finish_mpl()
-
-      if self._box_thread.is_alive():
-        self._stop_thread = True
-        try:
-          self._box_thread.join(0.05)
-        except RuntimeError:
-          self._log(logging.WARNING, "Thread for receiving the boxes did not "
-                                     "stop as expected")
+    if self._box_thread.is_alive():
+      self._stop_thread = True
+      try:
+        self._box_thread.join(0.05)
+      except RuntimeError:
+        self._log(logging.WARNING, "Thread for receiving the boxes did not "
+                                   "stop as expected")
 
   def _thread_target(self) -> None:
     """"""
@@ -227,34 +192,6 @@ class Displayer(Process):
         sleep(0.001)
 
     self._log(logging.INFO, "Thread for receiving the boxes ended")
-
-  def _set_logger(self) -> None:
-    """"""
-
-    log_level = 10 * int(round(self._log_level / 10, 0))
-
-    logger = logging.getLogger(f'crappy.{self._parent_name}.Displayer')
-    logger.setLevel(min(log_level, logging.INFO))
-
-    # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn":
-      queue_handler = logging.handlers.QueueHandler(self._log_queue)
-      queue_handler.setLevel(min(log_level, logging.INFO))
-      logger.addHandler(queue_handler)
-
-    self._logger = logger
-
-  def _log(self, level: int, msg: str) -> None:
-    """Sends a log message to the logger.
-
-    Args:
-      level: The logging level, as an :obj:`int`.
-      msg: The message to log, as a :obj:`str`.
-    """
-
-    if self._logger is None:
-      return
-    self._logger.log(level, msg)
 
   def _draw_box(self, img: np.ndarray, box: Box) -> None:
     """Draws a box on top of an image."""

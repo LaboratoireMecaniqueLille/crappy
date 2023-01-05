@@ -7,7 +7,7 @@ from time import time, sleep, strftime, gmtime
 from types import MethodType
 from multiprocessing import Array, Manager, Event, RLock, Pipe
 from multiprocessing.sharedctypes import SynchronizedArray
-from multiprocessing import managers, synchronize, connection, context
+from multiprocessing import managers, synchronize, connection
 from math import prod
 import logging
 
@@ -15,6 +15,7 @@ from .block import Block
 from .camera_parallel_display import Displayer
 from .camera_parallel_record import Image_saver
 from ..camera import camera_list, Camera as BaseCam
+from .camera_process import Camera_process
 from ..tool import Camera_config
 
 
@@ -47,7 +48,7 @@ class Camera_parallel(Block):
 
     self._save_proc: Optional[Image_saver] = None
     self._display_proc: Optional[Displayer] = None
-    self._process_proc: Optional[context.Process] = None
+    self._process_proc: Optional[Camera_process] = None
 
     super().__init__()
 
@@ -223,7 +224,10 @@ class Camera_parallel(Block):
                                  lock=self._save_lock,
                                  event=self._stop_event_cam,
                                  shape=self._img_shape,
-                                 dtype=self._img_dtype)
+                                 dtype=self._img_dtype,
+                                 box_conn=None,
+                                 outputs=list(),
+                                 labels=list())
       self.log(logging.INFO, "Starting the image saver process")
       self._save_proc.start()
 
@@ -236,7 +240,9 @@ class Camera_parallel(Block):
                                     event=self._stop_event_cam,
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
-                                    box_conn=self._box_conn_out)
+                                    box_conn=self._box_conn_out,
+                                    outputs=list(),
+                                    labels=list())
       self.log(logging.INFO, "Starting the image displayer process")
       self._display_proc.start()
 

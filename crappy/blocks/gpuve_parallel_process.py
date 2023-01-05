@@ -1,18 +1,15 @@
 # coding: utf-8
 
-from multiprocessing import Process, managers, get_start_method
-from multiprocessing.synchronize import Event, RLock
-from multiprocessing.sharedctypes import SynchronizedArray
-from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 import numpy as np
-from typing import Optional, Tuple, List, Union, Dict, Any
+from typing import Optional, Tuple, List, Union
 from pathlib import Path
 import logging
 import logging.handlers
+
+from .camera_process import Camera_process
 from ..tool import GPUCorrel, Spot_boxes
-from ..links import Link
-from .._global import LinkDataError, OptionalModule
+from .._global import OptionalModule
 
 try:
   import pycuda.tools
@@ -21,7 +18,7 @@ except (ModuleNotFoundError, ImportError):
   pycuda = OptionalModule("pycuda")
 
 
-class Gpuve_parallel_process(Process):
+class Gpuve_parallel_process(Camera_process):
   """"""
 
   def __init__(self,
@@ -36,12 +33,9 @@ class Gpuve_parallel_process(Process):
                mul: float = 3) -> None:
     """"""
 
-    super().__init__()
-
-    self._log_queue = log_queue
-    self._logger: Optional[logging.Logger] = None
-    self._log_level = log_level
-    self._parent_name = parent_name
+    super().__init__(log_queue=log_queue,
+                     parent_name=parent_name,
+                     log_level=log_level)
 
     pycuda.driver.init()
     context = pycuda.tools.make_default_context()
@@ -64,171 +58,60 @@ class Gpuve_parallel_process(Process):
     self._spots = Spot_boxes()
     self._spots.set_spots(patches)
 
-    self._img_array: Optional[SynchronizedArray] = None
-    self._data_dict: Optional[managers.DictProxy] = None
-    self._lock: Optional[RLock] = None
-    self._stop_event: Optional[Event] = None
-    self._shape: Optional[Tuple[int, int]] = None
-    self._box_conn: Optional[Connection] = None
-    self._outputs: List[Link] = list()
-    self._labels: List[str] = list()
-
-    self._img: Optional[np.ndarray] = None
-    self._dtype = None
-    self._metadata = {'ImageUniqueID': None}
     self._img0_set = img_ref is not None
 
-  def set_shared(self,
-                 array: SynchronizedArray,
-                 data_dict: managers.DictProxy,
-                 lock: RLock,
-                 event: Event,
-                 shape: Tuple[int, int],
-                 dtype,
-                 box_conn: Optional[Connection],
-                 outputs: List[Link],
-                 labels: List[str]) -> None:
+  def _init(self) -> None:
     """"""
 
-    self._img_array = array
-    self._data_dict = data_dict
-    self._lock = lock
-    self._stop_event = event
-    self._shape = shape
-    self._dtype = dtype
-    self._box_conn = box_conn
-    self._outputs = outputs
-    self._labels = labels
+    self._log(logging.INFO, "Instantiating the GPUCorrel tool instances")
+    self._gpuve_kw.update(logger_name=f'crappy.{self._parent_name}.Process')
+    self._correls = [GPUCorrel(**self._gpuve_kw) for _ in self._patches]
 
-    self._img = np.empty(shape=shape, dtype=dtype)
+    # We can already set the sizes of the images as they are already known
+    self._log(logging.INFO, "Setting the sizes of the patches")
+    for correl, (_, __, h, w) in zip(self._correls, self._patches):
+      correl.set_img_size((h, w))
 
-  def run(self) -> None:
+    if self._img_ref is not None:
+      self._log(logging.INFO, "Initializing the GPUCorrel tool instances "
+                              "with the given reference image and preparing "
+                              "them")
+      for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
+        correl.set_orig(
+          self._img_ref[oy:oy + h, ox:ox + w].astype(np.float32))
+        correl.prepare()
+
+  def _loop(self) -> None:
     """"""
 
-    try:
-      self._set_logger()
-      self._log(logging.INFO, "Logger configured")
+    if not self._get_data():
+      return
 
-      self._log(logging.INFO, "Instantiating the GPUCorrel tool instances")
-      self._gpuve_kw.update(logger_name=f'crappy.{self._parent_name}.Process')
-      self._correls = [GPUCorrel(**self._gpuve_kw) for _ in self._patches]
+    if not self._img0_set:
+      self._log(logging.INFO, "Setting the reference image")
+      for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
+        correl.set_orig(self._img[oy:oy + h,
+                        ox:ox + w].astype(np.float32))
+        correl.prepare()
+      self._img0_set = True
+      return
 
-      # We can already set the sizes of the images as they are already known
-      self._log(logging.INFO, "Setting the sizes of the patches")
-      for correl, (_, __, h, w) in zip(self._correls, self._patches):
-        correl.set_img_size((h, w))
+    self._log(logging.DEBUG, "Processing the received image")
+    data = [self._metadata['t(s)'], self._metadata]
+    for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
+      data.extend(correl.get_disp(
+        self._img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
+    self._send(data)
 
-      if self._img_ref is not None:
-        self._log(logging.INFO, "Initializing the GPUCorrel tool instances "
-                                "with the given reference image and preparing "
-                                "them")
-        for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
-          correl.set_orig(
-            self._img_ref[oy:oy + h, ox:ox + w].astype(np.float32))
-          correl.prepare()
+    if self._box_conn is not None:
+      self._log(logging.DEBUG, "Sending the boxes to the displayer "
+                               "process")
+      self._box_conn.send(self._spots)
 
-      while not self._stop_event.is_set():
-        process = False
-        with self._lock:
+  def _finish(self) -> None:
+    """"""
 
-          if 'ImageUniqueID' not in self._data_dict:
-            continue
-
-          if self._data_dict['ImageUniqueID'] != \
-              self._metadata['ImageUniqueID']:
-            self._metadata = self._data_dict.copy()
-            process = True
-
-            self._log(logging.DEBUG, f"Got new image to process with id "
-                                     f"{self._metadata['ImageUniqueID']}")
-
-            np.copyto(self._img,
-                      np.frombuffer(self._img_array.get_obj(),
-                                    dtype=self._dtype).reshape(self._shape))
-
-        if process:
-
-          if not self._img0_set:
-            self._log(logging.INFO, "Setting the reference image")
-            for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
-              correl.set_orig(self._img[oy:oy + h,
-                                        ox:ox + w].astype(np.float32))
-              correl.prepare()
-            self._img0_set = True
-            continue
-
-          self._log(logging.DEBUG, "Processing the received image")
-          data = [self._metadata['t(s)'], self._metadata]
-          for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
-            data.extend(correl.get_disp(
-              self._img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
-          self._send(data)
-
-          if self._box_conn is not None:
-            self._log(logging.DEBUG, "Sending the boxes to the displayer "
-                                     "process")
-            self._box_conn.send(self._spots)
-
-      self._log(logging.INFO, "Stop event set, stopping the processing")
-
-    except KeyboardInterrupt:
-      self._log(logging.INFO, "KeyboardInterrupt caught, stopping the "
-                              "processing")
-
-    finally:
+    if self._correls is not None:
       self._log(logging.INFO, "Cleaning up the GPUCorrel instances")
       for correl in self._correls:
         correl.clean()
-
-  def _send(self, data: Union[list, Dict[str, Any]]) -> None:
-    """"""
-
-    # Building the dict to send from the data and labels if the data is a list
-    if isinstance(data, list):
-      if not self._labels:
-        self._logger.log(logging.ERROR, "trying to send data as a list but no "
-                                        "labels are specified ! Please add a "
-                                        "self.labels attribute.")
-        raise LinkDataError
-      self._logger.log(logging.DEBUG, f"Converting {data} to dict before "
-                                      f"sending")
-      data = dict(zip(self._labels, data))
-
-    # Making sure the data is being sent as a dict
-    elif not isinstance(data, dict):
-      self._logger.log(logging.ERROR, f"Trying to send a {type(data)} in a "
-                                      f"Link !")
-      raise LinkDataError
-
-    # Sending the data to the downstream blocks
-    for link in self._outputs:
-      self._logger.log(logging.DEBUG, f"Sending {data} to Link {link}")
-      link.send(data)
-
-  def _set_logger(self) -> None:
-    """"""
-
-    log_level = 10 * int(round(self._log_level / 10, 0))
-
-    logger = logging.getLogger(f'crappy.{self._parent_name}.Process')
-    logger.setLevel(min(log_level, logging.INFO))
-
-    # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn":
-      queue_handler = logging.handlers.QueueHandler(self._log_queue)
-      queue_handler.setLevel(min(log_level, logging.INFO))
-      logger.addHandler(queue_handler)
-
-    self._logger = logger
-
-  def _log(self, level: int, msg: str) -> None:
-    """Sends a log message to the logger.
-
-    Args:
-      level: The logging level, as an :obj:`int`.
-      msg: The message to log, as a :obj:`str`.
-    """
-
-    if self._logger is None:
-      return
-    self._logger.log(level, msg)
