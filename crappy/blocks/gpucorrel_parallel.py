@@ -5,7 +5,6 @@ import numpy as np
 from pathlib import Path
 from .gpucorrel_parallel_process import Gpucorrel_parallel_process
 from .camera_parallel import Camera_parallel
-from ..tool import GPUCorrel
 
 
 class Gpucorrel_parallel(Camera_parallel):
@@ -86,10 +85,9 @@ class Gpucorrel_parallel(Camera_parallel):
                               resampling_factor=resampling_factor,
                               kernel_file=kernel_file,
                               iterations=iterations,
+                              fields=fields,
                               mask=mask,
-                              ref_img=img_ref,
-                              mul=mul,
-                              fields=fields)
+                              mul=mul)
 
   def prepare(self) -> None:
     """"""
