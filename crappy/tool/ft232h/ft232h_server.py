@@ -6,6 +6,7 @@ from typing import Union, List, Tuple, Optional, Callable
 from _io import FileIO
 from multiprocessing.synchronize import RLock
 from time import time, sleep
+import logging
 
 from .ft232h import ft232h
 from ..._global import OptionalModule
@@ -224,92 +225,81 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # Control transfer out
     if command[0] == 'ctrl_transfer_out':
-      self._command_file.write(b'00' + b',' +
-                               str(command[1]).encode() + b',' +
-                               str(command[2]).encode() + b',' +
-                               str(command[3]).encode() + b',' +
-                               str(command[4]).encode() + b',' +
-                               bytes(command[5]) + b',' +
-                               str(command[6]).encode())
+      value = b','.join((b'00', str(command[1]).encode(),
+                         str(command[2]).encode(), str(command[3]).encode(),
+                         str(command[4]).encode(), bytes(command[5]),
+                         str(command[6]).encode()))
       cmd = b'00'
     # Control transfer in
     elif command[0] == 'ctrl_transfer_in':
-      self._command_file.write(b'01' + b',' +
-                               str(command[1]).encode() + b',' +
-                               str(command[2]).encode() + b',' +
-                               str(command[3]).encode() + b',' +
-                               str(command[4]).encode() + b',' +
-                               str(command[5]).encode() + b',' +
-                               str(command[6]).encode())
+      value = b','.join((b'01', str(command[1]).encode(),
+                         str(command[2]).encode(), str(command[3]).encode(),
+                         str(command[4]).encode(), str(command[5]).encode(),
+                         str(command[6]).encode()))
       cmd = b'01'
     # Write operation
     elif command[0] == 'write':
-      self._command_file.write(b'02' + b',' +
-                               str(command[1]).encode() + b',' +
-                               bytes(command[2]) + b',' +
-                               str(command[3]).encode())
+      value = b','.join((b'02', str(command[1]).encode(), bytes(command[2]),
+                         str(command[3]).encode()))
       cmd = b'02'
     # Read operation
     elif command[0] == 'read':
-      self._command_file.write(b'03' + b',' +
-                               str(command[1]).encode() + b',' +
-                               str(command[2]).encode() + b',' +
-                               str(command[3]).encode())
+      value = b','.join((b'03', str(command[1]).encode(),
+                         str(command[2]).encode(), str(command[3]).encode()))
       cmd = b'03'
     # Checks whether the kernel driver is active
     # It doesn't actually interact with the device
     elif command[0] == 'is_kernel_driver_active':
-      self._command_file.write(b'04' + b',' +
-                               str(command[1]).encode())
+      value = b','.join((b'04', str(command[1]).encode()))
       cmd = b'04'
     # Detaches the kernel driver
     # It doesn't actually interact with the device
     elif command[0] == 'detach_kernel_driver':
-      self._command_file.write(b'05' + b',' +
-                               str(command[1]).encode())
+      value = b','.join((b'05', str(command[1]).encode()))
       cmd = b'05'
     # Sets the device configuration
     elif command[0] == 'set_configuration':
-      self._command_file.write(b'06')
+      value = b'06'
       cmd = b'06'
     # Custom command getting information from the current configuration
     elif command[0] == 'get_active_configuration':
-      self._command_file.write(b'07')
+      value = b'07'
       cmd = b'07'
     # Should the block close the device when leaving ?
     # It doesn't actually interact with the device
     elif command[0] == 'close?':
-      self._command_file.write(b'08')
+      value = b'08'
       cmd = b'08'
     # Checks whether the internal resources have been released or not
     # It doesn't actually interact with the device
     elif command[0] == '_ctx.handle':
-      self._command_file.write(b'09')
+      value = b'09'
       cmd = b'09'
     # Releases the USB interface
     # It doesn't actually interact with the device
     elif command[0] == 'release_interface':
-      self._command_file.write(b'10' + b',' +
-                               str(command[1]).encode())
+      value = b','.join((b'10', str(command[1]).encode()))
       cmd = b'10'
     # Detaches the kernel driver
     # It doesn't actually interact with the device
     elif command[0] == 'attach_kernel_driver':
-      self._command_file.write(b'11' + b',' +
-                               str(command[1]).encode())
+      value = b','.join((b'11', str(command[1]).encode()))
       cmd = b'11'
     # Releases all the resources used by :mod:`pyusb` for a given device
     # It doesn't actually interact with the device
     elif command[0] == 'dispose_resources':
-      self._command_file.write(b'12')
+      value = b'12'
       cmd = b'12'
     # Registers a block as gone
     # It doesn't actually interact with the device
     elif command[0] == 'farewell':
-      self._command_file.write(b'13')
+      value = b'13'
       cmd = b'13'
     else:
       raise ValueError("Wrong command type !")
+
+    self.log(logging.DEBUG, f"Writing command {value} to command buffer")
+    self._command_file.write(value)
 
     return cmd
 
@@ -341,6 +331,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             try:
 
               # Writing the block number in the file
+              self.log(logging.DEBUG,
+                       f"Writing  {str(self._block_number).encode()} to the "
+                       f"current file buffer")
               self._current_file.seek(0)
               self._current_file.truncate(0)
               self._current_file.write(str(self._block_number).encode())
@@ -353,6 +346,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
               # Releases the lock to indicate the server that the command is
               # ready
+              self.log(logging.DEBUG, "Releasing the block lock")
               self._block_lock.release()
 
               # Waits for the answer to be written in the answer file
@@ -367,14 +361,17 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
               except (KeyboardInterrupt, TimeoutError):
                 raise_kbi = True
                 self._block_lock.acquire(timeout=1)
+                self.log(logging.DEBUG, "Acquired the block lock")
                 raise
 
               # When the lock is re-acquired, the server has written the answer
               # in the answer file
               if self._block_lock.acquire(timeout=1):
+                self.log(logging.DEBUG, "Acquired the block lock")
                 # Reading the answer
                 self._answer_file.seek(0)
                 answer: List[bytes] = self._answer_file.read().split(b',')
+                self.log(logging.DEBUG, f"Read {answer} from the answer file")
                 self._answer_file.seek(0)
                 self._answer_file.truncate(0)
 
@@ -486,11 +483,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     try:
       if self._send_server(['is_kernel_driver_active', 0]):
         self._send_server(['detach_kernel_driver', 0])
+      self.log(logging.INFO, "Setting USB configuration for the FT232H")
       self._send_server(['set_configuration'])
     except USBError:
-      print("You may have to install the udev-rules for this USB device, "
-            "this can be done using the udev_rule_setter utility in the util "
-            "folder")
+      self.log(logging.ERROR,
+               "Could not set USB device configuration !\nYou may have to "
+               "install the udev-rules for this USB device, this can be done "
+               "using the udev_rule_setter utility in the util folder")
       raise
 
     self._index, self._in_ep, self._out_ep, self._max_packet_size = \
@@ -531,8 +530,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # Enable MPSSE mode
     if self._ft232h_mode == 'GPIO_only':
+      self.log(logging.DEBUG, "Setting the mode to GPIO_only")
       self._set_bitmode(0xFF, ft232h.BitMode.MPSSE)
     else:
+      self.log(logging.DEBUG, f"Setting the mode to {self._ft232h_mode}")
       self._set_bitmode(self._direction, ft232h.BitMode.MPSSE)
 
     # Configure clock
@@ -544,6 +545,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._set_frequency(frequency)
 
     # Configure pins
+    self.log(logging.DEBUG, "Configuring the FT232H pins")
     if self._ft232h_mode == 'I2C':
       cmd = bytearray(self._idle)
       cmd.extend((ft232h_cmds['set_bits_high'], 0, 0))
@@ -562,6 +564,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._write_data(cmd)
 
     # Disable loopback
+    self.log(logging.DEBUG, "Disabling loopback")
     self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
     # Validate MPSSE
     bytes_ = bytes(self._read_data_bytes(2))
@@ -570,6 +573,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # I2C-specific settings
     if self._ft232h_mode == 'I2C':
+      self.log(logging.DEBUG, "Configuring I2C-specific features")
       self._tx_size, self._rx_size = fifo_sizes
 
       # Enable 3-phase clock
@@ -603,6 +607,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """
 
     try:
+      self.log(logging.DEBUG,
+               f"Sending USB control transfer with request type {Ftdi_req_out}"
+               f", request {reqtype}, value {value}, index {self._index}, "
+               f"data {data}")
       return self._send_server(['ctrl_transfer_out', Ftdi_req_out, reqtype,
                                 value, self._index, bytearray(data),
                                 self._usb_write_timeout])
@@ -654,9 +662,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         while True:
 
           try:
+            self.log(logging.DEBUG,
+                     f"Sending USB read command to endpoint {self._out_ep}"
+                     f"to read {self._readbuffer_chunksize} bytes")
             tempbuf = self._send_server(['read', self._out_ep,
                                          self._readbuffer_chunksize,
                                          self._usb_read_timeout])
+            self.log(logging.DEBUG, f"Read {tempbuf} from the USB device")
           except USBError:
             raise
 
@@ -716,7 +728,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             self._readoffset += part_size
             return data
     except USBError:
-      print("An error occurred while writing to USB")
+      self.log(logging.ERROR, "An error occurred while writing to USB device")
       raise
     # never reached
     raise ValueError("Internal error")
@@ -743,9 +755,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     data = bytearray()
     while word_count:
       try:
+        self.log(logging.DEBUG,
+                 f"Sending USB control transfer with request type "
+                 f"{Ftdi_req_in}, request {ft232h_sio_req['read_eeprom']}, "
+                 f"value 0, index {word_addr}, data 2")
         buf = self._send_server(['ctrl_transfer_in', Ftdi_req_in,
                                  ft232h_sio_req['read_eeprom'], 0, word_addr,
                                  2, self._usb_read_timeout])
+        self.log(logging.DEBUG, f"Read {buf} from the USB device")
       except USBError as exc:
         raise IOError('UsbError: %s' % exc) from exc
       if not buf:
@@ -802,6 +819,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # Updating the eeprom
     addr = 0
     for word in unpack('<%dH' % (len(new_eeprom) // 2), new_eeprom):
+      self.log(logging.DEBUG,
+               f"Sending USB control transfer with request type {Ftdi_req_out}"
+               f", request {ft232h_sio_req['write_eeprom']}, value {word}, "
+               f"index {addr >> 1}, data b''")
       out = self._send_server(['ctrl_transfer_out', Ftdi_req_out,
                                ft232h_sio_req['write_eeprom'], word, addr >> 1,
                                b'', self._usb_write_timeout])
@@ -831,6 +852,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
           write_size = size - offset
 
         try:
+          self.log(logging.DEBUG,
+                   f"Sending USB write command to endpoint {self._in_ep}"
+                   f"and with data {data[offset:offset + write_size]}")
           length = self._send_server(['write', self._in_ep,
                                       data[offset:offset + write_size],
                                       self._usb_write_timeout])
@@ -842,7 +866,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         offset += length
       return offset
     except USBError:
-      print("An error occurred while writing to USB")
+      self.log(logging.ERROR, "An error occurred while writing to USB device")
       raise
 
   def close(self) -> None:
@@ -850,6 +874,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     if self._send_server(['close?']):
 
+      self.log(logging.INFO, "Closing the USB connection to the FT232H")
       if self._send_server(['_ctx.handle']):
         try:
           self._set_bitmode(0, ft232h.BitMode.RESET)
@@ -860,6 +885,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
           self._send_server(['attach_kernel_driver', self._index - 1])
         except (NotImplementedError, USBError):
           pass
+      self.log(logging.INFO, "Releasing the USB resources")
       self._send_server(['dispose_resources'])
 
     self._send_server(['farewell'])

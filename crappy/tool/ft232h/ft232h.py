@@ -4,6 +4,8 @@ from enum import IntEnum
 from collections import namedtuple
 from struct import calcsize, unpack, pack
 from typing import Union, Callable, Optional
+from multiprocessing import current_process
+import logging
 
 from ..._global import OptionalModule
 try:
@@ -244,9 +246,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._nb_attempt_1 = 8
     self._nb_attempt_2 = 8
 
+    self._logger: Optional[logging.Logger] = None
+
     self._initialize()
 
     if mode == 'Write_serial_nr':
+      self.log(logging.WARNING, f"Setting the FT232H seria lnumber to "
+                                f"{serial_nr}")
       self._set_serial_number(serial_nr)
       self.close()
 
@@ -320,6 +326,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise IOError("Several ft232h devices found, please specify a serial_nr")
     else:
       self._usb_dev = devices[0]
+      self.log(logging.DEBUG, f"USB device found: {self._usb_dev}")
 
     try:
       self._serial_nr = self._usb_dev.serial_number
@@ -330,11 +337,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     try:
       if self._usb_dev.is_kernel_driver_active(0):
         self._usb_dev.detach_kernel_driver(0)
+        self.log(logging.INFO, "Setting USB configuration for the FT232H")
       self._usb_dev.set_configuration()
     except USBError:
-      print("You may have to install the udev-rules for this USB device, "
-            "this can be done using the udev_rule_setter utility in the util "
-            "folder")
+      self.log(logging.ERROR,
+               "Could not set USB device configuration !\nYou may have to "
+               "install the udev-rules for this USB device, this can be done "
+               "using the udev_rule_setter utility in the util folder")
       raise
     config = self._usb_dev.get_active_configuration()
 
@@ -381,8 +390,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # Enable MPSSE mode
     if self._ft232h_mode == 'GPIO_only':
+      self.log(logging.DEBUG, "Setting the mode to GPIO_only")
       self._set_bitmode(0xFF, ft232h.BitMode.MPSSE)
     else:
+      self.log(logging.DEBUG, f"Setting the mode to {self._ft232h_mode}")
       self._set_bitmode(self._direction, ft232h.BitMode.MPSSE)
 
     # Configure clock
@@ -394,6 +405,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._set_frequency(frequency)
 
     # Configure pins
+    self.log(logging.DEBUG, "Configuring the FT232H pins")
     if self._ft232h_mode == 'I2C':
       cmd = bytearray(self._idle)
       cmd.extend((ft232h_cmds['set_bits_high'], 0, 0))
@@ -412,6 +424,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._write_data(cmd)
 
     # Disable loopback
+    self.log(logging.DEBUG, "Disabling loopback")
     self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
     # Validate MPSSE
     bytes_ = bytes(self._read_data_bytes(2))
@@ -420,6 +433,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
     # I2C-specific settings
     if self._ft232h_mode == 'I2C':
+      self.log(logging.DEBUG, "Configuring I2C-specific features")
       self._tx_size, self._rx_size = fifo_sizes
 
       # Enable 3-phase clock
@@ -436,6 +450,15 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._write_data(bytearray([False and
                                 ft232h_cmds['enable_clk_adaptative'] or
                                 ft232h_cmds['disable_clk_adaptative']]))
+
+  def log(self, level: int, msg: str) -> None:
+    """"""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.FT232H")
+
+    self._logger.log(level, msg)
 
   @staticmethod
   def _compute_delay_cycles(value: float) -> int:
@@ -463,6 +486,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       latency (:obj:`int`): latency (in milliseconds)
     """
 
+    self.log(logging.DEBUG, f"Setting the latency timer to {latency}")
+
     if not ft232h_latency['min'] <= latency <= ft232h_latency['max']:
       raise ValueError("Latency out of range")
     if self._ctrl_transfer_out(ft232h_sio_req['set_latency_timer'], latency):
@@ -481,6 +506,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     Returns:
       Actual bus frequency
     """
+
+    self.log(logging.DEBUG, f"Setting the clock frequency to {frequency}")
 
     # Calculate base speed clock divider
     divcode = ft232h_cmds['enable_clk_div5']
@@ -572,6 +599,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """
 
     try:
+      self.log(logging.DEBUG,
+               f"Sending USB control transfer with request type {Ftdi_req_out}"
+               f", request {reqtype}, value {value}, index {self._index}, "
+               f"data {data}")
       return self._usb_dev.ctrl_transfer(
         Ftdi_req_out, reqtype, value, self._index,
         bytearray(data), self._usb_write_timeout)
@@ -600,9 +631,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     data = bytearray()
     while word_count:
       try:
+        self.log(logging.DEBUG,
+                 f"Sending USB control transfer with request type "
+                 f"{Ftdi_req_in}, request {ft232h_sio_req['read_eeprom']}, "
+                 f"value 0, index {word_addr}, data 2")
         buf = self._usb_dev.ctrl_transfer(
           Ftdi_req_in, ft232h_sio_req['read_eeprom'], 0,
           word_addr, 2, self._usb_read_timeout)
+        self.log(logging.DEBUG, f"Read {buf} from the USB device")
       except USBError as exc:
         raise IOError('UsbError: %s' % exc) from exc
       if not buf:
@@ -659,6 +695,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # Updating the eeprom
     addr = 0
     for word in unpack('<%dH' % (len(new_eeprom) // 2), new_eeprom):
+      self.log(logging.DEBUG,
+               f"Sending USB control transfer with request type {Ftdi_req_out}"
+               f", request {ft232h_sio_req['write_eeprom']}, value {word}, "
+               f"index {addr >> 1}, data b''")
       out = self._usb_dev.ctrl_transfer(
         Ftdi_req_out, ft232h_sio_req['write_eeprom'],
         word, addr >> 1, b'', self._usb_write_timeout)
@@ -688,6 +728,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
           write_size = size - offset
 
         try:
+          self.log(logging.DEBUG,
+                   f"Sending USB write command to endpoint {self._in_ep}"
+                   f"and with data {data[offset:offset + write_size]}")
           length = self._usb_dev.write(self._in_ep,
                                        data[offset:offset + write_size],
                                        self._usb_write_timeout)
@@ -699,7 +742,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         offset += length
       return offset
     except USBError:
-      print("An error occurred while writing to USB")
+      self.log(logging.ERROR, "An error occurred while writing to USB device")
       raise
 
   def _read_data_bytes(self,
@@ -750,9 +793,13 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         while True:
 
           try:
+            self.log(logging.DEBUG,
+                     f"Sending USB read command to endpoint {self._out_ep}"
+                     f"to read {self._readbuffer_chunksize} bytes")
             tempbuf = self._usb_dev.read(self._out_ep,
                                          self._readbuffer_chunksize,
                                          self._usb_read_timeout)
+            self.log(logging.DEBUG, f"Read {tempbuf} from the USB device")
           except USBError:
             raise
 
@@ -812,7 +859,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             self._readoffset += part_size
             return data
     except USBError:
-      print("An error occurred while writing to USB")
+      self.log(logging.ERROR, "An error occurred while writing to USB device")
       raise
     # never reached
     raise ValueError("Internal error")
@@ -1108,6 +1155,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       value (:obj:`int`): The value to write
     """
 
+    self.log(logging.DEBUG, f"Requested I2C byte write with value {value} to "
+                            f"address {i2c_addr}")
+
     self.write_i2c_block_data(i2c_addr=i2c_addr,
                               register=0x00,
                               data=[value & 0xFF])
@@ -1123,6 +1173,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       register (:obj:`int`): Index of the register to be written
       value (:obj:`int`): The value to write
     """
+
+    self.log(logging.DEBUG, f"Requested I2C byte write with value {value} to "
+                            f"register {register} at address {i2c_addr}")
 
     self.write_i2c_block_data(i2c_addr=i2c_addr,
                               register=register,
@@ -1144,6 +1197,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       value (:obj:`int`): The value to write
     """
 
+    self.log(logging.DEBUG, f"Requested I2C word write with value {value} to "
+                            f"register {register} at address {i2c_addr}")
+
     self.write_i2c_block_data(i2c_addr=i2c_addr,
                               register=register,
                               data=[(value >> 8) & 0xFF, value & 0xFF])
@@ -1159,6 +1215,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       register (:obj:`int`): Index of the first register to be written
       data (:obj:`list`): List of bytes to write
     """
+
+    self.log(logging.DEBUG, f"Requested I2C block write with data {data} to "
+                            f"register {register} at address {i2c_addr}")
 
     self.write_i2c_block_data(i2c_addr=i2c_addr,
                               register=register,
@@ -1176,6 +1235,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       register (:obj:`int`): Index of the first register to be written
       data (:obj:`list`): List of bytes to write
     """
+
+    self.log(logging.DEBUG, f"Requested I2C block write with data {data} to "
+                            f"register {register} at address {i2c_addr}")
 
     if self._ft232h_mode != 'I2C':
       raise ValueError("Method only available in I2C mode")
@@ -1195,12 +1257,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       Value of the read register
     """
 
+    self.log(logging.DEBUG, f"Requested I2C byte read at address {i2c_addr}")
+
     try:
       return self.read_i2c_block_data(i2c_addr=i2c_addr,
                                       register=0x00,
                                       length=1)[0]
     except IndexError:
-      print("No data to read")
+      self.log(logging.ERROR, "No data to read from USB device")
       raise
 
   def read_byte_data(self, i2c_addr: int, register: int) -> int:
@@ -1214,12 +1278,15 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       Value of the read register
     """
 
+    self.log(logging.DEBUG, f"Requested I2C byte read from register {register}"
+                            f" at address {i2c_addr}")
+
     try:
       return self.read_i2c_block_data(i2c_addr=i2c_addr,
                                       register=register,
                                       length=1)[0]
     except IndexError:
-      print("No data to read")
+      self.log(logging.ERROR, "No data to read from USB device")
       raise
 
   def read_word_data(self, i2c_addr: int, register: int) -> int:
@@ -1234,13 +1301,16 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       Value of the read registers
     """
 
+    self.log(logging.DEBUG, f"Requested I2C word read from register {register}"
+                            f" at address {i2c_addr}")
+
     try:
       ret = self.read_i2c_block_data(i2c_addr=i2c_addr,
                                      register=register,
                                      length=2)
       return (ret[0] << 8) & ret[1]
     except IndexError:
-      print("Not enough data to read")
+      self.log(logging.ERROR, "Not enough data to read from USB device")
       raise
 
   def read_i2c_block_data(self,
@@ -1258,6 +1328,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     Returns:
       Values of read registers as a :obj:`list`
     """
+
+    self.log(logging.DEBUG, f"Requested I2C block read of length {length} from"
+                            f" register {register} at address {i2c_addr}")
 
     if self._ft232h_mode != 'I2C':
       raise ValueError("Method only available in I2C mode")
@@ -1291,6 +1364,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         write messages.
     """
 
+    self.log(logging.DEBUG, "Requested I2C readwrite")
+
     nr = len(i2c_msgs)
     for i, msg in enumerate(i2c_msgs):
       if msg.type == 'w':
@@ -1319,6 +1394,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise TypeError("bits_per_word should be an integer")
     if value != 8:
       raise ValueError("bits_per_word values other than 8 are not implemented")
+
+    self.log(logging.DEBUG, f"Set SPI bits_per_word to {value}")
     self._bits_per_word = value
 
   @property
@@ -1336,6 +1413,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if not isinstance(value, bool):
       raise TypeError("cshigh should be either True or False")
     self._spi_param_changed = True
+
+    self.log(logging.DEBUG, f"Set SPI cshigh to {value}")
     self._cshigh = value
 
   @property
@@ -1356,6 +1435,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._write_data(bytearray((ft232h_cmds['loopback_start'],)))
     else:
       self._write_data(bytearray((ft232h_cmds['loopback_end'],)))
+
+    self.log(logging.DEBUG, f"Set SPI loop to {value}")
     self._loop = value
 
   @property
@@ -1372,6 +1453,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
       raise TypeError("no_cs should be either True or False")
+
+    self.log(logging.DEBUG, f"Set SPI no_cs to {value}")
     self._no_cs = value
 
   @property
@@ -1388,6 +1471,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise ValueError("Attribute only available in SPI mode")
     if not isinstance(value, bool):
       raise TypeError("lsbfirst should be either True or False")
+
+    self.log(logging.DEBUG, f"Set SPI lsbfirst to {value}")
     self._lsbfirst = value
 
   @property
@@ -1425,6 +1510,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._write_data(bytearray([False and
                                   ft232h_cmds['enable_clk_3phase'] or
                                   ft232h_cmds['disable_clk_3phase']]))
+
+    self.log(logging.DEBUG, f"Set SPI max_speed_hz to {value}")
     self._max_speed_hz = value
 
   @property
@@ -1445,6 +1532,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     if value not in range(4):
       raise ValueError("mode should be an integer between 0 and 3")
     former_mode = self.mode
+
+    self.log(logging.DEBUG, f"Set SPI mode to {value}")
     self._mode = value
     self._spi_param_changed = True
     if value % 2 != former_mode % 2:
@@ -1467,6 +1556,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       raise TypeError("threewire should be either True or False")
     if value:
       raise ValueError("threewire mode not implemented")
+
+    self.log(logging.DEBUG, f"Set SPI threewire to {value}")
     self._threewire = value
 
   def _exchange_spi(self, readlen: int, out: list, start: bool,
@@ -1652,6 +1743,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       List of read bytes
     """
 
+    self.log(logging.DEBUG, f"Requested SPI bytes read of length {len}")
+
     if self._ft232h_mode != 'SPI':
       raise ValueError("Method only available in SPI mode")
     return [byte for byte in self._exchange_spi(readlen=len,
@@ -1674,6 +1767,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         reading data, and remains in its previous state.
     """
 
+    self.log(logging.DEBUG, f"Requested SPI bytes write with values {values}")
+
     if self._ft232h_mode != 'SPI':
       raise ValueError("Method only available in SPI mode")
     self._exchange_spi(readlen=0,
@@ -1687,6 +1782,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                   start: bool = True,
                   stop: bool = True) -> None:
     """Actually calls the :meth:`writebytes` method with the same arguments."""
+
+    self.log(logging.DEBUG, f"Requested SPI bytes write with values {values}")
 
     self.writebytes(values=values,
                     start=start,
@@ -1719,6 +1816,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       List of read bytes
     """
 
+    self.log(logging.DEBUG, f"Requested SPI xfer with values {values}")
+
     if self._ft232h_mode != 'SPI':
       raise ValueError("Method only available in SPI mode")
     if bits != 8:
@@ -1744,6 +1843,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             stop: bool = True) -> list:
     """Actually calls the :meth:`xfer` method with the same arguments."""
 
+    self.log(logging.DEBUG, f"Requested SPI xfer with values {values}")
+
     return self.xfer(values=values,
                      speed=speed,
                      delay=delay,
@@ -1759,6 +1860,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             start: bool = True,
             stop: bool = True) -> list:
     """Actually calls the :meth:`xfer` method with the same arguments."""
+
+    self.log(logging.DEBUG, f"Requested SPI xfer with values {values}")
 
     return self.xfer(values=values,
                      speed=speed,
@@ -1835,6 +1938,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       3.3V-logic value corresponding to the input voltage
     """
 
+    self.log(logging.DEBUG, f"Requested GPIO value reading for {gpio_str}")
+
     if gpio_str not in ft232h_pin_nr:
       raise ValueError("gpio_id should be in {}".format(
         list(ft232h_pin_nr.values())))
@@ -1855,6 +1960,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       gpio_str (:obj:`str`): Name of the GPIO to be set
       value (:obj:`int`): 1 for setting the GPIO high, 0 for setting it low
     """
+
+    self.log(logging.DEBUG, f"Requested GPIO value writing to {value} "
+                            f"for {gpio_str}")
 
     if value not in [0, 1]:
       raise ValueError("value should be either 0 or 1")
@@ -1888,6 +1996,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Closes the FTDI interface/port."""
 
     if self._usb_dev:
+      self.log(logging.INFO, "Closing the USB connection to the FT232H")
       if bool(self._usb_dev._ctx.handle):
         try:
           self._set_bitmode(0, ft232h.BitMode.RESET)
@@ -1898,5 +2007,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
           self._usb_dev.attach_kernel_driver(self._index - 1)
         except (NotImplementedError, USBError):
           pass
+      self.log(logging.INFO, "Releasing the USB resources")
       util.dispose_resources(self._usb_dev)
       self._usb_dev = None

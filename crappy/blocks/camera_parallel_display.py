@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from multiprocessing import Process, managers
+from multiprocessing import Process, managers, get_start_method
 from multiprocessing.synchronize import Event, RLock
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing.connection import Connection
@@ -196,6 +196,7 @@ class Displayer(Process):
       self._log(logging.INFO, "KeyboardInterrupt caught, stopping the display")
 
     finally:
+      self._log(logging.INFO, "Closing the displayer window")
       if self._backend == 'cv2':
         self._finish_cv2()
       elif self._backend == 'mpl':

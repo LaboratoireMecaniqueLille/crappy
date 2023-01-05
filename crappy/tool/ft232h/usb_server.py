@@ -6,6 +6,7 @@ import multiprocessing.synchronize
 from _io import FileIO
 from tempfile import TemporaryFile
 from typing import List, Dict, Any
+
 from ..._global import OptionalModule
 try:
   from usb.core import find, Device, USBTimeoutError
@@ -87,28 +88,34 @@ class Server_process(Process):
 
     # Control transfer out
     if command[0] == b'00':
-      return b'00,' + str(device.ctrl_transfer(int(command[1]),
-                                               int(command[2]),
-                                               int(command[3]),
-                                               int(command[4]),
-                                               command[5],
-                                               int(command[6]))).encode()
+      return b','.join((b'00',
+                        str(device.ctrl_transfer(int(command[1]),
+                                                 int(command[2]),
+                                                 int(command[3]),
+                                                 int(command[4]),
+                                                 command[5],
+                                                 int(command[6]))).encode()))
     # Control transfer in
     elif command[0] == b'01':
-      return b'01,' + bytes(device.ctrl_transfer(*[int(arg) for arg in
-                                                   command[1:]]))
+      return b','.join((b'01',
+                        bytes(device.ctrl_transfer(*[int(arg) for arg in
+                                                     command[1:]]))))
     # Write operation
     elif command[0] == b'02':
-      return b'02,' + str(device.write(int(command[1]), command[2],
-                                       int(command[3]))).encode()
+      return b','.join((b'02',
+                        str(device.write(int(command[1]), command[2],
+                                         int(command[3]))).encode()))
     # Read operation
     elif command[0] == b'03':
-        return b'03,' + bytes(device.read(*[int(arg) for arg in command[1:]]))
+      return b','.join((b'03',
+                        bytes(device.read(*[int(arg) for arg
+                                            in command[1:]]))))
     # Checks whether the kernel driver is active
     # It doesn't actually interact with the device
     elif command[0] == b'04':
-      return b'04,' + (b'1' if device.is_kernel_driver_active(int(command[1]))
-                       else b'0')
+      return b','.join((b'04',
+                        b'1' if device.is_kernel_driver_active(int(command[1]))
+                        else b'0'))
     # Detaches the kernel driver
     # It doesn't actually interact with the device
     elif command[0] == b'05':
@@ -121,18 +128,21 @@ class Server_process(Process):
     # Custom command getting information from the current configuration
     elif command[0] == b'07':
       info = self._return_config_info(device)
-      return b'07,' + str(info[0]).encode() + b',' + str(info[1]).encode() + \
-             b',' + str(info[2]).encode() + b',' + str(info[3]).encode()
+      return b','.join((b'07',
+                        str(info[0]).encode(), str(info[1]).encode(),
+                        str(info[2]).encode(), str(info[3]).encode()))
     # When a block is leaving, if it's the last one associated with a given
     # ft232h then it should release the internal resources
     # It doesn't actually interact with the device
     elif command[0] == b'08':
       self.dev_count[serial_nr] -= 1
-      return b'08,' + (b'1' if not self.dev_count[serial_nr] else b'0')
+      return b','.join((b'08',
+                        b'1' if not self.dev_count[serial_nr] else b'0'))
+
     # Checks whether the internal resources have been released or not
     # It doesn't actually interact with the device
     elif command[0] == b'09':
-      return b'09,' + (b'1' if device._ctx.handle else b'0')
+      return b','.join((b'09', b'1' if device._ctx.handle else b'0'))
     # Releases the USB interface
     # It doesn't actually interact with the device
     elif command[0] == b'10':

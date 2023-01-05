@@ -96,10 +96,8 @@ if is_installed:
   def check(h, code):
     if code == 0:
       return
-    print("Error: return code=", code)
     sz_error_text_buffer = create_string_buffer(ERRORTEXTLEN)
     dwGetErrorInfo_i32(h, None, None, sz_error_text_buffer)
-    print(sz_error_text_buffer.value)
     vClose(h)
     raise SpectrumError(sz_error_text_buffer.value)
 
