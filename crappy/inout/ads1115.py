@@ -3,6 +3,8 @@
 from time import time
 from re import findall
 from typing import Union, List, Optional
+import logging
+
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
@@ -225,8 +227,9 @@ class Ads1115(Usb_server, InOut):
         raise TypeError('int_pin should be an int when using the Pi4 '
                         'backend !')
       elif backend == 'blinka' and dry_pin is not None:
-        print("Warning ! Getting the end of conversion information from the"
-              "DRY pin is not supported by the blinka backend.")
+        self.log(logging.WARNING, "Getting the end of conversion information "
+                                  "from the DRY pin is not supported by the "
+                                  "blinka backend")
     self._dry_pin = dry_pin
 
     self._gain = gain
@@ -239,6 +242,7 @@ class Ads1115(Usb_server, InOut):
       self._ads.gain = Ads1115_blinka_gain[self._v_range]
       self._ads.data_rate = self._sample_rate
       chan_nr = findall(r'\d', self._multiplexer)
+      self.log(logging.INFO, "Opening the ADS1115 with backend blinka")
       if len(chan_nr) == 1:
         self._chan = AnalogIn(self._ads,
                               getattr(ads, 'P{}'.format(chan_nr[0])))
@@ -256,6 +260,7 @@ class Ads1115(Usb_server, InOut):
       init_value |= Ads1115_config_gain[self._v_range]
       init_value |= 0x0100  # Single shot operating mode
       init_value |= Ads1115_config_dr[self._sample_rate]
+      self.log(logging.INFO, "Initializing the ADS1115")
       if self._dry_pin is None:
         # Setting the two last bits to 11 to disable the DRY pin
         init_value |= 0x0003
@@ -305,6 +310,9 @@ class Ads1115(Usb_server, InOut):
           self._device_address,
           Ads1115_pointer_conversion,
           2)
+      self.log(logging.DEBUG, f"Read {ms_byte, ls_byte} from the device "
+                              f"address {self._device_address} at "
+                              f"register {Ads1115_pointer_conversion}")
 
       # Converting the output value into Volts
       value_raw = (ms_byte << 8) | ls_byte
@@ -319,14 +327,19 @@ class Ads1115(Usb_server, InOut):
     """Closes the I2C bus"""
 
     if self._backend != 'blinka':
+      self.log(logging.INFO, "Closing the ADS1115")
       self._bus.close()
 
     if self._backend == 'Pi4' and self._dry_pin is not None:
+      self.log(logging.INFO, "CCleaning up the GPIOs")
       GPIO.cleanup()
 
   def _set_register(self, register_address: int, value: int) -> None:
     """Thin wrapper for writing data to the registers."""
 
+    self.log(logging.DEBUG, f"Writing {[(value >> 8) & 0xFF, value & 0xFF]} "
+                            f"to the address {self._device_address} in "
+                            f"register {register_address}")
     self._bus.write_i2c_block_data(self._device_address, register_address,
                                    [(value >> 8) & 0xFF, value & 0xFF])
 

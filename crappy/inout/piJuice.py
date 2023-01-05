@@ -2,6 +2,8 @@
 
 from typing import Dict, Any, List
 from time import time
+import logging
+
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -87,8 +89,12 @@ class Pijuice(InOut):
     """Opens the I2C port."""
 
     if self._backend == 'Pi4':
+      self.log(logging.INFO, f"Opening the I2C connection to the PiJuice on "
+                             f"port {self._i2c_port}")
       self._bus = SMBus(self._i2c_port)
     elif self._backend == 'pijuice':
+      self.log(logging.INFO, f"Opening the I2C connection to the PiJuice on "
+                             f"port {self._i2c_port} with backend pijuice")
       self._pijuice = PiJuice(self._i2c_port, self._address)
 
   def get_data(self) -> Dict[str, Any]:
@@ -196,6 +202,7 @@ class Pijuice(InOut):
     """Closes the I2C bus."""
 
     if self._backend == 'Pi4':
+      self.log(logging.INFO, "closing the I2C connection to the PiJuice")
       self._bus.close()
 
   @staticmethod
@@ -238,4 +245,6 @@ class Pijuice(InOut):
     ret = self._bus.read_i2c_block_data(i2c_addr=self._address,
                                         register=command,
                                         length=length)
+    self.log(logging.DEBUG, f"Read {ret} from register {command} at address "
+                            f"{self._address}")
     return self._checksum(ret)

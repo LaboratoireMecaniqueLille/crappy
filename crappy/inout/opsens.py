@@ -2,6 +2,8 @@
 
 from time import time
 from typing import List
+import logging
+
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -36,6 +38,8 @@ class Opsens(InOut):
   def open(self) -> None:
     """Opens the serial connection and configures the PicoSens."""
 
+    self.log(logging.INFO, f"Opening the serial connection on port "
+                           f"{self._addr} with baudrate 57600")
     self._dev = serial.Serial(port=self._addr, baudrate=57600)
     self._send_cmd("meas:rate min")
 
@@ -48,10 +52,15 @@ class Opsens(InOut):
     """Closes the serial connection if it was opened."""
 
     if self._dev is not None:
+      self.log(logging.INFO, f"Closing the serial connection on port "
+                             f"{self._addr}")
       self._dev.close()
 
   def _send_cmd(self, cmd: str) -> str:
     """Sends a command and returns the received answer."""
 
+    self.log(logging.DEBUG, f"Writing b'{cmd}\\n' to port {self._addr}")
     self._dev.write(cmd + '\n')
-    return self._dev.read_until(b'\x04\n').decode()
+    ret = self._dev.read_until(b'\x04\n').decode()
+    self.log(logging.DEBUG, f"Read {ret} on port {self._addr}")
+    return ret

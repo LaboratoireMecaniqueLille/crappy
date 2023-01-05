@@ -3,6 +3,8 @@
 from time import time, sleep
 from re import fullmatch, findall
 from typing import List, Union, Optional
+import logging
+
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 
@@ -220,7 +222,7 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
     self._channel_set = False
 
     if dac_channels is None and adc_channels is None:
-      print("Warning ! The AD/DA doesn't read nor write anything.")
+      self.log(logging.WARNING, "The AD/DA doesn't read nor write anything")
 
     self._channels_write = []
     if dac_channels is not None:
@@ -231,6 +233,8 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
                            "with i either 0 or 1")
         else:
           self._channels_write.append(int(findall(r'\d', chan)[0]))
+
+      self.log(logging.DEBUG, f"Channels to write to: {self._channels_write}")
 
     self._channels_read = []
     if adc_channels is not None:
@@ -251,9 +255,12 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
             raise ValueError("The two channels are the same !")
           self._channels_read.append(chan)
 
+      self.log(logging.DEBUG, f"Channels to read from: {self._channels_read}")
+
     self._gain = gain
     self._offset = offset
 
+    self.log(logging.INFO, "Opening the SPI communication with the AD/DA")
     self._bus = ft232h(mode='I2C',
                        block_number=block_number,
                        current_file=current_file,
@@ -271,6 +278,7 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
     """Sets the SPI communication, the GPIOs and the device."""
 
     # Setting the SPI
+    self.log(logging.INFO, "Setting up the SPI connection")
     self._bus.max_speed_hz = 40000
     self._bus.mode = 1
     self._bus.no_cs = True
@@ -279,8 +287,9 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
     # Setting the ADS according to the user parameters
     buf = [Ads1256_gain[self._gain_hardware], Ads1256_drate[self._sample_rate]]
     self._bus.set_gpio(self._cs_pin_ads, False)
-    self._bus.writebytes([Ads1256_cmd['CMD_WREG'] |
-                          Ads1256_reg['REG_ADCON'], 0x01] + buf)
+    cmd = [Ads1256_cmd['CMD_WREG'] | Ads1256_reg['REG_ADCON'], 0x01] + buf
+    self.log(logging.DEBUG, f"Writing {cmd} to the SPI bus")
+    self._bus.writebytes(cmd)
     self._bus.set_gpio(self._cs_pin_ads, True)
     sleep(0.001)
 
@@ -303,22 +312,30 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
 
       # Switching channel only if necessary, except for the first loop
       if len(self._channels_read) > 1 or not self._channel_set:
-        self._bus.writebytes([Ads1256_cmd['CMD_WREG'] |
-                              Ads1256_reg['REG_MUX'], 0x00,
-                              (chan[0] << 4) | chan[1]], stop=False)
+        cmd = [Ads1256_cmd['CMD_WREG'] | Ads1256_reg['REG_MUX'], 0x00,
+               (chan[0] << 4) | chan[1]]
+        self.log(logging.DEBUG, f"Writing {cmd} to the SPI bus")
+        self._bus.writebytes(cmd, stop=False)
 
         # The ADS has to be synchronized again when switching channel
+        self.log(logging.DEBUG, f"Writing {[Ads1256_cmd['CMD_SYNC']]} to the "
+                                f"SPI bus")
         self._bus.writebytes([Ads1256_cmd['CMD_SYNC']],
                              start=False,
                              stop=False)
+        self.log(logging.DEBUG, f"Writing {[Ads1256_cmd['CMD_WAKEUP']]} to "
+                                f"the SPI bus")
         self._bus.writebytes([Ads1256_cmd['CMD_WAKEUP']], start=False)
 
         self._channel_set = True
 
       # Reading the output value
       self._wait_drdy()
+      self.log(logging.DEBUG, f"Writing {[Ads1256_cmd['CMD_RDATA']]} to the "
+                              f"SPI bus")
       self._bus.writebytes([Ads1256_cmd['CMD_RDATA']], stop=False)
       buf = self._bus.readbytes(3, start=False)
+      self.log(logging.DEBUG, f"Read {buf} from the SPI bus")
       self._bus.set_gpio(self._cs_pin_ads, True)
 
       # Converting the raw output into Volts
@@ -344,13 +361,15 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
                          "v_ref")
       digit = int((2 ** 16 - 1) * val / self._v_ref)
       self._bus.set_gpio(self._cs_pin_dac, False)
-      self._bus.writebytes([Dac8532_chan[channel], digit >> 8,
-                            digit & 0xFF])
+      cmd = [Dac8532_chan[channel], digit >> 8, digit & 0xFF]
+      self.log(logging.DEBUG, f"Writing {cmd} to the SPI bus")
+      self._bus.writebytes(cmd)
       self._bus.set_gpio(self._cs_pin_dac, True)
 
   def close(self) -> None:
     """Releases the GPIOs."""
 
+    self.log(logging.INFO, "Closing the SPI communication with the AD/DA")
     self._bus.close()
 
   def _reset(self) -> None:

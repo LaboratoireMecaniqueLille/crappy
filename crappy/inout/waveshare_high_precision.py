@@ -3,6 +3,8 @@
 from time import time, sleep
 from re import fullmatch, findall
 from typing import Union, List, Optional
+import logging
+
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -189,6 +191,8 @@ class Waveshare_high_precision(InOut):
     super().__init__()
     self._gain = gain
     self._offset = offset
+
+    self.log(logging.INFO, f"Opening the SPI communication on port {spi_port}")
     self._bus = SpiDev(spi_port, 0)
 
     # Checking the validity of the arguments
@@ -219,16 +223,19 @@ class Waveshare_high_precision(InOut):
     """Sets up the GPIO and the different parameters on the ADS1263."""
 
     # Setting up the GPIO
+    self.log(logging.INFO, "Setting up the GPIOs")
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(RST_PIN, GPIO.OUT)
     GPIO.setup(CS_PIN, GPIO.OUT)
     GPIO.setup(DRDY_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     # Setting up the SPI bus
+    self.log(logging.INFO, "Setting up the SPI connection")
     self._bus.max_speed_hz = 2000000
     self._bus.mode = 0b01
 
     # Resetting the ADS1263
+    self.log(logging.INFO, "Configuring the ADS1263")
     GPIO.output(RST_PIN, GPIO.HIGH)
     sleep(0.2)
     GPIO.output(RST_PIN, GPIO.LOW)
@@ -279,8 +286,11 @@ class Waveshare_high_precision(InOut):
 
       # Reading the data from the buffer
       GPIO.output(CS_PIN, GPIO.LOW)
+      self.log(logging.DEBUG, f"Writing {[ADS1263_CMD['CMD_RDATA1']]} to the "
+                              f"SPI bus")
       self._bus.writebytes([ADS1263_CMD['CMD_RDATA1']])
       buf = self._bus.readbytes(4)
+      self.log(logging.DEBUG, f"Read {buf} from the SPI bus")
       GPIO.output(CS_PIN, GPIO.HIGH)
 
       # Assembling the data from the four registers
@@ -302,13 +312,16 @@ class Waveshare_high_precision(InOut):
   def close(self) -> None:
     """Closes the SPI bus and resets the GPIOs."""
 
+    self.log(logging.INFO, "Closing the SPI communication")
     self._bus.close()
+    self.log(logging.INFO, "Cleaning up the GPIOs")
     GPIO.cleanup()
 
   def _write_cmd(self, cmd: int) -> None:
     """Writes a command to the ADS1263 and manages the CS pin."""
 
     GPIO.output(CS_PIN, GPIO.LOW)
+    self.log(logging.DEBUG, f"Writing the command {cmd} to the SPI bus")
     self._bus.writebytes([cmd])
     GPIO.output(CS_PIN, GPIO.HIGH)
 
@@ -327,7 +340,9 @@ class Waveshare_high_precision(InOut):
     """Writes data to a register of the ADS1263 and manages the CS pin."""
 
     GPIO.output(CS_PIN, GPIO.LOW)
-    self._bus.writebytes([ADS1263_CMD['CMD_WREG'] | reg, 0x00, data])
+    cmd = [ADS1263_CMD['CMD_WREG'] | reg, 0x00, data]
+    self.log(logging.DEBUG, f"Writing the data {cmd} to the SPI bus")
+    self._bus.writebytes(cmd)
     GPIO.output(CS_PIN, GPIO.HIGH)
 
   def _set_channel(self, channel: str) -> None:

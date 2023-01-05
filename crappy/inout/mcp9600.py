@@ -2,6 +2,8 @@
 
 from time import time
 from typing import Optional, List
+import logging
+
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
@@ -237,6 +239,7 @@ class Mcp9600(Usb_server, InOut):
     """Sets the I2C communication and device."""
 
     if self._backend == 'blinka':
+      self.log(logging.INFO, "Connecting the the MCP9600 with backend blinka")
       self._mcp = MCP9600(self._i2c,
                           address=self._device_address,
                           tctype=self._thermocouple_type,
@@ -246,11 +249,16 @@ class Mcp9600(Usb_server, InOut):
     else:
       if not self._is_connected():
         raise IOError("The MCP9600 is not connected")
+      self.log(logging.INFO, "Setting up the MCP9600")
 
       # Setting the sensor according to the user parameters
       config_sensor = Mcp9600_filter_coefficients[self._filter_coefficient]
       config_sensor |= Mcp9600_thermocouple_types[self._thermocouple_type]
 
+      self.log(logging.DEBUG,
+               f"Writing {config_sensor} to the register "
+               f"{Mcp9600_registers['Thermocouple Sensor Configuration']} "
+               f"at address {self._device_address}")
       self._bus.write_i2c_block_data(self._device_address, Mcp9600_registers[
           'Thermocouple Sensor Configuration'], [config_sensor])
 
@@ -258,6 +266,10 @@ class Mcp9600(Usb_server, InOut):
       config_device = Mcp9600_sensor_resolutions[self._sensor_resolution]
       config_device |= Mcp9600_adc_resolutions[self._adc_resolution]
       config_device |= 0b00  # Normal operating mode
+      self.log(logging.DEBUG,
+               f"Writing {config_device} to the register "
+               f"{Mcp9600_registers['Device Configuration']} "
+               f"at address {self._device_address}")
       self._bus.write_i2c_block_data(self._device_address,
                                      Mcp9600_registers['Device Configuration'],
                                      [config_device])
@@ -285,6 +297,13 @@ class Mcp9600(Usb_server, InOut):
       # Starting a conversion
       value = self._bus.read_i2c_block_data(self._device_address,
                                             Mcp9600_registers['Status'], 1)[0]
+      self.log(logging.DEBUG, f"Read {value} from register "
+                              f"{Mcp9600_registers['Status']} at address "
+                              f"{self._device_address}")
+      self.log(logging.DEBUG,
+               f"Writing {value & 0xBF} to the register "
+               f"{Mcp9600_registers['Status']} at address "
+               f"{self._device_address}")
       self._bus.write_i2c_block_data(self._device_address,
                                      Mcp9600_registers['Status'],
                                      [value & 0xBF])
@@ -304,6 +323,9 @@ class Mcp9600(Usb_server, InOut):
                         'Cold Junction Temperature']:
         block = self._bus.read_i2c_block_data(self._device_address,
                                               Mcp9600_registers[self._mode], 2)
+        self.log(logging.DEBUG, f"Read {block} from register "
+                                f"{Mcp9600_registers[self._mode]} at address "
+                                f"{self._device_address}")
         value_raw = ((block[0] << 8) | block[1])
 
         # Converting the raw output value into °C
@@ -316,6 +338,9 @@ class Mcp9600(Usb_server, InOut):
       else:
         block = self._bus.read_i2c_block_data(self._device_address,
                                               Mcp9600_registers[self._mode], 3)
+        self.log(logging.DEBUG, f"Read {block} from register "
+                                f"{Mcp9600_registers[self._mode]} at address "
+                                f"{self._device_address}")
         value_raw = (block[0] << 16) | (block[1] << 8) | block[2]
 
         # Converting the raw output value into Volts
@@ -328,18 +353,26 @@ class Mcp9600(Usb_server, InOut):
     return out
 
   def close(self) -> None:
-    """Switches the MCP9600 to shutdown mode and closes the I2C bus.."""
+    """Switches the MCP9600 to shut down mode and closes the I2C bus.."""
 
     if self._backend != 'blinka':
-      # switching to shutdown mode, keeping configuration
+      # Switching to shut down mode, keeping configuration
       value = self._bus.read_i2c_block_data(self._device_address,
                                             Mcp9600_registers[
                                              'Device Configuration'], 1)[0]
+      self.log(logging.DEBUG, f"Read {value} from register "
+                              f"{Mcp9600_registers['Device Configuration']}"
+                              f" at address {self._device_address}")
       value &= 0xFD
       value |= 0x01
+      self.log(logging.DEBUG,
+               f"Writing {value} to the register "
+               f"{Mcp9600_registers['Device Configuration']} at address "
+               f"{self._device_address}")
       self._bus.write_i2c_block_data(self._device_address,
                                      Mcp9600_registers['Device Configuration'],
                                      [value])
+      self.log(logging.INFO, "Closing the I2C connection to the MCP9600")
       self._bus.close()
 
   def _data_available(self) -> int:
@@ -350,6 +383,9 @@ class Mcp9600(Usb_server, InOut):
 
     status = self._bus.read_i2c_block_data(self._device_address,
                                            Mcp9600_registers['Status'], 1)[0]
+    self.log(logging.DEBUG,
+             f"Read {status} from register {Mcp9600_registers['Status']}"
+             f" at address {self._device_address}")
 
     # The MCP9600 features an over-temperature protection
     if status & 0x10:

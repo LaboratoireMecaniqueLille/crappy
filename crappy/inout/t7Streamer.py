@@ -5,6 +5,9 @@ import numpy as np
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from itertools import chain
+from multiprocessing import current_process
+import logging
+
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -38,7 +41,9 @@ class _Channel:
 
       # Handling the case when the user enters a wrong key
       else:
-        print(f"[Labjack T7] Unknown channel key : {key}, ignoring it")
+        logger = logging.getLogger(
+          f"crappy.{current_process().name}.Labjack_t7.Channel_{self.name}")
+        logger.log(logging.WARNING, f"Unknown channel key : {key}, ignoring")
 
 
 class T7_streamer(InOut):
@@ -137,8 +142,9 @@ class T7_streamer(InOut):
 
     if len(channels) * scan_rate > 100000:
       scan_rate = 100000 / len(channels)
-      print(f"[Labjack T7] Warning ! scan_rate is too high! Sample rate cannot"
-            f" exceed 100kS/s, lowering samplerate to {scan_rate} samples/s")
+      self.log(logging.WARNING,
+               f"scan_rate is too high! Sample rate cannot exceed 100kS/s, "
+               f"lowering samplerate to {scan_rate} samples/s")
 
     self._device = device
     self._connection = connection
@@ -165,6 +171,8 @@ class T7_streamer(InOut):
 
       self._channels.append(chan)
 
+    self.log(logging.DEBUG, f"Input channels: {self._channels}")
+
     # these attributes will be set later
     self._handle = None
     self._n_points = 0
@@ -179,6 +187,7 @@ class T7_streamer(InOut):
     """
 
     # Opening the Labjack
+    self.log(logging.INFO, "Opening the connection to the Labjack")
     self._handle = ljm.openS(self._device, self._connection, self._identifier)
 
     # Setting the different channels to read from on the Labjack
@@ -187,6 +196,7 @@ class T7_streamer(InOut):
     write_at_open.extend([("STREAM_SCANRATE_HZ", self._scan_rate),
                           ("STREAM_RESOLUTION_INDEX", self._resolution)])
     names, values = tuple(zip(*write_at_open))
+    self.log(logging.DEBUG, f"Writing values {values} to names {names}")
     ljm.eWriteNames(handle=self._handle,
                     numFrames=len(names),
                     aNames=names,
@@ -195,8 +205,8 @@ class T7_streamer(InOut):
     # Checking if the scan rate that will be used is the same as requested
     scan_rate = ljm.eReadName(handle=self._handle, name="STREAM_SCANRATE_HZ")
     if scan_rate != self._scan_rate:
-      print(f"[Labjack T7] Actual scan_rate: {scan_rate} "
-            f"instead of {self._scan_rate}")
+      self.log(logging.WARNING, f"Actual scan_rate: {scan_rate} instead of "
+                                f"requested {self._scan_rate}")
       self._scan_rate = scan_rate
 
   def make_zero(self, delay: float) -> None:
@@ -275,4 +285,5 @@ class T7_streamer(InOut):
     """Closes the Labjack if it was opened."""
 
     if self._handle is not None:
+      self.log(logging.INFO, "Closing the connection to the Labjack")
       ljm.close(self._handle)

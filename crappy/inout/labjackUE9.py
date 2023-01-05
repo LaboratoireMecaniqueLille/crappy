@@ -3,6 +3,7 @@
 from time import time
 from typing import Optional, List
 from dataclasses import dataclass
+import logging
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -90,12 +91,14 @@ class Labjack_ue9(InOut):
                                offset=off, make_zero=make_z)
                       for chan, r_num, g, off, make_z in
                       zip(channels, resolution, gain, offset, make_zero)]
+    self.log(logging.DEBUG, f"Input channels: {self._channels}")
 
     self._handle = None
 
   def open(self) -> None:
     """Simply opens the connection to the Labjack."""
 
+    self.log(logging.INFO, "Opening the connection to the Labjack")
     self._handle = UE9()
 
   def make_zero(self, delay: float) -> None:
@@ -129,4 +132,5 @@ class Labjack_ue9(InOut):
     """Closes the Labjack if it was already opened."""
 
     if self._handle is not None:
+      self.log(logging.INFO, "Closing the connection to the Labjack")
       self._handle.close()

@@ -2,6 +2,7 @@
 
 from time import time
 from typing import List
+
 from .inout import InOut
 from .._global import OptionalModule
 

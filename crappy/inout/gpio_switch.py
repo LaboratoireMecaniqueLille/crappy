@@ -1,6 +1,8 @@
 # coding: utf-8
 
 from typing import Optional, Union
+import logging
+
 from .inout import InOut
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h, Usb_server, ft232h_pin_nr
@@ -103,6 +105,7 @@ class Gpio_switch(Usb_server, InOut):
     """Sets the GPIO."""
 
     if self._backend == 'Pi4':
+      self.log(logging.INFO, "Setting up the GPIOs")
       GPIO.setmode(GPIO.BCM)
       GPIO.setup(self._pin_out, GPIO.OUT)
 
@@ -130,6 +133,7 @@ class Gpio_switch(Usb_server, InOut):
     """Releases the GPIO."""
 
     if self._backend == 'Pi4':
+      self.log(logging.INFO, "Cleaning up the GPIOs")
       GPIO.cleanup()
     elif self._backend == 'blinka':
       self._pin_out.deinit()

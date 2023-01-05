@@ -2,6 +2,8 @@
 
 from time import time
 from typing import List
+import logging
+
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -51,17 +53,27 @@ class Agilent34420a(InOut):
     """Opens the serial connection, resets the Agilent and configures it to the
     desired mode."""
 
+    self.log(logging.INFO, f"Opening the serial port {self._device} with "
+                           f"baudrate {self._baudrate}")
     self._ser = serial.Serial(port=self._device, baudrate=self._baudrate,
                               timeout=self._timeout)
+    self.log(logging.DEBUG, f"Writing b'*RST;*CLS;*OPC?\\n' to port "
+                            f"{self._device}")
     self._ser.write(b"*RST;*CLS;*OPC?\n")
+    self.log(logging.DEBUG, f"Writing b'SENS:FUNC \"{self._mode}\";  \\n' "
+                            f"to port {self._device}")
     self._ser.write(b"SENS:FUNC \"" + self._mode + b"\";  \n")
+    self.log(logging.DEBUG, f"Writing b'SENS:{self._mode}:NPLC 2  \\n' "
+                            f"to port {self._device}")
     self._ser.write(b"SENS:" + self._mode + b":NPLC 2  \n")
+    self.log(logging.DEBUG, f"Writing b'SYST:REM\\n' to port {self._device}")
     self._ser.write(b"SYST:REM\n")
 
   def get_data(self) -> List[float]:
     """Asks the Agilent to acquire a reading and returns it, except if an error
     occurs in which case `0` is returned."""
 
+    self.log(logging.DEBUG, f"Writing b'READ?  \\n' to port {self._device}")
     self._ser.write(b"READ?  \n")
     t = time()
     try:
@@ -73,4 +85,5 @@ class Agilent34420a(InOut):
   def close(self) -> None:
     """Closes the serial port."""
 
+    self.log(logging.INFO, f"Closing the serial port {self._device}")
     self._ser.close()

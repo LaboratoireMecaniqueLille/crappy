@@ -2,6 +2,8 @@
 
 from time import time, sleep
 from typing import Union, Optional, List
+import logging
+
 from .inout import InOut
 from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
@@ -231,6 +233,8 @@ class Nau7802(Usb_server, InOut):
     if not self._is_connected():
       raise IOError("The NAU7802 is not connected")
 
+    self.log(logging.INFO, "Setting up the NAU7802")
+
     # Resetting the device
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_RR'],
                   NAU7802_Scale_Registers['PU_CTRL'], 1)
@@ -282,6 +286,7 @@ class Nau7802(Usb_server, InOut):
         raise IOError("Calibration failed !")
 
     if self._backend == 'Pi4' and self._int_pin is not None:
+      self.log(logging.INFO, "Setting up the GPIOs")
       GPIO.setmode(GPIO.BCM)
       GPIO.setup(self._int_pin, GPIO.IN)
 
@@ -307,6 +312,9 @@ class Nau7802(Usb_server, InOut):
     block = self._bus.read_i2c_block_data(self._device_address,
                                           NAU7802_Scale_Registers['ADCO_B2'],
                                           3)
+    self.log(logging.DEBUG,
+             f"Read {block} from register {NAU7802_Scale_Registers['ADCO_B2']}"
+             f" at address {self._device_address}")
     value_raw = (block[0] << 16) | (block[1] << 8) | block[2]
 
     # Converting raw data into Volts or Newtons
@@ -320,14 +328,17 @@ class Nau7802(Usb_server, InOut):
     """Powers down the device."""
 
     # Powering down the device
+    self.log(logging.INFO, "Powering down the NAU7802")
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUD'],
                   NAU7802_Scale_Registers['PU_CTRL'], 0)
     sleep(0.001)
     self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUA'],
                   NAU7802_Scale_Registers['PU_CTRL'], 0)
+    self.log(logging.INFO, "Closing the I2C connection to the NAU7802")
     self._bus.close()
 
     if self._backend == 'Pi4' and self._int_pin is not None:
+      self.log(logging.INFO, "Cleaning up the GPIOs")
       GPIO.cleanup()
 
   def _is_connected(self) -> bool:
@@ -370,10 +381,14 @@ class Nau7802(Usb_server, InOut):
 
     value = self._bus.read_i2c_block_data(self._device_address,
                                           register_address, 1)[0]
+    self.log(logging.DEBUG, f"Read {value} from register {register_address}"
+                            f" at address {self._device_address}")
     if bit:
       value |= (1 << bit_number)
     else:
       value &= ~(1 << bit_number)
+      self.log(logging.DEBUG, f"Writing {value} to register {register_address}"
+                              f" at address {self._device_address}")
     self._bus.write_byte_data(self._device_address, register_address, value)
 
   def _get_bit(self,
@@ -391,6 +406,8 @@ class Nau7802(Usb_server, InOut):
 
     value = self._bus.read_i2c_block_data(self._device_address,
                                           register_address, 1)[0]
+    self.log(logging.DEBUG, f"Read {value} from register {register_address}"
+                            f" at address {self._device_address}")
     value = value >> bit_number & 1
     return bool(value)
 

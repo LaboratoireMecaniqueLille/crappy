@@ -3,6 +3,7 @@
 from time import time
 from struct import pack, unpack
 from typing import List
+import logging
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -66,12 +67,17 @@ class Koll(InOut):
 
     self._axes = axes
     self._mode = mode
-
-    self._variator = ModbusTcpClient(host=host, port=port)
+    self._host = host
+    self._port = port
 
   def open(self) -> None:
     """Connects to the variator over modbus."""
 
+    self.log(logging.INFO, f"Initializing the TCP connection to address "
+                           f"{self._host} on port {self._port}")
+    self._variator = ModbusTcpClient(host=self._host, port=self._port)
+    self.log(logging.INFO, f"Opening the TCP connecting to the address "
+                           f"{self._host} on port {self._port}")
     self._variator.connect()
 
   def get_data(self) -> List[float]:
@@ -130,4 +136,6 @@ class Koll(InOut):
   def close(self) -> None:
     """Closes the modbus connection to the variator."""
 
+    self.log(logging.INFO, f"Closing the TCP connecting to the address "
+                           f"{self._host} on port {self._port}")
     self._variator.close()

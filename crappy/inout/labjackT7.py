@@ -4,6 +4,8 @@ from time import time
 from typing import List, Optional, Dict, Any, Union, Tuple
 from itertools import chain
 from dataclasses import dataclass, field
+from multiprocessing import current_process
+import logging
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -50,7 +52,9 @@ class _Channel:
 
       # Handling the case when the user enters a wrong key
       else:
-        print(f"[Labjack T7] Unknown channel key : {key}, ignoring it")
+        logger = logging.getLogger(
+          f"crappy.{current_process().name}.Labjack_t7.Channel_{self.name}")
+        logger.log(logging.WARNING, f"Unknown channel key : {key}, ignoring")
 
 
 class Labjack_t7(InOut):
@@ -293,6 +297,9 @@ class Labjack_t7(InOut):
       else:
         raise AttributeError(f"[Labjack T7] Invalid chan name: {name}")
 
+    self.log(logging.DEBUG, f"Input channels: {self._channels_in}")
+    self.log(logging.DEBUG, f"Output channels: {self._channels_out}")
+
     # Extracting the addresses and data types from all channels
     self._read_addresses = [chan.address for chan in self._channels_in]
     self._read_types = [chan.dtype for chan in self._channels_in]
@@ -308,6 +315,7 @@ class Labjack_t7(InOut):
     them."""
 
     # Opening the Labjack
+    self.log(logging.INFO, "Opening the connection to the Labjack")
     self._handle = ljm.openS(self._device, self._connection, self._identifier)
 
     # Gathering all the data to write at open
@@ -327,6 +335,7 @@ class Labjack_t7(InOut):
 
     # Finally, writing the commands to write at open
     if reg is not None:
+      self.log(logging.DEBUG, f"Writing values {values} to addresses {reg}")
       ljm.eWriteAddresses(handle=self._handle,
                           numFrames=len(reg),
                           aAddresses=reg,
@@ -361,6 +370,8 @@ class Labjack_t7(InOut):
           if chan.make_zero and 'AIN' in chan.name)))
 
         # Setting the offsets on the Labjack
+        self.log(logging.DEBUG, f"Writing values {values} to registers "
+                                f"{names}")
         ljm.eWriteNames(handle=self._handle,
                         numFrames=len(names),
                         aNames=names,
@@ -410,6 +421,8 @@ class Labjack_t7(InOut):
 
       # Sending the commands
       if addresses:
+        self.log(logging.DEBUG, f"Writing values {values} to addresses "
+                                f"{addresses}")
         ljm.eWriteAddresses(handle=self._handle,
                             numFrames=len(addresses),
                             aAddresses=addresses,
@@ -419,6 +432,7 @@ class Labjack_t7(InOut):
   def close(self) -> None:
     """Closes the Labjack."""
 
+    self.log(logging.INFO, "Closing the connection to the Labjack")
     ljm.close(self._handle)
 
   @staticmethod

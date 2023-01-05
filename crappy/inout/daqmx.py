@@ -4,6 +4,7 @@ import numpy as np
 from time import time
 from typing import List, Optional
 from dataclasses import dataclass
+import logging
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -147,11 +148,13 @@ class Daqmx(InOut):
                                  offset=off, make_zero=make_z)
                         for chan, r_num, g, off, make_z in
                         zip(channels, ranges, gain, offset, make_zero)]
+      self.log(logging.DEBUG, f"Input channels: {self._channels}")
 
       self._out_channels = [_Channel(name=chan, range_num=r_num, gain=g,
                                      offset=off) for chan, r_num, g, off in
                             zip(out_channels, out_ranges,
                                 out_gain, out_offset)]
+      self.log(logging.DEBUG, f"Output channels: {self._out_channels}")
 
     self._handle, self._out_handle = None, None
     self._n_reads = PyDAQmx.int32()
@@ -159,6 +162,7 @@ class Daqmx(InOut):
   def open(self) -> None:
     """Opens the device and initializes the input and output channels."""
 
+    self.log(logging.INFO, "Opening the connection to the DAQmx device")
     PyDAQmx.DAQmxResetDevice(self._device)
 
     if self._channels:
@@ -167,7 +171,10 @@ class Daqmx(InOut):
       PyDAQmx.DAQmxCreateTask('', PyDAQmx.byref(self._handle))
 
       # Setting up the input channels
+      self.log(logging.INFO, "Setting up the input channels")
       for chan in self._channels:
+        self.log(logging.DEBUG, f"Setting up the input channel "
+                                f"{self._device}/{chan.name}")
         PyDAQmx.DAQmxCreateAIVoltageChan(self._handle,
                                          f"{self._device}/{chan.name}", '',
                                          PyDAQmx.DAQmx_Val_Cfg_Default, 0,
@@ -180,7 +187,10 @@ class Daqmx(InOut):
       PyDAQmx.DAQmxCreateTask('', PyDAQmx.byref(self._out_handle))
 
       # Setting up the output channels
+      self.log(logging.INFO, "Setting up the output channels")
       for chan in self._out_channels:
+        self.log(logging.DEBUG, f"Setting up the output channel "
+                                f"{self._device}/{chan.name}")
         PyDAQmx.DAQmxCreateAOVoltageChan(self._out_handle, 
                                          f"{self._device}/{chan.name}", '', 0, 
                                          chan.range_num, 
@@ -252,10 +262,12 @@ class Daqmx(InOut):
 
     # Stopping and closing the processes for data acquisition
     if self._handle is not None:
+      self.log(logging.INFO, "Stopping the input channels")
       PyDAQmx.DAQmxStopTask(self._handle)
       PyDAQmx.DAQmxClearTask(self._handle)
 
     # Stopping and closing the processes for writing data
     if self._out_handle is not None:
+      self.log(logging.INFO, "Stopping the output channels")
       PyDAQmx.DAQmxStopTask(self._out_handle)
       PyDAQmx.DAQmxClearTask(self._out_handle)

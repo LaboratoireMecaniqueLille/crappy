@@ -1,6 +1,8 @@
 # coding: utf-8
 
 from typing import Optional
+import logging
+
 from .inout import InOut
 from .._global import OptionalModule
 
@@ -26,7 +28,7 @@ class Gpio_pwm(InOut):
                pin_out: int,
                duty_cycle: Optional[float] = None,
                frequency: Optional[float] = None) -> None:
-    """Checks the arguments validity.
+    """Checks the argument validity.
 
     Args:
       pin_out (:obj:`int`): The GPIO pin to be controlled (BCM convention).
@@ -78,16 +80,19 @@ class Gpio_pwm(InOut):
     """Sets the GPIOs and starts the PWM."""
 
     # Setting the GPIOs
+    self.log(logging.INFO, "Setting up the GPIOs")
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(self._pin_out, GPIO.OUT)
 
     # Setting to user frequency if provided, or else to 10kHz
+    self.log(logging.INFO, "Setting up the PWM")
     if self._frequency is not None:
       self._pwm = GPIO.PWM(self._pin_out, self._frequency)
     else:
       self._pwm = GPIO.PWM(self._pin_out, 10000)
 
     # Setting to user duty cycle if provided, or else to 0%
+    self.log(logging.INFO, "Starting the PWM")
     if self._duty_cycle is not None:
       self._pwm.start(self._duty_cycle)
     else:
@@ -125,5 +130,7 @@ class Gpio_pwm(InOut):
   def close(self) -> None:
     """Stops PWM and releases GPIOs."""
 
+    self.log(logging.INFO, "Stopping the PWM")
     self._pwm.stop()
+    self.log(logging.INFO, "Cleaning up the GPIOs")
     GPIO.cleanup()

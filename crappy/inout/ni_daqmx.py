@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from re import fullmatch
 from collections import defaultdict
 from itertools import chain
+import logging
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -218,12 +219,15 @@ class Nidaqmx(InOut):
           raise ValueError(f"[NI DAQmx] Invalid channel type : {type_}")
 
     # Opening a stream for each analog input task
+    self.log(logging.INFO, "Opening the streams for the analog input channels")
     self._stream_ai = {
       type_: stream_readers.AnalogMultiChannelReader(task.in_stream)
       for type_, task in self._tasks_ai.items()}
 
     # Creating a task and a stream for all the analog output channels
     if self._analog_out:
+      self.log(logging.INFO,
+               "Opening the streams for the analog output channels")
       self._task_ao = nidaqmx.Task()
       self._stream_ao = stream_writers.AnalogMultiChannelWriter(
         self._task_ao.out_stream, auto_start=True)
@@ -236,6 +240,8 @@ class Nidaqmx(InOut):
 
     # Creating a task and a stream for all the digital input channels
     if self._digital_in:
+      self.log(logging.INFO,
+               "Opening the streams for the digital input channels")
       self._task_di = nidaqmx.Task()
 
       for chan in self._digital_in:
@@ -246,6 +252,8 @@ class Nidaqmx(InOut):
 
     # Creating a task and a stream for all the digital output channels
     if self._digital_out:
+      self.log(logging.INFO,
+               "Opening the streams for the digital output channels")
       self._task_do = nidaqmx.Task()
 
       for chan in self._digital_out:
@@ -365,18 +373,25 @@ class Nidaqmx(InOut):
     device."""
 
     if self._analog_in:
+      self.log(logging.INFO, "Closing the streams for the analog input "
+                             "channels")
       for task in self._tasks_ai.values():
         task.stop()
 
     if self._analog_out:
+      self.log(logging.INFO, "Closing the streams for the analog output "
+                             "channels")
       self._task_ao.stop()
 
     if self._stream_started:
       self.stop_stream()
 
-    if self._analog_in:
-      for task in self._tasks_ai.values():
-        task.close()
+    if self._digital_in:
+      self.log(logging.INFO, "Closing the streams for the digital input "
+                             "channels")
+      self._task_di.close()
 
-    if self._analog_out:
-      self._task_ao.close()
+    if self._digital_out:
+      self.log(logging.INFO, "Closing the streams for the digital output "
+                             "channels")
+      self._task_do.close()

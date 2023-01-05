@@ -3,6 +3,7 @@
 from time import time
 from typing import Optional, List
 from dataclasses import dataclass
+import logging
 
 from .inout import InOut
 from ..tool import comedi_bind as comedi
@@ -146,11 +147,13 @@ class Comedi(InOut):
                                offset=off, make_zero=make_z)
                       for chan, r_num, g, off, make_z in
                       zip(channels, range_num, gain, offset, make_zero)]
+    self.log(logging.DEBUG, f"Input channels: {self._channels}")
 
     self._out_channels = [_Channel(num=chan, range_num=r_num, gain=g,
                                    offset=off) for chan, r_num, g, off in
                           zip(out_channels, out_range_num,
                               out_gain, out_offset)]
+    self.log(logging.DEBUG, f"Output channels: {self._out_channels}")
 
     self._device = None
 
@@ -159,9 +162,11 @@ class Comedi(InOut):
     channels."""
 
     # Opening the Comedi board
+    self.log(logging.INFO, "Opening the connection to the Comedi device")
     self._device = comedi.comedi_open(self._device_name)
 
     # Setting up the input channels
+    self.log(logging.INFO, "Setting up the input channels")
     for chan in self._channels:
       chan.max_data = comedi.comedi_get_maxdata(self._device, self._subdevice,
                                                 chan.num)
@@ -169,6 +174,7 @@ class Comedi(InOut):
                                               chan.num, chan.range_num)
 
     # Setting up the output channels
+    self.log(logging.INFO, "Setting up the output channels")
     for chan in self._out_channels:
       chan.max_data = comedi.comedi_get_maxdata(self._device,
                                                 self._out_subdevice,
@@ -215,6 +221,7 @@ class Comedi(InOut):
       out_a = comedi.comedi_from_phys(val, chan.range_ds, chan.max_data)
 
       # Sending the command
+      self.log(logging.DEBUG, f"Writing value {out_a} to channel {chan.num}")
       comedi.comedi_data_write(self._device, self._out_subdevice, chan.num,
                                chan.range_num, comedi.AREF_GROUND, out_a)
 
@@ -230,6 +237,7 @@ class Comedi(InOut):
       data_read = comedi.comedi_data_read(self._device, self._subdevice,
                                           chan.num, chan.range_num,
                                           comedi.AREF_GROUND)
+      self.log(logging.DEBUG, f"Read value {data_read} to channel {chan.num}")
 
       # Converting numeric to a voltage
       val = comedi.comedi_to_phys(data_read, chan.range_ds, chan.max_data)
@@ -241,5 +249,6 @@ class Comedi(InOut):
   def close(self) -> None:
     """Simply closes the Comedi board and warns the user in case of failure."""
 
+    self.log(logging.INFO, "Closing the connection to the Comedi device")
     if comedi.comedi_close(self._device):
-      print('[Comedi] Device close failed !')
+      self.log(logging.WARNING, "Closing device failed !")

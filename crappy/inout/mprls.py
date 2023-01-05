@@ -2,6 +2,8 @@
 
 from time import time
 from typing import Union, Optional, List
+import logging
+
 from .inout import InOut
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h, Usb_server, i2c_msg_ft232h
@@ -130,8 +132,11 @@ class Mprls(Usb_server, InOut):
     """Opens the I2C bus."""
 
     if self._backend == 'Pi4':
+      self.log(logging.INFO, f"Opening the I2C connection to the MPRLS on "
+                             f"port {self._i2c_port}")
       self._bus = SMBus(self._i2c_port)
       if self._eoc_pin is not None:
+        self.log(logging.INFO, "Setting up the GPIOs")
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self._eoc_pin, GPIO.IN)
 
@@ -140,6 +145,7 @@ class Mprls(Usb_server, InOut):
         eoc = DigitalInOut(getattr(board, self._eoc_pin))
       else:
         eoc = None
+      self.log(logging.INFO, "Connecting the the MPRLS with backend blinka")
       self._mpr = adafruit_mprls.MPRLS(board.I2C(),
                                        psi_min=0,
                                        psi_max=25,
@@ -159,6 +165,8 @@ class Mprls(Usb_server, InOut):
 
     else:
       # Starting conversion
+      self.log(logging.DEBUG, f"Writing {0xAA, 0x00, 0x00} to the address "
+                              f"{self._address}")
       self._bus.i2c_rdwr(self._i2c_msg.write(self._address,
                                              [0xAA, 0x00, 0x00]))
       # Waiting for conversion to complete
@@ -171,6 +179,7 @@ class Mprls(Usb_server, InOut):
       read = self._i2c_msg.read(self._address, 4)
       self._bus.i2c_rdwr(read)
       out = list(read)
+      self.log(logging.DEBUG, f"Read {out} from address {self._address}")
       # Checking if anu error occurred
       if out[0] & mprls_status_bits['memory error']:
         raise RuntimeError("A memory error occurred on the MPRLS")
@@ -187,9 +196,11 @@ class Mprls(Usb_server, InOut):
     """Closes the I2C bus."""
 
     if self._backend != 'blinka':
+      self.log(logging.INFO, "Closing the I2C connection to the MPRLS")
       self._bus.close()
 
     if self._backend == 'Pi4' and self._eoc_pin is not None:
+      self.log(logging.INFO, "Cleaning up the GPIOs")
       GPIO.cleanup()
 
   def _data_available(self) -> bool:

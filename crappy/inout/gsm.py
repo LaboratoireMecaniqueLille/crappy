@@ -2,6 +2,7 @@
 
 from time import sleep
 from typing import List
+import logging
 
 from .inout import InOut
 from .._global import OptionalModule
@@ -40,10 +41,9 @@ class Gsm(InOut):
     """
 
     super().__init__()
-    try:
-      self._ser = Serial(port, baudrate)
-    except SerialException:
-      raise SerialException("GSM not connected or wrong port")
+
+    self._port = port
+    self._baudrate = baudrate
 
     # Change the type of numbers to bytes rather than string
     self._numbers = [number.encode('utf-8') for number in numbers]
@@ -51,6 +51,14 @@ class Gsm(InOut):
   def open(self) -> None:
     """Sends ``"AT"`` to the GSM and waits for the response : ``"OK"``. """
 
+    try:
+      self.log(logging.INFO, f"Opening the serial port {self._port} with "
+                             f"baudrate {self._baudrate}")
+      self._ser = Serial(self._port, self._baudrate)
+    except SerialException:
+      raise SerialException("GSM not connected or wrong port")
+
+    self.log(logging.DEBUG, f"Writing b'AT\\r\\n' to port {self._port}")
     self._ser.write(b'AT' + b'\r\n')
     count = 0
     while count <= 2:
@@ -58,6 +66,7 @@ class Gsm(InOut):
       data = ""
       while self._ser.inWaiting() > 0:
         data += self._ser.read(self._ser.inWaiting()).decode()
+      self.log(logging.DEBUG, f"Read {data} from port {self._port}")
       if "OK" in data:
         return
       count += 1
@@ -85,6 +94,7 @@ class Gsm(InOut):
 
     for number in self._numbers:
       count = 0
+      self.log(logging.DEBUG, f"Writing b'AT\\r\\n' to port {self._port}")
       self._ser.write(b'AT' + b'\r\n')
       w_buff = [b"AT+CMGF=1\r\n",
                 b"AT+CMGS=\"" + number + b"\"\r\n", message.encode()]
@@ -94,14 +104,21 @@ class Gsm(InOut):
           data += self._ser.read(self._ser.inWaiting()).decode()
           # Get all the answers in Waiting
         if data:
+          self.log(logging.DEBUG, f"Read {data} from port {self._port}")
           if count < 2:
             sleep(1)
+            self.log(logging.DEBUG, f"Writing {w_buff[count]} to port "
+                                    f"{self._port}")
             self._ser.write(w_buff[count])
             # Put the message in text mode then enter the
             # number to contact
           if count == 2:
             sleep(0.5)
+            self.log(logging.DEBUG, f"Writing {w_buff[2]} to port "
+                                    f"{self._port}")
             self._ser.write(w_buff[2])  # Write the message
+            self.log(logging.DEBUG, f"Writing b'\x1a\\r\\n' to port "
+                                    f"{self._port}")
             self._ser.write(b"\x1a\r\n")
             # 0x1a : send   0x1b : Cancel send
           count += 1
@@ -109,4 +126,5 @@ class Gsm(InOut):
   def close(self) -> None:
     """Closes the serial port."""
 
+    self.log(logging.INFO, f"Closing the serial port {self._port}")
     self._ser.close()

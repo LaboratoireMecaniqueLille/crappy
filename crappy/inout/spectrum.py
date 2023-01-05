@@ -3,6 +3,8 @@
 import numpy as np
 from time import time
 from typing import List, Optional
+import logging
+
 from .inout import InOut
 from ..tool import pyspcm as spc
 
@@ -56,10 +58,10 @@ class Spectrum(InOut):
     self._notify_size = notify_size
     self._chunk_size = notify_size // (2 * len(channels))
 
-    print(f"[Spectrum] Will send "
-          f"{2 * sample_rate * len(channels) / notify_size} chunks of "
-          f"{notify_size / 1024} kB per second "
-          f"({sample_rate * len(channels) / 512} kB/s)")
+    self.log(logging.INFO,
+             f"Will send {2 * sample_rate * len(channels) / notify_size} "
+             f"chunks of {notify_size / 1024} kB per second "
+             f"({sample_rate * len(channels) / 512} kB/s)")
 
     # These attributes will be set later
     self._spectrum = None
@@ -73,9 +75,11 @@ class Spectrum(InOut):
     """Opens and configures the Spectrum, and sets the ranges and the sample
     rate as requested."""
 
+    self.log(logging.INFO, "Opening the connection to the Spectrum")
     self._spectrum = spc.hOpen(self._device)
 
     # Configuring the Spectrum
+    self.log(logging.INFO, "Configuring the Spectrum")
     spc.dw_set_param(self._spectrum, spc.SPC_CHENABLE,
                      sum([2 ** chan for chan in self._channels]))
     spc.dw_set_param(self._spectrum, spc.SPC_CARDMODE, spc.SPC_REC_FIFO_SINGLE)
@@ -148,4 +152,5 @@ class Spectrum(InOut):
     """Closes the connection to the Spectrum if it was opened."""
 
     if self._spectrum is not None:
+      self.log(logging.INFO, "closing the connection to the Spectrum")
       spc.vClose(self._spectrum)
