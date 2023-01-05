@@ -114,8 +114,8 @@ class Link:
       return
 
     if not isinstance(value, dict):
-      self.log(logging.ERROR, f"Link {self.name}: trying to send object of "
-                              f"type {type(value)} instead of dict !")
+      self.log(logging.ERROR, f"Trying to send object of type {type(value)} "
+                              f"instead of dict !")
       raise LinkDataError
 
     # Finally, sending the dict to the link
@@ -124,8 +124,8 @@ class Link:
     else:
       if time() - self._last_warn > 1:
         self._last_warn = time()
-        self.log(logging.WARNING, f"Link {self.name}: Cannot send the values, "
-                                  f"the Link is full !")
+        self.log(logging.WARNING, f"Cannot send the values, the Link is "
+                                  f"full !")
 
   def recv(self) -> Dict[str, Any]:
     """Reads a single value from the Link and returns it.
