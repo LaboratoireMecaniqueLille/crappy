@@ -43,6 +43,16 @@ class PrepareError(IOError):
   another Block fails to prepare."""
 
 
+class CameraPrepareError(RuntimeError):
+  """Error raised by a Camera Block when one of its child processes crashes
+  while preparing."""
+
+
+class CameraRuntimeError(RuntimeError):
+  """Error raised by a Camera Block when one of its child processes crashes
+  while running."""
+
+
 class T0NotSetError(ValueError):
   """Exception raised when requesting the t0 value when it is not set."""
 

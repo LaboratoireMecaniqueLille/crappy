@@ -5,9 +5,10 @@ from pathlib import Path
 import numpy as np
 from time import time, sleep, strftime, gmtime
 from types import MethodType
-from multiprocessing import Array, Manager, Event, RLock, Pipe
+from multiprocessing import Array, Manager, Event, RLock, Pipe, Barrier
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing import managers, synchronize, connection
+from threading import BrokenBarrierError
 from math import prod
 import logging
 
@@ -17,6 +18,7 @@ from .camera_parallel_record import Image_saver
 from ..camera import camera_list, Camera as BaseCam
 from .camera_process import Camera_process
 from ..tool import Camera_config
+from .._global import CameraPrepareError, CameraRuntimeError
 
 
 class Camera_parallel(Block):
@@ -85,6 +87,7 @@ class Camera_parallel(Block):
     self._img: Optional[np.ndarray] = None
     self._manager: Optional[managers.SyncManager] = None
     self._metadata: Optional[managers.DictProxy] = None
+    self._cam_barrier: Optional[synchronize.Barrier] = None
     self._stop_event_cam: Optional[synchronize.Event] = None
     self._box_conn_in: Optional[connection.Connection] = None
     self._box_conn_out: Optional[connection.Connection] = None
@@ -156,6 +159,16 @@ class Camera_parallel(Block):
                                      parent_name=self.name,
                                      **self._display_proc_kw)
 
+    # Creating the barrier for camera processes synchronization
+    n_proc = sum(int(proc is not None) for proc in (self._process_proc,
+                                                    self._save_proc,
+                                                    self._display_proc))
+    if not n_proc:
+      self.log(logging.WARNING, "The block acquires images but does not save "
+                                "them, nor display them, nor process them !")
+
+    self._cam_barrier = Barrier(n_proc + 1)
+
     # Case when the images are generated and not acquired
     if self._image_generator is not None:
       self.log(logging.INFO, "Setting the image generator camera")
@@ -207,6 +220,7 @@ class Camera_parallel(Block):
       self._process_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._proc_lock,
+                                    barrier=self._cam_barrier,
                                     event=self._stop_event_cam,
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
@@ -222,6 +236,7 @@ class Camera_parallel(Block):
       self._save_proc.set_shared(array=self._img_array,
                                  data_dict=self._metadata,
                                  lock=self._save_lock,
+                                 barrier=self._cam_barrier,
                                  event=self._stop_event_cam,
                                  shape=self._img_shape,
                                  dtype=self._img_dtype,
@@ -237,6 +252,7 @@ class Camera_parallel(Block):
       self._display_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._disp_lock,
+                                    barrier=self._cam_barrier,
                                     event=self._stop_event_cam,
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
@@ -246,9 +262,22 @@ class Camera_parallel(Block):
       self.log(logging.INFO, "Starting the image displayer process")
       self._display_proc.start()
 
+  def begin(self) -> None:
+    """"""
+
+    try:
+      self.log(logging.INFO, "Waiting for all Camera processes to be ready")
+      self._cam_barrier.wait()
+      self.log(logging.INFO, "All Camera processes ready now")
+    except BrokenBarrierError:
+      raise CameraPrepareError
+
   def loop(self) -> None:
     """Receives the incoming data, acquires an image, displays it, saves it,
     and finally processes it if needed."""
+
+    if self._stop_event_cam.is_set():
+      raise CameraRuntimeError
 
     data = self.recv_last_data(fill_missing=False)
 

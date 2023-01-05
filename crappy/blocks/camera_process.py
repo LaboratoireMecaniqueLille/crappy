@@ -1,10 +1,11 @@
 # coding: utf-8
 
 from multiprocessing import Process, managers, get_start_method
-from multiprocessing.synchronize import Event, RLock
+from multiprocessing.synchronize import Event, RLock, Barrier
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
+from threading import BrokenBarrierError
 import numpy as np
 from typing import Optional, Tuple, List, Union, Dict, Any
 import logging
@@ -33,6 +34,7 @@ class Camera_process(Process):
     self._img_array: Optional[SynchronizedArray] = None
     self._data_dict: Optional[managers.DictProxy] = None
     self._lock: Optional[RLock] = None
+    self._cam_barrier: Optional[Barrier] = None
     self._stop_event: Optional[Event] = None
     self._shape: Optional[Tuple[int, int]] = None
     self._box_conn: Optional[Connection] = None
@@ -48,6 +50,7 @@ class Camera_process(Process):
                  array: SynchronizedArray,
                  data_dict: managers.DictProxy,
                  lock: RLock,
+                 barrier: Barrier,
                  event: Event,
                  shape: Tuple[int, int],
                  dtype,
@@ -59,6 +62,7 @@ class Camera_process(Process):
     self._img_array = array
     self._data_dict = data_dict
     self._lock = lock
+    self._cam_barrier = barrier
     self._stop_event = event
     self._shape = shape
     self._dtype = dtype
@@ -75,7 +79,18 @@ class Camera_process(Process):
       self._set_logger()
       self._log(logging.INFO, "Logger configured")
 
-      self._init()
+      try:
+        self._init()
+      except (Exception,):
+        self._cam_barrier.abort()
+        self._log(logging.ERROR, "Breaking the barrier due to caught exception"
+                                 " while preparing")
+        raise
+
+      self._log(logging.INFO, "Waiting for the other Camera processes to be "
+                              "ready")
+      self._cam_barrier.wait()
+      self._log(logging.INFO, "All Camera processes ready now")
 
       while not self._stop_event.is_set():
         self._loop()
@@ -85,6 +100,18 @@ class Camera_process(Process):
     except KeyboardInterrupt:
       self._log(logging.INFO, "KeyboardInterrupt caught, stopping the "
                               "processing")
+
+    except BrokenBarrierError:
+      self._log(logging.WARNING,
+                "Exception raised in another Camera process while waiting "
+                "for all Camera processes to be ready, stopping")
+
+    except (Exception,) as exc:
+      self._logger.exception("Exception caught wile running !", exc_info=exc)
+      self._log(logging.ERROR, "Setting the stop event to stop the other "
+                               "Camera processes")
+      self._stop_event.set()
+      raise
 
     finally:
       self._finish()

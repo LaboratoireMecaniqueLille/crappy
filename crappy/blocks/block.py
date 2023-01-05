@@ -19,7 +19,8 @@ from pathlib import Path
 
 from ..links import Link
 from .._global import LinkDataError, StartTimeout, PrepareError, \
-  T0NotSetError, GeneratorStop, ReaderStop
+  T0NotSetError, GeneratorStop, ReaderStop, CameraPrepareError, \
+  CameraRuntimeError
 
 # Todo:
 #  Add a clean way to stop the blocks, using the keyboard or a button
@@ -501,6 +502,14 @@ class Block(Process):
       self._logger.log(logging.ERROR, "Exception raised in another Block while"
                                       " waiting for all Blocks to be ready, "
                                       "stopping")
+    # An error occurred in a Camera process while preparing
+    except CameraPrepareError:
+      self._logger.log(logging.ERROR, "Exception raised in a Camera process "
+                                      "while preparing, stopping")
+      # An error occurred in a Camera process while running
+    except CameraRuntimeError:
+      self._logger.log(logging.ERROR, "Exception raised in a Camera process "
+                                      "while running, stopping")
     # The start event took too long to be set
     except StartTimeout:
       self._logger.log(logging.ERROR, "Waited too long for start time to be "
@@ -523,7 +532,7 @@ class Block(Process):
       self._logger.log(logging.INFO, f"KeyBoardInterrupt caught, stopping")
     # Another exception occurred
     except (Exception,) as exc:
-      logging.exception("Caught exception while preparing !", exc_info=exc)
+      logging.exception("Caught exception while running !", exc_info=exc)
       raise
 
     # In all cases, trying to properly close the block
