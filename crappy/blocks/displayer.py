@@ -198,7 +198,6 @@ class Displayer:
     """
 
     if self._logger is None:
-      self._logger = logging.getLogger(
-        f"crappy.{current_process().name}.Displayer")
+      self._logger = logging.getLogger(f"{current_process().name}.Displayer")
 
     self._logger.log(level, msg)

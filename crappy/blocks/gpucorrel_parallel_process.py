@@ -60,8 +60,7 @@ class Gpucorrel_parallel_process(Camera_process):
     """"""
 
     self._log(logging.INFO, "Instantiating the GPUCorrel tool")
-    self._gpucorrel_kw.update(
-      logger_name=f'crappy.{self._parent_name}.Process')
+    self._gpucorrel_kw.update(logger_name=self.name)
     self._correl = GPUCorrel(**self._gpucorrel_kw)
 
     if self._img_ref is not None:

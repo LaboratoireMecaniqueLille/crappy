@@ -64,7 +64,7 @@ class Gpuve_parallel_process(Camera_process):
     """"""
 
     self._log(logging.INFO, "Instantiating the GPUCorrel tool instances")
-    self._gpuve_kw.update(logger_name=f'crappy.{self._parent_name}.Process')
+    self._gpuve_kw.update(logger_name=self.name)
     self._correls = [GPUCorrel(**self._gpuve_kw) for _ in self._patches]
 
     # We can already set the sizes of the images as they are already known

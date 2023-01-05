@@ -28,11 +28,11 @@ class Camera_process(Process):
     """"""
 
     super().__init__()
+    self.name = f"{parent_name}.{type(self).__name__}"
 
     self._log_queue = log_queue
     self._logger: Optional[logging.Logger] = None
     self._log_level = log_level
-    self._parent_name = parent_name
 
     self._img_array: Optional[SynchronizedArray] = None
     self._data_dict: Optional[managers.DictProxy] = None
@@ -204,8 +204,7 @@ class Camera_process(Process):
 
     log_level = 10 * int(round(self._log_level / 10, 0))
 
-    logger = logging.getLogger(f'crappy.{self._parent_name}.'
-                               f'{type(self).__name__}')
+    logger = logging.getLogger(self.name)
     logger.setLevel(min(log_level, logging.INFO))
 
     # On Windows, the messages need to be sent through a Queue for logging

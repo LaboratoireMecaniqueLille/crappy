@@ -39,6 +39,7 @@ class Block(Process):
   """
 
   instances = WeakSet()
+  names = list()
 
   # The synchronization objects will be set later
   shared_t0: Optional[Synchronized] = None
@@ -64,6 +65,7 @@ class Block(Process):
     self.labels: Optional[List[str]] = None
     self.freq = None
     self.verbose = False
+    self.name = self.get_name(type(self).__name__)
 
     # The synchronization objects will be set later
     self._instance_t0: Optional[Synchronized] = None
@@ -92,9 +94,19 @@ class Block(Process):
     return instance
 
   @classmethod
+  def get_name(cls, name) -> str:
+    """"""
+
+    i = 1
+    while f"crappy.{name}_{i}" in cls.names:
+      i += 1
+
+    cls.names.append(f"crappy.{name}_{i}")
+    return f"crappy.{name}_{i}"
+
+  @classmethod
   def start_all(cls,
-                allow_root: bool = False,
-                log_level: int = 20) -> None:
+                allow_root: bool = False) -> None:
     """Method for starting a script with Crappy.
 
     It sets the synchronization objects for all the blocks, renices the
@@ -111,19 +123,14 @@ class Block(Process):
       allow_root: If set tu :obj:`True`, tries to renice the processes niceness
         with sudo privilege in Linux. It requires the Python script to be run
         with sudo privilege, otherwise it has no effect.
-      log_level: An :obj:`int` indicating the logging level to use when running
-        the script. Default is `20` for level INFO, other levels are `10` for
-        DEBUG, `30` for WARNING, `40` for ERROR and `50` for CRITICAL. The
-        verbosity of the DEBUG level is really high, so it should only be used
-        when needed.
     """
 
-    cls.prepare_all(log_level)
+    cls.prepare_all()
     cls.renice_all(allow_root)
     cls.launch_all()
 
   @classmethod
-  def prepare_all(cls, log_level: int = 20) -> None:
+  def prepare_all(cls) -> None:
     """Creates the synchronization objects, shares them with the blocks, and
     starts the processes associated to the blocks.
 
@@ -131,19 +138,12 @@ class Block(Process):
 
     Once started with this method, the blocks will call their :meth:`prepare`
     method and then be blocked by a :obj:`multiprocessing.Barrier`.
-
-    Args:
-      log_level: An :obj:`int` indicating the logging level to use when running
-        the script. Default is `20` for level INFO, other levels are `10` for
-        DEBUG, `30` for WARNING, `40` for ERROR and `50` for CRITICAL. The
-        verbosity of the DEBUG level is really high, so it should only be used
-        when needed.
     """
 
     try:
 
       # Initializing the logger and displaying the first messages
-      cls._set_logger(log_level)
+      cls._set_logger()
       cls.logger.log(logging.INFO,
                      "===================== CRAPPY =====================")
       cls.logger.log(logging.INFO, f'Starting the script {argv[0]}\n')
@@ -170,7 +170,6 @@ class Block(Process):
         instance._stop_event = cls.stop_event
         instance._start_event = cls.start_event
         instance._log_queue = cls.log_queue
-        instance._log_level = log_level
         cls.logger.log(logging.INFO, f'Multiprocessing synchronization objects'
                                      f' set for {instance.name} Block')
 
@@ -297,8 +296,8 @@ class Block(Process):
     # Waiting at most 3 seconds for all the blocks to finish
     while cls.instances and not all(not inst.is_alive() for inst
                                     in cls.instances):
-      sleep(0.1)
-      cls.logger.log(logging.DEBUG, "All Blocks not stopped yet")
+      sleep(0.5)
+      cls.logger.log(logging.INFO, "All Blocks not stopped yet")
 
       # After 3 seconds, killing the blocks that didn't stop
       if time() - t > 3:
@@ -316,7 +315,7 @@ class Block(Process):
     cls.thread_stop = True
 
   @classmethod
-  def _set_logger(cls, log_level: int = 20) -> None:
+  def _set_logger(cls) -> None:
     """Initializes the logging for the main process.
 
     It creates two Stream Loggers, one for the info and debug levels displaying
@@ -326,15 +325,7 @@ class Block(Process):
     The levels WARNING and above are always being displayed in the terminal, no
     matter what the user chooses. Similarly, the INFO log level and above are
     always being saved to the log file.
-
-    log_level: An :obj:`int` indicating the logging level to use when running
-      the script. Default is `20` for level INFO, other levels are `10` for
-      DEBUG, `30` for WARNING, `40` for ERROR and `50` for CRITICAL. The
-      verbosity of the DEBUG level is really high, so it should only be used
-      when needed.
     """
-
-    log_level = 10 * int(round(log_level / 10, 0))
 
     # The logger handling all messages
     crappy_log = logging.getLogger('crappy')
@@ -361,21 +352,16 @@ class Block(Process):
 
     # This handler writes the log messages to a log file
     if log_path is not None:
-      if log_level > 10:
-        file_handler = logging.handlers.RotatingFileHandler(
-          log_path / 'logs.txt', maxBytes=1000000, backupCount=5)
-      else:
-        file_handler = logging.FileHandler(log_path / 'logs_debug.txt',
-                                           mode='w')
+      file_handler = logging.FileHandler(log_path / 'logs.txt', mode='w')
     else:
       file_handler = None
 
     # Setting the log levels for the handlers
-    stream_handler.setLevel(log_level)
+    stream_handler.setLevel(logging.DEBUG)
     stream_handler.addFilter(cls._stdout_filter)
-    stream_handler_err.setLevel(max(logging.WARNING, log_level))
+    stream_handler_err.setLevel(logging.WARNING)
     if file_handler is not None:
-      file_handler.setLevel(min(logging.INFO, log_level))
+      file_handler.setLevel(logging.DEBUG)
 
     # Setting the log format for the handlers
     log_format = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s '
@@ -408,6 +394,7 @@ class Block(Process):
     already started."""
 
     cls.instances = WeakSet()
+    cls.names = list()
     cls.logger.log(logging.INFO, 'Crappy was reset by the reset() command')
 
   @classmethod
@@ -650,7 +637,7 @@ class Block(Process):
 
     log_level = 10 * int(round(self.log_level / 10, 0))
 
-    logger = logging.getLogger(f'crappy.{self.name}')
+    logger = logging.getLogger(self.name)
     logger.setLevel(min(log_level, logging.INFO))
 
     # On Windows, the messages need to be sent through a Queue for logging

@@ -46,7 +46,7 @@ class Ve_parallel_process(Camera_process):
                             safe_mode=self._detector.safe_mode,
                             border=self._detector.border,
                             blur=self._detector.blur,
-                            logger_name=f'crappy.{self._parent_name}.Process')
+                            logger_name=self.name)
 
     self._log(logging.INFO, "Starting the VideoExtenso spot tracker "
                             "processes")

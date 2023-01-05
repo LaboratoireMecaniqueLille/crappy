@@ -46,7 +46,7 @@ class InOut(metaclass=MetaIO):
 
     if self._logger is None:
       self._logger = logging.getLogger(
-        f"crappy.{current_process().name}.{type(self).__name__}")
+        f"{current_process().name}.{type(self).__name__}")
 
     self._logger.log(level, msg)
 

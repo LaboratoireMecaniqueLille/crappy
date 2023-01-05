@@ -319,6 +319,8 @@ class Tracker(Process):
   returns the updated position of the detected spot.
   """
 
+  names = list()
+
   def __init__(self,
                pipe: Connection,
                logger_name: str,
@@ -347,19 +349,30 @@ class Tracker(Process):
     """
 
     super().__init__()
+    self.name = self.get_name(logger_name, type(self).__name__)
 
     self._pipe = pipe
     self._white_spots = white_spots
     self._thresh = thresh
     self._blur = blur
 
-    self._logger_name = logger_name
     self._logger: Optional[logging.Logger] = None
     self._log_level = log_level
     self._log_queue = log_queue
 
     self._n = 0
     self._last_warn = time()
+
+  @classmethod
+  def get_name(cls, logger_name: str, self_name: str) -> str:
+    """"""
+
+    i = 1
+    while f"{logger_name}.{self_name}_{i}" in cls.names:
+      i += 1
+
+    cls.names.append(f"{logger_name}.{self_name}_{i}")
+    return f"{logger_name}.{self_name}_{i}"
 
   def run(self) -> None:
     """Continuously reads incoming subframes, tries to detect a spot and sends
@@ -493,7 +506,7 @@ class Tracker(Process):
 
     log_level = 10 * int(round(self._log_level / 10, 0))
 
-    logger = logging.getLogger(f"crappy.{self._logger_name}.{self.name}")
+    logger = logging.getLogger(self.name)
     logger.setLevel(min(log_level, logging.INFO))
 
     # On Windows, the messages need to be sent through a Queue for logging

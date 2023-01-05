@@ -455,8 +455,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """"""
 
     if self._logger is None:
-      self._logger = logging.getLogger(
-        f"crappy.{current_process().name}.FT232H")
+      self._logger = logging.getLogger(f"{current_process().name}.FT232H")
 
     self._logger.log(level, msg)
 

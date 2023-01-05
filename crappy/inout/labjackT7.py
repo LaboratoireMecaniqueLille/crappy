@@ -53,7 +53,7 @@ class _Channel:
       # Handling the case when the user enters a wrong key
       else:
         logger = logging.getLogger(
-          f"crappy.{current_process().name}.Labjack_t7.Channel_{self.name}")
+          f"{current_process().name}.Labjack_t7.Channel_{self.name}")
         logger.log(logging.WARNING, f"Unknown channel key : {key}, ignoring")
 
 
