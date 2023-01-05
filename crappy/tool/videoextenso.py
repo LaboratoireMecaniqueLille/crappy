@@ -3,13 +3,14 @@
 from multiprocessing import Process, Pipe
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Union
 import numpy as np
 from itertools import combinations
-from time import sleep
+from time import sleep, time
 from multiprocessing import get_start_method
 import logging
 import logging.handlers
+from select import select
 
 from .._global import OptionalModule
 from .cameraConfigBoxes import Spot_boxes, Box
@@ -118,6 +119,8 @@ class VideoExtenso:
     self._consecutive_overlaps = 0
     self._trackers = list()
     self._pipes = list()
+
+    self._last_warn = time()
 
   def __del__(self) -> None:
     """Security to ensure there are no zombie processes left when exiting."""
@@ -275,6 +278,19 @@ class VideoExtenso:
 
     self._logger.log(level, msg)
 
+  def _send(self,
+            conn: Connection,
+            val: Union[str, Tuple[int, int, np.ndarray]]):
+    """"""
+
+    if select([], [conn], [], 0)[1]:
+      conn.send(val)
+    else:
+      if time() - self._last_warn > 1:
+        self._last_warn = time()
+        self._log(logging.WARNING, f"Cannot send the image to process to the "
+                                   f"Tracker process, the Pipe is full !")
+
   @staticmethod
   def _overlap_box(box_1: Box, box_2: Box) -> bool:
     """Determines whether two boxes are overlapping or not."""
@@ -343,6 +359,7 @@ class Tracker(Process):
     self._log_queue = log_queue
 
     self._n = 0
+    self._last_warn = time()
 
   def run(self) -> None:
     """Continuously reads incoming subframes, tries to detect a spot and sends
@@ -370,7 +387,7 @@ class Tracker(Process):
           # Simply sending back the new Box containing the spot
           try:
             self._log(logging.DEBUG, "Sending back data through pipe")
-            self._pipe.send(self._evaluate(x_start, y_start, img))
+            self._send(self._evaluate(x_start, y_start, img))
 
           # If the caught exception is a KeyboardInterrupt, simply stopping
           except KeyboardInterrupt:
@@ -381,7 +398,7 @@ class Tracker(Process):
           except (Exception,) as exc:
             self._logger.exception("Caught exception while tracking spot",
                                    exc_info=exc)
-            self._pipe.send('stop')
+            self._send('stop')
 
     # In case the user presses CTRL+C, simply stopping the process
     except KeyboardInterrupt:
@@ -459,6 +476,17 @@ class Tracker(Process):
                y_end=y_start + y_min + height,
                x_centroid=x_start + x,
                y_centroid=y_start + y)
+
+  def _send(self, val: Union[Box, str]) -> None:
+    """"""
+
+    if select([], [self._pipe], [], 0)[1]:
+      self._pipe.send(val)
+    else:
+      if time() - self._last_warn > 1:
+        self._last_warn = time()
+        self._log(logging.WARNING, f"Cannot send the detected spot to the "
+                                   f"VideoExtenso tool, the Pipe is full !")
 
   def _set_logger(self) -> None:
     """"""
