@@ -5,14 +5,6 @@ import numpy as np
 from pathlib import Path
 from .gpuve_parallel_process import Gpuve_parallel_process
 from .camera_parallel import Camera_parallel
-from ..tool import GPUCorrel
-from .._global import OptionalModule
-
-try:
-  import pycuda.tools
-  import pycuda.driver
-except (ModuleNotFoundError, ImportError):
-  pycuda = OptionalModule("pycuda")
 
 
 class Gpuve_parallel(Camera_parallel):
@@ -72,7 +64,6 @@ class Gpuve_parallel(Camera_parallel):
     else:
       self.labels = labels
 
-    self._patches = patches
     self._img_ref = img_ref
 
     if 2 + 2 * len(patches) != len(self.labels):
@@ -80,37 +71,20 @@ class Gpuve_parallel(Camera_parallel):
                        "of labels !\nMake sure that the time and metadata "
                        "labels were given")
 
-    self._gpuve_kw = dict(verbose=verbose,
-                          levels=1,
-                          resampling_factor=2,
+    self._gpuve_kw = dict(patches=patches,
+                          verbose=verbose,
                           kernel_file=kernel_file,
                           iterations=iterations,
-                          mask=None,
-                          ref_img=img_ref,
-                          mul=mul,
-                          fields=['x', 'y'])
+                          img_ref=img_ref,
+                          mul=mul)
 
   def prepare(self) -> None:
     """"""
 
-    pycuda.driver.init()
-    context = pycuda.tools.make_default_context()
-    self._gpuve_kw.update(dict(context=context))
-
-    self._correls = [GPUCorrel(**self._gpuve_kw) for _ in self._patches]
-
-    # We can already set the sizes of the images as they are already known
-    for correl, (_, __, h, w) in zip(self._correls, self._patches):
-      correl.set_img_size((h, w))
-
-    if self._img_ref is not None:
-      for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
-        correl.set_orig(self._img_ref[oy:oy + h, ox:ox + w].astype(np.float32))
-        correl.prepare()
-
-    self._process_proc = Gpuve_parallel_process(
-      correls=self._correls, patches=self._patches,
-      img0_set=self._img_ref is not None)
+    self._process_proc = Gpuve_parallel_process(log_queue=self._log_queue,
+                                                log_level=self._log_level,
+                                                parent_name=self.name,
+                                                **self._gpuve_kw)
 
     super().prepare()
 

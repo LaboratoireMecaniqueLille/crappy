@@ -77,11 +77,10 @@ class Gpucorrel_parallel(Camera_parallel):
       raise ValueError("The number of fields is inconsistent with the number "
                        "of labels !\nMake sure that the time label was given")
 
-    self._img_ref = img_ref
-    self._discard_limit = discard_limit
-    self._discard_ref = discard_ref
-
-    self._gpucorrel_kw = dict(context=None,
+    self._gpucorrel_kw = dict(discard_limit=discard_limit,
+                              discard_ref=discard_ref,
+                              calc_res=res,
+                              img_ref=img_ref,
                               verbose=verbose,
                               levels=levels,
                               resampling_factor=resampling_factor,
@@ -95,19 +94,10 @@ class Gpucorrel_parallel(Camera_parallel):
   def prepare(self) -> None:
     """"""
 
-    self._correl = GPUCorrel(**self._gpucorrel_kw)
-
-    if self._img_ref is not None:
-      self._correl.set_img_size(self._img_ref.shape)
-      self._correl.set_orig(self._img_ref.astype(np.float32))
-      self._correl.prepare()
-
-    self._process_proc = Gpucorrel_parallel_process(
-      correl=self._correl,
-      img0_set=self._img_ref is not None,
-      discard_limit=self._discard_limit,
-      discard_ref=self._discard_ref,
-      calc_res=self._calc_res)
+    self._process_proc = Gpucorrel_parallel_process(log_queue=self._log_queue,
+                                                    log_level=self._log_level,
+                                                    parent_name=self.name,
+                                                    **self._gpucorrel_kw)
 
     super().prepare()
 

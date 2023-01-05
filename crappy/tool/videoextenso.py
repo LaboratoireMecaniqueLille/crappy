@@ -2,10 +2,15 @@
 
 from multiprocessing import Process, Pipe
 from multiprocessing.connection import Connection
+from multiprocessing.queues import Queue
 from typing import Optional, Tuple, List
 import numpy as np
 from itertools import combinations
 from time import sleep
+from multiprocessing import get_start_method
+import logging
+import logging.handlers
+
 from .._global import OptionalModule
 from .cameraConfigBoxes import Spot_boxes, Box
 
@@ -15,19 +20,16 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 try:
   from skimage.filters import threshold_otsu
-  from skimage.morphology import label
-  from skimage.measure import regionprops
 except (ModuleNotFoundError, ImportError):
-  label = OptionalModule("skimage", "Please install scikit-image to use"
-                         "Video-extenso")
-  threshold_otsu = regionprops = label
+  threshold_otsu = OptionalModule("skimage", "Please install scikit-image to "
+                                             "use Video-extenso")
 
 
 class LostSpotError(Exception):
   """Exception raised when a spot is lost, or when there's too much
   overlapping."""
 
-  pass
+  ...
 
 
 class VideoExtenso:
@@ -47,13 +49,19 @@ class VideoExtenso:
   """
 
   def __init__(self,
+               spots: Spot_boxes,
+               x_l0: float,
+               y_l0: float,
+               thresh: int,
+               log_level: int,
+               log_queue: Queue,
                white_spots: bool = False,
                update_thresh: bool = False,
                num_spots: Optional[int] = None,
                safe_mode: bool = False,
                border: int = 5,
-               min_area: int = 150,
-               blur: Optional[int] = 5) -> None:
+               blur: Optional[int] = 5,
+               logger_name: str = '') -> None:
     """Sets the args and the other instance attributes.
 
     Args:
@@ -80,10 +88,6 @@ class VideoExtenso:
         additional pixels to use. It should be greater than the expected
         "speed" of the spots, in pixels / frame. But if it's too big, noise or
         other spots might hinder the detection.
-      min_area: The minimum area an object should have to be potentially
-        detected as a spot. The value is given in pixels, as a surface unit.
-        It must of course be adapted depending on the resolution of camera and
-        the size of the spots to detect.
       blur: The size in pixels of the kernel to use for applying a median blur
         to the image before the spot detection. If not given, no blurring is
         performed. A slight blur improves the spot detection by smoothening the
@@ -99,15 +103,19 @@ class VideoExtenso:
     self._update_thresh = update_thresh
     self._safe_mode = safe_mode
     self._border = border
-    self._min_area = min_area
     self._blur = blur
+    self.spots = spots
+    self._x_l0 = x_l0
+    self._y_l0 = y_l0
+    self._thresh = thresh
+
+    self._logger: Optional[logging.Logger] = None
+    self._logger_name = logger_name
+    self._log_level = log_level
+    self._log_queue = log_queue
 
     # Setting the other attributes
     self._consecutive_overlaps = 0
-    self.spots = Spot_boxes()
-    self._thresh = 0 if white_spots else 255
-    self.x_l0 = None
-    self.y_l0 = None
     self._trackers = list()
     self._pipes = list()
 
@@ -115,123 +123,6 @@ class VideoExtenso:
     """Security to ensure there are no zombie processes left when exiting."""
 
     self.stop_tracking()
-
-  def detect_spots(self,
-                   img: np.ndarray,
-                   y_orig: int,
-                   x_orig: int) -> Optional[Spot_boxes]:
-    """Transforms the image to improve spot detection, detects up to 4 spots
-    and return a Spot_boxes object containing all the detected spots.
-
-    Args:
-      img: The sub-image on which the spots should be detected.
-      y_orig: The y coordinate of the top-left pixel of the sub-image on the
-        entire image.
-      x_orig: The x coordinate of the top-left pixel of the sub-image on the
-        entire image.
-
-    Returns:
-      A Spot_boxes object containing all the detected spots.
-    """
-
-    # First, blurring the image if asked to
-    if self._blur is not None and self._blur > 1:
-      img = cv2.medianBlur(img, self._blur)
-
-    # Determining the best threshold for the image
-    self._thresh = threshold_otsu(img)
-
-    # Getting all pixels superior or inferior to threshold
-    if self._white_spots:
-      black_white = img > self._thresh
-    else:
-      black_white = img <= self._thresh
-
-    # The original image is not needed anymore
-    del img
-
-    # Detecting the spots on the image
-    props = regionprops(label(black_white))
-
-    # The black and white image is not needed anymore
-    del black_white
-
-    # Removing regions that are too small or not circular
-    props = [prop for prop in props if prop.solidity > 0.8
-             and prop.area > self._min_area]
-
-    # Detecting overlapping spots and storing the ones that should be removed
-    to_remove = list()
-    for prop_1, prop_2 in combinations(props, 2):
-      if self._overlap_bbox(prop_1, prop_2):
-        to_remove.append(prop_2 if prop_1.area > prop_2.area else prop_1)
-
-    # Now removing the overlapping spots
-    if to_remove:
-      print("[VideoExtenso] Overlapping spots found, removing the smaller "
-            "overlapping ones")
-    for prop in to_remove:
-      props.remove(prop)
-
-    # Sorting the regions by area
-    props = sorted(props, key=lambda prop: prop.area, reverse=True)
-
-    # Keeping only the biggest areas to match the target number of spots
-    if self._num_spots is not None:
-      props = props[:self._num_spots]
-    else:
-      props = props[:4]
-
-    # Indicating the user if not enough spots were found
-    if not props:
-      print("[VideoExtenso] No spots found !")
-      return
-    elif self._num_spots is not None and len(props) != self._num_spots:
-      print(f"[VideoExtenso] Expected {self._num_spots} spots, "
-            f"found only {len(props)}")
-      return
-
-    # Replacing the previously detected spots with the new ones
-    self.spots.reset()
-    for i, prop in enumerate(props):
-      # Extracting the properties of interest
-      y, x = prop.centroid
-      y_min, x_min, y_max, x_max = prop.bbox
-      # Adjusting with the offset given as argument
-      x += x_orig
-      x_min += x_orig
-      x_max += x_orig
-      y += y_orig
-      y_min += y_orig
-      y_max += y_orig
-
-      self.spots[i] = Box(x_start=x_min, x_end=x_max,
-                          y_start=y_min, y_end=y_max,
-                          x_centroid=x, y_centroid=y)
-
-    return self.spots
-
-  def save_length(self) -> bool:
-    """Saves the initial length in x and y between the detected spots."""
-
-    # Cannot determine a length if no spots was detected
-    if self.spots.empty():
-      print("[VideoExtenso] Cannot save L0, no spots selected yet !")
-      return False
-
-    # Simply taking the distance between the extrema as the initial length
-    if len(self.spots) > 1:
-      x_centers = [spot.x_centroid for spot in self.spots if spot is not None]
-      y_centers = [spot.y_centroid for spot in self.spots if spot is not None]
-      self.x_l0 = max(x_centers) - min(x_centers)
-      self.y_l0 = max(y_centers) - min(y_centers)
-
-    # If only one spot detected, setting the initial lengths to 0
-    else:
-      self.x_l0 = 0
-      self.y_l0 = 0
-
-    return True
 
   def start_tracking(self) -> None:
     """Creates a Tracker process for each detected spot, and starts it.
@@ -248,6 +139,10 @@ class VideoExtenso:
 
       inlet, outlet = Pipe()
       tracker = Tracker(pipe=outlet,
+                        logger_name=f"{self._logger_name}."
+                                    f"{type(self).__name__}",
+                        log_level=self._log_level,
+                        log_queue=self._log_queue,
                         white_spots=self._white_spots,
                         thresh=None if self._update_thresh else self._thresh,
                         blur=self._blur)
@@ -269,6 +164,8 @@ class VideoExtenso:
       # If they're not stopping, killing the trackers
       for tracker in self._trackers:
         if tracker.is_alive():
+          self._log(logging.WARNING, "Tracker process did not stop properly, "
+                                     "terminating it")
           tracker.terminate()
 
   def get_data(self,
@@ -285,12 +182,6 @@ class VideoExtenso:
       A :obj:`list` containing tuples with the coordinates of the centers of
       the detected spots, and the calculated x and y strain values.
     """
-
-    # First, saving the initial length if not already saved
-    if self.x_l0 is None or self.y_l0 is None:
-       if not self.save_length():
-         # If no spots are selected, it should be detected here
-         raise IOError("[VideoExtenso] No spots selected, aborting !")
 
     # Sending the latest sub-image containing the spot to track
     # Also sending the coordinates of the top left pixel
@@ -311,7 +202,8 @@ class VideoExtenso:
         # In case a tracker faced an error, stopping them all and raising
         if isinstance(box, str):
           self.stop_tracking()
-          raise LostSpotError(f"[VideoExtenso] Tracker returned error : {box}")
+          self._log(logging.ERROR, "Tracker process returned exception !")
+          raise LostSpotError
 
         self.spots[i] = box
 
@@ -324,10 +216,12 @@ class VideoExtenso:
         # If there's overlapping in safe mode, raising directly
         if self._safe_mode:
           self.stop_tracking()
-          raise LostSpotError("[VideoExtenso] Overlapping detected in safe"
-                              " mode, raising exception directly")
+          self._log(logging.ERROR, "Overlapping detected in safe mode, "
+                                   "raising exception")
+          raise LostSpotError
 
-        print("[VideoExtenso] Overlapping detected ! Reducing spot window")
+        self._log(logging.WARNING, "Overlapping detected ! Reducing spot "
+                                   "window")
 
         # If we're not in safe mode, simply reduce the boxes by 1 pixel
         # Also, make sure the box is not being reduced too much
@@ -346,8 +240,8 @@ class VideoExtenso:
     if overlap:
       self._consecutive_overlaps += 1
       if self._consecutive_overlaps > 10:
-        raise LostSpotError("[VideoExtenso] Too many consecutive "
-                            "overlaps !")
+        self._log(logging.ERROR, "Too many consecutive overlaps !")
+        raise LostSpotError
     else:
       self._consecutive_overlaps = 0
 
@@ -358,8 +252,8 @@ class VideoExtenso:
       try:
         # The strain is calculated based on the positions of the extreme
         # spots in each direction
-        exx = ((max(x) - min(x)) / self.x_l0 - 1) * 100
-        eyy = ((max(y) - min(y)) / self.y_l0 - 1) * 100
+        exx = ((max(x) - min(x)) / self._x_l0 - 1) * 100
+        eyy = ((max(y) - min(y)) / self._y_l0 - 1) * 100
       except ZeroDivisionError:
         # Shouldn't happen but adding a safety just in case
         exx, eyy = 0, 0
@@ -371,6 +265,15 @@ class VideoExtenso:
       x = self.spots[0].x_centroid
       y = self.spots[0].y_centroid
       return [(y, x)], 0, 0
+
+  def _log(self, level: int, msg: str) -> None:
+    """"""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"{self._logger_name}.{type(self).__name__}")
+
+    self._logger.log(level, msg)
 
   @staticmethod
   def _overlap_box(box_1: Box, box_2: Box) -> bool:
@@ -402,6 +305,9 @@ class Tracker(Process):
 
   def __init__(self,
                pipe: Connection,
+               logger_name: str,
+               log_level: int,
+               log_queue: Queue,
                white_spots: bool = False,
                thresh: Optional[int] = None,
                blur: Optional[float] = 5) -> None:
@@ -421,6 +327,7 @@ class Tracker(Process):
         detect the spot. This argument gives the size of the kernel to use for
         blurring. Better results are obtained with blurring, but it takes a bit
         more time.
+      logger_name:
     """
 
     super().__init__()
@@ -429,6 +336,11 @@ class Tracker(Process):
     self._white_spots = white_spots
     self._thresh = thresh
     self._blur = blur
+
+    self._logger_name = logger_name
+    self._logger: Optional[logging.Logger] = None
+    self._log_level = log_level
+    self._log_queue = log_queue
 
     self._n = 0
 
@@ -442,10 +354,13 @@ class Tracker(Process):
 
     # Looping forever for receiving data
     try:
+      self._set_logger()
+
       while True:
         # Making sure the call to recv is not blocking
         if self._pipe.poll(0.5):
           y_start, x_start, img = self._pipe.recv()
+          self._log(logging.DEBUG, "Received data from pipe")
           self._n += 1
 
           # If a string is received, always means the process has to stop
@@ -454,18 +369,23 @@ class Tracker(Process):
 
           # Simply sending back the new Box containing the spot
           try:
+            self._log(logging.DEBUG, "Sending back data through pipe")
             self._pipe.send(self._evaluate(x_start, y_start, img))
 
           # If the caught exception is a KeyboardInterrupt, simply stopping
           except KeyboardInterrupt:
+            self._log(logging.INFO, "Caught KeyboardInterrupt, stopping the "
+                                    "process")
             break
           # Sending back the exception if anything else unexpected happened
           except (Exception,) as exc:
-            self._pipe.send(str(exc))
+            self._logger.exception("Caught exception while tracking spot",
+                                   exc_info=exc)
+            self._pipe.send('stop')
 
     # In case the user presses CTRL+C, simply stopping the process
     except KeyboardInterrupt:
-      pass
+      self._log(logging.INFO, "Caught KeyboardInterrupt, stopping the process")
 
   def _evaluate(self, x_start: int, y_start: int, img: np.ndarray) -> Box:
     """Takes a sub-image, applies a threshold on it and tries to detect the new
@@ -501,8 +421,9 @@ class Tracker(Process):
 
       # If the threshold is pre-defined, trying again with an updated one
       if self._thresh is not None:
-        print("[VideoExtenso Tracker] Detected spot too small compared with "
-              "overall box size, recalculating threshold")
+        self._log(logging.WARNING,
+                  "Detected spot too small compared with overall box size, "
+                  "recalculating threshold")
         thresh = threshold_otsu(img)
         if self._white_spots:
           black_white = (img > thresh).astype('uint8')
@@ -511,13 +432,15 @@ class Tracker(Process):
 
         # If the spot still cannot be detected, aborting
         if np.count_nonzero(black_white) < 0.1 * img.size:
-          raise LostSpotError("Couldn't detect spot with adaptive threshold, "
-                              "aborting !")
+          self._log(logging.ERROR,
+                    "Couldn't detect spot with adaptive threshold, aborting !")
+          raise LostSpotError
 
       # If an adaptive threshold is already used, nothing more can be done
       else:
-        raise LostSpotError("Couldn't detect spot with adaptive threshold, "
-                            "aborting !")
+        self._log(logging.ERROR,
+                  "Couldn't detect spot with adaptive threshold, aborting !")
+        raise LostSpotError
 
     # Calculating the coordinates of the centroid using the image moments
     moments = cv2.moments(black_white)
@@ -536,3 +459,31 @@ class Tracker(Process):
                y_end=y_start + y_min + height,
                x_centroid=x_start + x,
                y_centroid=y_start + y)
+
+  def _set_logger(self) -> None:
+    """"""
+
+    log_level = 10 * int(round(self._log_level / 10, 0))
+
+    logger = logging.getLogger(f"crappy.{self._logger_name}.{self.name}")
+    logger.setLevel(min(log_level, logging.INFO))
+
+    # On Windows, the messages need to be sent through a Queue for logging
+    if get_start_method() == "spawn":
+      queue_handler = logging.handlers.QueueHandler(self._log_queue)
+      queue_handler.setLevel(min(log_level, logging.INFO))
+      logger.addHandler(queue_handler)
+
+    self._logger = logger
+
+  def _log(self, level: int, msg: str) -> None:
+    """Sends a log message to the logger.
+
+    Args:
+      level: The logging level, as an :obj:`int`.
+      msg: The message to log, as a :obj:`str`.
+    """
+
+    if self._logger is None:
+      return
+    self._logger.log(level, msg)

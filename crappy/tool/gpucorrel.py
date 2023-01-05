@@ -7,6 +7,8 @@ from pkg_resources import resource_filename
 from typing import Any, Tuple, Optional, Union, List
 from pathlib import Path
 from itertools import chain
+from multiprocessing import current_process
+import logging
 
 from .fields import get_field
 from .._global import OptionalModule
@@ -63,6 +65,7 @@ class CorrelStage:
 
   def __init__(self,
                img_size: Tuple[int, int],
+               logger_name: str,
                verbose: int = 0,
                iterations: int = 5,
                mul: float = 3,
@@ -74,8 +77,8 @@ class CorrelStage:
       img_size: The shape of the images to process. It is given beforehand so
         that the memory can be allocated before the test starts.
       verbose: The verbose level as an integer, between `0` and `3`. At level
-        `0` no information is printed, and at level `3` so much information is
-        printed that is slows the code down.
+        `0` no information is displayed, and at level `3` so much information
+        is displayed that is slows the code down.
       iterations: The maximum number of iterations to run before returning the
         results. The results may be returned before if the residuals start
         increasing.
@@ -90,6 +93,9 @@ class CorrelStage:
       kernel_file: The path to the file containing the kernels to use for the
         correlation. Can be a :obj:`pathlib.Path` object or a :obj:`str`.
     """
+
+    self._logger: Optional[logging.Logger] = None
+    self._logger_name = logger_name
 
     # Setting the args
     self._verbose = verbose
@@ -452,11 +458,15 @@ class CorrelStage:
       self._debug(3, f"Inverted Hessian: {self.dev_h_i.get()}")
 
   def _debug(self, level: int, msg: str) -> None:
-    """Prints the provided debug message only if its debug level is lower than
-    or equal to the verbose level."""
+    """Displays the provided debug message only if its debug level is lower
+    than or equal to the verbose level."""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"{self._logger_name}.{type(self).__name__}")
 
     if level <= self._verbose:
-      print(f"[ GPUCorrel level {level} debug] {msg}")
+      self._logger.log(logging.INFO, msg)
 
   def _compute_gradients(self) -> None:
     """Wrapper to call the gradient kernel."""
@@ -486,6 +496,7 @@ class GPUCorrel:
   context = None
 
   def __init__(self,
+               logger_name: str,
                context: Optional[Any] = None,
                verbose: int = 0,
                levels: int = 5,
@@ -502,8 +513,8 @@ class GPUCorrel:
       context: Optionally, the :mod:`pycuda` context to use. If not specified,
         a new context is instantiated.
       verbose: The verbose level as an integer, between `0` and `3`. At level
-        `0` no information is printed, and at level `3` so much information is
-        printed that is slows the code down.
+        `0` no information is displayed, and at level `3` so much information
+        is displayed that is slows the code down.
       levels: Number of levels of the pyramid. More levels may help converging
         on images with large strain, but may fail on images that don't contain
         low spatial frequency. Fewer levels mean that the program runs faster.
@@ -540,14 +551,17 @@ class GPUCorrel:
     """
 
     self._context = context
+    self._logger: Optional[logging.Logger] = None
+    self._logger_name = logger_name
 
     self._verbose = verbose
     self._debug(3, "You set the verbose level to the maximum.\nIt may help "
                    "finding bugs or tracking errors but it may also impact the"
-                   " program performance as it will print A LOT of output and "
-                   "add GPU->CPU copies only to print information.\nIf it is "
-                   "not desired, consider lowering the verbosity: 1 or 2 is a "
-                   "reasonable choice, 0 won't show anything except errors.")
+                   " program performance as it will display A LOT of output "
+                   "and add GPU->CPU copies only to display information.\nIf "
+                   "it is not desired, consider lowering the verbosity: 1 or "
+                   "2 is a reasonable choice, 0 won't show anything except "
+                   "errors.")
 
     # Setting the args
     self._levels = levels
@@ -637,6 +651,8 @@ class GPUCorrel:
 
     # Initializing all the stages
     self._stages = [CorrelStage(img_size=(height, width),
+                                logger_name=f"{self._logger_name}."
+                                            f"{type(self).__name__}",
                                 verbose=self._verbose,
                                 n_fields=self._n_fields,
                                 iterations=self._iterations,
@@ -753,11 +769,15 @@ class GPUCorrel:
     return out_x, out_y
 
   def _debug(self, level: int, msg: str) -> None:
-    """Prints the provided debug message only if its debug level is lower than
-    or equal to the verbose level."""
+    """Displays the provided debug message only if its debug level is lower
+    than or equal to the verbose level."""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"{self._logger_name}.{type(self).__name__}")
 
     if level <= self._verbose:
-      print(f"[ GPUCorrel level {level} debug] {msg}")
+      self._logger.log(logging.INFO, msg)
 
   def _set_fields(self, fields: List[str]) -> None:
     """Computes the fields based on the provided field strings, and sets them

@@ -6,8 +6,10 @@ import numpy as np
 from io import BytesIO
 from pkg_resources import resource_string
 from time import sleep
+import logging
+
 from .cameraConfigBoxes import Camera_config_with_boxes
-from .cameraConfigTools import Box
+from .cameraConfigTools import Box, Spot_detector
 from .._global import OptionalModule
 
 try:
@@ -24,16 +26,16 @@ class VE_config(Camera_config_with_boxes):
   It is meant to be used for configuring the :ref:`VideoExtenso` block.
   """
 
-  def __init__(self, camera, video_extenso) -> None:
+  def __init__(self, camera, detector: Spot_detector) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
       camera: The camera object in charge of acquiring the images.
-      video_extenso: The video extenso tool in charge of tracking the spots.
     """
 
-    self._video_extenso = video_extenso
     super().__init__(camera)
+    self._detector = detector
+    self._spots = detector.spots
 
   def _bind_canvas_left_click(self) -> None:
     """Binds the left mouse button click for drawing the box in which the spots
@@ -76,13 +78,12 @@ class VE_config(Camera_config_with_boxes):
 
     # Now actually trying to detect the spots
     try:
-      spots = self._video_extenso.detect_spots(
-          self._original_img[x_top: x_bottom, y_left: y_right], x_top, y_left)
-      if spots is not None:
-        self._spots = spots
+      self._detector.detect_spots(self._original_img[x_top: x_bottom,
+                                                     y_left: y_right],
+                                  x_top, y_left)
     except IndexError:
       # Highly unlikely but always better to be careful
-      self._spots.reset()
+      self._detector.spots.reset()
       return
 
     # This box is not needed anymore
@@ -91,14 +92,19 @@ class VE_config(Camera_config_with_boxes):
   def _save_l0(self) -> None:
     """Saves the original positions of the spots on the image."""
 
-    if self._video_extenso.save_length():
-      print(f"[VideoExtenso] Successfully saved L0 :\n"
-            f"L0 x : {self._video_extenso.x_l0}\n"
-            f"L0 y : {self._video_extenso.y_l0}")
+    if self._detector.spots.empty():
+      self.log(logging.WARNING, "Cannot save L0, there are no spots !")
+    else:
+      self._detector.save_length()
+      self.log(logging.INFO,
+               f"Successfully saved L0 ! L0 x : {self._detector.x_l0}, L0 y : "
+               f"{self._detector.y_l0}")
 
   def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
     """Same as in the parent class except it also draws the patches and the
     select box on top of the displayed image."""
+
+    self.log(logging.DEBUG, "The image canvas was resized")
 
     self._draw_box(self._select_box)
     self._draw_spots()
@@ -116,16 +122,21 @@ class VE_config(Camera_config_with_boxes):
         replaced with a dummy one.
     """
 
+    self.log(logging.DEBUG, "Updating the image")
+
     ret = self._camera.get_image()
 
     # If no frame could be grabbed from the camera
     if ret is None:
       # If it's the first call, generate error image to initialize the window
       if init:
+        self.log(logging.WARNING, "Could not get an image from the camera, "
+                                  "displaying an error image instead")
         ret = None, np.array(Image.open(BytesIO(resource_string(
           'crappy', 'tool/data/no_image.png'))))
       # Otherwise, just pass
       else:
+        self.log(logging.DEBUG, "No image returned by the camera")
         self.update()
         sleep(0.001)
         return
@@ -157,3 +168,14 @@ class VE_config(Camera_config_with_boxes):
     modified. Simply resetting the spots then."""
 
     self._spots.reset()
+
+  def _stop(self) -> None:
+    """"""
+
+    if self._detector.x_l0 is None or self._detector.y_l0 is None:
+      if self._detector.spots.empty():
+        self.log(logging.WARNING, "Cannot save L0, there are no spots !")
+        raise IOError
+      self._detector.save_length()
+
+    super()._stop()

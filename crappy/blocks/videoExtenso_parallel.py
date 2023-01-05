@@ -5,8 +5,7 @@ import numpy as np
 from pathlib import Path
 from .ve_parallel_process import Ve_parallel_process
 from .camera_parallel import Camera_parallel
-from ..tool import VE_config
-from ..tool.videoextenso import VideoExtenso
+from ..tool import VE_config, Spot_detector
 
 
 class Video_extenso_parallel(Camera_parallel):
@@ -66,27 +65,34 @@ class Video_extenso_parallel(Camera_parallel):
                    'Eyy(%)', 'Exx(%)'] if labels is None else labels
 
     self._raise_on_lost_spot = raise_on_lost_spot
-    self._ve_kw = dict(white_spots=white_spots,
-                       update_thresh=update_thresh,
-                       num_spots=num_spots,
-                       safe_mode=safe_mode,
-                       border=border,
-                       min_area=min_area,
-                       blur=blur)
+
+    self._detector_kw = dict(logger_name=f"crappy.{self.name}",
+                             white_spots=white_spots,
+                             num_spots=num_spots,
+                             min_area=min_area,
+                             blur=blur,
+                             update_thresh=update_thresh,
+                             safe_mode=safe_mode,
+                             border=border)
 
   def prepare(self) -> None:
     """"""
 
-    self._ve = VideoExtenso(**self._ve_kw)
-    self._process_proc = Ve_parallel_process(self._ve,
-                                             self._raise_on_lost_spot)
+    self._spot_detector = Spot_detector(**self._detector_kw)
+
+    self._process_proc = Ve_parallel_process(
+      detector=self._spot_detector,
+      raise_on_lost_spot=self._raise_on_lost_spot,
+      log_queue=self._log_queue,
+      log_level=self._log_level,
+      parent_name=self.name)
 
     super().prepare()
 
   def _configure(self) -> None:
     """"""
 
-    config = VE_config(self._camera, self._ve)
+    config = VE_config(self._camera, self._spot_detector)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape
