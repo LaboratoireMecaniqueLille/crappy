@@ -86,6 +86,6 @@ if __name__ == "__main__":
   crappy.link(machine, ve)
 
   graph_def2 = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
-  crappy.link(ve, graph_def2)
+  crappy.link(ve, graph_def2, modifier=crappy.modifier.Mean(10))
 
   crappy.start()
