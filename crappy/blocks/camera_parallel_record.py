@@ -1,13 +1,16 @@
 # coding: utf-8
 
-from multiprocessing import Process, managers
+from multiprocessing import Process, managers, get_start_method
 from multiprocessing.synchronize import Event, RLock
 from multiprocessing.sharedctypes import SynchronizedArray
+from multiprocessing.queues import Queue
 from csv import DictWriter
 from time import strftime, gmtime
 import numpy as np
 from typing import Optional, Union, Tuple
 from pathlib import Path
+import logging
+import logging.handlers
 from .._global import OptionalModule
 
 try:
@@ -33,6 +36,9 @@ class Image_saver(Process):
   """"""
 
   def __init__(self,
+               log_queue: Queue,
+               parent_name: str,
+               log_level: int = 20,
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
@@ -40,6 +46,11 @@ class Image_saver(Process):
     """"""
 
     super().__init__()
+
+    self._log_queue = log_queue
+    self._logger: Optional[logging.Logger] = None
+    self._log_level = log_level
+    self._parent_name = parent_name
 
     # Trying the different possible backends and checking if the given one
     # is correct
@@ -110,6 +121,9 @@ class Image_saver(Process):
     """"""
 
     try:
+      self._set_logger()
+      self._log(logging.INFO, "Logger configured")
+
       while not self._stop_event.is_set():
         save = False
         with self._lock:
@@ -124,6 +138,9 @@ class Image_saver(Process):
             self._metadata = self._data_dict.copy()
             save = True
 
+            self._log(logging.DEBUG, f"Got new image to save with id "
+                                     f"{self._metadata['ImageUniqueID']}")
+
             np.copyto(self._img,
                       np.frombuffer(self._img_array.get_obj(),
                                     dtype=self._dtype).reshape(self._shape))
@@ -131,8 +148,11 @@ class Image_saver(Process):
         if save:
           self._save()
 
+      self._log(logging.INFO, "Stop event set, stopping the recording")
+
     except KeyboardInterrupt:
-      pass
+      self._log(logging.INFO, "KeyboardInterrupt caught, stopping the "
+                              "recording")
 
   def _save(self) -> None:
     """Simply saves the given image to the given path using the selected
@@ -142,12 +162,16 @@ class Image_saver(Process):
       self._csv_path = self._save_folder / \
           f'metadata_{strftime("%d_%m_%y %H:%M:%S", gmtime())}.csv'
 
+      self._log(logging.INFO, f"Creating file for saving the metadata: "
+                              f"{self._csv_path}")
+
       with open(self._csv_path, 'w') as csvfile:
         writer = DictWriter(csvfile, fieldnames=self._metadata.keys())
         writer.writeheader()
 
       self._csv_created = True
 
+    self._log(logging.DEBUG, f"Saving metadata: {self._metadata}")
     with open(self._csv_path, 'a') as csvfile:
       writer = DictWriter(csvfile, fieldnames=self._metadata.keys())
       writer.writerow({**self._metadata, 't(s)': self._metadata['t(s)']})
@@ -156,6 +180,7 @@ class Image_saver(Process):
                                    f"{self._metadata['t(s)']:.3f}."
                                    f"{self._img_extension}")
 
+    self._log(logging.DEBUG, "Saving image")
     if self._save_backend == 'sitk':
       Sitk.WriteImage(Sitk.GetImageFromArray(self._img), path)
 
@@ -166,3 +191,31 @@ class Image_saver(Process):
       PIL.Image.fromarray(self._img).save(
         path, exif={TAGS_INV[key]: val for key, val in self._metadata.items()
                     if key in TAGS_INV})
+
+  def _set_logger(self) -> None:
+    """"""
+
+    log_level = 10 * int(round(self._log_level / 10, 0))
+
+    logger = logging.getLogger(f'crappy.{self._parent_name}.Recorder')
+    logger.setLevel(min(log_level, logging.INFO))
+
+    # On Windows, the messages need to be sent through a Queue for logging
+    if get_start_method() == "spawn":
+      queue_handler = logging.handlers.QueueHandler(self._log_queue)
+      queue_handler.setLevel(min(log_level, logging.INFO))
+      logger.addHandler(queue_handler)
+
+    self._logger = logger
+
+  def _log(self, level: int, msg: str) -> None:
+    """Sends a log message to the logger.
+
+    Args:
+      level: The logging level, as an :obj:`int`.
+      msg: The message to log, as a :obj:`str`.
+    """
+
+    if self._logger is None:
+      return
+    self._logger.log(level, msg)

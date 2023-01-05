@@ -117,4 +117,4 @@ class Gpuve_parallel(Camera_parallel):
   def _configure(self) -> None:
     """"""
 
-    pass
+    ...

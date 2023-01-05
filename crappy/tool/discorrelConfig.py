@@ -7,6 +7,8 @@ import numpy as np
 from io import BytesIO
 from pkg_resources import resource_string
 from time import sleep
+import logging
+
 from .cameraConfigBoxes import Camera_config_with_boxes
 from .cameraConfigTools import Box
 from .._global import OptionalModule
@@ -50,6 +52,8 @@ class DISConfig(Camera_config_with_boxes):
     """Simply saves the position of the user click, and disables the display of
     the current correl box."""
 
+    self.log(logging.DEBUG, "Starting the selection box")
+
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
       return
@@ -62,6 +66,8 @@ class DISConfig(Camera_config_with_boxes):
   def _stop_box(self, _: tk.Event) -> None:
     """Makes sure that the selected region is valid, sets it as the new correl
     box, and enables the display of the correl box."""
+
+    self.log(logging.DEBUG, "Ending the selection box")
 
     # If it's just a regular click with no dragging, do nothing
     if self._img is None or self._select_box.no_points():
@@ -88,6 +94,8 @@ class DISConfig(Camera_config_with_boxes):
     """Same as in the parent class except it also draws the select box on top
     of the displayed image."""
 
+    self.log(logging.DEBUG, "The image canvas was resized")
+
     # Do not draw the correl box if the user is creating the select box
     if self._draw_correl_box:
       self._draw_box(self._correl_box)
@@ -107,16 +115,21 @@ class DISConfig(Camera_config_with_boxes):
         replaced with a dummy one.
     """
 
+    self.log(logging.DEBUG, "Updating the image")
+
     ret = self._camera.get_image()
 
     # If no frame could be grabbed from the camera
     if ret is None:
       # If it's the first call, generate error image to initialize the window
       if init:
+        self.log(logging.WARNING, "Could not get an image from the camera, "
+                                  "displaying an error image instead")
         ret = None, np.array(Image.open(BytesIO(resource_string(
           'crappy', 'tool/data/no_image.png'))))
       # Otherwise, just pass
       else:
+        self.log(logging.DEBUG, "No image returned by the camera")
         self.update()
         sleep(0.001)
         return

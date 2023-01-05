@@ -4,11 +4,14 @@ from multiprocessing import Process, managers
 from multiprocessing.synchronize import Event, RLock
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing.connection import Connection
+from multiprocessing.queues import Queue
 from threading import Thread
 from math import log2, ceil
 import numpy as np
 from typing import Optional, Tuple
 from time import time, sleep
+import logging
+import logging.handlers
 from .._global import OptionalModule
 from ..tool import Spot_boxes, Box
 
@@ -35,6 +38,9 @@ class Displayer(Process):
   def __init__(self,
                title: str,
                framerate: float,
+               log_queue: Queue,
+               parent_name: str,
+               log_level: int = 20,
                backend: Optional[str] = None) -> None:
     """"""
 
@@ -42,6 +48,11 @@ class Displayer(Process):
 
     self._title = title
     self._framerate = framerate
+
+    self._log_queue = log_queue
+    self._logger: Optional[logging.Logger] = None
+    self._log_level = log_level
+    self._parent_name = parent_name
 
     # Selecting the backend if no backend was specified
     if backend is None:
@@ -116,9 +127,18 @@ class Displayer(Process):
     """"""
 
     try:
+      self._set_logger()
+      self._log(logging.INFO, "Logger configured")
+
+      self._log(logging.INFO, "Instantiating the thread for getting the boxes "
+                              "to display")
       self._box_thread = Thread(target=self._thread_target)
+      self._log(logging.INFO, "Starting the thread for getting the boxes to "
+                              "display")
       self._box_thread.start()
 
+      self._log(logging.INFO, f"Opening the displayer window with the backend "
+                              f"{self._backend}")
       if self._backend == 'cv2':
         self._prepare_cv2()
       elif self._backend == 'mpl':
@@ -136,6 +156,9 @@ class Displayer(Process):
             self._last_nr = self._data_dict['ImageUniqueID']
             display = True
 
+            self._log(logging.DEBUG, f"Got new image to display with id "
+                                     f"{self._last_nr}")
+
             np.copyto(self._img,
                       np.frombuffer(self._img_array.get_obj(),
                                     dtype=self._dtype).reshape(self._shape))
@@ -144,6 +167,8 @@ class Displayer(Process):
 
           # Casts the image to uint8 if it's not already in this format
           if self._img.dtype != np.uint8:
+            self._log(logging.DEBUG, f"Casting displayed image from "
+                                     f"{self._img.dtype} to uint8")
             if np.max(self._img) > 255:
               factor = max(ceil(log2(np.max(self._img) + 1) - 8), 0)
               img = (self._img / 2 ** factor).astype(np.uint8)
@@ -155,6 +180,8 @@ class Displayer(Process):
           # Drawing the latest known position of the boxes
           for box in self._boxes:
             if box is not None:
+              self._log(logging.DEBUG, "Drawing boxes on top of the image to "
+                                       "display")
               self._draw_box(img, box)
 
           # Calling the right prepare method
@@ -163,8 +190,10 @@ class Displayer(Process):
           elif self._backend == 'mpl':
             self._update_mpl(img)
 
+      self._log(logging.INFO, "Stop event set, stopping the display")
+
     except KeyboardInterrupt:
-      pass
+      self._log(logging.INFO, "KeyboardInterrupt caught, stopping the display")
 
     finally:
       if self._backend == 'cv2':
@@ -177,7 +206,8 @@ class Displayer(Process):
         try:
           self._box_thread.join(0.05)
         except RuntimeError:
-          pass
+          self._log(logging.WARNING, "Thread for receiving the boxes did not "
+                                     "stop as expected")
 
   def _thread_target(self) -> None:
     """"""
@@ -189,13 +219,43 @@ class Displayer(Process):
         boxes = self._box_conn.recv()
 
       if boxes is not None:
+        self._log(logging.DEBUG, f"Received boxes to display: {boxes}")
         self._boxes = boxes
 
       else:
-        sleep(0.005)
+        sleep(0.001)
 
-  @staticmethod
-  def _draw_box(img: np.ndarray, box: Box) -> None:
+    self._log(logging.INFO, "Thread for receiving the boxes ended")
+
+  def _set_logger(self) -> None:
+    """"""
+
+    log_level = 10 * int(round(self._log_level / 10, 0))
+
+    logger = logging.getLogger(f'crappy.{self._parent_name}.Displayer')
+    logger.setLevel(min(log_level, logging.INFO))
+
+    # On Windows, the messages need to be sent through a Queue for logging
+    if get_start_method() == "spawn":
+      queue_handler = logging.handlers.QueueHandler(self._log_queue)
+      queue_handler.setLevel(min(log_level, logging.INFO))
+      logger.addHandler(queue_handler)
+
+    self._logger = logger
+
+  def _log(self, level: int, msg: str) -> None:
+    """Sends a log message to the logger.
+
+    Args:
+      level: The logging level, as an :obj:`int`.
+      msg: The message to log, as a :obj:`str`.
+    """
+
+    if self._logger is None:
+      return
+    self._logger.log(level, msg)
+
+  def _draw_box(self, img: np.ndarray, box: Box) -> None:
     """Draws a box on top of an image."""
 
     if box.no_points():
@@ -215,8 +275,8 @@ class Displayer(Process):
                    ):
         img[line] = 255 * int(np.mean(img[line]) < 128)
     except (Exception,) as exc:
-      print(f"[Displayer process] Encountered exception while drawing boxes: "
-            f"{exc}, ignoring")
+      self._logger.exception("Encountered exception while drawing boxes, "
+                             "ignoring", exc_info=exc)
 
   def _prepare_cv2(self) -> None:
     """Instantiates the display window of cv2."""
@@ -238,9 +298,14 @@ class Displayer(Process):
 
     if img.shape[0] > 480 or img.shape[1] > 640:
       factor = min(480 / img.shape[0], 640 / img.shape[1])
+      self._log(
+        logging.DEBUG,
+        f"Reshaping displayed image from {img.shape} to "
+        f"{int(img.shape[1] * factor), int(img.shape[0] * factor)}")
       img = cv2.resize(img, (int(img.shape[1] * factor),
                              int(img.shape[0] * factor)))
 
+    self._log(logging.DEBUG, "Displaying the image")
     cv2.imshow(self._title, img)
     cv2.waitKey(1)
 
@@ -250,9 +315,14 @@ class Displayer(Process):
 
     if img.shape[0] > 480 or img.shape[1] > 640:
       factor = max(ceil(img.shape[0] / 480), ceil(img.shape[1] / 640))
+      self._log(
+        logging.DEBUG,
+        f"Reshaping the displayed image from {img.shape} to "
+        f"{(img.shape[0] / factor, img.shape[1] / factor)}")
       img = img[::factor, ::factor]
 
     self._ax.clear()
+    self._log(logging.DEBUG, "Displaying the image")
     self._ax.imshow(img, cmap='gray')
     plt.pause(0.001)
     plt.show()

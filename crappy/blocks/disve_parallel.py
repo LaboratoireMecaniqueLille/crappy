@@ -99,7 +99,10 @@ class Disve_parallel(Camera_parallel):
     self._patches.set_spots(self._patches_int)
     self._disve_kw['patches'] = self._patches
 
-    self._process_proc = Disve_parallel_process(**self._disve_kw)
+    self._process_proc = Disve_parallel_process(log_queue=self._log_queue,
+                                                log_level=self._log_level,
+                                                parent_name=self.name,
+                                                **self._disve_kw)
 
     super().prepare()
 

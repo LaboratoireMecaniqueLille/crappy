@@ -1,13 +1,17 @@
 # coding: utf-8
 
-from multiprocessing import Process, managers
+from multiprocessing import Process, managers, get_start_method
 from multiprocessing.synchronize import Event, RLock
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing.connection import Connection
+from multiprocessing.queues import Queue
 import numpy as np
 from typing import Optional, Tuple, List, Union, Dict, Any
+import logging
+import logging.handlers
 from ..tool import DISVE, Spot_boxes
 from ..links import Link
+from .._global import LinkDataError
 
 
 class Disve_parallel_process(Process):
@@ -15,6 +19,9 @@ class Disve_parallel_process(Process):
 
   def __init__(self,
                patches: Spot_boxes,
+               log_queue: Queue,
+               parent_name: str,
+               log_level: int = 20,
                method: str = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
@@ -31,6 +38,11 @@ class Disve_parallel_process(Process):
     """"""
 
     super().__init__()
+
+    self._log_queue = log_queue
+    self._logger: Optional[logging.Logger] = None
+    self._log_level = log_level
+    self._parent_name = parent_name
 
     self._disve_kw = dict(patches=patches,
                           method=method,
@@ -90,6 +102,10 @@ class Disve_parallel_process(Process):
     """"""
 
     try:
+      self._set_logger()
+      self._log(logging.INFO, "Logger configured")
+
+      self._log(logging.INFO, "Instantiating the Disve tool")
       self._disve = DISVE(**self._disve_kw)
 
       while not self._stop_event.is_set():
@@ -104,6 +120,9 @@ class Disve_parallel_process(Process):
             self._metadata = self._data_dict.copy()
             process = True
 
+            self._log(logging.DEBUG, f"Got new image to process with id "
+                                     f"{self._metadata['ImageUniqueID']}")
+
             np.copyto(self._img,
                       np.frombuffer(self._img_array.get_obj(),
                                     dtype=self._dtype).reshape(self._shape))
@@ -112,31 +131,83 @@ class Disve_parallel_process(Process):
           try:
 
             if not self._img0_set:
+              self._log(logging.INFO, "Setting the reference image")
               self._disve.set_img0(np.copy(self._img))
               self._img0_set = True
               continue
 
+            self._log(logging.DEBUG, "Processing the received image")
             data = self._disve.calculate_displacement(self._img)
             self._send([self._metadata['t(s)'], self._metadata, *data])
 
             if self._box_conn is not None:
+              self._log(logging.DEBUG, "Sending the box to the displayer "
+                                       "process")
               self._box_conn.send(self._disve.patches)
 
-          except RuntimeError:
+          except RuntimeError as exc:
             if self._raise_on_exit:
+              self._logger.exception("Patch exiting the ROI !", exc_info=exc)
               raise
             self._lost_patch = True
-            print("[Disve] Patch exiting the ROI, not processing data "
-                  "anymore !")
+            self._log(logging.WARNING, "Patch exiting the ROI, not processing "
+                                       "data anymore !")
+
+      self._log(logging.INFO, "Stop event set, stopping the processing")
 
     except KeyboardInterrupt:
-      pass
+      self._log(logging.INFO, "KeyboardInterrupt caught, stopping the "
+                              "processing")
 
   def _send(self, data: Union[list, Dict[str, Any]]) -> None:
     """"""
 
+    # Building the dict to send from the data and labels if the data is a list
     if isinstance(data, list):
+      if not self._labels:
+        self._logger.log(logging.ERROR, "trying to send data as a list but no "
+                                        "labels are specified ! Please add a "
+                                        "self.labels attribute.")
+        raise LinkDataError
+      self._logger.log(logging.DEBUG, f"Converting {data} to dict before "
+                                      f"sending")
       data = dict(zip(self._labels, data))
 
-    for out in self._outputs:
-      out.send(data)
+    # Making sure the data is being sent as a dict
+    elif not isinstance(data, dict):
+      self._logger.log(logging.ERROR, f"Trying to send a {type(data)} in a "
+                                      f"Link !")
+      raise LinkDataError
+
+    # Sending the data to the downstream blocks
+    for link in self._outputs:
+      self._logger.log(logging.DEBUG, f"Sending {data} to Link {link}")
+      link.send(data)
+
+  def _set_logger(self) -> None:
+    """"""
+
+    log_level = 10 * int(round(self._log_level / 10, 0))
+
+    logger = logging.getLogger(f'crappy.{self._parent_name}.Process')
+    logger.setLevel(min(log_level, logging.INFO))
+
+    # On Windows, the messages need to be sent through a Queue for logging
+    if get_start_method() == "spawn":
+      queue_handler = logging.handlers.QueueHandler(self._log_queue)
+      queue_handler.setLevel(min(log_level, logging.INFO))
+      logger.addHandler(queue_handler)
+
+    self._logger = logger
+
+  def _log(self, level: int, msg: str) -> None:
+    """Sends a log message to the logger.
+
+    Args:
+      level: The logging level, as an :obj:`int`.
+      msg: The message to log, as a :obj:`str`.
+    """
+
+    if self._logger is None:
+      return
+    self._logger.log(level, msg)

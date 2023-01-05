@@ -6,6 +6,8 @@ import numpy as np
 from io import BytesIO
 from pkg_resources import resource_string
 from time import sleep
+import logging
+
 from .cameraConfigBoxes import Camera_config_with_boxes
 from .cameraConfigTools import Box, Spot_boxes
 from .._global import OptionalModule
@@ -40,6 +42,8 @@ class DISVE_config(Camera_config_with_boxes):
     """Same as in the parent class except it also draws the patches on top of
     the displayed image."""
 
+    self.log(logging.DEBUG, "The image canvas was resized")
+
     self._draw_spots()
     self._resize_img()
     self._display_img()
@@ -55,16 +59,21 @@ class DISVE_config(Camera_config_with_boxes):
         replaced with a dummy one.
     """
 
+    self.log(logging.DEBUG, "Updating the image")
+
     ret = self._camera.get_image()
 
     # If no frame could be grabbed from the camera
     if ret is None:
       # If it's the first call, generate error image to initialize the window
       if init:
+        self.log(logging.WARNING, "Could not get an image from the camera, "
+                                  "displaying an error image instead")
         ret = None, np.array(Image.open(BytesIO(resource_string(
           'crappy', 'tool/data/no_image.png'))))
       # Otherwise, just pass
       else:
+        self.log(logging.DEBUG, "No image returned by the camera")
         self.update()
         sleep(0.001)
         return

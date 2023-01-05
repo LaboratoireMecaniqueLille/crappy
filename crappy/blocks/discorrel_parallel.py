@@ -92,7 +92,10 @@ class Discorrel_parallel(Camera_parallel):
   def prepare(self) -> None:
     """"""
 
-    self._process_proc = Discorrel_parallel_process(**self._discorrel_kw)
+    self._process_proc = Discorrel_parallel_process(log_queue=self._log_queue,
+                                                    log_level=self._log_level,
+                                                    parent_name=self.name,
+                                                    **self._discorrel_kw)
 
     super().prepare()
 

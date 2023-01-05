@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import List, Optional
+
 from .._global import OptionalModule
 from .cameraConfigTools import Box
 from .fields import get_res, get_field, allowed_fields

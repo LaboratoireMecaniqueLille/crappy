@@ -2,6 +2,8 @@
 
 import numpy as np
 import tkinter as tk
+import logging
+
 from .cameraConfig import Camera_config
 from .cameraConfigTools import Box, Spot_boxes
 
@@ -28,6 +30,8 @@ class Camera_config_with_boxes(Camera_config):
 
     if self._img is None or box.no_points():
       return
+
+    self.log(logging.DEBUG, f"Drawing the box: {box}")
 
     # The sides need to be sorted before slicing numpy array
     y_left, y_right, x_top, x_bottom = box.sorted()
@@ -65,6 +69,8 @@ class Camera_config_with_boxes(Camera_config):
   def _start_box(self, event: tk.Event) -> None:
     """Simply saves the position of the user click."""
 
+    self.log(logging.DEBUG, "Starting the selection box")
+
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
       return
@@ -75,6 +81,8 @@ class Camera_config_with_boxes(Camera_config):
   def _extend_box(self, event: tk.Event) -> None:
     """Draws a box as the user drags the mouse while maintaining the left
     button clicked."""
+
+    self.log(logging.DEBUG, "Extending the selection box")
 
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):

@@ -9,6 +9,7 @@ from multiprocessing import Array, Manager, Event, RLock, Pipe
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing import managers, synchronize, connection, context
 from math import prod
+import logging
 
 from .block import Block
 from .camera_parallel_display import Displayer
@@ -130,6 +131,8 @@ class Camera_parallel(Block):
     configuration GUI."""
 
     # Instantiating the multiprocessing objects
+    self.log(logging.DEBUG, "Instantiating the multiprocessing "
+                            "synchronization objects")
     self._manager = Manager()
     self._metadata = self._manager.dict()
     self._stop_event = Event()
@@ -139,13 +142,22 @@ class Camera_parallel(Block):
     self._proc_lock = RLock()
 
     if self._save_proc_kw is not None:
-      self._save_proc = Image_saver(**self._save_proc_kw)
+      self.log(logging.INFO, "Instantiating the saver process")
+      self._save_proc = Image_saver(log_queue=self._log_queue,
+                                    log_level=self._log_level,
+                                    parent_name=self.name,
+                                    **self._save_proc_kw)
 
     if self._display_proc_kw is not None:
-      self._display_proc = Displayer(**self._display_proc_kw)
+      self.log(logging.INFO, "Instantiating the displayer process")
+      self._display_proc = Displayer(log_queue=self._log_queue,
+                                     log_level=self._log_level,
+                                     parent_name=self.name,
+                                     **self._display_proc_kw)
 
     # Case when the images are generated and not acquired
     if self._image_generator is not None:
+      self.log(logging.INFO, "Setting the image generator camera")
       self._camera = BaseCam()
       self._camera.add_scale_setting('Exx', -100, 100, None, None, 0.)
       self._camera.add_scale_setting('Eyy', -100, 100, None, None, 0.)
@@ -159,15 +171,20 @@ class Camera_parallel(Block):
     # Case when an actual camera object is responsible for acquiring the images
     else:
       self._camera = camera_list[self._camera_name]()
+      self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
       self._camera.open(**self._camera_kwargs)
+      self.log(logging.INFO, f"Opened the {self._camera_name} Camera")
 
     if self._config_cam:
+      self.log(logging.INFO, "Displaying the configuration window")
       self._configure()
+      self.log(logging.INFO, "Camera configuration done")
 
     # Setting the camera to 'Hardware' trig if it's in 'Hdw after config' mode
     if self._camera.trigger_name in self._camera.settings and \
         getattr(self._camera,
                 self._camera.trigger_name) == 'Hdw after config':
+      self.log(logging.INFO, "Setting the trigger mode to Hardware")
       setattr(self._camera, self._camera.trigger_name, 'Hardware')
 
     if self._img_dtype is None or self._img_shape is None:
@@ -176,12 +193,15 @@ class Camera_parallel(Block):
                        f"wasn't specified.\n Please specify it in the args, or"
                        f" enable the configuration window.")
 
+    self.log(logging.DEBUG, "Instantiating the shared objects")
     self._img_array = Array(np.ctypeslib.as_ctypes_type(self._img_dtype),
                             prod(self._img_shape))
     self._img = np.frombuffer(self._img_array.get_obj(),
                               dtype=self._img_dtype).reshape(self._img_shape)
 
     if self._process_proc is not None:
+      self.log(logging.DEBUG, "Sharing the synchronization objects with the "
+                              "image processing process")
       box_conn = self._box_conn_in if self._display_proc is not None else None
       self._process_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
@@ -192,18 +212,24 @@ class Camera_parallel(Block):
                                     box_conn=box_conn,
                                     outputs=self.outputs,
                                     labels=self.labels)
+      self.log(logging.INFO, "Starting the image processing process")
       self._process_proc.start()
 
     if self._save_proc is not None:
+      self.log(logging.DEBUG, "Sharing the synchronization objects with the "
+                              "image saver process")
       self._save_proc.set_shared(array=self._img_array,
                                  data_dict=self._metadata,
                                  lock=self._save_lock,
                                  event=self._stop_event,
                                  shape=self._img_shape,
                                  dtype=self._img_dtype)
+      self.log(logging.INFO, "Starting the image saver process")
       self._save_proc.start()
 
     if self._display_proc is not None:
+      self.log(logging.DEBUG, "Sharing the synchronization objects with the "
+                              "image displayer process")
       self._display_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._disp_lock,
@@ -211,6 +237,7 @@ class Camera_parallel(Block):
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
                                     box_conn=self._box_conn_out)
+      self.log(logging.INFO, "Starting the image displayer process")
       self._display_proc.start()
 
   def loop(self) -> None:
@@ -222,12 +249,16 @@ class Camera_parallel(Block):
     # Waiting for the trig label if it was given
     if self._trig_label is not None and self._trig_label not in data:
       return
+    elif self._trig_label is not None and self._trig_label in data:
+      self.log(logging.DEBUG, "Software trigger signal received")
 
     # Updating the image generator if there's one
     if self._image_generator is not None:
       if 'Exx(%)' in data:
+        self.log(logging.DEBUG, f"Setting Exx to {data['Exx(%)']}")
         self._camera.Exx = data['Exx(%)']
       if 'Eyy(%)' in data:
+        self.log(logging.DEBUG, f"Setting Eyy to {data['Eyy(%)']}")
         self._camera.Eyy = data['Eyy(%)']
 
     # Actually getting the image from the camera object
@@ -253,22 +284,31 @@ class Camera_parallel(Block):
       img = self._transform(img)
 
     with self._save_lock, self._disp_lock, self._proc_lock:
+      self.log(logging.DEBUG, f"Writing metadata to shared dict: {metadata}")
       self._metadata.update(metadata)
+      self.log(logging.DEBUG, "Writing image to shared array")
       np.copyto(self._img, img)
 
   def finish(self) -> None:
     """"""
 
     if self._image_generator is None:
+      self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
       self._camera.close()
 
     self._stop_event.set()
     sleep(0.1)
     if self._process_proc is not None and self._process_proc.is_alive():
+      self.log(logging.WARNING, "Image processing process not stopped, "
+                                "killing it !")
       self._process_proc.terminate()
     if self._save_proc is not None and self._save_proc.is_alive():
+      self.log(logging.WARNING, "Image saver process not stopped, "
+                                "killing it !")
       self._save_proc.terminate()
     if self._display_proc is not None and self._display_proc.is_alive():
+      self.log(logging.WARNING, "Image displayer process not stopped, "
+                                "killing it !")
       self._display_proc.terminate()
 
     self._manager.shutdown()

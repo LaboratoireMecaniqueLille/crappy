@@ -8,6 +8,8 @@ from typing import Optional
 from functools import partial
 from pkg_resources import resource_string
 from io import BytesIO
+import logging
+from multiprocessing import current_process
 
 from .._global import OptionalModule
 from .cameraConfigTools import Zoom
@@ -45,6 +47,7 @@ class Camera_config(tk.Tk):
     self._camera = camera
     self.shape = None
     self.dtype = None
+    self._logger: Optional[logging.Logger] = None
 
     # Attributes containing the several images and histograms
     self._img = None
@@ -99,10 +102,19 @@ class Camera_config(tk.Tk):
         n_loops = 0
         start_time = time()
 
-    print("Camera config done !")
+  def log(self, level: int, msg: str) -> None:
+    """"""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.{type(self).__name__}")
+
+    self._logger.log(level, msg)
 
   def _set_layout(self) -> None:
     """Creates and places the different elements of the display on the GUI."""
+
+    self.log(logging.DEBUG, "Setting the interface layout")
 
     # The main frame of the window
     self._main_frame = tk.Frame()
@@ -231,6 +243,8 @@ class Camera_config(tk.Tk):
   def _set_bindings(self) -> None:
     """Sets the bindings for the different events triggered by the user."""
 
+    self.log(logging.DEBUG, "Setting the interface bindings")
+
     # Bindings for the settings canvas
     self._settings_canvas.bind("<Configure>", self._configure_canvas)
     self._settings_frame.bind('<Enter>', self._bind_mouse)
@@ -263,6 +277,8 @@ class Camera_config(tk.Tk):
     """Binds the mousewheel to the settings canvas scrollbar when the user
     hovers over the canvas."""
 
+    self.log(logging.DEBUG, "Binding the mouse to the image canvas")
+
     if system() == "Linux":
       self._settings_frame.bind_all('<4>', self._on_wheel_settings)
       self._settings_frame.bind_all('<5>', self._on_wheel_settings)
@@ -273,6 +289,8 @@ class Camera_config(tk.Tk):
     """Unbinds the mousewheel to the settings canvas scrollbar when the mouse
     leaves the canvas."""
 
+    self.log(logging.DEBUG, "Unbinding the mouse from the image canvas")
+
     self._settings_frame.unbind_all('<4>')
     self._settings_frame.unbind_all('<5>')
     self._settings_frame.unbind_all('<MouseWheel>')
@@ -280,6 +298,8 @@ class Camera_config(tk.Tk):
   def _configure_canvas(self, event: tk.Event) -> None:
     """Adjusts the size of the scrollbar according to the size of the settings
     canvas whenever it is being resized."""
+
+    self.log(logging.DEBUG, "The image canvas has been resized")
 
     # Adjusting the height of the settings window inside the canvas
     self._settings_canvas.itemconfig(
@@ -316,6 +336,8 @@ class Camera_config(tk.Tk):
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
       return
+
+    self.log(logging.DEBUG, "Zooming on the canvas")
 
     pil_width = self._pil_img.width
     pil_height = self._pil_img.height
@@ -367,6 +389,8 @@ class Camera_config(tk.Tk):
     """Updates the coordinates of the pixel pointed by the mouse on the
     image."""
 
+    self.log(logging.DEBUG, "Updating the coordinates of the current pixel")
+
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
       return
@@ -381,6 +405,8 @@ class Camera_config(tk.Tk):
   def _update_pixel_value(self) -> None:
     """Updates the display of the gray level value of the pixel currently being
     pointed by the mouse."""
+
+    self.log(logging.DEBUG, "Updating the value of the current pixel")
 
     try:
       self._reticle_val.set(np.average(self._original_img[self._y_pos.get(),
@@ -428,6 +454,8 @@ class Camera_config(tk.Tk):
     if not self._check_event_pos(event):
       return
 
+    self.log(logging.DEBUG, "Drag started")
+
     # Stores the position of the mouse relative to the top left corner of the
     # image
     zero_x = (self._img_canvas.winfo_width() - self._pil_img.width) / 2
@@ -441,6 +469,8 @@ class Camera_config(tk.Tk):
     # If the mouse is on the canvas but not on the image, do nothing
     if not self._check_event_pos(event):
       return
+
+    self.log(logging.DEBUG, "Drag ended")
 
     pil_width = self._pil_img.width
     pil_height = self._pil_img.height
@@ -485,6 +515,8 @@ class Camera_config(tk.Tk):
   def _add_settings(self) -> None:
     """Adds the settings of the camera to the GUI."""
 
+    self.log(logging.DEBUG, "Adding the camera settings to the interface")
+
     # First, sort the settings by type for a nicer display
     sort_sets = sorted(self._camera.settings.values(),
                        key=lambda setting: setting.type.__name__)
@@ -500,6 +532,8 @@ class Camera_config(tk.Tk):
   def _add_bool_setting(self, cam_set) -> None:
     """Adds a setting represented by a checkbutton."""
 
+    self.log(logging.DEBUG, f"Adding the boolean setting {cam_set.name}")
+
     cam_set.tk_var = tk.BooleanVar(value=cam_set.value)
     cam_set.tk_obj = tk.Checkbutton(self._canvas_frame,
                                     text=cam_set.name,
@@ -510,6 +544,8 @@ class Camera_config(tk.Tk):
 
   def _add_slider_setting(self, cam_set) -> None:
     """Adds a setting represented by a scale bar."""
+
+    self.log(logging.DEBUG, f"Adding the slider setting {cam_set.name}")
 
     # The scale bar is slightly different if the setting type is int or float
     if cam_set.type == int:
@@ -533,6 +569,8 @@ class Camera_config(tk.Tk):
   def _add_choice_setting(self, cam_set) -> None:
     """Adds a setting represented by a list of radio buttons."""
 
+    self.log(logging.DEBUG, f"Adding the choice setting {cam_set.name}")
+
     cam_set.tk_var = tk.StringVar(value=cam_set.value)
     label = tk.Label(self._canvas_frame, text=f'{cam_set.name} :')
     label.pack(anchor='w', side='top', expand=False, fill='none',
@@ -548,6 +586,8 @@ class Camera_config(tk.Tk):
   def _set_variables(self) -> None:
     """Sets the text and numeric variables holding information about the
     display."""
+
+    self.log(logging.DEBUG, "Setting the interface variables")
 
     # The FPS counter
     self._fps_var = tk.DoubleVar(value=0.)
@@ -584,6 +624,8 @@ class Camera_config(tk.Tk):
   def _set_traces(self) -> None:
     """Sets the traces for automatically updating the display when a variable
     is modified."""
+
+    self.log(logging.DEBUG, "Setting the interface traces")
 
     self._fps_var.trace_add('write', self._update_fps)
 
@@ -651,6 +693,7 @@ class Camera_config(tk.Tk):
 
     # If the auto_range is set, adjusting the values to the range
     if self._auto_range.get():
+      self.log(logging.DEBUG, "Applying auto range to the image")
       self._low_thresh, self._high_thresh = np.percentile(img, (3, 97))
       self._img = ((np.clip(img, self._low_thresh, self._high_thresh) -
                     self._low_thresh) * 255 /
@@ -662,6 +705,7 @@ class Camera_config(tk.Tk):
 
     # Or if the image is not already 8 bits, casting to 8 bits
     elif img.dtype != np.uint8:
+      self.log(logging.DEBUG, "Casting the image to 8 bits")
       bit_depth = np.ceil(np.log2(np.max(img) + 1))
       self._img = (img / 2 ** (bit_depth - 8)).astype('uint8')
       self._original_img = np.copy(self._img)
@@ -682,6 +726,8 @@ class Camera_config(tk.Tk):
 
     if self._img is None:
       return
+
+    self.log(logging.DEBUG, "Resizing the image to fit in the window")
 
     # First, apply the current zoom level
     # The width and height values are inverted in NumPy
@@ -717,6 +763,8 @@ class Camera_config(tk.Tk):
     if self._pil_img is None:
       return
 
+    self.log(logging.DEBUG, "Displaying the image")
+
     self._image_tk = ImageTk.PhotoImage(self._pil_img)
     self._img_canvas.create_image(int(self._img_canvas.winfo_width() / 2),
                                   int(self._img_canvas.winfo_height() / 2),
@@ -725,6 +773,8 @@ class Camera_config(tk.Tk):
   def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
     """Resizes the image and updates the display when the zoom level has
     changed or the GUI has been resized."""
+
+    self.log(logging.DEBUG, "The image canvas was resized")
 
     self._resize_img()
     self._display_img()
@@ -735,6 +785,8 @@ class Camera_config(tk.Tk):
 
     if self._original_img is None:
       return
+
+    self.log(logging.DEBUG, "Calculating the histogram of the image")
 
     # The histogram is calculated on a grey level image
     if len(self._original_img.shape) == 3:
@@ -769,6 +821,8 @@ class Camera_config(tk.Tk):
     if self._hist is None:
       return
 
+    self.log(logging.DEBUG, "Resizing the histogram to fit in the window")
+
     pil_hist = Image.fromarray(self._hist)
     hist_canvas_width = self._hist_canvas.winfo_width()
     hist_canvas_height = self._hist_canvas.winfo_height()
@@ -780,6 +834,8 @@ class Camera_config(tk.Tk):
 
     if self._pil_hist is None:
       return
+
+    self.log(logging.DEBUG, "Displaying the histogram")
 
     self._hist_tk = ImageTk.PhotoImage(self._pil_hist)
     self._hist_canvas.create_image(int(self._hist_canvas.winfo_width() / 2),
@@ -804,16 +860,21 @@ class Camera_config(tk.Tk):
         replaced with a dummy one.
     """
 
+    self.log(logging.DEBUG, "Updating the image")
+
     ret = self._camera.get_image()
 
     # If no frame could be grabbed from the camera
     if ret is None:
       # If it's the first call, generate error image to initialize the window
       if init:
+        self.log(logging.WARNING, "Could not get an image from the camera, "
+                                  "displaying an error image instead")
         ret = None, np.array(Image.open(BytesIO(resource_string(
           'crappy', 'tool/data/no_image.png'))))
       # Otherwise, just pass
       else:
+        self.log(logging.DEBUG, "No image returned by the camera")
         self.update()
         sleep(0.001)
         return
@@ -843,4 +904,5 @@ class Camera_config(tk.Tk):
 
     self._run = False
     sleep(0.1)
+    self.log(logging.DEBUG, "Destroying the configuration window")
     self.destroy()
