@@ -103,10 +103,7 @@ class Gpuve_parallel_process(Camera_process):
         self._img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
     self._send(data)
 
-    if self._box_conn is not None:
-      self._log(logging.DEBUG, "Sending the boxes to the displayer "
-                               "process")
-      self._box_conn.send(self._spots)
+    self._send_box(self._spots)
 
   def _finish(self) -> None:
     """"""

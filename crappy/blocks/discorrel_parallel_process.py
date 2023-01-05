@@ -75,7 +75,4 @@ class Discorrel_parallel_process(Camera_process):
     data = self._discorrel.get_data(self._img, self._residual)
     self._send([self._metadata['t(s)'], self._metadata, *data])
 
-    if self._box_conn is not None:
-      self._log(logging.DEBUG, "Sending the box to the displayer "
-                               "process")
-      self._box_conn.send(Spot_boxes(self._discorrel.box))
+    self._send_box(Spot_boxes(self._discorrel.box))

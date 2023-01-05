@@ -10,9 +10,12 @@ import numpy as np
 from typing import Optional, Tuple, List, Union, Dict, Any
 import logging
 import logging.handlers
+from select import select
+from time import time
 
 from ..links import Link
 from .._global import LinkDataError
+from ..tool import Spot_boxes
 
 
 class Camera_process(Process):
@@ -45,6 +48,8 @@ class Camera_process(Process):
     self._dtype = None
     self._metadata = {'ImageUniqueID': None}
     self._img0_set = False
+
+    self._last_warn = time()
 
   def set_shared(self,
                  array: SynchronizedArray,
@@ -177,6 +182,22 @@ class Camera_process(Process):
     for link in self._outputs:
       self._logger.log(logging.DEBUG, f"Sending {data} to Link {link}")
       link.send(data)
+
+  def _send_box(self, boxes: Spot_boxes) -> None:
+    """"""
+
+    if self._box_conn is None:
+      return
+
+    self._log(logging.DEBUG, "Sending the box(es) to the displayer process")
+
+    if select([], [self._box_conn], [], 0)[1]:
+      self._box_conn.send(boxes)
+    else:
+      if time() - self._last_warn > 1:
+        self._last_warn = time()
+        self._log(logging.WARNING, f"Cannot send the box(es) to draw to the "
+                                   f"Displayer process, the Pipe is full !")
 
   def _set_logger(self) -> None:
     """"""

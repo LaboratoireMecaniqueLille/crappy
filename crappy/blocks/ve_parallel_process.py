@@ -66,10 +66,7 @@ class Ve_parallel_process(Camera_process):
         if data is not None:
           self._send([self._metadata['t(s)'], self._metadata, *data])
 
-        if self._box_conn is not None:
-          self._log(logging.DEBUG, "Sending the boxes to the displayer "
-                                   "process")
-          self._box_conn.send(self._ve.spots)
+        self._send_box(self._ve.spots)
 
       except LostSpotError:
         self._log(logging.INFO, "Spots lost, stopping the spot trackers")

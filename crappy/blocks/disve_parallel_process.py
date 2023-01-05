@@ -80,10 +80,7 @@ class Disve_parallel_process(Camera_process):
         data = self._disve.calculate_displacement(self._img)
         self._send([self._metadata['t(s)'], self._metadata, *data])
 
-        if self._box_conn is not None:
-          self._log(logging.DEBUG, "Sending the box to the displayer "
-                                   "process")
-          self._box_conn.send(self._disve.patches)
+        self._send_box(self._disve.patches)
 
       except RuntimeError as exc:
         if self._raise_on_exit:
