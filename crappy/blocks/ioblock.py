@@ -99,6 +99,9 @@ class IOBlock(Block):
     self._initial_cmd = initial_cmd
     self._exit_cmd = exit_cmd
 
+    self._name = name
+    self._inout_kwargs = kwargs
+
     self._streamer = streamer
     self._spam = spam
     self._make_zero_delay = make_zero_delay
@@ -107,12 +110,12 @@ class IOBlock(Block):
     self._last_cmd = None
     self._prev_value = dict()
 
-    # Instantiating the device
-    self._device = inout_dict[name.capitalize()](**kwargs)
-
   def prepare(self) -> None:
     """Checks the consistency of the link layout, opens the device and sets the
     initial command if required."""
+
+    # Instantiating the device
+    self._device = inout_dict[self._name.capitalize()](**self._inout_kwargs)
 
     # Checking that the block has inputs or outputs
     if not self.inputs and not self.outputs:
