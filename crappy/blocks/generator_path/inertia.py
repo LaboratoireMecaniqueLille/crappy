@@ -2,6 +2,7 @@
 
 from numpy import trapz
 from typing import Union, Dict
+import logging
 
 from .path import Path, Condition_type
 
@@ -48,7 +49,7 @@ class Inertia(Path):
         given !
     """
 
-    Path.__init__(self, _last_time, _last_cmd)
+    super().__init__(_last_time, _last_cmd)
 
     if init_value is None and _last_cmd is None:
       raise ValueError('For the first path, an init_value must be given !')
@@ -71,6 +72,7 @@ class Inertia(Path):
 
     # Checking if the stop condition is met
     if self._condition(data):
+      self.log(logging.DEBUG, "Stop condition met")
       raise StopIteration
 
     if self._time_label in data and self._func_label in data:

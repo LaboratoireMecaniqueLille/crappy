@@ -3,6 +3,7 @@
 from time import time
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, fields
+import logging
 
 from .block import Block
 from ..actuator import actuator_list, Actuator
@@ -52,7 +53,7 @@ class Machine(Block):
       spam: If :obj:`True`, a command is sent to the Actuators on each loop of
         the block, else it is sent every time a new command is received.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
 
     Note:
       - ``actuators`` keys:
@@ -138,7 +139,11 @@ class Machine(Block):
 
     # Opening each actuator
     for actuator in self._actuators:
+      self.log(logging.INFO, f"Opening the {type(actuator.actuator).__name__}"
+                             f"Actuator")
       actuator.actuator.open()
+      self.log(logging.INFO, f"Opened the {type(actuator.actuator).__name__}"
+                             f"Actuator")
 
   def loop(self) -> None:
     """Receives the commands from upstream blocks, sets them on the actuators
@@ -154,17 +159,29 @@ class Machine(Block):
         # Setting the speed attribute if it was received
         if actuator.speed_cmd_label is not None and \
             actuator.speed_cmd_label in recv:
+          self.log(logging.DEBUG,
+                   f"Updating the speed of the "
+                   f"{type(actuator.actuator).__name__} Actuator from "
+                   f"{actuator.speed} to {recv[actuator.speed_cmd_label]}")
           actuator.speed = recv[actuator.speed_cmd_label]
 
         # Setting only the commands that were received
         if actuator.cmd_label in recv:
           # Setting the speed command
           if actuator.mode == 'speed':
+            self.log(logging.DEBUG,
+                     f"Setting speed of the {type(actuator.actuator).__name__}"
+                     f" Actuator to {recv[actuator.cmd_label]}")
             actuator.actuator.set_speed(recv[actuator.cmd_label])
           # Setting the position command
           else:
             actuator.actuator.set_position(recv[actuator.cmd_label],
                                            actuator.speed)
+            self.log(
+              logging.DEBUG,
+              f"Setting position of the {type(actuator.actuator).__name__} "
+              f"Actuator to {recv[actuator.cmd_label]} with speed "
+              f"{actuator.speed}")
 
     to_send = {}
 
@@ -188,6 +205,12 @@ class Machine(Block):
     """Stops and closes all the actuators to drive."""
 
     for actuator in self._actuators:
+      self.log(logging.INFO, f"Stopping the {type(actuator.actuator).__name__}"
+                             f"Actuator")
       actuator.actuator.stop()
     for actuator in self._actuators:
+      self.log(logging.INFO, f"Closing the {type(actuator.actuator).__name__}"
+                             f"Actuator")
       actuator.actuator.close()
+      self.log(logging.INFO, f"closed the {type(actuator.actuator).__name__}"
+                             f"Actuator")

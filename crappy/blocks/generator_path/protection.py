@@ -1,6 +1,8 @@
 # coding: utf-8
 
 from typing import Union, Dict
+import logging
+
 from .path import Path, Condition_type
 
 
@@ -42,7 +44,7 @@ class Protection(Path):
       This generator path never ends, it doesn't have a stop condition.
     """
 
-    Path.__init__(self, _last_time, _last_cmd)
+    super().__init__(_last_time, _last_cmd)
 
     # Setting the attributes
     self._value0 = value0
@@ -61,16 +63,19 @@ class Protection(Path):
 
       # Send value1 if the first condition is met
       if self._condition1(data):
+        self.log(logging.DEBUG, "Condition 1 met")
         self._prev = self._value1
         return self._value1
 
       # Send value2 if only the second condition is met
       elif self._condition2(data):
+        self.log(logging.DEBUG, "Condition 2 met")
         self._prev = self._value2
         return self._value2
 
       # Send value0 if no condition is met
       else:
+        self.log(logging.DEBUG, "Neither condition 1 nor condition 2 met")
         self._prev = self._value0
         return self._value0
 

@@ -3,6 +3,7 @@
 from time import time
 from typing import Union, Dict, Optional
 from itertools import cycle, islice
+import logging
 
 from .path import Path, Condition_type
 
@@ -57,7 +58,7 @@ class Cyclic_ramp(Path):
         {'type': 'ramp', 'value': -2, 'condition': 'AIN1<1'}] * 5
     """
 
-    Path.__init__(self, _last_time, _last_cmd)
+    super().__init__(_last_time, _last_cmd)
 
     if init_value is None and _last_cmd is None:
       raise ValueError('For the first path, an init_value must be given !')
@@ -95,19 +96,27 @@ class Cyclic_ramp(Path):
       try:
         self._speed = next(self._speeds)
         self._condition = next(self._conditions)
+        self.log(logging.DEBUG, f"Got value {self._speed} and condition "
+                                f"{self._condition}")
       except StopIteration:
+        self.log(logging.DEBUG, "Stop condition met, switching to next path")
         raise
 
     # During other loops, getting the next condition and speed if the current
     # condition is met
     if self._condition(data):
+      self.log(logging.DEBUG, "Ended phase of the cycle, switching to the "
+                              "next phase")
       t = time()
       self._last_peak_cmd += self._speed * (t - self.t0)
       self.t0 = t
       try:
         self._speed = next(self._speeds)
         self._condition = next(self._conditions)
+        self.log(logging.DEBUG, f"Got value {self._speed} and condition "
+                                f"{self._condition}")
       except StopIteration:
+        self.log(logging.DEBUG, "Stop condition met, switching to next path")
         raise
 
     # Finally, returning the current value

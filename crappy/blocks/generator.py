@@ -4,6 +4,7 @@ from time import time, sleep
 from typing import Dict, List, Any, Optional, Iterator
 from itertools import cycle
 from copy import deepcopy
+import logging
 
 from .block import Block
 from . import generator_path
@@ -89,13 +90,6 @@ class Generator(Block):
     self._safe_start = safe_start
     self._safe_started = False
 
-    # Checking the validity of the path
-    try:
-      self._check_path_validity(iter(deepcopy(path)))
-    except (Exception,):
-      print("Error while parsing the Generator path !")
-      raise
-
     # The path is an iterable object
     self._path = cycle(path) if repeat else iter(path)
 
@@ -106,6 +100,17 @@ class Generator(Block):
     self._last_t = None
     self._current_path = None
     self._path_id = None
+
+  def prepare(self) -> None:
+    """Checks the validity of the provided path."""
+
+    # Checking the validity of the path
+    try:
+      self._check_path_validity(iter(deepcopy(self._path)))
+    except (Exception,):
+      self.log(logging.ERROR, "Exception raised while parsing the generator "
+                              "path !")
+      raise
 
   def begin(self) -> None:
     """Initializes the first path and runs a :meth:`loop`, that may be
@@ -128,7 +133,10 @@ class Generator(Block):
     if self._safe_start and not self._safe_started:
       if self.data_available():
         self._safe_started = True
+        self.log(logging.INFO, "First data received, starting safely")
       else:
+        self.log(logging.DEBUG, "Waiting for first data to arrive for "
+                                "starting safely")
         return
 
     # Getting the data from upstream blocks
@@ -137,6 +145,7 @@ class Generator(Block):
       # Getting the next command to send
       self._last_t = time()
       cmd = self._current_path.get_cmd(data)
+      self.log(logging.DEBUG, f"Next command: {cmd}")
     except StopIteration:
       try:
         # Switching to the next path if we reached the end of one

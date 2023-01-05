@@ -11,6 +11,7 @@ from ast import literal_eval
 from pickle import loads, dumps, UnpicklingError
 from socket import timeout, gaierror
 from itertools import chain
+import logging
 
 try:
   import paho.mqtt.client as mqtt
@@ -208,8 +209,8 @@ class Client_server(Block):
     self._client.reconnect_delay_set(max_delay=10)
 
     if topics is None and cmd_labels is None:
-      print("[Client_server] WARNING: client-server block is neither an input "
-            "nor an output !")
+      self.log(logging.WARNING, "The Client-server Block is neither an input "
+                                "nor an output !")
 
     # Preparing for receiving data
     if topics is not None:
@@ -219,7 +220,6 @@ class Client_server(Block):
 
       # The last out vals are given for each label, not each topic
       self._last_out_val = {label: None for label in chain(*self._topics)}
-      print(self._last_out_val)
 
       # The buffer for received data is a dictionary of queues
       self._buffer_output = {topic: Queue() for topic in topics}
@@ -263,34 +263,35 @@ class Client_server(Block):
 
     # Starting the broker
     if self._broker:
+      self.log(logging.INFO, f"Starting the Mosquitto broker on port "
+                             f"{self._port}")
       self._launch_mosquitto()
       self._reader.start()
       sleep(2)
-      print('[Client_server] Waiting for Mosquitto to start')
+      self.log(logging.INFO, "Waiting for Mosquitto to start")
       sleep(2)
 
     # Connecting to the broker
     try_count = 15
     while True:
       try:
+        self.log(logging.INFO, f"Connecting to the broker at address "
+                               f"{self._address} on port {self._port}")
         self._client.connect(self._address, port=self._port, keepalive=10)
         break
       except timeout:
-        print("[Client_server] Impossible to reach the given address, "
-              "aborting")
-        raise
+        raise TimeoutError("Impossible to reach the given address, aborting")
       except gaierror:
-        print("[Client_server] Invalid address given, please check the "
-              "spelling")
-        raise
+        raise ValueError("Invalid address given, please check the spelling")
       except ConnectionRefusedError:
         try_count -= 1
         if try_count == 0:
-          print("[Client_server] Connection refused, the broker may not be "
-                "running or you may not have the rights to connect")
-          raise
+          raise ConnectionRefusedError("Connection refused, the broker may not"
+                                       " be running or you may not have the "
+                                       "rights to connect")
         sleep(1)
 
+    self.log(logging.INFO, "Starting the client loop")
     self._client.loop_start()
 
   def loop(self) -> None:
@@ -347,31 +348,40 @@ class Client_server(Block):
       for topic in self._cmd_labels:
         for dic in received_data:
           if dic is not None and all(label in dic for label in topic):
+            if self._labels_to_send is not None:
+              topic = str(self._labels_to_send[topic])
+            else:
+              topic = str(topic)
             self._client.publish(
-              topic=str(self._labels_to_send[topic]) if
-              self._labels_to_send is not None else str(topic),
+              topic=topic,
               payload=dumps([dic[label] for label in topic]),
               qos=0)
+            self.log(logging.DEBUG, f"Sent {[dic[label] for label in topic]}"
+                                    f"on the topic {topic} with QOS 0")
             break
 
   def finish(self) -> None:
     """Disconnects from the broker and stops it."""
 
     # Disconnecting from the broker
+    self.log(logging.INFO, "Stopping the client loop")
     self._client.loop_stop()
+    self.log(logging.INFO, "Disconnecting from the broker")
     self._client.disconnect()
 
     # Stopping the broker
     if self._broker:
       try:
+        self.log(logging.INFO, "Stopping the Mosquitto broker")
         self._proc.terminate()
         self._proc.wait(timeout=15)
-        print('[Client_server] Mosquitto terminated with return code',
-              self._proc.returncode)
+        self.log(logging.INFO, f"Mosquitto terminated with return code "
+                               f"{self._proc.returncode}")
         self._stop_mosquitto = True
         self._reader.join()
       except TimeoutExpired:
-        print('[Client_server] Subprocess did not terminate in time')
+        self.log(logging.WARNING, "Mosquitto did not terminate in time, "
+                                  "killing it")
         self._proc.kill()
 
   def _launch_mosquitto(self) -> None:
@@ -382,17 +392,17 @@ class Client_server(Block):
                          stdout=PIPE,
                          stderr=STDOUT)
     except FileNotFoundError:
-      print("[Client_server] Mosquitto is not installed !")
-      raise
+      raise FileNotFoundError("Mosquitto is not installed !")
 
   def _output_reader(self) -> None:
     """Reads the output strings from Mosquitto's subprocess."""
 
     while not self._stop_mosquitto:
       for line in iter(self._proc.stdout.readline, b''):
-        print('[Mosquitto] {0}'.format(line.decode('utf-8')), end='')
-        if 'Error: Address already in use' in line.decode('utf-8'):
-          print('Mosquitto is already running on this port')
+        self.log(logging.INFO, f"[Mosquitto] {line.decode()}")
+        if 'Error: Address already in use' in line.decode():
+          self.log(logging.WARNING, "Mosquitto is already running on this "
+                                    "port !")
       sleep(0.1)
 
   def _on_message(self, _, __, message) -> None:
@@ -403,23 +413,24 @@ class Client_server(Block):
     """
 
     try:
+      self.log(logging.DEBUG, f"Received message from the broker: {message}")
       for data_points in zip(*loads(message.payload)):
         self._buffer_output[literal_eval(message.topic)].put_nowait(
           list(data_points))
     except UnpicklingError:
-      print("[Client_server] Warning ! Message raised UnpicklingError, "
-            "ignoring it")
+      self.log(logging.WARNING, f"Received message caused UnpicklingError, "
+                                f"ignoring it: {message}")
 
   def _on_connect(self, _, __, ___, rc: Any) -> None:
     """Automatically subscribes to the topics when connecting to the broker."""
 
-    print("[Client_server] Connected with result code " + str(rc))
+    self.log(logging.INFO, f"Connected to the broker with return code {rc}")
 
     # Subscribing on connect, so that it automatically resubscribes when
     # reconnecting after a connection loss
     if self._topics is not None:
       for topic in self._topics:
         self._client.subscribe(topic=str(topic), qos=0)
-        print("[Client_server] Subscribed to", topic)
+        self.log(logging.INFO, f"Subscribed to topic {topic}")
 
     self._client.loop_start()

@@ -3,6 +3,7 @@
 from time import time
 from typing import Union, Dict
 from itertools import cycle, islice
+import logging
 
 from .path import Path, Condition_type
 
@@ -54,7 +55,7 @@ class Cyclic(Path):
         {'type': 'constant', 'value': 0, 'condition': 'AIN1<1'}] * 5
     """
 
-    Path.__init__(self, _last_time, _last_cmd)
+    super().__init__(_last_time, _last_cmd)
 
     # Creates an interator object with a given length
     if cycles > 0:
@@ -86,17 +87,26 @@ class Cyclic(Path):
       try:
         self._value = next(self._values)
         self._condition = next(self._conditions)
+        self.log(logging.DEBUG, f"Got value {self._value} and condition "
+                                f"{self._condition}")
       except StopIteration:
+        self.log(logging.DEBUG, "No value or condition, switching to next "
+                                "path")
         raise
 
     # During other loops, getting the next condition and value if the current
     # condition is met
     if self._condition(data):
+      self.log(logging.DEBUG, "Ended phase of the cycle, switching to the "
+                              "next phase")
       self.t0 = time()
       try:
         self._value = next(self._values)
         self._condition = next(self._conditions)
+        self.log(logging.DEBUG, f"Got value {self._value} and condition "
+                                f"{self._condition}")
       except StopIteration:
+        self.log(logging.DEBUG, "Stop condition met, switching to next path")
         raise
 
     # Finally, returning the current value

@@ -3,6 +3,7 @@
 from time import time
 import numpy as np
 from typing import Callable, Dict, Optional
+import logging
 
 from .block import Block
 
@@ -56,7 +57,7 @@ class Fake_machine(Block):
       nu: Poisson's ratio of the material.
       cmd_label: The label carrying the command of the fake machine.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
     """
 
     super().__init__()
@@ -117,6 +118,7 @@ class Fake_machine(Block):
 
     # If the max strain is reached, consider that the sample broke
     if self._current_pos / self._l0 > self._max_strain:
+      self.log(logging.INFO, "Sample broke")
       self._k = 0
 
     # Compute the plastic elongation separately

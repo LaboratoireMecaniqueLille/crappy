@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Union, Dict
+import logging
 from .path import Path, Condition_type
 
 
@@ -25,7 +26,7 @@ class Constant(Path):
       value: The value to send.
     """
 
-    Path.__init__(self, _last_time, _last_cmd)
+    super().__init__(_last_time, _last_cmd)
 
     self._condition = self.parse_condition(condition)
 
@@ -40,6 +41,7 @@ class Constant(Path):
 
     # Checking if the stop condition is met
     if self._condition(data):
+      self.log(logging.DEBUG, "Stop condition met")
       raise StopIteration
 
     # Returning the value

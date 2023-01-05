@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Union, List, Optional
+import logging
 from .block import Block
 from ..inout import inout_dict
 
@@ -67,7 +68,7 @@ class IOBlock(Block):
         previous.
       freq: The block will try to loop as this frequency, or as fast as
         possible if no value is given.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
       **kwargs: The arguments to be passed to the :ref:`In / Out` class.
     """
 
@@ -126,14 +127,20 @@ class IOBlock(Block):
     self._write = bool(self.inputs)
 
     # Now opening the device
+    self.log(logging.INFO, f"Opening the {type(self._device).__name__} InOut")
     self._device.open()
+    self.log(logging.INFO, f"{type(self._device).__name__} InOut opened")
 
     # Acquiring data for offsetting the output
     if self._read and self._make_zero_delay is not None:
+      self.log(logging.INFO, f"Performing offsetting on the "
+                             f"{type(self._device).__name__} InOut")
       self._device.make_zero(self._make_zero_delay)
 
     # Writing the first command before the beginning of the test if required
     if self._write and self._initial_cmd is not None:
+      self.log(logging.INFO, f"Sending the initial command to the "
+                             f"{type(self._device).__name__} InOut")
       self._device.set_cmd(*self._initial_cmd)
       self._last_cmd = self._initial_cmd
 
@@ -151,7 +158,10 @@ class IOBlock(Block):
     # Reading data from the device if there's no trig_label or if data has been
     # received on this trig_label
     if self._read:
-      if self._trig_label is None or self._trig_label in data:
+      if self._trig_label is None:
+        self._read_data()
+      elif self._trig_label in data:
+        self.log(logging.DEBUG, "Software trigger signal received")
         self._read_data()
 
     # The missing values are completed here, because the trig label must not be
@@ -170,13 +180,15 @@ class IOBlock(Block):
 
       # If not all cmd_labels have a value, returning without calling set_cmd
       if len(cmd) != len(self._cmd_labels):
-        print(f"WARNING ! Not enough values received in the "
-              f"{type(self._device).__name__} InOut to set the cmd, cmd "
-              f"not set !")
+        self.log(logging.WARNING, f"Not enough values received in the "
+                                  f"{type(self._device).__name__} InOut to"
+                                  f" set the cmd, cmd not set !")
         return
 
       # Setting the command if it's different from the previous or spam is True
       if cmd != self._last_cmd or self._spam:
+        self.log(logging.DEBUG, f"Writing the command {cmd} to the "
+                                f"{type(self._device).__name__} InOut")
         self._device.set_cmd(*cmd)
         self._last_cmd = cmd
 
@@ -186,14 +198,20 @@ class IOBlock(Block):
 
     # Stopping the stream
     if self._streamer:
+      self.log(logging.INFO, f"Stopping stream on the "
+                             f"{type(self._device).__name__} InOut")
       self._device.stop_stream()
 
     # Setting the exit command
     if self._write and self._exit_cmd is not None:
+      self.log(logging.INFO, f"Sending the exit command to the "
+                             f"{type(self._device).__name__} InOut")
       self._device.set_cmd(*self._exit_cmd)
 
     # Closing the device
+    self.log(logging.INFO, f"Closing the {type(self._device).__name__} InOut")
     self._device.close()
+    self.log(logging.INFO, f"{type(self._device).__name__} InOut closed")
 
   def _read_data(self) -> None:
     """Reads the data or the stream, offsets the timestamp and sends the data
@@ -202,6 +220,8 @@ class IOBlock(Block):
     if self._streamer:
       # Starting the stream if needed
       if not self._stream_started:
+        self.log(logging.INFO, f"Starting stream on the "
+                               f"{type(self._device).__name__} InOut")
         self._device.start_stream()
         self._stream_started = True
       # Actually getting the stream
@@ -209,6 +229,9 @@ class IOBlock(Block):
     else:
       # Regular reading of data
       data = self._device.return_data()
+
+    self.log(logging.DEBUG, f"Read values {data} from the "
+                            f"{type(self._device).__name__} InOut")
 
     if data is None:
       return

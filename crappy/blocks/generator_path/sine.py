@@ -3,6 +3,7 @@
 from time import time
 from numpy import sin, pi
 from typing import Union, Dict
+import logging
 
 from .path import Path, Condition_type
 
@@ -34,7 +35,7 @@ class Sine(Path):
       phase: The phase of the sine (in radians).
     """
 
-    Path.__init__(self, _last_time, _last_cmd)
+    super().__init__(_last_time, _last_cmd)
 
     # Setting the attributes
     self._condition = self.parse_condition(condition)
@@ -49,6 +50,7 @@ class Sine(Path):
 
     # Checking if the stop condition is met
     if self._condition(data):
+      self.log(logging.DEBUG, "Stop condition met")
       raise StopIteration
 
     # Returning the current signal value

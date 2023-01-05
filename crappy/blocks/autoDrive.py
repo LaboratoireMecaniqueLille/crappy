@@ -2,6 +2,7 @@
 
 from time import time
 from typing import Dict, Any, Optional
+import logging
 
 from .block import Block
 from ..actuator import actuator_list
@@ -48,7 +49,7 @@ class AutoDrive(Block):
       max_speed: The absolute maximum speed value that can be sent to the
         actuator.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
     """
 
     super().__init__()
@@ -75,6 +76,8 @@ class AutoDrive(Block):
     # Opening and initializing the actuator to drive
     actuator_name = self._actuator.pop('name')
     self._device = actuator_list[actuator_name](**self._actuator)
+    self.log(logging.INFO, f"Opening the {type(self._device).__name__} "
+                           f"actuator")
     self._device.open()
     self._device.set_speed(0)
 
@@ -104,10 +107,17 @@ class AutoDrive(Block):
     speed = max(-self._max_speed, min(self._max_speed, self._gain * diff))
 
     # Setting the speed and sending to downstream blocks
+    self.log(logging.DEBUG, f"Setting the speed: {speed} on the "
+                            f"{type(self._device).__name__} actuator.")
     self._device.set_speed(speed)
     self.send([t - self.t0, diff])
 
   def finish(self) -> None:
     """Simply sets the device speed to `0`."""
 
-    self._device.set_speed(0)
+    self.log(logging.INFO, f"Stopping the {type(self._device).__name__} "
+                           f"actuator")
+    self._device.stop()
+    self.log(logging.INFO, f"Closing the {type(self._device).__name__} "
+                           f"actuator")
+    self._device.close()

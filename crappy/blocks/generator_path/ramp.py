@@ -2,6 +2,7 @@
 
 from time import time
 from typing import Union, Dict, Optional
+import logging
 
 from .path import Path, Condition_type
 
@@ -31,7 +32,7 @@ class Ramp(Path):
         first one in the list of dicts, this argument must be given !
     """
 
-    Path.__init__(self, _last_time, _last_cmd)
+    super().__init__(_last_time, _last_cmd)
 
     if init_value is None and _last_cmd is None:
       raise ValueError('For the first path, an init_value must be given !')
@@ -47,6 +48,7 @@ class Ramp(Path):
 
     # Checking if the stop condition is met
     if self._condition(data):
+      self.log(logging.DEBUG, "Stop condition met")
       raise StopIteration
 
     # Returning the current value

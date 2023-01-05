@@ -1,11 +1,12 @@
 # coding: utf-8
 
 from typing import Optional
+import logging
 from .block import Block
 
 
 class Reader(Block):
-  """Reads and prints the data flowing through the input :ref:`Link`."""
+  """Reads and displays the data flowing through the input :ref:`Link`."""
 
   _index = 0
 
@@ -16,9 +17,10 @@ class Reader(Block):
     """Sets the arg and initializes the parent class.
 
     Args:
-      name: If set, will be printed to identify the reader.
+      name: If set, will be displayed to identify the reader.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, the looping frequency will be printed every 2s.
+      verbose: If :obj:`True`, the looping frequency will be displayed every
+        2s.
     """
 
     super().__init__()
@@ -40,11 +42,11 @@ class Reader(Block):
     return cls._index
 
   def loop(self) -> None:
-    """Simply flushes the link and prints its data."""
+    """Simply flushes the link and displays its data."""
 
     data = self.recv_all_data_raw()
     for link_data in data:
       for dic in (dict(i) for i in
                   zip(*([(key, value) for value in values]
                         for key, values in link_data.items()))):
-        print(f'{self._name} got: {dic}')
+        self.log(logging.INFO, f'{self._name} got: {dic}')

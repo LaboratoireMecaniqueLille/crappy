@@ -41,7 +41,7 @@ class Multiplex(Block):
       freq : The sample rate for the interpolation, and the target looping
         frequency for the block. If this value is set too high and your machine
         cannot keep up, the block will most likely lag.
-      verbose: If :obj:`True`, prints information about the looping frequency
+      verbose: If :obj:`True`, displays information about the looping frequency
         of the block.
     """
 

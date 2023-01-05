@@ -2,6 +2,7 @@
 
 from typing import List, Optional, Union
 from pathlib import Path
+import logging
 
 from .block import Block
 
@@ -35,7 +36,7 @@ class Recorder(Block):
         Otherwise, all the received data is saved.
       time_label: The label carrying the time information, by default `'t(s)'`.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
     """
 
     super().__init__()
@@ -65,18 +66,21 @@ class Recorder(Block):
 
     # Creating the folder for storing the data if it does not already exist
     if not Path.is_dir(parent_folder):
+      self.log(logging.INFO, f"Creating the folder containing the file to save"
+                             f" data to ({parent_folder})")
       Path.mkdir(parent_folder, exist_ok=True, parents=True)
 
     # Changing the name of the file if it already exists
     if Path.exists(self._path):
-      print(f'[Recorder] Warning ! The file {self._path} already exists !')
+      self.log(logging.WARNING, f"The file {self._path} already exists !")
       stem, suffix = self._path.stem, self._path.suffix
       i = 1
       # Adding an integer at the end of the name to identify the file
       while Path.exists(parent_folder / f'{stem}_{i:05d}{suffix}'):
         i += 1
       self._path = parent_folder / f'{stem}_{i:05d}{suffix}'
-      print(f'[Recorder] Using {self._path} instead !')
+      self.log(logging.WARNING, f"Writing data to the file {self._path} "
+                                f"instead !")
 
   def loop(self) -> None:
     """Simply receives data from the upstream block and saves it."""
@@ -92,6 +96,7 @@ class Recorder(Block):
 
         # The first row of the file contains the names of the labels
         with open(self._path, 'w') as file:
+          self.log(logging.INFO, f"Writing the header on file {self._path}")
           file.write(f"{','.join(self._labels)}\n")
 
         self._file_initialized = True
@@ -108,5 +113,7 @@ class Recorder(Block):
       # Sorting the lists of values in the same order as the labels
       sorted_data = [data[label] for label in self._labels]
       # Actually writing the values
+      self.log(logging.DEBUG, f"Writing {sorted_data} to the file "
+                              f"{self._path}")
       for values in zip(*sorted_data):
         file.write(f"{','.join(map(str, values))}\n")

@@ -3,6 +3,8 @@
 import numpy as np
 from typing import Optional
 from time import time
+import logging
+from multiprocessing import current_process
 from .._global import OptionalModule
 
 try:
@@ -54,6 +56,7 @@ class Displayer:
 
     self._title = title
     self._framerate = framerate
+    self._logger: Optional[logging.Logger] = None
 
     # Selecting the backend if no backend was specified
     if backend is None:
@@ -80,6 +83,8 @@ class Displayer:
   def prepare(self) -> None:
     """Calls the right prepare method depending on the chosen backend."""
 
+    self._log(logging.INFO, f"Opening the displayer window with the backend "
+                            f"{self._backend}")
     if self._backend == 'cv2':
       self._prepare_cv2()
     elif self._backend == 'mpl':
@@ -101,6 +106,8 @@ class Displayer:
 
     # Casts the image to uint8 if it's not already in this format
     if img.dtype != np.uint8:
+      self._log(logging.DEBUG, f"Casting displayed image from {img.dtype} "
+                               f"to uint8")
       if np.max(img) > 255:
         factor = min((i for i in range(1, 10) if np.max(img) / 2 ** i < 256))
         img = (img / 2 ** factor).astype(np.uint8)
@@ -116,6 +123,7 @@ class Displayer:
   def finish(self) -> None:
     """Calls the right finish method depending on the chosen backend."""
 
+    self._log(logging.INFO, "Closing the displayer window")
     if self._backend == 'cv2':
       self._finish_cv2()
     elif self._backend == 'mpl':
@@ -141,9 +149,14 @@ class Displayer:
 
     if img.shape[0] > 480 or img.shape[1] > 640:
       factor = min(480 / img.shape[0], 640 / img.shape[1])
+      self._log(
+        logging.DEBUG,
+        f"Reshaping displayed image from {img.shape} to "
+        f"{int(img.shape[1] * factor), int(img.shape[0] * factor)}")
       img = cv2.resize(img, (int(img.shape[1] * factor),
                              int(img.shape[0] * factor)))
 
+    self._log(logging.DEBUG, "Displaying the image")
     cv2.imshow(self._title, img)
     cv2.waitKey(1)
 
@@ -154,9 +167,14 @@ class Displayer:
     if img.shape[0] > 480 or img.shape[1] > 640:
       factor = min((i for i in range(2, 10) if img.shape[0] / i <= 480
                     and img.shape[1] / i <= 640))
+      self._log(
+        logging.DEBUG,
+        f"Reshaping the displayed image from {img.shape} to "
+        f"{(img.shape[0] / factor, img.shape[1] / factor)}")
       img = img[::factor, ::factor]
 
     self._ax.clear()
+    self._log(logging.DEBUG, "Displaying the image")
     self._ax.imshow(img, cmap='gray')
     plt.pause(0.001)
     plt.show()
@@ -170,3 +188,17 @@ class Displayer:
     """Destroys the opened Matplotlib window."""
 
     plt.close(self._fig)
+
+  def _log(self, level: int, msg: str) -> None:
+    """Sends a log message to the logger.
+
+    Args:
+      level: The logging level, as an :obj:`int`.
+      msg: The message to log, as a :obj:`str`.
+    """
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.Displayer")
+
+    self._logger.log(level, msg)

@@ -2,6 +2,7 @@
 
 import numpy as np
 from typing import Optional, Tuple
+import logging
 from _tkinter import TclError
 
 from .block import Block
@@ -101,6 +102,7 @@ class Grapher(Block):
 
     # Switch to the required backend
     if self._backend:
+      self.log(logging.INFO, f"Setting matplotlib backend to {self._backend}")
       plt.switch_backend(self._backend)
 
     # Create the figure and the subplot
@@ -141,6 +143,7 @@ class Grapher(Block):
       mng.window.wm_geometry("+%s+%s" % self._window_pos)
 
     # Ready to show the window
+    self.log(logging.INFO, "Configured the matplotlib window, displaying it")
     plt.show(block=False)
     plt.pause(.001)
 
@@ -192,18 +195,20 @@ class Grapher(Block):
 
       # Dividing the number of points by two to remain below the maxpt limit
       elif len(x) > self._maxpt:
-        print(f"[Grapher] Too many points on the graph "
-              f"{i} ({len(x)}>{self._maxpt})")
+        self.log(logging.INFO, f"Too many points on the graph "
+                               f"{i} ({len(x)}>{self._maxpt})")
         x, y = x[::2], y[::2]
         self._factor[i] *= 2
-        print(f"[Grapher] Resampling factor is now {self._factor[i]}")
+        self.log(logging.INFO, f"Resampling factor is now {self._factor[i]}")
 
       # Finally, updating the data on the graph
+      self.log(logging.DEBUG, f"Graph data for labels {lx}, {ly}: {x}, {y}")
       self._lines[i].set_xdata(x)
       self._lines[i].set_ydata(y)
 
     # Updating the graph if necessary
     if update:
+      self.log(logging.DEBUG, "Updating the graph")
       self._ax.relim()
       self._ax.autoscale()
       try:
@@ -215,6 +220,7 @@ class Grapher(Block):
   def finish(self) -> None:
     """Closes all the opened Matplotlib windows."""
 
+    self.log(logging.INFO, "Closing all matplotlib windows")
     plt.close("all")
 
   def _clear(self, *_, **__) -> None:
@@ -225,3 +231,5 @@ class Grapher(Block):
       line.set_ydata([])
     self.factor = [1 for _ in self._labels]
     self.counter = [0 for _ in self._labels]
+
+    self.log(logging.INFO, "Cleared the matplotlib window")

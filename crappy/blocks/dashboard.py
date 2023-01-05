@@ -2,6 +2,7 @@
 
 from typing import List
 import tkinter as tk
+import logging
 
 from .block import Block
 
@@ -49,7 +50,7 @@ class Dashboard_window(tk.Tk):
 
 
 class Dashboard(Block):
-  """The Dashboard receives data from a :ref:`Link`, and prints it on a new
+  """The Dashboard receives data from a :ref:`Link`, and displays it on a new
   popped window.
 
   It can only display data coming from one block.
@@ -63,9 +64,9 @@ class Dashboard(Block):
     """Sets the args and initializes parent class.
 
     Args:
-      labels: Only the data from these labels will be printed on the window.
+      labels: Only the data from these labels will be displayed on the window.
       nb_digits: Number of decimals to show.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
       freq: If set, the block will try to loop at this frequency.
     """
 
@@ -84,6 +85,7 @@ class Dashboard(Block):
     elif len(self.inputs) > 1:
       raise IOError("Too many links pointing towards the Dashboard block !")
 
+    self.log(logging.INFO, "Creating the dashboard window")
     self._dashboard = Dashboard_window(self._labels)
     self._dashboard.update()
 
@@ -93,12 +95,16 @@ class Dashboard(Block):
     data = self.recv_last_data(fill_missing=False)
 
     for label, value in data.items():
-      # Only print the required labels
+      # Only displays the required labels
       if label in self._labels:
         # Possibility to display str values carried by the links
         if isinstance(value, str):
+          self.log(logging.DEBUG, f"Displaying {value} for the label {label} "
+                                  f"on the dashboard")
           self._dashboard.tk_var[label].set(value)
         elif isinstance(value, int) or isinstance(value, float):
+          self.log(logging.DEBUG, f"Displaying {value:.{self._nb_digits}f} for"
+                                  f" the label {label} on the dashboard")
           self._dashboard.tk_var[label].set(f'{value:.{self._nb_digits}f}')
 
     # In case the GUI has been destroyed, don't raise an error
@@ -112,6 +118,7 @@ class Dashboard(Block):
 
     # In case the GUI has been destroyed, don't raise an error
     try:
+      self.log(logging.INFO, "Closing the dashboard window")
       self._dashboard.destroy()
     except tk.TclError:
       pass

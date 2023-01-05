@@ -3,6 +3,8 @@
 from time import time
 from typing import Callable, Union, Dict, Optional
 from re import split, IGNORECASE, match
+import logging
+from multiprocessing import current_process
 
 Condition_type = Callable[[Dict[str, list]], bool]
 
@@ -20,11 +22,21 @@ class Path:
 
     self.t0 = _last_time
     self.last_cmd = _last_cmd if _last_cmd is not None else 0
+    self._logger: Optional[logging.Logger] = None
 
   def get_cmd(self, _: Dict[str, list]) -> float:
     """If not overridden, simply returns the last_cmd attribute."""
 
     return self.last_cmd
+
+  def log(self, level: int, msg: str) -> None:
+    """"""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.{type(self).__name__}")
+
+    self._logger.log(level, msg)
 
   def parse_condition(
         self,
@@ -51,13 +63,16 @@ class Path:
     if not isinstance(condition, str):
       # First case, the condition is None
       if condition is None:
+        self.log(logging.DEBUG, "Condition is None")
         return lambda _: False
       # Second case, the condition is already a Callable
       elif isinstance(condition, Callable):
+        self.log(logging.DEBUG, "Condition is a callable")
         return condition
 
     # Third case, the condition is a string containing '<'
     if '<' in condition:
+      self.log(logging.DEBUG, "Condition is of type var < thresh")
       var, thresh = split(r'\s*<\s*', condition)
 
       # Return a function that checks if received data is inferior to threshold
@@ -70,6 +85,7 @@ class Path:
 
     # Fourth case, the condition is a string containing '>'
     elif '>' in condition:
+      self.log(logging.DEBUG, "Condition is of type var > thresh")
       var, thresh = split(r'\s*>\s*', condition)
 
       # Return a function that checks if received data is superior to threshold
@@ -82,6 +98,7 @@ class Path:
 
     # Fifth case, it is a delay condition
     elif match(r'delay', condition, IGNORECASE) is not None:
+      self.log(logging.DEBUG, "Condition is of type delay=xx")
       delay = float(split(r'=\s*', condition)[1])
       # Return a function that checks if the delay is expired
       return lambda _: time() - self.t0 > delay

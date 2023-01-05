@@ -3,6 +3,7 @@
 from datetime import timedelta
 from time import time
 from typing import Tuple, List, Dict, Any, Optional
+import logging
 
 from .block import Block
 from .._global import OptionalModule
@@ -153,7 +154,7 @@ class Drawing(Block):
         :mod:`matplotlib` nomenclature.
       backend: The :mod:`matplotlib` backend to use.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
 
     Note:
       - Information about the ``draw`` keys:
@@ -188,6 +189,8 @@ class Drawing(Block):
 
   def prepare(self) -> None:
     """Initializes the different elements of the drawing."""
+
+    self.log(logging.INFO, "Opening the drawing windows")
 
     # Initializing the window and the background image
     plt.switch_backend(self._backend)
@@ -225,10 +228,12 @@ class Drawing(Block):
 
     for elt in self._drawing_elements:
       elt.update(data)
+    self.log(logging.DEBUG, "Updating the drawing window")
     self._fig.canvas.draw()
     plt.pause(0.001)
 
   def finish(self) -> None:
     """Simply closes the window containing the drawing."""
 
+    self.log(logging.INFO, "Closing the drawing windows")
     plt.close()

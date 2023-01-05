@@ -3,6 +3,7 @@
 import numpy as np
 from typing import Union, Optional
 from pathlib import Path
+import logging
 
 from .._global import OptionalModule
 
@@ -52,7 +53,7 @@ class Hdf_recorder(Block):
       metadata: A :obj:`dict` containing additional information to save in the
         `hdf5` file.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
     """
 
     super().__init__()
@@ -89,20 +90,24 @@ class Hdf_recorder(Block):
 
     # Creating the folder for storing the data if it does not already exist
     if not Path.is_dir(parent_folder):
+      self.log(logging.INFO, f"Creating the folder containing the file to save"
+                             f" data to ({parent_folder})")
       Path.mkdir(parent_folder, exist_ok=True, parents=True)
 
     # Changing the name of the file if it already exists
     if Path.exists(self._path):
-      print(f'[HDF Recorder] Warning ! The file {self._path} already exists !')
+      self.log(logging.WARNING, f"The file {self._path} already exists !")
       stem, suffix = self._path.stem, self._path.suffix
       i = 1
       # Adding an integer at the end of the name to identify the file
       while Path.exists(parent_folder / f'{stem}_{i:05d}{suffix}'):
         i += 1
       self._path = parent_folder / f'{stem}_{i:05d}{suffix}'
-      print(f'[HDF Recorder] Using {self._path} instead !')
+      self.log(logging.WARNING, f"Writing data to the file {self._path} "
+                                f"instead !")
 
     # Initializing the file to save data to
+    self.log(logging.INFO, "Initializing the HDF5 file")
     self._hfile = tables.open_file(str(self._path), "w")
     for name, value in self._metadata.items():
       self._hfile.create_array(self._hfile.root, name, value)
@@ -131,6 +136,7 @@ class Hdf_recorder(Block):
   def finish(self) -> None:
     """Simply closes the HDF file."""
 
+    self.log(logging.INFO, "Closing the HDF5 file")
     self._hfile.close()
 
   def _first_loop(self) -> None:
@@ -141,6 +147,8 @@ class Hdf_recorder(Block):
     if self._label not in data:
       raise KeyError(f'The data received by the HDF Recorder block does not '
                      f'contain the label {self._label} !')
+
+    self.log(logging.INFO, "Initializing the arrays in the HDF5 file")
 
     _, width, *_ = data[self._label][0].shape
     self._array = self._hfile.create_earray(self._hfile.root,

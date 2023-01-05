@@ -4,6 +4,7 @@ from time import time
 from numpy import loadtxt, interp
 from typing import Dict, Union
 import pathlib
+import logging
 
 from .path import Path
 
@@ -37,8 +38,9 @@ class Custom(Path):
       delimiter: The delimiter between columns in the file, usually a coma.
     """
 
-    Path.__init__(self, _last_time, _last_cmd)
+    super().__init__(_last_time, _last_cmd)
 
+    self.log(logging.DEBUG, f"Extracting data from file {filename}")
     array = loadtxt(pathlib.Path(filename), delimiter=delimiter)
 
     if array.shape[1] != 2:
@@ -57,5 +59,6 @@ class Custom(Path):
 
     t = time()
     if t - self.t0 > self._timestamps[-1]:
+      self.log(logging.DEBUG, "Stop condition met")
       raise StopIteration
     return interp(t - self.t0, self._timestamps, self._values)

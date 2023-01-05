@@ -2,6 +2,7 @@
 
 from time import time
 from typing import List, Optional, Tuple
+import logging
 
 from .block import Block
 
@@ -51,7 +52,7 @@ class PID(Block):
         value. It adds ``'p_term', 'i_term', 'd_term'`` to the output labels.
         This is particularly useful to tweak the gains.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
     """
 
     # Attributes of the parent class
@@ -97,11 +98,13 @@ class PID(Block):
     # Updating the target value if provided
     if self._target_label in data:
       self._target = data[self._target_label]
+      self.log(logging.DEBUG, f"Updated target value to {self._target}")
 
     # Checking if a new input was received
     if self._time_label in data and self._input_label in data:
       input_ = data[self._input_label]
       t = data[self._time_label]
+      self.log(logging.DEBUG, f"Updated input value to {input_} at time {t}")
 
       # For the first loops, setting the target to the first inout by default
       if self._target is None:

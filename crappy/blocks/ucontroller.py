@@ -4,6 +4,7 @@ from .block import Block
 from .._global import OptionalModule
 from struct import unpack
 from time import time
+import logging
 try:
   from serial import Serial
   from serial.serialutil import SerialException
@@ -61,8 +62,8 @@ class UController(Block):
         Linux and Mac they're called `/dev/ttyxxxx`.
       baudrate (:obj:`int`, optional): The baudrate for serial communication.
         It depends on the capabilities of the device.
-      verbose (:obj:`bool`, optional): If :obj:`True`, prints debugging
-        information.
+      verbose (:obj:`bool`, optional): If :obj:`True`, displays the looping
+        frequency of the block.
       freq (:obj:`float`, optional): The looping frequency of the block.
     """
 
@@ -140,6 +141,8 @@ class UController(Block):
 
     # Opening the serial port
     try:
+      self.log(logging.INFO, f"Opening the serial port {self._port} with "
+                             f"baudrate {self._baudrate}")
       self._bus = Serial(self._port,
                          self._baudrate,
                          timeout=0,
@@ -149,16 +152,25 @@ class UController(Block):
 
     # Assigning indexes to the cmd_labels and labels, to identify them easily
     # and reduce the traffic on the bus
-    self._cmd_table = {label: i for i, label in enumerate(self._cmd_labels,
-                                                          start=1)} \
-        if self._cmd_labels is not None else {}
-    self._labels_table = {label: i for i, label in enumerate(self._labels,
-                                                             start=1)} \
-        if self._labels is not None else {}
+    if self._cmd_labels is not None:
+      self._cmd_table = {label: i for i, label
+                         in enumerate(self._cmd_labels, start=1)}
+    else:
+      self._cmd_table = dict()
+    self.log(logging.DEBUG, f"Command table : {self._cmd_table}")
+
+    if self._labels is not None:
+      self._labels_table = {label: i for i, label
+                            in enumerate(self._labels, start=1)}
+    else:
+      self._labels_table = dict()
+
     # The presence of the label 't(s)' indicates that the device should return
     # a timestamp along with the data
     if self._labels is not None and self._t_device:
       self._labels_table.update({'t(s)': 0})
+
+    self.log(logging.DEBUG, f"Labels table : {self._labels_table}")
 
     # Emptying the read buffer before starting
     try:
@@ -169,34 +181,35 @@ class UController(Block):
                     f"it may have been disconnected.")
 
     # Sending the 'go' command to start the device
+    self.log(logging.INFO, f"Sending start command on port {self._port}")
     try:
       msg = b''.join((b'go', str(len(self._cmd_table)).encode(),
                       str(len(self._labels_table)).encode(), b'\r\n'))
       self._bus.write(msg)
-      if self.verbose:
-        print(f'[UController] Sent {msg} on the port {self._port}')
+      self.log(logging.DEBUG, f"Sent {msg} on the port {self._port}")
     except SerialException:
       raise IOError(f"Writing to the device on port {self._port} failed, "
                     f"it may have been disconnected.")
 
     # Sending the table of cmd_labels and their indexes
+    self.log(logging.INFO, f"Sending the command labels table on port "
+                           f"{self._port}")
     for cmd, i in self._cmd_table.items():
       try:
         msg = b''.join((str(i).encode(), cmd.encode(), b'\r\n'))
         self._bus.write(msg)
-        if self.verbose:
-          print(f'[UController] Sent {msg} on the port {self._port}')
+        self.log(logging.DEBUG, f"Sent {msg} on the port {self._port}")
       except SerialException:
         raise IOError(f"Writing to the device on port {self._port} failed, "
                       f"it may have been disconnected.")
 
     # Sending the table of labels and their indexes
+    self.log(logging.INFO, f"Sending the labels table on port {self._port}")
     for label, i in self._labels_table.items():
       try:
         msg = b''.join((str(i).encode(), label.encode(), b'\r\n'))
         self._bus.write(msg)
-        if self.verbose:
-          print(f'[UController] Sent {msg} on the port {self._port}')
+        self.log(logging.DEBUG, f"Sent {msg} on the port {self._port}")
       except SerialException:
         raise IOError(f"Writing to the device on port {self._port} failed, "
                       f"it may have been disconnected.")
@@ -233,8 +246,7 @@ class UController(Block):
                           b'\r\n'))
 
           # Information for debugging
-          if self.verbose:
-            print(f"[UController] Sent {msg} on the port {self._port}")
+          self.log(logging.DEBUG, f"Sending {msg} on the port {self._port}")
 
           # Sending the actual message to the device
           try:
@@ -280,8 +292,8 @@ class UController(Block):
 
       # Information for debugging
       if self.verbose:
-        print(f"[UController] Received {self._buffer} on the "
-              f"port {self._port}")
+        self.log(logging.DEBUG, f"Received {self._buffer} on the port "
+                                f"{self._port}")
 
       # Parsing the received bytes
       read = unpack('<ibf' if self._t_device else '<bf', self._buffer)
@@ -291,6 +303,8 @@ class UController(Block):
       if self._t_device:
         self._out['t(s)'] = read[0] / 1000
         read = read[1:]
+
+      self.log(logging.DEBUG, f"Read value {read} from the device")
 
       # Updating the label value and sending to the downstream blocks
       for label in self._labels:
@@ -307,7 +321,6 @@ class UController(Block):
     else:
       try:
         self._bus.reset_input_buffer()
-        print(f"[UController] Flushed input buffer on port {self._port}")
       except SerialException:
         raise IOError(f"Reading from the device on port {self._port} "
                       f"failed, it may have been disconnected.")
@@ -316,12 +329,13 @@ class UController(Block):
     """Closes the serial port, and sends a `'stop!'` message to the device."""
 
     # Sending a 'stop!' message to the device
+    self.log(logging.INFO, f"Sending stop command on port {self._port}")
     try:
       msg = b'stop!\r\n'
       self._bus.write(msg)
-      if self.verbose:
-        print(f"[UController] Sent {msg} on the port {self._port}")
+      self.log(logging.DEBUG, f"Sent {msg} on the port {self._port}")
     except SerialException:
       pass
 
+    self.log(logging.INFO, "Closing the serial connection")
     self._bus.close()

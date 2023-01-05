@@ -3,6 +3,7 @@
 import numpy as np
 from typing import List, Optional
 from time import time
+import logging
 
 from .block import Block
 
@@ -35,7 +36,7 @@ class Mean_block(Block):
       time_label: The label containing the time information.
       out_labels: If given, only the listed labels and the time will be
         returned. Otherwise, all of them are returned.
-      verbose: If :obj:`True`, prints the looping frequency of the block.
+      verbose: If :obj:`True`, displays the looping frequency of the block.
       freq: The block will try to loop at this frequency.
     """
 
@@ -75,6 +76,8 @@ class Mean_block(Block):
         try:
           to_send[label] = np.mean(values)
         except (ValueError, TypeError):
+          self.log(logging.WARNING, f"Cannot perform averaging on label "
+                                    f"{label} with values: {values}")
           to_send[label] = values[-1]
 
     # Sending the output dict
