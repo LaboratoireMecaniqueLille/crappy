@@ -74,7 +74,7 @@ class Block(Process):
     # The objects for logging will be set later
     self._log_queue: Optional[queues.Queue] = None
     self._logger: Optional[logging.Logger] = None
-    self._log_level = logging.INFO
+    self.log_level = logging.INFO
 
     # Objects for displaying performance information about the block
     self._last_t: Optional[float] = None
@@ -648,7 +648,7 @@ class Block(Process):
     redirects the log messages to a Queue for passing them to the main process.
     """
 
-    log_level = 10 * int(round(self._log_level / 10, 0))
+    log_level = 10 * int(round(self.log_level / 10, 0))
 
     logger = logging.getLogger(f'crappy.{self.name}')
     logger.setLevel(min(log_level, logging.INFO))

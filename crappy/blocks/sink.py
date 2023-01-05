@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import logging
 from .block import Block
 
 
@@ -8,12 +9,14 @@ class Sink(Block):
 
   def __init__(self,
                verbose: bool = False,
-               freq: float = 10) -> None:
+               freq: float = 10,
+               debug: bool = False) -> None:
     """Sets the args and initializes the parent class."""
 
     super().__init__()
     self.verbose = verbose
     self.freq = freq
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
   def loop(self) -> None:
     """Simply drops all received data."""

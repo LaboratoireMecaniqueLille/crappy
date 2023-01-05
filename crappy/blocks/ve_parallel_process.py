@@ -1,7 +1,6 @@
 # coding: utf-8
 
 from multiprocessing.queues import Queue
-import numpy as np
 from typing import Optional
 import logging
 import logging.handlers

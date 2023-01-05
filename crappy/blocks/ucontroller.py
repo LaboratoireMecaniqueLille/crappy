@@ -33,7 +33,8 @@ class UController(Block):
                port: str = '/dev/ttyUSB0',
                baudrate: int = 115200,
                verbose: bool = False,
-               freq: float = 100) -> None:
+               freq: float = 100,
+               debug: bool = False) -> None:
     """Checks the validity of the arguments.
 
     Args:
@@ -68,6 +69,7 @@ class UController(Block):
     """
 
     super().__init__()
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     if not isinstance(verbose, bool):
       raise TypeError("verbose should be either True or False !")

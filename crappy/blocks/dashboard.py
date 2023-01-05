@@ -60,7 +60,8 @@ class Dashboard(Block):
                labels: List[str],
                nb_digits: int = 2,
                verbose: bool = False,
-               freq: float = 30) -> None:
+               freq: float = 30,
+               debug: bool = False) -> None:
     """Sets the args and initializes parent class.
 
     Args:
@@ -73,6 +74,7 @@ class Dashboard(Block):
     super().__init__()
     self.verbose = verbose
     self.freq = freq
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     self._labels = labels
     self._nb_digits = nb_digits

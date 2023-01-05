@@ -36,7 +36,8 @@ class Hdf_recorder(Block):
                label: str = 'stream',
                metadata: Optional[dict] = None,
                freq: Optional[float] = None,
-               verbose: bool = False) -> None:
+               verbose: bool = False,
+               debug: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -59,6 +60,7 @@ class Hdf_recorder(Block):
     super().__init__()
     self.freq = freq
     self.verbose = verbose
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     self._path = Path(filename)
     self._label = label

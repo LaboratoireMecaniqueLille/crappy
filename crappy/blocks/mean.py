@@ -28,7 +28,8 @@ class Mean_block(Block):
                time_label: str = 't(s)',
                out_labels: Optional[List[str]] = None,
                verbose: bool = False,
-               freq: float = 50) -> None:
+               freq: float = 50,
+               debug: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -43,6 +44,7 @@ class Mean_block(Block):
     super().__init__()
     self.verbose = verbose
     self.freq = freq
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     self._delay = delay
     self._time_label = time_label

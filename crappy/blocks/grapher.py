@@ -38,7 +38,8 @@ class Grapher(Block):
                window_pos: Optional[Tuple[int, int]] = None,
                interp: bool = True,
                backend: str = "TkAgg",
-               verbose: bool = False) -> None:
+               verbose: bool = False,
+               debug: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -87,6 +88,7 @@ class Grapher(Block):
     self.niceness = 10
     self.freq = freq
     self.verbose = verbose
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     self._length = length
     self._maxpt = maxpt

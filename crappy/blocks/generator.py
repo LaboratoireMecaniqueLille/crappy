@@ -37,7 +37,8 @@ class Generator(Block):
                spam: bool = False,
                verbose: bool = False,
                end_delay: Optional[float] = 2,
-               safe_start: bool = False) -> None:
+               safe_start: bool = False,
+               debug: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -84,6 +85,7 @@ class Generator(Block):
     self.freq = freq
     self.verbose = verbose
     self.labels = ['t(s)', cmd_label, cycle_label]
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     self._end_delay = end_delay
     self._spam = spam

@@ -38,7 +38,8 @@ class Fake_machine(Block):
                mode: str = 'speed',
                cmd_label: str = 'cmd',
                freq: float = 100,
-               verbose: bool = False) -> None:
+               verbose: bool = False,
+               debug: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -63,6 +64,7 @@ class Fake_machine(Block):
     super().__init__()
     self.freq = freq
     self.verbose = verbose
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     # Setting the mechanical parameters of the material
     self._k = k

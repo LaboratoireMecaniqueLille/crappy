@@ -6,6 +6,7 @@ import numpy as np
 from time import time, strftime, gmtime
 from re import fullmatch
 from types import MethodType
+import logging
 
 from .block import Block
 from .displayer import Displayer
@@ -53,6 +54,7 @@ class Camera(Block):
                software_trig_label: Optional[str] = None,
                verbose: bool = False,
                freq: float = 200,
+               debug: bool = False,
                save_images: bool = False,
                img_name: str = "{self._n_loops:6d}_{t-self.t0:.6f}.tiff",
                save_folder: Optional[Union[str, Path]] = None,
@@ -130,6 +132,7 @@ class Camera(Block):
     self.verbose = verbose
     self.freq = freq
     self.niceness = -10
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     # Checking if the requested camera exists in Crappy
     if image_generator is None:

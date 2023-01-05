@@ -22,6 +22,7 @@ class Gpuve_parallel(Camera_parallel):
                software_trig_label: Optional[str] = None,
                verbose: bool = False,
                freq: float = 200,
+               debug: bool = False,
                save_images: bool = False,
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
@@ -46,6 +47,7 @@ class Gpuve_parallel(Camera_parallel):
                      software_trig_label=software_trig_label,
                      verbose=verbose,
                      freq=freq,
+                     debug=debug,
                      save_images=save_images,
                      img_extension=img_extension,
                      save_folder=save_folder,
@@ -82,7 +84,7 @@ class Gpuve_parallel(Camera_parallel):
     """"""
 
     self._process_proc = Gpuve_parallel_process(log_queue=self._log_queue,
-                                                log_level=self._log_level,
+                                                log_level=self.log_level,
                                                 parent_name=self.name,
                                                 **self._gpuve_kw)
 

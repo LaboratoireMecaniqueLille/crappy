@@ -139,7 +139,8 @@ class Drawing(Block):
                window_size: Tuple[int, int] = (7, 5),
                backend: str = "TkAgg",
                freq: float = 2,
-               verbose: bool = False) -> None:
+               verbose: bool = False,
+               debug: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -179,6 +180,7 @@ class Drawing(Block):
     super().__init__()
     self.freq = freq
     self.verbose = verbose
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     self._image = image
     self._draw = [] if draw is None else draw

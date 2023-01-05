@@ -38,7 +38,8 @@ class Client_server(Block):
                labels_to_send: Optional[Topics_type] = None,
                verbose: bool = False,
                freq: float = 200,
-               spam: bool = False) -> None:
+               spam: bool = False,
+               debug: bool = False) -> None:
     """Checks arguments validity and sets the instance attributes.
 
     Args:
@@ -191,6 +192,7 @@ class Client_server(Block):
     self.niceness = -10
     self.verbose = verbose
     self.freq = freq
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     # Setting the args
     self._broker = broker

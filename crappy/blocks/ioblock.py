@@ -31,6 +31,7 @@ class IOBlock(Block):
                spam: bool = False,
                freq: Optional[float] = 200,
                verbose: bool = False,
+               debug: bool = False,
                **kwargs) -> None:
     """Sets the args and initializes the parent class.
 
@@ -76,6 +77,7 @@ class IOBlock(Block):
     self.niceness = -10
     self.freq = freq
     self.verbose = verbose
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     # The label argument can be omitted for streaming
     if labels is None and streamer:

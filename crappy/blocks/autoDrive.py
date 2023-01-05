@@ -28,7 +28,8 @@ class AutoDrive(Block):
                pixel_range: int = 2048,
                max_speed: float = 200000,
                freq: float = 200,
-               verbose: bool = False) -> None:
+               verbose: bool = False,
+               debug: bool = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -56,6 +57,7 @@ class AutoDrive(Block):
     self.labels = ['t(s)', 'diff(pix)']
     self.freq = freq
     self.verbose = verbose
+    self.log_level = logging.DEBUG if debug else logging.INFO
 
     self._actuator = {'name': 'CM_drive'} if actuator is None else actuator
     self._gain = -gain if '-' in direction else gain
