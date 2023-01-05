@@ -1,10 +1,11 @@
 # coding: utf-8
 
 from typing import Tuple, List, Any
-from .camera import Camera
-from .._global import OptionalModule
 import numpy as np
 from time import time
+import logging
+from .camera import Camera
+from .._global import OptionalModule
 
 try:
   import usb.util
@@ -89,14 +90,19 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
 
     # Setting the USB configuration on the camera
     try:
+      self.log(logging.INFO, f"Setting configuration on USB device "
+                             f"{self._dev}")
       self._dev.set_configuration()
     except usb.core.USBError:
-      print("You may have to install the udev-rules for this USB device, "
-            "this can be done using the udev_rule_setter utility in the util "
-            "folder")
+      self.log(logging.ERROR,
+               "An error occurred while setting the configuration of the USB"
+               " device !\nYou may have to install the udev-rules for this "
+               "USB device, this can be done using the udev_rule_setter "
+               "utility in the util folder")
       raise
 
     # Initializing the camera by sending various commands to it
+    self.log(logging.INFO, "Configuring the camera")
     self._write_data(Seek_thermal_pro_commands['Set operation mode'],
                      b'\x00\x00')
     self._write_data(
@@ -120,16 +126,18 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
                      b'\x01\x00')
 
     # Acquiring the dead pixels image and saving the dead pixes map
+    self.log(logging.INFO, "Getting the dead pixels")
     for i in range(5):
       status, ret = self._grab()
       if status == 4:
         self._dead_pixels = self._get_dead_pixels_list(ret)
         break
       elif i == 4:
-        print("Could not get the dead pixels frame")
+        self.log(logging.WARNING, "Could not get the dead pixels frame")
         self._dead_pixels = []
 
     # Acquiring the calibration image and calibrating the camera
+    self.log(logging.INFO, "Calibrating the camera")
     for i in range(10):
       status, img = self._grab()
       if status == 1:
@@ -155,6 +163,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
 
       # If a calibration frame is acquired, recalibrating
       if status == 1:
+        self.log(logging.DEBUG, "Recalibrating the camera")
         self._calib = self._crop(img) - 1600
 
       # If a valid frame is acquired, returning it along with its metadata
@@ -172,6 +181,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     for _ in range(3):
       self._write_data(Seek_thermal_pro_commands['Set operation mode'],
                        b'\x00\x00')
+    self.log(logging.INFO, "Releasing the USB resources")
     usb.util.dispose_resources(self._dev)
 
   def _grab(self) -> [bytes, np.ndarray]:
@@ -248,6 +258,11 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
   def _write_data(self, request: int, data: bytes) -> int:
     """Wrapper for writing over USB."""
 
+    self.log(logging.DEBUG, f"Sending USB command with request type "
+                            f"{Seek_therm_usb_req['Write']}, request "
+                            f"{request}, value {0}, index {0},length or "
+                            f"data {data}")
+
     try:
       return self._dev.ctrl_transfer(bmRequestType=Seek_therm_usb_req['Write'],
                                      bRequest=request,
@@ -260,6 +275,10 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
 
   def _read_data(self, request: int, data: bytes) -> int:
     """Wrapper for reading over USB."""
+
+    self.log(logging.DEBUG, f"Sending USB command with request type "
+                            f"{Seek_therm_usb_req['Read']}, request {request},"
+                            f" value {0}, index {0},length or data {data}")
 
     try:
       return self._dev.ctrl_transfer(bmRequestType=Seek_therm_usb_req['Read'],

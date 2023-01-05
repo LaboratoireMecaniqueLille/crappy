@@ -1,13 +1,15 @@
 # coding: utf-8
 
-from .camera import Camera
-from .._global import OptionalModule
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
 from typing import Tuple, Optional, Union
 from subprocess import Popen, PIPE, run
 from platform import system
 from re import findall, split, search
+import logging
+
+from .camera import Camera
+from .._global import OptionalModule
 
 try:
   import cv2
@@ -157,6 +159,8 @@ videoconvert ! autovideosink
         user_pipeline = user_pipeline[1]
 
         # Opening a subprocess handling the first half of the pipeline
+        self.log(logging.INFO, f"Running command "
+                               f"{user_application.split(' ')}")
         self._process = Popen(user_application.split(' '), stdout=PIPE)
         file_descriptor = self._process.stdout.fileno()
 
@@ -182,13 +186,14 @@ videoconvert ! autovideosink
         # Trying to run v4l2-ctl to get the available settings
         command = ['v4l2-ctl', '-l'] if device is None \
           else ['v4l2-ctl', '-d', device, '-l']
+        self.log(logging.INFO, f"Getting the available image settings with "
+                               f"command {command}")
         try:
           check = run(command, capture_output=True, text=True)
         except FileNotFoundError:
-          print("\n#######\n"
-                "Warning ! The performance of the Camera_gstreamer "
-                "class could be improved if v4l-utils was installed !"
-                "\n#######\n")
+          self.log(logging.WARNING, "The performance of the Camera_opencv "
+                                    "class could be improved if v4l-utils "
+                                    "was installed !")
           check = None
         check = check.stdout if check is not None else ''
 
@@ -228,6 +233,8 @@ videoconvert ! autovideosink
         # Trying to run v4l2-ctl to get the available formats
         command = ['v4l2-ctl', '--list-formats-ext'] if device is None \
             else ['v4l2-ctl', '-d', device, '--list-formats-ext']
+        self.log(logging.INFO, f"Getting the available image formats with "
+                               f"command {command}")
         try:
           check = run(command, capture_output=True, text=True)
         except FileNotFoundError:
@@ -286,12 +293,15 @@ videoconvert ! autovideosink
                              setter=self._set_saturation, default=1.)
 
     # Setting up GStreamer and the callback
+    self.log(logging.INFO, "Initializing the GST pipeline")
+    self.log(logging.DEBUG, f"The pipeline is {self._get_pipeline()}")
     self._pipeline = Gst.parse_launch(self._get_pipeline())
     self._app_sink = self._pipeline.get_by_name('sink')
     self._app_sink.set_property("emit-signals", True)
     self._app_sink.connect("new-sample", self._on_new_sample)
 
     # Starting image acquisition
+    self.log(logging.INFO, "Starting the GST pipeline")
     self._pipeline.set_state(Gst.State.PLAYING)
 
     # Checking that images are read as expected
@@ -329,11 +339,13 @@ videoconvert ! autovideosink
   def close(self) -> None:
     """Simply stops the image acquisition."""
 
+    self.log(logging.INFO, "Stopping the GST pipeline")
     self._pipeline.set_state(Gst.State.NULL)
 
     # Closes the subprocess started in case a user pipeline containing a pipe
     # was given
     if self._process is not None:
+      self.log(logging.INFO, "Stopping the image generating process")
       self._process.terminate()
 
   def _restart_pipeline(self,
@@ -347,9 +359,12 @@ videoconvert ! autovideosink
     """
 
     # Stops the previous pipeline
+    self.log(logging.INFO, "Stopping the GST pipeline")
     self._pipeline.set_state(Gst.State.NULL)
 
     # Redefines the pipeline and the callbacks
+    self.log(logging.INFO, "Initializing the GST pipeline")
+    self.log(logging.DEBUG, f"The new pipeline is {pipeline}")
     self._pipeline = Gst.parse_launch(pipeline)
     self._app_sink = self._pipeline.get_by_name('sink')
     self._app_sink.set_property("emit-signals", True)
@@ -375,6 +390,7 @@ videoconvert ! autovideosink
       self._app_source.set_property('extra-controls', structure)
 
     # Restarts the pipeline
+    self.log(logging.INFO, "Starting the GST pipeline")
     self._pipeline.set_state(Gst.State.PLAYING)
 
   def _get_pipeline(self,
@@ -476,6 +492,7 @@ videoconvert ! autovideosink
     success, map_info = buffer.map(Gst.MapFlags.READ)
     if not success:
       raise RuntimeError("Could not map buffer data!")
+    self.log(logging.DEBUG, "Grabbed new frame")
 
     # Casting the data into a numpy array
     try:
@@ -545,6 +562,7 @@ videoconvert ! autovideosink
                  'exposure_absolute' if self._exposure_mode == 'auto' else
                  'exposure']
     try:
+      self.log(logging.DEBUG, f"Getting exposure with command {command}")
       expo = run(command, capture_output=True, text=True)
     except FileNotFoundError:
       expo = None
@@ -571,6 +589,7 @@ videoconvert ! autovideosink
       command = ['v4l2-ctl', '-d', str(self._device), '-V']
     else:
       command = ['v4l2-ctl', '-V']
+    self.log(logging.DEBUG, f"Getting image format with command {command}")
     check = run(command, capture_output=True, text=True).stdout
 
     # Parsing the answer

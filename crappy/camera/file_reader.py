@@ -5,6 +5,7 @@ from typing import Tuple, Union, Optional
 import numpy as np
 from pathlib import Path
 from re import fullmatch
+import logging
 
 from .camera import Camera
 from .._global import OptionalModule, CrappyStop
@@ -106,6 +107,9 @@ class File_reader(Camera):
                               f" folder !\nPlease specify a valid folder or "
                               f"put the image names in the right format.")
 
+    self.log(logging.INFO, f"Detected {len(images)} images in the {folder} "
+                           f"folder")
+
     # The images are stored as an iterator
     self._images = iter(images)
 
@@ -129,6 +133,9 @@ class File_reader(Camera):
       # Getting the next image to read and its timestamp
       img_path = next(self._images)
       timestamp = float(fullmatch(r'.+(\d+\.\d+).+', img_path.name).group(1))
+
+      self.log(logging.DEBUG, f"Reading image {img_path} with timestamp "
+                              f"{timestamp}")
 
       # Reading the image data with the chosen backend
       if self._backend == 'sitk':

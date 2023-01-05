@@ -6,6 +6,8 @@ from numpy import ndarray
 from platform import system
 from subprocess import run
 from re import findall, split, search
+import logging
+
 from .camera import Camera
 from .._global import OptionalModule
 
@@ -55,6 +57,7 @@ class Camera_opencv(Camera):
       raise ValueError("device_num should be an integer !")
 
     # Opening the videocapture device
+    self.log(logging.INFO, "Opening the image stream from the camera")
     self._cap = cv2.VideoCapture(device_num)
     self._device_num = device_num
     fourcc = self._get_fourcc()
@@ -65,12 +68,13 @@ class Camera_opencv(Camera):
       # Trying to run v4l2-ctl to get the available formats
       command = ['v4l2-ctl', '-d', str(device_num), '--list-formats-ext']
       try:
+        self.log(logging.INFO, f"Getting the available image formats with "
+                               f"command {command}")
         check = run(command, capture_output=True, text=True)
       except FileNotFoundError:
-        print("\n#######\n"
-              "Warning ! The performance of the Camera_opencv "
-              "class could be improved if v4l-utils was installed !"
-              "\n#######\n")
+        self.log(logging.WARNING, "The performance of the Camera_opencv class "
+                                  "could be improved if v4l-utils was "
+                                  "installed !")
         check = None
       check = check.stdout if check is not None else ''
 
@@ -153,6 +157,7 @@ class Camera_opencv(Camera):
     """Releases the videocapture object."""
 
     if self._cap is not None:
+      self.log(logging.INFO, "Closing the image stream from the camera")
       self._cap.release()
 
   def _get_fourcc(self) -> str:

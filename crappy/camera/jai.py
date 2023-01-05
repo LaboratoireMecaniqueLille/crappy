@@ -2,6 +2,7 @@
 
 from typing import Optional, Tuple
 import numpy as np
+import logging
 
 from .cameralink import Cl_camera
 from .._global import OptionalModule
@@ -42,6 +43,7 @@ class Jai8(Cl_camera):
                  camera_type=camera_type,
                  **kwargs)
 
+    self.lo(logging.DEBUG, "Writing b'TAGM=5\\r\\n' to the camera")
     self.cap.serialWrite('TAGM=5\r\n')  # (default)
     self._set_format('8 bits')  # Set camera to 8 bits
     self.cap.set(Cl.FG_CAMERA_LINK_CAMTYP, 208)  # Set the input to 8 bits
@@ -51,26 +53,33 @@ class Jai8(Cl_camera):
   def _set_w(self, val: int) -> None:
     self.stopAcq()
     super()._set_w(val)
+    self.lo(logging.DEBUG, f"Writing b'WTC={val}\\r\\n' to the camera")
     self.cap.serialWrite('WTC={}\r\n'.format(val))
     self.startAcq()
 
   def _set_h(self, val: int) -> None:
     self.stopAcq()
     super()._set_h(val)
+    self.lo(logging.DEBUG, f"Writing b'HTL={val}\\r\\n' to the camera")
     self.cap.serialWrite('HTL={}\r\n'.format(val))
     self.startAcq()
 
   def _get_format(self) -> str:
+    self.lo(logging.DEBUG, "Writing b'BA?\\r\\n' to the camera")
     r = self.cap.serialWrite('BA?\r\n')
     return num_to_format[int(r[3])]
 
   def _set_format(self, val: str) -> None:
+    self.lo(logging.DEBUG, f"Writing b'BA={format_to_num[val]}\\r\\n' "
+                           f"to the camera")
     self.cap.serialWrite('BA={}\r\n'.format(format_to_num[val]))
 
   def _set_exp(self, val: int) -> None:
+    self.lo(logging.DEBUG, f"Writing b'RE={val}\\r\\n' to the camera")
     self.cap.serialWrite('PE={}\r\n'.format(val))
 
   def _get_exp(self) -> int:
+    self.lo(logging.DEBUG, "Writing b'PE?\\r\\n' to the camera")
     return int(self.cap.serialWrite('PE?\r\n').strip()[3:])
 
 
@@ -93,6 +102,7 @@ class Jai(Jai8):
     super().open(camera_type=camera_type,
                  **kwargs)
     # dual tap (default does not allow 12 bits)
+    self.lo(logging.DEBUG, "Writing b'TAGM=1\\r\\n' to the camera")
     self.cap.serialWrite('TAGM=1\r\n')
     self._set_format('12 bits')  # 12 bits
     self.cap.set(Cl.FG_CAMERA_LINK_CAMTYP, 212)  # Set the input to 12 bits

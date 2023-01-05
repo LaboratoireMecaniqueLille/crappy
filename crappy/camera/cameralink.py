@@ -6,6 +6,7 @@
 from time import time
 from typing import Optional, Tuple
 import numpy as np
+import logging
 
 from .camera import Camera
 from .._global import OptionalModule
@@ -46,6 +47,8 @@ class Cl_camera(Camera):
     """Opens the camera."""
 
     if camera_type is None and config_file is not None:
+      self.log(logging.INFO, "Reading config file for getting the type of "
+                             "camera")
       with open(config_file, 'r') as file:
         r = file.readlines()
       r = [s for s in r if s[:5] == "Typ='"]
@@ -68,6 +71,8 @@ class Cl_camera(Camera):
 
       else:
         if config_file:
+          self.log(logging.WARNING,"Reading config file for getting the data "
+                                   "format")
           with open(config_file, 'r') as file:
             r = file.readlines()
           r = [s for s in r if s[:10] == "FG_FORMAT="]
@@ -78,6 +83,7 @@ class Cl_camera(Camera):
         else:
           raise ValueError("Could not determine the format")
 
+    self.log(logging.INFO, "Initializing the communication with the camera")
     self.cap = Cl.VideoCapture()
     self.cap.open(numdevice, camera_type, f)
 
@@ -86,6 +92,7 @@ class Cl_camera(Camera):
 
     self.set_all(**kwargs)
 
+    self.log(logging.INFO, "Starting acquisition")
     self.cap.startAcq()
     self.cap.set(Cl.FG_TRIGGERMODE, 1)
     self.cap.set(Cl.FG_EXSYNCON, 1)
@@ -103,7 +110,9 @@ class Cl_camera(Camera):
   def close(self) -> None:
     """"""
 
+    self.log(logging.INFO, "Stopping acquisition")
     self.cap.stopAcq()
+    self.log(logging.INFO, "Closing the communication with the camera")
     self.cap.release()
 
   def _set_framespersec(self, val: float) -> None:

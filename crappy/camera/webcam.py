@@ -3,6 +3,7 @@
 from time import time
 from typing import Tuple, Optional
 from numpy import ndarray
+import logging
 from .camera import Camera
 from .._global import OptionalModule
 
@@ -40,6 +41,7 @@ class Webcam(Camera):
     """
 
     # Opening the videocapture device
+    self.log(logging.INFO, "Opening the image stream from the camera")
     self._cap = cv2.VideoCapture(device_num)
 
     # Setting the kwargs if any
@@ -67,4 +69,5 @@ class Webcam(Camera):
     """Releases the videocapture object."""
 
     if self._cap is not None:
+      self.log(logging.INFO, "Closing the image stream from the camera")
       self._cap.release()

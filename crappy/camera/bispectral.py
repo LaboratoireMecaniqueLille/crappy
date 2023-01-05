@@ -2,6 +2,8 @@
 
 import numpy as np
 from typing import Tuple
+import logging
+
 from .cameralink import Cl_camera
 
 table = (0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
@@ -81,8 +83,8 @@ class Bispectral(Cl_camera):
            **kwargs) -> None:
     """"""
 
-    super().open(camera_type=camera_type,
-                 **kwargs)
+    super().open(camera_type=camera_type, **kwargs)
+
     self.send_cmd('@W1A084')  # Restore unwindowed Mode
     self.send_cmd('@W10012')  # Make sure the image is not inverted
 
@@ -137,9 +139,10 @@ class Bispectral(Cl_camera):
     self.set_it(self._get_it1(), val)
 
   def send_cmd(self, cmd: str) -> str:
+    self.log(logging.DEBUG, f"Sending command {cmd}")
     r = self.cap.serialWrite(add_crc(cmd))
     if not check_crc(r) or r[1] != 'Y':
-      print('WARNING! Incorrect reply!')
+      self.log(logging.WARNING, f"Incorrect reply {r}")
     return r[2:4]
 
   def set_external_trigger(self, val: str) -> None:
@@ -171,7 +174,7 @@ class Bispectral(Cl_camera):
       self.send_cmd('@W1A080')  # Set to windowed mode
     else:
       self.send_cmd('@W1A084')
-    print("D set ROI to", xmin, ymin, xmax, ymax)
+      self.log(logging.INFO, f"D set ROI to {xmin}, {ymin}, {xmax}, {ymax}")
     lsb_xmin = hexlify(xmin % 256)
     msb_xmin = hexlify(xmin // 256)
     lsb_xmax = hexlify(xmax % 256)

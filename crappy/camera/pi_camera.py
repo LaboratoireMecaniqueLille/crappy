@@ -2,10 +2,11 @@
 
 from time import time, sleep
 from typing import Tuple, Any
-from .camera import Camera
-from .._global import OptionalModule
 import numpy as np
 from threading import Thread, RLock
+import logging
+from .camera import Camera
+from .._global import OptionalModule
 
 try:
   import cv2
@@ -37,6 +38,8 @@ class Picamera(Camera):
     """Instantiates the available settings."""
 
     super().__init__()
+
+    self.log(logging.INFO, "Opening the connection to the camera")
     self._cam = PiCamera()
 
     # Settings definition
@@ -79,9 +82,11 @@ class Picamera(Camera):
     # Starting the video stream
     self._capture = PiRGBArray(self._cam, (self._get_width(),
                                            self._get_height()))
+    self.log(logging.INFO, "Starting the frame stream")
     self._stream = self._cam.capture_continuous(self._capture, format='bgr',
                                                 use_video_port=True)
 
+    self.log(logging.INFO, "Starting the frame grabber thread")
     self._frame_grabber.start()
     sleep(1)
     self._started = True
@@ -93,7 +98,9 @@ class Picamera(Camera):
       return
 
     self._stop = True
+    self.log(logging.INFO, "Stopping the frame grabber thread")
     self._frame_grabber.join()
+    self.log(logging.INFO, "Stopping the frame stream")
     self._capture.close()
 
   def _restart_stream(self) -> None:
@@ -106,9 +113,11 @@ class Picamera(Camera):
     self._frame_grabber = Thread(target=self._grab_frame)
     self._capture = PiRGBArray(self._cam, (self._get_width(),
                                            self._get_height()))
+    self.log(logging.INFO, "Starting the frame stream")
     self._stream = self._cam.capture_continuous(self._capture, format='bgr',
                                                 use_video_port=True)
 
+    self.log(logging.INFO, "Starting the frame grabber thread")
     self._frame_grabber.start()
     sleep(1)
 
@@ -135,6 +144,7 @@ class Picamera(Camera):
 
     for frame in self._stream:
       with self._lock:
+        self.log(logging.DEBUG, "Got new frame from stream")
         self._frame = frame.array
       self._capture.truncate(0)
       if self._stop:
@@ -145,8 +155,11 @@ class Picamera(Camera):
     :class:`picamera.PiCamera` object."""
 
     self._stop = True
+    self.log(logging.INFO, "Stopping the frame grabber thread")
     self._frame_grabber.join()
+    self.log(logging.INFO, "Stopping the frame stream")
     self._capture.close()
+    self.log(logging.INFO, "Opening the connection to the camera")
     self._cam.close()
 
   def _get_width(self) -> int:

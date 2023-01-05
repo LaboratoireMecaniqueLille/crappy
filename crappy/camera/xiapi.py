@@ -8,6 +8,7 @@
 from time import time
 from typing import Optional, Tuple
 import numpy as np
+import logging
 
 from .camera import Camera
 from .._global import OptionalModule
@@ -43,8 +44,11 @@ class Xiapi(Camera):
     """
 
     if sn is not None:
+      self.log(logging.INFO, f"Opening the connection to the camera with "
+                             f"serial number {sn}")
       self._cam.open_device_by_SN(sn)
     else:
+      self.log(logging.INFO, "Opening the connection to the camera")
       self._cam.open_device()
 
     self.add_scale_setting('width', 1, self._get_w(), self._get_w, self._set_w,
@@ -62,6 +66,7 @@ class Xiapi(Camera):
     self.add_trigger_setting(self._get_extt, self._set_extt)
 
     self.set_all(**kwargs)
+    self.log(logging.INFO, "Starting the image acquisition")
     self._cam.start_acquisition()
 
   def get_image(self) -> Tuple[float, np.ndarray]:
@@ -83,6 +88,7 @@ class Xiapi(Camera):
         void return function.
     """
 
+    self.log(logging.INFO, "Closing the connection to the camera")
     self._cam.close_device()
 
   def _get_w(self) -> int:

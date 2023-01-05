@@ -1,8 +1,10 @@
 # coding: utf-8
 
-from time import time, strftime, gmtime
+from time import time, strftime, gmtime, sleep
 from typing import Tuple, Optional, Dict, Any
 import numpy as np
+import logging
+
 from .camera import Camera
 
 
@@ -63,6 +65,7 @@ class Fake_camera(Camera):
     """Generates the base gradient image, that will be splitted and returned
     in the :meth:`get_image` method"""
 
+    self.log(logging.DEBUG, "Generating the image")
     self._img = np.arange(self.height) * 255. / self.height
     self._img = np.repeat(self._img.reshape(self.height, 1),
                           self.width, axis=1).astype(np.uint8)
