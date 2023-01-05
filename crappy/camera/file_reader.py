@@ -8,7 +8,7 @@ from re import fullmatch
 import logging
 
 from .camera import Camera
-from .._global import OptionalModule, CrappyStop
+from .._global import OptionalModule, ReaderStop
 
 try:
   import SimpleITK as Sitk
@@ -46,6 +46,7 @@ class File_reader(Camera):
     self._stop_at_end = True
     self._backend = None
     self._t0 = None
+    self._stopped = False
 
   def open(self,
            reader_folder: Union[Path, str],
@@ -113,7 +114,7 @@ class File_reader(Camera):
     # The images are stored as an iterator
     self._images = iter(images)
 
-  def get_image(self) -> Tuple[float, np.ndarray]:
+  def get_image(self) -> Optional[Tuple[float, np.ndarray]]:
     """Reads the next image in the image folder, and returns it at the right
     time so that the achieved framerate matches the original framerate.
 
@@ -128,6 +129,10 @@ class File_reader(Camera):
     # actual t0 of Crappy's blocks)
     if self._t0 is None:
       self._t0 = time()
+
+    if self._stopped:
+      sleep(0.1)
+      return
 
     try:
       # Getting the next image to read and its timestamp
@@ -154,6 +159,10 @@ class File_reader(Camera):
     except StopIteration:
       # Default behavior, stop the test
       if self._stop_at_end:
-        raise CrappyStop
-      # Otherwise, nothing more gets done but the test goes on
-      sleep(0.1)
+        raise ReaderStop
+      else:
+        # Otherwise, nothing more gets done but the test goes on
+        self._stopped = True
+        self.log(logging.WARNING, "Exhausted all the images to read for the "
+                                  "File_reader camera, staying idle until the "
+                                  "script ends")
