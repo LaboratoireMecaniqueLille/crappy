@@ -318,9 +318,9 @@ class Block(Process):
   def _set_logger(cls, log_level: int = 20) -> None:
     """Initializes the logging for the main process.
 
-    It creates two Stream Loggers, one for the info and debug levels printing
-    on stdout and one for the other levels printing on stderr. It also creates
-    a File Logger for saving the log to a log file.
+    It creates two Stream Loggers, one for the info and debug levels displaying
+    on stdout and one for the other levels displaying on stderr. It also
+    creates a File Logger for saving the log to a log file.
 
     The levels WARNING and above are always being displayed in the terminal, no
     matter what the user chooses. Similarly, the INFO log level and above are
@@ -623,7 +623,7 @@ class Block(Process):
 
       self._last_t = t
 
-    # Printing frequency every 2 seconds
+    # Displaying frequency every 2 seconds
     if self.verbose and self._last_t - self._last_fps > 2:
       self._logger.log(
         logging.INFO,

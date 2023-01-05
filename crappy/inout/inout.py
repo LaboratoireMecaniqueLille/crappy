@@ -3,6 +3,8 @@
 from time import time, sleep
 from typing import Optional, Dict, Any, Union, List
 import numpy as np
+import logging
+from multiprocessing import current_process
 
 from .._global import DefinitionError
 
@@ -37,6 +39,16 @@ class InOut(metaclass=MetaIO):
     """Sets the attributes."""
 
     self._compensations = list()
+    self._logger: Optional[logging.Logger] = None
+
+  def log(self, level: int, msg: str) -> None:
+    """"""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.{type(self).__name__}")
+
+    self._logger.log(level, msg)
 
   def open(self) -> None:
     """This method should perform any action that's required for initializing
@@ -66,10 +78,11 @@ class InOut(metaclass=MetaIO):
     acquire.
     """
 
-    print(f"WARNING ! The get_data method is not defined for the InOut "
-          f"{type(self).__name__} !\n To get rid of this warning, define a "
-          f"get_data method, or remove all the downstream links and make sure "
-          f"the make_zero_delay argument of the IOBlock is set to None.")
+    self.log(logging.WARNING,
+             "The get_data method was called but is not defined !\n To get "
+             "rid of this warning, define a get_data method, or remove all "
+             "the downstream links and make sure the make_zero_delay argument "
+             "of the IOBlock is set to None")
     sleep(1)
     return
 
@@ -101,17 +114,17 @@ class InOut(metaclass=MetaIO):
 
     """
 
-    print(f"WARNING ! The InOut {type(self).__name__} has incoming links but"
-          f" its set_cmd method is not defined !\nThe data received from the "
-          f"incoming links is discarded.")
+    self.log(logging.WARNING,
+             "The set_cmd method was called but is not defined ! The data "
+             "received from the incoming links is discarded")
     sleep(1)
     return
 
   def start_stream(self) -> None:
     """This method should start the acquisition of the stream."""
 
-    print(f"WARNING ! The InOut {type(self).__name__} does not define the "
-          f"start_stream method !")
+    self.log(logging.WARNING, "The start_stream method was called but is not "
+                              "defined !")
 
   def get_stream(self) -> Optional[List[np.ndarray]]:
     """This method should acquire a stream as a numpy array, and return it in a
@@ -130,17 +143,16 @@ class InOut(metaclass=MetaIO):
     acquire.
     """
 
-    print(f"WARNING ! The InOut {type(self).__name__} has downstream links but"
-          f" its get_stream method is not defined !\nNo data sent to "
-          f"downstream links.")
+    self.log(logging.WARNING, "The get_stream method was called but is not "
+                              "defined ! No data sent to downstream links")
     sleep(1)
     return
 
   def stop_stream(self) -> None:
     """This method should stop the acquisition of the stream."""
 
-    print(f"WARNING ! The InOut {type(self).__name__} does not define the "
-          f"stop_stream method !")
+    self.log(logging.WARNING, "The stop_stream method was called but is not "
+                              "defined !")
 
   def close(self) -> None:
     """This method should perform any action required for properly ending the
@@ -176,8 +188,8 @@ class InOut(metaclass=MetaIO):
 
     # If no data could be acquired, abort
     if not buf:
-      print(f"No data acquired when zeroing the channels of the InOut "
-            f"{type(self).__name__}, aborting the zeroing.")
+      self.log(logging.WARNING, "No data acquired when zeroing the channels, "
+                                "aborting the zeroing")
       return
 
     # Averaging the values and storing them
@@ -187,10 +199,10 @@ class InOut(metaclass=MetaIO):
       except TypeError:
         # If something goes wrong, just forget about the offsetting
         self._compensations = list()
-        print(f"WARNING ! Cannot calculate the offset for the InOut "
-              f"{type(self).__name__} !\nPossible reasons are that it doesn't"
-              f"return only numbers, or that it returns a dict instead of the "
-              f"expected list.")
+        self.log(logging.WARNING,
+                 "Cannot calculate the offset !\nPossible reasons are that the"
+                 " InOut doesn't return only numbers, or that it returns a "
+                 "dict instead of the expected list")
         return
 
   def return_data(self) -> Optional[Union[list, Dict[str, Any]]]:

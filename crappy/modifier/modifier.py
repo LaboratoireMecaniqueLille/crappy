@@ -1,5 +1,9 @@
 # coding: utf-8
 
+from typing import Optional
+import logging
+from multiprocessing import current_process
+
 from .._global import DefinitionError
 
 
@@ -40,8 +44,20 @@ class MetaModifier(type):
       cls.classes[name] = cls
 
 
-class Modifier:
+class Modifier(metaclass=MetaModifier):
   """The base class for all modifier classes, simply allowing to keep track of
   them."""
 
-  __metaclass__ = MetaModifier
+  def __init__(self) -> None:
+    """"""
+
+    self._logger: Optional[logging.Logger] = None
+
+  def log(self, level: int, msg: str) -> None:
+    """"""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.{type(self).__name__}")
+
+    self._logger.log(level, msg)

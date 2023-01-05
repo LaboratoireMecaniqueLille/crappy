@@ -3,6 +3,8 @@
 from typing import Callable, Optional, Tuple, Union, Any, Dict
 from time import sleep
 import numpy as np
+from multiprocessing import current_process
+import logging
 
 from .._global import DefinitionError
 
@@ -64,6 +66,16 @@ class Cam_setting:
     self._value_no_getter = default
     self._getter = getter
     self._setter = setter
+    self._logger: Optional[logging.Logger] = None
+
+  def log(self, level: int, msg: str) -> None:
+    """"""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.{type(self).__name__}")
+
+    self._logger.log(level, msg)
 
   @property
   def value(self) -> Any:
@@ -77,13 +89,14 @@ class Cam_setting:
 
   @value.setter
   def value(self, val: Any) -> None:
+    self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
     self._value_no_getter = val
     if self._setter is not None:
       self._setter(val)
 
     if self.value != val:
-      print(f'[Cam settings] Could not set {self.name} to {val}, the value '
-            f'is {self.value} !')
+      self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
+                                f"value is {self.value} !")
 
 
 class Cam_bool_setting(Cam_setting):
@@ -154,14 +167,15 @@ class Cam_scale_setting(Cam_setting):
   @value.setter
   def value(self, val: nbr_type) -> None:
     val = min(max(val, self.lowest), self.highest)
+    self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
 
     self._value_no_getter = self.type(val)
     if self._setter is not None:
       self._setter(self.type(val))
 
     if self.value != val:
-      print(f'[Cam settings] Could not set {self.name} to {val}, the value '
-            f'is {self.value} !')
+      self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
+                                f"value is {self.value} !")
 
 
 class Cam_choice_setting(Cam_setting):
@@ -205,6 +219,16 @@ class Camera(metaclass=MetaCam):
 
     self.settings: Dict[str, Cam_setting] = dict()
     self.trigger_name = 'Trigger'
+    self._logger: Optional[logging.Logger] = None
+
+  def log(self, level: int, msg: str) -> None:
+    """"""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.{type(self).__name__}")
+
+    self._logger.log(level, msg)
 
   def open(self, **kwargs) -> None:
     """This method should initialize the connection to the camera, configure
@@ -245,9 +269,9 @@ class Camera(metaclass=MetaCam):
     ``time.time()``) and the frame number as an :obj:`int`.
     """
 
-    print(f"WARNING ! The get_img method is not defined for the Camera "
-          f"{type(self).__name__} !\nNo image can be acquired if this method "
-          f"isn't defined !")
+    self.log(logging.WARNING, "The get_img method was called but is not "
+                              "defined !\nNo image can be acquired if this "
+                              "method isn't defined")
     sleep(1)
     return
 
@@ -287,6 +311,7 @@ class Camera(metaclass=MetaCam):
                        f"trigger setting !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
+    self.log(logging.INFO, f"Adding the {name} bool setting")
     self.settings[name] = Cam_bool_setting(name, getter, setter, default)
 
   def add_scale_setting(self,
@@ -324,6 +349,7 @@ class Camera(metaclass=MetaCam):
                        f"trigger setting !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
+    self.log(logging.INFO, f"Adding the {name} scale setting")
     self.settings[name] = Cam_scale_setting(name, lowest, highest, getter,
                                             setter, default)
 
@@ -355,6 +381,7 @@ class Camera(metaclass=MetaCam):
                        f"trigger setting !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
+    self.log(logging.INFO, f"Adding the {name} choice setting")
     self.settings[name] = Cam_choice_setting(name, choices, getter, setter,
                                              default)
 
@@ -394,6 +421,7 @@ class Camera(metaclass=MetaCam):
     if self.trigger_name in self.settings:
       raise ValueError("There can only be one trigger setting per camera !")
 
+    self.log(logging.INFO, f"Adding the {self.trigger_name} trigger setting")
     self.settings[self.trigger_name] = Cam_choice_setting(
       name=self.trigger_name, choices=('Free run',
                                        'Hdw after config',
@@ -409,6 +437,7 @@ class Camera(metaclass=MetaCam):
       raise ValueError(f'Unexpected argument(s) {", ".join(unexpected)} for '
                        f'camera {type(self).__name__}.')
 
+    self.log(logging.INFO, "Setting all the setting values")
     for name, setting in self.settings.items():
       setting.value = kwargs[name] if name in kwargs else setting.default
 

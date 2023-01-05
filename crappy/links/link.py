@@ -85,7 +85,8 @@ class Link:
     """
 
     if self._logger is None:
-      self._logger = logging.getLogger(f"crappy.{current_process().name}")
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.{self.name}")
 
     self._logger.log(log_level, msg)
 

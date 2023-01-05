@@ -2,6 +2,8 @@
 
 from time import sleep
 from typing import Optional
+import logging
+from multiprocessing import current_process
 
 from .._global import DefinitionError
 
@@ -32,6 +34,20 @@ class Actuator(metaclass=MetaActuator):
   """The base class for all actuator classes, allowing to keep track of them
   and defining methods shared by all of them."""
 
+  def __init__(self) -> None:
+    """"""
+
+    self._logger: Optional[logging.Logger] = None
+
+  def log(self, level: int, msg: str) -> None:
+    """"""
+
+    if self._logger is None:
+      self._logger = logging.getLogger(
+        f"crappy.{current_process().name}.{type(self).__name__}")
+
+    self._logger.log(level, msg)
+
   def open(self) -> None:
     """This method should initialize the connection to the actuator, and
     configure the actuator."""
@@ -42,11 +58,9 @@ class Actuator(metaclass=MetaActuator):
     """This method should drive the actuator so that it reaches the desired
     speed."""
 
-    print(f"WARNING ! Trying to drive the Actuator {type(self).__name__} in "
-          f"speed but it does not define a set_speed method !\nNo command "
-          f"sent to the actuator.")
+    self.log(logging.WARNING, f"The set_speed method was called but is not "
+                              f"defined ! No command sent to the actuator.")
     sleep(1)
-    return
 
   def set_position(self,
                    position: float,
@@ -55,20 +69,18 @@ class Actuator(metaclass=MetaActuator):
     position. A speed value can optionally be provided for specifying the speed
     at which the actuator should move for getting to the desired position."""
 
-    print(f"WARNING ! Trying to drive the Actuator {type(self).__name__} in "
-          f"position but it does not define a set_position method !\n"
-          f"No command sent to the actuator.")
+    self.log(logging.WARNING, f"The set_position method was called but is not "
+                              f"defined ! No command sent to the actuator.")
     sleep(1)
-    return
 
   def get_speed(self) -> Optional[float]:
     """This method should return the current speed of the actuator. It is also
     fine for this method to return :obj:`None`."""
 
-    print(f"WARNING ! Trying to get the speed of the Actuator "
-          f"{type(self).__name__}, but it does not define a get_speed "
-          f"method !\nDefine such a method, don't set the speed_label, or "
-          f"remove the output links of this block.")
+    self.log(logging.WARNING, f"The get_speed method as called but is not "
+                              f"defined ! Define such a method, don't set the "
+                              f"speed_label, or remove the output links of "
+                              f"this block.")
     sleep(1)
     return
 
@@ -76,10 +88,10 @@ class Actuator(metaclass=MetaActuator):
     """This method should return the current position of the actuator. It is
     also fine for this method to return :obj:`None`."""
 
-    print(f"WARNING ! Trying to get the position of the Actuator "
-          f"{type(self).__name__}, but it does not define a get_position "
-          f"method !\nDefine such a method, don't set the pos_label, or remove"
-          f" the output links of this block.")
+    self.log(logging.WARNING, f"The get_position method as called but is not "
+                              f"defined ! Define such a method, don't set the "
+                              f"position_label, or remove the output links of "
+                              f"this block.")
     sleep(1)
     return
 
