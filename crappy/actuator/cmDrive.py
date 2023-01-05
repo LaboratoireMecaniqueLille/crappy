@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Optional
+import logging
 
 from .actuator import Actuator
 from .._global import OptionalModule
@@ -36,6 +37,8 @@ class CM_drive(Actuator):
   def open(self) -> None:
     """Opens the serial connection to the actuator."""
 
+    self.log(logging.INFO, f"Opening the serial port {self._port} with "
+                           f"baudrate {self._baudrate}")
     self._ser = serial.Serial(self._port, self._baudrate)
 
   def set_speed(self, speed: float) -> None:
@@ -51,10 +54,12 @@ class CM_drive(Actuator):
 
     # Sending the command only if it's below the maximum allowed value
     if abs(speed) < 1000000:
+      self.log(logging.DEBUG, f"Writing b'SL {int(speed)}\\r' to port "
+                              f"{self._port}")
       self._ser.write(f'SL {int(speed)}\r')
       self._ser.read(self._ser.inWaiting())
     else:
-      print('[CMDrive] Maximum speed exceeded !')
+      self.log(logging.WARNING, "Maximum speed exceeded, not setting speed")
 
   def set_position(self,
                    position: float,
@@ -71,23 +76,26 @@ class CM_drive(Actuator):
     self._ser.open()
 
     # Sending the position command
+    self.log(logging.DEBUG, f"Writing b'MR {int(position)}\\r' to port "
+                            f"{self._port}")
     self._ser.write(f'MR {int(position)}\r')
     self._ser.readline()
 
   def get_position(self) -> float:
-    """Reads, prints and returns the current position in `mm`."""
+    """Reads, displays and returns the current position in `mm`."""
 
     # Closing and reopening to get rid of errors
     self._ser.close()
     self._ser.open()
 
     # Asking for a position reading
+    self.log(logging.DEBUG, f"Writing b'PR P \\r' to port {self._port}")
     self._ser.write('PR P \r')
     pfb = self._ser.readline()
+    self.log(logging.DEBUG, f"Read {pfb} from port {self._port}")
     pfb1 = self._ser.readline()
+    self.log(logging.DEBUG, f"Read {pfb1} from port {self._port}")
 
-    # Printing and returning the read position
-    print(f'{pfb} {int(pfb1)}\n')
     return int(pfb1)
 
   def stop(self) -> None:
@@ -97,9 +105,11 @@ class CM_drive(Actuator):
     self._ser.close()
     self._ser.open()
 
+    self.log(logging.DEBUG, f"Writing b'SL 0\\r' to port {self._port}")
     self._ser.write('SL 0\r')
 
   def close(self) -> None:
     """Close the serial connection."""
 
+    self.log(logging.INFO, f"Closing the serial port {self._port}")
     self._ser.close()

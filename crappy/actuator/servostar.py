@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Union, Optional
+import logging
 
 from .actuator import Actuator
 from .._global import OptionalModule
@@ -45,7 +46,10 @@ class Servostar(Actuator):
     """Initializes the serial connection and sets the desired driving mode."""
 
     # Opening the serial connection
+    self.log(logging.INFO, f"Opening the serial port {self._port} with "
+                           f"baudrate {self._baudrate}")
     self._ser = serial.Serial(self._port, baudrate=self._baudrate, timeout=2)
+    self.log(logging.DEBUG, f"Writing b'ANCNFG 0\\r\\n' to port {self._port}")
     self._ser.write('ANCNFG 0\r\n')
 
     # Setting the desired mode
@@ -54,7 +58,9 @@ class Servostar(Actuator):
     else:
       self._set_mode_serial()
 
+    self.log(logging.DEBUG, f"Writing b'EN\\r\\n' to port {self._port}")
     self._ser.write('EN\r\n')
+    self.log(logging.DEBUG, f"Writing b'MH\\r\\n' to port {self._port}")
     self._ser.write('MH\r\n')
 
   def set_position(self,
@@ -95,7 +101,10 @@ class Servostar(Actuator):
 
     # Writing the command to the actuator
     self._ser.flushInput()
+    self.log(logging.DEBUG, f"Writing b'ORDER 0 {int(pos)} {speed} 8192 200 "
+                            f"200 0 0 0 0\\r\\n' to port {self._port}")
     self._ser.write(f"ORDER 0 {int(pos)} {speed} 8192 200 200 0 0 0 0\r\n")
+    self.log(logging.DEBUG, f"Writing b'MOVE 0\\r\\n' to port {self._port}")
     self._ser.write("MOVE 0\r\n")
 
     # Saving the last command
@@ -106,6 +115,7 @@ class Servostar(Actuator):
 
     # Requesting a position reading
     self._ser.flushInput()
+    self.log(logging.DEBUG, f"Writing b'PFB\\r\\n' to port {self._port}")
     self._ser.write("PFB\r\n")
 
     # Reading until getting the stop sequence, or the actuator stops responding
@@ -118,27 +128,33 @@ class Servostar(Actuator):
       r += self._ser.read()
       # Aborting if no new character could be read
       if not r:
-        print("[Servostar] Timeout error! Make sure the servostar is on !")
+        self.log(logging.ERROR, "Timeout error ! Make sure the servostar is "
+                                "on !")
         return
 
     # The next reading should give the position
-    return int(self._ser.readline())
+    ret = self._ser.readline()
+    self.log(logging.DEBUG, f"Read {ret} on port {self._port}")
+    return int(ret)
 
   def stop(self) -> None:
     """Sends a command for stopping the motor."""
 
+    self.log(logging.DEBUG, f"Writing b'DIS\\r\\n' to port {self._port}")
     self._ser.write("DIS\r\n")
     self._ser.flushInput()
 
   def close(self) -> None:
     """Closes the serial connection."""
 
+    self.log(logging.INFO, f"Closing the serial port {self._port}")
     self._ser.close()
 
   def _set_mode_serial(self) -> None:
     """Sets the driving mode to serial."""
 
     self._ser.flushInput()
+    self.log(logging.DEBUG, f"Writing b'OPMODE 8\\r\\n' to port {self._port}")
     self._ser.write('OPMODE 8\r\n')
     self._mode = "serial"
 
@@ -147,5 +163,6 @@ class Servostar(Actuator):
 
     self._last_pos = None
     self._ser.flushInput()
+    self.log(logging.DEBUG, f"Writing b'OPMODE A\\r\\n' to port {self._port}")
     self._ser.write('OPMODE 1\r\n')
     self._mode = "analog"

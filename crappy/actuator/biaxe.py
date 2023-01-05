@@ -1,5 +1,6 @@
 ﻿# coding: utf-8
 
+import logging
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -36,6 +37,8 @@ class Biaxe(Actuator):
   def open(self) -> None:
     """"""
 
+    self.log(logging.INFO, f"Opening the serial port {self._port} with "
+                           f"baudrate {self._baudrate}")
     self._ser = serial.Serial(self._port, self._baudrate,
                               serial.EIGHTBITS, serial.PARITY_EVEN,
                               serial.STOPBITS_ONE, self._timeout)
@@ -48,16 +51,22 @@ class Biaxe(Actuator):
     speed = int(speed / 0.002)
 
     if speed != self._speed:
+      self.log(logging.DEBUG, f"Writing b'J{ {speed}}\\r\\n' on port "
+                              f"{self._port}")
       self._ser.write(f'J {speed}\r\n'.encode('ASCII'))
       self._speed = speed
 
   def close(self) -> None:
     """Closes the serial connection."""
 
+    self.log(logging.INFO, f"Closing the serial port {self._port}")
     self._ser.close()
 
   def _clear_errors(self) -> None:
     """Clears the errors on the Servostar."""
 
+    self.log(logging.DEBUG, f"Writing b'CLRFAULT\\r\\n' on port {self._port}")
     self._ser.write(b"CLRFAULT\r\n")
+    self.log(logging.DEBUG, f"Writing b'OPMODE 0\\r\\n EN\\r\\n' on port "
+                            f"{self._port}")
     self._ser.write(b"OPMODE 0\r\n EN\r\n")

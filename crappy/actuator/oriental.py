@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Optional
+import logging
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -44,23 +45,30 @@ class Oriental(Actuator):
     """Opens the serial connection to the motor and initializes the motor."""
 
     # Opening the serial connection to the actuator
+    self.log(logging.INFO, f"Opening the serial port {self._port} with "
+                           f"baudrate {self._baudrate}")
     self._ser = Serial(self._port, baudrate=self._baudrate, timeout=0.1)
 
     # Checking which of the four motors is the one connected to the chosen port
     for i in range(1, 5):
+      self.log(logging.DEBUG, f"Writing b'TALK{i}\\n' to port {self._port}")
       self._ser.write(f"TALK{i}\n".encode())
       ret = self._ser.readlines()
+      self.log(logging.DEBUG, f"Read {ret} on port {self._port}")
 
-      # Printing the connected motor
+      # Displaying the connected motor
       if f"{i}>".encode() in ret:
         motors = ['A', 'B', 'C', 'D']
-        print(f"Motor connected to port {self._port} is {motors[i-1]}")
+        self.log(logging.INFO, f"Motor connected to port {self._port} is "
+                               f"{motors[i-1]}")
         break
 
     self._clear_errors()
 
     # Setting the acceleration and deceleration
+    self.log(logging.DEBUG, f"Writing b'TA .1\\n' to port {self._port}")
     self._ser.write(b"TA .1\n")
+    self.log(logging.DEBUG, f"Writing b'TD .1\\n' to port {self._port}")
     self._ser.write(b"TD .1\n")
 
   def set_speed(self, cmd: float) -> None:
@@ -96,11 +104,15 @@ class Oriental(Actuator):
       self.stop()
 
     # Writing the target speed value
+    self.log(logging.DEBUG, f"Writing b'VR {abs(speed)}\\n' to port "
+                            f"{self._port}")
     self._ser.write(f'VR {abs(speed)}\n'.encode())
     # Writing the target direction
     if sign > 0:
+      self.log(logging.DEBUG, f"Writing b'MCP\\n' to port {self._port}")
       self._ser.write(b"MCP\n")
     else:
+      self.log(logging.DEBUG, f"Writing b'MCN\\n' to port {self._port}")
       self._ser.write(b"MCN\n")
 
     # Storing the written value
@@ -121,7 +133,9 @@ class Oriental(Actuator):
       raise ValueError("The Oriental actuator needs both a position and a "
                        "speed command when driven in position mode !")
 
+    self.log(logging.DEBUG, f"Writing b'VR {abs(speed)}' to port {self._port}")
     self._ser.write(f'VR {abs(speed)}'.encode())
+    self.log(logging.DEBUG, f"Writing b'MA {position}' to port {self._port}")
     self._ser.write(f'MA {position}'.encode())
 
   def get_position(self) -> float:
@@ -129,11 +143,13 @@ class Oriental(Actuator):
 
     # Sending the read command
     self._ser.flushInput()
+    self.log(logging.DEBUG, f"Writing b'PC\\n' to port {self._port}")
     self._ser.write(b'PC\n')
     self._ser.readline()
 
     # Reading the position and returning it
     actuator_pos = str(self._ser.readline())
+    self.log(logging.DEBUG, f"Read {actuator_pos} on port {self._port}")
     try:
       return float(actuator_pos[4:-3])
     except ValueError:
@@ -142,14 +158,17 @@ class Oriental(Actuator):
   def stop(self) -> None:
     """Sends a command for stopping the motor."""
 
+    self.log(logging.DEBUG, f"Writing b'SSTOP\\n' to port {self._port}")
     self._ser.write(b"SSTOP\n")
 
   def close(self) -> None:
     """Closes the serial connection to the actuator."""
 
+    self.log(logging.INFO, f"Closing the serial port {self._port}")
     self._ser.close()
 
   def _clear_errors(self) -> None:
     """Sends a command for clearing any serial error on the actuator."""
 
+    self.log(logging.DEBUG, f"Writing b'ALMCLR\\n' to port {self._port}")
     self._ser.write(b"ALMCLR\n")

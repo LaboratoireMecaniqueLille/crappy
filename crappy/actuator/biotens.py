@@ -3,6 +3,7 @@
 from struct import pack, unpack
 from typing import Optional, Tuple
 from time import sleep
+import logging
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -39,10 +40,14 @@ class Biotens(Actuator):
 
   def open(self) -> None:
     """Initializes the serial connection and clears any serial error."""
-    
+
+    self.log(logging.INFO, f"Opening the serial port {self._port} with "
+                           f"baudrate 19200")
     self._ser = serial.Serial(self._port, baudrate=19200, timeout=0.1)
     # Clearing any error in the motor registers
-    self._ser.write(self._make_cmd((35, 4, 0, 35), ('B', 'B', 'i', 'B'), True))
+    cmd = self._make_cmd((35, 4, 0, 35), ('B', 'B', 'i', 'B'), True)
+    self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
+    self._ser.write(cmd)
 
   def set_speed(self, speed: float) -> None:
     """Sets the desired speed on the actuator.
@@ -64,7 +69,9 @@ class Biotens(Actuator):
     command = self._make_cmd((2, 2, 1, 2), ('B', 'B', 'h', 'B'), True)
 
     # Writing the command values to the motor registers
-    self._ser.writelines([set_speed, set_torque, set_acc, command])
+    cmd = [set_speed, set_torque, set_acc, command]
+    self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
+    self._ser.writelines(cmd)
 
   def set_position(self,
                    position: float,
@@ -95,8 +102,9 @@ class Biotens(Actuator):
     command = self._make_cmd((2, 2, 2, 2), ('B', 'B', 'h', 'B'), True)
 
     # Writing the command values to the motor registers
-    self._ser.writelines([set_position, set_speed, set_torque, set_acc,
-                          command])
+    cmd = [set_position, set_speed, set_torque, set_acc, command]
+    self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
+    self._ser.writelines(cmd)
 
   def get_position(self) -> float:
     """Reads and returns the current position of the actuator, in `mm`."""
@@ -107,11 +115,13 @@ class Biotens(Actuator):
         # Emptying the read buffer
         self._ser.readlines()
         # Sending command to return position
-        self._ser.write(b''.join((b'\x50\x50\x50\xFF\x00',
-                                  self._to_bytes(10, 'B'),
-                                  msg_tail_last)))
+        cmd = b''.join((b'\x50\x50\x50\xFF\x00', self._to_bytes(10, 'B'),
+                        msg_tail_last))
+        self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
+        self._ser.write(cmd)
         # Reading the position
         position = self._ser.read(19)
+        self.log(logging.DEBUG, f"Read {position} from port {self._port}")
         # Might return fewer characters than expected due to the timeout
         if len(position) != 19:
           continue
@@ -128,11 +138,14 @@ class Biotens(Actuator):
   def stop(self) -> None:
     """Sends a command for stopping the actuator."""
 
-    self._ser.write(self._make_cmd((2, 2, 0, 2), ('B', 'B', 'h', 'B'), True))
+    cmd = self._make_cmd((2, 2, 0, 2), ('B', 'B', 'h', 'B'), True)
+    self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
+    self._ser.write(cmd)
 
   def close(self) -> None:
     """Closes the serial connection to the actuator."""
 
+    self.log(logging.INFO, f"Closing the serial port {self._port}")
     self._ser.close()
 
   def reset_position(self) -> None:
@@ -144,8 +157,12 @@ class Biotens(Actuator):
     init_torque = self._make_cmd((41, 2, 1023, 41), ('B', 'B', 'i', 'B'), True)
     to_init = self._make_cmd((37, 2, 0, 37), ('B', 'B', 'h', 'B'), True)
 
-    self._ser.writelines([init_pos, init_speed, init_torque, to_init])
-    self._ser.write(self._make_cmd((2, 2, 12, 2), ('B', 'B', 'h', 'B'), True))
+    cmd = [init_pos, init_speed, init_torque, to_init]
+    self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
+    self._ser.writelines(cmd)
+    cmd = self._make_cmd((2, 2, 12, 2), ('B', 'B', 'h', 'B'), True)
+    self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
+    self._ser.write(cmd)
 
     sleep(1)
 
@@ -156,11 +173,13 @@ class Biotens(Actuator):
     while pos != last_pos:
       last_pos = pos
       pos = self.get_position()
-      print(f"position : {pos}")
-    print("[Biotens] Init done")
+      self.log(logging.INFO, f"Current position: {pos}")
+    self.log(logging.INFO, "Initialization done")
     self.stop()
 
-    self._ser.write(self._make_cmd((10, 4, 0, 10), ('B', 'B', 'i', 'B'), True))
+    cmd = self._make_cmd((10, 4, 0, 10), ('B', 'B', 'i', 'B'), True)
+    self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
+    self._ser.write(cmd)
 
     # Emptying the serial read buffer
     try:

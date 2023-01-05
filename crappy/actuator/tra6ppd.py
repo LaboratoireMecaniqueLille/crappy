@@ -3,6 +3,7 @@
 from time import sleep
 from re import findall
 from typing import Optional
+import logging
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -46,16 +47,20 @@ class Tra6ppd(Actuator):
   def open(self) -> None:
     """Resets the device and performs homing."""
 
+    self.log(logging.INFO, f"Opening the serial port {self._port} with "
+                           f"baudrate {self._baudrate}")
     self._ser = Serial(self._port, baudrate=self._baudrate, timeout=0.1)
 
     # First, reset the device
+    self.log(logging.DEBUG, f"Writing b'1RS\\r\\n' to port {self._port}")
     self._ser.write(b'1RS\r\n')
     sleep(5)
 
     # Then, perform homing (may take up to 45s)
+    self.log(logging.DEBUG, f"Writing b'10R\\r\\n' to port {self._port}")
     self._ser.write(b'1OR\r\n')
     for i in range(5, 0, -1):
-      print(f"[TRA6PPD] Performing homing, {10 * i} seconds left.")
+      self.log(logging.INFO, f"Performing homing, {10 * i} seconds left")
       sleep(10)
 
   def set_position(self,
@@ -78,14 +83,18 @@ class Tra6ppd(Actuator):
     speed_clamped = max(min(self._max_speed, speed), 0)
 
     # Sending the speed command
+    self.log(logging.DEBUG, f"Writing b'1VA{speed_clamped:.5f}\\r\\n' to port "
+                            f"{self._port}")
     self._ser.write(f'1VA{speed_clamped:.5f}\r\n'.encode())
 
     # Ignoring the position command if it is out of range
     if not self._min_position <= position <= self._max_position:
-      print(f"[TRA6PPD] WARNING : The requested position {position} is out of "
-            f"range ! Ignoring.")
+      self.log(logging.WARNING, f"The requested position {position} is out of "
+                                f"range ! Ignoring")
     else:
       # Sending the position command
+      self.log(logging.DEBUG, f"Writing b'1PA{position:.5f}\\r\\n' to port "
+                              f"{self._port}")
       self._ser.write(f'1PA{position:.5f}\r\n'.encode())
 
   def get_position(self) -> float:
@@ -96,18 +105,24 @@ class Tra6ppd(Actuator):
     """
 
     # Sending the read command
+    self.log(logging.DEBUG, f"Writing b'1TP?\\r\\n' to port {self._port}")
     self._ser.write(b'1TP?\r\n')
 
     # Using a regular expression to parse the answer
-    return float(findall(r'\d\.\d+', self._ser.readline().decode())[0])
+    ret = self._ser.readline()
+    self.log(logging.DEBUG, f"Read {ret} on port {self._port}")
+    return float(findall(r'\d\.\d+', ret.decode())[0])
 
   def close(self) -> None:
     """Just closes the serial port."""
 
+    self.log(logging.INFO, f"Closing the serial port {self._port}")
     self._ser.close()
 
   def stop(self) -> None:
     """Stops the motor and sets the device to "disable" state."""
 
+    self.log(logging.DEBUG, f"Writing b'ST\\r\\n' to port {self._port}")
     self._ser.write(b'ST\r\n')
+    self.log(logging.DEBUG, f"Writing b'1MMO\\r\\n' to port {self._port}")
     self._ser.write(b'1MMO\r\n')

@@ -3,6 +3,7 @@
 from struct import pack_into
 from time import sleep
 from typing import Union, List, Optional
+import logging
 from .actuator import Actuator
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h, Usb_server
@@ -233,6 +234,7 @@ class Motorkit_pump(Usb_server, Actuator):
     """Initializes the generic HAT object."""
 
     if self._backend == 'blinka':
+      self.log(logging.INFO, "Opening the Motorkit with the Adafruit library")
       self._hat = MotorKit(i2c=board.I2C())
 
       def set_motor(nr: int, cmd: float) -> None:
@@ -241,6 +243,11 @@ class Motorkit_pump(Usb_server, Actuator):
       self._hat.set_motor = set_motor
 
     else:
+      if self._bus is None:
+        self.log(logging.INFO, "Opening the Motorkit with the SMBus library")
+      else:
+        self.log(logging.INFO, "Opening the Motorkit with an USB connection "
+                               "over FT232H")
       self._hat = DC_motor_hat([1, 2, 3], self._address, self._port, self._bus)
 
   def set_speed(self, volt: float) -> None:
@@ -256,24 +263,34 @@ class Motorkit_pump(Usb_server, Actuator):
 
     # Stops all the motors
     if volt == 0:
+      self.log(logging.DEBUG, "Setting motor 1 to 0.0")
       self._hat.set_motor(1, 0.0)
+      self.log(logging.DEBUG, "Setting motor 2 to 0.0")
       self._hat.set_motor(2, 0.0)
+      self.log(logging.DEBUG, "Setting motor 3 to 0.0")
       self._hat.set_motor(3, 0.0)
 
     # Drives the inflating pump
     elif volt > 0:
+      self.log(logging.DEBUG, f"Setting motor 1 to {volt_clamped}")
       self._hat.set_motor(1, volt_clamped)
+      self.log(logging.DEBUG, "Setting motor 2 to 0.0")
       self._hat.set_motor(2, 0.0)
+      self.log(logging.DEBUG, "Setting motor 3 to 0.0")
       self._hat.set_motor(3, 0.0)
 
     # Drives the deflating pump and opens the valve
     elif volt < 0:
+      self.log(logging.DEBUG, "Setting motor 1 to 0.0")
       self._hat.set_motor(1, 0.0)
+      self.log(logging.DEBUG, "Setting motor 2 to 1.0")
       self._hat.set_motor(2, 1.0)
+      self.log(logging.DEBUG, f"Setting motor 3 to {volt_clamped}")
       self._hat.set_motor(3, volt_clamped)
 
   def close(self) -> None:
     """Stops the pumps and closes the HAT object."""
 
     if self._backend != 'blinka':
+      self.log(logging.INFO, "Closing the connection to the Motorkit")
       self._hat.close()

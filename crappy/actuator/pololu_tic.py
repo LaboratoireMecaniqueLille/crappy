@@ -4,6 +4,7 @@ from subprocess import check_output
 from threading import Thread, RLock
 from time import sleep
 from typing import Union, Dict, Optional
+import logging
 from .actuator import Actuator
 from .._global import OptionalModule
 
@@ -414,12 +415,12 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       - ``serial_number``:
         Serial numbers can be accessed using the `lsusb` command in Linux
         shell, or running ``ticcmd --list`` if `ticcmd` is installed. This
-        number is also printed during :meth:`__init__` if only one device is
+        number is also displayed during :meth:`__init__` if only one device is
         connected and ``serial_number`` is :obj:`None`.
       - ``model``:
         The model is written on the Tic board, and can be accessed by running
         ``ticcmd --list`` in a shell if `ticcmd` is installed. It is also
-        printed during :meth:`__init__` if only one device is connected and
+        displayed during :meth:`__init__` if only one device is connected and
         ``model`` is :obj:`None`.
       - **Pins settings**:
         The pin functions and polarity can also be set independently of
@@ -522,11 +523,11 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       else:
         self._model = model
 
-    # Printing model and serial_number if they were not specified by the user
+    # Displaying model and serial_number if they were not specified by the user
     if serial_number is None:
-      print("Tic serial number :", self._serial_number)
+      self.log(logging.INFO, f"Tic serial number: {self._serial_number}")
     if model is None:
-      print("Tic model :", self._model)
+      self.log(logging.INFO, f"Tic model: {self._model}")
 
     # Making sure the current limit is valid, especially for the 36v4 model
     if not 0 < current_limit < Tic_max_allowed_current[self._model]:
@@ -573,14 +574,14 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     # Keeping the max_accel and max_decel values within the Tic ratings
     if max_accel < self._to_mm(Tic_min_accel / 100):
-      print(
-        "Requested acceleration below min allowed acceleration, "
-        "setting to min allowed acceleration")
+      self.log(logging.WARNING, "Requested acceleration below min allowed "
+                                "acceleration, setting to min allowed "
+                                "acceleration")
       max_accel = self._to_mm(Tic_min_accel / 100)
     elif max_accel > self._to_mm(Tic_max_accel / 100):
-      print(
-        "Requested acceleration exceeding max allowed acceleration, "
-        "setting to max allowed acceleration")
+      self.log(logging.WARNING, "Requested acceleration exceeding max allowed "
+                                "acceleration, setting to max allowed "
+                                "acceleration")
       max_accel = self._to_mm(Tic_max_accel / 100)
     self._max_accel = max_accel
 
@@ -590,15 +591,17 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       self._t_shutoff = t_shutoff
 
     if config_file is not None and backend != 'ticcmd':
-      print("Warning : config files can only be loaded if backend='ticcmd', "
-            "ignoring the given config_file")
+      self.log(logging.WARNING, "Config files can only be loaded if "
+                                "backend='ticcmd', ignoring the given "
+                                "config_file")
       self._config_file = None
     else:
       self._config_file = config_file
 
     if backend != 'USB' and not reset_command_timeout:
-      print("Warning : reset_command_timeout can only be disabled if "
-            "backend='USB', reset_command_timeout set to True")
+      self.log(logging.WARNING, "reset_command_timeout can only be disabled "
+                                "if backend='USB', reset_command_timeout set "
+                                "to True")
       self._rct_on = True
     else:
       self._rct_on = reset_command_timeout
@@ -645,11 +648,15 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     if self._backend == 'USB':
       try:
+        self.log(logging.INFO, f"Setting configuration on USB device "
+                               f"{self._dev}")
         self._dev.set_configuration()
       except core.USBError:
-        print("You may have to install the udev-rules for this USB device, "
-              "this can be done using the udev_rule_setter utility in the util"
-              " folder")
+        self.log(logging.ERROR,
+                 "An error occurred while setting the configuration of the USB"
+                 " device !\nYou may have to install the udev-rules for this "
+                 "USB device, this can be done using the udev_rule_setter "
+                 "utility in the util folder")
         raise
 
     # Setting the Tic according to the user parameters
@@ -672,14 +679,18 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     # Loading the config file
     if self._config_file is not None:
+      self.log(logging.INFO, "Loading the config file")
       self._ticcmd('--settings', str(self._config_file))
 
     # Starting the auxiliary threads
     # The RCT thread is not needed in case reset_command_timeout is False
     # The shutoff thread is not needed in case t_shutoff is zero
     if self._rct_on:
+      self.log(logging.INFO, "Starting the thread for managing the command "
+                             "timeouts")
       self._thrd_rct.start()
     else:
+      self.log(logging.INFO, "Disabling the command timeout security")
       self._usb_command(request=Tic_cmd['Set_setting'],
                         value=0x00,
                         index=Tic_settings['Command_timeout_low'])
@@ -687,6 +698,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
                         value=0x00,
                         index=Tic_settings['Command_timeout_high'])
     if self._t_shutoff > 0:
+      self.log(logging.INFO, "Starting the thread managing the auto shutoff")
       self._thrd_shutoff.start()
 
   def get_speed(self) -> float:
@@ -695,6 +707,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         Returns:
           :obj:`float`: The speed in mm/s
         """
+
     if self._backend == 'ticcmd':
       return self._to_mm(yaml.load(self._ticcmd('-s'), Loader=yaml.FullLoader)
                          ['Current velocity'] / 10000) if full_loader else \
@@ -778,9 +791,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     final_speed = min(abs(self._to_steps(speed * 10000)), Tic_max_speed)
     if final_speed:  # If speed is 0, then it should remain 0
       if final_speed < Tic_min_speed:
-        print(
-          "Requested speed below min possible speed, setting to min "
-          "possible speed")
+        self.log(logging.WARNING, "Requested speed below min possible speed, "
+                                  "setting to min possible speed")
         final_speed = Tic_min_speed
       final_speed *= speed / abs(speed)
 
@@ -806,12 +818,16 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     self._close = True
     if self._rct_on:
+      self.log(logging.INFO, "Stopping the thread managing the command "
+                             "timeouts")
       self._thrd_rct.join()
     if self._t_shutoff > 0:
+      self.log(logging.INFO, "Starting the thread managing the auto shutoff")
       self._thrd_shutoff.join()
     self._enter_safe_start()
     self._deenergize()
     if self._backend == 'USB':
+      self.log(logging.INFO, "Releasing the USB resources")
       util.dispose_resources(self._dev)
 
   def _to_steps(self, mm: float) -> float:
@@ -827,6 +843,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _reset_command_timeout(self) -> None:
     """Sends a reset command timeout command."""
 
+    self.log(logging.DEBUG, "Sending reset command timeout command")
+
     if self._backend == 'ticcmd':
       self._ticcmd('--reset-command-timeout')
     elif self._backend == 'USB':
@@ -834,6 +852,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
   def _enter_safe_start(self) -> None:
     """Sends an enter safe start command."""
+
+    self.log(logging.INFO, "Entering safe start mode")
 
     if self._backend == 'ticcmd':
       self._ticcmd('--enter-safe-start')
@@ -843,6 +863,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _exit_safe_start(self) -> None:
     """Sends an exit safe start command."""
 
+    self.log(logging.INFO, "Exiting safe start mode")
+
     if self._backend == 'ticcmd':
       self._ticcmd('--exit-safe-start')
     elif self._backend == 'USB':
@@ -850,6 +872,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
   def _deenergize(self) -> None:
     """Sends a deenergize command."""
+
+    self.log(logging.INFO, "Deenergizing the motor")
 
     if self._backend == 'ticcmd':
       self._ticcmd('--deenergize')
@@ -859,6 +883,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _energize(self) -> None:
     """Sends an energize command."""
 
+    self.log(logging.INFO, "Energizing the motor")
+
     if self._backend == 'ticcmd':
       self._ticcmd('--energize')
     elif self._backend == 'USB':
@@ -866,6 +892,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
   def _set_step_mode(self) -> None:
     """Sends a set step mode command."""
+
+    self.log(logging.INFO, "Setting the micro-step mode")
 
     if self._backend == 'ticcmd':
       self._ticcmd('--step-mode', str(self._step_mode))
@@ -875,6 +903,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
   def _set_current_limit(self) -> None:
     """Sends a set current limit command."""
+
+    self.log(logging.INFO, "Setting the current limit")
 
     if self._backend == 'ticcmd':
       self._ticcmd('--current', str(self._current_limit))
@@ -889,17 +919,17 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _set_max_speed(self, speed: float) -> None:
     """Clamps the speed within the limits and sets it."""
 
+    self.log(logging.DEBUG, "Setting the maximum speed")
+
     # The given speed may first need to be reduced or increased in order to
     # comply with the Tic ratings
     if abs(speed) > self._to_mm(Tic_max_speed / 10000):
-      print(
-        "Requested speed exceeding max allowed speed, setting to max "
-        "allowed speed")
+      self.log(logging.WARNING, "Requested speed exceeding max allowed speed, "
+                                "setting to max allowed speed")
       max_speed = Tic_max_speed
     elif abs(speed) < self._to_mm(Tic_min_speed / 10000):
-      print(
-        "Requested speed below min possible speed, setting to min "
-        "possible speed")
+      self.log(logging.WARNING, "Requested speed below min possible speed, "
+                                "setting to min possible speed")
       max_speed = Tic_min_speed
     else:
       max_speed = abs(self._to_steps(speed * 10000))
@@ -913,6 +943,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _set_max_accel(self) -> None:
     """Clamps the acceleration within the limits and sets it."""
 
+    self.log(logging.INFO, "Setting the maximum acceleration")
+
     if self._backend == 'ticcmd':
       self._ticcmd('--max-accel', str(int(
         self._to_steps(self._max_accel * 100))))
@@ -922,6 +954,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
   def _set_max_decel(self) -> None:
     """Clamps the deceleration within the limits and sets it."""
+
+    self.log(logging.INFO, "Setting the maximum deceleration")
 
     if self._backend == 'ticcmd':
       self._ticcmd('--max-decel', str(int(
@@ -933,6 +967,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _set_position(self, position: float) -> None:
     """Sends a set position command."""
 
+    self.log(logging.DEBUG, "Setting the position")
+
     if self._backend == 'ticcmd':
       self._ticcmd('--position', str(int(self._to_steps(position))))
     elif self._backend == 'USB':
@@ -942,6 +978,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _set_velocity(self, velocity: float) -> None:
     """Sends a set velocity command."""
 
+    self.log(logging.DEBUG, "Setting the velocity")
+
     if self._backend == 'ticcmd':
       self._ticcmd('--velocity', str(int(velocity)))
     elif self._backend == 'USB':
@@ -950,6 +988,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
   def _get_max_speed(self) -> float:
     """Reads the maximum speed from the motor."""
+
+    self.log(logging.DEBUG, "Reading the maximum speed")
 
     if self._backend == 'ticcmd':
       return self._to_mm(yaml.load(self._ticcmd('-s', '--full'),
@@ -973,6 +1013,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     setting the Kill switch, Limit switch forward and Limit switch reverse
     bitfields.
     """
+
+    self.log(logging.INFO, "Setting the pin functions")
 
     if self._backend == 'ticcmd':
       pass
@@ -1036,6 +1078,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _set_pin_polarity(self, pin_pol: Dict[str, str]) -> None:
     """Sets the switch polarity bitfield."""
 
+    self.log(logging.INFO, "Setting the pin polarities")
+
     if self._backend == 'ticcmd':
       pass
     elif self._backend == 'USB':
@@ -1058,6 +1102,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
   def _reset(self) -> None:
     """Resets the Tic and reloads the settings."""
 
+    self.log(logging.INFO, "Resetting the device")
+
     if self._backend == 'ticcmd':
       pass
     elif self._backend == 'USB':
@@ -1073,6 +1119,10 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
 
     with self._lock:
       try:
+        self.log(logging.DEBUG, f"Sending USB command with "
+                                f"request type {request_type}, request "
+                                f"{request}, value {value}, index {index},"
+                                f"length or data {data_or_length}")
         result = self._dev.ctrl_transfer(bmRequestType=request_type,
                                          bRequest=request,
                                          wValue=value,
@@ -1093,6 +1143,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     """Wrapper for calling ticcmd in a subprocess."""
 
     with self._lock:
+      self.log(logging.DEBUG, f"Calling ticcmd -d {self._serial_number} "
+                              f"{' '.join(args)}")
       return check_output(['ticcmd'] + ['-d'] +
                           [self._serial_number]
                           + list(args))
