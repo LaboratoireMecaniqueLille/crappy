@@ -1,28 +1,33 @@
 # coding:utf-8
 
+from typing import Optional, NoReturn
+
+
 class OptionalModule:
   """Placeholder for optional dependencies when not installed
 
-  Will print a message and raise an error when trying to use them
+  Will display a message and raise an error when trying to use them
   """
 
-  def __init__(self, module_name, message=None):
+  def __init__(self, module_name: str, message: Optional[str] = None):
+    """"""
+
     self.mname = module_name
     if message is not None:
       self.message = message
     else:
-      self.message = """The module {} is necessary to use this functionality
-Please install it and try again""".format(self.mname)
+      self.message = f"The module {self.mname} is necessary to use this " \
+                     f"functionality. Please install it and try again"
 
-  def __getattr__(self, _):
-    print("Missing module: {}".format(self.mname))
-    print(self.message)
-    raise RuntimeError(self.message)
+  def __getattr__(self, _) -> NoReturn:
+    """"""
 
-  def __call__(self, *_, **__):
-    print("Missing module: {}".format(self.mname))
-    print(self.message)
-    raise RuntimeError(self.message)
+    raise RuntimeError(f"Missing module: {self.mname}\n{self.message}")
+
+  def __call__(self, *_, **__) -> NoReturn:
+    """"""
+
+    raise RuntimeError(f"Missing module: {self.mname}\n{self.message}")
 
 
 class LinkDataError(ValueError):
