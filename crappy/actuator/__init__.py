@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from .ft232h import Motorkit_pump_ft232h
+
 from .actuator import MetaActuator, Actuator
 from .biaxe import Biaxe
 from .biotens import Biotens

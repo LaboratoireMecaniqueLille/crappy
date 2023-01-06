@@ -6,7 +6,6 @@ from typing import Union, List, Optional
 import logging
 
 from .inout import InOut
-from ..tool import ft232h_server as ft232h, Usb_server
 from .._global import OptionalModule
 
 try:
@@ -76,10 +75,10 @@ Ads1115_blinka_gain = {0.256: 16,
                        4.096: 1,
                        6.144: 2/3}
 
-Ads1115_backends = ['Pi4', 'ft232h', 'blinka']
+Ads1115_backends = ['Pi4', 'blinka']
 
 
-class Ads1115(Usb_server, InOut):
+class Ads1115(InOut):
   """A class for controlling Adafruit's ADS1115 16-bits ADC.
 
   The Ads1115 InOut block is meant for reading output values from a 16-bits
@@ -96,8 +95,7 @@ class Ads1115(Usb_server, InOut):
                multiplexer: str = 'A1',
                dry_pin: Optional[Union[str, int]] = None,
                gain: float = 1,
-               offset: float = 0,
-               ft232h_ser_num: Optional[str] = None) -> None:
+               offset: float = 0) -> None:
     """Checks arguments validity.
 
     Args:
@@ -164,9 +162,6 @@ class Ads1115(Usb_server, InOut):
 
           output = gain * tension + offset.
 
-      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
-        serial number of the FT232H to use for communication.
-
     Warning:
       AINx voltages should not be higher than `VDD+0.3V` nor lower than
       `GND-0.3V`. Setting high ``v_range`` values does not allow measuring
@@ -179,24 +174,10 @@ class Ads1115(Usb_server, InOut):
       raise ValueError("backend should be in {}".format(Ads1115_backends))
     self._backend = backend
 
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend=backend)
-    InOut.__init__(self)
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
+    super().__init__()
 
     if backend == 'Pi4':
       self._bus = SMBus(i2c_port)
-    elif backend == 'ft232h':
-      self._bus = ft232h(mode='I2C',
-                         block_number=block_number,
-                         current_file=current_file,
-                         command_file=command_file,
-                         answer_file=answer_file,
-                         block_lock=block_lock,
-                         current_lock=current_lock,
-                         serial_nr=ft232h_ser_num)
     elif backend == 'blinka':
       i2c = busio.I2C(board.SCL, board.SDA)
       self._ads = ads.ADS1115(i2c)
@@ -328,7 +309,7 @@ class Ads1115(Usb_server, InOut):
   def close(self) -> None:
     """Closes the I2C bus"""
 
-    if self._backend != 'blinka' and self._bus is not None:
+    if self._backend == 'Pi4' and self._bus is not None:
       self.log(logging.INFO, "Closing the ADS1115")
       self._bus.close()
 

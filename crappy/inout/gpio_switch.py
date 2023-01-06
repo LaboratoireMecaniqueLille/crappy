@@ -5,7 +5,6 @@ import logging
 
 from .inout import InOut
 from .._global import OptionalModule
-from ..tool import ft232h_server as ft232h, Usb_server, ft232h_pin_nr
 
 try:
   import RPi.GPIO as GPIO
@@ -23,10 +22,10 @@ except (ImportError, ModuleNotFoundError):
   digitalio = OptionalModule('digitalio',
                              'Blinka is necessary to access the GPIOs')
 
-gpio_switch_backends = ['Pi4', 'ft232h', 'blinka']
+gpio_switch_backends = ['Pi4', 'blinka']
 
 
-class Gpio_switch(Usb_server, InOut):
+class Gpio_switch(InOut):
   """Class for setting a GPIO high or low.
 
   The Gpio_switch InOut block is meant for switching a GPIO high or low
@@ -37,8 +36,7 @@ class Gpio_switch(Usb_server, InOut):
 
   def __init__(self,
                pin_out: Union[int, str],
-               backend: str,
-               ft232h_ser_num: Optional[int] = None) -> None:
+               backend: str) -> None:
     """Checks the argument validity.
 
     Args:
@@ -57,11 +55,8 @@ class Gpio_switch(Usb_server, InOut):
         and maintained on a wide variety of boards. The `'ft232h'` backend
         allows controlling the GPIO from a PC using Adafruit's FT232H USB to
         I2C adapter. See :ref:`Crappy for embedded hardware` for details.
-      ft232h_ser_num: If backend is `'ft232h'`, the serial number of the FT232H
-        to use for communication.
     """
 
-    self._ft232h = None
     self._pin_out = None
 
     # Checking that the backend is valid
@@ -73,34 +68,16 @@ class Gpio_switch(Usb_server, InOut):
     if backend == 'blinka' and not hasattr(board, pin_out):
       raise TypeError(f'{pin_out} is not a valid pin using the blinka backend '
                       f'on this board !')
-    elif backend == 'ft232h' and pin_out not in ft232h_pin_nr:
-      raise TypeError(f'{pin_out} is not a valid pin for the ft232h backend !')
     elif backend == 'Pi4' and (not isinstance(pin_out, int) or
                                pin_out not in range(2, 28)):
       raise ValueError('pin_out should be an integer between 2 and 28 when '
                        'using the Pi4 backend !')
 
-    # Starting the USB server (doesn't do anything if backend is not ft232h)
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend=backend)
-    InOut.__init__(self)
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
+    super().__init__()
 
     # Instantiating the pin object
     if backend == 'Pi4':
       self._pin_out = pin_out
-    elif backend == 'ft232h':
-      self._pin_out = pin_out
-      self._ft232h = ft232h(mode='GPIO_only',
-                            block_number=block_number,
-                            current_file=current_file,
-                            command_file=command_file,
-                            answer_file=answer_file,
-                            block_lock=block_lock,
-                            current_lock=current_lock,
-                            serial_nr=ft232h_ser_num)
     elif backend == 'blinka':
       self._pin_out = digitalio.DigitalInOut(getattr(board, pin_out))
 
@@ -129,8 +106,6 @@ class Gpio_switch(Usb_server, InOut):
       GPIO.output(self._pin_out, cmd[0])
     elif self._backend == 'blinka':
       self._pin_out.value = cmd[0]
-    elif self._backend == 'ft232h':
-      self._ft232h.set_gpio(self._pin_out, cmd[0])
 
   def close(self) -> None:
     """Releases the GPIO."""
@@ -140,5 +115,3 @@ class Gpio_switch(Usb_server, InOut):
       GPIO.cleanup()
     elif self._backend == 'blinka' and self._pin_out is not None:
       self._pin_out.deinit()
-    elif self._backend == 'ft232h' and self._ft232h is not None:
-      self._ft232h.close()

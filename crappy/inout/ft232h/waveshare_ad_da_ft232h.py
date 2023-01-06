@@ -5,8 +5,8 @@ from re import fullmatch, findall
 from typing import List, Union, Optional
 import logging
 
-from .inout import InOut
-from ..tool import ft232h_server as ft232h, Usb_server
+from ..inout import InOut
+from ...tool import ft232h_server as ft232h, Usb_server
 
 # ADS1256 gain channel
 Ads1256_gain = {1: 0b000,
@@ -87,6 +87,8 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
     This class is specifically meant to be used with an FT232H. See
     :ref:`Waveshare AD/DA` for use with a Raspberry Pi.
   """
+
+  ft232h = True
 
   def __init__(self,
                dac_channels: Optional[List[str]] = None,

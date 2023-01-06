@@ -5,21 +5,9 @@ from time import sleep
 from typing import Union, List, Optional
 import logging
 
-from .actuator import Actuator
-from .._global import OptionalModule
-from ..tool import ft232h_server as ft232h
-
-try:
-  from adafruit_motorkit import MotorKit
-except (ImportError, ModuleNotFoundError):
-  MotorKit = OptionalModule('adafruit_motorkit',
-                            'Adafrfuit Motorkit module (adafruit_motorkit) is '
-                            'required to use this actuator')
-
-try:
-  import board
-except (ImportError, ModuleNotFoundError):
-  board = OptionalModule('board', 'Blinka is necessary to use the I2C bus')
+from ..actuator import Actuator
+from ..._global import OptionalModule
+from ...tool import ft232h_server as ft232h, Usb_server
 
 try:
   from smbus2 import SMBus
@@ -42,7 +30,7 @@ motor_hat_neg = {1: 0x2E,
                  4: 0x1E}
 
 motor_hat_0xFF = [0x00, 0x10, 0x00, 0x00]
-motor_hat_backends = ['Pi4', 'blinka']
+motor_hat_backends = ['Pi4', 'blinka', 'ft232h']
 motor_hat_max_volt = 12
 
 
@@ -164,46 +152,48 @@ class DC_motor_hat:
     self._bus.write_i2c_block_data(self._address, register, list(buf))
 
 
-class Motorkit_pump(Actuator):
+class Motorkit_pump_ft232h(Usb_server, Actuator):
   """Class for controlling two DC air pumps and a valve.
 
   It uses Adafruit's DC motor HAT. The motor 1 controls the inflation pump,
   the motor 2 controls a valve, and the motor 3 controls a deflation pump.
   """
 
+  ft232h = True
+
   def __init__(self,
-               backend: str,
                device_address: int = 0x60,
-               i2c_port: int = 1) -> None:
+               i2c_port: int = 1,
+               ft232h_ser_num: Optional[str] = None) -> None:
     """Checks the validity of the arguments.
 
     Args:
-      backend: Should be one of :
-        ::
-
-          'Pi4', 'blinka', 'ft232h'
-
-        The `'Pi4'` backend is optimized but only works on boards supporting
-        the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing Adafruit's
-        modules, but these modules are compatible with and maintained on a wide
-        variety of boards. The `'ft232h'` backend allows controlling the hat
-        from a PC using Adafruit's FT232H USB to I2C adapter. See
-        :ref:`Crappy for embedded hardware` for details.
       device_address: The I2C address of the HAT. The default address is
         `0x60`, but it is possible to change this setting by cutting traces on
           the board.
       i2c_port: The I2C port over which the HAT should communicate. On most
         Raspberry Pi models the default I2C port is `1`.
+      ft232h_ser_num: If backend is `'ft232h'`, the serial number of the ft232h
+        to use for communication.
     """
 
     self._hat = None
 
-    if not isinstance(backend, str) or backend not in motor_hat_backends:
-      raise ValueError("backend should be in {}".format(motor_hat_backends))
-    self._backend = backend
+    Usb_server.__init__(self,
+                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
+                        backend='ft232h')
+    Actuator.__init__(self)
+    current_file, block_number, command_file, answer_file, block_lock, \
+        current_lock = super().start_server()
 
-    super().__init__()
+    self._bus = ft232h(mode='I2C',
+                       block_number=block_number,
+                       current_file=current_file,
+                       command_file=command_file,
+                       answer_file=answer_file,
+                       block_lock=block_lock,
+                       current_lock=current_lock,
+                       serial_nr='')
 
     if not isinstance(device_address, int):
       raise TypeError("device_address should be an integer between 0 and 127.")
@@ -216,18 +206,9 @@ class Motorkit_pump(Actuator):
   def open(self) -> None:
     """Initializes the generic HAT object."""
 
-    if self._backend == 'blinka':
-      self.log(logging.INFO, "Opening the Motorkit with the Adafruit library")
-      self._hat = MotorKit(i2c=board.I2C())
-
-      def set_motor(nr: int, cmd: float) -> None:
-        setattr(getattr(self._hat, f'motor{nr}'), 'throttle', cmd)
-
-      self._hat.set_motor = set_motor
-
-    else:
-      self.log(logging.INFO, "Opening the Motorkit with the SMBus library")
-      self._hat = DC_motor_hat([1, 2, 3], self._address, self._port, None)
+    self.log(logging.INFO, "Opening the Motorkit with an USB connection "
+                           "over FT232H")
+    self._hat = DC_motor_hat([1, 2, 3], self._address, self._port, self._bus)
 
   def set_speed(self, volt: float) -> None:
     """Inflates or deflates the setup according to the command.
@@ -270,6 +251,6 @@ class Motorkit_pump(Actuator):
   def close(self) -> None:
     """Stops the pumps and closes the HAT object."""
 
-    if self._backend == 'Pi4' and self._hat is not None:
+    if self._hat is not None:
       self.log(logging.INFO, "Closing the connection to the Motorkit")
       self._hat.close()

@@ -1,21 +1,11 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Optional, List
+from typing import Union, Optional, List
 import logging
 
-from .inout import InOut
-from .._global import OptionalModule
-
-try:
-  import smbus2
-except (ModuleNotFoundError, ImportError):
-  smbus2 = OptionalModule("smbus2")
-
-try:
-  import RPi.GPIO as GPIO
-except (ModuleNotFoundError, ImportError):
-  GPIO = OptionalModule("RPi.GPIO")
+from ..inout import InOut
+from ...tool import ft232h_server as ft232h, Usb_server
 
 # Register Map
 NAU7802_Scale_Registers = {'PU_CTRL': 0x00,
@@ -104,7 +94,7 @@ NAU7802_Cal_Status = {'CAL_SUCCESS': 0,
 NAU7802_VREF = 3.3
 
 
-class Nau7802(InOut):
+class Nau7802_ft232h(Usb_server, InOut):
   """Class for controlling Sparkfun's NAU7802 load cell conditioner.
 
   The Nau7802 InOut block is meant for reading output values from a NAU7802
@@ -112,20 +102,19 @@ class Nau7802(InOut):
   default, but can be converted to Newtons using ``gain`` and ``offset``.
   """
 
+  ft232h = True
+
   def __init__(self,
-               i2c_port: int = 1,
                device_address: int = 0x2A,
                gain_hardware: int = 128,
                sample_rate: int = 80,
-               int_pin: Optional[int] = None,
+               int_pin: Optional[Union[str, int]] = None,
                gain: float = 1,
-               offset: float = 0) -> None:
+               offset: float = 0,
+               ft232h_ser_num: Optional[str] = None) -> None:
     """Checks the validity of the arguments..
 
     Args:
-      i2c_port (:obj:`int`, optional): The I2C port over which the NAU7802
-        should communicate. On most Raspberry Pi models the default I2C port is
-        `1`.
       device_address (:obj:`int`, optional): The I2C address of the NAU7802. It
         is impossible to change this address, so it is not possible to have
         several NAU7802 on the same i2c bus.
@@ -161,14 +150,27 @@ class Nau7802(InOut):
 
           output = gain * tension + offset.
 
+      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
+        serial number of the ft232h to use for communication.
     """
 
     self._bus = None
 
-    super().__init__()
+    Usb_server.__init__(self,
+                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
+                        backend='ft232h')
+    InOut.__init__(self)
+    current_file, block_number, command_file, answer_file, block_lock, \
+        current_lock = super().start_server()
 
-    self._bus = smbus2.SMBus(i2c_port)
-
+    self._bus = ft232h(mode='I2C',
+                       block_number=block_number,
+                       current_file=current_file,
+                       command_file=command_file,
+                       answer_file=answer_file,
+                       block_lock=block_lock,
+                       current_lock=current_lock,
+                       serial_nr=ft232h_ser_num)
     self._device_address = device_address
 
     if gain_hardware not in NAU7802_Gain_Values:
@@ -183,8 +185,9 @@ class Nau7802(InOut):
     else:
       self._sample_rate = sample_rate
 
-    if int_pin is not None and not isinstance(int_pin, int):
-      raise TypeError('int_pin should be an int !')
+    if int_pin is not None and not isinstance(int_pin, str):
+      raise TypeError('int_pin should be a string when using the ft232h '
+                      'backend !')
     self._int_pin = int_pin
 
     self._gain = gain
@@ -248,11 +251,6 @@ class Nau7802(InOut):
       if self._cal_afe_status() == NAU7802_Cal_Status['CAL_FAILURE']:
         raise IOError("Calibration failed !")
 
-    if self._int_pin is not None:
-      self.log(logging.INFO, "Setting up the GPIOs")
-      GPIO.setmode(GPIO.BCM)
-      GPIO.setup(self._int_pin, GPIO.IN)
-
   def get_data(self) -> List[float]:
     """Reads the registers containing the conversion result.
 
@@ -301,10 +299,6 @@ class Nau7802(InOut):
       self.log(logging.INFO, "Closing the I2C connection to the NAU7802")
       self._bus.close()
 
-    if self._int_pin is not None:
-      self.log(logging.INFO, "Cleaning up the GPIOs")
-      GPIO.cleanup()
-
   def _is_connected(self) -> bool:
     """Tries reading a byte from the device.
 
@@ -325,8 +319,9 @@ class Nau7802(InOut):
     if self._int_pin is None:
       return self._get_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_CR'],
                            NAU7802_Scale_Registers['PU_CTRL'])
+    # EOC signal from a GPIO
     else:
-      return bool(GPIO.input(self._int_pin))
+      return bool(self._bus.get_gpio(self._int_pin))
 
   def _set_bit(self,
                bit_number: int,

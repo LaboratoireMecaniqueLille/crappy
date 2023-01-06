@@ -34,6 +34,8 @@ class Actuator(metaclass=MetaActuator):
   """The base class for all actuator classes, allowing to keep track of them
   and defining methods shared by all of them."""
 
+  ft232h: bool = False
+
   def __init__(self) -> None:
     """"""
 

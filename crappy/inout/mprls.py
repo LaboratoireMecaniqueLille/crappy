@@ -6,7 +6,6 @@ import logging
 
 from .inout import InOut
 from .._global import OptionalModule
-from ..tool import ft232h_server as ft232h, Usb_server, i2c_msg_ft232h
 
 try:
   import adafruit_mprls
@@ -37,10 +36,10 @@ except (ModuleNotFoundError, ImportError):
 mprls_status_bits = {'busy': 0x20,
                      'memory error': 0x04,
                      'math saturation': 0x01}
-mprls_backends = ['Pi4', 'blinka', 'ft232h']
+mprls_backends = ['Pi4', 'blinka']
 
 
-class Mprls(Usb_server, InOut):
+class Mprls(InOut):
   """The Mprls inout is meant for reading pressure from Adafruit's Mprls
     pressure sensor.
 
@@ -51,8 +50,7 @@ class Mprls(Usb_server, InOut):
                backend: str,
                eoc_pin: Optional[Union[str, int]] = None,
                device_address: int = 0x18,
-               i2c_port: int = 1,
-               ft232h_ser_num: Optional[str] = None) -> None:
+               i2c_port: int = 1) -> None:
     """Initializes the parent class and opens the I2C bus.
 
     Args:
@@ -82,8 +80,6 @@ class Mprls(Usb_server, InOut):
       i2c_port (:obj:`int`, optional): The I2C port over which the MPRLS
         should communicate. On most Raspberry Pi models the default I2C port is
         `1`.
-      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
-        serial number of the FT232H to use for communication.
     """
 
     self._bus = None
@@ -92,23 +88,7 @@ class Mprls(Usb_server, InOut):
       raise ValueError("backend should be in {}".format(mprls_backends))
     self._backend = backend
 
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend=backend)
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
-
-    InOut.__init__(self)
-
-    if backend == 'ft232h':
-      self._bus = ft232h(mode='I2C',
-                         block_number=block_number,
-                         current_file=current_file,
-                         command_file=command_file,
-                         answer_file=answer_file,
-                         block_lock=block_lock,
-                         current_lock=current_lock,
-                         serial_nr=ft232h_ser_num)
+    super().__init__()
 
     if not isinstance(device_address, int):
       raise TypeError("device_address should be an integer.")
@@ -153,7 +133,7 @@ class Mprls(Usb_server, InOut):
                                        psi_max=25,
                                        eoc_pin=eoc)
 
-    self._i2c_msg = i2c_msg_ft232h if self._backend == 'ft232h' else i2c_msg
+    self._i2c_msg = i2c_msg
 
   def get_data(self) -> List[float]:
     """Reads the pressure value.
@@ -197,7 +177,7 @@ class Mprls(Usb_server, InOut):
   def close(self) -> None:
     """Closes the I2C bus."""
 
-    if self._backend != 'blinka' and self._bus is not None:
+    if self._backend == 'Pi4' and self._bus is not None:
       self.log(logging.INFO, "Closing the I2C connection to the MPRLS")
       self._bus.close()
 
@@ -213,8 +193,5 @@ class Mprls(Usb_server, InOut):
       wait = self._i2c_msg.read(self._address, 1)
       self._bus.i2c_rdwr(wait)
       return not list(wait)[0] & mprls_status_bits['busy']
-    # EOC signal from a GPIO
-    elif self._backend == 'ft232h':
-      return bool(self._bus.get_gpio(self._eoc_pin))
     else:
       return bool(GPIO.input(self._eoc_pin))

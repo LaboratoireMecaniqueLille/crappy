@@ -35,6 +35,8 @@ class InOut(metaclass=MetaIO):
   """Base class for all InOut objects. Implements methods shared by all the
   these objects, and ensures their dataclass is MetaIO."""
 
+  ft232h: bool = False
+
   def __init__(self) -> None:
     """Sets the attributes."""
 
