@@ -192,6 +192,8 @@ class Waveshare_ad_da(InOut):
         up with `5V`. Same goes for the DAC.
     """
 
+    self._bus = None
+
     super().__init__()
 
     if gain_hardware not in Ads1256_gain:
@@ -357,8 +359,9 @@ class Waveshare_ad_da(InOut):
   def close(self) -> None:
     """Releases the GPIOs."""
 
-    self.log(logging.INFO, "Closing the SPI communication with the AD/DA")
-    self._bus.close()
+    if self._bus is not None:
+      self.log(logging.INFO, "Closing the SPI communication with the AD/DA")
+      self._bus.close()
     self.log(logging.INFO, "Cleaning up the GPIOs")
     GPIO.cleanup()
 

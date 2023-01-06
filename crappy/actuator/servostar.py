@@ -33,6 +33,8 @@ class Servostar(Actuator):
 
     super().__init__()
 
+    self._ser = None
+
     self._port = port
     self._mode = mode
     self._baudrate = baudrate
@@ -147,8 +149,9 @@ class Servostar(Actuator):
   def close(self) -> None:
     """Closes the serial connection."""
 
-    self.log(logging.INFO, f"Closing the serial port {self._port}")
-    self._ser.close()
+    if self._ser is not None:
+      self.log(logging.INFO, f"Closing the serial port {self._port}")
+      self._ser.close()
 
   def _set_mode_serial(self) -> None:
     """Sets the driving mode to serial."""

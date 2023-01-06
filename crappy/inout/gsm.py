@@ -40,6 +40,8 @@ class Gsm(InOut):
       baudrate(:obj:`int`, optional): Serial baudrate, between 1200 and 115200.
     """
 
+    self._ser = None
+
     super().__init__()
 
     self._port = port
@@ -126,5 +128,6 @@ class Gsm(InOut):
   def close(self) -> None:
     """Closes the serial port."""
 
-    self.log(logging.INFO, f"Closing the serial port {self._port}")
-    self._ser.close()
+    if self._ser is not None:
+      self.log(logging.INFO, f"Closing the serial port {self._port}")
+      self._ser.close()

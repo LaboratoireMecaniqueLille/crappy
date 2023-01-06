@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Tuple, Any
+from typing import Tuple, Any, Optional
 import numpy as np
 from threading import Thread, RLock
 import logging
@@ -36,6 +36,10 @@ class Picamera(Camera):
 
   def __init__(self) -> None:
     """Instantiates the available settings."""
+
+    self._frame_grabber: Optional[Thread] = None
+    self._capture = None
+    self._cam = None
 
     super().__init__()
 
@@ -155,12 +159,20 @@ class Picamera(Camera):
     :class:`picamera.PiCamera` object."""
 
     self._stop = True
-    self.log(logging.INFO, "Stopping the frame grabber thread")
-    self._frame_grabber.join()
-    self.log(logging.INFO, "Stopping the frame stream")
-    self._capture.close()
-    self.log(logging.INFO, "Opening the connection to the camera")
-    self._cam.close()
+    if self._frame_grabber is not None:
+      self.log(logging.INFO, "Stopping the frame grabber thread")
+      self._frame_grabber.join(0.2)
+      if self._frame_grabber.is_alive():
+        self.log(logging.WARNING, "The frame grabber thread didn't stop "
+                                  "properly !")
+
+    if self._capture is not None:
+      self.log(logging.INFO, "Stopping the frame stream")
+      self._capture.close()
+
+    if self._cam is not None:
+      self.log(logging.INFO, "Opening the connection to the camera")
+      self._cam.close()
 
   def _get_width(self) -> int:
     return self._cam.resolution[0]

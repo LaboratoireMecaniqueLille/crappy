@@ -85,5 +85,6 @@ class Agilent34420a(InOut):
   def close(self) -> None:
     """Closes the serial port."""
 
-    self.log(logging.INFO, f"Closing the serial port {self._device}")
-    self._ser.close()
+    if self._ser is not None:
+      self.log(logging.INFO, f"Closing the serial port {self._device}")
+      self._ser.close()

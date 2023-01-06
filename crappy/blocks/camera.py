@@ -134,6 +134,9 @@ class Camera(Block):
     self.niceness = -10
     self.log_level = logging.DEBUG if debug else logging.INFO
 
+    self._camera: Optional[BaseCam] = None
+    self._displayer: Optional[Displayer] = None
+
     # Checking if the requested camera exists in Crappy
     if image_generator is None:
       if camera.capitalize() not in camera_list:
@@ -199,8 +202,6 @@ class Camera(Block):
                                   f"{Camera.cam_count[self._camera_name]}",
                                   displayer_framerate,
                                   displayer_backend)
-    else:
-      self._displayer = None
 
     # Setting the other attributes
     self._save_images = save_images
@@ -298,7 +299,7 @@ class Camera(Block):
   def finish(self) -> None:
     """Closes the camera and the displayer."""
 
-    if self._image_generator is None:
+    if self._image_generator is None and self._camera is not None:
       self._camera.close()
 
     if self._displayer is not None:

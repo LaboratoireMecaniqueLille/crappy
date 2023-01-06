@@ -2,8 +2,9 @@
 
 from typing import Union, List, Optional
 import logging
+
 from .block import Block
-from ..inout import inout_dict
+from ..inout import inout_dict, InOut
 
 
 class IOBlock(Block):
@@ -72,6 +73,8 @@ class IOBlock(Block):
       verbose: If :obj:`True`, displays the looping frequency of the block.
       **kwargs: The arguments to be passed to the :ref:`In / Out` class.
     """
+
+    self._device: Optional[InOut] = None
 
     super().__init__()
     self.niceness = -10
@@ -202,21 +205,23 @@ class IOBlock(Block):
     device."""
 
     # Stopping the stream
-    if self._streamer:
+    if self._streamer and self._device is not None:
       self.log(logging.INFO, f"Stopping stream on the "
                              f"{type(self._device).__name__} InOut")
       self._device.stop_stream()
 
     # Setting the exit command
-    if self._write and self._exit_cmd is not None:
+    if self._write and self._exit_cmd is not None and self._device is not None:
       self.log(logging.INFO, f"Sending the exit command to the "
                              f"{type(self._device).__name__} InOut")
       self._device.set_cmd(*self._exit_cmd)
 
     # Closing the device
-    self.log(logging.INFO, f"Closing the {type(self._device).__name__} InOut")
-    self._device.close()
-    self.log(logging.INFO, f"{type(self._device).__name__} InOut closed")
+    if self._device is not None:
+      self.log(logging.INFO, f"Closing the {type(self._device).__name__} "
+                             f"InOut")
+      self._device.close()
+      self.log(logging.INFO, f"{type(self._device).__name__} InOut closed")
 
   def _read_data(self) -> None:
     """Reads the data or the stream, offsets the timestamp and sends the data

@@ -68,6 +68,8 @@ class UController(Block):
       freq (:obj:`float`, optional): The looping frequency of the block.
     """
 
+    self._bus = None
+
     super().__init__()
     self.log_level = logging.DEBUG if debug else logging.INFO
 
@@ -330,14 +332,15 @@ class UController(Block):
   def finish(self) -> None:
     """Closes the serial port, and sends a `'stop!'` message to the device."""
 
-    # Sending a 'stop!' message to the device
-    self.log(logging.INFO, f"Sending stop command on port {self._port}")
-    try:
-      msg = b'stop!\r\n'
-      self._bus.write(msg)
-      self.log(logging.DEBUG, f"Sent {msg} on the port {self._port}")
-    except SerialException:
-      pass
+    if self._bus is not None:
+      # Sending a 'stop!' message to the device
+      self.log(logging.INFO, f"Sending stop command on port {self._port}")
+      try:
+        msg = b'stop!\r\n'
+        self._bus.write(msg)
+        self.log(logging.DEBUG, f"Sent {msg} on the port {self._port}")
+      except SerialException:
+        pass
 
-    self.log(logging.INFO, "Closing the serial connection")
-    self._bus.close()
+      self.log(logging.INFO, "Closing the serial connection")
+      self._bus.close()

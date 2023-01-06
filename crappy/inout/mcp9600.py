@@ -172,6 +172,8 @@ class Mcp9600(Usb_server, InOut):
 
     """
 
+    self._bus = None
+
     if not isinstance(backend, str) or backend not in Mcp9600_backends:
       raise ValueError("backend should be in {}".format(Mcp9600_backends))
     self._backend = backend
@@ -355,7 +357,7 @@ class Mcp9600(Usb_server, InOut):
   def close(self) -> None:
     """Switches the MCP9600 to shut down mode and closes the I2C bus.."""
 
-    if self._backend != 'blinka':
+    if self._backend != 'blinka' and self._bus is not None:
       # Switching to shut down mode, keeping configuration
       value = self._bus.read_i2c_block_data(self._device_address,
                                             Mcp9600_registers[

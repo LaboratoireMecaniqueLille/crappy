@@ -179,6 +179,8 @@ class Nau7802(Usb_server, InOut):
         serial number of the ft232h to use for communication.
     """
 
+    self._bus = None
+
     if backend not in NAU7802_Backends:
       raise ValueError("backend should be in {}".format(NAU7802_Backends))
 
@@ -327,15 +329,16 @@ class Nau7802(Usb_server, InOut):
   def close(self) -> None:
     """Powers down the device."""
 
-    # Powering down the device
-    self.log(logging.INFO, "Powering down the NAU7802")
-    self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUD'],
-                  NAU7802_Scale_Registers['PU_CTRL'], 0)
-    sleep(0.001)
-    self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUA'],
-                  NAU7802_Scale_Registers['PU_CTRL'], 0)
-    self.log(logging.INFO, "Closing the I2C connection to the NAU7802")
-    self._bus.close()
+    if self._bus is not None:
+      # Powering down the device
+      self.log(logging.INFO, "Powering down the NAU7802")
+      self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUD'],
+                    NAU7802_Scale_Registers['PU_CTRL'], 0)
+      sleep(0.001)
+      self._set_bit(NAU7802_PU_CTRL_Bits['PU_CTRL_PUA'],
+                    NAU7802_Scale_Registers['PU_CTRL'], 0)
+      self.log(logging.INFO, "Closing the I2C connection to the NAU7802")
+      self._bus.close()
 
     if self._backend == 'Pi4' and self._int_pin is not None:
       self.log(logging.INFO, "Cleaning up the GPIOs")

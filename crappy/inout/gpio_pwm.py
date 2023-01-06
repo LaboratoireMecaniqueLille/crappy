@@ -59,6 +59,8 @@ class Gpio_pwm(InOut):
         work but may decrease the available frequency range.
     """
 
+    self._pwm = None
+
     super().__init__()
 
     if pin_out not in range(2, 28):
@@ -130,7 +132,9 @@ class Gpio_pwm(InOut):
   def close(self) -> None:
     """Stops PWM and releases GPIOs."""
 
-    self.log(logging.INFO, "Stopping the PWM")
-    self._pwm.stop()
+    if self._pwm is not None:
+      self.log(logging.INFO, "Stopping the PWM")
+      self._pwm.stop()
+
     self.log(logging.INFO, "Cleaning up the GPIOs")
     GPIO.cleanup()

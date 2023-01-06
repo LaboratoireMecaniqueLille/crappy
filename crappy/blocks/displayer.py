@@ -187,7 +187,8 @@ class Displayer:
   def _finish_mpl(self) -> None:
     """Destroys the opened Matplotlib window."""
 
-    plt.close(self._fig)
+    if self._fig is not None:
+      plt.close(self._fig)
 
   def _log(self, level: int, msg: str) -> None:
     """Sends a log message to the logger.

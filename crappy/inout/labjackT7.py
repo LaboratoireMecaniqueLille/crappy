@@ -432,8 +432,9 @@ class Labjack_t7(InOut):
   def close(self) -> None:
     """Closes the Labjack."""
 
-    self.log(logging.INFO, "Closing the connection to the Labjack")
-    ljm.close(self._handle)
+    if self._handle is not None:
+      self.log(logging.INFO, "Closing the connection to the Labjack")
+      ljm.close(self._handle)
 
   @staticmethod
   def _parse(name: str) -> (int, int):

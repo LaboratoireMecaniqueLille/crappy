@@ -188,6 +188,8 @@ class Waveshare_high_precision(InOut):
       would be read as 4.7V after the PGA, not 4.8V ! Beware !
     """
 
+    self._bus = None
+
     super().__init__()
     self._gain = gain
     self._offset = offset
@@ -312,8 +314,9 @@ class Waveshare_high_precision(InOut):
   def close(self) -> None:
     """Closes the SPI bus and resets the GPIOs."""
 
-    self.log(logging.INFO, "Closing the SPI communication")
-    self._bus.close()
+    if self._bus is not None:
+      self.log(logging.INFO, "Closing the SPI communication")
+      self._bus.close()
     self.log(logging.INFO, "Cleaning up the GPIOs")
     GPIO.cleanup()
 

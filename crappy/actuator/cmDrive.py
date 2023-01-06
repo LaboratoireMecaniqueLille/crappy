@@ -31,6 +31,8 @@ class CM_drive(Actuator):
 
     super().__init__()
 
+    self._ser = None
+
     self._port = port
     self._baudrate = baudrate
 

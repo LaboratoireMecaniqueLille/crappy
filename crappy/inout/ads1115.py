@@ -173,6 +173,8 @@ class Ads1115(Usb_server, InOut):
       voltages higher than `VDD` !!
     """
 
+    self._bus = None
+
     if not isinstance(backend, str) or backend not in Ads1115_backends:
       raise ValueError("backend should be in {}".format(Ads1115_backends))
     self._backend = backend
@@ -326,7 +328,7 @@ class Ads1115(Usb_server, InOut):
   def close(self) -> None:
     """Closes the I2C bus"""
 
-    if self._backend != 'blinka':
+    if self._backend != 'blinka' and self._bus is not None:
       self.log(logging.INFO, "Closing the ADS1115")
       self._bus.close()
 

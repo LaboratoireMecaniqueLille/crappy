@@ -58,6 +58,8 @@ class Camera_gstreamer(Camera):
     self._img = None
 
     self._exposure_mode = None
+    self._pipeline = None
+    self._process: Optional[Popen] = None
 
   def open(self,
            device: Optional[Union[int, str]] = None,
@@ -133,8 +135,6 @@ videoconvert ! autovideosink
       raise ValueError('nb_channels must be given if user_pipeline is !')
     if user_pipeline is not None and img_depth is None:
       raise ValueError('img_depth must be given if user_pipeline is !')
-
-    self._process = None
 
     # Parsing the user pipeline if given
     if user_pipeline is not None:
@@ -339,8 +339,9 @@ videoconvert ! autovideosink
   def close(self) -> None:
     """Simply stops the image acquisition."""
 
-    self.log(logging.INFO, "Stopping the GST pipeline")
-    self._pipeline.set_state(Gst.State.NULL)
+    if self._pipeline is not None:
+      self.log(logging.INFO, "Stopping the GST pipeline")
+      self._pipeline.set_state(Gst.State.NULL)
 
     # Closes the subprocess started in case a user pipeline containing a pipe
     # was given

@@ -36,6 +36,7 @@ class Biotens(Actuator):
 
     super().__init__()
 
+    self._ser = None
     self._port = port
 
   def open(self) -> None:
@@ -145,8 +146,9 @@ class Biotens(Actuator):
   def close(self) -> None:
     """Closes the serial connection to the actuator."""
 
-    self.log(logging.INFO, f"Closing the serial port {self._port}")
-    self._ser.close()
+    if self._ser is not None:
+      self.log(logging.INFO, f"Closing the serial port {self._port}")
+      self._ser.close()
 
   def reset_position(self) -> None:
     """Makes the servomotor reach its limit position, in order to re-calibrate

@@ -37,6 +37,8 @@ class Tra6ppd(Actuator):
 
     super().__init__()
 
+    self._ser = None
+
     self._max_speed = 0.2
     self._min_position = 0
     self._max_position = 6
@@ -116,8 +118,9 @@ class Tra6ppd(Actuator):
   def close(self) -> None:
     """Just closes the serial port."""
 
-    self.log(logging.INFO, f"Closing the serial port {self._port}")
-    self._ser.close()
+    if self._ser is not None:
+      self.log(logging.INFO, f"Closing the serial port {self._port}")
+      self._ser.close()
 
   def stop(self) -> None:
     """Stops the motor and sets the device to "disable" state."""

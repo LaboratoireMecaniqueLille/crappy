@@ -188,6 +188,10 @@ class Client_server(Block):
 
     """
 
+    self._client: Optional[mqtt.Client] = None
+    self._reader: Optional[Thread] = None
+    self._proc: Optional[Popen] = None
+
     super().__init__()
     self.niceness = -10
     self.verbose = verbose
@@ -366,13 +370,14 @@ class Client_server(Block):
     """Disconnects from the broker and stops it."""
 
     # Disconnecting from the broker
-    self.log(logging.INFO, "Stopping the client loop")
-    self._client.loop_stop()
-    self.log(logging.INFO, "Disconnecting from the broker")
-    self._client.disconnect()
+    if self._client is not None:
+      self.log(logging.INFO, "Stopping the client loop")
+      self._client.loop_stop()
+      self.log(logging.INFO, "Disconnecting from the broker")
+      self._client.disconnect()
 
     # Stopping the broker
-    if self._broker:
+    if self._broker and self._proc is not None:
       try:
         self.log(logging.INFO, "Stopping the Mosquitto broker")
         self._proc.terminate()
@@ -380,7 +385,11 @@ class Client_server(Block):
         self.log(logging.INFO, f"Mosquitto terminated with return code "
                                f"{self._proc.returncode}")
         self._stop_mosquitto = True
-        self._reader.join()
+        if self._reader is not None:
+          self._reader.join(0.2)
+          if self._reader.is_alive():
+            self.log(logging.WARNING, "Reader thread failed to stop !")
+
       except TimeoutExpired:
         self.log(logging.WARNING, "Mosquitto did not terminate in time, "
                                   "killing it")

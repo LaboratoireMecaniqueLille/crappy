@@ -71,6 +71,8 @@ class Pijuice(InOut):
         default address is 0x14.
     """
 
+    self._bus = None
+
     super().__init__()
     if not isinstance(i2c_port, int):
       raise TypeError("i2c_port should be an int")
@@ -201,7 +203,7 @@ class Pijuice(InOut):
   def close(self) -> None:
     """Closes the I2C bus."""
 
-    if self._backend == 'Pi4':
+    if self._backend == 'Pi4' and self._bus is not None:
       self.log(logging.INFO, "closing the I2C connection to the PiJuice")
       self._bus.close()
 

@@ -61,6 +61,9 @@ class Gpio_switch(Usb_server, InOut):
         to use for communication.
     """
 
+    self._ft232h = None
+    self._pin_out = None
+
     # Checking that the backend is valid
     if not isinstance(backend, str) or backend not in gpio_switch_backends:
       raise ValueError("backend should be in {}".format(gpio_switch_backends))
@@ -135,7 +138,7 @@ class Gpio_switch(Usb_server, InOut):
     if self._backend == 'Pi4':
       self.log(logging.INFO, "Cleaning up the GPIOs")
       GPIO.cleanup()
-    elif self._backend == 'blinka':
+    elif self._backend == 'blinka' and self._pin_out is not None:
       self._pin_out.deinit()
-    elif self._backend == 'ft232h':
+    elif self._backend == 'ft232h' and self._ft232h is not None:
       self._ft232h.close()

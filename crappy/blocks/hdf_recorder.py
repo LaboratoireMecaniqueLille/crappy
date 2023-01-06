@@ -57,6 +57,8 @@ class Hdf_recorder(Block):
       verbose: If :obj:`True`, displays the looping frequency of the block.
     """
 
+    self._hfile = None
+
     super().__init__()
     self.freq = freq
     self.verbose = verbose
@@ -138,8 +140,9 @@ class Hdf_recorder(Block):
   def finish(self) -> None:
     """Simply closes the HDF file."""
 
-    self.log(logging.INFO, "Closing the HDF5 file")
-    self._hfile.close()
+    if self._hfile is not None:
+      self.log(logging.INFO, "Closing the HDF5 file")
+      self._hfile.close()
 
   def _first_loop(self) -> None:
     """Initializes the array for saving data."""

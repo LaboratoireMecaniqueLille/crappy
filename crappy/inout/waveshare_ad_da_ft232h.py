@@ -195,6 +195,8 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
         up with `5V`. Same goes for the DAC.
     """
 
+    self._bus = None
+
     Usb_server.__init__(self,
                         serial_nr=ft232h_ser_num if ft232h_ser_num else '',
                         backend='ft232h')
@@ -369,8 +371,9 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
   def close(self) -> None:
     """Releases the GPIOs."""
 
-    self.log(logging.INFO, "Closing the SPI communication with the AD/DA")
-    self._bus.close()
+    if self._bus is not None:
+      self.log(logging.INFO, "Closing the SPI communication with the AD/DA")
+      self._bus.close()
 
   def _reset(self) -> None:
     """Resets the ADC."""

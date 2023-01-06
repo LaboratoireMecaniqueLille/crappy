@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import List
+from typing import List, Optional
 import tkinter as tk
 import logging
 
@@ -71,6 +71,8 @@ class Dashboard(Block):
       freq: If set, the block will try to loop at this frequency.
     """
 
+    self._dashboard: Optional[Dashboard_window] = None
+
     super().__init__()
     self.verbose = verbose
     self.freq = freq
@@ -120,7 +122,8 @@ class Dashboard(Block):
 
     # In case the GUI has been destroyed, don't raise an error
     try:
-      self.log(logging.INFO, "Closing the dashboard window")
-      self._dashboard.destroy()
+      if self._dashboard is not None:
+        self.log(logging.INFO, "Closing the dashboard window")
+        self._dashboard.destroy()
     except tk.TclError:
       pass

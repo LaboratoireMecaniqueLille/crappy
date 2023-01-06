@@ -67,6 +67,8 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
   def __init__(self) -> None:
     """Selects the right USB device."""
 
+    self._dev = None
+
     super().__init__()
     self._calib = None
 
@@ -178,11 +180,12 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
   def close(self) -> None:
     """Resets the camera and releases the USB resources."""
 
-    for _ in range(3):
-      self._write_data(Seek_thermal_pro_commands['Set operation mode'],
-                       b'\x00\x00')
-    self.log(logging.INFO, "Releasing the USB resources")
-    usb.util.dispose_resources(self._dev)
+    if self._dev is not None:
+      for _ in range(3):
+        self._write_data(Seek_thermal_pro_commands['Set operation mode'],
+                         b'\x00\x00')
+      self.log(logging.INFO, "Releasing the USB resources")
+      usb.util.dispose_resources(self._dev)
 
   def _grab(self) -> [bytes, np.ndarray]:
     """Captures a raw image from the camera.

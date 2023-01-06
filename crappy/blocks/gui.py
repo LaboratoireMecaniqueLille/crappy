@@ -2,6 +2,7 @@
 
 from time import time
 import logging
+from typing import Optional
 
 from .block import Block
 from .._global import OptionalModule
@@ -42,6 +43,8 @@ class GUI(Block):
         otherwise only sends it at each click.
       verbose: If :obj:`True`, displays the looping frequency of the block.
     """
+
+    self._root: Optional[tk.Tk] = None
 
     super().__init__()
     self.freq = freq
@@ -99,7 +102,8 @@ class GUI(Block):
 
     self.log(logging.INFO, "closing the GUI")
     try:
-      self._root.destroy()
+      if self._root is not None:
+        self._root.destroy()
     except tk.TclError:
       pass
 

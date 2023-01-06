@@ -53,6 +53,8 @@ class Camera_parallel(Block):
     self._display_proc: Optional[Displayer] = None
     self._process_proc: Optional[Camera_process] = None
 
+    self._camera: Optional[BaseCam] = None
+
     super().__init__()
 
     self.verbose = verbose
@@ -327,14 +329,16 @@ class Camera_parallel(Block):
   def finish(self) -> None:
     """"""
 
-    if self._image_generator is None:
+    if self._image_generator is None and self._camera is not None:
       self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
       self._camera.close()
       self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
 
-    self.log(logging.DEBUG, "Asking all the children processes to stop")
-    self._stop_event_cam.set()
-    sleep(0.2)
+    if self._stop_event_cam is not None:
+      self.log(logging.DEBUG, "Asking all the children processes to stop")
+      self._stop_event_cam.set()
+      sleep(0.2)
+
     if self._process_proc is not None and self._process_proc.is_alive():
       self.log(logging.WARNING, "Image processing process not stopped, "
                                 "killing it !")
@@ -348,7 +352,8 @@ class Camera_parallel(Block):
                                 "killing it !")
       self._display_proc.terminate()
 
-    self._manager.shutdown()
+    if self._manager is not None:
+      self._manager.shutdown()
 
   def _configure(self) -> None:
     """"""

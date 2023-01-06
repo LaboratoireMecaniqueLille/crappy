@@ -34,6 +34,8 @@ class Cl_camera(Camera):
       Using a config file is recommended over changing all settings manually.
     """
 
+    self._cap = None
+
     super().__init__()
 
     self.add_scale_setting("framespersec", 1, 200, self._get_framespersec,
@@ -110,10 +112,11 @@ class Cl_camera(Camera):
   def close(self) -> None:
     """"""
 
-    self.log(logging.INFO, "Stopping acquisition")
-    self.cap.stopAcq()
-    self.log(logging.INFO, "Closing the communication with the camera")
-    self.cap.release()
+    if self._cap is not None:
+      self.log(logging.INFO, "Stopping acquisition")
+      self.cap.stopAcq()
+      self.log(logging.INFO, "Closing the communication with the camera")
+      self.cap.release()
 
   def _set_framespersec(self, val: float) -> None:
     self.cap.set(Cl.FG_FRAMESPERSEC, val)

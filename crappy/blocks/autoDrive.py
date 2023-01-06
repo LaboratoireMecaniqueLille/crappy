@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional
 import logging
 
 from .block import Block
-from ..actuator import actuator_list
+from ..actuator import actuator_list, Actuator
 
 
 class AutoDrive(Block):
@@ -59,6 +59,7 @@ class AutoDrive(Block):
     self.verbose = verbose
     self.log_level = logging.DEBUG if debug else logging.INFO
 
+    self._device: Optional[Actuator] = None
     self._actuator = {'name': 'CM_drive'} if actuator is None else actuator
     self._gain = -gain if '-' in direction else gain
     self._direction = direction
@@ -117,9 +118,10 @@ class AutoDrive(Block):
   def finish(self) -> None:
     """Simply sets the device speed to `0`."""
 
-    self.log(logging.INFO, f"Stopping the {type(self._device).__name__} "
-                           f"actuator")
-    self._device.stop()
-    self.log(logging.INFO, f"Closing the {type(self._device).__name__} "
-                           f"actuator")
-    self._device.close()
+    if self._device is not None:
+      self.log(logging.INFO, f"Stopping the {type(self._device).__name__} "
+                             f"actuator")
+      self._device.stop()
+      self.log(logging.INFO, f"Closing the {type(self._device).__name__} "
+                             f"actuator")
+      self._device.close()

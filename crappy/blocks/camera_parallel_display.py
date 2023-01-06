@@ -165,7 +165,7 @@ class Displayer(Camera_process):
     elif self._backend == 'mpl':
       self._finish_mpl()
 
-    if self._box_thread.is_alive():
+    if self._box_thread is not None and self._box_thread.is_alive():
       self._stop_thread = True
       try:
         self._box_thread.join(0.05)
@@ -266,9 +266,11 @@ class Displayer(Camera_process):
   def _finish_cv2(self) -> None:
     """Destroys the opened cv2 window."""
 
-    cv2.destroyWindow(self._title)
+    if self._title is not None:
+      cv2.destroyWindow(self._title)
 
   def _finish_mpl(self) -> None:
     """Destroys the opened Matplotlib window."""
 
-    plt.close(self._fig)
+    if self._fig is not None:
+      plt.close(self._fig)

@@ -35,6 +35,8 @@ class Oriental(Actuator):
 
     super().__init__()
 
+    self._ser = None
+
     self._baudrate = baudrate
     self._port = port
     self._gain = gain
@@ -164,8 +166,9 @@ class Oriental(Actuator):
   def close(self) -> None:
     """Closes the serial connection to the actuator."""
 
-    self.log(logging.INFO, f"Closing the serial port {self._port}")
-    self._ser.close()
+    if self._ser is not None:
+      self.log(logging.INFO, f"Closing the serial port {self._port}")
+      self._ser.close()
 
   def _clear_errors(self) -> None:
     """Sends a command for clearing any serial error on the actuator."""

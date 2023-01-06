@@ -22,6 +22,8 @@ class Fake_inout(InOut):
   def __init__(self) -> None:
     """Not much to do here."""
 
+    self._buf = None
+
     super().__init__()
 
   def open(self) -> None:

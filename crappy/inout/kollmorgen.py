@@ -58,6 +58,8 @@ class Koll(InOut):
         an :obj:`int`.
     """
 
+    self._variator = None
+
     super().__init__()
 
     # Making sure the given mode is correct
@@ -136,6 +138,7 @@ class Koll(InOut):
   def close(self) -> None:
     """Closes the modbus connection to the variator."""
 
-    self.log(logging.INFO, f"Closing the TCP connecting to the address "
-                           f"{self._host} on port {self._port}")
-    self._variator.close()
+    if self._variator is not None:
+      self.log(logging.INFO, f"Closing the TCP connecting to the address "
+                             f"{self._host} on port {self._port}")
+      self._variator.close()

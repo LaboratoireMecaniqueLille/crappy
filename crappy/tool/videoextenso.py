@@ -94,6 +94,11 @@ class VideoExtenso:
         noise, but also takes a bit more time compared to no blurring.
     """
 
+    # These attributes will be used later
+    self._consecutive_overlaps = 0
+    self._trackers = list()
+    self._pipes = list()
+
     if num_spots is not None and num_spots not in range(1, 5):
       raise ValueError("num_spots should be either None, 1, 2, 3 or 4 !")
     self._num_spots = num_spots
@@ -112,11 +117,6 @@ class VideoExtenso:
     self._logger: Optional[logging.Logger] = None
     self._log_level = log_level
     self._log_queue = log_queue
-
-    # Setting the other attributes
-    self._consecutive_overlaps = 0
-    self._trackers = list()
-    self._pipes = list()
 
     self._last_warn = time()
 

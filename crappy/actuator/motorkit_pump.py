@@ -199,6 +199,8 @@ class Motorkit_pump(Usb_server, Actuator):
         to use for communication.
     """
 
+    self._hat = None
+
     if not isinstance(backend, str) or backend not in motor_hat_backends:
       raise ValueError("backend should be in {}".format(motor_hat_backends))
     self._backend = backend
@@ -291,6 +293,6 @@ class Motorkit_pump(Usb_server, Actuator):
   def close(self) -> None:
     """Stops the pumps and closes the HAT object."""
 
-    if self._backend != 'blinka':
+    if self._backend != 'blinka' and self._hat is not None:
       self.log(logging.INFO, "Closing the connection to the Motorkit")
       self._hat.close()

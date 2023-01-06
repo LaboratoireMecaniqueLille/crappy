@@ -83,6 +83,8 @@ class Machine(Block):
 
     """
 
+    self._actuators: List[Actuator_instance] = list()
+
     super().__init__()
     self.freq = freq
     self.verbose = verbose

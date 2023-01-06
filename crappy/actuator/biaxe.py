@@ -28,6 +28,8 @@ class Biaxe(Actuator):
 
     super().__init__()
 
+    self._ser = None
+
     self._port = port
     self._baudrate = baudrate
     self._timeout = timeout
@@ -59,8 +61,9 @@ class Biaxe(Actuator):
   def close(self) -> None:
     """Closes the serial connection."""
 
-    self.log(logging.INFO, f"Closing the serial port {self._port}")
-    self._ser.close()
+    if self._ser is not None:
+      self.log(logging.INFO, f"Closing the serial port {self._port}")
+      self._ser.close()
 
   def _clear_errors(self) -> None:
     """Clears the errors on the Servostar."""

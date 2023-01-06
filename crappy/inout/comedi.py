@@ -249,6 +249,7 @@ class Comedi(InOut):
   def close(self) -> None:
     """Simply closes the Comedi board and warns the user in case of failure."""
 
-    self.log(logging.INFO, "Closing the connection to the Comedi device")
-    if comedi.comedi_close(self._device):
-      self.log(logging.WARNING, "Closing device failed !")
+    if self._device is not None:
+      self.log(logging.INFO, "Closing the connection to the Comedi device")
+      if comedi.comedi_close(self._device):
+        self.log(logging.WARNING, "Closing device failed !")

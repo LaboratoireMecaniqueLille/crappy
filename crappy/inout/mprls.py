@@ -86,6 +86,8 @@ class Mprls(Usb_server, InOut):
         serial number of the FT232H to use for communication.
     """
 
+    self._bus = None
+
     if not isinstance(backend, str) or backend not in mprls_backends:
       raise ValueError("backend should be in {}".format(mprls_backends))
     self._backend = backend
@@ -195,7 +197,7 @@ class Mprls(Usb_server, InOut):
   def close(self) -> None:
     """Closes the I2C bus."""
 
-    if self._backend != 'blinka':
+    if self._backend != 'blinka' and self._bus is not None:
       self.log(logging.INFO, "Closing the I2C connection to the MPRLS")
       self._bus.close()
 
