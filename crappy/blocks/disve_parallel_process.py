@@ -29,11 +29,13 @@ class Disve_parallel_process(Camera_process):
                border: float = 0.2,
                safe: bool = True,
                follow: bool = True,
-               raise_on_exit: bool = True) -> None:
+               raise_on_exit: bool = True,
+               verbose: bool = False) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
-                     log_level=log_level)
+                     log_level=log_level,
+                     verbose=verbose)
 
     self._disve_kw = dict(patches=patches,
                           method=method,
@@ -66,6 +68,7 @@ class Disve_parallel_process(Camera_process):
       return
 
     if not self._lost_patch:
+      self.fps_count += 1
       try:
 
         if not self._img0_set:

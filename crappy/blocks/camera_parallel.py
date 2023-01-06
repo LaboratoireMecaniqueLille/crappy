@@ -100,6 +100,8 @@ class Camera_parallel(Block):
     self._proc_lock: Optional[synchronize.RLock] = None
 
     self._loop_count = 0
+    self._fps_count = 0
+    self._last_cam_fps = time()
 
     # Cannot start process from __main__
     if not save_images:
@@ -153,12 +155,14 @@ class Camera_parallel(Block):
       self.log(logging.INFO, "Instantiating the saver process")
       self._save_proc = Image_saver(log_queue=self._log_queue,
                                     log_level=self.log_level,
+                                    verbose=self.verbose,
                                     **self._save_proc_kw)
 
     if self._display_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the displayer process")
       self._display_proc = Displayer(log_queue=self._log_queue,
                                      log_level=self.log_level,
+                                     verbose=self.verbose,
                                      **self._display_proc_kw)
 
     # Creating the barrier for camera processes synchronization
@@ -274,6 +278,8 @@ class Camera_parallel(Block):
     except BrokenBarrierError:
       raise CameraPrepareError
 
+    self._last_cam_fps = time()
+
   def loop(self) -> None:
     """Receives the incoming data, acquires an image, displays it, saves it,
     and finally processes it if needed."""
@@ -314,8 +320,6 @@ class Camera_parallel(Block):
 
     metadata['t(s)'] -= self.t0
 
-    self._loop_count += 1
-
     # Applying the transform function
     if self._transform is not None:
       img = self._transform(img)
@@ -325,6 +329,17 @@ class Camera_parallel(Block):
       self._metadata.update(metadata)
       self.log(logging.DEBUG, "Writing image to shared array")
       np.copyto(self._img, img)
+
+    self._loop_count += 1
+
+    if self.verbose:
+      self._fps_count += 1
+      t = time()
+      if t - self._last_cam_fps > 2:
+        self.log(logging.INFO, f"Acquisition FPS: "
+                               f"{self._fps_count / (t - self._last_cam_fps)}")
+        self._last_cam_fps = t
+        self._fps_count = 0
 
   def finish(self) -> None:
     """"""

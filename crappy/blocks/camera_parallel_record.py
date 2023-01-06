@@ -40,11 +40,13 @@ class Image_saver(Camera_process):
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
-               save_backend: Optional[str] = None) -> None:
+               save_backend: Optional[str] = None,
+               verbose: bool = False) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
-                     log_level=log_level)
+                     log_level=log_level,
+                     verbose=verbose)
 
     # Trying the different possible backends and checking if the given one
     # is correct
@@ -118,6 +120,7 @@ class Image_saver(Camera_process):
 
     if not self._get_data():
       return
+    self.fps_count += 1
 
     if not self._csv_created:
       self._csv_path = (self._save_folder /

@@ -24,7 +24,8 @@ class Camera_process(Process):
 
   def __init__(self,
                log_queue: Queue,
-               log_level: int = 20) -> None:
+               log_level: int = 20,
+               verbose: bool = False) -> None:
     """"""
 
     super().__init__()
@@ -50,6 +51,9 @@ class Camera_process(Process):
     self._img0_set = False
 
     self._last_warn = time()
+    self.fps_count = 0
+    self._verbose = verbose
+    self._last_fps = time()
 
   def set_shared(self,
                  array: SynchronizedArray,
@@ -97,8 +101,18 @@ class Camera_process(Process):
       self._cam_barrier.wait()
       self._log(logging.INFO, "All Camera processes ready now")
 
+      self._last_fps = time()
+
       while not self._stop_event.is_set():
         self._loop()
+
+        if self._verbose:
+          t = time()
+          if t - self._last_fps > 2:
+            self._log(logging.INFO, f"Images processed /s: "
+                                    f"{self.fps_count / (t - self._last_fps)}")
+            self._last_fps = t
+            self.fps_count = 0
 
       self._log(logging.INFO, "Stop event set, stopping the processing")
 

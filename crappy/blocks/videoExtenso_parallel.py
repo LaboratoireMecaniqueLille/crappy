@@ -85,7 +85,8 @@ class Video_extenso_parallel(Camera_parallel):
       detector=self._spot_detector,
       raise_on_lost_spot=self._raise_on_lost_spot,
       log_queue=self._log_queue,
-      log_level=self.log_level)
+      log_level=self.log_level,
+      verbose=self.verbose)
 
     super().prepare()
 

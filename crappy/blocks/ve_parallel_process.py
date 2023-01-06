@@ -17,11 +17,13 @@ class Ve_parallel_process(Camera_process):
                detector: Spot_detector,
                log_queue: Queue,
                log_level: int = 20,
-               raise_on_lost_spot: bool = True) -> None:
+               raise_on_lost_spot: bool = True,
+               verbose: bool = False) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
-                     log_level=log_level)
+                     log_level=log_level,
+                     verbose=verbose)
 
     self._ve: Optional[VideoExtenso] = None
     self._detector = detector
@@ -56,6 +58,7 @@ class Ve_parallel_process(Camera_process):
       return
 
     if not self._lost_spots:
+      self.fps_count += 1
       try:
         self._log(logging.DEBUG, "Processing the received image")
         data = self._ve.get_data(self._img)

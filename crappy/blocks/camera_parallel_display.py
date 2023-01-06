@@ -38,11 +38,13 @@ class Displayer(Camera_process):
                framerate: float,
                log_queue: Queue,
                log_level: int = 20,
-               backend: Optional[str] = None) -> None:
+               backend: Optional[str] = None,
+               verbose: bool = False) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
-                     log_level=log_level)
+                     log_level=log_level,
+                     verbose=verbose)
 
     self._title = title
     self._framerate = framerate
@@ -130,6 +132,7 @@ class Displayer(Camera_process):
 
     if not self._get_data():
       return
+    self.fps_count += 1
 
     # Casts the image to uint8 if it's not already in this format
     if self._img.dtype != np.uint8:

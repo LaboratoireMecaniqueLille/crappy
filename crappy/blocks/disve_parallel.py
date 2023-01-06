@@ -103,6 +103,7 @@ class Disve_parallel(Camera_parallel):
 
     self._process_proc = Disve_parallel_process(log_queue=self._log_queue,
                                                 log_level=self.log_level,
+                                                verbose=self.verbose,
                                                 **self._disve_kw)
 
     super().prepare()

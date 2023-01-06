@@ -32,7 +32,8 @@ class Gpucorrel_parallel_process(Camera_process):
     """"""
 
     super().__init__(log_queue=log_queue,
-                     log_level=log_level)
+                     log_level=log_level,
+                     verbose=bool(verbose))
 
     self._gpucorrel_kw = dict(context=None,
                               verbose=verbose,
@@ -74,6 +75,7 @@ class Gpucorrel_parallel_process(Camera_process):
 
     if not self._get_data():
       return
+    self.fps_count += 1
 
     if not self._img0_set:
       self._log(logging.INFO, "Setting the reference image")
