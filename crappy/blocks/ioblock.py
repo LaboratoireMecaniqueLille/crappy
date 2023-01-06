@@ -104,7 +104,9 @@ class IOBlock(Block):
     self._initial_cmd = initial_cmd
     self._exit_cmd = exit_cmd
 
-    self._name = name
+    if name not in inout_dict:
+      raise ValueError(f"No InOut object called {name} !")
+    self._io_name = name
     self._inout_kwargs = kwargs
 
     self._streamer = streamer
@@ -120,7 +122,7 @@ class IOBlock(Block):
     initial command if required."""
 
     # Instantiating the device
-    self._device = inout_dict[self._name.capitalize()](**self._inout_kwargs)
+    self._device = inout_dict[self._io_name.capitalize()](**self._inout_kwargs)
 
     # Checking that the block has inputs or outputs
     if not self.inputs and not self.outputs:

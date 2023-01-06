@@ -29,7 +29,8 @@ class Reader(Block):
     self.verbose = verbose
     self.log_level = logging.DEBUG if debug else logging.INFO
 
-    self._name = name if name is not None else f'Reader {self._get_index()}'
+    self._reader_name = name if name is not None else f'Reader ' \
+                                                      f'{self._get_index()}'
 
   def __new__(cls, *args, **kwargs):
     """"""
@@ -51,4 +52,4 @@ class Reader(Block):
       for dic in (dict(i) for i in
                   zip(*([(key, value) for value in values]
                         for key, values in link_data.items()))):
-        self.log(logging.INFO, f'{self._name} got: {dic}')
+        self.log(logging.INFO, f'{self._reader_name} got: {dic}')
