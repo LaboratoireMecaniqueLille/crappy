@@ -62,6 +62,7 @@ class Camera_config(tk.Tk):
     self._move_x = None
     self._move_y = None
     self._run = True
+    self._n_loops = 0
 
     # Settings for adjusting the behavior of the zoom
     self._zoom_ratio = 0.9
@@ -88,7 +89,7 @@ class Camera_config(tk.Tk):
     """Constantly updates the image and the information on the GUI, until asked
     to stop."""
 
-    n_loops = 0
+    self._n_loops = 0
     start_time = time()
 
     while self._run:
@@ -96,10 +97,9 @@ class Camera_config(tk.Tk):
       self._update_img(init=False)
 
       # Update the FPS counter
-      n_loops += 1
       if time() - start_time > 0.5:
-        self._fps_var.set(n_loops / (time() - start_time))
-        n_loops = 0
+        self._fps_var.set(self._n_loops / (time() - start_time))
+        self._n_loops = 0
         start_time = time()
 
   def log(self, level: int, msg: str) -> None:
@@ -879,6 +879,7 @@ class Camera_config(tk.Tk):
         sleep(0.001)
         return
 
+    self._n_loops += 1
     _, img = ret
 
     if img.dtype != self.dtype:

@@ -78,6 +78,7 @@ class DISVE_config(Camera_config_with_boxes):
         sleep(0.001)
         return
 
+    self._n_loops += 1
     _, img = ret
 
     if img.dtype != self.dtype:
