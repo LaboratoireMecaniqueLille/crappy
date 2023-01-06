@@ -151,14 +151,12 @@ class Camera_parallel(Block):
       self.log(logging.INFO, "Instantiating the saver process")
       self._save_proc = Image_saver(log_queue=self._log_queue,
                                     log_level=self.log_level,
-                                    parent_name=self.name,
                                     **self._save_proc_kw)
 
     if self._display_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the displayer process")
       self._display_proc = Displayer(log_queue=self._log_queue,
                                      log_level=self.log_level,
-                                     parent_name=self.name,
                                      **self._display_proc_kw)
 
     # Creating the barrier for camera processes synchronization
@@ -336,7 +334,7 @@ class Camera_parallel(Block):
 
     self.log(logging.DEBUG, "Asking all the children processes to stop")
     self._stop_event_cam.set()
-    sleep(0.5)
+    sleep(0.2)
     if self._process_proc is not None and self._process_proc.is_alive():
       self.log(logging.WARNING, "Image processing process not stopped, "
                                 "killing it !")

@@ -16,13 +16,11 @@ class Ve_parallel_process(Camera_process):
   def __init__(self,
                detector: Spot_detector,
                log_queue: Queue,
-               parent_name: str,
                log_level: int = 20,
                raise_on_lost_spot: bool = True) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
-                     parent_name=parent_name,
                      log_level=log_level)
 
     self._ve: Optional[VideoExtenso] = None
@@ -45,8 +43,7 @@ class Ve_parallel_process(Camera_process):
                             num_spots=self._detector.num_spots,
                             safe_mode=self._detector.safe_mode,
                             border=self._detector.border,
-                            blur=self._detector.blur,
-                            logger_name=self.name)
+                            blur=self._detector.blur)
 
     self._log(logging.INFO, "Starting the VideoExtenso spot tracker "
                             "processes")

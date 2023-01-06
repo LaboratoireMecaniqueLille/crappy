@@ -68,8 +68,7 @@ class Video_extenso_parallel(Camera_parallel):
 
     self._raise_on_lost_spot = raise_on_lost_spot
 
-    self._detector_kw = dict(logger_name=self.name,
-                             white_spots=white_spots,
+    self._detector_kw = dict(white_spots=white_spots,
                              num_spots=num_spots,
                              min_area=min_area,
                              blur=blur,
@@ -86,8 +85,7 @@ class Video_extenso_parallel(Camera_parallel):
       detector=self._spot_detector,
       raise_on_lost_spot=self._raise_on_lost_spot,
       log_queue=self._log_queue,
-      log_level=self.log_level,
-      parent_name=self.name)
+      log_level=self.log_level)
 
     super().prepare()
 

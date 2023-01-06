@@ -98,11 +98,11 @@ class Block(Process):
     """"""
 
     i = 1
-    while f"crappy.{name}_{i}" in cls.names:
+    while f"crappy.{name}-{i}" in cls.names:
       i += 1
 
-    cls.names.append(f"crappy.{name}_{i}")
-    return f"crappy.{name}_{i}"
+    cls.names.append(f"crappy.{name}-{i}")
+    return f"crappy.{name}-{i}"
 
   @classmethod
   def start_all(cls,

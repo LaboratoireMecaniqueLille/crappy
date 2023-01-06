@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from multiprocessing import current_process
 from dataclasses import dataclass
 from typing import Optional, Tuple, List
 import numpy as np
@@ -243,7 +244,6 @@ class Spot_detector:
   """"""
 
   def __init__(self,
-               logger_name: str,
                white_spots: bool = False,
                num_spots: Optional[int] = None,
                min_area: int = 150,
@@ -271,7 +271,8 @@ class Spot_detector:
     self.safe_mode = safe_mode
     self.border = border
 
-    self._logger = logging.getLogger(f"{logger_name}.{type(self).__name__}")
+    self._logger = logging.getLogger(f"{current_process().name}."
+                                     f"{type(self).__name__}")
 
     if num_spots is not None and num_spots not in range(1, 5):
       raise ValueError("num_spots should be either None, 1, 2, 3 or 4 !")

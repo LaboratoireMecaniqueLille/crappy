@@ -85,7 +85,6 @@ class Gpuve_parallel(Camera_parallel):
 
     self._process_proc = Gpuve_parallel_process(log_queue=self._log_queue,
                                                 log_level=self.log_level,
-                                                parent_name=self.name,
                                                 **self._gpuve_kw)
 
     super().prepare()

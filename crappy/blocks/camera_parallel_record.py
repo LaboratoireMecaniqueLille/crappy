@@ -36,7 +36,6 @@ class Image_saver(Camera_process):
 
   def __init__(self,
                log_queue: Queue,
-               parent_name: str,
                log_level: int = 20,
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
@@ -45,7 +44,6 @@ class Image_saver(Camera_process):
     """"""
 
     super().__init__(log_queue=log_queue,
-                     parent_name=parent_name,
                      log_level=log_level)
 
     # Trying the different possible backends and checking if the given one

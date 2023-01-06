@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from multiprocessing import Process, managers, get_start_method
+from multiprocessing import Process, managers, get_start_method, \
+  current_process
 from multiprocessing.synchronize import Event, RLock, Barrier
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing.connection import Connection
@@ -23,12 +24,11 @@ class Camera_process(Process):
 
   def __init__(self,
                log_queue: Queue,
-               parent_name: str,
                log_level: int = 20) -> None:
     """"""
 
     super().__init__()
-    self.name = f"{parent_name}.{type(self).__name__}"
+    self.name = f"{current_process().name}.{type(self).__name__}"
 
     self._log_queue = log_queue
     self._logger: Optional[logging.Logger] = None

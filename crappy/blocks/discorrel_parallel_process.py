@@ -15,7 +15,6 @@ class Discorrel_parallel_process(Camera_process):
 
   def __init__(self,
                log_queue: Queue,
-               parent_name: str,
                log_level: int = 20,
                fields: List[str] = None,
                alpha: float = 3,
@@ -31,7 +30,6 @@ class Discorrel_parallel_process(Camera_process):
     """"""
 
     super().__init__(log_queue=log_queue,
-                     parent_name=parent_name,
                      log_level=log_level)
 
     self._discorrel_kw = dict(fields=fields,

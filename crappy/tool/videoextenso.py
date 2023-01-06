@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from multiprocessing import Process, Pipe
+from multiprocessing import Process, Pipe, current_process
 from multiprocessing.connection import Connection
 from multiprocessing.queues import Queue
 from typing import Optional, Tuple, List, Union
@@ -61,8 +61,7 @@ class VideoExtenso:
                num_spots: Optional[int] = None,
                safe_mode: bool = False,
                border: int = 5,
-               blur: Optional[int] = 5,
-               logger_name: str = '') -> None:
+               blur: Optional[int] = 5) -> None:
     """Sets the args and the other instance attributes.
 
     Args:
@@ -111,7 +110,6 @@ class VideoExtenso:
     self._thresh = thresh
 
     self._logger: Optional[logging.Logger] = None
-    self._logger_name = logger_name
     self._log_level = log_level
     self._log_queue = log_queue
 
@@ -142,7 +140,7 @@ class VideoExtenso:
 
       inlet, outlet = Pipe()
       tracker = Tracker(pipe=outlet,
-                        logger_name=f"{self._logger_name}."
+                        logger_name=f"{current_process().name}."
                                     f"{type(self).__name__}",
                         log_level=self._log_level,
                         log_queue=self._log_queue,
@@ -162,7 +160,7 @@ class VideoExtenso:
       for pipe, tracker in zip(self._pipes, self._trackers):
         if tracker.is_alive():
           pipe.send(('stop', 'stop', 'stop'))
-      sleep(0.05)
+      sleep(0.1)
 
       # If they're not stopping, killing the trackers
       for tracker in self._trackers:
@@ -274,7 +272,7 @@ class VideoExtenso:
 
     if self._logger is None:
       self._logger = logging.getLogger(
-        f"{self._logger_name}.{type(self).__name__}")
+        f"{current_process().name}.{type(self).__name__}")
 
     self._logger.log(level, msg)
 
@@ -368,11 +366,11 @@ class Tracker(Process):
     """"""
 
     i = 1
-    while f"{logger_name}.{self_name}_{i}" in cls.names:
+    while f"{logger_name}.{self_name}-{i}" in cls.names:
       i += 1
 
-    cls.names.append(f"{logger_name}.{self_name}_{i}")
-    return f"{logger_name}.{self_name}_{i}"
+    cls.names.append(f"{logger_name}.{self_name}-{i}")
+    return f"{logger_name}.{self_name}-{i}"
 
   def run(self) -> None:
     """Continuously reads incoming subframes, tries to detect a spot and sends

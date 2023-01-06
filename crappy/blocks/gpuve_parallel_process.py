@@ -24,7 +24,6 @@ class Gpuve_parallel_process(Camera_process):
   def __init__(self,
                patches: List[Tuple[int, int, int, int]],
                log_queue: Queue,
-               parent_name: str,
                log_level: int = 20,
                verbose: int = 0,
                kernel_file: Optional[Union[str, Path]] = None,
@@ -34,7 +33,6 @@ class Gpuve_parallel_process(Camera_process):
     """"""
 
     super().__init__(log_queue=log_queue,
-                     parent_name=parent_name,
                      log_level=log_level)
 
     pycuda.driver.init()

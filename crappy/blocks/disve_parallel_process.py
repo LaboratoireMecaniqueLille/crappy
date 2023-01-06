@@ -16,7 +16,6 @@ class Disve_parallel_process(Camera_process):
   def __init__(self,
                patches: Spot_boxes,
                log_queue: Queue,
-               parent_name: str,
                log_level: int = 20,
                method: str = 'Disflow',
                alpha: float = 3,
@@ -34,7 +33,6 @@ class Disve_parallel_process(Camera_process):
     """"""
 
     super().__init__(log_queue=log_queue,
-                     parent_name=parent_name,
                      log_level=log_level)
 
     self._disve_kw = dict(patches=patches,

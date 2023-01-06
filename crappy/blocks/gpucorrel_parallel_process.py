@@ -16,7 +16,6 @@ class Gpucorrel_parallel_process(Camera_process):
 
   def __init__(self,
                log_queue: Queue,
-               parent_name: str,
                log_level: int = 20,
                discard_limit: float = 3,
                discard_ref: int = 5,
@@ -33,7 +32,6 @@ class Gpucorrel_parallel_process(Camera_process):
     """"""
 
     super().__init__(log_queue=log_queue,
-                     parent_name=parent_name,
                      log_level=log_level)
 
     self._gpucorrel_kw = dict(context=None,

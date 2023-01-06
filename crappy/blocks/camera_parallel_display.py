@@ -37,13 +37,11 @@ class Displayer(Camera_process):
                title: str,
                framerate: float,
                log_queue: Queue,
-               parent_name: str,
                log_level: int = 20,
                backend: Optional[str] = None) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
-                     parent_name=parent_name,
                      log_level=log_level)
 
     self._title = title
