@@ -40,7 +40,7 @@ class Opsens(InOut):
 
     self.log(logging.INFO, f"Opening the serial connection on port "
                            f"{self._addr} with baudrate 57600")
-    self._dev = serial.Serial(port=self._addr, baudrate=57600)
+    self._dev = serial.Serial(port=self._addr, baudrate=57600, timeout=0.1)
     self._send_cmd("meas:rate min")
 
   def get_data(self) -> List[float]:

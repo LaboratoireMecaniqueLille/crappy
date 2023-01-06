@@ -41,7 +41,7 @@ class CM_drive(Actuator):
 
     self.log(logging.INFO, f"Opening the serial port {self._port} with "
                            f"baudrate {self._baudrate}")
-    self._ser = serial.Serial(self._port, self._baudrate)
+    self._ser = serial.Serial(self._port, self._baudrate, timeout=0.1)
 
   def set_speed(self, speed: float) -> None:
     """Sets the target speed on the actuator.

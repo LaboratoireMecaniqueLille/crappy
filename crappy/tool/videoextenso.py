@@ -197,7 +197,7 @@ class VideoExtenso:
     for i, (pipe, spot) in enumerate(zip(self._pipes, self.spots)):
 
       # Receiving the data from the tracker, if there's any
-      if pipe.poll(timeout=0.5):
+      if pipe.poll(timeout=0.1):
         box = pipe.recv()
 
         # In case a tracker faced an error, stopping them all and raising
@@ -410,6 +410,7 @@ class Tracker(Process):
             self._logger.exception("Caught exception while tracking spot",
                                    exc_info=exc)
             self._send('stop')
+            break
 
     # In case the user presses CTRL+C, simply stopping the process
     except KeyboardInterrupt:
