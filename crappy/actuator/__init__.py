@@ -4,7 +4,7 @@ from typing import Dict, Type
 
 from .ft232h import Motorkit_pump_ft232h
 
-from .actuator import MetaActuator, Actuator
+from .meta_actuator import MetaActuator, Actuator
 from .biaxe import Biaxe
 from .biotens import Biotens
 from .cmDrive import CM_drive

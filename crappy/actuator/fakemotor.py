@@ -2,7 +2,7 @@
 
 from time import time
 
-from .actuator import Actuator
+from .meta_actuator import Actuator
 
 
 class Fake_motor(Actuator):

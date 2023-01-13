@@ -5,7 +5,7 @@ from time import sleep
 from typing import Union, List, Optional
 import logging
 
-from .actuator import Actuator
+from .meta_actuator import Actuator
 from .._global import OptionalModule
 from ..tool import ft232h_server as ft232h
 

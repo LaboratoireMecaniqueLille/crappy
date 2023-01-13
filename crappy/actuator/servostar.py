@@ -3,7 +3,7 @@
 from typing import Union, Optional
 import logging
 
-from .actuator import Actuator
+from .meta_actuator import Actuator
 from .._global import OptionalModule
 
 try:

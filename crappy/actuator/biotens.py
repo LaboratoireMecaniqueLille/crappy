@@ -4,7 +4,7 @@ from struct import pack, unpack
 from typing import Optional, Tuple
 from time import sleep
 import logging
-from .actuator import Actuator
+from .meta_actuator import Actuator
 from .._global import OptionalModule
 
 try:
