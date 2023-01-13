@@ -5,7 +5,7 @@ from time import time
 from typing import List, Optional
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from ..tool import pyspcm as spc
 
 

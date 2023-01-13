@@ -9,8 +9,9 @@ from collections import defaultdict
 from itertools import chain
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from .._global import OptionalModule
+
 try:
   import nidaqmx
   from nidaqmx import stream_readers, stream_writers

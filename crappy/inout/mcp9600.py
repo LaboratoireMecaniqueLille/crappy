@@ -1,10 +1,10 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, List
+from typing import List
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from .._global import OptionalModule
 
 try:

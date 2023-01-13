@@ -2,7 +2,7 @@
 
 from typing import Union
 
-from ..inout import InOut
+from ..meta_inout import InOut
 from ...tool import ft232h_server as ft232h, ft232h_pin_nr
 
 

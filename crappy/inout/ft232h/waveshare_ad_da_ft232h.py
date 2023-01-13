@@ -5,7 +5,7 @@ from re import fullmatch, findall
 from typing import List, Union, Optional
 import logging
 
-from ..inout import InOut
+from ..meta_inout import InOut
 from ...tool import ft232h_server as ft232h
 
 # ADS1256 gain channel

@@ -5,7 +5,7 @@ from typing import Optional, List
 from dataclasses import dataclass
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from .._global import OptionalModule
 
 try:

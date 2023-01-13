@@ -5,7 +5,7 @@ from re import findall
 from typing import Union, List, Optional
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from .._global import OptionalModule
 
 try:

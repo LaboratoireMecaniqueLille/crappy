@@ -4,7 +4,7 @@ from time import time, sleep
 from typing import Union, Optional, List
 import logging
 
-from ..inout import InOut
+from ..meta_inout import InOut
 from ...tool import ft232h_server as ft232h
 
 # Register Map

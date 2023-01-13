@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from multiprocessing import current_process
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from .._global import OptionalModule
 
 try:

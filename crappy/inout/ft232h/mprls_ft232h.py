@@ -4,7 +4,7 @@ from time import time
 from typing import Optional, List
 import logging
 
-from ..inout import InOut
+from ..meta_inout import InOut
 from ...tool import ft232h_server as ft232h, i2c_msg_ft232h
 
 mprls_status_bits = {'busy': 0x20,

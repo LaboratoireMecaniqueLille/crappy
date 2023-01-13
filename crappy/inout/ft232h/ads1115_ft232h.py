@@ -4,7 +4,7 @@ from time import time
 from typing import Union, List, Optional
 import logging
 
-from ..inout import InOut
+from ..meta_inout import InOut
 from ...tool import ft232h_server as ft232h
 
 # Register and other configuration values:

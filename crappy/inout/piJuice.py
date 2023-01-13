@@ -4,7 +4,7 @@ from typing import Dict, Any, List
 from time import time
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from .._global import OptionalModule
 
 try:

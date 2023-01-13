@@ -2,7 +2,7 @@
 
 from typing import Dict, Type
 
-from .inout import InOut, MetaIO
+from .meta_inout import InOut, MetaIO
 
 from .ft232h import Ads1115_ft232h
 from .ft232h import Gpio_switch_ft232h

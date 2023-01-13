@@ -1,9 +1,9 @@
 # coding: utf-8
 
-from typing import Optional, Union
+from typing import Union
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from .._global import OptionalModule
 
 try:

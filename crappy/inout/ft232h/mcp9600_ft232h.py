@@ -4,7 +4,7 @@ from time import time
 from typing import List
 import logging
 
-from ..inout import InOut
+from ..meta_inout import InOut
 from ...tool import ft232h_server as ft232h
 
 Mcp9600_registers = {'Hot Junction Temperature': 0x00,

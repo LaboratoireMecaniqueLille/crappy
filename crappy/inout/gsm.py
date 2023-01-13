@@ -4,7 +4,7 @@ from time import sleep
 from typing import List
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from .._global import OptionalModule
 
 try:

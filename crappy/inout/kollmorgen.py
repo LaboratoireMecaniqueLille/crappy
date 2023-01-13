@@ -5,7 +5,7 @@ from struct import pack, unpack
 from typing import List
 import logging
 
-from .inout import InOut
+from .meta_inout import InOut
 from .._global import OptionalModule
 try:
   from pymodbus.client.tcp import ModbusTcpClient
