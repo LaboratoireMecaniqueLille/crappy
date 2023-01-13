@@ -3,7 +3,7 @@
 from typing import Optional, Tuple, Dict, Any, Union, List
 import logging
 
-from .modifier import Modifier
+from .meta_modifier import Modifier
 
 
 class Trig_on_value(Modifier):

@@ -3,7 +3,7 @@
 from typing import Optional, Dict, Any
 import logging
 
-from .modifier import Modifier
+from .meta_modifier import Modifier
 
 
 class Trig_on_change(Modifier):

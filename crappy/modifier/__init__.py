@@ -2,7 +2,7 @@
 
 from typing import Dict, Type
 
-from .modifier import Modifier, MetaModifier
+from .meta_modifier import Modifier, MetaModifier
 
 from .demux import Demux
 from .differentiate import Diff

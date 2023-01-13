@@ -3,7 +3,7 @@
 from typing import Dict, Any, List, Union, Tuple
 import logging
 
-from .modifier import Modifier
+from .meta_modifier import Modifier
 
 
 class Offset(Modifier):

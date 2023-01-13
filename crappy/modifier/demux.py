@@ -4,7 +4,7 @@ import numpy as np
 from typing import Dict, Any, Union, List, Tuple
 import logging
 
-from .modifier import Modifier
+from .meta_modifier import Modifier
 
 
 class Demux(Modifier):
