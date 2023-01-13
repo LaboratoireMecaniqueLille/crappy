@@ -13,16 +13,13 @@ from .camera_process import Camera_process
 from .._global import OptionalModule
 from ..tool import Spot_boxes, Box
 
+plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
+
 try:
   from PIL import ImageTk, Image
 except (ModuleNotFoundError, ImportError):
   ImageTk = OptionalModule("Pillow")
   Image = OptionalModule("Pillow")
-
-try:
-  import matplotlib.pyplot as plt
-except (ModuleNotFoundError, ImportError):
-  plt = OptionalModule("matplotlib")
 
 try:
   import cv2

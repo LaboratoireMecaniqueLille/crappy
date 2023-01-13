@@ -8,12 +8,8 @@ import logging
 from .block import Block
 from .._global import OptionalModule
 
-try:
-  import matplotlib.pyplot as plt
-  from matplotlib import cm
-except (ModuleNotFoundError, ImportError):
-  plt = OptionalModule("matplotlib")
-  cm = OptionalModule("matplotlib")
+plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
+mpl = OptionalModule('matplotlib', lazy_import=True)
 
 
 class Text:
@@ -92,8 +88,8 @@ class Dot_text:
 
     if self._label in data:
       self._txt.set_text(self._text % data[self._label])
-      self._dot.set_color(cm.coolwarm((data[self._label] -
-                                       self._low) / self._amp))
+      self._dot.set_color(mpl.cm.coolwarm((data[self._label] -
+                                           self._low) / self._amp))
 
 
 class Time:
@@ -197,7 +193,7 @@ class Drawing(Block):
     # Initializing the window and the background image
     plt.switch_backend(self._backend)
     self._fig, self.ax = plt.subplots(figsize=self._window_size)
-    image = self.ax.imshow(plt.imread(self._image), cmap=cm.coolwarm)
+    image = self.ax.imshow(plt.imread(self._image), cmap=mpl.cm.coolwarm)
     image.set_clim(-0.5, 1)
 
     # Initializing the color bar

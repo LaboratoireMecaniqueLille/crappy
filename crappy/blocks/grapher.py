@@ -8,12 +8,8 @@ from _tkinter import TclError
 from .block import Block
 from .._global import OptionalModule
 
-try:
-  import matplotlib.pyplot as plt
-  from matplotlib.widgets import Button
-except (ModuleNotFoundError, ImportError):
-  plt = OptionalModule("matplotlib")
-  Button = OptionalModule("matplotlib")
+plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
+wdg = OptionalModule('matplotlib.widgets', lazy_import=True)
 
 
 class Grapher(Block):
@@ -136,7 +132,7 @@ class Grapher(Block):
     plt.grid()
 
     # Adds a button for clearing the graph
-    self._clear_button = Button(plt.axes([.8, .02, .15, .05]), 'Clear')
+    self._clear_button = wdg.Button(plt.axes([.8, .02, .15, .05]), 'Clear')
     self._clear_button.on_clicked(self._clear)
 
     # Set the dimensions if required

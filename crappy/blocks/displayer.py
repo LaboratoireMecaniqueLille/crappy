@@ -7,16 +7,13 @@ import logging
 from multiprocessing import current_process
 from .._global import OptionalModule
 
+plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
+
 try:
   from PIL import ImageTk, Image
 except (ModuleNotFoundError, ImportError):
   ImageTk = OptionalModule("Pillow")
   Image = OptionalModule("Pillow")
-
-try:
-  import matplotlib.pyplot as plt
-except (ModuleNotFoundError, ImportError):
-  plt = OptionalModule("matplotlib")
 
 try:
   import cv2
