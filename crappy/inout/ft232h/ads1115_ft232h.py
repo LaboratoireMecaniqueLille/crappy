@@ -5,8 +5,7 @@ from typing import Union, List, Optional
 import logging
 
 from ..inout import InOut
-from ...tool import ft232h_server as ft232h, Usb_server
-
+from ...tool import ft232h_server as ft232h
 
 # Register and other configuration values:
 Ads1115_pointer_conversion = 0x00
@@ -40,7 +39,7 @@ Ads1115_config_dr = {8: 0x0000,
                      860: 0x00E0}
 
 
-class Ads1115_ft232h(Usb_server, InOut):
+class Ads1115_ft232h(InOut):
   """A class for controlling Adafruit's ADS1115 16-bits ADC.
 
   The Ads1115 InOut block is meant for reading output values from a 16-bits
@@ -58,7 +57,7 @@ class Ads1115_ft232h(Usb_server, InOut):
                dry_pin: Optional[Union[str, int]] = None,
                gain: float = 1,
                offset: float = 0,
-               ft232h_ser_num: Optional[str] = None) -> None:
+               _ft232h_args: tuple = tuple()) -> None:
     """Checks arguments validity.
 
     Args:
@@ -109,9 +108,6 @@ class Ads1115_ft232h(Usb_server, InOut):
 
           output = gain * tension + offset.
 
-      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
-        serial number of the FT232H to use for communication.
-
     Warning:
       AINx voltages should not be higher than `VDD+0.3V` nor lower than
       `GND-0.3V`. Setting high ``v_range`` values does not allow measuring
@@ -120,21 +116,18 @@ class Ads1115_ft232h(Usb_server, InOut):
 
     self._bus = None
 
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend='ft232h')
-    InOut.__init__(self)
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
+    super().__init__()
+
+    (block_index, current_block, command_file, answer_file, block_lock,
+     shared_lock) = _ft232h_args
 
     self._bus = ft232h(mode='I2C',
-                       block_number=block_number,
-                       current_file=current_file,
+                       block_index=block_index,
+                       current_block=current_block,
                        command_file=command_file,
                        answer_file=answer_file,
                        block_lock=block_lock,
-                       current_lock=current_lock,
-                       serial_nr=ft232h_ser_num)
+                       shared_lock=shared_lock)
 
     self._device_address = device_address
 
@@ -212,9 +205,9 @@ class Ads1115_ft232h(Usb_server, InOut):
     # Reading the output of the conversion
     out = [time()]
     ms_byte, ls_byte = self._bus.read_i2c_block_data(
-        self._device_address,
-        Ads1115_pointer_conversion,
-        2)
+      self._device_address,
+      Ads1115_pointer_conversion,
+      2)
     self.log(logging.DEBUG, f"Read {ms_byte, ls_byte} from the device "
                             f"address {self._device_address} at "
                             f"register {Ads1115_pointer_conversion}")

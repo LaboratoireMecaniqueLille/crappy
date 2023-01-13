@@ -5,6 +5,7 @@ import logging
 
 from .block import Block
 from ..inout import inout_dict, InOut
+from ..tool import UsbServer
 
 
 class IOBlock(Block):
@@ -29,6 +30,7 @@ class IOBlock(Block):
                initial_cmd: Optional[Union[list]] = None,
                exit_cmd: Optional[list] = None,
                make_zero_delay: Optional[float] = None,
+               ft232h_ser_num: Optional[str] = None,
                spam: bool = False,
                freq: Optional[float] = 200,
                verbose: bool = False,
@@ -75,6 +77,7 @@ class IOBlock(Block):
     """
 
     self._device: Optional[InOut] = None
+    self._ft232h_args = None
 
     super().__init__()
     self.niceness = -10
@@ -117,12 +120,24 @@ class IOBlock(Block):
     self._last_cmd = None
     self._prev_value = dict()
 
+    # Checking whether the InOut communicates through an FT232H
+    if inout_dict[self._io_name.capitalize()].ft232h:
+      self._ft232h_args = UsbServer.register(ft232h_ser_num)
+
   def prepare(self) -> None:
     """Checks the consistency of the link layout, opens the device and sets the
     initial command if required."""
 
-    # Instantiating the device
-    self._device = inout_dict[self._io_name.capitalize()](**self._inout_kwargs)
+    # Instantiating the device in a regular way
+    if self._ft232h_args is None:
+      self._device = inout_dict[
+        self._io_name.capitalize()](**self._inout_kwargs)
+    # Instantiating the device and the connection to the FT232H
+    else:
+      self.log(logging.INFO, "The InOut to open communicates over an FT232H")
+      self._device = inout_dict[
+        self._io_name.capitalize()](**self._inout_kwargs,
+                                    _ft232h_args=self._ft232h_args)
 
     # Checking that the block has inputs or outputs
     if not self.inputs and not self.outputs:

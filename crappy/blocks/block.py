@@ -21,6 +21,7 @@ from ..links import Link
 from .._global import LinkDataError, StartTimeout, PrepareError, \
   T0NotSetError, GeneratorStop, ReaderStop, CameraPrepareError, \
   CameraRuntimeError
+from ..tool import UsbServer
 
 # Todo:
 #  Add a clean way to stop the blocks, using the keyboard or a button
@@ -163,6 +164,11 @@ class Block(Process):
       cls.log_thread.start()
       cls.logger.log(logging.INFO, 'Logger thread started')
 
+      # Starting the USB server if required
+      if UsbServer.initialized:
+        cls.logger.log(logging.INFO, "Starting the USB server")
+        UsbServer.start_server(cls.log_queue, logging.INFO)
+
       # Passing the synchronization and logging objects to each block
       for instance in cls.instances:
         instance._ready_barrier = cls.ready_barrier
@@ -258,6 +264,11 @@ class Block(Process):
       for inst in cls.instances:
         inst.join()
         cls.logger.log(logging.INFO, f'{inst.name} finished by itself')
+
+      # Stopping the USB server if required
+      if UsbServer.initialized:
+        cls.logger.log(logging.INFO, "Stopping the USB server")
+        UsbServer.stop_server()
 
       cls.logger.log(logging.INFO, 'All Blocks done, Crappy terminated '
                                    'gracefully\n')

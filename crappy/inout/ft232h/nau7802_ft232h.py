@@ -5,7 +5,7 @@ from typing import Union, Optional, List
 import logging
 
 from ..inout import InOut
-from ...tool import ft232h_server as ft232h, Usb_server
+from ...tool import ft232h_server as ft232h
 
 # Register Map
 NAU7802_Scale_Registers = {'PU_CTRL': 0x00,
@@ -94,7 +94,7 @@ NAU7802_Cal_Status = {'CAL_SUCCESS': 0,
 NAU7802_VREF = 3.3
 
 
-class Nau7802_ft232h(Usb_server, InOut):
+class Nau7802_ft232h(InOut):
   """Class for controlling Sparkfun's NAU7802 load cell conditioner.
 
   The Nau7802 InOut block is meant for reading output values from a NAU7802
@@ -111,7 +111,7 @@ class Nau7802_ft232h(Usb_server, InOut):
                int_pin: Optional[Union[str, int]] = None,
                gain: float = 1,
                offset: float = 0,
-               ft232h_ser_num: Optional[str] = None) -> None:
+               _ft232h_args: tuple = tuple()) -> None:
     """Checks the validity of the arguments..
 
     Args:
@@ -150,27 +150,23 @@ class Nau7802_ft232h(Usb_server, InOut):
 
           output = gain * tension + offset.
 
-      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
-        serial number of the ft232h to use for communication.
     """
 
     self._bus = None
 
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend='ft232h')
-    InOut.__init__(self)
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
+    super().__init__()
+
+    (block_index, current_block, command_file, answer_file, block_lock,
+     shared_lock) = _ft232h_args
 
     self._bus = ft232h(mode='I2C',
-                       block_number=block_number,
-                       current_file=current_file,
+                       block_index=block_index,
+                       current_block=current_block,
                        command_file=command_file,
                        answer_file=answer_file,
                        block_lock=block_lock,
-                       current_lock=current_lock,
-                       serial_nr=ft232h_ser_num)
+                       shared_lock=shared_lock)
+
     self._device_address = device_address
 
     if gain_hardware not in NAU7802_Gain_Values:

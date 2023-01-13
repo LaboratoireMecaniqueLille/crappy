@@ -5,7 +5,8 @@ from typing import Dict, Any, Optional
 import logging
 
 from .block import Block
-from ..actuator import actuator_list, Actuator
+from ..actuator import actuator_dict, Actuator
+from ..tool import UsbServer
 
 
 class AutoDrive(Block):
@@ -27,6 +28,7 @@ class AutoDrive(Block):
                direction: str = 'Y-',
                pixel_range: int = 2048,
                max_speed: float = 200000,
+               ft232h_ser_num: Optional[str] = None,
                freq: float = 200,
                verbose: bool = False,
                debug: bool = False) -> None:
@@ -53,6 +55,8 @@ class AutoDrive(Block):
       verbose: If :obj:`True`, displays the looping frequency of the block.
     """
 
+    self._ft232h_args = None
+
     super().__init__()
     self.labels = ['t(s)', 'diff(pix)']
     self.freq = freq
@@ -66,6 +70,10 @@ class AutoDrive(Block):
     self._pixel_range = pixel_range
     self._max_speed = max_speed
 
+    # Checking whether the Actuator communicates through an FT232H
+    if actuator_dict[actuator['name']].ft232h:
+      self._ft232h_args = UsbServer.register(ft232h_ser_num)
+
   def prepare(self) -> None:
     """Checks the consistency of the linking and initializes the actuator to
     drive."""
@@ -78,7 +86,11 @@ class AutoDrive(Block):
 
     # Opening and initializing the actuator to drive
     actuator_name = self._actuator.pop('name')
-    self._device = actuator_list[actuator_name](**self._actuator)
+    if self._ft232h_args is None:
+      self._device = actuator_dict[actuator_name](**self._actuator)
+    else:
+      self._device = actuator_dict[actuator_name](
+        **self._actuator, _ft232h_args=self._ft232h_args)
     self.log(logging.INFO, f"Opening the {type(self._device).__name__} "
                            f"actuator")
     self._device.open()

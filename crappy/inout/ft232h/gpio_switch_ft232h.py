@@ -1,12 +1,12 @@
 # coding: utf-8
 
-from typing import Optional, Union
+from typing import Union
 
 from ..inout import InOut
-from ...tool import ft232h_server as ft232h, Usb_server, ft232h_pin_nr
+from ...tool import ft232h_server as ft232h, ft232h_pin_nr
 
 
-class Gpio_switch_ft232h(Usb_server, InOut):
+class Gpio_switch_ft232h(InOut):
   """Class for setting a GPIO high or low.
 
   The Gpio_switch InOut block is meant for switching a GPIO high or low
@@ -19,7 +19,7 @@ class Gpio_switch_ft232h(Usb_server, InOut):
 
   def __init__(self,
                pin_out: Union[int, str],
-               ft232h_ser_num: Optional[int] = None) -> None:
+               _ft232h_args: tuple = tuple()) -> None:
     """Checks the argument validity.
 
     Args:
@@ -28,8 +28,6 @@ class Gpio_switch_ft232h(Usb_server, InOut):
         a string corresponding to the name of a GPIO. With the `'blinka'`
         backend, should be a string holding the name of the pin. Refer to
         blinka's specific documentation for each board for more information.
-      ft232h_ser_num: If backend is `'ft232h'`, the serial number of the FT232H
-        to use for communication.
     """
 
     self._ft232h = None
@@ -39,24 +37,20 @@ class Gpio_switch_ft232h(Usb_server, InOut):
     if pin_out not in ft232h_pin_nr:
       raise TypeError(f'{pin_out} is not a valid pin for the ft232h backend !')
 
-    # Starting the USB server (doesn't do anything if backend is not ft232h)
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend='ft232h')
-    InOut.__init__(self)
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
+    super().__init__()
 
-    # Instantiating the pin object
-    self._pin_out = pin_out
+    (block_index, current_block, command_file, answer_file, block_lock,
+     shared_lock) = _ft232h_args
+
     self._ft232h = ft232h(mode='GPIO_only',
-                          block_number=block_number,
-                          current_file=current_file,
+                          block_index=block_index,
+                          current_block=current_block,
                           command_file=command_file,
                           answer_file=answer_file,
                           block_lock=block_lock,
-                          current_lock=current_lock,
-                          serial_nr=ft232h_ser_num)
+                          shared_lock=shared_lock)
+
+    self._pin_out = pin_out
 
   def set_cmd(self, *cmd: int) -> None:
     """Drives the GPIO according to the command.

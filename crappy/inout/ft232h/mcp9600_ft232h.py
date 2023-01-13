@@ -1,11 +1,11 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, List
+from typing import List
 import logging
 
 from ..inout import InOut
-from ...tool import ft232h_server as ft232h, Usb_server
+from ...tool import ft232h_server as ft232h
 
 Mcp9600_registers = {'Hot Junction Temperature': 0x00,
                      'Junction Temperature Delta': 0x01,
@@ -60,7 +60,7 @@ Mcp9600_modes = ['Hot Junction Temperature',
                  'Raw Data ADC']
 
 
-class Mcp9600_ft232h(Usb_server, InOut):
+class Mcp9600_ft232h(InOut):
   """Class for controlling Adafruit's MCP9600 thermocouple reader.
 
   The Mcp9600 InOut block is meant for reading temperature from an MCP9600
@@ -77,7 +77,7 @@ class Mcp9600_ft232h(Usb_server, InOut):
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
                mode: str = 'Hot Junction Temperature',
-               ft232h_ser_num: Optional[str] = None) -> None:
+               _ft232h_args: tuple = tuple()) -> None:
     """Checks arguments validity.
 
     Args:
@@ -121,28 +121,22 @@ class Mcp9600_ft232h(Usb_server, InOut):
           'Cold Junction Temperature',
           'Raw Data ADC'
 
-      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
-        serial number of the ft232h to use for communication.
-
     """
 
     self._bus = None
 
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend='ft232h')
-    InOut.__init__(self)
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
+    super().__init__()
+
+    (block_index, current_block, command_file, answer_file, block_lock,
+     shared_lock) = _ft232h_args
 
     self._bus = ft232h(mode='I2C',
-                       block_number=block_number,
-                       current_file=current_file,
+                       block_index=block_index,
+                       current_block=current_block,
                        command_file=command_file,
                        answer_file=answer_file,
                        block_lock=block_lock,
-                       current_lock=current_lock,
-                       serial_nr=ft232h_ser_num,
+                       shared_lock=shared_lock,
                        i2c_speed=20E3)
 
     self._device_address = device_address

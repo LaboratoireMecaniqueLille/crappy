@@ -1,11 +1,18 @@
 # coding: utf-8
 
-from multiprocessing import Process, Pipe, RLock
-from multiprocessing.connection import Connection
+from multiprocessing import Process, RLock, Event, Value, get_start_method
 import multiprocessing.synchronize
+import multiprocessing.context
+import multiprocessing.queues
+from multiprocessing.sharedctypes import Synchronized
+import signal
 from _io import FileIO
 from tempfile import TemporaryFile
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Tuple
+from contextlib import contextmanager
+from dataclasses import dataclass
+import logging
+import logging.handlers
 
 from ..._global import OptionalModule
 try:
@@ -18,70 +25,326 @@ except (FileNotFoundError, ModuleNotFoundError):
   util = OptionalModule('pyusb')
 
 
-class Server_process(Process):
-  """Process actually communicating with the FT232H device.
+@dataclass
+class BlockObjects:
+  """This class stores all the objects specific to a single Block, in order to
+  easily pass them to the USB server process."""
 
-  It receives the commands, sends them to the device, and returns the answer.
-  This architecture is necessary as :mod:`pyusb` doesn't support
-  multiprocessing.
-  """
+  ser_num: str
+  lock: multiprocessing.synchronize.RLock
+  device: Device
+
+  finished: bool = False
+
+
+class UsbServer(Process):
+  """"""
+
+  initialized = False
+  logger: Optional[logging.Logger] = None
+
+  process: Optional[multiprocessing.context.Process] = None
+  block_nr: int = 0
+  devices: Dict[str, Device] = dict()
+
+  # Objects for synchronizing with the server
+  stop_event: Optional[multiprocessing.synchronize.Event] = None
+  current_block: Optional[Synchronized] = None
+  command_file: Optional[FileIO] = None
+  answer_file: Optional[FileIO] = None
+  shared_lock: Optional[multiprocessing.synchronize.RLock] = None
+  block_dict: Dict[int, BlockObjects] = dict()
 
   def __init__(self,
-               new_block_recv: Connection,
-               current_file: FileIO,
+               current_block: Synchronized,
                command_file: FileIO,
                answer_file: FileIO,
-               lock_pool: List[multiprocessing.synchronize.RLock],
-               current_lock: multiprocessing.synchronize.RLock,
-               dev_dict: Dict[str, Any]):
-    """Simply passes the args as instance attributes.
-
-    Args:
-      new_block_recv: A pipe connection through which new blocks send
-        information.
-      current_file: A temporary file in which the index of the block currently
-        communicating with the server is written.
-      command_file: A temporary file containing the command the server has to
-        send to the ft232h.
-      answer_file: A temporary file containing the answer from the device after
-        a command was sent.
-      lock_pool: A :obj:`list` of RLocks, with each one affected to a different
-        block. They indicate to the server that a command is ready, or to the
-        block that an answer is ready.
-      current_lock: A unique RLock that determines which block has control over
-        the server. The different blocks all try to acquire this lock.
-      dev_dict: A :obj:`dict` whose keys are the serial numbers of the
-        connected ft232h and values are the associated :mod:`pyusb` Device
-        objects.
+               block_dict: Dict[int, BlockObjects],
+               stop_event: multiprocessing.synchronize.Event,
+               log_queue: multiprocessing.queues.Queue,
+               log_level: int) -> None:
     """
 
-    super().__init__()
+    Args:
+      current_block:
+      command_file:
+      answer_file:
+      block_dict:
+      stop_event:
+    """
 
-    self.new_block_recv = new_block_recv
-    self.current_file = current_file
-    self.command_file = command_file
-    self.answer_file = answer_file
-    self.lock_pool = lock_pool
-    self.current_lock = current_lock
-    self.dev_dict = dev_dict
+    super().__init__(name=f'crappy.{type(self).__name__}')
+
+    # Objects for synchronizing with the server
+    self._current_block = current_block
+    self._command_file = command_file
+    self._answer_file = answer_file
+    self._block_dict = block_dict
+    self._stop_event = stop_event
+
+    self._log_queue = log_queue
+    self._logger: Optional[logging.Logger] = None
+    self._log_level = log_level
+
+    # Keeping a track of the number of connected blocks for each FT232H
+    self._dev_count = dict()
+    for ser_num in set(block.ser_num for block in self._block_dict.values()):
+      self._dev_count[ser_num] = sum(
+        1 for _ in (block for block in self._block_dict.values()
+                    if block.ser_num == ser_num))
+
+  @classmethod
+  def register(cls,
+               ser_num: Optional[str] = None,
+               ) -> Tuple[int, multiprocessing.synchronize.RLock, FileIO,
+                          FileIO, multiprocessing.synchronize.RLock,
+                          Synchronized]:
+    """
+
+    Args:
+      ser_num:
+
+    Returns:
+
+    """
+
+    # Initializing the synchronization objects
+    if not cls.initialized:
+      cls._initialize()
+
+    # Assigning an index to the calling Block
+    cls.block_nr += 1
+    index = cls.block_nr
+
+    # If there's only one device connected and the serial number is not
+    # specified, using the connected device
+    if len(cls.devices) == 1 and (ser_num is None or ser_num == ""):
+      device = list(cls.devices.values())[0]
+
+    # Otherwise, making sure the serial number is one of the connected devices
+    else:
+      try:
+        device = cls.devices[ser_num]
+      except KeyError:
+        raise IOError(f"No FT232H detected with serial number {ser_num} !")
+
+    # Storing the relevant attributes for the calling Block
+    lock = RLock()
+    cls.block_dict[index] = BlockObjects(ser_num=ser_num,
+                                         lock=lock,
+                                         device=device)
+
+    return (index, lock, cls.command_file, cls.answer_file, cls.shared_lock,
+            cls.current_block)
+
+  @classmethod
+  def start_server(cls,
+                   log_queue: multiprocessing.queues.Queue,
+                   log_level: int) -> None:
+    """Initializes and starts the USB server process.
+
+    Args:
+      log_queue: The queue carrying the log messages from the server process to
+        Crappy's centralized log handler.
+      log_level:
+    """
+
+    cls.process = cls(current_block=cls.current_block,
+                      command_file=cls.command_file,
+                      answer_file=cls.answer_file,
+                      block_dict=cls.block_dict,
+                      stop_event=cls.stop_event,
+                      log_queue=log_queue,
+                      log_level=log_level)
+    cls.process.start()
+
+  @classmethod
+  def stop_server(cls) -> None:
+    """If the server was started, tries to stop it gently and if not successful
+    terminates it."""
+
+    if cls.process is not None:
+      cls.stop_event.set()
+      cls.log(logging.INFO, "Stop event set, waiting for the USB server to "
+                            "finish")
+      cls.process.join(0.2)
+
+      if cls.process.is_alive():
+        cls.log(logging.WARNING, "The USB server process did not stop "
+                                 "correctly, killing it !")
+        cls.process.terminate()
+
+  @classmethod
+  def _initialize(cls) -> None:
+    """Sets the synchronization attributes and detects all the connected
+    FT232H devices."""
+
+    cls.devices = cls._get_devices()
+
+    cls.stop_event = Event()
+    cls.current_block = Value('B')
+    cls.command_file = TemporaryFile(buffering=0)
+    cls.answer_file = TemporaryFile(buffering=0)
+    cls.shared_lock = RLock()
+
+    cls.initialized = True
+
+  @classmethod
+  def log(cls, level: int, msg: str) -> None:
+    """"""
+
+    if cls.logger is None:
+      cls.logger = logging.getLogger(f'crappy.{cls.__name__}')
+
+    cls.logger.log(level, msg)
+
+  @staticmethod
+  @contextmanager
+  def acquire_timeout(lock: multiprocessing.synchronize.RLock,
+                      timeout: float) -> bool:
+    """
+
+    Args:
+      lock:
+      timeout:
+
+    Returns:
+
+    """
+
+    ret = False
+    try:
+      ret = lock.acquire(timeout=timeout)
+      yield ret
+    finally:
+      if ret:
+        lock.release()
+
+  @staticmethod
+  def _get_devices() -> Dict[str, Any]:
+    """
+
+    Returns:
+
+    """
+
+    # Searching for the FT232H devices
+    devices: List[Device] = list(find(find_all=True,
+                                      idVendor=0x0403,
+                                      idProduct=0x6014))
+    if not devices:
+      raise IOError("No FT232H connected !")
+
+    dev_dict = {}
+
+    # Storing the found devices
+    for device in devices:
+      try:
+        dev_dict[device.serial_number] = device
+
+      except ValueError:
+        # If there's only one FT232H connected, it can lack a serial number
+        if len(devices) == 1:
+          dev_dict[''] = devices[0]
+        # Otherwise, every FT232H must have a serial number
+        else:
+          raise ValueError('Please set a serial number for each FT232H ! It '
+                           'can be done using the dedicated crappy tool')
+
+    return dev_dict
+
+  def run(self) -> None:
+    """"""
+
+    self._set_logger()
+    self._log(logging.INFO, "Logger configured")
+
+    # Disabling the KeyboardInterrupt exceptions, to avoid disruptions
+    self._log(logging.WARNING, "Disabling KeyboardInterrupt for the server !")
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    while not self._stop_event.is_set():
+
+      # Exiting if all the devices have been closed
+      if all(dev.finished for dev in self._block_dict.values()):
+        self._log(logging.INFO, "Server finished after all devices were "
+                                "closed")
+        break
+
+      # A Block has acquired the lock and shared its index
+      if self._current_block.value:
+        # Reading the index and resetting the value
+        index = self._current_block.value
+        self._current_block.value = 0
+        self._log(logging.DEBUG, f"Block with index {index} now has control")
+
+        # The Block has finished writing the command
+        with self.acquire_timeout(self._block_dict[index].lock, 1) as acquired:
+          if acquired:
+            self._log(logging.DEBUG, f"Acquired lock of Block with index "
+                                     f"{index}")
+            # Reading the command
+            self._command_file.seek(0)
+            command = self._command_file.read()
+            # Resetting the command file
+            self._command_file.seek(0)
+            self._command_file.truncate(0)
+
+            self._log(logging.DEBUG, f"Received command {command}")
+
+            try:
+              # Sends the command to the device and returns the answer
+              answer = self._send_command(command,
+                                          self._block_dict[index].device,
+                                          self._block_dict[index].ser_num,
+                                          index)
+            except (USBTimeoutError, TimeoutError):
+              # Double-checking the timeout error
+              answer = self._send_command(command,
+                                          self._block_dict[index].device,
+                                          self._block_dict[index].ser_num,
+                                          index)
+
+            self._log(logging.DEBUG,
+                      f"Got answer {answer} from device with serial number "
+                      f"{self._block_dict[index].ser_num}")
+
+            # Resetting the answer file
+            self._answer_file.seek(0)
+            self._answer_file.truncate(0)
+            # Writing the answer in the answer file
+            try:
+              self._answer_file.write(answer)
+            except TypeError:
+              # Sometimes for an unknown reason the answer is None
+              raise IOError("Got an unexpected USB answer from an FT232H !")
+
+          else:
+            raise TimeoutError(
+              f"Could not acquire the Block lock of Block with index {index} "
+              f"driving the FT232H with serial number "
+              f"{self._block_dict[index].ser_num} within 1s, aborting !")
+
+    if self._stop_event.is_set():
+      self._log(logging.INFO, "Server finished after stop event was set")
 
   def _send_command(self,
                     command: bytes,
-                    device,
+                    device: Device,
                     serial_nr: str,
-                    current_block: int) -> bytes:
-    """Sends commands to the USB devices and returns the answer.
+                    index: int) -> bytes:
+    """Sends commands to a USB device and returns the answer.
 
     Args:
       command: The command to send to the device. The bytes are arranged in a
         specific way for each type of command.
       device: The :mod:`pyusb` Device to which the commands are sent.
       serial_nr: The serial number of the :mod:`pyusb` device.
-      current_block: The index of the block currently controlling the server.
+      index: The index of the block currently controlling the server.
 
     Returns:
-      The number of the command, followed by the answer from the USB device if
-      any.
+      The index of the command, followed by the answer from the USB device if
+      applicable.
     """
 
     command = command.split(b',')
@@ -135,9 +398,9 @@ class Server_process(Process):
     # ft232h then it should release the internal resources
     # It doesn't actually interact with the device
     elif command[0] == b'08':
-      self.dev_count[serial_nr] -= 1
+      self._dev_count[serial_nr] -= 1
       return b','.join((b'08',
-                        b'1' if not self.dev_count[serial_nr] else b'0'))
+                        b'1' if not self._dev_count[serial_nr] else b'0'))
 
     # Checks whether the internal resources have been released or not
     # It doesn't actually interact with the device
@@ -161,106 +424,39 @@ class Server_process(Process):
     # Registers a block as gone
     # It doesn't actually interact with the device
     elif command[0] == b'13':
-      self.left[current_block] = True
+      self._block_dict[index].finished = True
       return b'13,'
 
-  def run(self) -> None:
-    """Main loop of the server.
+  def _set_logger(self) -> None:
+    """"""
 
-    It runs an infinite loop for receiving the commands and sending back the
-    answers to the blocks.
+    log_level = 10 * int(round(self._log_level / 10, 0))
+
+    logger = logging.getLogger(self.name)
+    logger.setLevel(min(log_level, logging.INFO))
+
+    # On Windows, the messages need to be sent through a Queue for logging
+    if get_start_method() == "spawn":
+      queue_handler = logging.handlers.QueueHandler(self._log_queue)
+      queue_handler.setLevel(min(log_level, logging.INFO))
+      logger.addHandler(queue_handler)
+
+    self._logger = logger
+
+  def _log(self, level: int, msg: str) -> None:
     """
 
-    block_count = 0  # The count of blocks registered with the server
-    num_to_dev = {}  # Associates each block index to a ft232h device
-    num_to_ser = {}  # Associates each block index to a serial number
-    self.left = {}  # For each block index, tells whether the block has left
-    # Counts the number of blocks controlling a given device
-    self.dev_count = {serial_nr: 0 for serial_nr in self.dev_dict}
-    while True:
-      try:
-        # If all the blocks have left, stop the server
-        if self.left and all(val for val in self.left.values()):
-          break
+    Args:
+      level:
+      msg:
+    """
 
-        # A new block wants to register
-        if self.new_block_recv.poll():
-          try:
-            # It sends a Connection object
-            temp_pipe = self.new_block_recv.recv()
-            if temp_pipe.poll(timeout=1):
-              # The serial number of the ft232h the block wants to control is
-              # sent
-              serial_nr = temp_pipe.recv()
-              # The different dicts are updated accordingly
-              num_to_dev[block_count] = self.dev_dict[serial_nr]
-              num_to_ser[block_count] = serial_nr
-              self.dev_count[serial_nr] += 1
-              self.left[block_count] = False
-            else:
-              raise TimeoutError("A block took too long to send the serial nr")
-            # Sending back the index the block was assigned
-            temp_pipe.send(block_count)
-            block_count += 1
-          except KeyboardInterrupt:
-            # The program was interrupted during __init__, no choice but to
-            # stop abruptly
-            break
-
-        # A block has acquired the lock and wrote its index in the file
-        if self.current_file.tell() > 0:
-          self.current_file.seek(0)
-          # Reads the index of the block currently in control
-          current_block = int(self.current_file.read())
-          self.current_file.seek(0)
-          self.current_file.truncate(0)
-
-          # The block has finished writing the command
-          if self.lock_pool[current_block].acquire(timeout=1):
-            try:
-              # Reads the command
-              self.command_file.seek(0)
-              command = self.command_file.read()
-              self.command_file.seek(0)
-              self.command_file.truncate(0)
-
-              try:
-                # Sends the command to the device and returns the answer
-                answer = self._send_command(command,
-                                            num_to_dev[current_block],
-                                            num_to_ser[current_block],
-                                            current_block)
-              except (USBTimeoutError, TimeoutError):
-                # Double-checking the timeout error
-                answer = self._send_command(command,
-                                            num_to_dev[current_block],
-                                            num_to_ser[current_block],
-                                            current_block)
-
-              # Writing the answer in the file
-              self.answer_file.seek(0)
-              self.answer_file.truncate(0)
-              try:
-                self.answer_file.write(answer)
-              except TypeError:
-                # Sometimes for an unknown reason the answer is None
-                raise KeyboardInterrupt
-
-            except KeyboardInterrupt:
-              # If the command wasn't sent it's no big deal, the block will
-              # send it again anyway
-              pass
-            finally:
-              # Releasing the lock so that the block can go on
-              self.lock_pool[current_block].release()
-
-      except KeyboardInterrupt:
-        # The server should never raise exceptions, as it must keep running to
-        # allow the blocks to finish properly
-        continue
+    if self._logger is None:
+      return
+    self._logger.log(level, msg)
 
   @staticmethod
-  def _return_config_info(device) -> tuple:
+  def _return_config_info(device) -> Tuple[int, int, int, int]:
     """Returns some configuration information from a USB object.
 
     Args:
@@ -276,125 +472,3 @@ class Server_process(Process):
     in_ep, out_ep = sorted([ep.bEndpointAddress for ep in interface])[:2]
     max_packet_size = interface[0].wMaxPacketSize
     return index, in_ep, out_ep, max_packet_size
-
-
-class Usb_server:
-  """Class for starting a server controlling communication with the
-  :ref:`FT232H` devices.
-
-  The :ref:`In / Out` objects wishing to communicate through an :ref:`FT232H`
-  inherit from this class.
-
-  Note:
-    There is a limitation to 10 blocks accessing ft232h devices from the same
-    machine in Crappy. This limit can be increased at will, but it is necessary
-    to change the code of this class and build Crappy yourself.
-  """
-
-  def __init__(self, serial_nr: str, backend: str) -> None:
-    """Simply receives the attributes from the :ref:`In / Out` object.
-
-    Args:
-      serial_nr (:obj:`int`): The serial number of the :ref:`FT232H` to use.
-      backend (:obj:`str`): The server won't be started if the chosen backend
-        is not ``'ft232h'``.
-    """
-
-    self._serial_nr = serial_nr
-    self._backend = backend
-
-  def start_server(self) -> tuple:
-    """Starts the server for communicating with the :ref:`FT232H` devices.
-
-    If the server is already started, doesn't start it twice. Then initializes
-    the connection with the server and receives a block number.
-
-    Returns:
-      The different :mod:`multiprocessing` objects needed as arguments by the
-      :ref:`FT232H` in order to run properly.
-    """
-
-    if self._backend == 'ft232h':
-      # The server should only be started once
-      if not hasattr(Usb_server, 'server'):
-        # Finding all connected FT232H
-        devices: List[Device] = list(find(find_all=True,
-                                          idVendor=0x0403,
-                                          idProduct=0x6014))
-        if not devices:
-          raise IOError("No FT232H connected")
-
-        dev_dict = {}
-
-        # Collecting all the serial numbers of the connected FT232H
-        if len(devices) == 0:
-          raise IOError("No FT232H connected")
-        # If only one FT232H is connected then it is acceptable not to give a
-        # serial number
-        elif len(devices) == 1:
-          if self._serial_nr == '':
-            dev_dict[''] = devices[0]
-          else:
-            dev_dict[devices[0].serial_number] = devices[0]
-        else:
-          for device in devices:
-            try:
-              dev_dict[device.serial_number] = device
-            except ValueError:
-              if len(devices) > 1:
-                raise ValueError('Please set a serial number for each FT232H '
-                                 'using the corresponding crappy tool')
-              else:
-                dev_dict[''] = device
-
-        # This pipe is used by each new block to send a Connection object
-        # Through this connection the server receives the information of the
-        # new block
-        Usb_server.new_block_send, new_block_recv = Pipe()
-        # In this file will be written the number of the block currently owning
-        # the lock
-        Usb_server.current_file = TemporaryFile(buffering=0)
-        # In this file will be written the command from the block to the server
-        Usb_server.command_file = TemporaryFile(buffering=0)
-        # In this file will be written the answer from the server to the block
-        Usb_server.answer_file = TemporaryFile(buffering=0)
-        # Each new block is assigned one of these locks
-        # It is used by the block to indicate the server that the command is
-        # ready, and by the server to indicate the block that the answer is
-        # ready
-        Usb_server.lock_pool = [RLock() for _ in range(10)]
-        # The block owning this lock is the only one that can communicate with
-        # the server
-        Usb_server.current_lock = RLock()
-
-        # Starting the server process
-        Usb_server.server = Server_process(
-          new_block_recv, Usb_server.current_file,
-          Usb_server.command_file,
-          Usb_server.answer_file, Usb_server.lock_pool,
-          Usb_server.current_lock, dev_dict)
-        Usb_server.server.start()
-
-      # Sending the server the serial number of the ft232h to use
-      temp_pipe_block, temp_pipe_server = Pipe()
-      Usb_server.new_block_send.send(temp_pipe_server)
-      temp_pipe_block.send(self._serial_nr)
-      if temp_pipe_block.poll(timeout=1):
-        # Receiving the block number from the server
-        self.block_number = temp_pipe_block.recv()
-        self.block_lock = Usb_server.lock_pool[self.block_number]
-      else:
-        raise TimeoutError('The USB server took too long to reply')
-
-      # Transmitting the necessary information to the InOut or Actuator object
-      return Usb_server.current_file, self.block_number, \
-          Usb_server.command_file, Usb_server.answer_file, \
-          self.block_lock, Usb_server.current_lock
-
-    return None, None, None, None, None, None
-
-  def __del__(self) -> None:
-    """Stops the server upon deletion of the :ref:`In / Out` object."""
-
-    if hasattr(Usb_server, 'server') and Usb_server.server.is_alive():
-      Usb_server.server.kill()

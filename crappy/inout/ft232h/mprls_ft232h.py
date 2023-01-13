@@ -1,18 +1,18 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, Optional, List
+from typing import Optional, List
 import logging
 
 from ..inout import InOut
-from ...tool import ft232h_server as ft232h, Usb_server, i2c_msg_ft232h
+from ...tool import ft232h_server as ft232h, i2c_msg_ft232h
 
 mprls_status_bits = {'busy': 0x20,
                      'memory error': 0x04,
                      'math saturation': 0x01}
 
 
-class Mprls_ft232h(Usb_server, InOut):
+class Mprls_ft232h(InOut):
   """The Mprls inout is meant for reading pressure from Adafruit's Mprls
     pressure sensor.
 
@@ -22,9 +22,9 @@ class Mprls_ft232h(Usb_server, InOut):
   ft232h = True
 
   def __init__(self,
-               eoc_pin: Optional[Union[str, int]] = None,
+               eoc_pin: Optional[str] = None,
                device_address: int = 0x18,
-               ft232h_ser_num: Optional[str] = None) -> None:
+               _ft232h_args: tuple = tuple()) -> None:
     """Initializes the parent class and opens the I2C bus.
 
     Args:
@@ -39,28 +39,22 @@ class Mprls_ft232h(Usb_server, InOut):
       device_address (:obj:`int`, optional): The I2C address of the MPRLS.
         The address of the devices sold by Adafruit is `0x18`, but other
         suppliers may sell it with another address.
-      ft232h_ser_num (:obj:`str`, optional): If backend is `'ft232h'`, the
-        serial number of the FT232H to use for communication.
     """
 
     self._bus = None
 
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend='ft232h')
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
+    super().__init__()
 
-    InOut.__init__(self)
+    (block_index, current_block, command_file, answer_file, block_lock,
+     shared_lock) = _ft232h_args
 
     self._bus = ft232h(mode='I2C',
-                       block_number=block_number,
-                       current_file=current_file,
+                       block_index=block_index,
+                       current_block=current_block,
                        command_file=command_file,
                        answer_file=answer_file,
                        block_lock=block_lock,
-                       current_lock=current_lock,
-                       serial_nr=ft232h_ser_num)
+                       shared_lock=shared_lock)
 
     if not isinstance(device_address, int):
       raise TypeError("device_address should be an integer.")

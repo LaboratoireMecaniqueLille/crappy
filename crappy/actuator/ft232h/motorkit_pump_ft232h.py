@@ -7,7 +7,7 @@ import logging
 
 from ..actuator import Actuator
 from ..._global import OptionalModule
-from ...tool import ft232h_server as ft232h, Usb_server
+from ...tool import ft232h_server as ft232h
 
 try:
   from smbus2 import SMBus
@@ -152,7 +152,7 @@ class DC_motor_hat:
     self._bus.write_i2c_block_data(self._address, register, list(buf))
 
 
-class Motorkit_pump_ft232h(Usb_server, Actuator):
+class Motorkit_pump_ft232h(Actuator):
   """Class for controlling two DC air pumps and a valve.
 
   It uses Adafruit's DC motor HAT. The motor 1 controls the inflation pump,
@@ -164,7 +164,7 @@ class Motorkit_pump_ft232h(Usb_server, Actuator):
   def __init__(self,
                device_address: int = 0x60,
                i2c_port: int = 1,
-               ft232h_ser_num: Optional[str] = None) -> None:
+               _ft232h_args: tuple = tuple()) -> None:
     """Checks the validity of the arguments.
 
     Args:
@@ -173,27 +173,22 @@ class Motorkit_pump_ft232h(Usb_server, Actuator):
           the board.
       i2c_port: The I2C port over which the HAT should communicate. On most
         Raspberry Pi models the default I2C port is `1`.
-      ft232h_ser_num: If backend is `'ft232h'`, the serial number of the ft232h
-        to use for communication.
     """
 
     self._hat = None
 
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend='ft232h')
-    Actuator.__init__(self)
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
+    super().__init__()
+
+    (block_index, current_block, command_file, answer_file, block_lock,
+     shared_lock) = _ft232h_args
 
     self._bus = ft232h(mode='I2C',
-                       block_number=block_number,
-                       current_file=current_file,
+                       block_index=block_index,
+                       current_block=current_block,
                        command_file=command_file,
                        answer_file=answer_file,
                        block_lock=block_lock,
-                       current_lock=current_lock,
-                       serial_nr='')
+                       shared_lock=shared_lock)
 
     if not isinstance(device_address, int):
       raise TypeError("device_address should be an integer between 0 and 127.")

@@ -6,7 +6,8 @@ from dataclasses import dataclass, fields
 import logging
 
 from .block import Block
-from ..actuator import actuator_list, Actuator
+from ..actuator import actuator_dict, Actuator
+from ..tool import UsbServer
 
 
 @dataclass
@@ -34,6 +35,7 @@ class Machine(Block):
                actuators: List[Dict[str, Any]],
                common: Optional[Dict[str, Any]] = None,
                time_label: str = 't(s)',
+               ft232h_ser_num: Optional[str] = None,
                spam: bool = False,
                freq: float = 200,
                verbose: bool = False,
@@ -84,6 +86,7 @@ class Machine(Block):
     """
 
     self._actuators: List[Actuator_instance] = list()
+    self._ft232h_args = None
 
     super().__init__()
     self.freq = freq
@@ -113,11 +116,11 @@ class Machine(Block):
     # The list of all the Actuator types to instantiate
     self._types = [actuator['type'] for actuator in actuators]
 
-    if not all(type_ in actuator_list for type_ in self._types):
+    if not all(type_ in actuator_dict for type_ in self._types):
       unknown = tuple(type_ for type_ in self._types if type_
-                      not in actuator_list)
+                      not in actuator_dict)
       raise ValueError(f"[Machine] Unknown actuator type(s) : {unknown}\n"
-                       f"The possible types are : {actuator_list}")
+                       f"The possible types are : {actuator_dict}")
 
     # The settings that won't be passed to the Actuator objects
     self._settings = [{key: value for key, value in actuator.items()
@@ -129,13 +132,20 @@ class Machine(Block):
                            if key not in ('type', *actuator_settings)}
                           for actuator in actuators]
 
+    # Checking whether the Actuators communicate through an FT232H
+    if any(actuator_dict[type_].ft232h for type_ in self._types):
+      self._ft232h_args = UsbServer.register(ft232h_ser_num)
+
   def prepare(self) -> None:
     """Checks the validity of the linking and initializes all the Actuator
     objects to drive."""
 
     # Instantiating the actuators and storing them
     self._actuators = [Actuator_instance(
-      actuator=actuator_list[type_](**actuator_kw), **setting)
+      actuator=actuator_dict[type_](**actuator_kw)
+      if not actuator_dict[type_].ft232h else
+      actuator_dict[type_](**actuator_kw, _ft232h_args=self._ft232h_args),
+      **setting)
       for type_, setting, actuator_kw in zip(self._types,
                                              self._settings,
                                              self._actuators_kw)]

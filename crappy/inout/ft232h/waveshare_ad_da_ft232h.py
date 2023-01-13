@@ -6,7 +6,7 @@ from typing import List, Union, Optional
 import logging
 
 from ..inout import InOut
-from ...tool import ft232h_server as ft232h, Usb_server
+from ...tool import ft232h_server as ft232h
 
 # ADS1256 gain channel
 Ads1256_gain = {1: 0b000,
@@ -75,7 +75,7 @@ AD_DA_pins = {'RST_PIN_ADS': 18,
               'CS_PIN_DAC': 23}
 
 
-class Waveshare_ad_da_ft232h(Usb_server, InOut):
+class Waveshare_ad_da_ft232h(InOut):
   """Class for controlling Waveshare's AD/DA hat from an FTDI FT232H.
 
   The Waveshare_ad_da InOut block is meant for communicating with Waveshare's
@@ -98,7 +98,7 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
                gain: float = 1,
                offset: float = 0,
                sample_rate: Union[int, float] = 100,
-               ft232h_ser_num: Optional[str] = None,
+               _ft232h_args: tuple = tuple(),
                rst_pin_ads: str = 'D7',
                cs_pin_ads: str = 'D4',
                drdy_pin_ads: str = 'D6',
@@ -155,8 +155,6 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
           2.5, 5, 10, 15, 25, 30, 50, 60, 100, 500,
           1000, 2000, 3750, 7500, 15000, 30000
 
-      ft232h_ser_num (:obj:`str`, optional): The serial number of the ft232h to
-        use for communication.
       rst_pin_ads (:obj:`str`, optional): The pin for resetting the ADS1256.
       cs_pin_ads (:obj:`str`, optional): The chip select pin for the ADS1256.
       drdy_pin_ads (:obj:`str`, optional): The pin for knowing when a
@@ -199,12 +197,10 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
 
     self._bus = None
 
-    Usb_server.__init__(self,
-                        serial_nr=ft232h_ser_num if ft232h_ser_num else '',
-                        backend='ft232h')
-    InOut.__init__(self)
-    current_file, block_number, command_file, answer_file, block_lock, \
-        current_lock = super().start_server()
+    super().__init__()
+
+    (block_index, current_block, command_file, answer_file, block_lock,
+     shared_lock) = _ft232h_args
 
     if gain_hardware not in Ads1256_gain:
       raise ValueError("gain_hardware should be in {}".format(list(
@@ -265,14 +261,13 @@ class Waveshare_ad_da_ft232h(Usb_server, InOut):
     self._offset = offset
 
     self.log(logging.INFO, "Opening the SPI communication with the AD/DA")
-    self._bus = ft232h(mode='I2C',
-                       block_number=block_number,
-                       current_file=current_file,
+    self._bus = ft232h(mode='SPI',
+                       block_index=block_index,
+                       current_block=current_block,
                        command_file=command_file,
                        answer_file=answer_file,
                        block_lock=block_lock,
-                       current_lock=current_lock,
-                       serial_nr=ft232h_ser_num)
+                       shared_lock=shared_lock)
     self._rst_pin_ads = rst_pin_ads
     self._cs_pin_ads = cs_pin_ads
     self._drdy_pin_ads = drdy_pin_ads

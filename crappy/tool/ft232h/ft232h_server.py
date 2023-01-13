@@ -5,8 +5,11 @@ from struct import unpack
 from typing import Union, List, Tuple, Optional, Callable
 from _io import FileIO
 from multiprocessing.synchronize import RLock
+from multiprocessing.sharedctypes import Synchronized
 from time import time, sleep
 import logging
+from contextlib import contextmanager
+import signal
 
 from .ft232h import ft232h
 from ..._global import OptionalModule
@@ -95,6 +98,22 @@ ft232h_i2c_speed = {100E3: ft232h_i2c_timings(4.0E-6, 4.7E-6, 4.0E-6, 4.7E-6),
                     1E6: ft232h_i2c_timings(0.26E-6, 0.26E-6, 0.26E-6, 0.5E-6)}
 
 
+class DelayedKeyboardInterrupt:
+  """"""
+
+  def __enter__(self) -> None:
+    self._signal_received = None
+    self._prev_handler = signal.signal(signal.SIGINT, self._handler)
+
+  def __exit__(self, _, __, ___) -> None:
+    signal.signal(signal.SIGINT, self._prev_handler)
+    if self._signal_received is not None:
+      self._prev_handler(*self._signal_received)
+
+  def _handler(self, sig, frame):
+    self._signal_received = (sig, frame)
+
+
 class ft232h_server(ft232h):
   """A class for controlling FTDI's USB to Serial FT232H.
 
@@ -139,12 +158,12 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
   def __init__(self,
                mode: str,
-               block_number: int,
-               current_file: FileIO,
+               block_index: int,
+               current_block: Synchronized,
                command_file: FileIO,
                answer_file: FileIO,
                block_lock: RLock,
-               current_lock: RLock,
+               shared_lock: RLock,
                serial_nr: Optional[str] = None,
                i2c_speed: float = 100E3,
                spi_turbo: bool = False) -> None:
@@ -158,17 +177,16 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
         GPIOs can be driven in any mode, but faster speeds are achievable in
         `GPIO_only` mode.
-      block_number: The index the block driving this ft232h_server instance has
+      block_index: The index the block driving this ft232h_server instance has
         been assigned.
-      current_file: A file in which the index of the block currently allowed to
-        drive the USB server is written.
+      current_block:
       command_file: A file in which the current command to be executed by the
         USB server is written.
       answer_file: A file in which the answer to the current command is
         written.
       block_lock: A lock assigned to this block only, for signaling the USB
         server when the command has been written in the command_file.
-      current_lock: A lock common to all the blocks that allows the one block
+      shared_lock: A lock common to all the blocks that allows the one block
         holding it to communicate with the USB server.
       serial_nr (:obj:`str`, optional): The serial number of the FT232H to
         drive. In `Write_serial_nr` mode, the serial number to be written.
@@ -199,12 +217,12 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
         """
 
-    self._block_number = block_number
-    self._current_file = current_file
+    self._block_index = block_index
+    self._current_block = current_block
     self._command_file = command_file
     self._answer_file = answer_file
     self._block_lock = block_lock
-    self._current_lock = current_lock
+    self._shared_lock = shared_lock
 
     super().__init__(mode=mode, serial_nr=serial_nr, i2c_speed=i2c_speed,
                      spi_turbo=spi_turbo)
@@ -312,122 +330,76 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         and then the arguments if any.
     """
 
-    raise_kbi = False  # Flag for postponing the raise of the exception
-    retries = 3  # Number of retries for acquiring the lock
-    while True:
-      try:
-        # Acquires the lock assigned to this block only
-        if not self._block_lock.acquire(timeout=1):
-          retries -= 1
-          if not retries:
-            raise TimeoutError("Couldn't acquire the lock in a reasonable "
-                               "delay !")
-          continue
-        # Acquires the lock common to all blocks, to start communicating with
-        # the server
-        if self._current_lock.acquire(timeout=1):
-          while True:
-            release = True  # Should the common lock be released ?
-            try:
+    # Disabling KeyboardInterrupt to avoid unexpected behavior upon CTRL+C
+    with DelayedKeyboardInterrupt():
+      self.log(logging.DEBUG, "KeyBoardInterrupt disabled")
 
-              # Writing the block number in the file
+      # Acquiring the shared lock to get control over the server
+      with self.acquire_timeout(self._shared_lock, 1) as acquired:
+        if acquired:
+          self.log(logging.DEBUG, "Acquired shared lock")
+
+          # Acquiring the block lock to indicate the command is being written
+          with self.acquire_timeout(self._block_lock, 1) as acq:
+            if acq:
+              self.log(logging.DEBUG, "Acquired block lock")
               self.log(logging.DEBUG,
-                       f"Writing  {str(self._block_number).encode()} to the "
-                       f"current file buffer")
-              self._current_file.seek(0)
-              self._current_file.truncate(0)
-              self._current_file.write(str(self._block_number).encode())
+                       f"Writing {str(self._block_index).encode()} as the "
+                       f"current block index")
+              self._current_block.value = self._block_index
 
               self._command_file.seek(0)
               self._command_file.truncate(0)
-
-              # Writes the command and its arguments to the command file
+              # Writing the command and its arguments to the command file
               cmd = self._handle_command(command)
 
-              # Releases the lock to indicate the server that the command is
-              # ready
-              self.log(logging.DEBUG, "Releasing the block lock")
-              self._block_lock.release()
+            else:
+              raise TimeoutError("Could not acquire the block lock in 1s")
 
-              # Waits for the answer to be written in the answer file
-              # It prevents the block from re-acquiring the lock it just
-              # released
-              try:
-                t = time()
-                while not self._answer_file.tell():
-                  sleep(0.00001)
-                  if time() - t > 1:
-                    raise TimeoutError
-              except (KeyboardInterrupt, TimeoutError):
-                raise_kbi = True
-                self._block_lock.acquire(timeout=1)
-                self.log(logging.DEBUG, "Acquired the block lock")
-                raise
+          # Waiting for the server to write the answer
+          # If using only the lock, it could be re-acquired by this class
+          # without the server having a chance to get it
+          t = time()
+          while not self._answer_file.tell():
+            sleep(0.00001)
+            if time() - t > 1:
+              raise TimeoutError("No answer from the USB server after 1s")
 
-              # When the lock is re-acquired, the server has written the answer
-              # in the answer file
-              if self._block_lock.acquire(timeout=1):
-                self.log(logging.DEBUG, "Acquired the block lock")
-                # Reading the answer
-                self._answer_file.seek(0)
-                answer: List[bytes] = self._answer_file.read().split(b',')
-                self.log(logging.DEBUG, f"Read {answer} from the answer file")
-                self._answer_file.seek(0)
-                self._answer_file.truncate(0)
+          # The lock can be re-acquired once the answer has been written
+          with self.acquire_timeout(self._block_lock, 1) as acq:
+            if acq:
+              self.log(logging.DEBUG, "Acquired the block lock")
+              # Reading the answer
+              self._answer_file.seek(0)
+              answer: List[bytes] = self._answer_file.read().split(b',')
+              self.log(logging.DEBUG, f"Read {answer} from the answer file")
+              self._answer_file.seek(0)
+              self._answer_file.truncate(0)
 
-                # Making sure we're reading the answer corresponding to our
-                # command
-                if cmd != answer[0]:
-                  raise KeyboardInterrupt
+              if cmd != answer[0]:
+                raise IOError("Got an answer for the command of another block")
 
-                # The different answers have to be handled in various ways
-                if command[0] in ['ctrl_transfer_out',
-                                  'write',
-                                  'is_kernel_driver_active',
-                                  'close?',
-                                  '_ctx.handle']:
-                  return int(answer[1])
-                if command[0] in ['ctrl_transfer_in', 'read']:
-                  return answer[1]
-                elif command[0] == 'get_active_configuration':
-                  return tuple(int(rep) for rep in answer[1:])
+              # The different answers have to be handled in various ways
+              if command[0] in ['ctrl_transfer_out',
+                                'write',
+                                'is_kernel_driver_active',
+                                'close?',
+                                '_ctx.handle']:
+                return int(answer[1])
+              if command[0] in ['ctrl_transfer_in', 'read']:
+                return answer[1]
+              elif command[0] == 'get_active_configuration':
+                return tuple(int(rep) for rep in answer[1:])
 
-                return
+              return
 
-              else:
-                raise TimeoutError("Couldn't acquire the lock in a reasonable "
-                                   "delay !")
-
-            except KeyboardInterrupt:
-              # When interrupted, resend the same command to the server without
-              # releasing the common lock
-              raise_kbi = True
-              release = False
-              continue
-            finally:
-              # Releasing the locks if needed
-              if release:
-                try:
-                  self._current_lock.release()
-                except AssertionError:
-                  pass
-                try:
-                  self._block_lock.release()
-                except AssertionError:
-                  pass
+            else:
+              raise TimeoutError("Could not acquire the block lock in 1s")
 
         else:
-          raise TimeoutError("Couldn't acquire the lock in a reasonable "
-                             "delay !")
+          raise TimeoutError("Could not acquire the shared lock in 1s")
 
-      except KeyboardInterrupt:
-        # Still try to send the command despite the KeyboardInterrupt
-        # This way the block can stop properly
-        continue
-      finally:
-        # Raise the KeyboardInterrupt that was postponed if needed
-        if raise_kbi:
-          raise KeyboardInterrupt
+    self.log(logging.DEBUG, "KeyBoardInterrupt re-enabled")
 
   def _initialize(self) -> None:
     """Initializing the FT232H according to the chosen mode.
@@ -889,3 +861,16 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._send_server(['dispose_resources'])
 
     self._send_server(['farewell'])
+
+  @staticmethod
+  @contextmanager
+  def acquire_timeout(lock: RLock, timeout: float) -> bool:
+    """"""
+
+    ret = False
+    try:
+      ret = lock.acquire(timeout=timeout)
+      yield ret
+    finally:
+      if ret:
+        lock.release()
