@@ -213,7 +213,7 @@ class Camera(metaclass=MetaCam):
   metaclass.
   """
 
-  def __init__(self) -> None:
+  def __init__(self, *_, **__) -> None:
     """Simply sets the dict containing the settings and the name of the
     trigger setting."""
 

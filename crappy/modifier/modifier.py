@@ -48,7 +48,7 @@ class Modifier(metaclass=MetaModifier):
   """The base class for all modifier classes, simply allowing to keep track of
   them."""
 
-  def __init__(self) -> None:
+  def __init__(self, *_, **__) -> None:
     """"""
 
     self._logger: Optional[logging.Logger] = None

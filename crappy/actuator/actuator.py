@@ -36,7 +36,7 @@ class Actuator(metaclass=MetaActuator):
 
   ft232h: bool = False
 
-  def __init__(self) -> None:
+  def __init__(self, *_, **__) -> None:
     """"""
 
     self._logger: Optional[logging.Logger] = None

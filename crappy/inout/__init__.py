@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from typing import Dict, Type
+
 from .inout import InOut, MetaIO
 
 from .ft232h import Ads1115_ft232h
@@ -34,4 +36,4 @@ from .waveshare_high_precision import Waveshare_high_precision
 from .daqmx import Daqmx
 
 # All the inout objects
-inout_dict = MetaIO.classes
+inout_dict: Dict[str, Type[InOut]] = MetaIO.classes

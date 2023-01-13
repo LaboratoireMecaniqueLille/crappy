@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from typing import Dict, Type
+
 from .ft232h import Motorkit_pump_ft232h
 
 from .actuator import MetaActuator, Actuator
@@ -13,4 +15,4 @@ from .servostar import Servostar
 from .pololu_tic import Pololu_tic
 from .tra6ppd import Tra6ppd
 
-actuator_list = MetaActuator.classes
+actuator_dict: Dict[str, Type[Actuator]] = MetaActuator.classes

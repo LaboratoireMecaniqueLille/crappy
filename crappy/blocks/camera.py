@@ -10,7 +10,7 @@ import logging
 
 from .block import Block
 from .displayer import Displayer
-from ..camera import camera_list, Camera as BaseCam
+from ..camera import camera_dict, Camera as BaseCam
 from ..tool import Camera_config, Box
 from .._global import OptionalModule
 
@@ -139,7 +139,7 @@ class Camera(Block):
 
     # Checking if the requested camera exists in Crappy
     if image_generator is None:
-      if camera.capitalize() not in camera_list:
+      if camera.capitalize() not in camera_dict:
         raise ValueError(f"No camera named {camera.capitalize()} found in the "
                          f"list of available cameras !")
       self._camera_name = camera.capitalize()
@@ -236,7 +236,7 @@ class Camera(Block):
 
     # Case when an actual camera object is responsible for acquiring the images
     else:
-      self._camera = camera_list[self._camera_name]()
+      self._camera = camera_dict[self._camera_name]()
       self._camera.open(**self._camera_kwargs)
 
     if self._config_cam:

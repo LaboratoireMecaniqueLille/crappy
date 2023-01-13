@@ -14,7 +14,7 @@ class MetaIO(type):
   InOuts define the required methods. Also keeps track of all the InOut
   classes, including the custom user-defined ones."""
 
-  classes = {}
+  classes = dict()
 
   def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
     return super().__new__(mcs, name, bases, dct)
@@ -37,7 +37,7 @@ class InOut(metaclass=MetaIO):
 
   ft232h: bool = False
 
-  def __init__(self) -> None:
+  def __init__(self, *_, **__) -> None:
     """Sets the attributes."""
 
     self._compensations = list()

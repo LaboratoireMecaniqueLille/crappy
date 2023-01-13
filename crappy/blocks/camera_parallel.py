@@ -15,7 +15,7 @@ import logging
 from .block import Block
 from .camera_parallel_display import Displayer
 from .camera_parallel_record import Image_saver
-from ..camera import camera_list, Camera as BaseCam
+from ..camera import camera_dict, Camera as BaseCam
 from .camera_process import Camera_process
 from ..tool import Camera_config
 from .._global import CameraPrepareError, CameraRuntimeError
@@ -64,7 +64,7 @@ class Camera_parallel(Block):
 
     # Checking if the requested camera exists in Crappy
     if image_generator is None:
-      if camera.capitalize() not in camera_list:
+      if camera.capitalize() not in camera_dict:
         raise ValueError(f"No camera named {camera.capitalize()} found in the "
                          f"list of available cameras !")
       self._camera_name = camera.capitalize()
@@ -190,7 +190,7 @@ class Camera_parallel(Block):
 
     # Case when an actual camera object is responsible for acquiring the images
     else:
-      self._camera = camera_list[self._camera_name]()
+      self._camera = camera_dict[self._camera_name]()
       self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
       self._camera.open(**self._camera_kwargs)
       self.log(logging.INFO, f"Opened the {self._camera_name} Camera")

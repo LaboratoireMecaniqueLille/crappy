@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from typing import Dict, Type
+
 from .modifier import Modifier, MetaModifier
 
 from .demux import Demux
@@ -13,4 +15,4 @@ from .offset import Offset
 from .trig_on_change import Trig_on_change
 from .trig_on_value import Trig_on_value
 
-modifier_list = MetaModifier.classes
+modifier_dict: Dict[str, Type[Modifier]] = MetaModifier.classes

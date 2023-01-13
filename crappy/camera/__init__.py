@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from typing import Dict, Type
+
 # Parent class
 from .camera import Camera, MetaCam
 # Virtual cameras
@@ -17,4 +19,4 @@ from .bispectral import Bispectral
 from .jai import Jai, Jai8
 from .seek_thermal_pro import Seek_thermal_pro
 
-camera_list = MetaCam.classes
+camera_dict: Dict[str, Type[Camera]] = MetaCam.classes
