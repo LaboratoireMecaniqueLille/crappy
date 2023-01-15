@@ -3,19 +3,20 @@
 from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
-from .camera_processes import DisveProcess
-from .camera_parallel import Camera_parallel
-from ..tool.camera_config import DisveConfig, SpotsBoxes
+
+from .camera_processes import GpuVeProcess
+from .camera import Camera
 
 
-class Disve_parallel(Camera_parallel):
+class GpuVe(Camera):
   """"""
 
   def __init__(self,
                camera: str,
                patches: List[Tuple[int, int, int, int]],
+               img_shape: Tuple[int, int],
+               img_dtype: str,
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
-               config: bool = True,
                display_images: bool = False,
                displayer_backend: Optional[str] = None,
                displayer_framerate: float = 5,
@@ -30,28 +31,17 @@ class Disve_parallel(Camera_parallel):
                save_backend: Optional[str] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               img_shape: Optional[Tuple[int, int]] = None,
-               img_dtype: Optional[str] = None,
                labels: Optional[List[str]] = None,
-               method: str = 'Disflow',
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               patch_size: int = 8,
-               patch_stride: int = 3,
-               border: float = 0.2,
-               safe: bool = True,
-               follow: bool = True,
-               raise_on_patch_exit: bool = True,
+               img_ref: Optional[np.ndarray] = None,
+               kernel_file: Optional[Union[str, Path]] = None,
+               iterations: int = 4,
+               mul: float = 3,
                **kwargs) -> None:
     """"""
 
     super().__init__(camera=camera,
                      transform=transform,
-                     config=config,
+                     config=False,
                      display_images=display_images,
                      displayer_backend=displayer_backend,
                      displayer_framerate=displayer_framerate,
@@ -77,43 +67,30 @@ class Disve_parallel(Camera_parallel):
     else:
       self.labels = labels
 
-    self._raise_on_exit = raise_on_patch_exit
-    self._patches_int = patches
+    self._img_ref = img_ref
 
-    self._disve_kw = dict(method=method,
-                          alpha=alpha,
-                          delta=delta,
-                          gamma=gamma,
-                          finest_scale=finest_scale,
+    if 2 + 2 * len(patches) != len(self.labels):
+      raise ValueError("The number of fields is inconsistent with the number "
+                       "of labels !\nMake sure that the time and metadata "
+                       "labels were given")
+
+    self._gpuve_kw = dict(patches=patches,
+                          verbose=verbose,
+                          kernel_file=kernel_file,
                           iterations=iterations,
-                          gradient_iterations=gradient_iterations,
-                          patch_size=patch_size,
-                          patch_stride=patch_stride,
-                          border=border,
-                          safe=safe,
-                          follow=follow,
-                          raise_on_exit=raise_on_patch_exit)
+                          img_ref=img_ref,
+                          mul=mul)
 
   def prepare(self) -> None:
     """"""
 
-    self._patches = SpotsBoxes()
-    self._patches.set_spots(self._patches_int)
-    self._disve_kw['patches'] = self._patches
-
-    self._process_proc = DisveProcess(log_queue=self._log_queue,
+    self._process_proc = GpuVeProcess(log_queue=self._log_queue,
                                       log_level=self.log_level,
-                                      verbose=self.verbose,
-                                      **self._disve_kw)
+                                      **self._gpuve_kw)
 
     super().prepare()
 
   def _configure(self) -> None:
     """"""
 
-    config = DisveConfig(self._camera, self._patches)
-    config.main()
-    if config.shape is not None:
-      self._img_shape = config.shape
-    if config.dtype is not None:
-      self._img_dtype = config.dtype
+    ...

@@ -1,46 +1,26 @@
 # coding: utf-8
 
-from typing import Callable, Union, Optional, Tuple, Dict, Any
+from typing import Callable, Union, Optional, Tuple
 from pathlib import Path
 import numpy as np
-from time import time, strftime, gmtime
-from re import fullmatch
+from time import time, sleep, strftime, gmtime
 from types import MethodType
+from multiprocessing import Array, Manager, Event, RLock, Pipe, Barrier
+from multiprocessing.sharedctypes import SynchronizedArray
+from multiprocessing import managers, synchronize, connection
+from threading import BrokenBarrierError
+from math import prod
 import logging
 
 from .meta_block import Block
-from .displayer import Displayer
+from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam
-from ..tool.camera_config import Box, CameraConfig
-from .._global import OptionalModule
-
-try:
-  import SimpleITK as Sitk
-except (ModuleNotFoundError, ImportError):
-  Sitk = OptionalModule("SimpleITK")
-
-try:
-  import PIL
-except (ModuleNotFoundError, ImportError):
-  PIL = OptionalModule("Pillow")
-
-try:
-  import cv2
-except (ModuleNotFoundError, ImportError):
-  cv2 = OptionalModule("opencv-python")
+from ..tool.camera_config import CameraConfig
+from .._global import CameraPrepareError, CameraRuntimeError
 
 
 class Camera(Block):
-  """This block simply acquires images from a camera.
-
-  It can then save the images, and / or display them. The image acquisition can
-  be triggered via incoming links. Optionally, a configuration window can be
-  displayed for interactively tuning the camera settings before the test
-  starts.
-
-  This class also serves as a base class for other blocks that perform image
-  processing on the acquired frames.
-  """
+  """"""
 
   cam_count = dict()
 
@@ -53,79 +33,25 @@ class Camera(Block):
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
                verbose: bool = False,
-               freq: float = 200,
                debug: bool = False,
+               freq: float = 200,
                save_images: bool = False,
-               img_name: str = "{self._n_loops:6d}_{t-self.t0:.6f}.tiff",
+               img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
                save_backend: Optional[str] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
+               img_shape: Optional[Tuple[int, int]] = None,
+               img_dtype: Optional[str] = None,
                **kwargs) -> None:
-    """Sets the args and initializes the parent class.
+    """"""
 
-    Args:
-      camera: The name of the camera to control. See :ref:`Cameras` for an
-        exhaustive list of available cameras.
-      transform: A function taking an image as an argument and returning a
-        transformed image. The original image is discarded and only the
-        transformed one is kept for processing, display and saving.
-      config: If :obj:`True`, a config window is shown before the test starts
-        for interactively tuning the camera settings. It also allows selecting
-        the spots to track.
-      display_images: If :obj:`True`, a window displays the acquired images
-        in low resolution during the test. This display is mainly intended for
-        debugging and visual follow-up, but not for displaying high-quality
-        images.
-      displayer_backend: If ``display_images`` is :obj:`True`, the backend to
-        use for the display window. Should be one of :
-        ::
+    self._save_proc: Optional[ImageSaver] = None
+    self._display_proc: Optional[Displayer] = None
+    self._process_proc: Optional[CameraProcess] = None
 
-          'cv2', 'mpl'
-
-        If not given, OpenCV will be used if available.
-      displayer_framerate: If ``display_images`` is :obj:`True`, sets the
-        maximum framerate for updating the display window. This setting allows
-        limiting the resources used by the displayer. Note that the actual
-        achieved framerate might differ, this is just the maximum limit.
-      software_trig_label: If given, the block will only acquire images when
-        receiving data on this label. The received data can be anything, even
-        empty. This label will thus de facto act as a software trigger for the
-        camera.
-      verbose: If :obj:`True`, the achieved framerate will be displayed in the
-        console during the test.
-      freq: If given, the block will try to loop at this frequency. If it is
-        lower than the framerate of the camera, frames will be dropped. This
-        argument can be used for limiting the achieved framerate when the
-        camera doesn't support framerate control.
-      save_images: If :obj:`True`, the acquired images are saved on the
-        computer during the test. Note that saving images uses CPU, so the
-        achieved performance might drop when this feature is in use.
-      img_name: If ``save_images`` is :obj:`True`, the template for naming the
-        recorded images. It is evaluated as an `f-string`, and must contain the
-        file extension at the end. For building the `f-string`, the
-        ``self._n_loops`` attribute holds the loop number, and ``t-self.t0``
-        holds the current timestamp.
-      save_folder: If ``save_images`` is :obj:`True`, the directory to save
-        images to. If it doesn't exist, it will be created. If not given, the
-        images are saved in a folder named `Crappy_images` and created next to
-        the file being run.
-      save_period: If ``save_images`` is :obj:`True`, only one every this
-        number of images will be saved.
-      save_backend: The backend to use for saving the images. Should be one
-        of :
-        ::
-
-          'sitk', 'pil', 'cv2'
-
-        If not specified, SimpleITK will be used if available, then OpenCV as a
-        second choice, and finally Pillow if none of the others was available.
-      image_generator: A function taking two floats as arguments, and returning
-        an image. It is only used for demonstration without camera in the
-        examples, and isn't meant to be used in an actual test.
-      **kwargs: Any additional argument to pass to the camera.
-    """
+    self._camera: Optional[BaseCam] = None
 
     super().__init__()
 
@@ -133,9 +59,6 @@ class Camera(Block):
     self.freq = freq
     self.niceness = -10
     self.log_level = logging.DEBUG if debug else logging.INFO
-
-    self._camera: Optional[BaseCam] = None
-    self._displayer: Optional[Displayer] = None
 
     # Checking if the requested camera exists in Crappy
     if image_generator is None:
@@ -152,84 +75,113 @@ class Camera(Block):
     else:
       Camera.cam_count[self._camera_name] += 1
 
-    # Trying the different possible backends and checking if the given one
-    # is correct
-    if save_images:
-      if save_backend is None:
-        if not isinstance(Sitk, OptionalModule):
-          self._save_backend = 'sitk'
-        elif not isinstance(cv2, OptionalModule):
-          self._save_backend = 'cv2'
-        elif not isinstance(PIL, OptionalModule):
-          self._save_backend = 'pil'
-        else:
-          raise ModuleNotFoundError("Neither SimpleITK, opencv-python nor "
-                                    "Pillow could be imported, no backend "
-                                    "found for saving the images")
-      elif save_backend in ('sitk', 'pil', 'cv2'):
-        self._save_backend = save_backend
-      else:
-        raise ValueError("The save_backend argument should be either 'sitk', "
-                         "'pil' or 'cv2' !")
-    else:
-      self._save_backend = None
-
-    # Checking that the given image name is valid
-    if save_images:
-      if fullmatch(r'.*\{.+}.*', img_name) is None:
-        raise ValueError("img_name cannot be evaluated as a regular "
-                         "expression !")
-      elif fullmatch(r'.+\..+', img_name) is None:
-        raise ValueError("No extension given in the img_name argument !")
-      self._img_name = img_name
-    else:
-      self._img_name = None
-
-    # Setting a default save folder if not given
-    if save_images:
-      if save_folder is None:
-        self._save_folder = Path.cwd() / 'Crappy_images'
-      else:
-        self._save_folder = Path(save_folder)
-    else:
-      self._save_folder = None
-
-    self._save_period = int(save_period)
-
-    # Instantiating the displayer window if requested
-    if display_images:
-      self._displayer = Displayer(f"Displayer {camera} "
-                                  f"{Camera.cam_count[self._camera_name]}",
-                                  displayer_framerate,
-                                  displayer_backend)
-
     # Setting the other attributes
-    self._save_images = save_images
     self._trig_label = software_trig_label
     self._config_cam = config
     self._transform = transform
     self._image_generator = image_generator
+    self._img_shape = img_shape
+    self._img_dtype = img_dtype
     self._camera_kwargs = kwargs
 
-    self._n_loops = 0
+    # The objects must be initialized later for Windows compatibility
+    self._img_array: Optional[SynchronizedArray] = None
+    self._img: Optional[np.ndarray] = None
+    self._manager: Optional[managers.SyncManager] = None
+    self._metadata: Optional[managers.DictProxy] = None
+    self._cam_barrier: Optional[synchronize.Barrier] = None
+    self._stop_event_cam: Optional[synchronize.Event] = None
+    self._box_conn_in: Optional[connection.Connection] = None
+    self._box_conn_out: Optional[connection.Connection] = None
+    self._save_lock: Optional[synchronize.RLock] = None
+    self._disp_lock: Optional[synchronize.RLock] = None
+    self._proc_lock: Optional[synchronize.RLock] = None
+
+    self._loop_count = 0
+    self._fps_count = 0
+    self._last_cam_fps = time()
+
+    # Cannot start process from __main__
+    if not save_images:
+      self._save_proc_kw = None
+    else:
+      self._save_proc_kw = dict(img_extension=img_extension,
+                                save_folder=save_folder,
+                                save_period=save_period,
+                                save_backend=save_backend)
+
+    # Instantiating the displayer window if requested
+    if not display_images:
+      self._display_proc_kw = None
+    else:
+      self._display_proc_kw = dict(
+        title=f"Displayer {camera} "
+              f"{Camera.cam_count[self._camera_name]}",
+        framerate=displayer_framerate, backend=displayer_backend)
+
+  def __del__(self) -> None:
+    """"""
+
+    if self._process_proc is not None and self._process_proc.is_alive():
+      self._process_proc.terminate()
+
+    if self._save_proc is not None and self._save_proc.is_alive():
+      self._save_proc.terminate()
+
+    if self._display_proc is not None and self._display_proc.is_alive():
+      self._display_proc.terminate()
+
+    if self._manager is not None:
+      self._manager.shutdown()
 
   def prepare(self) -> None:
     """Preparing the save folder, opening the camera and displaying the
     configuration GUI."""
 
-    # Creating the folder for saving the images if it doesn't exist
-    if self._save_folder is not None:
-      if not self._save_folder.exists():
-        Path.mkdir(self._save_folder, exist_ok=True, parents=True)
+    # Instantiating the multiprocessing objects
+    self.log(logging.DEBUG, "Instantiating the multiprocessing "
+                            "synchronization objects")
+    self._manager = Manager()
+    self._metadata = self._manager.dict()
+    self._stop_event_cam = Event()
+    self._box_conn_in, self._box_conn_out = Pipe()
+    self._save_lock = RLock()
+    self._disp_lock = RLock()
+    self._proc_lock = RLock()
+
+    if self._save_proc_kw is not None:
+      self.log(logging.INFO, "Instantiating the saver process")
+      self._save_proc = ImageSaver(log_queue=self._log_queue,
+                                   log_level=self.log_level,
+                                   verbose=self.verbose,
+                                   **self._save_proc_kw)
+
+    if self._display_proc_kw is not None:
+      self.log(logging.INFO, "Instantiating the displayer process")
+      self._display_proc = Displayer(log_queue=self._log_queue,
+                                     log_level=self.log_level,
+                                     verbose=self.verbose,
+                                     **self._display_proc_kw)
+
+    # Creating the barrier for camera processes synchronization
+    n_proc = sum(int(proc is not None) for proc in (self._process_proc,
+                                                    self._save_proc,
+                                                    self._display_proc))
+    if not n_proc:
+      self.log(logging.WARNING, "The block acquires images but does not save "
+                                "them, nor display them, nor process them !")
+
+    self._cam_barrier = Barrier(n_proc + 1)
 
     # Case when the images are generated and not acquired
     if self._image_generator is not None:
+      self.log(logging.INFO, "Setting the image generator camera")
       self._camera = BaseCam()
-      self._camera.add_scale_setting('Exx', -100., 100., None, None, 0.)
-      self._camera.add_scale_setting('Eyy', -100., 100., None, None, 0.)
+      self._camera.add_scale_setting('Exx', -100, 100, None, None, 0.)
+      self._camera.add_scale_setting('Eyy', -100, 100, None, None, 0.)
       self._camera.set_all()
 
-      def get_image(self_) -> Tuple[float, np.ndarray]:
+      def get_image(self_) -> (float, np.ndarray):
         return time(), self._image_generator(self_.Exx, self_.Eyy)
 
       self._camera.get_image = MethodType(get_image, self._camera)
@@ -237,30 +189,117 @@ class Camera(Block):
     # Case when an actual camera object is responsible for acquiring the images
     else:
       self._camera = camera_dict[self._camera_name]()
+      self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
       self._camera.open(**self._camera_kwargs)
+      self.log(logging.INFO, f"Opened the {self._camera_name} Camera")
 
     if self._config_cam:
-      config = CameraConfig(self._camera)
-      config.main()
+      self.log(logging.INFO, "Displaying the configuration window")
+      self._configure()
+      self.log(logging.INFO, "Camera configuration done")
 
-    if self._displayer is not None:
-      self._displayer.prepare()
+    # Setting the camera to 'Hardware' trig if it's in 'Hdw after config' mode
+    if self._camera.trigger_name in self._camera.settings and \
+        getattr(self._camera,
+                self._camera.trigger_name) == 'Hdw after config':
+      self.log(logging.INFO, "Setting the trigger mode to Hardware")
+      setattr(self._camera, self._camera.trigger_name, 'Hardware')
+
+    if self._img_dtype is None or self._img_shape is None:
+      raise ValueError(f"Cannot launch the Camera processes for camera "
+                       f"{self._camera_name} as the image shape and/or dtype "
+                       f"wasn't specified.\n Please specify it in the args, or"
+                       f" enable the configuration window.")
+
+    self.log(logging.DEBUG, "Instantiating the shared objects")
+    self._img_array = Array(np.ctypeslib.as_ctypes_type(self._img_dtype),
+                            prod(self._img_shape))
+    self._img = np.frombuffer(self._img_array.get_obj(),
+                              dtype=self._img_dtype).reshape(self._img_shape)
+
+    if self._process_proc is not None:
+      self.log(logging.DEBUG, "Sharing the synchronization objects with the "
+                              "image processing process")
+      box_conn = self._box_conn_in if self._display_proc is not None else None
+      self._process_proc.set_shared(array=self._img_array,
+                                    data_dict=self._metadata,
+                                    lock=self._proc_lock,
+                                    barrier=self._cam_barrier,
+                                    event=self._stop_event_cam,
+                                    shape=self._img_shape,
+                                    dtype=self._img_dtype,
+                                    box_conn=box_conn,
+                                    outputs=self.outputs,
+                                    labels=self.labels)
+      self.log(logging.INFO, "Starting the image processing process")
+      self._process_proc.start()
+
+    if self._save_proc is not None:
+      self.log(logging.DEBUG, "Sharing the synchronization objects with the "
+                              "image saver process")
+      self._save_proc.set_shared(array=self._img_array,
+                                 data_dict=self._metadata,
+                                 lock=self._save_lock,
+                                 barrier=self._cam_barrier,
+                                 event=self._stop_event_cam,
+                                 shape=self._img_shape,
+                                 dtype=self._img_dtype,
+                                 box_conn=None,
+                                 outputs=list(),
+                                 labels=list())
+      self.log(logging.INFO, "Starting the image saver process")
+      self._save_proc.start()
+
+    if self._display_proc is not None:
+      self.log(logging.DEBUG, "Sharing the synchronization objects with the "
+                              "image displayer process")
+      self._display_proc.set_shared(array=self._img_array,
+                                    data_dict=self._metadata,
+                                    lock=self._disp_lock,
+                                    barrier=self._cam_barrier,
+                                    event=self._stop_event_cam,
+                                    shape=self._img_shape,
+                                    dtype=self._img_dtype,
+                                    box_conn=self._box_conn_out,
+                                    outputs=list(),
+                                    labels=list())
+      self.log(logging.INFO, "Starting the image displayer process")
+      self._display_proc.start()
+
+  def begin(self) -> None:
+    """"""
+
+    try:
+      self.log(logging.INFO, "Waiting for all Camera processes to be ready")
+      self._cam_barrier.wait()
+      self.log(logging.INFO, "All Camera processes ready now")
+    except BrokenBarrierError:
+      raise CameraPrepareError
+
+    self._last_cam_fps = time()
 
   def loop(self) -> None:
     """Receives the incoming data, acquires an image, displays it, saves it,
     and finally processes it if needed."""
+
+    if self._stop_event_cam.is_set():
+      raise CameraRuntimeError
 
     data = self.recv_last_data(fill_missing=False)
 
     # Waiting for the trig label if it was given
     if self._trig_label is not None and self._trig_label not in data:
       return
+    elif self._trig_label is not None and self._trig_label in data:
+      self.log(logging.DEBUG, "Software trigger signal received")
 
     # Updating the image generator if there's one
     if self._image_generator is not None:
       if 'Exx(%)' in data:
+        self.log(logging.DEBUG, f"Setting Exx to {data['Exx(%)']}")
         self._camera.Exx = data['Exx(%)']
       if 'Eyy(%)' in data:
+        self.log(logging.DEBUG, f"Setting Eyy to {data['Eyy(%)']}")
         self._camera.Eyy = data['Eyy(%)']
 
     # Actually getting the image from the camera object
@@ -275,71 +314,66 @@ class Camera(Block):
                   'DateTimeOriginal': strftime("%Y:%m:%d %H:%M:%S",
                                                gmtime(metadata)),
                   'SubsecTimeOriginal': f'{metadata % 1:.6f}',
-                  'ImageUniqueID': self._n_loops}
-    metadata['t(s)'] -= self.t0
+                  'ImageUniqueID': self._loop_count}
 
-    self._n_loops += 1
+    metadata['t(s)'] -= self.t0
 
     # Applying the transform function
     if self._transform is not None:
       img = self._transform(img)
 
-    # Updating the displayer
-    if self._displayer is not None:
-      self._displayer.update(img)
+    with self._save_lock, self._disp_lock, self._proc_lock:
+      self.log(logging.DEBUG, f"Writing metadata to shared dict: {metadata}")
+      self._metadata.update(metadata)
+      self.log(logging.DEBUG, "Writing image to shared array")
+      np.copyto(self._img, img)
 
-    # Saving the image
-    if self._save_images and not self._n_loops % self._save_period:
-      path = str(self._save_folder / eval('f"{}"'.format(self._img_name)))
-      self._save(img, path)
+    self._loop_count += 1
 
-    # Performing the additional actions for subclasses
-    self._additional_loop(metadata, img)
+    if self.verbose:
+      self._fps_count += 1
+      t = time()
+      if t - self._last_cam_fps > 2:
+        self.log(logging.INFO, f"Acquisition FPS: "
+                               f"{self._fps_count / (t - self._last_cam_fps)}")
+        self._last_cam_fps = t
+        self._fps_count = 0
 
   def finish(self) -> None:
-    """Closes the camera and the displayer."""
+    """"""
 
     if self._image_generator is None and self._camera is not None:
+      self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
       self._camera.close()
+      self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
 
-    if self._displayer is not None:
-      self._displayer.finish()
+    if self._stop_event_cam is not None:
+      self.log(logging.DEBUG, "Asking all the children processes to stop")
+      self._stop_event_cam.set()
+      sleep(0.2)
 
-  def _save(self, img: np.ndarray, path: str) -> None:
-    """Simply saves the given image to the given path using the selected
-    backend."""
+    if self._process_proc is not None and self._process_proc.is_alive():
+      self.log(logging.WARNING, "Image processing process not stopped, "
+                                "killing it !")
+      self._process_proc.terminate()
+    if self._save_proc is not None and self._save_proc.is_alive():
+      self.log(logging.WARNING, "Image saver process not stopped, "
+                                "killing it !")
+      self._save_proc.terminate()
+    if self._display_proc is not None and self._display_proc.is_alive():
+      self.log(logging.WARNING, "Image displayer process not stopped, "
+                                "killing it !")
+      self._display_proc.terminate()
 
-    if self._save_backend == 'sitk':
-      Sitk.WriteImage(Sitk.GetImageFromArray(img), path)
+    if self._manager is not None:
+      self._manager.shutdown()
 
-    elif self._save_backend == 'cv2':
-      cv2.imwrite(path, img)
+  def _configure(self) -> None:
+    """"""
 
-    elif self._save_backend == 'pil':
-      PIL.Image.fromarray(img).save(path)
-
-  def _additional_loop(self, meta: Dict[str, Any], img: np.ndarray) -> None:
-    """Additional action to perform in the loop, used by subclasses of the
-    Camera block."""
-
-    ...
-
-  @staticmethod
-  def _draw_box(img: np.ndarray, box: Box) -> None:
-    """Draws a box on top of an image."""
-
-    if box.no_points():
-      return
-
-    x_top, x_bottom, y_left, y_right = box.sorted()
-
-    for line in ((box.y_start, slice(x_top, x_bottom)),
-                 (box.y_end, slice(x_top, x_bottom)),
-                 (slice(y_left, y_right), x_top),
-                 (slice(y_left, y_right), x_bottom),
-                 (box.y_start + 1, slice(x_top, x_bottom)),
-                 (box.y_end - 1, slice(x_top, x_bottom)),
-                 (slice(y_left, y_right), x_top + 1),
-                 (slice(y_left, y_right), x_bottom - 1)
-                 ):
-      img[line] = 255 * int(np.mean(img[line]) < 128)
+    config = CameraConfig(self._camera)
+    config.main()
+    if config.shape is not None:
+      self._img_shape = config.shape
+    if config.dtype is not None:
+      self._img_dtype = config.dtype

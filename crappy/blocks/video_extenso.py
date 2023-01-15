@@ -3,12 +3,13 @@
 from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
-from .camera_processes import DiscorrelProcess
-from .camera_parallel import Camera_parallel
-from ..tool.camera_config import DiscorrelConfig
+
+from .camera_processes import VideoExtensoProcess
+from .camera import Camera
+from ..tool.camera_config import VideoExtensoConfig, SpotsDetector
 
 
-class Discorrel_parallel(Camera_parallel):
+class VideoExtenso(Camera):
   """"""
 
   def __init__(self,
@@ -31,18 +32,15 @@ class Discorrel_parallel(Camera_parallel):
                                                   np.ndarray]] = None,
                img_shape: Optional[Tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
-               fields: List[str] = None,
                labels: List[str] = None,
-               alpha: float = 3,
-               delta: float = 1,
-               gamma: float = 0,
-               finest_scale: int = 1,
-               iterations: int = 1,
-               gradient_iterations: int = 10,
-               init: bool = True,
-               patch_size: int = 8,
-               patch_stride: int = 3,
-               residual: bool = False,
+               raise_on_lost_spot: bool = True,
+               white_spots: bool = False,
+               update_thresh: bool = False,
+               num_spots: Optional[int] = None,
+               safe_mode: bool = False,
+               border: int = 5,
+               min_area: int = 150,
+               blur: int = 5,
                **kwargs) -> None:
     """"""
 
@@ -66,54 +64,39 @@ class Discorrel_parallel(Camera_parallel):
                      img_dtype=img_dtype,
                      **kwargs)
 
-    # Managing the fields and labels lists
-    fields = ["x", "y", "exx", "eyy"] if fields is None else fields
-    self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)',
-                   'Exx(%)', 'Eyy(%)'] if labels is None else labels
-    if residual:
-      self.labels.append('res')
+    self.labels = ['t(s)', 'meta', 'Coord(px)',
+                   'Eyy(%)', 'Exx(%)'] if labels is None else labels
 
-    # Making sure a coherent number of labels and fields was given
-    if 2 + len(fields) + int(residual) != len(self.labels):
-      raise ValueError(
-        "The number of fields is inconsistent with the number "
-        "of labels !\nMake sure that the time label was given")
+    self._raise_on_lost_spot = raise_on_lost_spot
 
-    self._discorrel_kw = dict(fields=fields,
-                              alpha=alpha,
-                              delta=delta,
-                              gamma=gamma,
-                              finest_scale=finest_scale,
-                              init=init,
-                              iterations=iterations,
-                              gradient_iterations=gradient_iterations,
-                              patch_size=patch_size,
-                              patch_stride=patch_stride,
-                              residual=residual)
+    self._detector_kw = dict(white_spots=white_spots,
+                             num_spots=num_spots,
+                             min_area=min_area,
+                             blur=blur,
+                             update_thresh=update_thresh,
+                             safe_mode=safe_mode,
+                             border=border)
 
   def prepare(self) -> None:
     """"""
 
-    self._process_proc = DiscorrelProcess(log_queue=self._log_queue,
-                                          log_level=self.log_level,
-                                          verbose=self.verbose,
-                                          **self._discorrel_kw)
+    self._spot_detector = SpotsDetector(**self._detector_kw)
+
+    self._process_proc = VideoExtensoProcess(
+      detector=self._spot_detector,
+      raise_on_lost_spot=self._raise_on_lost_spot,
+      log_queue=self._log_queue,
+      log_level=self.log_level,
+      verbose=self.verbose)
 
     super().prepare()
 
   def _configure(self) -> None:
     """"""
 
-    config = DiscorrelConfig(self._camera)
+    config = VideoExtensoConfig(self._camera, self._spot_detector)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape
     if config.dtype is not None:
       self._img_dtype = config.dtype
-
-    bbox = config.box
-    if bbox.no_points():
-      raise AttributeError("The region of interest wasn't properly selected in"
-                           " the config window !")
-
-    self._process_proc.set_box(bbox)

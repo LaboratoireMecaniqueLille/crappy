@@ -8,14 +8,13 @@ from .meta_block import Block
 from .camera import Camera
 from .client_server import Client_server
 from .dashboard import Dashboard
-from .discorrel import DISCorrel
-from .displayer import Displayer
-from .disve import DISVE
+from .discorrel import Discorrel
+from .disve import Disve
 from .drawing import Drawing
 from .fake_machine import Fake_machine
 from .generator import Generator
-from .gpucorrel import GPUCorrel
-from .gpuve import GPUVE
+from .gpu_correl import GpuCorrel
+from .gpu_ve import GpuVe
 from .grapher import Grapher
 from .gui import GUI
 from .hdf_recorder import Hdf_recorder
@@ -28,14 +27,7 @@ from .reader import Reader
 from .recorder import Recorder
 from .sink import Sink
 from .ucontroller import UController
-from .videoExtenso import Video_extenso
+from .video_extenso import VideoExtenso
 
 from . import generator_path
 from . import camera_processes
-
-from .camera_parallel import Camera_parallel
-from .videoExtenso_parallel import Video_extenso_parallel
-from .disve_parallel import Disve_parallel
-from .discorrel_parallel import Discorrel_parallel
-from .gpuve_parallel import Gpuve_parallel
-from .gpucorrel_parallel import Gpucorrel_parallel

@@ -3,11 +3,12 @@
 from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
+
 from .camera_processes import GpuCorrelProcess
-from .camera_parallel import Camera_parallel
+from .camera import Camera
 
 
-class Gpucorrel_parallel(Camera_parallel):
+class GpuCorrel(Camera):
   """"""
 
   def __init__(self,
