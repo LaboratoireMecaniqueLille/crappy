@@ -4,12 +4,12 @@ from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
 
-from .camera_processes import DiscorrelProcess
+from .camera_processes import DISCorrelProcess
 from .camera import Camera
-from ..tool.camera_config import DiscorrelConfig
+from ..tool.camera_config import DISCorrelConfig
 
 
-class Discorrel(Camera):
+class DISCorrel(Camera):
   """"""
 
   def __init__(self,
@@ -95,7 +95,7 @@ class Discorrel(Camera):
   def prepare(self) -> None:
     """"""
 
-    self._process_proc = DiscorrelProcess(log_queue=self._log_queue,
+    self._process_proc = DISCorrelProcess(log_queue=self._log_queue,
                                           log_level=self.log_level,
                                           verbose=self.verbose,
                                           **self._discorrel_kw)
@@ -105,7 +105,7 @@ class Discorrel(Camera):
   def _configure(self) -> None:
     """"""
 
-    config = DiscorrelConfig(self._camera)
+    config = DISCorrelConfig(self._camera)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape

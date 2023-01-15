@@ -476,7 +476,7 @@ class CorrelStage:
                                       self._dev_grad_y.gpudata)
 
 
-class GpuCorrelTool:
+class GPUCorrelTool:
   """This tool performs GPU correlation between two images in order to identify
   fields of rigid body displacements.
 
@@ -602,10 +602,10 @@ class GpuCorrelTool:
 
     # Initializing the pycuda context
     if self._context is not None:
-      GPUCorrel.context = self._context
+      GPUCorrelTool.context = self._context
     else:
       pycuda.driver.init()
-      GPUCorrel.context = pycuda.tools.make_default_context()
+      GPUCorrelTool.context = pycuda.tools.make_default_context()
 
     src_txt = """
         texture<float, cudaTextureType2D, cudaReadModeElementType> texFx{0};
@@ -746,7 +746,7 @@ class GpuCorrelTool:
     """Needs to be called at the end, to destroy the :mod:`pycuda` context
     properly."""
 
-    GPUCorrel.context.pop()
+    GPUCorrelTool.context.pop()
 
   def _get_fields(self,
                   y: Optional[int] = None,

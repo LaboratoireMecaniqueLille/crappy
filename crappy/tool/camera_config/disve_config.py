@@ -18,7 +18,7 @@ except (ModuleNotFoundError, ImportError):
   Image = OptionalModule("pillow")
 
 
-class DisveConfig(CameraConfigBoxes):
+class DISVEConfig(CameraConfigBoxes):
   """Class similar to :ref:`Camera configuration` but also displaying the
   bounding boxes of the regions defined as patches.
 

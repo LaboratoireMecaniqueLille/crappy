@@ -8,10 +8,10 @@ import logging.handlers
 
 from .camera_process import CameraProcess
 from ...tool.camera_config import Box, SpotsBoxes
-from ...tool.image_processing import DiscorrelTool
+from ...tool.image_processing import DISCorrelTool
 
 
-class DiscorrelProcess(CameraProcess):
+class DISCorrelProcess(CameraProcess):
   """"""
 
   def __init__(self,
@@ -46,7 +46,7 @@ class DiscorrelProcess(CameraProcess):
                               patch_size=patch_size,
                               patch_stride=patch_stride)
     self._residual = residual
-    self._discorrel: Optional[DiscorrelTool] = None
+    self._discorrel: Optional[DISCorrelTool] = None
     self._img0_set = False
 
   def set_box(self, box: Box) -> None:
@@ -58,7 +58,7 @@ class DiscorrelProcess(CameraProcess):
     """"""
 
     self._log(logging.INFO, "Instantiating the Discorrel tool")
-    self._discorrel = DiscorrelTool(**self._discorrel_kw)
+    self._discorrel = DISCorrelTool(**self._discorrel_kw)
 
   def _loop(self) -> None:
     """"""

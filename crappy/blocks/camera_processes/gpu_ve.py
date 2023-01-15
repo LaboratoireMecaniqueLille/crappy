@@ -8,7 +8,7 @@ import logging
 import logging.handlers
 
 from .camera_process import CameraProcess
-from ...tool.image_processing import GpuCorrelTool
+from ...tool.image_processing import GPUCorrelTool
 from ...tool.camera_config import SpotsBoxes
 from ..._global import OptionalModule
 
@@ -19,7 +19,7 @@ except (ModuleNotFoundError, ImportError):
   pycuda = OptionalModule("pycuda")
 
 
-class GpuVeProcess(CameraProcess):
+class GPUVEProcess(CameraProcess):
   """"""
 
   def __init__(self,
@@ -51,7 +51,7 @@ class GpuVeProcess(CameraProcess):
                           mask=None,
                           mul=mul)
 
-    self._correls: Optional[List[GpuCorrelTool]] = None
+    self._correls: Optional[List[GPUCorrelTool]] = None
     self._patches = patches
     self._img_ref = img_ref
 
@@ -65,7 +65,7 @@ class GpuVeProcess(CameraProcess):
 
     self._log(logging.INFO, "Instantiating the GPUCorrel tool instances")
     self._gpuve_kw.update(logger_name=self.name)
-    self._correls = [GpuCorrelTool(**self._gpuve_kw) for _ in self._patches]
+    self._correls = [GPUCorrelTool(**self._gpuve_kw) for _ in self._patches]
 
     # We can already set the sizes of the images as they are already known
     self._log(logging.INFO, "Setting the sizes of the patches")

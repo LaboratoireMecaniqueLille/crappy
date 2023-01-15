@@ -19,7 +19,7 @@ except (ModuleNotFoundError, ImportError):
   Image = OptionalModule("pillow")
 
 
-class DiscorrelConfig(CameraConfigBoxes):
+class DISCorrelConfig(CameraConfigBoxes):
   """Class similar to :ref:`Camera configuration` but also allowing to select
   the area on which the correlation will be performed.
 

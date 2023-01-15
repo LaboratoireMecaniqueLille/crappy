@@ -11,7 +11,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class DisveTool:
+class DISVETool:
   """This tool computes the displacement of regions of interest (patches) on an
   image compared to a reference image.
 

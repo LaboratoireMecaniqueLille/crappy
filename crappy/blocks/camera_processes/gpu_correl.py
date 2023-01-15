@@ -8,10 +8,10 @@ import logging
 import logging.handlers
 
 from .camera_process import CameraProcess
-from ...tool.image_processing import GpuCorrelTool
+from ...tool.image_processing import GPUCorrelTool
 
 
-class GpuCorrelProcess(CameraProcess):
+class GPUCorrelProcess(CameraProcess):
   """"""
 
   def __init__(self,
@@ -46,7 +46,7 @@ class GpuCorrelProcess(CameraProcess):
                               mask=mask,
                               mul=mul)
 
-    self._correl: Optional[GpuCorrelTool] = None
+    self._correl: Optional[GPUCorrelTool] = None
     self._img_ref = img_ref
     self._img0_set = img_ref is not None
 
@@ -60,7 +60,7 @@ class GpuCorrelProcess(CameraProcess):
 
     self._log(logging.INFO, "Instantiating the GPUCorrel tool")
     self._gpucorrel_kw.update(logger_name=self.name)
-    self._correl = GpuCorrelTool(**self._gpucorrel_kw)
+    self._correl = GPUCorrelTool(**self._gpucorrel_kw)
 
     if self._img_ref is not None:
       self._log(logging.INFO, "Initializing the GPUCorrel tool with the "

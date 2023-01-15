@@ -13,7 +13,7 @@ except (ModuleNotFoundError, ImportError):
 import numpy as np
 
 
-class DiscorrelTool:
+class DISCorrelTool:
   """This class simply stores the data needed for performing image correlation
   using DisFlow, and also performs the correlation.
 

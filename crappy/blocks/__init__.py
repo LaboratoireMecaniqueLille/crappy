@@ -8,13 +8,13 @@ from .meta_block import Block
 from .camera import Camera
 from .client_server import Client_server
 from .dashboard import Dashboard
-from .discorrel import Discorrel
-from .disve import Disve
+from .discorrel import DISCorrel
+from .disve import DISVE
 from .drawing import Drawing
 from .fake_machine import Fake_machine
 from .generator import Generator
-from .gpu_correl import GpuCorrel
-from .gpu_ve import GpuVe
+from .gpu_correl import GPUCorrel
+from .gpu_ve import GPUVE
 from .grapher import Grapher
 from .gui import GUI
 from .hdf_recorder import Hdf_recorder

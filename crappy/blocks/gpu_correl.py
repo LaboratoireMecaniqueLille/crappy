@@ -4,11 +4,11 @@ from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
 
-from .camera_processes import GpuCorrelProcess
+from .camera_processes import GPUCorrelProcess
 from .camera import Camera
 
 
-class GpuCorrel(Camera):
+class GPUCorrel(Camera):
   """"""
 
   def __init__(self,
@@ -95,7 +95,7 @@ class GpuCorrel(Camera):
   def prepare(self) -> None:
     """"""
 
-    self._process_proc = GpuCorrelProcess(log_queue=self._log_queue,
+    self._process_proc = GPUCorrelProcess(log_queue=self._log_queue,
                                           log_level=self.log_level,
                                           **self._gpucorrel_kw)
 

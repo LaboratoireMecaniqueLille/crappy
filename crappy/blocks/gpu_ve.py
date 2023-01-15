@@ -4,11 +4,11 @@ from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
 
-from .camera_processes import GpuVeProcess
+from .camera_processes import GPUVEProcess
 from .camera import Camera
 
 
-class GpuVe(Camera):
+class GPUVE(Camera):
   """"""
 
   def __init__(self,
@@ -84,7 +84,7 @@ class GpuVe(Camera):
   def prepare(self) -> None:
     """"""
 
-    self._process_proc = GpuVeProcess(log_queue=self._log_queue,
+    self._process_proc = GPUVEProcess(log_queue=self._log_queue,
                                       log_level=self.log_level,
                                       **self._gpuve_kw)
 
