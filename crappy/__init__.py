@@ -2,7 +2,6 @@
 
 from pkg_resources import resource_string, resource_filename
 from numpy import frombuffer, uint8
-from ._global import OptionalModule
 from webbrowser import open
 
 from . import actuator
@@ -13,9 +12,7 @@ from . import blocks
 from . import links
 from . import modifier
 from .__version__ import __version__
-
-# For compatibility (deprecated!)
-condition = modifier
+from ._global import OptionalModule
 
 
 # Quick access to documentation
