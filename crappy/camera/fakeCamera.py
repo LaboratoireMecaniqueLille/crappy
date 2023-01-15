@@ -1,11 +1,11 @@
 # coding: utf-8
 
-from time import time, strftime, gmtime, sleep
+from time import time, strftime, gmtime
 from typing import Tuple, Optional, Dict, Any
 import numpy as np
 import logging
 
-from .camera import Camera
+from .meta_camera import Camera
 
 
 class Fake_camera(Camera):

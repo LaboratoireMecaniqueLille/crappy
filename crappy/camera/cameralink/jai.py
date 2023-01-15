@@ -5,7 +5,7 @@ import numpy as np
 import logging
 
 from .cameralink import Cl_camera
-from .._global import OptionalModule
+from ..._global import OptionalModule
 try:
   from . import clModule as Cl
 except (ModuleNotFoundError, ImportError):

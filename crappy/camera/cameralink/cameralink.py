@@ -8,8 +8,8 @@ from typing import Optional, Tuple
 import numpy as np
 import logging
 
-from .camera import Camera
-from .._global import OptionalModule
+from ..meta_camera import Camera
+from ..._global import OptionalModule
 try:
   from . import clModule as Cl
 except (ImportError, ModuleNotFoundError):
@@ -73,8 +73,8 @@ class Cl_camera(Camera):
 
       else:
         if config_file:
-          self.log(logging.WARNING,"Reading config file for getting the data "
-                                   "format")
+          self.log(logging.WARNING, "Reading config file for getting the data "
+                                    "format")
           with open(config_file, 'r') as file:
             r = file.readlines()
           r = [s for s in r if s[:10] == "FG_FORMAT="]

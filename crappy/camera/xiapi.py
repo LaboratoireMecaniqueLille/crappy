@@ -10,7 +10,7 @@ from typing import Optional, Tuple
 import numpy as np
 import logging
 
-from .camera import Camera
+from .meta_camera import Camera
 from .._global import OptionalModule
 try:
   from ximea import xiapi

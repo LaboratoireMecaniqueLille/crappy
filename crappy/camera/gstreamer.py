@@ -8,7 +8,7 @@ from platform import system
 from re import findall, split, search
 import logging
 
-from .camera import Camera
+from .meta_camera import Camera
 from .._global import OptionalModule
 
 try:

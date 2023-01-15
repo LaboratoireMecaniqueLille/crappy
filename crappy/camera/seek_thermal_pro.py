@@ -4,7 +4,7 @@ from typing import Tuple, List, Any
 import numpy as np
 from time import time
 import logging
-from .camera import Camera
+from .meta_camera import Camera
 from .._global import OptionalModule
 
 try:

@@ -4,7 +4,7 @@ from time import time
 from typing import Tuple, Optional
 from numpy import ndarray
 import logging
-from .camera import Camera
+from .meta_camera import Camera
 from .._global import OptionalModule
 
 try:

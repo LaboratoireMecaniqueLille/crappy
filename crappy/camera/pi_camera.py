@@ -5,7 +5,7 @@ from typing import Tuple, Any, Optional
 import numpy as np
 from threading import Thread, RLock
 import logging
-from .camera import Camera
+from .meta_camera import Camera
 from .._global import OptionalModule
 
 try:

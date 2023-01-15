@@ -6,207 +6,14 @@ import numpy as np
 from multiprocessing import current_process
 import logging
 
-from .._global import DefinitionError
+from .meta_camera import MetaCamera
+from .camera_setting import Camera_setting, Camera_bool_setting, \
+  Camera_scale_setting, Camera_choice_setting
 
 nbr_type = Union[int, float]
 
 
-class MetaCam(type):
-  """Metaclass ensuring that two cameras don't have the same name, and that all
-  cameras define the required methods. Also keeps track of all the Camera
-  classes, including the custom user-defined ones."""
-
-  classes = {}
-
-  def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
-    return super().__new__(mcs, name, bases, dct)
-
-  def __init__(cls, name: str, bases: tuple, dct: dict) -> None:
-    super().__init__(name, bases, dct)
-
-    # Checking that a Camera with the same name doesn't already exist
-    if name in cls.classes:
-      raise DefinitionError(f"The {name} class is already defined !")
-
-    # Otherwise, saving the class
-    if name != "Camera":
-      cls.classes[name] = cls
-
-
-class Cam_setting:
-  """Base class for each camera setting.
-
-  It is meant to be subclassed and should not be used as is.
-  """
-
-  def __init__(self,
-               name: str,
-               getter: Callable[[], Any],
-               setter: Callable[[Any], None],
-               default: Any) -> None:
-    """Sets the attributes.
-
-    Args:
-      name: The name of the setting, that will be displayed in the GUI.
-      getter: The method for getting the current value of the setting.
-      setter: The method for setting the current value of the setting.
-      default: The default value to assign to the setting.
-    """
-
-    # Attributes shared by all the settings
-    self.name = name
-    self.default = default
-    self.type = type(default)
-
-    # Attributes used in the GUI
-    self.tk_var = None
-    self.tk_obj = None
-
-    # Attributes for internal use only
-    self._value_no_getter = default
-    self._getter = getter
-    self._setter = setter
-    self._logger: Optional[logging.Logger] = None
-
-  def log(self, level: int, msg: str) -> None:
-    """"""
-
-    if self._logger is None:
-      self._logger = logging.getLogger(
-        f"{current_process().name}.{type(self).__name__}")
-
-    self._logger.log(level, msg)
-
-  @property
-  def value(self) -> Any:
-    """Returns the current value of the setting, by calling the getter if one
-    was provided or else by returning the stored value."""
-
-    if self._getter is not None:
-      return self._getter()
-    else:
-      return self._value_no_getter
-
-  @value.setter
-  def value(self, val: Any) -> None:
-    self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
-    self._value_no_getter = val
-    if self._setter is not None:
-      self._setter(val)
-
-    if self.value != val:
-      self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
-                                f"value is {self.value} !")
-
-
-class Cam_bool_setting(Cam_setting):
-  """Camera setting that can only be :obj:`True` or :obj:`False`."""
-
-  def __init__(self,
-               name: str,
-               getter: Optional[Callable[[], bool]] = None,
-               setter: Optional[Callable[[bool], None]] = None,
-               default: bool = True) -> None:
-    """Sets the attributes.
-
-    Args:
-      name: The name of the setting, that will be displayed in the GUI.
-      getter: The method for getting the current value of the setting.
-      setter: The method for setting the current value of the setting.
-      default: The default value to assign to the setting.
-    """
-
-    super().__init__(name, getter, setter, default)
-
-
-class Cam_scale_setting(Cam_setting):
-  """Camera setting that can take any value between a lower and an upper
-  boundary.
-
-  This class can handle settings that should only take :obj:`int` values as
-  well as settings that can take :obj:`float` value.
-  """
-
-  def __init__(self,
-               name: str,
-               lowest: nbr_type,
-               highest: nbr_type,
-               getter: Optional[Callable[[], nbr_type]] = None,
-               setter: Optional[Callable[[nbr_type], None]] = None,
-               default: Optional[nbr_type] = None) -> None:
-    """Sets the attributes.
-
-    Args:
-      name: The name of the setting, that will be displayed in the GUI.
-      lowest: The lower boundary for the setting values.
-      highest: The upper boundary for the setting values.
-      getter: The method for getting the current value of the setting.
-      setter: The method for setting the current value of the setting.
-      default: The default value to assign to the setting.
-    """
-
-    self.lowest = lowest
-    self.highest = highest
-    self.type = int if isinstance(lowest + highest, int) else float
-
-    if default is None:
-      default = self.type((lowest + highest) / 2)
-
-    super().__init__(name, getter, setter, default)
-
-  @property
-  def value(self) -> nbr_type:
-    """Returns the current value of the setting, by calling the getter if one
-    was provided or else by returning the stored value."""
-
-    if self._getter is not None:
-      return self.type(min(max(self._getter(), self.lowest), self.highest))
-    else:
-      return self.type(self._value_no_getter)
-
-  @value.setter
-  def value(self, val: nbr_type) -> None:
-    val = min(max(val, self.lowest), self.highest)
-    self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
-
-    self._value_no_getter = self.type(val)
-    if self._setter is not None:
-      self._setter(self.type(val))
-
-    if self.value != val:
-      self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
-                                f"value is {self.value} !")
-
-
-class Cam_choice_setting(Cam_setting):
-  """Camera setting that can take any value from a predefined list of
-  values."""
-
-  def __init__(self,
-               name: str,
-               choices: Tuple[str, ...],
-               getter: Optional[Callable[[], str]] = None,
-               setter: Optional[Callable[[str], None]] = None,
-               default: Optional[str] = None) -> None:
-    """Sets the attributes.
-
-    Args:
-      name: The name of the setting, that will be displayed in the GUI.
-      choices: A tuple listing the possible values for the setting.
-      getter: The method for getting the current value of the setting.
-      setter: The method for setting the current value of the setting.
-      default: The default value to assign to the setting.
-    """
-
-    self.choices = choices
-
-    if default is None:
-      default = choices[0]
-
-    super().__init__(name, getter, setter, default)
-
-
-class Camera(metaclass=MetaCam):
+class Camera(metaclass=MetaCamera):
   """Base class for every camera object.
 
   It contains all the methods shared by these classes and sets MetaCam as their
@@ -217,7 +24,7 @@ class Camera(metaclass=MetaCam):
     """Simply sets the dict containing the settings and the name of the
     trigger setting."""
 
-    self.settings: Dict[str, Cam_setting] = dict()
+    self.settings: Dict[str, Camera_setting] = dict()
     self.trigger_name = 'Trigger'
     self._logger: Optional[logging.Logger] = None
 
@@ -312,7 +119,7 @@ class Camera(metaclass=MetaCam):
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} bool setting")
-    self.settings[name] = Cam_bool_setting(name, getter, setter, default)
+    self.settings[name] = Camera_bool_setting(name, getter, setter, default)
 
   def add_scale_setting(self,
                         name: str,
@@ -350,8 +157,8 @@ class Camera(metaclass=MetaCam):
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} scale setting")
-    self.settings[name] = Cam_scale_setting(name, lowest, highest, getter,
-                                            setter, default)
+    self.settings[name] = Camera_scale_setting(name, lowest, highest, getter,
+                                               setter, default)
 
   def add_choice_setting(self,
                          name: str,
@@ -382,8 +189,8 @@ class Camera(metaclass=MetaCam):
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} choice setting")
-    self.settings[name] = Cam_choice_setting(name, choices, getter, setter,
-                                             default)
+    self.settings[name] = Camera_choice_setting(name, choices, getter, setter,
+                                                default)
 
   def add_trigger_setting(self,
                           getter: Optional[Callable[[], str]] = None,
@@ -422,7 +229,7 @@ class Camera(metaclass=MetaCam):
       raise ValueError("There can only be one trigger setting per camera !")
 
     self.log(logging.INFO, f"Adding the {self.trigger_name} trigger setting")
-    self.settings[self.trigger_name] = Cam_choice_setting(
+    self.settings[self.trigger_name] = Camera_choice_setting(
       name=self.trigger_name, choices=('Free run',
                                        'Hdw after config',
                                        'Hardware'),

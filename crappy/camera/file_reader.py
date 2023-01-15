@@ -7,7 +7,7 @@ from pathlib import Path
 from re import fullmatch
 import logging
 
-from .camera import Camera
+from .meta_camera import Camera
 from .._global import OptionalModule, ReaderStop
 
 try:
