@@ -4,7 +4,7 @@ from typing import List, Optional, Union
 from pathlib import Path
 import logging
 
-from .block import Block
+from .meta_block import Block
 
 
 class Recorder(Block):

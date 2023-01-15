@@ -5,7 +5,7 @@ from typing import Dict, Optional, List
 from collections import defaultdict
 import logging
 
-from .block import Block
+from .meta_block import Block
 
 
 class Multiplex(Block):

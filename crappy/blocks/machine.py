@@ -5,7 +5,7 @@ from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, fields
 import logging
 
-from .block import Block
+from .meta_block import Block
 from ..actuator import actuator_dict, Actuator
 from ..tool.ft232h import UsbServer
 

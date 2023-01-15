@@ -4,7 +4,7 @@ from time import time
 import logging
 from typing import Optional
 
-from .block import Block
+from .meta_block import Block
 from .._global import OptionalModule
 
 try:

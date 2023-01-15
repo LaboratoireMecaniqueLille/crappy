@@ -8,7 +8,7 @@ from re import fullmatch
 from types import MethodType
 import logging
 
-from .block import Block
+from .meta_block import Block
 from .displayer import Displayer
 from ..camera import camera_dict, Camera as BaseCam
 from ..tool.camera_config import Box, CameraConfig

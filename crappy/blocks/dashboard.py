@@ -4,7 +4,7 @@ from typing import List, Optional
 import tkinter as tk
 import logging
 
-from .block import Block
+from .meta_block import Block
 
 
 class Dashboard_window(tk.Tk):

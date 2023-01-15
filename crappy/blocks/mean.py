@@ -5,7 +5,7 @@ from typing import List, Optional
 from time import time
 import logging
 
-from .block import Block
+from .meta_block import Block
 
 
 class Mean_block(Block):

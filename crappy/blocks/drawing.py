@@ -5,7 +5,7 @@ from time import time
 from typing import Tuple, List, Dict, Any, Optional
 import logging
 
-from .block import Block
+from .meta_block import Block
 from .._global import OptionalModule
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)

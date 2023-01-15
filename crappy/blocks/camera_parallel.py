@@ -12,7 +12,7 @@ from threading import BrokenBarrierError
 from math import prod
 import logging
 
-from .block import Block
+from .meta_block import Block
 from .camera_parallel_display import Displayer
 from .camera_parallel_record import Image_saver
 from ..camera import camera_dict, Camera as BaseCam

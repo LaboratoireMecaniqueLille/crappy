@@ -1,10 +1,12 @@
 # coding: utf-8
 
-from .block import Block
-from .._global import OptionalModule
 from struct import unpack
 from time import time
 import logging
+
+from .meta_block import Block
+from .._global import OptionalModule
+
 try:
   from serial import Serial
   from serial.serialutil import SerialException

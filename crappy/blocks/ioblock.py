@@ -3,7 +3,7 @@
 from typing import Union, List, Optional
 import logging
 
-from .block import Block
+from .meta_block import Block
 from ..inout import inout_dict, InOut
 from ..tool.ft232h import UsbServer
 

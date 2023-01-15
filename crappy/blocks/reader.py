@@ -2,7 +2,8 @@
 
 from typing import Optional
 import logging
-from .block import Block
+
+from .meta_block import Block
 
 
 class Reader(Block):

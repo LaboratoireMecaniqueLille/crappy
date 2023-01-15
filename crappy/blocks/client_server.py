@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from .block import Block
+from .meta_block import Block
 from .._global import OptionalModule
 from typing import Dict, List, Union, Tuple, Any, Optional
 from time import time, sleep

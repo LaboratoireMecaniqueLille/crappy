@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 import logging
 from _tkinter import TclError
 
-from .block import Block
+from .meta_block import Block
 from .._global import OptionalModule
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)

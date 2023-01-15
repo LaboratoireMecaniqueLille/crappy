@@ -17,17 +17,18 @@ import subprocess
 from sys import stdout, stderr, argv
 from pathlib import Path
 
-from ..links import Link
-from .._global import LinkDataError, StartTimeout, PrepareError, \
+from .meta_block import MetaBlock
+from ...links import Link
+from ..._global import LinkDataError, StartTimeout, PrepareError, \
   T0NotSetError, GeneratorStop, ReaderStop, CameraPrepareError, \
   CameraRuntimeError
-from ..tool.ft232h import UsbServer
+from ...tool.ft232h import UsbServer
 
 # Todo:
 #  Add a clean way to stop the blocks, using the keyboard or a button
 
 
-class Block(Process):
+class Block(Process, metaclass=MetaBlock):
   """This class constitutes the base object in Crappy.
 
   It is extremely versatile, an can perform a wide variety of actions during a

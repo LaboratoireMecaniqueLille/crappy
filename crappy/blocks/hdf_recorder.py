@@ -6,14 +6,13 @@ from pathlib import Path
 import logging
 
 from .._global import OptionalModule
+from .meta_block import Block
 
 try:
   import tables
 except ModuleNotFoundError:
   tables = OptionalModule("tables", "Hdf_recorder needs the tables module to "
                           "write hdf files.")
-
-from .block import Block
 
 
 class Hdf_recorder(Block):

@@ -1,7 +1,8 @@
 # coding: utf-8
 
 import logging
-from .block import Block
+
+from .meta_block import Block
 
 
 class Sink(Block):

@@ -4,7 +4,7 @@
 # but you can also implement your own.
 
 from .autoDrive import AutoDrive
-from .block import Block
+from .meta_block import Block
 from .camera import Camera
 from .client_server import Client_server
 from .dashboard import Dashboard

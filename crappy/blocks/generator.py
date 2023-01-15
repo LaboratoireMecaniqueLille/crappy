@@ -6,7 +6,7 @@ from itertools import cycle
 from copy import deepcopy
 import logging
 
-from .block import Block
+from .meta_block import Block
 from . import generator_path
 from .._global import GeneratorStop
 

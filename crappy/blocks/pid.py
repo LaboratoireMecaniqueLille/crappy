@@ -4,7 +4,7 @@ from time import time
 from typing import List, Optional, Tuple
 import logging
 
-from .block import Block
+from .meta_block import Block
 
 
 class PID(Block):

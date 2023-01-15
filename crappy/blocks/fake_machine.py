@@ -5,7 +5,7 @@ import numpy as np
 from typing import Callable, Dict, Optional
 import logging
 
-from .block import Block
+from .meta_block import Block
 
 
 def plastic(v: float, yield_strain: float = .005, rate: float = .02) -> float:
