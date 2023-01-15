@@ -7,14 +7,14 @@ import logging
 import logging.handlers
 
 from .camera_process import Camera_process
-from ..tool import DISVE, Spot_boxes
+from ..tool import DISVE, SpotsBoxes
 
 
 class Disve_parallel_process(Camera_process):
   """"""
 
   def __init__(self,
-               patches: Spot_boxes,
+               patches: SpotsBoxes,
                log_queue: Queue,
                log_level: int = 20,
                method: str = 'Disflow',

@@ -9,9 +9,9 @@ from pkg_resources import resource_string
 from time import sleep
 import logging
 
-from .cameraConfigBoxes import Camera_config_with_boxes
-from .cameraConfigTools import Box
-from .._global import OptionalModule
+from .camera_config_boxes import CameraConfigBoxes
+from .config_tools import Box
+from ..._global import OptionalModule
 
 try:
   from PIL import Image
@@ -19,7 +19,7 @@ except (ModuleNotFoundError, ImportError):
   Image = OptionalModule("pillow")
 
 
-class DISConfig(Camera_config_with_boxes):
+class DiscorrelConfig(CameraConfigBoxes):
   """Class similar to :ref:`Camera configuration` but also allowing to select
   the area on which the correlation will be performed.
 

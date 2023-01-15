@@ -11,7 +11,7 @@ import logging.handlers
 
 from .camera_process import Camera_process
 from .._global import OptionalModule
-from ..tool import Spot_boxes, Box
+from ..tool import SpotsBoxes, Box
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
@@ -70,7 +70,7 @@ class Displayer(Camera_process):
 
     # The thread must be initialized later for compatibility with Windows
     self._box_thread: Optional[Thread] = None
-    self._boxes: Spot_boxes = Spot_boxes()
+    self._boxes: SpotsBoxes = SpotsBoxes()
     self._stop_thread = False
 
   def __del__(self) -> None:

@@ -8,7 +8,7 @@ import logging
 import logging.handlers
 
 from .camera_process import Camera_process
-from ..tool import GPUCorrel, Spot_boxes
+from ..tool import GPUCorrel, SpotsBoxes
 from .._global import OptionalModule
 
 try:
@@ -54,7 +54,7 @@ class Gpuve_parallel_process(Camera_process):
     self._patches = patches
     self._img_ref = img_ref
 
-    self._spots = Spot_boxes()
+    self._spots = SpotsBoxes()
     self._spots.set_spots(patches)
 
     self._img0_set = img_ref is not None

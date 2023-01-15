@@ -5,7 +5,7 @@ from typing import Callable, Optional, Union, List, Dict, Any
 from pathlib import Path
 
 from ..tool import DISCorrel as Dis
-from ..tool import DISConfig, Box
+from ..tool import DiscorrelConfig, Box
 from .camera import Camera
 from .displayer import Displayer
 
@@ -214,7 +214,7 @@ class DISCorrel(Camera):
     super().prepare()
 
     if self._config_dis:
-      conf = DISConfig(self._camera)
+      conf = DiscorrelConfig(self._camera)
       conf.main()
       self._bbox = conf.box
 

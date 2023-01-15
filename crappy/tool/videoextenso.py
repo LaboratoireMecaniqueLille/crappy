@@ -13,7 +13,7 @@ import logging.handlers
 from select import select
 
 from .._global import OptionalModule
-from .cameraConfigBoxes import Spot_boxes, Box
+from .camera_config import SpotsBoxes, Box
 
 try:
   import cv2
@@ -50,7 +50,7 @@ class VideoExtenso:
   """
 
   def __init__(self,
-               spots: Spot_boxes,
+               spots: SpotsBoxes,
                x_l0: float,
                y_l0: float,
                thresh: int,

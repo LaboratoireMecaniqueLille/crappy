@@ -17,7 +17,7 @@ from .camera_parallel_display import Displayer
 from .camera_parallel_record import Image_saver
 from ..camera import camera_dict, Camera as BaseCam
 from .camera_process import Camera_process
-from ..tool import Camera_config
+from ..tool import CameraConfig
 from .._global import CameraPrepareError, CameraRuntimeError
 
 
@@ -373,7 +373,7 @@ class Camera_parallel(Block):
   def _configure(self) -> None:
     """"""
 
-    config = Camera_config(self._camera)
+    config = CameraConfig(self._camera)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape

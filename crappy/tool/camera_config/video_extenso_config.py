@@ -8,9 +8,9 @@ from pkg_resources import resource_string
 from time import sleep
 import logging
 
-from .cameraConfigBoxes import Camera_config_with_boxes
-from .cameraConfigTools import Box, Spot_detector
-from .._global import OptionalModule
+from .camera_config_boxes import CameraConfigBoxes
+from .config_tools import Box, SpotsDetector
+from ..._global import OptionalModule
 
 try:
   from PIL import Image
@@ -18,7 +18,7 @@ except (ModuleNotFoundError, ImportError):
   Image = OptionalModule("pillow")
 
 
-class VE_config(Camera_config_with_boxes):
+class VideoExtensoConfig(CameraConfigBoxes):
   """Class similar to :ref:`Camera configuration` but also displaying the
   bounding boxes of the detected spots, and allowing to select the area where
   to detect the spots by drawing a box with the left mouse button.
@@ -26,7 +26,7 @@ class VE_config(Camera_config_with_boxes):
   It is meant to be used for configuring the :ref:`VideoExtenso` block.
   """
 
-  def __init__(self, camera, detector: Spot_detector) -> None:
+  def __init__(self, camera, detector: SpotsDetector) -> None:
     """Sets the args and initializes the parent class.
 
     Args:

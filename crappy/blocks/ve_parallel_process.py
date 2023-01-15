@@ -7,14 +7,14 @@ import logging.handlers
 
 from .camera_process import Camera_process
 from ..tool.videoextenso import VideoExtenso, LostSpotError
-from ..tool import Spot_detector
+from ..tool import SpotsDetector
 
 
 class Ve_parallel_process(Camera_process):
   """"""
 
   def __init__(self,
-               detector: Spot_detector,
+               detector: SpotsDetector,
                log_queue: Queue,
                log_level: int = 20,
                raise_on_lost_spot: bool = True,

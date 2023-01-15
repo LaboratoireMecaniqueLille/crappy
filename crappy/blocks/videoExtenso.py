@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 
 from ..tool.videoextenso import LostSpotError, VideoExtenso as Ve
-from ..tool.videoextensoConfig import VE_config
+from ..tool import VideoExtensoConfig
 from .camera import Camera
 from .displayer import Displayer
 
@@ -203,7 +203,7 @@ class Video_extenso(Camera):
     super().prepare()
 
     if self._config_ve:
-      config = VE_config(self._camera, self._ve)
+      config = VideoExtensoConfig(self._camera, self._ve)
       config.main()
 
     self._ve.start_tracking()

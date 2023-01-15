@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 from .ve_parallel_process import Ve_parallel_process
 from .camera_parallel import Camera_parallel
-from ..tool import VE_config, Spot_detector
+from ..tool import VideoExtensoConfig, SpotsDetector
 
 
 class Video_extenso_parallel(Camera_parallel):
@@ -79,7 +79,7 @@ class Video_extenso_parallel(Camera_parallel):
   def prepare(self) -> None:
     """"""
 
-    self._spot_detector = Spot_detector(**self._detector_kw)
+    self._spot_detector = SpotsDetector(**self._detector_kw)
 
     self._process_proc = Ve_parallel_process(
       detector=self._spot_detector,
@@ -93,7 +93,7 @@ class Video_extenso_parallel(Camera_parallel):
   def _configure(self) -> None:
     """"""
 
-    config = VE_config(self._camera, self._spot_detector)
+    config = VideoExtensoConfig(self._camera, self._spot_detector)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape

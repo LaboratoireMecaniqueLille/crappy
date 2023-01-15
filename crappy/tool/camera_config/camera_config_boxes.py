@@ -4,11 +4,11 @@ import numpy as np
 import tkinter as tk
 import logging
 
-from .cameraConfig import Camera_config
-from .cameraConfigTools import Box, Spot_boxes
+from .camera_config import CameraConfig
+from .config_tools import Box, SpotsBoxes
 
 
-class Camera_config_with_boxes(Camera_config):
+class CameraConfigBoxes(CameraConfig):
   """This class is a basis for the configuration GUIs featuring boxes to
   display or to draw.
 
@@ -20,7 +20,7 @@ class Camera_config_with_boxes(Camera_config):
   def __init__(self, camera) -> None:
     """Initializes the parent class and sets the spots container."""
 
-    self._spots = Spot_boxes()
+    self._spots = SpotsBoxes()
     self._select_box = Box()
     super().__init__(camera)
 

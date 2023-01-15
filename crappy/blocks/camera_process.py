@@ -16,7 +16,7 @@ from time import time
 
 from ..links import Link
 from .._global import LinkDataError
-from ..tool import Spot_boxes
+from ..tool import SpotsBoxes
 
 
 class Camera_process(Process):
@@ -197,7 +197,7 @@ class Camera_process(Process):
       self._logger.log(logging.DEBUG, f"Sending {data} to Link {link}")
       link.send(data)
 
-  def _send_box(self, boxes: Spot_boxes) -> None:
+  def _send_box(self, boxes: SpotsBoxes) -> None:
     """"""
 
     if self._box_conn is None:

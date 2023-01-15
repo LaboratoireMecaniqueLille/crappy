@@ -7,7 +7,6 @@ from pkg_resources import resource_filename
 from typing import Any, Tuple, Optional, Union, List
 from pathlib import Path
 from itertools import chain
-from multiprocessing import current_process
 import logging
 
 from .fields import get_field

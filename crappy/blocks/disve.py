@@ -3,7 +3,7 @@
 from typing import List, Tuple, Optional, Callable, Union, Dict, Any
 import numpy as np
 from pathlib import Path
-from ..tool import DISVE as VE, DISVE_config, Spot_boxes
+from ..tool import DISVE as VE, DisveConfig, SpotsBoxes
 from .camera import Camera
 from .displayer import Displayer
 
@@ -148,7 +148,7 @@ class DISVE(Camera):
       **kwargs: Any additional argument to pass to the camera.
     """
 
-    self._patches = Spot_boxes()
+    self._patches = SpotsBoxes()
     self._patches.set_spots(patches)
 
     super().__init__(camera=camera,
@@ -212,7 +212,7 @@ class DISVE(Camera):
     super().prepare()
 
     if self._config_dis:
-      config = DISVE_config(self._camera, self._patches)
+      config = DisveConfig(self._camera, self._patches)
       config.main()
 
     if self._displayer_dis is not None:

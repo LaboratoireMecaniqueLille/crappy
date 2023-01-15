@@ -11,8 +11,8 @@ from io import BytesIO
 import logging
 from multiprocessing import current_process
 
-from .._global import OptionalModule
-from .cameraConfigTools import Zoom
+from ..._global import OptionalModule
+from .config_tools import Zoom
 
 try:
   from PIL import ImageTk, Image
@@ -21,7 +21,7 @@ except (ModuleNotFoundError, ImportError):
   Image = OptionalModule("pillow")
 
 
-class Camera_config(tk.Tk):
+class CameraConfig(tk.Tk):
   """This class is a GUI allowing the user to visualize the images from a
   camera before a Crappy test starts, and to tune the settings of the camera.
 

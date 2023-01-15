@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 from .disve_parallel_process import Disve_parallel_process
 from .camera_parallel import Camera_parallel
-from ..tool import DISVE_config, Spot_boxes
+from ..tool import DisveConfig, SpotsBoxes
 
 
 class Disve_parallel(Camera_parallel):
@@ -97,7 +97,7 @@ class Disve_parallel(Camera_parallel):
   def prepare(self) -> None:
     """"""
 
-    self._patches = Spot_boxes()
+    self._patches = SpotsBoxes()
     self._patches.set_spots(self._patches_int)
     self._disve_kw['patches'] = self._patches
 
@@ -111,7 +111,7 @@ class Disve_parallel(Camera_parallel):
   def _configure(self) -> None:
     """"""
 
-    config = DISVE_config(self._camera, self._patches)
+    config = DisveConfig(self._camera, self._patches)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape

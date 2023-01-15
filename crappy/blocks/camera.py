@@ -11,7 +11,7 @@ import logging
 from .block import Block
 from .displayer import Displayer
 from ..camera import camera_dict, Camera as BaseCam
-from ..tool import Camera_config, Box
+from ..tool import Box, CameraConfig
 from .._global import OptionalModule
 
 try:
@@ -240,7 +240,7 @@ class Camera(Block):
       self._camera.open(**self._camera_kwargs)
 
     if self._config_cam:
-      config = Camera_config(self._camera)
+      config = CameraConfig(self._camera)
       config.main()
 
     if self._displayer is not None:

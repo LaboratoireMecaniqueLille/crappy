@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 from .discorrel_parallel_process import Discorrel_parallel_process
 from .camera_parallel import Camera_parallel
-from ..tool import DISConfig
+from ..tool import DiscorrelConfig
 
 
 class Discorrel_parallel(Camera_parallel):
@@ -104,7 +104,7 @@ class Discorrel_parallel(Camera_parallel):
   def _configure(self) -> None:
     """"""
 
-    config = DISConfig(self._camera)
+    config = DiscorrelConfig(self._camera)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape

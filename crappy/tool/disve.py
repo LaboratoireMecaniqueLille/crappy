@@ -3,7 +3,7 @@
 import numpy as np
 from typing import List, Tuple
 from .._global import OptionalModule
-from .cameraConfigTools import Spot_boxes, Box
+from .camera_config import SpotsBoxes, Box
 
 try:
   import cv2
@@ -22,7 +22,7 @@ class DISVE:
   """
 
   def __init__(self,
-               patches: Spot_boxes,
+               patches: SpotsBoxes,
                method: str = 'Disflow',
                alpha: float = 3,
                delta: float = 1,

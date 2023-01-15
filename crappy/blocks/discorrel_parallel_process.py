@@ -7,7 +7,7 @@ import logging
 import logging.handlers
 
 from .camera_process import Camera_process
-from ..tool import DISCorrel, Box, Spot_boxes
+from ..tool import DISCorrel, Box, SpotsBoxes
 
 
 class Discorrel_parallel_process(Camera_process):
@@ -76,4 +76,4 @@ class Discorrel_parallel_process(Camera_process):
     data = self._discorrel.get_data(self._img, self._residual)
     self._send([self._metadata['t(s)'], self._metadata, *data])
 
-    self._send_box(Spot_boxes(self._discorrel.box))
+    self._send_box(SpotsBoxes(self._discorrel.box))

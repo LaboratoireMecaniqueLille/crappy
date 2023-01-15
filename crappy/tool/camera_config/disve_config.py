@@ -8,9 +8,9 @@ from pkg_resources import resource_string
 from time import sleep
 import logging
 
-from .cameraConfigBoxes import Camera_config_with_boxes
-from .cameraConfigTools import Box, Spot_boxes
-from .._global import OptionalModule
+from .camera_config_boxes import CameraConfigBoxes
+from .config_tools import Box, SpotsBoxes
+from ..._global import OptionalModule
 
 try:
   from PIL import Image
@@ -18,14 +18,14 @@ except (ModuleNotFoundError, ImportError):
   Image = OptionalModule("pillow")
 
 
-class DISVE_config(Camera_config_with_boxes):
+class DisveConfig(CameraConfigBoxes):
   """Class similar to :ref:`Camera configuration` but also displaying the
   bounding boxes of the regions defined as patches.
 
   It is meant to be used for configuring the :ref:`Disve` block.
   """
 
-  def __init__(self, camera, patches: Spot_boxes) -> None:
+  def __init__(self, camera, patches: SpotsBoxes) -> None:
     """Sets the patches and initializes the parent class.
 
     Args:
