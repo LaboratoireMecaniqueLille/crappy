@@ -5,7 +5,7 @@ from typing import Optional, List
 import logging
 
 from ..meta_inout import InOut
-from ...tool import ft232h_server as ft232h, i2c_msg_ft232h
+from ...tool.ft232h import Ft232hServer as Ft232h, i2c_msg_ft232h
 
 mprls_status_bits = {'busy': 0x20,
                      'memory error': 0x04,
@@ -48,7 +48,7 @@ class Mprls_ft232h(InOut):
     (block_index, current_block, command_file, answer_file, block_lock,
      shared_lock) = _ft232h_args
 
-    self._bus = ft232h(mode='I2C',
+    self._bus = Ft232h(mode='I2C',
                        block_index=block_index,
                        current_block=current_block,
                        command_file=command_file,

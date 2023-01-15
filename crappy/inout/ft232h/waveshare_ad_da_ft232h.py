@@ -6,7 +6,7 @@ from typing import List, Union, Optional
 import logging
 
 from ..meta_inout import InOut
-from ...tool import ft232h_server as ft232h
+from ...tool.ft232h import Ft232hServer as Ft232h
 
 # ADS1256 gain channel
 Ads1256_gain = {1: 0b000,
@@ -261,7 +261,7 @@ class Waveshare_ad_da_ft232h(InOut):
     self._offset = offset
 
     self.log(logging.INFO, "Opening the SPI communication with the AD/DA")
-    self._bus = ft232h(mode='SPI',
+    self._bus = Ft232h(mode='SPI',
                        block_index=block_index,
                        current_block=current_block,
                        command_file=command_file,

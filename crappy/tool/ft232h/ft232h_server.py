@@ -11,7 +11,7 @@ import logging
 from contextlib import contextmanager
 import signal
 
-from .ft232h import ft232h
+from .ft232h import Ft232h
 from ..._global import OptionalModule
 try:
   from usb import util
@@ -114,7 +114,7 @@ class DelayedKeyboardInterrupt:
     self._signal_received = (sig, frame)
 
 
-class ft232h_server(ft232h):
+class Ft232hServer(Ft232h):
   """A class for controlling FTDI's USB to Serial FT232H.
 
   This class is very similar to the :class:`ft232h` except it doesn't
@@ -478,7 +478,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                ft232h_sio_args['reset']):
       raise IOError('Unable to reset FTDI device')
     # Reset feature mode
-    self._set_bitmode(0, ft232h.BitMode.RESET)
+    self._set_bitmode(0, Ft232h.BitMode.RESET)
 
     # Set latency timer
     self._set_latency_timer(latency)
@@ -491,7 +491,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                      self._max_packet_size)
 
     # Reset feature mode
-    self._set_bitmode(0, ft232h.BitMode.RESET)
+    self._set_bitmode(0, Ft232h.BitMode.RESET)
     # Drain buffers
     self._purge_buffers()
     # Disable event and error characters
@@ -503,10 +503,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # Enable MPSSE mode
     if self._ft232h_mode == 'GPIO_only':
       self.log(logging.DEBUG, "Setting the mode to GPIO_only")
-      self._set_bitmode(0xFF, ft232h.BitMode.MPSSE)
+      self._set_bitmode(0xFF, Ft232h.BitMode.MPSSE)
     else:
       self.log(logging.DEBUG, f"Setting the mode to {self._ft232h_mode}")
-      self._set_bitmode(self._direction, ft232h.BitMode.MPSSE)
+      self._set_bitmode(self._direction, Ft232h.BitMode.MPSSE)
 
     # Configure clock
     if self._ft232h_mode == 'I2C':
@@ -849,7 +849,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self.log(logging.INFO, "Closing the USB connection to the FT232H")
       if self._send_server(['_ctx.handle']):
         try:
-          self._set_bitmode(0, ft232h.BitMode.RESET)
+          self._set_bitmode(0, Ft232h.BitMode.RESET)
           self._send_server(['release_interface', self._index - 1])
         except (IOError, ValueError, USBError):
           pass

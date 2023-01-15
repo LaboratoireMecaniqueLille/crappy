@@ -122,7 +122,7 @@ class Find_serial_number:
     return device.serial_number == self.serial_number
 
 
-class ft232h:
+class Ft232h:
   """A class for controlling FTDI's USB to Serial FT232H.
 
   Communication in SPI and I2C are implemented, along with GPIO control. The

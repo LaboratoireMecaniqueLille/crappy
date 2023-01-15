@@ -7,7 +7,7 @@ import logging
 
 from .block import Block
 from ..actuator import actuator_dict, Actuator
-from ..tool import UsbServer
+from ..tool.ft232h import UsbServer
 
 
 @dataclass

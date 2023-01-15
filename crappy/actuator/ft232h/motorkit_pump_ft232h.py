@@ -7,7 +7,7 @@ import logging
 
 from ..meta_actuator import Actuator
 from ..._global import OptionalModule
-from ...tool import ft232h_server as ft232h
+from ...tool.ft232h import Ft232hServer as Ft232h
 
 try:
   from smbus2 import SMBus
@@ -52,7 +52,7 @@ class DC_motor_hat:
                motor_nrs: List[int],
                device_address: int = 0x60,
                i2c_port: int = 1,
-               bus: Optional[ft232h] = None) -> None:
+               bus: Optional[Ft232h] = None) -> None:
     """Resets the HAT and initializes it.
 
     Args:
@@ -182,7 +182,7 @@ class Motorkit_pump_ft232h(Actuator):
     (block_index, current_block, command_file, answer_file, block_lock,
      shared_lock) = _ft232h_args
 
-    self._bus = ft232h(mode='I2C',
+    self._bus = Ft232h(mode='I2C',
                        block_index=block_index,
                        current_block=current_block,
                        command_file=command_file,

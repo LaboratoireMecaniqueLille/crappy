@@ -2,12 +2,11 @@
 
 from struct import pack_into
 from time import sleep
-from typing import Union, List, Optional
+from typing import Union, List
 import logging
 
 from .meta_actuator import Actuator
 from .._global import OptionalModule
-from ..tool import ft232h_server as ft232h
 
 try:
   from adafruit_motorkit import MotorKit
@@ -63,8 +62,7 @@ class DC_motor_hat:
   def __init__(self,
                motor_nrs: List[int],
                device_address: int = 0x60,
-               i2c_port: int = 1,
-               bus: Optional[ft232h] = None) -> None:
+               i2c_port: int = 1) -> None:
     """Resets the HAT and initializes it.
 
     Args:
@@ -76,9 +74,6 @@ class DC_motor_hat:
         the board.
       i2c_port: The I2C port over which the HAT should communicate. On most
         Raspberry Pi models the default I2C port is `1`.
-      bus: If given, the I2C commands are sent by the corresponding
-        :class:`ft232h_server` instance, in the situation when the hat is
-        controlled from a PC through an FT232H.
     """
 
     if not all(i in range(1, 5) for i in motor_nrs):
@@ -92,11 +87,7 @@ class DC_motor_hat:
     if not isinstance(i2c_port, int):
       raise TypeError("i2c_port should be an integer !")
 
-    if not bus:
-      self._bus = SMBus(i2c_port)
-    else:
-      self._bus = bus
-
+    self._bus = SMBus(i2c_port)
     self._buf = bytearray(4)
 
     # Reset
@@ -227,7 +218,7 @@ class Motorkit_pump(Actuator):
 
     else:
       self.log(logging.INFO, "Opening the Motorkit with the SMBus library")
-      self._hat = DC_motor_hat([1, 2, 3], self._address, self._port, None)
+      self._hat = DC_motor_hat([1, 2, 3], self._address, self._port)
 
   def set_speed(self, volt: float) -> None:
     """Inflates or deflates the setup according to the command.

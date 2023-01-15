@@ -21,7 +21,7 @@ from ..links import Link
 from .._global import LinkDataError, StartTimeout, PrepareError, \
   T0NotSetError, GeneratorStop, ReaderStop, CameraPrepareError, \
   CameraRuntimeError
-from ..tool import UsbServer
+from ..tool.ft232h import UsbServer
 
 # Todo:
 #  Add a clean way to stop the blocks, using the keyboard or a button

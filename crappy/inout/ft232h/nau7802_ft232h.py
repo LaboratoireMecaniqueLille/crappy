@@ -5,7 +5,7 @@ from typing import Union, Optional, List
 import logging
 
 from ..meta_inout import InOut
-from ...tool import ft232h_server as ft232h
+from ...tool.ft232h import Ft232hServer as Ft232h
 
 # Register Map
 NAU7802_Scale_Registers = {'PU_CTRL': 0x00,
@@ -159,7 +159,7 @@ class Nau7802_ft232h(InOut):
     (block_index, current_block, command_file, answer_file, block_lock,
      shared_lock) = _ft232h_args
 
-    self._bus = ft232h(mode='I2C',
+    self._bus = Ft232h(mode='I2C',
                        block_index=block_index,
                        current_block=current_block,
                        command_file=command_file,
