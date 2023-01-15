@@ -3,7 +3,7 @@
 from typing import Dict, Type
 
 # Parent class
-from .meta_camera import Camera, MetaCamera
+from .meta_camera import Camera, MetaCamera, camera_setting
 # Virtual cameras
 from .fakeCamera import Fake_camera
 from .file_reader import File_reader
