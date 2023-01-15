@@ -7,10 +7,10 @@ from pathlib import Path
 import logging
 import logging.handlers
 
-from .camera_process import Camera_process
-from ..tool.image_processing import GpuCorrelTool
-from ..tool.camera_config import SpotsBoxes
-from .._global import OptionalModule
+from .camera_process import CameraProcess
+from ...tool.image_processing import GpuCorrelTool
+from ...tool.camera_config import SpotsBoxes
+from ..._global import OptionalModule
 
 try:
   import pycuda.tools
@@ -19,7 +19,7 @@ except (ModuleNotFoundError, ImportError):
   pycuda = OptionalModule("pycuda")
 
 
-class Gpuve_parallel_process(Camera_process):
+class GpuVeProcess(CameraProcess):
   """"""
 
   def __init__(self,

@@ -5,12 +5,12 @@ from typing import Optional
 import logging
 import logging.handlers
 
-from .camera_process import Camera_process
-from ..tool.image_processing import VideoExtensoTool, LostSpotError
-from ..tool.camera_config import SpotsDetector
+from .camera_process import CameraProcess
+from ...tool.image_processing import VideoExtensoTool, LostSpotError
+from ...tool.camera_config import SpotsDetector
 
 
-class Ve_parallel_process(Camera_process):
+class VideoExtensoProcess(CameraProcess):
   """"""
 
   def __init__(self,

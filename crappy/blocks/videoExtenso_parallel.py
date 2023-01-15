@@ -3,7 +3,7 @@
 from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
-from .ve_parallel_process import Ve_parallel_process
+from .camera_processes import VideoExtensoProcess
 from .camera_parallel import Camera_parallel
 from ..tool.camera_config import VideoExtensoConfig, SpotsDetector
 
@@ -81,7 +81,7 @@ class Video_extenso_parallel(Camera_parallel):
 
     self._spot_detector = SpotsDetector(**self._detector_kw)
 
-    self._process_proc = Ve_parallel_process(
+    self._process_proc = VideoExtensoProcess(
       detector=self._spot_detector,
       raise_on_lost_spot=self._raise_on_lost_spot,
       log_queue=self._log_queue,

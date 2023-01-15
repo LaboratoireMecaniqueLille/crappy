@@ -6,12 +6,12 @@ import numpy as np
 import logging
 import logging.handlers
 
-from .camera_process import Camera_process
-from ..tool.image_processing import DisveTool
-from ..tool.camera_config import SpotsBoxes
+from .camera_process import CameraProcess
+from ...tool.image_processing import DisveTool
+from ...tool.camera_config import SpotsBoxes
 
 
-class Disve_parallel_process(Camera_process):
+class DisveProcess(CameraProcess):
   """"""
 
   def __init__(self,

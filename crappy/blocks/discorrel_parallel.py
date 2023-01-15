@@ -3,7 +3,7 @@
 from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
-from .discorrel_parallel_process import Discorrel_parallel_process
+from .camera_processes import DiscorrelProcess
 from .camera_parallel import Camera_parallel
 from ..tool.camera_config import DiscorrelConfig
 
@@ -94,10 +94,10 @@ class Discorrel_parallel(Camera_parallel):
   def prepare(self) -> None:
     """"""
 
-    self._process_proc = Discorrel_parallel_process(log_queue=self._log_queue,
-                                                    log_level=self.log_level,
-                                                    verbose=self.verbose,
-                                                    **self._discorrel_kw)
+    self._process_proc = DiscorrelProcess(log_queue=self._log_queue,
+                                          log_level=self.log_level,
+                                          verbose=self.verbose,
+                                          **self._discorrel_kw)
 
     super().prepare()
 

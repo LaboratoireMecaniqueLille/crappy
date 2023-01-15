@@ -6,12 +6,12 @@ from typing import Optional, List
 import logging
 import logging.handlers
 
-from .camera_process import Camera_process
-from ..tool.camera_config import Box, SpotsBoxes
-from ..tool.image_processing import DiscorrelTool
+from .camera_process import CameraProcess
+from ...tool.camera_config import Box, SpotsBoxes
+from ...tool.image_processing import DiscorrelTool
 
 
-class Discorrel_parallel_process(Camera_process):
+class DiscorrelProcess(CameraProcess):
   """"""
 
   def __init__(self,

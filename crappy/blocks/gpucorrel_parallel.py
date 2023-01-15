@@ -3,7 +3,7 @@
 from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
-from .gpucorrel_parallel_process import Gpucorrel_parallel_process
+from .camera_processes import GpuCorrelProcess
 from .camera_parallel import Camera_parallel
 
 
@@ -94,9 +94,9 @@ class Gpucorrel_parallel(Camera_parallel):
   def prepare(self) -> None:
     """"""
 
-    self._process_proc = Gpucorrel_parallel_process(log_queue=self._log_queue,
-                                                    log_level=self.log_level,
-                                                    **self._gpucorrel_kw)
+    self._process_proc = GpuCorrelProcess(log_queue=self._log_queue,
+                                          log_level=self.log_level,
+                                          **self._gpucorrel_kw)
 
     super().prepare()
 

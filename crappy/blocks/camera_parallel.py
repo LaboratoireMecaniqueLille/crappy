@@ -13,10 +13,8 @@ from math import prod
 import logging
 
 from .meta_block import Block
-from .camera_parallel_display import Displayer
-from .camera_parallel_record import Image_saver
+from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam
-from .camera_process import Camera_process
 from ..tool.camera_config import CameraConfig
 from .._global import CameraPrepareError, CameraRuntimeError
 
@@ -49,9 +47,9 @@ class Camera_parallel(Block):
                **kwargs) -> None:
     """"""
 
-    self._save_proc: Optional[Image_saver] = None
+    self._save_proc: Optional[ImageSaver] = None
     self._display_proc: Optional[Displayer] = None
-    self._process_proc: Optional[Camera_process] = None
+    self._process_proc: Optional[CameraProcess] = None
 
     self._camera: Optional[BaseCam] = None
 
@@ -153,10 +151,10 @@ class Camera_parallel(Block):
 
     if self._save_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the saver process")
-      self._save_proc = Image_saver(log_queue=self._log_queue,
-                                    log_level=self.log_level,
-                                    verbose=self.verbose,
-                                    **self._save_proc_kw)
+      self._save_proc = ImageSaver(log_queue=self._log_queue,
+                                   log_level=self.log_level,
+                                   verbose=self.verbose,
+                                   **self._save_proc_kw)
 
     if self._display_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the displayer process")

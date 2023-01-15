@@ -9,9 +9,9 @@ from time import time, sleep
 import logging
 import logging.handlers
 
-from .camera_process import Camera_process
-from .._global import OptionalModule
-from ..tool.camera_config import SpotsBoxes, Box
+from .camera_process import CameraProcess
+from ..._global import OptionalModule
+from ...tool.camera_config import SpotsBoxes, Box
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
@@ -27,7 +27,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class Displayer(Camera_process):
+class Displayer(CameraProcess):
   """"""
 
   def __init__(self,

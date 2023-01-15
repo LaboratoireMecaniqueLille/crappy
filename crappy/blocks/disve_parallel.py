@@ -3,7 +3,7 @@
 from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
-from .disve_parallel_process import Disve_parallel_process
+from .camera_processes import DisveProcess
 from .camera_parallel import Camera_parallel
 from ..tool.camera_config import DisveConfig, SpotsBoxes
 
@@ -101,10 +101,10 @@ class Disve_parallel(Camera_parallel):
     self._patches.set_spots(self._patches_int)
     self._disve_kw['patches'] = self._patches
 
-    self._process_proc = Disve_parallel_process(log_queue=self._log_queue,
-                                                log_level=self.log_level,
-                                                verbose=self.verbose,
-                                                **self._disve_kw)
+    self._process_proc = DisveProcess(log_queue=self._log_queue,
+                                      log_level=self.log_level,
+                                      verbose=self.verbose,
+                                      **self._disve_kw)
 
     super().prepare()
 

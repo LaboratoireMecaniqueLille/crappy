@@ -3,7 +3,7 @@
 from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
-from .gpuve_parallel_process import Gpuve_parallel_process
+from .camera_processes import GpuVeProcess
 from .camera_parallel import Camera_parallel
 
 
@@ -83,9 +83,9 @@ class Gpuve_parallel(Camera_parallel):
   def prepare(self) -> None:
     """"""
 
-    self._process_proc = Gpuve_parallel_process(log_queue=self._log_queue,
-                                                log_level=self.log_level,
-                                                **self._gpuve_kw)
+    self._process_proc = GpuVeProcess(log_queue=self._log_queue,
+                                      log_level=self.log_level,
+                                      **self._gpuve_kw)
 
     super().prepare()
 

@@ -9,8 +9,8 @@ from pathlib import Path
 import logging
 import logging.handlers
 
-from .camera_process import Camera_process
-from .._global import OptionalModule
+from .camera_process import CameraProcess
+from ..._global import OptionalModule
 
 try:
   import SimpleITK as Sitk
@@ -31,7 +31,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class Image_saver(Camera_process):
+class ImageSaver(CameraProcess):
   """"""
 
   def __init__(self,

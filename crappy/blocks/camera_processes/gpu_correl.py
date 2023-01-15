@@ -7,11 +7,11 @@ from pathlib import Path
 import logging
 import logging.handlers
 
-from .camera_process import Camera_process
-from ..tool.image_processing import GpuCorrelTool
+from .camera_process import CameraProcess
+from ...tool.image_processing import GpuCorrelTool
 
 
-class Gpucorrel_parallel_process(Camera_process):
+class GpuCorrelProcess(CameraProcess):
   """"""
 
   def __init__(self,
