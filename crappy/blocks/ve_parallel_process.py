@@ -6,7 +6,7 @@ import logging
 import logging.handlers
 
 from .camera_process import Camera_process
-from ..tool.videoextenso import VideoExtenso, LostSpotError
+from ..tool.image_processing import VideoExtensoTool, LostSpotError
 from ..tool.camera_config import SpotsDetector
 
 
@@ -25,7 +25,7 @@ class Ve_parallel_process(Camera_process):
                      log_level=log_level,
                      verbose=verbose)
 
-    self._ve: Optional[VideoExtenso] = None
+    self._ve: Optional[VideoExtensoTool] = None
     self._detector = detector
     self._raise_on_lost_spot = raise_on_lost_spot
     self._lost_spots = False
@@ -34,18 +34,18 @@ class Ve_parallel_process(Camera_process):
     """"""
 
     self._log(logging.INFO, "Instantiating the VideoExtenso tool")
-    self._ve = VideoExtenso(spots=self._detector.spots,
-                            x_l0=self._detector.x_l0,
-                            y_l0=self._detector.y_l0,
-                            thresh=self._detector.thresh,
-                            log_level=self._log_level,
-                            log_queue=self._log_queue,
-                            white_spots=self._detector.white_spots,
-                            update_thresh=self._detector.update_thresh,
-                            num_spots=self._detector.num_spots,
-                            safe_mode=self._detector.safe_mode,
-                            border=self._detector.border,
-                            blur=self._detector.blur)
+    self._ve = VideoExtensoTool(spots=self._detector.spots,
+                                x_l0=self._detector.x_l0,
+                                y_l0=self._detector.y_l0,
+                                thresh=self._detector.thresh,
+                                log_level=self._log_level,
+                                log_queue=self._log_queue,
+                                white_spots=self._detector.white_spots,
+                                update_thresh=self._detector.update_thresh,
+                                num_spots=self._detector.num_spots,
+                                safe_mode=self._detector.safe_mode,
+                                border=self._detector.border,
+                                blur=self._detector.blur)
 
     self._log(logging.INFO, "Starting the VideoExtenso spot tracker "
                             "processes")

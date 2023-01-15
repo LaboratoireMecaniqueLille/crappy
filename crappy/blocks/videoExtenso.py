@@ -4,7 +4,7 @@ from typing import Callable, Union, Optional, List, Dict, Any
 import numpy as np
 from pathlib import Path
 
-from ..tool.videoextenso import LostSpotError, VideoExtenso as Ve
+from ..tool.image_processing import LostSpotError, VideoExtensoTool as Ve
 from ..tool.camera_config import VideoExtensoConfig
 from .camera import Camera
 from .displayer import Displayer

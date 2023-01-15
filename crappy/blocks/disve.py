@@ -4,7 +4,7 @@ from typing import List, Tuple, Optional, Callable, Union, Dict, Any
 import numpy as np
 from pathlib import Path
 from ..tool.camera_config import DisveConfig, SpotsBoxes
-from ..tool import DISVE as VE
+from ..tool.image_processing import DisveTool
 from .camera import Camera
 from .displayer import Displayer
 
@@ -208,7 +208,7 @@ class DISVE(Camera):
     """Opens the camera for acquiring images and displays the corresponding
     settings window."""
 
-    self._ve = VE(**self._ve_kwargs)
+    self._ve = DisveTool(**self._ve_kwargs)
 
     super().prepare()
 

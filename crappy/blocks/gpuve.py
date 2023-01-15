@@ -5,7 +5,7 @@ from typing import Callable, Optional, List, Union, Tuple, Dict, Any
 from pathlib import Path
 
 from .._global import OptionalModule
-from ..tool import GPUCorrel as GPUCorrel_tool
+from ..tool.image_processing import GpuCorrelTool
 from .camera import Camera
 
 try:
@@ -154,16 +154,16 @@ class GPUVE(Camera):
                        "of labels !\nMake sure that the time and metadata "
                        "labels were given")
 
-    self._correls = [GPUCorrel_tool(context=context,
-                                    verbose=verbose,
-                                    levels=1,
-                                    resampling_factor=2,
-                                    kernel_file=kernel_file,
-                                    iterations=iterations,
-                                    mask=None,
-                                    ref_img=img_ref,
-                                    mul=mul,
-                                    fields=['x', 'y']) for _ in self._patches]
+    self._correls = [GpuCorrelTool(context=context,
+                                   verbose=verbose,
+                                   levels=1,
+                                   resampling_factor=2,
+                                   kernel_file=kernel_file,
+                                   iterations=iterations,
+                                   mask=None,
+                                   ref_img=img_ref,
+                                   mul=mul,
+                                   fields=['x', 'y']) for _ in self._patches]
 
     # We can already set the sizes of the images as they are already known
     for correl, (_, __, h, w) in zip(self._correls, self._patches):

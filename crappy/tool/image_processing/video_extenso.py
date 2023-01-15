@@ -12,8 +12,8 @@ import logging
 import logging.handlers
 from select import select
 
-from .._global import OptionalModule
-from .camera_config import SpotsBoxes, Box
+from ..._global import OptionalModule
+from ..camera_config import SpotsBoxes, Box
 
 try:
   import cv2
@@ -33,7 +33,7 @@ class LostSpotError(Exception):
   ...
 
 
-class VideoExtenso:
+class VideoExtensoTool:
   """This class tracks up to 4 spots on successive images, and computes the
   strain on the material based on the displacement of the spots from their
   original position.

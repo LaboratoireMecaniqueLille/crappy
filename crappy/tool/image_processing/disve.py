@@ -2,8 +2,8 @@
 
 import numpy as np
 from typing import List, Tuple
-from .._global import OptionalModule
-from .camera_config import SpotsBoxes, Box
+from ..._global import OptionalModule
+from ..camera_config import SpotsBoxes, Box
 
 try:
   import cv2
@@ -11,7 +11,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class DISVE:
+class DisveTool:
   """This tool computes the displacement of regions of interest (patches) on an
   image compared to a reference image.
 

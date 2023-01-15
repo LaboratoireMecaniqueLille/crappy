@@ -2,8 +2,8 @@
 
 from typing import List, Optional
 
-from .._global import OptionalModule
-from .camera_config import Box
+from ..._global import OptionalModule
+from ..camera_config import Box
 from .fields import get_res, get_field, allowed_fields
 
 try:
@@ -13,7 +13,7 @@ except (ModuleNotFoundError, ImportError):
 import numpy as np
 
 
-class DISCorrel:
+class DiscorrelTool:
   """This class simply stores the data needed for performing image correlation
   using DisFlow, and also performs the correlation.
 

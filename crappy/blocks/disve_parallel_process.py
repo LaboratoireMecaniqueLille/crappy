@@ -7,7 +7,7 @@ import logging
 import logging.handlers
 
 from .camera_process import Camera_process
-from ..tool import DISVE
+from ..tool.image_processing import DisveTool
 from ..tool.camera_config import SpotsBoxes
 
 
@@ -52,7 +52,7 @@ class Disve_parallel_process(Camera_process):
                           safe=safe,
                           follow=follow)
     self._raise_on_exit = raise_on_exit
-    self._disve: Optional[DISVE] = None
+    self._disve: Optional[DisveTool] = None
     self._img0_set = False
     self._lost_patch = False
 
@@ -60,7 +60,7 @@ class Disve_parallel_process(Camera_process):
     """"""
 
     self._log(logging.INFO, "Instantiating the Disve tool")
-    self._disve = DISVE(**self._disve_kw)
+    self._disve = DisveTool(**self._disve_kw)
 
   def _loop(self) -> None:
     """"""

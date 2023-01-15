@@ -4,7 +4,7 @@ import numpy as np
 from typing import Callable, Union, Optional, List, Dict, Any
 from pathlib import Path
 
-from ..tool import GPUCorrel as GPUCorrel_tool
+from ..tool.image_processing import GpuCorrelTool
 from .camera import Camera
 from .displayer import Displayer
 
@@ -167,16 +167,16 @@ class GPUCorrel(Camera):
                      image_generator=image_generator,
                      **kwargs)
 
-    self._correl = GPUCorrel_tool(context=None,
-                                  verbose=verbose,
-                                  levels=levels,
-                                  resampling_factor=resampling_factor,
-                                  kernel_file=kernel_file,
-                                  iterations=iterations,
-                                  mask=mask,
-                                  ref_img=img_ref,
-                                  mul=mul,
-                                  fields=fields)
+    self._correl = GpuCorrelTool(context=None,
+                                 verbose=verbose,
+                                 levels=levels,
+                                 resampling_factor=resampling_factor,
+                                 kernel_file=kernel_file,
+                                 iterations=iterations,
+                                 mask=mask,
+                                 ref_img=img_ref,
+                                 mul=mul,
+                                 fields=fields)
 
     # Setting the labels
     if labels is None:

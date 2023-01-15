@@ -4,7 +4,7 @@ import numpy as np
 from typing import Callable, Optional, Union, List, Dict, Any
 from pathlib import Path
 
-from ..tool import DISCorrel as Dis
+from ..tool.image_processing import DiscorrelTool
 from ..tool.camera_config import DiscorrelConfig, Box
 from .camera import Camera
 from .displayer import Displayer
@@ -183,16 +183,16 @@ class DISCorrel(Camera):
         "The number of fields is inconsistent with the number "
         "of labels !\nMake sure that the time label was given")
 
-    self._dis = Dis(fields=fields,
-                    alpha=alpha,
-                    delta=delta,
-                    gamma=gamma,
-                    finest_scale=finest_scale,
-                    init=init,
-                    iterations=iterations,
-                    gradient_iterations=gradient_iterations,
-                    patch_size=patch_size,
-                    patch_stride=patch_stride)
+    self._dis = DiscorrelTool(fields=fields,
+                              alpha=alpha,
+                              delta=delta,
+                              gamma=gamma,
+                              finest_scale=finest_scale,
+                              init=init,
+                              iterations=iterations,
+                              gradient_iterations=gradient_iterations,
+                              patch_size=patch_size,
+                              patch_stride=patch_stride)
 
     self._residual = residual
     self._config_dis = config

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from .._global import OptionalModule
+from ..._global import OptionalModule
 
 try:
   import cv2

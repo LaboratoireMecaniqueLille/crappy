@@ -1,2 +1,2 @@
-include crappy/tool/kernels.cu
+include crappy/tool/image_processing/kernels.cu
 include crappy/tool/data/*

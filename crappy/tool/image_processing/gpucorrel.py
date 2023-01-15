@@ -10,7 +10,7 @@ from itertools import chain
 import logging
 
 from .fields import get_field
-from .._global import OptionalModule
+from ..._global import OptionalModule
 try:
   import pycuda.tools
   import pycuda.driver
@@ -150,7 +150,8 @@ class CorrelStage:
     # Opening the kernel file and compiling the module
     if kernel_file is None:
       self._debug(2, "Kernel file not specified")
-      kernel_file = resource_filename('crappy', 'tool/kernels.cu')
+      kernel_file = resource_filename('crappy',
+                                      'tool/image_processing/kernels.cu')
     with open(kernel_file, "r") as file:
       self._debug(3, "Sourcing module")
       mod = pycuda.compiler.SourceModule(file.read() % (self._width,
@@ -475,7 +476,7 @@ class CorrelStage:
                                       self._dev_grad_y.gpudata)
 
 
-class GPUCorrel:
+class GpuCorrelTool:
   """This tool performs GPU correlation between two images in order to identify
   fields of rigid body displacements.
 
@@ -587,7 +588,8 @@ class GPUCorrel:
     if kernel_file is None:
       self._debug(3, "Kernel file not specified, using the default one of "
                      "crappy")
-      self._kernel_file = resource_filename('crappy', 'tool/kernels.cu')
+      self._kernel_file = resource_filename('crappy',
+                                            'tool/image_processing/kernels.cu')
     else:
       self._kernel_file = kernel_file
     self._debug(3, f"Kernel file:{self._kernel_file}")
