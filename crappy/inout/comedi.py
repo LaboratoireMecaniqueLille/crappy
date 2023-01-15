@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import logging
 
 from .meta_inout import InOut
-from ..tool import comedi_bind as comedi
+from ..tool.bindings import comedi_bind as comedi
 
 
 @dataclass

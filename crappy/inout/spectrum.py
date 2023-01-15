@@ -6,7 +6,7 @@ from typing import List, Optional
 import logging
 
 from .meta_inout import InOut
-from ..tool import pyspcm as spc
+from ..tool.bindings import pyspcm as spc
 
 
 class Spectrum(InOut):

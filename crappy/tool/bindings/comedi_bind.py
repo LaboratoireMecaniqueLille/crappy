@@ -6,7 +6,7 @@ The bindings haven't been tested for a while.
 """
 
 from ctypes import *
-from .._global import OptionalModule
+from ..._global import OptionalModule
 
 try:
   comedi = cdll.LoadLibrary("/usr/lib/libcomedi.so")
