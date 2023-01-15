@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 
 from ..tool.videoextenso import LostSpotError, VideoExtenso as Ve
-from ..tool import VideoExtensoConfig
+from ..tool.camera_config import VideoExtensoConfig
 from .camera import Camera
 from .displayer import Displayer
 

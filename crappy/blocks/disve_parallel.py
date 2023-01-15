@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 from .disve_parallel_process import Disve_parallel_process
 from .camera_parallel import Camera_parallel
-from ..tool import DisveConfig, SpotsBoxes
+from ..tool.camera_config import DisveConfig, SpotsBoxes
 
 
 class Disve_parallel(Camera_parallel):

@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 from .ve_parallel_process import Ve_parallel_process
 from .camera_parallel import Camera_parallel
-from ..tool import VideoExtensoConfig, SpotsDetector
+from ..tool.camera_config import VideoExtensoConfig, SpotsDetector
 
 
 class Video_extenso_parallel(Camera_parallel):

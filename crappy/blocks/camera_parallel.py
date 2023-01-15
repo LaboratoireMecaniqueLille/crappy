@@ -17,7 +17,7 @@ from .camera_parallel_display import Displayer
 from .camera_parallel_record import Image_saver
 from ..camera import camera_dict, Camera as BaseCam
 from .camera_process import Camera_process
-from ..tool import CameraConfig
+from ..tool.camera_config import CameraConfig
 from .._global import CameraPrepareError, CameraRuntimeError
 
 

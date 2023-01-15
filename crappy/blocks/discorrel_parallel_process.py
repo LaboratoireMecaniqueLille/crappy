@@ -7,7 +7,8 @@ import logging
 import logging.handlers
 
 from .camera_process import Camera_process
-from ..tool import DISCorrel, Box, SpotsBoxes
+from ..tool.camera_config import Box, SpotsBoxes
+from ..tool import DISCorrel
 
 
 class Discorrel_parallel_process(Camera_process):

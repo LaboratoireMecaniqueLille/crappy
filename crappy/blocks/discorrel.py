@@ -5,7 +5,7 @@ from typing import Callable, Optional, Union, List, Dict, Any
 from pathlib import Path
 
 from ..tool import DISCorrel as Dis
-from ..tool import DiscorrelConfig, Box
+from ..tool.camera_config import DiscorrelConfig, Box
 from .camera import Camera
 from .displayer import Displayer
 

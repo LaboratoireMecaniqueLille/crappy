@@ -3,7 +3,8 @@
 from typing import List, Tuple, Optional, Callable, Union, Dict, Any
 import numpy as np
 from pathlib import Path
-from ..tool import DISVE as VE, DisveConfig, SpotsBoxes
+from ..tool.camera_config import DisveConfig, SpotsBoxes
+from ..tool import DISVE as VE
 from .camera import Camera
 from .displayer import Displayer
 

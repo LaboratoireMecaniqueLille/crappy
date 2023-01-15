@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from .camera_config import CameraConfig, DisveConfig, VideoExtensoConfig, \
-  DiscorrelConfig, Box, SpotsBoxes, SpotsDetector
 from .gpucorrel import GPUCorrel
 from .discorrel import DISCorrel
 from .disve import DISVE

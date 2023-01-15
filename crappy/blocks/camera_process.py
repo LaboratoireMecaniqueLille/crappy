@@ -16,7 +16,7 @@ from time import time
 
 from ..links import Link
 from .._global import LinkDataError
-from ..tool import SpotsBoxes
+from ..tool.camera_config import SpotsBoxes
 
 
 class Camera_process(Process):

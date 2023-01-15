@@ -11,7 +11,7 @@ import logging
 from .block import Block
 from .displayer import Displayer
 from ..camera import camera_dict, Camera as BaseCam
-from ..tool import Box, CameraConfig
+from ..tool.camera_config import Box, CameraConfig
 from .._global import OptionalModule
 
 try:

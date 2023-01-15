@@ -11,7 +11,7 @@ import logging.handlers
 
 from .camera_process import Camera_process
 from .._global import OptionalModule
-from ..tool import SpotsBoxes, Box
+from ..tool.camera_config import SpotsBoxes, Box
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 

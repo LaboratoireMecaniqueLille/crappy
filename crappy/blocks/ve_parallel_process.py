@@ -7,7 +7,7 @@ import logging.handlers
 
 from .camera_process import Camera_process
 from ..tool.videoextenso import VideoExtenso, LostSpotError
-from ..tool import SpotsDetector
+from ..tool.camera_config import SpotsDetector
 
 
 class Ve_parallel_process(Camera_process):

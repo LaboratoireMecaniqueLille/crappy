@@ -8,7 +8,8 @@ import logging
 import logging.handlers
 
 from .camera_process import Camera_process
-from ..tool import GPUCorrel, SpotsBoxes
+from ..tool import GPUCorrel
+from ..tool.camera_config import SpotsBoxes
 from .._global import OptionalModule
 
 try:
