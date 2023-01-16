@@ -16,13 +16,19 @@ from ._global import OptionalModule
 
 
 # Quick access to documentation
-def doc():
+def docs():
   open('https://crappy.readthedocs.io/en/latest/')
 
 
 # Useful aliases
 link = links.link
 Block = blocks.Block
+Actuator = actuator.Actuator
+Camera = camera.Camera
+InOut = inout.InOut
+Modifier = modifier.Modifier
+
+# Useful commands
 stop = Block.stop_all
 prepare = Block.prepare_all
 launch = Block.launch_all

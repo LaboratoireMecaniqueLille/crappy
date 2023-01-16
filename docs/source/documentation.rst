@@ -13,6 +13,70 @@ of Crappy's documentation can be found on `ReadTheDocs
 An easy way to access the online documentation is to run in a Python console :
 
   >>> import crappy
+  >>> crappy.docs()
+
+This will open the documentation in a new tab or window of your default browser,
+hard to be quicker than that ! Of course you still need an internet connection.
+
+An easy way to access the online documentation is to run in a Python console :
+
+  >>> import crappy
+  >>> crappy.docs()
+
+This will open the documentation in a new tab or window of your default browser,
+hard to be quicker than that ! Of course you still need an internet connection.
+
+An easy way to access the online documentation is to run in a Python console :
+
+  >>> import crappy
+  >>> crappy.docs()
+
+This will open the documentation in a new tab or window of your default browser,
+hard to be quicker than that ! Of course you still need an internet connection.
+
+An easy way to access the online documentation is to run in a Python console :
+
+  >>> import crappy
+  >>> crappy.docs()
+
+This will open the documentation in a new tab or window of your default browser,
+hard to be quicker than that ! Of course you still need an internet connection.
+
+An easy way to access the online documentation is to run in a Python console :
+
+  >>> import crappy
+  >>> crappy.docs()
+
+This will open the documentation in a new tab or window of your default browser,
+hard to be quicker than that ! Of course you still need an internet connection.
+
+An easy way to access the online documentation is to run in a Python console :
+
+  >>> import crappy
+  >>> crappy.docs()
+
+This will open the documentation in a new tab or window of your default browser,
+hard to be quicker than that ! Of course you still need an internet connection.
+
+An easy way to access the online documentation is to run in a Python console :
+
+  >>> import crappy
+  >>> crappy.docs()
+
+This will open the documentation in a new tab or window of your default browser,
+hard to be quicker than that ! Of course you still need an internet connection.
+
+An easy way to access the online documentation is to run in a Python console :
+
+  >>> import crappy
+  >>> crappy.docs()
+
+This will open the documentation in a new tab or window of your default browser,
+hard to be quicker than that ! Of course you still need an internet connection.
+
+An easy way to access the online documentation is to run in a Python console :
+
+  >>> import crappy
   >>> crappy.doc()
 
 This will open the documentation in a new tab or window of your default browser,

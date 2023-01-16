@@ -78,6 +78,9 @@ documentation !
    To easily access the documentation, simply type in a Python terminal :
 
      >>> import crappy
+          >>> crappy.docs()
+
+     In our specific case, the script could be as follows :
      >>> crappy.doc()
 
 In our specific case, the script could be as follows :
