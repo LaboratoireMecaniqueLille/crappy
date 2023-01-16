@@ -13,6 +13,10 @@ BUILDDIR      = build
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+.PHONY: clean
+clean:
+	rm -r $(BUILDDIR)
+
 LINKCHECKDIR  = build/linkcheck
 
 .PHONY: checklinks
