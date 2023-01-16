@@ -3,7 +3,7 @@
 from typing import Optional, Iterable
 
 
-class i2c_msg_ft232h:
+class I2CMessage:
   """Class that mimics the :obj:`i2c_msg` class of the :mod:`smbus2` module."""
 
   def __init__(self,

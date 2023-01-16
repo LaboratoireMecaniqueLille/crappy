@@ -5,7 +5,7 @@ from typing import Optional, List
 import logging
 
 from ..meta_inout import InOut
-from ...tool.ft232h import Ft232hServer as Ft232h, i2c_msg_ft232h
+from ...tool.ft232h import Ft232hServer as Ft232h, I2CMessage
 
 mprls_status_bits = {'busy': 0x20,
                      'memory error': 0x04,
@@ -68,7 +68,7 @@ class Mprls_ft232h(InOut):
   def open(self) -> None:
     """Opens the I2C bus."""
 
-    self._i2c_msg = i2c_msg_ft232h
+    self._i2c_msg = I2CMessage
 
   def get_data(self) -> List[float]:
     """Reads the pressure value.
