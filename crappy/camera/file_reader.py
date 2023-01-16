@@ -20,7 +20,7 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 
-class File_reader(Camera):
+class FileReader(Camera):
   """This Camera class reads existing images from a given folder, in the same
   order in which they were acquired.
 
@@ -164,5 +164,5 @@ class File_reader(Camera):
         # Otherwise, nothing more gets done but the test goes on
         self._stopped = True
         self.log(logging.WARNING, "Exhausted all the images to read for the "
-                                  "File_reader camera, staying idle until the "
+                                  "FileReader camera, staying idle until the "
                                   "script ends")

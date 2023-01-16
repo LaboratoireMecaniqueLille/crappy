@@ -29,7 +29,7 @@ except (ImportError, ModuleNotFoundError, ValueError):
 # Todo: Error with a getter
 
 
-class Camera_gstreamer(Camera):
+class CameraGstreamer(Camera):
   """A class for reading images from a video device using Gstreamer.
 
   It can read images from the default video source, or a video device can be
@@ -191,7 +191,7 @@ videoconvert ! autovideosink
         try:
           check = run(command, capture_output=True, text=True)
         except FileNotFoundError:
-          self.log(logging.WARNING, "The performance of the Camera_opencv "
+          self.log(logging.WARNING, "The performance of the CameraOpencv "
                                     "class could be improved if v4l-utils "
                                     "was installed !")
           check = None

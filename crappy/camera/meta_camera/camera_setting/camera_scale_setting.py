@@ -3,12 +3,12 @@
 from typing import Optional, Callable, Union
 import logging
 
-from .camera_setting import Camera_setting
+from .camera_setting import CameraSetting
 
-nbr_type = Union[int, float]
+NbrType = Union[int, float]
 
 
-class Camera_scale_setting(Camera_setting):
+class CameraScaleSetting(CameraSetting):
   """Camera setting that can take any value between a lower and an upper
   boundary.
 
@@ -18,11 +18,11 @@ class Camera_scale_setting(Camera_setting):
 
   def __init__(self,
                name: str,
-               lowest: nbr_type,
-               highest: nbr_type,
-               getter: Optional[Callable[[], nbr_type]] = None,
-               setter: Optional[Callable[[nbr_type], None]] = None,
-               default: Optional[nbr_type] = None) -> None:
+               lowest: NbrType,
+               highest: NbrType,
+               getter: Optional[Callable[[], NbrType]] = None,
+               setter: Optional[Callable[[NbrType], None]] = None,
+               default: Optional[NbrType] = None) -> None:
     """Sets the attributes.
 
     Args:
@@ -44,7 +44,7 @@ class Camera_scale_setting(Camera_setting):
     super().__init__(name, getter, setter, default)
 
   @property
-  def value(self) -> nbr_type:
+  def value(self) -> NbrType:
     """Returns the current value of the setting, by calling the getter if one
     was provided or else by returning the stored value."""
 
@@ -54,7 +54,7 @@ class Camera_scale_setting(Camera_setting):
       return self.type(self._value_no_getter)
 
   @value.setter
-  def value(self, val: nbr_type) -> None:
+  def value(self, val: NbrType) -> None:
     val = min(max(val, self.lowest), self.highest)
     self.log(logging.DEBUG, f"Setting the setting {self.name} to {val}")
 

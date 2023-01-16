@@ -7,10 +7,10 @@ from multiprocessing import current_process
 import logging
 
 from .meta_camera import MetaCamera
-from .camera_setting import Camera_setting, Camera_bool_setting, \
-  Camera_scale_setting, Camera_choice_setting
+from .camera_setting import CameraSetting, CameraBoolSetting, \
+  CameraScaleSetting, CameraChoiceSetting
 
-nbr_type = Union[int, float]
+NbrType = Union[int, float]
 
 
 class Camera(metaclass=MetaCamera):
@@ -24,7 +24,7 @@ class Camera(metaclass=MetaCamera):
     """Simply sets the dict containing the settings and the name of the
     trigger setting."""
 
-    self.settings: Dict[str, Camera_setting] = dict()
+    self.settings: Dict[str, CameraSetting] = dict()
     self.trigger_name = 'Trigger'
     self._logger: Optional[logging.Logger] = None
 
@@ -119,15 +119,15 @@ class Camera(metaclass=MetaCamera):
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} bool setting")
-    self.settings[name] = Camera_bool_setting(name, getter, setter, default)
+    self.settings[name] = CameraBoolSetting(name, getter, setter, default)
 
   def add_scale_setting(self,
                         name: str,
-                        lowest: nbr_type,
-                        highest: nbr_type,
-                        getter: Optional[Callable[[], nbr_type]] = None,
-                        setter: Optional[Callable[[nbr_type], None]] = None,
-                        default: Optional[nbr_type] = None) -> None:
+                        lowest: NbrType,
+                        highest: NbrType,
+                        getter: Optional[Callable[[], NbrType]] = None,
+                        setter: Optional[Callable[[NbrType], None]] = None,
+                        default: Optional[NbrType] = None) -> None:
     """Adds a scale setting, whose value is an :obj:`int` or a :obj:`float`
     clamped between two boundaries.
 
@@ -157,8 +157,8 @@ class Camera(metaclass=MetaCamera):
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} scale setting")
-    self.settings[name] = Camera_scale_setting(name, lowest, highest, getter,
-                                               setter, default)
+    self.settings[name] = CameraScaleSetting(name, lowest, highest, getter,
+                                             setter, default)
 
   def add_choice_setting(self,
                          name: str,
@@ -189,8 +189,8 @@ class Camera(metaclass=MetaCamera):
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} choice setting")
-    self.settings[name] = Camera_choice_setting(name, choices, getter, setter,
-                                                default)
+    self.settings[name] = CameraChoiceSetting(name, choices, getter, setter,
+                                              default)
 
   def add_trigger_setting(self,
                           getter: Optional[Callable[[], str]] = None,
@@ -229,7 +229,7 @@ class Camera(metaclass=MetaCamera):
       raise ValueError("There can only be one trigger setting per camera !")
 
     self.log(logging.INFO, f"Adding the {self.trigger_name} trigger setting")
-    self.settings[self.trigger_name] = Camera_choice_setting(
+    self.settings[self.trigger_name] = CameraChoiceSetting(
       name=self.trigger_name, choices=('Free run',
                                        'Hdw after config',
                                        'Hardware'),

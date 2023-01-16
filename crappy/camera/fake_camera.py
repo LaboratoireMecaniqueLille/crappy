@@ -8,7 +8,7 @@ import logging
 from .meta_camera import Camera
 
 
-class Fake_camera(Camera):
+class FakeCamera(Camera):
   """This camera class generates images without requiring any actual camera or
   existing image file.
 

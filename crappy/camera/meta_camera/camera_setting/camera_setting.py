@@ -4,10 +4,10 @@ from typing import Callable, Optional, Union, Any
 from multiprocessing import current_process
 import logging
 
-nbr_type = Union[int, float]
+NbrType = Union[int, float]
 
 
-class Camera_setting:
+class CameraSetting:
   """Base class for each camera setting.
 
   It is meant to be subclassed and should not be used as is.

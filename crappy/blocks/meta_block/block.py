@@ -521,10 +521,10 @@ class Block(Process, metaclass=MetaBlock):
     except GeneratorStop:
       self._logger.log(logging.WARNING, f"Generator path exhausted, stopping "
                                         f"the Block")
-    # A File_reader Camera object has no more file to read from
+    # A FileReader Camera object has no more file to read from
     except ReaderStop:
       self._logger.log(logging.WARNING, "Exhausted all the images to read from"
-                                        " a File_reader camera, stopping the "
+                                        " a FileReader camera, stopping the "
                                         "Block")
     # The user requested the script to stop
     except KeyboardInterrupt:

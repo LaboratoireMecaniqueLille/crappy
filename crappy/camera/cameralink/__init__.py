@@ -1,5 +1,5 @@
 # coding: utf-8
 
-from .cameralink import Cl_camera
-from .bispectral import Bispectral
+from .cameralink import CLCamera
+from .bispectral import BiSpectral
 from .jai import Jai, Jai8

@@ -15,11 +15,11 @@ from .._global import OptionalModule
 try:
   from ximea import xiapi
 except (ModuleNotFoundError, ImportError):
-  xiapi = OptionalModule("ximea", "To use Xiapi cameras, please install the "
+  xiapi = OptionalModule("ximea", "To use XiApi cameras, please install the "
                          "official ximea Python module")
 
 
-class Xiapi(Camera):
+class XiApi(Camera):
   """Camera class for ximeas using official XiAPI."""
 
   def __init__(self) -> None:

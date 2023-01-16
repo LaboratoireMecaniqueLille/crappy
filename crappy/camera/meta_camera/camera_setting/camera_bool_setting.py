@@ -2,10 +2,10 @@
 
 from typing import Optional, Callable
 
-from .camera_setting import Camera_setting
+from .camera_setting import CameraSetting
 
 
-class Camera_bool_setting(Camera_setting):
+class CameraBoolSetting(CameraSetting):
   """Camera setting that can only be :obj:`True` or :obj:`False`."""
 
   def __init__(self,

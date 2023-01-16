@@ -14,18 +14,18 @@ except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
 try:
-  from picamera import PiCamera
+  from picamera import PiCamera as PiCameraRPi
   from picamera.array import PiRGBArray
 except (ModuleNotFoundError, ImportError, OSError):
-  PiCamera = OptionalModule("picamera")
+  PiCameraRPi = OptionalModule("picamera")
 
 picamera_iso = [0, 100, 200, 320, 400, 500, 640, 800]
 
 
-class Picamera(Camera):
+class PiCamera(Camera):
   """Class for reading images from a PiCamera.
 
-  The Picamera Camera block is meant for reading images from a Picamera.
+  The PiCamera Camera block is meant for reading images from a PiCamera.
   It uses the :mod:`picamera` module for capturing images, and :mod:`cv2` for
   converting bgr images to black and white.
 
@@ -44,7 +44,7 @@ class Picamera(Camera):
     super().__init__()
 
     self.log(logging.INFO, "Opening the connection to the camera")
-    self._cam = PiCamera()
+    self._cam = PiCameraRPi()
 
     # Settings definition
     self.add_scale_setting('Width', 1, 3280, self._get_width,
@@ -211,19 +211,19 @@ class Picamera(Camera):
     return self._cam.zoom[3]
 
   def _set_width(self, width: float) -> None:
-    # The Picamera only accepts width that are multiples of 32
+    # The PiCamera only accepts width that are multiples of 32
     self._stop_stream()
     self._cam.resolution = (32 * (width // 32), self._get_height())
     self._restart_stream()
 
   def _set_height(self, height: float) -> None:
-    # The Picamera only accepts heights that are multiples of 32
+    # The PiCamera only accepts heights that are multiples of 32
     self._stop_stream()
     self._cam.resolution = (self._get_width(), 32 * (height // 32))
     self._restart_stream()
 
   def _set_iso(self, iso: float) -> None:
-    # The Picamera only accepts a limited range of iso values
+    # The PiCamera only accepts a limited range of iso values
     self._cam.iso = min(picamera_iso, key=lambda x: abs(x - iso))
 
   def _set_brightness(self, brightness: float) -> None:

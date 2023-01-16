@@ -98,5 +98,5 @@ class GeneratorStop(Exception):
 
 
 class ReaderStop(Exception):
-  """Exception raised when a File_reader camera has exhausted all the images
+  """Exception raised when a FileReader camera has exhausted all the images
   to read."""

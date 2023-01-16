@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 import numpy as np
 import logging
 
-from .cameralink import Cl_camera
+from .cameralink import CLCamera
 from ..._global import OptionalModule
 try:
   from . import clModule as Cl
@@ -17,7 +17,7 @@ format_to_num = {'8 bits': 0,
 num_to_format = {val: key for key, val in format_to_num.items()}
 
 
-class Jai8(Cl_camera):
+class Jai8(CLCamera):
   """This class supports Jai GO-5000-PMCL gray cameras.
 
   This one uses FullAreaGray8 module for maximum framerate.

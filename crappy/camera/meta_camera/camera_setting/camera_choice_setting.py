@@ -2,10 +2,10 @@
 
 from typing import Optional, Callable, Tuple
 
-from .camera_setting import Camera_setting
+from .camera_setting import CameraSetting
 
 
-class Camera_choice_setting(Camera_setting):
+class CameraChoiceSetting(CameraSetting):
   """Camera setting that can take any value from a predefined list of
   values."""
 

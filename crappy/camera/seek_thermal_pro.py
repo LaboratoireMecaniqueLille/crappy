@@ -44,10 +44,10 @@ Seek_thermal_pro_dimensions = {'Width': 320,
                                'Raw height': 260}
 
 
-class Seek_thermal_pro(Camera):
+class SeekThermalPro(Camera):
   """Class for reading the Seek Thermal Pro infrared camera.
 
-  The Seek_thermal_pro Camera block is meant for reading images from a Seek
+  The SeekThermalPro Camera block is meant for reading images from a Seek
   Thermal Pro infrared camera. It communicates over USB, and gets images by
   converting the received bytearrays into numpy arrays.
 

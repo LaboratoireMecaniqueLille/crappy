@@ -19,7 +19,7 @@ except (ModuleNotFoundError, ImportError):
 # Todo: Manage frame rate
 
 
-class Camera_opencv(Camera):
+class CameraOpencv(Camera):
   """A class for reading images from any camera able to interface with OpenCv.
 
   The number of the video device to read images from can be specified. It is
@@ -72,7 +72,7 @@ class Camera_opencv(Camera):
                                f"command {command}")
         check = run(command, capture_output=True, text=True)
       except FileNotFoundError:
-        self.log(logging.WARNING, "The performance of the Camera_opencv class "
+        self.log(logging.WARNING, "The performance of the CameraOpencv class "
                                   "could be improved if v4l-utils was "
                                   "installed !")
         check = None
