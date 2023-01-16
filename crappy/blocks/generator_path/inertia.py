@@ -4,7 +4,7 @@ from numpy import trapz
 from typing import Union, Dict
 import logging
 
-from .path import Path, Condition_type
+from .path import Path, ConditionType
 
 
 class Inertia(Path):
@@ -24,7 +24,7 @@ class Inertia(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               condition: Union[str, Condition_type],
+               condition: Union[str, ConditionType],
                inertia: float,
                func_label: str,
                time_label: str = 't(s)',

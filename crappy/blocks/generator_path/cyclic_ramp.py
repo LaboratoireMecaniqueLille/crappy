@@ -5,10 +5,10 @@ from typing import Union, Dict, Optional
 from itertools import cycle, islice
 import logging
 
-from .path import Path, Condition_type
+from .path import Path, ConditionType
 
 
-class Cyclic_ramp(Path):
+class CyclicRamp(Path):
   """The path cyclically alternates between two ramps with different slopes,
   based on two different conditions.
 
@@ -18,8 +18,8 @@ class Cyclic_ramp(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               condition1: Union[str, Condition_type],
-               condition2: Union[str, Condition_type],
+               condition1: Union[str, ConditionType],
+               condition2: Union[str, ConditionType],
                speed1: float,
                speed2: float,
                cycles: float = 1,

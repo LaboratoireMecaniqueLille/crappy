@@ -32,6 +32,6 @@ if __name__ == "__main__":
   g = crappy.blocks.Grapher(('t', 'AIN0'), ('t', 'AIN1'))
   crappy.link(s, g, modifier=my_mean)
 
-  rec = crappy.blocks.Hdf_recorder("out.h5", atom=tables.Float64Atom())
+  rec = crappy.blocks.HDFRecorder("out.h5", atom=tables.Float64Atom())
   crappy.link(s, rec)
   crappy.start()

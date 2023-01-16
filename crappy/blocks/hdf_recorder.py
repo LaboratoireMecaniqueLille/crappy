@@ -11,11 +11,11 @@ from .meta_block import Block
 try:
   import tables
 except ModuleNotFoundError:
-  tables = OptionalModule("tables", "Hdf_recorder needs the tables module to "
+  tables = OptionalModule("tables", "HDFRecorder needs the tables module to "
                           "write hdf files.")
 
 
-class Hdf_recorder(Block):
+class HDFRecorder(Block):
   """This block saves data efficiently into a hdf5 file.
 
   This block is meant to save data coming as arrays at a high rate

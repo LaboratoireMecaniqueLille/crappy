@@ -7,7 +7,7 @@ import logging
 from .meta_block import Block
 
 
-class Dashboard_window(tk.Tk):
+class DashboardWindow(tk.Tk):
   """The GUI for displaying the label values."""
 
   def __init__(self, labels: List[str]) -> None:
@@ -71,7 +71,7 @@ class Dashboard(Block):
       freq: If set, the block will try to loop at this frequency.
     """
 
-    self._dashboard: Optional[Dashboard_window] = None
+    self._dashboard: Optional[DashboardWindow] = None
 
     super().__init__()
     self.verbose = verbose
@@ -90,7 +90,7 @@ class Dashboard(Block):
       raise IOError("Too many links pointing towards the Dashboard block !")
 
     self.log(logging.INFO, "Creating the dashboard window")
-    self._dashboard = Dashboard_window(self._labels)
+    self._dashboard = DashboardWindow(self._labels)
     self._dashboard.update()
 
   def loop(self) -> None:

@@ -3,24 +3,24 @@
 # Some of them are already implemented (see the reference manual),
 # but you can also implement your own.
 
-from .autoDrive import AutoDrive
+from .auto_drive import AutoDrive
 from .meta_block import Block
 from .camera import Camera
-from .client_server import Client_server
+from .client_server import ClientServer
 from .dashboard import Dashboard
-from .discorrel import DISCorrel
-from .disve import DISVE
+from .dis_correl import DISCorrel
+from .dis_ve import DISVE
 from .drawing import Drawing
-from .fake_machine import Fake_machine
+from .fake_machine import FakeMachine
 from .generator import Generator
 from .gpu_correl import GPUCorrel
 from .gpu_ve import GPUVE
 from .grapher import Grapher
 from .gui import GUI
-from .hdf_recorder import Hdf_recorder
+from .hdf_recorder import HDFRecorder
 from .ioblock import IOBlock
 from .machine import Machine
-from .mean import Mean_block
+from .mean import MeanBlock
 from .multiplex import Multiplex
 from .pid import PID
 from .reader import Reader

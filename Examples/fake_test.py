@@ -20,7 +20,7 @@ if __name__ == "__main__":
     {'type': 'constant', 'value': -speed, 'condition': 'F(N)<0'}]
     for i in range(1, 6)], []), spam=False, cmd_label='cmd')
 
-  machine = crappy.blocks.Fake_machine()
+  machine = crappy.blocks.FakeMachine()
 
   crappy.link(generator, machine)
   crappy.link(machine, generator)

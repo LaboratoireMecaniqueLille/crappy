@@ -28,8 +28,8 @@ if __name__ == "__main__":
   graph = crappy.blocks.Grapher(*[('t(s)', i) for i in chan_names])
 
   if save_file:
-    hrec = crappy.blocks.Hdf_recorder("./out.h5",
-                                      metadata={
+    hrec = crappy.blocks.HDFRecorder("./out.h5",
+                                     metadata={
                                         'channels': channels,
                                         'ranges': ranges,
                                         'freq': 100000,

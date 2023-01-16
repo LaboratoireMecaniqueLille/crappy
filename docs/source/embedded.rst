@@ -395,7 +395,7 @@ assumes that a remote device publishes in the topic `to_receive`.
                                      freq=50,
                                      cmd_label='to_send')
 
-       mqtt = crappy.blocks.Client_server(address='192.0.2.1',
+       mqtt = crappy.blocks.ClientServer(address='192.0.2.1',
                                           port=1148,
                                           topics=[('to_receive',)],
                                           init_output={'to_receive': 0},
@@ -426,7 +426,7 @@ device sends the timestamp `t_remote` along with `to_receive`.
                                        'condition': None}],
                                      freq=50)
 
-       mqtt = crappy.blocks.Client_server(address='192.0.2.1',
+       mqtt = crappy.blocks.ClientServer(address='192.0.2.1',
                                           port=1148,
                                           topics=[('t_remote', 'to_receive')],
                                           init_output={'t_remote': 0,

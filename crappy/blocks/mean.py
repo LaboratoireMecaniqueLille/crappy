@@ -8,7 +8,7 @@ import logging
 from .meta_block import Block
 
 
-class Mean_block(Block):
+class MeanBlock(Block):
   """This block computes the average values over a given delay of each label
   received, and returns them.
 

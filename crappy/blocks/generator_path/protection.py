@@ -3,7 +3,7 @@
 from typing import Union, Dict
 import logging
 
-from .path import Path, Condition_type
+from .path import Path, ConditionType
 
 
 class Protection(Path):
@@ -18,8 +18,8 @@ class Protection(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               condition1: Union[str, Condition_type],
-               condition2: Union[str, Condition_type],
+               condition1: Union[str, ConditionType],
+               condition2: Union[str, ConditionType],
                value1: float,
                value2: float,
                value0: float = 0) -> None:

@@ -11,7 +11,7 @@ from ..tool.ft232h import UsbServer
 
 
 @dataclass
-class Actuator_instance:
+class ActuatorInstance:
   """"""
 
   actuator: Actuator
@@ -85,7 +85,7 @@ class Machine(Block):
 
     """
 
-    self._actuators: List[Actuator_instance] = list()
+    self._actuators: List[ActuatorInstance] = list()
     self._ft232h_args = None
 
     super().__init__()
@@ -110,7 +110,7 @@ class Machine(Block):
                        "actuators !")
 
     # The names of the possible settings, to avoid typos and reduce verbosity
-    actuator_settings = [field.name for field in fields(Actuator_instance)
+    actuator_settings = [field.name for field in fields(ActuatorInstance)
                          if field.type is not Actuator]
 
     # The list of all the Actuator types to instantiate
@@ -141,7 +141,7 @@ class Machine(Block):
     objects to drive."""
 
     # Instantiating the actuators and storing them
-    self._actuators = [Actuator_instance(
+    self._actuators = [ActuatorInstance(
       actuator=actuator_dict[type_](**actuator_kw)
       if not actuator_dict[type_].ft232h else
       actuator_dict[type_](**actuator_kw, _ft232h_args=self._ft232h_args),

@@ -21,7 +21,7 @@ except (ModuleNotFoundError, ImportError):
 Topics_type = List[Union[str, Tuple[str, ...]]]
 
 
-class Client_server(Block):
+class ClientServer(Block):
   """Block for exchanging data on a local network using the MQTT protocol.
 
   This block can send data to an MQTT broker, receive data from this broker by

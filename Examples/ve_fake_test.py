@@ -68,9 +68,9 @@ if __name__ == "__main__":
     for i in range(1, 5)], []), spam=False)
 
   # Our fake machine
-  machine = crappy.blocks.Fake_machine(max_strain=17, k=5000, l0=20,
-                                       plastic_law=elastic_law,
-                                       sigma={'F(N)': 0.5})
+  machine = crappy.blocks.FakeMachine(max_strain=17, k=5000, l0=20,
+                                      plastic_law=elastic_law,
+                                      sigma={'F(N)': 0.5})
 
   crappy.link(generator, machine)
   crappy.link(machine, generator)
@@ -82,7 +82,7 @@ if __name__ == "__main__":
                                    image_generator=Apply_strain_img(img),
                                    verbose=True)
   # This modifier will generate an image with the values of strain
-  # coming from the Fake_machine block
+  # coming from the FakeMachine block
   crappy.link(machine, ve)
 
   graph_def2 = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))

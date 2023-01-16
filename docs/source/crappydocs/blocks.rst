@@ -134,7 +134,7 @@ Machine
 .. automodule:: crappy.blocks.machine
    :members:
 
-Mean_block
+MeanBlock
 ----------
 .. automodule:: crappy.blocks.mean
    :members:

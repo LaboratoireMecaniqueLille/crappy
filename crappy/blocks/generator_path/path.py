@@ -6,7 +6,7 @@ from re import split, IGNORECASE, match
 import logging
 from multiprocessing import current_process
 
-Condition_type = Callable[[Dict[str, list]], bool]
+ConditionType = Callable[[Dict[str, list]], bool]
 
 
 class Path:
@@ -40,7 +40,7 @@ class Path:
 
   def parse_condition(
         self,
-        condition: Optional[Union[str, Condition_type]]) -> Condition_type:
+        condition: Optional[Union[str, ConditionType]]) -> ConditionType:
     """This method returns a function allowing to check whether the stop
     condition is met or not.
 

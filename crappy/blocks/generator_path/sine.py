@@ -5,7 +5,7 @@ from numpy import sin, pi
 from typing import Union, Dict
 import logging
 
-from .path import Path, Condition_type
+from .path import Path, ConditionType
 
 
 class Sine(Path):
@@ -15,7 +15,7 @@ class Sine(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               condition: Union[str, Condition_type],
+               condition: Union[str, ConditionType],
                freq: float,
                amplitude: float,
                offset: float = 0,

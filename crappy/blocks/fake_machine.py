@@ -16,7 +16,7 @@ def plastic(v: float, yield_strain: float = .005, rate: float = .02) -> float:
   return 0
 
 
-class Fake_machine(Block):
+class FakeMachine(Block):
   """This block simulates the behavior of a tensile test machine.
 
   It should be used to simulate tensile teste, not compression tests. By

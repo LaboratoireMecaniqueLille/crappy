@@ -30,7 +30,7 @@ if __name__ == "__main__":
   generator = crappy.blocks.Generator(path=path)
 
   # This block will simulate a tensile testing machine
-  machine = crappy.blocks.Fake_machine()
+  machine = crappy.blocks.FakeMachine()
   # We must link the generator to the machine to give the command to
   # the machine
   crappy.link(generator, machine)

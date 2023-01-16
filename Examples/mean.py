@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
   # Return a point every .5s
   # It will be the average received value
-  m = crappy.blocks.Mean_block(.5)  # , out_labels=['cmd1', 'cmd2'])
+  m = crappy.blocks.MeanBlock(.5)  # , out_labels=['cmd1', 'cmd2'])
 
   crappy.link(g1, m)
   crappy.link(g2, m)

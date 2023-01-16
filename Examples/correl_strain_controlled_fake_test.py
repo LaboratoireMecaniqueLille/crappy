@@ -73,10 +73,10 @@ if __name__ == "__main__":
   crappy.link(generator, generator)
 
   # Our fake machine
-  machine = crappy.blocks.Fake_machine(max_strain=1.7, k=5000, l0=20,
-                                       plastic_law=plastic_law,
-                                       sigma={'F(N)': 0.5},
-                                       cmd_label='pid')
+  machine = crappy.blocks.FakeMachine(max_strain=1.7, k=5000, l0=20,
+                                      plastic_law=plastic_law,
+                                      sigma={'F(N)': 0.5},
+                                      cmd_label='pid')
 
   # The block performing the DIC
   dis = crappy.blocks.DISCorrel('', display_images=True,
@@ -86,7 +86,7 @@ if __name__ == "__main__":
                                 image_generator=Apply_strain_img(img))
 
   # This modifier will generate an image with the values of strain
-  # coming from the Fake_machine block
+  # coming from the FakeMachine block
   crappy.link(machine, dis)
 
   # The PID block takes TWO inputs: the setpoint and the feedback

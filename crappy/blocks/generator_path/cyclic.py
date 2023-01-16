@@ -5,7 +5,7 @@ from typing import Union, Dict
 from itertools import cycle, islice
 import logging
 
-from .path import Path, Condition_type
+from .path import Path, ConditionType
 
 
 class Cyclic(Path):
@@ -19,8 +19,8 @@ class Cyclic(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               condition1: Union[str, Condition_type],
-               condition2: Union[str, Condition_type],
+               condition1: Union[str, ConditionType],
+               condition2: Union[str, ConditionType],
                value1: float,
                value2: float,
                cycles: float = 1) -> None:

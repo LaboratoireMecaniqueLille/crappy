@@ -44,7 +44,7 @@ class Text:
       self._txt.set_text(self._text % data[self._label])
 
 
-class Dot_text:
+class DotText:
   """Like :class:`Text`, but with a colored dot to visualize a numerical value.
   """
 
@@ -162,12 +162,12 @@ class Drawing(Block):
         - ``coord``: Mandatory, a :obj:`tuple` containing the `x` and `y`
           coordinates where the element should be displayed on the drawing.
 
-        - ``text``: Mandatory for :class:`Text` and :class:`Dot_text` only, the
+        - ``text``: Mandatory for :class:`Text` and :class:`DotText` only, the
           text to display on the drawing. It must follow the %-formatting, and
           contain exactly one %-field. This field will be updated using the
           value carried by ``label``.
 
-        - ``label``: Mandatory for :class:`Text` and :class:`Dot_text` only,
+        - ``label``: Mandatory for :class:`Text` and :class:`DotText` only,
           the label of the data to display. It will try to retrieve this data
           in the incoming links. The ``text`` will then be updated with this
           data.
@@ -212,7 +212,7 @@ class Drawing(Block):
       if dic['type'] == 'text':
         self._drawing_elements.append(Text(self, **dic))
       elif dic['type'] == 'dot_text':
-        self._drawing_elements.append(Dot_text(self, **dic))
+        self._drawing_elements.append(DotText(self, **dic))
       elif dic['type'] == 'time':
         self._drawing_elements.append(Time(self, **dic))
 

@@ -94,7 +94,7 @@ In our specific case, the script could be as follows :
                                             'condition': None}],
                                      cmd_label='input_speed')
   
-       machine = crappy.blocks.Fake_machine(cmd_label='input_speed')
+       machine = crappy.blocks.FakeMachine(cmd_label='input_speed')
   
        record = crappy.blocks.Recorder(filename='data.csv',
                                        labels=['t(s)', 'F(N)', 'x(mm)'])
@@ -129,7 +129,7 @@ in our program this would give :
                                             'condition': None}],
                                      cmd_label='input_speed')
   
-       machine = crappy.blocks.Fake_machine(cmd_label='input_speed')
+       machine = crappy.blocks.FakeMachine(cmd_label='input_speed')
   
        record = crappy.blocks.Recorder(filename='data.csv',
                                        labels=['t(s)', 'F(N)', 'x(mm)'])
@@ -180,7 +180,7 @@ And here's the final code :
                                             'condition': None}],
                                      cmd_label='input_speed')
   
-       machine = crappy.blocks.Fake_machine(cmd_label='input_speed')
+       machine = crappy.blocks.FakeMachine(cmd_label='input_speed')
   
        record = crappy.blocks.Recorder(filename='data.csv',
                                        labels=['t(s)', 'F(N)', 'x(mm)'])
@@ -295,7 +295,7 @@ to be stopped using CTRL+C otherwise it will run forever.
                                             'condition': None}],
                                      cmd_label='input_speed')
   
-       machine = crappy.blocks.Fake_machine(cmd_label='input_speed')
+       machine = crappy.blocks.FakeMachine(cmd_label='input_speed')
   
        record = crappy.blocks.Recorder(filename='data.csv',
                                        labels=['t(s)', 'F(N)', 'x(mm)'])
@@ -598,7 +598,7 @@ The code including the new link and the new conditions is the following :
                                             'condition': None}],
                                      cmd_label='input_speed')
   
-       machine = crappy.blocks.Fake_machine(cmd_label='input_speed')
+       machine = crappy.blocks.FakeMachine(cmd_label='input_speed')
   
        record = crappy.blocks.Recorder(filename='data.csv',
                                        labels=['t(s)', 'F(N)', 'x(mm)'])
@@ -646,7 +646,7 @@ absolutely no obligation to do so ! Consider the following script :
                                             'value': 1,
                                             'condition': None}])
   
-       machine = crappy.blocks.Fake_machine()
+       machine = crappy.blocks.FakeMachine()
   
        record = crappy.blocks.Recorder(filename='data_1.csv')
   
@@ -676,7 +676,7 @@ path in the recorder :
                                             'value': speed,
                                             'condition': None}])
   
-       machine = crappy.blocks.Fake_machine()
+       machine = crappy.blocks.FakeMachine()
   
        record = crappy.blocks.Recorder(filename=path)
   
@@ -831,7 +831,7 @@ created if it doesn't already exist. The code could look as follows :
   
        path = Path(__file__).parent / 'Tutorial' / 'data.csv'
   
-       machine = crappy.blocks.Fake_machine(cmd_label='input_speed')
+       machine = crappy.blocks.FakeMachine(cmd_label='input_speed')
   
        record = crappy.blocks.Recorder(filename=path,
                                        labels=['t(s)', 'F(N)', 'x(mm)'])
@@ -864,7 +864,7 @@ the :mod:`psutil` module with an ``if`` statement :
   
        path = Path(__file__).parent / 'Tutorial' / 'data.csv'
   
-       machine = crappy.blocks.Fake_machine(cmd_label='input_speed')
+       machine = crappy.blocks.FakeMachine(cmd_label='input_speed')
   
        record = crappy.blocks.Recorder(filename=path,
                                        labels=['t(s)', 'F(N)', 'x(mm)'])

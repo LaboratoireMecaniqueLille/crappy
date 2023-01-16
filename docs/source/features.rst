@@ -68,7 +68,7 @@ Data recording
 Data processing
 +++++++++++++++
 
-- :ref:`Mean <Mean_block>`
+- :ref:`Mean <MeanBlock>`
 
   Calculates the average of the received labels over a given period. One
   average is given for every label, it is not meant to average several labels

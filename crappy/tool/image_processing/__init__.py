@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from .discorrel import DISCorrelTool
-from .disve import DISVETool
-from .gpucorrel import GPUCorrelTool
+from .dis_correl import DISCorrelTool
+from .dis_ve import DISVETool
+from .gpu_correl import GPUCorrelTool
 from .video_extenso import VideoExtensoTool, LostSpotError
