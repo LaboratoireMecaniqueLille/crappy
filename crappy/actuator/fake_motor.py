@@ -5,7 +5,7 @@ from time import time
 from .meta_actuator import Actuator
 
 
-class Fake_motor(Actuator):
+class FakeMotor(Actuator):
   """Emulates the behavior of a DC electric machine, driven through its input
   voltage.
 

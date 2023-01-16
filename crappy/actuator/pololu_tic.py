@@ -238,7 +238,7 @@ Tic_pin_polarity = {'Active low': 0,
                     'Active high': 1}
 
 
-class Find_serial_number:
+class FindSerialNumber:
   """A class used for finding USB devices matching a given serial number, using
      the :meth:`usb.core.find` method."""
 
@@ -249,7 +249,7 @@ class Find_serial_number:
     return device.serial_number == self.serial_number
 
 
-class Pololu_tic(Actuator):
+class PololuTic(Actuator):
   """Class for controlling Pololu's Tic stepper motor divers.
 
   The Pololu_tic Actuator block is meant for controlling a Pololu Tic stepper
@@ -451,8 +451,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         else:
           devices = core.find(find_all=True,
                               idVendor=Tic_vendor_id,
-                              custom_match=Find_serial_number(
-                                serial_number))
+                              custom_match=FindSerialNumber(serial_number))
       else:
         if serial_number is None:
           devices = core.find(find_all=True,
@@ -462,8 +461,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
           devices = core.find(find_all=True,
                               idVendor=Tic_vendor_id,
                               idProduct=Tic_product_id[model],
-                              custom_match=Find_serial_number(
-                                serial_number))
+                              custom_match=FindSerialNumber(serial_number))
       # Making sure there's only one matching device
       devices = list(devices)
       if len(devices) == 0:

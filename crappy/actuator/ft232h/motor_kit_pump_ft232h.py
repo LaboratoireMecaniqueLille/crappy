@@ -2,23 +2,12 @@
 
 from struct import pack_into
 from time import sleep
-from typing import Union, List
+from typing import Union, List, Optional
 import logging
 
-from .meta_actuator import Actuator
-from .._global import OptionalModule
-
-try:
-  from adafruit_motorkit import MotorKit
-except (ImportError, ModuleNotFoundError):
-  MotorKit = OptionalModule('adafruit_motorkit',
-                            'Adafrfuit Motorkit module (adafruit_motorkit) is '
-                            'required to use this actuator')
-
-try:
-  import board
-except (ImportError, ModuleNotFoundError):
-  board = OptionalModule('board', 'Blinka is necessary to use the I2C bus')
+from ..meta_actuator import Actuator
+from ..._global import OptionalModule
+from ...tool.ft232h import Ft232hServer as Ft232h
 
 try:
   from smbus2 import SMBus
@@ -41,11 +30,11 @@ motor_hat_neg = {1: 0x2E,
                  4: 0x1E}
 
 motor_hat_0xFF = [0x00, 0x10, 0x00, 0x00]
-motor_hat_backends = ['Pi4', 'blinka']
+motor_hat_backends = ['Pi4', 'blinka', 'ft232h']
 motor_hat_max_volt = 12
 
 
-class DC_motor_hat:
+class DCMotorHat:
   """Class for driving Adafruit's DC motor HAT.
 
   This class serves as a basis for building Actuators in Crappy, but is not one
@@ -62,7 +51,8 @@ class DC_motor_hat:
   def __init__(self,
                motor_nrs: List[int],
                device_address: int = 0x60,
-               i2c_port: int = 1) -> None:
+               i2c_port: int = 1,
+               bus: Optional[Ft232h] = None) -> None:
     """Resets the HAT and initializes it.
 
     Args:
@@ -74,6 +64,9 @@ class DC_motor_hat:
         the board.
       i2c_port: The I2C port over which the HAT should communicate. On most
         Raspberry Pi models the default I2C port is `1`.
+      bus: If given, the I2C commands are sent by the corresponding
+        :class:`ft232h_server` instance, in the situation when the hat is
+        controlled from a PC through an FT232H.
     """
 
     if not all(i in range(1, 5) for i in motor_nrs):
@@ -87,7 +80,11 @@ class DC_motor_hat:
     if not isinstance(i2c_port, int):
       raise TypeError("i2c_port should be an integer !")
 
-    self._bus = SMBus(i2c_port)
+    if not bus:
+      self._bus = SMBus(i2c_port)
+    else:
+      self._bus = bus
+
     self._buf = bytearray(4)
 
     # Reset
@@ -155,32 +152,22 @@ class DC_motor_hat:
     self._bus.write_i2c_block_data(self._address, register, list(buf))
 
 
-class Motorkit_pump(Actuator):
+class MotorKitPumpFT232H(Actuator):
   """Class for controlling two DC air pumps and a valve.
 
   It uses Adafruit's DC motor HAT. The motor 1 controls the inflation pump,
   the motor 2 controls a valve, and the motor 3 controls a deflation pump.
   """
 
+  ft232h = True
+
   def __init__(self,
-               backend: str,
                device_address: int = 0x60,
-               i2c_port: int = 1) -> None:
+               i2c_port: int = 1,
+               _ft232h_args: tuple = tuple()) -> None:
     """Checks the validity of the arguments.
 
     Args:
-      backend: Should be one of :
-        ::
-
-          'Pi4', 'blinka', 'ft232h'
-
-        The `'Pi4'` backend is optimized but only works on boards supporting
-        the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing Adafruit's
-        modules, but these modules are compatible with and maintained on a wide
-        variety of boards. The `'ft232h'` backend allows controlling the hat
-        from a PC using Adafruit's FT232H USB to I2C adapter. See
-        :ref:`Crappy for embedded hardware` for details.
       device_address: The I2C address of the HAT. The default address is
         `0x60`, but it is possible to change this setting by cutting traces on
           the board.
@@ -190,11 +177,18 @@ class Motorkit_pump(Actuator):
 
     self._hat = None
 
-    if not isinstance(backend, str) or backend not in motor_hat_backends:
-      raise ValueError("backend should be in {}".format(motor_hat_backends))
-    self._backend = backend
-
     super().__init__()
+
+    (block_index, current_block, command_file, answer_file, block_lock,
+     shared_lock) = _ft232h_args
+
+    self._bus = Ft232h(mode='I2C',
+                       block_index=block_index,
+                       current_block=current_block,
+                       command_file=command_file,
+                       answer_file=answer_file,
+                       block_lock=block_lock,
+                       shared_lock=shared_lock)
 
     if not isinstance(device_address, int):
       raise TypeError("device_address should be an integer between 0 and 127.")
@@ -207,18 +201,9 @@ class Motorkit_pump(Actuator):
   def open(self) -> None:
     """Initializes the generic HAT object."""
 
-    if self._backend == 'blinka':
-      self.log(logging.INFO, "Opening the Motorkit with the Adafruit library")
-      self._hat = MotorKit(i2c=board.I2C())
-
-      def set_motor(nr: int, cmd: float) -> None:
-        setattr(getattr(self._hat, f'motor{nr}'), 'throttle', cmd)
-
-      self._hat.set_motor = set_motor
-
-    else:
-      self.log(logging.INFO, "Opening the Motorkit with the SMBus library")
-      self._hat = DC_motor_hat([1, 2, 3], self._address, self._port)
+    self.log(logging.INFO, "Opening the Motorkit with an USB connection "
+                           "over FT232H")
+    self._hat = DCMotorHat([1, 2, 3], self._address, self._port, self._bus)
 
   def set_speed(self, volt: float) -> None:
     """Inflates or deflates the setup according to the command.
@@ -261,6 +246,6 @@ class Motorkit_pump(Actuator):
   def close(self) -> None:
     """Stops the pumps and closes the HAT object."""
 
-    if self._backend == 'Pi4' and self._hat is not None:
+    if self._hat is not None:
       self.log(logging.INFO, "Closing the connection to the Motorkit")
       self._hat.close()

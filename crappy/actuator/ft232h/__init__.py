@@ -1,3 +1,3 @@
 # coding: utf-8
 
-from .motorkit_pump_ft232h import Motorkit_pump_ft232h
+from .motor_kit_pump_ft232h import MotorKitPumpFT232H
