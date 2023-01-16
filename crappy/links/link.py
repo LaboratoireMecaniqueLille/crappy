@@ -12,7 +12,7 @@ import logging
 from ..modifier import Modifier
 from .._global import LinkDataError
 
-Modifier_type = Callable[[Dict[str, Any]], Dict[str, Any]]
+ModifierType = Callable[[Dict[str, Any]], Dict[str, Any]]
 
 
 class Link:
@@ -34,7 +34,7 @@ class Link:
   def __init__(self,
                input_block,
                output_block,
-               modifiers: Optional[List[Union[Modifier_type,
+               modifiers: Optional[List[Union[ModifierType,
                                               Modifier]]] = None,
                name: Optional[str] = None) -> None:
     """Sets the instance attributes.
@@ -184,8 +184,8 @@ class Link:
 
 def link(in_block,
          out_block,
-         modifier: Optional[Union[List[Union[Modifier_type, Modifier]],
-                                  Union[Modifier_type, Modifier]]] = None,
+         modifier: Optional[Union[List[Union[ModifierType, Modifier]],
+                                  Union[ModifierType, Modifier]]] = None,
          name: Optional[str] = None) -> None:
   """Function linking two blocks, allowing to send data from one to the other.
 
