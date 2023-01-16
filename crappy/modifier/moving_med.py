@@ -7,7 +7,7 @@ import logging
 from .meta_modifier import Modifier
 
 
-class Moving_med(Modifier):
+class MovingMed(Modifier):
   """Modifier replacing the data of each label with its median value over a
   chosen number of points.
 

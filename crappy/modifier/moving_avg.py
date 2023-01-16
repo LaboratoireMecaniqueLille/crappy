@@ -7,7 +7,7 @@ import logging
 from .meta_modifier import Modifier
 
 
-class Moving_avg(Modifier):
+class MovingAvg(Modifier):
   """Modifier replacing the data of each label with its average value over a
   chosen number of points.
 

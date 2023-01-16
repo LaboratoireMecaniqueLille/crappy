@@ -6,7 +6,7 @@ import logging
 from .meta_modifier import Modifier
 
 
-class Trig_on_change(Modifier):
+class TrigOnChange(Modifier):
   """Modifier passing the data to the downstream block only when the value of
   a given label changes.
 

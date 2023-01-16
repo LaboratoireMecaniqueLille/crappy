@@ -6,7 +6,7 @@ import logging
 from .meta_modifier import Modifier
 
 
-class Trig_on_value(Modifier):
+class TrigOnValue(Modifier):
   """Modifier passing the data to the downstream only if the value carried by a
   given label matches a given set of accepted values.
 
