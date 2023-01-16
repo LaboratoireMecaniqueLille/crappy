@@ -26,7 +26,7 @@ class _Channel:
   make_zero: bool = False
 
 
-class Daqmx(InOut):
+class DAQmx(InOut):
   """"""
 
   def __init__(self,

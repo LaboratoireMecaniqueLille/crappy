@@ -39,10 +39,10 @@ Ads1115_config_dr = {8: 0x0000,
                      860: 0x00E0}
 
 
-class Ads1115_ft232h(InOut):
+class ADS1115FT232H(InOut):
   """A class for controlling Adafruit's ADS1115 16-bits ADC.
 
-  The Ads1115 InOut block is meant for reading output values from a 16-bits
+  The ADS1115 InOut block is meant for reading output values from a 16-bits
   ADS1115 ADC, using the I2C protocol. The output is in Volts by default, but a
   ``gain`` and an ``offset`` can be specified.
   """

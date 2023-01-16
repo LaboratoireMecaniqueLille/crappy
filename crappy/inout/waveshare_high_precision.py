@@ -99,7 +99,7 @@ DRDY_PIN = 17
 VREF = 5
 
 
-class Waveshare_high_precision(InOut):
+class WaveshareHighPrecision(InOut):
   """This InOut allows acquiring data from Waveshare's High Precision HAT.
 
   This board features an ADS1263 32-bits ADC, which is what this InOut actually

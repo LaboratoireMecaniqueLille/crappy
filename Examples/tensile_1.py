@@ -46,7 +46,7 @@ if __name__ == "__main__":
   # Then we give the channels, the InOut will automatically detect that it has
   # two inputs and one output
   # The output labels always start with the time in second so we need 3 outputs
-  daq = crappy.blocks.IOBlock('Labjack_t7', channels=[force, pos, cmd],
+  daq = crappy.blocks.IOBlock('LabjackT7', channels=[force, pos, cmd],
                               labels=['t(s)', 'F(N)', 'Position(mm)'],
                               cmd_labels=['cmd'])
   # Now we link them: the output of the board will be read from the label 'cmd'

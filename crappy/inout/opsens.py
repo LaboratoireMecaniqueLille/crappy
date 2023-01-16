@@ -13,8 +13,8 @@ except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("pyserial")
 
 
-class Opsens(InOut):
-  """This class allows reading data from an Opsens PicoSens fiber optics signal
+class OpSens(InOut):
+  """This class allows reading data from an OpSens PicoSens fiber optics signal
   conditioner.
 
   It can read data from various fiber optics sensors like temperature,

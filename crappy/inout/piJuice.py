@@ -8,9 +8,9 @@ from .meta_inout import InOut
 from .._global import OptionalModule
 
 try:
-  from pijuice import PiJuice
+  from pijuice import PiJuice as PiJuiceModule
 except (ModuleNotFoundError, ImportError):
-  PiJuice = OptionalModule("pijuice")
+  PiJuiceModule = OptionalModule("pijuice")
 
 try:
   from smbus2 import SMBus
@@ -43,7 +43,7 @@ pijuice_power_status = {0x00: 'Not_present',
 pijuice_backends = ['Pi4', 'pijuice']
 
 
-class Pijuice(InOut):
+class PiJuice(InOut):
   """Block getting various information about a piJuice power platform,
   including the charge level and the power supply status.
 
@@ -97,7 +97,7 @@ class Pijuice(InOut):
     elif self._backend == 'pijuice':
       self.log(logging.INFO, f"Opening the I2C connection to the PiJuice on "
                              f"port {self._i2c_port} with backend pijuice")
-      self._pijuice = PiJuice(self._i2c_port, self._address)
+      self._pijuice = PiJuiceModule(self._i2c_port, self._address)
 
   def get_data(self) -> Dict[str, Any]:
     """Reads all the available information on the battery status.

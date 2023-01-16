@@ -4,36 +4,36 @@ from typing import Dict, Type
 
 from .meta_inout import InOut, MetaIO
 
-from .ft232h import Ads1115_ft232h
-from .ft232h import Gpio_switch_ft232h
-from .ft232h import Mcp9600_ft232h
-from .ft232h import Mprls_ft232h
-from .ft232h import Nau7802_ft232h
-from .ft232h import Waveshare_ad_da_ft232h
+from .ft232h import ADS1115FT232H
+from .ft232h import GpioSwitchFT232H
+from .ft232h import MCP9600FT232H
+from .ft232h import MPRLSFT232H
+from .ft232h import NAU7802FT232H
+from .ft232h import WaveshareADDAFT232H
 
-from .ads1115 import Ads1115
-from .agilent34420A import Agilent34420a
+from .ads1115 import ADS1115
+from .agilent_34420A import Agilent34420a
 from .comedi import Comedi
-from .fake_inout import Fake_inout
-from .gpio_pwm import Gpio_pwm
-from .gpio_switch import Gpio_switch
-from .gsm import Gsm
+from .fake_inout import FakeInout
+from .gpio_pwm import GPIOPWM
+from .gpio_switch import GPIOSwitch
+from .gsm import GSM
 from .kollmorgen import Koll
-from .labjackT7 import Labjack_t7
-from .labjackUE9 import Labjack_ue9
-from .mcp9600 import Mcp9600
-from .mprls import Mprls
-from .nau7802 import Nau7802
-from .ni_daqmx import Nidaqmx
-from .opsens import Opsens
-from .piJuice import Pijuice
+from .labjack_t7 import LabjackT7
+from .labjack_ue9 import LabjackUE9
+from .mcp9600 import MCP9600
+from .mprls import MPRLS
+from .nau7802 import NAU7802
+from .ni_daqmx import NIDAQmx
+from .opsens import OpSens
+from .piJuice import PiJuice
 from .spectrum import Spectrum
-from .t7Streamer import T7_streamer
-from .waveshare_ad_da import Waveshare_ad_da
-from .waveshare_high_precision import Waveshare_high_precision
+from .labjack_t7_streamer import T7_streamer
+from .waveshare_ad_da import WaveshareADDA
+from .waveshare_high_precision import WaveshareHighPrecision
 
 # Win specific
-from .daqmx import Daqmx
+from .daqmx import DAQmx
 
 # All the inout objects
 inout_dict: Dict[str, Type[InOut]] = MetaIO.classes

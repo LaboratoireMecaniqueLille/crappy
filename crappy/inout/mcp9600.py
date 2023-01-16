@@ -29,10 +29,10 @@ except (ModuleNotFoundError, ImportError):
                              'Blinka is necessary to use the I2C bus')
 
 try:
-  from adafruit_mcp9600 import MCP9600
+  from adafruit_mcp9600 import MCP9600 as MCP9600Adafruit
 except (ModuleNotFoundError, ImportError):
-  MCP9600 = OptionalModule('adafruit_mcp9600',
-                           'Blinka is necessary to use the I2C bus')
+  MCP9600Adafruit = OptionalModule('adafruit_mcp9600',
+                                   'Blinka is necessary to use the I2C bus')
 
 Mcp9600_registers = {'Hot Junction Temperature': 0x00,
                      'Junction Temperature Delta': 0x01,
@@ -89,10 +89,10 @@ Mcp9600_modes = ['Hot Junction Temperature',
 Mcp9600_backends = ['Pi4', 'blinka']
 
 
-class Mcp9600(InOut):
+class MCP9600(InOut):
   """Class for controlling Adafruit's MCP9600 thermocouple reader.
 
-  The Mcp9600 InOut block is meant for reading temperature from an MCP9600
+  The MCP9600 InOut block is meant for reading temperature from an MCP9600
   board, using the I2C protocol. The output is in `°C`, except for one
   operating mode that returns Volts.
   """
@@ -222,10 +222,10 @@ class Mcp9600(InOut):
 
     if self._backend == 'blinka':
       self.log(logging.INFO, "Connecting the the MCP9600 with backend blinka")
-      self._mcp = MCP9600(self._i2c,
-                          address=self._device_address,
-                          tctype=self._thermocouple_type,
-                          tcfilter=self._filter_coefficient)
+      self._mcp = MCP9600Adafruit(self._i2c,
+                                  address=self._device_address,
+                                  tctype=self._thermocouple_type,
+                                  tcfilter=self._filter_coefficient)
       self._mcp.ambient_resolution = self._sensor_resolution == 0.25
 
     else:

@@ -77,7 +77,7 @@ pwm_chan[0]['write_at_open'][0:0] = clock_config
 th_chan = [dict(name='AIN%d' % i, thermocouple='K') for i in pins]
 
 
-lj = crappy.blocks.IOBlock("Labjack_t7", channels=pwm_chan+th_chan,
+lj = crappy.blocks.IOBlock("LabjackT7", channels=pwm_chan+th_chan,
                            labels=['t(s)']+['T%d' % i for i in pins],
                            cmd_labels=['pwm%d' % i for i in pins],
                            verbose=True)

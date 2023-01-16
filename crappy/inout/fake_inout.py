@@ -12,7 +12,7 @@ except (ModuleNotFoundError, ImportError):
   virtual_memory = OptionalModule("psutil")
 
 
-class Fake_inout(InOut):
+class FakeInout(InOut):
   """A class demonstrating the usage of an inout abject without requiring any
   hardware.
 
@@ -43,7 +43,7 @@ class Fake_inout(InOut):
     """
 
     if not isinstance(cmd[0], float) and not isinstance(cmd[0], int):
-      raise TypeError("Not the right command type for the Fake_inout !")
+      raise TypeError("Not the right command type for the FakeInout !")
     if not 0 <= cmd[0] <= 100:
       raise ValueError("Command should be a percentage of memory usage !")
 

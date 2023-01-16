@@ -151,7 +151,7 @@ Pi 4, and displaying it on a graph.
 
    if __name__ == "__main__":
 
-       nau = crappy.blocks.IOBlock('Nau7802',
+       nau = crappy.blocks.IOBlock('NAU7802',
                                    labels=['t(s)', 'out(V)'],
                                    backend='Pi4')
 
@@ -189,7 +189,7 @@ one FT232H is connected, then the code given in the last section would become :
 
    if __name__ == "__main__":
 
-       nau = crappy.blocks.IOBlock('Nau7802',
+       nau = crappy.blocks.IOBlock('NAU7802',
                                    labels=['t(s)', 'out(V)'],
                                    backend='ft232h')
 
@@ -220,12 +220,12 @@ code for a setup featuring two FT232H :
 
    if __name__ == "__main__":
 
-       nau = crappy.blocks.IOBlock('Nau7802',
+       nau = crappy.blocks.IOBlock('NAU7802',
                                    labels=['t(s)', 'out(V)'],
                                    backend='ft232h',
                                    serial_nr='54321')
 
-       ads = crappy.blocks.IOBlock('Ads1115',
+       ads = crappy.blocks.IOBlock('ADS1115',
                                    labels=['t(s)', 'U(V)'],
                                    backend='ft232h',
                                    serial_nr='12345')

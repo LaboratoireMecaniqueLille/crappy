@@ -39,8 +39,8 @@ mprls_status_bits = {'busy': 0x20,
 mprls_backends = ['Pi4', 'blinka']
 
 
-class Mprls(InOut):
-  """The Mprls inout is meant for reading pressure from Adafruit's Mprls
+class MPRLS(InOut):
+  """The MPRLS inout is meant for reading pressure from Adafruit's MPRLS
     pressure sensor.
 
     It communicates over I2C with the sensor.

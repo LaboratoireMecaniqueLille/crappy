@@ -26,7 +26,7 @@ class _Channel:
   make_zero: bool = False
 
 
-class Labjack_ue9(InOut):
+class LabjackUE9(InOut):
   """"""
 
   def __init__(self,

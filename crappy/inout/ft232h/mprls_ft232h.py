@@ -12,8 +12,8 @@ mprls_status_bits = {'busy': 0x20,
                      'math saturation': 0x01}
 
 
-class Mprls_ft232h(InOut):
-  """The Mprls inout is meant for reading pressure from Adafruit's Mprls
+class MPRLSFT232H(InOut):
+  """The MPRLS inout is meant for reading pressure from Adafruit's MPRLS
     pressure sensor.
 
     It communicates over I2C with the sensor.

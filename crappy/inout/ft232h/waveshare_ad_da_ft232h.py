@@ -75,10 +75,10 @@ AD_DA_pins = {'RST_PIN_ADS': 18,
               'CS_PIN_DAC': 23}
 
 
-class Waveshare_ad_da_ft232h(InOut):
+class WaveshareADDAFT232H(InOut):
   """Class for controlling Waveshare's AD/DA hat from an FTDI FT232H.
 
-  The Waveshare_ad_da InOut block is meant for communicating with Waveshare's
+  The WaveshareADDA InOut block is meant for communicating with Waveshare's
   AD/DA Raspberry Pi hat from an FT232H, using the SPI protocol and the GPIOs.
   It allows reading values from the 8-channels ADC and/or to set the 2-channels
   DAC.

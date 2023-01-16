@@ -60,10 +60,10 @@ Mcp9600_modes = ['Hot Junction Temperature',
                  'Raw Data ADC']
 
 
-class Mcp9600_ft232h(InOut):
+class MCP9600FT232H(InOut):
   """Class for controlling Adafruit's MCP9600 thermocouple reader.
 
-  The Mcp9600 InOut block is meant for reading temperature from an MCP9600
+  The MCP9600 InOut block is meant for reading temperature from an MCP9600
   board, using the I2C protocol. The output is in `°C`, except for one
   operating mode that returns Volts.
   """

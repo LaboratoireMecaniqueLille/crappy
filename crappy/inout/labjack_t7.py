@@ -53,11 +53,11 @@ class _Channel:
       # Handling the case when the user enters a wrong key
       else:
         logger = logging.getLogger(
-          f"{current_process().name}.Labjack_t7.Channel_{self.name}")
+          f"{current_process().name}.LabjackT7.Channel_{self.name}")
         logger.log(logging.WARNING, f"Unknown channel key : {key}, ignoring")
 
 
-class Labjack_t7(InOut):
+class LabjackT7(InOut):
   """This InOut object allows controlling a Labjack T7 device. It can use any
   channel as input/output.
 

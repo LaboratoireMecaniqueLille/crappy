@@ -58,7 +58,7 @@ class _Channel:
         self.kwargs.update({key: val})
 
 
-class Nidaqmx(InOut):
+class NIDAQmx(InOut):
   """This class can communicate with NI DAQmx devices using the :mod:`pydaqmx`
   module.
 

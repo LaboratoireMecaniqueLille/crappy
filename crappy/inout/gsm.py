@@ -12,10 +12,10 @@ try:
   from serial.serialutil import SerialException
 except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("serial", "Please install the module serial to use "
-                          "the Gsm InOut: pip install pyserial")
+                          "the GSM InOut: pip install pyserial")
 
 
-class Gsm(InOut):
+class GSM(InOut):
   """Block for sending messages by SMS to given phone numbers.
 
   Important:

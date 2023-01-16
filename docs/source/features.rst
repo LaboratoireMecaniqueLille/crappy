@@ -494,9 +494,9 @@ Sensors
      This inout was written for a specific application, so it may not be
      usable as-is in the general case.
 
-- :ref:`Opsens`
+- :ref:`OpSens`
 
-  Reads data from Opsens' `single channel signal conditioner <https://opsens-
+  Reads data from OpSens' `single channel signal conditioner <https://opsens-
   solutions.com/products/signal-conditioners-oem-boards/picosens/>`_ for
   fiber-optics temperature, strain, pressure or position measurement.
   Communicates over serial.

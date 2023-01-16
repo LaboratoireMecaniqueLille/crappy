@@ -38,7 +38,7 @@ if __name__ == "__main__":
   gen = crappy.blocks.Generator([dict(type='cyclic', value1=0, value2=1,
                                       condition1="delay=1",
                                       condition2="delay=1")], repeat=True)
-  io = crappy.blocks.IOBlock("Nidaqmx", device="Dev2",
+  io = crappy.blocks.IOBlock("NIDAQmx", device="Dev2",
                              channels=[dict(name='ai0'), dict(name='di0'),
                                        dict(name='ao0'), dict(name='do1')],
                              samplerate=100,

@@ -30,7 +30,7 @@ crappy.link(ve, rec_extenso)
 crappy.link(ve, ad)
 
 # Labjack
-lj = crappy.blocks.IOBlock("Labjack_t7", channels=[
+lj = crappy.blocks.IOBlock("LabjackT7", channels=[
   {'name': 'AIN0', 'gain': gains[0], 'make_zero':True},
   {'name': 'AIN1', 'gain': gains[1], 'make_zero':True},
   {'name': 'TDAC0', 'gain': out_gain}],

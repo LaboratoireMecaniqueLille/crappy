@@ -78,10 +78,10 @@ Ads1115_blinka_gain = {0.256: 16,
 Ads1115_backends = ['Pi4', 'blinka']
 
 
-class Ads1115(InOut):
+class ADS1115(InOut):
   """A class for controlling Adafruit's ADS1115 16-bits ADC.
 
-  The Ads1115 InOut block is meant for reading output values from a 16-bits
+  The ADS1115 InOut block is meant for reading output values from a 16-bits
   ADS1115 ADC, using the I2C protocol. The output is in Volts by default, but a
   ``gain`` and an ``offset`` can be specified.
   """

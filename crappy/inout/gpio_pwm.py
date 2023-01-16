@@ -12,7 +12,7 @@ except (ModuleNotFoundError, ImportError):
   GPIO = OptionalModule("RPi.GPIO")
 
 
-class Gpio_pwm(InOut):
+class GPIOPWM(InOut):
   """ Class for performing PWM on a Raspberry Pi.
 
   The Gpio_pwn InOut block is meant for controlling a PWM output from a

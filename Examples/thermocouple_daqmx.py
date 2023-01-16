@@ -4,7 +4,7 @@
 Example showing how to use thermocouples with an NI daq board.
 
 Required hardware:
-  - Nidaqmx compatible board
+  - NIDAQmx compatible board
   - Thermocouple(s)
 """
 
@@ -16,7 +16,7 @@ chan_names = ['cDAQ1Mod1/ai%d' % i for i in channels]
 labels = ['t(s)'] + ['T%d' % i for i in channels]
 
 if __name__ == "__main__":
-  io = crappy.blocks.IOBlock("Nidaqmx",
+  io = crappy.blocks.IOBlock("NIDAQmx",
                              channels=[dict(name=c_name, units='C',
                                             type='thrmcpl',
                                             thermocouple_type='K')

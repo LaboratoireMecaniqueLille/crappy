@@ -82,7 +82,7 @@ NI DaQMX
 .. automodule:: crappy.inout.ni_daqmx
    :members:
 
-Opsens
+OpSens
 ------
 .. automodule:: crappy.inout.opsens
    :members:

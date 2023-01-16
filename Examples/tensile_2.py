@@ -41,7 +41,7 @@ if __name__ == "__main__":
   force = {'name': 'AIN0', 'gain': FORCE_GAIN}
   pos = {'name': 'AIN1', 'gain': POS_GAIN, 'make_zero': True}
   cmd = {'name': 'TDAC0', 'gain': POS_GAIN}
-  daq = crappy.blocks.IOBlock('Labjack_t7', channels=[force, pos, cmd],
+  daq = crappy.blocks.IOBlock('LabjackT7', channels=[force, pos, cmd],
                               labels=['t(s)', 'F(N)', 'Position(mm)'],
                               cmd_labels=['cmd'])
 

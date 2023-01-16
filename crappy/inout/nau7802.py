@@ -104,10 +104,10 @@ NAU7802_Cal_Status = {'CAL_SUCCESS': 0,
 NAU7802_VREF = 3.3
 
 
-class Nau7802(InOut):
+class NAU7802(InOut):
   """Class for controlling Sparkfun's NAU7802 load cell conditioner.
 
-  The Nau7802 InOut block is meant for reading output values from a NAU7802
+  The NAU7802 InOut block is meant for reading output values from a NAU7802
   load cell conditioner, using the I2C protocol. The output is in Volts by
   default, but can be converted to Newtons using ``gain`` and ``offset``.
   """
