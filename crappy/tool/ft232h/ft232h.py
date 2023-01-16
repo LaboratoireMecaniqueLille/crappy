@@ -122,7 +122,7 @@ class FindSerialNumber:
     return device.serial_number == self.serial_number
 
 
-class Ft232h:
+class FT232H:
   """A class for controlling FTDI's USB to Serial FT232H.
 
   Communication in SPI and I2C are implemented, along with GPIO control. The
@@ -365,7 +365,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                ft232h_sio_args['reset']):
       raise IOError('Unable to reset FTDI device')
     # Reset feature mode
-    self._set_bitmode(0, Ft232h.BitMode.RESET)
+    self._set_bitmode(0, FT232H.BitMode.RESET)
 
     # Set latency timer
     self._set_latency_timer(latency)
@@ -378,7 +378,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                      self._max_packet_size)
 
     # Reset feature mode
-    self._set_bitmode(0, Ft232h.BitMode.RESET)
+    self._set_bitmode(0, FT232H.BitMode.RESET)
     # Drain buffers
     self._purge_buffers()
     # Disable event and error characters
@@ -390,10 +390,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # Enable MPSSE mode
     if self._ft232h_mode == 'GPIO_only':
       self.log(logging.DEBUG, "Setting the mode to GPIO_only")
-      self._set_bitmode(0xFF, Ft232h.BitMode.MPSSE)
+      self._set_bitmode(0xFF, FT232H.BitMode.MPSSE)
     else:
       self.log(logging.DEBUG, f"Setting the mode to {self._ft232h_mode}")
-      self._set_bitmode(self._direction, Ft232h.BitMode.MPSSE)
+      self._set_bitmode(self._direction, FT232H.BitMode.MPSSE)
 
     # Configure clock
     if self._ft232h_mode == 'I2C':
@@ -553,7 +553,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       mode (:class:`BitMode`): Bitbang mode to be set.
     """
 
-    mask = sum(Ft232h.BitMode)
+    mask = sum(FT232H.BitMode)
     value = (bitmask & 0xff) | ((mode.value & mask) << 8)
     if self._ctrl_transfer_out(ft232h_sio_req['set_bitmode'], value):
       raise IOError('Unable to set bitmode')
@@ -1998,7 +1998,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self.log(logging.INFO, "Closing the USB connection to the FT232H")
       if bool(self._usb_dev._ctx.handle):
         try:
-          self._set_bitmode(0, Ft232h.BitMode.RESET)
+          self._set_bitmode(0, FT232H.BitMode.RESET)
           util.release_interface(self._usb_dev, self._index - 1)
         except (IOError, ValueError, USBError):
           pass

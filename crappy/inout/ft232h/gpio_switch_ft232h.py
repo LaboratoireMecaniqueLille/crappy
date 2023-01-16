@@ -3,7 +3,7 @@
 from typing import Union
 
 from ..meta_inout import InOut
-from ...tool.ft232h import Ft232hServer as Ft232h, ft232h_pin_nr
+from ...tool.ft232h import FT232HServer as FT232H, ft232h_pin_nr
 
 
 class Gpio_switch_ft232h(InOut):
@@ -42,7 +42,7 @@ class Gpio_switch_ft232h(InOut):
     (block_index, current_block, command_file, answer_file, block_lock,
      shared_lock) = _ft232h_args
 
-    self._ft232h = Ft232h(mode='GPIO_only',
+    self._ft232h = FT232H(mode='GPIO_only',
                           block_index=block_index,
                           current_block=current_block,
                           command_file=command_file,
