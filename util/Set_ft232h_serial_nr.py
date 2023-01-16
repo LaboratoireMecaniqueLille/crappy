@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from crappy.tool import ft232h
+from crappy.tool.ft232h import Ft232h
 
 """
 Utility for writing a serial number to an FT32H.
@@ -18,6 +18,6 @@ while not isinstance(serial_number, int):
     print("Wrong input, serial_number should be an integer !")
     print("")
 
-FT232H = ft232h('Write_serial_nr', str(serial_number))
+FT232H = Ft232h('Write_serial_nr', str(serial_number))
 
 print("Serial number successfully written")

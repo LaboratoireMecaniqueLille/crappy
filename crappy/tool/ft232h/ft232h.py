@@ -111,7 +111,7 @@ ft232h_i2c_speed = {100E3: ft232h_i2c_timings(4.0E-6, 4.7E-6, 4.0E-6, 4.7E-6),
                     1E6: ft232h_i2c_timings(0.26E-6, 0.26E-6, 0.26E-6, 0.5E-6)}
 
 
-class Find_serial_number:
+class FindSerialNumber:
   """A class used for finding USB devices matching a given serial number, using
      the usb.core.find method."""
 
@@ -311,8 +311,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       devices = find(find_all=True,
                      idVendor=Ftdi_vendor_id,
                      idProduct=ft232h_product_id,
-                     custom_match=Find_serial_number(
-                       self._serial_nr))
+                     custom_match=FindSerialNumber(self._serial_nr))
     else:
       devices = find(find_all=True,
                      idVendor=Ftdi_vendor_id,
@@ -366,7 +365,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                ft232h_sio_args['reset']):
       raise IOError('Unable to reset FTDI device')
     # Reset feature mode
-    self._set_bitmode(0, ft232h.BitMode.RESET)
+    self._set_bitmode(0, Ft232h.BitMode.RESET)
 
     # Set latency timer
     self._set_latency_timer(latency)
@@ -379,7 +378,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                      self._max_packet_size)
 
     # Reset feature mode
-    self._set_bitmode(0, ft232h.BitMode.RESET)
+    self._set_bitmode(0, Ft232h.BitMode.RESET)
     # Drain buffers
     self._purge_buffers()
     # Disable event and error characters
@@ -391,10 +390,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # Enable MPSSE mode
     if self._ft232h_mode == 'GPIO_only':
       self.log(logging.DEBUG, "Setting the mode to GPIO_only")
-      self._set_bitmode(0xFF, ft232h.BitMode.MPSSE)
+      self._set_bitmode(0xFF, Ft232h.BitMode.MPSSE)
     else:
       self.log(logging.DEBUG, f"Setting the mode to {self._ft232h_mode}")
-      self._set_bitmode(self._direction, ft232h.BitMode.MPSSE)
+      self._set_bitmode(self._direction, Ft232h.BitMode.MPSSE)
 
     # Configure clock
     if self._ft232h_mode == 'I2C':
@@ -554,7 +553,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       mode (:class:`BitMode`): Bitbang mode to be set.
     """
 
-    mask = sum(ft232h.BitMode)
+    mask = sum(Ft232h.BitMode)
     value = (bitmask & 0xff) | ((mode.value & mask) << 8)
     if self._ctrl_transfer_out(ft232h_sio_req['set_bitmode'], value):
       raise IOError('Unable to set bitmode')
@@ -1999,7 +1998,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self.log(logging.INFO, "Closing the USB connection to the FT232H")
       if bool(self._usb_dev._ctx.handle):
         try:
-          self._set_bitmode(0, ft232h.BitMode.RESET)
+          self._set_bitmode(0, Ft232h.BitMode.RESET)
           util.release_interface(self._usb_dev, self._index - 1)
         except (IOError, ValueError, USBError):
           pass
