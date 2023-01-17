@@ -198,7 +198,7 @@ class Generator(Block):
                            f"{next_path_dict['type']}")
 
     # Instantiating the next generator path object
-    path_name = next_path_dict.pop('type').capitalize()
+    path_name = next_path_dict.pop('type')
     path_type = getattr(generator_path, path_name)
     self._current_path = path_type(
       _last_time=self._last_t if self._last_t is not None else self.t0,
@@ -212,6 +212,6 @@ class Generator(Block):
 
     for i, next_dict in enumerate(path):
       next_dict = deepcopy(next_dict)
-      path_name = next_dict.pop('type').capitalize()
+      path_name = next_dict.pop('type')
       path_type = getattr(generator_path, path_name)
       path_type(_last_time=0, _last_cmd=None if i == 0 else 0, **next_dict)
