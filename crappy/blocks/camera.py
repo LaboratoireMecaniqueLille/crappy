@@ -33,7 +33,7 @@ class Camera(Block):
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
                verbose: bool = False,
-               debug: bool = False,
+               debug: Optional[bool] = False,
                freq: float = 200,
                save_images: bool = False,
                img_extension: str = "tiff",
@@ -58,7 +58,7 @@ class Camera(Block):
     self.verbose = verbose
     self.freq = freq
     self.niceness = -10
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     # Checking if the requested camera exists in Crappy
     if image_generator is None:
@@ -152,14 +152,14 @@ class Camera(Block):
     if self._save_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the saver process")
       self._save_proc = ImageSaver(log_queue=self._log_queue,
-                                   log_level=self.log_level,
+                                   log_level=self._log_level,
                                    verbose=self.verbose,
                                    **self._save_proc_kw)
 
     if self._display_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the displayer process")
       self._display_proc = Displayer(log_queue=self._log_queue,
-                                     log_level=self.log_level,
+                                     log_level=self._log_level,
                                      verbose=self.verbose,
                                      **self._display_proc_kw)
 

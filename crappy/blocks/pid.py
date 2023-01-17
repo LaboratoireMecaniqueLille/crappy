@@ -29,7 +29,7 @@ class PID(Block):
                send_terms: bool = False,
                freq: float = 500,
                verbose: bool = False,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -61,7 +61,7 @@ class PID(Block):
     self.niceness = -10
     self.freq = freq
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
     self.labels = ['t(s)', 'pid'] if labels is None else labels
     if send_terms:
       self.labels.extend(['p_term', 'i_term', 'd_term'])

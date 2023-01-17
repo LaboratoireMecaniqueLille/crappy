@@ -15,7 +15,7 @@ class Reader(Block):
                name: Optional[str] = None,
                freq: float = 50,
                verbose: bool = False,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the arg and initializes the parent class.
 
     Args:
@@ -28,7 +28,7 @@ class Reader(Block):
     super().__init__()
     self.freq = freq
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     self._reader_name = name if name is not None else f'Reader ' \
                                                       f'{self._get_index()}'

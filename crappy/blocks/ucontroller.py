@@ -2,6 +2,7 @@
 
 from struct import unpack
 from time import time
+from typing import Optional
 import logging
 
 from .meta_block import Block
@@ -36,7 +37,7 @@ class UController(Block):
                baudrate: int = 115200,
                verbose: bool = False,
                freq: float = 100,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Checks the validity of the arguments.
 
     Args:
@@ -73,7 +74,7 @@ class UController(Block):
     self._bus = None
 
     super().__init__()
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     if not isinstance(verbose, bool):
       raise TypeError("verbose should be either True or False !")

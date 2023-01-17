@@ -31,7 +31,7 @@ class AutoDrive(Block):
                ft232h_ser_num: Optional[str] = None,
                freq: float = 200,
                verbose: bool = False,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -61,7 +61,7 @@ class AutoDrive(Block):
     self.labels = ['t(s)', 'diff(pix)']
     self.freq = freq
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     self._device: Optional[Actuator] = None
     self._actuator = {'name': 'CM_drive'} if actuator is None else actuator

@@ -39,7 +39,7 @@ class FakeMachine(Block):
                cmd_label: str = 'cmd',
                freq: float = 100,
                verbose: bool = False,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -64,7 +64,7 @@ class FakeMachine(Block):
     super().__init__()
     self.freq = freq
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     # Setting the mechanical parameters of the material
     self._k = k

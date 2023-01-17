@@ -39,7 +39,7 @@ class Machine(Block):
                spam: bool = False,
                freq: float = 200,
                verbose: bool = False,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -91,7 +91,7 @@ class Machine(Block):
     super().__init__()
     self.freq = freq
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     self._time_label = time_label
     self._spam = spam

@@ -22,7 +22,7 @@ class DISCorrel(Camera):
                software_trig_label: Optional[str] = None,
                verbose: bool = False,
                freq: float = 200,
-               debug: bool = False,
+               debug: Optional[bool] = False,
                save_images: bool = False,
                img_extension: str = "tiff",
                save_folder: Optional[Union[str, Path]] = None,
@@ -96,7 +96,7 @@ class DISCorrel(Camera):
     """"""
 
     self._process_proc = DISCorrelProcess(log_queue=self._log_queue,
-                                          log_level=self.log_level,
+                                          log_level=self._log_level,
                                           verbose=self.verbose,
                                           **self._discorrel_kw)
 

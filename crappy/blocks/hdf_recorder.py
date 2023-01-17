@@ -36,7 +36,7 @@ class HDFRecorder(Block):
                metadata: Optional[dict] = None,
                freq: Optional[float] = None,
                verbose: bool = False,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -61,7 +61,7 @@ class HDFRecorder(Block):
     super().__init__()
     self.freq = freq
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     self._path = Path(filename)
     self._label = label

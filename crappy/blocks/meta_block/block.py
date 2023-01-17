@@ -78,7 +78,8 @@ class Block(Process, metaclass=MetaBlock):
     # The objects for logging will be set later
     self._log_queue: Optional[queues.Queue] = None
     self._logger: Optional[logging.Logger] = None
-    self.log_level = logging.INFO
+    self._debug: Optional[bool] = False
+    self._log_level: int = logging.INFO
 
     # Objects for displaying performance information about the block
     self._last_t: Optional[float] = None
@@ -647,18 +648,41 @@ class Block(Process, metaclass=MetaBlock):
     redirects the log messages to a Queue for passing them to the main process.
     """
 
-    log_level = 10 * int(round(self.log_level / 10, 0))
-
     logger = logging.getLogger(self.name)
-    logger.setLevel(min(log_level, logging.INFO))
+    logger.setLevel(self._log_level)
 
     # On Windows, the messages need to be sent through a Queue for logging
     if get_start_method() == "spawn":
       queue_handler = logging.handlers.QueueHandler(self._log_queue)
-      queue_handler.setLevel(min(log_level, logging.INFO))
+      queue_handler.setLevel(self._log_level)
       logger.addHandler(queue_handler)
 
     self._logger = logger
+
+  @property
+  def debug(self) -> Optional[bool]:
+    """Indicates whether the debug information should be displayed or not.
+
+    If :obj:`False` (the default), only displays the INFO logging level. If
+    :obj:`True`, displays the DEBUG logging level for the Block. And if
+    :obj:`None`, displays only the CRITICAL logging level, which is equivalent
+    to no information at all.
+    """
+
+    return self._debug
+
+  @debug.setter
+  def debug(self, val: Optional[bool]) -> None:
+    if val is not None:
+      if val:
+        self._debug = True
+        self._log_level = logging.DEBUG
+      else:
+        self._debug = False
+        self._log_level = logging.INFO
+    else:
+      self._debug = None
+      self._log_level = logging.CRITICAL
 
   @property
   def t0(self) -> float:

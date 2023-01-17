@@ -24,7 +24,7 @@ class Recorder(Block):
                time_label: str = 't(s)',
                freq: float = 200,
                verbose: bool = True,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -44,7 +44,7 @@ class Recorder(Block):
     self.niceness = -5
     self.freq = freq
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     self._delay = delay
     self._path = Path(filename)

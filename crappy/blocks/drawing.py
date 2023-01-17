@@ -136,7 +136,7 @@ class Drawing(Block):
                backend: str = "TkAgg",
                freq: float = 2,
                verbose: bool = False,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -176,7 +176,7 @@ class Drawing(Block):
     super().__init__()
     self.freq = freq
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     self._image = image
     self._draw = [] if draw is None else draw

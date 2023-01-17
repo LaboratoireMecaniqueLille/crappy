@@ -28,7 +28,7 @@ class GUI(Block):
                freq: float = 50,
                spam: bool = False,
                verbose: bool = False,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -50,7 +50,7 @@ class GUI(Block):
     self.freq = freq
     self.labels = [time_label, label]
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     self._spam = spam
     self._send_0 = send_0

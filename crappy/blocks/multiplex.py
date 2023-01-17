@@ -3,7 +3,6 @@
 import numpy as np
 from typing import Dict, Optional, List
 from collections import defaultdict
-import logging
 
 from .meta_block import Block
 
@@ -31,7 +30,7 @@ class Multiplex(Block):
                interp_freq: float = 200,
                freq: float = 50,
                verbose: bool = False,
-               debug: bool = False) -> None:
+               debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -50,7 +49,7 @@ class Multiplex(Block):
     super().__init__()
     self.freq = freq
     self.verbose = verbose
-    self.log_level = logging.DEBUG if debug else logging.INFO
+    self.debug = debug
 
     # Initializing the attributes
     self._time_label = time_label
