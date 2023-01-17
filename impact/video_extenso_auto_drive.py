@@ -7,15 +7,20 @@ markers during a test with large strains.
 
 import crappy
 
-ve = crappy.blocks.Video_extenso(camera='Ximea_cv', show_image=True)
+if __name__ == '__main__':
 
-ad = crappy.blocks.AutoDrive(
-    actuator={'name': 'CM_drive', 'port': '/dev/ttyUSB0'}, direction='X-')
+  # The Block acquiring the images and performing video-extensometry
+  ve = crappy.blocks.VideoExtenso(camera='XiAPI', display_images=True)
 
-graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
+  # The Block driving the Actuator for following the spots
+  auto_drive = crappy.blocks.AutoDrive(actuator={'name': 'CM_drive',
+                                                 'port': '/dev/ttyUSB0'},
+                                       direction='X-')
+  crappy.link(ve, auto_drive)
 
-crappy.link(ve, graph_extenso)
+  # The Block displaying the strain in real-time
+  graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
+  crappy.link(ve, graph_extenso)
 
-crappy.link(ve, ad)
-
-crappy.start()
+  # Starting the test
+  crappy.start()

@@ -8,61 +8,54 @@ It creates a new folder for each experiment and performs tensile tests using
 videoextensometry.
 """
 
-import time
-
+from time import strftime, gmtime
+from pathlib import Path
 import crappy
 
-save_path = "biotens_data/"
-timestamp = time.ctime()[:-5].replace(" ", "_")
-save_path += timestamp + "/"
+save_path = Path(f"biotens_data/{strftime('%a %b %d %H_%M_%S', gmtime())}")
 
-# Creating F sensor
-effort = crappy.blocks.IOBlock("Comedi", channels=[0], gain=[-48.8],
-                               labels=['t(s)', 'F(N)'])
+if __name__ == '__main__':
 
-# grapher
-graph_effort = crappy.blocks.Grapher(('t(s)', 'F(N)'))
-crappy.link(effort, graph_effort)
+  # Quick hack for resetting the position of the clamps
+  biotens_init = crappy.actuator.Biotens()
+  biotens_init.open()
+  biotens_init.reset_position()
+  biotens_init.set_position(5, 50)
 
-# and recorder
-rec_effort = crappy.blocks.Recorder(save_path + "effort.csv")
-crappy.link(effort, rec_effort)
+  # The Block providing the signal for driving the tensile test machine
+  generator = crappy.blocks.Generator([{'type': 'constant',
+                                        'condition': 'F(N)>90',
+                                        'value': 5}], freq=100)
 
-# Quick hack to reset the position of the actuator
-b = crappy.actuator.Biotens()
-b.open()
-b.reset_position()
-b.set_position(5, 50)
+  # The Block acquiring the force from the load cell
+  effort = crappy.blocks.IOBlock("Comedi", channels=[0], gain=[-48.8],
+                                 labels=['t(s)', 'F(N)'])
+  # This link enables feedback from the setup to the Generator
+  crappy.link(effort, generator)
 
-# Creating Machine block...
-biotens = crappy.blocks.Machine([{'type': 'biotens',
-                                  'port': '/dev/ttyUSB0',
-                                  'pos_label': 'position1',
-                                  'cmd': 'cmd'}])
-# ..graph...
-# graph_pos = crappy.blocks.Grapher(('t(s)', 'position1'))
-# crappy.link(biotens, graph_pos)
-# ...and recorder
-rec_pos = crappy.blocks.Recorder(save_path + 'position.csv')
-crappy.link(biotens, rec_pos)
+  # The Block driving the tensile test machine
+  biotens = crappy.blocks.Machine([{'type': 'biotens',
+                                    'port': '/dev/ttyUSB0',
+                                    'position_label': 'position1',
+                                    'cmd_label': 'cmd'}])
+  crappy.link(generator, biotens)
 
-# To pilot the biotens
-generator = crappy.blocks.Generator([{'type': 'constant',
-                                      'condition': 'F(N)>90',
-                                      'value': 5}], freq=100)
-crappy.link(effort, generator)
-crappy.link(generator, biotens)
+  # The Block acquiring images from the setup and performing video-extensometry
+  extenso = crappy.blocks.VideoExtenso(camera="XiAPI")
 
-# VideoExtenso
-extenso = crappy.blocks.Video_extenso(camera="XiApi", white_spots=False)
+  # The Blocks saving the recorded data to text files
+  rec_effort = crappy.blocks.Recorder(save_path / "effort.csv")
+  rec_position = crappy.blocks.Recorder(save_path / 'position.csv')
+  rec_extenso = crappy.blocks.Recorder(save_path / 'extenso.csv',
+                                       labels=['t(s)', 'Exx(%)', 'Eyy(%)'])
+  crappy.link(effort, rec_effort)
+  crappy.link(biotens, rec_position)
+  crappy.link(extenso, rec_extenso)
 
-# Recorder
-rec_extenso = crappy.blocks.Recorder(save_path + 'extenso.csv',
-                                     labels=['t(s)', 'Exx(%)', 'Eyy(%)'])
-crappy.link(extenso, rec_extenso)
-# And grapher
-graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
-crappy.link(extenso, graph_extenso)
+  # The Graphers displaying the acquired or calculated values in real-time
+  graph_effort = crappy.blocks.Grapher(('t(s)', 'F(N)'))
+  graph_extenso = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
+  crappy.link(effort, graph_effort)
+  crappy.link(extenso, graph_extenso)
 
-# And here we go !
-crappy.start()
+  crappy.start()

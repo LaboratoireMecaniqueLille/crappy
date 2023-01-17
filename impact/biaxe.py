@@ -8,35 +8,30 @@ It demonstrates an equibiaxial cyclic test.
 
 import crappy
 
-path = {'type': 'cyclic', 'value1': 5, 'condition1': 'delay=3',
-        'value2': -5, 'condition2': 'delay=3', 'cycles': 0}
-path2 = dict(path)
-path2['condition1'] = 'delay=5'
-path2['condition2'] = 'delay=5'
-g1 = crappy.blocks.Generator(path=[path], cmd_label="vx")
-g2 = crappy.blocks.Generator(path=[path2], cmd_label="vy")
+if __name__ == '__main__':
 
-mot = {'type': 'biaxe',
-       'mode': 'speed'
-       }
+  # The instructions for driving the motors
+  path1 = {'type': 'cyclic', 'value1': 5, 'condition1': 'delay=3',
+           'value2': -5, 'condition2': 'delay=3', 'cycles': 0}
+  path2 = {'type': 'cyclic', 'value1': 5, 'condition1': 'delay=5',
+           'value2': -5, 'condition2': 'delay=5', 'cycles': 0}
 
-motA = {'port': '/dev/ttyS4',
-        'cmd': 'vy',
-        }
+  # The signal generators driving the motors
+  gen_1 = crappy.blocks.Generator(path=[path1], cmd_label="vx")
+  gen_2 = crappy.blocks.Generator(path=[path2], cmd_label="vy")
 
-motB = {'port': '/dev/ttyS5',
-        'cmd': 'vx',
-        }
+  # Settings common to all four motors to drive
+  mot = {'type': 'biaxe', 'mode': 'speed'}
+  # Settings specific to each motor
+  mot_a = {'port': '/dev/ttyS4', 'cmd': 'vy'}
+  mot_b = {'port': '/dev/ttyS5', 'cmd': 'vx'}
+  mot_c = {'port': '/dev/ttyS6', 'cmd': 'vy'}
+  mot_d = {'port': '/dev/ttyS7', 'cmd': 'vx'}
 
-motC = {'port': '/dev/ttyS6',
-        'cmd': 'vy',
-        }
+  # Instantiating the Block driving the motors and linking it to the Generator
+  machine = crappy.blocks.Machine([mot_a, mot_b, mot_c, mot_d], common=mot)
+  crappy.link(gen_1, machine)
+  crappy.link(gen_2, machine)
 
-motD = {'port': '/dev/ttyS7',
-        'cmd': 'vx',
-        }
-
-b = crappy.blocks.Machine([motA, motB, motC, motD], common=mot)
-crappy.link(g1, b)
-crappy.link(g2, b)
-crappy.start()
+  # Starting the test
+  crappy.start()
