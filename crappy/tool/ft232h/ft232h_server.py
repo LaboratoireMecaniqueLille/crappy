@@ -153,7 +153,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     For controlling several FT232H from the same computer, it is first
     necessary to set their USB serial numbers. Otherwise, an error will be
     raised. This can be done using the crappy utility
-    ``Set_ft232h_serial_nr.py``.
+    ``set_ft232h_serial_nr.py``.
   """
 
   def __init__(self,

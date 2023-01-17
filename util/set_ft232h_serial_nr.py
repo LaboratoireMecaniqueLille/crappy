@@ -18,6 +18,6 @@ while not isinstance(serial_number, int):
     print("Wrong input, serial_number should be an integer !")
     print("")
 
-FT232H = FT232H('Write_serial_nr', str(serial_number))
+FT232H('Write_serial_nr', str(serial_number))
 
 print("Serial number successfully written")
