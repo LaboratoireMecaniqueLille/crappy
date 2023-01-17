@@ -120,7 +120,7 @@ class Machine(Block):
       unknown = tuple(type_ for type_ in self._types if type_
                       not in actuator_dict)
       raise ValueError(f"[Machine] Unknown actuator type(s) : {unknown}\n"
-                       f"The possible types are : {actuator_dict}")
+                       f"The possible types are : {actuator_dict.keys()}")
 
     # The settings that won't be passed to the Actuator objects
     self._settings = [{key: value for key, value in actuator.items()
