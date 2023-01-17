@@ -82,6 +82,7 @@ class FakeMachine(Block):
     # Creating the mechanical variables
     self._current_pos = 0
     self._prev_t = None
+    self._prev_broke_t = time()
     self._plastic_elongation = 0
     self._max_recorded_strain = 0
 
@@ -120,7 +121,9 @@ class FakeMachine(Block):
 
     # If the max strain is reached, consider that the sample broke
     if self._current_pos / self._l0 > self._max_strain:
-      self.log(logging.INFO, "Sample broke")
+      if time() - self._prev_broke_t > 1:
+        self._prev_broke_t = time()
+        self.log(logging.WARNING, "Sample broke !")
       self._k = 0
 
     # Compute the plastic elongation separately
