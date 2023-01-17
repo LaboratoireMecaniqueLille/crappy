@@ -42,6 +42,7 @@ class Block(Process, metaclass=MetaBlock):
 
   instances = WeakSet()
   names = list()
+  log_level: Optional[int] = logging.DEBUG
 
   # The synchronization objects will be set later
   shared_t0: Optional[Synchronized] = None
@@ -109,7 +110,8 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def start_all(cls,
-                allow_root: bool = False) -> None:
+                allow_root: bool = False,
+                log_level: Optional[int] = logging.DEBUG) -> None:
     """Method for starting a script with Crappy.
 
     It sets the synchronization objects for all the blocks, renices the
@@ -126,7 +128,15 @@ class Block(Process, metaclass=MetaBlock):
       allow_root: If set tu :obj:`True`, tries to renice the processes niceness
         with sudo privilege in Linux. It requires the Python script to be run
         with sudo privilege, otherwise it has no effect.
+      log_level: The maximum logging level that will be handled by Crappy. By
+        default, it is set to the lowest level (DEBUG) so that all messages are
+        handled. If set to a higher level, the levels specified for each Block
+        with the ``debug`` argument may be ignored. If set to :obj:`None`,
+        logging is totally disabled. Refer to the documentation of the
+        :mod:`logging` module for information on the possible levels.
     """
+
+    cls.log_level = log_level
 
     cls.prepare_all()
     cls.renice_all(allow_root)
@@ -180,6 +190,15 @@ class Block(Process, metaclass=MetaBlock):
         instance._log_queue = cls.log_queue
         cls.logger.log(logging.INFO, f'Multiprocessing synchronization objects'
                                      f' set for {instance.name} Block')
+
+        # Setting the common log level to all the instances
+        if instance._log_level is not None:
+          if cls.log_level is not None:
+            instance._log_level = max(instance._log_level, cls.log_level)
+          else:
+            instance._log_level = None
+        cls.logger.log(logging.INFO, f"Log level set for the {instance.name} "
+                                     f"Block")
 
       # Starting all the blocks
       for instance in cls.instances:
@@ -342,53 +361,59 @@ class Block(Process, metaclass=MetaBlock):
 
     # The logger handling all messages
     crappy_log = logging.getLogger('crappy')
-    crappy_log.setLevel(logging.DEBUG)
 
-    # The two handlers for displaying messages in the console
-    stream_handler = logging.StreamHandler(stream=stdout)
-    stream_handler_err = logging.StreamHandler(stream=stderr)
-
-    # Getting the path to Crappy's temporary folder
-    if system() in ('Linux', 'Darwin'):
-      log_path = Path('/tmp/crappy')
-    elif system() == 'Windows':
-      log_path = Path.home() / 'AppData' / 'Local' / 'Temp' / 'crappy'
+    if cls.log_level is not None:
+      crappy_log.setLevel(cls.log_level)
     else:
-      log_path = None
+      logging.disable()
 
-    # Creating Crappy's temporary folder if needed
-    if log_path is not None:
-      try:
-        log_path.mkdir(parents=False, exist_ok=True)
-      except FileNotFoundError:
+    # In case there's no logging, no need to configure the handlers
+    if cls.log_level is not None:
+      # The two handlers for displaying messages in the console
+      stream_handler = logging.StreamHandler(stream=stdout)
+      stream_handler_err = logging.StreamHandler(stream=stderr)
+
+      # Getting the path to Crappy's temporary folder
+      if system() in ('Linux', 'Darwin'):
+        log_path = Path('/tmp/crappy')
+      elif system() == 'Windows':
+        log_path = Path.home() / 'AppData' / 'Local' / 'Temp' / 'crappy'
+      else:
         log_path = None
 
-    # This handler writes the log messages to a log file
-    if log_path is not None:
-      file_handler = logging.FileHandler(log_path / 'logs.txt', mode='w')
-    else:
-      file_handler = None
+      # Creating Crappy's temporary folder if needed
+      if log_path is not None:
+        try:
+          log_path.mkdir(parents=False, exist_ok=True)
+        except FileNotFoundError:
+          log_path = None
 
-    # Setting the log levels for the handlers
-    stream_handler.setLevel(logging.DEBUG)
-    stream_handler.addFilter(cls._stdout_filter)
-    stream_handler_err.setLevel(logging.WARNING)
-    if file_handler is not None:
-      file_handler.setLevel(logging.DEBUG)
+      # This handler writes the log messages to a log file
+      if log_path is not None:
+        file_handler = logging.FileHandler(log_path / 'logs.txt', mode='w')
+      else:
+        file_handler = None
 
-    # Setting the log format for the handlers
-    log_format = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s '
-                                   '%(message)s')
-    stream_handler.setFormatter(log_format)
-    stream_handler_err.setFormatter(log_format)
-    if file_handler is not None:
-      file_handler.setFormatter(log_format)
+      # Setting the log levels for the handlers
+      stream_handler.setLevel(max(logging.DEBUG, cls.log_level))
+      stream_handler.addFilter(cls._stdout_filter)
+      stream_handler_err.setLevel(max(logging.WARNING, cls.log_level))
+      if file_handler is not None:
+        file_handler.setLevel(max(logging.DEBUG, cls.log_level))
 
-    # Adding the handlers to the logger
-    crappy_log.addHandler(stream_handler)
-    crappy_log.addHandler(stream_handler_err)
-    if file_handler is not None:
-      crappy_log.addHandler(file_handler)
+      # Setting the log format for the handlers
+      log_format = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s '
+                                     '%(message)s')
+      stream_handler.setFormatter(log_format)
+      stream_handler_err.setFormatter(log_format)
+      if file_handler is not None:
+        file_handler.setFormatter(log_format)
+
+      # Adding the handlers to the logger
+      crappy_log.addHandler(stream_handler)
+      crappy_log.addHandler(stream_handler_err)
+      if file_handler is not None:
+        crappy_log.addHandler(file_handler)
 
     cls.logger = crappy_log
 
@@ -649,10 +674,15 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     logger = logging.getLogger(self.name)
-    logger.setLevel(self._log_level)
+
+    # Adjusting logging to the desired level
+    if self._log_level is not None:
+      logger.setLevel(self._log_level)
+    else:
+      logging.disable()
 
     # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn":
+    if get_start_method() == "spawn" and self._log_level is not None:
       queue_handler = logging.handlers.QueueHandler(self._log_queue)
       queue_handler.setLevel(self._log_level)
       logger.addHandler(queue_handler)

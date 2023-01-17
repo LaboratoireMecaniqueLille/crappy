@@ -36,7 +36,7 @@ class VideoExtensoTool:
                x_l0: float,
                y_l0: float,
                thresh: int,
-               log_level: int,
+               log_level: Optional[int],
                log_queue: Queue,
                white_spots: bool = False,
                update_thresh: bool = False,

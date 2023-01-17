@@ -62,7 +62,7 @@ class UsbServer(Process):
                block_dict: Dict[int, BlockObjects],
                stop_event: multiprocessing.synchronize.Event,
                log_queue: multiprocessing.queues.Queue,
-               log_level: int) -> None:
+               log_level: Optional[int]) -> None:
     """
 
     Args:
@@ -430,15 +430,18 @@ class UsbServer(Process):
   def _set_logger(self) -> None:
     """"""
 
-    log_level = 10 * int(round(self._log_level / 10, 0))
-
     logger = logging.getLogger(self.name)
-    logger.setLevel(min(log_level, logging.INFO))
+
+    # Disabling logging if requested
+    if self._log_level is not None:
+      logger.setLevel(self._log_level)
+    else:
+      logging.disable()
 
     # On Windows, the messages need to be sent through a Queue for logging
-    if get_start_method() == "spawn":
+    if get_start_method() == "spawn" and self._log_level is not None:
       queue_handler = logging.handlers.QueueHandler(self._log_queue)
-      queue_handler.setLevel(min(log_level, logging.INFO))
+      queue_handler.setLevel(self._log_level)
       logger.addHandler(queue_handler)
 
     self._logger = logger
