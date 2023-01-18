@@ -62,10 +62,10 @@ class Camera(Block):
 
     # Checking if the requested camera exists in Crappy
     if image_generator is None:
-      if camera.capitalize() not in camera_dict:
-        raise ValueError(f"No camera named {camera.capitalize()} found in the "
+      if camera not in camera_dict:
+        raise ValueError(f"No camera named {camera} found in the "
                          f"list of available cameras !")
-      self._camera_name = camera.capitalize()
+      self._camera_name = camera
     else:
       self._camera_name = 'Image Generator'
 
