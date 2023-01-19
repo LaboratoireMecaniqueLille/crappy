@@ -201,7 +201,7 @@ class LabjackT7(InOut):
       hardware safety !
     """
 
-    self._handle
+    self._handle = None
 
     super().__init__()
 
