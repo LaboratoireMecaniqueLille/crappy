@@ -557,8 +557,7 @@ class Block(Process, metaclass=MetaBlock):
       self._logger.log(logging.INFO, f"KeyBoardInterrupt caught, stopping")
     # Another exception occurred
     except (Exception,) as exc:
-      logging.exception("Caught exception while running !", exc_info=exc)
-      raise
+      self._logger.exception("Caught exception while running !", exc_info=exc)
 
     # In all cases, trying to properly close the block
     finally:
