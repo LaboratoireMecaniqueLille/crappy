@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from time import time, strftime, gmtime
-from typing import Tuple, Optional, Dict, Any
+from time import time
+from typing import Tuple, Optional
 import numpy as np
 import logging
 
@@ -39,7 +39,7 @@ class FakeCamera(Camera):
     self._t0 = time()
     self._t = self._t0
 
-  def get_image(self) -> Tuple[Dict[str, Any], np.ndarray]:
+  def get_image(self) -> Tuple[float, np.ndarray]:
     """Returns the updated image, depending only on the current timestamp.
 
     Also includes a waiting loop in order to achieve the right frame rate.
@@ -54,15 +54,10 @@ class FakeCamera(Camera):
 
     # Splitting the image to make a moving line
     row = int(self.speed * (self._t - self._t0)) % self.height
-    metadata = {'t(s)': self._t,
-                'DateTimeOriginal': strftime("%Y:%m:%d %H:%M:%S",
-                                             gmtime(self._t)),
-                'SubsecTimeOriginal': f'{self._t % 1:.6f}',
-                'ImageUniqueID': self._frame_nr}
-    return metadata, np.concatenate((self._img[row:], self._img[:row]), axis=0)
+    return self._t, np.concatenate((self._img[row:], self._img[:row]), axis=0)
 
   def _gen_image(self, _: Optional[float] = None) -> None:
-    """Generates the base gradient image, that will be splitted and returned
+    """Generates the base gradient image, that will be split and returned
     in the :meth:`get_image` method"""
 
     self.log(logging.DEBUG, "Generating the image")
