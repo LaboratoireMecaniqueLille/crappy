@@ -1,9 +1,9 @@
 # coding: utf-8
 
 from .camera_process import CameraProcess
-from .discorrel import DISCorrelProcess
+from .dis_correl import DISCorrelProcess
 from .display import Displayer
-from .disve import DISVEProcess
+from .dis_ve import DISVEProcess
 from .gpu_correl import GPUCorrelProcess
 from .gpu_ve import GPUVEProcess
 from .record import ImageSaver
