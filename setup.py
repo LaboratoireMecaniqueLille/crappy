@@ -126,54 +126,56 @@ docs_files = [
                            f'{TUTORIALS}/custom_blocks.rst',
                            f'{TUTORIALS}/c.rst'])]
 
+# Example aliases
+OTHER = 'examples/other_examples'
+READY = 'examples/ready_to_run'
+REAL = 'examples/real_setups_scripts'
 # Explicitly listing all the example files to avoid including unwanted files
-example_files = [('crappy/Examples',
-                  ['Examples/microcontroller_example.py',
-                   'Examples/thermocouple_daqmx.py',
-                   'Examples/custom_actuator.py',
-                   'Examples/ve_fake_test.py',
-                   'Examples/drawing.py',
-                   'Examples/thermocouple_t7.py',
-                   'Examples/tensile_1.py',
-                   'Examples/discorrel_basic.py',
-                   'Examples/pid.py',
-                   'Examples/modifiers.py',
-                   'Examples/mean.py',
-                   'Examples/videoextenso_simple.py',
-                   'Examples/custom_block.py',
-                   'Examples/stream_t7.py',
-                   'Examples/multiplexer.py',
-                   'Examples/spectrum.py',
-                   'Examples/correl_basic.py',
-                   'Examples/read_write.py',
-                   'Examples/generator_steps.py',
-                   'Examples/correl_strain_controlled_fake_test.py',
-                   'Examples/displayer.py',
-                   'Examples/generator.py',
-                   'Examples/fake_test.py',
-                   'Examples/custom_camera.py',
-                   'Examples/correl_fake_test.py',
-                   'Examples/custom_in.py',
-                   'Examples/furnace_simulation.py',
-                   'Examples/custom_out.py',
-                   'Examples/photo.py',
-                   'Examples/dio_daqmx.py',
-                   'Examples/tensile_2.py',
-                   'Examples/disve.py',
-                   'Examples/gpucorrel_fake_test.py',
-                   'Examples/read.py',
-                   'Examples/correl_advanced.py'])]
+example_files = [
+  (f'crappy/{OTHER}', [f'{OTHER}/daqmx_thermocouple.py',
+                       f'{OTHER}/dio_daqmx.py',
+                       f'{OTHER}/gpu_correl_advanced.py',
+                       f'{OTHER}/gpu_correl_basic.py',
+                       f'{OTHER}/gpu_correl_fake_test.py',
+                       f'{OTHER}/labjack_t7_stream.py',
+                       f'{OTHER}/labjack_t7_tensile_1.py',
+                       f'{OTHER}/labjack_t7_tensile_2.py',
+                       f'{OTHER}/labjack_t7_thermocouple.py',
+                       f'{OTHER}/microcontroller_example.py',
+                       f'{OTHER}/spectrum.py',
+                       f'{OTHER}/video_extenso_auto_drive.py',
+                       f'{OTHER}/video_extenso_auto_drive_full.py']),
+  (f'crappy/{READY}', [f'{READY}/custom_actuator.py',
+                       f'{READY}/custom_block.py',
+                       f'{READY}/custom_camera.py',
+                       f'{READY}/custom_in.py',
+                       f'{READY}/custom_out.py',
+                       f'{READY}/dis_correl_basic.py',
+                       f'{READY}/dis_correl_fake_test.py',
+                       f'{READY}/dis_correl_fake_test_strain_controlled.py',
+                       f'{READY}/dis_ve.py',
+                       f'{READY}/displayer.py',
+                       f'{READY}/drawing.py',
+                       f'{READY}/fake_test.py',
+                       f'{READY}/fake_test_video_extenso.py',
+                       f'{READY}/furnace_simulation.py',
+                       f'{READY}/generator.py',
+                       f'{READY}/generator_steps.py',
+                       f'{READY}/mean.py',
+                       f'{READY}/modifiers.py',
+                       f'{READY}/multiplexer.py',
+                       f'{READY}/photo.py',
+                       f'{READY}/pid.py',
+                       f'{READY}/read.py',
+                       f'{READY}/read_write.py',
+                       f'{READY}/video_extenso_simple.py']),
+  (f'crappy/{REAL}', [f'{REAL}/biaxe.py',
+                      f'{REAL}/biotens.py',
+                      f'{REAL}/furnace.py'])]
 
 # Explicitly listing all the util files to avoid including unwanted files
 util_files = [('crappy/util', ['util/set_ft232h_serial_nr.py',
                                'util/udev_rule_setter.sh'])]
-
-# Explicitly listing all the impact files to avoid including unwanted files
-impact_files = [('crappy/impact', ['impact/biaxe.py',
-                                   'impact/biotens.py',
-                                   'impact/furnace.py',
-                                   'impact/video_extenso_full.py',
-                                   'impact/video_extenso_auto_drive.py'])]
 
 setup(
   name='crappy',
@@ -237,5 +239,5 @@ setup(
 
   include_package_data=True,
 
-  data_files=docs_files + example_files + util_files + impact_files
+  data_files=docs_files + example_files + util_files
 )
