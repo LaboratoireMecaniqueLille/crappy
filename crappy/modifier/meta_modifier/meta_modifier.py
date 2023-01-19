@@ -9,8 +9,6 @@ class MetaModifier(type):
 
   classes = {}
 
-  needed_methods = ["evaluate"]
-
   def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
     return super().__new__(mcs, name, bases, dct)
 
@@ -20,20 +18,6 @@ class MetaModifier(type):
     # Checking that a Modifier with the same name doesn't already exist
     if name in cls.classes:
       raise DefinitionError(f"The {name} class is already defined !")
-
-    # Gathering all the defined methods
-    defined_methods = list(dct.keys())
-    defined_methods += [base.__dict__.keys() for base in bases]
-
-    # Checking for missing methods
-    missing_methods = [meth for meth in cls.needed_methods
-                       if meth not in defined_methods]
-
-    # Raising if there are unexpected missing methods
-    if missing_methods and name != "Modifier":
-      raise DefinitionError(
-        f'Class {name} is missing the required method(s): '
-        f'{", ".join(missing_methods)}')
 
     # Otherwise, saving the class
     if name != "Modifier":
