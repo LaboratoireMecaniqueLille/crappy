@@ -67,9 +67,9 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
   def __init__(self) -> None:
     """Selects the right USB device."""
 
-    self._dev = None
-
     super().__init__()
+
+    self._dev = None
     self._calib = None
 
     # Listing all the matching USB devices

@@ -50,11 +50,12 @@ class CameraGstreamer(Camera):
   def __init__(self) -> None:
     """Simply initializes the instance attributes."""
 
+    super().__init__()
+
     self._exposure_mode = None
     self._pipeline = None
     self._process: Optional[Popen] = None
 
-    super().__init__()
     Gst.init(None)
 
     self._last_frame_nr = 0

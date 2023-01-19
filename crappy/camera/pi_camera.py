@@ -37,11 +37,11 @@ class PiCamera(Camera):
   def __init__(self) -> None:
     """Instantiates the available settings."""
 
+    super().__init__()
+
     self._frame_grabber: Optional[Thread] = None
     self._capture = None
     self._cam = None
-
-    super().__init__()
 
     self.log(logging.INFO, "Opening the connection to the camera")
     self._cam = PiCameraRPi()

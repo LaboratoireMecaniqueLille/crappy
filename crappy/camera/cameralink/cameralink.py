@@ -34,9 +34,9 @@ class CLCamera(Camera):
       Using a config file is recommended over changing all settings manually.
     """
 
-    self._cap = None
-
     super().__init__()
+
+    self._cap = None
 
     self.add_scale_setting("framespersec", 1, 200, self._get_framespersec,
                            self._set_framespersec)

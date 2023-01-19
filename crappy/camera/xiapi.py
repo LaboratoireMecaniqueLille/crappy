@@ -25,9 +25,9 @@ class XiAPI(Camera):
   def __init__(self) -> None:
     """"""
 
-    self._cam = None
-
     super().__init__()
+
+    self._cam = None
 
     self._cam = xiapi.Camera()
     self._img = xiapi.Image()
