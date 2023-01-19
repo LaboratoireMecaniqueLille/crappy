@@ -83,6 +83,7 @@ class MPRLS(InOut):
     """
 
     self._bus = None
+    self._eoc_pin = None
 
     if not isinstance(backend, str) or backend not in mprls_backends:
       raise ValueError("backend should be in {}".format(mprls_backends))

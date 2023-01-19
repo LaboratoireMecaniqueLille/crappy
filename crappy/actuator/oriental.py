@@ -33,9 +33,9 @@ class Oriental(Actuator):
         corresponds to `0.07mm/min` for a command value of `1`.
     """
 
-    super().__init__()
-
     self._ser = None
+
+    super().__init__()
 
     self._baudrate = baudrate
     self._port = port
@@ -160,8 +160,9 @@ class Oriental(Actuator):
   def stop(self) -> None:
     """Sends a command for stopping the motor."""
 
-    self.log(logging.DEBUG, f"Writing b'SSTOP\\n' to port {self._port}")
-    self._ser.write(b"SSTOP\n")
+    if self._ser is not None:
+      self.log(logging.DEBUG, f"Writing b'SSTOP\\n' to port {self._port}")
+      self._ser.write(b"SSTOP\n")
 
   def close(self) -> None:
     """Closes the serial connection to the actuator."""

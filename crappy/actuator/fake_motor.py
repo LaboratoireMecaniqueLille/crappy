@@ -46,6 +46,11 @@ class FakeMotor(Actuator):
     self._initial_speed = initial_speed
     self._initial_pos = initial_pos
 
+    self._rpm = 0
+    self._pos = 0
+    self._volt = 0
+    self._t = time()
+
   def open(self) -> None:
     """Sets the variables describing the state of the motor."""
 

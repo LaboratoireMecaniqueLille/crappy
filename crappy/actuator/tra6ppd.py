@@ -35,9 +35,9 @@ class TRA6PPD(Actuator):
       port: Path to the port to use for seria lcommunication.
     """
 
-    super().__init__()
-
     self._ser = None
+
+    super().__init__()
 
     self._max_speed = 0.2
     self._min_position = 0
@@ -125,7 +125,8 @@ class TRA6PPD(Actuator):
   def stop(self) -> None:
     """Stops the motor and sets the device to "disable" state."""
 
-    self.log(logging.DEBUG, f"Writing b'ST\\r\\n' to port {self._port}")
-    self._ser.write(b'ST\r\n')
-    self.log(logging.DEBUG, f"Writing b'1MMO\\r\\n' to port {self._port}")
-    self._ser.write(b'1MMO\r\n')
+    if self._ser is not None:
+      self.log(logging.DEBUG, f"Writing b'ST\\r\\n' to port {self._port}")
+      self._ser.write(b'ST\r\n')
+      self.log(logging.DEBUG, f"Writing b'1MMO\\r\\n' to port {self._port}")
+      self._ser.write(b'1MMO\r\n')

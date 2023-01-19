@@ -169,6 +169,7 @@ class ADS1115(InOut):
     """
 
     self._bus = None
+    self._dry_pin = None
 
     if not isinstance(backend, str) or backend not in Ads1115_backends:
       raise ValueError("backend should be in {}".format(Ads1115_backends))

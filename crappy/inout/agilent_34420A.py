@@ -40,14 +40,14 @@ class Agilent34420a(InOut):
       timeout: Timeout for the serial connection, as a :obj:`float`.
     """
 
+    self._ser = None
+
     super().__init__()
 
     self._device = device
     self._baudrate = baudrate
     self._timeout = timeout
     self._mode = mode
-
-    self._ser = None
 
   def open(self) -> None:
     """Opens the serial connection, resets the Agilent and configures it to the

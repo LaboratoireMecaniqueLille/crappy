@@ -164,6 +164,7 @@ class NAU7802(InOut):
     """
 
     self._bus = None
+    self._int_pin = None
 
     super().__init__()
 

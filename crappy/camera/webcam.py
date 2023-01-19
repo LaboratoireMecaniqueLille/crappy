@@ -24,9 +24,10 @@ class Webcam(Camera):
   def __init__(self) -> None:
     """Sets variables and adds the channels setting."""
 
-    super().__init__()
-    self.name = "webcam"
     self._cap = None
+
+    super().__init__()
+
     self.add_choice_setting(name="channels",
                             choices=('1', '3'),
                             default='1')

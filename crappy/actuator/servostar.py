@@ -31,9 +31,9 @@ class Servostar(Actuator):
       mode (:obj:`str`, optional): Can be `'analog'` or `'serial'`.
     """
 
-    super().__init__()
-
     self._ser = None
+
+    super().__init__()
 
     self._port = port
     self._mode = mode
@@ -142,9 +142,10 @@ class Servostar(Actuator):
   def stop(self) -> None:
     """Sends a command for stopping the motor."""
 
-    self.log(logging.DEBUG, f"Writing b'DIS\\r\\n' to port {self._port}")
-    self._ser.write("DIS\r\n")
-    self._ser.flushInput()
+    if self._ser is not None:
+      self.log(logging.DEBUG, f"Writing b'DIS\\r\\n' to port {self._port}")
+      self._ser.write("DIS\r\n")
+      self._ser.flushInput()
 
   def close(self) -> None:
     """Closes the serial connection."""

@@ -25,6 +25,8 @@ class XiAPI(Camera):
   def __init__(self) -> None:
     """"""
 
+    self._cam = None
+
     super().__init__()
 
     self._cam = xiapi.Camera()
@@ -88,8 +90,9 @@ class XiAPI(Camera):
         void return function.
     """
 
-    self.log(logging.INFO, "Closing the connection to the camera")
-    self._cam.close_device()
+    if self._cam is not None:
+      self.log(logging.INFO, "Closing the connection to the camera")
+      self._cam.close_device()
 
   def _get_w(self) -> int:
     return self._cam.get_width()

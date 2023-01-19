@@ -34,9 +34,10 @@ class Biotens(Actuator):
       port: Path to the serial port to use for communication.
     """
 
+    self._ser = None
+
     super().__init__()
 
-    self._ser = None
     self._port = port
 
   def open(self) -> None:
@@ -139,9 +140,10 @@ class Biotens(Actuator):
   def stop(self) -> None:
     """Sends a command for stopping the actuator."""
 
-    cmd = self._make_cmd((2, 2, 0, 2), ('B', 'B', 'h', 'B'), True)
-    self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
-    self._ser.write(cmd)
+    if self._ser is not None:
+      cmd = self._make_cmd((2, 2, 0, 2), ('B', 'B', 'h', 'B'), True)
+      self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
+      self._ser.write(cmd)
 
   def close(self) -> None:
     """Closes the serial connection to the actuator."""

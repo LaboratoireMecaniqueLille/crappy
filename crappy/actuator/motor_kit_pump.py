@@ -258,9 +258,15 @@ class MotorKitPump(Actuator):
       self.log(logging.DEBUG, f"Setting motor 3 to {volt_clamped}")
       self._hat.set_motor(3, volt_clamped)
 
+  def stop(self) -> None:
+    """"""
+
+    if self._hat is not None:
+      self.set_speed(0)
+
   def close(self) -> None:
     """Stops the pumps and closes the HAT object."""
 
-    if self._backend == 'Pi4' and self._hat is not None:
+    if self._hat is not None and self._backend == 'Pi4':
       self.log(logging.INFO, "Closing the connection to the Motorkit")
       self._hat.close()

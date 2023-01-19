@@ -47,6 +47,8 @@ class Spectrum(InOut):
         bytes. The default is 65kB.
     """
 
+    self._spectrum = None
+
     super().__init__()
 
     # Setting the args
@@ -64,7 +66,6 @@ class Spectrum(InOut):
              f"({sample_rate * len(channels) / 512} kB/s)")
 
     # These attributes will be set later
-    self._spectrum = None
     self._dt = None
     self._buff = None
     self._stream_t0 = 0

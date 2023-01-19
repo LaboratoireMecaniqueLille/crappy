@@ -29,9 +29,9 @@ class CMDrive(Actuator):
       baudrate: The baudrate to use for serial communication.
     """
 
-    super().__init__()
-
     self._ser = None
+
+    super().__init__()
 
     self._port = port
     self._baudrate = baudrate
@@ -103,15 +103,17 @@ class CMDrive(Actuator):
   def stop(self) -> None:
     """Sends a command for stopping the motor."""
 
-    # Closing and reopening to get rid of errors
-    self._ser.close()
-    self._ser.open()
+    if self._ser is not None:
+      # Closing and reopening to get rid of errors
+      self._ser.close()
+      self._ser.open()
 
-    self.log(logging.DEBUG, f"Writing b'SL 0\\r' to port {self._port}")
-    self._ser.write('SL 0\r')
+      self.log(logging.DEBUG, f"Writing b'SL 0\\r' to port {self._port}")
+      self._ser.write('SL 0\r')
 
   def close(self) -> None:
     """Close the serial connection."""
 
-    self.log(logging.INFO, f"Closing the serial port {self._port}")
-    self._ser.close()
+    if self._ser is not None:
+      self.log(logging.INFO, f"Closing the serial port {self._port}")
+      self._ser.close()

@@ -30,10 +30,11 @@ class OpSens(InOut):
         PicoSens.
     """
 
+    self._dev = None
+
     super().__init__()
 
     self._addr = device
-    self._dev = None
 
   def open(self) -> None:
     """Opens the serial connection and configures the PicoSens."""

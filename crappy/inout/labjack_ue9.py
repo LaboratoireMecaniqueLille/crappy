@@ -75,6 +75,8 @@ class LabjackUE9(InOut):
       if they had the same length as the shortest given list.
     """
 
+    self._handle = None
+
     super().__init__()
 
     # Setting the defaults for arguments that are not given
@@ -92,8 +94,6 @@ class LabjackUE9(InOut):
                       for chan, r_num, g, off, make_z in
                       zip(channels, resolution, gain, offset, make_zero)]
     self.log(logging.DEBUG, f"Input channels: {self._channels}")
-
-    self._handle = None
 
   def open(self) -> None:
     """Simply opens the connection to the Labjack."""

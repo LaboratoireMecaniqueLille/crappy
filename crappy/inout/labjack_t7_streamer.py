@@ -138,6 +138,8 @@ class T7_streamer(InOut):
 
     """
 
+    self._handle = None
+
     super().__init__()
 
     if len(channels) * scan_rate > 100000:
@@ -174,7 +176,6 @@ class T7_streamer(InOut):
     self.log(logging.DEBUG, f"Input channels: {self._channels}")
 
     # these attributes will be set later
-    self._handle = None
     self._n_points = 0
     self._stream_t0 = 0
     self._stream_started = False

@@ -26,9 +26,9 @@ class Biaxe(Actuator):
       timeout: The timeout for the serial communication.
     """
 
-    super().__init__()
-
     self._ser = None
+
+    super().__init__()
 
     self._port = port
     self._baudrate = baudrate
@@ -57,6 +57,12 @@ class Biaxe(Actuator):
                               f"{self._port}")
       self._ser.write(f'J {speed}\r\n'.encode('ASCII'))
       self._speed = speed
+
+  def stop(self) -> None:
+    """"""
+
+    if self._ser is not None:
+      self.set_speed(0)
 
   def close(self) -> None:
     """Closes the serial connection."""

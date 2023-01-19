@@ -114,6 +114,8 @@ class Comedi(InOut):
       as the shortest given list.
     """
 
+    self._device = None
+
     super().__init__()
 
     self._device_name = device.encode()

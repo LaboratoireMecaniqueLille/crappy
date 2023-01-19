@@ -201,6 +201,8 @@ class LabjackT7(InOut):
       hardware safety !
     """
 
+    self._handle
+
     super().__init__()
 
     # Identifiers for the device to open
@@ -308,7 +310,6 @@ class LabjackT7(InOut):
 
     # These attributes will come in use later
     self._last_sent_val = [None for _ in self._write_addresses]
-    self._handle = None
 
   def open(self) -> None:
     """Opening the Labjack, parsing the commands to write at open, and sending

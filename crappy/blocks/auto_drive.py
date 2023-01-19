@@ -55,6 +55,7 @@ class AutoDrive(Block):
       verbose: If :obj:`True`, displays the looping frequency of the block.
     """
 
+    self._device: Optional[Actuator] = None
     self._ft232h_args = None
 
     super().__init__()
@@ -63,7 +64,6 @@ class AutoDrive(Block):
     self.verbose = verbose
     self.debug = debug
 
-    self._device: Optional[Actuator] = None
     self._actuator = {'name': 'CM_drive'} if actuator is None else actuator
     self._gain = -gain if '-' in direction else gain
     self._direction = direction

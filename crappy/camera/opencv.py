@@ -37,8 +37,9 @@ class CameraOpencv(Camera):
   def __init__(self) -> None:
     """Sets variables and adds the channels setting."""
 
-    super().__init__()
     self._cap = None
+
+    super().__init__()
 
     self.add_choice_setting(name="channels",
                             choices=('1', '3'),

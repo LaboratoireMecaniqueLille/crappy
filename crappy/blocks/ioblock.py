@@ -78,6 +78,8 @@ class IOBlock(Block):
 
     self._device: Optional[InOut] = None
     self._ft232h_args = None
+    self._read: bool = False
+    self._write: bool = False
 
     super().__init__()
     self.niceness = -10

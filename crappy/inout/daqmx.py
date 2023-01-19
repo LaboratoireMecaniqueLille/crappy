@@ -116,6 +116,9 @@ class DAQmx(InOut):
       as the shortest given list.
     """
 
+    self._handle = None
+    self._out_handle = None
+
     super().__init__()
 
     self._device = device
