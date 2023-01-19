@@ -46,7 +46,7 @@ class _Channel:
         logger.log(logging.WARNING, f"Unknown channel key : {key}, ignoring")
 
 
-class T7_streamer(InOut):
+class T7Streamer(InOut):
   """This InOut object allows controlling a Labjack T7 device in stream mode.
 
   It can only acquire data on the `AIN` channels. For single point mode, and
