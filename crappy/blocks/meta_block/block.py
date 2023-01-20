@@ -22,7 +22,7 @@ from ...links import Link
 from ..._global import LinkDataError, StartTimeout, PrepareError, \
   T0NotSetError, GeneratorStop, ReaderStop, CameraPrepareError, \
   CameraRuntimeError
-from ...tool.ft232h import UsbServer
+from ...tool.ft232h import USBServer
 
 # Todo:
 #  Add a clean way to stop the blocks, using the keyboard or a button
@@ -177,9 +177,9 @@ class Block(Process, metaclass=MetaBlock):
       cls.logger.log(logging.INFO, 'Logger thread started')
 
       # Starting the USB server if required
-      if UsbServer.initialized:
+      if USBServer.initialized:
         cls.logger.log(logging.INFO, "Starting the USB server")
-        UsbServer.start_server(cls.log_queue, logging.INFO)
+        USBServer.start_server(cls.log_queue, logging.INFO)
 
       # Passing the synchronization and logging objects to each block
       for instance in cls.instances:
@@ -287,9 +287,9 @@ class Block(Process, metaclass=MetaBlock):
         cls.logger.log(logging.INFO, f'{inst.name} finished by itself')
 
       # Stopping the USB server if required
-      if UsbServer.initialized:
+      if USBServer.initialized:
         cls.logger.log(logging.INFO, "Stopping the USB server")
-        UsbServer.stop_server()
+        USBServer.stop_server()
 
       cls.logger.log(logging.INFO, 'All Blocks done, Crappy terminated '
                                    'gracefully\n')

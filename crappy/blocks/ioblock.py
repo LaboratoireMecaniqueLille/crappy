@@ -5,7 +5,7 @@ import logging
 
 from .meta_block import Block
 from ..inout import inout_dict, InOut
-from ..tool.ft232h import UsbServer
+from ..tool.ft232h import USBServer
 
 
 class IOBlock(Block):
@@ -124,7 +124,7 @@ class IOBlock(Block):
 
     # Checking whether the InOut communicates through an FT232H
     if inout_dict[self._io_name].ft232h:
-      self._ft232h_args = UsbServer.register(ft232h_ser_num)
+      self._ft232h_args = USBServer.register(ft232h_ser_num)
 
   def prepare(self) -> None:
     """Checks the consistency of the link layout, opens the device and sets the

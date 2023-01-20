@@ -37,7 +37,7 @@ class BlockObjects:
   finished: bool = False
 
 
-class UsbServer(Process):
+class USBServer(Process):
   """"""
 
   initialized = False

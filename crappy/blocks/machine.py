@@ -7,7 +7,7 @@ import logging
 
 from .meta_block import Block
 from ..actuator import actuator_dict, Actuator
-from ..tool.ft232h import UsbServer
+from ..tool.ft232h import USBServer
 
 
 @dataclass
@@ -134,7 +134,7 @@ class Machine(Block):
 
     # Checking whether the Actuators communicate through an FT232H
     if any(actuator_dict[type_].ft232h for type_ in self._types):
-      self._ft232h_args = UsbServer.register(ft232h_ser_num)
+      self._ft232h_args = USBServer.register(ft232h_ser_num)
 
   def prepare(self) -> None:
     """Checks the validity of the linking and initializes all the Actuator
