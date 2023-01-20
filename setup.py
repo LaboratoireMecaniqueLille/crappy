@@ -13,7 +13,7 @@ from distutils.core import setup, Extension
 import platform
 
 # Reading version from __version__.py file
-with open('crappy/__version__.py') as file:
+with open('src/crappy/__version__.py') as file:
   for line in file:
     if line.startswith('__version__'):
       __version__ = line.split("'")[1]
@@ -208,7 +208,10 @@ setup(
 
   keywords='control command acquisition multiprocessing',
 
-  packages=find_namespace_packages(exclude=['contrib', 'docs', 'tests*']),
+  packages=find_namespace_packages(where="src",
+                                   exclude=['contrib', 'docs', 'tests*']),
+
+  package_dir={"": "src"},
 
   python_requires=">=3.6",
 
