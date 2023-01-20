@@ -170,7 +170,7 @@ class MotorKitPumpFT232H(Actuator):
     Args:
       device_address: The I2C address of the HAT. The default address is
         `0x60`, but it is possible to change this setting by cutting traces on
-          the board.
+        the board.
       i2c_port: The I2C port over which the HAT should communicate. On most
         Raspberry Pi models the default I2C port is `1`.
     """
