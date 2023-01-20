@@ -8,3 +8,4 @@ from .inertia import Inertia
 from .sine import Sine
 from .protection import Protection
 from .custom import Custom
+from .path import Path
