@@ -5,7 +5,7 @@ from typing import Dict, Type
 from .meta_inout import InOut, MetaIO
 
 from .ft232h import ADS1115FT232H
-from .ft232h import GpioSwitchFT232H
+from .ft232h import GPIOSwitchFT232H
 from .ft232h import MCP9600FT232H
 from .ft232h import MPRLSFT232H
 from .ft232h import NAU7802FT232H

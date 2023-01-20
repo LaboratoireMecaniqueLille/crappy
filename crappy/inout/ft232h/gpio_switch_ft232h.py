@@ -6,7 +6,7 @@ from ..meta_inout import InOut
 from ...tool.ft232h import FT232HServer as FT232H, ft232h_pin_nr
 
 
-class GpioSwitchFT232H(InOut):
+class GPIOSwitchFT232H(InOut):
   """Class for setting a GPIO high or low.
 
   The GPIOSwitch InOut block is meant for switching a GPIO high or low
