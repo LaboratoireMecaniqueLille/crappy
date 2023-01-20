@@ -15,7 +15,8 @@
 import os
 import sys
 from time import asctime
-from crappy import __version__
+__version__ = '1.5.9'
+
 sys.path.insert(0, os.path.abspath('../..'))
 sys.setrecursionlimit(1500)
 
@@ -36,6 +37,9 @@ release = __version__
 # If your documentation needs a minimal Sphinx version, state it here.
 #
 # needs_sphinx = '1.0'
+
+# Sort entries in the order in which they appear in the code
+autodoc_member_order = 'bysource'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
