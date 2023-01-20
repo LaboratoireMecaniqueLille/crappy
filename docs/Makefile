@@ -15,7 +15,9 @@ help:
 
 .PHONY: clean
 clean:
-	rm -r $(BUILDDIR)
+	@if [ -d $(BUILDDIR) ]; then\
+	    rm -r $(BUILDDIR);\
+	fi
 
 LINKCHECKDIR  = build/linkcheck
 
