@@ -19,10 +19,10 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DISVEConfig(CameraConfigBoxes):
-  """Class similar to :ref:`Camera configuration` but also displaying the
+  """Class similar to :ref:`Camera Configurator` but also displaying the
   bounding boxes of the regions defined as patches.
 
-  It is meant to be used for configuring the :ref:`Disve` block.
+  It is meant to be used for configuring the :ref:`DIS VE` block.
   """
 
   def __init__(self, camera, patches: SpotsBoxes) -> None:

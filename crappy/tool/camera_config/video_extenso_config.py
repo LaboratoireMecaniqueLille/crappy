@@ -19,11 +19,11 @@ except (ModuleNotFoundError, ImportError):
 
 
 class VideoExtensoConfig(CameraConfigBoxes):
-  """Class similar to :ref:`Camera configuration` but also displaying the
+  """Class similar to :ref:`Camera Configurator` but also displaying the
   bounding boxes of the detected spots, and allowing to select the area where
   to detect the spots by drawing a box with the left mouse button.
 
-  It is meant to be used for configuring the :ref:`VideoExtenso` block.
+  It is meant to be used for configuring the :ref:`Video Extenso` block.
   """
 
   def __init__(self, camera, detector: SpotsDetector) -> None:

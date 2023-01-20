@@ -11,7 +11,7 @@ class Mean(Modifier):
   """Modifier waiting for a given number of data points to be received, then
   returning their average, and starting all over again.
 
-  Unlike :ref:`Moving average`, it only returns a value once every ``n_points``
+  Unlike :ref:`Moving Average`, it only returns a value once every ``n_points``
   points.
   """
 

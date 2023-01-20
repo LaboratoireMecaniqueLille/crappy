@@ -11,7 +11,7 @@ class Median(Modifier):
   """Modifier waiting for a given number of data points to be received, then
   returning their median, and starting all over again.
 
-  Unlike :ref:`Moving med`, it only returns a value once every ``n_points``
+  Unlike :ref:`Moving Median`, it only returns a value once every ``n_points``
   points.
   """
 

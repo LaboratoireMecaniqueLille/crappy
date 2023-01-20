@@ -37,7 +37,7 @@ class Inertia(Path):
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
       condition: The condition for switching to the next path. Refer to
-        :ref:`generator path` for more info.
+        :ref:`Path` for more info.
       inertia: Value of the equivalent inertia to use for driving the signal.
         In the above formula, it is the value of `m`. The larger this value,
         the slower the changes in the signal value.

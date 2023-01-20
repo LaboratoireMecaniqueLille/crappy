@@ -14,7 +14,7 @@ class Recorder(Block):
   The first row of the file contains the names of the saved labels.
   This block can only save data coming from one upstream block. To save data
   from multiple blocks, use several instances of Recorder (recommended) or a
-  :ref:`Multiplex` block.
+  :ref:`Multiplexer` block.
   """
 
   def __init__(self,

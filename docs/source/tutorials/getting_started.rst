@@ -225,7 +225,7 @@ argument in the Generator block !
 
 This argument must be a :obj:`list` containing :obj:`dict`. Each :obj:`dict`
 provides information for generating signal following a specific pattern. All
-the patterns can be found in :ref:`the generator path section <generator path>`.
+the patterns can be found in :ref:`the generator path section <Generator Paths>`.
 The dicts in the list are considered successively by the Generator, until
 there's no dict left in which case the program stops.
 
@@ -331,7 +331,7 @@ let's consider a new example. No we simply want to drive a DC motor with known
 properties to a target speed, but the motor takes Volts as an input so we need
 to setup a control for converting the speed command into a voltage input.
 
-Since not everyone has a DC motor at home, let's use a :ref:`Fakemotor` object
+Since not everyone has a DC motor at home, let's use a :ref:`Fake Motor` object
 instead. It simply simulates the dynamic behavior of a DC motor. We're going to
 use a `PID controller <https://en.wikipedia.org/wiki/PID_controller>`_ for
 converting the speed command into Volts, implemented in the :ref:`PID` block. We

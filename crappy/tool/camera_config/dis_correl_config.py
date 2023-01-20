@@ -20,10 +20,10 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DISCorrelConfig(CameraConfigBoxes):
-  """Class similar to :ref:`Camera configuration` but also allowing to select
+  """Class similar to :ref:`Camera Configurator` but also allowing to select
   the area on which the correlation will be performed.
 
-  It is meant to be used for configuring the :ref:`Discorrel` block.
+  It is meant to be used for configuring the :ref:`DIS Correl` block.
   """
 
   def __init__(self, camera) -> None:

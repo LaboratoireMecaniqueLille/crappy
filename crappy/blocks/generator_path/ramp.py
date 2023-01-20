@@ -25,7 +25,7 @@ class Ramp(Path):
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
       condition: The condition for switching to the next path. Refer to
-        :ref:`generator path` for more info.
+        :ref:`Path` for more info.
       speed: The slope of the ramp, in `units/s`.
       init_value: If given, overwrites the last value of the signal as the
         starting point for the ramp. In the specific case when this path is the

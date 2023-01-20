@@ -67,7 +67,7 @@ class LabjackT7(InOut):
   from Crappy.
 
   This class is not capable of streaming. For higher frequency, refer to the
-  :ref:`T7 Streamer` class.
+  :ref:`Labjack T7 Streamer` class.
   """
 
   def __init__(self,

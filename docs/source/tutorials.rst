@@ -4,6 +4,6 @@ Tutorials
 
 .. toctree::
 
-   tutorials/gettingstarted
-   tutorials/custom_blocks
-   tutorials/c
+   tutorials/getting_started.rst
+   tutorials/custom_blocks.rst
+   tutorials/c_modules.rst

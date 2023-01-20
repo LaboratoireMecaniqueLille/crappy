@@ -40,13 +40,6 @@ Data plotting
 
   No example featuring a Dashboard block is currently distributed.
 
-- :ref:`Displayer`
-
-  Displays real-time images from a :ref:`camera <Cameras>`.
-
-  Refer to the `displayer.py <https://github.com/LaboratoireMecaniqueLille/
-  crappy/blob/master/Examples/displayer.py>`_ example for a use case.
-
 Data recording
 ++++++++++++++
 
@@ -68,17 +61,16 @@ Data recording
 Data processing
 +++++++++++++++
 
-- :ref:`Mean <MeanBlock>`
+- :ref:`Mean <Mean Block>`
 
   Calculates the average of the received labels over a given period. One
   average is given for every label, it is not meant to average several labels
-  together. Can be used as a less computationally-intensive :ref:`Multiplexer
-  <Multiplex>`.
+  together. Can be used as a less computationally-intensive :ref:`Multiplexer`.
 
   Refer to the `mean.py <https://github.com/LaboratoireMecaniqueLille/crappy/
   blob/master/Examples/mean.py>`_ example for a use case.
 
-- :ref:`Multiplexer <Multiplex>`
+- :ref:`Multiplexer`
 
   Allows putting labels emitted at different frequencies on a same time basis.
   Useful for plotting curves made of two labels from different blocks, as the
@@ -91,7 +83,7 @@ Data processing
 Real-time correlation
 +++++++++++++++++++++
 
-- :ref:`Discorrel`
+- :ref:`DIS Correl`
 
   Performs real-time Dense Inverse Search (DIS) image correlation using
   :mod:`cv2`'s `DISOpticalFlow`, and projects the displacement field on a
@@ -101,9 +93,9 @@ Real-time correlation
   Lille/crappy/blob/master/Examples/discorrel_basic.py>`_ example for a use
   case.
 
-- :ref:`GPUCorrel`
+- :ref:`GPU Correl`
 
-  Same as :ref:`Discorrel` except the computation is done on a Cuda-compatible
+  Same as :ref:`DIS Correl` except the computation is done on a Cuda-compatible
   GPU.
 
   Refer to the `gpucorrel_fake_test.py <https://github.com/LaboratoireMecanique
@@ -113,7 +105,7 @@ Real-time correlation
 Video-extensometry
 ++++++++++++++++++
 
-- :ref:`VideoExtenso`
+- :ref:`Video Extenso`
 
   Performs real-time video-extensometry on two to four dots and returns the `x`
   and `y` strains.
@@ -121,22 +113,22 @@ Video-extensometry
   Refer to the `ve_fake_test.py <https://github.com/LaboratoireMecaniqueLille/
   crappy/blob/master/Examples/ve_fake_test.py>`_ example for a use case.
 
-- :ref:`Disve`
+- :ref:`DIS VE`
 
-  Performs DIS correlation just like :ref:`Discorrel` but only on the areas
+  Performs DIS correlation just like :ref:`DIS Correl` but only on the areas
   selected by the user, and returns the `x` and `y` displacement for each area.
-  Can be used to replace :ref:`VideoExtenso` on speckled samples, each area
+  Can be used to replace :ref:`Video Extenso` on speckled samples, each area
   playing the same role as a dot.
 
   No example featuring a Disve block is currently distributed.
 
-- :ref:`GPUve`
+- :ref:`GPU VE`
 
-  Same as :ref:`Disve` except the computation is done on a Cuda-compatible GPU.
+  Same as :ref:`DIS VE` except the computation is done on a Cuda-compatible GPU.
 
   No example featuring a GPUve block is currently distributed.
 
-- :ref:`Autodrive`
+- :ref:`Auto Drive`
 
   Allows moving a camera performing video-extensometry and mounted on an
   actuator, so that the barycenter of the dots remains in the center of the
@@ -220,7 +212,7 @@ Others
 
   No example featuring a Client Server block is currently distributed.
 
-- :ref:`Fake machine`
+- :ref:`Fake Machine`
 
   Emulates the behavior of a tensile test machine, taking a position command as
   input and outputting the force and the displacement. Mainly used in the
@@ -243,7 +235,7 @@ Supported hardware (cameras, inouts, actuators)
 Supported cameras
 +++++++++++++++++
 
-- :ref:`Bispectral`
+- :ref:`Bi Spectral`
 
   An infrared camera acquiring on two wavelengths at the same time.
 
@@ -271,7 +263,7 @@ Supported cameras
   mostly compatible with USB cameras, and its dependencies are straightforward
   to install.
 
-- :ref:`Camera link`
+- :ref:`Camera Link`
 
   Allows reading from a camera communicating over Camera Link plugged to a
   `microEnable 5 ironman AD8-PoCL <https://www.baslerweb.com/en/products/
@@ -367,12 +359,12 @@ Supported Actuators
      This actuator was written for a specific application, so it may not be
      usable as-is in the general case.
 
-- :ref:`Fakemotor`
+- :ref:`Fake Motor`
 
   Emulates the dynamic behavior of a DC motor, but doesn't drive any hardware.
   Used in the examples, may also be used for prototyping or debugging.
 
-- :ref:`Motorkit pump`
+- :ref:`Motor kit pump`
 
   Drives Adafruit's `DC & Stepper Motor HAT for Raspberry Pi <https://www.
   adafruit.com/product/2348>`_ in Volts, using Adafruit's Blinka library.
@@ -430,7 +422,7 @@ Acquisition boards
   Controls Labjack's `UE9 <https://labjack.com/products/calibration-service-
   with-cert-u6-ue9-t7>`_ acquisition board.
 
-- :ref:`T7 Streamer`
+- :ref:`Labjack T7 Streamer`
 
   Controls Labjack's `T7 <https://labjack.com/products/t7>`_ acquisition board
   in streaming mode.
@@ -518,22 +510,22 @@ Multi-device drivers
   other acquisition boards supporting the Comedi driver, but this hasn't been
   tested. Communicates over serial.
 
-- :ref:`NI DaQMX`
+- :ref:`NI DAQmx`
 
   Controls National Instrument's `USB 6008 <https://www.ni.com/en-us/support/
   model.usb-6008.html>`_ DAQ module using the :mod:`nidaqmx` module. The code
   was written to work as-is on other National Instruments acquisition modules,
   but this hasn't been tested. Communicates over USB.
 
-- :ref:`DaQMX`
+- :ref:`DAQmx`
 
-  Same as :ref:`NI DaQMX`, except it relies on the :mod:`PyDAQmx` module. The
+  Same as :ref:`NI DAQmx`, except it relies on the :mod:`PyDAQmx` module. The
   differences between the two modules weren't further investigated.
 
 Outputs
 """""""
 
-- :ref:`GPIO switch`
+- :ref:`GPIO Switch`
 
   Drives a single GPIO on a Raspberry Pi.
 
@@ -597,12 +589,12 @@ Real-time data processing (Modifiers)
   Returns the median value of a label over a given number of points. Only
   returns a value once every number of points.
 
-- :ref:`Moving average`
+- :ref:`Moving Average`
 
   Returns the moving average of a label over a given number of points. Returns
   a value at the same frequency as the label.
 
-- :ref:`Moving med`
+- :ref:`Moving Median`
 
   Returns the moving median of a label over a given number of points. Returns
   a value at the same frequency as the label.

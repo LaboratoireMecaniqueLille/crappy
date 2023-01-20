@@ -6,14 +6,14 @@ import logging
 
 from .meta_block import Block
 from ..actuator import actuator_dict, Actuator
-from ..tool.ft232h import UsbServer
+from ..tool.ft232h import USBServer
 
 
 class AutoDrive(Block):
   """This block is meant to drive an actuator on which a camera performing
   videoextensometry is mounted so that the spots stay centered on the image.
 
-  It takes the output of a :ref:`VideoExtenso` block and uses the coordinates
+  It takes the output of a :ref:`Video Extenso` block and uses the coordinates
   of the spots to drive the actuator. The actuator can only be driven in speed,
   not in position.
 
@@ -72,7 +72,7 @@ class AutoDrive(Block):
 
     # Checking whether the Actuator communicates through an FT232H
     if actuator_dict[actuator['name']].ft232h:
-      self._ft232h_args = UsbServer.register(ft232h_ser_num)
+      self._ft232h_args = USBServer.register(ft232h_ser_num)
 
   def prepare(self) -> None:
     """Checks the consistency of the linking and initializes the actuator to

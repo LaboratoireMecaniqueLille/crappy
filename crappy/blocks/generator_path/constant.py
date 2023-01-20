@@ -22,7 +22,7 @@ class Constant(Path):
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
       condition: The condition for switching to the next path. Refer to
-        :ref:`generator path` for more info.
+        :ref:`Path` for more info.
       value: The value to send.
     """
 

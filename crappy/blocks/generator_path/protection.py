@@ -31,9 +31,9 @@ class Protection(Path):
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
       condition1: The first condition checked by the path. Refer to
-        :ref:`generator path` for more info.
+        :ref:`Path` for more info.
       condition2: The second condition checked by the path. Refer to
-        :ref:`generator path` for more info.
+        :ref:`Path` for more info.
       value1: Value to send when ``condition1`` is met.
       value2: Value to send when ``condition2`` is met and ``condition1`` is
         not met.

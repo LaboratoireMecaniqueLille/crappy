@@ -19,7 +19,7 @@ with open('crappy/__version__.py') as file:
       __version__ = line.split("'")[1]
 
 # Get the long description from the relevant file
-with open('docs/source/whatiscrappy.rst', encoding='utf-8') as f:
+with open('docs/source/what_is_crappy.rst', encoding='utf-8') as f:
   long_description = f.read()
 
 # Getting the current version of Python
@@ -96,7 +96,7 @@ if platform.system() == "Windows":
 
 # Documentation aliases
 SOURCE = 'docs/source'
-CRAPPYDOCS = 'docs/source/crappydocs'
+CRAPPYDOCS = 'docs/source/crappy_docs'
 TUTORIALS = 'docs/source/tutorials'
 # Explicitly listing all documentation files to avoid including unwanted files
 docs_files = [
@@ -106,8 +106,8 @@ docs_files = [
                         f'{SOURCE}/conf.py',
                         f'{SOURCE}/features.rst',
                         f'{SOURCE}/tutorials.rst',
-                        f'{SOURCE}/blocklist.rst',
-                        f'{SOURCE}/whatiscrappy.rst',
+                        f'{SOURCE}/api.rst',
+                        f'{SOURCE}/what_is_crappy.rst',
                         f'{SOURCE}/index.rst',
                         f'{SOURCE}/bugs.rst',
                         f'{SOURCE}/license.rst',
@@ -117,14 +117,13 @@ docs_files = [
   (f'crappy/{CRAPPYDOCS}', [f'{CRAPPYDOCS}/cameras.rst',
                             f'{CRAPPYDOCS}/blocks.rst',
                             f'{CRAPPYDOCS}/modifiers.rst',
-                            f'{CRAPPYDOCS}/block.rst',
                             f'{CRAPPYDOCS}/inouts.rst',
                             f'{CRAPPYDOCS}/actuators.rst',
                             f'{CRAPPYDOCS}/tools.rst',
                             f'{CRAPPYDOCS}/links.rst']),
-  (f'crappy/{TUTORIALS}', [f'{TUTORIALS}/gettingstarted.rst',
+  (f'crappy/{TUTORIALS}', [f'{TUTORIALS}/getting_started.rst',
                            f'{TUTORIALS}/custom_blocks.rst',
-                           f'{TUTORIALS}/c.rst'])]
+                           f'{TUTORIALS}/c_modules.rst'])]
 
 # Example aliases
 OTHER = 'examples/other_examples'

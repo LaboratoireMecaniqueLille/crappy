@@ -8,14 +8,14 @@ acquisition on complex experimental setups.
 .. toctree::
   :maxdepth: 2
 
-  whatiscrappy
-  installation
-  tutorials
-  embedded
-  features
-  blocklist
-  documentation
-  developers
-  citing
-  bugs
-  license
+  what_is_crappy.rst
+  installation.rst
+  tutorials.rst
+  embedded.rst
+  features.rst
+  api.rst
+  documentation.rst
+  developers.rst
+  citing.rst
+  bugs.rst
+  license.rst

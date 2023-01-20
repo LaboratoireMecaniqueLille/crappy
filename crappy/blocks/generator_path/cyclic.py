@@ -34,9 +34,9 @@ class Cyclic(Path):
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
       condition1: The condition for switching to ``value2``. Refer to
-        :ref:`generator path` for more info.
+        :ref:`Path` for more info.
       condition2: The condition for switching to ``value1``. Refer to
-        :ref:`generator path` for more info.
+        :ref:`Path` for more info.
       value1: First value to send.
       value2: Second value to send.
       cycles: Number of cycles. Half cycles are accepted. If `0`, loops

@@ -34,9 +34,9 @@ class CyclicRamp(Path):
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
       condition1: The condition for switching to ``speed2``. Refer to
-        :ref:`generator path` for more info.
+        :ref:`Path` for more info.
       condition2: The condition for switching to ``speed1``. Refer to
-        :ref:`generator path` for more info.
+        :ref:`Path` for more info.
       speed1: Slope of the first generated ramp, in `units/s`.
       speed2: Slope of the second generated ramp, in `units/s`.
       cycles: Number of cycles. Half cycles are accepted. If `0`, loops

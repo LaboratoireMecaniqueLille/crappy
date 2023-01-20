@@ -528,7 +528,7 @@ part that's filled with black :
 
 There's no need to do anything special at exit, so the ``close`` method remains
 as it was. Now we'll simply write a short program displaying our animated image.
-To do so we only need a :ref:`Displayer` block, and of course our custom camera.
+To do so we only need a Displayer block, and of course our custom camera.
 Notice that the argument for choosing a camera object in the :ref:`Camera` block
 is a :obj:`str`, you should give the name not the object. We'll also set the
 frame rate to 50, because the camera may loop way too fast for the screen to

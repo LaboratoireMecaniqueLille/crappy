@@ -12,7 +12,7 @@ ConditionType = Callable[[Dict[str, list]], bool]
 class Path:
   """Parent class for all the generator paths.
 
-  Allows them to have access to the:meth:`parse_condition` method.
+  Allows them to have access to the :meth:`parse_condition` method.
   """
 
   def __init__(self,

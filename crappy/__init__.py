@@ -27,6 +27,7 @@ Actuator = actuator.Actuator
 Camera = camera.Camera
 InOut = inout.InOut
 Modifier = modifier.Modifier
+Path = blocks.generator_path.Path
 
 # Useful commands
 stop = Block.stop_all
