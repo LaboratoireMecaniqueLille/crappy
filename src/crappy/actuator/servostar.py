@@ -12,8 +12,8 @@ except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("pyserial")
 
 
-class Servostar(Actuator):
-  """This class can drive Kollmorgen's Servostar 300 servomotor conditioner in
+class ServoStar(Actuator):
+  """This class can drive Kollmorgen's ServoStar 300 servomotor conditioner in
   position, and set it to the analog or serial driving mode.
 
   It communicates with the servomotor over a serial connection.

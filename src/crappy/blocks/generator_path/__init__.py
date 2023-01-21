@@ -4,8 +4,8 @@ from .constant import Constant
 from .cyclic import Cyclic
 from .ramp import Ramp
 from .cyclic_ramp import CyclicRamp
-from .inertia import Inertia
+from .integrator import Integrator
 from .sine import Sine
-from .protection import Protection
+from .conditional import Conditional
 from .custom import Custom
 from .path import Path

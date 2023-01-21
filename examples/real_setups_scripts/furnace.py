@@ -120,8 +120,7 @@ if __name__ == '__main__':
 
   # If requested to display details about a given PID, creating a Grapher
   if SHOW_PID:
-    graph_pid = crappy.blocks.Grapher(('t(s)', 'p_term'),
-                                      ('t(s)', 'i_term'),
+    graph_pid = crappy.blocks.Grapher(('t(s)', 'p_term'), ('t(s)', 'i_term'),
                                       ('t(s)', 'd_term'),
                                       ('t(s)', f'pwm{SHOW_PID}'))
     crappy.link(pid_list[PINS.index(SHOW_PID)], graph_pid)

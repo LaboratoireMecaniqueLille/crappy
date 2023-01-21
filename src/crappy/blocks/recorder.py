@@ -18,7 +18,7 @@ class Recorder(Block):
   """
 
   def __init__(self,
-               filename: Union[str, Path],
+               file_name: Union[str, Path],
                delay: float = 2,
                labels: Optional[List[str]] = None,
                time_label: str = 't(s)',
@@ -28,7 +28,7 @@ class Recorder(Block):
     """Sets the args and initializes the parent class.
 
     Args:
-      filename: Path to the output file, either relative or absolute. If the
+      file_name: Path to the output file, either relative or absolute. If the
         parent folders of the file do not exist, they will be created. If the
         file already exists, the actual file where data will be written will be
         renamed with a trailing index to avoid overriding it.
@@ -47,7 +47,7 @@ class Recorder(Block):
     self.debug = debug
 
     self._delay = delay
-    self._path = Path(filename)
+    self._path = Path(file_name)
     self._labels = labels
     self._time_label = time_label
 

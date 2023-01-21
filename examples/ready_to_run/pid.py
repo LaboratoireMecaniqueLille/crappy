@@ -64,8 +64,7 @@ if __name__ == "__main__":
   graph_pid = crappy.blocks.Grapher(('t(s)', 'pid'))
   crappy.link(pid, graph_pid, modifier=crappy.modifier.Mean(10))
 
-  graph_pid2 = crappy.blocks.Grapher(('t(s)', 'p_term'),
-                                     ('t(s)', 'i_term'),
+  graph_pid2 = crappy.blocks.Grapher(('t(s)', 'p_term'), ('t(s)', 'i_term'),
                                      ('t(s)', 'd_term'))
 
   crappy.link(pid, graph_pid2, modifier=crappy.modifier.Mean(10))

@@ -183,15 +183,15 @@ Cyclic Ramp
    :members: get_cmd
    :special-members: __init__
 
-Inertia
-+++++++
-.. autoclass:: crappy.blocks.generator_path.Inertia
+Integrator
+++++++++++
+.. autoclass:: crappy.blocks.generator_path.Integrator
    :members: get_cmd
    :special-members: __init__
 
-Protection
-++++++++++
-.. autoclass:: crappy.blocks.generator_path.Protection
+Conditional
++++++++++++
+.. autoclass:: crappy.blocks.generator_path.Conditional
    :members: get_cmd
    :special-members: __init__
 

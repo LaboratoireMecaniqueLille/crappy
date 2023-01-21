@@ -35,7 +35,7 @@ class XiAPI(Camera):
     # Stores the last requested or read trigger mode value
     self._trig = 'Free run'
 
-  def open(self, sn: Optional[str] = None, **kwargs) -> None:
+  def open(self, serial_number: Optional[str] = None, **kwargs) -> None:
     """Will actually open the camera, args will be set to default unless
     specified otherwise in kwargs.
 
@@ -45,10 +45,10 @@ class XiAPI(Camera):
     Else, it will open any camera.
     """
 
-    if sn is not None:
+    if serial_number is not None:
       self.log(logging.INFO, f"Opening the connection to the camera with "
-                             f"serial number {sn}")
-      self._cam.open_device_by_SN(sn)
+                             f"serial number {serial_number}")
+      self._cam.open_device_by_SN(serial_number)
     else:
       self.log(logging.INFO, "Opening the connection to the camera")
       self._cam.open_device()

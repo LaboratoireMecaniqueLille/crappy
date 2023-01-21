@@ -6,7 +6,7 @@ import logging
 from .path import Path, ConditionType
 
 
-class Protection(Path):
+class Conditional(Path):
   """Depending on two different conditions checked at each loop, this path can
   output one between 3 constant values.
 

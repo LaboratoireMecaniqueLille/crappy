@@ -29,7 +29,7 @@ class Grapher(Block):
                *labels: Tuple[str, str],
                length: int = 0,
                freq: float = 2,
-               maxpt: int = 20000,
+               max_pt: int = 20000,
                window_size: Tuple[int, int] = (8, 8),
                window_pos: Optional[Tuple[int, int]] = None,
                interp: bool = True,
@@ -48,9 +48,9 @@ class Grapher(Block):
         and drops the previous ones.
       freq: The refresh rate of the graph. May cause high CPU use if set too
         high.
-      maxpt: The maximum number of points displayed on the graph. When reaching
-        this limit, the block deletes one point out of two to avoid using too
-        much memory and CPU.
+      max_pt: The maximum number of points displayed on the graph. When
+        reaching this limit, the block deletes one point out of two to avoid
+        using too  much memory and CPU.
       window_size: The size of the graph, in inches.
       window_pos: The position of the graph in pixels. The first value is for
         the `x` direction, the second for the `y` direction. The origin is the
@@ -87,7 +87,7 @@ class Grapher(Block):
     self.debug = debug
 
     self._length = length
-    self._maxpt = maxpt
+    self._max_pt = max_pt
     self._window_size = window_size
     self._window_pos = window_pos
     self._interp = interp
@@ -192,9 +192,9 @@ class Grapher(Block):
         y = y[-self._length:]
 
       # Dividing the number of points by two to remain below the maxpt limit
-      elif len(x) > self._maxpt:
+      elif len(x) > self._max_pt:
         self.log(logging.INFO, f"Too many points on the graph "
-                               f"{i} ({len(x)}>{self._maxpt})")
+                               f"{i} ({len(x)}>{self._max_pt})")
         x, y = x[::2], y[::2]
         self._factor[i] *= 2
         self.log(logging.INFO, f"Resampling factor is now {self._factor[i]}")

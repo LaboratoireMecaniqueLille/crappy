@@ -42,7 +42,7 @@ class CLCamera(Camera):
                            self._set_framespersec)
 
   def open(self,
-           numdevice: int = 0,
+           num_device: int = 0,
            config_file: Optional[str] = None,
            camera_type: Optional[str] = None,
            **kwargs) -> None:
@@ -87,7 +87,7 @@ class CLCamera(Camera):
 
     self.log(logging.INFO, "Initializing the communication with the camera")
     self.cap = Cl.VideoCapture()
-    self.cap.open(numdevice, camera_type, f)
+    self.cap.open(num_device, camera_type, f)
 
     if config_file:
       self.cap.loadFile(config_file)

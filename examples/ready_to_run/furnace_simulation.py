@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
   furnace = crappy.blocks.Machine([dict(type='FakeMotor',
                                         cmd_label='pid',
-                                        sim_speed=SPEED,
+                                        simulation_speed=SPEED,
                                         mode='speed',
                                         speed_label='T',
                                         kv=1000,
@@ -69,11 +69,8 @@ if __name__ == "__main__":
   graph = crappy.blocks.Grapher(('t(s)', 'T'))
   crappy.link(furnace, graph)
 
-  graph_pid = crappy.blocks.Grapher(
-      ('t(s)', 'p_term'),
-      ('t(s)', 'i_term'),
-      ('t(s)', 'd_term'),
-      ('t(s)', 'pid'))
+  graph_pid = crappy.blocks.Grapher(('t(s)', 'p_term'), ('t(s)', 'i_term'),
+                                    ('t(s)', 'd_term'), ('t(s)', 'pid'))
   crappy.link(pid, graph_pid)
 
   crappy.start()

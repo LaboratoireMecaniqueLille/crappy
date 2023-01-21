@@ -11,7 +11,7 @@ from .cm_drive import CMDrive
 from .fake_motor import FakeMotor
 from .motor_kit_pump import MotorKitPump
 from .oriental import Oriental
-from .servostar import Servostar
+from .servostar import ServoStar
 from .pololu_tic import PololuTic
 from .tra6ppd import TRA6PPD
 

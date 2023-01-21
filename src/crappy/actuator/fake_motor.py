@@ -18,7 +18,7 @@ class FakeMotor(Actuator):
                kv: float = 1000,
                rv: float = 0.4,
                fv: float = 2e-5,
-               sim_speed: float = 1,
+               simulation_speed: float = 1,
                initial_speed: float = 0,
                initial_pos: float = 0) -> None:
     """Sets the instance attributes.
@@ -29,7 +29,7 @@ class FakeMotor(Actuator):
       kv: The electrical constant of the motor, in`t/min/V`.
       rv: The internal solid friction coefficient of the motor, no unit.
       fv: The internal fluid friction coefficient of the motor, no unit.
-      sim_speed: Speed factor of the simulation, to speed it up or slow it
+      simulation_speed: Speed factor of the simulation, to speed it up or slow it
         down.
       initial_speed: The initial speed of the motor, in RPM.
       initial_pos: The initial position of the motor, in rounds.
@@ -42,7 +42,7 @@ class FakeMotor(Actuator):
     self._kv = kv
     self._rv = rv
     self._fv = fv
-    self._sim_speed = sim_speed
+    self._simulation_speed = simulation_speed
     self._initial_speed = initial_speed
     self._initial_pos = initial_pos
 
@@ -57,7 +57,7 @@ class FakeMotor(Actuator):
     self._rpm = self._initial_speed
     self._pos = self._initial_pos
     self._volt = 0
-    self._t = time() * self._sim_speed
+    self._t = time() * self._simulation_speed
 
   def get_speed(self) -> float:
     """Return the speed of the motor, in RPM."""
@@ -84,7 +84,7 @@ class FakeMotor(Actuator):
     It supposes that the voltage has been constant since the last update.
     """
 
-    t1 = time() * self._sim_speed
+    t1 = time() * self._simulation_speed
     dt = (t1 - self._t)
     self._t = t1
 

@@ -7,7 +7,7 @@ import logging
 from .path import Path, ConditionType
 
 
-class Inertia(Path):
+class Integrator(Path):
   """This path integrates an incoming label over time and returns the
   integration as an output signal.
 

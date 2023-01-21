@@ -49,9 +49,9 @@ Pololu Tic
              close
    :special-members: __init__
 
-Servostar
+ServoStar
 +++++++++
-.. autoclass:: crappy.actuator.Servostar
+.. autoclass:: crappy.actuator.ServoStar
    :members: open, get_position, set_position, stop, close
    :special-members: __init__
 

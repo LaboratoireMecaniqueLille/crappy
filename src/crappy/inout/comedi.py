@@ -34,13 +34,13 @@ class Comedi(InOut):
 
   def __init__(self,
                device: str = '/dev/comedi0',
-               subdevice: int = 0,
+               sub_device: int = 0,
                channels: Optional[List[int]] = None,
                range_num: Optional[List[int]] = None,
                gain: Optional[List[float]] = None,
                offset: Optional[List[float]] = None,
                make_zero: Optional[List[bool]] = None,
-               out_subdevice: int = 1,
+               out_sub_device: int = 1,
                out_channels: Optional[List[int]] = None,
                out_range_num: Optional[List[int]] = None,
                out_gain: Optional[List[float]] = None,
@@ -49,7 +49,7 @@ class Comedi(InOut):
 
     Args:
       device: The address of the device, as a :obj:`str`.
-      subdevice: The id of the subdevice to use for input channels, as an
+      sub_device: The id of the subdevice to use for input channels, as an
         :obj:`int`.
       channels: A :obj:`list` containing the indexes of the channels to use as
         inputs, given as :obj:`int`.
@@ -81,7 +81,7 @@ class Comedi(InOut):
         is `0`. **It will only take effect if the ``make_zero_delay`` argument
         of the :ref:`IOBlock` controlling the Comedi is set** ! If not given,
         the channels are by default not zeroed.
-      out_subdevice: The id of the subdevice to use for output channels, as an
+      out_sub_device: The id of the subdevice to use for output channels, as an
         :obj:`int`.
       out_channels: A :obj:`list` containing the indexes of the channels to use
         as outputs, given as :obj:`int`.
@@ -119,8 +119,8 @@ class Comedi(InOut):
     super().__init__()
 
     self._device_name = device.encode()
-    self._subdevice = subdevice
-    self._out_subdevice = out_subdevice
+    self._sub_device = sub_device
+    self._out_sub_device = out_sub_device
 
     # Setting the defaults for arguments that are not given
     if channels is None:
@@ -170,19 +170,19 @@ class Comedi(InOut):
     # Setting up the input channels
     self.log(logging.INFO, "Setting up the input channels")
     for chan in self._channels:
-      chan.max_data = comedi.comedi_get_maxdata(self._device, self._subdevice,
+      chan.max_data = comedi.comedi_get_maxdata(self._device, self._sub_device,
                                                 chan.num)
-      chan.range_ds = comedi.comedi_get_range(self._device, self._subdevice,
+      chan.range_ds = comedi.comedi_get_range(self._device, self._sub_device,
                                               chan.num, chan.range_num)
 
     # Setting up the output channels
     self.log(logging.INFO, "Setting up the output channels")
     for chan in self._out_channels:
       chan.max_data = comedi.comedi_get_maxdata(self._device,
-                                                self._out_subdevice,
+                                                self._out_sub_device,
                                                 chan.num)
       chan.range_ds = comedi.comedi_get_range(self._device,
-                                              self._out_subdevice,
+                                              self._out_sub_device,
                                               chan.num, chan.range_num)
 
   def make_zero(self, delay: float) -> None:
@@ -224,7 +224,7 @@ class Comedi(InOut):
 
       # Sending the command
       self.log(logging.DEBUG, f"Writing value {out_a} to channel {chan.num}")
-      comedi.comedi_data_write(self._device, self._out_subdevice, chan.num,
+      comedi.comedi_data_write(self._device, self._out_sub_device, chan.num,
                                chan.range_num, comedi.AREF_GROUND, out_a)
 
   def get_data(self) -> List[float]:
@@ -236,7 +236,7 @@ class Comedi(InOut):
     for chan in self._channels:
 
       # Reading the numeric values
-      data_read = comedi.comedi_data_read(self._device, self._subdevice,
+      data_read = comedi.comedi_data_read(self._device, self._sub_device,
                                           chan.num, chan.range_num,
                                           comedi.AREF_GROUND)
       self.log(logging.DEBUG, f"Read value {data_read} to channel {chan.num}")

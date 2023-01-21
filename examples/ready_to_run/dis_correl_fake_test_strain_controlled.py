@@ -71,10 +71,9 @@ if __name__ == "__main__":
   crappy.link(generator, generator)
 
   # The Block emulating the behavior of a tensile test machine
-  machine = crappy.blocks.FakeMachine(max_strain=1.7, k=5000, l0=20,
-                                      plastic_law=plastic_law,
+  machine = crappy.blocks.FakeMachine(rigidity=5000, l0=20, max_strain=1.7,
                                       sigma={'F(N)': 0.5},
-                                      cmd_label='pid')
+                                      plastic_law=plastic_law, cmd_label='pid')
 
   # The Block performing the DIC
   dis = crappy.blocks.DISCorrel('', display_images=True,
@@ -104,9 +103,8 @@ if __name__ == "__main__":
   # Since send_terms is given to the PID block, it also returns the 3
   # channels of the PID (P, I and D). This can be useful when adjusting
   # the gains
-  graph_pid = crappy.blocks.Grapher(('t(s)', 'pid'),
-                                    ('t(s)', 'p_term'), ('t(s)', 'i_term'),
-                                    ('t(s)', 'd_term'))
+  graph_pid = crappy.blocks.Grapher(('t(s)', 'pid'), ('t(s)', 'p_term'),
+                                    ('t(s)', 'i_term'), ('t(s)', 'd_term'))
   crappy.link(pid, graph_pid, modifier=crappy.modifier.Mean(10))
 
   # To see the commanded and the measured strains

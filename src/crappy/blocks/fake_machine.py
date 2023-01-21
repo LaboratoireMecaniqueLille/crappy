@@ -28,7 +28,7 @@ class FakeMachine(Block):
   """
 
   def __init__(self,
-               k: float = 8.4E6,
+               rigidity: float = 8.4E6,
                l0: float = 200,
                max_strain: float = 1.51,
                sigma: Optional[Dict[str, float]] = None,
@@ -43,7 +43,8 @@ class FakeMachine(Block):
     """Sets the args and initializes the parent class.
 
     Args:
-      k: The rigidity of the material, in N, so that ``force = k x strain``.
+      rigidity: The rigidity of the material, in N, so that
+        ``force = k x strain``.
       l0: The initial length of the fake sample to test, in mm.
       max_strain: The maximum strain the material can withstand before
         breaking.
@@ -67,7 +68,7 @@ class FakeMachine(Block):
     self.debug = debug
 
     # Setting the mechanical parameters of the material
-    self._k = k
+    self._rigidity = rigidity
     self._l0 = l0
     self._max_strain = max_strain / 100
     self._nu = nu
@@ -124,7 +125,7 @@ class FakeMachine(Block):
       if time() - self._prev_broke_t > 1:
         self._prev_broke_t = time()
         self.log(logging.WARNING, "Sample broke !")
-      self._k = 0
+      self._rigidity = 0
 
     # Compute the plastic elongation separately
     if self._current_pos / self._l0 > self._max_recorded_strain:
@@ -150,7 +151,7 @@ class FakeMachine(Block):
 
     to_send = {'t(s)': time() - self.t0,
                'F(N)': (self._current_pos -
-                        self._plastic_elongation) / self._l0 * self._k,
+                        self._plastic_elongation) / self._l0 * self._rigidity,
                'x(mm)': self._current_pos,
                'Exx(%)': self._current_pos * 100 / self._l0,
                'Eyy(%)': -self._nu * self._current_pos * 100 / self._l0}

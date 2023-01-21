@@ -68,9 +68,9 @@ if __name__ == "__main__":
     for i in range(1, 5)], []), spam=False)
 
   # Our fake machine
-  machine = crappy.blocks.FakeMachine(max_strain=17, k=5000, l0=20,
-                                      plastic_law=elastic_law,
-                                      sigma={'F(N)': 0.5})
+  machine = crappy.blocks.FakeMachine(rigidity=5000, l0=20, max_strain=17,
+                                      sigma={'F(N)': 0.5},
+                                      plastic_law=elastic_law)
 
   crappy.link(generator, machine)
   crappy.link(machine, generator)

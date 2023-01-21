@@ -11,7 +11,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Biaxe(Actuator):
-  """This class can drive a Kollmorgen Servostar 300 conditioner in speed."""
+  """This class can drive a Kollmorgen ServoStar 300 conditioner in speed."""
 
   def __init__(self,
                port: str = '/dev/ttyUSB0',
@@ -72,7 +72,7 @@ class Biaxe(Actuator):
       self._ser.close()
 
   def _clear_errors(self) -> None:
-    """Clears the errors on the Servostar."""
+    """Clears the errors on the ServoStar."""
 
     self.log(logging.DEBUG, f"Writing b'CLRFAULT\\r\\n' on port {self._port}")
     self._ser.write(b"CLRFAULT\r\n")

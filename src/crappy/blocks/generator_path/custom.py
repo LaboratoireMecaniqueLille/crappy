@@ -19,7 +19,7 @@ class Custom(Path):
   def __init__(self,
                _last_time: float,
                _last_cmd: float,
-               filename: Union[str, pathlib.Path],
+               file_name: Union[str, pathlib.Path],
                delimiter: str = ',') -> None:
     """Loads the file and sets the args.
 
@@ -31,7 +31,7 @@ class Custom(Path):
         use only, do not overwrite.
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
-      filename: Path to the file to read the path from. Can be either a
+      file_name: Path to the file to read the path from. Can be either a
         :obj:`str` or a :mod:`pathlib` Path. The file must contain two columns:
         the first one containing timestamps (starting from 0), the other one
         containing the values.
@@ -40,11 +40,11 @@ class Custom(Path):
 
     super().__init__(_last_time, _last_cmd)
 
-    self.log(logging.DEBUG, f"Extracting data from file {filename}")
-    array = loadtxt(pathlib.Path(filename), delimiter=delimiter)
+    self.log(logging.DEBUG, f"Extracting data from file {file_name}")
+    array = loadtxt(pathlib.Path(file_name), delimiter=delimiter)
 
     if array.shape[1] != 2:
-      raise ValueError(f'The file {filename} should contain exactly two'
+      raise ValueError(f'The file {file_name} should contain exactly two'
                        f'columns !')
 
     self._timestamps = array[:, 0]
