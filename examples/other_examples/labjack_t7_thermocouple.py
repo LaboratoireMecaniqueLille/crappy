@@ -16,8 +16,8 @@ if __name__ == "__main__":
   m = crappy.blocks.IOBlock("LabjackT7",
                             channels=[dict(name=f'AIN{i}', thermocouple='K')
                                       for i in chan],
-                            verbose=True, labels=['t(s)'] + [f'T{i}'
-                                                             for i in chan])
+                            display_freq=True,
+                            labels=['t(s)'] + [f'T{i}' for i in chan])
 
   g = crappy.blocks.Grapher(*[('t(s)', f'T{i}') for i in chan])
 

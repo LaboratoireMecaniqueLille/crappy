@@ -31,12 +31,12 @@ class DICVEProcess(CameraProcess):
                safe: bool = True,
                follow: bool = True,
                raise_on_exit: bool = True,
-               verbose: bool = False) -> None:
+               display_freq: bool = False) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
                      log_level=log_level,
-                     verbose=verbose)
+                     display_freq=display_freq)
 
     self._disve_kw = dict(patches=patches,
                           method=method,

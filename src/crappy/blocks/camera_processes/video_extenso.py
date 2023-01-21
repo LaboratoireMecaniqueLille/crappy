@@ -18,12 +18,12 @@ class VideoExtensoProcess(CameraProcess):
                log_queue: Queue,
                log_level: int = 20,
                raise_on_lost_spot: bool = True,
-               verbose: bool = False) -> None:
+               display_freq: bool = False) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
                      log_level=log_level,
-                     verbose=verbose)
+                     display_freq=display_freq)
 
     self._ve: Optional[VideoExtensoTool] = None
     self._detector = detector

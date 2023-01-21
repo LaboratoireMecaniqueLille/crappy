@@ -80,7 +80,7 @@ if __name__ == "__main__":
                                   display_images=True,
                                   blur=False,
                                   image_generator=Apply_strain_img(img),
-                                  verbose=True)
+                                  display_freq=True)
   # This modifier will generate an image with the values of strain
   # coming from the FakeMachine block
   crappy.link(machine, ve)

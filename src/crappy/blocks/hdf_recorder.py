@@ -35,7 +35,7 @@ class HDFRecorder(Block):
                label: str = 'stream',
                metadata: Optional[dict] = None,
                freq: Optional[float] = None,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -53,14 +53,15 @@ class HDFRecorder(Block):
       metadata: A :obj:`dict` containing additional information to save in the
         `hdf5` file.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
     """
 
     self._hfile = None
 
     super().__init__()
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     self._path = Path(filename)

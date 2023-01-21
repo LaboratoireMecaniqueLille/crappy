@@ -14,20 +14,20 @@ class Reader(Block):
   def __init__(self,
                name: Optional[str] = None,
                freq: float = 50,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the arg and initializes the parent class.
 
     Args:
       name: If set, will be displayed to identify the reader.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, the looping frequency will be displayed every
-        2s.
+      display_freq: If :obj:`True`, the looping frequency will be displayed
+        every 2s.
     """
 
     super().__init__()
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     self._reader_name = name if name is not None else f'Reader ' \

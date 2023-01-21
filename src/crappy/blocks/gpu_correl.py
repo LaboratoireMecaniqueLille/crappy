@@ -52,7 +52,7 @@ class GPUCorrel(Camera):
                      displayer_backend=displayer_backend,
                      displayer_framerate=displayer_framerate,
                      software_trig_label=software_trig_label,
-                     verbose=bool(verbose),
+                     display_freq=bool(verbose),
                      freq=freq,
                      debug=debug,
                      save_images=save_images,
@@ -79,25 +79,25 @@ class GPUCorrel(Camera):
       raise ValueError("The number of fields is inconsistent with the number "
                        "of labels !\nMake sure that the time label was given")
 
-    self._gpucorrel_kw = dict(discard_limit=discard_limit,
-                              discard_ref=discard_ref,
-                              calc_res=res,
-                              img_ref=img_ref,
-                              verbose=verbose,
-                              levels=levels,
-                              resampling_factor=resampling_factor,
-                              kernel_file=kernel_file,
-                              iterations=iterations,
-                              fields=fields,
-                              mask=mask,
-                              mul=mul)
+    self._gpu_correl_kw = dict(discard_limit=discard_limit,
+                               discard_ref=discard_ref,
+                               calc_res=res,
+                               img_ref=img_ref,
+                               verbose=verbose,
+                               levels=levels,
+                               resampling_factor=resampling_factor,
+                               kernel_file=kernel_file,
+                               iterations=iterations,
+                               fields=fields,
+                               mask=mask,
+                               mul=mul)
 
   def prepare(self) -> None:
     """"""
 
     self._process_proc = GPUCorrelProcess(log_queue=self._log_queue,
                                           log_level=self._log_level,
-                                          **self._gpucorrel_kw)
+                                          **self._gpu_correl_kw)
 
     super().prepare()
 

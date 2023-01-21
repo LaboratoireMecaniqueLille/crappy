@@ -67,7 +67,7 @@ class Block(Process, metaclass=MetaBlock):
     self.niceness: int = 0
     self.labels: Optional[List[str]] = None
     self.freq = None
-    self.verbose = False
+    self.display_freq = False
     self.name = self.get_name(type(self).__name__)
 
     # The synchronization objects will be set later
@@ -657,7 +657,7 @@ class Block(Process, metaclass=MetaBlock):
       self._last_t = t
 
     # Displaying frequency every 2 seconds
-    if self.verbose and self._last_t - self._last_fps > 2:
+    if self.display_freq and self._last_t - self._last_fps > 2:
       self._logger.log(
         logging.INFO,
         f"loops/s: {self._n_loops / (self._last_t - self._last_fps)}")

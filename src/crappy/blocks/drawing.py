@@ -135,7 +135,7 @@ class Drawing(Block):
                window_size: Tuple[int, int] = (7, 5),
                backend: str = "TkAgg",
                freq: float = 2,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -151,7 +151,8 @@ class Drawing(Block):
         :mod:`matplotlib` nomenclature.
       backend: The :mod:`matplotlib` backend to use.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
 
     Note:
       - Information about the ``draw`` keys:
@@ -175,7 +176,7 @@ class Drawing(Block):
 
     super().__init__()
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     self._image = image

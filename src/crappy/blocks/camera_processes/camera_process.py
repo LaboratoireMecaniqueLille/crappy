@@ -25,7 +25,7 @@ class CameraProcess(Process):
   def __init__(self,
                log_queue: Queue,
                log_level: Optional[int] = 20,
-               verbose: bool = False) -> None:
+               display_freq: bool = False) -> None:
     """"""
 
     super().__init__()
@@ -52,7 +52,7 @@ class CameraProcess(Process):
 
     self._last_warn = time()
     self.fps_count = 0
-    self._verbose = verbose
+    self.display_freq = display_freq
     self._last_fps = time()
 
   def set_shared(self,
@@ -106,7 +106,7 @@ class CameraProcess(Process):
       while not self._stop_event.is_set():
         self._loop()
 
-        if self._verbose:
+        if self.display_freq:
           t = time()
           if t - self._last_fps > 2:
             self._log(logging.INFO, f"Images processed /s: "

@@ -35,7 +35,7 @@ class UController(Block):
                t_device: bool = False,
                port: str = '/dev/ttyUSB0',
                baudrate: int = 115200,
-               verbose: bool = False,
+               display_freq: bool = False,
                freq: float = 100,
                debug: Optional[bool] = False) -> None:
     """Checks the validity of the arguments.
@@ -66,8 +66,8 @@ class UController(Block):
         Linux and Mac they're called `/dev/ttyxxxx`.
       baudrate (:obj:`int`, optional): The baudrate for serial communication.
         It depends on the capabilities of the device.
-      verbose (:obj:`bool`, optional): If :obj:`True`, displays the looping
-        frequency of the block.
+      display_freq (:obj:`bool`, optional): If :obj:`True`, displays the
+        looping frequency of the block.
       freq (:obj:`float`, optional): The looping frequency of the block.
     """
 
@@ -76,9 +76,9 @@ class UController(Block):
     super().__init__()
     self.debug = debug
 
-    if not isinstance(verbose, bool):
-      raise TypeError("verbose should be either True or False !")
-    self.verbose = verbose
+    if not isinstance(display_freq, bool):
+      raise TypeError("display_freq should be either True or False !")
+    self.display_freq = display_freq
 
     if not isinstance(freq, float) and not isinstance(freq, int) or freq <= 0:
       raise TypeError("freq should be a positive float !")
@@ -298,9 +298,8 @@ class UController(Block):
         return
 
       # Information for debugging
-      if self.verbose:
-        self.log(logging.DEBUG, f"Received {self._buffer} on the port "
-                                f"{self._port}")
+      self.log(logging.DEBUG, f"Received {self._buffer} on the port "
+                              f"{self._port}")
 
       # Parsing the received bytes
       read = unpack('<ibf' if self._t_device else '<bf', self._buffer)

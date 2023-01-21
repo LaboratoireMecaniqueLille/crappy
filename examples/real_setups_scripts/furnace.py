@@ -86,7 +86,7 @@ if __name__ == '__main__':
                                   channels=pwm_chan + th_chan,
                                   labels=['t(s)'] + [f'T{i}' for i in PINS],
                                   cmd_labels=[f'pwm{i}' for i in PINS],
-                                  verbose=True)
+                                  display_freq=True)
 
   # the Blocks displaying the temperature and command values in real-time
   graph_cmd = crappy.blocks.Grapher(*[('t(s)', f'pwm{i}') for i in PINS])

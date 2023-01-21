@@ -36,7 +36,7 @@ if __name__ == "__main__":
          condition1='cmd2>1', condition2='cmd2<-1', cycles=0, init_value=0)
       ], freq=50, cmd_label='cmd2')
 
-  mul = crappy.blocks.Multiplex(verbose=True,
+  mul = crappy.blocks.Multiplex(display_freq=True,
                                 out_labels=['cmd1', 'cmd2'])
 
   # crappy.link(g1, mul)

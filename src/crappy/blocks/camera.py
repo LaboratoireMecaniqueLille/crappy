@@ -32,7 +32,7 @@ class Camera(Block):
                displayer_backend: Optional[str] = None,
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False,
                freq: float = 200,
                save_images: bool = False,
@@ -55,7 +55,7 @@ class Camera(Block):
 
     super().__init__()
 
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.freq = freq
     self.niceness = -10
     self.debug = debug
@@ -153,14 +153,14 @@ class Camera(Block):
       self.log(logging.INFO, "Instantiating the saver process")
       self._save_proc = ImageSaver(log_queue=self._log_queue,
                                    log_level=self._log_level,
-                                   verbose=self.verbose,
+                                   display_freq=self.display_freq,
                                    **self._save_proc_kw)
 
     if self._display_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the displayer process")
       self._display_proc = Displayer(log_queue=self._log_queue,
                                      log_level=self._log_level,
-                                     verbose=self.verbose,
+                                     display_freq=self.display_freq,
                                      **self._display_proc_kw)
 
     # Creating the barrier for camera processes synchronization
@@ -330,7 +330,7 @@ class Camera(Block):
 
     self._loop_count += 1
 
-    if self.verbose:
+    if self.display_freq:
       self._fps_count += 1
       t = time()
       if t - self._last_cam_fps > 2:

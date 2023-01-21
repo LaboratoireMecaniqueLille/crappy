@@ -28,7 +28,7 @@ class PID(Block):
                i_limit: Tuple[Optional[float], Optional[float]] = (None, None),
                send_terms: bool = False,
                freq: float = 500,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -53,14 +53,15 @@ class PID(Block):
         value. It adds ``'p_term', 'i_term', 'd_term'`` to the output labels.
         This is particularly useful to tweak the gains.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
     """
 
     # Attributes of the parent class
     super().__init__()
     self.niceness = -10
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
     self.labels = ['t(s)', 'pid'] if labels is None else labels
     if send_terms:

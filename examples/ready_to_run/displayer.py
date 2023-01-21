@@ -31,7 +31,7 @@ if __name__ == "__main__":
   cam = cam_list[ret]
 
   # Instantiating the Camera Block
-  camera = crappy.blocks.Camera(camera=cam, verbose=True,
+  camera = crappy.blocks.Camera(camera=cam, display_freq=True,
                                 display_images=True, displayer_framerate=20)
 
   # Starting the test

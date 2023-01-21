@@ -41,12 +41,12 @@ class ImageSaver(CameraProcess):
                save_folder: Optional[Union[str, Path]] = None,
                save_period: int = 1,
                save_backend: Optional[str] = None,
-               verbose: bool = False) -> None:
+               display_freq: bool = False) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
                      log_level=log_level,
-                     verbose=verbose)
+                     display_freq=display_freq)
 
     # Trying the different possible backends and checking if the given one
     # is correct

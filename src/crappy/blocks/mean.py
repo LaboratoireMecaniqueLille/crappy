@@ -27,7 +27,7 @@ class MeanBlock(Block):
                delay: float,
                time_label: str = 't(s)',
                out_labels: Optional[List[str]] = None,
-               verbose: bool = False,
+               display_freq: bool = False,
                freq: float = 50,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
@@ -37,12 +37,13 @@ class MeanBlock(Block):
       time_label: The label containing the time information.
       out_labels: If given, only the listed labels and the time will be
         returned. Otherwise, all of them are returned.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
       freq: The block will try to loop at this frequency.
     """
 
     super().__init__()
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.freq = freq
     self.debug = debug
 

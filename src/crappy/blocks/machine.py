@@ -38,7 +38,7 @@ class Machine(Block):
                ft232h_ser_num: Optional[str] = None,
                spam: bool = False,
                freq: float = 200,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -56,7 +56,8 @@ class Machine(Block):
       spam: If :obj:`True`, a command is sent to the Actuators on each loop of
         the block, else it is sent every time a new command is received.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
 
     Note:
       - ``actuators`` keys:
@@ -90,7 +91,7 @@ class Machine(Block):
 
     super().__init__()
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     self._time_label = time_label

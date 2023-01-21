@@ -75,7 +75,7 @@ if __name__ == '__main__':
   cam = crappy.blocks.Camera('MyCam',
                              freq=60,
                              display_images=True,
-                             verbose=True)
+                             display_freq=True)
 
   # Starting the test
   crappy.start()

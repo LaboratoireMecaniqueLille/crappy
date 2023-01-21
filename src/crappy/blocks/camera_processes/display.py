@@ -36,12 +36,12 @@ class Displayer(CameraProcess):
                log_queue: Queue,
                log_level: int = 20,
                backend: Optional[str] = None,
-               verbose: bool = False) -> None:
+               display_freq: bool = False) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
                      log_level=log_level,
-                     verbose=verbose)
+                     display_freq=display_freq)
 
     self._title = title
     self._framerate = framerate

@@ -34,7 +34,7 @@ class Grapher(Block):
                window_pos: Optional[Tuple[int, int]] = None,
                interp: bool = True,
                backend: str = "TkAgg",
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -60,7 +60,7 @@ class Grapher(Block):
       backend: The :mod:`matplotlib` backend to use. Performance may vary
         according to the chosen backend. Also, every backend may not be
         available depending on your machine.
-      verbose: To display the loop frequency of the block.
+      display_freq: To display the loop frequency of the block.
 
     Example:
       ::
@@ -83,7 +83,7 @@ class Grapher(Block):
     super().__init__()
     self.niceness = 10
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     self._length = length

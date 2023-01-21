@@ -29,7 +29,7 @@ class Multiplex(Block):
                out_labels: Optional[List[str]] = None,
                interp_freq: float = 200,
                freq: float = 50,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -42,13 +42,13 @@ class Multiplex(Block):
       freq : The sample rate for the interpolation, and the target looping
         frequency for the block. If this value is set too high and your machine
         cannot keep up, the block will most likely lag.
-      verbose: If :obj:`True`, displays information about the looping frequency
-        of the block.
+      display_freq: If :obj:`True`, displays information about the looping
+        frequency of the block.
     """
 
     super().__init__()
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     # Initializing the attributes

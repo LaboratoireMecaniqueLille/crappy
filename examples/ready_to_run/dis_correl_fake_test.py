@@ -81,7 +81,7 @@ if __name__ == "__main__":
                                 labels=['t(s)', 'meta', 'x', 'y',
                                         'measured_Exx(%)', 'measured_Eyy(%)'],
                                 image_generator=Apply_strain_img(img),
-                                verbose=True)
+                                display_freq=True)
   crappy.link(machine, dis)
 
   # The Block displaying the measured strain

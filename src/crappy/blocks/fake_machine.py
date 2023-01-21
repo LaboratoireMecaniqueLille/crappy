@@ -38,7 +38,7 @@ class FakeMachine(Block):
                mode: str = 'speed',
                cmd_label: str = 'cmd',
                freq: float = 100,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -59,12 +59,13 @@ class FakeMachine(Block):
       nu: Poisson's ratio of the material.
       cmd_label: The label carrying the command of the fake machine.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
     """
 
     super().__init__()
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     # Setting the mechanical parameters of the material

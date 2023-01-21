@@ -28,12 +28,12 @@ class DISCorrelProcess(CameraProcess):
                patch_size: int = 8,
                patch_stride: int = 3,
                residual: bool = False,
-               verbose: bool = False) -> None:
+               display_freq: bool = False) -> None:
     """"""
 
     super().__init__(log_queue=log_queue,
                      log_level=log_level,
-                     verbose=verbose)
+                     display_freq=display_freq)
 
     self._discorrel_kw = dict(fields=fields,
                               alpha=alpha,

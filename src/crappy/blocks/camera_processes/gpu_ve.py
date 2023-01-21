@@ -33,23 +33,22 @@ class GPUVEProcess(CameraProcess):
                mul: float = 3) -> None:
     """"""
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     verbose=bool(verbose))
+    super().__init__(log_queue=log_queue, log_level=log_level,
+                     display_freq=bool(verbose))
 
     pycuda.driver.init()
     context = pycuda.tools.make_default_context()
 
-    self._gpuve_kw = dict(context=context,
-                          verbose=verbose,
-                          levels=1,
-                          resampling_factor=2,
-                          kernel_file=kernel_file,
-                          iterations=iterations,
-                          fields=['x', 'y'],
-                          ref_img=img_ref,
-                          mask=None,
-                          mul=mul)
+    self._gpu_ve_kw = dict(context=context,
+                           verbose=verbose,
+                           levels=1,
+                           resampling_factor=2,
+                           kernel_file=kernel_file,
+                           iterations=iterations,
+                           fields=['x', 'y'],
+                           ref_img=img_ref,
+                           mask=None,
+                           mul=mul)
 
     self._correls: Optional[List[GPUCorrelTool]] = None
     self._patches = patches
@@ -64,8 +63,8 @@ class GPUVEProcess(CameraProcess):
     """"""
 
     self._log(logging.INFO, "Instantiating the GPUCorrel tool instances")
-    self._gpuve_kw.update(logger_name=self.name)
-    self._correls = [GPUCorrelTool(**self._gpuve_kw) for _ in self._patches]
+    self._gpu_ve_kw.update(logger_name=self.name)
+    self._correls = [GPUCorrelTool(**self._gpu_ve_kw) for _ in self._patches]
 
     # We can already set the sizes of the images as they are already known
     self._log(logging.INFO, "Setting the sizes of the patches")

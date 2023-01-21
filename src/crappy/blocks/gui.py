@@ -27,7 +27,7 @@ class GUI(Block):
                time_label: str = 't(s)',
                freq: float = 50,
                spam: bool = False,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -41,7 +41,8 @@ class GUI(Block):
       freq: The block will try to loop at this frequency.
       spam: If :obj:`True`, sends the current step value at each loop,
         otherwise only sends it at each click.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
     """
 
     self._root: Optional[tk.Tk] = None
@@ -49,7 +50,7 @@ class GUI(Block):
     super().__init__()
     self.freq = freq
     self.labels = [time_label, label]
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     self._spam = spam

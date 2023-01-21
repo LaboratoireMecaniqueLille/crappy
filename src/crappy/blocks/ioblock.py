@@ -33,7 +33,7 @@ class IOBlock(Block):
                ft232h_ser_num: Optional[str] = None,
                spam: bool = False,
                freq: Optional[float] = 200,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False,
                **kwargs) -> None:
     """Sets the args and initializes the parent class.
@@ -72,7 +72,8 @@ class IOBlock(Block):
         previous.
       freq: The block will try to loop as this frequency, or as fast as
         possible if no value is given.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
       **kwargs: The arguments to be passed to the :ref:`In / Out` class.
     """
 
@@ -84,7 +85,7 @@ class IOBlock(Block):
     super().__init__()
     self.niceness = -10
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     # The label argument can be omitted for streaming

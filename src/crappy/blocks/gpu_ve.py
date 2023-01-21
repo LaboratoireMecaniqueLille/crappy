@@ -46,8 +46,8 @@ class GPUVE(Camera):
                      displayer_backend=displayer_backend,
                      displayer_framerate=displayer_framerate,
                      software_trig_label=software_trig_label,
-                     verbose=verbose,
-                     freq=freq,
+                     display_freq=bool(verbose),
+                     disp=freq,
                      debug=debug,
                      save_images=save_images,
                      img_extension=img_extension,
@@ -74,19 +74,19 @@ class GPUVE(Camera):
                        "of labels !\nMake sure that the time and metadata "
                        "labels were given")
 
-    self._gpuve_kw = dict(patches=patches,
-                          verbose=verbose,
-                          kernel_file=kernel_file,
-                          iterations=iterations,
-                          img_ref=img_ref,
-                          mul=mul)
+    self._gpu_ve_kw = dict(patches=patches,
+                           verbose=verbose,
+                           kernel_file=kernel_file,
+                           iterations=iterations,
+                           img_ref=img_ref,
+                           mul=mul)
 
   def prepare(self) -> None:
     """"""
 
     self._process_proc = GPUVEProcess(log_queue=self._log_queue,
                                       log_level=self._log_level,
-                                      **self._gpuve_kw)
+                                      **self._gpu_ve_kw)
 
     super().prepare()
 

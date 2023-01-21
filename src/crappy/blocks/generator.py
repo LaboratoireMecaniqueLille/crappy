@@ -35,7 +35,7 @@ class Generator(Block):
                cycle_label: str = 'cycle',
                repeat: bool = False,
                spam: bool = False,
-               verbose: bool = False,
+               display_freq: bool = False,
                end_delay: Optional[float] = 2,
                safe_start: bool = False,
                debug: Optional[bool] = False) -> None:
@@ -57,8 +57,8 @@ class Generator(Block):
       spam: If :obj:`True`, the signal value will be sent on each loop. Else,
         it will only be sent if it is different from the previous or if the
         ``path`` switched to a new dict.
-      verbose: if :obj:`True`, displays the loop frequency of the block and a
-        message when switching to the next dict of ``path``.
+      display_freq: if :obj:`True`, displays the loop frequency of the block
+        and a message when switching to the next dict of ``path``.
       end_delay: When all the dicts in ``path`` are exhausted, waits this many
         seconds before stopping the entire program. Can be set to :obj:`None`,
         in which case the Generator won't stop the program when finishing.
@@ -83,7 +83,7 @@ class Generator(Block):
     # Instantiating a few attributes based on the arguments
     self.niceness = -5
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.labels = ['t(s)', cmd_label, cycle_label]
     self.debug = debug
 

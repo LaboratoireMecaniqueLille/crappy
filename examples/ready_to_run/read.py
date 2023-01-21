@@ -20,7 +20,7 @@ if __name__ == "__main__":
     print(i, c)
   name = lst[int(input("What board do you want to use ?> "))]
 
-  m = crappy.blocks.IOBlock(name, labels=['t(s)', 'chan0'], verbose=True)
+  m = crappy.blocks.IOBlock(name, labels=['t(s)', 'chan0'], display_freq=True)
 
   g = crappy.blocks.Grapher(('t(s)', 'chan0'))
 

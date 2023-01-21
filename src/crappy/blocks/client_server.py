@@ -36,7 +36,7 @@ class ClientServer(Block):
                topics: Optional[Topics_type] = None,
                cmd_labels: Optional[Topics_type] = None,
                labels_to_send: Optional[Topics_type] = None,
-               verbose: bool = False,
+               display_freq: bool = False,
                freq: float = 200,
                spam: bool = False,
                debug: Optional[bool] = False) -> None:
@@ -78,7 +78,8 @@ class ClientServer(Block):
         useful for transferring several signals along with their timestamps, as 
         the label ``'t(s)'`` should not appear more than once in the topics 
         list of the receiving block.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
       freq: The block will try to loop at this frequency.
       spam: If :obj:`True`, sends the last received values at each loop even if
         no new values were received from the broker.
@@ -194,7 +195,7 @@ class ClientServer(Block):
 
     super().__init__()
     self.niceness = -10
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.freq = freq
     self.debug = debug
 

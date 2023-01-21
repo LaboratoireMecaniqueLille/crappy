@@ -27,10 +27,10 @@ if __name__ == "__main__":
   # freq : the target of points/s
   # spam : Send the value even if nothing changed
   #   (so the graph updates continuously)
-  # verbose : add some information in the terminal
+  # display_freq : add some information in the terminal
   gen = crappy.blocks.Generator([path1, path2, path3, path4],
                                 cmd_label='cmd', freq=50, spam=True,
-                                verbose=True)
+                                display_freq=True)
 
   # As cmd is in one of the conditions, need to link the Generator to itself
   crappy.link(gen, gen)

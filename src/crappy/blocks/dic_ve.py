@@ -21,7 +21,7 @@ class DICVE(Camera):
                displayer_backend: Optional[str] = None,
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
-               verbose: bool = False,
+               display_freq: bool = False,
                freq: float = 200,
                debug: Optional[bool] = False,
                save_images: bool = False,
@@ -57,7 +57,7 @@ class DICVE(Camera):
                      displayer_backend=displayer_backend,
                      displayer_framerate=displayer_framerate,
                      software_trig_label=software_trig_label,
-                     verbose=verbose,
+                     display_freq=display_freq,
                      freq=freq,
                      debug=debug,
                      save_images=save_images,
@@ -104,7 +104,7 @@ class DICVE(Camera):
 
     self._process_proc = DICVEProcess(log_queue=self._log_queue,
                                       log_level=self._log_level,
-                                      verbose=self.verbose,
+                                      display_freq=self.display_freq,
                                       **self._disve_kw)
 
     super().prepare()

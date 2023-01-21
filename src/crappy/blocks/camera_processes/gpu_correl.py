@@ -31,20 +31,19 @@ class GPUCorrelProcess(CameraProcess):
                mul: float = 3) -> None:
     """"""
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     verbose=bool(verbose))
+    super().__init__(log_queue=log_queue, log_level=log_level,
+                     display_freq=bool(verbose))
 
-    self._gpucorrel_kw = dict(context=None,
-                              verbose=verbose,
-                              levels=levels,
-                              resampling_factor=resampling_factor,
-                              kernel_file=kernel_file,
-                              iterations=iterations,
-                              fields=fields,
-                              ref_img=img_ref,
-                              mask=mask,
-                              mul=mul)
+    self._gpu_correl_kw = dict(context=None,
+                               verbose=verbose,
+                               levels=levels,
+                               resampling_factor=resampling_factor,
+                               kernel_file=kernel_file,
+                               iterations=iterations,
+                               fields=fields,
+                               ref_img=img_ref,
+                               mask=mask,
+                               mul=mul)
 
     self._correl: Optional[GPUCorrelTool] = None
     self._img_ref = img_ref
@@ -59,8 +58,8 @@ class GPUCorrelProcess(CameraProcess):
     """"""
 
     self._log(logging.INFO, "Instantiating the GPUCorrel tool")
-    self._gpucorrel_kw.update(logger_name=self.name)
-    self._correl = GPUCorrelTool(**self._gpucorrel_kw)
+    self._gpu_correl_kw.update(logger_name=self.name)
+    self._correl = GPUCorrelTool(**self._gpu_correl_kw)
 
     if self._img_ref is not None:
       self._log(logging.INFO, "Initializing the GPUCorrel tool with the "

@@ -59,7 +59,7 @@ class Dashboard(Block):
   def __init__(self,
                labels: List[str],
                nb_digits: int = 2,
-               verbose: bool = False,
+               display_freq: bool = False,
                freq: float = 30,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes parent class.
@@ -67,14 +67,15 @@ class Dashboard(Block):
     Args:
       labels: Only the data from these labels will be displayed on the window.
       nb_digits: Number of decimals to show.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
       freq: If set, the block will try to loop at this frequency.
     """
 
     self._dashboard: Optional[DashboardWindow] = None
 
     super().__init__()
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.freq = freq
     self.debug = debug
 

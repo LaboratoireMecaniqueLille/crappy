@@ -23,7 +23,7 @@ class Recorder(Block):
                labels: Optional[List[str]] = None,
                time_label: str = 't(s)',
                freq: float = 200,
-               verbose: bool = True,
+               display_freq: bool = True,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -37,13 +37,14 @@ class Recorder(Block):
         Otherwise, all the received data is saved.
       time_label: The label carrying the time information, by default `'t(s)'`.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
     """
 
     super().__init__()
     self.niceness = -5
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     self._delay = delay

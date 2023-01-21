@@ -30,7 +30,7 @@ class AutoDrive(Block):
                max_speed: float = 200000,
                ft232h_ser_num: Optional[str] = None,
                freq: float = 200,
-               verbose: bool = False,
+               display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 
@@ -52,7 +52,8 @@ class AutoDrive(Block):
       max_speed: The absolute maximum speed value that can be sent to the
         actuator.
       freq: The block will try to loop at this frequency.
-      verbose: If :obj:`True`, displays the looping frequency of the block.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        block.
     """
 
     self._device: Optional[Actuator] = None
@@ -61,7 +62,7 @@ class AutoDrive(Block):
     super().__init__()
     self.labels = ['t(s)', 'diff(pix)']
     self.freq = freq
-    self.verbose = verbose
+    self.display_freq = display_freq
     self.debug = debug
 
     self._actuator = {'name': 'CM_drive'} if actuator is None else actuator
