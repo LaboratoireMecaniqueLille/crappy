@@ -69,7 +69,7 @@ def get_field(field_string: str,
     return u / 200, v / 200
 
   else:
-    raise NameError(f"[DISVE Field parser] Unknown field {field_string}")
+    raise NameError(f"[DICVE Field parser] Unknown field {field_string}")
 
 
 def get_res(ref: np.ndarray, img: np.ndarray, flow: np.ndarray) -> np.ndarray:

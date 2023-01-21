@@ -45,7 +45,7 @@ DIS Correl Configurator
 
 DIS VE Configurator
 +++++++++++++++++++
-.. autoclass:: crappy.tool.camera_config.DISVEConfig
+.. autoclass:: crappy.tool.camera_config.DICVEConfig
    :special-members: __init__
 
 Video Extenso Configurator
@@ -126,7 +126,7 @@ DIS Correl Tool
 
 DIS VE Tool
 +++++++++++
-.. autoclass:: crappy.tool.image_processing.DISVETool
+.. autoclass:: crappy.tool.image_processing.DICVETool
    :members: set_img0, calculate_displacement
    :special-members: __init__
 

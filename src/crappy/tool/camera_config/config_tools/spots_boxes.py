@@ -9,7 +9,7 @@ from .box import Box
 @dataclass
 class SpotsBoxes:
   """This class stores up to four instances of :class:`Box`, defining the
-  bounding boxes of the spots for video extensometry or the patches for DISVE.
+  bounding boxes of the spots for video extensometry or the patches for DICVE.
 
   It can also instantiate the Box object by parsing a list of tuples containing
   enough information.

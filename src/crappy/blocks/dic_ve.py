@@ -4,12 +4,12 @@ from typing import Optional, Callable, List, Union, Tuple
 import numpy as np
 from pathlib import Path
 
-from .camera_processes import DISVEProcess
+from .camera_processes import DICVEProcess
 from .camera import Camera
-from ..tool.camera_config import DISVEConfig, SpotsBoxes
+from ..tool.camera_config import DICVEConfig, SpotsBoxes
 
 
-class DISVE(Camera):
+class DICVE(Camera):
   """"""
 
   def __init__(self,
@@ -102,7 +102,7 @@ class DISVE(Camera):
     self._patches.set_spots(self._patches_int)
     self._disve_kw['patches'] = self._patches
 
-    self._process_proc = DISVEProcess(log_queue=self._log_queue,
+    self._process_proc = DICVEProcess(log_queue=self._log_queue,
                                       log_level=self._log_level,
                                       verbose=self.verbose,
                                       **self._disve_kw)
@@ -112,7 +112,7 @@ class DISVE(Camera):
   def _configure(self) -> None:
     """"""
 
-    config = DISVEConfig(self._camera, self._patches)
+    config = DICVEConfig(self._camera, self._patches)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape

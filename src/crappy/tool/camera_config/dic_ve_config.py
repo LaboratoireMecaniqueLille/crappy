@@ -18,7 +18,7 @@ except (ModuleNotFoundError, ImportError):
   Image = OptionalModule("pillow")
 
 
-class DISVEConfig(CameraConfigBoxes):
+class DICVEConfig(CameraConfigBoxes):
   """Class similar to :ref:`Camera Configurator` but also displaying the
   bounding boxes of the regions defined as patches.
 
@@ -102,7 +102,7 @@ class DISVEConfig(CameraConfigBoxes):
 
   def _handle_box_outside_img(self, box: Box) -> None:
     """If a patch is outside the image, maybe the user entered a wrong value or
-    the image size has been modified. Raising an exception as the DISVE can't
+    the image size has been modified. Raising an exception as the DICVE can't
     run in this situation."""
 
     raise ValueError(f'The patch {box.get_patch()} does not fit in the '

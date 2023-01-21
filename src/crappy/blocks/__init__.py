@@ -9,7 +9,7 @@ from .camera import Camera
 from .client_server import ClientServer
 from .dashboard import Dashboard
 from .dis_correl import DISCorrel
-from .dis_ve import DISVE
+from .dic_ve import DICVE
 from .drawing import Drawing
 from .fake_machine import FakeMachine
 from .generator import Generator

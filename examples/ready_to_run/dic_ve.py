@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Example showing how to use the DISVE block.
+Example showing how to use the DICVE block.
 
 It performs DIC on the specified patches, and returns the motion along `x` and
 `y` in pixels. This example demonstrates the processing to measure strain using
@@ -40,7 +40,7 @@ if __name__ == "__main__":
              (h - ps - m, w // 2 - ps // 2, ps, ps),  # Bottom
              (h // 2 - ps // 2, m, ps, ps)]  # Left
 
-  ve = crappy.blocks.DISVE('Webcam', patches, verbose=True,
+  ve = crappy.blocks.DICVE('Webcam', patches, verbose=True,
                            display_images=True)
   graphy = crappy.blocks.Grapher(('t(s)', 'p0y'), ('t(s)', 'p2y'))
   graphx = crappy.blocks.Grapher(('t(s)', 'p1x'), ('t(s)', 'p3x'))

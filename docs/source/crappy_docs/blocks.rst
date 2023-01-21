@@ -37,7 +37,7 @@ DIS Correl
 
 DIS VE
 ++++++
-.. autoclass:: crappy.blocks.DISVE
+.. autoclass:: crappy.blocks.DICVE
    :members: prepare
    :special-members: __init__
 
@@ -224,7 +224,7 @@ DIS Correl Process
 
 DIS VE Process
 ++++++++++++++
-.. autoclass:: crappy.blocks.camera_processes.DISVEProcess
+.. autoclass:: crappy.blocks.camera_processes.DICVEProcess
    :special-members: __init__
 
 Displayer Process
