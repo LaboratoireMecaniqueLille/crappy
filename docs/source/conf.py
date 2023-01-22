@@ -40,6 +40,8 @@ release = __version__
 
 # Sort entries in the order in which they appear in the code
 autodoc_member_order = 'bysource'
+# Including undocumented features
+autodoc_default_options = {'undoc-members': True}
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
