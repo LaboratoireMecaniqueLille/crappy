@@ -30,4 +30,32 @@ Classes aliases
 Methods aliases
 ---------------
 
-Lorem ipsum
+crappy.prepare()
+++++++++++++++++
+.. automethod:: crappy.Block.prepare_all
+   :noindex:
+
+crappy.renice()
++++++++++++++++
+.. automethod:: crappy.Block.renice_all
+   :noindex:
+
+crappy.launch()
++++++++++++++++
+.. automethod:: crappy.Block.launch_all
+   :noindex:
+
+crappy.start()
+++++++++++++++
+.. automethod:: crappy.Block.start_all
+   :noindex:
+
+crappy.stop()
++++++++++++++
+.. automethod:: crappy.Block.stop_all
+   :noindex:
+
+crappy.reset()
+++++++++++++++
+.. automethod:: crappy.Block.reset
+   :noindex:
