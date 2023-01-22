@@ -20,5 +20,4 @@ class MetaModifier(type):
       raise DefinitionError(f"The {name} class is already defined !")
 
     # Otherwise, saving the class
-    if name != "Modifier":
-      cls.classes[name] = cls
+    cls.classes[name] = cls

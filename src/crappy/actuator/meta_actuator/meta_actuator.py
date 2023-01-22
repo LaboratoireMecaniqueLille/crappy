@@ -21,5 +21,4 @@ class MetaActuator(type):
       raise DefinitionError(f"The {name} class is already defined !")
 
     # Otherwise, saving the class
-    if name != 'Actuator':
-      cls.classes[name] = cls
+    cls.classes[name] = cls

@@ -21,5 +21,4 @@ class MetaIO(type):
       raise DefinitionError(f"The {name} class is already defined !")
 
     # Saving the class
-    if name != 'InOut':
-      cls.classes[name] = cls
+    cls.classes[name] = cls
