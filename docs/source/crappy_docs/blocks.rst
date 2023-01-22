@@ -13,7 +13,7 @@ Auto Drive
 
 Camera Block
 ++++++++++++
-.. autoclass:: crappy.blocks.camera
+.. autoclass:: crappy.blocks.Camera
    :members: prepare, begin, loop, finish
    :special-members: __init__
 
