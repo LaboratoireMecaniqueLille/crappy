@@ -23,11 +23,11 @@ LINKCHECKDIR  = build/linkcheck
 
 .PHONY: checklinks
 checklinks:
-	$(SPHINXBUILD) -b linkcheck $(SOURCEDIR) $(LINKCHECKDIR)
+	$(SPHINXBUILD) -b linkcheck $(SOURCEDIR) $(LINKCHECKDIR) -v
 	@echo
 	@echo "Check finished. Report is in $(LINKCHECKDIR)."
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %:
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) -v
