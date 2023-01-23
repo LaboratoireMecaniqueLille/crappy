@@ -35,8 +35,6 @@ class VideoExtensoProcess(CameraProcess):
 
     self._log(logging.INFO, "Instantiating the VideoExtenso tool")
     self._ve = VideoExtensoTool(spots=self._detector.spots,
-                                x_l0=self._detector.x_l0,
-                                y_l0=self._detector.y_l0,
                                 thresh=self._detector.thresh,
                                 log_level=self._log_level,
                                 log_queue=self._log_queue,

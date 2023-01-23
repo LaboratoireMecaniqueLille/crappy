@@ -33,8 +33,6 @@ class VideoExtensoTool:
 
   def __init__(self,
                spots: SpotsBoxes,
-               x_l0: float,
-               y_l0: float,
                thresh: int,
                log_level: Optional[int],
                log_queue: Queue,
@@ -92,8 +90,6 @@ class VideoExtensoTool:
     self._border = border
     self._blur = blur
     self.spots = spots
-    self._x_l0 = x_l0
-    self._y_l0 = y_l0
     self._thresh = thresh
 
     self._logger: Optional[logging.Logger] = None
@@ -235,11 +231,11 @@ class VideoExtensoTool:
       # The strain is calculated based on the positions of the extreme
       # spots in each direction
       try:
-        exx = ((max(x) - min(x)) / self._x_l0 - 1) * 100
+        exx = ((max(x) - min(x)) / self.spots.x_l0 - 1) * 100
       except ZeroDivisionError:
         exx = 0
       try:
-        eyy = ((max(y) - min(y)) / self._y_l0 - 1) * 100
+        eyy = ((max(y) - min(y)) / self.spots.y_l0 - 1) * 100
       except ZeroDivisionError:
         eyy = 0
       centers = list(zip(y, x))

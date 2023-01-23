@@ -97,10 +97,10 @@ class VideoExtensoConfig(CameraConfigBoxes):
     if self._detector.spots.empty():
       self.log(logging.WARNING, "Cannot save L0, there are no spots !")
     else:
-      self._detector.save_length()
+      self._detector.spots.save_length()
       self.log(logging.INFO,
-               f"Successfully saved L0 ! L0 x : {self._detector.x_l0}, L0 y : "
-               f"{self._detector.y_l0}")
+               f"Successfully saved L0 ! L0 x : {self._detector.spots.x_l0}, "
+               f"L0 y : {self._detector.spots.y_l0}")
 
   def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
     """Same as in the parent class except it also draws the patches and the
@@ -183,10 +183,10 @@ class VideoExtensoConfig(CameraConfigBoxes):
                         "window !\nOr hit CTRL+C to exit Crappy")
       return
 
-    if self._detector.x_l0 is None or self._detector.y_l0 is None:
-      self._detector.save_length()
+    if self._detector.spots.x_l0 is None or self._detector.spots.y_l0 is None:
+      self._detector.spots.save_length()
       self.log(logging.INFO,
-               f"Successfully saved L0 ! L0 x : {self._detector.x_l0}, L0 y : "
-               f"{self._detector.y_l0}")
+               f"Successfully saved L0 ! L0 x : {self._detector.spots.x_l0}, "
+               f"L0 y : {self._detector.spots.y_l0}")
 
     super()._stop()

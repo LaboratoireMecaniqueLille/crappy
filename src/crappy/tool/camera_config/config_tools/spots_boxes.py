@@ -21,6 +21,9 @@ class SpotsBoxes:
   spot_3: Optional[Box] = None
   spot_4: Optional[Box] = None
 
+  x_l0: Optional[float] = None
+  y_l0: Optional[float] = None
+
   _index = -1
 
   def __getitem__(self, i: int) -> Optional[Box]:
@@ -69,6 +72,21 @@ class SpotsBoxes:
     for i, spot in enumerate(spots):
       self[i] = Box(x_start=spot[1], x_end=spot[1] + spot[3],
                     y_start=spot[0], y_end=spot[0] + spot[2])
+
+  def save_length(self) -> None:
+    """"""
+
+    # Simply taking the distance between the extrema as the initial length
+    if len(self) > 1:
+      x_centers = [spot.x_centroid for spot in self if spot is not None]
+      y_centers = [spot.y_centroid for spot in self if spot is not None]
+      self.x_l0 = max(x_centers) - min(x_centers)
+      self.y_l0 = max(y_centers) - min(y_centers)
+
+    # If only one spot detected, setting the initial lengths to 0
+    else:
+      self.x_l0 = 0
+      self.y_l0 = 0
 
   def empty(self) -> bool:
     """Returns :obj:`True` if all spots are :obj:`None`, else :obj:`False`."""

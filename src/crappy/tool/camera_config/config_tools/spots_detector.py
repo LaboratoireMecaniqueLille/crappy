@@ -63,8 +63,6 @@ class SpotsDetector:
     self.num_spots = num_spots
 
     self.spots = SpotsBoxes()
-    self.x_l0 = None
-    self.y_l0 = None
 
   def detect_spots(self,
                    img: np.ndarray,
@@ -158,21 +156,6 @@ class SpotsDetector:
       self.spots[i] = Box(x_start=x_min, x_end=x_max,
                           y_start=y_min, y_end=y_max,
                           x_centroid=x, y_centroid=y)
-
-  def save_length(self) -> None:
-    """Saves the initial length in x and y between the detected spots."""
-
-    # Simply taking the distance between the extrema as the initial length
-    if len(self.spots) > 1:
-      x_centers = [spot.x_centroid for spot in self.spots if spot is not None]
-      y_centers = [spot.y_centroid for spot in self.spots if spot is not None]
-      self.x_l0 = max(x_centers) - min(x_centers)
-      self.y_l0 = max(y_centers) - min(y_centers)
-
-    # If only one spot detected, setting the initial lengths to 0
-    else:
-      self.x_l0 = 0
-      self.y_l0 = 0
 
   @staticmethod
   def _overlap_bbox(prop_1, prop_2) -> bool:
