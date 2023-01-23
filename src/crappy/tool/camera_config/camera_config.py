@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import tkinter as tk
+from tkinter.messagebox import showerror
 from platform import system
 import numpy as np
 from time import time, sleep
@@ -113,6 +114,13 @@ class CameraConfig(tk.Tk):
         f"{current_process().name}.{type(self).__name__}")
 
     self._logger.log(level, msg)
+
+  def report_callback_exception(self, exc: Exception, val: str, tb) -> None:
+    """"""
+
+    self._logger.exception(f"Caught exception in {type(self).__name__}: "
+                           f"{exc.__name__}({val})", exc_info=tb)
+    showerror("Error !", message=f"{exc.__name__}\n{val}")
 
   def _set_layout(self) -> None:
     """Creates and places the different elements of the display on the GUI."""
