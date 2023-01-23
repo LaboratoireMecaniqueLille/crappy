@@ -232,14 +232,16 @@ class VideoExtensoTool:
     if len(self.spots) > 1:
       x = [spot.x_centroid for spot in self.spots if spot is not None]
       y = [spot.y_centroid for spot in self.spots if spot is not None]
+      # The strain is calculated based on the positions of the extreme
+      # spots in each direction
       try:
-        # The strain is calculated based on the positions of the extreme
-        # spots in each direction
         exx = ((max(x) - min(x)) / self._x_l0 - 1) * 100
+      except ZeroDivisionError:
+        exx = 0
+      try:
         eyy = ((max(y) - min(y)) / self._y_l0 - 1) * 100
       except ZeroDivisionError:
-        # Shouldn't happen but adding a safety just in case
-        exx, eyy = 0, 0
+        eyy = 0
       centers = list(zip(y, x))
       return centers, eyy, exx
 
