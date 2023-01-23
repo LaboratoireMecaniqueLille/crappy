@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import tkinter as tk
+from tkinter.messagebox import showerror
 from typing import Optional
 import numpy as np
 from io import BytesIO
@@ -176,8 +177,12 @@ class VideoExtensoConfig(CameraConfigBoxes):
 
     if self._detector.x_l0 is None or self._detector.y_l0 is None:
       if self._detector.spots.empty():
-        self.log(logging.WARNING, "Cannot save L0, there are no spots !")
-        raise IOError
+        self.log(logging.WARNING, "No spots were selected ! Not exiting the "
+                                  "configuration window")
+        showerror("Error !",
+                  message="Please select spots before exiting the config "
+                          "window !\nOr hit CTRL+C to exit Crappy")
+        return
       self._detector.save_length()
 
     super()._stop()
