@@ -175,14 +175,18 @@ class VideoExtensoConfig(CameraConfigBoxes):
   def _stop(self) -> None:
     """"""
 
+    if self._detector.spots.empty():
+      self.log(logging.WARNING, "No spots were selected ! Not exiting the "
+                                "configuration window")
+      showerror("Error !",
+                message="Please select spots before exiting the config "
+                        "window !\nOr hit CTRL+C to exit Crappy")
+      return
+
     if self._detector.x_l0 is None or self._detector.y_l0 is None:
-      if self._detector.spots.empty():
-        self.log(logging.WARNING, "No spots were selected ! Not exiting the "
-                                  "configuration window")
-        showerror("Error !",
-                  message="Please select spots before exiting the config "
-                          "window !\nOr hit CTRL+C to exit Crappy")
-        return
       self._detector.save_length()
+      self.log(logging.INFO,
+               f"Successfully saved L0 ! L0 x : {self._detector.x_l0}, L0 y : "
+               f"{self._detector.y_l0}")
 
     super()._stop()
