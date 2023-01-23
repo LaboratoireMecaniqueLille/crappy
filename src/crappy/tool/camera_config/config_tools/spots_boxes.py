@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, List, Tuple
 
@@ -46,7 +47,7 @@ class SpotsBoxes:
     else:
       raise IndexError
 
-  def __iter__(self):
+  def __iter__(self) -> SpotsBoxes:
     self._index = -1
     return self
 

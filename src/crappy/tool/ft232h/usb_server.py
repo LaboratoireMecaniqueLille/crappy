@@ -24,6 +24,10 @@ except (FileNotFoundError, ModuleNotFoundError):
   USBTimeoutError = OptionalModule('pyusb')
   util = OptionalModule('pyusb')
 
+USBArgsType = Tuple[int, multiprocessing.synchronize.RLock, FileIO,
+                    FileIO, multiprocessing.synchronize.RLock,
+                    Synchronized]
+
 
 @dataclass
 class BlockObjects:
@@ -94,11 +98,7 @@ class USBServer(Process):
                     if block.ser_num == ser_num))
 
   @classmethod
-  def register(cls,
-               ser_num: Optional[str] = None,
-               ) -> Tuple[int, multiprocessing.synchronize.RLock, FileIO,
-                          FileIO, multiprocessing.synchronize.RLock,
-                          Synchronized]:
+  def register(cls, ser_num: Optional[str] = None) -> USBArgsType:
     """
 
     Args:

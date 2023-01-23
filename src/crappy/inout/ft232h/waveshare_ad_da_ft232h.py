@@ -6,7 +6,7 @@ from typing import List, Union, Optional
 import logging
 
 from ..meta_inout import InOut
-from ...tool.ft232h import FT232HServer as FT232H
+from ...tool.ft232h import FT232HServer as FT232H, USBArgsType
 
 # ADS1256 gain channel
 Ads1256_gain = {1: 0b000,
@@ -98,7 +98,7 @@ class WaveshareADDAFT232H(InOut):
                gain: float = 1,
                offset: float = 0,
                sample_rate: Union[int, float] = 100,
-               _ft232h_args: tuple = tuple(),
+               _ft232h_args: USBArgsType = tuple(),
                rst_pin_ads: str = 'D7',
                cs_pin_ads: str = 'D4',
                drdy_pin_ads: str = 'D6',
@@ -199,8 +199,8 @@ class WaveshareADDAFT232H(InOut):
 
     super().__init__()
 
-    (block_index, current_block, command_file, answer_file, block_lock,
-     shared_lock) = _ft232h_args
+    (block_index, block_lock, command_file, answer_file, shared_lock,
+     current_block) = _ft232h_args
 
     if gain_hardware not in Ads1256_gain:
       raise ValueError("gain_hardware should be in {}".format(list(

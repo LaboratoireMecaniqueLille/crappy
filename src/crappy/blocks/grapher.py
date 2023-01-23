@@ -95,6 +95,14 @@ class Grapher(Block):
 
     self._labels = labels
 
+    self._ax = None
+    self._canvas = None
+    self._figure = None
+    self._lines = None
+    self._factor = None
+    self._counter = None
+    self._clear_button = None
+
   def prepare(self) -> None:
     """Configures the figure for displaying data."""
 

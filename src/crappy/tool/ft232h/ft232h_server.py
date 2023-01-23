@@ -110,7 +110,7 @@ class DelayedKeyboardInterrupt:
     if self._signal_received is not None:
       self._prev_handler(*self._signal_received)
 
-  def _handler(self, sig, frame):
+  def _handler(self, sig, frame) -> None:
     self._signal_received = (sig, frame)
 
 

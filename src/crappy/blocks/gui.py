@@ -56,6 +56,11 @@ class GUI(Block):
     self._spam = spam
     self._send_0 = send_0
 
+    self._step = None
+    self._text = None
+    self._label = None
+    self._button = None
+
   def prepare(self) -> None:
     """Creates the graphical interface and sets its layout and callbacks."""
 

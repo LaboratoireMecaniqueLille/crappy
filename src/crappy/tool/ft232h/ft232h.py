@@ -3,10 +3,11 @@
 from enum import IntEnum
 from collections import namedtuple
 from struct import calcsize, unpack, pack
-from typing import Union, Callable, Optional
+from typing import Union, Callable, Optional, Tuple, List
 from multiprocessing import current_process
 import logging
 
+from .i2c_message import I2CMessage
 from ..._global import OptionalModule
 try:
   from usb import util
@@ -246,6 +247,16 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self._nb_attempt_1 = 8
     self._nb_attempt_2 = 8
 
+    self._bits_per_word = 8
+    self._cshigh = False
+    self._no_cs = False
+    self._loop = False
+    self._lsbfirst = False
+    self._max_speed_hz = 400E3
+    self._mode = 0
+    self._threewire = False
+    self._spi_param_changed = True
+
     self._logger: Optional[logging.Logger] = None
 
     self._initialize()
@@ -287,16 +298,6 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     # SPI properties
     elif self._ft232h_mode == 'SPI':
       frequency = 400E3
-
-      self._bits_per_word = 8
-      self._cshigh = False
-      self._no_cs = False
-      self._loop = False
-      self._lsbfirst = False
-      self._max_speed_hz = 400E3
-      self._mode = 0
-      self._threewire = False
-      self._spi_param_changed = True
 
       self._cs_bit = ft232h_pins['CS']
       self._spi_dir = self._cs_bit | ft232h_pins['SCK'] | ft232h_pins['DO']
@@ -864,7 +865,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     raise ValueError("Internal error")
 
   @property
-  def _clk_hi_data_lo(self) -> tuple:
+  def _clk_hi_data_lo(self) -> Tuple[int, int, int]:
     """Returns the MPSSE command for driving CLK line high and SDA line low,
        while preserving the GPIO outputs."""
 
@@ -873,7 +874,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             self._i2c_dir | (self._gpio_dir & 0xFF))
 
   @property
-  def _clk_lo_data_input(self) -> tuple:
+  def _clk_lo_data_input(self) -> Tuple[int, int, int]:
     """Returns the MPSSE command for driving CLK line low and listening to SDA
        line, while preserving the GPIO outputs."""
 
@@ -882,7 +883,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             ft232h_pins['SCL'] | (self._gpio_dir & 0xFF))
 
   @property
-  def _clk_lo_data_hi(self) -> tuple:
+  def _clk_lo_data_hi(self) -> Tuple[int, int, int]:
     """Returns the MPSSE command for driving CLK line low and SDA line high,
        while preserving the GPIO outputs."""
 
@@ -891,7 +892,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             self._i2c_dir | (self._gpio_dir & 0xFF))
 
   @property
-  def _clk_lo_data_lo(self) -> tuple:
+  def _clk_lo_data_lo(self) -> Tuple[int, int, int]:
     """Returns the MPSSE command for driving CLK line low and SDA line low,
        while preserving the GPIO outputs."""
 
@@ -900,7 +901,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             self._i2c_dir | (self._gpio_dir & 0xFF))
 
   @property
-  def _idle(self) -> tuple:
+  def _idle(self) -> Tuple[int, int, int]:
     """Returns the MPSSE command for driving CLK line high and SDA line high,
        while preserving the GPIO outputs."""
 
@@ -909,14 +910,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             self._i2c_dir | (self._gpio_dir & 0xFF))
 
   @property
-  def _start(self) -> tuple:
+  def _start(self) -> Tuple[int, ...]:
     """Returns the MPSSE command for issuing and I2C start condition."""
 
     return self._clk_hi_data_lo * self._ck_hd_sta + \
         self._clk_lo_data_lo * self._ck_hd_sta
 
   @property
-  def _stop(self) -> tuple:
+  def _stop(self) -> Tuple[int, ...]:
     """Returns the MPSSE command for issuing and I2C stop condition."""
 
     return self._clk_lo_data_hi * self._ck_hd_sta + \
@@ -924,7 +925,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         self._clk_hi_data_lo * self._ck_su_sto + \
         self._idle * self._ck_idle
 
-  def _do_prolog(self, i2caddress: int) -> Optional[None]:
+  def _do_prolog(self, i2caddress: int) -> None:
     """Sends the MPSSE commands for starting an I2C transaction.
 
     Args:
@@ -942,7 +943,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     except IOError:
       raise
 
-  def _do_write(self, out: list) -> Optional[None]:
+  def _do_write(self, out: list) -> None:
     """Sends the MPSSE commands for writing bytes to an I2C slave.
 
     Args:
@@ -1050,7 +1051,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def _write_i2c(self,
                  address: int,
                  out: list,
-                 stop: bool = True) -> Optional[None]:
+                 stop: bool = True) -> None:
     """Writes bytes to an I2C slave.
 
     Args:
@@ -1315,7 +1316,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   def read_i2c_block_data(self,
                           i2c_addr: int,
                           register: int,
-                          length: int) -> list:
+                          length: int) -> List[int]:
     """Reads a given number of bytes from an I2C slave, starting at the
     specified register.
 
@@ -1352,7 +1353,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         if not retries:
           raise
 
-  def i2c_rdwr(self, *i2c_msgs) -> None:
+  def i2c_rdwr(self, *i2c_msgs: I2CMessage) -> None:
     """Exchanges messages with a slave that doesn't feature registers.
 
     A start condition is sent at the beginning of each transaction, but only
@@ -1728,7 +1729,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       data = self._read_data_bytes(exlen, 8)
     return data
 
-  def readbytes(self, len: int, start: bool = True, stop: bool = True) -> list:
+  def readbytes(self,
+                len: int,
+                start: bool = True,
+                stop: bool = True) -> List[int]:
     """Reads the specified number of bytes from an SPI slave.
 
     Args:
@@ -1794,7 +1798,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
            delay: float = 0.0,
            bits: int = 8,
            start: bool = True,
-           stop: bool = True) -> list:
+           stop: bool = True) -> List[int]:
     """Simultaneously reads and write bytes to an SPI slave.
 
     The number of bytes to read is equal to the number of bytes in the write
@@ -1839,7 +1843,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             delay: float = 0.0,
             bits: int = 8,
             start: bool = True,
-            stop: bool = True) -> list:
+            stop: bool = True) -> List[int]:
     """Actually calls the :meth:`xfer` method with the same arguments."""
 
     self.log(logging.DEBUG, f"Requested SPI xfer with values {values}")
@@ -1857,7 +1861,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
             delay: float = 0.0,
             bits: int = 8,
             start: bool = True,
-            stop: bool = True) -> list:
+            stop: bool = True) -> List[int]:
     """Actually calls the :meth:`xfer` method with the same arguments."""
 
     self.log(logging.DEBUG, f"Requested SPI xfer with values {values}")

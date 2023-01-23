@@ -2,7 +2,7 @@
 
 from struct import unpack
 from time import time
-from typing import Optional
+from typing import Optional, List, Dict, Callable
 import logging
 
 from .meta_block import Block
@@ -28,10 +28,11 @@ class UController(Block):
   """
 
   def __init__(self,
-               labels: list = None,
-               cmd_labels: list = None,
-               init_output: dict = None,
-               post_process: dict = None,
+               labels: Optional[List[str]] = None,
+               cmd_labels: Optional[List[str]] = None,
+               init_output: Optional[Dict[str, float]] = None,
+               post_process: Optional[Dict[str,
+                                           Callable[[float], float]]] = None,
                t_device: bool = False,
                port: str = '/dev/ttyUSB0',
                baudrate: int = 115200,
@@ -123,6 +124,10 @@ class UController(Block):
                                              in post_process.values())):
       raise TypeError("post_process should be a dict of callables !")
     self._post_process = post_process if post_process is not None else {}
+
+    self._buffer = None
+    self._cmd_table = None
+    self._labels_table = None
 
   def prepare(self) -> None:
     """Opens the serial port, and sends a `'go'` message to the device.

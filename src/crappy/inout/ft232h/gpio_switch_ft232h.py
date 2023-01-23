@@ -3,7 +3,7 @@
 from typing import Union
 
 from ..meta_inout import InOut
-from ...tool.ft232h import FT232HServer as FT232H, ft232h_pin_nr
+from ...tool.ft232h import FT232HServer as FT232H, ft232h_pin_nr, USBArgsType
 
 
 class GPIOSwitchFT232H(InOut):
@@ -19,7 +19,7 @@ class GPIOSwitchFT232H(InOut):
 
   def __init__(self,
                pin_out: Union[int, str],
-               _ft232h_args: tuple = tuple()) -> None:
+               _ft232h_args: USBArgsType = tuple()) -> None:
     """Checks the argument validity.
 
     Args:
@@ -39,8 +39,8 @@ class GPIOSwitchFT232H(InOut):
 
     super().__init__()
 
-    (block_index, current_block, command_file, answer_file, block_lock,
-     shared_lock) = _ft232h_args
+    (block_index, block_lock, command_file, answer_file, shared_lock,
+     current_block) = _ft232h_args
 
     self._ft232h = FT232H(mode='GPIO_only',
                           block_index=block_index,

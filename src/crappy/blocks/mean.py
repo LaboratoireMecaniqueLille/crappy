@@ -51,10 +51,7 @@ class MeanBlock(Block):
     self._time_label = time_label
     self._out_labels = out_labels
 
-  def prepare(self) -> None:
-    """Initializes the buffer."""
-
-    self._buffer = {link: dict() for link in self.inputs}
+    self._last_sent_t = time()
 
   def begin(self) -> None:
     """Initializes the time counter."""

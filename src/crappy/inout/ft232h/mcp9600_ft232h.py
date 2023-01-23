@@ -5,7 +5,7 @@ from typing import List
 import logging
 
 from ..meta_inout import InOut
-from ...tool.ft232h import FT232HServer as FT232H
+from ...tool.ft232h import FT232HServer as FT232H, USBArgsType
 
 Mcp9600_registers = {'Hot Junction Temperature': 0x00,
                      'Junction Temperature Delta': 0x01,
@@ -77,7 +77,7 @@ class MCP9600FT232H(InOut):
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
                mode: str = 'Hot Junction Temperature',
-               _ft232h_args: tuple = tuple()) -> None:
+               _ft232h_args: USBArgsType = tuple()) -> None:
     """Checks arguments validity.
 
     Args:
@@ -127,8 +127,8 @@ class MCP9600FT232H(InOut):
 
     super().__init__()
 
-    (block_index, current_block, command_file, answer_file, block_lock,
-     shared_lock) = _ft232h_args
+    (block_index, block_lock, command_file, answer_file, shared_lock,
+     current_block) = _ft232h_args
 
     self._bus = FT232H(mode='I2C',
                        block_index=block_index,

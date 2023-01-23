@@ -30,7 +30,7 @@ class ClientServer(Block):
 
   def __init__(self,
                broker: bool = False,
-               address: Any = 'localhost',
+               address: str = 'localhost',
                port: int = 1883,
                init_output: Optional[Dict[str, Any]] = None,
                topics: Optional[Topics_type] = None,
@@ -59,7 +59,7 @@ class ClientServer(Block):
         crappy label to be received from the broker. Each element of the list 
         is considered to be the name of an MQTT topic, to which the client 
         subscribes. After a message has been received on that topic, the block 
-        returns for each label in the topic (i.e. each string in the tuple) the 
+        returns for each label in the topic (i.e. each string in the tuple) the
         corresponding data from the message. It also returns the current
         timestamp in the label `'t(s)'`.
       cmd_labels (:obj:`list`, optional): A :obj:`list` of :obj:`str` and/or 
@@ -67,7 +67,7 @@ class ClientServer(Block):
         crappy label to send to the broker. Each element of the list is 
         considered to be the name of an MQTT topic, in which the client 
         publishes. Grouping labels in a same topic (i.e. strings in a same 
-        tuple) allows to keep the synchronization between signals coming from a 
+        tuple) allows to keep the synchronization between signals coming from a
         same block, as they will be published together in a same message. This 
         is mostly useful for sending a signal along with its timeframe.
       labels_to_send (:obj:`list`, optional): A :obj:`list` of :obj:`str` 
@@ -75,7 +75,7 @@ class ClientServer(Block):
         publishing data. The structure of ``labels_to_send`` should be the 
         exact same as ``cmd_labels``, with each label in ``labels_to_send`` 
         replacing the corresponding one in ``cmd_labels``. This is especially 
-        useful for transferring several signals along with their timestamps, as 
+        useful for transferring several signals along with their timestamps, as
         the label ``'t(s)'`` should not appear more than once in the topics 
         list of the receiving block.
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -94,7 +94,7 @@ class ClientServer(Block):
         used.
 
       - ``topics``:
-        The presence of the same label in multiple topics will most likely lead 
+        The presence of the same label in multiple topics will most likely lead
         to a data loss.
 
       - ``cmd_labels``:

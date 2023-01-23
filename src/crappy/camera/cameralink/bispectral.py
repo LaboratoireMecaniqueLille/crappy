@@ -154,7 +154,7 @@ class BiSpectral(CLCamera):
     else:
       self.send_cmd('@W10274')  # 3rd bit to 0
 
-  def get_roi(self) -> tuple:
+  def get_roi(self) -> Tuple[int, int, int, int]:
     x1min_lsb = self.send_cmd("@R1D0")
     x1min_msb = self.send_cmd("@R1D1")
     y1min_lsb = self.send_cmd("@R1D2")
@@ -192,7 +192,7 @@ class BiSpectral(CLCamera):
     self.send_cmd("@W1D6" + lsb_ymax)
     self.send_cmd("@W1D7" + msb_ymax)
 
-  def get_it(self) -> tuple:
+  def get_it(self) -> Tuple[float, float]:
     mc = 10.35  # MHz
     it1_lsb = self.send_cmd("@R1B4")
     it1_mid = self.send_cmd("@R1B5")

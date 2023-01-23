@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
 
 
 @dataclass
@@ -37,14 +37,14 @@ class Box:
     self.x_centroid = None
     self.y_centroid = None
 
-  def get_patch(self) -> (int, int, int, int):
+  def get_patch(self) -> Tuple[int, int, int, int]:
     """Returns the information of the box in the patch format, for
     compatibility with other blocks."""
 
     return (self.y_start, self.x_start, self.y_end - self.y_start,
             self.x_end - self.x_start)
 
-  def sorted(self) -> (int, int, int, int):
+  def sorted(self) -> Tuple[int, int, int, int]:
     """Returns the four sides values but sorted in the order : min x, max x,
     min y, max y."""
 

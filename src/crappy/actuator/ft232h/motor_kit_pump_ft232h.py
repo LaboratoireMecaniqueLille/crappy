@@ -7,7 +7,7 @@ import logging
 
 from ..meta_actuator import Actuator
 from ..._global import OptionalModule
-from ...tool.ft232h import FT232HServer as FT232H
+from ...tool.ft232h import FT232HServer as FT232H, USBArgsType
 
 try:
   from smbus2 import SMBus
@@ -146,7 +146,7 @@ class DCMotorHat:
 
     self._bus.close()
 
-  def _write_i2c(self, register: int, buf: Union[list, bytearray]):
+  def _write_i2c(self, register: int, buf: Union[list, bytearray]) -> None:
     """Thin wrapper to reduce verbosity."""
 
     self._bus.write_i2c_block_data(self._address, register, list(buf))
@@ -164,7 +164,7 @@ class MotorKitPumpFT232H(Actuator):
   def __init__(self,
                device_address: int = 0x60,
                i2c_port: int = 1,
-               _ft232h_args: tuple = tuple()) -> None:
+               _ft232h_args: USBArgsType = tuple()) -> None:
     """Checks the validity of the arguments.
 
     Args:
@@ -179,8 +179,8 @@ class MotorKitPumpFT232H(Actuator):
 
     super().__init__()
 
-    (block_index, current_block, command_file, answer_file, block_lock,
-     shared_lock) = _ft232h_args
+    (block_index, block_lock, command_file, answer_file, shared_lock,
+     current_block) = _ft232h_args
 
     self._bus = FT232H(mode='I2C',
                        block_index=block_index,

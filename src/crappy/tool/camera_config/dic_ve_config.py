@@ -10,6 +10,7 @@ import logging
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box, SpotsBoxes
+from ...camera.meta_camera import Camera
 from ..._global import OptionalModule
 
 try:
@@ -25,7 +26,7 @@ class DICVEConfig(CameraConfigBoxes):
   It is meant to be used for configuring the :ref:`DIS VE` block.
   """
 
-  def __init__(self, camera, patches: SpotsBoxes) -> None:
+  def __init__(self, camera: Camera, patches: SpotsBoxes) -> None:
     """Sets the patches and initializes the parent class.
 
     Args:

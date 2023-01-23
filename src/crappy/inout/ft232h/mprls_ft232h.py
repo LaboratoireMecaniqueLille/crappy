@@ -5,7 +5,7 @@ from typing import Optional, List
 import logging
 
 from ..meta_inout import InOut
-from ...tool.ft232h import FT232HServer as FT232H, I2CMessage
+from ...tool.ft232h import FT232HServer as FT232H, I2CMessage, USBArgsType
 
 mprls_status_bits = {'busy': 0x20,
                      'memory error': 0x04,
@@ -24,7 +24,7 @@ class MPRLSFT232H(InOut):
   def __init__(self,
                eoc_pin: Optional[str] = None,
                device_address: int = 0x18,
-               _ft232h_args: tuple = tuple()) -> None:
+               _ft232h_args: USBArgsType = tuple()) -> None:
     """Initializes the parent class and opens the I2C bus.
 
     Args:
@@ -45,8 +45,8 @@ class MPRLSFT232H(InOut):
 
     super().__init__()
 
-    (block_index, current_block, command_file, answer_file, block_lock,
-     shared_lock) = _ft232h_args
+    (block_index, block_lock, command_file, answer_file, shared_lock,
+     current_block) = _ft232h_args
 
     self._bus = FT232H(mode='I2C',
                        block_index=block_index,
@@ -64,6 +64,8 @@ class MPRLSFT232H(InOut):
       raise TypeError('eoc_pin should be a string when using the ft232h '
                       'backend !')
     self._eoc_pin = eoc_pin
+
+    self._i2c_msg = None
 
   def open(self) -> None:
     """Opens the I2C bus."""

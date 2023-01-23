@@ -520,22 +520,22 @@ videoconvert ! autovideosink
 
     return Gst.FlowReturn.OK
 
-  def _set_brightness(self, brightness) -> None:
+  def _set_brightness(self, brightness: float) -> None:
     """Sets the image brightness."""
 
     self._restart_pipeline(self._get_pipeline(brightness=brightness))
 
-  def _set_contrast(self, contrast) -> None:
+  def _set_contrast(self, contrast: float) -> None:
     """Sets the image contrast."""
 
     self._restart_pipeline(self._get_pipeline(contrast=contrast))
 
-  def _set_hue(self, hue) -> None:
+  def _set_hue(self, hue: float) -> None:
     """Sets the image hue."""
 
     self._restart_pipeline(self._get_pipeline(hue=hue))
 
-  def _set_saturation(self, saturation) -> None:
+  def _set_saturation(self, saturation: float) -> None:
     """Sets the image saturation."""
 
     self._restart_pipeline(self._get_pipeline(saturation=saturation))

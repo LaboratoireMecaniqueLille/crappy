@@ -5,7 +5,7 @@ from typing import Union, Optional, List
 import logging
 
 from ..meta_inout import InOut
-from ...tool.ft232h import FT232HServer as FT232H
+from ...tool.ft232h import FT232HServer as FT232H, USBArgsType
 
 # Register Map
 NAU7802_Scale_Registers = {'PU_CTRL': 0x00,
@@ -111,7 +111,7 @@ class NAU7802FT232H(InOut):
                int_pin: Optional[Union[str, int]] = None,
                gain: float = 1,
                offset: float = 0,
-               _ft232h_args: tuple = tuple()) -> None:
+               _ft232h_args: USBArgsType = tuple()) -> None:
     """Checks the validity of the arguments..
 
     Args:
@@ -156,8 +156,8 @@ class NAU7802FT232H(InOut):
 
     super().__init__()
 
-    (block_index, current_block, command_file, answer_file, block_lock,
-     shared_lock) = _ft232h_args
+    (block_index, block_lock, command_file, answer_file, shared_lock,
+     current_block) = _ft232h_args
 
     self._bus = FT232H(mode='I2C',
                        block_index=block_index,

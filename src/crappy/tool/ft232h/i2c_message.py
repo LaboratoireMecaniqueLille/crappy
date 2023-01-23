@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from typing import Optional, Iterable
+from __future__ import annotations
+from typing import Optional, List
 
 
 class I2CMessage:
@@ -32,7 +33,7 @@ class I2CMessage:
     self.buf = buf if buf else []
 
   @classmethod
-  def read(cls, address: int, length: int) -> Iterable:
+  def read(cls, address: int, length: int) -> I2CMessage:
     """Instantiates an :class:`i2c_msg_ft232h` object for reading bytes.
 
     Args:
@@ -43,7 +44,7 @@ class I2CMessage:
     return cls(type_='r', address=address, length=length)
 
   @classmethod
-  def write(cls, address: int, buf: list) -> object:
+  def write(cls, address: int, buf: list) -> I2CMessage:
     """Instantiates an :class:`i2c_msg_ft232h` object for writing bytes.
 
     Args:
@@ -60,19 +61,19 @@ class I2CMessage:
     return self._addr
 
   @addr.setter
-  def addr(self, addr_) -> None:
+  def addr(self, addr_: int) -> None:
     if not isinstance(addr_, int) or not 0 <= addr_ <= 127:
       raise ValueError("addr should be an integer between 0 and 127 !")
     self._addr = addr_
 
   @property
-  def buf(self) -> list:
+  def buf(self) -> List[int]:
     """The list of bytes to be written, or the list of bytes read."""
 
     return self._buf
 
   @buf.setter
-  def buf(self, buf_: list) -> None:
+  def buf(self, buf_: List[int]) -> None:
     if self.type == 'w' and not buf_:
       raise ValueError("buf can't be empty for a write operation !")
     self._buf = buf_
@@ -84,7 +85,7 @@ class I2CMessage:
     return self._len
 
   @len.setter
-  def len(self, len_) -> None:
+  def len(self, len_: int) -> None:
     if self.type == 'r' and (not isinstance(len_, int) or not len_ > 0):
       raise ValueError("len cannot be zero for a read operation !")
     self._len = len_

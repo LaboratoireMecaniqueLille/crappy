@@ -78,6 +78,8 @@ class DICVE(Camera):
     else:
       self.labels = labels
 
+    self._patches: Optional[SpotsBoxes] = None
+
     self._raise_on_exit = raise_on_patch_exit
     self._patches_int = patches
 

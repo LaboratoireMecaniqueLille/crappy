@@ -64,10 +64,8 @@ if __name__ == "__main__":
                   'label': ''})
 
   # The block containing the Drawing
-  drawing = crappy.blocks.Drawing(image=img_path,
-                                  draw=options,
-                                  color_range=(20, 300),
-                                  title="Temperatures")
+  drawing = crappy.blocks.Drawing(image_path=img_path, draw=options,
+                                  color_range=(20, 300), title="Temperatures")
 
   # Linking and starting the blocks
   crappy.link(update_block, drawing)

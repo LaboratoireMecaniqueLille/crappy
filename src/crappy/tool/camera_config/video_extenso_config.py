@@ -10,6 +10,7 @@ import logging
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box, SpotsDetector
+from ...camera.meta_camera import Camera
 from ..._global import OptionalModule
 
 try:
@@ -26,7 +27,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
   It is meant to be used for configuring the :ref:`Video Extenso` block.
   """
 
-  def __init__(self, camera, detector: SpotsDetector) -> None:
+  def __init__(self, camera: Camera, detector: SpotsDetector) -> None:
     """Sets the args and initializes the parent class.
 
     Args:

@@ -98,7 +98,7 @@ class Block(Process, metaclass=MetaBlock):
     return instance
 
   @classmethod
-  def get_name(cls, name) -> str:
+  def get_name(cls, name: str) -> str:
     """"""
 
     i = 1

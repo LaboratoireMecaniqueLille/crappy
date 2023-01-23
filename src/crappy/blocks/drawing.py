@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from __future__ import annotations
 from datetime import timedelta
 from time import time
 from typing import Tuple, List, Dict, Any, Optional
@@ -16,7 +17,7 @@ class Text:
   """Displays a simple text line on the drawing."""
 
   def __init__(self,
-               _,
+               _: Drawing,
                coord: Tuple[int, int],
                text: str,
                label: str,
@@ -49,7 +50,7 @@ class DotText:
   """
 
   def __init__(self,
-               drawing,
+               drawing: Drawing,
                coord: Tuple[int, int],
                text: str,
                label: str,
@@ -96,7 +97,7 @@ class Time:
   """Displays a time counter on the drawing, starting at the beginning of the
   test."""
 
-  def __init__(self, drawing, coord: Tuple[int, int], **__) -> None:
+  def __init__(self, drawing: Drawing, coord: Tuple[int, int], **__) -> None:
     """Simply sets the args.
 
     Args:
@@ -128,7 +129,7 @@ class Drawing(Block):
   """
 
   def __init__(self,
-               image: str,
+               image_path: str,
                draw: Optional[List[Dict[str, Any]]] = None,
                color_range: Tuple[float, float] = (20, 300),
                title: str = "Drawing",
@@ -140,8 +141,8 @@ class Drawing(Block):
     """Sets the args and initializes the parent class.
 
     Args:
-      image: Path to the image that will be the background of the canvas, as a
-        :obj:`str`.
+      image_path: Path to the image that will be the background of the canvas,
+        as a :obj:`str`.
       draw: A :obj:`list` of :obj:`dict` defining what to draw. See below for
         more details.
       color_range: A :obj:`tuple` containing the lowest and highest values for
@@ -179,12 +180,16 @@ class Drawing(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    self._image = image
+    self._image = image_path
     self._draw = [] if draw is None else draw
     self.color_range = color_range
     self._title = title
     self._window_size = window_size
     self._backend = backend
+
+    self._fig = None
+    self.ax = None
+    self._drawing_elements = None
 
   def prepare(self) -> None:
     """Initializes the different elements of the drawing."""

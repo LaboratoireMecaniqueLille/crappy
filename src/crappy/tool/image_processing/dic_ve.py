@@ -241,7 +241,7 @@ class DICVETool:
 
   @staticmethod
   def _cross_correlation(img0: np.ndarray,
-                         img1: np.ndarray) -> (np.ndarray, int, int):
+                         img1: np.ndarray) -> Tuple[np.ndarray, int, int]:
     """Performs a cross-correlation operation on two patches in the Fourier
     domain.
 

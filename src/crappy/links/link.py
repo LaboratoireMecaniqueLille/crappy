@@ -34,8 +34,7 @@ class Link:
   def __init__(self,
                input_block,
                output_block,
-               modifiers: Optional[List[Union[ModifierType,
-                                              Modifier]]] = None,
+               modifiers: Optional[List[Union[ModifierType, Modifier]]] = None,
                name: Optional[str] = None) -> None:
     """Sets the instance attributes.
 
@@ -163,7 +162,7 @@ class Link:
 
     return data
 
-  def recv_chunk(self) -> Dict[str, list]:
+  def recv_chunk(self) -> Dict[str, List[Any]]:
     """Reads all the available values in the Link, and returns them all.
 
     Returns:

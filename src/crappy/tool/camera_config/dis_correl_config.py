@@ -11,6 +11,7 @@ import logging
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box
+from ...camera.meta_camera import Camera
 from ..._global import OptionalModule
 
 try:
@@ -26,7 +27,7 @@ class DISCorrelConfig(CameraConfigBoxes):
   It is meant to be used for configuring the :ref:`DIS Correl` block.
   """
 
-  def __init__(self, camera) -> None:
+  def __init__(self, camera: Camera) -> None:
     """Initializes the parent class and sets the correl box."""
 
     self._correl_box = Box()

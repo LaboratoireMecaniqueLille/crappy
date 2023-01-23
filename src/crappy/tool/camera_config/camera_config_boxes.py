@@ -6,6 +6,7 @@ import logging
 
 from .camera_config import CameraConfig
 from .config_tools import Box, SpotsBoxes
+from ...camera.meta_camera import Camera
 
 
 class CameraConfigBoxes(CameraConfig):
@@ -17,7 +18,7 @@ class CameraConfigBoxes(CameraConfig):
   any block in Crappy.
   """
 
-  def __init__(self, camera) -> None:
+  def __init__(self, camera: Camera) -> None:
     """Initializes the parent class and sets the spots container."""
 
     self._spots = SpotsBoxes()

@@ -68,6 +68,7 @@ class VideoExtenso(Camera):
                    'Eyy(%)', 'Exx(%)'] if labels is None else labels
 
     self._raise_on_lost_spot = raise_on_lost_spot
+    self._spot_detector = SpotsDetector()
 
     self._detector_kw = dict(white_spots=white_spots,
                              num_spots=num_spots,
@@ -82,11 +83,12 @@ class VideoExtenso(Camera):
 
     self._spot_detector = SpotsDetector(**self._detector_kw)
 
-    self._process_proc = VideoExtensoProcess(detector=self._spot_detector,
-                                             log_queue=self._log_queue,
-                                             log_level=self._log_level,
-                                             raise_on_lost_spot=self._raise_on_lost_spot,
-                                             display_freq=self.display_freq)
+    self._process_proc = VideoExtensoProcess(
+      detector=self._spot_detector,
+      log_queue=self._log_queue,
+      log_level=self._log_level,
+      raise_on_lost_spot=self._raise_on_lost_spot,
+      display_freq=self.display_freq)
 
     super().prepare()
 

@@ -149,7 +149,7 @@ class DCMotorHat:
 
     self._bus.close()
 
-  def _write_i2c(self, register: int, buf: Union[list, bytearray]):
+  def _write_i2c(self, register: int, buf: Union[list, bytearray]) -> None:
     """Thin wrapper to reduce verbosity."""
 
     self._bus.write_i2c_block_data(self._address, register, list(buf))

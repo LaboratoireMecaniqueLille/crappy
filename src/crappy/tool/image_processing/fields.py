@@ -1,6 +1,8 @@
 # coding: utf-8
 
+from typing import Tuple
 import numpy as np
+
 from ..._global import OptionalModule
 
 try:
@@ -13,7 +15,7 @@ allowed_fields = ('x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z')
 
 def get_field(field_string: str,
               h: int,
-              w: int) -> (np.ndarray, np.ndarray):
+              w: int) -> Tuple[np.ndarray, np.ndarray]:
   """Creates and returns the two fields on which the image will be projected,
   as numpy arrays.
 

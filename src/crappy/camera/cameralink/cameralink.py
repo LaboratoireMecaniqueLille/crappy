@@ -137,5 +137,5 @@ class CLCamera(Camera):
   def _get_h(self) -> int:
     return self.cap.get(Cl.FG_HEIGHT)
 
-  def _get_w(self):
+  def _get_w(self) -> int:
     return self.cap.get(Cl.FG_WIDTH)

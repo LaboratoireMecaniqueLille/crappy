@@ -260,7 +260,7 @@ class VideoExtensoTool:
 
   def _send(self,
             conn: Connection,
-            val: Union[str, Tuple[int, int, np.ndarray]]):
+            val: Union[str, Tuple[int, int, np.ndarray]]) -> None:
     """"""
 
     if select([], [conn], [], 0)[1]:

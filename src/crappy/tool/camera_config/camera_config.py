@@ -4,15 +4,18 @@ import tkinter as tk
 from platform import system
 import numpy as np
 from time import time, sleep
-from typing import Optional
+from typing import Optional, Tuple
 from functools import partial
 from pkg_resources import resource_string
 from io import BytesIO
 import logging
 from multiprocessing import current_process
 
-from ..._global import OptionalModule
 from .config_tools import Zoom
+from ...camera.meta_camera.camera_setting import CameraBoolSetting, \
+  CameraChoiceSetting, CameraScaleSetting
+from ...camera.meta_camera import Camera
+from ..._global import OptionalModule
 
 try:
   from PIL import ImageTk, Image
@@ -36,7 +39,7 @@ class CameraConfig(tk.Tk):
   contrast.
   """
 
-  def __init__(self, camera) -> None:
+  def __init__(self, camera: Camera) -> None:
     """Initializes the interface and starts displaying the first image.
 
     Args:
@@ -417,7 +420,7 @@ class CameraConfig(tk.Tk):
       self._reticle_val.set(np.average(self._original_img[self._y_pos.get(),
                                                           self._x_pos.get()]))
 
-  def _coord_to_pix(self, x: int, y: int) -> (int, int):
+  def _coord_to_pix(self, x: int, y: int) -> Tuple[int, int]:
     """Converts the coordinates of the mouse in the GUI referential to
     coordinates on the original image."""
 
@@ -522,14 +525,14 @@ class CameraConfig(tk.Tk):
                        key=lambda setting: setting.type.__name__)
 
     for cam_set in sort_sets:
-      if cam_set.type == bool:
+      if isinstance(cam_set, CameraBoolSetting):
         self._add_bool_setting(cam_set)
-      elif cam_set.type in (int, float):
+      elif isinstance(cam_set, CameraScaleSetting):
         self._add_slider_setting(cam_set)
-      elif cam_set.type == str:
+      elif isinstance(cam_set, CameraChoiceSetting):
         self._add_choice_setting(cam_set)
 
-  def _add_bool_setting(self, cam_set) -> None:
+  def _add_bool_setting(self, cam_set: CameraBoolSetting) -> None:
     """Adds a setting represented by a checkbutton."""
 
     self.log(logging.DEBUG, f"Adding the boolean setting {cam_set.name}")
@@ -542,7 +545,7 @@ class CameraConfig(tk.Tk):
     cam_set.tk_obj.pack(anchor='w', side='top', expand=False, fill='none',
                         padx=5, pady=2)
 
-  def _add_slider_setting(self, cam_set) -> None:
+  def _add_slider_setting(self, cam_set: CameraScaleSetting) -> None:
     """Adds a setting represented by a scale bar."""
 
     self.log(logging.DEBUG, f"Adding the slider setting {cam_set.name}")
@@ -566,7 +569,7 @@ class CameraConfig(tk.Tk):
     cam_set.tk_obj.pack(anchor='center', side='top', expand=False,
                         fill='x', padx=5, pady=2)
 
-  def _add_choice_setting(self, cam_set) -> None:
+  def _add_choice_setting(self, cam_set: CameraChoiceSetting) -> None:
     """Adds a setting represented by a list of radio buttons."""
 
     self.log(logging.DEBUG, f"Adding the choice setting {cam_set.name}")
@@ -809,7 +812,9 @@ class CameraConfig(tk.Tk):
     self._hist = out_img
 
   @staticmethod
-  def _hist_func(x: np.ndarray, _: np.ndarray, histo: np.ndarray):
+  def _hist_func(x: np.ndarray,
+                 _: np.ndarray,
+                 histo: np.ndarray) -> np.ndarray:
     """Function passed to the :meth:`np.fromfunction` method for building the
     histogram."""
 

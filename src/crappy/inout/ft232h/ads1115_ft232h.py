@@ -5,7 +5,7 @@ from typing import Union, List, Optional
 import logging
 
 from ..meta_inout import InOut
-from ...tool.ft232h import FT232HServer as FT232H
+from ...tool.ft232h import FT232HServer as FT232H, USBArgsType
 
 # Register and other configuration values:
 Ads1115_pointer_conversion = 0x00
@@ -57,7 +57,7 @@ class ADS1115FT232H(InOut):
                dry_pin: Optional[Union[str, int]] = None,
                gain: float = 1,
                offset: float = 0,
-               _ft232h_args: tuple = tuple()) -> None:
+               _ft232h_args: USBArgsType = tuple()) -> None:
     """Checks arguments validity.
 
     Args:
@@ -118,8 +118,8 @@ class ADS1115FT232H(InOut):
 
     super().__init__()
 
-    (block_index, current_block, command_file, answer_file, block_lock,
-     shared_lock) = _ft232h_args
+    (block_index, block_lock, command_file, answer_file, shared_lock,
+     current_block) = _ft232h_args
 
     self._bus = FT232H(mode='I2C',
                        block_index=block_index,

@@ -276,14 +276,14 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
                step_mode: Union[int, str] = 8,
                max_accel: float = 20,
                t_shutoff: float = 0,
-               config_file: str = None,
-               serial_number: str = None,
-               model: str = None,
+               config_file: Optional[str] = None,
+               serial_number: Optional[str] = None,
+               model: Optional[str] = None,
                reset_command_timeout: bool = True,
                backend: str = 'USB',
                unrestricted_current_limit: bool = False,
-               pin_function: Dict[str, str] = None,
-               pin_polarity: Dict[str, str] = None) -> None:
+               pin_function: Optional[Dict[str, str]] = None,
+               pin_polarity: Optional[Dict[str, str]] = None) -> None:
     """Checks args validity, finds the right device, reads the current limit
     tables.
 

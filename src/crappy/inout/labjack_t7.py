@@ -381,7 +381,7 @@ class LabjackT7(InOut):
         # Resetting the software offsets to avoid double compensation
         self._compensations = list()
 
-  def get_data(self) -> Optional[Union[list, Dict[str, Any]]]:
+  def get_data(self) -> List[float]:
     """Read the signal on all pre-defined input channels."""
 
     return [time()] + ljm.eReadAddresses(handle=self._handle,
@@ -389,7 +389,7 @@ class LabjackT7(InOut):
                                          aAddresses=self._read_addresses,
                                          aDataTypes=self._read_types)
 
-  def set_cmd(self, *cmd) -> None:
+  def set_cmd(self, *cmd: float) -> None:
     """Sets the tension commands on the output channels.
 
     The given gain and offset are first applied, then the commands are clamped
@@ -438,7 +438,7 @@ class LabjackT7(InOut):
       ljm.close(self._handle)
 
   @staticmethod
-  def _parse(name: str) -> (int, int):
+  def _parse(name: str) -> Tuple[int, int]:
     """Wrapper around :meth:`ljm.nameToAddress` to make the code clearer."""
 
     return ljm.nameToAddress(name)
