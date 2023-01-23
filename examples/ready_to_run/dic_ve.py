@@ -40,7 +40,7 @@ if __name__ == "__main__":
              (h - ps - m, w // 2 - ps // 2, ps, ps),  # Bottom
              (h // 2 - ps // 2, m, ps, ps)]  # Left
 
-  ve = crappy.blocks.DICVE('Webcam', patches, display_freq=True,
+  ve = crappy.blocks.DICVE('Webcam', patches=patches, display_freq=True,
                            display_images=True)
   graphy = crappy.blocks.Grapher(('t(s)', 'p0y'), ('t(s)', 'p2y'))
   graphx = crappy.blocks.Grapher(('t(s)', 'p1x'), ('t(s)', 'p3x'))

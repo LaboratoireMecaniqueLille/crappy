@@ -14,7 +14,6 @@ class DICVE(Camera):
 
   def __init__(self,
                camera: str,
-               patches: List[Tuple[int, int, int, int]],
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
                config: bool = True,
                display_images: bool = False,
@@ -33,6 +32,7 @@ class DICVE(Camera):
                                                   np.ndarray]] = None,
                img_shape: Optional[Tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
+               patches: Optional[List[Tuple[int, int, int, int]]] = None,
                labels: Optional[List[str]] = None,
                method: str = 'Disflow',
                alpha: float = 3,
@@ -49,6 +49,10 @@ class DICVE(Camera):
                raise_on_patch_exit: bool = True,
                **kwargs) -> None:
     """"""
+
+    if not config and patches is None:
+      raise ValueError("If the config window is disabled, patches must be "
+                       "provided !")
 
     super().__init__(camera=camera,
                      transform=transform,
@@ -72,9 +76,14 @@ class DICVE(Camera):
 
     # Setting the labels
     if labels is None:
-      self.labels = ['t(s)', 'meta'] + [elt
-                                        for i, _ in enumerate(patches)
-                                        for elt in [f'p{i}x', f'p{i}y']]
+      if patches is not None:
+        self.labels = ['t(s)', 'meta'] + [elt
+                                          for i, _ in enumerate(patches)
+                                          for elt in [f'p{i}x', f'p{i}y']]
+      else:
+        self.labels = ['t(s)', 'meta'] + [elt
+                                          for i in range(4)
+                                          for elt in [f'p{i}x', f'p{i}y']]
     else:
       self.labels = labels
 
@@ -83,31 +92,32 @@ class DICVE(Camera):
     self._raise_on_exit = raise_on_patch_exit
     self._patches_int = patches
 
-    self._disve_kw = dict(method=method,
-                          alpha=alpha,
-                          delta=delta,
-                          gamma=gamma,
-                          finest_scale=finest_scale,
-                          iterations=iterations,
-                          gradient_iterations=gradient_iterations,
-                          patch_size=patch_size,
-                          patch_stride=patch_stride,
-                          border=border,
-                          safe=safe,
-                          follow=follow,
-                          raise_on_exit=raise_on_patch_exit)
+    self._dic_ve_kw = dict(method=method,
+                           alpha=alpha,
+                           delta=delta,
+                           gamma=gamma,
+                           finest_scale=finest_scale,
+                           iterations=iterations,
+                           gradient_iterations=gradient_iterations,
+                           patch_size=patch_size,
+                           patch_stride=patch_stride,
+                           border=border,
+                           safe=safe,
+                           follow=follow,
+                           raise_on_exit=raise_on_patch_exit)
 
   def prepare(self) -> None:
     """"""
 
     self._patches = SpotsBoxes()
-    self._patches.set_spots(self._patches_int)
-    self._disve_kw['patches'] = self._patches
+    if self._patches_int is not None:
+      self._patches.set_spots(self._patches_int)
+    self._dic_ve_kw['patches'] = self._patches
 
     self._process_proc = DICVEProcess(log_queue=self._log_queue,
                                       log_level=self._log_level,
                                       display_freq=self.display_freq,
-                                      **self._disve_kw)
+                                      **self._dic_ve_kw)
 
     super().prepare()
 

@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from typing import Optional
+from tkinter.messagebox import showerror
 import tkinter as tk
 import numpy as np
 from io import BytesIO
@@ -38,6 +39,40 @@ class DICVEConfig(CameraConfigBoxes):
 
     # Setting the patches
     self._spots = patches
+
+  def _bind_canvas_left_click(self) -> None:
+    """"""
+
+    self._img_canvas.bind('<ButtonPress-1>', self._start_box)
+    self._img_canvas.bind('<B1-Motion>', self._extend_box)
+    self._img_canvas.bind('<ButtonRelease-1>', self._stop_box)
+
+  def _extend_box(self, event: tk.Event) -> None:
+    """"""
+
+    super()._extend_box(event)
+
+    if not self._select_box.no_points():
+      min_x, max_x, min_y, max_y = self._select_box.sorted()
+      if max_x - min_x >= 8 and max_y - min_y >= 8:
+        self._spots.spot_1 = Box(
+            min_x, min_x + (max_x - min_x) // 4,
+            min_y + 3 * (max_y - min_y) // 8, min_y + 5 * (max_y - min_y) // 8)
+        self._spots.spot_2 = Box(
+            min_x + 3 * (max_x - min_x) // 4, max_x,
+            min_y + 3 * (max_y - min_y) // 8, min_y + 5 * (max_y - min_y) // 8)
+        self._spots.spot_3 = Box(
+            min_x + 3 * (max_x - min_x) // 8, min_x + 5 * (max_x - min_x) // 8,
+            min_y, min_y + (max_y - min_y) // 4)
+        self._spots.spot_4 = Box(
+            min_x + 3 * (max_x - min_x) // 8, min_x + 5 * (max_x - min_x) // 8,
+            min_y + 3 * (max_y - min_y) // 4, max_y)
+
+  def _stop_box(self, _: tk.Event) -> None:
+    """"""
+
+    # This box is not needed anymore
+    self._select_box.reset()
 
   def _on_img_resize(self, _: Optional[tk.Event] = None) -> None:
     """Same as in the parent class except it also draws the patches on top of
@@ -106,5 +141,19 @@ class DICVEConfig(CameraConfigBoxes):
     the image size has been modified. Raising an exception as the DICVE can't
     run in this situation."""
 
-    raise ValueError(f'The patch {box.get_patch()} does not fit in the '
-                     f'image !')
+    self.log(logging.WARNING, f"The patch {box} is outside the image, "
+                              f"resetting the patches")
+    self._spots.reset()
+
+  def _stop(self) -> None:
+    """"""
+
+    if self._spots.empty():
+      self.log(logging.WARNING, "No patches selected ! Not exiting the "
+                                "configuration window")
+      showerror('Error !',
+                message="Please select patches before exiting the config "
+                        "window !\nOr hit CTRL+C to exit Crappy")
+      return
+
+    super()._stop()

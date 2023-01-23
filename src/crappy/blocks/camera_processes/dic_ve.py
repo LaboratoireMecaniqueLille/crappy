@@ -38,19 +38,19 @@ class DICVEProcess(CameraProcess):
                      log_level=log_level,
                      display_freq=display_freq)
 
-    self._disve_kw = dict(patches=patches,
-                          method=method,
-                          alpha=alpha,
-                          delta=delta,
-                          gamma=gamma,
-                          finest_scale=finest_scale,
-                          iterations=iterations,
-                          gradient_iterations=gradient_iterations,
-                          patch_size=patch_size,
-                          patch_stride=patch_stride,
-                          border=border,
-                          safe=safe,
-                          follow=follow)
+    self._dic_ve_kw = dict(patches=patches,
+                           method=method,
+                           alpha=alpha,
+                           delta=delta,
+                           gamma=gamma,
+                           finest_scale=finest_scale,
+                           iterations=iterations,
+                           gradient_iterations=gradient_iterations,
+                           patch_size=patch_size,
+                           patch_stride=patch_stride,
+                           border=border,
+                           safe=safe,
+                           follow=follow)
     self._raise_on_exit = raise_on_exit
     self._disve: Optional[DICVETool] = None
     self._img0_set = False
@@ -60,7 +60,7 @@ class DICVEProcess(CameraProcess):
     """"""
 
     self._log(logging.INFO, "Instantiating the Disve tool")
-    self._disve = DICVETool(**self._disve_kw)
+    self._disve = DICVETool(**self._dic_ve_kw)
 
   def _loop(self) -> None:
     """"""
