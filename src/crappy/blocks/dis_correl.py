@@ -112,9 +112,4 @@ class DISCorrel(Camera):
     if config.dtype is not None:
       self._img_dtype = config.dtype
 
-    bbox = config.box
-    if bbox.no_points():
-      raise AttributeError("The region of interest wasn't properly selected in"
-                           " the config window !")
-
-    self._process_proc.set_box(bbox)
+    self._process_proc.set_box(config.box)

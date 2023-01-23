@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import tkinter as tk
+from tkinter.messagebox import showerror
 from typing import Optional
 from copy import deepcopy
 import numpy as np
@@ -165,3 +166,16 @@ class DISCorrelConfig(CameraConfigBoxes):
     been modified. Simply resetting the correl box then."""
 
     self._correl_box.reset()
+
+  def _stop(self) -> None:
+    """"""
+
+    if self.box.no_points():
+      self.log(logging.WARNING, "No ROI selected ! Not exiting the "
+                                "configuration window")
+      showerror('Error !',
+                message="Please select a ROI before exiting the config "
+                        "window !\nOr hit CTRL+C to exit Crappy")
+      return
+
+    super()._stop()
