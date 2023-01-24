@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Demonstration of a Videoextensometry controlled test.
+Demonstration of a DIC Video Extensometry controlled test.
 
 This program is intended as a demonstration and is fully virtual.
 
@@ -56,7 +56,7 @@ def elastic_law(_: float) -> float:
 
 
 if __name__ == "__main__":
-  img = crappy.resources.ve_markers
+  img = crappy.resources.speckle
 
   speed = 5 / 60  # mm/sec
 
@@ -76,16 +76,14 @@ if __name__ == "__main__":
   crappy.link(machine, generator)
 
   # The block performing the video-extensometry
-  ve = crappy.blocks.VideoExtenso('',
-                                  display_images=True,
-                                  blur=False,
-                                  image_generator=Apply_strain_img(img),
-                                  display_freq=True)
+  dicve = crappy.blocks.DICVE('', display_images=True,
+                              image_generator=Apply_strain_img(img),
+                              display_freq=True)
   # This modifier will generate an image with the values of strain
   # coming from the FakeMachine block
-  crappy.link(machine, ve)
+  crappy.link(machine, dicve)
 
   graph_def2 = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
-  crappy.link(ve, graph_def2, modifier=crappy.modifier.Mean(10))
+  crappy.link(dicve, graph_def2, modifier=crappy.modifier.Mean(10))
 
   crappy.start()
