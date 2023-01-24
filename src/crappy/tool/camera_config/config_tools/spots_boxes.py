@@ -76,6 +76,12 @@ class SpotsBoxes:
   def save_length(self) -> None:
     """"""
 
+    for spot in self:
+      if spot is not None and spot.x_centroid is None:
+        min_x, max_x, min_y, max_y = spot.sorted()
+        spot.x_centroid = min_x + (max_x - min_x) / 2
+        spot.y_centroid = min_y + (max_y - min_y) / 2
+
     # Simply taking the distance between the extrema as the initial length
     if len(self) > 1:
       x_centers = [spot.x_centroid for spot in self if spot is not None]

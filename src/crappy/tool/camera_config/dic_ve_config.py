@@ -59,14 +59,14 @@ class DICVEConfig(CameraConfigBoxes):
             min_x, min_x + (max_x - min_x) // 4,
             min_y + 3 * (max_y - min_y) // 8, min_y + 5 * (max_y - min_y) // 8)
         self._spots.spot_2 = Box(
-            min_x + 3 * (max_x - min_x) // 4, max_x,
+            max_x - (max_x - min_x) // 4, max_x,
             min_y + 3 * (max_y - min_y) // 8, min_y + 5 * (max_y - min_y) // 8)
         self._spots.spot_3 = Box(
             min_x + 3 * (max_x - min_x) // 8, min_x + 5 * (max_x - min_x) // 8,
             min_y, min_y + (max_y - min_y) // 4)
         self._spots.spot_4 = Box(
             min_x + 3 * (max_x - min_x) // 8, min_x + 5 * (max_x - min_x) // 8,
-            min_y + 3 * (max_y - min_y) // 4, max_y)
+            max_y - (max_y - min_y) // 4, max_y)
 
   def _stop_box(self, _: tk.Event) -> None:
     """"""
@@ -155,5 +155,10 @@ class DICVEConfig(CameraConfigBoxes):
                 message="Please select patches before exiting the config "
                         "window !\nOr hit CTRL+C to exit Crappy")
       return
+
+    self._spots.save_length()
+    self.log(logging.INFO,
+             f"Successfully saved L0 ! L0 x : {self._spots.x_l0}, "
+             f"L0 y : {self._spots.y_l0}")
 
     super()._stop()

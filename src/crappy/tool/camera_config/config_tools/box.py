@@ -17,6 +17,9 @@ class Box:
   y_start: Optional[int] = None
   y_end: Optional[int] = None
 
+  x_disp: Optional[float] = None
+  y_disp: Optional[float] = None
+
   x_centroid: Optional[float] = None
   y_centroid: Optional[float] = None
 

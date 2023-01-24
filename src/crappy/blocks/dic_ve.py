@@ -75,17 +75,13 @@ class DICVE(Camera):
                      **kwargs)
 
     # Setting the labels
-    if labels is None:
-      if patches is not None:
-        self.labels = ['t(s)', 'meta'] + [elt
-                                          for i, _ in enumerate(patches)
-                                          for elt in [f'p{i}x', f'p{i}y']]
-      else:
-        self.labels = ['t(s)', 'meta'] + [elt
-                                          for i in range(4)
-                                          for elt in [f'p{i}x', f'p{i}y']]
-    else:
-      self.labels = labels
+    self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
+                   'Exx(%)', 'Disp(px)'] if labels is None else labels
+
+    # Making sure a coherent number of labels and fields was given
+    if len(self.labels) != 6:
+      raise ValueError("The number of labels should be 6 !\n"
+                       "Make sure that the time label was given")
 
     self._patches: Optional[SpotsBoxes] = None
 
@@ -112,6 +108,7 @@ class DICVE(Camera):
     self._patches = SpotsBoxes()
     if self._patches_int is not None:
       self._patches.set_spots(self._patches_int)
+      self._patches.save_length()
     self._dic_ve_kw['patches'] = self._patches
 
     self._process_proc = DICVEProcess(log_queue=self._log_queue,

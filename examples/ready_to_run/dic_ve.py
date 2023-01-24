@@ -25,12 +25,6 @@ ps = 100  # patch size (x and y)
 m = 100  # Margin
 
 
-def compute_strain(d):
-  d['Exx(%)'] = (d['p3x'] - d['p1x']) / (w - ps) * 100
-  d['Eyy(%)'] = (d['p0y'] - d['p2y']) / (h - ps) * 100
-  return d
-
-
 if __name__ == "__main__":
 
   # Patches are defined as such: (y, x, height, width)
@@ -49,5 +43,5 @@ if __name__ == "__main__":
   crappy.link(ve, graphy)
 
   graph_strain = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
-  crappy.link(ve, graph_strain, modifier=compute_strain)
+  crappy.link(ve, graph_strain)  # , modifier=compute_strain)
   crappy.start()

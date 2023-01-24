@@ -109,7 +109,9 @@ class DICVETool:
     if self._safe:
       self._check_offsets()
 
-  def calculate_displacement(self, img: np.ndarray) -> List[float]:
+  def calculate_displacement(
+      self, img: np.ndarray) -> Tuple[List[Tuple[float, float]], float, float,
+                                      List[Tuple[float, float]]]:
     """Returns the displacement of every patch, calculated according to the
     chosen method.
 
@@ -125,6 +127,9 @@ class DICVETool:
     # Compute the displacement for each patch
     displacements = []
     for patch, offset in zip(self.patches, self._offsets):
+
+      if patch is None:
+        continue
 
       if self._method == 'Disflow':
         displacements.append(self._calc_disflow(patch, img, offset))
@@ -151,9 +156,15 @@ class DICVETool:
         patch.x_end = round(patch.x_end + disp[0])
         patch.y_start = round(patch.y_start + disp[1])
         patch.y_end = round(patch.y_end + disp[1])
+        
+        patch.x_centroid = (patch.x_end + patch.x_start) / 2
+        patch.y_centroid = (patch.y_end + patch.y_start) / 2
 
         disp[0] += x_offset
         disp[1] += y_offset
+
+        patch.x_disp = disp[0]
+        patch.y_disp = disp[1]
 
       self._offsets = [(round(y_disp), round(x_disp)) for
                        x_disp, y_disp in displacements]
@@ -162,8 +173,47 @@ class DICVETool:
       if self._safe:
         self._check_offsets()
 
-    displacements = [coord for disp in displacements for coord in disp]
-    return displacements
+    else:
+      for (x_disp, y_disp), patch in zip(displacements, self.patches):
+        patch.x_disp = x_disp
+        patch.y_disp = y_disp
+    
+    max_x = max(self.patches, 
+                key=lambda patch_: patch_.x_centroid if patch_ is not None
+                else -float('inf'))
+    min_x = min(self.patches,
+                key=lambda patch_: patch_.x_centroid if patch_ is not None
+                else float('inf'))
+    max_y = max(self.patches,
+                key=lambda patch_: patch_.y_centroid if patch_ is not None
+                else -float('inf'))
+    min_y = min(self.patches,
+                key=lambda patch_: patch_.y_centroid if patch_ is not None
+                else float('inf'))
+
+    # If there are multiple spots, the x and y strains can be computed
+    if len(self.patches) > 1:
+      try:
+        exx = ((max_x.x_disp - min_x.x_disp) / self.patches.x_l0) * 100
+      except ZeroDivisionError:
+        exx = 0
+      try:
+        eyy = ((max_y.y_disp - min_y.y_disp) / self.patches.y_l0) * 100
+      except ZeroDivisionError:
+        eyy = 0
+      centers = [(patch.y_centroid, patch.x_centroid)
+                 for patch in self.patches if patch is not None]
+      disps = [(patch.y_disp, patch.x_disp)
+               for patch in self.patches if patch is not None]
+      return centers, eyy, exx, disps
+
+    # If only one spot was detected, the strain isn't computed
+    else:
+      x = self.patches[0].x_centroid
+      y = self.patches[0].y_centroid
+      x_disp = self.patches[0].x_disp
+      y_disp = self.patches[0].y_disp
+      return [(y, x)], 0, 0, [(y_disp, x_disp)]
 
   def _calc_disflow(self,
                     patch: Box,
@@ -312,6 +362,10 @@ class DICVETool:
     one of them is out."""
 
     for patch in self.patches:
+
+      if patch is None:
+        continue
+
       x_top, x_bottom, y_left, y_right = patch.sorted()
 
       # Checking the left border
