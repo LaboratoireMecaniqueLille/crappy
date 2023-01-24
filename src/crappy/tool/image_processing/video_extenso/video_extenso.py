@@ -190,6 +190,10 @@ class VideoExtensoTool:
 
     # Checking if the newly received boxes overlaps with each other
     for box_1, box_2 in combinations(self.spots, 2):
+
+      if box_1 is None or box_2 is None:
+        continue
+
       if self._overlap_box(box_1, box_2):
 
         # If there's overlapping in safe mode, raising directly
@@ -207,10 +211,12 @@ class VideoExtensoTool:
         overlap = True
         x_top_1, x_bottom_1, y_left_1, y_right_1 = box_1.sorted()
         x_top_2, x_bottom_2, y_left_2, y_right_2 = box_2.sorted()
+
         box_1.x_start = min(x_top_1 + 1, box_1.x_centroid - 2)
         box_1.y_start = min(y_left_1 + 1, box_1.y_centroid - 2)
         box_1.x_end = max(x_bottom_1 - 1, box_1.x_centroid + 2)
         box_1.y_end = max(y_right_1 - 1, box_1.y_centroid + 2)
+
         box_2.x_start = min(x_top_2 + 1, box_2.x_centroid - 2)
         box_2.y_start = min(y_left_2 + 1, box_2.y_centroid - 2)
         box_2.x_end = max(x_bottom_2 - 1, box_2.x_centroid + 2)
