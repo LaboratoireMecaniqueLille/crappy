@@ -71,7 +71,7 @@ class DISCorrel(Camera):
     fields = ["x", "y", "exx", "eyy"] if fields is None else fields
     self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)',
                    'Exx(%)', 'Eyy(%)'] if labels is None else labels
-    if residual:
+    if residual and labels is None:
       self.labels.append('res')
 
     # Making sure a coherent number of labels and fields was given
