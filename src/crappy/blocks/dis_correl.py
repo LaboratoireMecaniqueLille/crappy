@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
-from ..tool.camera_config import DISCorrelConfig
+from ..tool.camera_config import DISCorrelConfig, Box
 
 
 class DISCorrel(Camera):
@@ -32,6 +32,7 @@ class DISCorrel(Camera):
                                                   np.ndarray]] = None,
                img_shape: Optional[Tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
+               patch: Optional[Tuple[int, int, int, int]] = None,
                fields: List[str] = None,
                labels: List[str] = None,
                alpha: float = 3,
@@ -46,6 +47,10 @@ class DISCorrel(Camera):
                residual: bool = False,
                **kwargs) -> None:
     """"""
+
+    if not config and patch is None:
+      raise ValueError("If the config window is disabled, the patch must be "
+                       "provided !")
 
     super().__init__(camera=camera,
                      transform=transform,
@@ -74,42 +79,52 @@ class DISCorrel(Camera):
     if residual and labels is None:
       self.labels.append('res')
 
+    self._patch_int = patch
+    self._patch: Optional[Box] = None
+
     # Making sure a coherent number of labels and fields was given
     if 2 + len(fields) + int(residual) != len(self.labels):
       raise ValueError(
         "The number of fields is inconsistent with the number "
         "of labels !\nMake sure that the time label was given")
 
-    self._discorrel_kw = dict(fields=fields,
-                              alpha=alpha,
-                              delta=delta,
-                              gamma=gamma,
-                              finest_scale=finest_scale,
-                              init=init,
-                              iterations=iterations,
-                              gradient_iterations=gradient_iterations,
-                              patch_size=patch_size,
-                              patch_stride=patch_stride,
-                              residual=residual)
+    self._dis_correl_kw = dict(fields=fields,
+                               alpha=alpha,
+                               delta=delta,
+                               gamma=gamma,
+                               finest_scale=finest_scale,
+                               init=init,
+                               iterations=iterations,
+                               gradient_iterations=gradient_iterations,
+                               patch_size=patch_size,
+                               patch_stride=patch_stride,
+                               residual=residual)
 
   def prepare(self) -> None:
     """"""
 
+    if self._patch_int is not None:
+      self._patch = Box(x_start=self._patch_int[1],
+                        x_end=self._patch_int[1] + self._patch_int[3],
+                        y_start=self._patch_int[0],
+                        y_end=self._patch_int[0] + self._patch_int[2])
+    else:
+      self._patch = Box()
+
     self._process_proc = DISCorrelProcess(log_queue=self._log_queue,
                                           log_level=self._log_level,
                                           display_freq=self.display_freq,
-                                          **self._discorrel_kw)
+                                          patch=self._patch,
+                                          **self._dis_correl_kw)
 
     super().prepare()
 
   def _configure(self) -> None:
     """"""
 
-    config = DISCorrelConfig(self._camera)
+    config = DISCorrelConfig(self._camera, self._patch)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape
     if config.dtype is not None:
       self._img_dtype = config.dtype
-
-    self._process_proc.set_box(config.box)

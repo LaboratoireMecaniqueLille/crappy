@@ -3,7 +3,6 @@
 import tkinter as tk
 from tkinter.messagebox import showerror
 from typing import Optional
-from copy import deepcopy
 import numpy as np
 from io import BytesIO
 from pkg_resources import resource_string
@@ -28,10 +27,10 @@ class DISCorrelConfig(CameraConfigBoxes):
   It is meant to be used for configuring the :ref:`DIS Correl` block.
   """
 
-  def __init__(self, camera: Camera) -> None:
+  def __init__(self, camera: Camera, patch: Box) -> None:
     """Initializes the parent class and sets the correl box."""
 
-    self._correl_box = Box()
+    self._correl_box = patch
     self._draw_correl_box = True
 
     super().__init__(camera)
@@ -87,7 +86,7 @@ class DISCorrelConfig(CameraConfigBoxes):
       return
 
     # The new correl box is just the copy of the select box
-    self._correl_box = deepcopy(self._select_box)
+    self._correl_box.update(self._select_box)
     self._select_box.reset()
 
     self._draw_correl_box = True

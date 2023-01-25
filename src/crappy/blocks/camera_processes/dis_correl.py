@@ -16,6 +16,7 @@ class DISCorrelProcess(CameraProcess):
 
   def __init__(self,
                log_queue: Queue,
+               patch: Box,
                log_level: int = 20,
                fields: List[str] = None,
                alpha: float = 3,
@@ -35,30 +36,27 @@ class DISCorrelProcess(CameraProcess):
                      log_level=log_level,
                      display_freq=display_freq)
 
-    self._discorrel_kw = dict(fields=fields,
-                              alpha=alpha,
-                              delta=delta,
-                              gamma=gamma,
-                              finest_scale=finest_scale,
-                              init=init,
-                              iterations=iterations,
-                              gradient_iterations=gradient_iterations,
-                              patch_size=patch_size,
-                              patch_stride=patch_stride)
+    self._dis_correl_kw = dict(box=patch,
+                               fields=fields,
+                               alpha=alpha,
+                               delta=delta,
+                               gamma=gamma,
+                               finest_scale=finest_scale,
+                               init=init,
+                               iterations=iterations,
+                               gradient_iterations=gradient_iterations,
+                               patch_size=patch_size,
+                               patch_stride=patch_stride)
     self._residual = residual
-    self._discorrel: Optional[DISCorrelTool] = None
+    self._dis_correl: Optional[DISCorrelTool] = None
     self._img0_set = False
-
-  def set_box(self, box: Box) -> None:
-    """"""
-
-    self._discorrel_kw.update(dict(box=box))
 
   def _init(self) -> None:
     """"""
 
     self._log(logging.INFO, "Instantiating the Discorrel tool")
-    self._discorrel = DISCorrelTool(**self._discorrel_kw)
+    self._dis_correl = DISCorrelTool(**self._dis_correl_kw)
+    self._dis_correl.set_box()
 
   def _loop(self) -> None:
     """"""
@@ -69,12 +67,12 @@ class DISCorrelProcess(CameraProcess):
 
     if not self._img0_set:
       self._log(logging.INFO, "Setting the reference image")
-      self._discorrel.set_img0(np.copy(self._img))
+      self._dis_correl.set_img0(np.copy(self._img))
       self._img0_set = True
       return
 
     self._log(logging.DEBUG, "Processing the received image")
-    data = self._discorrel.get_data(self._img, self._residual)
+    data = self._dis_correl.get_data(self._img, self._residual)
     self._send([self._metadata['t(s)'], self._metadata, *data])
 
-    self._send_box(SpotsBoxes(self._discorrel.box))
+    self._send_box(SpotsBoxes(self._dis_correl.box))

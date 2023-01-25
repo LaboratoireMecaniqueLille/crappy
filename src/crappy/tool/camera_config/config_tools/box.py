@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
@@ -22,6 +23,20 @@ class Box:
 
   x_centroid: Optional[float] = None
   y_centroid: Optional[float] = None
+
+  def update(self, box: Box) -> None:
+    """"""
+
+    self.x_start = box.x_start
+    self.y_start = box.y_start
+    self.x_end = box.x_end
+    self.y_end = box.y_end
+
+    self.x_disp = box.x_disp
+    self.y_disp = box.y_disp
+
+    self.x_centroid = box.x_centroid
+    self.y_centroid = box.y_centroid
 
   def no_points(self) -> bool:
     """Returns whether all four sides of the box are defined or not."""

@@ -23,6 +23,7 @@ class DISCorrelTool:
   """
 
   def __init__(self,
+               box: Box,
                fields: Optional[List[str]] = None,
                alpha: float = 3,
                delta: float = 1,
@@ -32,8 +33,7 @@ class DISCorrelTool:
                iterations: int = 1,
                gradient_iterations: int = 10,
                patch_size: int = 8,
-               patch_stride: int = 3,
-               box: Optional[Box] = None) -> None:
+               patch_stride: int = 3) -> None:
     """Sets the parameters of DisFlow.
 
     Args:
@@ -70,13 +70,10 @@ class DISCorrelTool:
     # These attributes will be set later
     self._img0 = None
     self._height, self._width = None, None
-    self.box = None
+    self.box = box
     self._dis_flow = None
     self._base = None
     self._norm2 = None
-
-    if box is not None:
-      self.set_box(box)
 
     # Setting the parameters of Disflow
     self._dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
@@ -96,13 +93,12 @@ class DISCorrelTool:
     self._height, self._width, *_ = img0.shape
     self._dis_flow = np.zeros((self._height, self._width, 2))
 
-  def set_box(self, box: Box) -> None:
+  def set_box(self) -> None:
     """Sets the region of interest to use for the correlation, and initializes
     other attributes."""
 
     # Sets the bounding box
-    self.box = box
-    x_top, x_bottom, y_left, y_right = box.sorted()
+    x_top, x_bottom, y_left, y_right = self.box.sorted()
     box_height = y_right - y_left
     box_width = x_bottom - x_top
 
