@@ -71,7 +71,7 @@ Spots Boxes
 Spots Detector
 """"""""""""""
 .. autoclass:: crappy.tool.camera_config.config_tools.SpotsDetector
-   :members: detect_spots, save_length
+   :members: detect_spots
    :special-members: __init__
 
 Zoom

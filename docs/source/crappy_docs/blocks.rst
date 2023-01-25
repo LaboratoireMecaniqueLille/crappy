@@ -219,7 +219,6 @@ Camera Process
 DIS Correl Process
 ++++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.DISCorrelProcess
-   :members: set_box
    :special-members: __init__
 
 DIS VE Process
