@@ -433,7 +433,8 @@ class Block(Process, metaclass=MetaBlock):
 
     cls.instances = WeakSet()
     cls.names = list()
-    cls.logger.log(logging.INFO, 'Crappy was reset by the reset() command')
+    if cls.logger is not None:
+      cls.logger.log(logging.INFO, 'Crappy was reset by the reset() command')
 
   @classmethod
   def _log_target(cls) -> None:
