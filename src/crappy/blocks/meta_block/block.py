@@ -474,38 +474,37 @@ class Block(Process, metaclass=MetaBlock):
     try:
       # Initializes the logger for the Block
       self._set_block_logger()
-      self._logger.log(logging.INFO, "Block launched")
+      self.log(logging.INFO, "Block launched")
 
       # Running the preliminary actions before the test starts
       try:
-        self._logger.log(logging.INFO, "Block preparing")
+        self.log(logging.INFO, "Block preparing")
         self.prepare()
       except (Exception,):
         # If exception is raised, breaking the barrier to warn the other blocks
         self._ready_barrier.abort()
-        self._logger.log(logging.WARNING, "Breaking the barrier due to caught "
-                                          "exception while preparing")
+        self.log(logging.WARNING, "Breaking the barrier due to caught "
+                                  "exception while preparing")
         raise
 
       # Waiting for all blocks to be ready, except if the barrier was broken
       try:
-        self._logger.log(logging.INFO, "Waiting for the other Blocks to be "
-                                       "ready")
+        self.log(logging.INFO, "Waiting for the other Blocks to be ready")
         self._ready_barrier.wait()
-        self._logger.log(logging.INFO, "All Blocks ready now")
+        self.log(logging.INFO, "All Blocks ready now")
       except BrokenBarrierError:
         raise PrepareError
 
       # Waiting for t0 to be set, should take a few milliseconds at most
-      self._logger.log(logging.INFO, "Waiting for the start time to be set")
+      self.log(logging.INFO, "Waiting for the start time to be set")
       self._start_event.wait(timeout=1)
       if not self._start_event.is_set():
         raise StartTimeout
       else:
-        self._logger.log(logging.INFO, "Start time set, Block starting")
+        self.log(logging.INFO, "Start time set, Block starting")
 
       # Running the first loop
-      self._logger.log(logging.INFO, "Calling begin method")
+      self.log(logging.INFO, "Calling begin method")
       self.begin()
 
       # Setting the attributes for counting the performance
@@ -514,57 +513,54 @@ class Block(Process, metaclass=MetaBlock):
       self._n_loops = 0
 
       # Running the main loop until told to stop
-      self._logger.log(logging.INFO, "Entering main loop")
+      self.log(logging.INFO, "Entering main loop")
       self.main()
-      self._logger.log(logging.INFO, "Exiting main loop after stop event was "
-                                     "set")
+      self.log(logging.INFO, "Exiting main loop after stop event was set")
 
     # A wrong data type was sent through a Link
     except LinkDataError:
-      self._logger.log(logging.ERROR, "Tried to send a wrong data type through"
-                                      " a Link, stopping !")
+      self.log(logging.ERROR, "Tried to send a wrong data type through a Link,"
+                              " stopping !")
     # An error occurred in another Block while preparing
     except PrepareError:
-      self._logger.log(logging.ERROR, "Exception raised in another Block while"
-                                      " waiting for all Blocks to be ready, "
-                                      "stopping")
+      self.log(logging.ERROR, "Exception raised in another Block while waiting"
+                              " for all Blocks to be ready, stopping")
     # An error occurred in a Camera process while preparing
     except CameraPrepareError:
-      self._logger.log(logging.ERROR, "Exception raised in a Camera process "
-                                      "while preparing, stopping")
+      self.log(logging.ERROR, "Exception raised in a Camera process while "
+                              "preparing, stopping")
       # An error occurred in a Camera process while running
     except CameraRuntimeError:
-      self._logger.log(logging.ERROR, "Exception raised in a Camera process "
-                                      "while running, stopping")
+      self.log(logging.ERROR, "Exception raised in a Camera process while "
+                              "running, stopping")
     # The start event took too long to be set
     except StartTimeout:
-      self._logger.log(logging.ERROR, "Waited too long for start time to be "
-                                      "set, aborting !")
+      self.log(logging.ERROR, "Waited too long for start time to be set, "
+                              "aborting !")
     # Tried to access t0 but it's not set yet
     except T0NotSetError:
-      self._logger.log(logging.ERROR, "Trying to get the value of t0 when it's"
-                                      " not set yet, aborting")
+      self.log(logging.ERROR, "Trying to get the value of t0 when it's not "
+                              "set yet, aborting")
     # A Generator Block finished its path
     except GeneratorStop:
-      self._logger.log(logging.WARNING, f"Generator path exhausted, stopping "
-                                        f"the Block")
+      self.log(logging.WARNING, f"Generator path exhausted, stopping the "
+                                f"Block")
     # A FileReader Camera object has no more file to read from
     except ReaderStop:
-      self._logger.log(logging.WARNING, "Exhausted all the images to read from"
-                                        " a FileReader camera, stopping the "
-                                        "Block")
+      self.log(logging.WARNING, "Exhausted all the images to read from a "
+                                "FileReader camera, stopping the Block")
     # The user requested the script to stop
     except KeyboardInterrupt:
-      self._logger.log(logging.INFO, f"KeyBoardInterrupt caught, stopping")
+      self.log(logging.INFO, f"KeyBoardInterrupt caught, stopping")
     # Another exception occurred
     except (Exception,) as exc:
       self._logger.exception("Caught exception while running !", exc_info=exc)
 
     # In all cases, trying to properly close the block
     finally:
-      self._logger.log(logging.INFO, "Setting the stop event")
+      self.log(logging.INFO, "Setting the stop event")
       self._stop_event.set()
-      self._logger.log(logging.INFO, "Calling the finish method")
+      self.log(logging.INFO, "Calling the finish method")
       self.finish()
 
   def main(self) -> None:
@@ -573,9 +569,9 @@ class Block(Process, metaclass=MetaBlock):
 
     # Looping until told to stop or an error occurs
     while not self._stop_event.is_set():
-      self._logger.log(logging.DEBUG, "Looping")
+      self.log(logging.DEBUG, "Looping")
       self.loop()
-      self._logger.log(logging.DEBUG, "Handling freq")
+      self.log(logging.DEBUG, "Handling freq")
       self._handle_freq()
 
   def prepare(self) -> None:
@@ -613,8 +609,8 @@ class Block(Process, metaclass=MetaBlock):
     interest and this method should always be rewritten.
     """
 
-    self._logger.log(logging.WARNING, f"Loop method not defined, "
-                                      f"this block does nothing !")
+    self.log(logging.WARNING, f"Loop method not defined, this block does "
+                              f"nothing !")
     sleep(1)
 
   def finish(self) -> None:
@@ -646,8 +642,7 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     if self._stop_event is not None:
-      self._logger.log(logging.WARNING, "stop method called, setting the stop "
-                                        "event !")
+      self.log(logging.WARNING, "stop method called, setting the stop event !")
       self._stop_event.set()
 
   def _handle_freq(self) -> None:
@@ -677,7 +672,7 @@ class Block(Process, metaclass=MetaBlock):
 
     # Displaying frequency every 2 seconds
     if self.display_freq and self._last_t - self._last_fps > 2:
-      self._logger.log(
+      self.log(
         logging.INFO,
         f"loops/s: {self._n_loops / (self._last_t - self._last_fps)}")
 
@@ -738,7 +733,7 @@ class Block(Process, metaclass=MetaBlock):
     shared between all the Blocks."""
 
     if self._instance_t0 is not None and self._instance_t0.value > 0:
-      self._logger.log(logging.DEBUG, "Start time value requested")
+      self.log(logging.DEBUG, "Start time value requested")
       return self._instance_t0.value
     else:
       raise T0NotSetError
@@ -773,30 +768,28 @@ class Block(Process, metaclass=MetaBlock):
     # Building the dict to send from the data and labels if the data is a list
     if isinstance(data, list):
       if not self.labels:
-        self._logger.log(logging.ERROR, "trying to send data as a list but no "
-                                        "labels are specified ! Please add a "
-                                        "self.labels attribute.")
+        self.log(logging.ERROR, "trying to send data as a list but no labels "
+                                "are specified ! Please add a self.labels "
+                                "attribute.")
         raise LinkDataError
-      self._logger.log(logging.DEBUG, f"Converting {data} to dict before "
-                                      f"sending")
+      self.log(logging.DEBUG, f"Converting {data} to dict before sending")
       data = dict(zip(self.labels, data))
 
     # Making sure the data is being sent as a dict
     elif not isinstance(data, dict):
-      self._logger.log(logging.ERROR, f"Trying to send a {type(data)} in a "
-                                      f"Link !")
+      self.log(logging.ERROR, f"Trying to send a {type(data)} in a Link !")
       raise LinkDataError
 
     # Sending the data to the downstream blocks
     for link in self.outputs:
-      self._logger.log(logging.DEBUG, f"Sending {data} to Link {link}")
+      self.log(logging.DEBUG, f"Sending {data} to Link {link}")
       link.send(data)
 
   def data_available(self) -> bool:
     """Returns :obj:`True` if there's data available for reading in at least
     one of the input Links."""
 
-    self._logger.log(logging.DEBUG, "Data availability requested")
+    self.log(logging.DEBUG, "Data availability requested")
     return self.inputs and any(link.poll() for link in self.inputs)
 
   def recv_data(self) -> Dict[str, Any]:
@@ -823,7 +816,7 @@ class Block(Process, metaclass=MetaBlock):
     for link in self.inputs:
       ret.update(link.recv())
 
-    self._logger.log(logging.DEBUG, f"Called recv_data, got {ret}")
+    self.log(logging.DEBUG, f"Called recv_data, got {ret}")
     return ret
 
   def recv_last_data(self, fill_missing: bool = True) -> Dict[str, Any]:
@@ -865,7 +858,7 @@ class Block(Process, metaclass=MetaBlock):
       for buffer in self._last_values:
         ret.update(buffer)
 
-    self._logger.log(logging.DEBUG, f"Called recv_last_data, got {ret}")
+    self.log(logging.DEBUG, f"Called recv_last_data, got {ret}")
     return ret
 
   def recv_all_data(self,
@@ -922,7 +915,7 @@ class Block(Process, metaclass=MetaBlock):
         sleep(max(0., last_t + poll_delay - time()))
 
     # Returning a dict, not a defaultdict
-    self._logger.log(logging.DEBUG, f"Called recv_all_data, got {dict(ret)}")
+    self.log(logging.DEBUG, f"Called recv_all_data, got {dict(ret)}")
     return dict(ret)
 
   def recv_all_data_raw(self,
@@ -969,6 +962,6 @@ class Block(Process, metaclass=MetaBlock):
         # Sleeping to avoid useless CPU usage
         sleep(max(0., last_t + poll_delay - time()))
 
-    self._logger.log(logging.DEBUG, f"Called recv_all_data_raw, got "
-                                    f"{[dict(dic) for dic in ret]}")
+    self.log(logging.DEBUG, f"Called recv_all_data_raw, got "
+                            f"{[dict(dic) for dic in ret]}")
     return [dict(dic) for dic in ret]
