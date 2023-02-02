@@ -41,9 +41,11 @@ class DISCorrelConfig(CameraConfigBoxes):
 
     return self._correl_box
 
-  def _bind_canvas_left_click(self) -> None:
+  def _set_bindings(self) -> None:
     """Binds the left mouse button click for drawing the box on which the
     correlation will be performed."""
+
+    super()._set_bindings()
 
     self._img_canvas.bind('<ButtonPress-1>', self._start_box)
     self._img_canvas.bind('<B1-Motion>', self._extend_box)

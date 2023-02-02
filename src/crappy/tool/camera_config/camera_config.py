@@ -272,17 +272,10 @@ class CameraConfig(tk.Tk):
     self._img_canvas.bind('<Motion>', self._update_coord)
     self._img_canvas.bind('<ButtonPress-3>', self._start_move)
     self._img_canvas.bind('<B3-Motion>', self._move)
-    self._bind_canvas_left_click()
 
     # It's more efficient to bind the resizing to the graphical frame
     self._graphical_frame.bind("<Configure>", self._on_img_resize)
     self._graphical_frame.bind("<Configure>", self._on_hist_resize)
-
-  def _bind_canvas_left_click(self) -> None:
-    """This method is meant to simplify the modification of the left button
-    behavior in subclasses."""
-
-    pass
 
   def _bind_mouse(self, _: tk.Event) -> None:
     """Binds the mousewheel to the settings canvas scrollbar when the user

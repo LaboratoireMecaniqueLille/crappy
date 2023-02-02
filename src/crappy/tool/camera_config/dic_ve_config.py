@@ -40,8 +40,10 @@ class DICVEConfig(CameraConfigBoxes):
     # Setting the patches
     self._spots = patches
 
-  def _bind_canvas_left_click(self) -> None:
+  def _set_bindings(self) -> None:
     """"""
+
+    super()._set_bindings()
 
     self._img_canvas.bind('<ButtonPress-1>', self._start_box)
     self._img_canvas.bind('<B1-Motion>', self._extend_box)
