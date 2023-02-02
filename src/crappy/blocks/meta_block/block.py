@@ -54,6 +54,8 @@ class Block(Process, metaclass=MetaBlock):
   log_thread: Optional[Thread] = None
   thread_stop = False
 
+  prepared = False
+
   def __init__(self) -> None:
     """Sets the attributes and initializes the parent class."""
 
@@ -205,6 +207,9 @@ class Block(Process, metaclass=MetaBlock):
         instance.start()
         cls.logger.log(logging.INFO, f'Started the {instance.name} Block')
 
+      # Setting the prepared flag
+      cls.prepared = True
+
     except KeyboardInterrupt:
       cls.logger.log(logging.INFO, 'KeyboardInterrupt caught while running '
                                    'prepare_all')
@@ -223,6 +228,11 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     try:
+      # Making sure the prepare method has already been called
+      if not cls.prepared:
+        cls.logger.log(logging.ERROR, "Cannot call renice before calling "
+                                      "prepare ! Aborting")
+        return
 
       # There's no niceness on Windows
       if system() == "Windows":
@@ -266,6 +276,12 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     try:
+      # Making sure the prepare method has already been called
+      if not cls.prepared:
+        cls.logger.log(logging.ERROR, "Cannot call launch_all before calling "
+                                      "prepare ! Aborting")
+        return
+
       # The barrier waits for the main process to be ready so that the
       # prepare_all and launch_all methods can be used separately for a finer
       # grained control
@@ -421,9 +437,10 @@ class Block(Process, metaclass=MetaBlock):
   def stop_all(cls) -> None:
     """Method for stopping all the Blocks by setting the stop event."""
 
-    cls.stop_event.set()
-    cls.logger.log(logging.INFO, 'Stop event set after a call to stop(), all '
-                                 'Blocks should now finish')
+    if cls.stop_event is not None:
+      cls.stop_event.set()
+      cls.logger.log(logging.INFO, 'Stop event set after a call to stop(), all'
+                                   ' Blocks should now finish')
 
   @classmethod
   def reset(cls) -> None:
@@ -433,6 +450,8 @@ class Block(Process, metaclass=MetaBlock):
 
     cls.instances = WeakSet()
     cls.names = list()
+    cls.thread_stop = False
+    cls.prepared = False
     if cls.logger is not None:
       cls.logger.log(logging.INFO, 'Crappy was reset by the reset() command')
 
