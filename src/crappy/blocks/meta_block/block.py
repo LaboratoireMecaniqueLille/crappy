@@ -613,9 +613,8 @@ class Block(Process, metaclass=MetaBlock):
     interest and this method should always be rewritten.
     """
 
-    self._logger.log(logging.WARNING, f"[Block {type(self).__name__}] Loop "
-                                      f"method not defined, this block does "
-                                      f"nothing !")
+    self._logger.log(logging.WARNING, f"Loop method not defined, "
+                                      f"this block does nothing !")
     sleep(1)
 
   def finish(self) -> None:
@@ -631,6 +630,25 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     ...
+
+  def stop(self) -> None:
+    """This method stops all the running Blocks.
+
+    It should be called from the :meth:`loop` method of a Block. It allows to
+    stop the execution of the script in a clean way, without raising an
+    exception. It is mostly intended for users writing their own Blocks.
+
+    Note:
+      Calling this method in :meth:`__init__`, :meth:`prepare` or :meth:`begin`
+      is not recommended, as the Block will only stop when reaching the
+      :meth:`loop` method. Calling this method during :meth:`finish` will have
+      no effect.
+    """
+
+    if self._stop_event is not None:
+      self._logger.log(logging.WARNING, "stop method called, setting the stop "
+                                        "event !")
+      self._stop_event.set()
 
   def _handle_freq(self) -> None:
     """This method ensures that the Block loops at the desired frequency, or as
