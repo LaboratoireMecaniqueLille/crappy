@@ -159,28 +159,28 @@ class Block(Process, metaclass=MetaBlock):
 
       # Initializing the logger and displaying the first messages
       cls._set_logger()
-      cls.logger.log(logging.INFO,
-                     "===================== CRAPPY =====================")
-      cls.logger.log(logging.INFO, f'Starting the script {argv[0]}\n')
-      cls.logger.log(logging.INFO, 'Logger configured')
+      cls.cls_log(logging.INFO,
+                  "===================== CRAPPY =====================")
+      cls.cls_log(logging.INFO, f'Starting the script {argv[0]}\n')
+      cls.cls_log(logging.INFO, 'Logger configured')
 
       # Setting all the synchronization objects at the class level
       cls.ready_barrier = Barrier(len(cls.instances) + 1)
       cls.shared_t0 = Value('d', -1.0)
       cls.start_event = Event()
       cls.stop_event = Event()
-      cls.logger.log(logging.INFO, 'Multiprocessing synchronization objects '
-                                   'set for main process')
+      cls.cls_log(logging.INFO, 'Multiprocessing synchronization objects set '
+                                'for main process')
 
       # Initializing the objects required for logging
       cls.log_thread = Thread(target=cls._log_target)
       cls.log_queue = Queue()
       cls.log_thread.start()
-      cls.logger.log(logging.INFO, 'Logger thread started')
+      cls.cls_log(logging.INFO, 'Logger thread started')
 
       # Starting the USB server if required
       if USBServer.initialized:
-        cls.logger.log(logging.INFO, "Starting the USB server")
+        cls.cls_log(logging.INFO, "Starting the USB server")
         USBServer.start_server(cls.log_queue, logging.INFO)
 
       # Passing the synchronization and logging objects to each block
@@ -190,8 +190,8 @@ class Block(Process, metaclass=MetaBlock):
         instance._stop_event = cls.stop_event
         instance._start_event = cls.start_event
         instance._log_queue = cls.log_queue
-        cls.logger.log(logging.INFO, f'Multiprocessing synchronization objects'
-                                     f' set for {instance.name} Block')
+        cls.cls_log(logging.INFO, f'Multiprocessing synchronization objects '
+                                  f'set for {instance.name} Block')
 
         # Setting the common log level to all the instances
         if instance._log_level is not None:
@@ -199,20 +199,20 @@ class Block(Process, metaclass=MetaBlock):
             instance._log_level = max(instance._log_level, cls.log_level)
           else:
             instance._log_level = None
-        cls.logger.log(logging.INFO, f"Log level set for the {instance.name} "
-                                     f"Block")
+        cls.cls_log(logging.INFO, f"Log level set for the {instance.name} "
+                                  f"Block")
 
       # Starting all the blocks
       for instance in cls.instances:
         instance.start()
-        cls.logger.log(logging.INFO, f'Started the {instance.name} Block')
+        cls.cls_log(logging.INFO, f'Started the {instance.name} Block')
 
       # Setting the prepared flag
       cls.prepared = True
 
     except KeyboardInterrupt:
-      cls.logger.log(logging.INFO, 'KeyboardInterrupt caught while running '
-                                   'prepare_all')
+      cls.cls_log(logging.INFO, 'KeyboardInterrupt caught while running '
+                                'prepare_all')
       cls._exception()
 
   @classmethod
@@ -230,17 +230,17 @@ class Block(Process, metaclass=MetaBlock):
     try:
       # Making sure the prepare method has already been called
       if not cls.prepared:
-        cls.logger.log(logging.ERROR, "Cannot call renice before calling "
-                                      "prepare ! Aborting")
+        cls.cls_log(logging.ERROR, "Cannot call renice before calling "
+                                   "prepare ! Aborting")
         return
 
       # There's no niceness on Windows
       if system() == "Windows":
-        cls.logger.log(logging.INFO, 'Not renicing processes on Windows')
+        cls.cls_log(logging.INFO, 'Not renicing processes on Windows')
         return
 
       # Renicing all the blocks
-      cls.logger.log(logging.INFO, 'Renicing processes')
+      cls.cls_log(logging.INFO, 'Renicing processes')
       for inst in cls.instances:
         # If root is not allowed then the minimum niceness is 0
         niceness = max(inst.niceness, 0 if not allow_root else -20)
@@ -249,18 +249,18 @@ class Block(Process, metaclass=MetaBlock):
         if niceness < 0:
           subprocess.call(['sudo', 'renice', str(niceness), '-p',
                            str(inst.pid)], stdout=subprocess.DEVNULL)
-          cls.logger.log(logging.INFO, f"Reniced process {inst.name} with PID "
-                                       f"{inst.pid} to niceness {niceness} "
-                                       f"with sudo privilege")
+          cls.cls_log(logging.INFO, f"Reniced process {inst.name} with PID "
+                                    f"{inst.pid} to niceness {niceness} "
+                                    f"with sudo privilege")
         else:
           subprocess.call(['renice', str(niceness), '-p', str(inst.pid)],
                           stdout=subprocess.DEVNULL)
-          cls.logger.log(logging.INFO, f"Reniced process {inst.name} with PID "
-                                       f"{inst.pid} to niceness {niceness}")
+          cls.cls_log(logging.INFO, f"Reniced process {inst.name} with PID "
+                                    f"{inst.pid} to niceness {niceness}")
 
     except KeyboardInterrupt:
-      cls.logger.log(logging.INFO, 'KeyboardInterrupt caught while running '
-                                   'renice_all')
+      cls.cls_log(logging.INFO, 'KeyboardInterrupt caught while running '
+                                'renice_all')
       cls._exception()
 
   @classmethod
@@ -278,49 +278,48 @@ class Block(Process, metaclass=MetaBlock):
     try:
       # Making sure the prepare method has already been called
       if not cls.prepared:
-        cls.logger.log(logging.ERROR, "Cannot call launch_all before calling "
-                                      "prepare ! Aborting")
+        cls.cls_log(logging.ERROR, "Cannot call launch_all before calling "
+                                   "prepare ! Aborting")
         return
 
       # The barrier waits for the main process to be ready so that the
       # prepare_all and launch_all methods can be used separately for a finer
       # grained control
-      cls.logger.log(logging.INFO, 'Waiting for all Blocks to be ready')
+      cls.cls_log(logging.INFO, 'Waiting for all Blocks to be ready')
       cls.ready_barrier.wait()
-      cls.logger.log(logging.INFO, 'All Blocks ready now')
+      cls.cls_log(logging.INFO, 'All Blocks ready now')
 
       # Setting t0 and telling all the block to start
       cls.shared_t0.value = time()
-      cls.logger.log(logging.INFO, f'Start time set to {cls.shared_t0.value}s')
+      cls.cls_log(logging.INFO, f'Start time set to {cls.shared_t0.value}s')
       cls.start_event.set()
-      cls.logger.log(logging.INFO, 'Start event set, all Blocks can now start')
+      cls.cls_log(logging.INFO, 'Start event set, all Blocks can now start')
 
       # The main process mustn't finish before all the blocks are done running
-      cls.logger.log(logging.INFO, 'Main process done, waiting for all Blocks '
-                                   'to finish')
+      cls.cls_log(logging.INFO, 'Main process done, waiting for all Blocks to '
+                                'finish')
       for inst in cls.instances:
         inst.join()
-        cls.logger.log(logging.INFO, f'{inst.name} finished by itself')
+        cls.cls_log(logging.INFO, f'{inst.name} finished by itself')
 
       # Stopping the USB server if required
       if USBServer.initialized:
-        cls.logger.log(logging.INFO, "Stopping the USB server")
+        cls.cls_log(logging.INFO, "Stopping the USB server")
         USBServer.stop_server()
 
-      cls.logger.log(logging.INFO, 'All Blocks done, Crappy terminated '
-                                   'gracefully\n')
+      cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
+                                'gracefully\n')
       cls.thread_stop = True
 
     # A Block crashed while preparing
     except BrokenBarrierError:
-      cls.logger.log(logging.ERROR, "Exception raised in a Block while "
-                                    " waiting for all Blocks to be ready, "
-                                    "stopping")
+      cls.cls_log(logging.ERROR, "Exception raised in a Block while  waiting "
+                                 "for all Blocks to be ready, stopping")
       cls._exception()
     # The user ended the script while preparing
     except KeyboardInterrupt:
-      cls.logger.log(logging.INFO, 'KeyboardInterrupt caught while running '
-                                   'launch_all')
+      cls.cls_log(logging.INFO, 'KeyboardInterrupt caught while running '
+                                'launch_all')
       cls._exception()
     # Another exception occurred
     except (Exception,) as exc:
@@ -337,29 +336,29 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     cls.stop_event.set()
-    cls.logger.log(logging.INFO, 'Stop event set, waiting for all Blocks to '
-                                 'finish')
+    cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks to '
+                              'finish')
     t = time()
 
     # Waiting at most 3 seconds for all the blocks to finish
     while cls.instances and not all(not inst.is_alive() for inst
                                     in cls.instances):
       sleep(0.5)
-      cls.logger.log(logging.INFO, "All Blocks not stopped yet")
+      cls.cls_log(logging.INFO, "All Blocks not stopped yet")
 
       # After 3 seconds, killing the blocks that didn't stop
       if time() - t > 3:
-        cls.logger.log(logging.WARNING, 'All Blocks not stopped, terminating '
-                                        'the living ones')
+        cls.cls_log(logging.WARNING, 'All Blocks not stopped, terminating the '
+                                     'living ones')
         for inst in cls.instances:
           if inst.is_alive():
             inst.terminate()
-            cls.logger.log(logging.WARNING, f'Block {inst.name} terminated')
+            cls.cls_log(logging.WARNING, f'Block {inst.name} terminated')
           else:
-            cls.logger.log(logging.INFO, f'Block {inst.name} done')
+            cls.cls_log(logging.INFO, f'Block {inst.name} done')
 
-    cls.logger.log(logging.INFO, 'All Blocks done, Crappy terminated '
-                                 'gracefully\n')
+    cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
+                              'gracefully\n')
     cls.thread_stop = True
 
   @classmethod
@@ -439,8 +438,8 @@ class Block(Process, metaclass=MetaBlock):
 
     if cls.stop_event is not None:
       cls.stop_event.set()
-      cls.logger.log(logging.INFO, 'Stop event set after a call to stop(), all'
-                                   ' Blocks should now finish')
+      cls.cls_log(logging.INFO, 'Stop event set after a call to stop(), all '
+                                'Blocks should now finish')
 
   @classmethod
   def reset(cls) -> None:
@@ -453,7 +452,19 @@ class Block(Process, metaclass=MetaBlock):
     cls.thread_stop = False
     cls.prepared = False
     if cls.logger is not None:
-      cls.logger.log(logging.INFO, 'Crappy was reset by the reset() command')
+      cls.cls_log(logging.INFO, 'Crappy was reset by the reset() command')
+  
+  @classmethod
+  def cls_log(cls, level: int, msg: str) -> None:
+    """Wrapper for logging messages in the main process.
+    
+    Ensures the logger exists before trying to log, thus avoiding potential 
+    errors.
+    """
+    
+    if cls.logger is None:
+      return
+    cls.logger.log(level=level, msg=msg)
 
   @classmethod
   def _log_target(cls) -> None:
