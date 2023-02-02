@@ -12,6 +12,7 @@ import logging
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box, SpotsBoxes
 from ...camera.meta_camera import Camera
+from ...camera.meta_camera.camera_setting import CameraScaleSetting
 from ..._global import OptionalModule
 
 try:
@@ -35,10 +36,30 @@ class DICVEConfig(CameraConfigBoxes):
       patches: The patches to follow for image correlation.
     """
 
+    self._patch_size: Optional[CameraScaleSetting] = None
+
     super().__init__(camera)
 
     # Setting the patches
     self._spots = patches
+
+  def _add_settings(self) -> None:
+    """"""
+
+    self._patch_size = CameraScaleSetting("Patch size (px)", 2, 1024,
+                                          default=128)
+    self._add_slider_setting(self._patch_size)
+
+    super()._add_settings()
+
+  def _update_settings(self) -> None:
+    """"""
+
+    if self._patch_size.value != self._patch_size.tk_var.get():
+      self._patch_size.value = self._patch_size.tk_var.get()
+    self._patch_size.tk_var.set(self._patch_size.value)
+
+    super()._update_settings()
 
   def _set_bindings(self) -> None:
     """"""
@@ -54,21 +75,22 @@ class DICVEConfig(CameraConfigBoxes):
 
     super()._extend_box(event)
 
-    if not self._select_box.no_points():
+    if not self._select_box.no_points() and self._patch_size is not None:
       min_x, max_x, min_y, max_y = self._select_box.sorted()
-      if max_x - min_x >= 8 and max_y - min_y >= 8:
-        self._spots.spot_1 = Box(
-            min_x, min_x + (max_x - min_x) // 4,
-            min_y + 3 * (max_y - min_y) // 8, min_y + 5 * (max_y - min_y) // 8)
-        self._spots.spot_2 = Box(
-            max_x - (max_x - min_x) // 4, max_x,
-            min_y + 3 * (max_y - min_y) // 8, min_y + 5 * (max_y - min_y) // 8)
-        self._spots.spot_3 = Box(
-            min_x + 3 * (max_x - min_x) // 8, min_x + 5 * (max_x - min_x) // 8,
-            min_y, min_y + (max_y - min_y) // 4)
-        self._spots.spot_4 = Box(
-            min_x + 3 * (max_x - min_x) // 8, min_x + 5 * (max_x - min_x) // 8,
-            max_y - (max_y - min_y) // 4, max_y)
+      size = self._patch_size.value
+      if max_x - min_x >= 3 * size and max_y - min_y >= 3 * size:
+        self._spots.spot_1 = Box(min_x, min_x + size,
+                                 (min_y + max_y - size) // 2,
+                                 (min_y + max_y + size) // 2)
+        self._spots.spot_2 = Box(max_x - size, max_x,
+                                 (min_y + max_y - size) // 2,
+                                 (min_y + max_y + size) // 2)
+        self._spots.spot_3 = Box((min_x + max_x - size) // 2,
+                                 (min_x + max_x + size) // 2,
+                                 min_y, min_y + size)
+        self._spots.spot_4 = Box((min_x + max_x - size) // 2,
+                                 (min_x + max_x + size) // 2,
+                                 max_y - size, max_y)
 
   def _stop_box(self, _: tk.Event) -> None:
     """"""
