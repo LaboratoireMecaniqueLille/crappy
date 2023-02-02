@@ -173,10 +173,11 @@ class Block(Process, metaclass=MetaBlock):
                                 'for main process')
 
       # Initializing the objects required for logging
-      cls.log_thread = Thread(target=cls._log_target)
       cls.log_queue = Queue()
-      cls.log_thread.start()
-      cls.cls_log(logging.INFO, 'Logger thread started')
+      cls.log_thread = Thread(target=cls._log_target)
+      if get_start_method() == 'spawn':
+        cls.log_thread.start()
+        cls.cls_log(logging.INFO, 'Logger thread started')
 
       # Starting the USB server if required
       if USBServer.initialized:
@@ -307,9 +308,16 @@ class Block(Process, metaclass=MetaBlock):
         cls.cls_log(logging.INFO, "Stopping the USB server")
         USBServer.stop_server()
 
-      cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
-                                'gracefully\n')
-      cls.thread_stop = True
+      if get_start_method() == 'spawn':
+        cls.thread_stop = True
+        cls.log_thread.join(timeout=0.1)
+
+      if cls.log_thread.is_alive():
+        cls.cls_log(logging.WARNING, "The thread reading the log messages did "
+                                     "not terminate in time !")
+      else:
+        cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
+                                  'gracefully\n')
 
     # A Block crashed while preparing
     except BrokenBarrierError:
@@ -357,9 +365,17 @@ class Block(Process, metaclass=MetaBlock):
           else:
             cls.cls_log(logging.INFO, f'Block {inst.name} done')
 
-    cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
-                              'gracefully\n')
-    cls.thread_stop = True
+    if get_start_method() == 'spawn':
+      cls.thread_stop = True
+      cls.log_thread.join(timeout=0.1)
+
+    if cls.log_thread.is_alive():
+      cls.cls_log(logging.WARNING, "The thread reading the log messages did "
+                                   "not terminate in time !")
+
+    else:
+      cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
+                                'gracefully\n')
 
   @classmethod
   def _set_logger(cls) -> None:
@@ -476,7 +492,7 @@ class Block(Process, metaclass=MetaBlock):
 
     while not cls.thread_stop:
       try:
-        record = cls.log_queue.get(block=True, timeout=1)
+        record = cls.log_queue.get(block=True, timeout=0.05)
       except Empty:
         continue
 
