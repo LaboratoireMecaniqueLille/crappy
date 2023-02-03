@@ -54,7 +54,7 @@ class Block(Process, metaclass=MetaBlock):
   log_thread: Optional[Thread] = None
   thread_stop = False
 
-  prepared = False
+  prepared_all = False
 
   def __init__(self) -> None:
     """Sets the attributes and initializes the parent class."""
@@ -209,7 +209,7 @@ class Block(Process, metaclass=MetaBlock):
         cls.cls_log(logging.INFO, f'Started the {instance.name} Block')
 
       # Setting the prepared flag
-      cls.prepared = True
+      cls.prepared_all = True
 
     except KeyboardInterrupt:
       cls.cls_log(logging.INFO, 'KeyboardInterrupt caught while running '
@@ -230,7 +230,7 @@ class Block(Process, metaclass=MetaBlock):
 
     try:
       # Making sure the prepare method has already been called
-      if not cls.prepared:
+      if not cls.prepared_all:
         cls.cls_log(logging.ERROR, "Cannot call renice before calling "
                                    "prepare ! Aborting")
         return
@@ -278,7 +278,7 @@ class Block(Process, metaclass=MetaBlock):
 
     try:
       # Making sure the prepare method has already been called
-      if not cls.prepared:
+      if not cls.prepared_all:
         cls.cls_log(logging.ERROR, "Cannot call launch_all before calling "
                                    "prepare ! Aborting")
         return
@@ -466,7 +466,7 @@ class Block(Process, metaclass=MetaBlock):
     cls.instances = WeakSet()
     cls.names = list()
     cls.thread_stop = False
-    cls.prepared = False
+    cls.prepared_all = False
     if cls.logger is not None:
       cls.cls_log(logging.INFO, 'Crappy was reset by the reset() command')
   
