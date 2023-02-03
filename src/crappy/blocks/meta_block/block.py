@@ -163,6 +163,11 @@ class Block(Process, metaclass=MetaBlock):
 
     try:
 
+      if cls.prepared_all:
+        cls.cls_log(logging.ERROR,
+                    "The method prepare_all was already called ! Stop the "
+                    "processes and reset Crappy before calling it again.")
+
       cls.log_level = log_level
 
       # Initializing the logger and displaying the first messages
