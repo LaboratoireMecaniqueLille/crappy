@@ -500,6 +500,12 @@ class Block(Process, metaclass=MetaBlock):
     cls.thread_stop = False
     cls.prepared_all = False
     cls.launched_all = False
+
+    cls.shared_t0 = None
+    cls.ready_barrier = None
+    cls.start_event = None
+    cls.stop_event = None
+
     if cls.logger is not None:
       cls.cls_log(logging.INFO, 'Crappy was reset by the reset() command')
   
