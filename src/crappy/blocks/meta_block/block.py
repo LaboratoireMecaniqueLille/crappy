@@ -646,7 +646,11 @@ class Block(Process, metaclass=MetaBlock):
       self.log(logging.INFO, "Setting the stop event")
       self._stop_event.set()
       self.log(logging.INFO, "Calling the finish method")
-      self.finish()
+      try:
+        self.finish()
+      except (Exception,) as exc:
+        self._logger.exception("Caught exception while finishing !",
+                               exc_info=exc)
 
   def main(self) -> None:
     """The main loop of the :meth:`run` method. Repeatedly calls the
