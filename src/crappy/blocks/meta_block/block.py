@@ -138,14 +138,12 @@ class Block(Process, metaclass=MetaBlock):
         :mod:`logging` module for information on the possible levels.
     """
 
-    cls.log_level = log_level
-
-    cls.prepare_all()
+    cls.prepare_all(log_level)
     cls.renice_all(allow_root)
     cls.launch_all()
 
   @classmethod
-  def prepare_all(cls) -> None:
+  def prepare_all(cls, log_level: Optional[int] = logging.DEBUG) -> None:
     """Creates the synchronization objects, shares them with the blocks, and
     starts the processes associated to the blocks.
 
@@ -153,9 +151,19 @@ class Block(Process, metaclass=MetaBlock):
 
     Once started with this method, the blocks will call their :meth:`prepare`
     method and then be blocked by a :obj:`multiprocessing.Barrier`.
+
+    Args:
+      log_level: The maximum logging level that will be handled by Crappy. By
+        default, it is set to the lowest level (DEBUG) so that all messages are
+        handled. If set to a higher level, the levels specified for each Block
+        with the ``debug`` argument may be ignored. If set to :obj:`None`,
+        logging is totally disabled. Refer to the documentation of the
+        :mod:`logging` module for information on the possible levels.
     """
 
     try:
+
+      cls.log_level = log_level
 
       # Initializing the logger and displaying the first messages
       cls._set_logger()
