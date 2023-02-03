@@ -41,7 +41,7 @@ class Block(Process, metaclass=MetaBlock):
   """
 
   instances = WeakSet()
-  names = list()
+  names: List[str] = list()
   log_level: Optional[int] = logging.DEBUG
 
   # The synchronization objects will be set later
@@ -52,9 +52,10 @@ class Block(Process, metaclass=MetaBlock):
   logger: Optional[logging.Logger] = None
   log_queue: Optional[queues.Queue] = None
   log_thread: Optional[Thread] = None
-  thread_stop = False
+  thread_stop: bool = False
 
-  prepared_all = False
+  prepared_all: bool = False
+  launched_all: bool = False
 
   def __init__(self) -> None:
     """Sets the attributes and initializes the parent class."""
@@ -166,7 +167,14 @@ class Block(Process, metaclass=MetaBlock):
       if cls.prepared_all:
         cls.cls_log(logging.ERROR,
                     "The method prepare_all was already called ! Stop the "
-                    "processes and reset Crappy before calling it again.")
+                    "processes and reset Crappy before calling it again. Not "
+                    "doing anything.")
+        return
+      if cls.launched_all:
+        cls.cls_log(logging.ERROR,
+                    "Please reset Crappy before calling the prepare_all "
+                    "method again ! Not doing anything.")
+        return
 
       cls.log_level = log_level
 
@@ -247,6 +255,10 @@ class Block(Process, metaclass=MetaBlock):
         cls.cls_log(logging.ERROR, "Cannot call renice before calling "
                                    "prepare ! Aborting")
         return
+      if cls.launched_all:
+        cls.cls_log(logging.ERROR,
+                    "Please reset Crappy before calling the renice_all method "
+                    "again ! Not doing anything.")
 
       # There's no niceness on Windows
       if system() == "Windows":
@@ -295,6 +307,13 @@ class Block(Process, metaclass=MetaBlock):
         cls.cls_log(logging.ERROR, "Cannot call launch_all before calling "
                                    "prepare ! Aborting")
         return
+      if cls.launched_all:
+        cls.cls_log(logging.ERROR,
+                    "Please reset Crappy before calling the launch_all method "
+                    "again ! Not doing anything.")
+        return
+
+      cls.launched_all = True
 
       # The barrier waits for the main process to be ready so that the
       # prepare_all and launch_all methods can be used separately for a finer
@@ -480,6 +499,7 @@ class Block(Process, metaclass=MetaBlock):
     cls.names = list()
     cls.thread_stop = False
     cls.prepared_all = False
+    cls.launched_all = False
     if cls.logger is not None:
       cls.cls_log(logging.INFO, 'Crappy was reset by the reset() command')
   
