@@ -112,11 +112,12 @@ class Recorder(Block):
     # Keeping only the data that needs to be saved
     data = {key: val for key, val in data.items() if key in self._labels}
 
-    with open(self._path, 'a') as file:
-      # Sorting the lists of values in the same order as the labels
-      sorted_data = [data[label] for label in self._labels]
-      # Actually writing the values
-      self.log(logging.DEBUG, f"Writing {sorted_data} to the file "
-                              f"{self._path}")
-      for values in zip(*sorted_data):
-        file.write(f"{','.join(map(str, values))}\n")
+    if data:
+      with open(self._path, 'a') as file:
+        # Sorting the lists of values in the same order as the labels
+        sorted_data = [data[label] for label in self._labels]
+        # Actually writing the values
+        self.log(logging.DEBUG, f"Writing {sorted_data} to the file "
+                                f"{self._path}")
+        for values in zip(*sorted_data):
+          file.write(f"{','.join(map(str, values))}\n")
