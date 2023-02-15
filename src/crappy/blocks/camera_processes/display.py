@@ -8,6 +8,7 @@ from typing import Optional
 from time import time, sleep
 import logging
 import logging.handlers
+from itertools import chain
 
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
@@ -198,17 +199,14 @@ class Displayer(CameraProcess):
       return
 
     x_top, x_bottom, y_left, y_right = box.sorted()
+    max_fact = max(img.shape[0] // 480, img.shape[1] // 640, 1)
 
     try:
-      for line in ((box.y_start, slice(x_top, x_bottom)),
-                   (box.y_end, slice(x_top, x_bottom)),
-                   (slice(y_left, y_right), x_top),
-                   (slice(y_left, y_right), x_bottom),
-                   (box.y_start + 1, slice(x_top, x_bottom)),
-                   (box.y_end - 1, slice(x_top, x_bottom)),
-                   (slice(y_left, y_right), x_top + 1),
-                   (slice(y_left, y_right), x_bottom - 1)
-                   ):
+      for line in (line for i in range(max_fact + 1) for line in
+                   ((box.y_start + i, slice(x_top, x_bottom)),
+                    (box.y_end - i, slice(x_top, x_bottom)),
+                    (slice(y_left, y_right), x_top + i),
+                    (slice(y_left, y_right), x_bottom - i))):
         img[line] = 255 * int(np.mean(img[line]) < 128)
     except (Exception,) as exc:
       self._logger.exception("Encountered exception while drawing boxes, "
