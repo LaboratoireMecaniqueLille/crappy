@@ -7,7 +7,7 @@ from copy import deepcopy
 import logging
 
 from .meta_block import Block
-from . import generator_path
+from .generator_path.meta_path import paths_dict
 from .._global import GeneratorStop
 
 
@@ -199,7 +199,11 @@ class Generator(Block):
 
     # Instantiating the next generator path object
     path_name = next_path_dict.pop('type')
-    path_type = getattr(generator_path, path_name)
+    if path_name in paths_dict:
+      path_type = paths_dict[path_name]
+    else:
+      raise ValueError(f"No Generator path called {path_name}! The available"
+                       f" generator paths are : {tuple(paths_dict.keys())}")
     self._current_path = path_type(
       _last_time=self._last_t if self._last_t is not None else self.t0,
       _last_cmd=self._last_cmd,
@@ -213,5 +217,9 @@ class Generator(Block):
     for i, next_dict in enumerate(path):
       next_dict = deepcopy(next_dict)
       path_name = next_dict.pop('type')
-      path_type = getattr(generator_path, path_name)
+      if path_name in paths_dict:
+        path_type = paths_dict[path_name]
+      else:
+        raise ValueError(f"No Generator path called {path_name}! The available"
+                         f" generator paths are : {tuple(paths_dict.keys())}")
       path_type(_last_time=0, _last_cmd=None if i == 0 else 0, **next_dict)

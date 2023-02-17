@@ -6,7 +6,7 @@ from ...._global import DefinitionError
 class MetaPath(type):
   """"""
 
-  classes = list()
+  classes = dict()
 
   def __new__(mcs, name: str, bases: tuple, dct: dict) -> type:
     return super().__new__(mcs, name, bases, dct)
@@ -19,4 +19,4 @@ class MetaPath(type):
       raise DefinitionError(f"The {name} Generator Path is already defined !")
 
     # Saving the name
-    cls.classes.append(name)
+    cls.classes[name] = cls

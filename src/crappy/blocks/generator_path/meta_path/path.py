@@ -19,7 +19,9 @@ class Path(metaclass=MetaPath):
 
   def __init__(self,
                _last_time: float,
-               _last_cmd: Optional[float] = None) -> None:
+               _last_cmd: Optional[float] = None,
+               *_,
+               **__) -> None:
     """Simply sets the arguments."""
 
     self.t0 = _last_time
@@ -31,7 +33,8 @@ class Path(metaclass=MetaPath):
 
     self.log(logging.WARNING, "The get_cmd was called but is not defined ! "
                               "Please define a get_cmd method for your "
-                              "Generator path !")
+                              "Generator path ! Returning the last sent "
+                              "command")
     sleep(1)
     return self.last_cmd
 
