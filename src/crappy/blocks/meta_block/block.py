@@ -874,7 +874,7 @@ class Block(Process, metaclass=MetaBlock):
 
     # Sending the data to the downstream blocks
     for link in self.outputs:
-      self.log(logging.DEBUG, f"Sending {data} to Link {link}")
+      self.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
 
   def data_available(self) -> bool:
