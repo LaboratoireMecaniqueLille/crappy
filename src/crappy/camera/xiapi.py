@@ -79,9 +79,7 @@ class XiAPI(Camera):
     """
 
     self._cam.get_image(self._img)
-    t = time()
-    self._frame_nr += 1
-    return t, self._img.get_image_data_numpy()
+    return time(), self._img.get_image_data_numpy()
 
   def close(self) -> None:
     """This method closes properly the camera.
