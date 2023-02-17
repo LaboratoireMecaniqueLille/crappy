@@ -4,7 +4,7 @@ from time import time
 from typing import Union, Dict, Optional
 import logging
 
-from .path import Path, ConditionType
+from .meta_path import Path, ConditionType
 
 
 class Ramp(Path):

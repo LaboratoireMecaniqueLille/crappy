@@ -1,15 +1,17 @@
 # coding: utf-8
 
-from time import time
+from time import time, sleep
 from typing import Callable, Union, Dict, Optional
 from re import split, IGNORECASE, match
 import logging
 from multiprocessing import current_process
 
+from .meta_path import MetaPath
+
 ConditionType = Callable[[Dict[str, list]], bool]
 
 
-class Path:
+class Path(metaclass=MetaPath):
   """Parent class for all the generator paths.
 
   Allows them to have access to the :meth:`parse_condition` method.
@@ -27,6 +29,10 @@ class Path:
   def get_cmd(self, _: Dict[str, list]) -> float:
     """If not overridden, simply returns the last_cmd attribute."""
 
+    self.log(logging.WARNING, "The get_cmd was called but is not defined ! "
+                              "Please define a get_cmd method for your "
+                              "Generator path !")
+    sleep(1)
     return self.last_cmd
 
   def log(self, level: int, msg: str) -> None:
@@ -38,9 +44,9 @@ class Path:
 
     self._logger.log(level, msg)
 
-  def parse_condition(
-        self,
-        condition: Optional[Union[str, ConditionType]]) -> ConditionType:
+  def parse_condition(self,
+                      condition: Optional[Union[str, ConditionType]]
+                      ) -> ConditionType:
     """This method returns a function allowing to check whether the stop
     condition is met or not.
 

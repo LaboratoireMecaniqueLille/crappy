@@ -4,7 +4,7 @@ from numpy import trapz
 from typing import Union, Dict
 import logging
 
-from .path import Path, ConditionType
+from .meta_path import Path, ConditionType
 
 
 class Integrator(Path):

@@ -8,4 +8,5 @@ from .integrator import Integrator
 from .sine import Sine
 from .conditional import Conditional
 from .custom import Custom
-from .path import Path
+
+from . import meta_path

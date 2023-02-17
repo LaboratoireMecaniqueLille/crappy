@@ -6,7 +6,7 @@ from typing import Dict, Union
 import pathlib
 import logging
 
-from .path import Path
+from .meta_path import Path
 
 
 class Custom(Path):

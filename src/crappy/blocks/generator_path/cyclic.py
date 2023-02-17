@@ -5,7 +5,7 @@ from typing import Union, Dict
 from itertools import cycle, islice
 import logging
 
-from .path import Path, ConditionType
+from .meta_path import Path, ConditionType
 
 
 class Cyclic(Path):
