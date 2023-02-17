@@ -25,7 +25,7 @@ class Camera(metaclass=MetaCamera):
     trigger setting."""
 
     self.settings: Dict[str, CameraSetting] = dict()
-    self.trigger_name = 'Trigger'
+    self.trigger_name = 'trigger'
     self._logger: Optional[logging.Logger] = None
 
   def log(self, level: int, msg: str) -> None:
