@@ -67,6 +67,11 @@ class VideoExtenso(Camera):
     self.labels = ['t(s)', 'meta', 'Coord(px)',
                    'Eyy(%)', 'Exx(%)'] if labels is None else labels
 
+    # Making sure a coherent number of labels and fields was given
+    if len(self.labels) != 5:
+      raise ValueError("The number of labels should be 5 !\n"
+                       "Make sure that the time label was given")
+
     self._raise_on_lost_spot = raise_on_lost_spot
     self._spot_detector = SpotsDetector()
 
