@@ -648,6 +648,9 @@ class Block(Process, metaclass=MetaBlock):
       self.log(logging.INFO, "Calling the finish method")
       try:
         self.finish()
+      except KeyboardInterrupt:
+        self.log(logging.INFO, "Caught KeyboardInterrupt while finishing, "
+                               "ignoring it")
       except (Exception,) as exc:
         self._logger.exception("Caught exception while finishing !",
                                exc_info=exc)
