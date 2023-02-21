@@ -383,8 +383,8 @@ class Block(Process, metaclass=MetaBlock):
     # Waiting at most 3 seconds for all the blocks to finish
     while cls.instances and not all(not inst.is_alive() for inst
                                     in cls.instances):
-      sleep(0.5)
       cls.cls_log(logging.INFO, "All Blocks not stopped yet")
+      sleep(0.5)
 
       # After 3 seconds, killing the blocks that didn't stop
       if time() - t > 3:
