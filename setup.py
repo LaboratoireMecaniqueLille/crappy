@@ -94,89 +94,6 @@ if platform.system() == "Windows":
     print("Can't find microEnable4 Device driver, clModule will not be "
           "compiled")
 
-# Documentation aliases
-SOURCE = 'docs/source'
-CRAPPYDOCS = 'docs/source/crappy_docs'
-TUTORIALS = 'docs/source/tutorials'
-# Explicitly listing all documentation files to avoid including unwanted files
-docs_files = [
-  ('crappy/docs', ['docs/Makefile']),
-  (f'crappy/{SOURCE}', [f'{SOURCE}/embedded.rst',
-                        f'{SOURCE}/installation.rst',
-                        f'{SOURCE}/conf.py',
-                        f'{SOURCE}/features.rst',
-                        f'{SOURCE}/tutorials.rst',
-                        f'{SOURCE}/api.rst',
-                        f'{SOURCE}/what_is_crappy.rst',
-                        f'{SOURCE}/index.rst',
-                        f'{SOURCE}/bugs.rst',
-                        f'{SOURCE}/license.rst',
-                        f'{SOURCE}/developers.rst',
-                        f'{SOURCE}/citing.rst',
-                        f'{SOURCE}/documentation.rst']),
-  (f'crappy/{CRAPPYDOCS}', [f'{CRAPPYDOCS}/cameras.rst',
-                            f'{CRAPPYDOCS}/blocks.rst',
-                            f'{CRAPPYDOCS}/modifiers.rst',
-                            f'{CRAPPYDOCS}/inouts.rst',
-                            f'{CRAPPYDOCS}/actuators.rst',
-                            f'{CRAPPYDOCS}/tools.rst',
-                            f'{CRAPPYDOCS}/links.rst']),
-  (f'crappy/{TUTORIALS}', [f'{TUTORIALS}/getting_started.rst',
-                           f'{TUTORIALS}/custom_blocks.rst',
-                           f'{TUTORIALS}/c_modules.rst'])]
-
-# Example aliases
-OTHER = 'examples/other_examples'
-READY = 'examples/ready_to_run'
-REAL = 'examples/real_setups_scripts'
-# Explicitly listing all the example files to avoid including unwanted files
-example_files = [
-  (f'crappy/{OTHER}', [f'{OTHER}/daqmx_thermocouple.py',
-                       f'{OTHER}/dio_daqmx.py',
-                       f'{OTHER}/gpu_correl_advanced.py',
-                       f'{OTHER}/gpu_correl_basic.py',
-                       f'{OTHER}/gpu_correl_fake_test.py',
-                       f'{OTHER}/labjack_t7_stream.py',
-                       f'{OTHER}/labjack_t7_tensile_1.py',
-                       f'{OTHER}/labjack_t7_tensile_2.py',
-                       f'{OTHER}/labjack_t7_thermocouple.py',
-                       f'{OTHER}/microcontroller_example.py',
-                       f'{OTHER}/spectrum.py',
-                       f'{OTHER}/video_extenso_auto_drive.py',
-                       f'{OTHER}/video_extenso_auto_drive_full.py']),
-  (f'crappy/{READY}', [f'{READY}/custom_actuator.py',
-                       f'{READY}/custom_block.py',
-                       f'{READY}/custom_camera.py',
-                       f'{READY}/custom_in.py',
-                       f'{READY}/custom_out.py',
-                       f'{READY}/dic_ve_fake_test.py',
-                       f'{READY}/dic_ve_simple.py',
-                       f'{READY}/dis_correl_basic.py',
-                       f'{READY}/dis_correl_fake_test.py',
-                       f'{READY}/dis_correl_fake_test_strain_controlled.py',
-                       f'{READY}/displayer.py',
-                       f'{READY}/drawing.py',
-                       f'{READY}/fake_test.py',
-                       f'{READY}/furnace_simulation.py',
-                       f'{READY}/generator.py',
-                       f'{READY}/generator_steps.py',
-                       f'{READY}/mean.py',
-                       f'{READY}/modifiers.py',
-                       f'{READY}/multiplexer.py',
-                       f'{READY}/photo.py',
-                       f'{READY}/pid.py',
-                       f'{READY}/read.py',
-                       f'{READY}/read_write.py',
-                       f'{READY}/video_extenso_fake_test.py',
-                       f'{READY}/video_extenso_simple.py']),
-  (f'crappy/{REAL}', [f'{REAL}/biaxe.py',
-                      f'{REAL}/biotens.py',
-                      f'{REAL}/furnace.py'])]
-
-# Explicitly listing all the util files to avoid including unwanted files
-util_files = [('crappy/util', ['util/set_ft232h_serial_nr.py',
-                               'util/udev_rule_setter.sh'])]
-
 setup(
   name='crappy',
 
@@ -241,6 +158,4 @@ setup(
                            'pyserial>=3.4']},
 
   include_package_data=True,
-
-  data_files=docs_files + example_files + util_files
 )
