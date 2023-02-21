@@ -28,6 +28,7 @@ class XiAPI(Camera):
     super().__init__()
 
     self._cam = None
+    self._started = False
 
     self._cam = xiapi.Camera()
     self._img = xiapi.Image()
@@ -69,7 +70,9 @@ class XiAPI(Camera):
 
     self.set_all(**kwargs)
     self.log(logging.INFO, "Starting the image acquisition")
+    
     self._cam.start_acquisition()
+    self._started = True
 
   def get_image(self) -> Tuple[float, np.ndarray]:
     """This method get a frame on the selected camera and return a ndarray.
@@ -149,10 +152,16 @@ class XiAPI(Camera):
     """Sets the requested trigger mode value, and updates the last requested
     trigger mode value."""
 
+    if self._started:
+      self._cam.stop_acquisition()
+
     if trig == 'Hardware':
       self._cam.set_gpi_mode('XI_GPI_TRIGGER')
       self._cam.set_trigger_source('XI_TRG_EDGE_RISING')
     else:
       self._cam.set_gpi_mode('XI_GPI_OFF')
       self._cam.set_trigger_source('XI_TRG_OFF')
+      
     self._trig = trig
+    if self._started:
+      self._cam.start_acquisition()
