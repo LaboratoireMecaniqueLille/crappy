@@ -212,7 +212,7 @@ class Camera(Block):
 
     self.log(logging.DEBUG, "Instantiating the shared objects")
     self._img_array = Array(np.ctypeslib.as_ctypes_type(self._img_dtype),
-                            np.prod(self._img_shape))
+                            int(np.prod(self._img_shape)))
     self._img = np.frombuffer(self._img_array.get_obj(),
                               dtype=self._img_dtype).reshape(self._img_shape)
 
