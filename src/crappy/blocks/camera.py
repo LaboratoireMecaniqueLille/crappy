@@ -9,7 +9,6 @@ from multiprocessing import Array, Manager, Event, RLock, Pipe, Barrier
 from multiprocessing.sharedctypes import SynchronizedArray
 from multiprocessing import managers, synchronize, connection
 from threading import BrokenBarrierError
-from math import prod
 import logging
 
 from .meta_block import Block
@@ -213,7 +212,7 @@ class Camera(Block):
 
     self.log(logging.DEBUG, "Instantiating the shared objects")
     self._img_array = Array(np.ctypeslib.as_ctypes_type(self._img_dtype),
-                            prod(self._img_shape))
+                            np.prod(self._img_shape))
     self._img = np.frombuffer(self._img_array.get_obj(),
                               dtype=self._img_dtype).reshape(self._img_shape)
 
