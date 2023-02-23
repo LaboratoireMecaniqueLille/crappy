@@ -357,10 +357,8 @@ class ClientServer(Block):
           if dic is not None and all(label in dic for label in topic):
             if self._labels_to_send is not None:
               topic = str(self._labels_to_send[topic])
-            else:
-              topic = str(topic)
             self._client.publish(
-              topic=topic,
+              topic=str(topic),
               payload=dumps([dic[label] for label in topic]),
               qos=0)
             self.log(logging.DEBUG, f"Sent {[dic[label] for label in topic]}"
