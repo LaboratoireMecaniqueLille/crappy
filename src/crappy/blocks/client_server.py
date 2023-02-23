@@ -356,7 +356,7 @@ class ClientServer(Block):
         for dic in received_data:
           if dic is not None and all(label in dic for label in topic):
             if self._labels_to_send is not None:
-              topic = str(self._labels_to_send[topic])
+              topic = self._labels_to_send[topic]
             self._client.publish(
               topic=str(topic),
               payload=dumps([dic[label] for label in topic]),
