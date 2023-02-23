@@ -107,7 +107,6 @@ class GPIOPWM(InOut):
       *cmd (:obj:`float`): Values of duty cycle and/or frequency to set
     """
 
-    cmd = list(*cmd)
     # If both frequency and duty cycle are fixed by the user, nothing to do
     if self._duty_cycle is not None and self._frequency is not None:
       pass
