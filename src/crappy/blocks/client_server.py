@@ -214,6 +214,13 @@ class ClientServer(Block):
     self._client.on_connect = self._on_connect
     self._client.on_message = self._on_message
     self._client.reconnect_delay_set(max_delay=10)
+    
+    # These attributs may be set later
+    self._topics = None
+    self._last_out_val = {}
+    self._buffer_output = None
+    self._cmd_labels = None
+    self._labels_to_send = None
 
     if topics is None and cmd_labels is None:
       self.log(logging.WARNING, "The Client-server Block is neither an input "
@@ -230,10 +237,6 @@ class ClientServer(Block):
 
       # The buffer for received data is a dictionary of queues
       self._buffer_output = {topic: Queue() for topic in topics}
-
-    else:
-      self._topics = None
-      self._buffer_output = None
 
     # Preparing for publishing data
     if cmd_labels is not None:
@@ -255,9 +258,6 @@ class ClientServer(Block):
         self._labels_to_send = {cmd_label: label_to_send for
                                 cmd_label, label_to_send in
                                 zip(self._cmd_labels, labels_to_send)}
-    else:
-      self._cmd_labels = None
-      self._labels_to_send = None
 
   def prepare(self) -> None:
     """Starts the broker and connects to it."""
@@ -356,11 +356,9 @@ class ClientServer(Block):
         for dic in received_data:
           if dic is not None and all(label in dic for label in topic):
             if self._labels_to_send is not None:
-              topic = str(self._labels_to_send[topic])
-            else:
-              topic = str(topic)
+              topic = self._labels_to_send[topic]
             self._client.publish(
-              topic=topic,
+              topic=str(topic),
               payload=dumps([dic[label] for label in topic]),
               qos=0)
             self.log(logging.DEBUG, f"Sent {[dic[label] for label in topic]}"
