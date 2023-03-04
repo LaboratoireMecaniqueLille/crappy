@@ -29,7 +29,7 @@ if __name__ == "__main__":
                                        "make_zero": True}],
                             streamer=True)
 
-  g = crappy.blocks.Grapher(('t', 'AIN0'), ('t', 'AIN1'))
+  g = crappy.blocks.Grapher(('t(s)', 'AIN0'), ('t(s)', 'AIN1'))
   crappy.link(s, g, modifier=my_mean)
 
   rec = crappy.blocks.Hdf_recorder("out.h5", atom=tables.Float64Atom())
