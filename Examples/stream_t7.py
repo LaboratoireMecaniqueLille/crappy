@@ -9,16 +9,6 @@ Hardware required:
 
 import crappy
 import tables
-import numpy as np
-
-
-def my_mean(data):
-  """Average the blocks of data to lower the freq and allow a real-time
-  plot."""
-
-  for k, val in data.items():
-    data[k] = np.mean(val)
-  return data
 
 
 if __name__ == "__main__":
@@ -30,7 +20,7 @@ if __name__ == "__main__":
                             streamer=True)
 
   g = crappy.blocks.Grapher(('t(s)', 'AIN0'), ('t(s)', 'AIN1'))
-  crappy.link(s, g, modifier=my_mean)
+  crappy.link(s, g, modifier=crappy.modifier.Demux(labels=('AIN0', 'AIN1')))
 
   rec = crappy.blocks.Hdf_recorder("out.h5", atom=tables.Float64Atom())
   crappy.link(s, rec)
