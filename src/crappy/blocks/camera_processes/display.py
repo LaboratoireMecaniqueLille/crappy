@@ -55,12 +55,14 @@ class Displayer(CameraProcess):
     if backend is None:
       if not isinstance(cv2, OptionalModule):
         self._backend = 'cv2'
-      elif not isinstance(plt, OptionalModule):
-        self._backend = 'mpl'
       else:
-        raise ModuleNotFoundError("Neither opencv-python nor matplotlib could "
-                                  "be imported, no backend found for "
-                                  "displaying the images")
+        try:
+          _ = plt.use
+          self._backend = 'mpl'
+        except RuntimeError:
+          raise ModuleNotFoundError("Neither opencv-python nor matplotlib "
+                                    "could be imported, no backend found for "
+                                    "displaying the images")
 
     elif backend in ('cv2', 'mpl'):
       self._backend = backend
