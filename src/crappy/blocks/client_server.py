@@ -215,7 +215,7 @@ class ClientServer(Block):
     self._client.on_message = self._on_message
     self._client.reconnect_delay_set(max_delay=10)
     
-    # These attributs may be set later
+    # These attributes may be set later
     self._topics = None
     self._last_out_val = {}
     self._buffer_output = None
