@@ -80,6 +80,6 @@ class Demux(Modifier):
     if self._mean:
       data[self._time_label] = np.mean(data[self._time_label])
     else:
-      data[self._time_label] = data[self._time_label][0]
+      data[self._time_label] = np.squeeze(data[self._time_label])[0]
 
     return data
