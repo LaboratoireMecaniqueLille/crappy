@@ -141,7 +141,7 @@ class ImageSaver(CameraProcess):
       writer = DictWriter(csvfile, fieldnames=self._metadata.keys())
       writer.writerow({**self._metadata, 't(s)': self._metadata['t(s)']})
 
-    path = str(self._save_folder / f"{self._metadata['ImageUniqueID']} "
+    path = str(self._save_folder / f"{self._metadata['ImageUniqueID']}_"
                                    f"{self._metadata['t(s)']:.3f}."
                                    f"{self._img_extension}")
 

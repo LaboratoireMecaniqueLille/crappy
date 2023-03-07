@@ -96,10 +96,10 @@ class FileReader(Camera):
 
     # Retrieving all the images in the given folder that match the name pattern
     images = (path for path in folder.glob('*') if
-              fullmatch(r'\d+\s\d+\.\d+\..+\Z', path.name) is not None)
+              fullmatch(r'\d+_\d+\.\d+\..+\Z', path.name) is not None)
     # Sorting the images by timestamp
     images = sorted(images,
-                    key=lambda p: float(fullmatch(r'\d+\s(\d+\.\d+)',
+                    key=lambda p: float(fullmatch(r'\d+_(\d+\.\d+)',
                                                   p.stem).group(1)))
 
     # In case no matching image was found
@@ -137,7 +137,7 @@ class FileReader(Camera):
     try:
       # Getting the next image to read and its timestamp
       img_path = next(self._images)
-      timestamp = float(fullmatch(r'\d+\s(\d+\.\d+)', img_path.stem).group(1))
+      timestamp = float(fullmatch(r'\d+_(\d+\.\d+)', img_path.stem).group(1))
 
       self.log(logging.DEBUG, f"Reading image {img_path} with timestamp "
                               f"{timestamp}")
