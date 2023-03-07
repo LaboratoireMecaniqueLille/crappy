@@ -8,7 +8,6 @@ from typing import Optional
 from time import time, sleep
 import logging
 import logging.handlers
-from itertools import chain
 
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
@@ -40,6 +39,11 @@ class Displayer(CameraProcess):
                display_freq: bool = False) -> None:
     """"""
 
+    # The thread must be initialized later for compatibility with Windows
+    self._box_thread: Optional[Thread] = None
+    self._boxes: SpotsBoxes = SpotsBoxes()
+    self._stop_thread = False
+
     super().__init__(log_queue=log_queue,
                      log_level=log_level,
                      display_freq=display_freq)
@@ -68,11 +72,6 @@ class Displayer(CameraProcess):
     self._ax = None
     self._fig = None
     self._last_upd = time()
-
-    # The thread must be initialized later for compatibility with Windows
-    self._box_thread: Optional[Thread] = None
-    self._boxes: SpotsBoxes = SpotsBoxes()
-    self._stop_thread = False
 
   def __del__(self) -> None:
     """"""
