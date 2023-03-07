@@ -263,7 +263,7 @@ class T7_streamer(InOut):
                                     data.shape[0]) / self._scan_rate
     self._n_points += data.shape[0]
 
-    return [t, data]
+    return [t[:, np.newaxis], data]
 
   def stop_stream(self) -> None:
     """Stops the stream if it was started."""
