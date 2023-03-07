@@ -69,7 +69,8 @@ class IOBlock(Block):
         no output links.
       spam: If :obj:`False`, the block will call :meth:`set_cmd` on the
         InOut object only if the current command is different from the
-        previous.
+        previous. Otherwise, it will call the method each time a command is
+        received.
       freq: The block will try to loop as this frequency, or as fast as
         possible if no value is given.
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -121,7 +122,7 @@ class IOBlock(Block):
 
     self._stream_started = False
     self._last_cmd = None
-    self._prev_value = dict()
+    self._prev_values = dict()
 
     # Checking whether the InOut communicates through an FT232H
     if inout_dict[self._io_name].ft232h:
@@ -169,6 +170,7 @@ class IOBlock(Block):
                              f"{type(self._device).__name__} InOut")
       self._device.set_cmd(*self._initial_cmd)
       self._last_cmd = self._initial_cmd
+      self._prev_values.update(zip(self._cmd_labels, self._initial_cmd))
 
   def loop(self) -> None:
     """Gets the latest command, reads data from the device and sets the
@@ -190,15 +192,15 @@ class IOBlock(Block):
         self.log(logging.DEBUG, "Software trigger signal received")
         self._read_data()
 
-    # The missing values are completed here, because the trig label must not be
-    # artificially created
-    self._prev_value.update(data)
-    data.update(self._prev_value)
+    # If no data was received, there's nothing to write
+    if not data:
+      return
 
     if self._write:
-      # At the very beginning of the test, there may not be any received value
-      if not data:
-        return
+      # The missing values are completed here, because the trig label must not
+      # be artificially created
+      self._prev_values.update(data)
+      data.update(self._prev_values)
 
       # Keeping only the labels in cmd_labels
       cmd = [val for label, val in data.items()
