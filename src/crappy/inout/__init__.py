@@ -26,7 +26,7 @@ from .mprls import MPRLS
 from .nau7802 import NAU7802
 from .ni_daqmx import NIDAQmx
 from .opsens import OpSens
-from .pijuice import PiJuice
+from .pijuice_hat import PiJuice
 from .spectrum import Spectrum
 from .labjack_t7_streamer import T7Streamer
 from .waveshare_ad_da import WaveshareADDA
