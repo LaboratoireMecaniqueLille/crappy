@@ -15,7 +15,7 @@
 import os
 import sys
 from time import asctime
-__version__ = '2.0.0.dev0'
+__version__ = '2.0.0.dev1'
 
 sys.path.insert(0, os.path.abspath('../..'))
 sys.setrecursionlimit(1500)
