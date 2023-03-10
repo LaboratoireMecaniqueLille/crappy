@@ -150,6 +150,7 @@ class Grapher(Block):
 
     # Ready to show the window
     self.log(logging.INFO, "Configured the matplotlib window, displaying it")
+    plt.tight_layout()
     plt.show(block=False)
     plt.pause(.001)
 
