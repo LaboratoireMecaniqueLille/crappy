@@ -142,6 +142,7 @@ class Grapher(Block):
       mng.window.wm_geometry("+%s+%s" % self._window_pos)
 
     # Ready to show the window
+    plt.tight_layout()
     plt.show(block=False)
     plt.pause(.001)
 
