@@ -10,7 +10,7 @@ from .meta_block import Block
 #   Add an option for zero-order interpolation
 
 
-class Multiplex(Block):
+class Multiplexer(Block):
   """This block takes data from upstream blocks as input and interpolates it to
   output all labels in a common time basis.
 

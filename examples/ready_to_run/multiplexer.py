@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-Example demonstrating the use of ``crappy.blocks.Multiplex``.
+Example demonstrating the use of ``crappy.blocks.Multiplexer``.
 
 This block interpolates data from several parents in a common timebase.
 
@@ -12,8 +12,8 @@ import crappy
 
 
 class Delay(crappy.modifier.Modifier):
-  """Modifier to add a delay to one of the inputs, demonstrating how Multiplex
-  will wait for data."""
+  """Modifier to add a delay to one of the inputs, demonstrating how
+  Multiplexer will wait for data."""
 
   def __init__(self, n):
     super().__init__()
@@ -36,8 +36,8 @@ if __name__ == "__main__":
          condition1='cmd2>1', condition2='cmd2<-1', cycles=0, init_value=0)
       ], freq=50, cmd_label='cmd2')
 
-  mul = crappy.blocks.Multiplex(display_freq=True,
-                                out_labels=['cmd1', 'cmd2'])
+  mul = crappy.blocks.Multiplexer(display_freq=True,
+                                  out_labels=['cmd1', 'cmd2'])
 
   # crappy.link(g1, mul)
   crappy.link(g1, mul, modifier=Delay(50))

@@ -109,7 +109,7 @@ Mean Block
 
 Multiplexer
 +++++++++++
-.. autoclass:: crappy.blocks.Multiplex
+.. autoclass:: crappy.blocks.Multiplexer
    :members: loop
    :special-members: __init__
 

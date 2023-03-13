@@ -21,7 +21,7 @@ from .hdf_recorder import HDFRecorder
 from .ioblock import IOBlock
 from .machine import Machine
 from .mean import MeanBlock
-from .multiplex import Multiplex
+from .multiplexer import Multiplexer
 from .pid import PID
 from .reader import Reader
 from .recorder import Recorder

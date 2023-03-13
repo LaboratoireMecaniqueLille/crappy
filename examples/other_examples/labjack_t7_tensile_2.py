@@ -76,7 +76,7 @@ if __name__ == "__main__":
   # may run at different frequencies, it is not possible to build a csv file
   # simply from two or more separate sources.
   # We could interpolate them in the same
-  # timebase (see block Multiplex) but this means loosing the raw data. It is
+  # timebase (see block Multiplexer) but this means loosing the raw data. It is
   # much better to perform this interpolation in post-processing if necessary
 
   # Our force against time plot
