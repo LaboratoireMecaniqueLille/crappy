@@ -147,12 +147,12 @@ Signal generation
   Refer to the `generator.py <https://github.com/LaboratoireMecaniqueLille/
   crappy/blob/master/Examples/generator.py>`_ example for a use case.
 
-- :ref:`GUI`
+- :ref:`Button`
 
   Generates a signal when the user clicks on a button in a GUI. Useful for
   triggering a behavior during an assay.
 
-  No example featuring a GUI block is currently distributed.
+  No example featuring a Button block is currently distributed.
 
 - :ref:`PID`
 

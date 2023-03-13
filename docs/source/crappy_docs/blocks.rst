@@ -77,9 +77,9 @@ Grapher
    :members: prepare, loop, finish
    :special-members: __init__
 
-GUI
+Button
 +++
-.. autoclass:: crappy.blocks.GUI
+.. autoclass:: crappy.blocks.Button
    :members: prepare, begin, loop, finish
    :special-members: __init__
 

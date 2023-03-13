@@ -13,7 +13,7 @@ except (ModuleNotFoundError, ImportError):
   tk = OptionalModule("tkinter")
 
 
-class GUI(Block):
+class Button(Block):
   """This block allows the user to send a signal upon clicking on a button in
   a graphical user interface.
 
@@ -67,7 +67,7 @@ class GUI(Block):
     self.log(logging.INFO, "Creating the GUI")
 
     self._root = tk.Tk()
-    self._root.title("GUI block")
+    self._root.title("Button block")
     self._root.resizable(False, False)
 
     self._step = tk.IntVar()

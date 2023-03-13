@@ -16,7 +16,7 @@ from .generator import Generator
 from .gpu_correl import GPUCorrel
 from .gpu_ve import GPUVE
 from .grapher import Grapher
-from .gui import GUI
+from .button import Button
 from .hdf_recorder import HDFRecorder
 from .ioblock import IOBlock
 from .machine import Machine
