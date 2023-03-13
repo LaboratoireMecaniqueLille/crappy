@@ -19,7 +19,7 @@ Data plotting
   Most of the `examples <https://github.com/LaboratoireMecaniqueLille/crappy/
   tree/master/Examples>`_ include a Grapher block, refer to them for a use case.
 
-- :ref:`Drawing`
+- :ref:`Canvas`
 
   Displays data on top of a static image, e.g. for having a real-time
   temperature map.

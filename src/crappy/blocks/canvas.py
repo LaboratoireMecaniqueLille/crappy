@@ -17,7 +17,7 @@ class Text:
   """Displays a simple text line on the drawing."""
 
   def __init__(self,
-               _: Drawing,
+               _: Canvas,
                coord: Tuple[int, int],
                text: str,
                label: str,
@@ -50,7 +50,7 @@ class DotText:
   """
 
   def __init__(self,
-               drawing: Drawing,
+               drawing: Canvas,
                coord: Tuple[int, int],
                text: str,
                label: str,
@@ -97,7 +97,7 @@ class Time:
   """Displays a time counter on the drawing, starting at the beginning of the
   test."""
 
-  def __init__(self, drawing: Drawing, coord: Tuple[int, int], **__) -> None:
+  def __init__(self, drawing: Canvas, coord: Tuple[int, int], **__) -> None:
     """Simply sets the args.
 
     Args:
@@ -117,7 +117,7 @@ class Time:
     self._txt.set_text(str(timedelta(seconds=int(time() - self._block.t0))))
 
 
-class Drawing(Block):
+class Canvas(Block):
   """This block allows displaying a real-time visual representation of data.
 
   It displays the data on top of a background image and updates it according to
@@ -132,7 +132,7 @@ class Drawing(Block):
                image_path: str,
                draw: Optional[List[Dict[str, Any]]] = None,
                color_range: Tuple[float, float] = (20, 300),
-               title: str = "Drawing",
+               title: str = "Canvas",
                window_size: Tuple[int, int] = (7, 5),
                backend: str = "TkAgg",
                freq: float = 2,

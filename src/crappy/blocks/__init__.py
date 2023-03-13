@@ -10,7 +10,7 @@ from .client_server import ClientServer
 from .dashboard import Dashboard
 from .dis_correl import DISCorrel
 from .dic_ve import DICVE
-from .drawing import Drawing
+from .canvas import Canvas
 from .fake_machine import FakeMachine
 from .generator import Generator
 from .gpu_correl import GPUCorrel

@@ -41,9 +41,9 @@ DIS VE
    :members: prepare
    :special-members: __init__
 
-Drawing
+Canvas
 +++++++
-.. autoclass:: crappy.blocks.Drawing
+.. autoclass:: crappy.blocks.Canvas
    :members: prepare, loop, finish
    :special-members: __init__
 
