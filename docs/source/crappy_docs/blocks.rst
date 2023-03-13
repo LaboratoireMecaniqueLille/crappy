@@ -11,6 +11,18 @@ Auto Drive
    :members: __init__, prepare, loop, finish
    :special-members: __init__
 
+Button
+++++++
+.. autoclass:: crappy.blocks.Button
+   :members: prepare, begin, loop, finish
+   :special-members: __init__
+
+Canvas
++++++++
+.. autoclass:: crappy.blocks.Canvas
+   :members: prepare, loop, finish
+   :special-members: __init__
+
 Camera Block
 ++++++++++++
 .. autoclass:: crappy.blocks.Camera
@@ -39,12 +51,6 @@ DIS VE
 ++++++
 .. autoclass:: crappy.blocks.DICVE
    :members: prepare
-   :special-members: __init__
-
-Canvas
-+++++++
-.. autoclass:: crappy.blocks.Canvas
-   :members: prepare, loop, finish
    :special-members: __init__
 
 Fake Machine
@@ -77,12 +83,6 @@ Grapher
    :members: prepare, loop, finish
    :special-members: __init__
 
-Button
-+++
-.. autoclass:: crappy.blocks.Button
-   :members: prepare, begin, loop, finish
-   :special-members: __init__
-
 HDF Recorder
 ++++++++++++
 .. autoclass:: crappy.blocks.HDFRecorder
@@ -93,6 +93,12 @@ IOBlock
 +++++++
 .. autoclass:: crappy.blocks.IOBlock
    :members: prepare, loop, finish
+   :special-members: __init__
+
+Link Reader
++++++++++++
+.. autoclass:: crappy.blocks.LinkReader
+   :members: loop
    :special-members: __init__
 
 Machine
@@ -116,12 +122,6 @@ Multiplexer
 PID
 +++
 .. autoclass:: crappy.blocks.PID
-   :members: loop
-   :special-members: __init__
-
-Link Reader
-++++++
-.. autoclass:: crappy.blocks.LinkReader
    :members: loop
    :special-members: __init__
 

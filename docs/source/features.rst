@@ -36,7 +36,7 @@ Data plotting
 - :ref:`Dashboard`
 
   Prints received values in a popup window and with a nicer formatting than
-  :ref:`LinkReader`.
+  :ref:`Link Reader`.
 
   No example featuring a Dashboard block is currently distributed.
 
