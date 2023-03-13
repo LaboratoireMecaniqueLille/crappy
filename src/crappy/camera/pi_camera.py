@@ -21,6 +21,9 @@ except (ModuleNotFoundError, ImportError, OSError):
 
 picamera_iso = [0, 100, 200, 320, 400, 500, 640, 800]
 
+# TODO:
+#   Update to picamera2 when available
+
 
 class PiCamera(Camera):
   """Class for reading images from a PiCamera.

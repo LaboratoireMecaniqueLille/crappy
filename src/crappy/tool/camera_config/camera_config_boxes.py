@@ -8,6 +8,9 @@ from .camera_config import CameraConfig
 from .config_tools import Box, SpotsBoxes
 from ...camera.meta_camera import Camera
 
+# TODO:
+#   Adapt line width of the box to the size of the image
+
 
 class CameraConfigBoxes(CameraConfig):
   """This class is a basis for the configuration GUIs featuring boxes to

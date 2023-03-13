@@ -14,6 +14,9 @@ from .._global import LinkDataError
 
 ModifierType = Callable[[Dict[str, Any]], Dict[str, Any]]
 
+# TODO:
+#   select() does not work on Windows for pipes
+
 
 class Link:
   """This class is used for transferring information between the Blocks.

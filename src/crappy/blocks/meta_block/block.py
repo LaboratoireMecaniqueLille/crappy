@@ -26,6 +26,7 @@ from ...tool.ft232h import USBServer
 
 # Todo:
 #  Add a clean way to stop the blocks, using the keyboard or a button
+#  Experiment the use of numpy arrays in Links
 
 
 class Block(Process, metaclass=MetaBlock):

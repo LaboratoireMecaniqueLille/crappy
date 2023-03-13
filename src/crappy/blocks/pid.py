@@ -6,6 +6,9 @@ import logging
 
 from .meta_block import Block
 
+# TODO:
+#   Upgrade to a more advanced PID algorithm
+
 
 class PID(Block):
   """A basic implementation of a PID corrector.

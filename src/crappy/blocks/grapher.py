@@ -11,6 +11,9 @@ from .._global import OptionalModule
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 wdg = OptionalModule('matplotlib.widgets', lazy_import=True)
 
+# TODO:
+#   Decide what to do with the Clear button
+
 
 class Grapher(Block):
   """The grapher receive data from a block and plots it.
