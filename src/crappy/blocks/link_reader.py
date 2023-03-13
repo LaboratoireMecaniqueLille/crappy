@@ -6,7 +6,7 @@ import logging
 from .meta_block import Block
 
 
-class Reader(Block):
+class LinkReader(Block):
   """Reads and displays the data flowing through the input :ref:`Link`."""
 
   _index = 0
@@ -30,7 +30,7 @@ class Reader(Block):
     self.display_freq = display_freq
     self.debug = debug
 
-    self._reader_name = name if name is not None else f'Reader ' \
+    self._reader_name = name if name is not None else f'LinkReader ' \
                                                       f'{self._get_index()}'
 
   def __new__(cls, *args, **kwargs):

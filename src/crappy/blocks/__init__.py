@@ -23,7 +23,7 @@ from .machine import Machine
 from .mean import MeanBlock
 from .multiplexer import Multiplexer
 from .pid import PID
-from .reader import Reader
+from .link_reader import LinkReader
 from .recorder import Recorder
 from .sink import Sink
 from .ucontroller import UController

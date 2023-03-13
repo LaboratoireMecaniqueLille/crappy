@@ -119,9 +119,9 @@ PID
    :members: loop
    :special-members: __init__
 
-Reader
+Link Reader
 ++++++
-.. autoclass:: crappy.blocks.Reader
+.. autoclass:: crappy.blocks.LinkReader
    :members: loop
    :special-members: __init__
 

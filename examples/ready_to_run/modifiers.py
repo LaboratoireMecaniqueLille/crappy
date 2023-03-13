@@ -58,7 +58,7 @@ if __name__ == "__main__":
                 mul_by_10])
 
   # This block will simply print "Triggered" followed by the received data
-  r = crappy.blocks.Reader('Triggered')
+  r = crappy.blocks.LinkReader('Triggered')
 
   # Only forward data when the label "cycle" changed its value
   crappy.link(generator, r,

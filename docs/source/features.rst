@@ -27,16 +27,16 @@ Data plotting
   Refer to the `drawing.py <https://github.com/LaboratoireMecaniqueLille/
   crappy/blob/master/Examples/drawing.py>`_ example for a use case.
 
-- :ref:`Reader`
+- :ref:`Link Reader`
 
   Prints the received values in the terminal. Mostly useful for debugging.
 
-  No example featuring a Reader block is currently distributed.
+  No example featuring a Link Reader block is currently distributed.
 
 - :ref:`Dashboard`
 
   Prints received values in a popup window and with a nicer formatting than
-  :ref:`Reader`.
+  :ref:`LinkReader`.
 
   No example featuring a Dashboard block is currently distributed.
 
