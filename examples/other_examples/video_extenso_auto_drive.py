@@ -13,9 +13,8 @@ if __name__ == '__main__':
   ve = crappy.blocks.VideoExtenso(camera='XiAPI', display_images=True)
 
   # The Block driving the Actuator for following the spots
-  auto_drive = crappy.blocks.AutoDrive(actuator={'name': 'CMDrive',
-                                                 'port': '/dev/ttyUSB0'},
-                                       direction='X-')
+  auto_drive = crappy.blocks.AutoDriveVideoExtenso(
+      actuator={'name': 'CMDrive', 'port': '/dev/ttyUSB0'}, direction='X-')
   crappy.link(ve, auto_drive)
 
   # The Block displaying the strain in real-time

@@ -7,7 +7,7 @@ Regular Blocks
 
 Auto Drive
 ++++++++++
-.. autoclass:: crappy.blocks.AutoDrive
+.. autoclass:: crappy.blocks.AutoDriveVideoExtenso
    :members: __init__, prepare, loop, finish
    :special-members: __init__
 

@@ -3,7 +3,7 @@
 # Some of them are already implemented (see the reference manual),
 # but you can also implement your own.
 
-from .auto_drive import AutoDrive
+from .auto_drive_video_extenso import AutoDriveVideoExtenso
 from .meta_block import Block
 from .camera import Camera
 from .client_server import ClientServer

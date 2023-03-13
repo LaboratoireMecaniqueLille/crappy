@@ -9,7 +9,7 @@ from ..actuator import actuator_dict, Actuator
 from ..tool.ft232h import USBServer
 
 
-class AutoDrive(Block):
+class AutoDriveVideoExtenso(Block):
   """This block is meant to drive an actuator on which a camera performing
   videoextensometry is mounted so that the spots stay centered on the image.
 
@@ -81,7 +81,7 @@ class AutoDrive(Block):
 
     # Checking that there's exactly one input link
     if not self.inputs:
-      raise IOError("The AutoDrive block should have an input link !")
+      raise IOError("The AutoDriveVideoExtenso block should have an input link !")
     elif len(self.inputs) > 1:
       raise IOError("The AUtoDrive block can only have one input link !")
 
