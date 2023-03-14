@@ -107,6 +107,7 @@ class Grapher(Block):
     self._canvas = self._figure.canvas
     self._ax = self._figure.add_subplot(111)
     self._figure.canvas.mpl_connect('key_press_event', self.on_press)
+    self._ax.set_title('(Press c to clear the graph)', fontsize='small',loc='right')
 
     # Add the lines or the dots
     self._lines = []
@@ -220,3 +221,5 @@ class Grapher(Block):
   def on_press(self, event):
     if event.key == 'c':
         self._clear()
+ 
+ 
