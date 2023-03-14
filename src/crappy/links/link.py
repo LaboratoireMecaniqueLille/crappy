@@ -6,6 +6,7 @@ from copy import deepcopy
 from typing import Callable, Union, Any, Dict, Optional, List
 from collections import defaultdict
 from select import select
+from platform import system
 from multiprocessing import current_process
 import logging
 
@@ -121,13 +122,17 @@ class Link:
       raise LinkDataError
 
     # Finally, sending the dict to the link
-    if select([], [self._out], [], 0)[1]:
-      self._out.send(value)
+    if self._system == 'Linux':
+      # Can only check on Linux if a pipe is full
+      if select([], [self._out], [], 0)[1]:
+        self._out.send(value)
+      # Warning in case the pipe is full
+      elif time() - self._last_warn > 1:
+          self._last_warn = time()
+          self.log(logging.WARNING, f"Cannot send the values, the Link is "
+                                    f"full !")
     else:
-      if time() - self._last_warn > 1:
-        self._last_warn = time()
-        self.log(logging.WARNING, f"Cannot send the values, the Link is "
-                                  f"full !")
+      self._out.send(value)
 
   def recv(self) -> Dict[str, Any]:
     """Reads a single value from the Link and returns it.

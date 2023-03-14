@@ -9,6 +9,7 @@ from time import time
 from select import select
 import logging
 import logging.handlers
+from platform import system
 
 from ...camera_config import Box
 from ...._global import OptionalModule
@@ -67,6 +68,7 @@ class Tracker(Process):
 
     super().__init__()
     self.name = self.get_name(logger_name, type(self).__name__)
+    self._system = system()
 
     self._pipe = pipe
     self._white_spots = white_spots
@@ -211,13 +213,15 @@ class Tracker(Process):
   def _send(self, val: Union[Box, str]) -> None:
     """"""
 
-    if select([], [self._pipe], [], 0)[1]:
-      self._pipe.send(val)
+    if self._system == 'Linux':
+      if select([], [self._pipe], [], 0)[1]:
+        self._pipe.send(val)
+      elif time() - self._last_warn > 1:
+          self._last_warn = time()
+          self._log(logging.WARNING, f"Cannot send the detected spot to the "
+                                     f"VideoExtenso tool, the Pipe is full !")
     else:
-      if time() - self._last_warn > 1:
-        self._last_warn = time()
-        self._log(logging.WARNING, f"Cannot send the detected spot to the "
-                                   f"VideoExtenso tool, the Pipe is full !")
+      self._pipe.send(val)
 
   def _set_logger(self) -> None:
     """"""

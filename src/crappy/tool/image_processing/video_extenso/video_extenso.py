@@ -10,6 +10,7 @@ from time import sleep, time
 import logging
 import logging.handlers
 from select import select
+from platform import system
 
 from ...camera_config import SpotsBoxes, Box
 from .tracker import Tracker, LostSpotError
@@ -97,6 +98,7 @@ class VideoExtensoTool:
     self._log_queue = log_queue
 
     self._last_warn = time()
+    self._system = system()
 
   def __del__(self) -> None:
     """Security to ensure there are no zombie processes left when exiting."""
@@ -267,13 +269,15 @@ class VideoExtensoTool:
             val: Union[str, Tuple[int, int, np.ndarray]]) -> None:
     """"""
 
-    if select([], [conn], [], 0)[1]:
-      conn.send(val)
+    if self._system == 'Linux':
+      if select([], [conn], [], 0)[1]:
+        conn.send(val)
+      elif time() - self._last_warn > 1:
+          self._last_warn = time()
+          self._log(logging.WARNING, f"Cannot send the image to process to the"
+                                     f" Tracker process, the Pipe is full !")
     else:
-      if time() - self._last_warn > 1:
-        self._last_warn = time()
-        self._log(logging.WARNING, f"Cannot send the image to process to the "
-                                   f"Tracker process, the Pipe is full !")
+      conn.send(val)
 
   @staticmethod
   def _overlap_box(box_1: Box, box_2: Box) -> bool:

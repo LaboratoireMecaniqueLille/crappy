@@ -13,6 +13,7 @@ import logging
 import logging.handlers
 from select import select
 from time import time
+from platform import system
 
 from ...links import Link
 from ..._global import LinkDataError
@@ -30,6 +31,7 @@ class CameraProcess(Process):
 
     super().__init__()
     self.name = f"{current_process().name}.{type(self).__name__}"
+    self._system = system()
 
     self._log_queue = log_queue
     self._logger: Optional[logging.Logger] = None
@@ -205,13 +207,18 @@ class CameraProcess(Process):
 
     self._log(logging.DEBUG, "Sending the box(es) to the displayer process")
 
-    if select([], [self._box_conn], [], 0)[1]:
-      self._box_conn.send(boxes)
+    # Sending the boxes
+    if self._system == 'Linux':
+      if select([], [self._box_conn], [], 0)[1]:
+        # Can only check on Linux if a pipe is full
+        self._box_conn.send(boxes)
+      elif time() - self._last_warn > 1:
+        # Warning in case the pipe is full
+          self._last_warn = time()
+          self._log(logging.WARNING, f"Cannot send the box(es) to draw to the "
+                                     f"Displayer process, the Pipe is full !")
     else:
-      if time() - self._last_warn > 1:
-        self._last_warn = time()
-        self._log(logging.WARNING, f"Cannot send the box(es) to draw to the "
-                                   f"Displayer process, the Pipe is full !")
+      self._box_conn.send(boxes)
 
   def _set_logger(self) -> None:
     """"""
