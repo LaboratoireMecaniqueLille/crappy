@@ -9,10 +9,8 @@ from .._global import OptionalModule
 
 try:
   import matplotlib.pyplot as plt
-  from matplotlib.widgets import Button
 except (ModuleNotFoundError, ImportError):
   plt = OptionalModule("matplotlib")
-  Button = OptionalModule("matplotlib")
 
 
 class Grapher(Block):
@@ -108,6 +106,8 @@ class Grapher(Block):
     self._figure = plt.figure(figsize=self._window_size)
     self._canvas = self._figure.canvas
     self._ax = self._figure.add_subplot(111)
+    self._figure.canvas.mpl_connect('key_press_event', self.on_press)
+    self._ax.set_title('(Press c to clear the graph)', fontsize='small',loc='right')
 
     # Add the lines or the dots
     self._lines = []
@@ -131,10 +131,6 @@ class Grapher(Block):
 
     # Add a grid
     plt.grid()
-
-    # Adds a button for clearing the graph
-    self._clear_button = Button(plt.axes([.8, .02, .15, .05]), 'Clear')
-    self._clear_button.on_clicked(self._clear)
 
     # Set the dimensions if required
     if self._window_pos:
@@ -221,3 +217,9 @@ class Grapher(Block):
       line.set_ydata([])
     self.factor = [1 for _ in self._labels]
     self.counter = [0 for _ in self._labels]
+
+  def on_press(self, event):
+    if event.key == 'c':
+        self._clear()
+ 
+ 
