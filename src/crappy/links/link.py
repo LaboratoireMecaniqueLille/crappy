@@ -15,9 +15,6 @@ from .._global import LinkDataError
 
 ModifierType = Callable[[Dict[str, Any]], Dict[str, Any]]
 
-# TODO:
-#   select() does not work on Windows for pipes
-
 
 class Link:
   """This class is used for transferring information between the Blocks.
@@ -66,6 +63,7 @@ class Link:
 
     self._last_warn = time()
     self._logger: Optional[logging.Logger] = None
+    self._system = system()
 
   def __new__(cls, *args, **kwargs):
     """When instantiating a new Link, increments the Link counter."""
