@@ -24,6 +24,9 @@ except (ModuleNotFoundError, ImportError):
   ImageTk = OptionalModule("pillow")
   Image = OptionalModule("pillow")
 
+# TODO:
+#   Parallelize the calculation of the histogram
+
 
 class CameraConfig(tk.Tk):
   """This class is a GUI allowing the user to visualize the images from a
@@ -595,7 +598,9 @@ class CameraConfig(tk.Tk):
 
     # The FPS counter
     self._fps_var = tk.DoubleVar(value=0.)
-    self._fps_txt = tk.StringVar(value=f'fps = {self._fps_var.get():.2f}')
+    self._fps_txt = tk.StringVar(
+        value=f'fps = {self._fps_var.get():.2f}\n(might be lower in this GUI '
+              f'than actual)')
 
     # The variable for enabling or disabling the auto range
     self._auto_range = tk.BooleanVar(value=False)
@@ -647,7 +652,8 @@ class CameraConfig(tk.Tk):
   def _update_fps(self, _, __, ___) -> None:
     """Auto-update of the FPS display."""
 
-    self._fps_txt.set(f'fps = {self._fps_var.get():.2f}')
+    self._fps_txt.set(f'fps = {self._fps_var.get():.2f}\n'
+                      f'(might be lower in this GUI than actual)')
 
   def _update_min_max(self, _, __, ___) -> None:
     """Auto-update of the minimum and maximum pixel values display."""
@@ -792,12 +798,14 @@ class CameraConfig(tk.Tk):
 
     self.log(logging.DEBUG, "Calculating the histogram of the image")
 
+    hist_img = self._pil_img.resize((320, 240))
+
     # The histogram is calculated on a grey level image
     if len(self._original_img.shape) == 3:
-      self._original_img = np.mean(self._original_img, axis=2)
+      hist_img = hist_img.convert('L')
 
     # Building the image containing the histogram
-    hist, _ = np.histogram(self._original_img, bins=np.arange(257))
+    hist, _ = np.histogram(hist_img, bins=np.arange(257))
     hist = np.repeat(hist / np.max(hist) * 80, 2)
     hist = np.repeat(hist[np.newaxis, :], 80, axis=0)
 
