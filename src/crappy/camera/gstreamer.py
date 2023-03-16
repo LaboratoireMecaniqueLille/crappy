@@ -199,32 +199,38 @@ videoconvert ! autovideosink
         check = check.stdout if check is not None else ''
 
         # Trying to find the exposure parameters in the returned string
-        expo = search(r'exposure\s0x[\dA-Fa-f]+\s\(\w+\)\s+:\s'
-                      r'min=(?P<min>\d+)\smax=(?P<max>\d+)', check)
-        expo_auto = search(r'exposure_auto\s0x[\dA-Fa-f]+\s\(\w+\)\s+:\s'
-                           r'min=(?P<min>\d+)\smax=(?P<max>\d+)', check)
-        expo_abso = search(r'exposure_absolute\s0x[\dA-Fa-f]+\s\(\w+\)\s+:\s'
-                           r'min=(?P<min>\d+)\smax=(?P<max>\d+)', check)
+        expo = search(r'(?=.*\sexposure\s.*).+min=(?P<min>\d+)\s'
+                      r'max=(?P<max>\d+).+default=(\d+)',
+                      check)
+        expo_auto = search(r'(?=.*exposure.*)(?=.*auto.*)(?=.*menu.*)\s+'
+                           r'\s(\w+)\s', check)
+        expo_abso = search(r'(?=.*absolute.*)(?=.*exposure.*)(?=.*int.*)\s+'
+                           r'\s(\w+)\s.+min=(\d+)\smax=(\d+).+default=(\d+)',
+                           check)
 
         # If there's an exposure parameter, getting its upper and lower limits
         if expo:
-          expo_min, expo_max = map(int, expo.groups())
+          expo_min, expo_max, default = map(int, expo.groups())
           self._exposure_mode = 'direct'
+          self._exposure_setting = 'exposure'
 
         # If there's an exposure parameter, getting its upper and lower limits
         elif expo_auto and expo_abso:
-          expo_min, expo_max = map(int, expo_abso.groups())
-          self._exposure_mode = 'auto'
+          self._exposure_mode = 'manual'
+          self._exposure_setting = expo_abso.groups()[0]
+          self._exposure_auto = expo_auto.groups()[0]
+          expo_min, expo_max, default = map(int, expo_abso.groups()[1:])
 
         else:
           expo_min = None
           expo_max = None
+          default = None
 
         # Creating the parameter if applicable
         if expo_min is not None:
           self.add_scale_setting(name='exposure', lowest=expo_min,
                                  highest=expo_max, getter=self._get_exposure,
-                                 setter=self._set_exposure)
+                                 setter=self._set_exposure, default=default)
 
       # Then, trying to get the available image encodings and formats
       if system() == 'Linux':
@@ -381,9 +387,9 @@ videoconvert ! autovideosink
                       f"""exposure={exposure if exposure is not None 
                                 else self.exposure}""")
       else:
-        extra_args = (f"controls,exposure_auto=1,"
-                      f"""exposure_absolute={exposure if exposure is not None
-                                         else self.exposure}""")
+        extra_args = (f"controls,{self._exposure_auto}=1,"
+                      f"{self._exposure_setting}="
+                      f"{exposure if exposure is not None else self.exposure}")
 
       # Setting the exposure is done via the 'extra-controls' property of the
       # 'v4l2src' source
@@ -556,13 +562,9 @@ videoconvert ! autovideosink
 
     # Trying to run v4l2-ctl to get the exposure value
     if self._device is not None:
-      command = ['v4l2-ctl', '-d', self._device, '-C',
-                 'exposure_absolute' if self._exposure_mode == 'auto' else
-                 'exposure']
+      command = ['v4l2-ctl', '-d', self._device, '--all']
     else:
-      command = ['v4l2-ctl', '-C',
-                 'exposure_absolute' if self._exposure_mode == 'auto' else
-                 'exposure']
+      command = ['v4l2-ctl', '--all']
     try:
       self.log(logging.DEBUG, f"Getting exposure with command {command}")
       expo = run(command, capture_output=True, text=True)
@@ -571,9 +573,9 @@ videoconvert ! autovideosink
 
     # Extracting the exposure from the returned string
     expo = expo.stdout if expo is not None else ''
-    expo = search(r'\d+', expo)
+    expo = search(rf'(?=.*\s{self._exposure_setting}\s.*).+value=(\d+)', expo)
     if expo:
-      return int(expo[0])
+      return int(expo.groups()[0])
     else:
       raise IOError("Couldn't read exposure value from v4l2 !")
 
