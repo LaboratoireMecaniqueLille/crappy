@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Tuple
+from typing import Tuple, List
 from numpy import ndarray
 from platform import system
 from subprocess import run
@@ -15,8 +15,6 @@ try:
   import cv2
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
-
-# Todo: Manage frame rate
 
 
 class CameraOpencv(Camera):
@@ -92,10 +90,13 @@ class CameraOpencv(Camera):
           # For each encoding, finding its name
           name, *_ = search(r"'(\w+)'", img_format).groups()
           sizes = findall(r'\d+x\d+', img_format)
+          fps_sections = split(r'\d+x\d+', img_format)[1:]
 
           # For each name, finding the available sizes
-          for size in sizes:
-            self._formats.append(f'{name} {size}')
+          for size, fps_section in zip(sizes, fps_sections):
+            fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
+            for fps in fps_list:
+              self._formats.append(f'{name} {size} ({fps} fps)')
 
       else:
         # If v4l-utils is not installed, proposing two encodings without
@@ -193,9 +194,10 @@ class CameraOpencv(Camera):
 
     # The format might be made of a name and a dimension, or just a name
     try:
-      format_name, img_size = img_format.split(' ')
+      format_name, img_size, fps = findall(r"(\w+)\s(\w+)\s\((\d+.\d+) fps\)",
+                                           img_format)[0]
     except ValueError:
-      format_name, img_size = img_format, None
+      format_name, img_size, fps = img_format, None, None
 
     # Setting the format
     self._cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*format_name))
@@ -205,22 +207,33 @@ class CameraOpencv(Camera):
       width, height = map(int, img_size.split('x'))
 
       # Setting the size
-      self._set_width(width),
+      self._set_width(width)
       self._set_height(height)
+
+    if fps is not None:
+      self._cap.set(cv2.CAP_PROP_FPS, float(fps))
 
   def _get_format_size(self) -> str:
     """Parses the v4l2-ctl -V command to get the current image format as an
     index."""
 
     # Sending the v4l2-ctl command
-    command = ['v4l2-ctl', '-d', str(self._device_num), '-V']
+    command = ['v4l2-ctl', '-d', str(self._device_num), '--all']
     check = run(command, capture_output=True, text=True).stdout
 
     # Parsing the answer
-    format_ = width = height = ''
-    if search(r"'(\w+)'", check) is not None:
-      format_, *_ = search(r"'(\w+)'", check).groups()
-    if search(r"(\d+)/(\d+)", check):
-      width, height = search(r"(\d+)/(\d+)", check).groups()
+    format_ = width = height = fps = ''
+    if search(r"Pixel Format\s*:\s*'(\w+)'", check) is not None:
+      format_, *_ = search(r"Pixel Format\s*:\s*'(\w+)'", check).groups()
+    if search(r"Width/Height\s*:\s*(\d+)/(\d+)", check) is not None:
+      width, height = search(r"Width/Height\s*:\s*(\d+)/(\d+)", check).groups()
+    if search(r"Frames per second\s*:\s*(\d+.\d+)", check) is not None:
+      fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", check).groups()
 
-    return f'{format_} {width}x{height}'
+    return f'{format_} {width}x{height} ({fps} fps)'
+
+  @staticmethod
+  def _sort(to_sort: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+    """"""
+
+
