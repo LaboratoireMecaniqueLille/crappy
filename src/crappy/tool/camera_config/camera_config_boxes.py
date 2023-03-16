@@ -8,9 +8,6 @@ from .camera_config import CameraConfig
 from .config_tools import Box, SpotsBoxes
 from ...camera.meta_camera import Camera
 
-# TODO:
-#   Adapt line width of the box to the size of the image
-
 
 class CameraConfigBoxes(CameraConfig):
   """This class is a basis for the configuration GUIs featuring boxes to
@@ -37,22 +34,24 @@ class CameraConfigBoxes(CameraConfig):
 
     self.log(logging.DEBUG, f"Drawing the box: {box}")
 
-    # The sides need to be sorted before slicing numpy array
-    y_left, y_right, x_top, x_bottom = box.sorted()
+    # Determining the number of lines to draw
+    x_top, x_bottom, y_left, y_right = box.sorted()
+    canvas_width = self._img_canvas.winfo_width()
+    canvas_height = self._img_canvas.winfo_height()
+    max_fact = max(self._img.shape[0] // canvas_height,
+                   self._img.shape[1] // canvas_width, 1)
 
-    # Drawing one line after the other
-    for slice_ in ((slice(x_top, x_bottom), y_left),
-                   (slice(x_top, x_bottom), y_right),
-                   (x_top, slice(y_left, y_right)),
-                   (x_bottom, slice(y_left, y_right))):
-      try:
-        # The color of the line is adjusted according to the background
-        # The original image must be used as no lines are already drawn on it
-        if np.size(self._original_img[slice_]) > 0:
-          self._img[slice_] = 255 * np.rint(np.mean(self._img[slice_] < 128))
-      except IndexError:
-        self._handle_box_outside_img(box)
-        return
+    try:
+      for line in (line for i in range(max_fact) for line in
+                   ((box.y_start + i, slice(x_top, x_bottom)),
+                    (box.y_end - i, slice(x_top, x_bottom)),
+                    (slice(y_left, y_right), x_top + i),
+                    (slice(y_left, y_right), x_bottom - i))):
+        if np.size(self._original_img[line]) > 0:
+          self._img[line] = 255 * int(np.mean(self._img[line]) < 128)
+    except IndexError:
+      self._handle_box_outside_img(box)
+      return
 
   def _handle_box_outside_img(self, _: Box) -> None:
     """This method is meant to simplify the customization of the action to
