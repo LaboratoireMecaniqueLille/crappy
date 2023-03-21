@@ -69,5 +69,9 @@ class CameraSetting:
       self._setter(val)
 
     if self.value != val:
+      # Double-checking, got strange behavior sometimes probably because of
+      # delays in lower level APIs
+      if self.value == val:
+        return
       self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
                                 f"value is {self.value} !")
