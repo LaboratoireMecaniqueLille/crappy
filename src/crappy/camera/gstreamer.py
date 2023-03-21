@@ -2,11 +2,12 @@
 
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
-from typing import Tuple, Optional, Union
+from typing import Tuple, Optional, Union, List
 from subprocess import Popen, PIPE, run
 from platform import system
 from re import findall, split, search
 import logging
+from fractions import Fraction
 
 from .meta_camera import Camera
 from .._global import OptionalModule
@@ -25,8 +26,6 @@ try:
 except (ImportError, ModuleNotFoundError, ValueError):
   Gst = GstApp = OptionalModule('gi', 'You need to install the python bindings'
                                       ' for GStreamer ! ')
-
-# Todo: Error with a getter
 
 
 class CameraGstreamer(Camera):
@@ -52,15 +51,23 @@ class CameraGstreamer(Camera):
 
     super().__init__()
 
-    self._exposure_mode = None
-    self._pipeline = None
-    self._process: Optional[Popen] = None
-
     Gst.init(None)
-
     self._last_frame_nr = 0
     self._frame_nr = 0
-    self._img = None
+
+    # These attributes will be set later
+    self._exposure_mode: Optional[str] = None
+    self._pipeline = None
+    self._process: Optional[Popen] = None
+    self._img: Optional[ndarray] = None
+    self._device: Optional[Union[str, int]] = None
+    self._user_pipeline: Optional[str] = None
+    self._nb_channels: int = 3
+    self._img_depth: int = 8
+    self._exposure_setting: str = ''
+    self._exposure_auto: str = ''
+    self._formats: List[str] = list()
+    self._app_sink = None
 
   def open(self,
            device: Optional[Union[int, str]] = None,
@@ -261,10 +268,13 @@ videoconvert ! autovideosink
             # For each encoding, finding its name
             name, *_ = search(r"'(\w+)'", img_format).groups()
             sizes = findall(r'\d+x\d+', img_format)
+            fps_sections = split(r'\d+x\d+', img_format)[1:]
 
             # For each name, finding the available sizes
-            for size in sizes:
-              self._formats.append(f'{name} {size}')
+            for size, fps_section in zip(sizes, fps_sections):
+              fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
+              for fps in fps_list:
+                self._formats.append(f'{name} {size} ({fps} fps)')
 
         else:
           # If v4l-utils is not installed, proposing two encodings without
@@ -449,9 +459,10 @@ videoconvert ! autovideosink
     img_format = img_format if img_format is not None else self.format
 
     try:
-      format_name, img_size = img_format.split(' ')
+      format_name, img_size, fps = findall(r"(\w+)\s(\w+)\s\((\d+.\d+) fps\)",
+                                           img_format)[0]
     except ValueError:
-      format_name, img_size = img_format, None
+      format_name, img_size, fps = img_format, None, None
 
     # Adding a mjpeg decoder to the pipeline if needed
     img_format = '! jpegdec' if format_name == 'MJPG' else ''
@@ -462,12 +473,17 @@ videoconvert ! autovideosink
     else:
       width, height = None, None
 
-    # Including the dimensions in the pipeline
+    # Including the dimensions and the fps in the pipeline
     img_size = f',width={width},height={height}' if width else ''
+    if fps is not None:
+      fps = Fraction(fps)
+      fps_str = f',framerate={fps.numerator}/{fps.denominator}'
+    else:
+      fps_str = ''
 
     # Finally, generate a single pipeline containing all the user settings
     return f"""{source} {device} name=source {img_format} ! videoconvert ! 
-           video/x-raw,format=BGR{img_size} ! 
+           video/x-raw,format=BGR{img_size}{fps_str} ! 
            videobalance 
            brightness={brightness if brightness is not None 
                        else self.brightness:.3f} 
@@ -590,17 +606,18 @@ videoconvert ! autovideosink
 
     # Sending the v4l2-ctl command
     if self._device is not None:
-      command = ['v4l2-ctl', '-d', str(self._device), '-V']
+      command = ['v4l2-ctl', '-d', str(self._device), '--all']
     else:
-      command = ['v4l2-ctl', '-V']
-    self.log(logging.DEBUG, f"Getting image format with command {command}")
+      command = ['v4l2-ctl', '--all']
     check = run(command, capture_output=True, text=True).stdout
 
     # Parsing the answer
-    format_ = width = height = ''
-    if search(r"'(\w+)'", check) is not None:
-      format_, *_ = search(r"'(\w+)'", check).groups()
-    if search(r"(\d+)/(\d+)", check):
-      width, height = search(r"(\d+)/(\d+)", check).groups()
+    format_ = width = height = fps = ''
+    if search(r"Pixel Format\s*:\s*'(\w+)'", check) is not None:
+      format_, *_ = search(r"Pixel Format\s*:\s*'(\w+)'", check).groups()
+    if search(r"Width/Height\s*:\s*(\d+)/(\d+)", check) is not None:
+      width, height = search(r"Width/Height\s*:\s*(\d+)/(\d+)", check).groups()
+    if search(r"Frames per second\s*:\s*(\d+.\d+)", check) is not None:
+      fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", check).groups()
 
-    return f'{format_} {width}x{height}'
+    return f'{format_} {width}x{height} ({fps} fps)'
