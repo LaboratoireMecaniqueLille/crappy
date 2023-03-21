@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 from numpy import ndarray
 from platform import system
 from subprocess import run
@@ -38,6 +38,8 @@ class CameraOpencv(Camera):
     super().__init__()
 
     self._cap = None
+    self._device_num: Optional[int] = None
+    self._formats: List[str] = list()
 
     self.add_choice_setting(name="channels",
                             choices=('1', '3'),
@@ -231,9 +233,3 @@ class CameraOpencv(Camera):
       fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", check).groups()
 
     return f'{format_} {width}x{height} ({fps} fps)'
-
-  @staticmethod
-  def _sort(to_sort: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
-    """"""
-
-
