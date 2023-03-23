@@ -7,6 +7,7 @@ from pathlib import Path
 from .camera_processes import DISCorrelProcess
 from .camera import Camera
 from ..tool.camera_config import DISCorrelConfig, Box
+from .._global import CameraConfigError
 
 
 class DISCorrel(Camera):
@@ -122,9 +123,18 @@ class DISCorrel(Camera):
   def _configure(self) -> None:
     """"""
 
-    config = DISCorrelConfig(self._camera, self._log_queue, self._log_level,
-                             self._patch)
-    config.main()
+    config = None
+    try:
+      config = DISCorrelConfig(self._camera, self._log_queue, self._log_level,
+                               self._patch)
+      config.main()
+    except (Exception,) as exc:
+      self._logger.exception("Caught exception in the configuration window !",
+                             exc_info=exc)
+      if config is not None:
+        config.stop()
+      raise CameraConfigError
+
     if config.shape is not None:
       self._img_shape = config.shape
     if config.dtype is not None:

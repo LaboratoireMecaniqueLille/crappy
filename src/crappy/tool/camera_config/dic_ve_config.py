@@ -114,15 +114,9 @@ class DICVEConfig(CameraConfigBoxes):
     self._display_img()
     self.update()
 
-  def _update_img(self, init: bool = False) -> None:
+  def _update_img(self) -> None:
     """Same as in the parent class except it also draws the patches on top of
-    the displayed image.
-
-    Args:
-      init: If :obj:`True`, means that the method is called during
-        :meth:`__init__` and if the image cannot be obtained it should be
-        replaced with a dummy one.
-    """
+    the displayed image."""
 
     self.log(logging.DEBUG, "Updating the image")
 
@@ -131,7 +125,7 @@ class DICVEConfig(CameraConfigBoxes):
     # If no frame could be grabbed from the camera
     if ret is None:
       # If it's the first call, generate error image to initialize the window
-      if init:
+      if not self._n_loops:
         self.log(logging.WARNING, "Could not get an image from the camera, "
                                   "displaying an error image instead")
         ret = None, np.array(Image.open(BytesIO(resource_string(
@@ -174,7 +168,7 @@ class DICVEConfig(CameraConfigBoxes):
                               f"resetting the patches")
     self._spots.reset()
 
-  def _stop(self) -> None:
+  def finish(self) -> None:
     """"""
 
     if self._spots.empty():
@@ -190,4 +184,4 @@ class DICVEConfig(CameraConfigBoxes):
              f"Successfully saved L0 ! L0 x : {self._spots.x_l0}, "
              f"L0 y : {self._spots.y_l0}")
 
-    super()._stop()
+    super().stop()

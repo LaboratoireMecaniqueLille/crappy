@@ -7,6 +7,7 @@ from pathlib import Path
 from .camera_processes import DICVEProcess
 from .camera import Camera
 from ..tool.camera_config import DICVEConfig, SpotsBoxes
+from .._global import CameraConfigError
 
 
 class DICVE(Camera):
@@ -121,9 +122,18 @@ class DICVE(Camera):
   def _configure(self) -> None:
     """"""
 
-    config = DICVEConfig(self._camera, self._log_queue, self._log_level,
-                         self._patches)
-    config.main()
+    config = None
+    try:
+      config = DICVEConfig(self._camera, self._log_queue, self._log_level,
+                           self._patches)
+      config.main()
+    except (Exception,) as exc:
+      self._logger.exception("Caught exception in the configuration window !",
+                             exc_info=exc)
+      if config is not None:
+        config.stop()
+      raise CameraConfigError
+
     if config.shape is not None:
       self._img_shape = config.shape
     if config.dtype is not None:

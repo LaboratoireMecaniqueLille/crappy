@@ -15,7 +15,7 @@ from .meta_block import Block
 from .camera_processes import Displayer, ImageSaver, CameraProcess
 from ..camera import camera_dict, Camera as BaseCam
 from ..tool.camera_config import CameraConfig
-from .._global import CameraPrepareError, CameraRuntimeError
+from .._global import CameraPrepareError, CameraRuntimeError, CameraConfigError
 
 
 class Camera(Block):
@@ -370,8 +370,17 @@ class Camera(Block):
   def _configure(self) -> None:
     """"""
 
-    config = CameraConfig(self._camera, self._log_queue, self._log_level)
-    config.main()
+    config = None
+    try:
+      config = CameraConfig(self._camera, self._log_queue, self._log_level)
+      config.main()
+    except (Exception,) as exc:
+      self._logger.exception("Caught exception in the configuration window !",
+                             exc_info=exc)
+      if config is not None:
+        config.stop()
+      raise CameraConfigError
+
     if config.shape is not None:
       self._img_shape = config.shape
     if config.dtype is not None:

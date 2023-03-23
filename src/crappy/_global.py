@@ -68,6 +68,10 @@ class PrepareError(IOError):
   another Block fails to prepare."""
 
 
+class CameraConfigError(RuntimeError):
+  """Error raised by a CameraConfig window when encountering an exception."""
+
+
 class CameraPrepareError(RuntimeError):
   """Error raised by a Camera Block when one of its child processes crashes
   while preparing."""

@@ -113,15 +113,9 @@ class DISCorrelConfig(CameraConfigBoxes):
     self._display_img()
     self.update()
 
-  def _update_img(self, init: bool = False) -> None:
+  def _update_img(self) -> None:
     """Same as in the parent class except it also draws the select box on top
-    of the displayed image.
-
-    Args:
-      init: If :obj:`True`, means that the method is called during
-        :meth:`__init__` and if the image cannot be obtained it should be
-        replaced with a dummy one.
-    """
+    of the displayed image."""
 
     self.log(logging.DEBUG, "Updating the image")
 
@@ -130,7 +124,7 @@ class DISCorrelConfig(CameraConfigBoxes):
     # If no frame could be grabbed from the camera
     if ret is None:
       # If it's the first call, generate error image to initialize the window
-      if init:
+      if not self._n_loops:
         self.log(logging.WARNING, "Could not get an image from the camera, "
                                   "displaying an error image instead")
         ret = None, np.array(Image.open(BytesIO(resource_string(
@@ -173,7 +167,7 @@ class DISCorrelConfig(CameraConfigBoxes):
 
     self._correl_box.reset()
 
-  def _stop(self) -> None:
+  def finish(self) -> None:
     """"""
 
     if self.box.no_points():
@@ -184,4 +178,4 @@ class DISCorrelConfig(CameraConfigBoxes):
                         "window !\nOr hit CTRL+C to exit Crappy")
       return
 
-    super()._stop()
+    super().stop()

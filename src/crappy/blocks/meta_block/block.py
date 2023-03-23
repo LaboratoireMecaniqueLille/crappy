@@ -21,7 +21,7 @@ from .meta_block import MetaBlock
 from ...links import Link
 from ..._global import LinkDataError, StartTimeout, PrepareError, \
   T0NotSetError, GeneratorStop, ReaderStop, CameraPrepareError, \
-  CameraRuntimeError
+  CameraRuntimeError, CameraConfigError
 from ...tool.ft232h import USBServer
 
 
@@ -607,6 +607,10 @@ class Block(Process, metaclass=MetaBlock):
     except PrepareError:
       self.log(logging.ERROR, "Exception raised in another Block while waiting"
                               " for all Blocks to be ready, stopping")
+    # An error occurred in the CameraConfig window while preparing
+    except CameraConfigError:
+      self.log(logging.ERROR, "Exception raised in a configuration window, "
+                              "stopping")
     # An error occurred in a Camera process while preparing
     except CameraPrepareError:
       self.log(logging.ERROR, "Exception raised in a Camera process while "

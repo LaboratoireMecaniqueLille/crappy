@@ -89,7 +89,7 @@ class CameraConfig(tk.Tk):
 
     # Settings of the root window
     self.title(f'Configuration window for the camera: {type(camera).__name__}')
-    self.protocol("WM_DELETE_WINDOW", self._stop)
+    self.protocol("WM_DELETE_WINDOW", self.finish)
     self._zoom_values = Zoom()
 
     # Initializing the interface
@@ -100,22 +100,19 @@ class CameraConfig(tk.Tk):
     self._add_settings()
     self.update()
 
-    # Starting the histogram calculation process
-    self._histogram_process.start()
-
-    # Displaying the first image
-    self._update_img(init=True)
-
   def main(self) -> None:
     """Constantly updates the image and the information on the GUI, until asked
     to stop."""
+
+    # Starting the histogram calculation process
+    self._histogram_process.start()
 
     self._n_loops = 0
     start_time = time()
 
     while self._run:
       # Update the image, the histogram and the information
-      self._update_img(init=False)
+      self._update_img()
 
       # Update the FPS counter
       if time() - start_time > 0.5:
@@ -874,15 +871,9 @@ class CameraConfig(tk.Tk):
     self._display_hist()
     self.update()
 
-  def _update_img(self, init: bool = False) -> None:
+  def _update_img(self) -> None:
     """Acquires an image from the camera, casts and resizes it, calculates its
-    histogram, displays them and updates the image information.
-
-    Args:
-      init: If :obj:`True`, means that the method is called during
-        :meth:`__init__` and if the image cannot be obtained it should be
-        replaced with a dummy one.
-    """
+    histogram, displays them and updates the image information."""
 
     self.log(logging.DEBUG, "Updating the image")
 
@@ -891,7 +882,7 @@ class CameraConfig(tk.Tk):
     # If no frame could be grabbed from the camera
     if ret is None:
       # If it's the first call, generate error image to initialize the window
-      if init:
+      if not self._n_loops:
         self.log(logging.WARNING, "Could not get an image from the camera, "
                                   "displaying an error image instead")
         ret = None, np.array(Image.open(BytesIO(resource_string(
@@ -924,8 +915,13 @@ class CameraConfig(tk.Tk):
 
     self.update()
 
-  def _stop(self) -> None:
-    """When the window is being destroyed, stop the main loop."""
+  def finish(self) -> None:
+    """"""
+
+    self.stop()
+
+  def stop(self) -> None:
+    """"""
 
     # Stopping the event loop and the histogram process
     self._run = False
@@ -939,4 +935,9 @@ class CameraConfig(tk.Tk):
       self._histogram_process.terminate()
 
     self.log(logging.DEBUG, "Destroying the configuration window")
-    self.destroy()
+
+    try:
+      self.destroy()
+    except TclError:
+      self.log(logging.WARNING, "Cannot destroy the configuration window, "
+                                "ignoring")
