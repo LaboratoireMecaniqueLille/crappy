@@ -8,6 +8,7 @@ from io import BytesIO
 from pkg_resources import resource_string
 from time import sleep
 import logging
+from multiprocessing.queues import Queue
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box, SpotsBoxes
@@ -28,7 +29,11 @@ class DICVEConfig(CameraConfigBoxes):
   It is meant to be used for configuring the :ref:`DIS VE` block.
   """
 
-  def __init__(self, camera: Camera, patches: SpotsBoxes) -> None:
+  def __init__(self,
+               camera: Camera,
+               log_queue: Queue,
+               log_level: Optional[int],
+               patches: SpotsBoxes) -> None:
     """Sets the patches and initializes the parent class.
 
     Args:
@@ -38,7 +43,7 @@ class DICVEConfig(CameraConfigBoxes):
 
     self._patch_size: Optional[CameraScaleSetting] = None
 
-    super().__init__(camera)
+    super().__init__(camera, log_queue, log_level)
 
     # Setting the patches
     self._spots = patches

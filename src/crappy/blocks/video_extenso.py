@@ -100,7 +100,8 @@ class VideoExtenso(Camera):
   def _configure(self) -> None:
     """"""
 
-    config = VideoExtensoConfig(self._camera, self._spot_detector)
+    config = VideoExtensoConfig(self._camera, self._log_queue, self._log_level,
+                                self._spot_detector)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape

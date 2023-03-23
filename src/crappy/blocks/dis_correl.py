@@ -122,7 +122,8 @@ class DISCorrel(Camera):
   def _configure(self) -> None:
     """"""
 
-    config = DISCorrelConfig(self._camera, self._patch)
+    config = DISCorrelConfig(self._camera, self._log_queue, self._log_level,
+                             self._patch)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape

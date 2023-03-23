@@ -3,6 +3,8 @@
 import numpy as np
 import tkinter as tk
 import logging
+from typing import Optional
+from multiprocessing.queues import Queue
 
 from .camera_config import CameraConfig
 from .config_tools import Box, SpotsBoxes
@@ -18,12 +20,15 @@ class CameraConfigBoxes(CameraConfig):
   any block in Crappy.
   """
 
-  def __init__(self, camera: Camera) -> None:
+  def __init__(self,
+               camera: Camera,
+               log_queue: Queue,
+               log_level: Optional[int]) -> None:
     """Initializes the parent class and sets the spots container."""
 
     self._spots = SpotsBoxes()
     self._select_box = Box()
-    super().__init__(camera)
+    super().__init__(camera, log_queue, log_level)
 
   def _draw_box(self, box: Box) -> None:
     """Draws one line of the box after the other, making sure they fit in the

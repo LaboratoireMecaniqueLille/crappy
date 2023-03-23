@@ -4,3 +4,4 @@ from .zoom import Zoom
 from .box import Box
 from .spots_boxes import SpotsBoxes
 from .spots_detector import SpotsDetector
+from .histogram_process import HistogramProcess

@@ -8,6 +8,7 @@ from io import BytesIO
 from pkg_resources import resource_string
 from time import sleep
 import logging
+from multiprocessing.queues import Queue
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box
@@ -27,13 +28,17 @@ class DISCorrelConfig(CameraConfigBoxes):
   It is meant to be used for configuring the :ref:`DIS Correl` block.
   """
 
-  def __init__(self, camera: Camera, patch: Box) -> None:
+  def __init__(self,
+               camera: Camera,
+               log_queue: Queue,
+               log_level: Optional[int],
+               patch: Box) -> None:
     """Initializes the parent class and sets the correl box."""
 
     self._correl_box = patch
     self._draw_correl_box = True
 
-    super().__init__(camera)
+    super().__init__(camera, log_queue, log_level)
 
   @property
   def box(self) -> Box:

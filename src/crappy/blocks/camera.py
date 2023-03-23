@@ -370,7 +370,7 @@ class Camera(Block):
   def _configure(self) -> None:
     """"""
 
-    config = CameraConfig(self._camera)
+    config = CameraConfig(self._camera, self._log_queue, self._log_level)
     config.main()
     if config.shape is not None:
       self._img_shape = config.shape

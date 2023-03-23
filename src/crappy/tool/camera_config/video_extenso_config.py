@@ -8,6 +8,7 @@ from io import BytesIO
 from pkg_resources import resource_string
 from time import sleep
 import logging
+from multiprocessing.queues import Queue
 
 from .camera_config_boxes import CameraConfigBoxes
 from .config_tools import Box, SpotsDetector
@@ -28,14 +29,18 @@ class VideoExtensoConfig(CameraConfigBoxes):
   It is meant to be used for configuring the :ref:`Video Extenso` block.
   """
 
-  def __init__(self, camera: Camera, detector: SpotsDetector) -> None:
+  def __init__(self,
+               camera: Camera,
+               log_queue: Queue,
+               log_level: Optional[int],
+               detector: SpotsDetector) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
       camera: The camera object in charge of acquiring the images.
     """
 
-    super().__init__(camera)
+    super().__init__(camera, log_queue, log_level)
     self._detector = detector
     self._spots = detector.spots
 

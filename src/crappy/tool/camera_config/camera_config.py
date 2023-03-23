@@ -2,17 +2,18 @@
 
 import tkinter as tk
 from tkinter.messagebox import showerror
+from _tkinter import TclError
 from platform import system
 import numpy as np
 from time import time, sleep
 from typing import Optional, Tuple
-from functools import partial
 from pkg_resources import resource_string
 from io import BytesIO
 import logging
-from multiprocessing import current_process
+from multiprocessing import current_process, Event, Pipe
+from multiprocessing.queues import Queue
 
-from .config_tools import Zoom
+from .config_tools import Zoom, HistogramProcess
 from ...camera.meta_camera.camera_setting import CameraBoolSetting, \
   CameraChoiceSetting, CameraScaleSetting
 from ...camera.meta_camera import Camera
@@ -23,9 +24,6 @@ try:
 except (ModuleNotFoundError, ImportError):
   ImageTk = OptionalModule("pillow")
   Image = OptionalModule("pillow")
-
-# TODO:
-#   Parallelize the calculation of the histogram
 
 
 class CameraConfig(tk.Tk):
@@ -43,7 +41,10 @@ class CameraConfig(tk.Tk):
   contrast.
   """
 
-  def __init__(self, camera: Camera) -> None:
+  def __init__(self,
+               camera: Camera,
+               log_queue: Queue,
+               log_level: Optional[int]) -> None:
     """Initializes the interface and starts displaying the first image.
 
     Args:
@@ -55,6 +56,16 @@ class CameraConfig(tk.Tk):
     self.shape = None
     self.dtype = None
     self._logger: Optional[logging.Logger] = None
+
+    # Instantiating objects for the process managing the histogram calculation
+    self._stop_event = Event()
+    self._processing_event = Event()
+    self._img_in, img_in_proc = Pipe()
+    img_out_proc, self._img_out = Pipe()
+    self._histogram_process = HistogramProcess(
+        stop_event=self._stop_event, processing_event=self._processing_event,
+        img_in=img_in_proc, img_out=img_out_proc, log_level=log_level,
+        log_queue=log_queue)
 
     # Attributes containing the several images and histograms
     self._img = None
@@ -88,6 +99,9 @@ class CameraConfig(tk.Tk):
     self._set_bindings()
     self._add_settings()
     self.update()
+
+    # Starting the histogram calculation process
+    self._histogram_process.start()
 
     # Displaying the first image
     self._update_img(init=True)
@@ -796,38 +810,34 @@ class CameraConfig(tk.Tk):
     if self._original_img is None:
       return
 
-    self.log(logging.DEBUG, "Calculating the histogram of the image")
+    # Don't calculate histogram if a calculation is already running
+    if self._processing_event.is_set():
+      self.log(logging.DEBUG, "A calculation is running for the histogram, "
+                              "not sending image for calculation")
+      return
 
-    hist_img = self._pil_img.resize((320, 240))
+    # If no calculation is running, sending a new image for calculation
+    else:
+      # Reshaping the image before sending to the histogram process
+      self.log(logging.DEBUG, "Preparing image for histogram calculation")
+      hist_img = Image.fromarray(self._original_img)
+      if hist_img.width > 320 or hist_img.height > 240:
+        factor = min(320 / hist_img.width, 240 / hist_img.height)
+        hist_img = hist_img.resize((int(hist_img.width * factor),
+                                    int(hist_img.height * factor)))
+      # The histogram is calculated on a grey level image
+      if len(self._original_img.shape) == 3:
+        hist_img = hist_img.convert('L')
 
-    # The histogram is calculated on a grey level image
-    if len(self._original_img.shape) == 3:
-      hist_img = hist_img.convert('L')
+      # Sending the image to the histogram process
+      self.log(logging.DEBUG, "Sending image for histogram calculation")
+      self._img_in.send((hist_img, self._auto_range.get(),
+                         self._low_thresh, self._high_thresh))
 
-    # Building the image containing the histogram
-    hist, _ = np.histogram(hist_img, bins=np.arange(257))
-    hist = np.repeat(hist / np.max(hist) * 80, 2)
-    hist = np.repeat(hist[np.newaxis, :], 80, axis=0)
-
-    out_img = np.fromfunction(partial(self._hist_func, histo=hist),
-                              shape=(80, 512))
-    out_img = np.flip(out_img, axis=0).astype('uint8')
-
-    # Adding vertical grey bars to indicate the limits of the auto range
-    if self._auto_range.get():
-      out_img[:, round(2 * self._low_thresh)] = 127
-      out_img[:, round(2 * self._high_thresh)] = 127
-
-    self._hist = out_img
-
-  @staticmethod
-  def _hist_func(x: np.ndarray,
-                 _: np.ndarray,
-                 histo: np.ndarray) -> np.ndarray:
-    """Function passed to the :meth:`np.fromfunction` method for building the
-    histogram."""
-
-    return np.where(x <= histo, 0, 255)
+    # Checking if a histogram is available for display
+    while self._img_out.poll():
+      self._hist = self._img_out.recv()
+      self.log(logging.DEBUG, "Received histogram from histogram process")
 
   def _resize_hist(self) -> None:
     """Resizes the histogram image to make it fit in the GUI."""
@@ -917,7 +927,16 @@ class CameraConfig(tk.Tk):
   def _stop(self) -> None:
     """When the window is being destroyed, stop the main loop."""
 
+    # Stopping the event loop and the histogram process
     self._run = False
+    self._stop_event.set()
     sleep(0.1)
+
+    # Killing the histogram process if it's still alive
+    if self._histogram_process.is_alive():
+      self.log(logging.WARNING, "The histogram process failed to stop, "
+                                "killing it !")
+      self._histogram_process.terminate()
+
     self.log(logging.DEBUG, "Destroying the configuration window")
     self.destroy()
