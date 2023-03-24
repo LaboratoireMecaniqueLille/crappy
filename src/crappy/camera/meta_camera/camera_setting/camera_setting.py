@@ -75,3 +75,12 @@ class CameraSetting:
         return
       self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
                                 f"value is {self.value} !")
+
+  def reload(self, *_, **__) -> None:
+    """Allows modifying a setting once it is already being displayed in the
+    GUI.
+
+    Mostly helpful for adjusting the ranges of sliders.
+    """
+
+    ...

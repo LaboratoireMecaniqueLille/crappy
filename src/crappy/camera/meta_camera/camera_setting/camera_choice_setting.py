@@ -1,6 +1,8 @@
 # coding: utf-8
 
 from typing import Optional, Callable, Tuple
+from itertools import zip_longest
+import logging
 
 from .camera_setting import CameraSetting
 
@@ -31,3 +33,43 @@ class CameraChoiceSetting(CameraSetting):
       default = choices[0]
 
     super().__init__(name, getter, setter, default)
+
+    self.tk_obj = list()
+
+  def reload(self,
+             choices: Tuple[str, ...],
+             default: Optional[str] = None) -> None:
+    """Allows modifying the choices of the radio buttons once they have been
+    instantiated.
+
+    As the layout of the GUI is already fixed,
+    """
+
+    self.log(logging.DEBUG, f"Reloading the setting {self.name}")
+
+    # Updating the default value
+    if default is not None:
+      self.default = default
+    else:
+      self.default = choices[0]
+
+    # Updating the radio buttons and the setting value
+    if self.tk_obj:
+      for button, choice in zip_longest(self.tk_obj, choices):
+        # If there are more choices than buttons, ignoring the extra choices
+        if button is None:
+          self.log(logging.WARNING,
+                   f"Too many choices given when reloading the {self.name} "
+                   f"setting, ignoring the extra ones")
+          break
+        # If there are more buttons than choices, disabling the extra buttons
+        if choice is None:
+          self.log(logging.WARNING,
+                   f"Too few choices given when reloading the {self.name} "
+                   f"setting, disabling the extra buttons")
+          button.configure(state='disabled', value='', text='')
+
+        # Updating the text and value of the button, and enabling it
+        button.configure(value=choice, text=choice, state='normal')
+    if self.tk_var is not None:
+      self.tk_var.set(self.value)

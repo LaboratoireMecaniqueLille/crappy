@@ -63,5 +63,32 @@ class CameraScaleSetting(CameraSetting):
       self._setter(self.type(val))
 
     if self.value != val:
+      # Double-checking, got strange behavior sometimes probably because of
+      # delays in lower level APIs
+      if self.value == val:
+        return
       self.log(logging.WARNING, f"Could not set {self.name} to {val}, the "
                                 f"value is {self.value} !")
+
+  def reload(self,
+             lowest: NbrType,
+             highest: NbrType,
+             default: Optional[NbrType] = None) -> None:
+    """Allows modifying the limits of the scale bar once it is already
+    instantiated."""
+
+    self.log(logging.DEBUG, f"Reloading the setting {self.name}")
+
+    # Updating the lowest, highest, and default values
+    self.lowest = lowest
+    self.highest = highest
+    if default is not None:
+      self.default = default
+    else:
+      self.default = self.type((lowest + highest) / 2)
+
+    # Updating the slider limits and the setting value
+    if self.tk_obj is not None:
+      self.tk_obj.configure(to=self.highest, from_=self.lowest)
+    if self.tk_var is not None:
+      self.tk_var.set(self.value)

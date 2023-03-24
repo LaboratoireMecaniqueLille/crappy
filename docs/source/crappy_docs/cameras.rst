@@ -101,7 +101,7 @@ Camera Settings
 Camera Setting
 """"""""""""""
 .. autoclass:: crappy.camera.meta_camera.camera_setting.CameraSetting
-   :members: value, log
+   :members: value, log, reload
    :special-members: __init__
 
 Camera Bool Setting
@@ -112,10 +112,11 @@ Camera Bool Setting
 Camera Choice Setting
 """""""""""""""""""""
 .. autoclass:: crappy.camera.meta_camera.camera_setting.CameraChoiceSetting
+   :members: reload
    :special-members: __init__
 
 Camera Scale Setting
 """"""""""""""""""""
 .. autoclass:: crappy.camera.meta_camera.camera_setting.CameraScaleSetting
-   :members: value
+   :members: value, reload
    :special-members: __init__

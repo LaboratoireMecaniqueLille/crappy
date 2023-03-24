@@ -13,7 +13,6 @@ from .camera_setting import CameraSetting, CameraBoolSetting, \
 NbrType = Union[int, float]
 
 # TODO:
-#   Allow modification of the settings after the GUI is started
 #   Define a default ROI selection for cameras that do not support it
 
 

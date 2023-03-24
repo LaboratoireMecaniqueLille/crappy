@@ -594,12 +594,13 @@ class CameraConfig(tk.Tk):
     label.pack(anchor='w', side='top', expand=False, fill='none',
                padx=12, pady=2)
     for value in cam_set.choices:
-      cam_set.tk_obj = tk.Radiobutton(self._canvas_frame,
-                                      text=value,
-                                      variable=cam_set.tk_var,
-                                      value=value)
-      cam_set.tk_obj.pack(anchor='w', side='top', expand=False,
-                          fill='none', padx=5, pady=2)
+      tk_obj = tk.Radiobutton(self._canvas_frame,
+                              text=value,
+                              variable=cam_set.tk_var,
+                              value=value)
+      tk_obj.pack(anchor='w', side='top', expand=False,
+                  fill='none', padx=5, pady=2)
+      cam_set.tk_obj.append(tk_obj)
 
   def _set_variables(self) -> None:
     """Sets the text and numeric variables holding information about the
