@@ -60,7 +60,7 @@ class Dashboard(Block):
                labels: List[str],
                nb_digits: int = 2,
                display_freq: bool = False,
-               freq: float = 30,
+               freq: Optional[float] = 30,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes parent class.
 

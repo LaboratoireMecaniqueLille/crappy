@@ -30,7 +30,7 @@ class PID(Block):
                reverse: bool = False,
                i_limit: Tuple[Optional[float], Optional[float]] = (None, None),
                send_terms: bool = False,
-               freq: float = 500,
+               freq: Optional[float] = 500,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.

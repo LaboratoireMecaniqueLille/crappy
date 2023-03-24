@@ -37,7 +37,7 @@ class UController(Block):
                port: str = '/dev/ttyUSB0',
                baudrate: int = 115200,
                display_freq: bool = False,
-               freq: float = 100,
+               freq: Optional[float] = 100,
                debug: Optional[bool] = False) -> None:
     """Checks the validity of the arguments.
 

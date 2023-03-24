@@ -25,7 +25,7 @@ class Button(Block):
                send_0: bool = False,
                label: str = 'step',
                time_label: str = 't(s)',
-               freq: float = 50,
+               freq: Optional[float] = 50,
                spam: bool = False,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:

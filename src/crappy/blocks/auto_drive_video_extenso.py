@@ -29,7 +29,7 @@ class AutoDriveVideoExtenso(Block):
                pixel_range: int = 2048,
                max_speed: float = 200000,
                ft232h_ser_num: Optional[str] = None,
-               freq: float = 200,
+               freq: Optional[float] = 200,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.

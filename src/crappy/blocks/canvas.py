@@ -135,7 +135,7 @@ class Canvas(Block):
                title: str = "Canvas",
                window_size: Tuple[int, int] = (7, 5),
                backend: str = "TkAgg",
-               freq: float = 2,
+               freq: Optional[float] = 2,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.

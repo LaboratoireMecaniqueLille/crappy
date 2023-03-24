@@ -28,7 +28,7 @@ class Multiplexer(Block):
                time_label: str = 't(s)',
                out_labels: Optional[List[str]] = None,
                interp_freq: float = 200,
-               freq: float = 50,
+               freq: Optional[float] = 50,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.

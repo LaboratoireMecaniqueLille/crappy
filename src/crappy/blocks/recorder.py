@@ -22,7 +22,7 @@ class Recorder(Block):
                delay: float = 2,
                labels: Optional[List[str]] = None,
                time_label: str = 't(s)',
-               freq: float = 200,
+               freq: Optional[float] = 200,
                display_freq: bool = True,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.

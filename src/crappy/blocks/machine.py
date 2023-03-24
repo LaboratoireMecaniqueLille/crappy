@@ -37,7 +37,7 @@ class Machine(Block):
                time_label: str = 't(s)',
                ft232h_ser_num: Optional[str] = None,
                spam: bool = False,
-               freq: float = 200,
+               freq: Optional[float] = 200,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.

@@ -37,7 +37,7 @@ class FakeMachine(Block):
                max_speed: float = 5,
                mode: str = 'speed',
                cmd_label: str = 'cmd',
-               freq: float = 100,
+               freq: Optional[float] = 100,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.

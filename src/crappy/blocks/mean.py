@@ -28,7 +28,7 @@ class MeanBlock(Block):
                time_label: str = 't(s)',
                out_labels: Optional[List[str]] = None,
                display_freq: bool = False,
-               freq: float = 50,
+               freq: Optional[float] = 50,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class.
 

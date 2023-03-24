@@ -22,7 +22,7 @@ class GPUVE(Camera):
                displayer_framerate: float = 5,
                software_trig_label: Optional[str] = None,
                verbose: bool = False,
-               freq: float = 200,
+               freq: Optional[float] = 200,
                debug: Optional[bool] = False,
                save_images: bool = False,
                img_extension: str = "tiff",

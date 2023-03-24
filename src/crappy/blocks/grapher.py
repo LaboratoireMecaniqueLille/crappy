@@ -27,7 +27,7 @@ class Grapher(Block):
   def __init__(self,
                *labels: Tuple[str, str],
                length: int = 0,
-               freq: float = 2,
+               freq: Optional[float] = 2,
                max_pt: int = 20000,
                window_size: Tuple[int, int] = (8, 8),
                window_pos: Optional[Tuple[int, int]] = None,

@@ -37,7 +37,7 @@ class ClientServer(Block):
                cmd_labels: Optional[Topics_type] = None,
                labels_to_send: Optional[Topics_type] = None,
                display_freq: bool = False,
-               freq: float = 200,
+               freq: Optional[float] = 200,
                spam: bool = False,
                debug: Optional[bool] = False) -> None:
     """Checks arguments validity and sets the instance attributes.

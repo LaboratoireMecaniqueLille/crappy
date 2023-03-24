@@ -30,7 +30,7 @@ class Generator(Block):
 
   def __init__(self,
                path: List[Dict[str, Any]],
-               freq: float = 200,
+               freq: Optional[float] = 200,
                cmd_label: str = 'cmd',
                cycle_label: str = 'cycle',
                repeat: bool = False,

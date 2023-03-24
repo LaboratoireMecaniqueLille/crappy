@@ -10,7 +10,7 @@ class Sink(Block):
 
   def __init__(self,
                display_freq: bool = False,
-               freq: float = 10,
+               freq: Optional[float] = 10,
                debug: Optional[bool] = False) -> None:
     """Sets the args and initializes the parent class."""
 

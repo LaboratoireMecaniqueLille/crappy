@@ -13,7 +13,7 @@ class LinkReader(Block):
 
   def __init__(self,
                name: Optional[str] = None,
-               freq: float = 50,
+               freq: Optional[float] = 50,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
     """Sets the arg and initializes the parent class.
