@@ -6,9 +6,6 @@ from collections import defaultdict
 
 from .meta_block import Block
 
-# TODO:
-#   Add an option for zero-order interpolation
-
 
 class Multiplexer(Block):
   """This block takes data from upstream blocks as input and interpolates it to
