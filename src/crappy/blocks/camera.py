@@ -178,10 +178,13 @@ class Camera(Block):
       self._camera = BaseCam()
       self._camera.add_scale_setting('Exx', -100, 100, None, None, 0.)
       self._camera.add_scale_setting('Eyy', -100, 100, None, None, 0.)
+      img = self._image_generator(0, 0)
+      self._camera.add_software_roi(img.shape[1], img.shape[0])
       self._camera.set_all()
 
       def get_image(self_) -> (float, np.ndarray):
-        return time(), self._image_generator(self_.Exx, self_.Eyy)
+        return time(), self_.apply_soft_roi(self._image_generator(self_.Exx,
+                                                                  self_.Eyy))
 
       self._camera.get_image = MethodType(get_image, self._camera)
 
