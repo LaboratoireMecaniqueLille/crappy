@@ -6,9 +6,6 @@ import logging
 
 from .meta_block import Block
 
-# TODO:
-#   Upgrade to a more advanced PID algorithm
-
 
 class PID(Block):
   """A basic implementation of a PID corrector.
@@ -23,9 +20,12 @@ class PID(Block):
                kd: float = 0,
                out_max: float = float('inf'),
                out_min: float = -float('inf'),
-               target_label: str = 'cmd',
+               setpoint_label: str = 'cmd',
                input_label: str = 'V',
                time_label: str = 't(s)',
+               kp_label: str = 'kp',
+               ki_label: str = 'ki',
+               kd_label: str = 'kd',
                labels: Optional[List[str]] = None,
                reverse: bool = False,
                i_limit: Tuple[Optional[float], Optional[float]] = (None, None),
@@ -36,16 +36,34 @@ class PID(Block):
     """Sets the args and initializes the parent class.
 
     Args:
-      kp: The `P` gain.
-      ki: The `I` gain.
-      kd: The `D` gain.
+      kp: The initial `P` gain. It can be tuned while running by sending the
+        new value over the given ``kp_label``. No matter if a positive or a
+        negative value is given, the definitive sign will be set by the
+        ``reverse`` argument.
+      ki: The initial `I` gain. It can be tuned while running by sending the
+        new value over the given ``ki_label``. No matter if a positive or a
+        negative value is given, the definitive sign will be set by the
+        ``reverse`` argument.
+      kd: The initial `D` gain. It can be tuned while running by sending the
+        new value over the given ``kd_label``. No matter if a positive or a
+        negative value is given, the definitive sign will be set by the
+        ``reverse`` argument.
       out_max: Ensures the output is always inferior to this value.
       out_min: Ensures the output is always superior to this value.
-      target_label: The label carrying the setpoint value.
+      setpoint_label: The label carrying the setpoint value.
       input_label: The label carrying the reading of the actual value, to be
         compared with the setpoint.
       time_label: The label carrying the time information in the incoming
         links.
+      kp_label: The label to use for changing the `P` gain on the fly. If a
+        value is received over this label, it will overwrite the one given in
+        the ``kp`` argument.
+      ki_label: The label to use for changing the `I` gain on the fly. If a
+        value is received over this label, it will overwrite the one given in
+        the ``ki`` argument.
+      kd_label: The label to use for changing the `D` gain on the fly. If a
+        value is received over this label, it will overwrite the one given in
+        the ``kd`` argument.
       labels: The two labels that will be sent to downstream blocks. The first
         one is the time label, the second one is the output of the PID. If this
         argument is not given, they default to ``'t(s)'`` and ``'pid'``.
@@ -72,9 +90,9 @@ class PID(Block):
 
     # Setting the gains
     sign = -1 if reverse else 1
-    self._kp = sign * kp
-    self._ki = sign * kp * ki
-    self._kd = sign * kp * kd
+    self._kp = sign * abs(kp)
+    self._ki = sign * abs(ki)
+    self._kd = sign * abs(kd)
 
     # Setting the limits
     self._out_max = out_max
@@ -82,17 +100,21 @@ class PID(Block):
     self._i_min, self._i_max = i_limit
 
     # Setting the labels
-    self._target_label = target_label
+    self._target_label = setpoint_label
     self._input_label = input_label
     self._time_label = time_label
+    self._kp_label = kp_label
+    self._ki_label = ki_label
+    self._kd_label = kd_label
 
     self._send_terms = send_terms
+    self._reverse = reverse
 
     # Setting the variables
-    self._target = None
-    self._last_input = None
-    self._prev_t = 0
-    self._i_term = 0
+    self._setpoint: Optional[float] = None
+    self._last_input: Optional[float] = None
+    self._prev_t: float = 0.
+    self._i_term: float = 0.
 
   def loop(self) -> None:
     """Receives the latest target and input values, calculates the P, I and D
@@ -101,10 +123,21 @@ class PID(Block):
     # Looping in a non-blocking way
     data = self.recv_last_data(fill_missing=False)
 
+    # Updating the gains if provided
+    if self._kp_label in data:
+      kp = data[self._kp_label]
+      self._kp = -abs(kp) if self._reverse else kp
+    if self._ki_label in data:
+      ki = data[self._ki_label]
+      self._ki = -abs(ki) if self._reverse else ki
+    if self._kd_label in data:
+      kd = data[self._kd_label]
+      self._kd = -abs(kd) if self._reverse else kd
+
     # Updating the target value if provided
     if self._target_label in data:
-      self._target = data[self._target_label]
-      self.log(logging.DEBUG, f"Updated target value to {self._target}")
+      self._setpoint = data[self._target_label]
+      self.log(logging.DEBUG, f"Updated target value to {self._setpoint}")
 
     # Checking if a new input was received
     if self._time_label in data and self._input_label in data:
@@ -112,11 +145,11 @@ class PID(Block):
       t = data[self._time_label]
       self.log(logging.DEBUG, f"Updated input value to {input_} at time {t}")
 
-      # For the first loops, setting the target to the first inout by default
-      if self._target is None:
-        self._target = input_
+      # For the first loops, setting the target to the first input by default
+      if self._setpoint is None:
+        self._setpoint = input_
 
-      # For the first loops, initializing the inout history
+      # For the first loops, initializing the input history
       if self._last_input is None:
         self._last_input = input_
 
@@ -125,12 +158,13 @@ class PID(Block):
       return
 
     delta_t = t - self._prev_t
-    diff = self._target - input_
+    error = self._setpoint - input_
+    d_input = input_ - self._last_input
 
     # Calculating the three PID terms
-    p_term = self._kp * diff
-    self._i_term += self._ki * diff * delta_t
-    d_term = - self._kd * (input_ - self._last_input) / delta_t
+    p_term = self._kp * error
+    self._i_term += self._ki * error * delta_t
+    d_term = - self._kd * d_input / delta_t
 
     self._prev_t = t
     self._last_input = input_

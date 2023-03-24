@@ -13,9 +13,9 @@ import crappy
 
 SPEED = 20  # Speed multiplier of the simulation
 
-P = .1
-I = .1 * SPEED
-D = 10 / SPEED
+P = 0.1
+I = 0.01 * SPEED
+D = 1 / SPEED
 
 
 class Delay(crappy.Modifier):

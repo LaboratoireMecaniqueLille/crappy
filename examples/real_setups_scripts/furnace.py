@@ -11,9 +11,9 @@ is measured using a thermocouple.
 import crappy
 
 # The parameters of the PID
-P = .25
-I = .03
-D = 20
+P = 0.25
+I = 0.0075
+D = 5.0
 
 # The frequency of the PWM
 FREQ = 100

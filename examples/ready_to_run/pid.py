@@ -44,8 +44,8 @@ if __name__ == "__main__":
   # crappy.start()
 
   p = 38 / kv
-  i = 2
-  d = .05
+  i = 76 / kv
+  d = 1.9 / kv
 
   pid = crappy.blocks.PID(kp=p,
                           ki=i,

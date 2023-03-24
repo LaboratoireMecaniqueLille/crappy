@@ -90,7 +90,8 @@ if __name__ == "__main__":
   # The output is the command sent to the machine
   # In a real-world scenario, consider using out_min and out_max
   # to clamp the output value and i_limit to prevent over_integration.
-  pid = crappy.blocks.PID(kp=0.5, ki=2, kd=0.05, target_label='target_Exx(%)',
+  pid = crappy.blocks.PID(kp=0.5, ki=1.0, kd=0.025,
+                          setpoint_label='target_Exx(%)',
                           input_label='measured_Exx(%)', send_terms=True)
 
   # We link the two inputs and the output
