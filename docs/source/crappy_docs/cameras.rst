@@ -87,7 +87,8 @@ Camera
 ++++++
 .. autoclass:: crappy.camera.Camera
    :members: open, get_image, close, log, add_bool_setting, add_choice_setting,
-             add_scale_setting, add_trigger_setting, set_all
+             add_scale_setting, add_trigger_setting, add_software_roi,
+             reload_software_roi, apply_soft_roi, set_all
    :special-members: __init__, __getattr__, __setattr__
 
 Meta Camera

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from time import time
+from time import time, sleep
 from typing import Tuple, List, Optional
 from numpy import ndarray
 from platform import system
@@ -136,6 +136,14 @@ class CameraOpencv(Camera):
                                 getter=self._get_fourcc,
                                 setter=self._set_format)
 
+    # Adding the software ROI selection settings
+    if 'width' in self.settings and 'height' in self.settings:
+      width, height = self._get_width(), self._get_height()
+      self.add_software_roi(width, height)
+    elif 'format' in self.settings:
+      width, height = search(r'(\d+)x(\d+)', self._get_format_size()).groups()
+      self.add_software_roi(int(width), int(height))
+
     # Setting the kwargs if any
     self.set_all(**kwargs)
 
@@ -153,9 +161,9 @@ class CameraOpencv(Camera):
 
     # Returning the image in the right format, and its timestamp
     if self.channels == '1':
-      return t, cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      return t, self.apply_soft_roi(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
     else:
-      return t, frame
+      return t, self.apply_soft_roi(frame)
 
   def close(self) -> None:
     """Releases the videocapture object."""
@@ -186,10 +194,22 @@ class CameraOpencv(Camera):
 
     self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 
+    # Reloading the software ROI selection settings
+    if self._soft_roi_set:
+      sleep(0.1)
+      width, height = self._get_width(), self._get_height()
+      self.reload_software_roi(width, height)
+
   def _set_height(self, height: int) -> None:
     """Tries to set the image height."""
 
     self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+    # Reloading the software ROI selection settings
+    if self._soft_roi_set:
+      sleep(0.1)
+      width, height = self._get_width(), self._get_height()
+      self.reload_software_roi(width, height)
 
   def _set_format(self, img_format: str) -> None:
     """Sets the format of the image according to the user's choice."""
@@ -214,6 +234,12 @@ class CameraOpencv(Camera):
 
     if fps is not None:
       self._cap.set(cv2.CAP_PROP_FPS, float(fps))
+
+    # Reloading the software ROI selection settings
+    if self._soft_roi_set:
+      sleep(0.1)
+      width, height = search(r'(\d+)x(\d+)', self._get_format_size()).groups()
+      self.reload_software_roi(int(width), int(height))
 
   def _get_format_size(self) -> str:
     """Parses the v4l2-ctl -V command to get the current image format as an

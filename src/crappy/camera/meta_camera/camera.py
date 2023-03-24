@@ -28,7 +28,17 @@ class Camera(metaclass=MetaCamera):
     trigger setting."""
 
     self.settings: Dict[str, CameraSetting] = dict()
+
+    # These names are reserved for special settings
     self.trigger_name = 'trigger'
+    self.roi_x_name = 'ROI_x'
+    self.roi_y_name = 'ROI_y'
+    self.roi_width_name = 'ROI_width'
+    self.roi_height_name = 'ROI_height'
+    self._soft_roi_set = False
+    self._reserved = (self.trigger_name, self.roi_x_name, self.roi_y_name,
+                      self.roi_width_name, self.roi_height_name)
+
     self._logger: Optional[logging.Logger] = None
 
   def log(self, level: int, msg: str) -> None:
@@ -116,9 +126,9 @@ class Camera(metaclass=MetaCamera):
     """
 
     # Checking if the given name is valid
-    if name == self.trigger_name:
-      raise ValueError(f"The name {self.trigger_name} is reserved for the "
-                       f"trigger setting !")
+    if name in self._reserved:
+      raise ValueError(f"The name {self.trigger_name} is reserved for a "
+                       f"different type of setting ! !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} bool setting")
@@ -154,9 +164,9 @@ class Camera(metaclass=MetaCamera):
     """
 
     # Checking if the given name is valid
-    if name == self.trigger_name:
-      raise ValueError(f"The name {self.trigger_name} is reserved for the "
-                       f"trigger setting !")
+    if name in self._reserved:
+      raise ValueError(f"The name {self.trigger_name} is reserved for a "
+                       f"different type of setting ! !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} scale setting")
@@ -186,9 +196,9 @@ class Camera(metaclass=MetaCamera):
     """
 
     # Checking if the given name is valid
-    if name == self.trigger_name:
-      raise ValueError(f"The name {self.trigger_name} is reserved for the "
-                       f"trigger setting !")
+    if name in self._reserved:
+      raise ValueError(f"The name {self.trigger_name} is reserved for a "
+                       f"different type of setting ! !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} choice setting")
@@ -231,12 +241,103 @@ class Camera(metaclass=MetaCamera):
     if self.trigger_name in self.settings:
       raise ValueError("There can only be one trigger setting per camera !")
 
-    self.log(logging.INFO, f"Adding the {self.trigger_name} trigger setting")
+    self.log(logging.INFO, f"Adding the '{self.trigger_name}' trigger setting")
     self.settings[self.trigger_name] = CameraChoiceSetting(
       name=self.trigger_name, choices=('Free run',
                                        'Hdw after config',
                                        'Hardware'),
       getter=getter, setter=setter, default='Free run')
+
+  def add_software_roi(self, width: int, height: int) -> None:
+    """Creates the settings needed for setting a software ROI.
+
+    The ROI is a rectangular area defining which part of the image to keep. It
+    can be tuned by the user by setting the position of the upper left corner,
+    as well as the width and the height.
+
+    Using a ROI reduces the size of the image for processing, displaying and
+    saving, which improves the overall performance.
+
+    Args:
+      width: The width of the acquired images, in pixels.
+      height: The height of the acquired images, in pixels.
+    """
+
+    # Checking that the software ROI setting does not already exist
+    if self._soft_roi_set:
+      raise ValueError("There can only be one set of software settings per "
+                       "camera !")
+
+    # Instantiating the CameraSetting objects
+    self.log(logging.INFO, "Adding the software ROI settings")
+    self.settings[self.roi_x_name] = CameraScaleSetting(
+        name=self.roi_x_name, lowest=0, highest=width-1, getter=None,
+        setter=None, default=0)
+    self.settings[self.roi_y_name] = CameraScaleSetting(
+        name=self.roi_y_name, lowest=0, highest=height - 1, getter=None,
+        setter=None, default=0)
+    self.settings[self.roi_width_name] = CameraScaleSetting(
+        name=self.roi_width_name, lowest=1, highest=width, getter=None,
+        setter=None, default=width)
+    self.settings[self.roi_height_name] = CameraScaleSetting(
+        name=self.roi_height_name, lowest=1, highest=height, getter=None,
+        setter=None, default=height)
+
+    self._soft_roi_set = True
+
+  def reload_software_roi(self, width: int, height: int) -> None:
+    """Updates the software ROI boundaries when the width and/or the height of
+    the acquired images change.
+
+    Args:
+      width: The width of the acquired images, in pixels.
+      height: The height of the acquired images, in pixels.
+    """
+
+    if self._soft_roi_set:
+      self.log(logging.DEBUG, "Reloading the software ROI settings")
+      self.settings[self.roi_x_name].reload(lowest=0, highest=width-1,
+                                            default=0)
+      self.settings[self.roi_y_name].reload(lowest=0, highest=height - 1,
+                                            default=0)
+      self.settings[self.roi_width_name].reload(lowest=1, highest=width,
+                                                default=width)
+      self.settings[self.roi_height_name].reload(lowest=1, highest=height,
+                                                 default=height)
+      self.settings[self.roi_x_name].value = 0
+      self.settings[self.roi_y_name].value = 0
+      self.settings[self.roi_width_name].value = width
+      self.settings[self.roi_height_name].value = height
+    else:
+      self.log(logging.WARNING, "Cannot reload the software ROI settings as "
+                                "they are not defined !")
+
+  def apply_soft_roi(self, img: np.ndarray) -> Optional[np.ndarray]:
+    """Takes an image as an input, and crops according to the selected software
+    ROI dimensions.
+
+    Might return :obj:`None` in case there's no pixel left on the cropped
+    image. Returns the original image if the software ROI settings are not
+    defined.
+    """
+
+    if self._soft_roi_set:
+      x = self.settings[self.roi_x_name].value
+      y = self.settings[self.roi_y_name].value
+      width = self.settings[self.roi_width_name].value
+      height = self.settings[self.roi_height_name].value
+
+      # Cropping to the requested size
+      img = img[y:y+height, x:x+width]
+      if img.size:
+        return img
+      # If there's no pixel left to display, return None
+      else:
+        return
+
+    # Simply returning the image if the ROI settings were not defined
+    else:
+      return img
 
   def set_all(self, **kwargs) -> None:
     """Checks if the kwargs are valid, sets them, and for settings that are not

@@ -309,6 +309,11 @@ videoconvert ! autovideosink
       self.add_scale_setting(name='saturation', lowest=0., highest=2.,
                              setter=self._set_saturation, default=1.)
 
+      # Adding the software ROI selection settings
+      if self._formats and ' ' in self._formats[0]:
+        width, height = search(r'(\d+)x(\d+)', self._get_format()).groups()
+        self.add_software_roi(int(width), int(height))
+
     # Setting up GStreamer and the callback
     self.log(logging.INFO, "Initializing the GST pipeline")
     self.log(logging.DEBUG, f"The pipeline is {self._get_pipeline()}")
@@ -351,7 +356,7 @@ videoconvert ! autovideosink
 
     self._last_frame_nr = self._frame_nr
 
-    return time(), copy(self._img)
+    return time(), self.apply_soft_roi(copy(self._img))
 
   def close(self) -> None:
     """Simply stops the image acquisition."""
@@ -599,6 +604,12 @@ videoconvert ! autovideosink
     """Sets the image encoding and dimensions."""
 
     self._restart_pipeline(self._get_pipeline(img_format=img_format))
+
+    # Reloading the software ROI selection settings
+    if self._soft_roi_set and self._formats and ' ' in self._formats[0]:
+      sleep(0.1)
+      width, height = search(r'(\d+)x(\d+)', self._get_format()).groups()
+      self.reload_software_roi(int(width), int(height))
 
   def _get_format(self) -> str:
     """Parses the v4l2-ctl -V command to get the current image format as an
