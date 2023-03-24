@@ -748,10 +748,10 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     self._n_loops += 1
+    t = time()
 
     # Only handling frequency if requested
     if self.freq is not None:
-      t = time()
 
       # Correcting the error of the sleep function through a recursive approach
       # The last 2 milliseconds are in free loop
@@ -761,7 +761,7 @@ class Block(Process, metaclass=MetaBlock):
         remaining = self._last_t + 1 / self.freq - t
         sleep(max(0., remaining / 2 - 2e-3))
 
-      self._last_t = t
+    self._last_t = t
 
     # Displaying frequency every 2 seconds
     if self.display_freq and self._last_t - self._last_fps > 2:
