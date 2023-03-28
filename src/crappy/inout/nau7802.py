@@ -190,6 +190,7 @@ class NAU7802(InOut):
 
     self._gain = gain
     self._offset = offset
+    self._retries = 5
 
   def open(self) -> None:
     """Sets the I2C communication and device."""
@@ -272,10 +273,22 @@ class NAU7802(InOut):
 
     out = [time()]
 
-    # Reading the output data
-    block = self._bus.read_i2c_block_data(self._device_address,
-                                          NAU7802_Scale_Registers['ADCO_B2'],
-                                          3)
+    # Reading the output data, and handling I2C errors
+    i = 0
+    block = None
+    while i < self._retries:
+      try:
+        block = self._bus.read_i2c_block_data(
+            self._device_address, NAU7802_Scale_Registers['ADCO_B2'], 3)
+        break
+      # If an I2C error is caught, retrying to get the value or raising
+      except OSError:
+        if i == self._retries:
+          self.log(logging.ERROR, "Retries count exhausted !")
+          raise
+        i += 1
+        continue
+
     self.log(logging.DEBUG,
              f"Read {block} from register {NAU7802_Scale_Registers['ADCO_B2']}"
              f" at address {self._device_address}")
