@@ -48,15 +48,15 @@ motor_hat_max_volt = 12
 class DCMotorHat:
   """Class for driving Adafruit's DC motor HAT.
 
-  This class serves as a basis for building Actuators in Crappy, but is not one
-  itself. It is used by the :class:`Motorkit_pump` Actuator.
+  This class serves as a basis for building Actuators in Crappy, but is not an
+  Actuator itself. It is used by the :class:`MotorKitPump` Actuator.
+
+  It is intended for Raspberry Pis but can also be used from any other device
+  interfacing over I2C, assuming a proper wiring.
 
   Note:
     This device can also drive stepper motors, but this feature isn't included
     here.
-
-  It is intended for Raspberry Pis but can also be used from any other device
-  interfacing over I2C assuming a proper wiring.
   """
 
   def __init__(self,
@@ -158,8 +158,9 @@ class DCMotorHat:
 class MotorKitPump(Actuator):
   """Class for controlling two DC air pumps and a valve.
 
-  It uses Adafruit's DC motor HAT. The motor 1 controls the inflation pump,
-  the motor 2 controls a valve, and the motor 3 controls a deflation pump.
+  It uses Adafruit's DC motor HAT, defined in :class:`DCMotorHat`. The motor 1
+  controls the inflation pump, the motor 2 controls a valve, and the motor 3
+  controls a deflation pump.
   """
 
   def __init__(self,
@@ -172,15 +173,14 @@ class MotorKitPump(Actuator):
       backend: Should be one of :
         ::
 
-          'Pi4', 'blinka', 'ft232h'
+          'Pi4', 'blinka'
 
         The `'Pi4'` backend is optimized but only works on boards supporting
         the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing Adafruit's
-        modules, but these modules are compatible with and maintained on a wide
-        variety of boards. The `'ft232h'` backend allows controlling the hat
-        from a PC using Adafruit's FT232H USB to I2C adapter. See
-        :ref:`Crappy for embedded hardware` for details.
+        backend may be less performant and requires installing
+        :mod`adafruit-circuitpython-motorkit` and :mod:`Adafruit-Blinka`, but
+        these modules are compatible with and maintained on a wide variety of
+        boards.
       device_address: The I2C address of the HAT. The default address is
         `0x60`, but it is possible to change this setting by cutting traces on
         the board.
@@ -212,6 +212,8 @@ class MotorKitPump(Actuator):
       self._hat = MotorKit(i2c=board.I2C())
 
       def set_motor(nr: int, cmd: float) -> None:
+        """Wrapper for consistency between Adafruit's and smbus2 methods."""
+
         setattr(getattr(self._hat, f'motor{nr}'), 'throttle', cmd)
 
       self._hat.set_motor = set_motor
@@ -259,7 +261,7 @@ class MotorKitPump(Actuator):
       self._hat.set_motor(3, volt_clamped)
 
   def stop(self) -> None:
-    """"""
+    """Simply sets the command to `0` to stop the pump."""
 
     if self._hat is not None:
       self.set_speed(0)

@@ -2,17 +2,11 @@
 
 from struct import pack_into
 from time import sleep
-from typing import Union, List, Optional
+from typing import Union, List
 import logging
 
 from ..meta_actuator import Actuator
-from ..._global import OptionalModule
 from ...tool.ft232h import FT232HServer as FT232H, USBArgsType
-
-try:
-  from smbus2 import SMBus
-except (ImportError, ModuleNotFoundError):
-  SMBus = OptionalModule('smbus2')
 
 motor_hat_ctrl = {1: 0x26,
                   2: 0x3A,
@@ -30,43 +24,36 @@ motor_hat_neg = {1: 0x2E,
                  4: 0x1E}
 
 motor_hat_0xFF = [0x00, 0x10, 0x00, 0x00]
-motor_hat_backends = ['Pi4', 'blinka', 'ft232h']
 motor_hat_max_volt = 12
 
 
-class DCMotorHat:
-  """Class for driving Adafruit's DC motor HAT.
+class DCMotorHatFT232H:
+  """Class for driving Adafruit's DC motor HAT over an FT232H.
 
-  This class serves as a basis for building Actuators in Crappy, but is not one
-  itself. It is used by the :class:`Motorkit_pump` Actuator.
+  This class serves as a basis for building Actuators in Crappy, but is not an
+  Actuator itself. It is used by the :class:`MotorKitPumpFT232H` Actuator.
 
   Note:
     This device can also drive stepper motors, but this feature isn't included
     here.
-
-  It is intended for Raspberry Pis but can also be used from any other device
-  interfacing over I2C assuming a proper wiring.
   """
 
   def __init__(self,
                motor_nrs: List[int],
-               device_address: int = 0x60,
-               i2c_port: int = 1,
-               bus: Optional[FT232H] = None) -> None:
+               bus: FT232H,
+               device_address: int = 0x60) -> None:
     """Resets the HAT and initializes it.
 
     Args:
       motor_nrs: The list of the motors to drive. Its elements should be
         integers between 1 and 4, corresponding to the indexes of the motors to
         drive.
+      bus: The I2C commands are sent by the corresponding :class:`FT232HServer`
+        instance, in the situation when the hat is controlled from a PC through
+        an FT232H.
       device_address: The I2C address of the HAT. The default address is
         `0x60`, but it is possible to change this setting by cutting traces on
         the board.
-      i2c_port: The I2C port over which the HAT should communicate. On most
-        Raspberry Pi models the default I2C port is `1`.
-      bus: If given, the I2C commands are sent by the corresponding
-        :class:`ft232h_server` instance, in the situation when the hat is
-        controlled from a PC through an FT232H.
     """
 
     if not all(i in range(1, 5) for i in motor_nrs):
@@ -77,14 +64,7 @@ class DCMotorHat:
       raise TypeError("device_address should be an integer between 0 and 127.")
     self._address = device_address
 
-    if not isinstance(i2c_port, int):
-      raise TypeError("i2c_port should be an integer !")
-
-    if not bus:
-      self._bus = SMBus(i2c_port)
-    else:
-      self._bus = bus
-
+    self._bus = bus
     self._buf = bytearray(4)
 
     # Reset
@@ -153,17 +133,21 @@ class DCMotorHat:
 
 
 class MotorKitPumpFT232H(Actuator):
-  """Class for controlling two DC air pumps and a valve.
+  """Class for controlling two DC air pumps and a valve over an FT232H.
 
-  It uses Adafruit's DC motor HAT. The motor 1 controls the inflation pump,
-  the motor 2 controls a valve, and the motor 3 controls a deflation pump.
+  It uses Adafruit's DC motor HAT, defined in :class:`DCMotorHatFT232H`. The
+  motor 1 controls the inflation pump, the motor 2 controls a valve, and the
+  motor 3 controls a deflation pump.
+
+  This Actuator is similar to the :ref:`Motor kit pump` one as they drive the
+  same hardware, except this one sends the I2C messages through an FT232H
+  device.
   """
 
   ft232h = True
 
   def __init__(self,
                device_address: int = 0x60,
-               i2c_port: int = 1,
                _ft232h_args: USBArgsType = tuple()) -> None:
     """Checks the validity of the arguments.
 
@@ -171,8 +155,8 @@ class MotorKitPumpFT232H(Actuator):
       device_address: The I2C address of the HAT. The default address is
         `0x60`, but it is possible to change this setting by cutting traces on
         the board.
-      i2c_port: The I2C port over which the HAT should communicate. On most
-        Raspberry Pi models the default I2C port is `1`.
+      _ft232h_args: This argument is for internal use only and should not be
+        accessed by users.
     """
 
     self._hat = None
@@ -194,16 +178,12 @@ class MotorKitPumpFT232H(Actuator):
       raise TypeError("device_address should be an integer between 0 and 127.")
     self._address = device_address
 
-    if not isinstance(i2c_port, int):
-      raise TypeError("i2c_port should be an integer !")
-    self._port = i2c_port
-
   def open(self) -> None:
     """Initializes the generic HAT object."""
 
     self.log(logging.INFO, "Opening the Motorkit with an USB connection "
                            "over FT232H")
-    self._hat = DCMotorHat([1, 2, 3], self._address, self._port, self._bus)
+    self._hat = DCMotorHatFT232H([1, 2, 3], self._bus, self._address)
 
   def set_speed(self, volt: float) -> None:
     """Inflates or deflates the setup according to the command.
@@ -244,7 +224,7 @@ class MotorKitPumpFT232H(Actuator):
       self._hat.set_motor(3, volt_clamped)
 
   def stop(self) -> None:
-    """"""
+    """Simply sets the command to `0` to stop the pump."""
 
     if self._hat is not None:
       self.set_speed(0)

@@ -252,7 +252,7 @@ class FindSerialNumber:
 class PololuTic(Actuator):
   """Class for controlling Pololu's Tic stepper motor divers.
 
-  The Pololu_tic Actuator block is meant for controlling a Pololu Tic stepper
+  The PololuTic Actuator block is meant for controlling a Pololu Tic stepper
   motor driver. It can be driven in both speed and position. Several Tic models
   are supported. The length unit is the millimeter (`mm`), and time unit is the
   second (`s`).
@@ -300,20 +300,19 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
       step_mode: Sets the number of microsteps used for driving the motor. This
         number is always a power of `2`. The minimum number of microsteps is
         `1` (full steps), and the maximum depends on the Tic model. All models
-        however support modes `1` to `8`. The block manages speed and length
-        conversions so that changing the step mode doesn't affect the motor
-        behaviour.
+        however support modes `1` to `8`. The speed and length conversions are
+        managed automatically so that changing the step mode doesn't affect the
+        motor behaviour.
       max_accel: The maximum allowed acceleration for the motor, in `mm/s²`.
         When asked to reach a given speed or position, the motor accelerates at
         this rate. It also corresponds to the maximum allowed deceleration.
         Usually doesn't need to be changed.
-      t_shutoff: The :class:`Pololu_tic` class features an auto-shutoff thread
-        that deenergizes the motor after a period of `t_shutoff` seconds of
-        inactivity. The timer counts in steps of `0.1s`, which is thus the
-        maximum precision for this setting. When set to `0`, this feature is
-        disabled and the motor remains energized until the :meth:`close` method
-        is called.
-      config_file: The path of the config file to be loaded to the Tic. It only
+      t_shutoff: This class features an auto-shutoff thread that deenergizes
+        the motor after a period of `t_shutoff` seconds of inactivity. The
+        timer counts in steps of `0.1s`, which is thus the maximum precision
+        for this setting. When set to `0`, this feature is disabled and the
+        motor remains energized until the :meth:`close` method is called.
+      config_file: The path to the config file to be loaded to the Tic. It only
         works if ``backend`` is 'ticcmd'. The config file contains some
         specific settings that can only be accessed this way using the 'ticcmd'
         backend. Not necessary for most applications.
@@ -333,8 +332,8 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         pings the Tic every `0.5s`, so that it doesn't block due to a Command
         Timeout error. This feature is a safety to prevent the motor from
         running indefinitely if the USB connection is down, so it is better not
-        to disable it. When disabled the Tic never raises Command Timeout
-        errors, and a bit of memory if freed because of the thread not running.
+        to disable it. When disabled, the Tic never raises Command Timeout
+        errors.
       backend: The backend for communicating with the Tic. Available backends
         are:
         ::
@@ -407,7 +406,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         motor misses microsteps are also higher when the number of microsteps
         is high.
       - ``t_shutoff``:
-        This functionality was originally added for long assays in temperature
+        This functionality was originally added for long tests in temperature
         controlled environments, so that the motor doesn't unnecessarily heat
         the setup when inactive. In other assays, it may still be useful for
         reducing the noise, the electromagnetic interference, or the energy
@@ -424,7 +423,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         ``model`` is :obj:`None`.
       - **Pins settings**:
         The pin functions and polarity can also be set independently of
-        ``crappy`` before starting the assay, in the `ticgui`.
+        ``crappy`` before starting the test, in the `ticgui`.
     """
 
     super().__init__()
@@ -703,7 +702,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     """Reads the current motor speed.
 
         Returns:
-          :obj:`float`: The speed in mm/s
+          The speed in `mm/s`
         """
 
     if self._backend == 'ticcmd':
@@ -723,7 +722,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     """Reads the current motor position.
 
     Returns:
-      :obj:`float`: The position in mm
+      The position in `mm`
     """
 
     if self._backend == 'ticcmd':
@@ -745,9 +744,9 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     """Sends a position command to the motor.
 
     Args:
-      position (:obj:`float`): The position to reach in `mm`
-      speed (:obj:`float`, optional): The speed at which the motor should move
-        to the given position, in `mm/s`
+      position: The position to reach in `mm`
+      speed: The speed at which the motor should move to the given position,
+        in `mm/s`
 
     Note:
       - ``speed``:
@@ -776,7 +775,7 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
     """Sends a speed command to the motor.
 
     Args:
-      speed (:obj:`float`): The speed the motor should reach
+      speed: The speed the motor should reach
     """
 
     # Changing the maximum speed if needed

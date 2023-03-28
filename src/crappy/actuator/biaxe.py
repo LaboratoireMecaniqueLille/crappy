@@ -11,7 +11,12 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Biaxe(Actuator):
-  """This class can drive a Kollmorgen ServoStar 300 conditioner in speed."""
+  """This class can drive a Kollmorgen ServoStar 300 conditioner in speed.
+
+  It is used at the LaMcube for driving a bi-axial tensile test machine, hence
+  its name. The `ServoStar` Actuator can drive the same hardware, but only in
+  position.
+  """
 
   def __init__(self,
                port: str = '/dev/ttyUSB0',
@@ -37,7 +42,7 @@ class Biaxe(Actuator):
     self._speed = None
 
   def open(self) -> None:
-    """"""
+    """Opens the serial connection to the ServoStar."""
 
     self.log(logging.INFO, f"Opening the serial port {self._port} with "
                            f"baudrate {self._baudrate}")
@@ -59,13 +64,13 @@ class Biaxe(Actuator):
       self._speed = speed
 
   def stop(self) -> None:
-    """"""
+    """Sets the speed of the motor to `0`"""
 
     if self._ser is not None:
       self.set_speed(0)
 
   def close(self) -> None:
-    """Closes the serial connection."""
+    """Closes the serial connection to the ServoStar."""
 
     if self._ser is not None:
       self.log(logging.INFO, f"Closing the serial port {self._port}")

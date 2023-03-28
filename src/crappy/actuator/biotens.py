@@ -24,6 +24,8 @@ class Biotens(Actuator):
   in position.
 
   It interfaces with the servomotor over a serial connection.
+  It is used at the LaMcube for driving a tensile test machine for biological
+  samples, hence its name.
   """
 
   def __init__(self,
@@ -78,7 +80,7 @@ class Biotens(Actuator):
   def set_position(self,
                    position: float,
                    speed: Optional[float] = None) -> None:
-    """Sets the desired target position on the actuator.
+    """Sets the desired target position on the servomotor.
 
     Args:
       position: The target position, in `mm`.
@@ -109,7 +111,7 @@ class Biotens(Actuator):
     self._ser.writelines(cmd)
 
   def get_position(self) -> float:
-    """Reads and returns the current position of the actuator, in `mm`."""
+    """Reads and returns the current position of the servomotor, in `mm`."""
 
     # We have 20 attempts for reading the position
     for _ in range(20):
@@ -138,7 +140,7 @@ class Biotens(Actuator):
     raise IOError("Could not read the position for the Biotens actuator!")
 
   def stop(self) -> None:
-    """Sends a command for stopping the actuator."""
+    """Sends a command for stopping the servomotor."""
 
     if self._ser is not None:
       cmd = self._make_cmd((2, 2, 0, 2), ('B', 'B', 'h', 'B'), True)
@@ -146,7 +148,7 @@ class Biotens(Actuator):
       self._ser.write(cmd)
 
   def close(self) -> None:
-    """Closes the serial connection to the actuator."""
+    """Closes the serial connection to the servomotor."""
 
     if self._ser is not None:
       self.log(logging.INFO, f"Closing the serial port {self._port}")

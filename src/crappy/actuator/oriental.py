@@ -27,7 +27,7 @@ class Oriental(Actuator):
     """Sets the instance attributes and initializes the parent class.
 
     Args:
-      baudrate: the baudrate to use for serial communication.
+      baudrate: The baudrate to use for the serial communication.
       port: The path to the serial port to use for communication.
       gain: The gain to apply to speed commands, in `mm/min`. The default value
         corresponds to `0.07mm/min` for a command value of `1`.
@@ -127,7 +127,7 @@ class Oriental(Actuator):
 
     Args:
       position: The target position to reach, in arbitrary units.
-      speed: The speed to use for reching the target position, in arbitrary
+      speed: The speed to use for reaching the target position, in arbitrary
         units.
     """
 
@@ -165,14 +165,14 @@ class Oriental(Actuator):
       self._ser.write(b"SSTOP\n")
 
   def close(self) -> None:
-    """Closes the serial connection to the actuator."""
+    """Closes the serial connection to the motor."""
 
     if self._ser is not None:
       self.log(logging.INFO, f"Closing the serial port {self._port}")
       self._ser.close()
 
   def _clear_errors(self) -> None:
-    """Sends a command for clearing any serial error on the actuator."""
+    """Sends a command for clearing any serial error from the motor."""
 
     self.log(logging.DEBUG, f"Writing b'ALMCLR\\n' to port {self._port}")
     self._ser.write(b"ALMCLR\n")

@@ -9,18 +9,18 @@ from .meta_actuator import MetaActuator
 
 
 class Actuator(metaclass=MetaActuator):
-  """The base class for all actuator classes, allowing to keep track of them
-  and defining methods shared by all of them."""
+  """The base class for all :ref:`Actuators` classes, allowing to keep track of
+  them and defining methods shared by all of them."""
 
   ft232h: bool = False
 
   def __init__(self, *_, **__) -> None:
-    """"""
+    """Initializes the instance attributes."""
 
     self._logger: Optional[logging.Logger] = None
 
   def log(self, level: int, msg: str) -> None:
-    """"""
+    """Wrapper for logging messages."""
 
     if self._logger is None:
       self._logger = logging.getLogger(
@@ -30,13 +30,20 @@ class Actuator(metaclass=MetaActuator):
 
   def open(self) -> None:
     """This method should initialize the connection to the actuator, and
-    configure the actuator."""
+    configure the actuator.
+
+    It is fine for this method not to perform anything.
+    """
 
     ...
 
   def set_speed(self, speed: float) -> None:
     """This method should drive the actuator so that it reaches the desired
-    speed."""
+    speed.
+
+    Args:
+      speed: The speed to reach, as a :obj:`float`.
+    """
 
     self.log(logging.WARNING, f"The set_speed method was called but is not "
                               f"defined ! No command sent to the actuator.")
@@ -47,7 +54,13 @@ class Actuator(metaclass=MetaActuator):
                    speed: Optional[float] = None) -> None:
     """This method should drive the actuator so that it reaches the desired
     position. A speed value can optionally be provided for specifying the speed
-    at which the actuator should move for getting to the desired position."""
+    at which the actuator should move for getting to the desired position.
+
+    Args:
+      position: The position to reach, as a :obj:`float`.
+      speed: Optionally, the speed at which to move to the desired position, as
+        a :obj:`float`.
+    """
 
     self.log(logging.WARNING, f"The set_position method was called but is not "
                               f"defined ! No command sent to the actuator.")
@@ -55,7 +68,8 @@ class Actuator(metaclass=MetaActuator):
 
   def get_speed(self) -> Optional[float]:
     """This method should return the current speed of the actuator. It is also
-    fine for this method to return :obj:`None`."""
+    fine for this method to return :obj:`None` if the speed could not be
+    acquired."""
 
     self.log(logging.WARNING, f"The get_speed method as called but is not "
                               f"defined ! Define such a method, don't set the "
@@ -66,7 +80,8 @@ class Actuator(metaclass=MetaActuator):
 
   def get_position(self) -> Optional[float]:
     """This method should return the current position of the actuator. It is
-    also fine for this method to return :obj:`None`."""
+    also fine for this method to return :obj:`None` if the position could not
+    be acquired."""
 
     self.log(logging.WARNING, f"The get_position method as called but is not "
                               f"defined ! Define such a method, don't set the "
@@ -92,6 +107,7 @@ class Actuator(metaclass=MetaActuator):
 
   def close(self) -> None:
     """This method should perform any action required for properly closing the
-    connection to the actuator."""
+    connection to the actuator. It is fine for this method not to do
+    anything."""
 
     ...

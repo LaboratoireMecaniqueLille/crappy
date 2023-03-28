@@ -4,9 +4,9 @@ from ..._global import DefinitionError
 
 
 class MetaActuator(type):
-  """Metaclass ensuring that two Actuators don't have the same name, and that
-  all Actuators define the required methods. Also keeps track of all the
-  Actuator classes, including the custom user-defined ones."""
+  """Metaclass ensuring that two Actuators don't have the same name, and
+  keeping track of all the :ref:`Actuators` classes. It also allows including
+  the user-defined Actuators."""
 
   classes = {}
 

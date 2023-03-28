@@ -29,8 +29,8 @@ class FakeMotor(Actuator):
       kv: The electrical constant of the motor, in`t/min/V`.
       rv: The internal solid friction coefficient of the motor, no unit.
       fv: The internal fluid friction coefficient of the motor, no unit.
-      simulation_speed: Speed factor of the simulation, to speed it up or slow it
-        down.
+      simulation_speed: Speed factor of the simulation, to speed it up or slow
+        it down.
       initial_speed: The initial speed of the motor, in RPM.
       initial_pos: The initial position of the motor, in rounds.
     """

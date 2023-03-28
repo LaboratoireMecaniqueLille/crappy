@@ -13,10 +13,11 @@ except (ModuleNotFoundError, ImportError):
 
 
 class ServoStar(Actuator):
-  """This class can drive Kollmorgen's ServoStar 300 servomotor conditioner in
+  """This class can drive a Kollmorgen ServoStar 300 servomotor conditioner in
   position, and set it to the analog or serial driving mode.
 
-  It communicates with the servomotor over a serial connection.
+  It communicates with the servomotor over a serial connection. The `Biaxe`
+  Actuator can drive the same hardware, but only in speed.
   """
 
   def __init__(self,
@@ -26,9 +27,11 @@ class ServoStar(Actuator):
     """Sets the instance attributes and initializes the parent class.
 
     Args:
-      port (:obj:`str`): Path to connect to the serial port.
-      baudrate (:obj:`int`, optional): Set the corresponding baud rate.
-      mode (:obj:`str`, optional): Can be `'analog'` or `'serial'`.
+      port: Path to the serial port used for communication.
+      baudrate: The serial baud rate to use, as an :obj:`int`.
+      mode: The driving mode to use when starting the test. Can be `'analog'`
+        or `'serial'`. It can be changed afterwards while the test is running,
+        by sending the right command.
     """
 
     self._ser = None

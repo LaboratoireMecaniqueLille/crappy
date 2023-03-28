@@ -14,12 +14,12 @@ except (ModuleNotFoundError, ImportError):
 
 
 class TRA6PPD(Actuator):
-  """Drives the TRA6PPD linear actuator in position.
+  """Drives theNewport TRA6PPD linear actuator in position.
 
   Warning:
     This actuator cannot handle a high serial messages rate. It is recommended
     to set the frequency of the corresponding :ref:`Machine` block to a few
-    dozen Hz at most.
+    dozen `Hz` at most.
 
   Note:
     This actuator ignores new position commands while it is moving.
@@ -32,7 +32,7 @@ class TRA6PPD(Actuator):
 
     Args:
       baudrate: The baudrate for the serial connection.
-      port: Path to the port to use for seria lcommunication.
+      port: Path to the port to use for serial communication.
     """
 
     self._ser = None
@@ -116,7 +116,7 @@ class TRA6PPD(Actuator):
     return float(findall(r'\d\.\d+', ret.decode())[0])
 
   def close(self) -> None:
-    """Just closes the serial port."""
+    """Closes the serial port."""
 
     if self._ser is not None:
       self.log(logging.INFO, f"Closing the serial port {self._port}")

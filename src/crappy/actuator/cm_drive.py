@@ -37,14 +37,14 @@ class CMDrive(Actuator):
     self._baudrate = baudrate
 
   def open(self) -> None:
-    """Opens the serial connection to the actuator."""
+    """Opens the serial connection to the stepper motor."""
 
     self.log(logging.INFO, f"Opening the serial port {self._port} with "
                            f"baudrate {self._baudrate}")
     self._ser = serial.Serial(self._port, self._baudrate, timeout=0.1)
 
   def set_speed(self, speed: float) -> None:
-    """Sets the target speed on the actuator.
+    """Sets the target speed of the stepper motor.
 
     Args:
       speed: The target speed to set, in `mm/min`.
@@ -66,7 +66,7 @@ class CMDrive(Actuator):
   def set_position(self,
                    position: float,
                    _: Optional[float] = None) -> None:
-    """Sets the target position for the actuator.
+    """Sets the target position for the stepper motor.
 
     Args:
       position: The target position to reach, in `mm`.
