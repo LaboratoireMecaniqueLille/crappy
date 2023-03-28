@@ -61,13 +61,14 @@ class ImageSaver(CameraProcess):
         raise ModuleNotFoundError("Neither SimpleITK, opencv-python nor "
                                   "Pillow could be imported, no backend "
                                   "found for saving the images")
-    elif save_backend in ('sitk', 'pil', 'cv2'):
+    elif save_backend in ('sitk', 'pil', 'cv2', 'npy'):
       self._save_backend = save_backend
     else:
       raise ValueError("The save_backend argument should be either 'sitk', "
-                       "'pil' or 'cv2' !")
+                       "'pil', 'cv2' or 'npy' !")
 
-    self._img_extension = img_extension
+    # In case the images are saved as arrays, don't include extension
+    self._img_extension = img_extension if self._save_backend != 'npy' else ''
 
     # Setting a default save folder if not given
     if save_folder is None:
@@ -141,9 +142,14 @@ class ImageSaver(CameraProcess):
       writer = DictWriter(csvfile, fieldnames=self._metadata.keys())
       writer.writerow({**self._metadata, 't(s)': self._metadata['t(s)']})
 
-    path = str(self._save_folder / f"{self._metadata['ImageUniqueID']}_"
-                                   f"{self._metadata['t(s)']:.3f}."
-                                   f"{self._img_extension}")
+    # Only include the extension if applicable
+    if self._img_extension:
+      path = str(self._save_folder / f"{self._metadata['ImageUniqueID']}_"
+                                     f"{self._metadata['t(s)']:.3f}."
+                                     f"{self._img_extension}")
+    else:
+      path = str(self._save_folder / f"{self._metadata['ImageUniqueID']}_"
+                                     f"{self._metadata['t(s)']:.3f}")
 
     self._log(logging.DEBUG, "Saving image")
     if self._save_backend == 'sitk':
@@ -156,3 +162,6 @@ class ImageSaver(CameraProcess):
       PIL.Image.fromarray(self._img).save(
         path, exif={TAGS_INV[key]: val for key, val in self._metadata.items()
                     if key in TAGS_INV})
+
+    elif self._save_backend == 'npy':
+      np.save(path, self._img)
