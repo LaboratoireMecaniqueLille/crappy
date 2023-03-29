@@ -11,6 +11,7 @@ from . import tool
 from . import blocks
 from . import links
 from . import modifier
+from . import lamcube
 from .__version__ import __version__
 from ._global import OptionalModule
 

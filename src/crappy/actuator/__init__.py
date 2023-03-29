@@ -5,7 +5,6 @@ from typing import Dict, Type
 from .ft232h import MotorKitPumpFT232H
 
 from .meta_actuator import MetaActuator, Actuator
-from .biaxe import Biaxe
 from .jvl_mac_140 import JVLMac140
 from .schneider_mdrive_23 import SchneiderMDrive23
 from .fake_motor import FakeMotor

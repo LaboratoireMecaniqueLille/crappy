@@ -5,12 +5,6 @@ Actuators
 Regular Actuators
 -----------------
 
-Biaxe
-+++++
-.. autoclass:: crappy.actuator.Biaxe
-   :members: open, set_speed, stop, close
-   :special-members: __init__
-
 JVL Mac140
 ++++++++++
 .. autoclass:: crappy.actuator.JVLMac140

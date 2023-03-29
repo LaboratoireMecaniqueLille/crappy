@@ -13,3 +13,4 @@ API
    crappy_docs/tools.rst
    crappy_docs/exceptions.rst
    crappy_docs/aliases.rst
+   crappy_docs/lamcube.rst

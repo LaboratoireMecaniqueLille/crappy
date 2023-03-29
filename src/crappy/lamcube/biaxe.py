@@ -1,7 +1,7 @@
 ﻿# coding: utf-8
 
 import logging
-from .meta_actuator import Actuator
+from ..actuator import Actuator
 from .._global import OptionalModule
 
 try:
