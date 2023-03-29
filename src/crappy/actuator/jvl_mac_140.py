@@ -24,8 +24,6 @@ class JVLMac140(Actuator):
   in position.
 
   It interfaces with the servomotor over a serial connection.
-  It is used at the LaMcube for driving a tensile test machine for biological
-  samples, hence its name.
   """
 
   def __init__(self,

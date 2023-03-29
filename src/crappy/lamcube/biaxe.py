@@ -14,8 +14,8 @@ class Biaxe(Actuator):
   """This class can drive a Kollmorgen ServoStar 300 conditioner in speed.
 
   It is used at the LaMcube for driving a bi-axial tensile test machine, hence
-  its name. The `ServoStar300` Actuator can drive the same hardware, but only
-  in position.
+  its name. The :ref:`Kollmorgen ServoStar 300` Actuator can drive the same
+  hardware, but only in position.
   """
 
   def __init__(self,

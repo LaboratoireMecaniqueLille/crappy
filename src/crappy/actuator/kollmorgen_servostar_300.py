@@ -16,8 +16,8 @@ class ServoStar300(Actuator):
   """This class can drive a Kollmorgen ServoStar 300 servomotor conditioner in
   position, and set it to the analog or serial driving mode.
 
-  It communicates with the servomotor over a serial connection. The `Biaxe`
-  Actuator can drive the same hardware, but only in speed.
+  It communicates with the servomotor over a serial connection. The
+  :ref:`Biaxe` Actuator can drive the same hardware, but only in speed.
   """
 
   def __init__(self,
