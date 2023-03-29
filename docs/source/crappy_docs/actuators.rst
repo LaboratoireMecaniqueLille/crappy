@@ -49,9 +49,9 @@ Pololu Tic
              close
    :special-members: __init__
 
-ServoStar
-+++++++++
-.. autoclass:: crappy.actuator.ServoStar
+Kollmorgen ServoStar 300
+++++++++++++++++++++++++
+.. autoclass:: crappy.actuator.ServoStar300
    :members: open, get_position, set_position, stop, close
    :special-members: __init__
 

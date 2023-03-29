@@ -391,7 +391,7 @@ Supported Actuators
   controllers>`_ stepper motor drivers in speed or in position. Designed for
   driving all the Tic drivers, but tested only on the 36v4 model.
 
-- :ref:`Servostar`
+- :ref:`Kollmorgen ServoStar 300`
 
   Drives Kollmorgen's `Servostar 300 <https://www.kollmorgen.com/en-us/products
   /drives/servo/s300/>`_ servomotor conditioner in position or sets it to the
