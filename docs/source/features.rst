@@ -338,7 +338,7 @@ Supported Actuators
      This actuator was written for a specific application, so it may not be
      usable as-is in the general case.
 
-- :ref:`Biotens`
+- :ref:`JVL Mac140`
 
   Drives JVL's `MAC140 <https://www.jvl.dk/276/integrated-servo-motors-mac050
   -141>`_ integrated servomotor in speed or in position. Probably works with

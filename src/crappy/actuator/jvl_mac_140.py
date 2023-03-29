@@ -19,7 +19,7 @@ msg_tail_last = b'\xAA\xAA'
 msg_tail_not_last = b'\xAA\xAA+'
 
 
-class Biotens(Actuator):
+class JVLMac140(Actuator):
   """This class allows driving JVL's MAC140 integrated servomotor in speed or
   in position.
 
@@ -88,8 +88,8 @@ class Biotens(Actuator):
     """
 
     if speed is None:
-      raise ValueError("The Biotens actuator needs both a position and a speed"
-                       " command when driven in position mode !")
+      raise ValueError("The JVLMac140 actuator needs both a position and a "
+                       "speed command when driven in position mode !")
 
     # For the conversions, there are 4096 counts/motor revolution, 1/16 encoder
     # counts/sample, and the screw thread is 5
@@ -137,7 +137,7 @@ class Biotens(Actuator):
       sleep(0.1)
 
     # In case no value was received after 20 attempts
-    raise IOError("Could not read the position for the Biotens actuator!")
+    raise IOError("Could not read the position for the JVLMac140 actuator!")
 
   def stop(self) -> None:
     """Sends a command for stopping the servomotor."""

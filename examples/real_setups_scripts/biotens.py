@@ -17,7 +17,7 @@ save_path = Path(f"biotens_data/{strftime('%a %b %d %H_%M_%S', gmtime())}")
 if __name__ == '__main__':
 
   # Quick hack for resetting the position of the clamps
-  biotens_init = crappy.actuator.Biotens()
+  biotens_init = crappy.actuator.JVLMac140()
   biotens_init.open()
   biotens_init.reset_position()
   biotens_init.set_position(5, 50)
@@ -34,7 +34,7 @@ if __name__ == '__main__':
   crappy.link(effort, generator)
 
   # The Block driving the tensile test machine
-  biotens = crappy.blocks.Machine([{'type': 'Biotens',
+  biotens = crappy.blocks.Machine([{'type': 'JVLMac140',
                                     'port': '/dev/ttyUSB0',
                                     'position_label': 'position1',
                                     'cmd_label': 'cmd'}])
