@@ -38,8 +38,8 @@ class AutoDriveVideoExtenso(Block):
       actuator: A :obj:`dict` for initializing the actuator to drive. It
         should contain the name of the actuator under the key ``'name'``, and
         all the arguments to pass to the actuator as key/value pairs. The
-        default actuator if this argument is not set is the :ref:`CM Drive`
-        with its default arguments.
+        default actuator if this argument is not set is the
+        :ref:`Schneider MDrive 23` with its default arguments.
       gain: The gain for driving the actuator in speed. The speed command is
         simply the difference in pixels between the center of the image and the
         center of the spots, multiplied by this gain.
@@ -81,9 +81,11 @@ class AutoDriveVideoExtenso(Block):
 
     # Checking that there's exactly one input link
     if not self.inputs:
-      raise IOError("The AutoDriveVideoExtenso block should have an input link !")
+      raise IOError("The AutoDriveVideoExtenso block should have an input "
+                    "link !")
     elif len(self.inputs) > 1:
-      raise IOError("The AUtoDrive block can only have one input link !")
+      raise IOError("The AutoDriveVideoExtenso block can only have one input "
+                    "link !")
 
     # Opening and initializing the actuator to drive
     actuator_name = self._actuator.pop('name')
