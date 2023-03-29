@@ -55,9 +55,9 @@ Kollmorgen ServoStar 300
    :members: open, get_position, set_position, stop, close
    :special-members: __init__
 
-TRA6PPD
-+++++++
-.. autoclass:: crappy.actuator.TRA6PPD
+Newport TRA6PPD
++++++++++++++++
+.. autoclass:: crappy.actuator.NewportTRA6PPD
    :members: open, get_position, set_position, stop, close
    :special-members: __init__
 

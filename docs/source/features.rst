@@ -402,7 +402,7 @@ Supported Actuators
      This actuator was written for a specific application, so it may not be
      usable as-is in the general case.
 
-- :ref:`TRA6PPD`
+- :ref:`Newport TRA6PPD`
 
   Drives Newport's `TRA6PPD <https://www.newport.com/p/TRA6PPD>`_ miniature
   linear stepper motor actuator, in speed or in position.

@@ -13,6 +13,6 @@ from .motor_kit_pump import MotorKitPump
 from .oriental_ard_k import OrientalARDK
 from .kollmorgen_servostar_300 import ServoStar300
 from .pololu_tic import PololuTic
-from .tra6ppd import TRA6PPD
+from .newport_tra6ppd import NewportTRA6PPD
 
 actuator_dict: Dict[str, Type[Actuator]] = MetaActuator.classes

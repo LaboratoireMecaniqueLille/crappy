@@ -13,7 +13,7 @@ except (ModuleNotFoundError, ImportError):
   Serial = OptionalModule('pyserial')
 
 
-class TRA6PPD(Actuator):
+class NewportTRA6PPD(Actuator):
   """Drives theNewport TRA6PPD linear actuator in position.
 
   Warning:
