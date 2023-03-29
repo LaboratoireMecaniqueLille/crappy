@@ -738,15 +738,14 @@ MODE=\\"0666\\\"" | sudo tee pololu.rules > /dev/null 2>&1
         byteorder='little',
         signed=True))
 
-  def set_position(self,
-                   position: float,
-                   speed: Optional[float] = None) -> None:
+  def set_position(self, position: float, speed: Optional[float]) -> None:
     """Sends a position command to the motor.
 
     Args:
       position: The position to reach in `mm`
       speed: The speed at which the motor should move to the given position,
-        in `mm/s`
+        in `mm/s` Giving a speed other than :obj:`None` will set the maximum
+        speed of the motor to that speed.
 
     Note:
       - ``speed``:

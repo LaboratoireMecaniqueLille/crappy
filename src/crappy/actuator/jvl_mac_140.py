@@ -75,14 +75,13 @@ class JVLMac140(Actuator):
     self.log(logging.DEBUG, f"Writing {cmd} to port {self._port}")
     self._ser.writelines(cmd)
 
-  def set_position(self,
-                   position: float,
-                   speed: Optional[float] = None) -> None:
+  def set_position(self, position: float, speed: Optional[float]) -> None:
     """Sets the desired target position on the servomotor.
 
     Args:
       position: The target position, in `mm`.
       speed: The target speed for reaching the desired position, in `mm/min`.
+        The speed must be given, otherwise an exception is raised.
     """
 
     if speed is None:

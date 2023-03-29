@@ -65,9 +65,7 @@ class NewportTRA6PPD(Actuator):
       self.log(logging.INFO, f"Performing homing, {10 * i} seconds left")
       sleep(10)
 
-  def set_position(self,
-                   position: float,
-                   speed: Optional[float] = None) -> None:
+  def set_position(self, position: float, speed: Optional[float]) -> None:
     """Sends the actuator a command to reach a given position.
 
     The command is ignored if the actuator is already moving.
@@ -75,7 +73,7 @@ class NewportTRA6PPD(Actuator):
     Args:
       position: The position to reach. Should be between `0` and `6 mm`.
       speed: The speed at which the actuator should move. Should be between `0`
-        and `0.2 mm/s`.
+        and `0.2 mm/s`. If :obj:`None` is received, the default is `0.2 mm/s`.
     """
 
     if speed is None:

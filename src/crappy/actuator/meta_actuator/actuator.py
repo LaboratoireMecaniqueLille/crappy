@@ -49,17 +49,15 @@ class Actuator(metaclass=MetaActuator):
                               f"defined ! No command sent to the actuator.")
     sleep(1)
 
-  def set_position(self,
-                   position: float,
-                   speed: Optional[float] = None) -> None:
+  def set_position(self, position: float, speed: Optional[float]) -> None:
     """This method should drive the actuator so that it reaches the desired
     position. A speed value can optionally be provided for specifying the speed
     at which the actuator should move for getting to the desired position.
 
     Args:
       position: The position to reach, as a :obj:`float`.
-      speed: Optionally, the speed at which to move to the desired position, as
-        a :obj:`float`.
+      speed: The speed at which to move to the desired position, as a
+      :obj:`float`, or :obj:`None` if no speed was specified.
     """
 
     self.log(logging.WARNING, f"The set_position method was called but is not "

@@ -63,14 +63,12 @@ class SchneiderMDrive23(Actuator):
     else:
       self.log(logging.WARNING, "Maximum speed exceeded, not setting speed")
 
-  def set_position(self,
-                   position: float,
-                   _: Optional[float] = None) -> None:
+  def set_position(self, position: float, _: Optional[float]) -> None:
     """Sets the target position for the stepper motor.
 
     Args:
       position: The target position to reach, in `mm`.
-      _: If also given, the speed is ignored.
+      _: The speed argument is ignored.
     """
 
     # Closing and reopening to get rid of errors

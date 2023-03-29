@@ -121,15 +121,13 @@ class OrientalARDK(Actuator):
     # Storing the written value
     self._prev_set_speed = signed_speed
 
-  def set_position(self,
-                   position: float,
-                   speed: Optional[float] = None) -> None:
+  def set_position(self, position: float, speed: Optional[float]) -> None:
     """Sets the target position for the motor.
 
     Args:
       position: The target position to reach, in arbitrary units.
       speed: The speed to use for reaching the target position, in arbitrary
-        units.
+        units. A speed must be given, otherwise an exception is raised.
     """
 
     if speed is None:

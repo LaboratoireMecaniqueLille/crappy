@@ -70,7 +70,7 @@ class ServoStar300(Actuator):
 
   def set_position(self,
                    pos: Union[float, bool],
-                   speed: Optional[float] = None) -> None:
+                   speed: Optional[float]) -> None:
     """Sets the target position for the motor.
 
     Also allows switching to the serial or analog driving mode if the target
@@ -82,6 +82,7 @@ class ServoStar300(Actuator):
         value of :obj:`True` sets the driving mode to serial, and :obj:`False`
         sets the driving mode to analog.
       speed: The speed at which the actuator should reach its target position.
+        If no speed is specified, the default is `20000`.
     """
 
     if speed is None:
