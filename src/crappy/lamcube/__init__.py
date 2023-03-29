@@ -9,3 +9,4 @@ as-is by anyone outside the lab.
 """
 
 from .biaxe import Biaxe
+from .biotens import Biotens
