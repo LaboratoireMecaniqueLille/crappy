@@ -19,7 +19,8 @@ if __name__ == '__main__':
 
   # The Block driving the Actuator for following the spots
   auto_drive = crappy.blocks.AutoDriveVideoExtenso(
-      actuator={'name': 'CMDrive', 'port': '/dev/ttyUSB0'}, direction='X-')
+      actuator={'name': 'SchneiderMDrive23', 'port': '/dev/ttyUSB0'},
+      direction='X-')
   crappy.link(ve, auto_drive)
 
   # The Block driving the extension of the test sample

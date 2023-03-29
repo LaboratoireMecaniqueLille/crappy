@@ -348,7 +348,7 @@ Supported Actuators
      This actuator was written for a specific application, so it may not be
      usable as-is in the general case.
 
-- :ref:`CM Drive`
+- :ref:`Schneider MDrive 23`
 
   Drives Schneider Electric's `MDrive 23 <https://www.novantaims.com/downloads
   /quickreference/mdi23plus_qr.pdf>`_ stepper motor in speed or in position.

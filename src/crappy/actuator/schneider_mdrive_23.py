@@ -12,7 +12,7 @@ except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("pyserial")
 
 
-class CMDrive(Actuator):
+class SchneiderMDrive23(Actuator):
   """This class can drive Schneider Electric MDrive 23 stepper motor in speed
   and in position.
 

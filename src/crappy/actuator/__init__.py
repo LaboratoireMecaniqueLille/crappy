@@ -7,7 +7,7 @@ from .ft232h import MotorKitPumpFT232H
 from .meta_actuator import MetaActuator, Actuator
 from .biaxe import Biaxe
 from .biotens import Biotens
-from .cm_drive import CMDrive
+from .schneider_mdrive_23 import SchneiderMDrive23
 from .fake_motor import FakeMotor
 from .motor_kit_pump import MotorKitPump
 from .oriental_ard_k import OrientalARDK

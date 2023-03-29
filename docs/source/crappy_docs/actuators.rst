@@ -18,9 +18,9 @@ Biotens
              stop, close
    :special-members: __init__
 
-CM Drive
-++++++++
-.. autoclass:: crappy.actuator.CMDrive
+Schneider MDrive 23
++++++++++++++++++++
+.. autoclass:: crappy.actuator.SchneiderMDrive23
    :members: open, get_position, set_speed, set_position, stop, close
    :special-members: __init__
 
