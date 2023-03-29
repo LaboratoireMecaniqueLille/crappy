@@ -36,9 +36,9 @@ Motor kit pump
    :members: open, set_speed, stop, close
    :special-members: __init__
 
-Oriental
-++++++++
-.. autoclass:: crappy.actuator.Oriental
+Oriental ARD-K
+++++++++++++++
+.. autoclass:: crappy.actuator.OrientalARDK
    :members: open, get_position, set_speed, set_position, stop, close
    :special-members: __init__
 

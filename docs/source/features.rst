@@ -373,7 +373,7 @@ Supported Actuators
      This actuator was written for a specific application, so it may not be
      usable as-is in the general case.
 
-- :ref:`Oriental`
+- :ref:`Oriental ARD-K`
 
   Drives Oriental Motor's `ARD-K <https://catalog.orientalmotor.com/item/s-
   closed-loop-stepper-motor-drivers-dc-input/ard-closed-loop-stepper-driver-

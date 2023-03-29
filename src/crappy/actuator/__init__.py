@@ -10,7 +10,7 @@ from .biotens import Biotens
 from .cm_drive import CMDrive
 from .fake_motor import FakeMotor
 from .motor_kit_pump import MotorKitPump
-from .oriental import Oriental
+from .oriental_ard_k import OrientalARDK
 from .servostar import ServoStar
 from .pololu_tic import PololuTic
 from .tra6ppd import TRA6PPD

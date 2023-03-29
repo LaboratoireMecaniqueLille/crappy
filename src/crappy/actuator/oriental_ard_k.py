@@ -2,6 +2,7 @@
 
 from typing import Optional
 import logging
+
 from .meta_actuator import Actuator
 from .._global import OptionalModule
 
@@ -11,9 +12,9 @@ except (ModuleNotFoundError, ImportError):
   Serial = OptionalModule("pyserial")
 
 
-class Oriental(Actuator):
-  """This class can drive an Oriental Motor's ARD-K stepper motor in speed or
-  in position.
+class OrientalARDK(Actuator):
+  """This class can drive an Oriental Motor's ARD-K stepper motor driver in
+  speed or in position.
 
   It communicates with the stepper motor over a serial connection. This class
   was designed so that the :ref:`Machine` block drives several of its instances
@@ -132,7 +133,7 @@ class Oriental(Actuator):
     """
 
     if speed is None:
-      raise ValueError("The Oriental actuator needs both a position and a "
+      raise ValueError("The OrientalARDK actuator needs both a position and a "
                        "speed command when driven in position mode !")
 
     self.log(logging.DEBUG, f"Writing b'VR {abs(speed)}' to port {self._port}")
