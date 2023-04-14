@@ -25,7 +25,7 @@ class TestActuator(unittest.TestCase):
   def test_set_position(self) -> None:
     """"""
 
-    self.assertIsNone(self._actuator.set_position(0.))
+    self.assertIsNone(self._actuator.set_position(0., None))
 
   def test_get_speed(self) -> None:
     """"""
