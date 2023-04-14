@@ -5,17 +5,10 @@ Actuators
 Regular Actuators
 -----------------
 
-JVL Mac140
-++++++++++
-.. autoclass:: crappy.actuator.JVLMac140
-   :members: open, get_position, set_speed, set_position, reset_position,
-             stop, close
-   :special-members: __init__
-
-Schneider MDrive 23
-+++++++++++++++++++
-.. autoclass:: crappy.actuator.SchneiderMDrive23
-   :members: open, get_position, set_speed, set_position, stop, close
+Adafruit DC Motor Hat
++++++++++++++++++++++
+.. autoclass:: crappy.actuator.DCMotorHat
+   :members: open, set_speed, stop, close
    :special-members: __init__
 
 Fake Motor
@@ -24,10 +17,23 @@ Fake Motor
    :members: open, get_speed, get_position, set_speed, stop, close
    :special-members: __init__
 
-Adafruit DC Motor Hat
-+++++++++++++++++++++
-.. autoclass:: crappy.actuator.DCMotorHat
-   :members: open, set_speed, stop, close
+JVL Mac140
+++++++++++
+.. autoclass:: crappy.actuator.JVLMac140
+   :members: open, get_position, set_speed, set_position, reset_position,
+             stop, close
+   :special-members: __init__
+
+Kollmorgen ServoStar 300
+++++++++++++++++++++++++
+.. autoclass:: crappy.actuator.ServoStar300
+   :members: open, get_position, set_position, stop, close
+   :special-members: __init__
+
+Newport TRA6PPD
++++++++++++++++
+.. autoclass:: crappy.actuator.NewportTRA6PPD
+   :members: open, get_position, set_position, stop, close
    :special-members: __init__
 
 Oriental ARD-K
@@ -43,16 +49,10 @@ Pololu Tic
              close
    :special-members: __init__
 
-Kollmorgen ServoStar 300
-++++++++++++++++++++++++
-.. autoclass:: crappy.actuator.ServoStar300
-   :members: open, get_position, set_position, stop, close
-   :special-members: __init__
-
-Newport TRA6PPD
-+++++++++++++++
-.. autoclass:: crappy.actuator.NewportTRA6PPD
-   :members: open, get_position, set_position, stop, close
+Schneider MDrive 23
++++++++++++++++++++
+.. autoclass:: crappy.actuator.SchneiderMDrive23
+   :members: open, get_position, set_speed, set_position, stop, close
    :special-members: __init__
 
 FT232H Actuators
