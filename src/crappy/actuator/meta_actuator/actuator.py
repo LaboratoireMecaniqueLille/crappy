@@ -51,13 +51,14 @@ class Actuator(metaclass=MetaActuator):
 
   def set_position(self, position: float, speed: Optional[float]) -> None:
     """This method should drive the actuator so that it reaches the desired
-    position. A speed value can optionally be provided for specifying the speed
-    at which the actuator should move for getting to the desired position.
+    position. A speed value must be provided. If it is not :obj:None`, it
+    specifies the speed at which the actuator should move for getting to the
+    desired position.
 
     Args:
       position: The position to reach, as a :obj:`float`.
       speed: The speed at which to move to the desired position, as a
-        :obj:`float`, or :obj:`None` if no speed was specified.
+        :obj:`float`, or :obj:`None` if no speed is specified.
     """
 
     self.log(logging.WARNING, f"The set_position method was called but is not "

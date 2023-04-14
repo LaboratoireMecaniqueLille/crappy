@@ -14,7 +14,7 @@ except (ModuleNotFoundError, ImportError):
 
 
 class NewportTRA6PPD(Actuator):
-  """Drives theNewport TRA6PPD linear actuator in position.
+  """Drives the Newport TRA6PPD linear actuator in position.
 
   Warning:
     This actuator cannot handle a high serial messages rate. It is recommended

@@ -30,7 +30,7 @@ class ServoStar300(Actuator):
       port: Path to the serial port used for communication.
       baudrate: The serial baud rate to use, as an :obj:`int`.
       mode: The driving mode to use when starting the test. Can be `'analog'`
-        or `'serial'`. It can be changed afterwards while the test is running,
+        or `'serial'`. It can be changed afterward while the test is running,
         by sending the right command.
     """
 

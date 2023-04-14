@@ -37,10 +37,11 @@ class DCMotorHatFT232H(Actuator):
   FT232H device.
 
   Important:
-    As this Actuator can drive up to 4 motors simultaneously, it takes
-    :obj:`tuple`, see :meth:`set_speed`. Regular Actuators receive their
-    commands as :obj:`float`. A :ref:`Modifier` can be used for converting a
-    :obj:`float` command from a :ref:`Generator` to a :obj:`tuple`.
+    As this Actuator can drive up to 4 motors simultaneously, it takes a
+    :obj:`tuple` as a command, see :meth:`set_speed`. Regular Actuators receive
+    their commands as :obj:`float`. A :ref:`Modifier` can be used for
+    converting a :obj:`float` command from a :ref:`Generator` to a
+    :obj:`tuple`.
 
   Note:
     The DC Motor Hat can also drive stepper motors, but this feature isn't
@@ -51,7 +52,7 @@ class DCMotorHatFT232H(Actuator):
   def __init__(self,
                device_address: int = 0x60,
                _ft232h_args: USBArgsType = tuple()) -> None:
-    """Checks the validity o the arguments and opens the connection to the
+    """Checks the validity of the arguments and opens the connection to the
     FT232H.
 
     Args:

@@ -49,14 +49,15 @@ class DCMotorHat(Actuator):
   """Class for driving Adafruit's DC motor HAT.
 
   It can drive up to four DC motors in speed only. The acquisition of the speed
-  has not been implemented so far. It can either rely on Adafruit's blinka
+  has not been implemented so far. It can either rely on Adafruit's Blinka
   library, or on :mod:`smbus2` if used from a Raspberry Pi.
 
   Important:
-    As this Actuator can drive up to 4 motors simultaneously, it takes
-    :obj:`tuple`, see :meth:`set_speed`. Regular Actuators receive their
-    commands as :obj:`float`. A :ref:`Modifier` can be used for converting a
-    :obj:`float` command from a :ref:`Generator` to a :obj:`tuple`.
+    As this Actuator can drive up to 4 motors simultaneously, it takes a
+    :obj:`tuple` as a command, see :meth:`set_speed`. Regular Actuators receive
+    their commands as :obj:`float`. A :ref:`Modifier` can be used for
+    converting a :obj:`float` command from a :ref:`Generator` to a
+    :obj:`tuple`.
 
   Note:
     The DC Motor Hat can also drive stepper motors, but this feature isn't
@@ -165,7 +166,7 @@ class DCMotorHat(Actuator):
     self._set_motor(motor_nr, volt_clamped)
 
   def stop(self) -> None:
-    """Simply sets the command to `0` to stop the pump."""
+    """Simply sets the command to `0` to stop the motors."""
 
     if self._bus is not None:
       for i in range(1, 5):
