@@ -2,7 +2,7 @@
 
 from typing import Dict, Type
 
-from .ft232h import MotorKitPumpFT232H
+from .ft232h import DCMotorHatFT232H
 
 from .meta_actuator import MetaActuator, Actuator
 from .jvl_mac_140 import JVLMac140

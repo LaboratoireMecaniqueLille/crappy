@@ -58,10 +58,10 @@ Newport TRA6PPD
 FT232H Actuators
 ----------------
 
-Motor kit pump FT232H
-+++++++++++++++++++++
+Adafruit DC Motor Hat FT232H
+++++++++++++++++++++++++++++
 
-.. autoclass:: crappy.actuator.MotorKitPumpFT232H
+.. autoclass:: crappy.actuator.DCMotorHatFT232H
    :members: open, set_speed, stop, close
    :special-members: __init__
 

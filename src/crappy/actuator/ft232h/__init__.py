@@ -1,3 +1,3 @@
 # coding: utf-8
 
-from .motor_kit_pump_ft232h import MotorKitPumpFT232H
+from .adafruit_dc_motor_hat import DCMotorHatFT232H
