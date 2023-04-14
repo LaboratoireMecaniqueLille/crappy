@@ -57,7 +57,7 @@ class Actuator(metaclass=MetaActuator):
     Args:
       position: The position to reach, as a :obj:`float`.
       speed: The speed at which to move to the desired position, as a
-      :obj:`float`, or :obj:`None` if no speed was specified.
+        :obj:`float`, or :obj:`None` if no speed was specified.
     """
 
     self.log(logging.WARNING, f"The set_position method was called but is not "
