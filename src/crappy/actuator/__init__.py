@@ -8,7 +8,7 @@ from .meta_actuator import MetaActuator, Actuator
 from .jvl_mac_140 import JVLMac140
 from .schneider_mdrive_23 import SchneiderMDrive23
 from .fake_motor import FakeMotor
-from .motor_kit_pump import MotorKitPump
+from .adafruit_dc_motor_hat import DCMotorHat
 from .oriental_ard_k import OrientalARDK
 from .kollmorgen_servostar_300 import ServoStar300
 from .pololu_tic import PololuTic

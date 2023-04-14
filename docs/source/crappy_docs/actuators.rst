@@ -24,9 +24,9 @@ Fake Motor
    :members: open, get_speed, get_position, set_speed, stop, close
    :special-members: __init__
 
-Motor kit pump
-++++++++++++++
-.. autoclass:: crappy.actuator.MotorKitPump
+Adafruit DC Motor Hat
++++++++++++++++++++++
+.. autoclass:: crappy.actuator.DCMotorHat
    :members: open, set_speed, stop, close
    :special-members: __init__
 

@@ -364,10 +364,13 @@ Supported Actuators
   Emulates the dynamic behavior of a DC motor, but doesn't drive any hardware.
   Used in the examples, may also be used for prototyping or debugging.
 
-- :ref:`Motor kit pump`
+- :ref:`Adafruit DC Motor Hat`
 
-  Drives Adafruit's `DC & Stepper Motor HAT for Raspberry Pi <https://www.
-  adafruit.com/product/2348>`_ in Volts, using Adafruit's Blinka library.
+  Drives up to 4 DC motors using Adafruit's `DC & Stepper Motor HAT for
+  Raspberry Pi <https://www.adafruit.com/product/2348>`_, using either
+  Adafruit's Blinka library or :mod:`smbus2` if driven from a Raspberry Pi.
+  Although this component can also drive stepper motors, this feature was not
+  implemented.
 
   .. Important::
      This actuator was written for a specific application, so it may not be
