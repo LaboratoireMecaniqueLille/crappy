@@ -10,7 +10,7 @@ class TrigOnChange(Modifier):
   """Modifier passing the data to the downstream block only when the value of
   a given label changes.
 
-  It also transmits the first received data. Can be used to trig a block upon
+  It also transmits the first received data. Can be used to trig a Block upon
   change of a label value.
   """
 
@@ -25,7 +25,7 @@ class TrigOnChange(Modifier):
     self._label = label
     self._last = None
 
-  def evaluate(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+  def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Compares the received value with the last sent one, and if they're
     different sends the received data and stores the latest value."""
 

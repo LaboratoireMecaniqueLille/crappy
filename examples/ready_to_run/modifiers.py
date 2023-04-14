@@ -13,11 +13,12 @@ import crappy
 
 
 # Example of class used as a Modifier
-class My_offset_modifier:
+class My_offset_modifier(crappy.Modifier):
   def __init__(self, offset):
+    super().__init__()
     self.offset = offset
 
-  def evaluate(self, data):
+  def __call__(self, data):
     """Method returning the modified values.
 
     Remember: data is ALWAYS a :obj:`dict`.

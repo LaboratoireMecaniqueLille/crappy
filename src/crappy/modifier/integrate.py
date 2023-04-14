@@ -32,9 +32,9 @@ class Integrate(Modifier):
     self._last_val = None
     self._integration = 0
 
-  def evaluate(self, data: Dict[str, Any]) -> Dict[str, Any]:
-    """Gets the data from the upstream block, updates the integration value and
-    returns it."""
+  def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    """Gets the data from the upstream block, updates the integration value,
+    adds it to the data and returns the data."""
 
     self.log(logging.DEBUG, f"Received {data}")
 

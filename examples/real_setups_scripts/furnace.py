@@ -45,7 +45,7 @@ class dc_to_clk(crappy.Modifier):
     super().__init__()
     self._label = label
 
-  def evaluate(self, data):
+  def __call__(self, data):
     """Converts the value received on the given label from a DC voltage to a
     number of clock cycles."""
 

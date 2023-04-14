@@ -59,7 +59,7 @@ Configurator Tools
 Box
 """
 .. autoclass:: crappy.tool.camera_config.config_tools.Box
-   :members: no_points, reset, get_patch, sorted
+   :members: no_points, reset, sorted
    :special-members: __init__
 
 Spots Boxes

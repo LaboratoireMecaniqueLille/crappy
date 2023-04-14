@@ -8,8 +8,8 @@ from .meta_modifier import Modifier
 
 
 class Demux(Modifier):
-  """Modifier converting a stream into a regular Crappy :obj:`dict` giving for
-  each label a single value.
+  """Modifier converting a stream into a :obj:`dict`, leaving for each label
+  only a single value.
 
   The single value is either the first value of a column/row, or the average
   of the row/column values. This Modifier is mainly meant for linking streaming
@@ -51,7 +51,7 @@ class Demux(Modifier):
     self._time_label = time_label
     self._transpose = transpose
 
-  def evaluate(self, data: Dict[str, np.ndarray]) -> Dict[str, Any]:
+  def __call__(self, data: Dict[str, np.ndarray]) -> Dict[str, Any]:
     """Retrieves for each label its value in the stream, also gets the
     corresponding timestamp, and returns them."""
 

@@ -32,7 +32,7 @@ class TrigOnValue(Modifier):
     else:
       self._values = (values,)
 
-  def evaluate(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+  def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Checks if the value of ``label`` is in the predefined set of accepted
     values, and if so transmits the data."""
 

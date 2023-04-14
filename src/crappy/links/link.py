@@ -10,7 +10,6 @@ from platform import system
 from multiprocessing import current_process
 import logging
 
-from ..modifier import Modifier
 from .._global import LinkDataError
 
 ModifierType = Callable[[Dict[str, Any]], Dict[str, Any]]
@@ -25,9 +24,9 @@ class Link:
 
   Note:
     It is possible to add one or multiple :ref:`Modifiers` to modify the
-    transferred value. The modifiers should either be children of
-    :ref:`Modifier` or callables taking a :obj:`dict` as argument and
-    returning a :obj:`dict`.
+    transferred value. The Modifiers should be callables taking a :obj:`dict`
+    as argument and returning a :obj:`dict`. They can be functions, or
+    preferably children of :ref:`Modifier`.
   """
 
   _count = 0
@@ -35,23 +34,29 @@ class Link:
   def __init__(self,
                input_block,
                output_block,
-               modifiers: Optional[List[Union[ModifierType, Modifier]]] = None,
+               modifiers: Optional[List[ModifierType]] = None,
                name: Optional[str] = None) -> None:
     """Sets the instance attributes.
 
     Args:
       input_block: The Block sending data through the link.
       output_block: The Block receiving data through the link.
-      modifiers: A :obj:`list` containing children of :ref:`Modifier` and/or
-        callables. If several objects given ,they will be called in the given
-        order. See :ref:`Modifiers` for more information.
+      modifiers: A :obj:`list` containing callables. If several objects given,
+        they will be called in the given order. See :ref:`Modifiers` for more
+        information.
       name: Name of the link, to differentiate it from the others when
-        debugging. If no specific name is given, the links are anyway numbered
-        in the order in which they are instantiated in the code.
+        debugging. If no specific name is given, the links are numbered in the
+        order in which they are instantiated in the code.
     """
 
     if modifiers is None:
       modifiers = list()
+
+    # Checking that all the given modifiers are callable
+    if modifiers and not all(callable(mod) for mod in modifiers):
+      not_callable = [mod for mod in modifiers if not callable(mod)]
+      raise TypeError(f"The following objects passed as modifiers are not "
+                      f"callable : {not_callable} !")
 
     self.name = name if name is not None else f'link{self._get_count()}'
     self._in, self._out = Pipe()
@@ -100,19 +105,15 @@ class Link:
     """Sends a value from the upstream Block to the downstream Block.
 
     Before sending, applies the given modifiers and makes sure there's room in
-    the Pipe for sending the data.
+    the Pipe for sending the data (Linux only).
     """
 
+    # Applying the modifiers to the value to send
     for mod in self._modifiers:
-      # Case when the modifier is a class
-      if hasattr(mod, 'evaluate'):
-        value = mod.evaluate(deepcopy(value))
-      # Case when the modifier is a method
-      else:
-        value = mod(deepcopy(value))
-
-    if value is None:
-      return
+      value = mod(deepcopy(value))
+      # No need to continue if there's no value to send anymore
+      if value is None:
+        return
 
     if not isinstance(value, dict):
       self.log(logging.ERROR, f"Trying to send object of type {type(value)} "
@@ -189,8 +190,7 @@ class Link:
 
 def link(in_block,
          out_block,
-         modifier: Optional[Union[List[Union[ModifierType, Modifier]],
-                                  Union[ModifierType, Modifier]]] = None,
+         modifier: Optional[Union[List[ModifierType], ModifierType]] = None,
          name: Optional[str] = None) -> None:
   """Function linking two blocks, allowing to send data from one to the other.
 
@@ -201,12 +201,13 @@ def link(in_block,
   Args:
     in_block: The Block sending data through the link.
     out_block: The Block receiving data through the link.
-    modifier: Either a child class of :ref:`Modifier`, or a callable, or a
-      :obj:`list` containing such objects. If several given (in a list), calls
-      them in the  given order. See :ref:`Modifiers` for more information.
+    modifier: Either a callable, or a :obj:`list` containing callables. If
+      several given (in a list), they are called in the  given order. They
+      should preferably be children of :ref:`Modifier`. See :ref:`Modifiers`
+      for more information.
     name: Name of the link, to differentiate it from the others when debugging.
-      If no specific name is given, the links are anyway numbered in the order
-      in which they are instantiated in the code.
+      If no specific name is given, the links are numbered in the order in
+      which they are instantiated in the code.
   """
 
   # Forcing the modifiers into lists

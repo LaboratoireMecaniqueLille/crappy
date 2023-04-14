@@ -16,11 +16,11 @@ class Offset(Modifier):
   label.
 
   This Modifier can be used for example when measuring a variable that should
-  start at `0` (like a force) but doesn't because of a sensor offset. It can
-  also just be used to plot nicer figures. It is not very accurate as it is
-  only based on a single data point for the offset calculation. The
-  ``make_zero`` argument of the :ref:`IOBlock` is a better alternative if
-  precision is required when offsetting the data.
+  start at `0` but doesn't because of a sensor offset. It can also just be used
+  to plot nicer figures. It is not very accurate as it is only based on a
+  single data point for the offset calculation. The ``make_zero`` argument of
+  the :ref:`IOBlock` is a better alternative if precision is required when
+  offsetting a sensor.
   """
 
   def __init__(self,
@@ -54,8 +54,8 @@ class Offset(Modifier):
     self._compensations = None
     self._compensated = False
 
-  def evaluate(self, data: Dict[str, Any]) -> Dict[str, Any]:
-    """If the compensations are not set, sets them, anf then offsets the
+  def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    """If the compensations are not set, sets them, and then offsets the
     required labels."""
 
     self.log(logging.DEBUG, f"Received {data}")

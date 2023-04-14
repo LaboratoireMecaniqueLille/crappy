@@ -26,7 +26,7 @@ class Mean(Modifier):
     self._n_points = n_points
     self._buf = None
 
-  def evaluate(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+  def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Receives data from the upstream block, and computes the average of every
     label once the right number of points have been received. Then empties the
     buffer and returns the averages.

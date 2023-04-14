@@ -20,7 +20,7 @@ class Delay(crappy.modifier.Modifier):
     self.n = n
     self.hist = []
 
-  def evaluate(self, data):
+  def __call__(self, data):
     self.hist.append(data)
     if len(self.hist) >= self.n:
       return self.hist.pop(0)

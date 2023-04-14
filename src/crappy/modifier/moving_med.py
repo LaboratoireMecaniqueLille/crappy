@@ -26,7 +26,7 @@ class MovingMed(Modifier):
     self._n_points = n_points
     self._buf = None
 
-  def evaluate(self, data: Dict[str, Any]) -> Dict[str, Any]:
+  def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
     """Receives data from the upstream block, computes the median of every
     label and replaces the original data with it."""
 

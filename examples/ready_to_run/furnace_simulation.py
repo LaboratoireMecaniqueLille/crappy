@@ -28,7 +28,7 @@ class Delay(crappy.Modifier):
     self.v = 'T'
     self.hist = []
 
-  def evaluate(self, data):
+  def __call__(self, data):
     self.hist.append(data)
     r = dict(data)
     while self.hist and self.hist[0][self.t] + self.delay <= r[self.t]:

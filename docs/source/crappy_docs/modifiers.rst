@@ -8,62 +8,52 @@ Regular Modifiers
 Demux
 +++++
 .. autoclass:: crappy.modifier.Demux
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Differentiate
 +++++++++++++
 .. autoclass:: crappy.modifier.Diff
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Integrate
 +++++++++
 .. autoclass:: crappy.modifier.Integrate
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Mean
 ++++
 .. autoclass:: crappy.modifier.Mean
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Median
 ++++++
 .. autoclass:: crappy.modifier.Median
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Moving Average
 ++++++++++++++
 .. autoclass:: crappy.modifier.MovingAvg
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Moving Median
 +++++++++++++
 .. autoclass:: crappy.modifier.MovingMed
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Offset
 ++++++
 .. autoclass:: crappy.modifier.Offset
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Trig on change
 ++++++++++++++
 .. autoclass:: crappy.modifier.TrigOnChange
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Trig on value
 +++++++++++++
 .. autoclass:: crappy.modifier.TrigOnValue
-   :members: evaluate
-   :special-members: __init__
+   :special-members: __init__, __call__
 
 Parent Modifier
 ---------------
@@ -71,8 +61,8 @@ Parent Modifier
 Modifier
 ++++++++
 .. autoclass:: crappy.modifier.Modifier
-   :members: evaluate, log
-   :special-members: __init__
+   :members: log
+   :special-members: __init__, __call__
 
 Meta Modifier
 +++++++++++++
