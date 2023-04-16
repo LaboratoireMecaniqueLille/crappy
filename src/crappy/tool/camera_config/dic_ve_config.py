@@ -26,7 +26,7 @@ class DICVEConfig(CameraConfigBoxes):
   """Class similar to :ref:`Camera Configurator` but also displaying the
   bounding boxes of the regions defined as patches.
 
-  It is meant to be used for configuring the :ref:`DIS VE` block.
+  It is meant to be used for configuring the :ref:`DIC VE` block.
   """
 
   def __init__(self,

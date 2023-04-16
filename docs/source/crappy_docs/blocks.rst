@@ -47,7 +47,7 @@ DIS Correl
    :members: prepare
    :special-members: __init__
 
-DIS VE
+DIC VE
 ++++++
 .. autoclass:: crappy.blocks.DICVE
    :members: prepare

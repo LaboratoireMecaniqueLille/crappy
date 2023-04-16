@@ -113,7 +113,7 @@ Video-extensometry
   Refer to the `ve_fake_test.py <https://github.com/LaboratoireMecaniqueLille/
   crappy/blob/master/Examples/ve_fake_test.py>`_ example for a use case.
 
-- :ref:`DIS VE`
+- :ref:`DIC VE`
 
   Performs DIS correlation just like :ref:`DIS Correl` but only on the areas
   selected by the user, and returns the `x` and `y` displacement for each area.
@@ -124,7 +124,7 @@ Video-extensometry
 
 - :ref:`GPU VE`
 
-  Same as :ref:`DIS VE` except the computation is done on a Cuda-compatible GPU.
+  Same as :ref:`DIC VE` except the computation is done on a Cuda-compatible GPU.
 
   No example featuring a GPUve block is currently distributed.
 
