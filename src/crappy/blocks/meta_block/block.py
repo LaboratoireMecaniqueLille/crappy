@@ -397,6 +397,8 @@ class Block(Process, metaclass=MetaBlock):
           else:
             cls.cls_log(logging.INFO, f'Block {inst.name} done')
 
+        break
+
     if get_start_method() == 'spawn':
       cls.thread_stop = True
       cls.log_thread.join(timeout=0.1)
