@@ -347,6 +347,13 @@ class Block(Process, metaclass=MetaBlock):
       if cls.log_thread.is_alive():
         cls.cls_log(logging.WARNING, "The thread reading the log messages did "
                                      "not terminate in time !")
+
+      # Checking whether all Blocks terminated gracefully
+      if cls.instances and any(inst.is_alive() for inst in cls.instances):
+        running = ', '.join(inst.name for inst in cls.instances
+                            if inst.is_alive())
+        cls.cls_log(logging.ERROR, f"Crappy failed to finish gracefully, "
+                                   f"Block(s) {running} still running !")
       else:
         cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
                                   'gracefully\n')
@@ -407,6 +414,12 @@ class Block(Process, metaclass=MetaBlock):
       cls.cls_log(logging.WARNING, "The thread reading the log messages did "
                                    "not terminate in time !")
 
+    # Checking whether all Blocks terminated gracefully
+    if cls.instances and any(inst.is_alive() for inst in cls.instances):
+      running = ', '.join(inst.name for inst in cls.instances
+                          if inst.is_alive())
+      cls.cls_log(logging.ERROR, f"Crappy failed to finish gracefully, "
+                                 f"Block(s) {running} still running !")
     else:
       cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
                                 'gracefully\n')
