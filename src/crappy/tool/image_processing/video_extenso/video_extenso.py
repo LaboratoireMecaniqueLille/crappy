@@ -39,7 +39,6 @@ class VideoExtensoTool:
                log_queue: Queue,
                white_spots: bool = False,
                update_thresh: bool = False,
-               num_spots: Optional[int] = None,
                safe_mode: bool = False,
                border: int = 5,
                blur: Optional[int] = 5) -> None:
@@ -79,10 +78,6 @@ class VideoExtensoTool:
     self._consecutive_overlaps = 0
     self._trackers = list()
     self._pipes = list()
-
-    if num_spots is not None and num_spots not in range(1, 5):
-      raise ValueError("num_spots should be either None, 1, 2, 3 or 4 !")
-    self._num_spots = num_spots
 
     # Setting the args
     self._white_spots = white_spots

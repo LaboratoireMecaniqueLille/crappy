@@ -40,7 +40,6 @@ class VideoExtensoProcess(CameraProcess):
                                 log_queue=self._log_queue,
                                 white_spots=self._detector.white_spots,
                                 update_thresh=self._detector.update_thresh,
-                                num_spots=self._detector.num_spots,
                                 safe_mode=self._detector.safe_mode,
                                 border=self._detector.border,
                                 blur=self._detector.blur)
