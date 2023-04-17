@@ -14,12 +14,12 @@ import numpy as np
 
 
 class DISCorrelTool:
-  """This class simply stores the data needed for performing image correlation
-  using DisFlow, and also performs the correlation.
+  """This class is the core of the :ref:`DIS Correl` Block.
 
-  Multiple parameters of DisFlow can be tuned, but not all of them. The class
-  also takes care of projecting the image on the chosen base of fields, and
-  optionally to estimate the residuals of the correlation process.
+  It receives images from a :ref:`Camera` object, and performs Dense Inverse
+  Search correlation on each new image to get fields of interest. It relies on
+  DISFlow for the image correlation, handles the projection of the image on the
+  chosen fields, and calculates the residuals.
   """
 
   def __init__(self,
@@ -34,29 +34,32 @@ class DISCorrelTool:
                gradient_iterations: int = 10,
                patch_size: int = 8,
                patch_stride: int = 3) -> None:
-    """Sets the parameters of DisFlow.
+    """Sets the parameters of DISFlow.
 
     Args:
+      box: An instance of the :ref:`Box` object containing the coordinates of
+        the patch on which to perform image correlation.
       fields: The base of fields to use for the projection, given as a
         :obj:`list` of :obj:`str`. The available fields are :
         ::
 
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
 
-      alpha: Weight of the smoothness term in DisFlow.
-      delta: Weight of the color constancy term in DisFlow.
-      gamma: Weight of the gradient constancy term in DisFlow
+      alpha: Weight of the smoothness term in DISFlow, as a :obj:`float`.
+      delta: Weight of the color constancy term in DISFlow, as a :obj:`float`.
+      gamma: Weight of the gradient constancy term in DISFlow , as a
+        :obj:`float`.
       finest_scale: Finest level of the Gaussian pyramid on which the flow
-        is computed in DisFlow (`0` means full scale).
+        is computed in DISFlow (`0` means full scale), as an :obj:`int`.
       init: If :obj:`True`, the last field is used to initialize the
         calculation for the next one.
       iterations: Maximum number of gradient descent iterations in the
-        patch inverse search stage in DisFlow.
+        patch inverse search stage in DISFlow, as an :obj:`int`.
       gradient_iterations: Maximum number of gradient descent iterations
-        in the patch inverse search stage in DisFlow.
-      patch_size: Size of an image patch for matching in DisFlow
+        in the patch inverse search stage in DISFlow, as an :obj:`int`.
+      patch_size: Size of an image patch for matching in DISFlow
         (in pixels).
-      patch_stride: Stride between neighbor patches in DisFlow. Must be
+      patch_stride: Stride between neighbor patches in DISFlow. Must be
         less than patch size.
     """
 
@@ -116,13 +119,13 @@ class DISCorrelTool:
   def get_data(self,
                img: np.ndarray,
                residuals: bool = False) -> List[float]:
-    """Processes the input image and returns the required data in a
+    """Processes the input image and returns the requested data in a
     :obj:`list`.
 
     Args:
       img: The new image to process.
       residuals: Whether the residuals should be calculated or not for the
-        image.
+        image, as a :obj:`bool`.
 
     Returns:
       A :obj:`list` containing the data to calculate, and the residuals at the

@@ -33,7 +33,17 @@ class DISCorrelConfig(CameraConfigBoxes):
                log_queue: Queue,
                log_level: Optional[int],
                patch: Box) -> None:
-    """Initializes the parent class and sets the correl box."""
+    """Initializes the parent class and sets the correlation :ref:`Box`.
+
+    Args:
+      camera: The :ref:`Camera` object in charge of acquiring the images.
+      log_queue: A Queue for sending the log messages to the main Logger, only
+        used in Windows.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
+      patch: The :ref:`Box` container that will save the information on the
+        patch where to perform image correlation.
+    """
 
     self._correl_box = patch
     self._draw_correl_box = True
@@ -42,9 +52,26 @@ class DISCorrelConfig(CameraConfigBoxes):
 
   @property
   def box(self) -> Box:
-    """Returns the Box object containing the region of interest."""
+    """Returns the :ref:`Box` object containing the region of interest."""
 
     return self._correl_box
+
+  def finish(self) -> None:
+    """Method called when the user tries to close the configuration window.
+
+    Checks that a patch was selected on the image. If not, warns the user and
+    prevents him from exiting except with CTRL+C.
+    """
+
+    if self.box.no_points():
+      self.log(logging.WARNING, "No ROI selected ! Not exiting the "
+                                "configuration window")
+      showerror('Error !',
+                message="Please select a ROI before exiting the config "
+                        "window !\nOr hit CTRL+C to exit Crappy")
+      return
+
+    super().stop()
 
   def _set_bindings(self) -> None:
     """Binds the left mouse button click for drawing the box on which the
@@ -166,16 +193,3 @@ class DISCorrelConfig(CameraConfigBoxes):
     been modified. Simply resetting the correl box then."""
 
     self._correl_box.reset()
-
-  def finish(self) -> None:
-    """"""
-
-    if self.box.no_points():
-      self.log(logging.WARNING, "No ROI selected ! Not exiting the "
-                                "configuration window")
-      showerror('Error !',
-                message="Please select a ROI before exiting the config "
-                        "window !\nOr hit CTRL+C to exit Crappy")
-      return
-
-    super().stop()

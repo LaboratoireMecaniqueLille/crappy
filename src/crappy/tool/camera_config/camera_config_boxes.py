@@ -17,14 +17,22 @@ class CameraConfigBoxes(CameraConfig):
 
   It implements useful methods for drawing the boxes. If instantiated, this
   class behaves the exact same way as its parent class. It is not used as is by
-  any block in Crappy.
+  any Block in Crappy.
   """
 
   def __init__(self,
                camera: Camera,
                log_queue: Queue,
                log_level: Optional[int]) -> None:
-    """Initializes the parent class and sets the spots container."""
+    """Initializes the parent class and sets the spots container.
+
+    Args:
+      camera: The :ref:`Camera` object in charge of acquiring the images.
+      log_queue: A Queue for sending the log messages to the main Logger, only
+        used in Windows.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
+    """
 
     self._spots = SpotsBoxes()
     self._select_box = Box()

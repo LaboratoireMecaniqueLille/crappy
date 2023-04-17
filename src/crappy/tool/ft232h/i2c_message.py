@@ -16,12 +16,10 @@ class I2CMessage:
     message.
 
     Args:
-      type_ (:obj:`str`): Either a read (`'r'`) or a write (`'w'`) message
-      address (:obj:`int`): The address of the I2C slave.
-      length (:obj:`int`, optional): For a read message, the number of bytes to
-        read.
-      buf (:obj:`list`, optional): For a write message, the list of bytes to be
-        written.
+      type_: Either a read (`'r'`) or a write (`'w'`) message
+      address: The address of the I2C slave, as an :obj:`int`.
+      length: For a read message, the number of bytes to read as an :obj:`int`.
+      buf: For a write message, the :obj:`list` of :obj:`bytes` to be written.
     """
 
     if type_ not in ['r', 'w']:
@@ -34,22 +32,22 @@ class I2CMessage:
 
   @classmethod
   def read(cls, address: int, length: int) -> I2CMessage:
-    """Instantiates an :class:`i2c_msg_ft232h` object for reading bytes.
+    """Instantiates an :ref:`I2C Message` object for reading bytes.
 
     Args:
-      address (:obj:`int`): The address of the I2C slave.
-      length (:obj:`int`): The number of bytes to read.
+      address: The address of the I2C slave, as an :obj:`int`.
+      length: The number of bytes to read, as an :obj:`int`.
     """
 
     return cls(type_='r', address=address, length=length)
 
   @classmethod
   def write(cls, address: int, buf: list) -> I2CMessage:
-    """Instantiates an :class:`i2c_msg_ft232h` object for writing bytes.
+    """Instantiates an :ref:`I2C Message` object for writing bytes.
 
     Args:
-      address (:obj:`int`): The address of the I2C slave.
-      buf (:obj:`list`): The list of bytes to be written.
+      address: The address of the I2C slave, as an :obj:`int`.
+      buf: The :obj:`list` of :obj:`bytes` to be written.
     """
 
     return cls(type_='w', address=address, buf=buf)

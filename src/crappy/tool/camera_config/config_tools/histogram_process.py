@@ -1,8 +1,5 @@
 # coding: utf-8
 
-"""This file contains the code for the process calculating the histogram on the
-camera configuration window."""
-
 import numpy as np
 from multiprocessing import Process, current_process, get_start_method
 from multiprocessing.synchronize import Event
@@ -16,8 +13,13 @@ from time import sleep
 
 
 class HistogramProcess(Process):
-  """This class is a process taking an image as an input, and returning the
-  histogram of that image."""
+  """This class is a process taking an image as an input via a Pipe, and
+  returning the histogram of that image in another Pipe.
+
+  It is used by the :ref:`Camera Configurator` window and its children to
+  delegate and parallelize the calculation of the histogram. It allows to gain
+  a few frames per second on the display in the configuration window.
+  """
 
   def __init__(self,
                stop_event: Event,
@@ -26,7 +28,20 @@ class HistogramProcess(Process):
                img_out: Connection,
                log_level: Optional[int],
                log_queue: Queue) -> None:
-    """"""
+    """Sets the arguments and initializes the parent class.
+
+    Args:
+      stop_event: An Event signaling the Process when to stop running.
+      processing_event: An Event set by the Process to
+      img_in: The Pipe Connection through which the images to process are
+        received.
+      img_out: The Pipe Connection through which the calculated histograms are
+        sent back.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
+      log_queue: A Queue for sending the log messages to the main Logger, only
+        used in Windows.
+    """
 
     self._logger: Optional[logging.Logger] = None
     self._log_level = log_level
@@ -40,25 +55,34 @@ class HistogramProcess(Process):
     self._img_out: Connection = img_out
 
   def run(self) -> None:
-    """"""
+    """The main method being run by the HistogramProcess.
+
+    It continuously receives images from the Configuration window, calculates
+    their histograms and returns them back as a nice image to integrate on the
+    window.
+    """
 
     try:
       self._processing_event.clear()
 
+      # Looping until told to stop or an exception is raised
       while not self._stop_event.is_set():
 
+        # Setting the processing event when busy processing an image
         if self._img_in.poll():
-
           self._processing_event.set()
+          # Receiving the image to process as well as additional parameters
           while self._img_in.poll():
             img, auto_range, low_thresh, high_thresh = self._img_in.recv()
 
           self.log(logging.DEBUG, "Received image from CameraConfig")
 
+          # Calculating the histogram
           hist, _ = np.histogram(img, bins=np.arange(257))
           hist = np.repeat(hist / np.max(hist) * 80, 2)
           hist = np.repeat(hist[np.newaxis, :], 80, axis=0)
 
+          # Making a nice image out of the calculated histogram
           out_img = np.fromfunction(partial(self._hist_func, histo=hist),
                                     shape=(80, 512))
           out_img = np.flip(out_img, axis=0).astype('uint8')
@@ -69,13 +93,15 @@ class HistogramProcess(Process):
             out_img[:, round(2 * low_thresh)] = 127
             out_img[:, round(2 * high_thresh)] = 127
 
+          # Sending back the histogram
           self._img_out.send(out_img)
           self._processing_event.clear()
           self.log(logging.DEBUG, "Sent the histogram back to the "
                                   "CameraConfig")
 
-      else:
-        sleep(0.001)
+        # To avoid spamming the CPU in vain when idle
+        else:
+          sleep(0.001)
 
       self.log(logging.INFO, "Stop event set, stopping")
 
@@ -92,7 +118,14 @@ class HistogramProcess(Process):
     return np.where(x <= histo, 0, 255)
 
   def log(self, level: int, msg: str) -> None:
-    """"""
+    """Records log messages for the HistogramProcess.
+
+    Also instantiates the logger when logging the first message.
+
+    Args:
+      level: An :obj:`int` indicating the logging level of the message.
+      msg: The message to log, as a :obj:`str`.
+    """
 
     if self._logger is None:
       self._set_logger()
@@ -100,7 +133,7 @@ class HistogramProcess(Process):
     self._logger.log(level, msg)
 
   def _set_logger(self) -> None:
-    """"""
+    """Instantiates and sets up the logger for the HistogramProcess."""
 
     logger = logging.getLogger(self.name)
 

@@ -7,11 +7,19 @@ Microcontroller templates
 
 Arduino Template
 ++++++++++++++++
-Bla Bla Bla
+The `src/crappy/tool/microcontroller.ino` file is an Arduino template meant
+to be used in combination with the :ref:`Client Server` Block. It greatly
+simplifies the use of this Block by leaving only a few fields for the user to
+complete. It mainly manages the serial communication between the PC and the
+microcontroller.
 
 MicroPython Template
 ++++++++++++++++++++
-Bla Bla Bla
+The `src/crappy/tool/microcontroller.py` file is a MicroPython template meant
+to be used in combination with the :ref:`Client Server` Block. It greatly
+simplifies the use of this Block by leaving only a few fields for the user to
+complete. It mainly manages the serial communication between the PC and the
+microcontroller.
 
 Bindings
 --------
@@ -82,7 +90,14 @@ Zoom
 
 Data
 ----
-Lorem ipsum
+The folder `src/crappy/tool/data/` contains various images that need to be
+distributed with the module. The `no_image.png` image is used by the
+:ref:`Camera Configurator` window in case no image could be acquired yet. The
+`speckle.png` and `ve_markers.tif` images serve as example of samples with
+respectively a speckle and spots drawn on them. They are used in several
+examples to demonstrate the use of :ref:`Video Extenso` or :ref:`DIC VE`
+without requiring any camera. The `pad.png` image is used for demonstrating the
+use of the :ref:`Canvas` Block.
 
 FT232H Tools
 ------------
@@ -144,7 +159,9 @@ GPU Correl Tool
 
 GPU Kernels
 +++++++++++
-Lorem ipsum
+The `src/crappy/tool/image_processing/kernels.cu` file contains the default
+kernels to use with :mod:`pycuda`. They're used by the :ref:`GPU Correl Tool`
+if no other kernel file is provided.
 
 Video Extenso Tool
 ++++++++++++++++++

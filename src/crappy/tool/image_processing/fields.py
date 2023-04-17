@@ -20,10 +20,10 @@ def get_field(field_string: str,
   as numpy arrays.
 
   Args:
-    field_string: The string describing the field on which to project the image
-      for correlation.
-    h: The height of the image.
-    w: The width of the image.
+    field_string: The :obj:`str` describing the field on which to project the
+      image for correlation.
+    h: The height of the image, as an :obj:`int`.
+    w: The width of the image, as an :obj:`int`.
   """
 
   if field_string == 'x':
@@ -71,7 +71,7 @@ def get_field(field_string: str,
     return u / 200, v / 200
 
   else:
-    raise NameError(f"[DICVE Field parser] Unknown field {field_string}")
+    raise NameError(f"Unknown field {field_string}")
 
 
 def get_res(ref: np.ndarray, img: np.ndarray, flow: np.ndarray) -> np.ndarray:
@@ -79,8 +79,8 @@ def get_res(ref: np.ndarray, img: np.ndarray, flow: np.ndarray) -> np.ndarray:
     reconstructed from the current image and the calculated flow.
 
   Args:
-    ref: The reference image for calculating the optical flow
-    img: The current image for calculating the optical flow
+    ref: The reference image for calculating the optical flow.
+    img: The current image for calculating the optical flow.
     flow: The calculated optical flow
   """
 

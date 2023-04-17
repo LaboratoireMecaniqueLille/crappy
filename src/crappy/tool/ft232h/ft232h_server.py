@@ -99,28 +99,41 @@ ft232h_i2c_speed = {100E3: ft232h_i2c_timings(4.0E-6, 4.7E-6, 4.0E-6, 4.7E-6),
 
 
 class DelayedKeyboardInterrupt:
-  """"""
+  """This class implements a context manager for temporarily disabling the
+  :exc:`KeyboardInterrupt` and storing any exception received in the meantime.
+
+  It is meant to avoid having a communication interrupted, which could cause
+  devices to bug and not be able to properly finish.
+  """
 
   def __enter__(self) -> None:
+    """Enters the context and sets :meth:`_handler` as the new handler for
+    SIGINT signals."""
+
     self._signal_received = None
     self._prev_handler = signal.signal(signal.SIGINT, self._handler)
 
   def __exit__(self, _, __, ___) -> None:
+    """Exits the context, sets the previous handler back, and handles any
+    SIGINT signal received while in the context."""
+
     signal.signal(signal.SIGINT, self._prev_handler)
     if self._signal_received is not None:
       self._prev_handler(*self._signal_received)
 
   def _handler(self, sig, frame) -> None:
+    """Handler that just stores the received SIGINT while in the context."""
+
     self._signal_received = (sig, frame)
 
 
 class FT232HServer(FT232H):
   """A class for controlling FTDI's USB to Serial FT232H.
 
-  This class is very similar to the :class:`ft232h` except it doesn't
+  This class is very similar to the :ref:`FT232H` except it doesn't
   directly instantiate the USB device nor send commands to it directly.
-  Instead, the commands are sent to a USB server managing communication with
-  the different FT232H devices.
+  Instead, the commands are sent to a :ref:`USB Server` managing communication
+  with the FT232H device(s).
 
   Communication in SPI and I2C are implemented, along with GPIO control. The
   name of the methods for SPI and I2C communication are those of :mod:`smbus`
@@ -170,7 +183,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Checks the argument validity and initializes the device.
 
     Args:
-      mode: The communication mode, can be :
+      mode: The communication mode as a :obj:`str`, can be :
         ::
 
           'SPI', 'I2C', 'GPIO_only', 'Write_serial_nr'
@@ -178,8 +191,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         GPIOs can be driven in any mode, but faster speeds are achievable in
         `GPIO_only` mode.
       block_index: The index the block driving this ft232h_server instance has
-        been assigned.
-      current_block:
+        been assigned, as an :obj:`int`.
+      current_block: The handle to a shared multiprocessing value indicating
+        which Block can currently communicate with the :ref:`USB Server`.
       command_file: A file in which the current command to be executed by the
         USB server is written.
       answer_file: A file in which the answer to the current command is
@@ -188,8 +202,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
         server when the command has been written in the command_file.
       shared_lock: A lock common to all the blocks that allows the one block
         holding it to communicate with the USB server.
-      serial_nr (:obj:`str`, optional): The serial number of the FT232H to
-        drive. In `Write_serial_nr` mode, the serial number to be written.
+      serial_nr: The serial number of the FT232H to drive, as a :obj:`str`. In
+        `Write_serial_nr` mode, the serial number to be written.
       i2c_speed: In I2C mode, the I2C bus clock frequency in Hz. Available
         values are :
         ::
@@ -198,9 +212,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
         or any value between `10kHz` and `100kHz`. Lowering below the default
         value may solve I2C clock stretching issues on some devices.
-
-      spi_turbo: Increases the achievable bus speed, but may not work with some
-        devices.
+      spi_turbo: Increases the achievable bus speed in SPI mode, but may not
+        work with some devices.
 
     Note:
       - **CS pin**:
@@ -570,9 +583,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Sends a control message to the device.
 
     Args:
-      reqtype (:obj:`int`): bmRequest
-      value (:obj:`int`): wValue
-      data (:obj:`bytes`): payload
+      reqtype: bmRequest
+      value: wValue
+      data: payload
 
     Returns:
       Number of bytes actually written
@@ -596,16 +609,19 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                          Callable[[int], Union[bytearray,
                                                bytes]]] = None) -> bytes:
     """Reads data from the FT232H.
+
     Reads data from the FTDI interface. The data buffer is rebuilt from
     chunk-sized blocks received over the USB bus. The FTDI device always sends
     internal status bytes, which are stripped out as not part of the data
     payload.
+
     Args:
-      size (:obj:`int`): The number of bytes to receive from the device
-      attempt (:obj:`int`): Attempt cycle count
+      size: The number of bytes to receive from the device
+      attempt: Attempt cycle count
       request_gen: A callable that takes the number of bytes read and expects a
         bytes buffer to send back to the remote device. This is only useful to
         perform optimized/continuous transfer from a slave device.
+
     Returns:
       Payload bytes
     """
@@ -713,7 +729,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     product string descriptors.
 
     Args:
-      serial_number (:obj:`str`): Serial number to be written in the EEPROM
+      serial_number: Serial number to be written in the EEPROM, as a
+        :obj:`str`.
     """
 
     if not isinstance(serial_number, str):
@@ -865,7 +882,16 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   @staticmethod
   @contextmanager
   def acquire_timeout(lock: RLock, timeout: float) -> bool:
-    """"""
+    """Short context manager for acquiring a Lock with a specified timeout.
+
+    Args:
+      lock: The lock to acquire.
+      timeout: The timeout for acquiring the Lock, as a :obj:`float`.
+
+    Returns:
+      :obj:`True` if the Lock was successfully acquired, :obj:`False`
+      otherwise.
+    """
 
     ret = False
     try:

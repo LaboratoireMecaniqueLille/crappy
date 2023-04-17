@@ -26,7 +26,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
   bounding boxes of the detected spots, and allowing to select the area where
   to detect the spots by drawing a box with the left mouse button.
 
-  It is meant to be used for configuring the :ref:`Video Extenso` block.
+  It is meant to be used for configuring the :ref:`Video Extenso` Block.
   """
 
   def __init__(self,
@@ -37,12 +37,42 @@ class VideoExtensoConfig(CameraConfigBoxes):
     """Sets the args and initializes the parent class.
 
     Args:
-      camera: The camera object in charge of acquiring the images.
+      camera: The :ref:`Camera` object in charge of acquiring the images.
+      log_queue: A Queue for sending the log messages to the main Logger, only
+        used in Windows.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
+      detector: An instance of :ref:`Spots Detector` used for detecting spots
+        on the images received from the :ref:`Camera`.
     """
 
     super().__init__(camera, log_queue, log_level)
     self._detector = detector
     self._spots = detector.spots
+
+  def finish(self) -> None:
+    """Method called when the user tries to close the configuration window.
+
+    Checks that spots were detected on the image. If not, warns the user and
+    prevents him from exiting except with CTRL+C. Also, saves the initial
+    length if not already done by the user.
+    """
+
+    if self._detector.spots.empty():
+      self.log(logging.WARNING, "No spots were selected ! Not exiting the "
+                                "configuration window")
+      showerror("Error !",
+                message="Please select spots before exiting the config "
+                        "window !\nOr hit CTRL+C to exit Crappy")
+      return
+
+    if self._detector.spots.x_l0 is None or self._detector.spots.y_l0 is None:
+      self._detector.spots.save_length()
+      self.log(logging.INFO,
+               f"Successfully saved L0 ! L0 x : {self._detector.spots.x_l0}, "
+               f"L0 y : {self._detector.spots.y_l0}")
+
+    super().stop()
 
   def _set_bindings(self) -> None:
     """Binds the left mouse button click for drawing the box in which the spots
@@ -172,22 +202,3 @@ class VideoExtensoConfig(CameraConfigBoxes):
     modified. Simply resetting the spots then."""
 
     self._spots.reset()
-
-  def finish(self) -> None:
-    """"""
-
-    if self._detector.spots.empty():
-      self.log(logging.WARNING, "No spots were selected ! Not exiting the "
-                                "configuration window")
-      showerror("Error !",
-                message="Please select spots before exiting the config "
-                        "window !\nOr hit CTRL+C to exit Crappy")
-      return
-
-    if self._detector.spots.x_l0 is None or self._detector.spots.y_l0 is None:
-      self._detector.spots.save_length()
-      self.log(logging.INFO,
-               f"Successfully saved L0 ! L0 x : {self._detector.spots.x_l0}, "
-               f"L0 y : {self._detector.spots.y_l0}")
-
-    super().stop()

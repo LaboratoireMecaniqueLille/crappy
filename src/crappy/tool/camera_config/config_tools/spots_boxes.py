@@ -9,8 +9,9 @@ from .box import Box
 
 @dataclass
 class SpotsBoxes:
-  """This class stores up to four instances of :class:`Box`, defining the
-  bounding boxes of the spots for video extensometry or the patches for DICVE.
+  """This class stores up to four instances of :ref:`Box`, defining the
+  bounding boxes of the spots for :ref:`Video Extenso` or the patches for
+  :ref:`DIC VE`.
 
   It can also instantiate the Box object by parsing a list of tuples containing
   enough information.
@@ -66,7 +67,7 @@ class SpotsBoxes:
 
   def set_spots(self,
                 spots: List[Tuple[int, int, int, int]]) -> None:
-    """Parses a list of tuples and instantiates the corresponding Box
+    """Parses a list of tuples and instantiates the corresponding :ref:`Box`
     objects."""
 
     for i, spot in enumerate(spots):
@@ -74,8 +75,13 @@ class SpotsBoxes:
                     y_start=spot[0], y_end=spot[0] + spot[2])
 
   def save_length(self) -> None:
-    """"""
+    """Setting the :attr:`x_l0` and :attr:`y_l0` attributes based on the
+    positions of the centroids.
 
+    If only one spot is detected, setting the initial lengths to 0.
+    """
+
+    # Calculating the centroids of the spots if not already known
     for spot in self:
       if spot is not None and spot.x_centroid is None:
         min_x, max_x, min_y, max_y = spot.sorted()

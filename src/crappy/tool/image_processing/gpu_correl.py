@@ -75,6 +75,7 @@ class CorrelStage:
     Args:
       img_size: The shape of the images to process. It is given beforehand so
         that the memory can be allocated before the test starts.
+      logger_name: The name of the parent logger, as a :obj:`str`.
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
         is displayed that is slows the code down.
@@ -477,19 +478,22 @@ class CorrelStage:
 
 
 class GPUCorrelTool:
-  """This tool performs GPU correlation between two images in order to identify
-  fields of rigid body displacements.
+  """This class is the core of the :ref:`GPU Correl` and :ref:`GPU VE` Blocks.
+
+  It receives images from a :ref:`Camera`, and performs GPU-accelerated image
+  correlation on each received image. From this correlation, rigid body
+  displacements or other fields are identified.
 
   This class  is meant to be efficient enough to run in real-time. It relies on
-  :class:`CorrelStage` to perform correlation on different scales. It mainly
-  takes a list of base fields and a reference image as inputs, and project the
-  displacement between the current image and the reference one on the base of
-  fields. The optimal fit is achieved by lowering the residuals with a
-  least-squares method.
+  the :class:`CorrelStage` class (not documented) to perform correlation on
+  different scales. It mainly takes a list of base fields and a reference image
+  as inputs, and project the displacement between the current image and the
+  reference one on the base of fields. The optimal fit is achieved by lowering
+  the residuals with a least-squares method.
 
   The projection on the base is performed sequentially, using the results
   obtained at stages with low resolution to initialize the computation on
-  on stages with higher resolution. A newton method is used to converge towards
+  stages with higher resolution. A Newton method is used to converge towards
   an optimal solution.
   """
 
@@ -510,6 +514,8 @@ class GPUCorrelTool:
     """Sets the args and a few parameters of :mod:`pycuda`.
 
     Args:
+      logger_name: The name of the parent Logger, to be used for setting the
+        Logger of the class.
       context: Optionally, the :mod:`pycuda` context to use. If not specified,
         a new context is instantiated.
       verbose: The verbose level as an integer, between `0` and `3`. At level
@@ -524,7 +530,8 @@ class GPUCorrelTool:
         reaching a finer detail level, but may lead to a coherence loss between
         the stages.
       kernel_file: The path to the file containing the kernels to use for the
-        correlation. Can be a :obj:`pathlib.Path` object or a :obj:`str`.
+        correlation. Can be a :obj:`pathlib.Path` object or a :obj:`str`. If
+        not provided, the default :ref:`GPU Kernels` are used.
       iterations: The maximum number of iterations to run before returning the
         results. The results may be returned before if the residuals start
         increasing.
@@ -536,8 +543,8 @@ class GPUCorrelTool:
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
 
       ref_img: the reference image, as a 2D :mod:`numpy` array with `dtype`
-        `float32`. It can either be given at ``__init__``, or set later with
-        :meth:`set_orig`.
+        `float32`. It can either be given at :meth:`__init__`, or set later
+        with :meth:`set_orig`.
       mask: The mask used for weighting the region of interest on the image. It
         is generally used to prevent unexpected behavior on the border of the
         image.
@@ -751,7 +758,7 @@ class GPUCorrelTool:
   def _get_fields(self,
                   y: Optional[int] = None,
                   x: Optional[int] = None) -> (Any, Any):
-    """Returns the fields, resampled to size `(y,x)`."""
+    """Returns the fields, resampled to size `(y, x)`."""
 
     if x is None or y is None:
       y, x = self._heights[0], self._widths[0]

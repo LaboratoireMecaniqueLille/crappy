@@ -17,19 +17,15 @@ from .tracker import Tracker, LostSpotError
 
 
 class VideoExtensoTool:
-  """This class tracks up to 4 spots on successive images, and computes the
-  strain on the material based on the displacement of the spots from their
-  original position.
+  """This class is the core of the :ref:`Video Extenso` Block.
 
-  The first step is to detect the spots to track. Once this is done, the
-  initial distances in x and y between the spots is saved. For each spot, a
-  Process in charge of tracking it is started. When a new image is received,
-  subframes based on the last known positions of the spots are sent to the
-  tracker processes, and they return the new positions of the detected spots.
-  Based on these new positions, updated strain values are returned.
+  It performs spot tracking on up to `4` spots on the images acquired by the
+  :ref:`Camera`, and computes the strain values at each new image. For each
+  spot, the tracking is performed by an independent
+  :ref:`Video Extenso Tracker` process.
 
   It is possible to track only one spot, in which case only the position of its
-  center is returned and the strain values are left to 0.
+  center is returned and the strain values are left to `0`.
   """
 
   def __init__(self,
@@ -42,36 +38,46 @@ class VideoExtensoTool:
                safe_mode: bool = False,
                border: int = 5,
                blur: Optional[int] = 5) -> None:
-    """Sets the args and the other instance attributes.
+    """Sets the arguments and the other instance attributes.
 
     Args:
-      white_spots: If :obj:`True`, detects white objects on a black background,
-        else black objects on a white background.
-      update_thresh: If :obj:`True`, the threshold for detecting the spots is
-        re-calculated for each new image. Otherwise, the first calculated
-        threshold is kept for the entire test. The spots are less likely to be
-        lost with adaptive threshold, but the measurement will be more noisy.
-        Adaptive threshold may also yield inconsistent results when spots are
-        lost.
-      num_spots: The number of spots to detect, between 1 and 4. The class will
-        then try to detect this exact number of spots, and won't work if not
-        enough spots can be found. If this argument is not given, at most 4
-        spots can be detected but the class will work with any number of
-        detected spots between 1 and 4.
+      spots: An instance of the :ref:`Spots Boxes` class containing the
+        coordinates of the spots to track.
+      thresh: The grey level value of the threshold to use for discriminating
+        spots from the background, as an :obj:int`. Passed to the
+        :ref:`Video Extenso Tracker` and not used in this class.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
+      log_queue: A Queue for sending the log messages to the main Logger, only
+        used in Windows.
+      white_spots: If :obj:`True`, detects white objects over a black
+        background, else black objects over a white background. Passed to the
+        :ref:`Video Extenso Tracker` and not used in this class.
+      update_thresh: If :obj:`True`, the grey level threshold for detecting the
+        spots is re-calculated at each new image. Otherwise, the first
+        calculated threshold is kept for the entire test. The spots are less
+        likely to be lost with adaptive threshold, but the measurement will be
+        more noisy. Adaptive threshold may also yield inconsistent results when
+        spots are lost. Passed to the :ref:`Video Extenso Tracker` and not used
+        in this class.
       safe_mode: If :obj:`True`, the class will stop and raise an exception as
-        soon as overlapping is detected. Otherwise, it will first try to reduce
-        the detection window to get rid of overlapping. This argument should be
-        used when inconsistency in the results may have critical consequences.
+        soon as overlapping spots are detected. Otherwise, it will first try to
+        reduce the detection window to get rid of overlapping. This argument
+        should be used when inconsistency in the results may have critical
+        consequences.
       border: When searching for the new position of a spot, the class will
         search in the last known bounding box of this spot plus a few
         additional pixels in each direction. This argument sets the number of
         additional pixels to use. It should be greater than the expected
-        "speed" of the spots, in pixels / frame. But if it's too big, noise or
-        other spots might hinder the detection.
-      blur: The size in pixels of the kernel to use for applying a median blur
-        to the image before the spot detection. If not given, no blurring is
+        "speed" of the spots, in pixels / frame. But if it's set too high,
+        noise or other spots might hinder the detection. Passed to the
+        :ref:`Video Extenso Tracker` and not used in this class.
+      blur: The size in pixels (as an odd :obj:`int` greater than `1`) of the
+        kernel to use when applying a median blur filter to the image before
+        the spot detection. If not given, no blurring is
         performed. A slight blur improves the spot detection by smoothening the
-        noise, but also takes a bit more time compared to no blurring.
+        noise, but also takes a bit more time compared to no blurring. Passed
+        to the :ref:`Video Extenso Tracker` and not used in this class.
     """
 
     # These attributes will be used later
@@ -101,13 +107,14 @@ class VideoExtensoTool:
     self.stop_tracking()
 
   def start_tracking(self) -> None:
-    """Creates a Tracker process for each detected spot, and starts it.
+    """Creates a :ref:`Video Extenso Tracker` process for each detected spot,
+    and starts it.
 
     Also creates a Pipe for each spot to communicate with the Tracker process.
     """
 
     if self.spots.empty():
-      raise AttributeError("[VideoExtenso] No spots selected, aborting !")
+      raise AttributeError("No spots selected, aborting !")
 
     for spot in self.spots:
       if spot is None:
@@ -127,8 +134,8 @@ class VideoExtensoTool:
       tracker.start()
 
   def stop_tracking(self) -> None:
-    """Stops all the active Tracker processes, either gently or by terminating
-    them if they don't stop by themselves."""
+    """Stops all the active :ref:`Video Extenso Tracker` processes, either
+    gently or by terminating them if they don't stop by themselves."""
 
     if any((tracker.is_alive() for tracker in self._trackers)):
       # First, gently asking the trackers to stop
@@ -145,8 +152,8 @@ class VideoExtensoTool:
           tracker.terminate()
 
   def get_data(self,
-               img: np.ndarray) -> Optional[Tuple[List[Tuple[float, ...]],
-                                                  float, float]]:
+               img: np.ndarray
+               ) -> Optional[Tuple[List[Tuple[float, ...]], float, float]]:
     """Takes an image as an input, performs spot detection on it, computes the
     strain from the newly detected spots, and returns the spot positions and
     strain values.
@@ -251,7 +258,14 @@ class VideoExtensoTool:
       return [(y, x)], 0, 0
 
   def _log(self, level: int, msg: str) -> None:
-    """"""
+    """Wrapper for recording log messages.
+
+    Also instantiates the Logger on the first message.
+
+    Args:
+      level: The logging level of the message, as an :obj:`int`.
+      msg: The message to lof, as a :obj:`str`.
+    """
 
     if self._logger is None:
       self._logger = logging.getLogger(
@@ -262,7 +276,14 @@ class VideoExtensoTool:
   def _send(self,
             conn: Connection,
             val: Union[str, Tuple[int, int, np.ndarray]]) -> None:
-    """"""
+    """Wrapper for sending messages to the Tracker processes.
+
+    In Linux, checks that the Pipe is not full before sending the message.
+
+    Args:
+      conn: The Connection to use for sending the message.
+      val: The message to send to the Tracker process.
+    """
 
     if self._system == 'Linux':
       if select([], [conn], [], 0)[1]:

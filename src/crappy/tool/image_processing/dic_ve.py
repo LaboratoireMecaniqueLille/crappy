@@ -12,13 +12,15 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DICVETool:
-  """This tool computes the displacement of regions of interest (patches) on an
-  image compared to a reference image.
+  """This class is the core of the :ref:`DIC VE` Block.
+
+  It tracks patches on images received from a :ref:`Camera` object, and
+  computes a strain value at each new image.
 
   It relies on cross-correlation algorithms to calculate the displacement.
-  Different algorithms are available depending on the needs.
-  This tool is mainly used to perform video-extensometry on speckled surfaces,
-  although it can as well be of use for other applications.
+  Different algorithms are available depending on the needs. This tool is
+  mainly used to perform video-extensometry on speckled surfaces, although it
+  could as well be of use for other applications.
   """
 
   def __init__(self,
@@ -35,11 +37,12 @@ class DICVETool:
                border: float = 0.2,
                safe: bool = True,
                follow: bool = True) -> None:
-    """Sets a few attributes and initializes Disflow if this method was
+    """Sets a few attributes and initializes DISFlow if this method was
     selected.
 
     Args:
-      patches: The regions to track, given as a :class:`Spot_boxes` object.
+      patches: An instance of the :ref:`Spots Boxes` class, containing the
+        coordinates of the patches to track.
       method: The method to use to calculate the displacement. `Disflow` uses
         opencv's DISOpticalFlow and `Lucas Kanade` uses opencv's
         calcOpticalFlowPyrLK, while all other methods are based on a basic
@@ -48,19 +51,20 @@ class DICVETool:
         cross-correlation, and has thus a 1-pixel resolution. It is mainly
         meant for debugging. `Parabola` refines the result of
         `Pixel precision` by interpolating the neighborhood of the maximum, and
-        have thus sub-pixel resolutions.
-      alpha: Weight of the smoothness term in DisFlow.
-      delta: Weight of the color constancy term in DisFlow.
-      gamma: Weight of the gradient constancy term in DisFlow.
+        has thus a sub-pixel resolution.
+      alpha: Weight of the smoothness term in DISFlow, as a :obj:`float`.
+      delta: Weight of the color constancy term in DISFlow, as a :obj:`float`.
+      gamma: Weight of the gradient constancy term in DISFlow , as a
+        :obj:`float`.
       finest_scale: Finest level of the Gaussian pyramid on which the flow
-        is computed in DisFlow (`0` means full scale).
+        is computed in DISFlow (`0` means full scale), as an :obj:`int`.
       iterations: Maximum number of gradient descent iterations in the
-        patch inverse search stage in DisFlow.
+        patch inverse search stage in DISFlow, as an :obj:`int`.
       gradient_iterations: Maximum number of gradient descent iterations
-        in the patch inverse search stage in DisFlow.
-      patch_size: Size of an image patch for matching in DisFlow
+        in the patch inverse search stage in DISFlow, as an :obj:`int`.
+      patch_size: Size of an image patch for matching in DISFlow
         (in pixels).
-      patch_stride: Stride between neighbor patches in DisFlow. Must be
+      patch_stride: Stride between neighbor patches in DISFlow. Must be
         less than patch size.
       border: Crop the patch on each side according to this value before
         calculating the displacements. 0 means no cropping, 1 means the entire
@@ -85,7 +89,7 @@ class DICVETool:
     self._img0 = None
     self._height, self._width = None, None
 
-    # Initialize Disflow if it is the selected method
+    # Initialize DISFlow if it is the selected method
     if self._method == 'Disflow':
       self._dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
       self._dis.setVariationalRefinementIterations(iterations)
@@ -220,7 +224,7 @@ class DICVETool:
                     img: np.ndarray,
                     offset: Tuple[int, int]) -> List[float]:
     """Returns the displacement between the original and the current image with
-    a sub-pixel precision, using Disflow."""
+    a sub-pixel precision, using DISFlow."""
 
     disp_img = self._dis.calc(self._get_patch(self._img0, patch, offset),
                               self._get_patch(img, patch), None)
@@ -349,7 +353,7 @@ class DICVETool:
 
   def _trim_patch(self, patch: np.ndarray) -> np.ndarray:
     """Trims the border of a patch according to the value set by the user, and
-    returns the tuple corresponding to the trimmed patch."""
+    returns the sub image corresponding to the trimmed patch."""
 
     height, width, *_ = patch.shape
     return patch[int(height * self._border / 2):

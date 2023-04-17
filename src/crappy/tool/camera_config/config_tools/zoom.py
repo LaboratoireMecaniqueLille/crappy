@@ -6,7 +6,7 @@ from dataclasses import dataclass
 @dataclass
 class Zoom:
   """This class stores the upper and lower limits of the image to display in
-  the configuration window.
+  the :ref:`Camera Configurator` window.
 
   It also allows updating them when the user changes the zoom ratio or drags
   the image with the mouse.

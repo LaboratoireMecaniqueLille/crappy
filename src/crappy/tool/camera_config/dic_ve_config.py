@@ -26,7 +26,7 @@ class DICVEConfig(CameraConfigBoxes):
   """Class similar to :ref:`Camera Configurator` but also displaying the
   bounding boxes of the regions defined as patches.
 
-  It is meant to be used for configuring the :ref:`DIC VE` block.
+  It is meant to be used for configuring the :ref:`DIC VE` Block.
   """
 
   def __init__(self,
@@ -37,8 +37,13 @@ class DICVEConfig(CameraConfigBoxes):
     """Sets the patches and initializes the parent class.
 
     Args:
-      camera: The camera object in charge of acquiring the images.
-      patches: The patches to follow for image correlation.
+      camera: The :ref:`Camera` object in charge of acquiring the images.
+      log_queue: A Queue for sending the log messages to the main Logger, only
+        used in Windows.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
+      patches: An instance of :ref:`Spots Boxes` containing the patches to
+        follow for image correlation.
     """
 
     self._patch_size: Optional[CameraScaleSetting] = None
@@ -48,8 +53,32 @@ class DICVEConfig(CameraConfigBoxes):
     # Setting the patches
     self._spots = patches
 
+  def finish(self) -> None:
+    """Method called when the user tries to close the configuration window.
+
+    Check that patches were selected on the image. If not, warns the user and
+    prevents him from exiting except with CTRL+C. If not already done by the
+    user, also saves the initial length between the patches.
+    """
+
+    if self._spots.empty():
+      self.log(logging.WARNING, "No patches selected ! Not exiting the "
+                                "configuration window")
+      showerror('Error !',
+                message="Please select patches before exiting the config "
+                        "window !\nOr hit CTRL+C to exit Crappy")
+      return
+
+    self._spots.save_length()
+    self.log(logging.INFO,
+             f"Successfully saved L0 ! L0 x : {self._spots.x_l0}, "
+             f"L0 y : {self._spots.y_l0}")
+
+    super().stop()
+
   def _add_settings(self) -> None:
-    """"""
+    """Same as in the parent class except it also adds a Path size setting to
+    the list of possible settings."""
 
     self._patch_size = CameraScaleSetting("Patch size (px)", 2, 1024,
                                           default=128)
@@ -58,7 +87,8 @@ class DICVEConfig(CameraConfigBoxes):
     super()._add_settings()
 
   def _update_settings(self) -> None:
-    """"""
+    """Same as in the parent class except it also updates the Path size setting
+    in addition to all the other settings."""
 
     if self._patch_size.value != self._patch_size.tk_var.get():
       self._patch_size.value = self._patch_size.tk_var.get()
@@ -67,7 +97,8 @@ class DICVEConfig(CameraConfigBoxes):
     super()._update_settings()
 
   def _set_bindings(self) -> None:
-    """"""
+    """Binds the left mouse button click to drawing the patches on which to
+    perform the image correlation."""
 
     super()._set_bindings()
 
@@ -76,7 +107,8 @@ class DICVEConfig(CameraConfigBoxes):
     self._img_canvas.bind('<ButtonRelease-1>', self._stop_box)
 
   def _extend_box(self, event: tk.Event) -> None:
-    """"""
+    """When the user drags the selection box, updating the four patches being
+    drawn."""
 
     super()._extend_box(event)
 
@@ -98,7 +130,7 @@ class DICVEConfig(CameraConfigBoxes):
                                  max_y - size, max_y)
 
   def _stop_box(self, _: tk.Event) -> None:
-    """"""
+    """Simply resets the selection box."""
 
     # This box is not needed anymore
     self._select_box.reset()
@@ -160,28 +192,9 @@ class DICVEConfig(CameraConfigBoxes):
     self.update()
 
   def _handle_box_outside_img(self, box: Box) -> None:
-    """If a patch is outside the image, maybe the user entered a wrong value or
-    the image size has been modified. Raising an exception as the DICVE can't
-    run in this situation."""
+    """If a patch is outside the image, warning the user and resetting the
+    patches."""
 
     self.log(logging.WARNING, f"The patch {box} is outside the image, "
                               f"resetting the patches")
     self._spots.reset()
-
-  def finish(self) -> None:
-    """"""
-
-    if self._spots.empty():
-      self.log(logging.WARNING, "No patches selected ! Not exiting the "
-                                "configuration window")
-      showerror('Error !',
-                message="Please select patches before exiting the config "
-                        "window !\nOr hit CTRL+C to exit Crappy")
-      return
-
-    self._spots.save_length()
-    self.log(logging.INFO,
-             f"Successfully saved L0 ! L0 x : {self._spots.x_l0}, "
-             f"L0 y : {self._spots.y_l0}")
-
-    super().stop()

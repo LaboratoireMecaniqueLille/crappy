@@ -34,7 +34,8 @@ class Tracker(Process):
   """Process whose task is to track a spot on an image.
 
   It receives a subframe centered on the last known position of the spot, and
-  returns the updated position of the detected spot.
+  returns the updated position of the detected spot. It is meant to be used in
+  association with the :ref:`Video Extenso Tool`.
   """
 
   names = list()
@@ -47,12 +48,18 @@ class Tracker(Process):
                white_spots: bool = False,
                thresh: Optional[int] = None,
                blur: Optional[float] = 5) -> None:
-    """Sets the args.
+    """Sets the arguments.
 
     Args:
       pipe: The :obj:`multiprocessing.connection.Connection` object through
         which the image is received and the updated coordinates of the spot
         are sent back.
+      logger_name: The name of the parent logger as a :obj:`str`, used for
+        naming the logger in this class.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
+      log_queue: A Queue for sending the log messages to the main Logger, only
+        used in Windows.
       white_spots: If :obj:`True`, detects white objects on a black background,
         else black objects on a white background.
       thresh: If given, this threshold value will always be used for isolating
@@ -63,7 +70,6 @@ class Tracker(Process):
         detect the spot. This argument gives the size of the kernel to use for
         blurring. Better results are obtained with blurring, but it takes a bit
         more time.
-      logger_name:
     """
 
     super().__init__()
@@ -84,7 +90,16 @@ class Tracker(Process):
 
   @classmethod
   def get_name(cls, logger_name: str, self_name: str) -> str:
-    """"""
+    """Method for naming the Tracker processes so that each of them has a
+    unique name.
+
+    Args:
+      logger_name: The name of the parent logger, as a :obj:`str`.
+      self_name: The name of the current class.
+
+    Returns:
+      The chosen name for the current Tracker process, as a :obj:`str`.
+    """
 
     i = 1
     while f"{logger_name}.{self_name}-{i}" in cls.names:
@@ -98,7 +113,7 @@ class Tracker(Process):
     back the coordinates of the detected spot.
 
     Can only be stopped either with a :exc:`KeyboardInterrupt` or when
-    receiving a text message from the parent VideoExtenso class.
+    receiving a text message from the parent :ref:`Video Extenso` class.
     """
 
     # Looping forever for receiving data
@@ -149,7 +164,7 @@ class Tracker(Process):
       img: The subframe on which to search for a spot.
 
     Returns:
-      A Box object containing the x and y start and end positions of the
+      A :ref:`Box` object containing the x and y start and end positions of the
       detected spot, as well as the coordinates of the centroid.
     """
 
@@ -211,7 +226,8 @@ class Tracker(Process):
                y_centroid=y_start + y)
 
   def _send(self, val: Union[Box, str]) -> None:
-    """"""
+    """Sends a message to the :ref:`Video Extenso Tool`, and in Linux checks
+    that the Pipe is not full before sending."""
 
     if self._system == 'Linux':
       if select([], [self._pipe], [], 0)[1]:
@@ -224,7 +240,7 @@ class Tracker(Process):
       self._pipe.send(val)
 
   def _set_logger(self) -> None:
-    """"""
+    """Instantiates and sets up the logger for the instance."""
 
     logger = logging.getLogger(self.name)
 

@@ -39,16 +39,24 @@ class CameraConfig(tk.Tk):
   maximum pixel values and the value and position of the pixel currently under
   the mouse. A checkbox allows auto-adjusting the pixel range to get a better
   contrast.
+
+  This class is used as is by the :ref:`Camera Block`, but also subclassed to
+  provide more specific functionalities to other camera-related Blocks like
+  :ref:`Video Extenso` or :ref:`DIC VE`.
   """
 
   def __init__(self,
                camera: Camera,
                log_queue: Queue,
                log_level: Optional[int]) -> None:
-    """Initializes the interface and starts displaying the first image.
+    """Initializes the interface and displays it.
 
     Args:
-      camera: The camera object in charge of acquiring the images.
+      camera: The :ref:`Camera` object in charge of acquiring the images.
+      log_queue: A Queue for sending the log messages to the main Logger, only
+        used in Windows.
+      log_level: The minimum logging level of the entire Crappy script, as an
+        :obj:`int`.
     """
 
     super().__init__()
@@ -121,7 +129,14 @@ class CameraConfig(tk.Tk):
         start_time = time()
 
   def log(self, level: int, msg: str) -> None:
-    """"""
+    """Record log messages for the CameraConfig window.
+
+    Also instantiates the logger when logging the first message.
+
+    Args:
+      level: An :obj:`int` indicating the logging level of the message.
+      msg: The message to log, as a :obj:`str`.
+    """
 
     if self._logger is None:
       self._logger = logging.getLogger(
@@ -130,11 +145,45 @@ class CameraConfig(tk.Tk):
     self._logger.log(level, msg)
 
   def report_callback_exception(self, exc: Exception, val: str, tb) -> None:
-    """"""
+    """Method displaying an error message in case an exception is raised in a
+    Tkinter callback."""
 
     self._logger.exception(f"Caught exception in {type(self).__name__}: "
                            f"{exc.__name__}({val})", exc_info=tb)
     showerror("Error !", message=f"{exc.__name__}\n{val}")
+
+  def finish(self) -> None:
+    """Method called when the user tries to close the configuration window.
+
+    Mostly intended for being overwritten.
+    """
+
+    self.stop()
+
+  def stop(self) -> None:
+    """Method called for gracefully stopping the GUI.
+
+    Stops the process calculating the histogram, and destroys the GUI.
+    """
+
+    # Stopping the event loop and the histogram process
+    self._run = False
+    self._stop_event.set()
+    sleep(0.1)
+
+    # Killing the histogram process if it's still alive
+    if self._histogram_process.is_alive():
+      self.log(logging.WARNING, "The histogram process failed to stop, "
+                                "killing it !")
+      self._histogram_process.terminate()
+
+    self.log(logging.DEBUG, "Destroying the configuration window")
+
+    try:
+      self.destroy()
+    except TclError:
+      self.log(logging.WARNING, "Cannot destroy the configuration window, "
+                                "ignoring")
 
   def _set_layout(self) -> None:
     """Creates and places the different elements of the display on the GUI."""
@@ -915,30 +964,3 @@ class CameraConfig(tk.Tk):
     self._update_pixel_value()
 
     self.update()
-
-  def finish(self) -> None:
-    """"""
-
-    self.stop()
-
-  def stop(self) -> None:
-    """"""
-
-    # Stopping the event loop and the histogram process
-    self._run = False
-    self._stop_event.set()
-    sleep(0.1)
-
-    # Killing the histogram process if it's still alive
-    if self._histogram_process.is_alive():
-      self.log(logging.WARNING, "The histogram process failed to stop, "
-                                "killing it !")
-      self._histogram_process.terminate()
-
-    self.log(logging.DEBUG, "Destroying the configuration window")
-
-    try:
-      self.destroy()
-    except TclError:
-      self.log(logging.WARNING, "Cannot destroy the configuration window, "
-                                "ignoring")

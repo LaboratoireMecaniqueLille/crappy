@@ -181,26 +181,25 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     locks.
 
     Args:
-      mode (:obj:`str`): The communication mode, can be :
+      mode: The communication mode as a :obj:`str`, can be :
         ::
 
           'SPI', 'I2C', 'GPIO_only', 'Write_serial_nr'
 
         GPIOs can be driven in any mode, but faster speeds are achievable in
         `GPIO_only` mode.
-      serial_nr (:obj:`str`, optional): The serial number of the FT232H to
-        drive. In `Write_serial_nr` mode, the serial number to be written.
-      i2c_speed (:obj:`str`, optional): In I2C mode, the I2C bus clock
-        frequency in Hz. Available values are :
+      serial_nr: The serial number of the FT232H to drive, as a :obj:`str`. In
+        `Write_serial_nr` mode, the serial number to be written.
+      i2c_speed: In I2C mode, the I2C bus clock frequency in Hz, as an
+        :obj:`int`. Available values are :
         ::
 
           100E3, 400E3, 1E6
 
         or any value between `10kHz` and `100kHz`. Lowering below the default
         value may solve I2C clock stretching issues on some devices.
-
-      spi_turbo (:obj:`str`, optional): Increases the achievable bus speed, but
-        may not work with some devices.
+      spi_turbo: If :obj:`True`, increases the achievable bus speed in SPI
+        mode, but may not work with some devices.
 
     Note:
       - **CS pin**:
@@ -452,7 +451,14 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
                                 ft232h_cmds['disable_clk_adaptative']]))
 
   def log(self, level: int, msg: str) -> None:
-    """"""
+    """Wrapper for logging messages.
+
+    Also initializes the Logger on the first message.
+
+    Args:
+      level: The logging level of the message, as an :obj:`int`.
+      msg: The message to log, as a :obj:`str`.
+    """
 
     if self._logger is None:
       self._logger = logging.getLogger(f"{current_process().name}."
@@ -465,10 +471,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Approximates the number of clock cycles over a given delay.
 
     Args:
-      value (:obj:`float`): delay (in seconds)
+      value: The delay in seconds, as a :obj:`float`.
 
     Returns:
-      Number of clock cycles
+      The number of clock cycles, as an :obj:`int`.
     """
 
     bit_delay = ft232h_mpsse_bit_delay
@@ -483,7 +489,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     immediately.
 
     Args:
-      latency (:obj:`int`): latency (in milliseconds)
+      latency: The latency in milliseconds, as an :obj:`int`.
     """
 
     self.log(logging.DEBUG, f"Setting the latency timer to {latency}")
@@ -501,10 +507,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     desired value, but may still be slightly different.
 
     Args:
-      frequency (:obj:`float`): Desired bus frequency (in Hz)
+      frequency: The desired bus frequency in Hz, as a :obj:`float`.
 
     Returns:
-      Actual bus frequency
+      The actual bus frequency, as a :obj:`float`.
     """
 
     self.log(logging.DEBUG, f"Setting the clock frequency to {frequency}")
@@ -550,8 +556,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Sets the bitbang mode.
 
     Args:
-      bitmask (:obj:`int`): Mask for choosing the driven GPIOs.
-      mode (:class:`BitMode`): Bitbang mode to be set.
+      bitmask: Mask for choosing the driven GPIOs.
+      mode: The bitbang mode to be set.
     """
 
     mask = sum(FT232H.BitMode)
@@ -590,9 +596,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Sends a control message to the device.
 
     Args:
-      reqtype (:obj:`int`): bmRequest
-      value (:obj:`int`): wValue
-      data (:obj:`bytes`): payload
+      reqtype: bmRequest
+      value: wValue
+      data: payload
 
     Returns:
       Number of bytes actually written
@@ -617,7 +623,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     product string descriptors.
 
     Args:
-      serial_number (:obj:`str`): Serial number to be written in the EEPROM
+      serial_number: Serial number to be written in the EEPROM, as a
+        :obj:`str`.
     """
 
     if not isinstance(serial_number, str):
@@ -759,8 +766,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     payload.
 
     Args:
-      size (:obj:`int`): The number of bytes to receive from the device
-      attempt (:obj:`int`): Attempt cycle count
+      size: The number of bytes to receive from the device, as an :obj:`int`.
+      attempt: Attempt cycle count
       request_gen: A callable that takes the number of bytes read and expects a
         bytes buffer to send back to the remote device. This is only useful to
         perform optimized/continuous transfer from a slave device.
@@ -929,7 +936,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Sends the MPSSE commands for starting an I2C transaction.
 
     Args:
-      i2caddress (:obj:`int`): I2C address of the slave
+      i2caddress: I2C address of the slave
     """
 
     if i2caddress is None:
@@ -947,7 +954,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Sends the MPSSE commands for writing bytes to an I2C slave.
 
     Args:
-      out (:obj:`list`): List of bytes to write
+      out: List of bytes to write
     """
 
     if not isinstance(out, bytearray):
@@ -960,8 +967,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
       self._send_check_ack(cmd)
 
   def _do_read(self, readlen: int) -> bytearray:
-    """
-    Sends the MPSSE commands for reading bytes from an I2C slave, and then
+    """Sends the MPSSE commands for reading bytes from an I2C slave, and then
     returns these bytes.
 
     Args:
@@ -1033,7 +1039,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     :meth:`_do_write` methods, and checks whether the slave ACKs it.
 
     Args:
-      cmd (:obj:`bytearray`): The MPSSE commands to send
+      cmd: The MPSSE commands to send
     """
 
     # SCL low, SDA high-Z
@@ -1055,10 +1061,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Writes bytes to an I2C slave.
 
     Args:
-      address (:obj:`int`): I2C address of the slave
-      out (:obj:`list`): List of bytes to send
-      stop (:obj:`bool`, optional): Should the stop condition be sent at the
-        end of the message ?
+      address: I2C address of the slave
+      out: List of bytes to send
+      stop: Should the stop condition be sent at the end of the message ?
     """
 
     i2caddress = (address << 1) & 0xFF
@@ -1083,10 +1088,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Reads bytes from an I2C slave.
 
     Args:
-      address (:obj:`int`): I2C address of the slave
-      length (:obj:`int`): Number of bytes to read
-      stop (:obj:`bool`, optional): Should the stop condition be sent at the
-        end of the message ?
+      address: I2C address of the slave
+      length: Number of bytes to read
+      stop: Should the stop condition be sent at the end of the message ?
     """
 
     i2caddress = (address << 1) & 0xFF
@@ -1114,9 +1118,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     from this same slave.
 
     Args:
-      address (:obj:`int`): I2C address of the slave
-      out (:obj:`list`): List of bytes to send
-      readlen (:obj:`int`): Number of bytes to read
+      address: I2C address of the slave
+      out: List of bytes to send
+      readlen: Number of bytes to read
 
     Returns:
       Read bytes as a bytearray
@@ -1151,8 +1155,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Writes a single byte to an I2C slave, in register 0.
 
     Args:
-      i2c_addr (:obj:`int`): I2C address of the slave
-      value (:obj:`int`): The value to write
+      i2c_addr: The I2C address of the slave, as an :obj:`int`.
+      value: The value to write, as an :obj:`int`.
     """
 
     self.log(logging.DEBUG, f"Requested I2C byte write with value {value} to "
@@ -1169,9 +1173,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Writes a single byte to an I2C slave, in the specified register.
 
     Args:
-      i2c_addr (:obj:`int`): I2C address of the slave
-      register (:obj:`int`): Index of the register to be written
-      value (:obj:`int`): The value to write
+      i2c_addr: The I2C address of the slave, as an :obj:`int`.
+      register: The index of the register to be written, as an :obj:`int`.
+      value: The value to write, as an :obj:`int`.
     """
 
     self.log(logging.DEBUG, f"Requested I2C byte write with value {value} to "
@@ -1192,9 +1196,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     well.
 
     Args:
-      i2c_addr (:obj:`int`): I2C address of the slave
-      register (:obj:`int`): Index of the first register to be written
-      value (:obj:`int`): The value to write
+      i2c_addr: The I2C address of the slave, as an :obj:`int`.
+      register: The index of the first register to be written, as an
+        :obj:`int`.
+      value: The value to write, as an :obj:`int`.
     """
 
     self.log(logging.DEBUG, f"Requested I2C word write with value {value} to "
@@ -1211,9 +1216,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Actually calls :meth:`write_i2c_block_data`.
 
     Args:
-      i2c_addr (:obj:`int`): I2C address of the slave
-      register (:obj:`int`): Index of the first register to be written
-      data (:obj:`list`): List of bytes to write
+      i2c_addr: The I2C address of the slave, as an :obj:`int`.
+      register: The index of the first register to be written, as an
+        :obj:`int`.
+      data: A :obj:`list` of bytes to write.
     """
 
     self.log(logging.DEBUG, f"Requested I2C block write with data {data} to "
@@ -1231,9 +1237,10 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     specified register.
 
     Args:
-      i2c_addr (:obj:`int`): I2C address of the slave
-      register (:obj:`int`): Index of the first register to be written
-      data (:obj:`list`): List of bytes to write
+      i2c_addr: The I2C address of the slave, as an :obj:`int`.
+      register: The index of the first register to be written, as an
+        :obj:`int`.
+      data: A :obj:`list` of bytes to write.
     """
 
     self.log(logging.DEBUG, f"Requested I2C block write with data {data} to "
@@ -1251,7 +1258,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Reads a single byte from an I2C slave, from the register `0`.
 
     Args:
-      i2c_addr (:obj:`int`): I2C address of the slave
+      i2c_addr: The I2C address of the slave, as an :obj:`int`.
 
     Returns:
       Value of the read register
@@ -1271,8 +1278,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Reads a single byte from an I2C slave, from the specified register.
 
     Args:
-      i2c_addr (:obj:`int`): I2C address of the slave
-      register (:obj:`int`): Index of the register to be read
+      i2c_addr: The I2C address of the slave, as an :obj:`int`.
+      register: The index of the register to be read, as an :obj:`int`.
 
     Returns:
       Value of the read register
@@ -1294,8 +1301,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     returns them as one single value.
 
     Args:
-      i2c_addr (:obj:`int`): I2C address of the slave
-      register (:obj:`int`): Index of the first register to be read
+      i2c_addr: The I2C address of the slave, as an :obj:`int`.
+      register: The index of the first register to be read, as an :obj:`int`.
 
     Returns:
       Value of the read registers
@@ -1321,9 +1328,9 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     specified register.
 
     Args:
-      i2c_addr (:obj:`int`): I2C address of the slave
-      register (:obj:`int`): Index of the first register to be read
-      length (:obj:`int`): Number of bytes to read
+      i2c_addr: The I2C address of the slave, as an :obj:`int`.
+      register: The index of the first register to be read, as an :obj:`int`.
+      length: The number of bytes to read, as an :obj:`int`.
 
     Returns:
       Values of read registers as a :obj:`list`
@@ -1360,8 +1367,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     one stop condition is sent after the last transaction.
 
     Args:
-      *i2c_msgs: Messages to exchange with the slave. They are either read or
-        write messages.
+      *i2c_msgs: One or several :ref:`I2C Message` to exchange with the slave.
+        They are either read or write messages.
     """
 
     self.log(logging.DEBUG, "Requested I2C readwrite")
@@ -1560,24 +1567,27 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     self.log(logging.DEBUG, f"Set SPI threewire to {value}")
     self._threewire = value
 
-  def _exchange_spi(self, readlen: int, out: list, start: bool,
-                    stop: bool, duplex: bool) -> bytes:
+  def _exchange_spi(self,
+                    readlen: int,
+                    out: list,
+                    start: bool,
+                    stop: bool,
+                    duplex: bool) -> bytes:
     """Exchanges bytes with an SPI slave.
 
     Can read and/or write data, in a sequential or simultaneous way. Also
     manages the CS line.
 
     Args:
-      readlen (:obj:`int`): Number of bytes to read. If 0, no reading is
-        performed.
-      out (:obj:`list`): List of bytes to write. If empty, no writing is
-        performed.
-      start (:obj:`bool`): If :obj:`False`, the CS line is not driven before
-        exchanging data, and remains in its previous state.
-      stop (:obj:`bool`): If :obj:`False`, the CS line is not driven after
-        exchanging data, and remains in its previous state.
-      duplex (:obj:`int`): If :obj:`True`, the data is read and written
-        simultaneously. If :obj:`False`, writes then reads in a sequential way.
+      readlen: The umber of bytes to read, as an :obj:`int`. If 0, no reading
+        is performed.
+      out: A :obj:`list` of bytes to write. If empty, no writing is performed.
+      start: If :obj:`False`, the CS line is not driven before exchanging data,
+        and remains in its previous state.
+      stop: If :obj:`False`, the CS line is not driven after exchanging data,
+        and remains in its previous state.
+      duplex: If :obj:`True`, the data is read and written simultaneously. If
+        :obj:`False`, writes then reads in a sequential way.
 
     Returns:
       Read data as bytes
@@ -1736,11 +1746,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Reads the specified number of bytes from an SPI slave.
 
     Args:
-      len (:obj:`int`): Number of bytes to read
-      start (:obj:`bool`): If :obj:`False`, the CS line is not driven before
-        reading data, and remains in its previous state.
-      stop (:obj:`bool`): If :obj:`False`, the CS line is not driven after
-        reading data, and remains in its previous state.
+      len: The number of bytes to read, as an :obj:`int`.
+      start: If :obj:`False`, the CS line is not driven before reading data,
+        and remains in its previous state.
+      stop: If :obj:`False`, the CS line is not driven after reading data, and
+        remains in its previous state.
 
     Returns:
       List of read bytes
@@ -1763,11 +1773,11 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Write bytes from a list to an SPI slave.
 
     Args:
-      values (:obj:`list`): List of bytes to write
-      start (:obj:`bool`): If :obj:`False`, the CS line is not driven before
-        reading data, and remains in its previous state.
-      stop (:obj:`bool`): If :obj:`False`, the CS line is not driven after
-        reading data, and remains in its previous state.
+      values: A :obj:list` of bytes to write
+      start: If :obj:`False`, the CS line is not driven before reading data,
+        and remains in its previous state.
+      stop: If :obj:`False`, the CS line is not driven after reading data, and
+        remains in its previous state.
     """
 
     self.log(logging.DEBUG, f"Requested SPI bytes write with values {values}")
@@ -1805,15 +1815,15 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     buffer.
 
     Args:
-      values (:obj:`list`): List of bytes to write
-      speed (:obj:`float`): Sets the bus clock frequency before issuing the
-        command (in Hz)
-      delay (:obj:`float`): Not implemented, should be 0.0
-      bits (:obj:`int`):  Not implemented, should be 8
-      start (:obj:`bool`): If :obj:`False`, the CS line is not driven before
-        reading data, and remains in its previous state.
-      stop (:obj:`bool`): If :obj:`False`, the CS line is not driven after
-        reading data, and remains in its previous state.
+      values: A :obj:list` of bytes to write.
+      speed: Sets the bus clock frequency in Hz before issuing the command, as
+        a :obj:`float`.
+      delay: Not implemented, should be 0.0
+      bits:  Not implemented, should be 8
+      start: If :obj:`False`, the CS line is not driven before reading data,
+        and remains in its previous state.
+      stop: If :obj:`False`, the CS line is not driven after reading data, and
+        remains in its previous state.
 
     Returns:
       List of read bytes
@@ -1935,7 +1945,7 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Reads the 3.3V-logic voltage value of the specified pin.
 
     Args:
-      gpio_str (:obj:`str`): Name of the GPIO to be read
+      gpio_str: The name of the GPIO to be read, as a :obj:`str`.
 
     Returns:
       3.3V-logic value corresponding to the input voltage
@@ -1960,8 +1970,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     """Sets the specified GPIO as an output and sets its output value.
 
     Args:
-      gpio_str (:obj:`str`): Name of the GPIO to be set
-      value (:obj:`int`): 1 for setting the GPIO high, 0 for setting it low
+      gpio_str: The name of the GPIO to be set, as a :obj:`str`.
+      value: 1 for setting the GPIO high, 0 for setting it low.
     """
 
     self.log(logging.DEBUG, f"Requested GPIO value writing to {value} "

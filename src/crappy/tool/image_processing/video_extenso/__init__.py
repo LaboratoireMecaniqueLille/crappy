@@ -1,4 +1,4 @@
 # coding: utf-8
 
-from .video_extenso import VideoExtensoTool
 from .tracker import LostSpotError
+from .video_extenso import VideoExtensoTool

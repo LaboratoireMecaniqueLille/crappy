@@ -7,8 +7,8 @@ from typing import Optional, Tuple
 
 @dataclass
 class Box:
-  """This class represents a box to be drawn on the image of a CameraConfig
-  GUI.
+  """This class represents a box to be drawn on the image of a
+  :ref:`Camera Configurator` window.
 
   It can be either the box drawn when selecting a region, or the bounding box
   of a previously detected area."""
@@ -25,7 +25,7 @@ class Box:
   y_centroid: Optional[float] = None
 
   def update(self, box: Box) -> None:
-    """"""
+    """Changes the coordinates of the box to those of another box."""
 
     self.x_start = box.x_start
     self.y_start = box.y_start
@@ -55,15 +55,8 @@ class Box:
     self.x_centroid = None
     self.y_centroid = None
 
-  def get_patch(self) -> Tuple[int, int, int, int]:
-    """Returns the information of the box in the patch format, for
-    compatibility with other blocks."""
-
-    return (self.y_start, self.x_start, self.y_end - self.y_start,
-            self.x_end - self.x_start)
-
   def sorted(self) -> Tuple[int, int, int, int]:
-    """Returns the four sides values but sorted in the order : min x, max x,
+    """Returns the four coordinates but sorted in the order : min x, max x,
     min y, max y."""
 
     if self.no_points():
