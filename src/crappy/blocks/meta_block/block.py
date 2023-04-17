@@ -335,32 +335,9 @@ class Block(Process, metaclass=MetaBlock):
         inst.join()
         cls.cls_log(logging.INFO, f'{inst.name} finished by itself')
 
-      # Stopping the USB server if required
-      if USBServer.initialized:
-        cls.cls_log(logging.INFO, "Stopping the USB server")
-        USBServer.stop_server()
-
-      if get_start_method() == 'spawn':
-        cls.thread_stop = True
-        cls.log_thread.join(timeout=0.1)
-
-      if cls.log_thread.is_alive():
-        cls.cls_log(logging.WARNING, "The thread reading the log messages did "
-                                     "not terminate in time !")
-
-      # Checking whether all Blocks terminated gracefully
-      if cls.instances and any(inst.is_alive() for inst in cls.instances):
-        running = ', '.join(inst.name for inst in cls.instances
-                            if inst.is_alive())
-        cls.cls_log(logging.ERROR, f"Crappy failed to finish gracefully, "
-                                   f"Block(s) {running} still running !")
-      else:
-        cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
-                                  'gracefully\n')
-
     # A Block crashed while preparing
     except BrokenBarrierError:
-      cls.cls_log(logging.ERROR, "Exception raised in a Block while  waiting "
+      cls.cls_log(logging.ERROR, "Exception raised in a Block while waiting "
                                  "for all Blocks to be ready, stopping")
       cls._exception()
     # The user ended the script while preparing
@@ -373,6 +350,10 @@ class Block(Process, metaclass=MetaBlock):
       cls.logger.exception("Caught exception while running launch_all, "
                            "aborting", exc_info=exc)
       cls._exception()
+
+    # Performing the cleanup actions before exiting
+    finally:
+      cls._cleanup()
 
   @classmethod
   def _exception(cls) -> None:
@@ -406,10 +387,25 @@ class Block(Process, metaclass=MetaBlock):
 
         break
 
+  @classmethod
+  def _cleanup(cls) -> None:
+    """Method called at the very end of every script execution.
+
+    It stops, if relevant, the USBServer and the log_thread, and warns the user
+    in case processes would still be running.
+    """
+
+    # Stopping the USB server if required
+    if USBServer.initialized:
+      cls.cls_log(logging.INFO, "Stopping the USB server")
+      USBServer.stop_server()
+
+    # Stopping the log thread if required
     if get_start_method() == 'spawn':
       cls.thread_stop = True
       cls.log_thread.join(timeout=0.1)
 
+    # Warning in case the log thread did not stop correctly
     if cls.log_thread.is_alive():
       cls.cls_log(logging.WARNING, "The thread reading the log messages did "
                                    "not terminate in time !")
