@@ -7,9 +7,8 @@ https://packaging.python.org/en/latest/distributing.html
 https://github.com/pypa/sampleproject
 """
 
-from setuptools import find_namespace_packages
+from setuptools import find_namespace_packages, setup, Extension
 from os import popen, walk
-from distutils.core import setup, Extension
 import platform
 
 # Reading version from __version__.py file
