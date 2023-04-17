@@ -1,25 +1,27 @@
 # coding: utf-8
 
+"""This file is the entry point to the module Crappy.
+
+It imports all the modules and other resources, and defines aliases.
+"""
+
 from pkg_resources import resource_string, resource_filename
 from numpy import frombuffer, uint8
 from webbrowser import open
 
+# Importing the modules of crappy
 from . import actuator
+from . import blocks
 from . import camera
 from . import inout
-from . import tool
-from . import blocks
+from . import lamcube
 from . import links
 from . import modifier
-from . import lamcube
+from . import tool
+
+# Importing other features
 from .__version__ import __version__
 from ._global import OptionalModule
-
-
-# Quick access to documentation
-def docs():
-  open('https://crappy.readthedocs.io/en/latest/')
-
 
 # Useful aliases
 link = links.link
@@ -39,9 +41,27 @@ renice = Block.renice_all
 reset = Block.reset
 
 
+# Quick access to documentation
+def docs():
+  """Opens the online documentation of Crappy.
+
+  It opens the latest version, and of course requires an internet access.
+  """
+
+  open('https://crappy.readthedocs.io/en/latest/')
+
+
 # Data aliases
 class resources:
+  """This class defines aliases for quick access to the resources in the
+  `tool/data/` folder.
+
+  These aliases are then used in the examples provided on the GitHub
+  repository, but could also be used in custom user scripts.
+  """
+
   try:
+    # Defining aliases to the images themselves
     from cv2 import imdecode
     speckle = imdecode(frombuffer(resource_string('crappy',
                                                   'tool/data/speckle.png'),
@@ -52,11 +72,14 @@ class resources:
 
     pad = imdecode(frombuffer(resource_string('crappy', 'tool/data/pad.png'),
                               uint8), flags=0)
+
+  # In case the module opencv-python is missing
   except (ModuleNotFoundError, ImportError):
     speckle = OptionalModule('opencv-python')
     ve_markers = OptionalModule('opencv-python')
     pad = OptionalModule('opencv-python')
 
+  # Also getting the paths to the images
   paths = {'pad': resource_filename('crappy', 'tool/data/pad.png'),
            'speckle': resource_filename('crappy', 'tool/data/speckle.png'),
            've_markers': resource_filename('crappy',

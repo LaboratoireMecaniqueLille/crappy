@@ -1,20 +1,31 @@
 # coding:utf-8
 
-from typing import Optional, NoReturn
+from typing import Optional, NoReturn, Any
 from importlib import import_module
 
 
 class OptionalModule:
-  """Placeholder for optional dependencies when not installed
+  """Placeholder for optional dependencies that are not installed.
 
-  Will display a message and raise an error when trying to use them
+  Will display a message and raise an error when trying to use them.
   """
 
   def __init__(self,
                module_name: str,
                message: Optional[str] = None,
-               lazy_import: bool = False):
-    """"""
+               lazy_import: bool = False) -> None:
+    """Sets the arguments.
+
+    Args:
+      module_name: The name of the module s a :obj:`str`, preferably the one
+        invoked with `pip install`.
+      message: Optionally, the message to display in case the module is
+        missing (as a :obj:`str`). If not provided, a generic message will be
+        displayed.
+      lazy_import: If :obj:`True`, the module won't be imported directly even
+        if it is installed. In stead, it will be imported only when necessary.
+        Allows reducing the import time, especially on Window.
+    """
 
     self._name = module_name
 
@@ -23,13 +34,19 @@ class OptionalModule:
       self._msg = message
     else:
       self._msg = f"The module {self._name} is necessary to use this " \
-                  f"functionality. Please install it and try again"
+                  f"functionality. Please install it and try again !"
 
     self._lazy = lazy_import
     self._module = None
 
-  def __getattr__(self, attr) -> NoReturn:
-    """"""
+  def __getattr__(self, attr: str) -> Any:
+    """Method normally raising an exception indicating that the module is
+    missing.
+
+    In case the ``lazy_import`` argument was set to :obj:`True`, still tries to
+    get the desired attribute and raises the exception only if the module is
+    missing.
+    """
 
     # The module has to be imported only when called because it's too heavy
     if self._lazy:
@@ -50,13 +67,14 @@ class OptionalModule:
     raise RuntimeError(f"Missing module: {self._name}\n{self._msg}")
 
   def __call__(self, *_, **__) -> NoReturn:
-    """"""
+    """Method raising an exception indicating that the module is missing."""
 
     raise RuntimeError(f"Missing module: {self._name}\n{self._msg}")
 
 
 class LinkDataError(ValueError):
-  """Error to raise when trying to send a wrong data type through a Link."""
+  """Exception raised when trying to send a wrong data type through a
+  :ref:`Link`."""
 
 
 class StartTimeout(TimeoutError):
@@ -69,38 +87,47 @@ class PrepareError(IOError):
 
 
 class CameraConfigError(RuntimeError):
-  """Error raised by a CameraConfig window when encountering an exception."""
+  """Error raised by a :ref:`Camera Configurator` window when encountering an
+  exception."""
 
 
 class CameraPrepareError(RuntimeError):
-  """Error raised by a Camera Block when one of its child processes crashes
-  while preparing."""
+  """Error raised by a :ref:`Camera Block` when one of its children processes
+  crashes while preparing."""
 
 
 class CameraRuntimeError(RuntimeError):
-  """Error raised by a Camera Block when one of its child processes crashes
-  while running."""
+  """Error raised by a :ref:`Camera Block` when one of its children processes
+  crashes while running."""
 
 
 class T0NotSetError(ValueError):
   """Exception raised when requesting the t0 value when it is not set."""
 
 
-class DefinitionError(Exception):
-    """Error to raise when classes are not defined correctly"""
+class DefinitionError(NameError):
+    """Exception raised when trying to define an object with the same name as
+    an already-defined one."""
 
-    def __init__(self, msg=""):
+    def __init__(self, msg: str) -> None:
+      """Sets the msg attribute.
+
+      Args:
+        msg: The message to display along with the exception.
+      """
+
       super().__init__()
-      self.msg = msg
+      self._msg = msg
 
-    def __str__(self):
-      return self.msg
+    def __str__(self) -> str:
+      return self._msg
 
 
 class GeneratorStop(Exception):
-  """Exception raised when a Generator block reaches the end of its path."""
+  """Exception raised when a :ref:`Generator` Block reaches the end of its
+  path."""
 
 
 class ReaderStop(Exception):
-  """Exception raised when a FileReader camera has exhausted all the images
-  to read."""
+  """Exception raised when a :ref:`File Reader` camera has exhausted all the
+  images to read."""

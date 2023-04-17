@@ -1,6 +1,6 @@
-============================
-Exceptions & module handling
-============================
+===================================
+Exceptions & missing Python modules
+===================================
 
 .. autoexception:: crappy._global.LinkDataError
 .. autoexception:: crappy._global.StartTimeout
