@@ -263,7 +263,7 @@ Supported cameras
   mostly compatible with USB cameras, and its dependencies are straightforward
   to install.
 
-- :ref:`Camera Link`
+- :ref:`Basler Ironman Camera Link`
 
   Allows reading from a camera communicating over Camera Link plugged to a
   `microEnable 5 ironman AD8-PoCL <https://www.baslerweb.com/en/products/
@@ -291,7 +291,8 @@ Supported cameras
 - :ref:`JAI`
 
   Allows reading from a `Jai GO-5000M-PMCL <https://www.jai.com/products/
-  go-5000c-pmcl>`_ camera. It relies on the :ref:`Camera Link` object.
+  go-5000c-pmcl>`_ camera. It relies on the :ref:`Basler Ironman Camera Link`
+  object.
 
   .. Important::
      This camera object relies on C++ libraries, which are not distributed with

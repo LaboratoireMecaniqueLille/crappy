@@ -62,9 +62,9 @@ Bi Spectral
    :members: open, get_image
    :special-members: __init__
 
-Camera Link
-+++++++++++
-.. autoclass:: crappy.camera.cameralink.CLCamera
+Basler Ironman Camera Link
++++++++++++++++++++++++++
+.. autoclass:: crappy.camera.cameralink.BaslerIronmanCameraLink
    :members: open, get_image, close
    :special-members: __init__
 

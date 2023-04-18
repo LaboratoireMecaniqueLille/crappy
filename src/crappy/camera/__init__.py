@@ -14,7 +14,7 @@ from .raspberry_pi_camera import RaspberryPiCamera
 from .gstreamer_camera import CameraGstreamer
 from .opencv_camera import CameraOpencv
 # Cameralink cameras
-from .cameralink import CLCamera
+from .cameralink import BaslerIronmanCameraLink
 from .cameralink import BiSpectral
 from .cameralink import Jai, Jai8
 from .seek_thermal_pro import SeekThermalPro

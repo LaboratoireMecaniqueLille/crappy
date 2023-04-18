@@ -18,7 +18,7 @@ except (ImportError, ModuleNotFoundError):
                                   "exists and reinstall Crappy")
 
 
-class CLCamera(Camera):
+class BaslerIronmanCameraLink(Camera):
   """Cameralink camera sensor."""
 
   def __init__(self) -> None:
