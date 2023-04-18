@@ -63,8 +63,9 @@ class Camera(Block):
     # Checking if the requested camera exists in Crappy
     if image_generator is None:
       if camera not in camera_dict:
-        raise ValueError(f"No camera named {camera} found in the "
-                         f"list of available cameras !")
+        possible = ', '.join(sorted(camera_dict.keys()))
+        raise ValueError(f"Unknown Camera type : {camera} ! "
+                         f"The possible types are : {possible}")
       self._camera_name = camera
     else:
       self._camera_name = 'Image Generator'
