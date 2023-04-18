@@ -9,7 +9,7 @@ from threading import BrokenBarrierError, Thread
 from queue import Empty
 import logging
 import logging.handlers
-from time import sleep, time
+from time import sleep, time, time_ns
 from weakref import WeakSet
 from typing import Union, Optional, List, Dict, Any
 from collections import defaultdict
@@ -323,7 +323,7 @@ class Block(Process, metaclass=MetaBlock):
       cls.cls_log(logging.INFO, 'All Blocks ready now')
 
       # Setting t0 and telling all the block to start
-      cls.shared_t0.value = time()
+      cls.shared_t0.value = time_ns() / 1e9
       cls.cls_log(logging.INFO, f'Start time set to {cls.shared_t0.value}s')
       cls.start_event.set()
       cls.cls_log(logging.INFO, 'Start event set, all Blocks can now start')
@@ -612,7 +612,7 @@ class Block(Process, metaclass=MetaBlock):
       self.begin()
 
       # Setting the attributes for counting the performance
-      self._last_t = time()
+      self._last_t = time_ns() / 1e9
       self._last_fps = self._last_t
       self._n_loops = 0
 
@@ -770,7 +770,7 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     self._n_loops += 1
-    t = time()
+    t = time_ns() / 1e9
 
     # Only handling frequency if requested
     if self.freq is not None:
@@ -779,7 +779,7 @@ class Block(Process, metaclass=MetaBlock):
       # The last 2 milliseconds are in free loop
       remaining = self._last_t + 1 / self.freq - t
       while remaining > 0:
-        t = time()
+        t = time_ns() / 1e9
         remaining = self._last_t + 1 / self.freq - t
         sleep(max(0., remaining / 2 - 2e-3))
 
