@@ -29,9 +29,9 @@ Camera OpenCV
    :members: open, get_image, close
    :special-members: __init__
 
-PiCamera
-++++++++
-.. autoclass:: crappy.camera.PiCamera
+Raspberry Pi Camera
++++++++++++++++++++
+.. autoclass:: crappy.camera.RaspberryPiCamera
    :members: open, get_image, close
    :special-members: __init__
 

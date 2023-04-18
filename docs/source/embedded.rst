@@ -111,7 +111,7 @@ the framework:
   Pi power platform
 - `Waveshare's AD/DA <https://www.waveshare.com/high-precision-ad-da-
   board.htm>`_ ADC and DAC HAT
-- `The PiCamera <https://www.raspberrypi.com/products/camera-module-v2/>`_
+- `The Raspberry Pi Camera <https://www.raspberrypi.com/products/camera-module-v2/>`_
 - `Pololu's Tic <https://www.pololu.com/product/3140>`_ stepper motor
   controllers
 

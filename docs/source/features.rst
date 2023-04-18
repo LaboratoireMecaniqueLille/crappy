@@ -301,9 +301,9 @@ Supported cameras
   .. Important::
      This camera object hasn't been tested on recent releases !
 
-- :ref:`PiCamera`
+- :ref:`Raspberry Pi Camera`
 
-  Allows reading images from a PiCamera, using a Raspberry Pi.
+  Allows reading images from a Raspberry Pi Camera, using a Raspberry Pi.
 
   .. Important:: Can only be run on a Raspberry Pi !
 

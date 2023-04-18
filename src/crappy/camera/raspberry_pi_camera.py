@@ -5,6 +5,7 @@ from typing import Tuple, Any, Optional
 import numpy as np
 from threading import Thread, RLock
 import logging
+
 from .meta_camera import Camera
 from .._global import OptionalModule
 
@@ -25,12 +26,12 @@ picamera_iso = [0, 100, 200, 320, 400, 500, 640, 800]
 #   Update to picamera2 when available
 
 
-class PiCamera(Camera):
-  """Class for reading images from a PiCamera.
+class RaspberryPiCamera(Camera):
+  """Class for reading images from a Raspberry Pi Camera.
 
-  The PiCamera Camera block is meant for reading images from a PiCamera.
-  It uses the :mod:`picamera` module for capturing images, and :mod:`cv2` for
-  converting bgr images to black and white.
+  The RaspberryPiCamera Camera block is meant for reading images from a
+  Raspberry Pi Camera. It uses the :mod:`picamera` module for capturing images,
+  and :mod:`cv2` for converting BGR images to black and white.
 
   Warning:
     Only works on Raspberry Pi, with the picamera API. On the latest OS release
@@ -214,19 +215,19 @@ class PiCamera(Camera):
     return self._cam.zoom[3]
 
   def _set_width(self, width: float) -> None:
-    # The PiCamera only accepts width that are multiples of 32
+    # The Raspberry Pi Camera only accepts width that are multiples of 32
     self._stop_stream()
     self._cam.resolution = (32 * (width // 32), self._get_height())
     self._restart_stream()
 
   def _set_height(self, height: float) -> None:
-    # The PiCamera only accepts heights that are multiples of 32
+    # The Raspberry Pi Camera only accepts heights that are multiples of 32
     self._stop_stream()
     self._cam.resolution = (self._get_width(), 32 * (height // 32))
     self._restart_stream()
 
   def _set_iso(self, iso: float) -> None:
-    # The PiCamera only accepts a limited range of iso values
+    # The Raspberry Pi Camera only accepts a limited range of iso values
     self._cam.iso = min(picamera_iso, key=lambda x: abs(x - iso))
 
   def _set_brightness(self, brightness: float) -> None:

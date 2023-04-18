@@ -10,7 +10,7 @@ from .file_reader import FileReader
 # Physical cameras
 from .opencv_basic_camera import Webcam
 from .ximea_xiapi import XiAPI
-from .raspberry_pi_camera import PiCamera
+from .raspberry_pi_camera import RaspberryPiCamera
 from .gstreamer_camera import CameraGstreamer
 from .opencv_camera import CameraOpencv
 # Cameralink cameras
