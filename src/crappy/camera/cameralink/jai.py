@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 import numpy as np
 import logging
 
-from .cameralink import CLCamera
+from . import CLCamera
 from ..._global import OptionalModule
 try:
   from . import clModule as Cl
