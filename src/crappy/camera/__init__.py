@@ -8,11 +8,11 @@ from .meta_camera import Camera, MetaCamera, camera_setting
 from .fake_camera import FakeCamera
 from .file_reader import FileReader
 # Physical cameras
-from .webcam import Webcam
+from .opencv_basic_camera import Webcam
 from .xiapi import XiAPI
 from .pi_camera import PiCamera
 from .gstreamer import CameraGstreamer
-from .opencv import CameraOpencv
+from .opencv_camera import CameraOpencv
 # Cameralink cameras
 from .cameralink import CLCamera
 from .cameralink import BiSpectral
