@@ -110,11 +110,11 @@ class DICVE(Camera):
     if self._patches_int is not None:
       self._patches.set_spots(self._patches_int)
       self._patches.save_length()
-    self._dic_ve_kw['patches'] = self._patches
 
     self._process_proc = DICVEProcess(log_queue=self._log_queue,
                                       log_level=self._log_level,
                                       display_freq=self.display_freq,
+                                      patches=self._patches,
                                       **self._dic_ve_kw)
 
     super().prepare()
