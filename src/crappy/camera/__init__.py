@@ -11,7 +11,7 @@ from .file_reader import FileReader
 from .opencv_basic_camera import Webcam
 from .xiapi import XiAPI
 from .pi_camera import PiCamera
-from .gstreamer import CameraGstreamer
+from .gstreamer_camera import CameraGstreamer
 from .opencv_camera import CameraOpencv
 # Cameralink cameras
 from .cameralink import CLCamera
