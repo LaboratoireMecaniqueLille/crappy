@@ -199,27 +199,30 @@ class Generator(Block):
 
     # Instantiating the next generator path object
     path_name = next_path_dict.pop('type')
-    if path_name in paths_dict:
-      path_type = paths_dict[path_name]
-    else:
-      raise ValueError(f"No Generator path called {path_name}! The available"
-                       f" generator paths are : {tuple(paths_dict.keys())}")
+    self._check_path_exists(path_name)
+    path_type = paths_dict[path_name]
     self._current_path = path_type(
       _last_time=self._last_t if self._last_t is not None else self.t0,
       _last_cmd=self._last_cmd,
       **next_path_dict)
 
-  @staticmethod
-  def _check_path_validity(path: Iterator[Dict[str, Any]]) -> None:
+  def _check_path_validity(self, path: Iterator[Dict[str, Any]]) -> None:
     """Simply instantiates all the paths in a row to check no error is
     raised."""
 
     for i, next_dict in enumerate(path):
       next_dict = deepcopy(next_dict)
       path_name = next_dict.pop('type')
-      if path_name in paths_dict:
-        path_type = paths_dict[path_name]
-      else:
-        raise ValueError(f"No Generator path called {path_name}! The available"
-                         f" generator paths are : {tuple(paths_dict.keys())}")
+      self._check_path_exists(path_name)
+      path_type = paths_dict[path_name]
       path_type(_last_time=0, _last_cmd=None if i == 0 else 0, **next_dict)
+
+  @staticmethod
+  def _check_path_exists(name: str) -> None:
+    """Checks that the provided Generator path is a valid one, and raises an
+    error if not."""
+
+    if name not in paths_dict:
+      possible = ', '.join(sorted(paths_dict.keys()))
+      raise ValueError(f"Unknown Generator path type : {name} ! "
+                       f"The possible types are : {possible}")
