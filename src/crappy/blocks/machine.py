@@ -117,11 +117,13 @@ class Machine(Block):
     # The list of all the Actuator types to instantiate
     self._types = [actuator['type'] for actuator in actuators]
 
+    # Checking that all the given actuators are valid
     if not all(type_ in actuator_dict for type_ in self._types):
-      unknown = tuple(type_ for type_ in self._types if type_
-                      not in actuator_dict)
-      raise ValueError(f"[Machine] Unknown actuator type(s) : {unknown}\n"
-                       f"The possible types are : {actuator_dict.keys()}")
+      unknown = ', '.join(tuple(type_ for type_ in self._types if type_
+                          not in actuator_dict))
+      possible = ', '.join(sorted(actuator_dict.keys()))
+      raise ValueError(f"Unknown actuator type(s) : {unknown} ! "
+                       f"The possible types are : {possible}")
 
     # The settings that won't be passed to the Actuator objects
     self._settings = [{key: value for key, value in actuator.items()
