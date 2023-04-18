@@ -49,6 +49,7 @@ class Camera(Block):
     self._save_proc: Optional[ImageSaver] = None
     self._display_proc: Optional[Displayer] = None
     self._process_proc: Optional[CameraProcess] = None
+    self._manager: Optional[managers.SyncManager] = None
 
     self._camera: Optional[BaseCam] = None
 
@@ -86,7 +87,6 @@ class Camera(Block):
     # The objects must be initialized later for Windows compatibility
     self._img_array: Optional[SynchronizedArray] = None
     self._img: Optional[np.ndarray] = None
-    self._manager: Optional[managers.SyncManager] = None
     self._metadata: Optional[managers.DictProxy] = None
     self._cam_barrier: Optional[synchronize.Barrier] = None
     self._stop_event_cam: Optional[synchronize.Event] = None
