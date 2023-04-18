@@ -288,7 +288,7 @@ Supported cameras
   Successively reads images already saved in a folder, and returns them. No
   image acquisition is performed and no hardware is required.
 
-- :ref:`JAI`
+- :ref:`JAI GO-5000C-PMCL`
 
   Allows reading from a `Jai GO-5000M-PMCL <https://www.jai.com/products/
   go-5000c-pmcl>`_ camera. It relies on the :ref:`Basler Ironman Camera Link`

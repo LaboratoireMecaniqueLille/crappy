@@ -16,7 +16,7 @@ from .opencv_camera import CameraOpencv
 # Cameralink cameras
 from .cameralink import BaslerIronmanCameraLink
 from .cameralink import BiSpectral
-from .cameralink import Jai, Jai8
+from .cameralink import JaiGO5000CPMCL, JaiGO5000CPMCL8Bits
 from .seek_thermal_pro import SeekThermalPro
 
 camera_dict: Dict[str, Type[Camera]] = MetaCamera.classes

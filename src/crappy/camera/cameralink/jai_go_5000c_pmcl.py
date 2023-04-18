@@ -17,7 +17,7 @@ format_to_num = {'8 bits': 0,
 num_to_format = {val: key for key, val in format_to_num.items()}
 
 
-class Jai8(BaslerIronmanCameraLink):
+class JaiGO5000CPMCL8Bits(BaslerIronmanCameraLink):
   """This class supports Jai GO-5000-PMCL gray cameras.
 
   This one uses FullAreaGray8 module for maximum framerate.
@@ -83,7 +83,7 @@ class Jai8(BaslerIronmanCameraLink):
     return int(self.cap.serialWrite('PE?\r\n').strip()[3:])
 
 
-class Jai(Jai8):
+class JaiGO5000CPMCL(JaiGO5000CPMCL8Bits):
   """This class allows the use of 10 and 12 bits mode for the Jai Cameras.
   Obviously, the framerate will be slower than the 8 bits version."""
 

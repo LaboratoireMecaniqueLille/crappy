@@ -2,4 +2,4 @@
 
 from .basler_ironman_cameralink import BaslerIronmanCameraLink
 from .bispectral import BiSpectral
-from .jai_go_5000c_pmcl import Jai, Jai8
+from .jai_go_5000c_pmcl import JaiGO5000CPMCL, JaiGO5000CPMCL8Bits
