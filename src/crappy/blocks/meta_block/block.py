@@ -395,30 +395,38 @@ class Block(Process, metaclass=MetaBlock):
     in case processes would still be running.
     """
 
-    # Stopping the USB server if required
-    if USBServer.initialized:
-      cls.cls_log(logging.INFO, "Stopping the USB server")
-      USBServer.stop_server()
+    try:
+      # Stopping the USB server if required
+      if USBServer.initialized:
+        cls.cls_log(logging.INFO, "Stopping the USB server")
+        USBServer.stop_server()
 
-    # Stopping the log thread if required
-    if get_start_method() == 'spawn':
-      cls.thread_stop = True
-      cls.log_thread.join(timeout=0.1)
+      # Stopping the log thread if required
+      if get_start_method() == 'spawn':
+        cls.thread_stop = True
+        cls.log_thread.join(timeout=0.1)
 
-    # Warning in case the log thread did not stop correctly
-    if cls.log_thread.is_alive():
-      cls.cls_log(logging.WARNING, "The thread reading the log messages did "
-                                   "not terminate in time !")
+      # Warning in case the log thread did not stop correctly
+      if cls.log_thread.is_alive():
+        cls.cls_log(logging.WARNING, "The thread reading the log messages did "
+                                     "not terminate in time !")
 
-    # Checking whether all Blocks terminated gracefully
-    if cls.instances and any(inst.is_alive() for inst in cls.instances):
-      running = ', '.join(inst.name for inst in cls.instances
-                          if inst.is_alive())
-      cls.cls_log(logging.ERROR, f"Crappy failed to finish gracefully, "
-                                 f"Block(s) {running} still running !")
-    else:
-      cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
-                                'gracefully\n')
+      # Checking whether all Blocks terminated gracefully
+      if cls.instances and any(inst.is_alive() for inst in cls.instances):
+        running = ', '.join(inst.name for inst in cls.instances
+                            if inst.is_alive())
+        cls.cls_log(logging.ERROR, f"Crappy failed to finish gracefully, "
+                                   f"Block(s) {running} still running !")
+      else:
+        cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
+                                  'gracefully\n')
+
+    except KeyboardInterrupt:
+      cls.cls_log(logging.INFO, "Caught KeyboardInterrupt while cleaning up, "
+                                "ignoring it")
+    except (Exception,) as exc:
+      cls.logger.exception("Caught exception while cleaning up !",
+                           exc_info=exc)
 
   @classmethod
   def _set_logger(cls) -> None:
