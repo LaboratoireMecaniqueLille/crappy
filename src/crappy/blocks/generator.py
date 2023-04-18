@@ -10,6 +10,9 @@ from .meta_block import Block
 from .generator_path.meta_path import paths_dict
 from .._global import GeneratorStop
 
+# TODO:
+#   Move the path validity check to __init__
+
 
 class GeneratorNoStop(Exception):
   """A custom exception for handling the case when the Generator should not
