@@ -111,8 +111,12 @@ class IOBlock(Block):
     self._initial_cmd = initial_cmd
     self._exit_cmd = exit_cmd
 
+    # Checking that all the given actuators are valid
     if name not in inout_dict:
-      raise ValueError(f"No InOut object called {name} !")
+      possible = ', '.join(sorted(inout_dict.keys()))
+      raise ValueError(f"Unknown InOut type : {name} ! "
+                       f"The possible types are : {possible}")
+
     self._io_name = name
     self._inout_kwargs = kwargs
 
