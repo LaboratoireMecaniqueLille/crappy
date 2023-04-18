@@ -9,7 +9,7 @@ from .fake_camera import FakeCamera
 from .file_reader import FileReader
 # Physical cameras
 from .opencv_basic_camera import Webcam
-from .xiapi import XiAPI
+from .ximea_xiapi import XiAPI
 from .raspberry_pi_camera import PiCamera
 from .gstreamer_camera import CameraGstreamer
 from .opencv_camera import CameraOpencv
