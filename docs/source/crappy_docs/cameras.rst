@@ -56,12 +56,6 @@ Xi API
 CameraLink Cameras
 ------------------
 
-Bi Spectral
-+++++++++++
-.. autoclass:: crappy.camera.cameralink.BiSpectral
-   :members: open, get_image
-   :special-members: __init__
-
 Basler Ironman Camera Link
 ++++++++++++++++++++++++++
 .. autoclass:: crappy.camera.cameralink.BaslerIronmanCameraLink

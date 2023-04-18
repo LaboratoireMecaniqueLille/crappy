@@ -12,7 +12,6 @@ from .seek_thermal_pro import SeekThermalPro
 from .ximea_xiapi import XiAPI
 
 from .cameralink import BaslerIronmanCameraLink
-from .cameralink import BiSpectral
 from .cameralink import JaiGO5000CPMCL, JaiGO5000CPMCL8Bits
 
 from .meta_camera import Camera, MetaCamera, camera_setting
