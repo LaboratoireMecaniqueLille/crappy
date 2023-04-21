@@ -5,18 +5,6 @@ Cameras
 Regular Cameras
 ---------------
 
-Fake Camera
-+++++++++++
-.. autoclass:: crappy.camera.FakeCamera
-   :members: open, get_image
-   :special-members: __init__
-
-File Reader
-+++++++++++
-.. autoclass:: crappy.camera.FileReader
-   :members: open, get_image
-   :special-members: __init__
-
 Camera GStreamer
 ++++++++++++++++
 .. autoclass:: crappy.camera.CameraGstreamer
@@ -27,6 +15,18 @@ Camera OpenCV
 +++++++++++++
 .. autoclass:: crappy.camera.CameraOpencv
    :members: open, get_image, close
+   :special-members: __init__
+
+Fake Camera
++++++++++++
+.. autoclass:: crappy.camera.FakeCamera
+   :members: open, get_image
+   :special-members: __init__
+
+File Reader
++++++++++++
+.. autoclass:: crappy.camera.FileReader
+   :members: open, get_image
    :special-members: __init__
 
 Raspberry Pi Camera
