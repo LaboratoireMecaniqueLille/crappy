@@ -30,6 +30,9 @@ try:
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
 
+# TODO:
+#   Manage case when the image folder already exists
+
 
 class ImageSaver(CameraProcess):
   """"""
