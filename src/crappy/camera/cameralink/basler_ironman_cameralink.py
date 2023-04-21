@@ -1,8 +1,5 @@
 # coding: utf-8
 
-# Todo:
-#  Update with recent Python bindings
-
 from time import time
 from typing import Optional, Tuple
 import numpy as np
@@ -10,6 +7,7 @@ import logging
 
 from ..meta_camera import Camera
 from ..._global import OptionalModule
+
 try:
   from . import clModule as Cl
 except (ImportError, ModuleNotFoundError):
@@ -19,24 +17,25 @@ except (ImportError, ModuleNotFoundError):
 
 
 class BaslerIronmanCameraLink(Camera):
-  """Cameralink camera sensor."""
+  """This class can drive cameras over Camera Link through a Basler microEnable
+  5 Ironman AD8 PoCL acquisition board.
+
+  It is subclassed by the :ref:`Bi Spectral` and the :ref:`JAI GO-5000C-PMCL`
+  Cameras. Not many settings can be accessed directly in Crappy, it is
+  recommended to sets the settings using a configuration file.
+
+  Warning:
+    This Camera relies on a custom-written C library that hasn't been tested in
+    a long time. It might not be functional anymore. This Camera also requires
+    proprietary drivers to be installed.
+  """
 
   def __init__(self) -> None:
-    """Using the clModule, will open a cameraLink camera.
-
-    Note:
-      If a config file is specified, it will be used to configure the camera.
-
-      If not set, it will be asked, unless set to :obj:`False` (or 0).
-
-      Else, you must at least provide the camera type (eg: `"FullAreaGray8"`).
-
-      Using a config file is recommended over changing all settings manually.
-    """
-
-    super().__init__()
+    """Adds the frame rate setting."""
 
     self._cap = None
+
+    super().__init__()
 
     self.add_scale_setting("framespersec", 1, 200, self._get_framespersec,
                            self._set_framespersec)
@@ -46,8 +45,20 @@ class BaslerIronmanCameraLink(Camera):
            config_file: Optional[str] = None,
            camera_type: Optional[str] = None,
            **kwargs) -> None:
-    """Opens the camera."""
+    """Reads the settings from the arguments or from the configuration file,
+    sets them on the camera, and starts the acquisition.
 
+    Args:
+      num_device: The index of the camera to open if multiple cameras are
+        connected, as an :obj:`int`.
+      config_file: Path to the configuration file for the camera, as a
+        :obj:`str`. Allows setting various parameters at once, and to store
+        them in a persistent way.
+      camera_type: The type of camera to drive, as a :obj:`str`.
+      **kwargs: All the settings to set on the camera.
+    """
+
+    # Reading the camera type from the config file, if applicable
     if camera_type is None and config_file is not None:
       self.log(logging.INFO, "Reading config file for getting the type of "
                              "camera")
@@ -60,9 +71,10 @@ class BaslerIronmanCameraLink(Camera):
     if camera_type is None:
       raise AttributeError("No camera type or valid config file specified!")
 
+    # Getting the data format from the kwargs
     if 'format' in kwargs:
       f = kwargs['format']
-
+    # Getting the data format from the given camera type
     else:
       if camera_type[-1] == '8':
         f = Cl.FG_GRAY
@@ -71,6 +83,7 @@ class BaslerIronmanCameraLink(Camera):
       elif camera_type[-2:] == '24':
         f = Cl.FG_COL24
 
+      # Getting the data format from the configuration file
       else:
         if config_file:
           self.log(logging.WARNING, "Reading config file for getting the data "
@@ -85,24 +98,27 @@ class BaslerIronmanCameraLink(Camera):
         else:
           raise ValueError("Could not determine the format")
 
+    # Opening the connection to the camera
     self.log(logging.INFO, "Initializing the communication with the camera")
-    self.cap = Cl.VideoCapture()
-    self.cap.open(num_device, camera_type, f)
+    self._cap = Cl.VideoCapture()
+    self._cap.open(num_device, camera_type, f)
 
+    # Loading the parameters from the configuration file
     if config_file:
-      self.cap.loadFile(config_file)
+      self._cap.loadFile(config_file)
 
     self.set_all(**kwargs)
 
+    # Starting the acquisition on the camera
     self.log(logging.INFO, "Starting acquisition")
-    self.cap.startAcq()
-    self.cap.set(Cl.FG_TRIGGERMODE, 1)
-    self.cap.set(Cl.FG_EXSYNCON, 1)
+    self._cap.startAcq()
+    self._cap.set(Cl.FG_TRIGGERMODE, 1)
+    self._cap.set(Cl.FG_EXSYNCON, 1)
 
   def get_image(self) -> Tuple[float, np.ndarray]:
-    """"""
+    """Reads a frame from the camera and returns it as is."""
 
-    ret, frame = self.cap.read()
+    ret, frame = self._cap.read()
     t = time()
     if not ret:
       raise IOError("Could not read camera")
@@ -110,32 +126,33 @@ class BaslerIronmanCameraLink(Camera):
     return t, frame
 
   def close(self) -> None:
-    """"""
+    """Stops the acquisition, and releases the resources attributed to the
+    camera."""
 
     if self._cap is not None:
       self.log(logging.INFO, "Stopping acquisition")
-      self.cap.stopAcq()
+      self._cap.stopAcq()
       self.log(logging.INFO, "Closing the communication with the camera")
-      self.cap.release()
+      self._cap.release()
 
   def _set_framespersec(self, val: float) -> None:
-    self.cap.set(Cl.FG_FRAMESPERSEC, val)
+    self._cap.set(Cl.FG_FRAMESPERSEC, val)
 
   def _get_framespersec(self) -> float:
-    return self.cap.get(Cl.FG_FRAMESPERSEC)
+    return self._cap.get(Cl.FG_FRAMESPERSEC)
 
   def _set_h(self, val: int) -> None:
-    self.cap.stopAcq()
-    self.cap.set(Cl.FG_HEIGHT, val)
-    self.cap.startAcq()
+    self._cap.stopAcq()
+    self._cap.set(Cl.FG_HEIGHT, val)
+    self._cap.startAcq()
 
   def _set_w(self, val: int) -> None:
-    self.cap.stopAcq()
-    self.cap.set(Cl.FG_WIDTH, val)
-    self.cap.startAcq()
+    self._cap.stopAcq()
+    self._cap.set(Cl.FG_WIDTH, val)
+    self._cap.startAcq()
 
   def _get_h(self) -> int:
-    return self.cap.get(Cl.FG_HEIGHT)
+    return self._cap.get(Cl.FG_HEIGHT)
 
   def _get_w(self) -> int:
-    return self.cap.get(Cl.FG_WIDTH)
+    return self._cap.get(Cl.FG_WIDTH)

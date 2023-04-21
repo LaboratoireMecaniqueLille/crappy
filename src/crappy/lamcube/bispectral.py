@@ -49,23 +49,43 @@ def calc_string(st: str, crc: int) -> int:
 
 
 def add_crc(s: str) -> str:
+  """Wrapper for adding a CRC to a serial command."""
+
   return s + hex(calc_string(s, 0xFFFF)).split('x')[1].upper().rjust(4, '0')
 
 
 def check_crc(s: str) -> bool:
+  """Wrapper for checking whether a CRC is valid."""
+
   r = s[:-4]
   return add_crc(r) == s
 
 
 def hexlify(n: int) -> str:
+  """Converts an integer to its hexadecimal representation."""
+
   return hex(n).split('x')[1].rjust(2, '0').upper()
 
 
 class BiSpectral(BaslerIronmanCameraLink):
-  """"""
+  """This class allows driving a bi-chromatic infrared camera, through a Basler
+  microEnable 5 Ironman AD8 PoCL acquisition board.
+
+  It is a child of the :ref:`Basler Ironman Camera Link` Camera. It can set
+  various settings on the camera, including the ROI or the trigger mode.
+
+  The bi-chromatic camera is a very specific setup, and won't certainly be ever
+  used outside the LaMcube laboratory. This is why it is stored in the LaMcube
+  submodule.
+
+  Warning:
+    This Camera relies on a custom-written C library that hasn't been tested in
+    a long time. It might not be functional anymore. This Camera also requires
+    proprietary drivers to be installed.
+  """
 
   def __init__(self) -> None:
-    """"""
+    """Adds the various setting for the Camera."""
 
     super().__init__()
     self.add_scale_setting('width', 1, 640, self._get_w, self._set_w, 640)
@@ -74,106 +94,75 @@ class BiSpectral(BaslerIronmanCameraLink):
     self.add_scale_setting('yoffset', 0, 511, self._get_oy, self._set_oy, 0)
     self.add_scale_setting('IT1', 10, 10000, self._get_it1, self._set_it1)
     self.add_scale_setting('IT2', 10, 10000, self._get_it2, self._set_it2)
-    self.add_scale_setting('fps', 1., 150., self.get_trigg_freq,
-                           self.set_trigg_freq)
-    self.add_trigger_setting(setter=self.set_external_trigger)
+    self.add_scale_setting('fps', 1., 150., self._get_trigg_freq,
+                           self._set_trigg_freq)
+    self.add_trigger_setting(setter=self._set_external_trigger)
 
   def open(self,
            camera_type: str = 'SingleAreaGray2DShading',
            **kwargs) -> None:
-    """"""
+    """Opens the Camera and sends initialization commands."""
 
     super().open(camera_type=camera_type, **kwargs)
 
-    self.send_cmd('@W1A084')  # Restore unwindowed Mode
-    self.send_cmd('@W10012')  # Make sure the image is not inverted
+    self._send_cmd('@W1A084')  # Restore unwindowed Mode
+    self._send_cmd('@W10012')  # Make sure the image is not inverted
 
   def get_image(self) -> Tuple[float, np.ndarray]:
-    """"""
+    """Grabs an image using the parent class' method, transforms it, and
+    returns it."""
 
-    metadata, frame = super().get_image()
+    t, frame = super().get_image()
     img = np.ones((self.height, self.width * 2), dtype=np.uint8)
     img[::, :self.width:2] = frame[::, ::4]
     img[::, 1:self.width:2] = frame[::, 1::4]
     img[::, self.width::2] = frame[::, 2::4]
     img[::, self.width + 1::2] = frame[::, 3::4]
-    return metadata, img
+    return t, img
 
-  def _set_w(self, val: int) -> None:
-    super()._set_w(val * 2)
-    self.set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
-                 self.yoffset + self.height - 1)
+  def _send_cmd(self, cmd: str) -> str:
+    """Wrapper for sending a command to the Camera."""
 
-  def _get_w(self) -> int:
-    return int(super()._get_w() / 2)
-
-  def _set_h(self, val: int) -> None:
-    super()._set_h(val)
-    self.set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
-                 self.yoffset + self.height - 1)
-
-  def _set_ox(self, val: int) -> None:
-    self.set_roi(val, self.yoffset, val + self.width - 1,
-                 self.yoffset + self.height - 1)
-
-  def _set_oy(self, val: int) -> None:
-    self.set_roi(self.xoffset, val, self.xoffset + self.width - 1,
-                 val + self.height - 1)
-
-  def _get_ox(self) -> int:
-    return self.get_roi()[0]
-
-  def _get_oy(self) -> int:
-    return self.get_roi()[1]
-
-  def _get_it1(self) -> int:
-    return int(self.get_itT()[0])
-
-  def _get_it2(self) -> int:
-    return int(self.get_it()[1])
-
-  def _set_it1(self, val: int) -> None:
-    self.set_it(val, self._get_it2())
-
-  def _set_it2(self, val: int) -> None:
-    self.set_it(self._get_it1(), val)
-
-  def send_cmd(self, cmd: str) -> str:
     self.log(logging.DEBUG, f"Sending command {cmd}")
-    r = self.cap.serialWrite(add_crc(cmd))
+    r = self._cap.serialWrite(add_crc(cmd))
     if not check_crc(r) or r[1] != 'Y':
       self.log(logging.WARNING, f"Incorrect reply {r}")
     return r[2:4]
 
-  def set_external_trigger(self, val: str) -> None:
+  def _set_external_trigger(self, val: str) -> None:
     """Sets the external trigger to val by toggling the value of the 3rd bit
     of register 102."""
 
     if val == 'Hardware':
-      self.send_cmd('@W1027C')  # 3rd bit to 1
+      self._send_cmd('@W1027C')  # 3rd bit to 1
     else:
-      self.send_cmd('@W10274')  # 3rd bit to 0
+      self._send_cmd('@W10274')  # 3rd bit to 0
 
-  def get_roi(self) -> Tuple[int, int, int, int]:
-    x1min_lsb = self.send_cmd("@R1D0")
-    x1min_msb = self.send_cmd("@R1D1")
-    y1min_lsb = self.send_cmd("@R1D2")
-    y1min_msb = self.send_cmd("@R1D3")
-    x1max_lsb = self.send_cmd("@R1D4")
-    x1max_msb = self.send_cmd("@R1D5")
-    y1max_lsb = self.send_cmd("@R1D6")
-    y1max_msb = self.send_cmd("@R1D7")
+  def _get_roi(self) -> Tuple[int, int, int, int]:
+    """Returns the minimum and maximum x and y coordinates of the current
+    ROI."""
+
+    x1min_lsb = self._send_cmd("@R1D0")
+    x1min_msb = self._send_cmd("@R1D1")
+    y1min_lsb = self._send_cmd("@R1D2")
+    y1min_msb = self._send_cmd("@R1D3")
+    x1max_lsb = self._send_cmd("@R1D4")
+    x1max_msb = self._send_cmd("@R1D5")
+    y1max_lsb = self._send_cmd("@R1D6")
+    y1max_msb = self._send_cmd("@R1D7")
     xmin = int(x1min_msb + x1min_lsb, 16)
     xmax = int(x1max_msb + x1max_lsb, 16)
     ymin = int(y1min_msb + y1min_lsb, 16)
     ymax = int(y1max_msb + y1max_lsb, 16)
     return xmin, ymin, xmax, ymax
 
-  def set_roi(self, xmin: int, ymin: int, xmax: int, ymax: int) -> None:
+  def _set_roi(self, xmin: int, ymin: int, xmax: int, ymax: int) -> None:
+    """Sets the minimum and maximum x and y coordinates of the ROI."""
+
     if (xmin, xmax, ymin, ymax) != (0, 0, 639, 511):
-      self.send_cmd('@W1A080')  # Set to windowed mode
+      self._send_cmd('@W1A080')  # Set to windowed mode
     else:
-      self.send_cmd('@W1A084')
+      self._send_cmd('@W1A084')
       self.log(logging.INFO, f"D set ROI to {xmin}, {ymin}, {xmax}, {ymax}")
     lsb_xmin = hexlify(xmin % 256)
     msb_xmin = hexlify(xmin // 256)
@@ -183,28 +172,32 @@ class BiSpectral(BaslerIronmanCameraLink):
     msb_ymin = hexlify(ymin // 256)
     lsb_ymax = hexlify(ymax % 256)
     msb_ymax = hexlify(ymax // 256)
-    self.send_cmd("@W1D0" + lsb_xmin)
-    self.send_cmd("@W1D1" + msb_xmin)
-    self.send_cmd("@W1D2" + lsb_ymin)
-    self.send_cmd("@W1D3" + msb_ymin)
-    self.send_cmd("@W1D4" + lsb_xmax)
-    self.send_cmd("@W1D5" + msb_xmax)
-    self.send_cmd("@W1D6" + lsb_ymax)
-    self.send_cmd("@W1D7" + msb_ymax)
+    self._send_cmd("@W1D0" + lsb_xmin)
+    self._send_cmd("@W1D1" + msb_xmin)
+    self._send_cmd("@W1D2" + lsb_ymin)
+    self._send_cmd("@W1D3" + msb_ymin)
+    self._send_cmd("@W1D4" + lsb_xmax)
+    self._send_cmd("@W1D5" + msb_xmax)
+    self._send_cmd("@W1D6" + lsb_ymax)
+    self._send_cmd("@W1D7" + msb_ymax)
 
-  def get_it(self) -> Tuple[float, float]:
+  def _get_it(self) -> Tuple[float, float]:
+    """Reads the integration time from the Camera and returns it."""
+
     mc = 10.35  # MHz
-    it1_lsb = self.send_cmd("@R1B4")
-    it1_mid = self.send_cmd("@R1B5")
-    it1_msb = self.send_cmd("@R1B6")
-    it2_lsb = self.send_cmd("@R1B8")
-    it2_mid = self.send_cmd("@R1B9")
-    it2_msb = self.send_cmd("@R1BA")
+    it1_lsb = self._send_cmd("@R1B4")
+    it1_mid = self._send_cmd("@R1B5")
+    it1_msb = self._send_cmd("@R1B6")
+    it2_lsb = self._send_cmd("@R1B8")
+    it2_mid = self._send_cmd("@R1B9")
+    it2_msb = self._send_cmd("@R1BA")
     it1 = int(it1_msb + it1_mid + it1_lsb, 16)  # Number of clock cycles
     it2 = int(it2_msb + it2_mid + it2_lsb, 16)
     return it1 / mc, it2 / mc  # IT in µs
 
-  def set_it(self, it1: int, it2: int) -> None:
+  def _set_it(self, it1: int, it2: int) -> None:
+    """Sets the integration time on the Camera."""
+
     mc = 10.35
     it1 = int(mc * it1)
     it2 = int(mc * it2)
@@ -218,22 +211,26 @@ class BiSpectral(BaslerIronmanCameraLink):
     it2 //= 256
     it2_mid = hexlify(it2 % 256)
     it2_msb = hexlify(it2 // 256)
-    self.send_cmd("@W1B4" + it1_lsb)
-    self.send_cmd("@W1B5" + it1_mid)
-    self.send_cmd("@W1B6" + it1_msb)
-    self.send_cmd("@W1B8" + it2_lsb)
-    self.send_cmd("@W1B9" + it2_mid)
-    self.send_cmd("@W1BA" + it2_msb)
+    self._send_cmd("@W1B4" + it1_lsb)
+    self._send_cmd("@W1B5" + it1_mid)
+    self._send_cmd("@W1B6" + it1_msb)
+    self._send_cmd("@W1B8" + it2_lsb)
+    self._send_cmd("@W1B9" + it2_mid)
+    self._send_cmd("@W1BA" + it2_msb)
 
-  def get_trigg_freq(self) -> float:
+  def _get_trigg_freq(self) -> float:
+    """Reads the trigger frequency from the Camera."""
+
     mc = 10350000  # Hz
-    p_lsb = self.send_cmd("@R1B0")
-    p_mid = self.send_cmd("@R1B1")
-    p_msb = self.send_cmd("@R1B2")
+    p_lsb = self._send_cmd("@R1B0")
+    p_mid = self._send_cmd("@R1B1")
+    p_msb = self._send_cmd("@R1B2")
     p = int(p_msb + p_mid + p_lsb, 16)
     return mc / p
 
-  def set_trigg_freq(self, freq: float) -> None:
+  def _set_trigg_freq(self, freq: float) -> None:
+    """Sets the trigger frequency on the Camera."""
+
     mc = 10350000  # Hz
     period = int(mc / freq)
     p_lsb = hexlify(period % 256)
@@ -241,20 +238,45 @@ class BiSpectral(BaslerIronmanCameraLink):
     period //= 256
     p_mid = hexlify(period % 256)
     p_msb = hexlify(period // 256)
-    self.send_cmd("@W1B0" + p_lsb)
-    self.send_cmd("@W1B1" + p_mid)
-    self.send_cmd("@W1B2" + p_msb)
+    self._send_cmd("@W1B0" + p_lsb)
+    self._send_cmd("@W1B1" + p_mid)
+    self._send_cmd("@W1B2" + p_msb)
 
-  def get_sensor_temperature(self) -> float:
-    """Returns sensor temperature in Kelvin."""
+  def _set_w(self, val: int) -> None:
+    super()._set_w(val * 2)
+    self._set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
+                  self.yoffset + self.height - 1)
 
-    gain = .01
-    lsb = self.send_cmd('@R160')
-    msb = self.send_cmd('@R161')
-    return int(msb + lsb, 16) * gain
+  def _get_w(self) -> int:
+    return int(super()._get_w() / 2)
 
-  def get_ambiant_temperature(self) -> float:
-    """Returns temperature of the board in °C."""
+  def _set_h(self, val: int) -> None:
+    super()._set_h(val)
+    self._set_roi(self.xoffset, self.yoffset, self.xoffset + self.width - 1,
+                  self.yoffset + self.height - 1)
 
-    t = self.send_cmd('@R173')
-    return int(t, 16)
+  def _set_ox(self, val: int) -> None:
+    self._set_roi(val, self.yoffset, val + self.width - 1,
+                  self.yoffset + self.height - 1)
+
+  def _set_oy(self, val: int) -> None:
+    self._set_roi(self.xoffset, val, self.xoffset + self.width - 1,
+                  val + self.height - 1)
+
+  def _get_ox(self) -> int:
+    return self._get_roi()[0]
+
+  def _get_oy(self) -> int:
+    return self._get_roi()[1]
+
+  def _get_it1(self) -> int:
+    return int(self.get_itT()[0])
+
+  def _get_it2(self) -> int:
+    return int(self._get_it()[1])
+
+  def _set_it1(self, val: int) -> None:
+    self._set_it(val, self._get_it2())
+
+  def _set_it2(self, val: int) -> None:
+    self._set_it(self._get_it1(), val)
