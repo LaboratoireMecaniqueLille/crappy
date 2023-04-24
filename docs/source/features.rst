@@ -419,7 +419,8 @@ Acquisition boards
 
 - :ref:`Labjack T7`
 
-  Controls Labjack's `T7 <https://labjack.com/products/t7>`_ acquisition board.
+  Controls Labjack's `T7 <https://labjack.com/products/labjack-t7>`_
+  acquisition board.
 
 - :ref:`Labjack UE9`
 
@@ -428,8 +429,8 @@ Acquisition boards
 
 - :ref:`Labjack T7 Streamer`
 
-  Controls Labjack's `T7 <https://labjack.com/products/t7>`_ acquisition board
-  in streaming mode.
+  Controls Labjack's `T7 <https://labjack.com/products/labjack-t7>`_
+  acquisition board in streaming mode.
 
 - :ref:`Waveshare AD/DA`
 
@@ -462,8 +463,8 @@ Sensors
 - :ref:`Agilent 34420A`
 
   Reads voltages or resistances from Agilent's `34420A <https://www.keysight.
-  com/us/en/product/34420A/micro-ohm-meter.html>`_ precision multimeter.
-  Communicates over serial.
+  com/us/en/product/34420A/micro-ohm-meter.html?&cc=FR&lc=fre>`_ precision
+  multimeter. Communicates over serial.
 
 - :ref:`MCP9600`
 
@@ -493,7 +494,7 @@ Sensors
 - :ref:`OpSens`
 
   Reads data from OpSens' `single channel signal conditioner <https://opsens-
-  solutions.com/products/signal-conditioners-oem-boards/picosens/>`_ for
+  solutions.com/products/signal-conditioners-oem-boards/handysens-w/>`_ for
   fiber-optics temperature, strain, pressure or position measurement.
   Communicates over serial.
 
