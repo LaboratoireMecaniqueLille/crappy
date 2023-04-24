@@ -33,6 +33,8 @@ class RaspberryPiCamera(Camera):
   Raspberry Pi Camera. It uses the :mod:`picamera` module for capturing images,
   and :mod:`cv2` for converting BGR images to black and white.
 
+  It can read images from the PiCamera V1, V2 and HQ models indifferently.
+
   Warning:
     Only works on Raspberry Pi, with the picamera API. On the latest OS release
     "Bullseye", it has to be specifically activated in the configuration menu.
@@ -81,9 +83,11 @@ class RaspberryPiCamera(Camera):
     self._frame = None
     self._stop = False
     self._started = False
+    self._stream = None
 
   def open(self, **kwargs: Any) -> None:
-    """Sets the settings to their default values and starts the thread."""
+    """Sets the settings to their default values and starts the image
+    acquisition thread."""
 
     self.set_all(**kwargs)
 
@@ -99,40 +103,10 @@ class RaspberryPiCamera(Camera):
     sleep(1)
     self._started = True
 
-  def _stop_stream(self) -> None:
-    """Stops the video stream before changing the image size."""
-
-    if not self._started:
-      return
-
-    self._stop = True
-    self.log(logging.INFO, "Stopping the frame grabber thread")
-    self._frame_grabber.join()
-    self.log(logging.INFO, "Stopping the frame stream")
-    self._capture.close()
-
-  def _restart_stream(self) -> None:
-    """Restarts the video stream after a change in the image size."""
-
-    if not self._started:
-      return
-
-    self._stop = False
-    self._frame_grabber = Thread(target=self._grab_frame)
-    self._capture = PiRGBArray(self._cam, (self._get_width(),
-                                           self._get_height()))
-    self.log(logging.INFO, "Starting the frame stream")
-    self._stream = self._cam.capture_continuous(self._capture, format='bgr',
-                                                use_video_port=True)
-
-    self.log(logging.INFO, "Starting the frame grabber thread")
-    self._frame_grabber.start()
-    sleep(1)
-
   def get_image(self) -> Tuple[float, np.ndarray]:
-    """Simply returns the last image in the buffer.
+    """Simply returns the last image in the acquisition buffer.
 
-    The captured image is in bgr format, and converted into black and white if
+    The captured image is in GBR format, and converted into black and white if
     needed.
 
     Returns:
@@ -146,20 +120,8 @@ class RaspberryPiCamera(Camera):
       output = cv2.cvtColor(output, cv2.COLOR_BGR2GRAY)
     return t, output
 
-  def _grab_frame(self) -> None:
-    """Thread for grabbing the last image in the video stream and putting it in
-    the buffer."""
-
-    for frame in self._stream:
-      with self._lock:
-        self.log(logging.DEBUG, "Got new frame from stream")
-        self._frame = frame.array
-      self._capture.truncate(0)
-      if self._stop:
-        break
-
   def close(self) -> None:
-    """Joins the thread and closes the stream and the
+    """Joins the image acquisition thread, and closes the stream and the
     :class:`picamera.PiCamera` object."""
 
     self._stop = True
@@ -177,6 +139,48 @@ class RaspberryPiCamera(Camera):
     if self._cam is not None:
       self.log(logging.INFO, "Opening the connection to the camera")
       self._cam.close()
+
+  def _stop_stream(self) -> None:
+    """Stops the video stream. Called before changing the image size."""
+
+    if not self._started:
+      return
+
+    self._stop = True
+    self.log(logging.INFO, "Stopping the frame grabber thread")
+    self._frame_grabber.join()
+    self.log(logging.INFO, "Stopping the frame stream")
+    self._capture.close()
+
+  def _restart_stream(self) -> None:
+    """Restarts the video stream. Called after a change in the image size."""
+
+    if not self._started:
+      return
+
+    self._stop = False
+    self._frame_grabber = Thread(target=self._grab_frame)
+    self._capture = PiRGBArray(self._cam, (self._get_width(),
+                                           self._get_height()))
+    self.log(logging.INFO, "Starting the frame stream")
+    self._stream = self._cam.capture_continuous(self._capture, format='bgr',
+                                                use_video_port=True)
+
+    self.log(logging.INFO, "Starting the frame grabber thread")
+    self._frame_grabber.start()
+    sleep(1)
+
+  def _grab_frame(self) -> None:
+    """Target of a thread for grabbing the last image in the video stream and
+    putting it in a buffer."""
+
+    for frame in self._stream:
+      with self._lock:
+        self.log(logging.DEBUG, "Got new frame from stream")
+        self._frame = frame.array
+      self._capture.truncate(0)
+      if self._stop:
+        break
 
   def _get_width(self) -> int:
     return self._cam.resolution[0]

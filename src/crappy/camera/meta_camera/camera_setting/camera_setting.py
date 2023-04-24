@@ -43,7 +43,14 @@ class CameraSetting:
     self._logger: Optional[logging.Logger] = None
 
   def log(self, level: int, msg: str) -> None:
-    """"""
+    """Records log messages for the CameraSetting.
+
+    Also instantiates the logger when logging the first message.
+
+    Args:
+      level: An :obj:`int` indicating the logging level of the message.
+      msg: The message to log, as a :obj:`str`.
+    """
 
     if self._logger is None:
       self._logger = logging.getLogger(

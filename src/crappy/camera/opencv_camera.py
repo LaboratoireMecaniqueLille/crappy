@@ -49,9 +49,9 @@ class CameraOpencv(Camera):
     """Opens the video stream and sets any user-specified settings.
 
     Args:
-      device_num (:obj:`int`, optional): The number of the device to open.
-      **kwargs: Any additional setting to set before opening the graphical
-        interface.
+      device_num: The index of the device to open, as an :obj:`int`.
+      **kwargs: Any additional setting to set before opening the configuration
+        window.
     """
 
     if not isinstance(device_num, int) or device_num < 0:
@@ -242,8 +242,8 @@ class CameraOpencv(Camera):
       self.reload_software_roi(int(width), int(height))
 
   def _get_format_size(self) -> str:
-    """Parses the v4l2-ctl -V command to get the current image format as an
-    index."""
+    """Parses the ``v4l2-ctl -V`` command to get the current image format as a
+    :obj:`str`."""
 
     # Sending the v4l2-ctl command
     command = ['v4l2-ctl', '-d', str(self._device_num), '--all']

@@ -42,7 +42,10 @@ class CameraChoiceSetting(CameraSetting):
     """Allows modifying the choices of the radio buttons once they have been
     instantiated.
 
-    As the layout of the GUI is already fixed,
+    As the layout of the GUI is already fixed, the number of displayed options
+    cannot vary. It is thus not possible to propose more choices than those
+    initially proposed. Reversely, if fewer new options ar proposed then some
+    radio buttons won't be affected a value.
     """
 
     self.log(logging.DEBUG, f"Reloading the setting {self.name}")

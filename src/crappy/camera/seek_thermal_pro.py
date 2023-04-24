@@ -4,6 +4,7 @@ from typing import Tuple, List, Any
 import numpy as np
 from time import time
 import logging
+
 from .meta_camera import Camera
 from .._global import OptionalModule
 
@@ -45,11 +46,11 @@ Seek_thermal_pro_dimensions = {'Width': 320,
 
 
 class SeekThermalPro(Camera):
-  """Class for reading the Seek Thermal Pro infrared camera.
+  """Class for reading images from the Seek Thermal Pro infrared camera.
 
-  The SeekThermalPro Camera block is meant for reading images from a Seek
+  The SeekThermalPro Camera is meant for reading images from a Seek
   Thermal Pro infrared camera. It communicates over USB, and gets images by
-  converting the received bytearrays into numpy arrays.
+  converting the received bytearrays into :mod:`numpy` arrays.
 
   Important:
     **Only for Linux users:** In order to drive the Seek Thermal Pro, the
@@ -71,6 +72,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
 
     self._dev = None
     self._calib = None
+    self._dead_pixels = []
 
     # Listing all the matching USB devices
     devices = usb.core.find(find_all=True,
@@ -88,7 +90,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
       self._dev = devices[0]
 
   def open(self) -> None:
-    """Sets the USB communication and device."""
+    """Sets the USB communication and initializes the device."""
 
     # Setting the USB configuration on the camera
     try:
@@ -136,7 +138,6 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
         break
       elif i == 4:
         self.log(logging.WARNING, "Could not get the dead pixels frame")
-        self._dead_pixels = []
 
     # Acquiring the calibration image and calibrating the camera
     self.log(logging.INFO, "Calibrating the camera")
@@ -152,7 +153,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     """Reads a single image from the camera.
 
     Returns:
-      The dict containing the metadata, and the captured image
+      The captured image as well as a timestamp.
     """
 
     count = 0
@@ -191,7 +192,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     """Captures a raw image from the camera.
 
     Returns:
-      The status information and the raw image
+      The status information and the raw image.
     """
 
     # Sending the read command
@@ -224,10 +225,10 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     """Identifies the dead pixels on an image.
 
     Args:
-      data: The image
+      data: The image to identify dead pixels on.
 
     Returns:
-      The list of dead pixels
+      A :obj:`list` containing the indexes of the dead pixels.
     """
 
     img = self._crop(np.frombuffer(data, dtype=np.uint16).reshape(
@@ -248,10 +249,10 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     The new value is the average value of the surrounding pixels.
 
     Args:
-      img: The image to correct
+      img: The image to correct.
 
     Returns:
-      The corrected image
+      The corrected image.
     """
 
     for i, j in self._dead_pixels:
@@ -259,7 +260,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
     return img
 
   def _write_data(self, request: int, data: bytes) -> int:
-    """Wrapper for writing over USB."""
+    """Wrapper for sending USB messages."""
 
     self.log(logging.DEBUG, f"Sending USB command with request type "
                             f"{Seek_therm_usb_req['Write']}, request "
@@ -277,7 +278,7 @@ MODE=\\"0777\\\"" | sudo tee seek_thermal.rules > /dev/null 2>&1
       raise IOError("An error occurred during USB communication")
 
   def _read_data(self, request: int, data: bytes) -> int:
-    """Wrapper for reading over USB."""
+    """Wrapper for reading USB messages."""
 
     self.log(logging.DEBUG, f"Sending USB command with request type "
                             f"{Seek_therm_usb_req['Read']}, request {request},"

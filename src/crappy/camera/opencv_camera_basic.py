@@ -36,9 +36,9 @@ class Webcam(Camera):
     """Opens the video stream and sets any user-specified settings.
 
     Args:
-      device_num (:obj:`int`, optional): The number of the device to open.
-      **kwargs: Any additional setting to set before opening the graphical
-        interface.
+      device_num: The index of the device to open, as an :obj:`int`.
+      **kwargs: Any additional setting to set before opening the configuration
+        window.
     """
 
     # Opening the videocapture device

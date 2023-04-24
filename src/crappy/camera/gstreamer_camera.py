@@ -39,11 +39,15 @@ class CameraGstreamer(Camera):
 
   This class uses less resources and is compatible with more cameras than the
   :ref:`Camera OpenCV` camera, that relies on OpenCV. The installation of
-  GStreamer of however less straightforward than the one of OpenCV.
+  GStreamer is however less straightforward than the one of OpenCV.
 
   Note:
     For a better performance of this class in Linux, it is recommended to have
     `v4l-utils` installed.
+
+  Note:
+    This Camera requires the module :mod:`gst-python3-1.0` to be installed, as
+    well as GStreamer.
   """
 
   def __init__(self) -> None:
@@ -113,19 +117,17 @@ videoconvert ! autovideosink
         the right one. In Linux, should be a path like `/dev/video0`. In
         Windows and Mac, should be the index of the video device. This argument
         is ignored if a ``user_pipeline`` is given.
-      user_pipeline (:obj:`str`, optional): A custom pipeline that can
-        optionally be given. If given, the ``device`` argument is ignored. The
-        pipeline should be given as it would be in a terminal.
-      nb_channels (:obj:`int`, optional): The number of channels expected in
-        the acquired images, in case a custom pipeline is given. Otherwise,
-        this argument is ignored. For now, Crappy only manages 1- and 3-channel
-        images.
-      img_depth (:obj:`int`, optional): The bit depth of each channel of the
-        acquired images, in case a custom pipeline is given. Otherwise, this
-        argument is ignored. For now, Crappy only manages 8- and 16-bits deep
-        images.
+      user_pipeline: A custom pipeline that can optionally be given as a
+        :obj:`str`. If given, the ``device`` argument is ignored. The pipeline
+        should be given as it would be in a terminal.
+      nb_channels: The number of channels expected in the acquired images, in
+        case a custom pipeline is given. Otherwise, this argument is ignored.
+        For now, Crappy only manages 1- and 3-channel images.
+      img_depth: The bit depth of each channel of the acquired images, in case
+        a custom pipeline is given. Otherwise, this argument is ignored. For
+        now, Crappy only manages 8- and 16-bits deep images.
       **kwargs: Allows specifying values for the settings even before
-        displaying the graphical interface.
+        displaying the configuration window.
     """
 
     # Checking the validity of the arguments
@@ -377,8 +379,8 @@ videoconvert ! autovideosink
     """Stops the current pipeline, redefines it, and restarts it.
 
     Args:
-      pipeline (:obj:`str`): The new pipeline to use.
-      exposure (:obj:`int`, optional): The new exposure value to set.
+      pipeline: The new pipeline to use, as a :obj:`str`.
+      exposure: The new exposure value to set, as an :obj:`int`.
     """
 
     # Stops the previous pipeline
@@ -422,17 +424,19 @@ videoconvert ! autovideosink
                     hue: Optional[float] = None,
                     saturation: Optional[float] = None,
                     img_format: Optional[int] = None) -> str:
-    """Method that generates a pipeline, according to the settings.
+    """Method that generates a pipeline, according to the given settings.
 
     If a user-defined pipeline was given, it will always be returned.
 
     Args:
-      brightness: The brightness value to set, as a float between -1 and 1.
-      contrast: The contrast value to set, as a float between 0 and 2.
-      hue: The hue value to set, as a float between -1 and 1.
-      saturation: The saturation value to set, as a float between 0 and 2.
-      img_format: The image format to set, as a string containing the name of
-        the encoding and optionally both the width and height in pixels.
+      brightness: The brightness value to set, as a :obj:`float` between -1 and
+        1.
+      contrast: The contrast value to set, as a :obj:`float` between 0 and 2.
+      hue: The hue value to set, as a :obj:`float` between -1 and 1.
+      saturation: The saturation value to set, as a :obj:`float` between 0 and
+        2.
+      img_format: The image format to set, as a :obj:`str` containing the name
+        of the encoding and optionally both the width and height in pixels.
 
     Returns:
       A pipeline matching the current settings values.
@@ -612,7 +616,7 @@ videoconvert ! autovideosink
       self.reload_software_roi(int(width), int(height))
 
   def _get_format(self) -> str:
-    """Parses the v4l2-ctl -V command to get the current image format as an
+    """Parses the ``v4l2-ctl -V`` command to get the current image format as an
     index."""
 
     # Sending the v4l2-ctl command

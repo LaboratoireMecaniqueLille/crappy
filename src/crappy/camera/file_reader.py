@@ -25,9 +25,10 @@ class FileReader(Camera):
   order in which they were acquired.
 
   The name of the images to read must follow the following pattern :
-  ``<frame_nr> <frame_seconds>.<frame_subseconds>.<file_extension>``. This
-  pattern is the same as used for recording images with Crappy, so images
-  recorded via Crappy are readily readable an don't need to be re-named.
+  ``<frame_nr>_<frame_seconds>.<frame_subseconds>.<file_extension>``. This
+  pattern is the same as used for recording images with the :ref:`Camera Block`
+  of Crappy, so images recorded via Crappy are readily readable and don't need
+  to be re-named.
 
   This class tries to read the images at the same framerate as they were
   recorded, although the control of the framerate is not so precise. It might
@@ -64,9 +65,9 @@ class FileReader(Camera):
           'sitk' or 'cv2'
 
         If not given, SimpleITK is preferred over OpenCV if available.
-      stop_at_end: If :obj:`True` (the default), stops the Crappy test once the
-        available images are all exhausted. Otherwise, simply does nothing
-        while waiting for the test to end.
+      stop_at_end: If :obj:`True` (the default), stops the Crappy script once
+        the available images are all exhausted. Otherwise, simply remains idle
+        while waiting for the test to finish.
     """
 
     # Selecting an  available backend between first sitk and then cv2
@@ -122,7 +123,7 @@ class FileReader(Camera):
     as possible.
 
     By default, stops the test when there's no image left to read. If specified
-    otherwise, just does nothing until the test ends.
+    otherwise, just remains idle until the test ends.
     """
 
     # Setting the approximate start time (potentially not well synced with the

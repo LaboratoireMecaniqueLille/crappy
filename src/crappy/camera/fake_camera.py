@@ -14,7 +14,7 @@ class FakeCamera(Camera):
 
   The generated images are just a gradient of grey levels, with a line moving
   as a function of time. It is possible to tune the dimension of the image, the
-  frame rate and the speed of the line.
+  frame rate and the speed of the moving line.
   """
 
   def __init__(self) -> None:
@@ -28,6 +28,9 @@ class FakeCamera(Camera):
     self.add_scale_setting('speed', 0., 800., None, None, 100.)
     self.add_scale_setting('fps', 0.1, 100., None, None, 50.)
 
+    self._t0 = time()
+    self._t = self._t0
+
   def open(self, **kwargs) -> None:
     """Sets the settings, generates the first image and initializes the time
     counter."""
@@ -35,9 +38,6 @@ class FakeCamera(Camera):
     self.set_all(**kwargs)
 
     self._gen_image()
-
-    self._t0 = time()
-    self._t = self._t0
 
   def get_image(self) -> Tuple[float, np.ndarray]:
     """Returns the updated image, depending only on the current timestamp.
@@ -58,7 +58,7 @@ class FakeCamera(Camera):
 
   def _gen_image(self, _: Optional[float] = None) -> None:
     """Generates the base gradient image, that will be split and returned
-    in the :meth:`get_image` method"""
+    in the :meth:`get_image` method."""
 
     self.log(logging.DEBUG, "Generating the image")
     self._img = np.arange(self.height) * 255. / self.height

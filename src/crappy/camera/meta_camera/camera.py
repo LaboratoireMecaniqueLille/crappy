@@ -39,7 +39,14 @@ class Camera(metaclass=MetaCamera):
     self._logger: Optional[logging.Logger] = None
 
   def log(self, level: int, msg: str) -> None:
-    """"""
+    """Records log messages for the Camera.
+
+    Also instantiates the logger when logging the first message.
+
+    Args:
+      level: An :obj:`int` indicating the logging level of the message.
+      msg: The message to log, as a :obj:`str`.
+    """
 
     if self._logger is None:
       self._logger = logging.getLogger(
@@ -111,6 +118,9 @@ class Camera(metaclass=MetaCamera):
     """Adds a boolean setting, whose value is either :obj:`True` or
     :obj:`False`.
 
+    If a configuration window is used, it will be possible to set this setting
+    by (un)checking a checkbox.
+
     Args:
       name: The name of the setting, that will be displayed in the GUI and can
         be used to directly get the value of the setting by calling
@@ -141,10 +151,13 @@ class Camera(metaclass=MetaCamera):
     """Adds a scale setting, whose value is an :obj:`int` or a :obj:`float`
     clamped between two boundaries.
 
+    If a configuration window is used, it will be possible to set this setting
+    by moving a slider.
+
     Note:
       If any of ``lowest`` or ``highest`` is a :obj:`float`, then the setting
       is considered to be of type float and can take float values. Otherwise,
-      it is considered of type int and can only take integer values.
+      it is considered of type :obj:`int` and can only take integer values.
 
     Args:
       name: The name of the setting, that will be displayed in the GUI and can
@@ -179,6 +192,9 @@ class Camera(metaclass=MetaCamera):
     """Adds a choice setting, that can take a limited number of predefined
     :obj:`str` values.
 
+    If a configuration window is used, it will be possible to set this setting
+    by selecting one of several possible radio buttons.
+
     Args:
       name: The name of the setting, that will be displayed in the GUI and can
         be used to directly get the value of the setting by calling
@@ -207,7 +223,7 @@ class Camera(metaclass=MetaCamera):
                           setter: Optional[Callable[[str], None]] = None
                           ) -> None:
     """Adds a specific choice setting for controlling the trigger mode of the
-    camera. The reserved name for this setting is ``'Trigger'``.
+    camera. The reserved name for this setting is ``'trigger'``.
 
     This setting is mainly intended for cameras that can run either in free run
     mode or in hardware trig mode. The three possible choices for this setting
@@ -223,7 +239,7 @@ class Camera(metaclass=MetaCamera):
 
     The rationale behind the ``'Hdw after config'`` choice is to allow the user
     to tune settings in the configuration window with the camera in free run
-    mode, and to switch afterwards to the hardware trigger mode for the actual
+    mode, and to switch afterward to the hardware trigger mode for the actual
     test. It proves extremely useful if the hardware triggers are generated
     from Crappy, as they're not started yet when the configuration window is
     running.
@@ -353,8 +369,8 @@ class Camera(metaclass=MetaCamera):
     """Method for getting the value of a setting directly by calling
     ``self.<setting name>``.
 
-    It is called in case __getattribute__ doesn't work properly, and tries to
-    return the corresponding setting value."""
+    It is called in case :meth:`__getattribute__` doesn't work properly, and
+    tries to return the corresponding setting value."""
 
     try:
       return self.settings[item].value
