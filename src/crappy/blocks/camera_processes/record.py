@@ -2,7 +2,6 @@
 
 from multiprocessing.queues import Queue
 from csv import DictWriter
-from time import strftime, gmtime
 import numpy as np
 from typing import Optional, Union
 from pathlib import Path
@@ -29,9 +28,6 @@ try:
   import cv2
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
-
-# TODO:
-#   Manage case when the image folder already exists
 
 
 class ImageSaver(CameraProcess):
@@ -83,11 +79,34 @@ class ImageSaver(CameraProcess):
 
     self._csv_created = False
     self._csv_path = None
+    self._metadata_name = 'metadata.csv'
 
   def _init(self) -> None:
     """"""
 
-    if self._save_folder is not None and not self._save_folder.exists():
+    # If the save folder already exists, checking if it contains images by
+    # checking if a metadata file is present
+    if self._save_folder.exists():
+      content = (path.name for path in self._save_folder.iterdir())
+      # If it contains images, saving to a different folder
+      if self._metadata_name in content:
+        self._log(logging.WARNING, f"The folder {self._save_folder} already "
+                                   f"seems to contain images from Crappy !")
+        parent, name = self._save_folder.parent, self._save_folder.name
+        i = 1
+        # Adding an integer at the end of the folder name to differentiate it
+        while (parent / f'{name}_{i:05d}').exists():
+          i += 1
+        self._save_folder = parent / f'{name}_{i:05d}'
+        self._log(logging.WARNING, f"Saving the images at {self._save_folder} "
+                                   f"instead !")
+
+      else:
+        self._log(logging.DEBUG,
+                  f"The folder {self._save_folder} for recording images exists"
+                  f" but does not contain images yet.")
+
+    if not self._save_folder.exists():
       self._log(logging.INFO, f"Creating the folder for saving images at: "
                               f"{self._save_folder}")
       Path.mkdir(self._save_folder, exist_ok=True, parents=True)
@@ -127,9 +146,7 @@ class ImageSaver(CameraProcess):
     self.fps_count += 1
 
     if not self._csv_created:
-      self._csv_path = (self._save_folder /
-                        f'metadata_'
-                        f'{strftime("%d_%m_%y %H:%M:%S", gmtime())}.csv')
+      self._csv_path = (self._save_folder / self._metadata_name)
 
       self._log(logging.INFO, f"Creating file for saving the metadata: "
                               f"{self._csv_path}")
