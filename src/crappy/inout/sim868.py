@@ -12,10 +12,10 @@ try:
   from serial.serialutil import SerialException
 except (ModuleNotFoundError, ImportError):
   serial = OptionalModule("serial", "Please install the module serial to use "
-                          "the GSM InOut: pip install pyserial")
+                          "the Sim868 InOut: pip install pyserial")
 
 
-class GSM(InOut):
+class Sim868(InOut):
   """Block for sending messages by SMS to given phone numbers.
 
   Important:
@@ -36,7 +36,7 @@ class GSM(InOut):
 
           ["0611223344"]
 
-      port (:obj:`str`, optional): Serial port the GSM is connected to.
+      port (:obj:`str`, optional): Serial port the Sim868 is connected to.
       baudrate(:obj:`int`, optional): Serial baudrate, between 1200 and 115200.
     """
 
@@ -51,14 +51,14 @@ class GSM(InOut):
     self._numbers = [number.encode('utf-8') for number in numbers]
 
   def open(self) -> None:
-    """Sends ``"AT"`` to the GSM and waits for the response : ``"OK"``. """
+    """Sends ``"AT"`` to the Sim868 and waits for the response : ``"OK"``. """
 
     try:
       self.log(logging.INFO, f"Opening the serial port {self._port} with "
                              f"baudrate {self._baudrate}")
       self._ser = Serial(self._port, self._baudrate)
     except SerialException:
-      raise SerialException("GSM not connected or wrong port")
+      raise SerialException("Sim868 not connected or wrong port")
 
     self.log(logging.DEBUG, f"Writing b'AT\\r\\n' to port {self._port}")
     self._ser.write(b'AT' + b'\r\n')
@@ -72,7 +72,7 @@ class GSM(InOut):
       if "OK" in data:
         return
       count += 1
-    raise TimeoutError("GSM is not responding")
+    raise TimeoutError("Sim868 is not responding")
 
   def set_cmd(self, *cmd: str) -> None:
     """Sends an SMS whose text is the :obj:`str` received as command to all the
@@ -88,7 +88,7 @@ class GSM(InOut):
       self._send_mess(cmd[0])
 
   def _send_mess(self, message: str) -> None:
-    """Commands the GSM to send a message to all the phone numbers.
+    """Commands the Sim868 to send a message to all the phone numbers.
 
     Args:
       message: The text message to send.

@@ -47,9 +47,9 @@ GPIO Switch
    :members: open, set_cmd, close
    :special-members: __init__
 
-GSM
-+++
-.. autoclass:: crappy.inout.GSM
+Sim868
+++++++
+.. autoclass:: crappy.inout.Sim868
    :members: open, set_cmd, close
    :special-members: __init__
 

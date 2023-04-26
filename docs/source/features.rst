@@ -542,7 +542,7 @@ Outputs
 
   .. Important:: Only works on a Raspberry Pi !
 
-- :ref:`GSM`
+- :ref:`Sim868`
 
   Uses Waveshare's `GSM/GPRS/GNSS/Bluetooth hat <https://www.waveshare.com/
   gsm-gprs-gnss-hat.htm>`_ for sending SMS. The other functionalities are not

@@ -17,7 +17,7 @@ from .comedi import Comedi
 from .fake_inout import FakeInout
 from .gpio_pwm import GPIOPWM
 from .gpio_switch import GPIOSwitch
-from .gsm import GSM
+from .sim868 import Sim868
 from .kollmorgen import Koll
 from .labjack_t7 import LabjackT7
 from .labjack_ue9 import LabjackUE9
