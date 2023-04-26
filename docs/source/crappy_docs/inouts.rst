@@ -53,9 +53,9 @@ Sim868
    :members: open, set_cmd, close
    :special-members: __init__
 
-Kollmorgen
-++++++++++
-.. autoclass:: crappy.inout.Koll
+Kollmorgen AKD PDMM
++++++++++++++++++++
+.. autoclass:: crappy.inout.KollmorgenAKDPDMM
    :members: open, set_cmd, get_data, close
    :special-members: __init__
 

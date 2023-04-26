@@ -556,7 +556,7 @@ Outputs
 Enhanced actuators
 """"""""""""""""""
 
-- :ref:`Kollmorgen`
+- :ref:`Kollmorgen AKD PDMM`
 
   Drives Kollmorgen's `AKD PDMM <https://www.kollmorgen.com/en-us/products/
   drives/servo/akd-pdmm/akd-pdmm-programmable-drive-multi-axis-master/>`_

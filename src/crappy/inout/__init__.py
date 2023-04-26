@@ -18,7 +18,7 @@ from .fake_inout import FakeInout
 from .gpio_pwm import GPIOPWM
 from .gpio_switch import GPIOSwitch
 from .sim868 import Sim868
-from .kollmorgen import Koll
+from .kollmorgen_akd_pdmm import KollmorgenAKDPDMM
 from .labjack_t7 import LabjackT7
 from .labjack_ue9 import LabjackUE9
 from .mcp9600 import MCP9600

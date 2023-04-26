@@ -33,7 +33,7 @@ input_reg_addr = {'act_speed': 0,
                   'axis_state': 4}
 
 
-class Koll(InOut):
+class KollmorgenAKDPDMM(InOut):
   """This class can communicate with a KollMorgen AKD PDMM programmable
    multi-axis controller.
 
@@ -64,8 +64,8 @@ class Koll(InOut):
 
     # Making sure the given mode is correct
     if mode not in ('speed', 'position'):
-      raise ValueError("[KollMorgen] the mode argument should be either "
-                       "'speed' or 'position' !")
+      raise ValueError("The mode argument should be either 'speed' or "
+                       "'position' !")
 
     self._axes = axes
     self._mode = mode
