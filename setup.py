@@ -94,49 +94,50 @@ if platform.system() == "Windows":
           "compiled")
 
 setup(
+  # Description of the project
   name='crappy',
-
   version=__version__,
-
   description='Command and Real-time Acquisition in Parallelized Python',
-
   long_description=long_description,
+  keywords='control,command,acquisition,multiprocessing',
+  license='GPL V2',
+  classifiers=['Development Status :: 4 - Beta ',
+               'Intended Audience :: Science/Research',
+               'License :: OSI Approved :: GNU General Public License v2 or '
+               'later (GPLv2+)',
+               'Natural Language :: English',
+               'Operating System :: OS Independent',
+               'Programming Language :: Python :: 3.7',
+               'Programming Language :: Python :: 3.8',
+               'Programming Language :: Python :: 3.9',
+               'Programming Language :: Python :: 3.10',
+               'Topic :: Scientific/Engineering',
+               'Topic :: Software Development :: Build Tools',
+               'Topic :: Software Development :: Embedded Systems'],
 
+  # URLs of the project
   url='https://github.com/LaboratoireMecaniqueLille/crappy',
-
+  download_url='https://pypi.org/project/crappy/#files',
   project_urls={'Documentation':
                 'https://crappy.readthedocs.io/en/latest/index.html'},
 
+  # Information on the author
   author='LaMcube',
   author_email='antoine.weisrock1@centralelille.fr',
+  maintainer='Antoine Weisrock',
+  maintainer_email='antoine.weisrock@gmail.com',
 
-  license='GPL V2',
-
-  zip_safe=False,
-
-  classifiers=['Development Status :: 4 - Beta ',
-               'Intended Audience :: Science/Research',
-               'Topic :: Software Development :: Build Tools',
-               'License :: OSI Approved :: GNU General Public License v2 or '
-               'later (GPLv2+)',
-               'Programming Language :: Python :: 3.6',
-               'Natural Language :: English',
-               'Operating System :: OS Independent'],
-
-  keywords='control command acquisition multiprocessing',
-
+  # Packaging information
   packages=find_namespace_packages(where="src",
                                    exclude=['contrib', 'docs', 'tests*']),
-
   package_dir={"": "src"},
-
-  python_requires=">=3.6",
-
+  include_package_data=True,
   ext_package='crappy',
   ext_modules=extensions,
 
+  # Installation requirements
+  python_requires=">=3.7",
   install_requires=["numpy>=1.21.0"],
-
   extras_require={'SBC': ['smbus2',
                           'spidev',
                           'Adafruit-Blinka',
@@ -156,5 +157,6 @@ setup(
                            'opencv-python>=4.0',
                            'pyserial>=3.4']},
 
-  include_package_data=True,
+  # Others
+  zip_safe=False,
 )
