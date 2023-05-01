@@ -25,7 +25,7 @@ from .mcp9600 import MCP9600
 from .mprls import MPRLS
 from .nau7802 import NAU7802
 from .ni_daqmx import NIDAQmx
-from .opsens import OpSens
+from .opsens_handysens import HandySens
 from .pijuice_hat import PiJuice
 from .spectrum import Spectrum
 from .labjack_t7_streamer import T7Streamer

@@ -103,9 +103,9 @@ NI DAQmx
              close
    :special-members: __init__
 
-OpSens
-++++++
-.. autoclass:: crappy.inout.OpSens
+OpSens HandySens
+++++++++++++++++
+.. autoclass:: crappy.inout.HandySens
    :members: open, get_data, close
    :special-members: __init__
 
