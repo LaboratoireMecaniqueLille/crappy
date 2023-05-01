@@ -102,21 +102,20 @@ class PiJuice(InOut):
     """Reads all the available information on the battery status.
 
     Returns:
-      Returns a :obj:`dict` containing:
-
-        - the timestamp in seconds as a :obj:`float` in label ``t(s)``
-        - the battery status as a :obj:`str` in label ``battery_status``
-        - the USB status as a :obj:`str` in label ``USB_status``
-        - the GPIO status as a :obj:`str` in label ``GPIO_status``
-        - the charge level as an :obj:`int` in label ``charge_level``
-        - the battery temperature in °C as an :obj:`int` in label
+      Returns a :obj:`dict` containing
+        * the timestamp in seconds as a :obj:`float` in label ``t(s)``
+        * the battery status as a :obj:`str` in label ``battery_status``
+        * the USB status as a :obj:`str` in label ``USB_status``
+        * the GPIO status as a :obj:`str` in label ``GPIO_status``
+        * the charge level as an :obj:`int` in label ``charge_level``
+        * the battery temperature in °C as an :obj:`int` in label
           ``battery_temperature``
-        - the battery voltage in mV as an :obj:`int` in label
+        * the battery voltage in mV as an :obj:`int` in label
           ``battery_voltage``
-        - the battery current in mA as an :obj:`int` in label
+        * the battery current in mA as an :obj:`int` in label
           ``battery_current``
-        - the GPIO voltage in mV as an :obj:`int` in label ``GPIO_voltage``
-        - the GPIO current in mA as an :obj:`int` in label ``GPIO_current``
+        * the GPIO voltage in mV as an :obj:`int` in label ``GPIO_voltage``
+        * the GPIO current in mA as an :obj:`int` in label ``GPIO_current``
     """
 
     # Gets the battery status

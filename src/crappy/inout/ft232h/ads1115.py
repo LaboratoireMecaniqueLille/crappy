@@ -187,7 +187,7 @@ class ADS1115FT232H(InOut):
     The output is in Volts, unless a gain and offset are applied.
 
     Returns:
-      A :obj:`list`list containing the timestamp and the voltage value.
+      A :obj:`list` containing the timestamp and the voltage value.
     """
 
     # Reading the config register, and setting it so that the ADS1115 starts

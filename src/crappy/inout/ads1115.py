@@ -262,7 +262,7 @@ class ADS1115(InOut):
     The output is in Volts, unless a gain and offset are applied.
 
     Returns:
-      A :obj:`list`list containing the timestamp and the voltage value.
+      A :obj:`list` containing the timestamp and the voltage value.
     """
 
     if self._backend == 'blinka':
