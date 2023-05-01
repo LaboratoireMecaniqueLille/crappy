@@ -30,6 +30,14 @@ class Comedi(InOut):
   output channels. Each channel can be tuned independently in terms of range,
   gan, offset, and for input channels it's possible to decide whether they
   should be offset to `0` at the beginning of the test.
+
+  Communicates over serial. This class was implemented and tested on a USB-DUX
+  sigma device. IT should work with other devices as well, but that was not
+  tested.
+
+  Note:
+    This class requires the `libcomedi` library to be installed on the
+    computer.
   """
 
   def __init__(self,
@@ -45,7 +53,7 @@ class Comedi(InOut):
                out_range_num: Optional[List[int]] = None,
                out_gain: Optional[List[float]] = None,
                out_offset: Optional[List[float]] = None) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       device: The address of the device, as a :obj:`str`.
@@ -186,8 +194,8 @@ class Comedi(InOut):
                                               chan.num, chan.range_num)
 
   def make_zero(self, delay: float) -> None:
-    """Overriding of the method of the parent class, because the user can
-    choose which channels should be zeroed or not.
+    """Overriding the method of the parent class, because the user can choose
+    which channels should be zeroed or not.
 
     It simply performs the regular zeroing, and resets the compensation to
     zero for the channels that shouldn't be zeroed.
@@ -228,8 +236,8 @@ class Comedi(InOut):
                                chan.range_num, comedi.AREF_GROUND, out_a)
 
   def get_data(self) -> List[float]:
-    """Simply reads and returns the value of each channel, adjusted with the
-    given gain and offset."""
+    """Reads and returns the value of each channel, adjusted with the given
+    gain and offset."""
 
     data = [time()]
 
@@ -249,7 +257,7 @@ class Comedi(InOut):
     return data
 
   def close(self) -> None:
-    """Simply closes the Comedi board and warns the user in case of failure."""
+    """Closes the Comedi board and warns the user in case of failure."""
 
     if self._device is not None:
       self.log(logging.INFO, "Closing the connection to the Comedi device")

@@ -27,7 +27,16 @@ class _Channel:
 
 
 class DAQmx(InOut):
-  """"""
+  """This class can drive data acquisition hardware from National Instruments.
+
+  It is similar to :ref:`NI DAQmx` InOut, except it relies on the
+  :mod:`PyDAQmx` module. It was written and tested on a USB 6008 DAQ board, but
+  should work with other instruments as well.
+
+  Note:
+    This class requires the NIDAQmx C driver to be installed, as well as the
+    :mod:`PyDAQmx` module.
+  """
 
   def __init__(self,
                device: str = 'Dev1',
@@ -41,7 +50,7 @@ class DAQmx(InOut):
                out_gain: Optional[List[float]] = None,
                out_offset: Optional[List[float]] = None,
                out_ranges: Optional[List[float]] = None) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       device: The name of the device to open, as a :obj:`str`.
@@ -201,8 +210,8 @@ class DAQmx(InOut):
         PyDAQmx.DAQmxStartTask(self._out_handle)
   
   def make_zero(self, delay: float) -> None:
-    """Overriding of the method of the parent class, because the user can
-    choose which channels should be zeroed or not.
+    """Overriding the method of the parent class, because the user can choose
+    which channels should be zeroed or not.
 
     It simply performs the regular zeroing, and resets the compensation to
     zero for the channels that shouldn't be zeroed.

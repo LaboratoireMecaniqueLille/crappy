@@ -16,28 +16,29 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Sim868(InOut):
-  """Block for sending messages by SMS to given phone numbers.
+  """This class can drive a SIM868 cellular module so that it sends SMS to
+  given phone numbers.
 
   Important:
-    This block should be associated with a modifier to manage the messages
-    to send.
+    This InOut should be associated with a :ref:`Modifier` to manage the
+    messages to send.
   """
 
   def __init__(self,
                numbers: List[str],
                port: str = "/dev/ttyUSB0",
                baudrate: int = 115200) -> None:
-    """Checks arguments validity.
+    """Checks the validity of the arguments.
 
     Args:
-      numbers(:obj:`list`): The list of numbers the messages will be sent to.
-        The syntax is the following :
+      numbers: The list of numbers the messages will be sent to. The syntax is
+        the following :
         ::
 
           ["0611223344"]
 
-      port (:obj:`str`, optional): Serial port the Sim868 is connected to.
-      baudrate(:obj:`int`, optional): Serial baudrate, between 1200 and 115200.
+      port: Serial port the Sim868 is connected to.
+      baudrate: Serial baudrate, between `1200` and `115200`.
     """
 
     self._ser = None
@@ -91,7 +92,7 @@ class Sim868(InOut):
     """Commands the Sim868 to send a message to all the phone numbers.
 
     Args:
-      message: The text message to send.
+      message: The text message to send, as a :obj:`str`.
     """
 
     for number in self._numbers:

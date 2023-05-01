@@ -44,7 +44,7 @@ pijuice_backends = ['Pi4', 'pijuice']
 
 
 class PiJuice(InOut):
-  """Block getting various information about a piJuice power platform,
+  """This class can read various information about a piJuice power platform,
   including the charge level and the power supply status.
 
   Warning:
@@ -55,23 +55,22 @@ class PiJuice(InOut):
                i2c_port: int = 1,
                address: int = 0x14,
                backend: str = 'Pi4') -> None:
-    """Checks arguments validity.
+    """Checks the validity of the arguments.
 
     Args:
-      backend (:obj:`str`, optional): Should be one of :
+      backend: Should be one of :
         ::
 
           'Pi4', 'pijuice'
 
         The `'Pi4'` backend is based on the :mod:`smbus2` module, while the
-        `'pijuice'` backend is based on the :mod:`pijuice`.
-      i2c_port(:obj:`int`, optional): The I2C port over which the PiJuice
-        should communicate.
-      address(:obj:`int`, optional): The I2C address of the piJuice. The
-        default address is 0x14.
+        `'pijuice'` backend is based on the :mod:`pijuice` module.
+      i2c_port: The I2C port over which the PiJuice should communicate.
+      address: The I2C address of the piJuice. The default address is `0x14`.
     """
 
     self._bus = None
+    self._pijuice = None
 
     super().__init__()
     if not isinstance(i2c_port, int):
@@ -103,9 +102,9 @@ class PiJuice(InOut):
     """Reads all the available information on the battery status.
 
     Returns:
-      :obj:`dict`: Returns a dict containing:
+      Returns a :obj:`dict` containing:
 
-        - the timeframe in seconds as a :obj:`float` in label ``t(s)``
+        - the timestamp in seconds as a :obj:`float` in label ``t(s)``
         - the battery status as a :obj:`str` in label ``battery_status``
         - the USB status as a :obj:`str` in label ``USB_status``
         - the GPIO status as a :obj:`str` in label ``GPIO_status``

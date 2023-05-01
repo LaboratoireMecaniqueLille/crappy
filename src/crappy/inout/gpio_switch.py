@@ -26,35 +26,31 @@ gpio_switch_backends = ['Pi4', 'blinka']
 
 
 class GPIOSwitch(InOut):
-  """Class for setting a GPIO high or low.
+  """This class can drive a GPIO high or low on a single board computer.
 
-  The GPIOSwitch InOut block is meant for switching a GPIO high or low
-  according to the input signal value. When the input signal is `1` the
-  GPIO is turned high, when the signal is `0` it is turned low. Any value other
-  than `0` and `1` raises an error.
+  When the command value is `1` the GPIO is turned high, when the command is
+  `0` it is turned low. Any value other than `0` and `1` raises an error.
   """
 
   def __init__(self,
                pin_out: Union[int, str],
                backend: str) -> None:
-    """Checks the argument validity.
+    """Checks the validity of the arguments.
 
     Args:
       pin_out: The GPIO pin to be controlled. On Raspberry Pi, should be an
-        integer corresponding to a GPIO in BCM convention. On FT232H, should be
-        a string corresponding to the name of a GPIO. With the `'blinka'`
-        backend, should be a string holding the name of the pin. Refer to
-        blinka's specific documentation for each board for more information.
+        :obj:`int` corresponding to a GPIO in BCM convention. With the
+        `'blinka'` backend, should be a string holding the name of the pin.
+        Refer to blinka's specific documentation for each board for more
+        information.
       backend: Should be one of :
         ::
 
-          'Pi4', 'blinka', 'ft232h'
+          'Pi4', 'blinka'
 
         The `'Pi4'` backend only works on the Raspberry Pis. The `'blinka'`
-        backend requires installing Adafruit's modules, but is compatible with
-        and maintained on a wide variety of boards. The `'ft232h'` backend
-        allows controlling the GPIO from a PC using Adafruit's FT232H USB to
-        I2C adapter. See :ref:`Crappy for embedded hardware` for details.
+        backend requires installing :mod:`Adafruit-Blinka`, but this module is
+        compatible with and maintained on a wide variety of boards.
     """
 
     self._pin_out = None
@@ -82,7 +78,7 @@ class GPIOSwitch(InOut):
       self._pin_out = digitalio.DigitalInOut(getattr(board, pin_out))
 
   def open(self) -> None:
-    """Sets the GPIO."""
+    """Initializes the GPIO."""
 
     if self._backend == 'Pi4':
       self.log(logging.INFO, "Setting up the GPIOs")
@@ -96,7 +92,7 @@ class GPIOSwitch(InOut):
     """Drives the GPIO according to the command.
 
     Args:
-      cmd (:obj:`int`): 1 for driving the GPIO high, 0 for driving it low
+      cmd: 1 for driving the GPIO high, 0 for driving it low.
     """
 
     if cmd[0] not in [0, 1]:

@@ -40,11 +40,10 @@ mprls_backends = ['Pi4', 'blinka']
 
 
 class MPRLS(InOut):
-  """The MPRLS inout is meant for reading pressure from Adafruit's MPRLS
-    pressure sensor.
+  """This class can read values from an MPRLS pressure sensor.
 
-    It communicates over I2C with the sensor.
-    """
+  It communicates over I2C with the sensor.
+  """
 
   def __init__(self,
                backend: str,
@@ -54,36 +53,35 @@ class MPRLS(InOut):
     """Initializes the parent class and opens the I2C bus.
 
     Args:
-      backend (:obj:`str`): Should be one of :
+      backend: Should be one of :
         ::
 
-          'Pi4', 'blinka', 'ft232h'
+          'Pi4', 'blinka'
 
         The `'Pi4'` backend is optimized but only works on boards supporting
         the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing Adafruit's
-        modules, but these modules are compatible with and maintained on a wide
-        variety of boards. The `'ft232h'` backend allows controlling the
-        MPRLS from a PC using Adafruit's FT232H USB to I2C adapter. See
-        :ref:`Crappy for embedded hardware` for details.
-      eoc_pin (:obj:`int` or :obj:`str`, optional): Optionally, reads the end
-        of conversion signal from a GPIO rather than from an I2C message.
-        Speeds up the reading and decreases the traffic on the bus, but
-        requires one extra wire. With the backend `'Pi4'`, give the index of
-        the GPIO in BCM convention. With the `'ft232h'` backend, give the name
-        of the GPIO in the format `Dx` or `Cx`. With the backend `'blinka'`,
-        it should be a string but the syntax varies according to the board.
-        Refer to blinka's documentation for more information.
-      device_address (:obj:`int`, optional): The I2C address of the MPRLS.
-        The address of the devices sold by Adafruit is `0x18`, but other
-        suppliers may sell it with another address.
-      i2c_port (:obj:`int`, optional): The I2C port over which the MPRLS
-        should communicate. On most Raspberry Pi models the default I2C port is
-        `1`.
+        backend may be less performant and requires installing
+        :mod:`Adafruit-Blinka` and :mod:`adafruit-circuitpython-mprls`, but
+        these modules are compatible with and maintained on a wide
+        variety of boards.
+      eoc_pin: Optionally, reads the end of conversion signal from the polarity
+        of a GPIO rather than from an I2C register. Speeds up the reading and
+        decreases the traffic on the bus, but requires one extra wire. With the
+        backend `'Pi4'`, give the index of the GPIO in BCM convention. With the
+        backend `'blinka'`, it should be a string but the syntax varies
+        according to the board. Refer to blinka's documentation for more
+        information.
+      device_address: The I2C address of the MPRLS. The address of the devices
+        sold by Adafruit is `0x18`, but other suppliers may sell it with
+        another address.
+      i2c_port: The I2C port over which the MPRLS should communicate. On most
+        Raspberry Pi models the default I2C port is `1`.
     """
 
     self._bus = None
     self._eoc_pin = None
+    self._mpr = None
+    self._i2c_msg = None
 
     if not isinstance(backend, str) or backend not in mprls_backends:
       raise ValueError("backend should be in {}".format(mprls_backends))

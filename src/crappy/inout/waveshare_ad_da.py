@@ -87,15 +87,15 @@ AD_DA_pins = {'RST_PIN_ADS': 18,
 
 
 class WaveshareADDA(InOut):
-  """Class for controlling Waveshare's AD/DA hat.
+  """Class for controlling Waveshare's AD/DA Raspberry Pi hat.
 
-  The WaveshareADDA InOut block is meant for communicating with Waveshare's
-  AD/DA Raspberry Pi hat, using the SPI protocol and the GPIOs. It allows to
-  read values from the 8-channels ADC and/or to set the 2-channels DAC.
+  It communicates over the SPI protocol and the GPIOs. It allows to
+  read values from the 8-channels ADC and/or to set the 2-channels DAC. The hat
+  can acquire up to 30000 samples per second, although this data rate is
+  impossible to achieve using Crappy.
 
-  Warning:
-    This class is specifically meant to be used on a Raspberry Pi. See
-    :ref:`Waveshare AD/DA FT232H` for use with FTDI's FT232H.
+  Important:
+    This class is specifically meant to be used on a Raspberry Pi.
   """
 
   def __init__(self,
@@ -109,12 +109,11 @@ class WaveshareADDA(InOut):
     """Checks the validity of the arguments.
 
     Args:
-      dac_channels (:obj:`list`, optional): A :obj:`list` of :obj:`str`
-        representing the channels to be set. The syntax for each string is
-        'DACi' with i being either `0` or `1`.
-      adc_channels (:obj:`list`, optional): A :obj:`list` of :obj:`str`
-        representing the channels to read. The syntax for all strings is
-        either:
+      dac_channels: A :obj:`list` of :obj:`str` representing the channels to be
+        set. The syntax for each string is 'DACi' with i being either `0` or
+        `1`.
+      adc_channels: A :obj:`list` of :obj:`str` representing the channels to
+        read. The syntax for all strings is either:
         ::
 
           'ADi' (i in range(8))
@@ -124,35 +123,34 @@ class WaveshareADDA(InOut):
 
           'ADi - ADj' (i, j in range(8))
 
-      gain_hardware (:obj:`int`, optional): The gain to be used by the
-        programmable gain amplifier. Setting a high gain allows to read small
-        voltages with a better precision, but it might saturate the sensor for
-        higher voltages. The available gain values are:
+      gain_hardware: The gain to be used by the programmable gain amplifier.
+        Setting a high gain allows to read small voltages with a better
+        precision, but it might saturate the sensor for higher voltages. The
+        available gain values are:
         ::
 
           1, 2, 4, 8, 16, 32, 64
 
-      v_ref (:obj:`float`, optional): The voltage reference set by the `VREF`
-        jumper. When reading single inputs, ``v_ref`` is the value the ADC
-        compares the signals with. In a similar way, the maximum output voltage
-        of the DAC is ``v_ref``. `3.3` and `5` are the only possible values for
-        this setting, as the Raspberry Pi can only provide `3.3V` and `5V`.
-      gain (:obj:`float`, optional): Allows to tune the output values of the
-        DAC according to the formula:
+      v_ref: The voltage reference set by the `VREF` jumper. When reading
+        single inputs, ``v_ref`` is the value the ADC compares the signals
+        with. In a similar way, the maximum output voltage of the DAC is
+        ``v_ref``. `3.3` and `5` are the only possible values for this setting,
+        as the Raspberry Pi can only provide `3.3V` and `5V`.
+      gain: Allows to tune the output values of the ADC according to the
+        formula:
         ::
 
           output = gain * tension + offset.
 
         The same gain applies to all the outputs.
-      offset (:obj:`float`, optional): Allows to tune the output values of the
-        ADC according to the formula:
+      offset: Allows to tune the output values of the ADC according to the
+        formula:
         ::
 
           output = gain * tension + offset.
 
         The same offset applies to all the outputs.
-      sample_rate (optional): The ADC data output rate in SPS. The available
-        values are:
+      sample_rate: The ADC data output rate in SPS. The available values are:
         ::
 
           2.5, 5, 10, 15, 25, 30, 50, 60, 100, 500,
@@ -167,11 +165,10 @@ class WaveshareADDA(InOut):
         should not be connected and the voltage reference should be plugged
         in the `AINCOM` pin.
 
-        The AD/DA offers the possibility to read single inputs or
-        differential inputs, but not both at the same time ! This is due to
-        the `JMP_AGND` jumper.
-        For measuring both input types simultaneously, is it necessary to
-        connect `AGND` to one of the channels (for example `AD0`). Then all
+        The AD/DA offers the possibility to read single inputs or differential
+        inputs, but not both at the same time ! This is due to the `JMP_AGND`
+        jumper. For measuring both input types simultaneously, is it necessary
+        to connect `AGND` to one of the channels (for example `AD0`). Then all
         single inputs `'ADi'` should be replaced by `'ADi - AD0'`. They are
         then considered as differential inputs.
 
@@ -292,8 +289,8 @@ class WaveshareADDA(InOut):
     Data is returned in Volts, but this can be tuned using gain and offset.
 
     Returns:
-      :obj:`list`: A list containing the timeframe, and then the values for
-      each channel to read
+      A :obj:`list` containing the timestamp, and then the values for each
+      channel to read.
     """
 
     out = [time()]
@@ -341,7 +338,7 @@ class WaveshareADDA(InOut):
     """Sets the user-specified DAC channels according to the input values.
 
     Args:
-      cmd (:obj:`float`): The input values, in Volts
+      cmd: The input values as :obj:`float`, in Volts.
     """
 
     # The values are set one channel after the other, not simultaneously

@@ -59,8 +59,11 @@ class _Channel:
 
 
 class NIDAQmx(InOut):
-  """This class can communicate with NI DAQmx devices using the :mod:`pydaqmx`
-  module.
+  """This class can drive data acquisition hardware from National Instruments.
+
+  It is similar to :ref:`DAQmx` InOut, except it relies on the :mod:`nidaqmx`
+  module. It was written and tested on a USB 6008 DAQ board, but should work
+  with other instruments as well.
 
   It can read single data points from digital and analog channels, read streams
   of data from analog channels, and set the voltage of analog and digital
@@ -72,7 +75,7 @@ class NIDAQmx(InOut):
                channels: List[Dict[str, Any]],
                sample_rate: float = 100,
                n_samples: Optional[int] = None) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       channels: A :obj:`list` containing :obj:`dict` holding information on the
@@ -90,8 +93,8 @@ class NIDAQmx(InOut):
     Note:
       - ``channels`` keys:
 
-        - name: The name of the channel to interface with, given with the
-          following syntax :
+        - name: The name of the channel to drive, given with the following
+          syntax :
           ::
 
             'DevX/[a/d][i/o]Y'
@@ -155,8 +158,8 @@ class NIDAQmx(InOut):
 
       # Making sure each channel has a 'name' attribute
       if 'name' not in channel:
-        raise AttributeError("[NI DAQmx] The given channels must contain "
-                             "the 'name' key !")
+        raise AttributeError("The given channels must contain the 'name' "
+                             "key !")
 
       # Parsing the channel name to retrieve info from it
       match = fullmatch(r'(.+)/(.+)(\d+)', channel['name'])
@@ -164,7 +167,7 @@ class NIDAQmx(InOut):
         dev, type_, num = match.groups()
         num = int(num)
       else:
-        raise AttributeError(f"[NI DAQmx] Invalid format for the channel name "
+        raise AttributeError(f"Invalid format for the channel name "
                              f": {channel['name']} !\nIt should be "
                              f"'Dev<dev num>/[a/d][i/o]<chan num>'")
 
@@ -184,8 +187,8 @@ class NIDAQmx(InOut):
         chan.name = f"{dev}/port{num // 8}/line{num % 8}"
         self._digital_out.append(chan)
       else:
-        raise ValueError(f"[NI DAQmx] Wrong channel type : {type_} !\nIt "
-                         f"should be either 'ai', 'ao', 'di', or 'do'.")
+        raise ValueError(f"Wrong channel type : {type_} !\nIt should be "
+                         f"either 'ai', 'ao', 'di', or 'do'.")
 
   def open(self) -> None:
     """Creates tasks and streams for analog output, digital input, digital
@@ -217,7 +220,7 @@ class NIDAQmx(InOut):
                          f'add_ai_{type_}_chan')
           func(chan.name, **chan.kwargs)
         except AttributeError:
-          raise ValueError(f"[NI DAQmx] Invalid channel type : {type_}")
+          raise ValueError(f"Invalid channel type : {type_}")
 
     # Opening a stream for each analog input task
     self.log(logging.INFO, "Opening the streams for the analog input channels")
@@ -272,11 +275,9 @@ class NIDAQmx(InOut):
 
     # Making sure there's only one type of channel to read data from
     if len(self._tasks_ai) > 1:
-      raise IOError("[NI DAQmx] Stream mode can only open one type of "
-                    "channel !")
+      raise IOError("Stream mode can only open one type of channel !")
     elif len(self._tasks_ai) < 1:
-      raise IOError("[NI DAQmx] There's no analog in channel to read data "
-                    "from !")
+      raise IOError("There's no analog in channel to read data from !")
 
     # Starting the streaming task, there should be only one
     for task in self._tasks_ai.values():
@@ -316,7 +317,7 @@ class NIDAQmx(InOut):
     return ret
 
   def get_stream(self) -> Optional[List[np.ndarray]]:
-    """Reads data from the NI DAQmx, and returns it in an array along with an
+    """Reads data from the device, and returns it in an array along with an
     array holding the timestamps.
 
     Only data from analog input channels can be read, this method cannot read
@@ -342,7 +343,7 @@ class NIDAQmx(InOut):
     command values.
 
     The first command values correspond to the analog channels, the remaining
-    ones correspond the the digital channels. It might be that not all channels
+    ones correspond to the digital channels. It might be that not all channels
     are set if the number of commands doesn't match the number of channels.
     """
 

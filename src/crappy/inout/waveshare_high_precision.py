@@ -123,7 +123,7 @@ class WaveshareHighPrecision(InOut):
                digital_filter: int = 4,
                gain: float = 1,
                offset: float = 0) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       spi_port: The SPI port for communicating with the Waveshare HAT.

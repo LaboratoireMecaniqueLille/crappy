@@ -14,8 +14,8 @@ except (ModuleNotFoundError, ImportError):
 
 
 class HandySens(InOut):
-  """This class allows reading data from an OpSens PicoSens fiber optics signal
-  conditioner.
+  """This class allows reading data from an OpSens HandySens fiber optics
+  signal conditioner.
 
   It can read data from various fiber optics sensors like temperature,
   pressure, position or strain.
@@ -23,11 +23,11 @@ class HandySens(InOut):
 
   def __init__(self,
                device: str = '/dev/ttyUSB0') -> None:
-    """Sets the arg and initializes the parent class.
+    """Sets the argument and initializes the parent class.
 
     Args:
       device: Address of the serial connection for communicating with the
-        PicoSens.
+        OpSens.
     """
 
     self._dev = None
@@ -37,7 +37,7 @@ class HandySens(InOut):
     self._addr = device
 
   def open(self) -> None:
-    """Opens the serial connection and configures the PicoSens."""
+    """Opens the serial connection and configures the OpSens."""
 
     self.log(logging.INFO, f"Opening the serial connection on port "
                            f"{self._addr} with baudrate 57600")
@@ -45,12 +45,12 @@ class HandySens(InOut):
     self._send_cmd("meas:rate min")
 
   def get_data(self) -> List[float]:
-    """Reads data from the PicoSens and returns it."""
+    """Reads data from the OpSens and returns it."""
 
     return [time(), float(self._send_cmd("ch1:data? 1")[:-3])]
 
   def close(self) -> None:
-    """Closes the serial connection if it was opened."""
+    """Closes the serial connection, if it was opened."""
 
     if self._dev is not None:
       self.log(logging.INFO, f"Closing the serial connection on port "
@@ -58,7 +58,7 @@ class HandySens(InOut):
       self._dev.close()
 
   def _send_cmd(self, cmd: str) -> str:
-    """Sends a command and returns the received answer."""
+    """Wrapper for sending a command and returning the received answer."""
 
     self.log(logging.DEBUG, f"Writing b'{cmd}\\n' to port {self._addr}")
     self._dev.write(cmd + '\n')

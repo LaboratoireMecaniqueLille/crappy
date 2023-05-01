@@ -68,24 +68,18 @@ Ads1256_cmd = {'CMD_WAKEUP': 0x00,
 Dac8532_chan = {0: 0x10,
                 1: 0x24}
 
-# Waveshare AD/DA pins definition
-AD_DA_pins = {'RST_PIN_ADS': 18,
-              'CS_PIN_ADS': 22,
-              'DRDY_PIN_ADS': 17,
-              'CS_PIN_DAC': 23}
-
 
 class WaveshareADDAFT232H(InOut):
-  """Class for controlling Waveshare's AD/DA hat from an FTDI FT232H.
+  """Class for controlling Waveshare's AD/DA Raspberry Pi hat through an
+  FT232H.
 
-  The WaveshareADDA InOut block is meant for communicating with Waveshare's
-  AD/DA Raspberry Pi hat from an FT232H, using the SPI protocol and the GPIOs.
-  It allows reading values from the 8-channels ADC and/or to set the 2-channels
-  DAC.
+  It is similar to the :ref:`Waveshare AD/DA` class, except this class is
+  specific for use with an :ref:`FT232H` USB to I2C converter.
 
-  Warning:
-    This class is specifically meant to be used with an FT232H. See
-    :ref:`Waveshare AD/DA` for use with a Raspberry Pi.
+  It communicates over the SPI protocol and the GPIOs. It allows to
+  read values from the 8-channels ADC and/or to set the 2-channels DAC. The hat
+  can acquire up to 30000 samples per second, although this data rate is
+  impossible to achieve using Crappy.
   """
 
   ft232h = True
@@ -106,12 +100,11 @@ class WaveshareADDAFT232H(InOut):
     """Checks the validity of the arguments.
 
     Args:
-      dac_channels (:obj:`list`, optional): A :obj:`list` of :obj:`str`
-        representing the channels to be set. The syntax for each string is
-        'DACi' with i being either `0` or `1`.
-      adc_channels (:obj:`list`, optional): A :obj:`list` of :obj:`str`
-        representing the channels to read. The syntax for all strings is
-        either:
+      dac_channels: A :obj:`list` of :obj:`str` representing the channels to be
+        set. The syntax for each string is 'DACi' with i being either `0` or
+        `1`.
+      adc_channels: A :obj:`list` of :obj:`str` representing the channels to
+        read. The syntax for all strings is either:
         ::
 
           'ADi' (i in range(8))
@@ -121,45 +114,46 @@ class WaveshareADDAFT232H(InOut):
 
           'ADi - ADj' (i, j in range(8))
 
-      gain_hardware (:obj:`int`, optional): The gain to be used by the
-        programmable gain amplifier. Setting a high gain allows reading small
-        voltages with a better precision, but it might saturate the sensor for
-        higher voltages. The available gain values are:
+      gain_hardware: The gain to be used by the programmable gain amplifier.
+        Setting a high gain allows to read small voltages with a better
+        precision, but it might saturate the sensor for higher voltages. The
+        available gain values are:
         ::
 
           1, 2, 4, 8, 16, 32, 64
 
-      v_ref (:obj:`float`, optional): The voltage reference set by the `VREF`
-        jumper. When reading single inputs, ``v_ref`` is the value the ADC
-        compares the signals with. In a similar way, the maximum output voltage
-        of the DAC is ``v_ref``. `3.3` and `5` are the only possible values for
-        this setting, as the Raspberry Pi can only provide `3.3V` and `5V`.
-      gain (:obj:`float`, optional): Allows to tune the output values of the
-        DAC according to the formula:
+      v_ref: The voltage reference set by the `VREF` jumper. When reading
+        single inputs, ``v_ref`` is the value the ADC compares the signals
+        with. In a similar way, the maximum output voltage of the DAC is
+        ``v_ref``. `3.3` and `5` are the only possible values for this setting,
+        as the FT232H can only provide `3.3V` and `5V`.
+      gain: Allows to tune the output values of the ADC according to the
+        formula:
         ::
 
           output = gain * tension + offset.
 
         The same gain applies to all the outputs.
-      offset (:obj:`float`, optional): Allows to tune the output values of the
-        ADC according to the formula:
+      offset: Allows to tune the output values of the ADC according to the
+        formula:
         ::
 
           output = gain * tension + offset.
 
         The same offset applies to all the outputs.
-      sample_rate (optional): The ADC data output rate in SPS. The available
-        values are:
+      sample_rate: The ADC data output rate in SPS. The available values are:
         ::
 
           2.5, 5, 10, 15, 25, 30, 50, 60, 100, 500,
           1000, 2000, 3750, 7500, 15000, 30000
 
-      rst_pin_ads (:obj:`str`, optional): The pin for resetting the ADS1256.
-      cs_pin_ads (:obj:`str`, optional): The chip select pin for the ADS1256.
-      drdy_pin_ads (:obj:`str`, optional): The pin for knowing when a
-        conversion result in ready.
-      cs_pin_dac (:obj:`str`, optional): The chip select pin for the DAC8552.
+      _ft232h_args: This argument is meant for internal use only and should not
+        be provided by the user. It contains the information necessary for
+        setting up the FT232H.
+      rst_pin_ads: The pin for resetting the ADS1256.
+      cs_pin_ads: The chip select pin for the ADS1256.
+      drdy_pin_ads: The pin for knowing when a conversion result in ready.
+      cs_pin_dac: The chip select pin for the DAC8552.
 
     Warning:
       - ``adc_channels``:
@@ -299,8 +293,8 @@ class WaveshareADDAFT232H(InOut):
     Data is returned in Volts, but this can be tuned using gain and offset.
 
     Returns:
-      :obj:`list`: A list containing the timeframe, and then the values for
-      each channel to read
+      A :obj:`list` containing the timestamp, and then the values for each
+      channel to read.
     """
 
     out = [time()]
@@ -350,7 +344,7 @@ class WaveshareADDAFT232H(InOut):
     """Sets the user-specified DAC channels according to the input values.
 
     Args:
-      cmd (:obj:`float`): The input values, in Volts
+      cmd: The input values as :obj:`float`, in Volts.
     """
 
     # The values are set one channel after the other, not simultaneously

@@ -46,13 +46,12 @@ class KollmorgenAKDPDMM(InOut):
                mode: str = 'position',
                host: str = '192.168.0.109',
                port: int = 502) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       axes: A :obj:`list` containing the motors/axes to drive, given as
         :obj:`int`.
-      mode: Should be either `'speed'` or `'position'`. Whether the axes
-        should be driven in speed or in position.
+      mode: The driving mode, should be either `'speed'` or `'position'`.
       host: The IP address of the variator, given as a :obj:`str`.
       port: The network port over which to communicate with the variator, as
         an :obj:`int`.

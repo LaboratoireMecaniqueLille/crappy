@@ -11,7 +11,11 @@ from .meta_inout import MetaIO
 
 class InOut(metaclass=MetaIO):
   """Base class for all InOut objects. Implements methods shared by all the
-  these objects, and ensures their dataclass is MetaIO."""
+  InOuts, and ensures their dataclass is MetaIO.
+
+  The InOut objects are helper classes used by the :ref:`IOBlock` to interface
+  with hardware.
+  """
 
   ft232h: bool = False
 
@@ -22,7 +26,14 @@ class InOut(metaclass=MetaIO):
     self._logger: Optional[logging.Logger] = None
 
   def log(self, level: int, msg: str) -> None:
-    """"""
+    """Records log messages for the InOut.
+
+    Also instantiates the logger when logging the first message.
+
+    Args:
+      level: An :obj:`int` indicating the logging level of the message.
+      msg: The message to log, as a :obj:`str`.
+    """
 
     if self._logger is None:
       self._logger = logging.getLogger(
@@ -36,8 +47,10 @@ class InOut(metaclass=MetaIO):
 
     Communication with hardware should be avoided in the :meth:`__init__`
     method, and this method is where it should start happening. This method is
-    called after Crappy's processes start, i.e. when the associated IOBlock
-    already runs separately from all the other blocks.
+    called after Crappy's processes start, i.e. when the associated
+    :ref:`IOBlock` already runs separately from all the other blocks.
+
+    It is fine for this method not to perform anything.
     """
 
     ...
@@ -138,10 +151,12 @@ class InOut(metaclass=MetaIO):
     """This method should perform any action required for properly ending the
     test and closing the communication with hardware.
 
-    It will be called when the associated IOBlock receives the order to stop,
-    either because the user hit CTRL+C, or because a Generator block reached
-    the end of its path, or because an exception was raised in any of the
-    blocks.
+    It will be called when the associated :ref:`IOBlock` receives the order to
+    stop (usually because the user hit `CTRL+C`, or because a :ref:`Generator`
+    block reached the end of its path, or because an exception was raised in
+    any of the blocks).
+
+    It is fine for this method not to perform anything.
     """
 
     ...
@@ -187,7 +202,7 @@ class InOut(metaclass=MetaIO):
 
   def return_data(self) -> Optional[Union[list, Dict[str, Any]]]:
     """Returns the data from :meth:`get_data`, corrected by an offset if the
-    ``make_zero_delay`` argument of the IOBlock is set."""
+    ``make_zero_delay`` argument of the :ref:`IOBlock` is set."""
 
     data = self.get_data()
 
@@ -211,7 +226,7 @@ class InOut(metaclass=MetaIO):
 
   def return_stream(self) -> Optional[List[np.ndarray]]:
     """Returns the data from :meth:`get_stream`, corrected by an offset if the
-    ``make_zero_delay`` argument of the IOBlock is set."""
+    ``make_zero_delay`` argument of the :ref:`IOBlock` is set."""
 
     data = self.get_stream()
 

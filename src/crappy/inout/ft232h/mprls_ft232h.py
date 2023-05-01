@@ -13,11 +13,14 @@ mprls_status_bits = {'busy': 0x20,
 
 
 class MPRLSFT232H(InOut):
-  """The MPRLS inout is meant for reading pressure from Adafruit's MPRLS
-    pressure sensor.
+  """This class can read values from an MPRLS pressure sensor through an
+  FT232H.
 
-    It communicates over I2C with the sensor.
-    """
+  It is similar to the :ref:`MPRLS` class, except this class is specific for
+  use with an :ref:`FT232H` USB to I2C converter.
+
+  It communicates over I2C with the sensor.
+  """
 
   ft232h = True
 
@@ -28,17 +31,16 @@ class MPRLSFT232H(InOut):
     """Initializes the parent class and opens the I2C bus.
 
     Args:
-      eoc_pin (:obj:`int` or :obj:`str`, optional): Optionally, reads the end
-        of conversion signal from a GPIO rather than from an I2C message.
-        Speeds up the reading and decreases the traffic on the bus, but
-        requires one extra wire. With the backend `'Pi4'`, give the index of
-        the GPIO in BCM convention. With the `'ft232h'` backend, give the name
-        of the GPIO in the format `Dx` or `Cx`. With the backend `'blinka'`,
-        it should be a string but the syntax varies according to the board.
-        Refer to blinka's documentation for more information.
-      device_address (:obj:`int`, optional): The I2C address of the MPRLS.
-        The address of the devices sold by Adafruit is `0x18`, but other
-        suppliers may sell it with another address.
+      eoc_pin: Optionally, reads the end of conversion signal from the polarity
+        of a GPIO rather than from an I2C register. Speeds up the reading and
+        decreases the traffic on the bus, but requires one extra wire. Give the
+        name of the GPIO in the format `Dx` or `Cx`.
+      device_address: The I2C address of the MPRLS. The address of the devices
+        sold by Adafruit is `0x18`, but other suppliers may sell it with
+        another address.
+      _ft232h_args: This argument is meant for internal use only and should not
+        be provided by the user. It contains the information necessary for
+        setting up the FT232H.
     """
 
     self._bus = None

@@ -27,7 +27,13 @@ class _Channel:
 
 
 class LabjackUE9(InOut):
-  """"""
+  """This class can read the analog input channels from a Labjack UE9 device.
+
+  It cannot read nor drive any of the other inout or output channels on the
+  UE9. The UE9 model has been discontinued, and replaced by the T7 model (see
+  :ref:`Labjack T7`). It is thus likely that this class won't be further
+  improved in the future.
+  """
 
   def __init__(self,
                channels: List[int],
@@ -35,7 +41,7 @@ class LabjackUE9(InOut):
                offset: Optional[List[float]] = None,
                make_zero: Optional[List[bool]] = None,
                resolution: Optional[List[int]] = None) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       channels: A :obj:`list` containing all the channels to read, given as
@@ -96,14 +102,14 @@ class LabjackUE9(InOut):
     self.log(logging.DEBUG, f"Input channels: {self._channels}")
 
   def open(self) -> None:
-    """Simply opens the connection to the Labjack."""
+    """Opens the connection to the Labjack."""
 
     self.log(logging.INFO, "Opening the connection to the Labjack")
     self._handle = UE9()
 
   def make_zero(self, delay: float) -> None:
-    """Overriding of the method of the parent class, because the user can
-    choose which channels should be zeroed or not.
+    """Overriding the method of the parent class, because the user can choose
+    which channels should be zeroed or not.
 
     It simply performs the regular zeroing, and resets the compensation to
     zero for the channels that shouldn't be zeroed.
@@ -122,14 +128,14 @@ class LabjackUE9(InOut):
                                in zip(self._compensations, self._channels)]
 
   def get_data(self) -> List[float]:
-    """Simply reads sequentially the channels and returns the acquired values,
+    """Reads sequentially the channels and returns the acquired values,
     corrected by the given gains and offsets."""
 
     return [time()] + [self._handle.getAIN(chan.num, Resolution=chan.range_num)
                        * chan.gain + chan.offset for chan in self._channels]
 
   def close(self) -> None:
-    """Closes the Labjack if it was already opened."""
+    """Closes the connection to the Labjack, if it was already opened."""
 
     if self._handle is not None:
       self.log(logging.INFO, "Closing the connection to the Labjack")

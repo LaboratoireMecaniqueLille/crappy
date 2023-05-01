@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Union, List, Optional
+from typing import List, Optional
 import logging
 
 from ..meta_inout import InOut
@@ -40,11 +40,17 @@ Ads1115_config_dr = {8: 0x0000,
 
 
 class ADS1115FT232H(InOut):
-  """A class for controlling Adafruit's ADS1115 16-bits ADC.
+  """A class for controlling Adafruit's ADS1115 16-bits ADC through an FT232H.
 
-  The ADS1115 InOut block is meant for reading output values from a 16-bits
+  It is similar to the :ref:`ADS1115` class, except this class is specific for
+  use with an :ref:`FT232H` USB to I2C converter.
+
+  The ADS1115 InOut is meant for reading conversion values from a 16-bits
   ADS1115 ADC, using the I2C protocol. The output is in Volts by default, but a
   ``gain`` and an ``offset`` can be specified.
+
+  Various settings can be adjusted, like the sample rate, the input mode or the
+  voltage range.
   """
 
   ft232h = True
@@ -54,33 +60,31 @@ class ADS1115FT232H(InOut):
                sample_rate: int = 128,
                v_range: float = 2.048,
                multiplexer: str = 'A1',
-               dry_pin: Optional[Union[str, int]] = None,
+               dry_pin: Optional[str] = None,
                gain: float = 1,
                offset: float = 0,
                _ft232h_args: USBArgsType = tuple()) -> None:
-    """Checks arguments validity.
+    """Checks the validity of the arguments.
 
     Args:
-      device_address (:obj:`int`, optional): The I2C address of the ADS1115.
-        The default address is `0x48`, but it is possible to change this
-        setting using the `ADDR` pin.
-      sample_rate (:obj:`int`, optional): The sample rate for data conversion
-        (in SPS). Available sample rates are:
+      device_address: The I2C address of the ADS1115. The default address is
+        `0x48`, but it is possible to change this setting using the `ADDR` pin.
+      sample_rate: The sample rate for data conversion (in SPS). The available
+        sample rates are:
         ::
 
           8, 16, 32, 64, 128, 250, 475, 860
 
-      v_range (:obj:`float`, optional): The value (in Volts) of the measured
-        signal corresponding to the `0x7FFF` output in bits, i.e. that
-        saturates the sensor. A signal of ``-v_range`` Volts gives a `0x8000`
-        output in bits. Available ``v_range`` values are:
+      v_range: The value (in Volts) of the measured signal corresponding to the
+        `0x7FFF` output in bits, i.e. that saturates the sensor. A signal of
+        ``-v_range`` Volts gives a `0x8000` output in bits. Available
+        ``v_range`` values are:
         ::
 
           0.256, 0.512, 1.024, 2.048, 4.096, 6.144
 
-      multiplexer (:obj:`str`, optional): Choice of the inputs to consider.
-        Single-input modes actually measure `Ax - GND`. The available
-        ``multiplexer`` values are:
+      multiplexer: Choice of the inputs to consider. Single-input modes
+        actually measure `Ax - GND`. The available ``multiplexer`` values are:
         ::
 
           'A0', 'A1', 'A2', 'A3',
@@ -89,24 +93,22 @@ class ADS1115FT232H(InOut):
           'A1 - A3',
           'A2 - A3'
 
-      dry_pin (:obj:`int` or :obj:`str`, optional): Optionally, reads the end
-        of conversion signal from a GPIO rather than from an I2C message.
-        Speeds up the reading and decreases the traffic on the bus, but
-        requires one extra wire. With the backend `'Pi4'`, give the index of
-        the GPIO in BCM convention. With the `'ft232h'` backend, give the name
-        of the GPIO in the format `Dx` or `Cx`. This feature is not available
-        with the `'blinka'` backend.
-      gain (:obj:`float`, optional): Allows to tune the output value according
-        to the formula:
+      dry_pin: Optionally, reads the end of conversion signal from a GPIO
+        rather than from an I2C message. Speeds up the reading and decreases
+        the traffic on the I2C bus, but requires one extra wire. Give the name
+        of the GPIO in the format `Dx` or `Cx`.
+      gain: Allows to tune the output value according to the formula:
         ::
 
           output = gain * tension + offset.
 
-      offset (:obj:`float`, optional): Allows to tune the output value
-        according to the formula:
+      offset: Allows to tune the output value according to the formula:
         ::
 
           output = gain * tension + offset.
+      _ft232h_args: This argument is meant for internal use only and should not
+        be provided by the user. It contains the information necessary for
+        setting up the FT232H.
 
     Warning:
       AINx voltages should not be higher than `VDD+0.3V` nor lower than
@@ -157,7 +159,7 @@ class ADS1115FT232H(InOut):
     self._offset = offset
 
   def open(self) -> None:
-    """Sets the I2C communication and device."""
+    """Initializes the I2C communication and the device."""
 
     if not self._is_connected():
       raise IOError("The ADS1115 is not connected")
@@ -185,7 +187,7 @@ class ADS1115FT232H(InOut):
     The output is in Volts, unless a gain and offset are applied.
 
     Returns:
-      :obj:`list`: A list containing the timeframe and the voltage value
+      A :obj:`list`list containing the timestamp and the voltage value.
     """
 
     # Reading the config register, and setting it so that the ADS1115 starts
@@ -222,7 +224,7 @@ class ADS1115FT232H(InOut):
     return out
 
   def close(self) -> None:
-    """Closes the I2C bus"""
+    """Closes the I2C bus."""
 
     if self._bus is not None:
       self.log(logging.INFO, "Closing the ADS1115")
@@ -241,7 +243,7 @@ class ADS1115FT232H(InOut):
     """Tries reading a byte from the device.
 
     Returns:
-      :obj:`bool`: :obj:`True` if reading was successful, else :obj:`False`
+      :obj:`True` if reading was successful, else :obj:`False`.
     """
 
     try:
@@ -255,9 +257,9 @@ class ADS1115FT232H(InOut):
 
     # EOC signal from the I2C communication
     if self._dry_pin is None:
-      return self._bus.read_i2c_block_data(self._device_address,
-                                           Ads1115_pointer_config,
-                                           1)[0] & 0x80
+      return bool(self._bus.read_i2c_block_data(self._device_address,
+                                                Ads1115_pointer_config,
+                                                1)[0] & 0x80)
     # EOC signal from a GPIO
     else:
       return not bool(self._bus.get_gpio(self._dry_pin))

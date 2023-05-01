@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List
+from typing import List, Optional
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -13,16 +13,17 @@ except (ModuleNotFoundError, ImportError):
 
 
 class FakeInout(InOut):
-  """A class demonstrating the usage of an inout abject without requiring any
-  hardware.
+  """This class is a demonstration InOut object that does not require any
+  hardware to run.
 
-  It can read and/or modify the current memory usage on the computer.
+  It can read and/or modify (to a certain extent) the memory usage of the
+  computer.
   """
 
   def __init__(self) -> None:
-    """Not much to do here."""
+    """Initializes the parent class."""
 
-    self._buf = None
+    self._buf: Optional[list] = None
 
     super().__init__()
 
@@ -32,14 +33,14 @@ class FakeInout(InOut):
     self._buf = list()
 
   def set_cmd(self, *cmd: float) -> None:
-    """Modifies the computer memory usage.
+    """Modifies the memory usage of the computer.
 
-    If the command is lower than the current, empties the buffer.
     If the command is higher than the current, adds big lists to the buffer in
     order to use more memory.
+    If the command is lower than the current, empties the buffer.
 
     Args:
-      *cmd (:obj:`float`): The target memory usage to set.
+      *cmd: The target memory usage to set, in percent as a :obj:`float`.
     """
 
     if not isinstance(cmd[0], float) and not isinstance(cmd[0], int):
@@ -57,7 +58,7 @@ class FakeInout(InOut):
         return
 
   def get_data(self) -> List[float]:
-    """Just returns time and the current memory usage."""
+    """Just returns the timestamp and the current memory usage."""
 
     return [time(), virtual_memory().percent]
 

@@ -7,12 +7,13 @@ from ...tool.ft232h import FT232HServer as FT232H, ft232h_pin_nr, USBArgsType
 
 
 class GPIOSwitchFT232H(InOut):
-  """Class for setting a GPIO high or low.
+  """This class can drive a GPIO high or low on a FT232H.
 
-  The GPIOSwitch InOut block is meant for switching a GPIO high or low
-  according to the input signal value. When the input signal is `1` the
-  GPIO is turned high, when the signal is `0` it is turned low. Any value other
-  than `0` and `1` raises an error.
+  It is similar to the :ref:`GPIO Switch` class, except this class is specific
+  for use with an :ref:`FT232H` USB to GPIO converter.
+
+  When the command value is `1` the GPIO is turned high, when the command is
+  `0` it is turned low. Any value other than `0` and `1` raises an error.
   """
 
   ft232h = True
@@ -20,7 +21,7 @@ class GPIOSwitchFT232H(InOut):
   def __init__(self,
                pin_out: Union[int, str],
                _ft232h_args: USBArgsType = tuple()) -> None:
-    """Checks the argument validity.
+    """Checks the validity of the arguments.
 
     Args:
       pin_out: The GPIO pin to be controlled. On Raspberry Pi, should be an
@@ -28,6 +29,9 @@ class GPIOSwitchFT232H(InOut):
         a string corresponding to the name of a GPIO. With the `'blinka'`
         backend, should be a string holding the name of the pin. Refer to
         blinka's specific documentation for each board for more information.
+      _ft232h_args: This argument is meant for internal use only and should not
+        be provided by the user. It contains the information necessary for
+        setting up the FT232H.
     """
 
     self._ft232h = None
@@ -56,7 +60,7 @@ class GPIOSwitchFT232H(InOut):
     """Drives the GPIO according to the command.
 
     Args:
-      cmd (:obj:`int`): 1 for driving the GPIO high, 0 for driving it low
+      cmd: 1 for driving the GPIO high, 0 for driving it low.
     """
 
     if cmd[0] not in [0, 1]:

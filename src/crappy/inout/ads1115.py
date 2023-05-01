@@ -2,7 +2,7 @@
 
 from time import time
 from re import findall
-from typing import Union, List, Optional
+from typing import List, Optional
 import logging
 
 from .meta_inout import InOut
@@ -81,9 +81,12 @@ Ads1115_backends = ['Pi4', 'blinka']
 class ADS1115(InOut):
   """A class for controlling Adafruit's ADS1115 16-bits ADC.
 
-  The ADS1115 InOut block is meant for reading output values from a 16-bits
+  The ADS1115 InOut is meant for reading conversion values from a 16-bits
   ADS1115 ADC, using the I2C protocol. The output is in Volts by default, but a
   ``gain`` and an ``offset`` can be specified.
+
+  Various settings can be adjusted, like the sample rate, the input mode or the
+  voltage range.
   """
 
   def __init__(self,
@@ -93,48 +96,44 @@ class ADS1115(InOut):
                sample_rate: int = 128,
                v_range: float = 2.048,
                multiplexer: str = 'A1',
-               dry_pin: Optional[Union[str, int]] = None,
+               dry_pin: Optional[int] = None,
                gain: float = 1,
                offset: float = 0) -> None:
-    """Checks arguments validity.
+    """Checks the validity of the arguments.
 
     Args:
-      backend (:obj:`str`): The backend for communicating with the ADS1115.
-        Should be one of:
+      backend: The backend for communicating with the ADS1115. Should be one
+        of:
         ::
 
-          'Pi4', 'ft232h', 'blinka'
+          'Pi4', 'blinka'
 
         The `'Pi4'` backend is optimized but only works on boards supporting
         the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing Adafruit's
-        modules, but these modules are compatible with and maintained on a wide
-        variety of boards. The `'ft232h'` backend allows controlling the
-        ADS1115 from a PC using Adafruit's FT232H USB to I2C adapter. See
-        :ref:`Crappy for embedded hardware` for details.
-      device_address (:obj:`int`, optional): The I2C address of the ADS1115.
-        The default address is `0x48`, but it is possible to change this
-        setting using the `ADDR` pin.
-      i2c_port (:obj:`int`, optional): The I2C port over which the ADS1115
-        should communicate. On most Raspberry Pi models the default I2C port is
-        `1`.
-      sample_rate (:obj:`int`, optional): The sample rate for data conversion
-        (in SPS). Available sample rates are:
+        backend may be less performant and requires installing
+        :mod:`Adafruit-Blinka` and :mod:`adafruit-circuitpython-ads1x15`, but
+        these modules are compatible with and maintained on a wide variety of
+        boards.
+      device_address: The I2C address of the ADS1115. The default address is
+        `0x48`, but it is possible to change this setting using the `ADDR` pin.
+      i2c_port: The I2C port over which the ADS1115 should communicate. On most
+        Raspberry Pi models the default I2C port is `1`.
+      sample_rate: The sample rate for data conversion (in SPS). The available
+        sample rates are:
         ::
 
           8, 16, 32, 64, 128, 250, 475, 860
 
-      v_range (:obj:`float`, optional): The value (in Volts) of the measured
-        signal corresponding to the `0x7FFF` output in bits, i.e. that
-        saturates the sensor. A signal of ``-v_range`` Volts gives a `0x8000`
-        output in bits. Available ``v_range`` values are:
+      v_range: The value (in Volts) of the measured signal corresponding to the
+        `0x7FFF` output in bits, i.e. that saturates the sensor. A signal of
+        ``-v_range`` Volts gives a `0x8000` output in bits. Available
+        ``v_range`` values are:
         ::
 
           0.256, 0.512, 1.024, 2.048, 4.096, 6.144
 
-      multiplexer (:obj:`str`, optional): Choice of the inputs to consider.
-        Single-input modes actually measure `Ax - GND`. The available
-        ``multiplexer`` values are:
+      multiplexer: Choice of the inputs to consider. Single-input modes
+        actually measure `Ax - GND`. The available ``multiplexer`` values are:
         ::
 
           'A0', 'A1', 'A2', 'A3',
@@ -143,21 +142,17 @@ class ADS1115(InOut):
           'A1 - A3',
           'A2 - A3'
 
-      dry_pin (:obj:`int` or :obj:`str`, optional): Optionally, reads the end
-        of conversion signal from a GPIO rather than from an I2C message.
-        Speeds up the reading and decreases the traffic on the bus, but
-        requires one extra wire. With the backend `'Pi4'`, give the index of
-        the GPIO in BCM convention. With the `'ft232h'` backend, give the name
-        of the GPIO in the format `Dx` or `Cx`. This feature is not available
-        with the `'blinka'` backend.
-      gain (:obj:`float`, optional): Allows to tune the output value according
-        to the formula:
+      dry_pin: Optionally, reads the end of conversion signal from a GPIO
+        rather than from an I2C message. Speeds up the reading and decreases
+        the traffic on the I2C bus, but requires one extra wire. With the
+        backend `'Pi4'`, give the index of the GPIO in BCM convention. This
+        feature is not available with the `'blinka'` backend.
+      gain: Allows to tune the output value according to the formula:
         ::
 
           output = gain * tension + offset.
 
-      offset (:obj:`float`, optional): Allows to tune the output value
-        according to the formula:
+      offset: Allows to tune the output value according to the formula:
         ::
 
           output = gain * tension + offset.
@@ -215,12 +210,13 @@ class ADS1115(InOut):
                                   "from the DRY pin is not supported by the "
                                   "blinka backend")
     self._dry_pin = dry_pin
+    self._chan = None
 
     self._gain = gain
     self._offset = offset
 
   def open(self) -> None:
-    """Sets the I2C communication and device."""
+    """Initializes the I2C communication and the device."""
 
     if self._backend == 'blinka':
       self._ads.gain = Ads1115_blinka_gain[self._v_range]
@@ -266,7 +262,7 @@ class ADS1115(InOut):
     The output is in Volts, unless a gain and offset are applied.
 
     Returns:
-      :obj:`list`: A list containing the timeframe and the voltage value
+      A :obj:`list`list containing the timestamp and the voltage value.
     """
 
     if self._backend == 'blinka':
@@ -308,7 +304,7 @@ class ADS1115(InOut):
     return out
 
   def close(self) -> None:
-    """Closes the I2C bus"""
+    """Closes the I2C bus."""
 
     if self._backend == 'Pi4' and self._bus is not None:
       self.log(logging.INFO, "Closing the ADS1115")
@@ -331,7 +327,7 @@ class ADS1115(InOut):
     """Tries reading a byte from the device.
 
     Returns:
-      :obj:`bool`: :obj:`True` if reading was successful, else :obj:`False`
+      :obj:`True` if reading was successful, else :obj:`False`.
     """
 
     try:

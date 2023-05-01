@@ -47,7 +47,7 @@ class _Channel:
 
 
 class T7Streamer(InOut):
-  """This InOut object allows controlling a Labjack T7 device in stream mode.
+  """This InOut allows controlling a Labjack T7 device in stream mode.
 
   It can only acquire data on the `AIN` channels. For single point mode, and
   acquisition on all channels, use the :ref:`Labjack T7` InOut.
@@ -75,7 +75,7 @@ class T7Streamer(InOut):
                scan_rate: int = 100000,
                scan_per_read: int = 10000,
                resolution: int = 1) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       channels: A :obj:`list` of the channels to interface with on the Labjack.
@@ -162,8 +162,8 @@ class T7Streamer(InOut):
 
       # Checking that the name was given as it's the most important attribute
       if 'name' not in channel:
-        raise AttributeError("[Labjack T7] The given channels must contain "
-                             "the 'name' key !")
+        raise AttributeError("The given channels must contain the 'name' "
+                             "key !")
 
       # Instantiating the channel and its attributes
       chan = _Channel(name=channel['name'])
@@ -183,7 +183,7 @@ class T7Streamer(InOut):
   def open(self) -> None:
     """Opens the Labjack, parses the commands to write at open, and sends them.
 
-    Also checks whether the scan rate chose nby the Labjack is the same as
+    Also checks whether the scan rate chosen by the Labjack is the same as
     requested by the user.
     """
 
@@ -211,8 +211,8 @@ class T7Streamer(InOut):
       self._scan_rate = scan_rate
 
   def make_zero(self, delay: float) -> None:
-    """Overriding of the method of the parent class, because the user can
-    choose which channels should be zeroed or not.
+    """Overriding the method of the parent class, because the user can choose
+    which channels should be zeroed or not.
 
     It simply performs the regular zeroing, and resets the compensation for the
     channels that shouldn't be zeroed.
@@ -232,7 +232,8 @@ class T7Streamer(InOut):
                                in zip(self._compensations, self._channels)]
 
   def start_stream(self) -> None:
-    """Starts the stream, and saves the timestamp chen the stream started."""
+    """Starts the stream, and saves the timestamp of the moment when the stream
+    started."""
 
     ljm.eStreamStart(handle=self._handle,
                      scansPerRead=self._scan_per_read,
@@ -244,7 +245,7 @@ class T7Streamer(InOut):
 
   def get_data(self) -> List[float]:
     """Reads single data points, applies the given gains and offsets, and
-    returns the data."""
+    returns the data along with a timestamp."""
 
     data = ljm.eReadNames(handle=self._handle,
                           numFrames=len(self._channels),
@@ -277,13 +278,13 @@ class T7Streamer(InOut):
     return [t[:, np.newaxis], data]
 
   def stop_stream(self) -> None:
-    """Stops the stream if it was started."""
+    """Stops the stream, if it was started."""
 
     if self._stream_started:
       ljm.eStreamStop(self._handle)
 
   def close(self) -> None:
-    """Closes the Labjack if it was opened."""
+    """Closes the connection to the Labjack, if it was opened."""
 
     if self._handle is not None:
       self.log(logging.INFO, "Closing the connection to the Labjack")

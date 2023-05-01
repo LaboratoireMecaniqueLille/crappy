@@ -13,12 +13,11 @@ except (ModuleNotFoundError, ImportError):
 
 
 class GPIOPWM(InOut):
-  """ Class for performing PWM on a Raspberry Pi.
+  """This class can drive a PWM output on a Raspberry Pi.
 
-  The Gpio_pwn InOut block is meant for controlling a PWM output from a
-  Raspberry Pi GPIO. It allows to control the duty cycle, the frequency, or
-  both at the same time. When controlling both, the duty cycle should be first
-  and the frequency second in the list of inputs.
+  It allows controlling the duty cycle, the frequency, or both at the same
+  time. When controlling both, the duty cycle should be first and the frequency
+  second in the given commands.
 
   Warning:
     Only works on Raspberry Pi !
@@ -28,35 +27,34 @@ class GPIOPWM(InOut):
                pin_out: int,
                duty_cycle: Optional[float] = None,
                frequency: Optional[float] = None) -> None:
-    """Checks the argument validity.
+    """Checks the validity of the arguments.
 
     Args:
-      pin_out (:obj:`int`): The GPIO pin to be controlled (BCM convention).
-      duty_cycle (:obj:`float`): If provided, sets a fixed duty cycle for the
-        entire assay. Only the frequency can then be tuned. If not provided,
-        the block will expect the duty cycle values to be given as the first
-        input. It will also start the PWM with a duty cycle of `0%` before the
-        first value is received and set.
-      frequency (:obj:`float`): If provided, sets a fixed PWM frequency for the
-        entire assay. Only the duty cycle can then be tuned. If not provided,
-        the block will expect the frequency values to be given as the first
-        input if the ``duty_cycle`` argument is provided, or else as the second
-        input. It will also start the PWM with a frequency of `10kHz` before
-        the first value is received and set.
+      pin_out: The index of GPIO pin to drive in BCM convention, as an
+        :obj:`int`.
+      duty_cycle: If provided (as a :obj:`float`, in percent), sets a fixed
+        duty cycle for the entire test. Only the frequency can then be tuned.
+        If not provided, the duty cycle can be set as a command. The duty cycle
+        will also be set to `0%` until a first value is received.
+      frequency: If provided (as a :obj:`float`, in Hz), sets a fixed PWM
+        frequency for the entire test. Only the duty cycle can then be tuned.
+        If not provided, the frequency can be set as a command. The frequency
+        will also be set to `10kHz` until a first value is received. Note that
+        the frequency inputs are clamped between `10Hz` and `1MHz`.
 
     Note:
-      - ``duty_cycle``:
-        The duty cycle inputs are clamped between `0` and `100`.
+      Several values can be passed at once as a command. If both ``duty_cycle``
+      and ``frequency`` are provided, all the values are ignored. If only
+      ``frequency`` is provided, the first command value sets the duty cycle
+      and any other value is ignored. Same goes if only ``duty_cycle`` is
+      provided. If none of the two arguments are provided, the first command
+      value should set the duty cycle and the second command value should set
+      the frequency.
 
-      - ``frequency``:
-        The frequency inputs are clamped between `10Hz` and `1MhZ`. Sending
-        other values to the bloc doesn't raise any error, but the assay may not
-        run as expected.
-
-      - **Hardware PWM pins**:
-        On the Raspberry Pi 4, only the GPIO pins `12`, `13`, `18` and `19`
-        support hardware PWM. Trying to get a PWM output from other pins might
-        work but may decrease the available frequency range.
+    Note:
+      On the Raspberry Pi 4, only the GPIO pins `12`, `13`, `18` and `19`
+      support hardware PWM. Trying to get a PWM output from other pins might
+      work but may decrease the available frequency range.
     """
 
     self._pwm = None
@@ -104,32 +102,32 @@ class GPIOPWM(InOut):
     """Modifies the PWM frequency and/or duty cycle.
 
     Args:
-      *cmd (:obj:`float`): Values of duty cycle and/or frequency to set
+      *cmd: Values of duty cycle and/or frequency to set.
     """
 
     # If both frequency and duty cycle are fixed by the user, nothing to do
     if self._duty_cycle is not None and self._frequency is not None:
-      pass
+      return
 
     # If only frequency is fixed, setting the duty cycle
     elif self._frequency is not None:
-      dc = min(100, max(0, cmd[0]))
+      dc = min(100., max(0., cmd[0]))
       self._pwm.ChangeDutyCycle(dc)
 
     # If only the duty cycle is fixed, setting the frequency
     elif self._duty_cycle is not None:
-      freq = min(1000000, max(10, cmd[0]))
+      freq = min(1000000., max(10., cmd[0]))
       self._pwm.ChangeFrequency(freq)
 
     # If neither duty cycle nor frequency are fixed, setting both
     else:
-      dc = min(100, max(0, cmd[0]))
-      freq = min(1000000, max(10, cmd[1]))
+      dc = min(100., max(0., cmd[0]))
+      freq = min(1000000., max(10., cmd[1]))
       self._pwm.ChangeFrequency(freq)
       self._pwm.ChangeDutyCycle(dc)
 
   def close(self) -> None:
-    """Stops PWM and releases GPIOs."""
+    """Stops the PWM and releases the GPIOs."""
 
     if self._pwm is not None:
       self.log(logging.INFO, "Stopping the PWM")

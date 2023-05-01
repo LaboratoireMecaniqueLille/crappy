@@ -28,7 +28,7 @@ class SpectrumM2I4711(InOut):
                sample_rate: int = 100000,
                buff_size: int = 2**26,
                notify_size: int = 2**16) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       channels: A :obj:`list` of all the channels to read data from, given as
@@ -150,7 +150,7 @@ class SpectrumM2I4711(InOut):
                        spc.M2CMD_DATA_STOPDMA)
 
   def close(self) -> None:
-    """Closes the connection to the Spectrum if it was opened."""
+    """Closes the connection to the Spectrum, if it was opened."""
 
     if self._spectrum is not None:
       self.log(logging.INFO, "closing the connection to the Spectrum")

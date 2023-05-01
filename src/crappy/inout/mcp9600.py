@@ -90,11 +90,13 @@ Mcp9600_backends = ['Pi4', 'blinka']
 
 
 class MCP9600(InOut):
-  """Class for controlling Adafruit's MCP9600 thermocouple reader.
+  """This class can read temperature values from an MCP9600 thermocouple
+  reader.
 
-  The MCP9600 InOut block is meant for reading temperature from an MCP9600
-  board, using the I2C protocol. The output is in `°C`, except for one
-  operating mode that returns Volts.
+  It communicates over the I2C protocol. The output is in `°C`, except for one
+  operating mode that returns Volts. Several parameters can be tuned, like the
+  thermocouple type, the reading resolution or the filter coefficient. Note
+  that the MCP9600 can only achieve a data rate of a few Hz.
   """
 
   def __init__(self,
@@ -106,58 +108,55 @@ class MCP9600(InOut):
                sensor_resolution: float = 0.0625,
                filter_coefficient: int = 0,
                mode: str = 'Hot Junction Temperature') -> None:
-    """Checks arguments validity.
+    """Checks the validity of the arguments.
 
     Args:
-      backend (:obj:`str`): The backend for communicating with the MCP9600.
+      backend: The backend for communicating with the MCP9600.
         Should be one of:
         ::
 
-          'Pi4', 'ft232h', 'blinka'
+          'Pi4', 'blinka'
 
         The `'Pi4'` backend is optimized but only works on boards supporting
         the :mod:`smbus2` module, like the Raspberry Pis. The `'blinka'`
-        backend may be less performant and requires installing Adafruit's
-        modules, but these modules are compatible with and maintained on a wide
-        variety of boards. The `'ft232h'` backend allows controlling the
-        ADS1115 from a PC using Adafruit's FT232H USB to I2C adapter. See
-        :ref:`Crappy for embedded hardware` for details.
-      thermocouple_type (:obj:`str`): The type of thermocouple plugged in the
-        MCP9600. The available types are:
+        backend may be less performant and requires installing
+        :mod:`Adafruit-Blinka`, :mod:`adafruit-circuitpython-busdevice` and
+        :mod:`adafruit-circuitpython-mcp9600`, but these modules are compatible
+        with and maintained on a wide variety of boards.
+      thermocouple_type: The type of thermocouple connected to the MCP9600. The
+        possible types are:
         ::
 
           'J', 'K', 'T', 'N', 'S', 'E', 'B', 'R'
 
-      i2c_port(:obj:`int`, optional): The I2C port over which the MCP9600
-        should communicate. On most Raspberry Pi models the default I2C port is
-        `1`.
-      device_address(:obj:`int`, optional): The I2C address of the MCP9600. The
-        default address is `0x67`, but it is possible to change this setting
-        using a specific setup involving the `ADDR` pin.
-      adc_resolution(:obj:`int`, optional): The number of bits the ADC output
-        is encoded on. The greater the resolution, the lower the sample rate.
-        The available resolutions are:
+      i2c_port: The I2C port over which the MCP9600 should communicate. On most
+        Raspberry Pi models the default I2C port is `1`.
+      device_address: The I2C address of the MCP9600. The default address is
+        `0x67`, but it is possible to change this setting using a specific
+        setup involving the `ADDR` pin.
+      adc_resolution: The number of bits the ADC output is encoded on. The
+        greater the resolution, the lower the sample rate. The available
+        resolutions are:
         ::
 
           12, 14, 16, 18
 
-      sensor_resolution(:obj:`float`, optional): The temperature measurement
-        resolution in `°C`. It should be either `0.0625` or `0.25`. Setting the
-        resolution to `0.25` will increase the sample rate, but the output
-        temperature will be encoded on two bits less.
-      filter_coefficient(:obj:`int`, optional): The MCP9600 features an
-        integrated filter (see its documentation for the exact filter formula).
-        When set to `0`, the filter is inactive. It is maximal when set to `7`.
-        When active, the filter will prohibit fast temperature changes, thus
-        limiting noise and smoothening the signal.
-      mode(:obj:`str`, optional): Four different values can be accessed when
-        measuring a temperature: the temperature of the thermocouple (hot
-        junction temperature), the temperature of the MCP9600 board (cold
-        junction temperature), the temperature calculated from the ADC data and
-        thermocouple type but not yet cold junction-compensated (junction
-        temperature delta), and the raw ADC measurement of the voltage
-        difference in the thermocouple (raw data ADC, in Volts). The available
-        modes are thus:
+      sensor_resolution: The temperature measurement resolution in `°C`. It
+        should be either `0.0625` or `0.25`. Setting the resolution to `0.25`
+        will increase the sample rate, but the output temperature will be
+        encoded on two bits less.
+      filter_coefficient: The MCP9600 features an integrated filter (see its
+        documentation for the exact filter formula). When set to `0`, the
+        filter is inactive. It is maximal when set to `7`. When active, the
+        filter will prohibit fast temperature changes, thus limiting noise and
+        smoothening the signal.
+      mode: Four different values can be accessed when measuring a temperature:
+        the temperature of the thermocouple (hot junction temperature), the
+        temperature of the MCP9600 board (cold junction temperature), the
+        temperature calculated from the ADC data and thermocouple type but not
+        yet cold junction-compensated (junction temperature delta), and the raw
+        ADC measurement of the voltage difference in the thermocouple (raw data
+        ADC, in Volts). The available modes are thus:
         ::
 
           'Hot Junction Temperature',
@@ -168,6 +167,7 @@ class MCP9600(InOut):
     """
 
     self._bus = None
+    self._mcp = None
 
     if not isinstance(backend, str) or backend not in Mcp9600_backends:
       raise ValueError("backend should be in {}".format(Mcp9600_backends))
@@ -218,7 +218,7 @@ class MCP9600(InOut):
       self._mode = mode
 
   def open(self) -> None:
-    """Sets the I2C communication and device."""
+    """Initializes the I2C communication and the device."""
 
     if self._backend == 'blinka':
       self.log(logging.INFO, "Connecting the the MCP9600 with backend blinka")
@@ -263,7 +263,7 @@ class MCP9600(InOut):
     outputs Volts.
 
     Returns:
-      :obj:`list`: A list containing the timeframe and the output value
+      A :obj:`list`: containing the timestamp and the output value.
     """
 
     if self._backend == 'blinka':
@@ -335,7 +335,7 @@ class MCP9600(InOut):
     return out
 
   def close(self) -> None:
-    """Switches the MCP9600 to shut down mode and closes the I2C bus.."""
+    """Switches the MCP9600 to shutdown mode and closes the I2C bus."""
 
     if self._backend != 'blinka' and self._bus is not None:
       # Switching to shut down mode, keeping configuration

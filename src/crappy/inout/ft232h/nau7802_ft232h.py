@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Union, Optional, List
+from typing import Optional, List
 import logging
 
 from ..meta_inout import InOut
@@ -95,11 +95,15 @@ NAU7802_VREF = 3.3
 
 
 class NAU7802FT232H(InOut):
-  """Class for controlling Sparkfun's NAU7802 load cell conditioner.
+  """This class can read values from a NAU7802 load cell conditioner.
 
-  The NAU7802 InOut block is meant for reading output values from a NAU7802
-  load cell conditioner, using the I2C protocol. The output is in Volts by
-  default, but can be converted to Newtons using ``gain`` and ``offset``.
+  It is similar to the :ref:`NAU7802` class, except this class is specific for
+  use with an :ref:`FT232H` USB to I2C converter.
+
+  This load cell conditioner is a low-cost 24-bits, single-channel conditioner,
+  that can read up to 320 samples per second. It communicates over the I2C
+  protocol. The returned value of the InOut is in Volts by default, but can be
+  converted to Newtons using the ``gain`` and ``offset`` arguments.
   """
 
   ft232h = True
@@ -108,48 +112,47 @@ class NAU7802FT232H(InOut):
                device_address: int = 0x2A,
                gain_hardware: int = 128,
                sample_rate: int = 80,
-               int_pin: Optional[Union[str, int]] = None,
+               int_pin: Optional[str] = None,
                gain: float = 1,
                offset: float = 0,
                _ft232h_args: USBArgsType = tuple()) -> None:
-    """Checks the validity of the arguments..
+    """Checks the validity of the arguments.
 
     Args:
-      device_address (:obj:`int`, optional): The I2C address of the NAU7802. It
-        is impossible to change this address, so it is not possible to have
-        several NAU7802 on the same i2c bus.
-      gain_hardware (:obj:`int`, optional): The gain to be used by the
-        programmable gain amplifier. Setting a high gain allows reading small
-        voltages with a better precision, but it might saturate the sensor for
-        higher voltages. Available gains are:
+      device_address: The I2C address of the NAU7802. It is impossible to
+        change this address, so it is not possible to have several NAU7802
+        connected on the same I2C bus.
+      gain_hardware: The gain to be used by the programmable gain amplifier.
+        Setting a high gain allows reading small voltages with a better
+        precision, but it might saturate the sensor for higher voltages.
+        Available gains are:
         ::
 
           1, 2, 4, 8, 16, 32, 64, 128
 
-      sample_rate (:obj:`int`, optional): The sample rate for data conversion.
-        The higher the rate, the greater the noise. Available sample rates are:
+      sample_rate: The sample rate for data conversion. The higher the rate,
+        the greater the noise. Available sample rates are:
         ::
 
           10, 20, 40, 80, 320
 
-      int_pin (:obj:`int` or :obj:`str`, optional): Optionally, reads the end
-        of conversion signal from a GPIO rather than from an I2C message.
-        Speeds up the reading and decreases the traffic on the bus, but
-        requires one extra wire. With the backend `'Pi4'`, give the index of
-        the GPIO in BCM convention. With the `'ft232h'` backend, give the name
-        of the GPIO in the format `Dx` or `Cx`.
-      gain (:obj:`float`, optional): Allows to tune the output value according
-        to the formula:
+      int_pin: Optionally, reads the end of conversion signal from the polarity
+        of a GPIO rather than from an I2C register. Speeds up the reading and
+        decreases the traffic on the bus, but requires one extra wire. Give the
+        name of the GPIO in the format `Dx` or `Cx`.
+      gain: Allows to tune the output value according to the formula:
         ::
 
-          output = gain * tension + offset.
+          output = gain * tension + offset
 
-      offset (:obj:`float`, optional): Allows to tune the output value
-        according to the formula:
+      offset: Allows to tune the output value according to the formula:
         ::
 
-          output = gain * tension + offset.
+          output = gain * tension + offset
 
+      _ft232h_args: This argument is meant for internal use only and should not
+        be provided by the user. It contains the information necessary for
+        setting up the FT232H.
     """
 
     self._bus = None
@@ -190,7 +193,7 @@ class NAU7802FT232H(InOut):
     self._offset = offset
 
   def open(self) -> None:
-    """Sets the I2C communication and device."""
+    """Initializes the I2C communication and the device."""
 
     if not self._is_connected():
       raise IOError("The NAU7802 is not connected")
@@ -254,7 +257,7 @@ class NAU7802FT232H(InOut):
     gain and offset.
 
     Returns:
-      :obj:`list`: A list containing the timeframe and the output value
+      A :obj:`list` containing the timeframe and the output value.
     """
 
     # Waiting for data to be ready
@@ -299,7 +302,7 @@ class NAU7802FT232H(InOut):
     """Tries reading a byte from the device.
 
     Returns:
-      :obj:`bool`: :obj:`True` if reading was successful, else :obj:`False`
+      :obj:`True` if reading was successful, else :obj:`False`
     """
 
     try:
@@ -326,9 +329,9 @@ class NAU7802FT232H(InOut):
     """Sets a given bit in the specified register.
 
     Args:
-      bit_number (:obj:`int`): Position of the bit in the register
-      register_address (:obj:`int`): Index of the register
-      bit (:obj:`int`): Value of the bit
+      bit_number: Position of the bit in the register, as an :obj:`int`.
+      register_address: Index of the register, as an :obj:`int`.
+      bit: Value of the bit, as an :obj:`int`.
     """
 
     value = self._bus.read_i2c_block_data(self._device_address,
@@ -349,11 +352,11 @@ class NAU7802FT232H(InOut):
     """Reads a given bit in the specified register.
 
     Args:
-      bit_number (:obj:`int`): Position of the bit in the register
-      register_address (:obj:`int`): Index of the register
+      bit_number: Position of the bit in the register, as an :obj:`int`.
+      register_address: Index of the register, as an :obj:`int`.
 
     Returns:
-      :obj:`bool`: True if the bit value is 1, else False
+      :obj:`True` if the bit value is 1, else :obj:`False`.
     """
 
     value = self._bus.read_i2c_block_data(self._device_address,
@@ -367,7 +370,7 @@ class NAU7802FT232H(InOut):
     """Reads the calibration status bits.
 
     Returns:
-      :obj:`int`: The int value corresponding to the current calibration status
+      The :obj:`int` value corresponding to the current calibration status.
     """
 
     if self._get_bit(NAU7802_CTRL2_Bits['CTRL2_CAL_ERROR'],

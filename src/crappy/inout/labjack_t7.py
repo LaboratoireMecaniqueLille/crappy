@@ -26,7 +26,7 @@ class _Channel:
   channel can have.
 
   Not all the attributes are used by every channel, but they all have a use for
-  at least on type of channel.
+  at least one type of channel.
   """
 
   name: Union[str, int]
@@ -58,8 +58,8 @@ class _Channel:
 
 
 class LabjackT7(InOut):
-  """This InOut object allows controlling a Labjack T7 device. It can use any
-  channel as input/output.
+  """This InOut allows controlling a Labjack T7 device. It can use any channel
+  as input/output.
 
   The Labjack T7 is a very complete DAQ board. It features several ADC, several
   DAC, as well as multiple GPIOs. It can also read thermocouples, and run LUA
@@ -77,7 +77,7 @@ class LabjackT7(InOut):
                identifier: str = 'ANY',
                write_at_open: Optional[List[tuple]] = None,
                no_led: bool = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       channels: A :obj:`list` of the channels to interface with on the Labjack.
@@ -223,8 +223,8 @@ class LabjackT7(InOut):
 
       # Checking that the name was given as it's the most important attribute
       if 'name' not in channel:
-        raise AttributeError("[Labjack T7] The given channels must contain "
-                             "the 'name' key !")
+        raise AttributeError("The given channels must contain the 'name' "
+                             "key !")
       name = channel['name']
 
       # Modbus registers
@@ -297,7 +297,7 @@ class LabjackT7(InOut):
           self._channels_in.append(chan)
 
       else:
-        raise AttributeError(f"[Labjack T7] Invalid chan name: {name}")
+        raise AttributeError(f"Invalid chan name: {name}")
 
     self.log(logging.DEBUG, f"Input channels: {self._channels_in}")
     self.log(logging.DEBUG, f"Output channels: {self._channels_out}")
@@ -312,7 +312,7 @@ class LabjackT7(InOut):
     self._last_sent_val = [None for _ in self._write_addresses]
 
   def open(self) -> None:
-    """Opening the Labjack, parsing the commands to write at open, and sending
+    """Opens the Labjack, parses the commands to write at open, and sends
     them."""
 
     # Opening the Labjack
@@ -344,11 +344,11 @@ class LabjackT7(InOut):
                           aValues=values)
 
   def make_zero(self, delay: float) -> None:
-    """Overriding of the method of the parent class, because the Labjack T7
+    """Overriding the method of the parent class, because the Labjack T7
     allows setting offsets directly on the board.
 
     Setting the offsets on the Labjack is slightly quicker than correcting the
-    received values afterwards.
+    received values afterward.
 
     Args:
       delay: The delay during which the data should be acquired for determining
@@ -382,7 +382,8 @@ class LabjackT7(InOut):
         self._compensations = list()
 
   def get_data(self) -> List[float]:
-    """Read the signal on all pre-defined input channels."""
+    """Reads the signal on all pre-defined input channels, and returns the
+    values along with a timestamp.."""
 
     return [time()] + ljm.eReadAddresses(handle=self._handle,
                                          numFrames=len(self._read_addresses),
@@ -394,7 +395,7 @@ class LabjackT7(InOut):
 
     The given gain and offset are first applied, then the commands are clamped
     to the given limits. The commands are then written to the Labjack, only if
-    they differ from the last ones.
+    they differ from the last written ones.
     """
 
     # First, applying the given gain and offsets to the commands
@@ -431,7 +432,7 @@ class LabjackT7(InOut):
                             aValues=values)
 
   def close(self) -> None:
-    """Closes the Labjack."""
+    """Closes the connection to the Labjack."""
 
     if self._handle is not None:
       self.log(logging.INFO, "Closing the connection to the Labjack")

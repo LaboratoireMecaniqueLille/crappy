@@ -14,16 +14,13 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Agilent34420a(InOut):
-  """Sensor class for Agilent34420A devices.
+  """This class can read resistance and voltage values from an Agilent 34420A
+  multimeter.
 
-  This class contains method to measure values of resistance or voltage on
-  Agilent34420A devices.
+  It communicates over serial.
 
-  Note:
-    May work for other devices too, but not tested.
-
-    If you have issues with this class returning a lot of `'bad serial'`, make
-    sure you have the last version of :mod:`serial`.
+  May also work on similar devices from the same manufacturer, although that
+  was not tested.
   """
 
   def __init__(self,
@@ -31,11 +28,12 @@ class Agilent34420a(InOut):
                device: str = '/dev/ttyUSB0',
                baudrate: int = 9600,
                timeout: float = 1) -> None:
-    """Sets the args and initializes parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
-      mode: Desired value to measure. Should be either `b'VOLT'` or `b'RES'`.
-      device: Path to the device to open, as a :obj:`str`.
+      mode: Measurement mode, as :obj:`bytes`. Should be either `b'VOLT'` or
+        `b'RES'`.
+      device: Path to the serial port to open, as a :obj:`str`.
       baudrate: Desired baudrate for serial communication.
       timeout: Timeout for the serial connection, as a :obj:`float`.
     """
@@ -70,7 +68,7 @@ class Agilent34420a(InOut):
     self._ser.write(b"SYST:REM\n")
 
   def get_data(self) -> List[float]:
-    """Asks the Agilent to acquire a reading and returns it, except if an error
+    """Asks the Agilent to acquire a value and returns it, except if an error
     occurs in which case `0` is returned."""
 
     self.log(logging.DEBUG, f"Writing b'READ?  \\n' to port {self._device}")
