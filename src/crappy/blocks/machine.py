@@ -9,6 +9,9 @@ from .meta_block import Block
 from ..actuator import actuator_dict, Actuator
 from ..tool.ft232h import USBServer
 
+# TODO:
+#   Allow returning any iterable, not just list
+
 
 @dataclass
 class ActuatorInstance:
