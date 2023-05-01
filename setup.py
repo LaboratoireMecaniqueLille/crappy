@@ -98,7 +98,7 @@ setup(
 
   version=__version__,
 
-  description='Command and Real-time Acquisition Parallelized in Python',
+  description='Command and Real-time Acquisition in Parallelized Python',
 
   long_description=long_description,
 
