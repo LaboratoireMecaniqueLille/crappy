@@ -140,7 +140,7 @@ setup(
   extras_require={'SBC': ['smbus2',
                           'spidev',
                           'Adafruit-Blinka',
-                          'Adafruit-ADS1x15',
+                          'adafruit-circuitpython-ads1x15',
                           'adafruit-circuitpython-motorkit',
                           'adafruit-circuitpython-mprls',
                           'adafruit-circuitpython-busdevice'],
