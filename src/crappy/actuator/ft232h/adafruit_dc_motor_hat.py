@@ -60,7 +60,7 @@ class DCMotorHatFT232H(Actuator):
         `0x60`, but it is possible to change this setting by cutting traces on
         the board.
       _ft232h_args: This argument is meant for internal use only and should not
-        be provided by thr user. It contains the information necessary for
+        be provided by the user. It contains the information necessary for
         setting up the FT232H.
     """
 
