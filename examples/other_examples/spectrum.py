@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
   chan_names = [f'ch{i}' for i in channels]
 
-  spectrum = crappy.blocks.IOBlock('Spectrum',
+  spectrum = crappy.blocks.IOBlock('SpectrumM2I4711',
                                    ranges=ranges,
                                    channels=channels,
                                    streamer=True,

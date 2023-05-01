@@ -115,9 +115,9 @@ PiJuice
    :members: open, get_data, close
    :special-members: __init__
 
-Spectrum
-++++++++
-.. autoclass:: crappy.inout.Spectrum
+Spectrum M2I 4711
++++++++++++++++++
+.. autoclass:: crappy.inout.SpectrumM2I4711
    :members: open, start_stream, get_stream, stop_stream, close
    :special-members: __init__
 

@@ -27,7 +27,7 @@ from .nau7802 import NAU7802
 from .ni_daqmx import NIDAQmx
 from .opsens_handysens import HandySens
 from .pijuice_hat import PiJuice
-from .spectrum import Spectrum
+from .spectrum_m2i4711 import SpectrumM2I4711
 from .labjack_t7_streamer import T7Streamer
 from .waveshare_ad_da import WaveshareADDA
 from .waveshare_high_precision import WaveshareHighPrecision

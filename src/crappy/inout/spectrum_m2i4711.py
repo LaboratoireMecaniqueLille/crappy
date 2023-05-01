@@ -9,7 +9,7 @@ from .meta_inout import InOut
 from ..tool.bindings import pyspcm as spc
 
 
-class Spectrum(InOut):
+class SpectrumM2I4711(InOut):
   """This class can read data from a Spectrum high speed ADC interfacing over
   PCIe.
 

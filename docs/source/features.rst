@@ -498,7 +498,7 @@ Sensors
   fiber-optics temperature, strain, pressure or position measurement.
   Communicates over serial.
 
-- :ref:`Spectrum`
+- :ref:`Spectrum M2I 4711`
 
   Reads voltages from Spectrum's `M2i 4711 EXP <https://spectrum-
   instrumentation.com/products/details/M2i4711.php>`_ high-speed ADC
