@@ -47,12 +47,6 @@ GPIO Switch
    :members: open, set_cmd, close
    :special-members: __init__
 
-Sim868
-++++++
-.. autoclass:: crappy.inout.Sim868
-   :members: open, set_cmd, close
-   :special-members: __init__
-
 Kollmorgen AKD PDMM
 +++++++++++++++++++
 .. autoclass:: crappy.inout.KollmorgenAKDPDMM
@@ -113,6 +107,12 @@ PiJuice
 +++++++
 .. autoclass:: crappy.inout.PiJuice
    :members: open, get_data, close
+   :special-members: __init__
+
+Sim868
+++++++
+.. autoclass:: crappy.inout.Sim868
+   :members: open, set_cmd, close
    :special-members: __init__
 
 Spectrum M2I 4711
