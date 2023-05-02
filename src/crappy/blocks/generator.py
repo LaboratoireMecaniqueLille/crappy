@@ -10,9 +10,6 @@ from .meta_block import Block
 from .generator_path.meta_path import paths_dict
 from .._global import GeneratorStop
 
-# TODO:
-#   Move the path validity check to __init__
-
 
 class GeneratorNoStop(Exception):
   """A custom exception for handling the case when the Generator should not
@@ -106,16 +103,8 @@ class Generator(Block):
     self._current_path = None
     self._path_id = None
 
-  def prepare(self) -> None:
-    """Checks the validity of the provided path."""
-
     # Checking the validity of the path
-    try:
-      self._check_path_validity(iter(deepcopy(self._path)))
-    except (Exception,):
-      self.log(logging.ERROR, "Exception raised while parsing the generator "
-                              "path !")
-      raise
+    self._check_path_validity(iter(deepcopy(self._path)))
 
   def begin(self) -> None:
     """Initializes the first path and runs a :meth:`loop`, that may be
