@@ -1,10 +1,11 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Optional, Dict, Any, Union, List
+from typing import Optional, Dict, Any, Union, List, Iterable
 import numpy as np
 import logging
 from multiprocessing import current_process
+from collections import defaultdict
 
 from .meta_inout import MetaIO
 
@@ -22,7 +23,8 @@ class InOut(metaclass=MetaIO):
   def __init__(self, *_, **__) -> None:
     """Sets the attributes."""
 
-    self._compensations = list()
+    self._compensations: List[float] = list()
+    self._compensations_dict: Dict[str, float] = dict()
     self._logger: Optional[logging.Logger] = None
 
   def log(self, level: int, msg: str) -> None:
@@ -46,26 +48,47 @@ class InOut(metaclass=MetaIO):
     the hardware and the communication with it.
 
     Communication with hardware should be avoided in the :meth:`__init__`
-    method, and this method is where it should start happening. This method is
-    called after Crappy's processes start, i.e. when the associated
-    :ref:`IOBlock` already runs separately from all the other blocks.
+    method, and this method is where it should start. This method is called
+    after Crappy's processes start, i.e. when the associated :ref:`IOBlock`
+    already runs separately from all the other Blocks.
 
     It is fine for this method not to perform anything.
     """
 
     ...
 
-  def get_data(self) -> Optional[Union[list, Dict[str, Any]]]:
-    """This method should acquire data from a device and return it in a
-    :obj:`list` along with a timestamp.
+  def get_data(self) -> Optional[Union[Iterable, Dict[str, Any]]]:
+    """This method should acquire data from a device and return it along with a
+    timestamp.
 
-    The timestamp must always be the first returned value, and there can be any
-    number of other acquired channels. The same number of values should always
-    be returned, and they should be in the same order.
+    The data can be either returned as raw values in an iterable object (like
+    a :obj:`list` or a :obj:`tuple`), or along with labels in a :obj:`dict`.
+    Values can be of any type (:obj:`float`, :obj:`int`, :obj:`str`,
+    :obj:`bytes`, etc.), but most Blocks in Crappy will expect numeric values.
 
-    Alternatively, the values can be returned in a :obj:`dict`. In that case,
-    the ``labels`` argument of the IOBlock is ignored and the returned labels
-    correspond to the keys of the dict.
+    If the data is returned in a dictionary, its keys will be the labels for
+    sending data to downstream Blocks. The ``labels`` argument of the
+    :ref:`IOBlock` is ignored. It is **mandatory** to use `'t(s)'` as the label
+    for the time value.
+
+    Example:
+      ::
+
+        return {'t(s)': time.time(), 'value_1': -3.5, 'value_2': 4.1}
+
+    If the data is returned as another type of iterable, the labels must be
+    provided in the ``labels`` argument of the :ref:`IOBlock`. The number of
+    labels must match the number of returned values. It is **mandatory** to
+    return the time value first in the iterable.
+
+    Example:
+      ::
+
+        return time.time(), -3.5, 4.1
+
+    In both cases, there's no limit to the number of returned values. The same
+    number of values must always be returned, and each value must keep a
+    consistent type throughout the test.
 
     It is alright for this method to return :obj:`None` if there's no data to
     acquire.
@@ -80,31 +103,18 @@ class InOut(metaclass=MetaIO):
     return
 
   def set_cmd(self, *cmd) -> None:
-    """This method should handle commands received from the upstream blocks.
+    """This method should handle commands received from the upstream Blocks.
 
-    Usually the command is meant to be set on a device, but any other behavior
-    is possible. The commands will be passed to this method as `args` (not
-    `kwargs`), in the same order as the ``cmd_labels`` are given in the
-    IOBlock.
+    Among all the data received on the incoming Link(s), only the labels listed
+    in the ``cmd_labels`` argument of the :ref:`IOBlock` are considered. The
+    command values are passed as arguments to this method in the same order as
+    the ``cmd_labels`` are given. They are passed as positional arguments, not
+    keyword arguments.
 
-    If the expected number of commands is always the same, you can simply put
-    as many `args` to your ``set_cmd`` method as there are commands. For
-    example for three commands:
-    ::
-
-      def set_cmd(self, cmd0, cmd1, cmd2):
-        ...
-
-    Alternatively, or if the number of commands may vary from one test to
-    another, you can get all the commands at once in a :obj:`tuple` by putting
-    a single unpacking argument. Example:
-    ::
-
-      def set_cmd(self, *cmds):
-        number_of_commands = len(cmds)
-        cmd0 = cmds[0]
-        ...
-
+    Example:
+      If ``{'t(s)': 20.5, 'value_1': 1.5, 'value_2': 3.6, 'value_3': 'OK'}`` is
+      received from upstream Blocks, and ``cmd_labels=('value_3', 'value_1')``,
+      then the call will be ``set_cmd('OK', 1.5)``.
     """
 
     self.log(logging.WARNING,
@@ -119,21 +129,37 @@ class InOut(metaclass=MetaIO):
     self.log(logging.WARNING, "The start_stream method was called but is not "
                               "defined !")
 
-  def get_stream(self) -> Optional[List[np.ndarray]]:
-    """This method should acquire a stream as a numpy array, and return it in a
-    :obj:`list` along with an array carrying the timestamps.
+  def get_stream(self) -> Optional[Union[Iterable[np.ndarray],
+                                         Dict[str, np.ndarray]]]:
+    """This method should acquire a stream as a numpy array, and return it
+    along with an array carrying the timestamps.
 
-    The time array must be the first element of the list, the stream array the
-    second element. The time array should have only one column, the stream
-    array can have any number of columns representing the different channels
-    acquired.
+    Two arrays should be created: one of dimension `(m,)` carrying the
+    timestamps, and one of dimension `(m, n)` carrying the acquired data. They
+    represent `n` channels acquired at `m` successive time points. There's no
+    maximum number of acquired channels, but this number must be constant
+    throughout a test.
 
-    It is also possible to return the two arrays in a :obj:`dict`, in which
-    case the ``labels`` argument is ignored and the keys of the dict set the
-    returned labels.
+    The two arrays can either be returned as is in an iterable object (like a
+    :obj:`list` or a :obj:`tuple`), or along with labels in a :obj:`dict`.
+
+    If the arrays are returned in a dictionary, its keys will be the labels for
+    sending data to downstream Blocks. The ``labels`` argument of the
+    :ref:`IOBlock` is ignored. It is **mandatory** to use `'t(s)'` as the label
+    for the time array.
+
+    If the arrays are returned in another type of iterable, two labels must be
+    provided in the ``labels`` argument of the :ref:`IOBlock`. The first label
+    **must be** `'t(s)'`, the second can be anything. It is **mandatory** to
+    return the time value first in the iterable.
 
     It is alright for this method to return :obj:`None` if there's no data to
     acquire.
+
+    Note:
+      It is technically  possible to return more than two arrays, or even
+      objects that are not arrays, but it is not the intended use for this
+      method and might interfere with some functionalities of Crappy.
     """
 
     self.log(logging.WARNING, "The get_stream method was called but is not "
@@ -153,8 +179,8 @@ class InOut(metaclass=MetaIO):
 
     It will be called when the associated :ref:`IOBlock` receives the order to
     stop (usually because the user hit `CTRL+C`, or because a :ref:`Generator`
-    block reached the end of its path, or because an exception was raised in
-    any of the blocks).
+    Block reached the end of its path, or because an exception was raised in
+    any of the Blocks).
 
     It is fine for this method not to perform anything.
     """
@@ -162,43 +188,73 @@ class InOut(metaclass=MetaIO):
     ...
 
   def make_zero(self, delay: float) -> None:
-    """Acquires data for a given delay, averages it for each channel, and
-    stores the average.
+    """This method acquires data for a given delay and stores for each channel
+    the average value.
 
-    Does not work for pure streams, as it requires a :meth:`get_data` for
-    acquiring the data.
+    These values are used for zeroing the channels, so that their values start
+    at `0` in the beginning of the test.
 
-    The average values will then be used to remove the offset of the acquired
-    data during the test.
+    Important:
+      This method uses :meth:`get_data` for acquiring the values, so it doesn't
+      work for pure streams. It also doesn't work if the acquired values do not
+      support arithmetic operations (like :obj:`str`).
     """
 
     buf = []
+    buf_dict = defaultdict(list)
     t0 = time()
 
     # Acquiring data for a given delay
     while time() < t0 + delay:
       data = self.get_data()
-      if data is not None and len(data) > 1:
-        buf.append(data[1:])
+      if data is not None:
+
+        # Case when the InOut returns a dict
+        if isinstance(data, dict):
+          for label, value in data.items():
+            buf_dict[label].append(value)
+
+        # Case when the InOut returns another type of iterable
+        else:
+          data = list(data)
+          if len(data) > 1:
+            buf.append(data[1:])
+
+    # Removing the time information if given
+    if 't(s)' in buf_dict:
+      del buf_dict['t(s)']
 
     # If no data could be acquired, abort
-    if not buf:
+    if not buf and not buf_dict:
       self.log(logging.WARNING, "No data acquired when zeroing the channels, "
                                 "aborting the zeroing")
       return
 
-    # Averaging the values and storing them
-    for values in zip(*buf):
-      try:
-        self._compensations.append(-sum(values) / len(values))
-      except TypeError:
-        # If something goes wrong, just forget about the offsetting
-        self._compensations = list()
-        self.log(logging.WARNING,
-                 "Cannot calculate the offset !\nPossible reasons are that the"
-                 " InOut doesn't return only numbers, or that it returns a "
-                 "dict instead of the expected list")
-        return
+    # Averaging the values and storing them in a list
+    if buf:
+      for values in zip(*buf):
+        try:
+          self._compensations.append(-sum(values) / len(values))
+        except TypeError:
+          # If something goes wrong, just forget about the offsetting
+          self._compensations = list()
+          self.log(logging.WARNING,
+                   "Cannot calculate the offset !\nA possible reason is that "
+                   "the InOut doesn't return only numbers")
+          return
+
+    # Averaging the values and storing them in a dict
+    else:
+      for label, values in buf_dict.items():
+        try:
+          self._compensations_dict[label] = -sum(values) / len(values)
+        except TypeError:
+          # If something goes wrong, just forget about the offsetting
+          self._compensations_dict = dict()
+          self.log(logging.WARNING,
+                   "Cannot calculate the offset !\nA possible reason is that "
+                   "the InOut doesn't return only numbers in the dict")
+          return
 
   def return_data(self) -> Optional[Union[list, Dict[str, Any]]]:
     """Returns the data from :meth:`get_data`, corrected by an offset if the
@@ -206,43 +262,114 @@ class InOut(metaclass=MetaIO):
 
     data = self.get_data()
 
-    # If there's no offsetting, just return the data
-    if data is None or not self._compensations:
-      return data
+    # Nothing to do if there's no data
+    if data is None:
+      return
 
-    # Otherwise, offset the acquired data except for time
-    elif len(data[1:]) == len(self._compensations):
-      try:
-        return [data[0]] + [val + comp for val, comp in
-                            zip(data[1:], self._compensations)]
-      # Shouldn't happen but doesn't harm to be careful
-      except TypeError:
+    # Case when the data is returned as a dict
+    if isinstance(data, dict):
+      # Checking that the time label is given
+      if 't(s)' not in data:
+        raise ValueError("The time label 't(s)' must be given in the dict "
+                         "returned by get_data() !")
+
+      # If there's no offsetting, just return the data
+      if not self._compensations_dict:
         return data
 
-    # Should also not happen
-    else:
-      raise ValueError("The number of offsets doesn't match the number of "
-                       "acquired values.")
+      # Offsetting if all the labels in data have an offset, except time label
+      elif all(label in self._compensations_dict
+               for label in data if label != 't(s)'):
+        t = {'t(s)': data['t(s)']}
+        comp = {label: data[label] + self._compensations_dict[label]
+                for label in data if label != 't(s)'}
+        return dict(**t, **comp)
 
-  def return_stream(self) -> Optional[List[np.ndarray]]:
+      else:
+        raise ValueError("Not all the labels in the acquired data have an "
+                         "offset value !")
+
+    # Case when data is returned as an iterable but not a dict
+    else:
+      # Converting to list for convenience
+      data = list(data)
+
+      # If there's no offsetting, just return the data
+      if not self._compensations:
+        return data
+
+      # Offsetting if the number of acquired values match the number of offsets
+      elif len(data[1:]) == len(self._compensations):
+        return [data[0]] + [val + comp for val, comp
+                            in zip(data[1:], self._compensations)]
+
+      else:
+        raise ValueError("The number of offsets doesn't match the number of "
+                         "acquired values.")
+
+  def return_stream(self) -> Optional[Union[List[np.ndarray],
+                                            Dict[str, np.ndarray]]]:
     """Returns the data from :meth:`get_stream`, corrected by an offset if the
     ``make_zero_delay`` argument of the :ref:`IOBlock` is set."""
 
     data = self.get_stream()
 
-    # If there's no offsetting, just return the data
-    if data is None or not self._compensations:
-      return data
+    # Nothing to do if there's no data
+    if data is None:
+      return
 
-    # Otherwise, offset the acquired data except for time
-    elif data[1].shape[1] == len(self._compensations):
-      try:
-        return [data[0], data[1] + self._compensations]
-      # Shouldn't happen but doesn't harm to be careful
-      except TypeError:
+    # Case when the stream is returned as a dict
+    if isinstance(data, dict):
+      # Checking that the time label is given
+      if 't(s)' not in data:
+        raise ValueError("The time label 't(s)' must be given in the dict "
+                         "returned by get_stream() !")
+
+      # If there's no offsetting, just return the stream
+      if not self._compensations and not self._compensations_dict:
         return data
 
-    # There's a problem with the shape of the output data
+      t = {'t(s)': data['t(s)']}
+      comp = dict()
+      # Offsetting if the shape of the acquired values match the number of
+      # offsets
+      for label, array in ((key, val) for key, val in data.items()
+                           if key != 't(s)'):
+        # Case when get_data returns an iterable
+        if self._compensations and len(self._compensations) == array.shape[1]:
+          comp[label] = array + self._compensations
+        # Case when get_data returns a dict
+        elif (self._compensations_dict and
+              len(self._compensations_dict) == array.shape[1]):
+          comp[label] = array + list(self._compensations_dict.values())
+        # The shapes do not match
+        else:
+          raise ValueError("The number of offsets doesn't match the shape of "
+                           "the acquired array !")
+        return dict(**t, **comp)
+
+    # Case when stream is returned as an iterable but not a dict
     else:
-      raise ValueError("The number of offsets doesn't match the shape of the "
-                       "acquired array.")
+      # Converting to list for convenience
+      data = list(data)
+
+      # If there's no offsetting, just return the stream
+      if not self._compensations and not self._compensations_dict:
+        return data
+
+      # Offsetting if the shape of the acquired values match the number of
+      # offsets
+      comp = list()
+      for array in data[1:]:
+        # Case when get_data returns an iterable
+        if self._compensations and len(self._compensations) == array.shape[1]:
+          comp.append(array + self._compensations)
+        # Case when get_data returns a dict
+        elif (self._compensations_dict and
+              len(self._compensations_dict) == array.shape[1]):
+          comp.append(array + self._compensations_dict.values())
+        # The shapes do not match
+        else:
+          raise ValueError("The number of offsets doesn't match the shape "
+                           "of the acquired array !")
+      return [data[0]] + comp
