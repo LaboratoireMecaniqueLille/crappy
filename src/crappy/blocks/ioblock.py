@@ -7,6 +7,9 @@ from .meta_block import Block
 from ..inout import inout_dict, InOut
 from ..tool.ft232h import USBServer
 
+# TODO:
+#   Call set_cmd with commands in same order as cmd_labels
+
 
 class IOBlock(Block):
   """This block is meant to drive :ref:`In / Out` objects. It can acquire data,

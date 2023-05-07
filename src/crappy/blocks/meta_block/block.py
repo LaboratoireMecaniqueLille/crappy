@@ -26,6 +26,7 @@ from ...tool.ft232h import USBServer
 
 # TODO:
 #   Increase granularity for the recv_all_data_raw method
+#   Improve the send method
 
 
 class Block(Process, metaclass=MetaBlock):
