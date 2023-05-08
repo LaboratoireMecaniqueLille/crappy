@@ -12,16 +12,24 @@ from ..tool.ft232h import USBServer
 
 
 class IOBlock(Block):
-  """This block is meant to drive :ref:`In / Out` objects. It can acquire data,
-  and/or set commands. One IOBlock can only drive a single InOut.
+  """This Block is meant to drive :class:`~crappy.inout.InOut` objects. It can
+  acquire data, and/or set commands. One IOBlock can only drive a single InOut.
 
   If it has incoming links, it will set the commands received over the labels
-  given in ``cmd_labels``. Additional commands to set at the very beginning or
+  given in ``cmd_labels`` by calling the :meth:`~crappy.inout.InOut.set_cmd`
+  method of the InOut. Additional commands to set at the very beginning or
   the very end of the test can also be specified.
 
-  If it has outgoing links, it will acquire data and send it downstream over
-  the labels given in ``labels``. It is possible to trigger the acquisition
-  using a predefined label.
+  If it has outgoing links, it will acquire data using the
+  :meth:`~crappy.inout.InOut.get_data` method of the InOut and send it
+  downstream over the labels given in ``labels``. It is possible to trigger the
+  acquisition using a predefined label.
+
+  The ``streamer`` argument allows using the "streamer" mode of InOuts
+  supporting it, instead of the regular acquisition mode. Finally, the
+  ``make_zero_delay`` argument allows offsetting the acquired values to zero at
+  the beginning of the test. Refer to the documentation of each argument for a
+  more detailed description.
   """
 
   def __init__(self,
@@ -42,43 +50,49 @@ class IOBlock(Block):
     """Sets the args and initializes the parent class.
 
     Args:
-      name: The name of the :ref:`In / Out` class to instantiate.
-      labels: A :obj:`list` containing the output labels for InOuts that
-        acquire data. They correspond to the values returned by the InOut's
-        :meth:`get_data` method, so there should be as many labels as values
-        returned, and given in the appropriate order. The first label must
-        always be the timestamp, preferably called ``'t(s)'``. This argument
-        can be omitted if :meth:`get_data` returns a :obj:`dict` instead of a
-        :obj:`list`. Ignored if the block has no output link.
-      cmd_labels: A :obj:`list` of the labels considered as inputs for this
-        block, for InOuts that set commands. The values received from these
-        labels will be passed to the InOut's :meth:`set_cmd` method, in the
-        same order as the labels are given. Usually, time is not part of the
-        cmd_labels. Ignored if the block has no input link.
-      trigger_label: If given, the block will only read data whenever a value
-        (can be any value) is received on this label. Ignored if the block has
-        no output link. A trigger label can also be a cmd label.
-      streamer: If :obj:`False`, the :meth:`get_data` method of the InOut
-        object is called for acquiring data, else it's the :meth:`get_stream`
-        method.
+      name: The name of the :class:`~crappy.inout.InOut` class to instantiate.
+      labels: An iterable (e.g. a :obj:`list` or a :obj:`tuple`) containing the
+        output labels for InOuts that acquire data. They correspond to the
+        values returned by the InOut's :meth:`~crappy.inout.InOut.get_data`
+        method, so there should be as many labels as returned values, and given
+        in the appropriate order. The first label must always be the time
+        label, preferably called ``'t(s)'``. This argument can be omitted if
+        :meth:`~crappy.inout.InOut.get_data` returns a :obj:`dict`. Ignored if
+        the Block has no output Link.
+      cmd_labels: An iterable (e.g. a :obj:`list` or a :obj:`tuple`) containing
+        the labels considered as inputs of this Block, for InOuts that set
+        commands. The values received from these labels will be passed to the
+        InOut's :meth:`~crappy.inout.InOut.set_cmd` method, in the same order
+        as the labels are given. Usually, time is not part of the
+        ``cmd_labels``. Ignored if the Block has no input Link.
+      trigger_label: If given, the Block will only read data whenever a value
+        is received on this label (can be any value). Ignored if the Block has
+        no output Link. A trigger label can also be a cmd label.
+      streamer: If :obj:`False`, the :meth:`~crappy.inout.InOut.get_data`
+        method of the InOut is called for acquiring data, else it is the
+        :meth:`~crappy.inout.InOut.get_stream` method. Refer to the
+        documentation of these methods for more information.
       initial_cmd: An initial command for the InOut, set during
         :meth:`prepare`. If given, there must be as many values as in
-        cmd_labels.
-      exit_cmd: A final command for the InOut, set during :obj:`finish`. If
-        given, there must be as many values as in cmd_labels.
+        ``cmd_labels``. Must be given as an iterable (e.g. a :obj:`list` or a
+        :obj:`tuple`).
+      exit_cmd: A final command for the InOut, set during :meth:`finish`. If
+        given, there must be as many values as in ``cmd_labels``. Must be given
+        as an iterable (e.g. a :obj:`list` or a :obj:`tuple`).
       make_zero_delay: If set, will acquire data before the beginning of the
         test and use it to offset all the labels to zero. The data will be
-        acquired during the given number of seconds. Ignored if the block has
-        no output links.
-      spam: If :obj:`False`, the block will call :meth:`set_cmd` on the
+        acquired during the given number of seconds. Ignored if the Block has
+        no output Links. Does not work for InOuts that acquire values other
+        than numbers (:obj:`str` for example).
+      spam: If :obj:`False`, the Block will call :meth:`set_cmd` on the
         InOut object only if the current command is different from the
         previous. Otherwise, it will call the method each time a command is
         received.
-      freq: The block will try to loop as this frequency, or as fast as
+      freq: The Block will try to loop as this frequency, or as fast as
         possible if no value is given.
       display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
-      **kwargs: The arguments to be passed to the :ref:`In / Out` class.
+        Block while running.
+      **kwargs: The arguments to be passed to the :class:`~crappy.inout.InOut`.
     """
 
     self._device: Optional[InOut] = None
@@ -136,7 +150,7 @@ class IOBlock(Block):
       self._ft232h_args = USBServer.register(ft232h_ser_num)
 
   def prepare(self) -> None:
-    """Checks the consistency of the link layout, opens the device and sets the
+    """Checks the consistency of the Link layout, opens the InOut and sets the
     initial command if required."""
 
     # Instantiating the device in a regular way
@@ -180,11 +194,22 @@ class IOBlock(Block):
       self._prev_values.update(zip(self._cmd_labels, self._initial_cmd))
 
   def loop(self) -> None:
-    """Gets the latest command, reads data from the device and sets the
-    command.
+    """Reads data from the InOut and/or sets the received commands.
 
-    Also handles the trig label if one was given, and manages the buffer for
-    the previously received commands.
+    Data is read from the InOut **only** if this Block has outgoing Links. If
+    the ``trigger_label`` is given, data is read only if a trigger is received
+    over the given trigger label.
+
+    A command is set on the InOut **only** if this Block has incoming Links,
+    and if data is received over these Links. Depending on the value of the
+    ``spam`` argument, a command might not be set if it is similar to the
+    previous one.
+
+    The data is read from the InOut either by calling its
+    :meth:`~crappy.inout.InOut.return_data` or its
+    :meth:`~crappy.inout.InOut.return_stream` method, depending if the
+    ``streamer`` argument is :obj:`True` of :obj:`False`. The commands are
+    always set by calling the :meth:`~crappy.inout.InOut.set_cmd` method.
     """
 
     # Receiving all the latest data waiting in the links
@@ -229,7 +254,7 @@ class IOBlock(Block):
 
   def finish(self) -> None:
     """Stops the stream, sets the exit command if necessary, and closes the
-    device."""
+    InOut."""
 
     # Stopping the stream
     if self._streamer and self._device is not None:
