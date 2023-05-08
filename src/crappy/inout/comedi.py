@@ -86,9 +86,9 @@ class Comedi(InOut):
         indicating whether the channel should be zeroed or not. If so, data
         will be acquired on this channel before the test starts, and a
         compensation value will be deduced so that the offset of this channel
-        is `0`. **It will only take effect if the ``make_zero_delay`` argument
-        of the :ref:`IOBlock` controlling the Comedi is set** ! If not given,
-        the channels are by default not zeroed.
+        is `0`. **It will only take effect if the** ``make_zero_delay``
+        **argument of the** :class:`~crappy.blocks.IOBlock` **controlling the
+        Comedi is set** ! If not given, the channels are by default not zeroed.
       out_sub_device: The id of the subdevice to use for output channels, as an
         :obj:`int`.
       out_channels: A :obj:`list` containing the indexes of the channels to use

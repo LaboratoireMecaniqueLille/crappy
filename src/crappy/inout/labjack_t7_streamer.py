@@ -50,7 +50,7 @@ class T7Streamer(InOut):
   """This InOut allows controlling a Labjack T7 device in stream mode.
 
   It can only acquire data on the `AIN` channels. For single point mode, and
-  acquisition on all channels, use the :ref:`Labjack T7` InOut.
+  acquisition on all channels, use the :class:`~crappy.inout.LabjackT7` InOut.
 
   Compared with single point acquisition, the streaming mode can achieve much
   higher data rates and has a much greater regularity in the frequency of the
@@ -126,8 +126,8 @@ class T7Streamer(InOut):
         - make_zero: If :obj:`True`, data will be acquired on this channel
           before the test starts, and a compensation value will be deduced
           so that the offset of this channel is `0`. **It will only take effect
-          if the ``make_zero_delay`` argument of the :ref:`IOBlock` controlling
-          the Labjack is set** !
+          if the** ``make_zero_delay`` **argument of the**
+          :class:`~crappy.blocks.IOBlock` **controlling the Labjack is set** !
 
         - range: The range of the acquisition in Volts. A range of `x` means
           that values can be read  between `-x` and `x` Volts. The possible

@@ -64,8 +64,9 @@ class MCP9600FT232H(InOut):
   """This class can read temperature values from an MCP9600 thermocouple
   reader through an FT232H.
 
-  It is similar to the :ref:`MCP9600` class, except this class is specific for
-  use with an :ref:`FT232H` USB to I2C converter.
+  It is similar to the :class:`~crappy.inout.MCP9600` class, except this class
+  is specific for use with an :class:`~crappy.tool.ft232h.FT232H` USB to I2C
+  converter.
 
   It communicates over the I2C protocol. The output is in `°C`, except for one
   operating mode that returns Volts. Several parameters can be tuned, like the

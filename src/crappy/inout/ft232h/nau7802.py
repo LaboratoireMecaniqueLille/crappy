@@ -97,8 +97,9 @@ NAU7802_VREF = 3.3
 class NAU7802FT232H(InOut):
   """This class can read values from a NAU7802 load cell conditioner.
 
-  It is similar to the :ref:`NAU7802` class, except this class is specific for
-  use with an :ref:`FT232H` USB to I2C converter.
+  It is similar to the :class:`~crappy.inout.NAU7802` class, except this class 
+  is specific for use with an :class:`~crappy.tool.ft232h.FT232H` USB to I2C
+  converter.
 
   This load cell conditioner is a low-cost 24-bits, single-channel conditioner,
   that can read up to 320 samples per second. It communicates over the I2C

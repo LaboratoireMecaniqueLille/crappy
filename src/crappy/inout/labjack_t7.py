@@ -67,7 +67,7 @@ class LabjackT7(InOut):
   from Crappy.
 
   This class is not capable of streaming. For higher frequency, refer to the
-  :ref:`Labjack T7 Streamer` class.
+  :class:`~crappy.inout.T7Streamer` class.
   """
 
   def __init__(self,
@@ -151,9 +151,9 @@ class LabjackT7(InOut):
           before the test starts, and a compensation value will be deduced
           so that the offset of this channel is `0`. The compensation is
           performed directly by the Labjack. This setting only has effect for
-          `AIN` channels defined as inputs. **It will only take effect if the
-          ``make_zero_delay`` argument of the :ref:`IOBlock` controlling the
-          Labjack is set** !
+          `AIN` channels defined as inputs. **It will only take effect if the**
+          ``make_zero_delay`` **argument of the**
+          :class:`~crappy.blocks.IOBlock` **controlling the Labjack is set** !
 
         - direction: If :obj:`True`, the channel is considered as an output,
           else as an input. Only has effect for `IO` channels, the default is

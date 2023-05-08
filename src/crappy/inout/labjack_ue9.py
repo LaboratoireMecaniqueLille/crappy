@@ -31,8 +31,8 @@ class LabjackUE9(InOut):
 
   It cannot read nor drive any of the other inout or output channels on the
   UE9. The UE9 model has been discontinued, and replaced by the T7 model (see
-  :ref:`Labjack T7`). It is thus likely that this class won't be further
-  improved in the future.
+  :class:`~crappy.inout.LabjackT7`). It is thus likely that this class won't be
+  further improved in the future.
   """
 
   def __init__(self,
@@ -67,9 +67,10 @@ class LabjackUE9(InOut):
         indicating whether the channel should be zeroed or not. If so, data
         will be acquired on this channel before the test starts, and a
         compensation value will be deduced so that the offset of this channel
-        is `0`. **It will only take effect if the ``make_zero_delay`` argument
-        of the :ref:`IOBlock` controlling the Labjack is set** ! If not given,
-        the channels are by default not zeroed.
+        is `0`. **It will only take effect if the** ``make_zero_delay``
+        **argument of the** :class:`~crappy.blocks.IOBlock` **controlling the
+        Labjack is set** ! If not given, the channels are by default not
+        zeroed.
       resolution: A :obj:`list` containing for each channel the resolution of
         the acquisition as an integer. Refer to Labjack documentation for more
         details. The higher this value the better the resolution, but the lower

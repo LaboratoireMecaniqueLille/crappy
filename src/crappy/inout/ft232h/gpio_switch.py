@@ -9,8 +9,9 @@ from ...tool.ft232h import FT232HServer as FT232H, ft232h_pin_nr, USBArgsType
 class GPIOSwitchFT232H(InOut):
   """This class can drive a GPIO high or low on a FT232H.
 
-  It is similar to the :ref:`GPIO Switch` class, except this class is specific
-  for use with an :ref:`FT232H` USB to GPIO converter.
+  It is similar to the :class:`~crappy.inout.GPIOSwitch` class, except this
+  class is specific for use with an :class:`~crappy.tool.ft232h.FT232H` USB to
+  GPIO converter.
 
   When the command value is `1` the GPIO is turned high, when the command is
   `0` it is turned low. Any value other than `0` and `1` raises an error.

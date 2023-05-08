@@ -61,9 +61,9 @@ class _Channel:
 class NIDAQmx(InOut):
   """This class can drive data acquisition hardware from National Instruments.
 
-  It is similar to :ref:`DAQmx` InOut, except it relies on the :mod:`nidaqmx`
-  module. It was written and tested on a USB 6008 DAQ board, but should work
-  with other instruments as well.
+  It is similar to :class:`~crappy.inout.DAQmx` InOut, except it relies on the
+  :mod:`nidaqmx` module. It was written and tested on a USB 6008 DAQ board, but
+  should work with other instruments as well.
 
   It can read single data points from digital and analog channels, read streams
   of data from analog channels, and set the voltage of analog and digital

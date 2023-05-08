@@ -29,9 +29,9 @@ class _Channel:
 class DAQmx(InOut):
   """This class can drive data acquisition hardware from National Instruments.
 
-  It is similar to :ref:`NI DAQmx` InOut, except it relies on the
-  :mod:`PyDAQmx` module. It was written and tested on a USB 6008 DAQ board, but
-  should work with other instruments as well.
+  It is similar to :class:`~crappy.inout.NIDAQmx` InOut, except it relies on
+  the :mod:`PyDAQmx` module. It was written and tested on a USB 6008 DAQ board,
+  but should work with other instruments as well.
 
   Note:
     This class requires the NIDAQmx C driver to be installed, as well as the
@@ -84,9 +84,9 @@ class DAQmx(InOut):
         indicating whether the channel should be zeroed or not. If so, data
         will be acquired on this channel before the test starts, and a
         compensation value will be deduced so that the offset of this channel
-        is `0`. **It will only take effect if the ``make_zero_delay`` argument
-        of the :ref:`IOBlock` controlling the Comedi is set** ! If not given,
-        the channels are by default not zeroed.
+        is `0`. **It will only take effect if the** ``make_zero_delay``
+        **argument of the** :class:`~crappy.blocks.IOBlock` **controlling the
+        DAQ is set** ! If not given, the channels are by default not zeroed.
       sample_rate: The frequency of the acquisition, as a :obj:`float`. The
         higher this number, the more noise there is on the signal but the
         higher the acquisition frequency.

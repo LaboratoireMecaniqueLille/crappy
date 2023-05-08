@@ -16,8 +16,9 @@ class MPRLSFT232H(InOut):
   """This class can read values from an MPRLS pressure sensor through an
   FT232H.
 
-  It is similar to the :ref:`MPRLS` class, except this class is specific for
-  use with an :ref:`FT232H` USB to I2C converter.
+  It is similar to the :class:`~crappy.inout.MPRLS` class, except this class is
+  specific for use with an :class:`~crappy.tool.ft232h.FT232H` USB to I2C
+  converter.
 
   It communicates over I2C with the sensor.
   """

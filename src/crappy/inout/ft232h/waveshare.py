@@ -73,8 +73,9 @@ class WaveshareADDAFT232H(InOut):
   """Class for controlling Waveshare's AD/DA Raspberry Pi hat through an
   FT232H.
 
-  It is similar to the :ref:`Waveshare AD/DA` class, except this class is
-  specific for use with an :ref:`FT232H` USB to I2C converter.
+  It is similar to the :class:`~crappy.inout.WaveshareADDA` class, except this
+  class is specific for use with an :class:`~crappy.tool.ft232h.FT232H` USB to
+  I2C converter.
 
   It communicates over the SPI protocol and the GPIOs. It allows to
   read values from the 8-channels ADC and/or to set the 2-channels DAC. The hat

@@ -14,8 +14,8 @@ class InOut(metaclass=MetaIO):
   """Base class for all InOut objects. Implements methods shared by all the
   InOuts, and ensures their dataclass is MetaIO.
 
-  The InOut objects are helper classes used by the :ref:`IOBlock` to interface
-  with hardware.
+  The InOut objects are helper classes used by the
+  :class:`~crappy.blocks.IOBlock` to interface with hardware.
   """
 
   ft232h: bool = False
@@ -49,8 +49,9 @@ class InOut(metaclass=MetaIO):
 
     Communication with hardware should be avoided in the :meth:`__init__`
     method, and this method is where it should start. This method is called
-    after Crappy's processes start, i.e. when the associated :ref:`IOBlock`
-    already runs separately from all the other Blocks.
+    after Crappy's processes start, i.e. when the associated
+    :class:`~crappy.blocks.IOBlock` already runs separately from all the other
+    Blocks.
 
     It is fine for this method not to perform anything.
     """
@@ -68,8 +69,8 @@ class InOut(metaclass=MetaIO):
 
     If the data is returned in a dictionary, its keys will be the labels for
     sending data to downstream Blocks. The ``labels`` argument of the
-    :ref:`IOBlock` is ignored. It is **mandatory** to use `'t(s)'` as the label
-    for the time value.
+    :class:`~crappy.blocks.IOBlock` is ignored. It is **mandatory** to use
+    `'t(s)'` as the label for the time value.
 
     Example:
       ::
@@ -77,9 +78,9 @@ class InOut(metaclass=MetaIO):
         return {'t(s)': time.time(), 'value_1': -3.5, 'value_2': 4.1}
 
     If the data is returned as another type of iterable, the labels must be
-    provided in the ``labels`` argument of the :ref:`IOBlock`. The number of
-    labels must match the number of returned values. It is **mandatory** to
-    return the time value first in the iterable.
+    provided in the ``labels`` argument of the :class:`~crappy.blocks.IOBlock`.
+    The number of labels must match the number of returned values. It is
+    **mandatory** to return the time value first in the iterable.
 
     Example:
       ::
@@ -106,10 +107,10 @@ class InOut(metaclass=MetaIO):
     """This method should handle commands received from the upstream Blocks.
 
     Among all the data received on the incoming Link(s), only the labels listed
-    in the ``cmd_labels`` argument of the :ref:`IOBlock` are considered. The
-    command values are passed as arguments to this method in the same order as
-    the ``cmd_labels`` are given. They are passed as positional arguments, not
-    keyword arguments.
+    in the ``cmd_labels`` argument of the :class:`~crappy.blocks.IOBlock` are
+    considered. The command values are passed as arguments to this method in
+    the same order as the ``cmd_labels`` are given. They are passed as
+    positional arguments, not keyword arguments.
 
     Example:
       If ``{'t(s)': 20.5, 'value_1': 1.5, 'value_2': 3.6, 'value_3': 'OK'}`` is
@@ -145,13 +146,13 @@ class InOut(metaclass=MetaIO):
 
     If the arrays are returned in a dictionary, its keys will be the labels for
     sending data to downstream Blocks. The ``labels`` argument of the
-    :ref:`IOBlock` is ignored. It is **mandatory** to use `'t(s)'` as the label
-    for the time array.
+    :class:`~crappy.blocks.IOBlock` is ignored. It is **mandatory** to use
+    `'t(s)'` as the label for the time array.
 
     If the arrays are returned in another type of iterable, two labels must be
-    provided in the ``labels`` argument of the :ref:`IOBlock`. The first label
-    **must be** `'t(s)'`, the second can be anything. It is **mandatory** to
-    return the time value first in the iterable.
+    provided in the ``labels`` argument of the :class:`~crappy.blocks.IOBlock`.
+    The first label **must be** `'t(s)'`, the second can be anything. It is
+    **mandatory** to return the time value first in the iterable.
 
     It is alright for this method to return :obj:`None` if there's no data to
     acquire.
@@ -177,10 +178,10 @@ class InOut(metaclass=MetaIO):
     """This method should perform any action required for properly ending the
     test and closing the communication with hardware.
 
-    It will be called when the associated :ref:`IOBlock` receives the order to
-    stop (usually because the user hit `CTRL+C`, or because a :ref:`Generator`
-    Block reached the end of its path, or because an exception was raised in
-    any of the Blocks).
+    It will be called when the associated :class:`~crappy.blocks.IOBlock`
+    receives the order to stop (usually because the user hit `CTRL+C`, or
+    because a :class:`~crappy.blocks.Generator` Block reached the end of its
+    path, or because an exception was raised in any of the Blocks).
 
     It is fine for this method not to perform anything.
     """
@@ -258,7 +259,8 @@ class InOut(metaclass=MetaIO):
 
   def return_data(self) -> Optional[Union[list, Dict[str, Any]]]:
     """Returns the data from :meth:`get_data`, corrected by an offset if the
-    ``make_zero_delay`` argument of the :ref:`IOBlock` is set."""
+    ``make_zero_delay`` argument of the :class:`~crappy.blocks.IOBlock` is
+    set."""
 
     data = self.get_data()
 
@@ -310,7 +312,8 @@ class InOut(metaclass=MetaIO):
   def return_stream(self) -> Optional[Union[List[np.ndarray],
                                             Dict[str, np.ndarray]]]:
     """Returns the data from :meth:`get_stream`, corrected by an offset if the
-    ``make_zero_delay`` argument of the :ref:`IOBlock` is set."""
+    ``make_zero_delay`` argument of the :class:`~crappy.blocks.IOBlock` is
+    set."""
 
     data = self.get_stream()
 

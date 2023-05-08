@@ -20,8 +20,8 @@ class Sim868(InOut):
   given phone numbers.
 
   Important:
-    This InOut should be associated with a :ref:`Modifier` to manage the
-    messages to send.
+    This InOut should be associated with a :class:`~crappy.modifier.Modifier`
+    to manage the messages to send.
   """
 
   def __init__(self,

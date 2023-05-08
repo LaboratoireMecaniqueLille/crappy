@@ -42,8 +42,9 @@ Ads1115_config_dr = {8: 0x0000,
 class ADS1115FT232H(InOut):
   """A class for controlling Adafruit's ADS1115 16-bits ADC through an FT232H.
 
-  It is similar to the :ref:`ADS1115` class, except this class is specific for
-  use with an :ref:`FT232H` USB to I2C converter.
+  It is similar to the :class:`~crappy.inout.ADS1115` class, except this class
+  is specific for use with an :class:`~crappy.tool.ft232h.FT232H` USB to I2C
+  converter.
 
   The ADS1115 InOut is meant for reading conversion values from a 16-bits
   ADS1115 ADC, using the I2C protocol. The output is in Volts by default, but a
