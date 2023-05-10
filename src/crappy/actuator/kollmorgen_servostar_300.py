@@ -17,7 +17,8 @@ class ServoStar300(Actuator):
   position, and set it to the analog or serial driving mode.
 
   It communicates with the servomotor over a serial connection. The
-  :ref:`Biaxe` Actuator can drive the same hardware, but only in speed.
+  :class:`~crappy.lamcube.Biaxe` Actuator can drive the same hardware, but only
+  in speed.
   """
 
   def __init__(self,

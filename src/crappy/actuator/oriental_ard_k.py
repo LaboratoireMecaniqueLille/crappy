@@ -17,8 +17,8 @@ class OrientalARDK(Actuator):
   speed or in position.
 
   It communicates with the stepper motor over a serial connection. This class
-  was designed so that the :ref:`Machine` block drives several of its instances
-  at a time, corresponding to different axes to drive.
+  was designed so that the :class:`~crappy.blocks.Machine` Block drives several
+  of its instances at a time, corresponding to different axes to drive.
   """
 
   def __init__(self,

@@ -33,15 +33,15 @@ class DCMotorHatFT232H(Actuator):
 
   It can drive up to four DC motors in speed only. The acquisition of the speed
   has not been implemented so far. It implements the same functionality as the
-  :ref:`Adafruit DC Motor Hat`, but communicates with the hat over USB via an
-  FT232H device.
+  :class:`~crappy.actuator.DCMotorHat`, but communicates with the hat over USB
+  via an FT232H device.
 
   Important:
     As this Actuator can drive up to 4 motors simultaneously, it takes a
     :obj:`tuple` as a command, see :meth:`set_speed`. Regular Actuators receive
-    their commands as :obj:`float`. A :ref:`Modifier` can be used for
-    converting a :obj:`float` command from a :ref:`Generator` to a
-    :obj:`tuple`.
+    their commands as :obj:`float`. A :class:`~crappy.modifier.Modifier` can be
+    used for converting a :obj:`float` command from a
+    :class:`~crappy.blocks.Generator` to a :obj:`tuple`.
 
   Note:
     The DC Motor Hat can also drive stepper motors, but this feature isn't

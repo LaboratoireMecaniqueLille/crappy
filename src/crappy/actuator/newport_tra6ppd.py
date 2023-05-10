@@ -18,11 +18,11 @@ class NewportTRA6PPD(Actuator):
 
   Warning:
     This actuator cannot handle a high serial messages rate. It is recommended
-    to set the frequency of the corresponding :ref:`Machine` block to a few
-    dozen `Hz` at most.
+    to set the frequency of the corresponding :class:`~crappy.blocks.Machine`
+    Block to a few dozen `Hz` at most.
 
   Note:
-    This actuator ignores new position commands while it is moving.
+    This Actuator ignores new position commands while it is moving.
   """
 
   def __init__(self,
