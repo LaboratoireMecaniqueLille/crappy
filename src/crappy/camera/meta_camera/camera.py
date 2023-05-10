@@ -134,8 +134,8 @@ class Camera(metaclass=MetaCamera):
 
     # Checking if the given name is valid
     if name in self._reserved:
-      raise ValueError(f"The name {self.trigger_name} is reserved for a "
-                       f"different type of setting ! !")
+      raise ValueError(f"The name {name} is reserved for a different type of "
+                       f"setting ! !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} bool setting")
@@ -175,8 +175,8 @@ class Camera(metaclass=MetaCamera):
 
     # Checking if the given name is valid
     if name in self._reserved:
-      raise ValueError(f"The name {self.trigger_name} is reserved for a "
-                       f"different type of setting ! !")
+      raise ValueError(f"The name {name} is reserved for a different type of "
+                       f"setting ! !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} scale setting")
@@ -210,8 +210,8 @@ class Camera(metaclass=MetaCamera):
 
     # Checking if the given name is valid
     if name in self._reserved:
-      raise ValueError(f"The name {self.trigger_name} is reserved for a "
-                       f"different type of setting ! !")
+      raise ValueError(f"The name {name} is reserved for a different type of "
+                       f"setting ! !")
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} choice setting")
