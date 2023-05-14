@@ -6,7 +6,10 @@ from .camera_setting import CameraSetting
 
 
 class CameraBoolSetting(CameraSetting):
-  """Camera setting that can only be :obj:`True` or :obj:`False`."""
+  """Camera setting that can only be :obj:`True` or :obj:`False`.
+
+  It is a child of :class:`~crappy.camera.camera_setting.CameraSetting`.
+  """
 
   def __init__(self,
                name: str,

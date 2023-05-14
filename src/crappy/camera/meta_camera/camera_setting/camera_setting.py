@@ -8,9 +8,16 @@ NbrType = Union[int, float]
 
 
 class CameraSetting:
-  """Base class for each camera setting.
+  """Base class for each Camera setting.
 
   It is meant to be subclassed and should not be used as is.
+
+  The Camera setting classes hold all the information needed to read and set a
+  setting of a :class:`~crappy.camera.Camera` object. Several types of settings
+  are defined, as children of this class :
+  :class:`~crappy.camera.camera_setting.CameraBoolSetting`,
+  :class:`~crappy.camera.camera_setting.CameraChoiceSetting`,
+  and :class:`~crappy.camera.camera_setting.CameraScaleSetting`.
   """
 
   def __init__(self,
@@ -61,7 +68,13 @@ class CameraSetting:
   @property
   def value(self) -> Any:
     """Returns the current value of the setting, by calling the getter if one
-    was provided or else by returning the stored value."""
+    was provided or else by returning the stored value.
+
+    When the getter is called, calls the setter if one was provided and updates
+    the sored value. After calling the setter, checks that the value was set
+    by calling the getter and displays a warning message if the target and
+    actual values don't match.
+    """
 
     if self._getter is not None:
       return self._getter()

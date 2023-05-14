@@ -22,11 +22,12 @@ class JaiGO5000CPMCL8Bits(BaslerIronmanCameraLink):
   """This class can drive a JAI GO-5000C-PMCL camera in 8 bits mode, through a
   Basler microEnable 5 Ironman AD8 PoCL acquisition board.
 
-  It is a child of the :ref:`Basler Ironman Camera Link` Camera. The only
+  It is a child of the
+  :class:`~crappy.camera.cameralink.BaslerIronmanCameraLink` Camera. The only
   difference is that it can only run in 8 bits mode, and gives access to more
   camera settings in Crappy. It is subclassed by the
-  :ref:`JAI GO-5000C-PMCL` Camera, that allows driving the same hardware but in
-  10 and 12 bits mode.
+  :class:`~crappy.camera.cameralink.JaiGO5000CPMCL` Camera, that allows driving
+  the same hardware but in 10 and 12 bits mode.
 
   Warning:
     This Camera relies on a custom-written C library that hasn't been tested in
@@ -106,9 +107,10 @@ class JaiGO5000CPMCL(JaiGO5000CPMCL8Bits):
   """This class can drive a JAI GO-5000C-PMCL camera in 10 or 12 bits mode,
   through a Basler microEnable 5 Ironman AD8 PoCL acquisition board.
 
-  It is a child of the :ref:`JAI GO-5000C-PMCL` Camera. The only difference 
-  with its parent class is that it sets the 10 or 12 bits mode on the camera,
-  and modifies the acquired image before returning it.
+  It is a child of the :class:`~crappy.camera.cameralink.JaiGO5000CPMCL8Bits`
+  Camera. The only difference with its parent class is that it sets the 10 or
+  12 bits mode on the camera, and modifies the acquired image before returning
+  it.
   
   Warning:
     This Camera relies on a custom-written C library that hasn't been tested in

@@ -9,7 +9,10 @@ from .camera_setting import CameraSetting
 
 class CameraChoiceSetting(CameraSetting):
   """Camera setting that can take any value from a predefined list of
-  values."""
+  values.
+
+  It is a child of :class:`~crappy.camera.camera_setting.CameraSetting`.
+  """
 
   def __init__(self,
                name: str,

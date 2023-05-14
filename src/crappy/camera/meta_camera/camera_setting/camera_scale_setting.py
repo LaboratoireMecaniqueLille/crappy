@@ -12,8 +12,12 @@ class CameraScaleSetting(CameraSetting):
   """Camera setting that can take any value between a lower and an upper
   boundary.
 
+  It is a child of :class:`~crappy.camera.camera_setting.CameraSetting`.
+
   This class can handle settings that should only take :obj:`int` values as
-  well as settings that can take :obj:`float` value.
+  well as settings that can take :obj:`float` value. The type used is
+  :obj:`int` is both of the given lowest or highest values are :obj:`int`,
+  otherwise :obj:`float` is used.
   """
 
   def __init__(self,
@@ -40,13 +44,21 @@ class CameraScaleSetting(CameraSetting):
 
     if default is None:
       default = self.type((lowest + highest) / 2)
+    else:
+      default = self.type(default)
 
     super().__init__(name, getter, setter, default)
 
   @property
   def value(self) -> NbrType:
     """Returns the current value of the setting, by calling the getter if one
-    was provided or else by returning the stored value."""
+    was provided or else by returning the stored value.
+
+    When the getter is called, calls the setter if one was provided and updates
+    the sored value. After calling the setter, checks that the value was set
+    by calling the getter and displays a warning message if the target and
+    actual values don't match.
+    """
 
     if self._getter is not None:
       return self.type(min(max(self._getter(), self.lowest), self.highest))
@@ -83,7 +95,7 @@ class CameraScaleSetting(CameraSetting):
     self.lowest = lowest
     self.highest = highest
     if default is not None:
-      self.default = default
+      self.default = self.type(default)
     else:
       self.default = self.type((lowest + highest) / 2)
 

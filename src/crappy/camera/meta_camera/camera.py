@@ -14,15 +14,24 @@ NbrType = Union[int, float]
 
 
 class Camera(metaclass=MetaCamera):
-  """Base class for every camera object.
+  """Base class for every Camera object. Implements methods shared by all the
+  Cameras, and ensures their dataclass is :class:`~crappy.camera.MetaCamera`.
 
-  It contains all the methods shared by these classes and sets MetaCam as their
-  metaclass.
+  The Camera objects are helper classes used by the
+  :class:`~crappy.blocks.Camera` Block to interface with cameras.
   """
 
   def __init__(self, *_, **__) -> None:
-    """Simply sets the dict containing the settings and the name of the
-    trigger setting."""
+    """Simply sets the :obj:`dict` containing the settings, and the name of the
+    reserved settings.
+
+    Here, :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` can
+    be added to the camera. It can be done using one of the
+    :meth:`add_bool_setting`, :meth:`add_scale_setting`,
+    :meth:`add_choice_setting`, :meth:`add_trigger_setting`, or
+    :meth:`add_software_roi` methods. Refer to the documentation of these
+    methods for more information.
+    """
 
     self.settings: Dict[str, CameraSetting] = dict()
 
@@ -58,21 +67,36 @@ class Camera(metaclass=MetaCamera):
     """This method should initialize the connection to the camera, configure
     the camera, and start the image acquisition.
 
-    This method also takes as arguments all the kwargs that were passed to the
-    Camera block but not used by it. Some may be used directly, e.g. for
-    choosing which camera to open out of several possible ones, and the others
-    should indicate values to set for available settings. It is fine not to
-    provide any values for the settings here, as each setting has a default.
+    Here, :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` can
+    be added to the camera. It can be done using one of the
+    :meth:`add_bool_setting`, :meth:`add_scale_setting`,
+    :meth:`add_choice_setting`, :meth:`add_trigger_setting`, or
+    :meth:`add_software_roi` methods. Refer to the documentation of these
+    methods for more information. It is preferable to add the settings during
+    :meth:`__init__`, but this is not always possible (e.g. if values read
+    from the camera are required to instantiate a setting).
 
-    To effectively set the setting values, the method :meth:`set_all` has to
-    be called at the end of open (e.g. ``self.set_all(**kwargs)``). This is
-    true even if no value to set was given in the kwargs. If it is not called,
-    the settings won't actually be set on the camera.
+    This method takes as arguments all the kwargs that were passed to the
+    :class:`~crappy.blocks.Camera` Block but not used by it. These kwargs can
+    have two possible usages. They can be used to parametrize the method, e.g.
+    a serial number can be given to choose which camera to open. Alternatively,
+    they can be used for adjusting camera settings values. It is also fine not
+    to provide any argument to this method.
 
-    If some camera settings require values from the camera for their
-    instantiation (e.g.
-    ``self.add_setting(..., highest=self.cam.max_width(), ...)``), they should
-    be instantiated here. And of course before calling :meth:`set_all`.
+    When providing a value for a setting, it should be done by giving the kwarg
+    ``<setting_name>=<setting_value>`` to the Camera Block, with
+    ``<setting_name>`` the exact name given to the setting. It can be desirable
+    to provide setting values here in case the display of the
+    :class:`~crappy.tool.camera_config.CameraConfig` is disabled
+    (``config=False`` set on the Camera Block), or to gain time if the correct
+    values are already known.
+
+    Important:
+      To effectively set the setting values, the method :meth:`set_all` must be
+      called e.g. ``self.set_all(**kwargs)``). It is usually called at the very
+      end of the method. This is true even if no value to set was given in the
+      kwargs. If :meth:`set_all` is not called, the settings won't actually be
+      set on the camera.
     """
 
     self.set_all(**kwargs)
@@ -81,16 +105,25 @@ class Camera(metaclass=MetaCamera):
                                         np.ndarray]]:
     """Acquires an image and returns it along with its metadata or timestamp.
 
-    It is also fine for this method to return :obj:`None`. The image should be
-    returned as a numpy array, and the metadata as a :obj:`dict` or the
-    timestamp as a :obj:`float`. The keys of the metadata dictionary should
-    preferably be valid Exif tags, so that the metadata can be embedded into
-    the image file when saving.
+    This method should return two objects, the second being the image as a
+    :mod:`numpy` array. If the first object is a :obj:`float`, it is considered
+    as the timestamp associated with the image (as returned by
+    :obj:`time.time`). If it is a :obj:`dict`, it should contain the metadata
+    associated with the image. It is also fine for this method to return
+    :obj:`None` if no image could be acquired.
 
-    In order for the recording of images to run, the metadata dict must
-    contain at least the ``'t(s)'`` and ``''ImageUniqueID''`` keys, whose
-    values should be the timestamp when the frame was acquired (as returned by
-    ``time.time()``) and the frame number as an :obj:`int`.
+    If metadata is returned, it should contain at least the ``'t(s)'`` and
+    ``'ImageUniqueID'`` keys, containing the timestamp as a :obj:`float` (as
+    returned by :obj:`time.time`) and the frame number as an :obj:`int`. Any
+    other field can be provided. This metadata is used by the
+    :class:`~crappy.blocks.camera_processes.ImageSaver` class and saved along
+    with the frames if the ``record_images`` argument of the
+    :class:`~crappy.blocks.Camera` Block is :obj:`True`. The keys should
+    preferably be valid EXIF tags, so that the information can be embedded in
+    the recorded images.
+
+    If only a timestamp is provided, a metadata :obj:`dict` is built internally
+    but the user has no control over it
     """
 
     self.log(logging.WARNING, "The get_img method was called but is not "
@@ -118,13 +151,19 @@ class Camera(metaclass=MetaCamera):
     """Adds a boolean setting, whose value is either :obj:`True` or
     :obj:`False`.
 
-    If a configuration window is used, it will be possible to set this setting
-    by (un)checking a checkbox.
+    It creates an instance of
+    :class:`~crappy.camera.meta_camera.camera_setting.CameraBoolSetting` using
+    the provided arguments.
+
+    If a :class:`~crappy.tool.camera_config.CameraConfig` window is displayed
+    (``config=True`` set on the Camera Block), this setting will appear as a
+    checkbox.
 
     Args:
-      name: The name of the setting, that will be displayed in the GUI and can
-        be used to directly get the value of the setting by calling
-        ``self.<name>``
+      name: The name of the setting, that will be displayed in the
+        configuration window and allows to access the setting directly with
+        ``self.<name>``. Also the name to use for setting the value as a kwarg
+        of the Camera Block (``<name>=<value>``).
       getter: The method for getting the current value of the setting. If not
         given, the returned value is simply the last one that was set.
       setter: The method for setting the current value of the setting. If not
@@ -149,10 +188,15 @@ class Camera(metaclass=MetaCamera):
                         setter: Optional[Callable[[NbrType], None]] = None,
                         default: Optional[NbrType] = None) -> None:
     """Adds a scale setting, whose value is an :obj:`int` or a :obj:`float`
-    clamped between two boundaries.
+    lying between two boundaries.
 
-    If a configuration window is used, it will be possible to set this setting
-    by moving a slider.
+    It creates an instance of
+    :class:`~crappy.camera.meta_camera.camera_setting.CameraScaleSetting` using
+    the provided arguments.
+
+    If a :class:`~crappy.tool.camera_config.CameraConfig` window is displayed
+    (``config=True`` set on the Camera Block), this setting will appear as a
+    slider.
 
     Note:
       If any of ``lowest`` or ``highest`` is a :obj:`float`, then the setting
@@ -160,9 +204,10 @@ class Camera(metaclass=MetaCamera):
       it is considered of type :obj:`int` and can only take integer values.
 
     Args:
-      name: The name of the setting, that will be displayed in the GUI and can
-        be used to directly get the value of the setting by calling
-        ``self.<name>``
+      name: The name of the setting, that will be displayed in the
+        configuration window and allows to access the setting directly with
+        ``self.<name>``. Also the name to use for setting the value as a kwarg
+        of the Camera Block (``<name>=<value>``).
       lowest: The lowest possible value for the setting.
       highest: The highest possible value for the setting.
       getter: The method for getting the current value of the setting. If not
@@ -192,13 +237,19 @@ class Camera(metaclass=MetaCamera):
     """Adds a choice setting, that can take a limited number of predefined
     :obj:`str` values.
 
-    If a configuration window is used, it will be possible to set this setting
-    by selecting one of several possible radio buttons.
+    It creates an instance of
+    :class:`~crappy.camera.meta_camera.camera_setting.CameraChoiceSetting`
+    using the provided arguments.
+
+    If a :class:`~crappy.tool.camera_config.CameraConfig` window is displayed
+    (``config=True`` set on the Camera Block), this setting will appear as a
+    set of radio buttons.
 
     Args:
-      name: The name of the setting, that will be displayed in the GUI and can
-        be used to directly get the value of the setting by calling
-        ``self.<name>``
+      name: The name of the setting, that will be displayed in the
+        configuration window and allows to access the setting directly with
+        ``self.<name>``. Also the name to use for setting the value as a kwarg
+        of the Camera Block (``<name>=<value>``).
       choices: An iterable (like a :obj:`tuple` or a :obj:`list`) containing
         the possible values for the setting.
       getter: The method for getting the current value of the setting. If not
@@ -223,13 +274,21 @@ class Camera(metaclass=MetaCamera):
                           getter: Optional[Callable[[], str]] = None,
                           setter: Optional[Callable[[str], None]] = None
                           ) -> None:
-    """Adds a specific choice setting for controlling the trigger mode of the
-    camera. The reserved name for this setting is ``'trigger'``.
+    """Adds a specific setting for controlling the trigger mode of the camera.
+    The reserved name for this setting is ``'trigger'``.
+
+    It creates an instance of
+    :class:`~crappy.camera.meta_camera.camera_setting.CameraChoiceSetting`
+    using a reserved name, and predefined choices and default.
 
     This setting is mainly intended for cameras that can run either in free run
     mode or in hardware trig mode. The three possible choices for this setting
-    are : ``'Free run'``, ``'Hdw after config'`` and ``'Hardware'``. Default is
-    ``'Free run'``.
+    are :
+    ::
+
+      'Free run', 'Hdw after config','Hardware'
+
+    Default is ``'Free run'``.
 
     The setter method is expected to set the camera to free run mode in
     ``'Free run'`` and ``'Hdw after config'`` choices, and to hardware trigger
@@ -239,11 +298,11 @@ class Camera(metaclass=MetaCamera):
     It can also be left to :obj:`None`.
 
     The rationale behind the ``'Hdw after config'`` choice is to allow the user
-    to tune settings in the configuration window with the camera in free run
-    mode, and to switch afterward to the hardware trigger mode for the actual
-    test. It proves extremely useful if the hardware triggers are generated
-    from Crappy, as they're not started yet when the configuration window is
-    running.
+    to tune settings in the :class:`~crappy.tool.camera_config.CameraConfig`
+    window with the camera in free run mode, and to switch afterward to the
+    hardware trigger mode once the test begins. It proves extremely useful if
+    the hardware triggers are generated from Crappy, as they're not started yet
+    when the configuration window is running.
 
     Args:
       getter: The method for getting the current value of the setting. If not
@@ -263,14 +322,36 @@ class Camera(metaclass=MetaCamera):
       getter=getter, setter=setter, default='Free run')
 
   def add_software_roi(self, width: int, height: int) -> None:
-    """Creates the settings needed for setting a software ROI.
+    """Creates the settings needed for generating a software ROI.
 
-    The ROI is a rectangular area defining which part of the image to keep. It
-    can be tuned by the user by setting the position of the upper left corner,
-    as well as the width and the height.
+    The ROI is a rectangular area defining which part of the image to keep and
+    return to the :class:`~crappy.blocks.Camera` Block. It can be tuned by the
+    user by setting the position of the upper left corner as well as the width
+    and the height of the rectangular box.
 
     Using a ROI reduces the size of the image for processing, displaying and
     saving, which improves the overall performance.
+
+    This method creates instances of
+    :class:`~crappy.camera.meta_camera.camera_setting.CameraScaleSetting`
+    using reserved names, and predefined choices and default. It takes as
+    arguments the dimensions of the un-cropped image, so that it can adjust
+    the boundaries of the sliders. These boundaries can later be adjusted
+    using the :meth:`reload_software_roi` method.
+
+    The reserved names for the instantiated settings are ``'ROI_x'``,
+    ``'ROI_y'``, ``'ROI_width'``, and ``'ROI_height'``, respectively for the
+    `x` and `y` position of the upper-left corner of the ROi and for the width
+    and height of the ROI.
+
+    Important:
+      To apply the ROI and crop the image to return, it is necessary to call
+      the :meth:`apply_soft_roi` method. Example :
+      ::
+
+        ...
+        frame = self._cam.read()
+        return time.time(), self.apply_soft_roi(img)
 
     Args:
       width: The width of the acquired images, in pixels.
@@ -303,6 +384,9 @@ class Camera(metaclass=MetaCamera):
     """Updates the software ROI boundaries when the width and/or the height of
     the acquired images change.
 
+    The :meth:`add_software_roi` method should have been called before calling
+    this method.
+
     Args:
       width: The width of the acquired images, in pixels.
       height: The height of the acquired images, in pixels.
@@ -331,8 +415,8 @@ class Camera(metaclass=MetaCamera):
     ROI dimensions.
 
     Might return :obj:`None` in case there's no pixel left on the cropped
-    image. Returns the original image if the software ROI settings are not
-    defined.
+    image. Returns the original image if the software ROI settings were not
+    defined using :meth:`add_software_roi`.
     """
 
     if self._soft_roi_set:
@@ -354,8 +438,20 @@ class Camera(metaclass=MetaCamera):
       return img
 
   def set_all(self, **kwargs) -> None:
-    """Checks if the kwargs are valid, sets them, and for settings that are not
-    in kwargs sets them to their default value."""
+    """Sets all the setting values on the camera.
+
+    The provided keys of the kwargs should be the names of valid
+    :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`, otherwise
+    an error is raised.
+
+    For settings that are given in the kwargs, sets them to the given
+    corresponding value. For the other settings, sets them to their default
+    value.
+
+    This method should be called during the :meth:`open` method, once the
+    communication with the camera is established and the settings are
+    instantiated. It is usually called at the very end of the method.
+    """
 
     unexpected = tuple(kwarg for kwarg in kwargs if kwarg not in self.settings)
     if unexpected:

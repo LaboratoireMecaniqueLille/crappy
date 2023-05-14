@@ -26,9 +26,9 @@ class FileReader(Camera):
 
   The name of the images to read must follow the following pattern :
   ``<frame_nr>_<frame_seconds>.<frame_subseconds>.<file_extension>``. This
-  pattern is the same as used for recording images with the :ref:`Camera Block`
-  of Crappy, so images recorded via Crappy are readily readable and don't need
-  to be re-named.
+  pattern is the same as used for recording images with the
+  :class:`~crappy.blocks.Camera` of Crappy, so images recorded via Crappy are
+  readily readable and don't need to be re-named.
 
   This class tries to read the images at the same framerate as they were
   recorded, although the control of the framerate is not so precise. It might

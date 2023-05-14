@@ -20,9 +20,10 @@ class BaslerIronmanCameraLink(Camera):
   """This class can drive cameras over Camera Link through a Basler microEnable
   5 Ironman AD8 PoCL acquisition board.
 
-  It is subclassed by the :ref:`Bi Spectral` and the :ref:`JAI GO-5000C-PMCL`
-  Cameras. Not many settings can be accessed directly in Crappy, it is
-  recommended to sets the settings using a configuration file.
+  It is subclassed by the :class:`~crappy.lamcube.BiSpectral` and the
+  :class:`~crappy.camera.cameralink.JaiGO5000CPMCL8Bits` Cameras. Not many
+  settings can be accessed directly in Crappy, it is recommended to set them
+  using a configuration file.
 
   Warning:
     This Camera relies on a custom-written C library that hasn't been tested in

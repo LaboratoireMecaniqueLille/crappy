@@ -23,9 +23,9 @@ class CameraOpencv(Camera):
   The number of the video device to read images from can be specified. It is
   then also possible to tune the encoding format and the size.
 
-  This camera class is less performant than the :ref:`Camera GStreamer` one
-  that relies on GStreamer, but the installation of OpenCv is way easier than
-  the one of GStreamer.
+  This camera class is less performant than the
+  :class:`~crappy.camera.CameraGstreamer` one that relies on GStreamer, but the
+  installation of OpenCv is way easier than the one of GStreamer.
 
   Note:
     For a better performance of this class in Linux, it is recommended to have

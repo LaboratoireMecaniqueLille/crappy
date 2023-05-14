@@ -34,12 +34,13 @@ class CameraGstreamer(Camera):
   It can read images from the default video source, or a video device can be
   specified. In this case, the user has access to a range of parameters for
   tuning the image. Alternatively, it is possible to give a custom GStreamer
-  pipeline to the block. In this case no settings are available, and it is up
+  pipeline as an argument. In this case no settings are available, and it is up
   to the user to ensure the validity of the pipeline.
 
   This class uses less resources and is compatible with more cameras than the
-  :ref:`Camera OpenCV` camera, that relies on OpenCV. The installation of
-  GStreamer is however less straightforward than the one of OpenCV.
+  :class:`~crappy.camera.CameraOpencv` camera, that relies on OpenCV. The
+  installation of GStreamer is however less straightforward than the one of
+  OpenCV.
 
   Note:
     For a better performance of this class in Linux, it is recommended to have

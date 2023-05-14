@@ -17,8 +17,10 @@ class Webcam(Camera):
   """A basic class for reading images from a USB camera (including webcams).
 
   It relies on the OpenCv library. Note that it was purposely kept extremely
-  simple as it is mainly used as a demo. See :ref:`Camera OpenCV` and
-  :ref:`Camera GStreamer` for classes giving a finer control over the device.
+  simple as it is mainly used as a demo. See
+  :class:`~crappy.camera.CameraOpencv` and
+  :class:`~crappy.camera.CameraGstreamer` for classes giving a finer control
+  over the camera.
   """
 
   def __init__(self) -> None:
