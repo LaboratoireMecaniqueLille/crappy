@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Callable, Optional, Tuple, Union, Any, Dict
+from typing import Callable, Optional, Tuple, Union, Any, Dict, Iterable
 from time import sleep
 import numpy as np
 from multiprocessing import current_process
@@ -185,7 +185,7 @@ class Camera(metaclass=MetaCamera):
 
   def add_choice_setting(self,
                          name: str,
-                         choices: Tuple[str, ...],
+                         choices: Iterable[str],
                          getter: Optional[Callable[[], str]] = None,
                          setter: Optional[Callable[[str], None]] = None,
                          default: Optional[str] = None) -> None:
@@ -199,7 +199,8 @@ class Camera(metaclass=MetaCamera):
       name: The name of the setting, that will be displayed in the GUI and can
         be used to directly get the value of the setting by calling
         ``self.<name>``
-      choices: A :obj:`tuple` containing the possible values for the setting.
+      choices: An iterable (like a :obj:`tuple` or a :obj:`list`) containing
+        the possible values for the setting.
       getter: The method for getting the current value of the setting. If not
         given, the returned value is simply the last one that was set.
       setter: The method for setting the current value of the setting. If not
@@ -215,8 +216,8 @@ class Camera(metaclass=MetaCamera):
     if name in self.settings:
       raise ValueError('This setting already exists !')
     self.log(logging.INFO, f"Adding the {name} choice setting")
-    self.settings[name] = CameraChoiceSetting(name, choices, getter, setter,
-                                              default)
+    self.settings[name] = CameraChoiceSetting(name, tuple(choices), getter,
+                                              setter, default)
 
   def add_trigger_setting(self,
                           getter: Optional[Callable[[], str]] = None,
