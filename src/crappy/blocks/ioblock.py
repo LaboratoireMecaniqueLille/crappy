@@ -9,6 +9,7 @@ from ..tool.ft232h import USBServer
 
 # TODO:
 #   Call set_cmd with commands in same order as cmd_labels
+#   Allow using any type of iterable, not just lists
 
 
 class IOBlock(Block):

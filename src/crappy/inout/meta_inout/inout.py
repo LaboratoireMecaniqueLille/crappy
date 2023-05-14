@@ -257,7 +257,7 @@ class InOut(metaclass=MetaIO):
                    "the InOut doesn't return only numbers in the dict")
           return
 
-  def return_data(self) -> Optional[Union[list, Dict[str, Any]]]:
+  def return_data(self) -> Optional[Union[List[Any], Dict[str, Any]]]:
     """Returns the data from :meth:`get_data`, corrected by an offset if the
     ``make_zero_delay`` argument of the :class:`~crappy.blocks.IOBlock` is
     set."""
