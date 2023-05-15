@@ -3,7 +3,7 @@
 import time
 from time import sleep, time
 from re import fullmatch, findall
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Iterable
 import logging
 
 from .meta_inout import InOut
@@ -99,8 +99,8 @@ class WaveshareADDA(InOut):
   """
 
   def __init__(self,
-               dac_channels: Optional[List[str]] = None,
-               adc_channels: Optional[List[str]] = None,
+               dac_channels: Optional[Iterable[str]] = None,
+               adc_channels: Optional[Iterable[str]] = None,
                gain_hardware: int = 1,
                v_ref: float = 3.3,
                gain: float = 1,
@@ -109,11 +109,12 @@ class WaveshareADDA(InOut):
     """Checks the validity of the arguments.
 
     Args:
-      dac_channels: A :obj:`list` of :obj:`str` representing the channels to be
-        set. The syntax for each string is 'DACi' with i being either `0` or
-        `1`.
-      adc_channels: A :obj:`list` of :obj:`str` representing the channels to
-        read. The syntax for all strings is either:
+      dac_channels: An iterable (like a :obj:`list` or a :obj:`tuple`) of
+        :obj:`str` representing the channels to be set. The syntax for each
+        string is 'DACi' with i being either `0` or `1`.
+      adc_channels: An iterable (like a :obj:`list` or a :obj:`tuple`) of
+        :obj:`str` representing the channels to read. The syntax for all the
+        strings is either:
         ::
 
           'ADi' (i in range(8))

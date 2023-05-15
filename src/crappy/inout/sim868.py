@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import sleep
-from typing import List
+from typing import Iterable
 import logging
 
 from .meta_inout import InOut
@@ -25,14 +25,14 @@ class Sim868(InOut):
   """
 
   def __init__(self,
-               numbers: List[str],
+               numbers: Iterable[str],
                port: str = "/dev/ttyUSB0",
                baudrate: int = 115200) -> None:
     """Checks the validity of the arguments.
 
     Args:
-      numbers: The list of numbers the messages will be sent to. The syntax is
-        the following :
+      numbers: An iterable (like a :obj:`list` or a :obj:`tuple`) of numbers
+        the messages will be sent to. The syntax is the following :
         ::
 
           ["0611223344"]

@@ -2,7 +2,7 @@
 
 from time import time
 import numpy as np
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional, Tuple, Iterable
 from dataclasses import dataclass, field
 from itertools import chain
 from multiprocessing import current_process
@@ -68,7 +68,7 @@ class T7Streamer(InOut):
   """
 
   def __init__(self,
-               channels: List[Dict[str, Any]],
+               channels: Iterable[Dict[str, Any]],
                device: str = 'ANY',
                connection: str = 'ANY',
                identifier: str = 'ANY',
@@ -78,10 +78,11 @@ class T7Streamer(InOut):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      channels: A :obj:`list` of the channels to interface with on the Labjack.
-        Each object in this list should be a :obj:`dict` representing a single
-        channel, and whose keys provide information on the channel to use.
-        Refer to the note below for more information on the possible keys.
+      channels: An iterable (like a :obj:`list` or a :obj:`tuple`) of the
+        channels to interface with on the Labjack. Each object in this iterable
+        should be a :obj:`dict` representing a single channel, and whose keys
+        provide information on the channel to use. Refer to the note below for
+        more information on the possible keys.
       device: The type of Labjack to open. Possible values include :
         ::
 
@@ -141,6 +142,8 @@ class T7Streamer(InOut):
     self._handle = None
 
     super().__init__()
+
+    channels = list(channels)
 
     if len(channels) * scan_rate > 100000:
       scan_rate = 100000 / len(channels)

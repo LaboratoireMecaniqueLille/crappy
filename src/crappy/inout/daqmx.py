@@ -2,7 +2,7 @@
 
 import numpy as np
 from time import time
-from typing import List, Optional
+from typing import List, Optional, Iterable
 from dataclasses import dataclass
 import logging
 
@@ -40,78 +40,81 @@ class DAQmx(InOut):
 
   def __init__(self,
                device: str = 'Dev1',
-               channels: Optional[List[str]] = None,
-               gain: Optional[List[float]] = None,
-               offset: Optional[List[float]] = None,
-               ranges: Optional[List[float]] = None,
-               make_zero: Optional[List[bool]] = True,
+               channels: Optional[Iterable[str]] = None,
+               gain: Optional[Iterable[float]] = None,
+               offset: Optional[Iterable[float]] = None,
+               ranges: Optional[Iterable[float]] = None,
+               make_zero: Optional[Iterable[bool]] = True,
                sample_rate: float = 10000,
-               out_channels: Optional[List[str]] = None,
-               out_gain: Optional[List[float]] = None,
-               out_offset: Optional[List[float]] = None,
-               out_ranges: Optional[List[float]] = None) -> None:
+               out_channels: Optional[Iterable[str]] = None,
+               out_gain: Optional[Iterable[float]] = None,
+               out_offset: Optional[Iterable[float]] = None,
+               out_ranges: Optional[Iterable[float]] = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
       device: The name of the device to open, as a :obj:`str`.
-      channels: A :obj:`list` containing the names of the channels to use as
-        inputs, given as :obj:`str`. Typical names for inputs are ``'aiX'```,
-        with `X` an integer.
-      gain: A :obj:`list` containing for each input channel the gain to apply
-        to the measured voltage, as a :obj:`float`. The returned voltage is
-        calculated as follows :
+      channels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        the names of the channels to use as inputs, given as :obj:`str`.
+        Typical names for inputs are ``'aiX'```, with `X` an integer.
+      gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
+        each input channel the gain to apply to the measured voltage, as a
+        :obj:`float`. The returned voltage is calculated as follows :
         ::
 
           returned_voltage = gain * measured_voltage + offset
 
         If not given, no gain is applied to the measured values.
-      offset: A :obj:`list` containing for each input channel the offset to
-        apply to the measured voltage, as a :obj:`float`. The returned voltage
-        is calculated as follows :
+      offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
+        each input channel the offset to apply to the measured voltage, as a
+        :obj:`float`. The returned voltage is calculated as follows :
         ::
 
           returned_voltage = gain * measured_voltage + offset
 
         If not given, no offset is applied to the measured values.
-      ranges: A :obj:`list` containing for each input channel the range to set
-        for that channel, as an :obj:`float`. The possible range values are :
+      ranges: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
+        each input channel the range to set for that channel, as a
+        :obj:`float`. The possible range values are :
         ::
 
           0.5, 1., 2.5, 5.
 
         If not given, all input channels will be set to the range `5`.
-      make_zero: A :obj:`list` containing for each input channel a :obj:`bool`
-        indicating whether the channel should be zeroed or not. If so, data
-        will be acquired on this channel before the test starts, and a
-        compensation value will be deduced so that the offset of this channel
-        is `0`. **It will only take effect if the** ``make_zero_delay``
-        **argument of the** :class:`~crappy.blocks.IOBlock` **controlling the
-        DAQ is set** ! If not given, the channels are by default not zeroed.
+      make_zero: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        for each input channel a :obj:`bool` indicating whether the channel
+        should be zeroed or not. If so, data will be acquired on this channel
+        before the test starts, and a compensation value will be deduced so
+        that the offset of this channel is `0`. **It will only take effect if
+        the** ``make_zero_delay`` **argument of the**
+        :class:`~crappy.blocks.IOBlock` **controlling the DAQ is set** ! If not
+        given, the channels are by default not zeroed.
       sample_rate: The frequency of the acquisition, as a :obj:`float`. The
         higher this number, the more noise there is on the signal but the
         higher the acquisition frequency.
-      out_channels: A :obj:`list` containing the names of the channels to use
-        as outputs, given as :obj:`str`. Typical names for outputs are
-        ``'aoX'``, with `X` an integer.
-      out_gain: A :obj:`list` containing for each output channel the gain to
-        apply to the command voltage, as a :obj:`float`. The set voltage is
-        calculated as follows :
+      out_channels: An iterable (like a :obj:`list` or a :obj:`tuple`)
+        containing the names of the channels to use as outputs, given as
+        :obj:`str`. Typical names for outputs are ``'aoX'``, with `X` an
+        integer.
+      out_gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        for each output channel the gain to apply to the command voltage, as a
+        :obj:`float`. The set voltage is calculated as follows :
         ::
 
           set_voltage = out_gain * command_voltage + out_offset
 
         If not given, no gain is applied to the command values.
-      out_offset: A :obj:`list` containing for each output channel the offset
-        to apply to the command voltage, as a :obj:`float`. The set voltage is
-        calculated as follows :
+      out_offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        for each output channel the offset to apply to the command voltage, as
+        a :obj:`float`. The set voltage is calculated as follows :
         ::
 
           set_voltage = out_gain * command_voltage + out_offset
 
         If not given, no offset is applied to the command values.
-      out_ranges: A :obj:`list` containing for each output channel the range to
-        set for that channel, as an :obj:`float`. The possible range values
-        are :
+      out_ranges: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        for each output channel the range to set for that channel, as a
+        :obj:`float`. The possible range values are :
         ::
 
           0.5, 1., 2.5, 5.
@@ -119,10 +122,10 @@ class DAQmx(InOut):
         If not given, all output channels will be set to the range `5`.
 
     Note:
-      All the :obj:`list` given as arguments for the input channels should have
+      All the iterables given as arguments for the input channels should have
       the same length, and same for the output channels. If that's not the
-      case, all the given lists are treated as if they had the same length
-      as the shortest given list.
+      case, all the given iterables are treated as if they had the same length
+      as the shortest given one.
     """
 
     self._handle = None
@@ -137,7 +140,7 @@ class DAQmx(InOut):
     if channels is None:
       channels = list()
     if out_channels is None:
-      channels = list()
+      out_channels = list()
 
     if ranges is None:
       ranges = [5 for _ in channels]

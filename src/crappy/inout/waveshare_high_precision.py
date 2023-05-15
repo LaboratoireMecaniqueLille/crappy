@@ -2,7 +2,7 @@
 
 from time import time, sleep
 from re import fullmatch, findall
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Iterable
 import logging
 
 from .meta_inout import InOut
@@ -119,7 +119,7 @@ class WaveshareHighPrecision(InOut):
                spi_port: int = 0,
                gain_hardware: int = 16,
                sample_rate: Union[int, float] = 50,
-               channels: Optional[List[str]] = None,
+               channels: Optional[Iterable[str]] = None,
                digital_filter: int = 4,
                gain: float = 1,
                offset: float = 0) -> None:
@@ -147,8 +147,9 @@ class WaveshareHighPrecision(InOut):
         greater the sample rate, the greater the noise. For multiple channels,
         the achieved sample rate is roughly the target sample rate divided by
         the number of channels.
-      channels: A :obj:`list` containing strings representing the channels to
-        acquire. Each channel must follow on of the two syntax :
+      channels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        strings representing the channels to acquire. Each channel must follow
+        one of the two syntax :
         ::
 
           'INi', i in range(10)
@@ -213,6 +214,8 @@ class WaveshareHighPrecision(InOut):
     # Parsing the channels to check the right syntax was given
     if channels is None:
       channels = ['IN0']
+    else:
+      channels = list(channels)
 
     for channel in channels:
       if fullmatch(r'IN\d', channel) is None and \

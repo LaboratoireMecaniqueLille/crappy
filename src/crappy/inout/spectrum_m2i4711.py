@@ -2,7 +2,7 @@
 
 import numpy as np
 from time import time
-from typing import List, Optional
+from typing import List, Optional, Iterable
 import logging
 
 from .meta_inout import InOut
@@ -22,23 +22,24 @@ class SpectrumM2I4711(InOut):
   """
 
   def __init__(self,
-               channels: List[int],
+               channels: Iterable[int],
                device: str = '/dev/spcm0',
-               ranges: Optional[List[int]] = None,
+               ranges: Optional[Iterable[int]] = None,
                sample_rate: int = 100000,
                buff_size: int = 2**26,
                notify_size: int = 2**16) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
-      channels: A :obj:`list` of all the channels to read data from, given as
-        :obj:`int`. Refer to the documentation to know which combinations of
+      channels: An iterable (like a :obj:`list` or a :obj:`tuple`) of all the
+        channels to read data from, given as :obj:`int`. Refer to the
+        documentation of the Spectrum board to know which combinations of
         channels are allowed.
       device: The address of the device to read data from, as a :obj:`str`.
-      ranges: A :obj:`list` indicating for each channel the range of the
-        acquisition in mV, as an :obj:`int`. There should be as many values in
-        this list as there are channels. If not given, all ranges default to
-        `10000` mV.
+      ranges: An iterable (like a :obj:`list` or a :obj:`tuple`) indicating for
+        each channel the range of the acquisition in mV, as an :obj:`int`.
+        There should be as many values in this iterable as there are channels.
+        If not given, all ranges default to `10000` mV.
       sample_rate: The sample rate of the acquisition for all channels, in Hz.
         The default is 100KHz.
       buff_size: The size of the memory allocated as a rolling buffer to copy
@@ -52,18 +53,18 @@ class SpectrumM2I4711(InOut):
     super().__init__()
 
     # Setting the args
-    self._channels = channels
+    self._channels = list(channels)
     self._device = device.encode()
     self._ranges = ranges if ranges is not None else [10000 for _ in channels]
     self._sample_rate = sample_rate
     self._buff_size = buff_size
     self._notify_size = notify_size
-    self._chunk_size = notify_size // (2 * len(channels))
+    self._chunk_size = notify_size // (2 * len(self._channels))
 
     self.log(logging.INFO,
-             f"Will send {2 * sample_rate * len(channels) / notify_size} "
-             f"chunks of {notify_size / 1024} kB per second "
-             f"({sample_rate * len(channels) / 512} kB/s)")
+             f"Will send {2 * sample_rate * len(self._channels) / notify_size}"
+             f" chunks of {notify_size / 1024} kB per second "
+             f"({sample_rate * len(self._channels) / 512} kB/s)")
 
     # These attributes will be set later
     self._dt = None

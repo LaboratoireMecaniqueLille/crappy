@@ -2,7 +2,7 @@
 
 from time import time
 from struct import pack, unpack
-from typing import List
+from typing import List, Iterable
 import logging
 
 from .meta_inout import InOut
@@ -42,15 +42,15 @@ class KollmorgenAKDPDMM(InOut):
    """
 
   def __init__(self,
-               axes: List[int],
+               axes: Iterable[int],
                mode: str = 'position',
                host: str = '192.168.0.109',
                port: int = 502) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
-      axes: A :obj:`list` containing the motors/axes to drive, given as
-        :obj:`int`.
+      axes: An iterable (like a :obj:`list` or a :obj:`tuple`) containing the
+        motors/axes to drive, given as :obj:`int`.
       mode: The driving mode, should be either `'speed'` or `'position'`.
       host: The IP address of the variator, given as a :obj:`str`.
       port: The network port over which to communicate with the variator, as

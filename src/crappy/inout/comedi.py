@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Optional, List
+from typing import Optional, List, Iterable
 from dataclasses import dataclass
 import logging
 
@@ -43,72 +43,74 @@ class Comedi(InOut):
   def __init__(self,
                device: str = '/dev/comedi0',
                sub_device: int = 0,
-               channels: Optional[List[int]] = None,
-               range_num: Optional[List[int]] = None,
-               gain: Optional[List[float]] = None,
-               offset: Optional[List[float]] = None,
-               make_zero: Optional[List[bool]] = None,
+               channels: Optional[Iterable[int]] = None,
+               range_num: Optional[Iterable[int]] = None,
+               gain: Optional[Iterable[float]] = None,
+               offset: Optional[Iterable[float]] = None,
+               make_zero: Optional[Iterable[bool]] = None,
                out_sub_device: int = 1,
-               out_channels: Optional[List[int]] = None,
-               out_range_num: Optional[List[int]] = None,
-               out_gain: Optional[List[float]] = None,
-               out_offset: Optional[List[float]] = None) -> None:
+               out_channels: Optional[Iterable[int]] = None,
+               out_range_num: Optional[Iterable[int]] = None,
+               out_gain: Optional[Iterable[float]] = None,
+               out_offset: Optional[Iterable[float]] = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
       device: The address of the device, as a :obj:`str`.
       sub_device: The id of the subdevice to use for input channels, as an
         :obj:`int`.
-      channels: A :obj:`list` containing the indexes of the channels to use as
-        inputs, given as :obj:`int`.
-      range_num: A :obj:`list` containing for each input channel the index of
-        the range to set for that channel, as an :obj:`int`. Refer to the
-        documentation of the board to get the correspondence between range
-        indexes and Volts. If not given, all input channels will be set to the
-        range `0`.
-      gain: A :obj:`list` containing for each input channel the gain to apply
-        to the measured voltage, as a :obj:`float`. The returned voltage is
-        calculated as follows :
+      channels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        the indexes of the channels to use as inputs, given as :obj:`int`.
+      range_num: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        for each input channel the index of the range to set for that channel,
+        as an :obj:`int`. Refer to the documentation of the board to get the
+        correspondence between range indexes and Volts. If not given, all input
+        channels will be set to the range `0`.
+      gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
+        each input channel the gain to apply to the measured voltage, as a
+        :obj:`float`. The returned voltage is calculated as follows :
         ::
 
           returned_voltage = gain * measured_voltage + offset
 
         If not given, no gain is applied to the measured values.
-      offset: A :obj:`list` containing for each input channel the offset to
-        apply to the measured voltage, as a :obj:`float`. The returned voltage
-        is calculated as follows :
+      offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
+        each input channel the offset to apply to the measured voltage, as a
+        :obj:`float`. The returned voltage is calculated as follows :
         ::
 
           returned_voltage = gain * measured_voltage + offset
 
         If not given, no offset is applied to the measured values.
-      make_zero: A :obj:`list` containing for each input channel a :obj:`bool`
-        indicating whether the channel should be zeroed or not. If so, data
-        will be acquired on this channel before the test starts, and a
-        compensation value will be deduced so that the offset of this channel
-        is `0`. **It will only take effect if the** ``make_zero_delay``
-        **argument of the** :class:`~crappy.blocks.IOBlock` **controlling the
-        Comedi is set** ! If not given, the channels are by default not zeroed.
+      make_zero: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        for each input channel a :obj:`bool` indicating whether the channel
+        should be zeroed or not. If so, data will be acquired on this channel
+        before the test starts, and a compensation value will be deduced so
+        that the offset of this channel is `0`. **It will only take effect if
+        the** ``make_zero_delay``**argument of the**
+        :class:`~crappy.blocks.IOBlock` **controlling the Comedi is set** ! If
+        not given, the channels are by default not zeroed.
       out_sub_device: The id of the subdevice to use for output channels, as an
         :obj:`int`.
-      out_channels: A :obj:`list` containing the indexes of the channels to use
-        as outputs, given as :obj:`int`.
-      out_range_num: A :obj:`list` containing for each output channel the index
-        of the range to set for that channel, as an :obj:`int`. Refer to the
-        documentation of the board to get the correspondence between range
-        indexes and Volts. If not given, all output channels will be set to the
-        range `0`.
-      out_gain: A :obj:`list` containing for each output channel the gain to
-        apply to the command voltage, as a :obj:`float`. The set voltage is
-        calculated as follows :
+      out_channels: An iterable (like a :obj:`list` or a :obj:`tuple`)
+        containing the indexes of the channels to use as outputs, given as
+        :obj:`int`.
+      out_range_num: An iterable (like a :obj:`list` or a :obj:`tuple`)
+        containing for each output channel the index of the range to set for
+        that channel, as an :obj:`int`. Refer to the documentation of the board
+        to get the correspondence between range indexes and Volts. If not
+        given, all output channels will be set to the range `0`.
+      out_gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        for each output channel the gain to apply to the command voltage, as a
+        :obj:`float`. The set voltage is calculated as follows :
         ::
 
           set_voltage = out_gain * command_voltage + out_offset
 
         If not given, no gain is applied to the command values.
-      out_offset: A :obj:`list` containing for each output channel the offset
-        to apply to the command voltage, as a :obj:`float`. The set voltage is
-        calculated as follows :
+      out_offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        for each output channel the offset to apply to the command voltage, as
+        a :obj:`float`. The set voltage is calculated as follows :
         ::
 
           set_voltage = out_gain * command_voltage + out_offset
@@ -116,10 +118,10 @@ class Comedi(InOut):
         If not given, no offset is applied to the command values.
 
     Note:
-      All the :obj:`list` given as arguments for the input channels should have
+      All the iterables given as arguments for the input channels should have
       the same length, and same for the output channels. If that's not the
-      case, all the given lists are treated as if they had the same length
-      as the shortest given list.
+      case, all the given iterables are treated as if they had the same length
+      as the shortest given one.
     """
 
     self._device = None
@@ -134,7 +136,7 @@ class Comedi(InOut):
     if channels is None:
       channels = list()
     if out_channels is None:
-      channels = list()
+      out_channels = list()
 
     if range_num is None:
       range_num = [0 for _ in channels]

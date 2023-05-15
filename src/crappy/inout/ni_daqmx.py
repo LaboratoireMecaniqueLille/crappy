@@ -2,7 +2,7 @@
 
 from time import time
 import numpy as np
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Iterable
 from dataclasses import dataclass, field
 from re import fullmatch
 from collections import defaultdict
@@ -72,18 +72,19 @@ class NIDAQmx(InOut):
   """
 
   def __init__(self,
-               channels: List[Dict[str, Any]],
+               channels: Iterable[Dict[str, Any]],
                sample_rate: float = 100,
                n_samples: Optional[int] = None) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
-      channels: A :obj:`list` containing :obj:`dict` holding information on the
-        channels to read data from or write data to. See below for the
-        mandatory and optional keys for the dicts. Note that in streamer mode,
-        the digital input channels are not available for reading. Also, only
-        one type of analog input channel at a time can be read in streamer
-        mode, with no restriction on the number of channels of this type.
+      channels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        :obj:`dict` holding information on the channels to read data from or
+        write data to. See below for the mandatory and optional keys for the
+        dicts. Note that in streamer mode, the digital input channels are not
+        available for reading. Also, only one type of analog input channel at a
+        time can be read in streamer mode, with no restriction on the number of
+        channels of this type.
       sample_rate: The target sample rate for data acquisition in streamer
         mode, given as a :obj:`float`. Default is `100` SPS.
       n_samples: The number of samples to acquire per chunk of data in streamer

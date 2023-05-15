@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List, Optional, Dict, Any, Union, Tuple
+from typing import List, Optional, Dict, Any, Union, Tuple, Iterable
 from itertools import chain
 from dataclasses import dataclass, field
 from multiprocessing import current_process
@@ -71,19 +71,20 @@ class LabjackT7(InOut):
   """
 
   def __init__(self,
-               channels: List[Dict[str, Any]],
+               channels: Iterable[Dict[str, Any]],
                device: str = 'ANY',
                connection: str = 'ANY',
                identifier: str = 'ANY',
-               write_at_open: Optional[List[tuple]] = None,
+               write_at_open: Optional[Iterable[tuple]] = None,
                no_led: bool = False) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
-      channels: A :obj:`list` of the channels to interface with on the Labjack.
-        Each object in this list should be a :obj:`dict` representing a single
-        channel, and whose keys provide information on the channel to use.
-        Refer to the note below for more information on the possible keys.
+      channels: An iterable (like a :obj:`list` or a :obj:`tuple`) of the
+        channels to interface with on the Labjack. Each object in this iterable
+        should be a :obj:`dict` representing a single channel, and whose keys
+        provide information on the channel to use. Refer to the note below for
+        more information on the possible keys.
       device: The type of Labjack to open. Possible values include :
         ::
 
@@ -99,9 +100,10 @@ class LabjackT7(InOut):
       identifier: Any extra information allowing to further identify the
         Labjack to open, like a serial number, an IP address, or a device name.
       write_at_open: If specific names or registers have to be written when
-        opening the channel, they can be given here as a :obj:`list` of
-        :obj:`tuple`. They will be written in the same order as in the given
-        list. Refer to the note below for the accepted formats.
+        opening the channel, they can be given here as an iterable (like a
+        :obj:`list` or a :obj:`tuple`) of :obj:`tuple`. They will be written in
+        the same order as in the given iterable. Refer to the note below for
+        the accepted formats.
       no_led: If :obj:`True`, turns off the LED on the Labjack. This led can
         generate noise on the channels `AIN0` and `AIN1`.
 
@@ -211,7 +213,7 @@ class LabjackT7(InOut):
     self._identifier = identifier
 
     # List of commands to send when opening the Labjack
-    self._write_at_open = [] if write_at_open is None else write_at_open
+    self._write_at_open = [] if write_at_open is None else list(write_at_open)
     if no_led:
       self._write_at_open.append(('POWER_LED', 0))
 
