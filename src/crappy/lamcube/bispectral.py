@@ -71,7 +71,8 @@ class BiSpectral(BaslerIronmanCameraLink):
   """This class allows driving a bi-chromatic infrared camera, through a Basler
   microEnable 5 Ironman AD8 PoCL acquisition board.
 
-  It is a child of the :ref:`Basler Ironman Camera Link` Camera. It can set
+  It is a child of the
+  :class:`~crappy.camera.cameralink.BaslerIronmanCameraLink` Camera. It can set
   various settings on the camera, including the ROI or the trigger mode.
 
   The bi-chromatic camera is a very specific setup, and won't certainly be ever
