@@ -74,7 +74,7 @@ class OptionalModule:
 
 class LinkDataError(ValueError):
   """Exception raised when trying to send a wrong data type through a
-  :ref:`Link`."""
+  :class:`~crappy.links.Link`."""
 
 
 class StartTimeout(TimeoutError):
@@ -82,23 +82,23 @@ class StartTimeout(TimeoutError):
 
 
 class PrepareError(IOError):
-  """Error raised in a Block when waiting for all Blocks to be ready but
-  another Block fails to prepare."""
+  """Error raised in a :class:`~crappy.blocks.Block` when waiting for all
+  Blocks to be ready but another Block fails to prepare."""
 
 
 class CameraConfigError(RuntimeError):
-  """Error raised by a :ref:`Camera Configurator` window when encountering an
-  exception."""
+  """Error raised by a :class:`~crappy.tool.camera_config.CameraConfig` window
+  when encountering an exception."""
 
 
 class CameraPrepareError(RuntimeError):
-  """Error raised by a :ref:`Camera Block` when one of its children processes
-  crashes while preparing."""
+  """Error raised by a :class:`~crappy.blocks.Camera` when one of its children
+  processes crashes while preparing."""
 
 
 class CameraRuntimeError(RuntimeError):
-  """Error raised by a :ref:`Camera Block` when one of its children processes
-  crashes while running."""
+  """Error raised by a :class:`~crappy.blocks.Camera` when one of its children
+  processes crashes while running."""
 
 
 class T0NotSetError(ValueError):
@@ -124,10 +124,10 @@ class DefinitionError(NameError):
 
 
 class GeneratorStop(Exception):
-  """Exception raised when a :ref:`Generator` Block reaches the end of its
-  path."""
+  """Exception raised when a :class:`~crappy.blocks.Generator` Block reaches
+  the end of its :class:`~crappy.blocks.generator_path.Path`."""
 
 
 class ReaderStop(Exception):
-  """Exception raised when a :ref:`File Reader` camera has exhausted all the
-  images to read."""
+  """Exception raised when a :class:`~crappy.camera.FileReader` Camera has
+  exhausted all the images to read."""
