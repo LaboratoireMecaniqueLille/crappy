@@ -16,17 +16,18 @@ ModifierType = Callable[[Dict[str, Any]], Dict[str, Any]]
 
 
 class Link:
-  """This class is used for transferring information between the Blocks.
+  """This class is used for transferring information between two instances of
+  :class:`~crappy.blocks.Block`.
 
-  The created link is unidirectional, from the input block to the output block.
-  Under the hood, a link is basically a :class:`multiprocessing.Pipe` with
+  The created Link is unidirectional, from the input Block to the output Block.
+  Under the hood, a Link is basically a :obj:`multiprocessing.Pipe` with
   extra features.
 
   Note:
-    It is possible to add one or multiple :ref:`Modifiers` to modify the
-    transferred value. The Modifiers should be callables taking a :obj:`dict`
-    as argument and returning a :obj:`dict`. They can be functions, or
-    preferably children of :ref:`Modifier`.
+    It is possible to add one or multiple :class:`~crappy.modifier.Modifier` to
+    modify the transferred value. The Modifiers should be callables taking a
+    :obj:`dict` as argument and returning a :obj:`dict`. They can be functions,
+    or preferably children of :class:`~crappy.modifier.Modifier`.
   """
 
   _count = 0
@@ -39,14 +40,14 @@ class Link:
     """Sets the instance attributes.
 
     Args:
-      input_block: The Block sending data through the link.
-      output_block: The Block receiving data through the link.
+      input_block: The Block sending data through the Link.
+      output_block: The Block receiving data through the Link.
       modifiers: A :obj:`list` containing callables. If several objects given,
-        they will be called in the given order. See :ref:`Modifiers` for more
-        information.
-      name: Name of the link, to differentiate it from the others when
-        debugging. If no specific name is given, the links are numbered in the
-        order in which they are instantiated in the code.
+        they will be called in the given order. Refer to
+        :class:`~crappy.modifier.Modifier` for more information.
+      name: Name of the Link, to differentiate it from the others when
+        debugging. If no specific name is given, the Links are numbered in the
+        order in which they are instantiated in the script.
     """
 
     if modifiers is None:
@@ -104,7 +105,7 @@ class Link:
   def send(self, value: Dict[str, Any]) -> None:
     """Sends a value from the upstream Block to the downstream Block.
 
-    Before sending, applies the given modifiers and makes sure there's room in
+    Before sending, applies the given Modifiers and makes sure there's room in
     the Pipe for sending the data (Linux only).
     """
 
@@ -192,22 +193,25 @@ def link(in_block,
          out_block,
          modifier: Optional[Union[List[ModifierType], ModifierType]] = None,
          name: Optional[str] = None) -> None:
-  """Function linking two blocks, allowing to send data from one to the other.
+  """Function linking two Blocks, allowing to send data from one to the other.
 
-  The created link is unidirectional, from the input block to the output block.
-  Under the hood, a link is basically a :class:`multiprocessing.Pipe` with
+  It instantiates a :class:`~crappy.links.Link` between two children of
+  :class:`~crappy.blocks.Block`.
+
+  The created Link is unidirectional, from the input Block to the output Block.
+  Under the hood, a Link is basically a :obj:`multiprocessing.Pipe` with
   extra features.
 
   Args:
-    in_block: The Block sending data through the link.
-    out_block: The Block receiving data through the link.
+    in_block: The Block sending data through the Link.
+    out_block: The Block receiving data through the Link.
     modifier: Either a callable, or a :obj:`list` containing callables. If
       several given (in a list), they are called in the  given order. They
-      should preferably be children of :ref:`Modifier`. See :ref:`Modifiers`
-      for more information.
-    name: Name of the link, to differentiate it from the others when debugging.
-      If no specific name is given, the links are numbered in the order in
-      which they are instantiated in the code.
+      should preferably be children of :class:`~crappy.modifier.Modifier`.
+      Refer to  the associated documentation for more information.
+    name: Name of the Link, to differentiate it from the others when debugging.
+      If no specific name is given, the Links are numbered in the order in
+      which they are instantiated in the script.
   """
 
   # Forcing the modifiers into lists
