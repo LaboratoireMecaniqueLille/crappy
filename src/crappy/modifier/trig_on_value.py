@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Tuple, Dict, Any, Union, List
+from typing import Optional, Dict, Any, Union, Iterable
 import logging
 
 from .meta_modifier import Modifier
@@ -15,22 +15,29 @@ class TrigOnValue(Modifier):
 
   def __init__(self,
                label: str,
-               values: Union[Any, Tuple[Any, ...], List[Any]]) -> None:
+               values: Union[Any, Iterable[Any]]) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
       label: The name of the label to monitor.
       values: The values of ``label`` for which the data will be transmitted.
-        Can be a single value, a :obj:`list` or a :obj:`tuple`.
+        Can be a single value, or an iterable of values (like a :obj:`list` or
+        a :obj:`tuple`).
     """
 
     super().__init__()
 
     self._label = label
-    if isinstance(values, list) or isinstance(values, tuple):
-      self._values = values
+
+    if isinstance(values, str):
+      values = (values,)
     else:
-      self._values = (values,)
+      try:
+        iter(values)
+      except TypeError:
+        values = (values,)
+
+    self._values = tuple(values)
 
   def __call__(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Checks if the value of ``label`` is in the predefined set of accepted

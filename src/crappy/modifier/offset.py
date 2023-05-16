@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Dict, Any, List, Union, Tuple
+from typing import Dict, Any, Union, Iterable
 import logging
 
 from .meta_modifier import Modifier
@@ -24,8 +24,8 @@ class Offset(Modifier):
   """
 
   def __init__(self,
-               labels: Union[str, List[str], Tuple[str, ...]],
-               offsets: Union[float, List[float], Tuple[float, ...]]) -> None:
+               labels: Union[str, Iterable[str]],
+               offsets: Union[float, Iterable[float]]) -> None:
     """Sets the args and initializes the parent class.
 
     Args:
@@ -39,10 +39,14 @@ class Offset(Modifier):
     super().__init__()
 
     # Handling the case when only one label needs to be offset
-    if not isinstance(labels, list) and not isinstance(labels, tuple):
+    if isinstance(labels, str):
       labels = (labels,)
-    if not isinstance(offsets, list) and not isinstance(offsets, tuple):
+    labels = tuple(labels)
+    try:
+      iter(offsets)
+    except TypeError:
       offsets = (offsets,)
+    offsets = tuple(offsets)
 
     # Checking that the number of offsets match the number of labels
     if len(offsets) != len(labels):

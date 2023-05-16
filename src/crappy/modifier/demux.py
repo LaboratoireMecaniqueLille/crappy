@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Dict, Any, Union, List, Tuple
+from typing import Dict, Any, Union, Iterable
 import logging
 
 from .meta_modifier import Modifier
@@ -29,7 +29,7 @@ class Demux(Modifier):
   """
 
   def __init__(self,
-               labels: Union[str, List[str], Tuple[str, ...]],
+               labels: Union[str, Iterable[str]],
                stream_label: str = "stream",
                mean: bool = False,
                time_label: str = "t(s)",
@@ -38,11 +38,11 @@ class Demux(Modifier):
 
     Args:
       labels: The labels corresponding to the rows or columns of the stream.
-        It can be either a single label, or a :obj:`list` of labels, or a
-        :obj:`tuple` of labels. They must be given in the same order as they
-        appear in the stream. If fewer labels are given than there are rows or
-        columns in the stream, only the data from the first rows/columns will
-        be retrieved.
+        It can be either a single label, or an iterable of labels (like a
+        :obj:`list` or a :obj:`tuple`). They must be given in the same order as
+        they appear in the stream. If fewer labels are given than there are
+        rows or columns in the stream, only the data from the first rows or
+        columns will be retrieved.
       stream_label: The label carrying the stream.
       mean: If :obj:`True`, the returned value will be the average of the
         row or column. Otherwise, it will be the first value.
@@ -53,10 +53,10 @@ class Demux(Modifier):
 
     super().__init__()
 
-    if isinstance(labels, list) or isinstance(labels, tuple):
-      self._labels = labels
-    else:
-      self._labels = (labels,)
+    if isinstance(labels, str):
+      labels = (labels,)
+    self._labels = labels
+
     self._stream_label = stream_label
     self._mean = mean
     self._time_label = time_label
