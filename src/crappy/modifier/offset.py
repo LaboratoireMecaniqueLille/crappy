@@ -19,8 +19,8 @@ class Offset(Modifier):
   start at `0` but doesn't because of a sensor offset. It can also just be used
   to plot nicer figures. It is not very accurate as it is only based on a
   single data point for the offset calculation. The ``make_zero`` argument of
-  the :ref:`IOBlock` is a better alternative if precision is required when
-  offsetting a sensor.
+  the :class:`~crappy.blocks.IOBlock` is a better alternative if precision is
+  required when offsetting a sensor.
   """
 
   def __init__(self,

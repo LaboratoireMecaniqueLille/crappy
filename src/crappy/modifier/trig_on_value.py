@@ -7,10 +7,10 @@ from .meta_modifier import Modifier
 
 
 class TrigOnValue(Modifier):
-  """Modifier passing the data to the downstream only if the value carried by a
-  given label matches a given set of accepted values.
+  """Modifier passing the data to the downstream Block only if the value
+  carried by a given label matches a given set of accepted values.
 
-  Mostly useful to trig blocks.
+  Mostly useful to trigger Blocks in predefined situations.
   """
 
   def __init__(self,

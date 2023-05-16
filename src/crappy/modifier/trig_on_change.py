@@ -7,11 +7,11 @@ from .meta_modifier import Modifier
 
 
 class TrigOnChange(Modifier):
-  """Modifier passing the data to the downstream block only when the value of
+  """Modifier passing the data to the downstream Block only when the value of
   a given label changes.
 
-  It also transmits the first received data. Can be used to trig a Block upon
-  change of a label value.
+  It also transmits the first received data. Can be used to trigger a Block
+  upon change of a label value.
   """
 
   def __init__(self, label: str) -> None:

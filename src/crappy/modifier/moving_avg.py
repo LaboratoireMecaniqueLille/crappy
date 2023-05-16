@@ -11,8 +11,8 @@ class MovingAvg(Modifier):
   """Modifier replacing the data of each label with its average value over a
   chosen number of points.
 
-  Unlike :ref:`Mean`, it returns a value each time a message is received from
-  the upstream link.
+  Unlike :class:`~crappy.modifier.Mean`, it returns a value each time data is
+  received from the upstream Block.
   """
 
   def __init__(self, n_points: int = 100) -> None:
@@ -27,7 +27,7 @@ class MovingAvg(Modifier):
     self._buf = None
 
   def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
-    """Receives data from the upstream block, computes the average of every
+    """Receives data from the upstream Block, computes the average of every
     label and replaces the original data with it."""
 
     self.log(logging.DEBUG, f"Received {data}")

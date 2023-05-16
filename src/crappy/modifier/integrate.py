@@ -7,7 +7,7 @@ from .meta_modifier import Modifier
 
 
 class Integrate(Modifier):
-  """This modifier integrates the data of a label over time and adds the
+  """This Modifier integrates the data of a label over time and adds the
   integration value to the returned data."""
 
   def __init__(self,
@@ -33,7 +33,7 @@ class Integrate(Modifier):
     self._integration = 0
 
   def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
-    """Gets the data from the upstream block, updates the integration value,
+    """Gets the data from the upstream Block, updates the integration value,
     adds it to the data and returns the data."""
 
     self.log(logging.DEBUG, f"Received {data}")

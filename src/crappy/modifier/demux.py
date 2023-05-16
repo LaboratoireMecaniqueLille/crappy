@@ -8,13 +8,24 @@ from .meta_modifier import Modifier
 
 
 class Demux(Modifier):
-  """Modifier converting a stream into a :obj:`dict`, leaving for each label
-  only a single value.
+  """Modifier converting a stream into a regular data flow interpretable by
+  most Blocks.
 
-  The single value is either the first value of a column/row, or the average
-  of the row/column values. This Modifier is mainly meant for linking streaming
-  :ref:`IOBlock` blocks to :ref:`Grapher` blocks, as it is otherwise impossible
-  to plot their data.
+  It is meant to be used on a :class:`~crappy.links.Link` taking an
+  :class:`~crappy.blocks.IOBlock` in streamer mode as an input. It converts
+  the stream to make it readable by most Blocks, and also splits the stream in
+  several labels if necessary.
+
+  It takes a stream as an input, i.e. a :obj:`dict` whose values are numpy
+  arrays, and outputs another :obj:`dict` whose values are :obj:`float`. If the
+  numpy arrays contains several columns (corresponding to several acquired
+  channels), it splits them into several labels.
+
+  Important:
+    In the process of converting the stream data to regular labeled data, much
+    information is lost ! This Modifier is intended to format the stream data
+    for low-frequency plotting, or low-frequency decision-making. To save all
+    the stream data, use the :class:`~crappy.blocks.HDFRecorder` Block.
   """
 
   def __init__(self,
@@ -34,7 +45,7 @@ class Demux(Modifier):
         be retrieved.
       stream_label: The label carrying the stream.
       mean: If :obj:`True`, the returned value will be the average of the
-        stream data. Otherwise, it will be the first value.
+        row or column. Otherwise, it will be the first value.
       time_label: The label carrying the time information.
       transpose: If :obj:`True`, each label corresponds to a row in the stream.
         Otherwise, a label corresponds to a column in the stream.

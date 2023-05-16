@@ -11,8 +11,8 @@ class MovingMed(Modifier):
   """Modifier replacing the data of each label with its median value over a
   chosen number of points.
 
-  Unlike :ref:`Median`, it returns a value each time a message is received from
-  the upstream link.
+  Unlike :class:`~crappy.modifier.Median`, it returns a value each time data is
+  received from the upstream Block.
   """
 
   def __init__(self, n_points: int = 100) -> None:
@@ -27,7 +27,7 @@ class MovingMed(Modifier):
     self._buf = None
 
   def __call__(self, data: Dict[str, Any]) -> Dict[str, Any]:
-    """Receives data from the upstream block, computes the median of every
+    """Receives data from the upstream Block, computes the median of every
     label and replaces the original data with it."""
 
     self.log(logging.DEBUG, f"Received {data}")
