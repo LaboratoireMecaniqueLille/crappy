@@ -70,6 +70,12 @@ Box
    :members: no_points, reset, sorted
    :special-members: __init__
 
+Histogram Process
+"""""""""""""""""
+.. autoclass:: crappy.tool.camera_config.config_tools.HistogramProcess
+   :members: run, log
+   :special-members: __init__
+
 Spots Boxes
 """""""""""
 .. autoclass:: crappy.tool.camera_config.config_tools.SpotsBoxes
