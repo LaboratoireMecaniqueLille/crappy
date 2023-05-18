@@ -14,10 +14,13 @@ from ...camera.meta_camera import Camera
 class CameraConfigBoxes(CameraConfig):
   """This class is a basis for the configuration GUIs featuring boxes to
   display or to draw.
-
-  It implements useful methods for drawing the boxes. If instantiated, this
-  class behaves the exact same way as its parent class. It is not used as is by
-  any Block in Crappy.
+  
+  It is a child of the base :class:`~crappy.tool.camera_config.CameraConfig`,
+  and relies on the :class:`~crappy.tool.camera_config.config_tools.Box` and
+  :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` tools. It
+  implements useful methods for drawing one or several Boxes. If instantiated,
+  this class behaves the exact same way as its parent class. It is not used as
+  is by any Block in Crappy.
   """
 
   def __init__(self,
@@ -27,9 +30,10 @@ class CameraConfigBoxes(CameraConfig):
     """Initializes the parent class and sets the spots container.
 
     Args:
-      camera: The :ref:`Camera` object in charge of acquiring the images.
-      log_queue: A Queue for sending the log messages to the main Logger, only
-        used in Windows.
+      camera: The :class:`~crappy.camera.Camera` object in charge of acquiring 
+        the images.
+      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
+        the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
     """

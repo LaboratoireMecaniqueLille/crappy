@@ -9,12 +9,13 @@ from .box import Box
 
 @dataclass
 class SpotsBoxes:
-  """This class stores up to four instances of :ref:`Box`, defining the
-  bounding boxes of the spots for :ref:`Video Extenso` or the patches for
-  :ref:`DIC VE`.
+  """This class stores up to four instances of
+  :class:`~crappy.tool.camera_config.config_tools.Box`, defining the bounding
+  boxes of the spots for :class:`~crappy.blocks.VideoExtenso` or the patches
+  for :class:`~crappy.blocks.DICVE`.
 
-  It can also instantiate the Box object by parsing a list of tuples containing
-  enough information.
+  It can also instantiate the Box objects by parsing a list of tuples
+  containing enough information.
   """
 
   spot_1: Optional[Box] = None
@@ -67,8 +68,8 @@ class SpotsBoxes:
 
   def set_spots(self,
                 spots: List[Tuple[int, int, int, int]]) -> None:
-    """Parses a list of tuples and instantiates the corresponding :ref:`Box`
-    objects."""
+    """Parses a list of tuples and instantiates the corresponding
+    :class:`~crappy.tool.camera_config.config_tools.Box` objects."""
 
     for i, spot in enumerate(spots):
       self[i] = Box(x_start=spot[1], x_end=spot[1] + spot[3],

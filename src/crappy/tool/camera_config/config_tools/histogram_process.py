@@ -13,12 +13,14 @@ from time import sleep
 
 
 class HistogramProcess(Process):
-  """This class is a process taking an image as an input via a Pipe, and
-  returning the histogram of that image in another Pipe.
+  """This class is a :obj:`multiprocessing.Process` taking an image as an input 
+  via a :obj:`multiprocessing.Pipe`, and returning the histogram of that image 
+  in another :obj:`~multiprocessing.Pipe`.
 
-  It is used by the :ref:`Camera Configurator` window and its children to
-  delegate and parallelize the calculation of the histogram. It allows to gain
-  a few frames per second on the display in the configuration window.
+  It is used by the :class:`~crappy.tool.camera_config.CameraConfig` window and 
+  its children to delegate and parallelize the calculation of the histogram. It
+  allows to gain a few frames per second on the display in the configuration
+  window.
   """
 
   def __init__(self,
@@ -31,16 +33,19 @@ class HistogramProcess(Process):
     """Sets the arguments and initializes the parent class.
 
     Args:
-      stop_event: An Event signaling the Process when to stop running.
-      processing_event: An Event set by the Process to
-      img_in: The Pipe Connection through which the images to process are
-        received.
-      img_out: The Pipe Connection through which the calculated histograms are
-        sent back.
+      stop_event: An :obj:`multiprocessing.Event` signaling the
+        :obj:`~multiprocessing.Process` when to stop running.
+      processing_event: An :obj:`multiprocessing.Event` set by the
+        :obj:`multiprocessing.Process` to indicate that it's currently
+        processing an image. Avoids having images to process piling up.
+      img_in: The :obj:`~multiprocessing.connection.Connection` through which 
+        the images to process are received.
+      img_out: The :obj:`~multiprocessing.connection.Connection` through which 
+        the calculated histograms are sent back.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
-      log_queue: A Queue for sending the log messages to the main Logger, only
-        used in Windows.
+      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
+        the main :obj:`~logging.Logger`, only used in Windows.
     """
 
     self._logger: Optional[logging.Logger] = None
@@ -57,8 +62,9 @@ class HistogramProcess(Process):
   def run(self) -> None:
     """The main method being run by the HistogramProcess.
 
-    It continuously receives images from the Configuration window, calculates
-    their histograms and returns them back as a nice image to integrate on the
+    It continuously receives images from the 
+    :class:`~crappy.tool.camera_config.CameraConfig`, calculates their 
+    histograms and returns them back as a nice image to integrate on the
     window.
     """
 
@@ -112,15 +118,16 @@ class HistogramProcess(Process):
   def _hist_func(x: np.ndarray,
                  _: np.ndarray,
                  histo: np.ndarray) -> np.ndarray:
-    """Function passed to the :meth:`np.fromfunction` method for building the
-    histogram."""
+    """Function passed to the :meth:`numpy.fromfunction` method for building 
+    the histogram."""
 
     return np.where(x <= histo, 0, 255)
 
   def log(self, level: int, msg: str) -> None:
     """Records log messages for the HistogramProcess.
 
-    Also instantiates the logger when logging the first message.
+    Also instantiates the :obj:`~logging.Logger` when logging the first
+    message.
 
     Args:
       level: An :obj:`int` indicating the logging level of the message.

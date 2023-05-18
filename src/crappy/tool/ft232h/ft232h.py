@@ -1367,8 +1367,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
     one stop condition is sent after the last transaction.
 
     Args:
-      *i2c_msgs: One or several :ref:`I2C Message` to exchange with the slave.
-        They are either read or write messages.
+      *i2c_msgs: One or several :class:`~crappy.tool.ft232h.I2CMessage` to
+        exchange with the slave. They are either read or write messages.
     """
 
     self.log(logging.DEBUG, "Requested I2C readwrite")

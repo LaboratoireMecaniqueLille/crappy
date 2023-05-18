@@ -17,7 +17,11 @@ def get_field(field_string: str,
               h: int,
               w: int) -> Tuple[np.ndarray, np.ndarray]:
   """Creates and returns the two fields on which the image will be projected,
-  as numpy arrays.
+  as :mod:`numpy` arrays.
+  
+  This function is used by the
+  :class:`~crappy.tool.image_processing.DISCorrelTool` and
+  :class:`~crappy.tool.image_processing.GPUCorrelTool` tools.
 
   Args:
     field_string: The :obj:`str` describing the field on which to project the
@@ -76,7 +80,10 @@ def get_field(field_string: str,
 
 def get_res(ref: np.ndarray, img: np.ndarray, flow: np.ndarray) -> np.ndarray:
   """Calculates the difference between the original image and the one
-    reconstructed from the current image and the calculated flow.
+  reconstructed from the current image and the calculated flow.
+
+  This function is used by the
+  :class:`~crappy.tool.image_processing.DISCorrelTool` tool.
 
   Args:
     ref: The reference image for calculating the optical flow.

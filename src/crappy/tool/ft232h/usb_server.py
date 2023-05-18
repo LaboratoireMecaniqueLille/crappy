@@ -32,7 +32,11 @@ USBArgsType = Tuple[int, multiprocessing.synchronize.RLock, FileIO,
 @dataclass
 class BlockObjects:
   """This class stores all the objects specific to a single Block, in order to
-  easily pass them to the USB server process."""
+  easily pass them to the :class:`USBServer` process.
+
+  Such a class will be created for each :class:`~crappy.blocks.Block`
+  registering with the :class:`USBServer`.
+  """
 
   ser_num: str
   lock: multiprocessing.synchronize.RLock
@@ -46,9 +50,13 @@ class USBServer(Process):
   :mod:`pysub` library.
 
   As :mod:`pyusb` is not process-safe in Python, running a server is the only
-  option to allow multiple Blocks to use the library in parallel. This server
-  simply sends the USB commands it receives to the USB devices, and returns
-  back the answers.
+  option to allow multiple :class:`~crappy.blocks.Block` to use the library in
+  parallel. This server simply sends the USB commands it receives to the USB
+  devices, and returns back the answers. It features a quite complex
+  architecture for managing the requests and properly starting up and shutting
+  down.
+
+  The server is a child of :obj:`multiprocessing.Process`.
   """
 
   initialized = False
@@ -77,18 +85,19 @@ class USBServer(Process):
     """Sets the arguments.
 
     Args:
-      current_block: A multiprocessing synchronized Value storing the index of
-        the Block currently allowed to communicate with the server.
+      current_block: A :obj:`multiprocessing.Value` storing the index of
+        the :class:`~crappy.blocks.Block` currently allowed to communicate with
+        the server.
       command_file: The handle to a file where the USB commands to send will be
         written.
       answer_file: The handle to a file where to write the answers from the USB
         devices.
-      block_dict: A :obj:`dict` indicating for each index which Block it
-        corresponds to.
-      stop_event: A multiprocessing Event indicating the serve when it should
-        stop running.
-      log_queue: A Queue for sending the log messages to the main Logger, only
-        used in Windows.
+      block_dict: A :obj:`dict` indicating for each index which
+        :class:`~crappy.blocks.Block` it corresponds to.
+      stop_event: A :obj:`multiprocessing.Event` indicating the server when it
+        should stop running.
+      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to
+        the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
     """
@@ -115,8 +124,9 @@ class USBServer(Process):
 
   @classmethod
   def register(cls, ser_num: Optional[str] = None) -> USBArgsType:
-    """Allows a Block to register for communicating with the server. This Block
-    is then given the necessary information for communication.
+    """Allows a :class:`~crappy.blocks.Block` to register for communicating
+    with the server. This Block is then given the necessary information for
+    communication.
 
     Args:
       ser_num: The serial number of the FT232H to communicate with, as a
@@ -125,7 +135,7 @@ class USBServer(Process):
     Returns:
       A :obj:`tuple` containing the necessary information for other objects to
       communicate with the server. This information is for example given as
-      arguments to :ref:`FT232H Server` objects.
+      arguments to :class:`~crappy.tool.ft232h.FT232HServer` objects.
     """
 
     # Initializing the synchronization objects
@@ -161,11 +171,12 @@ class USBServer(Process):
   def start_server(cls,
                    log_queue: multiprocessing.queues.Queue,
                    log_level: int) -> None:
-    """Initializes and starts the USB server process.
+    """Initializes and starts the USB server Process.
 
     Args:
-      log_queue: The queue carrying the log messages from the server process to
-        Crappy's centralized log handler. Only used in Windows.
+      log_queue: The :obj:`multiprocessing.Queue` carrying the log messages 
+        from the server Process to Crappy's centralized log handler. Only used 
+        in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
     """
@@ -214,11 +225,11 @@ class USBServer(Process):
   def log(cls, level: int, msg: str) -> None:
     """Wrapper for recording log messages.
 
-    Also instantiates the Logger on the first message.
+    Also instantiates the :obj:`~logging.Logger` on the first message.
 
     Args:
       level: The logging level of the message, as an :obj:`int`.
-      msg: The message to lof, as a :obj:`str`.
+      msg: The message to log, as a :obj:`str`.
     """
 
     if cls.logger is None:
@@ -230,10 +241,11 @@ class USBServer(Process):
   @contextmanager
   def acquire_timeout(lock: multiprocessing.synchronize.RLock,
                       timeout: float) -> bool:
-    """Short context manager for acquiring a Lock with a specified timeout.
+    """Short context manager for acquiring a :obj:`multiprocessing.Lock` with a 
+    specified timeout.
 
     Args:
-      lock: The lock to acquire.
+      lock: The Lock to acquire.
       timeout: The timeout for acquiring the Lock, as a :obj:`float`.
 
     Returns:
@@ -251,11 +263,12 @@ class USBServer(Process):
 
   @staticmethod
   def _get_devices() -> Dict[str, Any]:
-    """Detects all the connected USB devices and returns them as a :obj:`dict`.
+    """Detects all the connected FT232H devices and returns them as a 
+    :obj:`dict`.
 
     Returns:
       A :obj:`dict` containing as keys the detected serial numbers and as
-      values the handles in the :mod:`pyusb` module to the associated USB
+      values the handles in the :mod:`pyusb` module to the associated FT232H
       devices.
     """
 
@@ -287,10 +300,10 @@ class USBServer(Process):
   def run(self) -> None:
     """The main loop of the server.
 
-    Waits for a Block to acquire control, reads its command, sends it to the
-    correct USB device, reads the answer from the USB device and sends it back
-    to the Block in control. Then, does the same with the next Block getting
-    control over the server.
+    Waits for a :class:`~crappy.blocks.Block` to acquire control, reads its 
+    command, sends it to the correct USB device, reads the answer from the USB 
+    device and sends it back to the Block in control. Then, does the same with 
+    the next Block getting control over the server.
     """
 
     self._set_logger()
@@ -377,7 +390,7 @@ class USBServer(Process):
         specific way for each type of command.
       device: The :mod:`pyusb` Device to which the commands are sent.
       serial_nr: The serial number of the :mod:`pyusb` device.
-      index: The index of the block currently controlling the server.
+      index: The index of the Block currently controlling the server.
 
     Returns:
       The index of the command, followed by the answer from the USB device if
@@ -465,7 +478,8 @@ class USBServer(Process):
       return b'13,'
 
   def _set_logger(self) -> None:
-    """Instantiates and sets up the Logger for recording log messages."""
+    """Instantiates and sets up the :obj:`~logging.Logger` for recording log
+    messages."""
 
     logger = logging.getLogger(self.name)
 
@@ -504,7 +518,7 @@ class USBServer(Process):
 
     Returns:
       The index, in endpoint, out endpoint and maximum packet size of a USB
-      device
+      device.
     """
 
     interface = device.get_active_configuration()[(0, 0)]

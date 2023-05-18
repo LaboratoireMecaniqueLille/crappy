@@ -5,14 +5,19 @@ from typing import Optional, List
 
 
 class I2CMessage:
-  """Class that mimics the :obj:`i2c_msg` class of the :mod:`smbus2` module."""
+  """Class that mimics the :class:`smbus2.i2c_msg` class.
+
+  It is used for communication with the
+  :class:`~crappy.tool.ft232h.FT232HServer`, only by the
+  :class:`~crappy.inout.MPRLS` InOut.
+  """
 
   def __init__(self,
                type_: str,
                address: int,
                length: Optional[int] = None,
                buf: Optional[list] = None) -> None:
-    """Simply sets the attributes of the class, that characterise the i2c
+    """Simply sets the attributes of the class, that characterizes the I2C
     message.
 
     Args:
@@ -32,7 +37,7 @@ class I2CMessage:
 
   @classmethod
   def read(cls, address: int, length: int) -> I2CMessage:
-    """Instantiates an :ref:`I2C Message` object for reading bytes.
+    """Instantiates an :class:`I2CMessage` object for reading bytes.
 
     Args:
       address: The address of the I2C slave, as an :obj:`int`.
@@ -43,7 +48,7 @@ class I2CMessage:
 
   @classmethod
   def write(cls, address: int, buf: list) -> I2CMessage:
-    """Instantiates an :ref:`I2C Message` object for writing bytes.
+    """Instantiates an :class:`I2CMessage` object for writing bytes.
 
     Args:
       address: The address of the I2C slave, as an :obj:`int`.

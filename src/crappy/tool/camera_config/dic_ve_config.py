@@ -23,10 +23,12 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DICVEConfig(CameraConfigBoxes):
-  """Class similar to :ref:`Camera Configurator` but also displaying the
-  bounding boxes of the regions defined as patches.
-
-  It is meant to be used for configuring the :ref:`DIC VE` Block.
+  """Class similar to :class:`~crappy.tool.camera_config.CameraConfig` but also 
+  displaying the bounding boxes of the regions defined as patches.
+  
+  It relies on the :class:`~crappy.tool.camera_config.config_tools.Box` and 
+  :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` tools. It is
+  meant to be used for configuring the :class:`~crappy.blocks.DICVE` Block.
   """
 
   def __init__(self,
@@ -37,13 +39,15 @@ class DICVEConfig(CameraConfigBoxes):
     """Sets the patches and initializes the parent class.
 
     Args:
-      camera: The :ref:`Camera` object in charge of acquiring the images.
-      log_queue: A Queue for sending the log messages to the main Logger, only
-        used in Windows.
+      camera: The :class:`~crappy.camera.Camera` object in charge of acquiring 
+        the images.
+      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
+        the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
-      patches: An instance of :ref:`Spots Boxes` containing the patches to
-        follow for image correlation.
+      patches: An instance of
+        :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` containing
+        the patches to follow for image correlation.
     """
 
     self._patch_size: Optional[CameraScaleSetting] = None

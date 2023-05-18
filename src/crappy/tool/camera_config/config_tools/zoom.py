@@ -6,7 +6,7 @@ from dataclasses import dataclass
 @dataclass
 class Zoom:
   """This class stores the upper and lower limits of the image to display in
-  the :ref:`Camera Configurator` window.
+  the :class:`~crappy.tool.camera_config.CameraConfig` window.
 
   It also allows updating them when the user changes the zoom ratio or drags
   the image with the mouse.

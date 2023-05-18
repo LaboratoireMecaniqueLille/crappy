@@ -22,10 +22,12 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DISCorrelConfig(CameraConfigBoxes):
-  """Class similar to :ref:`Camera Configurator` but also allowing to select
-  the area on which the correlation will be performed.
-
-  It is meant to be used for configuring the :ref:`DIS Correl` block.
+  """Class similar to :class:`~crappy.tool.camera_config.CameraConfig` but also 
+  allowing to select the area on which the correlation will be performed.
+  
+  It relies on the :class:`~crappy.tool.camera_config.config_tools.Box` tool. 
+  It is meant to be used for configuring the :class:`~crappy.blocks.DISCorrel` 
+  Block.
   """
 
   def __init__(self,
@@ -33,16 +35,18 @@ class DISCorrelConfig(CameraConfigBoxes):
                log_queue: Queue,
                log_level: Optional[int],
                patch: Box) -> None:
-    """Initializes the parent class and sets the correlation :ref:`Box`.
+    """Initializes the parent class and sets the correlation Box.
 
     Args:
-      camera: The :ref:`Camera` object in charge of acquiring the images.
-      log_queue: A Queue for sending the log messages to the main Logger, only
-        used in Windows.
+      camera: The :class:`~crappy.camera.Camera` object in charge of acquiring 
+        the images.
+      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
+        the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
-      patch: The :ref:`Box` container that will save the information on the
-        patch where to perform image correlation.
+      patch: The :class:`~crappy.tool.camera_config.config_tools.Box` container
+        that will save the information on the patch where to perform image
+        correlation.
     """
 
     self._correl_box = patch
@@ -52,7 +56,8 @@ class DISCorrelConfig(CameraConfigBoxes):
 
   @property
   def box(self) -> Box:
-    """Returns the :ref:`Box` object containing the region of interest."""
+    """Returns the :class:`~crappy.tool.camera_config.config_tools.Box` object
+    containing the region of interest."""
 
     return self._correl_box
 

@@ -102,8 +102,8 @@ class DelayedKeyboardInterrupt:
   """This class implements a context manager for temporarily disabling the
   :exc:`KeyboardInterrupt` and storing any exception received in the meantime.
 
-  It is meant to avoid having a communication interrupted, which could cause
-  devices to bug and not be able to properly finish.
+  It is meant to avoid having a I2C or SPI communication interrupted, which 
+  could cause devices to bug and not be able to properly finish.
   """
 
   def __enter__(self) -> None:
@@ -130,10 +130,11 @@ class DelayedKeyboardInterrupt:
 class FT232HServer(FT232H):
   """A class for controlling FTDI's USB to Serial FT232H.
 
-  This class is very similar to the :ref:`FT232H` except it doesn't
-  directly instantiate the USB device nor send commands to it directly.
-  Instead, the commands are sent to a :ref:`USB Server` managing communication
-  with the FT232H device(s).
+  This class is very similar to the :class:`~crappy.tool.ft232h.FT232H` except 
+  it doesn't directly instantiate the USB device nor send commands to it 
+  directly. Instead, the commands are sent to a 
+  :class:`~crappy.tool.ft232h.USBServer` managing communication with the FT232H 
+  device(s).
 
   Communication in SPI and I2C are implemented, along with GPIO control. The
   name of the methods for SPI and I2C communication are those of :mod:`smbus`
@@ -190,18 +191,23 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
 
         GPIOs can be driven in any mode, but faster speeds are achievable in
         `GPIO_only` mode.
-      block_index: The index the block driving this ft232h_server instance has
-        been assigned, as an :obj:`int`.
-      current_block: The handle to a shared multiprocessing value indicating
-        which Block can currently communicate with the :ref:`USB Server`.
+      block_index: The index the :class:`~crappy.blocks.Block` driving this 
+        FT232HServer instance has been assigned by the 
+        :class:`~crappy.tool.ft232h.USBServer`, as an :obj:`int`.
+      current_block: The handle to a shared :obj:`multiprocessing.Value` 
+        indicating which :class:`~crappy.blocks.Block` can currently
+        communicate with the :class:`~crappy.tool.ft232h.USBServer`.
       command_file: A file in which the current command to be executed by the
         USB server is written.
       answer_file: A file in which the answer to the current command is
         written.
-      block_lock: A lock assigned to this block only, for signaling the USB
-        server when the command has been written in the command_file.
-      shared_lock: A lock common to all the blocks that allows the one block
-        holding it to communicate with the USB server.
+      block_lock: A :obj:`multiprocessing.Lock` assigned to this 
+        :class:`~crappy.blocks.Block` only, for signaling the 
+        :class:`~crappy.tool.ft232h.USBServer` when the command has been 
+        written in the command_file.
+      shared_lock: A :obj:`multiprocessing.Lock` common to all the 
+        :class:`~crappy.blocks.Block` that allows the one Block holding it to 
+        communicate with the :class:`~crappy.tool.ft232h.USBServer`.
       serial_nr: The serial number of the FT232H to drive, as a :obj:`str`. In
         `Write_serial_nr` mode, the serial number to be written.
       i2c_speed: In I2C mode, the I2C bus clock frequency in Hz. Available
@@ -882,7 +888,8 @@ MODE=\\"0666\\\"" | sudo tee ftdi.rules > /dev/null 2>&1
   @staticmethod
   @contextmanager
   def acquire_timeout(lock: RLock, timeout: float) -> bool:
-    """Short context manager for acquiring a Lock with a specified timeout.
+    """Short context manager for acquiring a :obj:`multiprocessing.Lock` with a
+    specified timeout.
 
     Args:
       lock: The lock to acquire.

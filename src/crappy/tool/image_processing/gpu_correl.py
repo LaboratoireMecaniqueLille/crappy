@@ -55,7 +55,7 @@ def interp_nearest(arr: np.ndarray, ny: int, nx: int) -> np.ndarray:
 
 
 class CorrelStage:
-  """Represents a stage of the pyramid used by the :ref:`GPUCorrel` tool for
+  """Represents a stage of the pyramid used by the :class:`GPUCorrelTool` for
   performing GPU correlation.
 
   This class actually performs the GPU computation, while the calling classes
@@ -478,11 +478,12 @@ class CorrelStage:
 
 
 class GPUCorrelTool:
-  """This class is the core of the :ref:`GPU Correl` and :ref:`GPU VE` Blocks.
+  """This class is the core of the :class:`~crappy.blocks.GPUCorrel` and 
+  :class:`~crappy.blocks.GPUVE` Blocks.
 
-  It receives images from a :ref:`Camera`, and performs GPU-accelerated image
-  correlation on each received image. From this correlation, rigid body
-  displacements or other fields are identified.
+  It receives images from a :class:`~crappy.camera.Camera`, and performs 
+  GPU-accelerated image correlation on each received image. From this 
+  correlation, rigid body displacements or other fields are identified.
 
   This class  is meant to be efficient enough to run in real-time. It relies on
   the :class:`CorrelStage` class (not documented) to perform correlation on
@@ -514,8 +515,8 @@ class GPUCorrelTool:
     """Sets the args and a few parameters of :mod:`pycuda`.
 
     Args:
-      logger_name: The name of the parent Logger, to be used for setting the
-        Logger of the class.
+      logger_name: The name of the parent :obj:`~logging.Logger`, to be used
+        for setting the Logger of the class.
       context: Optionally, the :mod:`pycuda` context to use. If not specified,
         a new context is instantiated.
       verbose: The verbose level as an integer, between `0` and `3`. At level
@@ -524,7 +525,7 @@ class GPUCorrelTool:
       levels: Number of levels of the pyramid. More levels may help converging
         on images with large strain, but may fail on images that don't contain
         low spatial frequency. Fewer levels mean that the program runs faster.
-      resampling_factor: the factor by which the resolution is divided between
+      resampling_factor: The factor by which the resolution is divided between
         each stage of the pyramid. A low factor ensures coherence between the
         stages, but is more computationally intensive. A high factor allows
         reaching a finer detail level, but may lead to a coherence loss between
@@ -542,7 +543,7 @@ class GPUCorrelTool:
 
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
 
-      ref_img: the reference image, as a 2D :mod:`numpy` array with `dtype`
+      ref_img: the reference image, as a 2D :obj:`numpy.array` with `dtype`
         `float32`. It can either be given at :meth:`__init__`, or set later
         with :meth:`set_orig`.
       mask: The mask used for weighting the region of interest on the image. It

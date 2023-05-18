@@ -2,8 +2,8 @@
 
 """This file contains the code for binding the C++ Comedi library in Python.
 
-It is only used by the :ref:`Comedi` InOut. The bindings haven't been tested
-for a while.
+It is only used by the :class:`~crappy.inout.Comedi` InOut. The bindings
+haven't been tested for a while.
 """
 
 from ctypes import *

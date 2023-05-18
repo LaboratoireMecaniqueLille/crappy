@@ -14,12 +14,12 @@ import numpy as np
 
 
 class DISCorrelTool:
-  """This class is the core of the :ref:`DIS Correl` Block.
+  """This class is the core of the :class:`~crappy.blocks.DISCorrel` Block.
 
-  It receives images from a :ref:`Camera` object, and performs Dense Inverse
-  Search correlation on each new image to get fields of interest. It relies on
-  DISFlow for the image correlation, handles the projection of the image on the
-  chosen fields, and calculates the residuals.
+  It receives images from a :class:`~crappy.camera.Camera` object, and performs 
+  Dense Inverse Search correlation on each new image to get fields of interest. 
+  It relies on DISFlow for the image correlation, handles the projection of the 
+  image on the chosen fields, and calculates the residuals.
   """
 
   def __init__(self,
@@ -37,8 +37,9 @@ class DISCorrelTool:
     """Sets the parameters of DISFlow.
 
     Args:
-      box: An instance of the :ref:`Box` object containing the coordinates of
-        the patch on which to perform image correlation.
+      box: An instance of the
+        :class:`~crappy.tool.camera_config.config_tools.Box` object containing
+        the coordinates of the patch on which to perform image correlation.
       fields: The base of fields to use for the projection, given as a
         :obj:`list` of :obj:`str`. The available fields are :
         ::

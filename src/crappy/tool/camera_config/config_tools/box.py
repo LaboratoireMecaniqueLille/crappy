@@ -7,8 +7,8 @@ from typing import Optional, Tuple
 
 @dataclass
 class Box:
-  """This class represents a box to be drawn on the image of a
-  :ref:`Camera Configurator` window.
+  """This class represents a box to be drawn on top of the image of a
+  :class:`~crappy.tool.camera_config.CameraConfig` window.
 
   It can be either the box drawn when selecting a region, or the bounding box
   of a previously detected area."""

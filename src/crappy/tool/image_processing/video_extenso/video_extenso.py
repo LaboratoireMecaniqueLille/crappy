@@ -17,12 +17,13 @@ from .tracker import Tracker, LostSpotError
 
 
 class VideoExtensoTool:
-  """This class is the core of the :ref:`Video Extenso` Block.
+  """This class is the core of the :class:`~crappy.blocks.VideoExtenso` Block.
 
   It performs spot tracking on up to `4` spots on the images acquired by the
-  :ref:`Camera`, and computes the strain values at each new image. For each
-  spot, the tracking is performed by an independent
-  :ref:`Video Extenso Tracker` process.
+  :class:`~crappy.camera.Camera`, and computes the strain values at each new 
+  image. For each spot, the tracking is performed by an independent
+  :class:`~crappy.tool.image_processing.video_extenso.tracker.tracker.Tracker`
+  Process.
 
   It is possible to track only one spot, in which case only the position of its
   center is returned and the strain values are left to `0`.
@@ -41,25 +42,29 @@ class VideoExtensoTool:
     """Sets the arguments and the other instance attributes.
 
     Args:
-      spots: An instance of the :ref:`Spots Boxes` class containing the
-        coordinates of the spots to track.
+      spots: An instance of the 
+        :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` tool 
+        containing the coordinates of the spots to track.
       thresh: The grey level value of the threshold to use for discriminating
         spots from the background, as an :obj:int`. Passed to the
-        :ref:`Video Extenso Tracker` and not used in this class.
+        :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
+        and not used in this class.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
-      log_queue: A Queue for sending the log messages to the main Logger, only
-        used in Windows.
+      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
+        the main :obj:`~logging.Logger`, only used in Windows.
       white_spots: If :obj:`True`, detects white objects over a black
         background, else black objects over a white background. Passed to the
-        :ref:`Video Extenso Tracker` and not used in this class.
+        :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
+        and not used in this class.
       update_thresh: If :obj:`True`, the grey level threshold for detecting the
         spots is re-calculated at each new image. Otherwise, the first
         calculated threshold is kept for the entire test. The spots are less
         likely to be lost with adaptive threshold, but the measurement will be
         more noisy. Adaptive threshold may also yield inconsistent results when
-        spots are lost. Passed to the :ref:`Video Extenso Tracker` and not used
-        in this class.
+        spots are lost. Passed to the 
+        :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
+        and not used in this class.
       safe_mode: If :obj:`True`, the class will stop and raise an exception as
         soon as overlapping spots are detected. Otherwise, it will first try to
         reduce the detection window to get rid of overlapping. This argument
@@ -71,13 +76,15 @@ class VideoExtensoTool:
         additional pixels to use. It should be greater than the expected
         "speed" of the spots, in pixels / frame. But if it's set too high,
         noise or other spots might hinder the detection. Passed to the
-        :ref:`Video Extenso Tracker` and not used in this class.
+        :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
+        and not used in this class.
       blur: The size in pixels (as an odd :obj:`int` greater than `1`) of the
         kernel to use when applying a median blur filter to the image before
-        the spot detection. If not given, no blurring is
-        performed. A slight blur improves the spot detection by smoothening the
-        noise, but also takes a bit more time compared to no blurring. Passed
-        to the :ref:`Video Extenso Tracker` and not used in this class.
+        the spot detection. If not given, no blurring is performed. A slight 
+        blur improves the spot detection by smoothening the noise, but also 
+        takes a bit more time compared to no blurring. Passed to the 
+        :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
+        and not used in this class.
     """
 
     # These attributes will be used later
@@ -107,10 +114,12 @@ class VideoExtensoTool:
     self.stop_tracking()
 
   def start_tracking(self) -> None:
-    """Creates a :ref:`Video Extenso Tracker` process for each detected spot,
-    and starts it.
+    """Creates a
+    :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
+    Process for each detected spot, and starts it.
 
-    Also creates a Pipe for each spot to communicate with the Tracker process.
+    Also creates a :obj:`multiprocessing.Pipe` for each spot to communicate 
+    with the Tracker process.
     """
 
     if self.spots.empty():
@@ -134,8 +143,10 @@ class VideoExtensoTool:
       tracker.start()
 
   def stop_tracking(self) -> None:
-    """Stops all the active :ref:`Video Extenso Tracker` processes, either
-    gently or by terminating them if they don't stop by themselves."""
+    """Stops all the active 
+    :class:`~crappy.tool.image_processing.video_extenso.tracker.Tracker`
+    Processes, either gently or by terminating them if they don't stop by
+    themselves."""
 
     if any((tracker.is_alive() for tracker in self._trackers)):
       # First, gently asking the trackers to stop
@@ -162,8 +173,8 @@ class VideoExtensoTool:
       img: The image on which the spots should be detected.
 
     Returns:
-      A :obj:`list` containing tuples with the coordinates of the centers of
-      the detected spots, and the calculated x and y strain values.
+      A :obj:`list` containing :obj:`tuple` with the coordinates of the centers 
+      of the detected spots, and the calculated x and y strain values.
     """
 
     # Sending the latest sub-image containing the spot to track
@@ -260,7 +271,7 @@ class VideoExtensoTool:
   def _log(self, level: int, msg: str) -> None:
     """Wrapper for recording log messages.
 
-    Also instantiates the Logger on the first message.
+    Also instantiates the :obj:`~logging.Logger` on the first message.
 
     Args:
       level: The logging level of the message, as an :obj:`int`.

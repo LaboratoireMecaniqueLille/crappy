@@ -27,11 +27,12 @@ except (ModuleNotFoundError, ImportError):
 class SpotsDetector:
   """This class detects round spots on a grey level image.
 
-  It takes an image from a :ref:`Camera Configurator` window as an input of the
-  :meth:`detect_spots` method, and tries to detect the requested number of
-  spots on it. It then stores the position and size of the detected spots, to
-  pass them later on to the :ref:`Video Extenso Tool` along with other
-  variables once the Configuration window is closed.
+  It takes an image from a :class:`~crappy.tool.camera_config.CameraConfig`
+  window as an input of the :meth:`detect_spots` method, and tries to detect
+  the requested number of spots on it. It then stores the position and size of
+  the detected spots, to pass them later on to the
+  :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` along
+  with other variables once the CameraConfig window is closed.
   """
 
   def __init__(self,
@@ -47,7 +48,8 @@ class SpotsDetector:
     Args:
       white_spots: If :obj:`True`, detects white spots over a black background.
         If :obj:`False`, detects black spots over a white background. Also
-        passed to the :ref:`Video Extenso Tool`.
+        passed to the 
+        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
       num_spots: The number of spots to detect, as an :obj:`int` between `1`
         and `4`. If given, will try to detect exactly that number of spots and
         will fail if not enough spots can be detected. If left to :obj:`None`,
@@ -60,26 +62,31 @@ class SpotsDetector:
         kernel to use when applying a median blur filter to the image before
         trying to detect spots. Can also be set to :obj:`None`, in which case
         no median blur filter is applied before detecting the spots. Also
-        passed to the :ref:`Video Extenso Tool`.
+        passed to the 
+        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`.
       update_thresh: If :obj:`True`, the grey level threshold for detecting
         the spots is re-calculated at each new image. Otherwise, the first
         calculated threshold is kept for the entire test. The spots are less
         likely to be lost with adaptive threshold, but the measurement will be
         more noisy. Adaptive threshold may also yield inconsistent results when
-        spots are lost. Passed to the :ref:`Video Extenso Tool` and not used in
-        this class.
+        spots are lost. Passed to the 
+        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` 
+        and not used in this class.
       safe_mode: If :obj:`True`, will stop and raise an exception as soon as
         overlapping spots are detected. Otherwise, will first try to reduce the
         detection window to get rid of overlapping. This argument should be
         used when inconsistency in the results may have critical consequences.
-        Passed to the :ref:`Video Extenso Tool` and not used in this class.
+        Passed to the 
+        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` 
+        and not used in this class.
       border: When searching for the new position of a spot, will search in the
         last known bounding box of this spot plus a few additional pixels in
         each direction. This argument sets the number of additional pixels to
         use. It should be greater than the expected "speed" of the spots, in
         pixels / frame. But if set too high, noise or other spots might hinder
-        the detection. Passed to the :ref:`Video Extenso Tool` and not used in
-        this class.
+        the detection. Passed to the 
+        :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` 
+        and not used in this class.
     """
 
     self.white_spots = white_spots
@@ -104,7 +111,8 @@ class SpotsDetector:
                    y_orig: int,
                    x_orig: int) -> None:
     """Transforms the image to improve spot detection, detects up to 4 spots
-    and return a :ref:`Spots Boxes` object containing all the detected spots.
+    and return a :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`
+    object containing all the detected spots.
 
     Args:
       img: The sub-image on which the spots should be detected.
@@ -114,7 +122,8 @@ class SpotsDetector:
         entire image.
 
     Returns:
-      A :ref:`Spots Boxes` object containing all the detected spots.
+      A :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` object
+      containing all the detected spots.
     """
 
     # First, blurring the image if asked to

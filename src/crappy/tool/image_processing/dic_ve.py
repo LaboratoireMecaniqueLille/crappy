@@ -12,10 +12,10 @@ except (ModuleNotFoundError, ImportError):
 
 
 class DICVETool:
-  """This class is the core of the :ref:`DIC VE` Block.
+  """This class is the core of the :class:`~crappy.blocks.DICVE` Block.
 
-  It tracks patches on images received from a :ref:`Camera` object, and
-  computes a strain value at each new image.
+  It tracks patches on images received from a :class:`~crappy.camera.Camera` 
+  object, and computes a strain value at each new image.
 
   It relies on cross-correlation algorithms to calculate the displacement.
   Different algorithms are available depending on the needs. This tool is
@@ -41,8 +41,9 @@ class DICVETool:
     selected.
 
     Args:
-      patches: An instance of the :ref:`Spots Boxes` class, containing the
-        coordinates of the patches to track.
+      patches: An instance of the
+        :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` class,
+        containing the coordinates of the patches to track.
       method: The method to use to calculate the displacement. `Disflow` uses
         opencv's DISOpticalFlow and `Lucas Kanade` uses opencv's
         calcOpticalFlowPyrLK, while all other methods are based on a basic

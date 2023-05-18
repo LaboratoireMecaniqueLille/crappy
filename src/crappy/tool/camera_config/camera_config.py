@@ -28,21 +28,29 @@ except (ModuleNotFoundError, ImportError):
 
 class CameraConfig(tk.Tk):
   """This class is a GUI allowing the user to visualize the images from a
-  camera before a Crappy test starts, and to tune the settings of the camera.
+  :class:`~crappy.camera.Camera` before a Crappy test starts, and to tune the
+  settings of the Camera.
 
   It is meant to be user-friendly and interactive. It is possible to zoom on
   the image using the mousewheel, and to move on the zoomed image by
-  left-clicking and dragging.
+  right-clicking and dragging.
 
   In addition to the image, the interface also displays a histogram of the
   pixel values, an FPS counter, a detected bits counter, the minimum and
-  maximum pixel values and the value and position of the pixel currently under
+  maximum pixel values, and the value and position of the pixel currently under
   the mouse. A checkbox allows auto-adjusting the pixel range to get a better
   contrast.
 
-  This class is used as is by the :ref:`Camera Block`, but also subclassed to
-  provide more specific functionalities to other camera-related Blocks like
-  :ref:`Video Extenso` or :ref:`DIC VE`.
+  This class is used as is by the :class:`~crappy.blocks.Camera`, but also 
+  subclassed to provide more specific functionalities to other camera-related 
+  Blocks like :class:`~crappy.blocks.VideoExtenso` or 
+  :class:`~crappy.blocks.DICVE`.
+  
+  This class is a child of :obj:`tkinter.Tk`. It relies on the 
+  :class:`~crappy.tool.camera_config.config_tools.Zoom` and 
+  :class:`~crappy.tool.camera_config.config_tools.HistogramProcess` tools. It
+  also interacts with instances of the 
+  :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` class.
   """
 
   def __init__(self,
@@ -52,9 +60,10 @@ class CameraConfig(tk.Tk):
     """Initializes the interface and displays it.
 
     Args:
-      camera: The :ref:`Camera` object in charge of acquiring the images.
-      log_queue: A Queue for sending the log messages to the main Logger, only
-        used in Windows.
+      camera: The :class:`~crappy.camera.Camera` object in charge of acquiring 
+        the images.
+      log_queue: A :obj:`multiprocessing.Queue` for sending the log messages to 
+        the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
     """
@@ -131,7 +140,8 @@ class CameraConfig(tk.Tk):
   def log(self, level: int, msg: str) -> None:
     """Record log messages for the CameraConfig window.
 
-    Also instantiates the logger when logging the first message.
+    Also instantiates the :obj:`~logging.Logger` when logging the first
+    message.
 
     Args:
       level: An :obj:`int` indicating the logging level of the message.
@@ -146,7 +156,7 @@ class CameraConfig(tk.Tk):
 
   def report_callback_exception(self, exc: Exception, val: str, tb) -> None:
     """Method displaying an error message in case an exception is raised in a
-    Tkinter callback."""
+    :mod:`tkinter` callback."""
 
     self._logger.exception(f"Caught exception in {type(self).__name__}: "
                            f"{exc.__name__}({val})", exc_info=tb)
