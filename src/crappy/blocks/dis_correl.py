@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Callable, List, Union, Tuple
+from typing import Optional, Callable, List, Union, Tuple, Iterable
 import numpy as np
 from pathlib import Path
 
@@ -34,8 +34,8 @@ class DISCorrel(Camera):
                img_shape: Optional[Tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
                patch: Optional[Tuple[int, int, int, int]] = None,
-               fields: List[str] = None,
-               labels: List[str] = None,
+               fields: Union[str, Iterable[str]] = None,
+               labels: Union[str, Iterable[str]] = None,
                alpha: float = 3,
                delta: float = 1,
                gamma: float = 0,
@@ -73,10 +73,23 @@ class DISCorrel(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
-    # Managing the fields and labels lists
-    fields = ["x", "y", "exx", "eyy"] if fields is None else fields
-    self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)',
-                   'Exx(%)', 'Eyy(%)'] if labels is None else labels
+    # Forcing the fields into a list
+    if fields is None:
+      fields = ["x", "y", "exx", "eyy"]
+    elif isinstance(fields, str):
+      fields = [fields]
+    else:
+      fields = list(fields)
+
+    # Forcing the labels into a list
+    if labels is None:
+      self.labels = ['t(s)', 'meta', 'x(pix)', 'y(pix)', 'Exx(%)', 'Eyy(%)']
+    elif isinstance(labels, str):
+      self.labels = [labels]
+    else:
+      self.labels = list(labels)
+
+    # Adding the residuals if required
     if residual and labels is None:
       self.labels.append('res')
 

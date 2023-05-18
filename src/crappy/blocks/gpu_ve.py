@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Callable, List, Union, Tuple
+from typing import Optional, Callable, Union, Tuple, Iterable
 import numpy as np
 from pathlib import Path
 
@@ -13,7 +13,7 @@ class GPUVE(Camera):
 
   def __init__(self,
                camera: str,
-               patches: List[Tuple[int, int, int, int]],
+               patches: Iterable[Tuple[int, int, int, int]],
                img_shape: Tuple[int, int],
                img_dtype: str,
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
@@ -31,7 +31,7 @@ class GPUVE(Camera):
                save_backend: Optional[str] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               labels: Optional[List[str]] = None,
+               labels: Optional[Union[str, Iterable[str]]] = None,
                img_ref: Optional[np.ndarray] = None,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
@@ -59,13 +59,18 @@ class GPUVE(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
-    # Setting the labels
+    # Forcing the patches into a list
+    patches = list(patches)
+
+    # Forcing the labels into a list
     if labels is None:
       self.labels = ['t(s)', 'meta'] + [elt
                                         for i, _ in enumerate(patches)
                                         for elt in [f'p{i}x', f'p{i}y']]
+    elif isinstance(labels, str):
+      self.labels = [labels]
     else:
-      self.labels = labels
+      self.labels = list(labels)
 
     self._img_ref = img_ref
 

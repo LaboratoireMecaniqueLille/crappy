@@ -3,7 +3,7 @@
 from __future__ import annotations
 from datetime import timedelta
 from time import time
-from typing import Tuple, List, Dict, Any, Optional
+from typing import Tuple, Dict, Any, Optional, Iterable
 import logging
 
 from .meta_block import Block
@@ -130,7 +130,7 @@ class Canvas(Block):
 
   def __init__(self,
                image_path: str,
-               draw: Optional[List[Dict[str, Any]]] = None,
+               draw: Optional[Iterable[Dict[str, Any]]] = None,
                color_range: Tuple[float, float] = (20, 300),
                title: str = "Canvas",
                window_size: Tuple[int, int] = (7, 5),
@@ -143,8 +143,8 @@ class Canvas(Block):
     Args:
       image_path: Path to the image that will be the background of the canvas,
         as a :obj:`str`.
-      draw: A :obj:`list` of :obj:`dict` defining what to draw. See below for
-        more details.
+      draw: An iterable (like a :obj:`list` or a :obj:`tuple`) of :obj:`dict`
+        defining what to draw. See below for more details.
       color_range: A :obj:`tuple` containing the lowest and highest values for
         the color bar.
       title: The title of the window containing the drawing.
@@ -181,7 +181,7 @@ class Canvas(Block):
     self.debug = debug
 
     self._image = image_path
-    self._draw = [] if draw is None else draw
+    self._draw = [] if draw is None else list(draw)
     self.color_range = color_range
     self._title = title
     self._window_size = window_size

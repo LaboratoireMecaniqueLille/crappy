@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Callable, List, Union, Tuple
+from typing import Optional, Callable, Union, Tuple, Iterable
 import numpy as np
 from pathlib import Path
 
@@ -33,7 +33,7 @@ class VideoExtenso(Camera):
                                                   np.ndarray]] = None,
                img_shape: Optional[Tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
-               labels: List[str] = None,
+               labels: Optional[Union[str, Iterable[str]]] = None,
                raise_on_lost_spot: bool = True,
                white_spots: bool = False,
                update_thresh: bool = False,
@@ -65,8 +65,13 @@ class VideoExtenso(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
-    self.labels = ['t(s)', 'meta', 'Coord(px)',
-                   'Eyy(%)', 'Exx(%)'] if labels is None else labels
+    # Forcing the labels into a list
+    if labels is None:
+      self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)', 'Exx(%)']
+    elif isinstance(labels, str):
+      self.labels = [labels]
+    else:
+      self.labels = list(labels)
 
     # Making sure a coherent number of labels and fields was given
     if len(self.labels) != 5:

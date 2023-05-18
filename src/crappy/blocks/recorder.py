@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import List, Optional, Union
+from typing import Iterable, Optional, Union
 from pathlib import Path
 import logging
 
@@ -20,7 +20,7 @@ class Recorder(Block):
   def __init__(self,
                file_name: Union[str, Path],
                delay: float = 2,
-               labels: Optional[List[str]] = None,
+               labels: Optional[Union[str, Iterable[str]]] = None,
                time_label: str = 't(s)',
                freq: Optional[float] = 200,
                display_freq: bool = False,
@@ -49,8 +49,15 @@ class Recorder(Block):
 
     self._delay = delay
     self._path = Path(file_name)
-    self._labels = labels
     self._time_label = time_label
+
+    # Forcing the labels into a list
+    if labels is not None and isinstance(labels, str):
+      self._labels = [labels]
+    elif labels is not None:
+      self._labels = list(labels)
+    else:
+      self._labels = None
 
     self._file_initialized = False
 

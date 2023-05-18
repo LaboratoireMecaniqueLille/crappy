@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Callable, List, Union, Tuple
+from typing import Optional, Callable, Union, Tuple, Iterable
 import numpy as np
 from pathlib import Path
 
@@ -33,8 +33,8 @@ class DICVE(Camera):
                                                   np.ndarray]] = None,
                img_shape: Optional[Tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
-               patches: Optional[List[Tuple[int, int, int, int]]] = None,
-               labels: Optional[List[str]] = None,
+               patches: Optional[Iterable[Tuple[int, int, int, int]]] = None,
+               labels: Optional[Union[str, Iterable[str]]] = None,
                method: str = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
@@ -75,9 +75,14 @@ class DICVE(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
-    # Setting the labels
-    self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
-                   'Exx(%)', 'Disp(px)'] if labels is None else labels
+    # Forcing the labels into a list
+    if labels is None:
+      self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
+                     'Exx(%)', 'Disp(px)']
+    elif isinstance(labels, str):
+      self._labels = [labels]
+    else:
+      self._labels = list(labels)
 
     # Making sure a coherent number of labels and fields was given
     if len(self.labels) != 6:
@@ -87,7 +92,7 @@ class DICVE(Camera):
     self._patches: Optional[SpotsBoxes] = None
 
     self._raise_on_exit = raise_on_patch_exit
-    self._patches_int = patches
+    self._patches_int = list(patches)
 
     self._dic_ve_kw = dict(method=method,
                            alpha=alpha,

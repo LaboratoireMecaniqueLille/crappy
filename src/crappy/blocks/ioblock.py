@@ -1,14 +1,11 @@
 # coding: utf-8
 
-from typing import Union, List, Optional
+from typing import Union, Optional, Iterable, Any
 import logging
 
 from .meta_block import Block
 from ..inout import inout_dict, InOut
 from ..tool.ft232h import USBServer
-
-# TODO:
-#   Allow using any type of iterable, not just lists
 
 
 class IOBlock(Block):
@@ -34,12 +31,12 @@ class IOBlock(Block):
 
   def __init__(self,
                name: str,
-               labels: Optional[List[str]] = None,
-               cmd_labels: Optional[List[str]] = None,
+               labels: Optional[Union[str, Iterable[str]]] = None,
+               cmd_labels: Optional[Union[str, Iterable[str]]] = None,
                trigger_label: Optional[str] = None,
                streamer: bool = False,
-               initial_cmd: Optional[Union[list]] = None,
-               exit_cmd: Optional[list] = None,
+               initial_cmd: Optional[Union[Any, Iterable[Any]]] = None,
+               exit_cmd: Optional[Union[Any, Iterable[Any]]] = None,
                make_zero_delay: Optional[float] = None,
                ft232h_ser_num: Optional[str] = None,
                spam: bool = False,
@@ -109,24 +106,50 @@ class IOBlock(Block):
     # The label argument can be omitted for streaming
     if labels is None and streamer:
       self.labels = ['t(s)', 'stream']
+    # Forcing the labels into a list
+    elif labels is not None and isinstance(labels, str):
+      self.labels = [labels]
+    elif labels is not None:
+      self.labels = list(labels)
     else:
-      self.labels = labels
+      self.labels = None
 
-    # The labels to get
-    self._cmd_labels = cmd_labels
-    self._trig_label = trigger_label
+    # Forcing the cmd_labels into a list or None
+    if cmd_labels is not None and isinstance(cmd_labels, str):
+      self._cmd_labels = [cmd_labels]
+    elif cmd_labels is not None:
+      self._cmd_labels = list(cmd_labels)
+    else:
+      self._cmd_labels = None
+
+    # Forcing the initial_cmd into a list
+    if initial_cmd is not None and isinstance(initial_cmd, str):
+      self._initial_cmd = [initial_cmd]
+    elif initial_cmd is not None:
+      self._initial_cmd = list(initial_cmd)
+    else:
+      self._initial_cmd = None
+
+    # Forcing the exit_cmd into a list
+    if exit_cmd is not None and isinstance(exit_cmd, str):
+      self._exit_cmd = [exit_cmd]
+    elif exit_cmd is not None:
+      self._exit_cmd = list(exit_cmd)
+    else:
+      self._exit_cmd = None
 
     # Checking that the initial_cmd and exit_cmd length are consistent
-    if cmd_labels is not None:
-      if initial_cmd is not None and len(initial_cmd) != len(cmd_labels):
+    if self._cmd_labels is not None:
+      if self._initial_cmd is not None \
+          and len(self._initial_cmd) != len(self._cmd_labels):
         raise ValueError("There should be as many values in initial_cmd as "
                          "there are in cmd_labels !")
-      if exit_cmd is not None and len(exit_cmd) != len(cmd_labels):
+      if self._exit_cmd is not None \
+          and len(self._exit_cmd) != len(self._cmd_labels):
         raise ValueError("There should be as many values in exit_cmd as "
                          "there are in cmd_labels !")
 
-    self._initial_cmd = initial_cmd
-    self._exit_cmd = exit_cmd
+    self._trig_label = trigger_label
 
     # Checking that all the given actuators are valid
     if name not in inout_dict:

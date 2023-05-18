@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import List, Optional
+from typing import List, Optional, Iterable, Union
 import tkinter as tk
 import logging
 
@@ -57,7 +57,7 @@ class Dashboard(Block):
   """
 
   def __init__(self,
-               labels: List[str],
+               labels: Union[str, Iterable[str]],
                nb_digits: int = 2,
                display_freq: bool = False,
                freq: Optional[float] = 30,
@@ -79,7 +79,7 @@ class Dashboard(Block):
     self.freq = freq
     self.debug = debug
 
-    self._labels = labels
+    self._labels = [labels] if isinstance(labels, str) else list(labels)
     self._nb_digits = nb_digits
 
   def prepare(self) -> None:

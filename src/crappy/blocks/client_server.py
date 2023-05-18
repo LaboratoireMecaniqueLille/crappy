@@ -2,7 +2,7 @@
 
 from .meta_block import Block
 from .._global import OptionalModule
-from typing import Dict, List, Union, Tuple, Any, Optional
+from typing import Dict, Union, Any, Optional, Iterable, List, Tuple
 from time import time, sleep
 from subprocess import Popen, PIPE, STDOUT, TimeoutExpired
 from threading import Thread
@@ -18,7 +18,7 @@ try:
 except (ModuleNotFoundError, ImportError):
   mqtt = OptionalModule("paho.mqtt.client")
 
-Topics_type = List[Union[str, Tuple[str, ...]]]
+TopicsType = Iterable[Union[str, Iterable[str, ...]]]
 
 
 class ClientServer(Block):
@@ -33,9 +33,9 @@ class ClientServer(Block):
                address: str = 'localhost',
                port: int = 1883,
                init_output: Optional[Dict[str, Any]] = None,
-               topics: Optional[Topics_type] = None,
-               cmd_labels: Optional[Topics_type] = None,
-               labels_to_send: Optional[Topics_type] = None,
+               topics: Optional[TopicsType] = None,
+               cmd_labels: Optional[TopicsType] = None,
+               labels_to_send: Optional[TopicsType] = None,
                display_freq: bool = False,
                freq: Optional[float] = 200,
                spam: bool = False,
@@ -54,30 +54,31 @@ class ClientServer(Block):
         in ``topics`` the first value to be sent in the output links. Should be
         given in case the data comes from several sources and data for all
         labels may not be available during the first loops.
-      topics (:obj:`list`, optional): A :obj:`list` of :obj:`str` and/or 
-        :obj:`tuple` of :obj:`str`. Each string corresponds to the name of a 
-        crappy label to be received from the broker. Each element of the list 
-        is considered to be the name of an MQTT topic, to which the client 
-        subscribes. After a message has been received on that topic, the block 
-        returns for each label in the topic (i.e. each string in the tuple) the
-        corresponding data from the message. It also returns the current
-        timestamp in the label `'t(s)'`.
-      cmd_labels (:obj:`list`, optional): A :obj:`list` of :obj:`str` and/or 
-        :obj:`tuple` of :obj:`str`. Each string corresponds to the name of a 
-        crappy label to send to the broker. Each element of the list is 
-        considered to be the name of an MQTT topic, in which the client 
-        publishes. Grouping labels in a same topic (i.e. strings in a same 
-        tuple) allows to keep the synchronization between signals coming from a
-        same block, as they will be published together in a same message. This 
-        is mostly useful for sending a signal along with its timeframe.
-      labels_to_send (:obj:`list`, optional): A :obj:`list` of :obj:`str` 
-        and/or :obj:`tuple` of :obj:`str`. Allows to rename the labels before 
-        publishing data. The structure of ``labels_to_send`` should be the 
-        exact same as ``cmd_labels``, with each label in ``labels_to_send`` 
-        replacing the corresponding one in ``cmd_labels``. This is especially 
-        useful for transferring several signals along with their timestamps, as
-        the label ``'t(s)'`` should not appear more than once in the topics 
-        list of the receiving block.
+      topics: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        :obj:`str` and/or iterables of :obj:`str`. Each string corresponds to
+        the name of a label in Crappy. Each element in the iterable (string or
+        iterable of strings) is considered to be the name of an MQTT topic, to
+        which the client subscribes. After a message has been received on that
+        topic, the Block returns for each label in the topic (just the given
+        string or each string in the iterable) the corresponding data from the
+        message. It also returns the current timestamp in the label `'t(s)'`.
+      cmd_labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        :obj:`str` and/or iterables of :obj:`str`. Each string corresponds to
+        the name of a label in Crappy. Each element in the iterable (string or
+        iterable of strings) is considered to be the name of an MQTT topic, in
+        which the client publishes. Grouping labels in a same topic (i.e.
+        strings in a same iterable) allows to keep the synchronization between
+        signals coming from a same Block, as they will be published together in
+        a same message. This  is mostly useful for sending a signal along with
+        its timeframe.
+      labels_to_send: An iterable (like a :obj:`list` or a :obj:`tuple`)
+        containing :obj:`str` and/or iterables of :obj:`str`. Allows to rename
+        the labels before publishing data. The structure of ``labels_to_send``
+        should be the exact same as ``cmd_labels``, with each label in
+        ``labels_to_send`` replacing the corresponding one in ``cmd_labels``.
+        This is especially useful for transferring several signals along with
+        their timestamps, as the label ``'t(s)'`` should not appear more than
+        once in the topics.
       display_freq: If :obj:`True`, displays the looping frequency of the
         block.
       freq: The block will try to loop at this frequency.
@@ -98,15 +99,15 @@ class ClientServer(Block):
         to a data loss.
 
       - ``cmd_labels``:
-        It is not possible to group signals coming from different blocks in a
+        It is not possible to group signals coming from different Blocks in a
         same topic.
 
       - ``labels_to_send``:
         Differences in the structure of ``labels_to_send`` and ``cmd_labels``
         will not always raise an error, but may lead to a data loss.
 
-      - **Single-value tuples**:
-        Single-value tuples can be shortened as strings.
+      - **Single-value iterables**:
+        Single-value iterables can be shortened as strings.
         ::
 
           topics=[('cmd1',), ('cmd2',)]
@@ -134,7 +135,7 @@ class ClientServer(Block):
           ('t1', 'cmd1')
           ('sign',)
 
-        The block will return data associated with the labels
+        The Block will return data associated with the labels
         ::
 
           't1', 'cmd1'
@@ -216,11 +217,11 @@ class ClientServer(Block):
     self._client.reconnect_delay_set(max_delay=10)
     
     # These attributes may be set later
-    self._topics = None
-    self._last_out_val = {}
-    self._buffer_output = None
-    self._cmd_labels = None
-    self._labels_to_send = None
+    self._topics: Optional[List[Tuple[str, ...]]] = None
+    self._last_out_val: Dict[str, Any] = dict()
+    self._buffer_output: Optional[Dict[Tuple[str, ...], Queue]] = None
+    self._cmd_labels: Optional[List[Tuple[str, ...]]] = None
+    self._labels_to_send: Optional[List[Tuple[str, ...]]] = None
 
     if topics is None and cmd_labels is None:
       self.log(logging.WARNING, "The Client-server Block is neither an input "
@@ -229,28 +230,28 @@ class ClientServer(Block):
     # Preparing for receiving data
     if topics is not None:
       # Replacing strings with tuples
-      self._topics = [topic if isinstance(topic, tuple) else (topic,) for
+      self._topics = [(topic,) if isinstance(topic, str) else tuple(topic) for
                       topic in topics]
 
       # The last out vals are given for each label, not each topic
       self._last_out_val = {label: None for label in chain(*self._topics)}
 
       # The buffer for received data is a dictionary of queues
-      self._buffer_output = {topic: Queue() for topic in topics}
+      self._buffer_output = {topic: Queue() for topic in self._topics}
 
     # Preparing for publishing data
     if cmd_labels is not None:
       # Replacing strings with tuples
-      self._cmd_labels = [topic if isinstance(topic, tuple) else (topic,)
+      self._cmd_labels = [(topic,) if isinstance(topic, str) else tuple(topic)
                           for topic in cmd_labels]
 
       if labels_to_send is not None:
         # Replacing strings with tuples
-        labels_to_send = [topic if isinstance(topic, tuple) else (topic,)
+        labels_to_send = [(topic,) if isinstance(topic, str) else tuple(topic)
                           for topic in labels_to_send]
 
         # Making sure the labels to send have the correct syntax
-        if len(labels_to_send) != len(cmd_labels):
+        if len(labels_to_send) != len(self._cmd_labels):
           raise ValueError("Either a label_to_send should be given for "
                            "every cmd_label, or none should be given ")
 

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from typing import Optional, Callable, List, Union, Tuple
+from typing import Optional, Callable, Union, Tuple, Iterable
 import numpy as np
 from pathlib import Path
 
@@ -13,7 +13,7 @@ class GPUCorrel(Camera):
 
   def __init__(self,
                camera: str,
-               fields: List[str],
+               fields: Union[str, Iterable[str]],
                img_shape: Tuple[int, int],
                img_dtype: str,
                transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
@@ -31,7 +31,7 @@ class GPUCorrel(Camera):
                save_backend: Optional[str] = None,
                image_generator: Optional[Callable[[float, float],
                                                   np.ndarray]] = None,
-               labels: Optional[List[str]] = None,
+               labels: Optional[Union[str, Iterable[str]]] = None,
                discard_limit: float = 3,
                discard_ref: int = 5,
                img_ref: Optional[np.ndarray] = None,
@@ -65,11 +65,19 @@ class GPUCorrel(Camera):
                      img_dtype=img_dtype,
                      **kwargs)
 
-    # Setting the labels
+    # Forcing the fields into a list
+    if isinstance(fields, str):
+      fields = [fields]
+    else:
+      fields = list(fields)
+
+    # Forcing the labels into a list
     if labels is None:
       self.labels = ['t(s)', 'meta'] + fields
+    elif isinstance(labels, str):
+      self.labels = [labels]
     else:
-      self.labels = labels
+      self.labels = list(labels)
 
     if res:
       self.labels.append('res')

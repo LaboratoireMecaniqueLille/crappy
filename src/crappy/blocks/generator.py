@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time, sleep
-from typing import Dict, List, Any, Optional, Iterator
+from typing import Dict, Any, Optional, Iterator, Iterable
 from itertools import cycle
 from copy import deepcopy
 import logging
@@ -29,7 +29,7 @@ class Generator(Block):
   """
 
   def __init__(self,
-               path: List[Dict[str, Any]],
+               path: Iterable[Dict[str, Any]],
                freq: Optional[float] = 200,
                cmd_label: str = 'cmd',
                cycle_label: str = 'cycle',
@@ -42,9 +42,9 @@ class Generator(Block):
     """Sets the args and initializes the parent class.
 
     Args:
-      path: It must be a :obj:`list` of :obj:`dict`, each dict providing the
-        parameters to generate the path. Refer to the Note below for more
-        information.
+      path: An iterable (like a :obj:`list` or a :obj:`tuple`) of :obj:`dict`,
+        each dict providing the parameters to generate the path. Refer to the
+        Note below for more information.
       freq: The looping frequency this block will try to achieve. Note that the
         higher this value, the more accurate the path will be. It will also
         consume more resources.
@@ -93,6 +93,7 @@ class Generator(Block):
     self._safe_started = False
 
     # The path is an iterable object
+    path = list(path)
     self._path = cycle(path) if repeat else iter(path)
 
     # More attributes

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 import logging
 
 from .meta_block import Block
@@ -26,7 +26,7 @@ class PID(Block):
                kp_label: str = 'kp',
                ki_label: str = 'ki',
                kd_label: str = 'kd',
-               labels: Optional[List[str]] = None,
+               labels: Optional[Tuple[str, str]] = None,
                reverse: bool = False,
                i_limit: Tuple[Optional[float], Optional[float]] = (None, None),
                send_terms: bool = False,
@@ -84,7 +84,7 @@ class PID(Block):
     self.freq = freq
     self.display_freq = display_freq
     self.debug = debug
-    self.labels = ['t(s)', 'pid'] if labels is None else labels
+    self.labels = ['t(s)', 'pid'] if labels is None else list(labels)
     if send_terms:
       self.labels.extend(['p_term', 'i_term', 'd_term'])
 

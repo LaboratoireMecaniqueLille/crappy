@@ -2,7 +2,7 @@
 
 from struct import unpack
 from time import time
-from typing import Optional, List, Dict, Callable
+from typing import Optional, Dict, Callable, Iterable, Union
 import logging
 
 from .meta_block import Block
@@ -28,8 +28,8 @@ class UController(Block):
   """
 
   def __init__(self,
-               labels: Optional[List[str]] = None,
-               cmd_labels: Optional[List[str]] = None,
+               labels: Optional[Union[str, Iterable[str]]] = None,
+               cmd_labels: Optional[Union[str, Iterable[str]]] = None,
                init_output: Optional[Dict[str, float]] = None,
                post_process: Optional[Dict[str,
                                            Callable[[float], float]]] = None,
@@ -42,15 +42,19 @@ class UController(Block):
     """Checks the validity of the arguments.
 
     Args:
-      labels (:obj:`list`, optional): The list of the labels to get from the
-        device. Only these labels should be given as argument to the
-        :meth:`send_to_pc` method in the MicroPython script. If this argument
-        is not :obj:`None`, then the``init_output`` argument should be given as
-        well. No more than 9 labels should be given.
-      cmd_labels (:obj:`list`, optional): The list of the command labels that
-        will be sent to the device upon reception from an upstream block. The
-        variables in the MicroPython script should have these exact names. No
-        more than 9 cmd_labels should be given.
+      labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing the
+        labels to get from the device (as :obj:`str`). Only these labels should
+        be given as argument to the :meth:`send_to_pc` method in the
+        MicroPython script. If this argument is not :obj:`None`, then the
+        ``init_output`` argument should be given as well. No more than 9 labels
+        should be given. If there's only one label to acquire, it can be given
+        directly as a :obj:`str` and not in an iterable.
+      cmd_labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        the command labels that will be sent to the device upon reception from
+        an upstream Block. The variables in the MicroPython script should have
+        these exact names. Not more than 9 cmd_labels should be given. If
+        there's only one command label, it can be given directly as a
+        :obj:`str` and not in an iterable.
       init_output (:obj:`dict`, optional): If the ``labels`` argument is not
         :obj:`None`, the values to output to downstream blocks for each label
         as long as no value has been received from the device. An initial
@@ -97,25 +101,35 @@ class UController(Block):
       raise ValueError("baudrate should be a positive integer !")
     self._baudrate = baudrate
 
-    if labels is not None and not isinstance(labels, list):
-      raise TypeError('labels should be a list !')
-    if labels is not None and len(labels) > 9:
+    # Forcing the labels into a list
+    if labels is not None and isinstance(labels, str):
+      self._labels = [labels]
+    elif labels is not None:
+      self._labels = list(labels)
+    else:
+      self._labels = None
+
+    # Forcing the cmd_labels into a list
+    if cmd_labels is not None and isinstance(cmd_labels, str):
+      self._cmd_labels = [cmd_labels]
+    elif cmd_labels is not None:
+      self._cmd_labels = list(cmd_labels)
+    else:
+      self._cmd_labels = None
+
+    if self._labels is not None and len(self._labels) > 9:
       raise ValueError("Sorry, a maximum of 9 labels is allowed !")
-    if cmd_labels is not None and not isinstance(cmd_labels, list):
-      raise TypeError('cmd_labels should be a list !')
-    if cmd_labels is not None and len(cmd_labels) > 9:
+    if self._cmd_labels is not None and len(self._cmd_labels) > 9:
       raise ValueError("Sorry, a maximum of 9 cmd_labels is allowed !")
-    self._labels = labels
-    self._cmd_labels = cmd_labels
 
     if self._cmd_labels is not None:
       self._prev_cmd = {cmd_label: None for cmd_label in self._cmd_labels}
 
     if init_output is not None and not isinstance(init_output, dict):
       raise TypeError("init_output should be a dict !")
-    if labels is not None and not all(label in (init_output if init_output
-                                                is not None else {})
-                                      for label in labels):
+    if self._labels is not None and not all(
+        label in (init_output if init_output is not None else dict())
+        for label in self._labels):
       raise ValueError("Every label should have an init_output value !")
     self._out = init_output
 

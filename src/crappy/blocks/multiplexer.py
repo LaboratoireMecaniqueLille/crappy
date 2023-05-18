@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import Dict, Optional, List
+from typing import Dict, Optional, Iterable, Union
 from collections import defaultdict
 
 from .meta_block import Block
@@ -29,7 +29,7 @@ class Multiplexer(Block):
 
   def __init__(self,
                time_label: str = 't(s)',
-               out_labels: Optional[List[str]] = None,
+               out_labels: Optional[Union[str, Iterable[str]]] = None,
                interp_freq: float = 200,
                freq: Optional[float] = 50,
                display_freq: bool = False,
@@ -56,9 +56,16 @@ class Multiplexer(Block):
 
     # Initializing the attributes
     self._time_label = time_label
-    self._out_labels = out_labels
     self._interp_freq = interp_freq
     self._data: Dict[str, np.ndarray] = defaultdict(self._default_array)
+
+    # Forcing the out_labels into a list
+    if out_labels is not None and isinstance(out_labels, str):
+      self._out_labels = [out_labels]
+    elif out_labels is not None:
+      self._out_labels = list(out_labels)
+    else:
+      self._out_labels = None
 
   def loop(self) -> None:
     """Receives data, interpolates it, and sends it to the downstream

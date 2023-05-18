@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from typing import List, Optional
+from typing import Optional, Union, Iterable
 from time import time
 import logging
 
@@ -26,7 +26,7 @@ class MeanBlock(Block):
   def __init__(self,
                delay: float,
                time_label: str = 't(s)',
-               out_labels: Optional[List[str]] = None,
+               out_labels: Optional[Union[str, Iterable[str]]] = None,
                display_freq: bool = False,
                freq: Optional[float] = 50,
                debug: Optional[bool] = False) -> None:
@@ -49,7 +49,14 @@ class MeanBlock(Block):
 
     self._delay = delay
     self._time_label = time_label
-    self._out_labels = out_labels
+
+    # Forcing the out_labels into a list
+    if out_labels is not None and isinstance(out_labels, str):
+      self._out_labels = [out_labels]
+    elif out_labels is not None:
+      self._out_labels = list(out_labels)
+    else:
+      self._out_labels = None
 
     self._last_sent_t = time()
 

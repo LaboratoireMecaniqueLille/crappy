@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from time import time
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Iterable
 from dataclasses import dataclass, fields
 import logging
 
@@ -32,7 +32,7 @@ class Machine(Block):
   """
 
   def __init__(self,
-               actuators: List[Dict[str, Any]],
+               actuators: Iterable[Dict[str, Any]],
                common: Optional[Dict[str, Any]] = None,
                time_label: str = 't(s)',
                ft232h_ser_num: Optional[str] = None,
@@ -43,11 +43,12 @@ class Machine(Block):
     """Sets the args and initializes the parent class.
 
     Args:
-      actuators: The :obj:`list` of all the :ref:`Actuators` this block needs
-        to drive. It contains one :obj:`dict` for every Actuator, with
-        mandatory and optional keys. The keys providing information on how to
-        drive the Actuator are listed below. Any other key will be passed to
-        the Actuator object as argument when instantiating it.
+      actuators: An iterable (like a :obj:`list` or a :obj:`tuple`) of all the
+        :ref:`Actuators` this block needs to drive. It contains one :obj:`dict`
+        for every Actuator, with mandatory and optional keys. The keys
+        providing information on how to drive the Actuator are listed below.
+        Any other key will be passed to the Actuator object as argument when
+        instantiating it.
       common: The keys of this :obj:`dict` will be common to all the Actuators.
         If it conflicts with an existing key for an Actuator, the common one
         will prevail.
