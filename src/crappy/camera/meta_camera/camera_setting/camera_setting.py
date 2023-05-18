@@ -15,9 +15,9 @@ class CameraSetting:
   The Camera setting classes hold all the information needed to read and set a
   setting of a :class:`~crappy.camera.Camera` object. Several types of settings
   are defined, as children of this class :
-  :class:`~crappy.camera.camera_setting.CameraBoolSetting`,
-  :class:`~crappy.camera.camera_setting.CameraChoiceSetting`,
-  and :class:`~crappy.camera.camera_setting.CameraScaleSetting`.
+  :class:`~crappy.camera.meta_camera.camera_setting.CameraBoolSetting`,
+  :class:`~crappy.camera.meta_camera.camera_setting.CameraChoiceSetting`,
+  and :class:`~crappy.camera.meta_camera.camera_setting.CameraScaleSetting`.
   """
 
   def __init__(self,

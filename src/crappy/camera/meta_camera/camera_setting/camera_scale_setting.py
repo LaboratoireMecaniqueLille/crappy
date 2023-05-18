@@ -12,7 +12,8 @@ class CameraScaleSetting(CameraSetting):
   """Camera setting that can take any value between a lower and an upper
   boundary.
 
-  It is a child of :class:`~crappy.camera.camera_setting.CameraSetting`.
+  It is a child of
+  :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`.
 
   This class can handle settings that should only take :obj:`int` values as
   well as settings that can take :obj:`float` value. The type used is

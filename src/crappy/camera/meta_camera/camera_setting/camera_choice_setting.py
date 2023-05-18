@@ -11,7 +11,8 @@ class CameraChoiceSetting(CameraSetting):
   """Camera setting that can take any value from a predefined list of
   values.
 
-  It is a child of :class:`~crappy.camera.camera_setting.CameraSetting`.
+  It is a child of
+  :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`.
   """
 
   def __init__(self,
