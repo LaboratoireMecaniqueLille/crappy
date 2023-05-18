@@ -6,6 +6,9 @@ from collections import defaultdict
 
 from .meta_block import Block
 
+# ToDo:
+#  Make out_label control the labels that are returned
+
 
 class Multiplexer(Block):
   """This block takes data from upstream blocks as input and interpolates it to
