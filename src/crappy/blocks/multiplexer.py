@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from .meta_block import Block
 
-# ToDo:
+# Todo:
 #  Make out_label control the labels that are returned
 
 
