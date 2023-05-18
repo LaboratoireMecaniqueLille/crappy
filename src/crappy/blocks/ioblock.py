@@ -8,7 +8,6 @@ from ..inout import inout_dict, InOut
 from ..tool.ft232h import USBServer
 
 # TODO:
-#   Call set_cmd with commands in same order as cmd_labels
 #   Allow using any type of iterable, not just lists
 
 
@@ -236,15 +235,17 @@ class IOBlock(Block):
       data.update(self._prev_values)
 
       # Keeping only the labels in cmd_labels
-      cmd = [val for label, val in data.items()
-             if label in self._cmd_labels]
+      data = {key: val for key, val in data.items() if key in self._cmd_labels}
 
       # If not all cmd_labels have a value, returning without calling set_cmd
-      if len(cmd) != len(self._cmd_labels):
+      if len(data) != len(self._cmd_labels):
         self.log(logging.WARNING, f"Not enough values received in the "
                                   f"{type(self._device).__name__} InOut to"
                                   f" set the cmd, cmd not set !")
         return
+
+      # Grouping the command values in a list before passing them to set_cmd
+      cmd = [data[label] for label in self._cmd_labels]
 
       # Setting the command if it's different from the previous or spam is True
       if cmd != self._last_cmd or self._spam:
