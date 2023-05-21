@@ -18,7 +18,7 @@ try:
 except (ModuleNotFoundError, ImportError):
   mqtt = OptionalModule("paho.mqtt.client")
 
-TopicsType = Iterable[Union[str, Iterable[str, ...]]]
+TopicsType = Iterable[Union[str, Iterable[str]]]
 
 
 class ClientServer(Block):
