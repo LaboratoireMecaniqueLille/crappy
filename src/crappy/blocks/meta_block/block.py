@@ -11,7 +11,7 @@ import logging
 import logging.handlers
 from time import sleep, time, time_ns
 from weakref import WeakSet
-from typing import Union, Optional, List, Dict, Any
+from typing import Union, Optional, List, Dict, Any, Iterable
 from collections import defaultdict
 import subprocess
 from sys import stdout, stderr, argv
@@ -26,13 +26,12 @@ from ...tool.ft232h import USBServer
 
 # TODO:
 #   Increase granularity for the recv_all_data_raw method
-#   Improve the send method
 
 
 class Block(Process, metaclass=MetaBlock):
   """This class constitutes the base object in Crappy.
 
-  It is extremely versatile, an can perform a wide variety of actions during a
+  It is extremely versatile, and can perform a wide variety of actions during a
   test. Many Blocks are already defined in Crappy, but it is possible to define
   custom ones for specific purposes.
 
@@ -69,7 +68,7 @@ class Block(Process, metaclass=MetaBlock):
 
     # Various objects that should be set by child classes
     self.niceness: int = 0
-    self.labels: Optional[List[str]] = None
+    self.labels: Optional[Iterable[str]] = None
     self.freq = None
     self.display_freq = False
     self.name = self.get_name(type(self).__name__)
@@ -877,26 +876,48 @@ class Block(Process, metaclass=MetaBlock):
       return
     self._logger.log(log_level, msg)
 
-  def send(self, data: Union[Dict[str, Any], List[Any]]) -> None:
-    """Ensures that the data to send is formatted as a :obj:`dict`, and sends
-    it in all the downstream links."""
+  def send(self, data: Optional[Union[Dict[str, Any], Iterable[Any]]]) -> None:
+    """Method for sending data to downstream Blocks.
 
-    # Building the dict to send from the data and labels if the data is a list
-    if isinstance(data, list):
-      if not self.labels:
-        self.log(logging.ERROR, "trying to send data as a list but no labels "
-                                "are specified ! Please add a self.labels "
-                                "attribute.")
+    The exact same :obj:`dict` is sent to every downstream Block.
+
+    This method accepts the data to send either as a :obj:`dict` or as another
+    type of iterable (like a :obj:`list` or a :obj:`tuple`). If data is
+    provided as a dict, it is sent as is. The keys of the dict then correspond
+    to the labels. Otherwise, the values given as an iterable are first
+    converted to a dict using the ``self.labels`` attribute containing the
+    labels to use.
+
+    It is up to the user to match the order of the values in the iterable with
+    the order of the labels in ``self.labels``. If the number of labels and the
+    number of values to send do not match, no error is raised but some data
+    might not get sent.
+    """
+
+    # Just in case, not handling non-existing data
+    if data is None:
+      return
+
+    # Case when the data to send is not given as a dict
+    if not isinstance(data, dict):
+      # First, checking that labels are provided
+      if self.labels is None or not self.labels:
+        self.log(logging.ERROR, "Trying to send data as an iterable, but no "
+                                "labels are specified ! Please add a "
+                                "self.labels attribute.")
         raise LinkDataError
-      self.log(logging.DEBUG, f"Converting {data} to dict before sending")
-      data = dict(zip(self.labels, data))
 
-    # Making sure the data is being sent as a dict
-    elif not isinstance(data, dict):
-      self.log(logging.ERROR, f"Trying to send a {type(data)} in a Link !")
-      raise LinkDataError
+      # Trying to convert iterable data to dict using the given labels
+      try:
+        self.log(logging.DEBUG, f"Converting {data} to dict before sending")
+        data = dict(zip(self.labels, data))
+      except TypeError:
+        self.log(logging.ERROR, f"Cannot convert data to send (of type "
+                                f"{type(data)}) to dict ! Please ensure that"
+                                f"the data is given as an iterable, as well as"
+                                f"self.labels.")
 
-    # Sending the data to the downstream blocks
+    # Sending the data to the downstream Blocks
     for link in self.outputs:
       self.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
