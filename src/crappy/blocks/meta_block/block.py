@@ -24,9 +24,6 @@ from ..._global import LinkDataError, StartTimeout, PrepareError, \
   CameraRuntimeError, CameraConfigError
 from ...tool.ft232h import USBServer
 
-# TODO:
-#   Increase granularity for the recv_all_data_raw method
-
 
 class Block(Process, metaclass=MetaBlock):
   """This class constitutes the base object in Crappy.
