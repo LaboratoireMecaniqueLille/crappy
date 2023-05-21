@@ -147,16 +147,10 @@ class NAU7802(InOut):
         of a GPIO rather than from an I2C register. Speeds up the reading and
         decreases the traffic on the bus, but requires one extra wire. Give the
         index of the GPIO in BCM convention, as an :obj:`int`.
-      gain: Allows to tune the output value according to the formula:
-        ::
-
-          output = gain * tension + offset
-
-      offset: Allows to tune the output value according to the formula:
-        ::
-
-          output = gain * tension + offset
-
+      gain: Allows to tune the output value according to the formula :
+        :math:`output = gain * tension + offset`.
+      offset: Allows to tune the output value according to the formula :
+        :math:`output = gain * tension + offset`.
     """
 
     self._bus = None

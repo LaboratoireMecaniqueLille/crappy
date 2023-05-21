@@ -141,16 +141,10 @@ class NAU7802FT232H(InOut):
         of a GPIO rather than from an I2C register. Speeds up the reading and
         decreases the traffic on the bus, but requires one extra wire. Give the
         name of the GPIO in the format `Dx` or `Cx`.
-      gain: Allows to tune the output value according to the formula:
-        ::
-
-          output = gain * tension + offset
-
-      offset: Allows to tune the output value according to the formula:
-        ::
-
-          output = gain * tension + offset
-
+      gain: Allows to tune the output value according to the formula :
+        :math:`output = gain * tension + offset`.
+      offset: Allows to tune the output value according to the formula :
+        :math:`output = gain * tension + offset`.
       _ft232h_args: This argument is meant for internal use only and should not
         be provided by the user. It contains the information necessary for
         setting up the FT232H.

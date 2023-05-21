@@ -69,19 +69,13 @@ class Comedi(InOut):
       gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
         each input channel the gain to apply to the measured voltage, as a
         :obj:`float`. The returned voltage is calculated as follows :
-        ::
-
-          returned_voltage = gain * measured_voltage + offset
-
-        If not given, no gain is applied to the measured values.
+        :math:`returned\_voltage = gain * measured\_voltage + offset`. If not
+        given, no gain is applied to the measured values.
       offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing for
         each input channel the offset to apply to the measured voltage, as a
         :obj:`float`. The returned voltage is calculated as follows :
-        ::
-
-          returned_voltage = gain * measured_voltage + offset
-
-        If not given, no offset is applied to the measured values.
+        :math:`returned\_voltage = gain * measured\_voltage + offset`. If not
+        given, no offset is applied to the measured values.
       make_zero: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         for each input channel a :obj:`bool` indicating whether the channel
         should be zeroed or not. If so, data will be acquired on this channel
@@ -103,7 +97,7 @@ class Comedi(InOut):
       out_gain: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         for each output channel the gain to apply to the command voltage, as a
         :obj:`float`. The set voltage is calculated as follows :
-        ::
+        .. math::
 
           set_voltage = out_gain * command_voltage + out_offset
 
@@ -111,7 +105,7 @@ class Comedi(InOut):
       out_offset: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         for each output channel the offset to apply to the command voltage, as
         a :obj:`float`. The set voltage is calculated as follows :
-        ::
+        .. math::
 
           set_voltage = out_gain * command_voltage + out_offset
 

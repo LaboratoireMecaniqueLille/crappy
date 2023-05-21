@@ -54,7 +54,8 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.autosectionlabel',
     'sphinx_rtd_theme',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.mathjax'
 ]
 
 # Napoleon settings

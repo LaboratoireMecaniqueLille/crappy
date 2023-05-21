@@ -130,19 +130,11 @@ class WaveshareADDAFT232H(InOut):
         ``v_ref``. `3.3` and `5` are the only possible values for this setting,
         as the FT232H can only provide `3.3V` and `5V`.
       gain: Allows to tune the output values of the ADC according to the
-        formula:
-        ::
-
-          output = gain * tension + offset.
-
-        The same gain applies to all the outputs.
+        formula : :math:`output = gain * tension + offset`. The same gain
+        applies to all the outputs.
       offset: Allows to tune the output values of the ADC according to the
-        formula:
-        ::
-
-          output = gain * tension + offset.
-
-        The same offset applies to all the outputs.
+        formula : :math:`output = gain * tension + offset`. The same offset
+        applies to all the outputs.
       sample_rate: The ADC data output rate in SPS. The available values are:
         ::
 

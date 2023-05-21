@@ -147,15 +147,10 @@ class ADS1115(InOut):
         the traffic on the I2C bus, but requires one extra wire. With the
         backend `'Pi4'`, give the index of the GPIO in BCM convention. This
         feature is not available with the `'blinka'` backend.
-      gain: Allows to tune the output value according to the formula:
-        ::
-
-          output = gain * tension + offset.
-
-      offset: Allows to tune the output value according to the formula:
-        ::
-
-          output = gain * tension + offset.
+      gain: Allows to tune the output value according to the formula :
+        :math:`output = gain * tension + offset`.
+      offset: Allows to tune the output value according to the formula :
+        :math:`output = gain * tension + offset`.
 
     Warning:
       AINx voltages should not be higher than `VDD+0.3V` nor lower than

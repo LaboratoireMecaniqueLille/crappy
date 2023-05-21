@@ -169,19 +169,11 @@ class WaveshareHighPrecision(InOut):
         accept different settings. Refer to the documentation of the ADS1263
         for more detail.
       gain: Allows to tune the output values of the ADC according to the
-        formula:
-        ::
-
-          output = gain * tension + offset.
-
-        The same gain applies to all the channels.
+        formula : :math:`output = gain * tension + offset`. The same gain
+        applies to all the channels.
       offset: Allows to tune the output values of the ADC according to the
-        formula:
-        ::
-
-          output = gain * tension + offset.
-
-        The same offset applies to all the channels.
+        formula : :math:`output = gain * tension + offset`. The same offset
+        applies to all the channels.
 
     Important:
       When the ``gain_hardware`` is greater than 1, the PGA cannot amplify
