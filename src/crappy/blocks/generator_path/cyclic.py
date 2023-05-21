@@ -9,11 +9,12 @@ from .meta_path import Path, ConditionType
 
 
 class Cyclic(Path):
-  """The path cyclically alternates between two constant values, based on two
+  """This Path cyclically alternates between two constant values, based on two
   different conditions.
 
   It can for example be used as a trigger, or used to drive an actuator
-  cyclically. It is equivalent to a succession of :ref:`constant` paths.
+  cyclically. It is equivalent to a succession of 
+  :class:`~crappy.blocks.generator_path.Constant` Paths.
   """
 
   def __init__(self,
@@ -24,9 +25,9 @@ class Cyclic(Path):
                value1: float,
                value2: float,
                cycles: float = 1) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
-    The path always starts with ``value1``, and then switches to ``value2``.
+    The Path always starts with ``value1``, and then switches to ``value2``.
 
     Args:
       _last_time: The last timestamp when a command was generated. For internal
@@ -34,9 +35,11 @@ class Cyclic(Path):
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
       condition1: The condition for switching to ``value2``. Refer to
-        :ref:`Path` for more info.
+        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        information.
       condition2: The condition for switching to ``value1``. Refer to
-        :ref:`Path` for more info.
+        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        information.
       value1: First value to send.
       value2: Second value to send.
       cycles: Number of cycles. Half cycles are accepted. If `0`, loops
@@ -45,14 +48,14 @@ class Cyclic(Path):
     Note:
       ::
 
-        [{'type': 'cyclic', 'value1': 1, 'condition1': 'AIN0>2',
+        [{'type': 'Cyclic', 'value1': 1, 'condition1': 'AIN0>2',
         'value2': 0, 'condition2': 'AIN1<1', 'cycles': 5}]
 
       is equivalent to
       ::
 
-        [{'type': 'constant', 'value': 1,'condition': 'AIN0>2'},
-        {'type': 'constant', 'value': 0, 'condition': 'AIN1<1'}] * 5
+        [{'type': 'Constant', 'value': 1,'condition': 'AIN0>2'},
+        {'type': 'Constant', 'value': 0, 'condition': 'AIN1<1'}] * 5
     """
 
     super().__init__(_last_time, _last_cmd)

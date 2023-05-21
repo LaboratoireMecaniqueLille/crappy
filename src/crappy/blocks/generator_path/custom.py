@@ -10,7 +10,7 @@ from .meta_path import Path
 
 
 class Custom(Path):
-  """Generates a custom path from a text file, until the file is exhausted.
+  """Generates a custom Path from a text file, until the file is exhausted.
 
   The file can be in any text format, including the most common `.csv` and
   `.txt` extensions.
@@ -21,7 +21,7 @@ class Custom(Path):
                _last_cmd: float,
                file_name: Union[str, pathlib.Path],
                delimiter: str = ',') -> None:
-    """Loads the file and sets the args.
+    """Loads the file and sets the arguments.
 
     The stop condition is simply to reach the last timestamp given in the
     file.
@@ -31,10 +31,10 @@ class Custom(Path):
         use only, do not overwrite.
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
-      file_name: Path to the file to read the path from. Can be either a
-        :obj:`str` or a :mod:`pathlib` Path. The file must contain two columns:
-        the first one containing timestamps (starting from 0), the other one
-        containing the values.
+      file_name: Path to the file containing the information on the Generator
+        Path. Can be either a :obj:`str` or a :obj:`pathlib.Path`. The file
+        must contain two columns: the first one containing timestamps (starting
+        from 0), the other one containing the values.
       delimiter: The delimiter between columns in the file, usually a coma.
     """
 

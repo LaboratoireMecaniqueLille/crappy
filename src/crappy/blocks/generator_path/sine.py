@@ -9,7 +9,7 @@ from .meta_path import Path, ConditionType
 
 
 class Sine(Path):
-  """This path generates a sine wave varying with time until the stop condition
+  """This Path generates a sine wave varying with time until the stop condition
   is met."""
 
   def __init__(self,
@@ -20,15 +20,16 @@ class Sine(Path):
                amplitude: float,
                offset: float = 0,
                phase: float = 0) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       _last_time: The last timestamp when a command was generated. For internal
         use only, do not overwrite.
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
-      condition: The condition for switching to the next path. Refer to
-        :ref:`Path` for more info.
+      condition: The condition for switching to the next Path. Refer to
+        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        information.
       freq: The frequency of the sine in `Hz`.
       amplitude: The amplitude of the sine wave (peak to peak).
       offset: The offset of the sine (average value).

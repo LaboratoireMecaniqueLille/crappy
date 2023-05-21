@@ -8,17 +8,14 @@ from .meta_path import Path, ConditionType
 
 
 class Integrator(Path):
-  """This path integrates an incoming label over time and returns the
+  """This Path integrates an incoming label over time and returns the
   integration as an output signal.
 
   Let `f(t)` be the input signal, `v(t)` the value of the output, `m` the
-  inertia and `t0` the timestamp of the beginning of this path.
+  inertia and `t0` the timestamp of the beginning of this Path.
 
-  Then the output value for this path will be:
-  ::
-
-    v(t) = v(t0) - [I(t0 -> t)f(t)dt] / m
-
+  Then the output value for this Path will be
+  :math:`v(t) = v(t0) - [I(t0 -> t)f(t)dt] / m`.
   """
 
   def __init__(self,
@@ -29,15 +26,16 @@ class Integrator(Path):
                func_label: str,
                time_label: str = 't(s)',
                init_value: float = None) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       _last_time: The last timestamp when a command was generated. For internal
         use only, do not overwrite.
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
-      condition: The condition for switching to the next path. Refer to
-        :ref:`Path` for more info.
+      condition: The condition for switching to the next Path. Refer to
+        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        information.
       inertia: Value of the equivalent inertia to use for driving the signal.
         In the above formula, it is the value of `m`. The larger this value,
         the slower the changes in the signal value.
@@ -45,7 +43,7 @@ class Integrator(Path):
       time_label: The name of the time label for the integration.
       init_value: If given, overwrites the last value of the signal as the
         starting point for the inertia path. In the specific case when this
-        path is the first one in the list of dicts, this argument must be
+        path is the first one in the Generator Paths, this argument must be
         given !
     """
 

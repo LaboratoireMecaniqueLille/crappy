@@ -153,6 +153,12 @@ Generator Paths
 ---------------
 There are several types of path available for the generator block.
 
+Conditional
++++++++++++
+.. autoclass:: crappy.blocks.generator_path.Conditional
+   :members: get_cmd
+   :special-members: __init__
+
 Constant
 ++++++++
 .. autoclass:: crappy.blocks.generator_path.Constant
@@ -183,12 +189,6 @@ Integrator
    :members: get_cmd
    :special-members: __init__
 
-Conditional
-+++++++++++
-.. autoclass:: crappy.blocks.generator_path.Conditional
-   :members: get_cmd
-   :special-members: __init__
-
 Ramp
 ++++
 .. autoclass:: crappy.blocks.generator_path.Ramp
@@ -204,15 +204,15 @@ Sine
 Parent Path
 +++++++++++
 
+Meta Path
+"""""""""
+.. autoclass:: crappy.blocks.generator_path.meta_path.MetaPath
+   :special-members: __init__
+
 Path
 """"
 .. autoclass:: crappy.blocks.generator_path.meta_path.Path
    :members: get_cmd, parse_condition, log
-   :special-members: __init__
-
-Meta Path
-"""""""""
-.. autoclass:: crappy.blocks.generator_path.meta_path.MetaPath
    :special-members: __init__
 
 Camera Processes

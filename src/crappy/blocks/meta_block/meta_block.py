@@ -4,7 +4,9 @@ from ..._global import DefinitionError
 
 
 class MetaBlock(type):
-  """"""
+  """Metaclass ensuring that two Blocks don't have the same name, and that all
+  Blocks define the required methods. Also keeps track of all the Block
+  classes, including the custom user-defined ones."""
 
   existing = list()
 

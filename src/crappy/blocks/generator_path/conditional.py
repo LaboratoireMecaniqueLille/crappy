@@ -7,12 +7,12 @@ from .meta_path import Path, ConditionType
 
 
 class Conditional(Path):
-  """Depending on two different conditions checked at each loop, this path can
-  output one between 3 constant values.
+  """This Path returns one of three possible output values, based on two given
+  conditions.
 
   It is especially useful for controlling processes that need to behave
-  differently based on given conditions, e.g. for preventing a heating element
-  from overheating or a motor from driving too far.
+  differently based on input values, e.g. for preventing a heating element
+  from overheating, or a motor from driving too far.
   """
 
   def __init__(self,
@@ -30,10 +30,12 @@ class Conditional(Path):
         use only, do not overwrite.
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
-      condition1: The first condition checked by the path. Refer to
-        :ref:`Path` for more info.
+      condition1: The first condition checked by the Path. Refer to
+        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        information.
       condition2: The second condition checked by the path. Refer to
-        :ref:`Path` for more info.
+        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        information.
       value1: Value to send when ``condition1`` is met.
       value2: Value to send when ``condition2`` is met and ``condition1`` is
         not met.
@@ -41,7 +43,7 @@ class Conditional(Path):
         met.
 
     Note:
-      This generator path never ends, it doesn't have a stop condition.
+      This Generator Path never ends, it doesn't have a stop condition.
     """
 
     super().__init__(_last_time, _last_cmd)
@@ -55,8 +57,8 @@ class Conditional(Path):
     self._prev = self._value0
 
   def get_cmd(self, data: Dict[str, list]) -> float:
-    """Sends either value1 if condition1 is met, or value2 if only condition2
-    is met, or value0 if none of the conditions are met."""
+    """Sends either ``value1`` if ``condition1`` is met, or ``value2`` if only
+    ``condition2`` is met, or ``value0`` if none of the conditions are met."""
 
     # Case when data has been received
     if any(data.values()):

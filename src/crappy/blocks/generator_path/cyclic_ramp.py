@@ -9,10 +9,11 @@ from .meta_path import Path, ConditionType
 
 
 class CyclicRamp(Path):
-  """The path cyclically alternates between two ramps with different slopes,
+  """This Pth cyclically alternates between two ramps with different slopes,
   based on two different conditions.
 
-  It is equivalent to a succession of :ref:`ramp` paths.
+  It is equivalent to a succession of 
+  :class:`~crappy.blocks.generator_path.Ramp` Paths.
   """
 
   def __init__(self,
@@ -24,7 +25,7 @@ class CyclicRamp(Path):
                speed2: float,
                cycles: float = 1,
                init_value: Optional[float] = None) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     The path always starts with ``speed1``, and then switches to ``speed2``.
 
@@ -34,28 +35,30 @@ class CyclicRamp(Path):
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
       condition1: The condition for switching to ``speed2``. Refer to
-        :ref:`Path` for more info.
+        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        information.
       condition2: The condition for switching to ``speed1``. Refer to
-        :ref:`Path` for more info.
+        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        information.
       speed1: Slope of the first generated ramp, in `units/s`.
       speed2: Slope of the second generated ramp, in `units/s`.
       cycles: Number of cycles. Half cycles are accepted. If `0`, loops
         forever.
       init_value: If given, overwrites the last value of the signal as the
-        starting point for the first ramp. In the specific case when this path
-        is the first one in the list of dicts, this argument must be given !
+        starting point for the first ramp. In the specific case when this Path
+        is the first one in the Generator Paths, this argument must be given !
 
     Note:
       ::
 
-        [{'type': 'cyclic_ramp', 'speed1': 5, 'condition1': 'AIN0>2',
+        [{'type': 'CyclicRamp', 'speed1': 5, 'condition1': 'AIN0>2',
         'speed2': -2, 'condition2': 'AIN1<1', 'cycles': 5}]
 
       is equivalent to
       ::
 
-        [{'type': 'ramp', 'speed': 5,'condition': 'AIN0>2'},
-        {'type': 'ramp', 'value': -2, 'condition': 'AIN1<1'}] * 5
+        [{'type': 'Ramp', 'speed': 5,'condition': 'AIN0>2'},
+        {'type': 'Ramp', 'value': -2, 'condition': 'AIN1<1'}] * 5
     """
 
     super().__init__(_last_time, _last_cmd)

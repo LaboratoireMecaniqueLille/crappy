@@ -7,8 +7,8 @@ from .meta_path import Path, ConditionType
 
 
 class Constant(Path):
-  """The simplest path, simply sends the same value until the condition is
-  met."""
+  """The simplest Path, outputs the same constant value until the stop 
+  condition is met."""
 
   def __init__(self,
                _last_time: float,
@@ -22,9 +22,10 @@ class Constant(Path):
         use only, do not overwrite.
       _last_cmd: The last sent command. For internal use only, do not
         overwrite.
-      condition: The condition for switching to the next path. Refer to
-        :ref:`Path` for more info.
-      value: The value to send.
+      condition: The condition for switching to the next Path. Refer to
+        :class:`~crappy.blocks.generator_path.meta_path.Path` for more
+        information.
+      value: The value to output.
     """
 
     super().__init__(_last_time, _last_cmd)
