@@ -6,9 +6,6 @@ from collections import defaultdict
 
 from .meta_block import Block
 
-# Todo:
-#  Make out_label control the labels that are returned
-
 
 class Multiplexer(Block):
   """This block takes data from upstream blocks as input and interpolates it to
@@ -38,10 +35,14 @@ class Multiplexer(Block):
 
     Args:
       time_label: The label carrying the time information.
-      out_labels: If given, the Block won't output anything until data has been
-        received on all these labels. The time label should not be included in
-        this list, as it is already given in the ``time_label`` argument. It is
-        recommended to always specify this argument.
+      out_labels: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
+        the labels to multiplex, except for the time label that is given
+        separately in the ``time_label`` argument. The Block also doesn't
+        output anything until data has been received on all these labels. If
+        left to :obj:`None`, all the received labels are considered. **It is
+        recommended to always set this argument !** It is also possible to
+        give this argument as a single :obj:`str` (i.e. not in an iterable),
+        although multiplexing a single label is of limited interest.
       freq : The sample rate for the interpolation, and the target looping
         frequency for the block. If this value is set too high and your machine
         cannot keep up, the block will most likely lag.
