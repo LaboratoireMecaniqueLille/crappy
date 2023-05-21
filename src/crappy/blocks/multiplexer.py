@@ -1,4 +1,5 @@
 # coding: utf-8
+import logging
 
 import numpy as np
 from typing import Dict, Optional, Iterable, Union
@@ -108,8 +109,9 @@ class Multiplexer(Block):
         return
 
     # Making sure there's data for all the labels
-    if not self ._data or all(not np.any(data)
-                              for data in self._data.values()):
+    if not self._data or any(not np.any(data) for data in self._data.values()):
+      self.log(logging.DEBUG, "At least one label doesn't have a value in "
+                              "buffer, not returning anything for this loop")
       return
 
     # Getting the minimum time for the interpolation
