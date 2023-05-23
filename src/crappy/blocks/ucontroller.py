@@ -21,7 +21,7 @@ class UController(Block):
   for communication with microcontrollers.
 
   It can send labeled commands to the device, and/or receive labeled data from
-  it. This block is meant to be used along with the MicroController.py
+  it. This Block is meant to be used along with the `microcontroller.py`
   MicroPython template located in the `tool` folder of Crappy, even though it
   is not mandatory. A given syntax needs to be followed for any data to be
   exchanged.
@@ -55,25 +55,30 @@ class UController(Block):
         these exact names. Not more than 9 cmd_labels should be given. If
         there's only one command label, it can be given directly as a
         :obj:`str` and not in an iterable.
-      init_output (:obj:`dict`, optional): If the ``labels`` argument is not
-        :obj:`None`, the values to output to downstream blocks for each label
-        as long as no value has been received from the device. An initial
-        output value must be given for each label.
-      post_process (:obj:`dict`, optional): Optionally allows applying a
-        function to the data of a label before transmitting it to downstream
-        blocks. It is possible to give functions for only part of the labels.
-      t_device (:obj:`bool`, optional): It :obj:`True`, the timestamp returned
-        under the label `'t(s)'` is the one of the device, not the one of
-        Crappy. It may reduce the maximum achievable sample rate, as more bytes
-        have to be transmitted, but it is also far more precise.
-      port (:obj:`str`, optional): The serial port to open for communicating
-        with the device. In Windows, they are usually called `COMx`, whereas in
-        Linux and Mac they're called `/dev/ttyxxxx`.
-      baudrate (:obj:`int`, optional): The baudrate for serial communication.
-        It depends on the capabilities of the device.
-      display_freq (:obj:`bool`, optional): If :obj:`True`, displays the
-        looping frequency of the block.
-      freq (:obj:`float`, optional): The looping frequency of the block.
+      init_output: If the ``labels`` argument is not :obj:`None`, the values to 
+        output to downstream Blocks for each label as long as no value has been 
+        received from the device. An initial output value must be given for 
+        each label.
+      post_process: Optionally allows applying a function to the data of a 
+        label before transmitting it to downstream Blocks. It is possible to 
+        give functions for only part of the labels.
+      t_device: It :obj:`True`, the timestamp returned under the label `'t(s)'` 
+        is the one of the device, not the one of Crappy. It may reduce the 
+        maximum achievable sample rate, as more bytes have to be transmitted, 
+        but it is also far more precise.
+      port: The serial port to open for communicating with the device. In 
+        Windows, they are usually called `COMx`, whereas in Linux and Mac 
+        they're called `/dev/ttyxxxx`.
+      baudrate: The baudrate for serial communication. It depends on the 
+        capabilities of the device.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        Block.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
     """
 
     self._bus = None
@@ -241,8 +246,8 @@ class UController(Block):
                       f"it may have been disconnected.")
 
   def loop(self) -> None:
-    """First sends the commands from upstream blocks to the device, then reads
-    the data from the device and sends it to the downstream blocks.
+    """First sends the commands from upstream Blocks to the device, then reads
+    the data from the device and sends it to the downstream Blocks.
 
     Important:
       The precision of the commands sent to the device is limited to 3 digits

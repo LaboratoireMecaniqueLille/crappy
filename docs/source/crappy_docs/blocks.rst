@@ -17,16 +17,16 @@ Button
    :members: prepare, begin, loop, finish
    :special-members: __init__
 
-Canvas
-+++++++
-.. autoclass:: crappy.blocks.Canvas
-   :members: prepare, loop, finish
-   :special-members: __init__
-
 Camera Block
 ++++++++++++
 .. autoclass:: crappy.blocks.Camera
    :members: prepare, begin, loop, finish
+   :special-members: __init__
+
+Canvas
++++++++
+.. autoclass:: crappy.blocks.Canvas
+   :members: prepare, loop, finish
    :special-members: __init__
 
 Client Server

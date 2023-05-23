@@ -16,15 +16,20 @@ except ModuleNotFoundError:
 
 
 class HDFRecorder(Block):
-  """This block saves data efficiently into a hdf5 file.
-
-  This block is meant to save data coming as arrays at a high rate
-  (`>1kHz`). It relies on the module :mod:`tables`.
-
-  Important:
-    Do not forget to specify the type of data to be saved (see ``atom``
-    parameter) to avoid casting the data into another type, as this could
-    result in data loss or inefficient saving.
+  """This Block records data efficiently into a HDF5 file.
+  
+  It expects data as :obj:`numpy.array` from exactly one upstream Block, that
+  should be an :class:`~crappy.blocks.IOBlock` in `streamer` mode. It then 
+  saves this data in a HDF5 file using the :mod:`tables` module.
+  
+  This Block is intended for high-speed data recording from 
+  :class:`~crappy.inout.InOut` in `streamer` mode. For regular data recording,
+  the :class:`~crappy.blocks.Recorder` Block should be used instead.
+  
+  Warning:
+    Corrupted HDF5 files are not readable at all ! If anything goes wrong 
+    during a test, especially during the finish phase, it is not guaranteed 
+    that the recorded data will be readable.
   """
 
   def __init__(self,
@@ -37,7 +42,7 @@ class HDFRecorder(Block):
                freq: Optional[float] = None,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       filename: Path to the output file, either relative or absolute. If the
@@ -47,14 +52,19 @@ class HDFRecorder(Block):
       expected_rows: The number of expected rows in the file. It is used to
         optimize the dumping.
       atom: This represents the type of data to be stored in the table. It can
-        be given as a :class:`tables.Atom` instance, as a :class:`numpy.array`
+        be given as a :obj:`tables.Atom` instance, as a :obj:`numpy.array`
         or as a :obj:`str`.
       label: The label carrying the data to be saved
       metadata: A :obj:`dict` containing additional information to save in the
-        `hdf5` file.
-      freq: The block will try to loop at this frequency.
-      display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
+        `HDF5` file.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
+      display_freq: if :obj:`True`, displays the looping frequency of the 
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
     """
 
     self._hfile = None
@@ -79,7 +89,7 @@ class HDFRecorder(Block):
     self._array_initialized = False
 
   def prepare(self) -> None:
-    """Checking that the block has the right number of inputs, creates the
+    """Checks that the Block has the right number of inputs, creates the
     folder containing the file if it doesn't already exist, changes the name of
     the file if it already exists, and initializes the HDF file."""
 
@@ -117,7 +127,7 @@ class HDFRecorder(Block):
       self._hfile.create_array(self._hfile.root, name, value)
 
   def loop(self) -> None:
-    """Simply receives data from the upstream block and saves it.
+    """Receives data from the upstream Block and saves it.
 
     Also creates the array for recording data when the first values are
     received.
@@ -138,7 +148,7 @@ class HDFRecorder(Block):
         self._array.append(elt)
 
   def finish(self) -> None:
-    """Simply closes the HDF file."""
+    """Closes the HDF file."""
 
     if self._hfile is not None:
       self.log(logging.INFO, "Closing the HDF5 file")

@@ -22,10 +22,10 @@ class Text:
                text: str,
                label: str,
                **__: str) -> None:
-    """Simply sets the args.
+    """Sets the arguments.
 
     Args:
-      _: The parent drawing block.
+      _: The parent drawing Block.
       coord: The coordinates of the text on the drawing.
       text: The text to display.
       label: The label carrying the information for updating the text.
@@ -55,20 +55,20 @@ class DotText:
                text: str,
                label: str,
                **__: str) -> None:
-    """Simply sets the args.
+    """Sets the arguments.
 
     Args:
-      drawing: The parent drawing block.
+      drawing: The parent drawing Block.
       coord: The coordinates of the text and the color dot on the drawing.
       text: The text to display.
       label: The label carrying the information for updating the text and the
         color of the dot.
       **__: Other unused arguments.
 
-        Important:
-          The value received in label must be a numeric value. It will be
-          normalized on the ``crange`` of the block and the dot will change
-          color from blue to red depending on this value.
+    Important:
+      The value received in label must be a numeric value. It will be
+      normalized on the ``crange`` of the Block and the dot will change
+      color from blue to red depending on this value.
     """
 
     x, y = coord
@@ -98,10 +98,10 @@ class Time:
   test."""
 
   def __init__(self, drawing: Canvas, coord: Tuple[int, int], **__) -> None:
-    """Simply sets the args.
+    """Sets the arguments.
 
     Args:
-      drawing: The parent drawing block.
+      drawing: The parent drawing Block.
       coord: The coordinates of the time counter on the drawing.
       **__: Other unused arguments.
     """
@@ -118,14 +118,20 @@ class Time:
 
 
 class Canvas(Block):
-  """This block allows displaying a real-time visual representation of data.
+  """This Block allows displaying a real-time visual representation of data.
 
   It displays the data on top of a background image and updates it according to
-  the values received through the incoming links.
+  the values received through the incoming :class:`~crappy.links.Link`. The
+  background image and the data overlay are displayed in a new window.
 
-  It is possible to display simple text, a time counter, ot text associated
+  It is possible to display a simple text, a time counter, or text associated
   with a color dot evolving depending on a predefined color bar and the
   received values.
+
+  This Block is mostly useful for displaying a user-friendly and fine-tuned
+  representation of data. For simpler displays, the
+  :class:`~crappy.blocks.Dashboard`, :class:`~crappy.blocks.Grapher` and
+  :class:`~crappy.blocks.LinkReader` Blocks should be preferred.
   """
 
   def __init__(self,
@@ -138,7 +144,7 @@ class Canvas(Block):
                freq: Optional[float] = 2,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       image_path: Path to the image that will be the background of the canvas,
@@ -148,12 +154,17 @@ class Canvas(Block):
       color_range: A :obj:`tuple` containing the lowest and highest values for
         the color bar.
       title: The title of the window containing the drawing.
-      window_size: The x and y dimension of the window, following
+      window_size: The `x` and `y` dimension of the window, following
         :mod:`matplotlib` nomenclature.
       backend: The :mod:`matplotlib` backend to use.
-      freq: The block will try to loop at this frequency.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops
+        as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
 
     Note:
       - Information about the ``draw`` keys:
@@ -164,15 +175,14 @@ class Canvas(Block):
         - ``coord``: Mandatory, a :obj:`tuple` containing the `x` and `y`
           coordinates where the element should be displayed on the drawing.
 
-        - ``text``: Mandatory for :class:`Text` and :class:`DotText` only, the
-          text to display on the drawing. It must follow the %-formatting, and
-          contain exactly one %-field. This field will be updated using the
-          value carried by ``label``.
+        - ``text``: Mandatory for `'text'` and `'dot_text'` only, the text to
+          display on the drawing. It must follow the %-formatting, and contain
+          exactly one %-field. Ex: `'T0 = %f'`. This field will be updated
+          using the value carried by ``label``.
 
-        - ``label``: Mandatory for :class:`Text` and :class:`DotText` only,
-          the label of the data to display. It will try to retrieve this data
-          in the incoming links. The ``text`` will then be updated with this
-          data.
+        - ``label``: Mandatory for `'text'` and `'dot_text'` only, the label of
+          the data to display. It will try to retrieve this data in the
+          incoming Links. The ``text`` will then be updated with this data.
     """
 
     super().__init__()
@@ -223,7 +233,7 @@ class Canvas(Block):
         self._drawing_elements.append(Time(self, **dic))
 
   def loop(self) -> None:
-    """Receives the latest data from upstream blocks and updates the drawing
+    """Receives the latest data from upstream Blocks and updates the drawing
     accordingly."""
 
     data = self.recv_last_data(fill_missing=False)
@@ -237,7 +247,7 @@ class Canvas(Block):
     plt.pause(0.001)
 
   def finish(self) -> None:
-    """Simply closes the window containing the drawing."""
+    """Closes the window containing the drawing."""
 
     self.log(logging.INFO, "Closing the drawing windows")
     plt.close()

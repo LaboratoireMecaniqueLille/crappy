@@ -22,10 +22,19 @@ TopicsType = Iterable[Union[str, Iterable[str]]]
 
 
 class ClientServer(Block):
-  """Block for exchanging data on a local network using the MQTT protocol.
+  """This Block can exchange data on a local network using the MQTT protocol.
+  
+  It communicates with an MQTT broker, from which it can receive data by
+  subscribing to topics, and to which it can send data by publishing in topics.
+  This Block can also manage the execution of a Mosquitto broker, so that the
+  broker doesn't need to be manually started before running the Crappy script.
 
-  This block can send data to an MQTT broker, receive data from this broker by
-  subscribing to its topics, and also launch the Mosquitto broker.
+  This Block is intended for communication with remote devices, that may run
+  Crappy scripts or other scripts handling data with the correct syntax.
+  Potential uses include acquisition from battery-powered devices (e.g.
+  microcontrollers) acquiring data in enclosed areas or rotating parts, data
+  transfer between machines to delegate processing, communication with other
+  programs on a same machine, etc.
   """
 
   def __init__(self,
@@ -40,20 +49,20 @@ class ClientServer(Block):
                freq: Optional[float] = 200,
                spam: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Checks arguments validity and sets the instance attributes.
+    """Checks the validity of the arguments and sets the instance attributes.
 
     Args:
       broker: If :obj:`True`, starts the Mosquitto broker during the prepare
         loop and stops it during the finish loop. If Mosquitto is not installed
         a :exc:`FileNotFoundError` is raised.
-      address (optional): The network address on which the MQTT broker is
-        running.
-      port (:obj:`int`, optional): A network port on which the MQTT broker is
-        listening.
-      init_output (:obj:`dict`, optional): A :obj:`dict` containing for labels
-        in ``topics`` the first value to be sent in the output links. Should be
-        given in case the data comes from several sources and data for all
-        labels may not be available during the first loops.
+      address: The network address on which the MQTT broker is running, as a
+        :obj:`str`.
+      port: A network port on which the MQTT broker is listening, as an 
+        :obj:`int`.
+      init_output: A :obj:`dict` containing for each label in ``topics`` the 
+        first value to be sent in the output Links. Should be given in case the 
+        data comes from several sources and data for all labels may not be 
+        available during the first loops. 
       topics: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         :obj:`str` and/or iterables of :obj:`str`. Each string corresponds to
         the name of a label in Crappy. Each element in the iterable (string or
@@ -69,7 +78,7 @@ class ClientServer(Block):
         which the client publishes. Grouping labels in a same topic (i.e.
         strings in a same iterable) allows to keep the synchronization between
         signals coming from a same Block, as they will be published together in
-        a same message. This  is mostly useful for sending a signal along with
+        a same message. This is mostly useful for sending a signal along with
         its timeframe.
       labels_to_send: An iterable (like a :obj:`list` or a :obj:`tuple`)
         containing :obj:`str` and/or iterables of :obj:`str`. Allows to rename
@@ -80,17 +89,22 @@ class ClientServer(Block):
         their timestamps, as the label ``'t(s)'`` should not appear more than
         once in the topics.
       display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
-      freq: The block will try to loop at this frequency.
+        Block.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops
+        as fast as possible.
       spam: If :obj:`True`, sends the last received values at each loop even if
         no new values were received from the broker.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
 
     Note:
       - ``broker``:
-        In order for the block to run, an MQTT broker must be running at the
+        In order for the Block to run, an MQTT broker must be running at the
         specified address on the specified port. If not, an
         :exc:`ConnectionRefusedError` is raised. The broker can be started and
-        stopped manually by the user independently of the execution of crappy.
+        stopped manually by the user independently of the execution of Crappy.
         It also doesn't need to be Mosquitto, any other MQTT broker can be
         used.
 
@@ -305,7 +319,7 @@ class ClientServer(Block):
   def loop(self) -> None:
     """Receives data from the broker and/or sends data to the broker.
 
-    The received data is then sent to the crappy blocks connected to this one.
+    The received data is then sent to the crappy Blocks connected to this one.
     """
 
     """Loop for receiving data

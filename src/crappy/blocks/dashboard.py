@@ -50,10 +50,20 @@ class DashboardWindow(tk.Tk):
 
 
 class Dashboard(Block):
-  """The Dashboard receives data from a :ref:`Link`, and displays it on a new
-  popped window.
+  """This Block generates an interface displaying data as text in a dedicated
+  window.
 
-  It can only display data coming from one block.
+  It can only display data coming from one Block. It relies on a
+  :obj:`~tkinter.Tk` window for the graphical interface.
+
+  In the window, the left column contains the names of the labels to display
+  and the right column contains the latest received values for these labels.
+  For each label, only the last value is therefore displayed.
+
+  This Block provides a nicer display than the raw
+  :class:`~crappy.blocks.LinkReader` Block. For displaying the evolution of a
+  label over time, the :class:`~crappy.blocks.Grapher` Block should be used
+  instead.
   """
 
   def __init__(self,
@@ -62,14 +72,19 @@ class Dashboard(Block):
                display_freq: bool = False,
                freq: Optional[float] = 30,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       labels: Only the data from these labels will be displayed on the window.
       nb_digits: Number of decimals to show.
       display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
-      freq: If set, the block will try to loop at this frequency.
+        Block.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops
+        as fast as possible.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
     """
 
     self._dashboard: Optional[DashboardWindow] = None
@@ -83,7 +98,8 @@ class Dashboard(Block):
     self._nb_digits = nb_digits
 
   def prepare(self) -> None:
-    """Checks that there's only one incoming link, and starts the GUI."""
+    """Checks that there's only one incoming :class:`~crappy.links.Link`, and
+    starts the GUI."""
 
     if len(self.inputs) == 0:
       raise IOError("No link pointing towards the Dashboard block !")
@@ -95,7 +111,8 @@ class Dashboard(Block):
     self._dashboard.update()
 
   def loop(self) -> None:
-    """Receives the data from the incoming link and displays it."""
+    """Receives the data from the incoming :class:`~crappy.links.Link` and
+    displays it."""
 
     data = self.recv_last_data(fill_missing=False)
 
@@ -119,7 +136,7 @@ class Dashboard(Block):
       pass
 
   def finish(self) -> None:
-    """"""
+    """Closes the display."""
 
     # In case the GUI has been destroyed, don't raise an error
     try:

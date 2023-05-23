@@ -8,13 +8,20 @@ from .meta_block import Block
 
 
 class Recorder(Block):
-  """Saves data from an upstream block to a text file, with values separated by
-  a coma and lines by a newline character.
+  """This Block saves data from an upstream Block to a text file, with values 
+  separated by a coma and lines by a newline character.
 
-  The first row of the file contains the names of the saved labels.
-  This block can only save data coming from one upstream block. To save data
-  from multiple blocks, use several instances of Recorder (recommended) or a
-  :ref:`Multiplexer` block.
+  The first row of the file contains the names of the saved labels. This Block 
+  can only save data coming from exactly one upstream Block. To save data
+  from multiple Blocks, use several instances of Recorder (recommended) or a
+  :class:`~crappy.blocks.Multiplexer` Block.
+  
+  This Block cannot directly record data from "streams", i.e. coming from an
+  :class:`~crappy.blocks.IOBlock` Block with the ``'streamer'`` argument set to
+  :obj:`True`. To do so, the :class:`~crappy.blocks.HDFRecorder` Block should
+  be used instead. Alternatively, a :class:`~crappy.modifier.Demux` Modifier 
+  can be placed between the IOBlock and the Recorder, but most of the acquired
+  data won't be saved.
   """
 
   def __init__(self,
@@ -25,7 +32,7 @@ class Recorder(Block):
                freq: Optional[float] = 200,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       file_name: Path to the output file, either relative or absolute. If the
@@ -36,9 +43,14 @@ class Recorder(Block):
       labels: If provided, only the data carried by these labels will be saved.
         Otherwise, all the received data is saved.
       time_label: The label carrying the time information, by default `'t(s)'`.
-      freq: The block will try to loop at this frequency.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the 
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
     """
 
     super().__init__()
@@ -62,7 +74,7 @@ class Recorder(Block):
     self._file_initialized = False
 
   def prepare(self) -> None:
-    """Checking that the block has the right number of inputs, creates the
+    """Checks that the Block has the right number of inputs, creates the
     folder containing the file if it doesn't already exist, and changes the
     name of the file if it already exists."""
 
@@ -93,7 +105,7 @@ class Recorder(Block):
                                 f"instead !")
 
   def loop(self) -> None:
-    """Simply receives data from the upstream block and saves it."""
+    """Receives data from the upstream Block and saves it."""
 
     if not self._file_initialized:
       if self.data_available():

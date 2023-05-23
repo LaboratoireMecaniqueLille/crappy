@@ -17,14 +17,22 @@ def plastic(v: float, yield_strain: float = .005, rate: float = .02) -> float:
 
 
 class FakeMachine(Block):
-  """This block simulates the behavior of a tensile test machine.
-
-  It should be used to simulate tensile teste, not compression tests. By
-  default, it assumes a plastic behavior of the material. The main mechanical
+  """This Block emulates the behavior of a tensile test machine.
+  
+  It can emulate tensile tests, **not compression tests**. By default, it 
+  assumes an elasto-plastic behavior of the tested sample. The main mechanical
   parameters of the material are tunable.
-
-  This block is meant to be driven like the :ref:`Machine` block. However, its
-  outputs are different and are : ``t(s), F(N), x(mm), Exx(%), Eyy(%)``.
+  
+  This Block is meant to be driven like a :class:`~crappy.blocks.Machine` 
+  Block. It receives speed or position commands from upstream Blocks, and 
+  modifies the behavior of the emulated machine accordingly. Its outputs are
+  however different from the Machine Blocks, as it outputs the current force, 
+  position, and strain of the emulated tensile test machine. The labels
+  carrying this data are : ``t(s), F(N), x(mm), Exx(%), Eyy(%)``.
+  
+  This Block was originally designed for proposing examples that do not require
+  any hardware to run, but still display the possibilities of Crappy. It can
+  also be used to test a script without actually interacting with hardware.
   """
 
   def __init__(self,
@@ -40,11 +48,11 @@ class FakeMachine(Block):
                freq: Optional[float] = 100,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
-      rigidity: The rigidity of the material, in N, so that
-        ``force = k x strain``.
+      rigidity: The rigidity of the material, in N, so that 
+        :math:`force = k * strain`.
       l0: The initial length of the fake sample to test, in mm.
       max_strain: The maximum strain the material can withstand before
         breaking.
@@ -58,9 +66,14 @@ class FakeMachine(Block):
         label to which it applies.
       nu: Poisson's ratio of the material.
       cmd_label: The label carrying the command of the fake machine.
-      freq: The block will try to loop at this frequency.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
     """
 
     super().__init__()
@@ -97,7 +110,7 @@ class FakeMachine(Block):
   def loop(self) -> None:
     """Receives the latest command value, calculates the new speed and position
     from it, checks whether the sample broke and what the plastic elongation
-    is, and finally returns the data"""
+    is, and finally returns the data."""
 
     # Getting the latest command
     data = self.recv_last_data(fill_missing=True)

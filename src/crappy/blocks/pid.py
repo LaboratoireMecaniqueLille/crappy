@@ -8,10 +8,19 @@ from .meta_block import Block
 
 
 class PID(Block):
-  """A basic implementation of a PID corrector.
-
-  A PID will continuously adjust its output based on the target value and the
-  actual measured value, to try to actually reach the target.
+  """This Block implements a basic PID corrector.
+  
+  It takes a target value and a measured value as an input, and outputs a
+  command value for reaching the target on the controlled system. The command
+  is updated at each loop. The given `P`, `I` and `D` gains can be adjusted at
+  runtime, by sending the new desired values. It is also possible to set 
+  boundaries to the output command, or to the integral corrector only.
+  
+  This Block is generally used in combination with a 
+  :class:`~crappy.blocks.Generator` Block for generating the target value, and
+  a :class:`~crappy.blocks.Machine` or :class:`~crappy.blocks.IOBlock` Block
+  driving a physical system. This latter Block takes the command as input, and
+  returns to the PID the measured value to be compared to the target.
   """
 
   def __init__(self,
@@ -33,7 +42,7 @@ class PID(Block):
                freq: Optional[float] = 500,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       kp: The initial `P` gain. It can be tuned while running by sending the
@@ -54,7 +63,7 @@ class PID(Block):
       input_label: The label carrying the reading of the actual value, to be
         compared with the setpoint.
       time_label: The label carrying the time information in the incoming
-        links.
+        Links.
       kp_label: The label to use for changing the `P` gain on the fly. If a
         value is received over this label, it will overwrite the one given in
         the ``kp`` argument.
@@ -64,7 +73,7 @@ class PID(Block):
       kd_label: The label to use for changing the `D` gain on the fly. If a
         value is received over this label, it will overwrite the one given in
         the ``kd`` argument.
-      labels: The two labels that will be sent to downstream blocks. The first
+      labels: The two labels that will be sent to downstream Blocks. The first
         one is the time label, the second one is the output of the PID. If this
         argument is not given, they default to ``'t(s)'`` and ``'pid'``.
       reverse: If :obj:`True`, reverses the action of the PID.
@@ -73,9 +82,14 @@ class PID(Block):
       send_terms: If :obj:`True`, returns the weight of each term in the output
         value. It adds ``'p_term', 'i_term', 'd_term'`` to the output labels.
         This is particularly useful to tweak the gains.
-      freq: The block will try to loop at this frequency.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
     """
 
     # Attributes of the parent class
@@ -118,7 +132,7 @@ class PID(Block):
 
   def loop(self) -> None:
     """Receives the latest target and input values, calculates the P, I and D
-    terms and sends the output to the downstream blocks."""
+    terms and sends the output to the downstream Blocks."""
 
     # Looping in a non-blocking way
     data = self.recv_last_data(fill_missing=False)

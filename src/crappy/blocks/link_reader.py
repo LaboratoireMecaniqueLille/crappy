@@ -7,7 +7,17 @@ from .meta_block import Block
 
 
 class LinkReader(Block):
-  """Reads and displays the data flowing through the input :ref:`Link`."""
+  """This Block reads and displays the data it receives.
+  
+  It can display data received from any number of :class:`~crappy.links.Link`.
+  For each new received data point, a message is displayed in the console with
+  the received values.
+  
+  This Block is the most basic way of displaying data in Crappy. The 
+  :class:`~crappy.blocks.Dashboard` Block can be used for a nicer layout, and 
+  the :class:`~crappy.blocks.Grapher` Block should be used for plotting data in
+  a persistent way.
+  """
 
   _index = 0
 
@@ -16,13 +26,20 @@ class LinkReader(Block):
                freq: Optional[float] = 50,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the arg and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
-      name: If set, will be displayed to identify the reader.
-      freq: The block will try to loop at this frequency.
-      display_freq: If :obj:`True`, the looping frequency will be displayed
-        every 2s.
+      name: If set, will be displayed to identify the LinkReader. Otherwise, 
+        the block is automatically named based on the number of its instances 
+        already running.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
+      display_freq: if :obj:`True`, displays the looping frequency of the 
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
     """
 
     super().__init__()
@@ -34,7 +51,7 @@ class LinkReader(Block):
                                                       f'{self._get_index()}'
 
   def __new__(cls, *args, **kwargs):
-    """"""
+    """Increments the instance counter when instantiating a new LinkReader."""
 
     cls._index += 1
     return super().__new__(cls)
@@ -46,7 +63,8 @@ class LinkReader(Block):
     return cls._index
 
   def loop(self) -> None:
-    """Simply flushes the link and displays its data."""
+    """Flushes the incoming :class:`~crappy.links.Link` and displays their
+    data."""
 
     data = self.recv_all_data_raw()
     for link_data in data:

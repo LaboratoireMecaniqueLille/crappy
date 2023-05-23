@@ -35,6 +35,10 @@ class Block(Process, metaclass=MetaBlock):
   It is a subclass of :obj:`multiprocessing.Process`, and is thus an
   independent process in Python. It communicates with other Blocks via
   :mod:`multiprocessing` objects.
+
+  This class also contains the class methods that allow driving a script with
+  Crappy. They are always called in the `__main__` Process, and drive the
+  execution of all the children Blocks.
   """
 
   instances = WeakSet()
@@ -90,8 +94,11 @@ class Block(Process, metaclass=MetaBlock):
     self._last_values = None
 
   def __new__(cls, *args, **kwargs):
-    """Called when instantiating a new instance of a Block. Adds itself to
-    the WeakSet of all blocks."""
+    """Called when instantiating a new instance of a Block.
+
+    Adds itself to the :obj:`~weakref.WeakSet` listing all the instantiated
+    Blocks.
+    """
 
     instance = super().__new__(cls)
     cls.instances.add(instance)
@@ -99,7 +106,8 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def get_name(cls, name: str) -> str:
-    """"""
+    """Method attributing to each new Block a unique name, based on the name of
+    the class and the number of existing instances for this class."""
 
     i = 1
     while f"crappy.{name}-{i}" in cls.names:
@@ -114,8 +122,8 @@ class Block(Process, metaclass=MetaBlock):
                 log_level: Optional[int] = logging.DEBUG) -> None:
     """Method for starting a script with Crappy.
 
-    It sets the synchronization objects for all the blocks, renices the
-    corresponding processes and starts the blocks.
+    It sets the synchronization objects for all the Blocks, renices the
+    corresponding :obj:`~multiprocessing.Process` and starts the Blocks.
 
     The call to this method is blocking until Crappy finishes.
 
@@ -125,15 +133,16 @@ class Block(Process, metaclass=MetaBlock):
       :meth:`launch_all`.
 
     Args:
-      allow_root: If set tu :obj:`True`, tries to renice the processes niceness
-        with sudo privilege in Linux. It requires the Python script to be run
+      allow_root: If set to :obj:`True`, tries to renice the Processes with
+        sudo privilege in Linux. It requires the Python script to be run
         with sudo privilege, otherwise it has no effect.
       log_level: The maximum logging level that will be handled by Crappy. By
-        default, it is set to the lowest level (DEBUG) so that all messages are
-        handled. If set to a higher level, the levels specified for each Block
-        with the ``debug`` argument may be ignored. If set to :obj:`None`,
-        logging is totally disabled. Refer to the documentation of the
-        :mod:`logging` module for information on the possible levels.
+        default, it is set to the lowest level (:obj:`~logging.DEBUG`) so that
+        all messages are handled. If set to a higher level, the levels
+        specified for each Block with the ``debug`` argument may be ignored. If
+        set to :obj:`None`, logging is totally disabled. Refer to the
+        documentation of the :mod:`logging` module for information on the
+        possible levels.
     """
 
     cls.prepare_all(log_level)
@@ -142,21 +151,22 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def prepare_all(cls, log_level: Optional[int] = logging.DEBUG) -> None:
-    """Creates the synchronization objects, shares them with the blocks, and
-    starts the processes associated to the blocks.
+    """Creates the synchronization objects, shares them with the Blocks, and
+    starts the :obj:`~multiprocessing.Process` associated to the Blocks.
 
-    Also initializes the logger for the Crappy script.
+    Also initializes the :obj:`~logging.Logger` for the Crappy script.
 
-    Once started with this method, the blocks will call their :meth:`prepare`
+    Once started with this method, the Blocks will call their :meth:`prepare`
     method and then be blocked by a :obj:`multiprocessing.Barrier`.
 
     Args:
       log_level: The maximum logging level that will be handled by Crappy. By
-        default, it is set to the lowest level (DEBUG) so that all messages are
-        handled. If set to a higher level, the levels specified for each Block
-        with the ``debug`` argument may be ignored. If set to :obj:`None`,
-        logging is totally disabled. Refer to the documentation of the
-        :mod:`logging` module for information on the possible levels.
+        default, it is set to the lowest level (:obj:`~logging.DEBUG`) so that 
+        all messages are handled. If set to a higher level, the levels 
+        specified for each Block with the ``debug`` argument may be ignored. If 
+        set to :obj:`None`, logging is totally disabled. Refer to the 
+        documentation of the :mod:`logging` module for information on the 
+        possible levels.
     """
 
     try:
@@ -236,14 +246,15 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def renice_all(cls, allow_root: bool) -> None:
-    """On Linux and MacOS, renices the processes associated with the blocks.
+    """On Linux and macOS, renices the :obj:`~multiprocessing.Process` 
+    associated with the Blocks.
 
     On Windows, does nothing.
 
     Args:
-      allow_root: If set tu :obj:`True`, tries to renice the processes niceness
-        with sudo privilege in Linux. It requires the Python script to be run
-        with sudo privilege, otherwise it has no effect.
+      allow_root: If set to :obj:`True`, tries to renice the Processes with 
+        sudo privilege in Linux. It requires the Python script to be run with 
+        sudo privilege, otherwise it has no effect.
     """
 
     try:
@@ -288,14 +299,16 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def launch_all(cls) -> None:
-    """The final method being called by the main process running a Crappy
-    script.
+    """The final method being called by the main
+    :obj:`~multiprocessing.Process` running a script with Crappy.
 
-    It unlocks all the Blocks by releasing the synchronization barrier, sets
-    the shared t0 value, and then waits for all the Blocks to finish.
+    It unlocks all the Blocks by releasing the synchronization
+    :obj:`~multiprocessing.Barrier`, sets the shared t0
+    :obj:`~multiprocessing.Value`, and then waits for all the Blocks to finish.
 
-    In case an exception is raised, sets the stop event for warning the Blocks,
-    waits for the Blocks to finish, and if they don't, terminates them.
+    In case an exception is raised, sets the stop :obj:`~multiprocessing.Event`
+    for warning the Blocks, waits for the Blocks to finish, and if they don't,
+    terminates them.
     """
 
     try:
@@ -354,10 +367,10 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def _exception(cls) -> None:
-    """This method is called when an exception is caught in the main process.
+    """This method is called when an exception is caught in the main Process.
 
     It waits for all the Blocks to end, and kills them if they don't stop by
-    themselves. Also stops the thread managing the logging.
+    themselves. Also stops the Thread managing the logging.
     """
 
     cls.stop_event.set()
@@ -389,7 +402,7 @@ class Block(Process, metaclass=MetaBlock):
     """Method called at the very end of every script execution.
 
     It stops, if relevant, the USBServer and the log_thread, and warns the user
-    in case processes would still be running.
+    in case Processes would still be running.
     """
 
     try:
@@ -427,7 +440,7 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def _set_logger(cls) -> None:
-    """Initializes the logging for the main process.
+    """Initializes the logging for the main Process.
 
     It creates two Stream Loggers, one for the info and debug levels displaying
     on stdout and one for the other levels displaying on stderr. It also
@@ -498,7 +511,8 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def stop_all(cls) -> None:
-    """Method for stopping all the Blocks by setting the stop event."""
+    """Method for stopping all the Blocks by setting the stop
+    :obj:`~multiprocessing.Event`."""
 
     if cls.stop_event is not None:
       cls.stop_event.set()
@@ -507,9 +521,9 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def reset(cls) -> None:
-    """Resets Crappy by emptying the WeakSet containing references to all the
-    Blocks. Only useful for restarting Crappy from a script where Crappy was
-    already started."""
+    """Resets Crappy by emptying the :obj:`~weakref.WeakSet` containing
+    references to all the Blocks. Only useful for restarting Crappy from a
+    script where Crappy was already started."""
 
     cls.instances = WeakSet()
     cls.names = list()
@@ -527,9 +541,9 @@ class Block(Process, metaclass=MetaBlock):
   
   @classmethod
   def cls_log(cls, level: int, msg: str) -> None:
-    """Wrapper for logging messages in the main process.
+    """Wrapper for logging messages in the main Process.
     
-    Ensures the logger exists before trying to log, thus avoiding potential 
+    Ensures the Logger exists before trying to log, thus avoiding potential 
     errors.
     """
     
@@ -539,9 +553,9 @@ class Block(Process, metaclass=MetaBlock):
 
   @classmethod
   def _log_target(cls) -> None:
-    """This method is the target to the logger Thread.
+    """This method is the target to the Logger Thread.
 
-    It reads log messages from a Queue and passes them to the logger for
+    It reads log messages from a Queue and passes them to the Logger for
     handling.
     """
 
@@ -562,14 +576,15 @@ class Block(Process, metaclass=MetaBlock):
     return rec.levelno in (logging.DEBUG, logging.INFO)
 
   def run(self) -> None:
-    """The method run by the Blocks when their process is started.
+    """The method run by the Blocks when their :obj:`~multiprocessing.Process` 
+    is started.
 
     It first calls :meth:`prepare`, then waits at the
-    :obj:`multiprocessing.Barrier` for all Blocks to be ready, then calls
+    :obj:`~multiprocessing.Barrier` for all Blocks to be ready, then calls
     :meth:`begin`, then :meth:`main`, and finally :meth:`finish`.
     
-    If an exception is raised, sets the shared stop event to warn all the other
-    Blocks.
+    If an exception is raised, sets the shared stop 
+    :obj:`~multiprocessing.Event` to warn all the other Blocks.
     """
 
     try:
@@ -694,8 +709,8 @@ class Block(Process, metaclass=MetaBlock):
     also fine for this method not to be overriden if there's no particular
     action to perform.
 
-    Note that this method is called once the process associated to the Block
-    has been started.
+    Note that this method is called once the :obj:`~multiprocessing.Process`
+    associated to the Block has been started.
     """
 
     ...
@@ -714,8 +729,8 @@ class Block(Process, metaclass=MetaBlock):
     """This method is the core of the Block. It is called repeatedly during the
     test, until the test stops or an error occurs.
 
-    Only in this method should data be sent to downstream blocks, or received
-    from upstream blocks.
+    Only in this method should data be sent to downstream Blocks, or received
+    from upstream Blocks.
 
     Although it is possible not to override this method, that has no practical
     interest and this method should always be rewritten.
@@ -733,8 +748,8 @@ class Block(Process, metaclass=MetaBlock):
     fine for this method not to be overriden if no particular action needs to
     be performed.
 
-    Note that this method should normally be called even in case an error
-    occurs, although that cannot be guaranteed.
+    Note that this method will normally be called even in case an error occurs,
+    although that cannot be guaranteed.
     """
 
     ...
@@ -792,10 +807,10 @@ class Block(Process, metaclass=MetaBlock):
       self._last_fps = self._last_t
 
   def _set_block_logger(self) -> None:
-    """Initializes the logger for the Block.
+    """Initializes the Logger for the Block.
 
     If the :mod:`multiprocessing` start method is `spawn` (mostly on Windows),
-    redirects the log messages to a Queue for passing them to the main process.
+    redirects the log messages to a Queue for passing them to the main Process.
     """
 
     logger = logging.getLogger(self.name)
@@ -818,10 +833,11 @@ class Block(Process, metaclass=MetaBlock):
   def debug(self) -> Optional[bool]:
     """Indicates whether the debug information should be displayed or not.
 
-    If :obj:`False` (the default), only displays the INFO logging level. If
-    :obj:`True`, displays the DEBUG logging level for the Block. And if
-    :obj:`None`, displays only the CRITICAL logging level, which is equivalent
-    to no information at all.
+    If :obj:`False` (the default), only displays the :obj:`~logging.INFO`
+    logging level. If :obj:`True`, displays the :obj:`~logging.DEBUG` logging
+    level for the Block. And if :obj:`None`, displays only the
+    :obj:`~logging.CRITICAL` logging level, which is equivalent to no
+    information at all.
     """
 
     return self._debug
@@ -851,12 +867,14 @@ class Block(Process, metaclass=MetaBlock):
       raise T0NotSetError
 
   def add_output(self, link: Link) -> None:
-    """Adds an output link to the list of output links of the Block."""
+    """Adds an output :class:`~crappy.links.Link` to the list of output Links
+    of the Block."""
 
     self.outputs.append(link)
 
   def add_input(self, link: Link) -> None:
-    """Adds an input link to the list of input links of the Block."""
+    """Adds an input :class:`~crappy.links.Link` to the list of input Links of
+    the Block."""
 
     self.inputs.append(link)
 
@@ -921,23 +939,23 @@ class Block(Process, metaclass=MetaBlock):
 
   def data_available(self) -> bool:
     """Returns :obj:`True` if there's data available for reading in at least
-    one of the input Links."""
+    one of the input :class:`~crappy.links.Link`."""
 
     self.log(logging.DEBUG, "Data availability requested")
     return self.inputs and any(link.poll() for link in self.inputs)
 
   def recv_data(self) -> Dict[str, Any]:
-    """Reads the first available values from each incoming Link and returns
-    them all in a single dict.
+    """Reads the first available values from each incoming
+    :class:`~crappy.links.Link` and returns them all in a single dict.
 
     The returned :obj:`dict` might not always have a fixed number of keys,
     depending on the availability of incoming data.
 
-    Also, the returned values are the oldest available in the links. See
+    Also, the returned values are the oldest available in the Links. See
     :meth:`recv_last_data` for getting the newest available values.
 
     Important:
-      If data is received over a same label from different links, part of it
+      If data is received over a same label from different Links, part of it
       will be lost ! Always avoid using a same label twice in a Crappy script.
 
     Returns:
@@ -954,21 +972,21 @@ class Block(Process, metaclass=MetaBlock):
     return ret
 
   def recv_last_data(self, fill_missing: bool = True) -> Dict[str, Any]:
-    """Reads all the available values from each incoming Link, and returns
-    the newest ones in a single dict.
+    """Reads all the available values from each incoming
+    :class:`~crappy.links.Link`, and returns the newest ones in a single dict.
 
     The returned :obj:`dict` might not always have a fixed number of keys,
     depending on the availability of incoming data.
 
     Important:
-      If data is received over a same label from different links, part of it
+      If data is received over a same label from different Links, part of it
       will be lost ! Always avoid using a same label twice in a Crappy script.
 
     Args:
       fill_missing: If :obj:`True`, fills up the missing data for the known
         labels. This way, the last value received from all known labels is
         always returned. It can of course not fill up missing data for labels
-        that haven(t been received yet.
+        that haven't been received yet.
 
     Returns:
       A :obj:`dict` whose keys are the received labels and with a single value
@@ -998,14 +1016,14 @@ class Block(Process, metaclass=MetaBlock):
   def recv_all_data(self,
                     delay: Optional[float] = None,
                     poll_delay: float = 0.1) -> Dict[str, List[Any]]:
-    """Reads all the available values from each incoming Link, and returns
-    them all in a single dict.
+    """Reads all the available values from each incoming
+    :class:`~crappy.links.Link`, and returns them all in a single dict.
 
     The returned :obj:`dict` might not always have a fixed number of keys,
     depending on the availability of incoming data.
 
     Important:
-      If data is received over a same label from different links, part of it
+      If data is received over a same label from different Links, part of it
       will be lost ! Always avoid using a same label twice in a Crappy script.
       See the :meth:`recv_all_data_raw` method for receiving data with no loss.
 
@@ -1025,7 +1043,7 @@ class Block(Process, metaclass=MetaBlock):
     Returns:
       A :obj:`dict` whose keys are the received labels and with a :obj:`list`
       of received values for each key. The first item in the list is the oldest
-      one available in the link, the last item is the newest available.
+      one available in the Link, the last item is the newest available.
     """
 
     ret = defaultdict(list)
@@ -1055,8 +1073,9 @@ class Block(Process, metaclass=MetaBlock):
   def recv_all_data_raw(self,
                         delay: Optional[float] = None,
                         poll_delay: float = 0.1) -> List[Dict[str, List[Any]]]:
-    """Reads all the available values from each incoming Link, and returns
-    them separately in a list of dicts.
+    """Reads all the available values from each incoming
+    :class:`~crappy.links.Link`, and returns them separately in a list of
+    dicts.
 
     Unlike :meth:`recv_all_data` this method does not fuse the received data
     into a single :obj:`dict`, so it is guaranteed to return all the available

@@ -12,7 +12,8 @@ from ..tool.ft232h import USBServer
 
 @dataclass
 class ActuatorInstance:
-  """"""
+  """This class holds all the information that can be associated to an
+  Actuator."""
 
   actuator: Actuator
   speed: Optional[float] = None
@@ -24,11 +25,27 @@ class ActuatorInstance:
 
 
 class Machine(Block):
-  """This block is meant to drive one or several :ref:`Actuators`.
+  """This Block is meant to drive one or several
+  :class:`~crappy.actuator.Actuator`. It can set speed or position commands on
+  hardware actuators.
 
-  The possibility to drive several Actuators from a unique block is given so
+  The possibility to drive several Actuators from a unique Block is given so
   that they can be driven in a synchronized way. If synchronization is not
-  needed, it is preferable to drive the Actuators from separate Machine blocks.
+  needed, it is preferable to drive the Actuators from separate Machine Blocks.
+
+  This Block takes the speed or position commands for the Actuators  as inputs,
+  and can optionally read and output the current speed and/or positions of the
+  Actuators. The speed and position commands are set respectively by calling
+  the :meth:`~crappy.actuator.Actuator.set_position` and
+  :meth:`~crappy.actuator.Actuator.set_speed` methods of the Actuators, and the
+  current speed and position values are acquired by calling the
+  :meth:`~crappy.actuator.Actuator.get_position` and
+  :meth:`~crappy.actuator.Actuator.get_speed` methods of the Actuators.
+
+  It is possible to tune for each Actuator the label over which it receives its
+  commands, and optionally the labels over which it sends its current speed
+  and/or position. The driving mode (`'speed'` or `'position'`) can also be set
+  independently for each Actuator.
   """
 
   def __init__(self,
@@ -40,49 +57,58 @@ class Machine(Block):
                freq: Optional[float] = 200,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       actuators: An iterable (like a :obj:`list` or a :obj:`tuple`) of all the
-        :ref:`Actuators` this block needs to drive. It contains one :obj:`dict`
-        for every Actuator, with mandatory and optional keys. The keys
-        providing information on how to drive the Actuator are listed below.
-        Any other key will be passed to the Actuator object as argument when
-        instantiating it.
+        :class:`~crappy.actuator.Actuator` this Block needs to drive. It 
+        contains one :obj:`dict` for every Actuator, with mandatory and 
+        optional keys. The keys providing information on how to drive the 
+        Actuator are listed below. Any other unrecognized key will be passed to 
+        the Actuator as argument when instantiating it.
       common: The keys of this :obj:`dict` will be common to all the Actuators.
-        If it conflicts with an existing key for an Actuator, the common one
-        will prevail.
+        If one key conflicts with an existing key for an Actuator, the common 
+        one will prevail.
       time_label: If reading speed or position from one or more Actuators, the
         time information will be carried by this label.
-      spam: If :obj:`True`, a command is sent to the Actuators on each loop of
-        the block, else it is sent every time a new command is received.
-      freq: The block will try to loop at this frequency.
+      spam: If :obj:`True`, a command is sent to the Actuators at each loop of
+        the Block, else it is sent every time a new command is received.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
 
     Note:
       - ``actuators`` keys:
 
-        - ``type``: The name of the Actuator class to instantiate. This key is
-          mandatory.
+        - ``type``: The name of the :class:`~crappy.actuator.Actuator` class to 
+          instantiate. This key is mandatory.
         - ``cmd_label``: The label carrying the command for driving the
           Actuator. It defaults to `'cmd'`.
-        - ``mode``: Can be either `'speed'` or `'position'`. Will either call
-          :meth:`set_speed` or :meth:`set_position` to drive the actuator. When
-          driven in `'position'` mode, the speed of the actuator can also be
-          adjusted, see the ``speed_cmd_label`` key. The default mode is
+        - ``mode``: Can be either `'speed'` or `'position'`. Either
+          :meth:`~crappy.actuator.Actuator.set_speed` or
+          :meth:`~crappy.actuator.Actuator.set_position` is called to drive the
+          Actuator, depending on the selected mode. When driven in `'position'` 
+          mode, the speed of the actuator can also be adjusted, see the 
+          ``speed`` and ``speed_cmd_label`` keys. The default mode is 
           `'speed'`.
         - ``speed``: If mode is `'position'`, the speed at which the Actuator
           should move. This speed is passed as second argument to the
-          :meth:`set_position` method of the Actuator. If the
-          ``speed_cmd_label`` key is not specified, this speed will remain the
-          same for the entire test. This key is not mandatory.
-        - ``position_label``: If given, the block will return the value of
-          :meth:`get_position` under this label. This key is not mandatory.
-        - ``speed_label``: If given, the block will return the value of
-          :meth:`get_speed` under this label. This key is not mandatory.
+          :meth:`~crappy.actuator.Actuator.set_position` method of the
+          Actuator. If the ``speed_cmd_label`` key is not specified, this speed
+          will remain the same for the entire test. This key is not mandatory.
+        - ``position_label``: If given, the Block will return the value of
+          :meth:`~crappy.actuator.Actuator.get_position` under this label. This
+          key is not mandatory.
+        - ``speed_label``: If given, the Block will return the value of
+          :meth:`~crappy.actuator.Actuator.get_speed` under this label. This
+          key is not mandatory.
         - ``speed_cmd_label``: The label carrying the speed to set when driving
-          in position mode. Each time a value is received, the stored speed
+          in `'position'` mode. Each time a value is received, the stored speed
           value is updated. It will also overwrite the ``speed`` key if given.
 
     """
@@ -142,7 +168,11 @@ class Machine(Block):
 
   def prepare(self) -> None:
     """Checks the validity of the linking and initializes all the Actuator
-    objects to drive."""
+    objects to drive.
+
+    This method calls the :meth:`~crappy.actuator.Actuator.open` method of each
+    Actuator.
+    """
 
     # Instantiating the actuators and storing them
     self._actuators = [ActuatorInstance(
@@ -167,9 +197,23 @@ class Machine(Block):
                              f"Actuator")
 
   def loop(self) -> None:
-    """Receives the commands from upstream blocks, sets them on the actuators
-    to drive, and sends the read positions and speed to the downstream
-    blocks."""
+    """Sets the received position and speed commands, and reads the current 
+    speed and position from the :class:`~crappy.actuator.Actuator`.
+    
+    For each Actuator, a command is set **only** if a new one was received or 
+    if the ``spam`` argument is :obj:`True`. It is set using either 
+    :meth:`~crappy.actuator.Actuator.set_position` or
+    :meth:`~crappy.actuator.Actuator.set_speed` depending on the selected
+    driving mode.
+    
+    For each Actuator, a speed and/or position value is read **only** if the 
+    ``speed_label`` and/or the ``position_label`` was set. If so, these values
+    are read at each loop and sent to downstream Blocks over the given labels.
+    This is independent of the chosen driving mode. The
+    :meth:`~crappy.actuator.Actuator.get_position` and
+    :meth:`~crappy.actuator.Actuator.get_speed` are called for acquiring the
+    position and speed values respectively.
+    """
 
     # Receiving the latest command
     recv = self.recv_last_data(fill_missing=self._spam)
@@ -223,7 +267,11 @@ class Machine(Block):
       self.send(to_send)
 
   def finish(self) -> None:
-    """Stops and closes all the actuators to drive."""
+    """Stops and closes all the Actuators to drive.
+
+    This method calls the :meth:`~crappy.actuator.Actuator.stop` and
+    :meth:`~crappy.actuator.Actuator.close` method of each Actuator.
+    """
 
     for actuator in self._actuators:
       self.log(logging.INFO, f"Stopping the {type(actuator.actuator).__name__}"
@@ -233,5 +281,5 @@ class Machine(Block):
       self.log(logging.INFO, f"Closing the {type(actuator.actuator).__name__}"
                              f"Actuator")
       actuator.actuator.close()
-      self.log(logging.INFO, f"closed the {type(actuator.actuator).__name__}"
+      self.log(logging.INFO, f"Closed the {type(actuator.actuator).__name__}"
                              f"Actuator")

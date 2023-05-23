@@ -12,16 +12,21 @@ plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
 
 class Grapher(Block):
-  """The grapher receive data from a block and plots it.
-
-  Multiple curves can be plotted on a same graph, and the data can come from
-  different blocks.
-
-  Note:
-    To reduce the memory and CPU usage of graphs, try lowering the ``maxpt``
-    parameter (2-3000 is already enough to follow a short test), or set the
-    ``length`` parameter to a non-zero value (again, 2-3000 is fine). Lowering
-    the ``freq`` is also a good option to limit the CPU use.
+  """This Block can display data in a 2D graph in a persistent way.
+  
+  The graph is displayed in an independent window. It iis updated each time new
+  data is received from upstream Blocks. The displayed data can come from 
+  different Blocks.
+  
+  The user can choose which labels are plotted on the `x` and `y` axes. It is
+  therefore possible to plot a label versus time, or a label versus another 
+  label. A single graph is displayed, but multiple curves can be plotted on
+  this graph.
+  
+  The Grapher Block is known for being very CPU-intensive. For displaying only 
+  the last values of given labels, the :class:`~crappy.blocks.LinkReader` and 
+  :class:`~crappy.blocks.Dashboard` Blocks are simpler solutions that go much
+  easier on the CPU. 
   """
 
   def __init__(self,
@@ -35,21 +40,21 @@ class Grapher(Block):
                backend: str = "TkAgg",
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       *labels: Each :obj:`tuple` corresponds to a curve to plot, and should
-        contain two values: the first will be the label of the `x`values, the
+        contain two values: the first will be the label of the `x` values, the
         second the label of the `y` values. There's no limit to the number of
         curves. Note that all the curves are displayed in a same graph.
       length: If `0` the graph is static and displays all data from the start
-        of the assay. Else only displays the last ``length`` received chunks,
+        of the assay. Else, only displays the last ``length`` received chunks,
         and drops the previous ones.
-      freq: The refresh rate of the graph. May cause high CPU use if set too
-        high.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
       max_pt: The maximum number of points displayed on the graph. When
-        reaching this limit, the block deletes one point out of two to avoid
-        using too  much memory and CPU.
+        reaching this limit, the Block deletes one point out of two to avoid
+        using too much memory and CPU.
       window_size: The size of the graph, in inches.
       window_pos: The position of the graph in pixels. The first value is for
         the `x` direction, the second for the `y` direction. The origin is the
@@ -59,14 +64,20 @@ class Grapher(Block):
       backend: The :mod:`matplotlib` backend to use. Performance may vary
         according to the chosen backend. Also, every backend may not be
         available depending on your machine.
-      display_freq: To display the loop frequency of the block.
+      display_freq: if :obj:`True`, displays the looping frequency of the
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
 
     Example:
       ::
 
         graph = Grapher(('t(s)', 'F(N)'), ('t(s)', 'def(%)'))
 
-      will plot a dynamic graph with two lines plot (`F=f(t)` and `def=f(t)`).
+      will plot a dynamic graph with two lines plot (:math:`F=f(t)` and
+      :math:`def=f(t)`).
       ::
 
         graph = Grapher(('def(%)', 'F(N)'), length=0)
@@ -223,7 +234,7 @@ class Grapher(Block):
       self._canvas.flush_events()
 
   def finish(self) -> None:
-    """Closes all the opened Matplotlib windows."""
+    """Closes all the opened :mod:`matplotlib` windows."""
 
     self.log(logging.INFO, "Closing all matplotlib windows")
     plt.close("all")

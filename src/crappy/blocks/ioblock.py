@@ -12,13 +12,14 @@ class IOBlock(Block):
   """This Block is meant to drive :class:`~crappy.inout.InOut` objects. It can
   acquire data, and/or set commands. One IOBlock can only drive a single InOut.
 
-  If it has incoming links, it will set the commands received over the labels
-  given in ``cmd_labels`` by calling the :meth:`~crappy.inout.InOut.set_cmd`
-  method of the InOut. Additional commands to set at the very beginning or
-  the very end of the test can also be specified.
+  If it has incoming :class:`~crappy.links.Link`, it will set the commands 
+  received over the labels given in ``cmd_labels`` by calling the 
+  :meth:`~crappy.inout.InOut.set_cmd` method of the InOut. Additional commands 
+  to set at the very beginning or the very end of the test can also be 
+  specified.
 
-  If it has outgoing links, it will acquire data using the
-  :meth:`~crappy.inout.InOut.get_data` method of the InOut and send it
+  If it has outgoing :class:`~crappy.links.Link`, it will acquire data using 
+  the :meth:`~crappy.inout.InOut.get_data` method of the InOut and send it
   downstream over the labels given in ``labels``. It is possible to trigger the
   acquisition using a predefined label.
 
@@ -44,7 +45,7 @@ class IOBlock(Block):
                display_freq: bool = False,
                debug: Optional[bool] = False,
                **kwargs) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       name: The name of the :class:`~crappy.inout.InOut` class to instantiate.
@@ -81,14 +82,18 @@ class IOBlock(Block):
         acquired during the given number of seconds. Ignored if the Block has
         no output Links. Does not work for InOuts that acquire values other
         than numbers (:obj:`str` for example).
-      spam: If :obj:`False`, the Block will call :meth:`set_cmd` on the
-        InOut object only if the current command is different from the
-        previous. Otherwise, it will call the method each time a command is
-        received.
-      freq: The Block will try to loop as this frequency, or as fast as
-        possible if no value is given.
+      spam: If :obj:`False`, the Block will call
+        :meth:`~crappy.inout.InOut.set_cmd` on the InOut object only if the
+        current command is different from the previous. Otherwise, it will call
+        the method each time a command is received.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
         Block while running.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
       **kwargs: The arguments to be passed to the :class:`~crappy.inout.InOut`.
     """
 
@@ -174,7 +179,11 @@ class IOBlock(Block):
 
   def prepare(self) -> None:
     """Checks the consistency of the Link layout, opens the InOut and sets the
-    initial command if required."""
+    initial command if required.
+
+    This method mainly calls the :meth:`~crappy.inout.InOut.open` method of the
+    driven InOut.
+    """
 
     # Instantiating the device in a regular way
     if self._ft232h_args is None:
@@ -279,7 +288,11 @@ class IOBlock(Block):
 
   def finish(self) -> None:
     """Stops the stream, sets the exit command if necessary, and closes the
-    InOut."""
+    InOut.
+
+    This method mainly calls the :meth:`~crappy.inout.InOut.close` method of
+    the driven InOut.
+    """
 
     # Stopping the stream
     if self._streamer and self._device is not None:
@@ -302,7 +315,7 @@ class IOBlock(Block):
 
   def _read_data(self) -> None:
     """Reads the data or the stream, offsets the timestamp and sends the data
-    to downstream blocks."""
+    to downstream Blocks."""
 
     if self._streamer:
       # Starting the stream if needed

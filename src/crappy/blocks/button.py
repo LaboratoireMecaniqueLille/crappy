@@ -14,11 +14,17 @@ except (ModuleNotFoundError, ImportError):
 
 
 class Button(Block):
-  """This block allows the user to send a signal upon clicking on a button in
-  a graphical user interface.
+  """This Block allows the user to send a signal to downstream Blocks upon
+  clicking on a button in a Graphical User Interface.
 
   It sends an integer value, that starts from `0` and is incremented every time
-  the user clicks on the button.
+  the user clicks on the button. This Block relies on a :obj:`~tkinter.Tk`
+  window for the graphical interface.
+
+  This Block is mostly useful for incorporating user feedback in a script, i.e.
+  triggering actions based on an experimenter's decision. It can be handy for
+  taking pictures at precise moments, or when an action should only begin after
+  the experimenter has completed a task, for example.
   """
 
   def __init__(self,
@@ -29,20 +35,26 @@ class Button(Block):
                spam: bool = False,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       send_0: If :obj:`True`, the value `0` will be sent automatically when
-        starting the block. Otherwise, `1` will be sent at the first click.
+        starting the Block. Otherwise, `1` will be sent at the first click.
         Only relevant when ``spam`` is :obj:`False`.
       label: The label carrying the information on the number of clicks,
-        default is `step`.
-      time_label: The label carrying the time information, default is `t(s)`.
-      freq: The block will try to loop at this frequency.
+        default is ``'step'``.
+      time_label: The label carrying the time information, default is
+        ``'t(s)'``.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops
+        as fast as possible.
       spam: If :obj:`True`, sends the current step value at each loop,
         otherwise only sends it at each click.
       display_freq: If :obj:`True`, displays the looping frequency of the
-        block.
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
     """
 
     self._root: Optional[tk.Tk] = None
@@ -91,7 +103,7 @@ class Button(Block):
       self.send([time() - self.t0, self._step.get()])
 
   def loop(self) -> None:
-    """Updates the interface, and sends the current step value if spam is
+    """Updates the interface, and sends the current step value if ``spam`` is
     :obj:`True`. """
 
     try:

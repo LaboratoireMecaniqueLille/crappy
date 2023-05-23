@@ -9,20 +9,27 @@ from .meta_block import Block
 
 
 class Multiplexer(Block):
-  """This block takes data from upstream blocks as input and interpolates it to
-  output all labels in a common time basis.
+  """This Block takes data from upstream Blocks as input and interpolates it to
+  output all the labels in a common time basis.
 
-  It is useful for synchronizing data acquired from different sensors, e.g. to
-  plot a real-time stress-strain curve. This block is however quite
-  resource-consuming, so it is preferable to perform interpolation in
+  It can take any number of inputs, provided that they all share a common time
+  label. It is also possible to choose which labels are considered for
+  multiplexing and which are dropped. The interpolation is performed using the
+  :obj:`numpy.interp` method.
+
+  This Block is useful for synchronizing data acquired from different sensors,
+  e.g. to plot a real-time stress-strain curve with position data coming from a
+  :class:`~crappy.blocks.Machine` Block and force data coming from a
+  :class:`~crappy.blocks.IOBlock` Block. Multiplexing is however quite
+  resource-consuming, so it is preferable to perform interpolation when
   post-processing if real-time is not needed.
 
   Note:
-    This block doesn't truly output data in real-time as it needs to wait for
-    data from all the upstream blocks before performing the interpolation.
-    So it should only be used with care when it is an input of a
-    decision-making block. This is especially true when the upstream blocks
-    have very different sample rates.
+    This Block doesn't truly output data in real-time as it needs to wait for
+    data from all the upstream Blocks before performing the interpolation. It
+    should only be used with care as an input to a decision-making Block. This
+    is especially true when the upstream Blocks have very different sampling
+    rates.
   """
 
   def __init__(self,
@@ -32,7 +39,7 @@ class Multiplexer(Block):
                freq: Optional[float] = 50,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
-    """Sets the args and initializes the parent class.
+    """Sets the arguments and initializes the parent class.
 
     Args:
       time_label: The label carrying the time information.
@@ -44,11 +51,14 @@ class Multiplexer(Block):
         recommended to always set this argument !** It is also possible to
         give this argument as a single :obj:`str` (i.e. not in an iterable),
         although multiplexing a single label is of limited interest.
-      freq : The sample rate for the interpolation, and the target looping
-        frequency for the block. If this value is set too high and your machine
-        cannot keep up, the block will most likely lag.
-      display_freq: If :obj:`True`, displays information about the looping
-        frequency of the block.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops 
+        as fast as possible.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
     """
 
     super().__init__()
@@ -71,7 +81,7 @@ class Multiplexer(Block):
 
   def loop(self) -> None:
     """Receives data, interpolates it, and sends it to the downstream
-    blocks."""
+    Blocks."""
 
     # Receiving all the upcoming data
     data = self.recv_all_data_raw()
