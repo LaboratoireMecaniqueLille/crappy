@@ -92,7 +92,7 @@ class DICVE(Camera):
     self._patches: Optional[SpotsBoxes] = None
 
     self._raise_on_exit = raise_on_patch_exit
-    self._patches_int = list(patches)
+    self._patches_int = list(patches) if patches is not None else None
 
     self._dic_ve_kw = dict(method=method,
                            alpha=alpha,
