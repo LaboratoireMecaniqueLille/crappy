@@ -233,7 +233,7 @@ class Camera(Block):
                                     dtype=self._img_dtype,
                                     box_conn=box_conn,
                                     outputs=self.outputs,
-                                    labels=self.labels)
+                                    labels=list(self.labels))
       self.log(logging.INFO, "Starting the image processing process")
       self._process_proc.start()
 
