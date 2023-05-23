@@ -177,26 +177,32 @@ class CameraProcess(Process):
   def _send(self, data: Union[list, Dict[str, Any]]) -> None:
     """"""
 
-    # Building the dict to send from the data and labels if the data is a list
-    if isinstance(data, list):
-      if not self._labels:
-        self._logger.log(logging.ERROR, "trying to send data as a list but no "
-                                        "labels are specified ! Please add a "
-                                        "self.labels attribute.")
+    # Just in case, not handling non-existing data
+    if data is None:
+      return
+
+    # Case when the data to send is not given as a dict
+    if not isinstance(data, dict):
+      # First, checking that labels are provided
+      if self._labels is None or not self._labels:
+        self._logger.log(logging.ERROR, "Trying to send data as an iterable, "
+                                        "but no labels are specified !")
         raise LinkDataError
-      self._logger.log(logging.DEBUG, f"Converting {data} to dict before "
-                                      f"sending")
-      data = dict(zip(self._labels, data))
 
-    # Making sure the data is being sent as a dict
-    elif not isinstance(data, dict):
-      self._logger.log(logging.ERROR, f"Trying to send a {type(data)} in a "
-                                      f"Link !")
-      raise LinkDataError
+      # Trying to convert iterable data to dict using the given labels
+      try:
+        self._logger.log(logging.DEBUG, f"Converting {data} to dict before "
+                                        f"sending")
+        data = dict(zip(self._labels, data))
+      except TypeError:
+        self._logger.log(logging.ERROR, f"Cannot convert data to send (of type"
+                                        f" {type(data)}) to dict ! Please "
+                                        f"ensure that the data is given as an "
+                                        f"iterable, as well as the labels.")
 
-    # Sending the data to the downstream blocks
+    # Sending the data to the downstream Blocks
     for link in self._outputs:
-      self._logger.log(logging.DEBUG, f"Sending {data} to Link {link}")
+      self._logger.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
 
   def _send_box(self, boxes: SpotsBoxes) -> None:
