@@ -177,8 +177,8 @@ class Camera(Block):
     if self._image_generator is not None:
       self.log(logging.INFO, "Setting the image generator camera")
       self._camera = BaseCam()
-      self._camera.add_scale_setting('Exx', -100, 100, None, None, 0.)
-      self._camera.add_scale_setting('Eyy', -100, 100, None, None, 0.)
+      self._camera.add_scale_setting('Exx', -100., 100., None, None, 0.)
+      self._camera.add_scale_setting('Eyy', -100., 100., None, None, 0.)
       img = self._image_generator(0, 0)
       self._camera.add_software_roi(img.shape[1], img.shape[0])
       self._camera.set_all()
