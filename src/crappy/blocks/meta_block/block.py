@@ -928,9 +928,9 @@ class Block(Process, metaclass=MetaBlock):
         data = dict(zip(self.labels, data))
       except TypeError:
         self.log(logging.ERROR, f"Cannot convert data to send (of type "
-                                f"{type(data)}) to dict ! Please ensure that"
+                                f"{type(data)}) to dict ! Please ensure that "
                                 f"the data is given as an iterable, as well as"
-                                f"self.labels.")
+                                f" self.labels.")
 
     # Sending the data to the downstream Blocks
     for link in self.outputs:
