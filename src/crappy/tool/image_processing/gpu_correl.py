@@ -551,9 +551,9 @@ class GPUCorrelTool:
         image.
       mul: The scalar by which the direction will be multiplied before being
         added to the solution. If it's too high, the convergence will be fast
-        but there's a risk that to go past the solution and to diverge. If it's
-        too low, the convergence will be slower and require more iterations.
-        `3` was found to be an acceptable value in most cases, but it is
+        but there's a risk to go past the solution and to diverge. If it's too
+        low, the convergence will be slower and require more iterations. `3`
+        was found to be an acceptable value in most cases, but it is
         recommended to tune this value for each application so that the
         convergence is neither too slow nor too fast.
     """
