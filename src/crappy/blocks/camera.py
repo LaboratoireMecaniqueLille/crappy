@@ -19,7 +19,32 @@ from .._global import CameraPrepareError, CameraRuntimeError, CameraConfigError
 
 
 class Camera(Block):
-  """"""
+  """This Block can drive a :class:`~crappy.camera.Camera` object. It can 
+  acquire images, display them and record them. It can only drive one Camera at
+  once.
+  
+  It takes no input :class:`~crappy.links.Link` in a majority of situations,
+  and never has output Links. Most of the time, this Block is used for 
+  recording to the desired location the images it acquires. Optionally, the 
+  images can also be displayed in a dedicated window. Both of these features 
+  are however optional, and it is possible to acquire images and not do 
+  anything with them. Several options are available for tuning the record and 
+  the display.
+  
+  Before a test starts, this Block can also display a 
+  :class:`~crappy.tool.camera_config.CameraConfig` window in which the user can
+  visualize the acquired images, and interactively tune all the 
+  :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` available
+  for the instantiated :class:`~crappy.camera.Camera`. 
+  
+  Internally, this Block is only in charge of the image acquisition, and the 
+  other tasks are parallelized and delegated to 
+  :class:`~crappy.blocks.camera_processes.CameraProcess` objects. The display 
+  is handled by the :class:`~crappy.blocks.camera_processes.Displayer`, and
+  the recording by the :class:`~crappy.blocks.camera_processes.ImageSaver`.
+  This Block manages the instantiation, the synchronisation and the
+  termination of all the CameraProcess it controls.
+  """
 
   cam_count = dict()
 
@@ -44,7 +69,128 @@ class Camera(Block):
                img_shape: Optional[Tuple[int, int]] = None,
                img_dtype: Optional[str] = None,
                **kwargs) -> None:
-    """"""
+    """Sets the arguments and initializes the parent class.
+    
+    Args:
+      camera: The name of the :class:`~crappy.camera.Camera` object to use for
+        acquiring the images. Arguments can be passed to this Camera as 
+        ``kwargs`` of this Block. This argument is ignored if the 
+        ``image_generator`` argument is provided.
+      transform: A callable taking an image as an argument, and returning a
+        transformed image as an output. Allows applying a post-processing
+        operation to the acquired images. This is done right after the
+        acquisition, so the original image is permanently lost and only the
+        transformed image is displayed and/or saved and/or further processed.
+        The transform operation is not parallelized, so it might negatively
+        affect the acquisition framerate if it is too heavy.
+      config: If :obj:`True`, a 
+        :class:`~crappy.tool.camera_config.CameraConfig` window is displayed
+        before the test starts. There, the user can interactively adjust the 
+        different 
+        :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` 
+        available for the selected :class:`~crappy.camera.Camera`, and 
+        visualize the acquired images. The test starts when closing the 
+        configuration window. If not enabled, the ``img_dtype`` and 
+        ``img_shape`` arguments must be provided.
+      display_images: If :obj:`True`, displays the acquired images in a
+        dedicated window, using the backend given in ``displayer_backend`` and
+        at the frequency specified in ``displayer_framerate``. This option
+        should be considered as a debug or basic follow-up feature, it is not
+        intended to be very fast nor to display high-quality images. The
+        maximum resolution of the displayed images in `640x480`, the images
+        might be downscaled to fit in this format.
+      displayer_backend: The backend to use for displaying the images. Can be
+        either ``'cv2'`` or ``'mpl'``, to use respectively :mod:`cv2` (OpenCV)
+        or :mod:`matplotlib`. ``'cv2'`` usually allows achieving a higher
+        display frequency. Ignored if ``display_images`` is :obj:`False`. If
+        not given and ``display_images`` is :obj:`True`, ``'cv2'`` is tried
+        first and ``'mpl'`` second, and the first available one is used.
+      displayer_framerate: The maximum update frequency of the image displayer, 
+        as an :obj:`int`. This value usually lies between 5 and 30Hz, the 
+        default is 5. The achieved update frequency might be lower than
+        requested. Ignored if ``display_images`` is :obj:`False`.
+      software_trig_label: The name of a label used as a software trigger for 
+        the :class:`~crappy.camera.Camera`. If given, images will only be 
+        acquired when receiving data over this label. The received value does
+        not matter. This software trigger is not meant to be very precise, it
+        is recommended not to rely on it for a trigger frequency greater than
+        10Hz, in which case a hardware trigger should be preferred if available
+        on the camera.
+      display_freq: If :obj:`True`, displays the looping frequency of the
+        Block.
+      debug: If :obj:`True`, displays all the log messages including the
+        :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
+        messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
+        disables logging for this Block.
+      freq: The target looping frequency for the Block. If :obj:`None`, loops
+        as fast as possible.
+      save_images: If :obj:`True`, the acquired images are saved to the folder
+        specified in ``save_folder``, in the format specified in 
+        ``img_extension``, using the backend specified in ``save_backend``, and
+        at the frequency specified in ``save_period``. Each image is saved with
+        the name : ``<frame_nr>_<timestamp>.<extension>``, and can thus easily
+        be identified. Along with the images, a ``metadata.csv`` file records 
+        the metadata of all the saved images. This metadata is either the one 
+        returned by the :meth:`~crappy.camera.Camera.get_image` method of the
+        :class:`~crappy.camera.Camera` object, or the default one generated in
+        the :meth:`loop` method of this Block. Depending on the framerate of
+        the camera and the performance of the computer, it is not guaranteed 
+        that all the acquired images will be recorded.
+      img_extension: The file extension for the recorded images, as a
+        :obj:`str` and without the dot. Common file extensions include `tiff`,
+        `png`, `jpg`, etc. Depending on the used ``save_backend``, some 
+        extensions might not be available. It is currently not possible to
+        customize the save parameters further than choosing the file extension.
+        Ignored if ``save_images`` is :obj:`False`.
+      save_folder: Path to the folder where to save the images, either as a 
+        :obj:`str` or as a :obj:`pathlib.Path`. Can be an absolute or a 
+        relative path, pointing to a folder. If the folder does not exist, it 
+        will be created (if the user has permission). If the given folder 
+        already contains a ``metadata.csv`` file (and thus likely images from
+        Crappy), images are saved to another folder with the same name except
+        a suffix is appended. Ignored if ``save_images`` is :obj:`False`. If
+        not provided and ``save_images`` is :obj:`True`, the images are saved
+        to the folder ``Crappy_images``, created next to the running script.
+      save_period: Must be given as an :obj:`int`. Only one out of that number 
+        images at most will be saved. Allows to have a known periodicity in 
+        case the framerate is too high to record all the images. Or simply to 
+        reduce the number of recorded images if saving them all is not needed.
+        Ignored if ``save_images`` is :obj:`False`.
+      save_backend: If ``save_images`` is :obj:`True`, the backend to use for 
+        recording the images. It should be one of:
+        ::
+
+          'sitk', 'cv2', 'pil', 'npy'
+        
+        They correspond to the modules :mod:`SimpleITK`, :mod:`cv2` (OpenCV),
+        :mod:`PIL` (Pillow Fork), and :mod:`numpy`. Note that the ``'npy'``
+        backend saves the images as raw :obj:`numpy.array`, and thus ignores
+        the ``img_extension`` argument. Depending on the machine, some backends
+        may be faster or slower. For using each backend, the corresponding 
+        Python must of course be installed. If not provided and ``save_images``
+        is :obj:`True`, the backends are tried in the same order as given above
+        and the first available one is used. ``'npy'`` is always available.
+      image_generator: A callable taking two :obj:`float` as arguments and
+        returning an image as a :obj:`numpy.array`. **This argument is intended
+        for use in the examples of Crappy, to apply an artificial strain on a
+        base image. Most users should ignore it.** When given, the ``camera``
+        argument is ignored and the images are acquired from the generator. To
+        apply a strain on the image, strain values (in `%`) should be sent to 
+        the Camera Block over the labels ``'Exx(%)'`` and ``'Eyy(%)'``.
+      img_shape: The shape of the images returned by the 
+        :class:`~crappy.camera.Camera` object as a :obj:`tuple` of :obj:`int`.
+        It should correspond to the value returned by :obj:`numpy.shape`. 
+        **This argument is mandatory in case** ``config`` **is** :obj:`False`.
+        It is otherwise ignored.
+      img_dtype: The `dtype` of the images returned by the
+        :class:`~crappy.camera.Camera` object, as a :obj:`str`. It should
+        correspond to a valid data type in :mod:`numpy`, e.g. ``'uint8'``.
+        **This argument is mandatory in case** ``config`` **is** :obj:`False`.
+        It is otherwise ignored.
+      **kwargs: Any additional argument will be passed to the 
+        :class:`~crappy.camera.Camera` object, and used as a kwarg to its
+        :meth:`~crappy.camera.Camera.open` method.
+    """
 
     self._save_proc: Optional[ImageSaver] = None
     self._display_proc: Optional[Displayer] = None
@@ -85,7 +231,7 @@ class Camera(Block):
     self._img_dtype = img_dtype
     self._camera_kwargs = kwargs
 
-    # The objects must be initialized later for Windows compatibility
+    # The synchronization objects are initialized later
     self._img_array: Optional[SynchronizedArray] = None
     self._img: Optional[np.ndarray] = None
     self._metadata: Optional[managers.DictProxy] = None
@@ -101,7 +247,7 @@ class Camera(Block):
     self._fps_count = 0
     self._last_cam_fps = time()
 
-    # Cannot start process from __main__
+    # Instantiating the ImageSaver if requested
     if not save_images:
       self._save_proc_kw = None
     else:
@@ -110,7 +256,7 @@ class Camera(Block):
                                 save_period=save_period,
                                 save_backend=save_backend)
 
-    # Instantiating the displayer window if requested
+    # Instantiating the Displayer window if requested
     if not display_images:
       self._display_proc_kw = None
     else:
@@ -120,7 +266,12 @@ class Camera(Block):
         framerate=displayer_framerate, backend=displayer_backend)
 
   def __del__(self) -> None:
-    """"""
+    """Safety method called when deleting the Block and ensuring that all the
+    instantiated :class:`~crappy.blocks.camera_processes.CameraProcess` as well 
+    as the :obj:`~multiprocessing.Manager` are stopped before exiting.
+    
+    If they did not stop in time, just terminates them.
+    """
 
     if self._process_proc is not None and self._process_proc.is_alive():
       self._process_proc.terminate()
@@ -136,9 +287,13 @@ class Camera(Block):
 
   def prepare(self) -> None:
     """Preparing the save folder, opening the camera and displaying the
-    configuration GUI."""
+    configuration GUI.
+    
+    This method calls the :meth:`crappy.camera.Camera.open` method of the
+    :class:`~crappy.camera.Camera` object.
+    """
 
-    # Instantiating the multiprocessing objects
+    # Instantiating the synchronization objects
     self.log(logging.DEBUG, "Instantiating the multiprocessing "
                             "synchronization objects")
     self._manager = Manager()
@@ -149,6 +304,7 @@ class Camera(Block):
     self._disp_lock = RLock()
     self._proc_lock = RLock()
 
+    # instantiating the ImageSaver CameraProcess
     if self._save_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the saver process")
       self._save_proc = ImageSaver(log_queue=self._log_queue,
@@ -156,6 +312,7 @@ class Camera(Block):
                                    display_freq=self.display_freq,
                                    **self._save_proc_kw)
 
+    # instantiating the Displayer CameraProcess
     if self._display_proc_kw is not None:
       self.log(logging.INFO, "Instantiating the displayer process")
       self._display_proc = Displayer(log_queue=self._log_queue,
@@ -163,17 +320,17 @@ class Camera(Block):
                                      display_freq=self.display_freq,
                                      **self._display_proc_kw)
 
-    # Creating the barrier for camera processes synchronization
+    # Creating the Barrier for the synchronization of the CameraProcesses
     n_proc = sum(int(proc is not None) for proc in (self._process_proc,
                                                     self._save_proc,
                                                     self._display_proc))
     if not n_proc:
-      self.log(logging.WARNING, "The block acquires images but does not save "
+      self.log(logging.WARNING, "The Block acquires images but does not save "
                                 "them, nor display them, nor process them !")
 
     self._cam_barrier = Barrier(n_proc + 1)
 
-    # Case when the images are generated and not acquired
+    # Case when the images are artificially generated and not acquired
     if self._image_generator is not None:
       self.log(logging.INFO, "Setting the image generator camera")
       self._camera = BaseCam()
@@ -184,18 +341,22 @@ class Camera(Block):
       self._camera.set_all()
 
       def get_image(self_) -> (float, np.ndarray):
+        """Method generating the frames using the ``image_generator`` argument 
+        if one was provided."""
+        
         return time(), self_.apply_soft_roi(self._image_generator(self_.Exx,
                                                                   self_.Eyy))
 
       self._camera.get_image = MethodType(get_image, self._camera)
 
-    # Case when an actual camera object is responsible for acquiring the images
+    # Instantiating the Camera object for acquiring the images
     else:
       self._camera = camera_dict[self._camera_name]()
       self.log(logging.INFO, f"Opening the {self._camera_name} Camera")
       self._camera.open(**self._camera_kwargs)
       self.log(logging.INFO, f"Opened the {self._camera_name} Camera")
 
+    # Displaying the configuration window if required
     if self._config_cam:
       self.log(logging.INFO, "Displaying the configuration window")
       self._configure()
@@ -208,18 +369,21 @@ class Camera(Block):
       self.log(logging.INFO, "Setting the trigger mode to Hardware")
       setattr(self._camera, self._camera.trigger_name, 'Hardware')
 
+    # Ensuring a dtype and a shape were given for the image
     if self._img_dtype is None or self._img_shape is None:
       raise ValueError(f"Cannot launch the Camera processes for camera "
                        f"{self._camera_name} as the image shape and/or dtype "
                        f"wasn't specified.\n Please specify it in the args, or"
                        f" enable the configuration window.")
 
+    # Instantiating the Array for sharing the frames with the CameraProcesses
     self.log(logging.DEBUG, "Instantiating the shared objects")
     self._img_array = Array(np.ctypeslib.as_ctypes_type(self._img_dtype),
                             int(np.prod(self._img_shape)))
     self._img = np.frombuffer(self._img_array.get_obj(),
                               dtype=self._img_dtype).reshape(self._img_shape)
 
+    # Starting the CameraProcess for image processing if it was instantiated
     if self._process_proc is not None:
       self.log(logging.DEBUG, "Sharing the synchronization objects with the "
                               "image processing process")
@@ -237,6 +401,7 @@ class Camera(Block):
       self.log(logging.INFO, "Starting the image processing process")
       self._process_proc.start()
 
+    # Starting the ImageSaver CameraProcess if it was instantiated
     if self._save_proc is not None:
       self.log(logging.DEBUG, "Sharing the synchronization objects with the "
                               "image saver process")
@@ -253,6 +418,7 @@ class Camera(Block):
       self.log(logging.INFO, "Starting the image saver process")
       self._save_proc.start()
 
+    # Starting the Displayer CameraProcess if it was instantiated
     if self._display_proc is not None:
       self.log(logging.DEBUG, "Sharing the synchronization objects with the "
                               "image displayer process")
@@ -270,7 +436,14 @@ class Camera(Block):
       self._display_proc.start()
 
   def begin(self) -> None:
-    """"""
+    """This method waits for all the 
+    :class:`~crappy.blocks.camera_processes.CameraProcess` to be ready, then
+    releases them all at once to make sure they're synchronized.
+    
+    
+    A :obj:`~multiprocessing.Barrier` is used for forcing the CameraProcesses
+    to wait for each other.
+    """
 
     try:
       self.log(logging.INFO, "Waiting for all Camera processes to be ready")
@@ -282,21 +455,35 @@ class Camera(Block):
     self._last_cam_fps = time()
 
   def loop(self) -> None:
-    """Receives the incoming data, acquires an image, displays it, saves it,
-    and finally processes it if needed."""
+    """This method receives data from upstream Blocks, acquires a frame from 
+    the :class:`~crappy.camera.Camera` object, and transmits it to all the 
+    :class:`~crappy.blocks.camera_processes.CameraProcess`.
 
+    The image is acquired by calling the 
+    :meth:`~crappy.camera.Camera.get_image` method of the Camera object. If
+    only a timestamp is returned by this method, and not a complete :obj:`dict`
+    of metadata, some basic metadata is generated here and transmitted to the
+    CameraProcesses.
+    
+    This method also manages the software trigger if this option was set, 
+    applies the image transformation function if one was given, and displays
+    the FPS of the acquisition if required.
+    """
+
+    # Signaling all the Blocks to stop if a CameraProcess crashed
     if self._stop_event_cam.is_set():
       raise CameraRuntimeError
 
+    # Receiving the data from upstream Blocks
     data = self.recv_last_data(fill_missing=False)
 
-    # Waiting for the trig label if it was given
+    # Waiting for the trig label if one was given
     if self._trig_label is not None and self._trig_label not in data:
       return
     elif self._trig_label is not None and self._trig_label in data:
       self.log(logging.DEBUG, "Software trigger signal received")
 
-    # Updating the image generator if there's one
+    # Updating the image generator if one was provided
     if self._image_generator is not None:
       if 'Exx(%)' in data:
         self.log(logging.DEBUG, f"Setting Exx to {data['Exx(%)']}")
@@ -305,13 +492,13 @@ class Camera(Block):
         self.log(logging.DEBUG, f"Setting Eyy to {data['Eyy(%)']}")
         self._camera.Eyy = data['Eyy(%)']
 
-    # Actually getting the image from the camera object
+    # Grabbing the frame from the Camera object
     ret = self._camera.get_image()
     if ret is None:
       return
     metadata, img = ret
-
-    # Building the metadata if it was not provided
+ 
+    # Building the metadata dict if it was not provided
     if isinstance(metadata, float):
       metadata = {'t(s)': metadata,
                   'DateTimeOriginal': strftime("%Y:%m:%d %H:%M:%S",
@@ -319,12 +506,16 @@ class Camera(Block):
                   'SubsecTimeOriginal': f'{metadata % 1:.6f}',
                   'ImageUniqueID': self._loop_count}
 
+    # Making the timestamp relative to the beginning of the test
     metadata['t(s)'] -= self.t0
 
-    # Applying the transform function
+    # Applying the transform function if one as provided
     if self._transform is not None:
       img = self._transform(img)
 
+    # Copying the metadata and the acquired frame into the shared objects for 
+    # transfer to the CameraProcesses
+    # This is done with all the Locks acquired to avoid any conflict
     with self._save_lock, self._disp_lock, self._proc_lock:
       self.log(logging.DEBUG, f"Writing metadata to shared dict: {metadata}")
       self._metadata.update(metadata)
@@ -333,6 +524,7 @@ class Camera(Block):
 
     self._loop_count += 1
 
+    # If requested, displays the FPS of the image acquisition
     if self.display_freq:
       self._fps_count += 1
       t = time()
@@ -343,41 +535,70 @@ class Camera(Block):
         self._fps_count = 0
 
   def finish(self) -> None:
-    """"""
+    """This method stops the image acquisition on the 
+    :class:`~crappy.camera.Camera`, as well as all the 
+    :class:`~crappy.blocks.camera_processes.CameraProcess` that were started.
+    
+    If the CameraProcesses do not gently stop, they are terminated. Also stops
+    the :obj:`~multiprocessing.Manager` in charge of handling the metadata.
+    
+    For stopping the image acquisition, the :meth:`~crappy.camera.Camera.close`
+    method is called.
+    """
 
+    # Closing the Camera object
     if self._image_generator is None and self._camera is not None:
       self.log(logging.INFO, f"Closing the {self._camera_name} Camera")
       self._camera.close()
       self.log(logging.INFO, f"Closed the {self._camera_name} Camera")
 
+    # Setting the stop event to signal all CameraProcesses to stop
     if self._stop_event_cam is not None:
       self.log(logging.DEBUG, "Asking all the children processes to stop")
       self._stop_event_cam.set()
       sleep(0.2)
 
+    # If the processing CameraProcess is not done, terminating it
     if self._process_proc is not None and self._process_proc.is_alive():
       self.log(logging.WARNING, "Image processing process not stopped, "
                                 "killing it !")
       self._process_proc.terminate()
+    # If the ImageSaver CameraProcess is not done, terminating it
     if self._save_proc is not None and self._save_proc.is_alive():
       self.log(logging.WARNING, "Image saver process not stopped, "
                                 "killing it !")
       self._save_proc.terminate()
+    # If the Displayer CameraProcess is not done, terminating it
     if self._display_proc is not None and self._display_proc.is_alive():
       self.log(logging.WARNING, "Image displayer process not stopped, "
                                 "killing it !")
       self._display_proc.terminate()
 
+    # Closing the Manager handling the metadata
     if self._manager is not None:
       self._manager.shutdown()
 
   def _configure(self) -> None:
-    """"""
+    """This method should instantiate and start the 
+    :class:`~crappy.tool.camera_config.CameraConfig` window for configuring the
+    :class:`~crappy.camera.Camera` object.
+    
+    It should also handle the case when an exception is raised in the 
+    configuration window.
+    
+    This method is meant to be overriden by children of the Camera Block, as 
+    other image processing Blocks rely on subclasses of 
+    :class:`~crappy.tool.camera_config.CameraConfig`.
+    """
 
     config = None
+    
+    # Instantiating and starting the configuration window
     try:
       config = CameraConfig(self._camera, self._log_queue, self._log_level)
       config.main()
+    
+    # If an exception is raised in the config window, closing it before raising
     except (Exception,) as exc:
       self._logger.exception("Caught exception in the configuration window !",
                              exc_info=exc)
@@ -385,6 +606,7 @@ class Camera(Block):
         config.stop()
       raise CameraConfigError
 
+    # Getting the image dtype and shape for setting the shared Array
     if config.shape is not None:
       self._img_shape = config.shape
     if config.dtype is not None:
