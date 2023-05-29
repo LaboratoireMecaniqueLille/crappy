@@ -92,9 +92,7 @@ class ImageSaver(CameraProcess):
       elif not isinstance(PIL, OptionalModule):
         self._save_backend = 'pil'
       else:
-        raise ModuleNotFoundError("Neither SimpleITK, opencv-python nor "
-                                  "Pillow could be imported, no backend "
-                                  "found for saving the images")
+        self._save_backend = 'npy'
     elif save_backend in ('sitk', 'pil', 'cv2', 'npy'):
       self._save_backend = save_backend
     else:
