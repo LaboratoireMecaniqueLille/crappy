@@ -543,7 +543,7 @@ class GPUCorrelTool:
 
           'x', 'y', 'r', 'exx', 'eyy', 'exy', 'eyx', 'exy2', 'z'
 
-      ref_img: the reference image, as a 2D :obj:`numpy.array` with `dtype`
+      ref_img: The reference image, as a 2D :obj:`numpy.array` with `dtype`
         `float32`. It can either be given at :meth:`__init__`, or set later
         with :meth:`set_orig`.
       mask: The mask used for weighting the region of interest on the image. It

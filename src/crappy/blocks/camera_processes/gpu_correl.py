@@ -48,11 +48,11 @@ class GPUCorrelProcess(CameraProcess):
         to the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
-      discard_limit: If ``clac_res`` is :obj:`True`, the result of the
+      discard_limit: If ``calc_res`` is :obj:`True`, the result of the
         correlation is not sent to the downstream Blocks if the residuals for
         the current image are greater than ``discard_limit`` times the average
         residual for the last ``discard_ref`` images.
-      discard_ref: If ``clac_res`` is :obj:`True`, the result of the
+      discard_ref: If ``calc_res`` is :obj:`True`, the result of the
         correlation is not sent to the downstream Blocks if the residuals for
         the current image are greater than ``discard_limit`` times the average
         residual for the last ``discard_ref`` images.
