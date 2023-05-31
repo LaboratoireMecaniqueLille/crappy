@@ -16,7 +16,8 @@ class AutoDriveVideoExtenso(Block):
 
   It takes the output of a :class:`~crappy.blocks.VideoExtenso` Block and uses 
   the coordinates of the spots to drive the Actuator. The Actuator can only be 
-  driven in speed, not in position.
+  driven in speed, not in position. The label carrying the coordinates of the
+  tracked spots must be ``'Coord(px)'``.
 
   It also outputs the difference between the center of the image and the middle
   of the spots, along with a timestamp, over the ``'t(s)'`` and ``'diff(pix)'``
@@ -37,9 +38,10 @@ class AutoDriveVideoExtenso(Block):
 
     Args:
       actuator: A :obj:`dict` for initializing the 
-        :class:`~crappy.actuator.Actuator` to drive. Refer to the documentation
-        of the :class:`~crappy.blocks.Machine` Block for more information on
-        the mandatory and optional keys.
+        :class:`~crappy.actuator.Actuator` to drive. Unlike for the
+        :class:`~crappy.blocks.Machine` Block, only the ``'type'`` key is
+        mandatory here. All the other keys will be considered as kwargs to
+        pass to the Actuator.
       gain: The gain for driving the Actuator in speed. The speed command is
         simply the difference in pixels between the center of the image and the
         center of the spots, multiplied by this gain.
@@ -86,11 +88,11 @@ class AutoDriveVideoExtenso(Block):
 
     # Checking that there's exactly one input link
     if not self.inputs:
-      raise IOError("The AutoDriveVideoExtenso block should have an input "
-                    "link !")
+      raise IOError("The AutoDriveVideoExtenso Block should have an input "
+                    "Link !")
     elif len(self.inputs) > 1:
-      raise IOError("The AutoDriveVideoExtenso block can only have one input "
-                    "link !")
+      raise IOError("The AutoDriveVideoExtenso Block can only have one input "
+                    "Link !")
 
     # Opening and initializing the actuator to drive
     actuator_name = self._actuator.pop('name')

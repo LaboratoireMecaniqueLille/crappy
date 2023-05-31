@@ -53,6 +53,10 @@ class Generator(Block):
         :class:`~crappy.blocks.generator_path.meta_path.Path`. The Paths are
         generated in the order in which they are given, and the stop condition
         of each Path is used for determining when to switch to the next one.
+        The ``'type'`` key of each :obj:`dict` gives the name of the Path to
+        use, and all the other keys correspond to the arguments to give to
+        this Path. Refer to the documentation of the chosen Paths to know which
+        keys to provide.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       cmd_label: The label of the signal sent to the downstream Blocks.
