@@ -72,14 +72,19 @@ class AutoDriveVideoExtenso(Block):
     self.display_freq = display_freq
     self.debug = debug
 
+    # Checking that the 'type' key is given
+    if 'type' not in actuator:
+      raise ValueError("The 'type' key must be provided for instantiating the "
+                       "Actuator !")
     self._actuator = actuator
+
     self._gain = -gain if '-' in direction else gain
     self._direction = direction
     self._pixel_range = pixel_range
     self._max_speed = max_speed
 
     # Checking whether the Actuator communicates through an FT232H
-    if actuator_dict[actuator['name']].ft232h:
+    if actuator_dict[actuator['type']].ft232h:
       self._ft232h_args = USBServer.register(ft232h_ser_num)
 
   def prepare(self) -> None:
@@ -95,7 +100,7 @@ class AutoDriveVideoExtenso(Block):
                     "Link !")
 
     # Opening and initializing the actuator to drive
-    actuator_name = self._actuator.pop('name')
+    actuator_name = self._actuator.pop('type')
     if self._ft232h_args is None:
       self._device = actuator_dict[actuator_name](**self._actuator)
     else:
