@@ -39,7 +39,7 @@ class DashboardWindow(tk.Tk):
 
     for row, label in enumerate(self._labels):
       # The name of the labels on the left
-      self._tk_labels[label] = tk.Label(self, text=label, borderwidth=15,
+      self._tk_labels[label] = tk.Label(self, text=f'{label}:', borderwidth=15,
                                         font=("Courier bold", 48))
       self._tk_labels[label].grid(row=row, column=0)
       # Their values on the right
