@@ -143,11 +143,10 @@ class Grapher(Block):
     self._counter = [0 for _ in self._labels]
 
     # Add the legend
-    legend = [y for x, y in self._labels]
-    plt.legend(legend, bbox_to_anchor=(-0.03, 1.02, 1.06, .102), loc=3,
-               ncol=len(legend), mode="expand", borderaxespad=1)
-    plt.xlabel(self._labels[0][0])
-    plt.ylabel(self._labels[0][1])
+    legend = [y for _, y in self._labels]
+    plt.legend(legend)
+    plt.xlabel(', '.join(set(x for x, _ in self._labels)))
+    plt.ylabel(', '.join(set(y for _, y in self._labels)))
 
     # Add a grid
     plt.grid()
