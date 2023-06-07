@@ -215,7 +215,7 @@ class Canvas(Block):
     # Initializing the color bar
     cbar = self._fig.colorbar(image, ticks=[-0.5, 1], fraction=0.061,
                               orientation='horizontal', pad=0.04)
-    cbar.set_label('Temperatures(C)')
+    cbar.set_label('Dot text values')
     cbar.ax.set_xticklabels(self.color_range)
 
     # Setting the title and the axes
