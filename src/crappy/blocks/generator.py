@@ -111,7 +111,7 @@ class Generator(Block):
     self._path_id = None
 
     # Checking the validity of the path
-    self._check_path_validity(iter(deepcopy(self._path)))
+    self._check_path_validity(iter(deepcopy(iter(path))))
 
   def begin(self) -> None:
     """Initializes the first
