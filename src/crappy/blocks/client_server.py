@@ -62,7 +62,8 @@ class ClientServer(Block):
       init_output: A :obj:`dict` containing for each label in ``topics`` the 
         first value to be sent in the output Links. Should be given in case the 
         data comes from several sources and data for all labels may not be 
-        available during the first loops. 
+        available during the first loops. Must also be given is ``spam`` is set
+        to :obj:`True`.
       topics: An iterable (like a :obj:`list` or a :obj:`tuple`) containing
         :obj:`str` and/or iterables of :obj:`str`. Each string corresponds to
         the name of a label in Crappy. Each element in the iterable (string or
@@ -93,7 +94,8 @@ class ClientServer(Block):
       freq: The target looping frequency for the Block. If :obj:`None`, loops
         as fast as possible.
       spam: If :obj:`True`, sends the last received values at each loop even if
-        no new values were received from the broker.
+        no new values were received from the broker. When set to :obj:`True`,
+        the ``init_output`` must be provided.
       debug: If :obj:`True`, displays all the log messages including the
         :obj:`~logging.DEBUG` ones. If :obj:`False`, only displays the log
         messages with :obj:`~logging.INFO` level or higher. If :obj:`None`,
@@ -331,7 +333,7 @@ class ClientServer(Block):
     case no value was received yet for a given label, the user can also provide 
     init values to be sent at the beginning."""
     if self._topics is not None:
-      dict_out = {}
+      dict_out = dict()
       for topic in self._buffer_output:
         if not self._buffer_output[topic].empty():
           try:
@@ -342,8 +344,7 @@ class ClientServer(Block):
             pass
       # Updating the _last_out_val buffer, and completing dict_out before
       # sending data if necessary
-      if dict_out or (self._spam and all(val is not None for val in
-                                         self._last_out_val.values())):
+      if dict_out or self._spam:
         for topic in self._buffer_output:
           for label in topic:
             if label not in dict_out:
