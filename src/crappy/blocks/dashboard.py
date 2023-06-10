@@ -53,8 +53,7 @@ class Dashboard(Block):
   """This Block generates an interface displaying data as text in a dedicated
   window.
 
-  It can only display data coming from one Block. It relies on a
-  :obj:`~tkinter.Tk` window for the graphical interface.
+  It relies on a :obj:`~tkinter.Tk` window for the graphical interface.
 
   In the window, the left column contains the names of the labels to display
   and the right column contains the latest received values for these labels.
@@ -98,13 +97,11 @@ class Dashboard(Block):
     self._nb_digits = nb_digits
 
   def prepare(self) -> None:
-    """Checks that there's only one incoming :class:`~crappy.links.Link`, and
-    starts the GUI."""
+    """Checks that there's at least one incoming :class:`~crappy.links.Link`,
+    and starts the GUI."""
 
-    if len(self.inputs) == 0:
-      raise IOError("No link pointing towards the Dashboard block !")
-    elif len(self.inputs) > 1:
-      raise IOError("Too many links pointing towards the Dashboard block !")
+    if not self.inputs:
+      raise IOError("No Link pointing towards the Dashboard Block !")
 
     self.log(logging.INFO, "Creating the dashboard window")
     self._dashboard = DashboardWindow(self._labels)
