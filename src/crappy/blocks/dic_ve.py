@@ -318,9 +318,9 @@ class DICVE(Camera):
       self.labels = ['t(s)', 'meta', 'Coord(px)', 'Eyy(%)',
                      'Exx(%)', 'Disp(px)']
     elif isinstance(labels, str):
-      self._labels = [labels]
+      self.labels = [labels]
     else:
-      self._labels = list(labels)
+      self.labels = list(labels)
 
     # Making sure a coherent number of labels and fields was given
     if len(self.labels) != 6:
