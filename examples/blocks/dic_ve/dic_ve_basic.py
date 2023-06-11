@@ -14,11 +14,11 @@ to the images by the DICVE Block. This same DICVE Block then calculates the
 strain on the images, and outputs it to a Grapher Block for display.
 
 After starting this script, you have to select the patches to track in the
-configuration window. Adjust the size of the patches, apply the settings, then
-draw the patches to track by left-clicking and dragging. Then, close the
-configuration window and watch the strain be calculated in real time. This demo
-normally ends automatically after 2 minutes, but can also be stopped by hitting
-CTRL+C.
+configuration window. Adjust the size of the patches (64 or lower should be
+fine), apply the settings, then draw the patches to track by left-clicking and
+dragging. Then, close the configuration window and watch the strain be
+calculated in real time. This demo normally ends automatically after 2 minutes,
+but can also be stopped by hitting CTRL+C.
 """
 
 import crappy
