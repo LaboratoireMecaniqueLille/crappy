@@ -38,7 +38,7 @@ class Generator(Block):
                path: Iterable[Dict[str, Any]],
                freq: Optional[float] = 200,
                cmd_label: str = 'cmd',
-               cycle_label: str = 'cycle',
+               path_index_label: str = 'index',
                repeat: bool = False,
                spam: bool = False,
                display_freq: bool = False,
@@ -60,10 +60,11 @@ class Generator(Block):
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       cmd_label: The label of the signal sent to the downstream Blocks.
-      cycle_label: In addition to the ``cmd_label``, this label holds the index
-        of the current :class:`~crappy.blocks.generator_path.meta_path.Path`.
-        Useful to trigger a Block when the current Path changes, as the output
-        value might not necessarily change.
+      path_index_label: In addition to the ``cmd_label``, this label holds the
+        index of the current
+        :class:`~crappy.blocks.generator_path.meta_path.Path`. Useful to
+        trigger a Block when the current Path changes, as the output value
+        might not necessarily change.
       repeat: If :obj:`True`, the ``path`` will loop forever instead of
         stopping when it reaches the last Path.
       spam: If :obj:`True`, the signal value will be sent on each loop. Else,
@@ -90,7 +91,7 @@ class Generator(Block):
     self.niceness = -5
     self.freq = freq
     self.display_freq = display_freq
-    self.labels = ['t(s)', cmd_label, cycle_label]
+    self.labels = ['t(s)', cmd_label, path_index_label]
     self.debug = debug
 
     self._end_delay = end_delay

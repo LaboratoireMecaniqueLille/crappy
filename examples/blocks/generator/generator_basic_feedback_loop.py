@@ -42,7 +42,8 @@ if __name__ == '__main__':
       freq=50,  # Lowering the default frequency because it's just a demo
       cmd_label='signal',  # The label carrying the value of the generated
       # signal
-      cycle_label='cycle',  # This label carries the index of the current path
+      path_index_label='index',  # This label carries the index of the current
+      # path
       repeat=False,  # When reaching the end of the path, stop the test and do
       # not repeat the path forever
       spam=False,  # Only send a value if it's different from the last sent one

@@ -11,7 +11,7 @@ spots are updated based on the values received from the upstream Blocks.
 In this example, the Canvas displays the image of a brake pad. A Generator
 simulates a temperature variation and sends it to the Canvas. It is displayed
 as a spot whose color changes according to the temperature value. The current
-time and the current cycle index of the Generator are also displayed.
+time and the current path index of the Generator are also displayed.
 
 After starting this script, just watch how the Canvas evolves. This demo never
 ends, and must be stopped by hitting CTRL+C.
@@ -40,11 +40,11 @@ if __name__ == '__main__':
      'label': 'T(°C)'},
     # The second element is the same as the first one, except it has no dot and
     # simply displays the text
-    # Here, it displays the number of cycles of the Generator
+    # Here, it displays the index of the current Generator path
     {'type': 'text',
      'coord': (1000, 1000),
-     'text': 'Cycle = %i',
-     'label': 'Cycle'},
+     'text': 'Index = %i',
+     'label': 'Index'},
     # The third element simply displays the current time
     {'type': 'time',
      'coord': (80, 1000),
@@ -53,16 +53,17 @@ if __name__ == '__main__':
 
   # This Generator Block generates a signal for the Canvas to display. It
   # generates a sine wave during 5 seconds, then cyclically repeats it. Along
-  # with the value of the sine, it also sends the index of the cycle.
+  # with the value of the sine, it also sends the index of the path.
   gen_temp = crappy.blocks.Generator(
       # Generating a Sine wave of frequency 1/5 Hz oscillating between 150 and
       # 250
       ({'type': 'Sine', 'condition': 'delay=5',
         'freq': 0.2, 'amplitude': 100, 'offset': 200},),
       cmd_label='T(°C)',  # The label carrying the value of the sine
-      cycle_label='Cycle',  # The label carrying the index of the current cycle
+      path_index_label='Index',  # The label carrying the index of the current
+      # path
       repeat=True,  # After 5 seconds when the paths ends, repeat it and
-      # increment the cycle index
+      # increment the path index
       freq=50,  # Lowering the default frequency because it's just a demo
 
       # Sticking to default for the other arguments

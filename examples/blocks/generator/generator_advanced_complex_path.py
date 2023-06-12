@@ -45,7 +45,8 @@ if __name__ == '__main__':
       freq=50,  # Lowering the default frequency because it's just a demo
       cmd_label='signal',  # The label carrying the value of the generated
       # signal
-      cycle_label='cycle',  # This label carries the index of the current path
+      path_index_label='index',  # This label carries the index of the current
+      # path
       repeat=True,  # When reaching the end of the path, repeat it forever
       spam=True,  # Send a value at each loop, for a nice display on the
       # Grapher
