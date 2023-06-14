@@ -32,7 +32,8 @@ DAQmx
 Fake Inout
 ++++++++++
 .. autoclass:: crappy.inout.FakeInOut
-   :members: open, set_cmd, get_data, get_stream, close
+   :members: open, set_cmd, get_data, start_stream, get_stream, stop_stream,
+             close
    :special-members: __init__
 
 GPIO PWM

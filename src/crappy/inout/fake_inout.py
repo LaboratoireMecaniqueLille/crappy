@@ -63,6 +63,16 @@ class FakeInOut(InOut):
 
     return [time(), virtual_memory().percent]
 
+  def start_stream(self) -> None:
+    """Defining this method to avoid getting warnings in the logs."""
+
+    ...
+
+  def stop_stream(self) -> None:
+    """Defining this method to avoid getting warnings in the logs."""
+
+    ...
+
   def get_stream(self) -> Tuple[np.ndarray, np.ndarray]:
     """This method calls 10 times the :meth:`get_data` method and returns the
     10 values at once in the streamer format.
