@@ -199,12 +199,12 @@ class IOBlock(Block):
       raise IOError('Error ! The IOBlock is neither an input nor an output !')
 
     # cmd_labels must be defined when the block has inputs
-    if self.inputs and self._cmd_labels is None:
+    if self.inputs and self._cmd_labels is None and self._trig_label is None:
       raise ValueError('Error ! The IOBlock has incoming links but no '
                        'cmd_labels have been given !')
 
     self._read = bool(self.outputs)
-    self._write = bool(self.inputs)
+    self._write = bool(self._cmd_labels)
 
     # Now opening the device
     self.log(logging.INFO, f"Opening the {type(self._device).__name__} InOut")
