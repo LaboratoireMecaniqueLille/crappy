@@ -1,7 +1,8 @@
 # coding: utf-8
 
 from time import time
-from typing import List, Optional
+from typing import List, Optional, Tuple
+import numpy as np
 
 from .meta_inout import InOut
 from .._global import OptionalModule
@@ -61,6 +62,17 @@ class FakeInout(InOut):
     """Just returns the timestamp and the current memory usage."""
 
     return [time(), virtual_memory().percent]
+
+  def get_stream(self) -> Tuple[np.ndarray, np.ndarray]:
+    """This method calls 10 times the :meth:`get_data` method and returns the
+    10 values at once in the streamer format.
+
+    It is just a demo for showcasing the use of the streamer mode.
+    """
+
+    values = np.array([self.get_data() for _ in range(10)])
+    t, ret = np.split(values, 2, axis=1)
+    return np.squeeze(t), ret
 
   def close(self) -> None:
     """Deletes the buffer."""
