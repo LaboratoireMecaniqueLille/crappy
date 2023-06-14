@@ -49,6 +49,7 @@ class HDFRecorder(Block):
         parent folders of the file do not exist, they will be created. If the
         file already exists, the actual file where data will be written will be
         renamed with a trailing index to avoid overriding it.
+      node: The name of the array to create in the HDF5 file, as a :obj:`str`.
       expected_rows: The number of expected rows in the file. It is used to
         optimize the dumping.
       atom: This represents the type of data to be stored in the table. It can
