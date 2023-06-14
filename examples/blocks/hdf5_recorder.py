@@ -26,7 +26,7 @@ if __name__ == '__main__':
   # This IOBlock acquires the data to record, using the FakeInOut InOut object
   # It is in streamer mode to send data as a stream to the HDF5Recorder
   streamer = crappy.blocks.IOBlock(
-      'FakeInout',  # The name of the InOut object to drive
+      'FakeInOut',  # The name of the InOut object to drive
       labels=('t(s)', 'stream'),  # The labels carrying the time and the stream
       # information
       streamer=True,  # Mandatory to use the streamer mode of the InOut

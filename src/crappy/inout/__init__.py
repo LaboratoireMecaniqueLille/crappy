@@ -6,7 +6,7 @@ from .ads1115 import ADS1115
 from .agilent_34420A import Agilent34420a
 from .comedi import Comedi
 from .daqmx import DAQmx
-from .fake_inout import FakeInout
+from .fake_inout import FakeInOut
 from .gpio_pwm import GPIOPWM
 from .gpio_switch import GPIOSwitch
 from .kollmorgen_akd_pdmm import KollmorgenAKDPDMM

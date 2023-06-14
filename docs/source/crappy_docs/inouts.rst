@@ -31,7 +31,7 @@ DAQmx
 
 Fake Inout
 ++++++++++
-.. autoclass:: crappy.inout.FakeInout
+.. autoclass:: crappy.inout.FakeInOut
    :members: open, set_cmd, get_data, get_stream, close
    :special-members: __init__
 
