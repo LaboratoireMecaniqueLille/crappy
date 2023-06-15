@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # dict(type='constant', condition="delay=20", value=400),
     dict(type='Constant', condition=None, value=500)])
 
-  furnace = crappy.blocks.Machine([dict(type='FakeMotor',
+  furnace = crappy.blocks.Machine([dict(type='FakeDCMotor',
                                         cmd_label='pid',
                                         simulation_speed=SPEED,
                                         mode='speed',

@@ -51,7 +51,7 @@ class TestMachine(unittest.TestCase):
   def test_machine(self) -> None:
     """"""
 
-    base_dict = dict(actuators=[{'type': 'FakeMotor',
+    base_dict = dict(actuators=[{'type': 'FakeDCMotor',
                                  'cmd_label': 'cmd',
                                  'mode': 'speed',
                                  'speed': 10,
@@ -66,7 +66,7 @@ class TestMachine(unittest.TestCase):
                      display_freq=False,
                      debug=False)
 
-    common_dict = dict(actuators=[{'type': 'FakeMotor'}],
+    common_dict = dict(actuators=[{'type': 'FakeDCMotor'}],
                        common={'cmd_label': 'cmd',
                                'mode': 'speed',
                                'speed': 10,

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from crappy.actuator import FakeMotor
+from crappy.actuator import FakeDCMotor
 import unittest
 
 
@@ -10,7 +10,7 @@ class TestFakeMotor(unittest.TestCase):
   def setUp(self) -> None:
     """"""
 
-    self._actuator = FakeMotor()
+    self._actuator = FakeDCMotor()
 
   def test_open(self) -> None:
     """"""

@@ -11,9 +11,9 @@ Adafruit DC Motor Hat
    :members: open, set_speed, stop, close
    :special-members: __init__
 
-Fake Motor
-++++++++++
-.. autoclass:: crappy.actuator.FakeMotor
+Fake DC Motor
++++++++++++++
+.. autoclass:: crappy.actuator.FakeDCMotor
    :members: open, get_speed, get_position, set_speed, stop, close
    :special-members: __init__
 

@@ -3,7 +3,7 @@
 from typing import Dict, Type
 
 from .adafruit_dc_motor_hat import DCMotorHat
-from .fake_motor import FakeMotor
+from .fake_dc_motor import FakeDCMotor
 from .jvl_mac_140 import JVLMac140
 from .kollmorgen_servostar_300 import ServoStar300
 from .newport_tra6ppd import NewportTRA6PPD

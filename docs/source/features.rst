@@ -360,7 +360,7 @@ Supported Actuators
      This actuator was written for a specific application, so it may not be
      usable as-is in the general case.
 
-- :ref:`Fake Motor`
+- :ref:`Fake DC Motor`
 
   Emulates the dynamic behavior of a DC motor, but doesn't drive any hardware.
   Used in the examples, may also be used for prototyping or debugging.

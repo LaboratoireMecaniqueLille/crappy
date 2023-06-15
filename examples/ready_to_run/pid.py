@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
   kv = 1000
 
-  mot = crappy.blocks.Machine([{'type': 'FakeMotor',
+  mot = crappy.blocks.Machine([{'type': 'FakeDCMotor',
                                 'cmd_label': 'pid',
                                 'mode': 'speed',
                                 'speed_label': 'speed',

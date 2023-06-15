@@ -59,7 +59,7 @@ if __name__ == '__main__':
   # difference between the center of the spots and the center of the image
   # The speed command sent to the Actuator is proportional to this difference
   auto_drive = crappy.blocks.AutoDriveVideoExtenso(
-      {'type': 'FakeMotor'},  # FakeMotor so that no hardware is needed
+      {'type': 'FakeDCMotor'},  # FakeDCMotor so that no hardware is needed
       gain=1,  # The gain to apply to the center difference before sending the
       # speed command to the Actuator
       direction='x+',  # We want to be centered in the x direction, and we

@@ -331,11 +331,11 @@ let's consider a new example. No we simply want to drive a DC motor with known
 properties to a target speed, but the motor takes Volts as an input so we need
 to setup a control for converting the speed command into a voltage input.
 
-Since not everyone has a DC motor at home, let's use a :ref:`Fake Motor` object
-instead. It simply simulates the dynamic behavior of a DC motor. We're going to
-use a `PID controller <https://en.wikipedia.org/wiki/PID_controller>`_ for
-converting the speed command into Volts, implemented in the :ref:`PID` block. We
-also need a :ref:`Generator` for generating the speed command, and a
+Since not everyone has a DC motor at home, let's use a :ref:`Fake DC Motor`
+object instead. It simply simulates the dynamic behavior of a DC motor. We're
+going to use a `PID controller <https://en.wikipedia.org/wiki/PID_controller>`_
+for converting the speed command into Volts, implemented in the :ref:`PID`
+block. We also need a :ref:`Generator` for generating the speed command, and a
 :ref:`Grapher` for plotting the command speed next to the actual speed.
 
 The beginning of the code should be fairly understandable if you followed the
