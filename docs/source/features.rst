@@ -365,6 +365,13 @@ Supported Actuators
   Emulates the dynamic behavior of a DC motor, but doesn't drive any hardware.
   Used in the examples, may also be used for prototyping or debugging.
 
+- :ref:`Fake Stepper Motor`
+
+  Emulates the dynamic behavior of a stepper motor used as a linear actuator,
+  but does not drive any actual hardware. It is used in examples, and can also
+  be used for debugging. Unlike the :class:`~crappy.actuator.FakeDCMotor`, it
+  can drive the motor in position.
+
 - :ref:`Adafruit DC Motor Hat`
 
   Drives up to 4 DC motors using Adafruit's `DC & Stepper Motor HAT for

@@ -17,6 +17,13 @@ Fake DC Motor
    :members: open, get_speed, get_position, set_speed, stop, close
    :special-members: __init__
 
+Fake Stepper Motor
+++++++++++++++++++
+.. autoclass:: crappy.actuator.FakeStepperMotor
+   :members: open, get_speed, get_position, set_speed, set_position, stop,
+             close
+   :special-members: __init__
+
 JVL Mac140
 ++++++++++
 .. autoclass:: crappy.actuator.JVLMac140
