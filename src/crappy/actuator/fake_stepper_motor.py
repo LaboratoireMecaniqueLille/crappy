@@ -26,8 +26,8 @@ class FakeStepperMotor(Actuator):
   def __init__(self,
                steps_per_mm: float = 100,
                microsteps: int = 256,
-               acceleration: float = 512000,
-               max_speed: float = 256000) -> None:
+               acceleration: float = 20,
+               max_speed: float = 10) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -38,16 +38,16 @@ class FakeStepperMotor(Actuator):
         The higher this value, the more precise the resolution of the motor,
         but the lower the maximum achievable speed.
       acceleration: The maximum acceleration the motor can achieve, in
-        steps/s². In this demo Actuator, this parameter only has an incidence
+        mm/s². In this demo Actuator, this parameter only has an incidence
         on the responsiveness of the motor.
-      max_speed: The maximum achievable speed of the motor, in steps/s.
+      max_speed: The maximum achievable speed of the motor, in mm/s.
     """
 
     super().__init__()
 
     # The variables describing the motor
-    self._accel: float = abs(acceleration)
-    self._max_speed: float = abs(max_speed)
+    self._accel: float = abs(acceleration * steps_per_mm * microsteps)
+    self._max_speed: float = abs(max_speed * steps_per_mm * microsteps)
     self._steps_per_mm: float = steps_per_mm
     self._microsteps: int = microsteps
 
