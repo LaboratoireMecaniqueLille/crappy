@@ -49,7 +49,6 @@ if __name__ == '__main__':
       ('t(s)', 'sine'), ('t(s)', 'i_sine'),
       length=500,  # Limiting the extent of the graph to better see the signals
 
-
       # Sticking to default for the other arguments
   )
 
