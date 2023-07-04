@@ -320,7 +320,7 @@ class VideoExtenso(Camera):
     # Instantiating and starting the configuration window
     try:
       config = VideoExtensoConfig(self._camera, self._log_queue,
-                                  self._log_level,
+                                  self._log_level, self.freq,
                                   self._spot_detector)
       config.main()
 

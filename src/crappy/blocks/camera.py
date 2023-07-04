@@ -595,7 +595,8 @@ class Camera(Block):
     
     # Instantiating and starting the configuration window
     try:
-      config = CameraConfig(self._camera, self._log_queue, self._log_level)
+      config = CameraConfig(self._camera, self._log_queue,
+                            self._log_level, self.freq)
       config.main()
     
     # If an exception is raised in the config window, closing it before raising

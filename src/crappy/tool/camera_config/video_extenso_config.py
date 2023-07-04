@@ -37,6 +37,7 @@ class VideoExtensoConfig(CameraConfigBoxes):
                camera: Camera,
                log_queue: Queue,
                log_level: Optional[int],
+               max_freq: Optional[float],
                detector: SpotsDetector) -> None:
     """Sets the args and initializes the parent class.
 
@@ -47,13 +48,16 @@ class VideoExtensoConfig(CameraConfigBoxes):
         the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
+      max_freq: The maximum frequency this window is allowed to loop at. It is
+        simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
+        Block.
       detector: An instance of
         :class:`~crappy.tool.camera_config.config_tools.SpotsDetector` used for
         detecting spots on the images received from the
         :class:`~crappy.camera.Camera`.
     """
 
-    super().__init__(camera, log_queue, log_level)
+    super().__init__(camera, log_queue, log_level, max_freq)
     self._detector = detector
     self._spots = detector.spots
 

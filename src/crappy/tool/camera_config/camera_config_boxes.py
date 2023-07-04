@@ -26,7 +26,8 @@ class CameraConfigBoxes(CameraConfig):
   def __init__(self,
                camera: Camera,
                log_queue: Queue,
-               log_level: Optional[int]) -> None:
+               log_level: Optional[int],
+               max_freq: Optional[float]) -> None:
     """Initializes the parent class and sets the spots container.
 
     Args:
@@ -36,11 +37,14 @@ class CameraConfigBoxes(CameraConfig):
         the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
+      max_freq: The maximum frequency this window is allowed to loop at. It is
+        simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
+        Block.
     """
 
     self._spots = SpotsBoxes()
     self._select_box = Box()
-    super().__init__(camera, log_queue, log_level)
+    super().__init__(camera, log_queue, log_level, max_freq)
 
   def _draw_box(self, box: Box) -> None:
     """Draws one line of the box after the other, making sure they fit in the

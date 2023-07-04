@@ -35,6 +35,7 @@ class DICVEConfig(CameraConfigBoxes):
                camera: Camera,
                log_queue: Queue,
                log_level: Optional[int],
+               max_freq: Optional[float],
                patches: SpotsBoxes) -> None:
     """Sets the patches and initializes the parent class.
 
@@ -45,6 +46,9 @@ class DICVEConfig(CameraConfigBoxes):
         the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
+      max_freq: The maximum frequency this window is allowed to loop at. It is
+        simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
+        Block.
       patches: An instance of
         :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` containing
         the patches to follow for image correlation.
@@ -52,7 +56,7 @@ class DICVEConfig(CameraConfigBoxes):
 
     self._patch_size: Optional[CameraScaleSetting] = None
 
-    super().__init__(camera, log_queue, log_level)
+    super().__init__(camera, log_queue, log_level, max_freq)
 
     # Setting the patches
     self._spots = patches

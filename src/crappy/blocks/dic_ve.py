@@ -385,7 +385,7 @@ class DICVE(Camera):
     # Instantiating and starting the configuration window
     try:
       config = DICVEConfig(self._camera, self._log_queue, self._log_level,
-                           self._patches)
+                           self.freq, self._patches)
       config.main()
 
     # If an exception is raised in the config window, closing it before raising

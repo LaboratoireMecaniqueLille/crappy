@@ -56,7 +56,8 @@ class CameraConfig(tk.Tk):
   def __init__(self,
                camera: Camera,
                log_queue: Queue,
-               log_level: Optional[int]) -> None:
+               log_level: Optional[int],
+               max_freq: Optional[float]) -> None:
     """Initializes the interface and displays it.
 
     Args:
@@ -66,6 +67,9 @@ class CameraConfig(tk.Tk):
         the main :obj:`~logging.Logger`, only used in Windows.
       log_level: The minimum logging level of the entire Crappy script, as an
         :obj:`int`.
+      max_freq: The maximum frequency this window is allowed to loop at. It is
+        simply the ``freq`` attribute of the :class:`~crappy.blocks.Camera`
+        Block.
     """
 
     super().__init__()
@@ -98,6 +102,7 @@ class CameraConfig(tk.Tk):
     self._move_y = None
     self._run = True
     self._n_loops = 0
+    self._max_freq = max_freq
 
     # Settings for adjusting the behavior of the zoom
     self._zoom_ratio = 0.9
@@ -128,8 +133,11 @@ class CameraConfig(tk.Tk):
     start_time = time()
 
     while self._run:
-      # Update the image, the histogram and the information
-      self._update_img()
+      # Remaining below the max allowed frequency
+      if self._max_freq is None or \
+          self._n_loops / (time() - start_time) < self._max_freq:
+        # Update the image, the histogram and the information
+        self._update_img()
 
       # Update the FPS counter
       if time() - start_time > 0.5:

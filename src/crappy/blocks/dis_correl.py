@@ -362,7 +362,7 @@ class DISCorrel(Camera):
     # Instantiating and starting the configuration window
     try:
       config = DISCorrelConfig(self._camera, self._log_queue, self._log_level,
-                               self._patch)
+                               self.freq, self._patch)
       config.main()
 
     # If an exception is raised in the config window, closing it before raising
