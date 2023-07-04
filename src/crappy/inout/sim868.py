@@ -93,10 +93,10 @@ class Sim868(InOut):
       sleep(0.1)
 
     # Raising if no response after 2 seconds
-    if 'OK' not in ret:
-      raise ConnectionError("Could not get answer from Sim868 after 2 seconds")
-    elif 'ERROR' in ret:
+    if 'ERROR' in ret:
       raise IOError("Got an ERROR message from the Sim868")
+    elif 'OK' not in ret:
+      raise ConnectionError("Could not get answer from Sim868 after 2 seconds")
 
     # Checking if the status of the SIM card is OK
     self._ser.write(b'AT+CPIN?\r')
@@ -133,10 +133,10 @@ class Sim868(InOut):
       sleep(0.1)
 
     # Raising if no response after 2 seconds
-    if 'OK' not in ret:
-      raise ConnectionError("Could not get answer from Sim868 after 2 seconds")
-    elif 'ERROR' in ret:
+    if 'ERROR' in ret:
       raise IOError("Got an ERROR message from the Sim868")
+    elif 'OK' not in ret:
+      raise ConnectionError("Could not get answer from Sim868 after 2 seconds")
 
     # Case when a PIN code is needed
     if need_pin:
@@ -166,11 +166,11 @@ class Sim868(InOut):
           sleep(0.1)
 
         # Raising if no response after 2 seconds
-        if 'OK' not in ret:
+        if 'ERROR' in ret:
+          raise IOError("Got an ERROR message from the Sim868")
+        elif 'OK' not in ret:
           raise ConnectionError(
               "Could not get answer from Sim868 after 2 seconds")
-        elif 'ERROR' in ret:
-          raise IOError("Got an ERROR message from the Sim868")
 
         # Giving some time to the Sim868 for setting the PIN code
         sleep(1)
@@ -205,11 +205,11 @@ class Sim868(InOut):
           sleep(0.1)
 
         # Raising if no response after 2 seconds
-        if 'OK' not in ret:
+        if 'ERROR' in ret:
+          raise IOError("Got an ERROR message from the Sim868")
+        elif 'OK' not in ret:
           raise ConnectionError(
               "Could not get answer from Sim868 after 2 seconds")
-        elif 'ERROR' in ret:
-          raise IOError("Got an ERROR message from the Sim868")
 
     # Checking that the SIM card is registered with an operator
     registered = False
@@ -253,11 +253,11 @@ class Sim868(InOut):
         sleep(0.1)
 
       # Raising if no response after the given timeout
-      if 'OK' not in ret:
+      if 'ERROR' in ret:
+        raise IOError("Got an ERROR message from the Sim868")
+      elif 'OK' not in ret:
         raise ConnectionError(f"Could not get answer from Sim868 after "
                               f"{t + self._reg_timeout - t1} seconds")
-      elif 'ERROR' in ret:
-        raise IOError("Got an ERROR message from the Sim868")
 
       # Exiting the loop once the Sim868 is connected to a network
       if registered:
@@ -290,10 +290,10 @@ class Sim868(InOut):
       sleep(0.1)
 
     # Raising if no response after 9 seconds
-    if 'OK' not in ret:
-      raise ConnectionError("Could not get answer from Sim868 after 9 seconds")
-    elif 'ERROR' in ret:
+    if 'ERROR' in ret:
       raise IOError("Got an ERROR message from the Sim868")
+    elif 'OK' not in ret:
+      raise ConnectionError("Could not get answer from Sim868 after 9 seconds")
 
   def set_cmd(self, *cmd: str) -> None:
     """Sends an SMS whose text is the :obj:`str` received as command to all the
@@ -337,10 +337,10 @@ class Sim868(InOut):
             sleep(0.1)
 
           # Raising if no stop character after 2 seconds
-          if '> ' not in ret:
-            raise ValueError("Did not receive the stop character in 2 seconds")
-          elif 'ERROR' in ret:
+          if 'ERROR' in ret:
             raise IOError("Got an ERROR message from the Sim868")
+          elif '> ' not in ret:
+            raise ValueError("Did not receive the stop character in 2 seconds")
 
           # Providing the text message to send
           self._ser.write(f"{msg}\x1a".encode())
@@ -363,11 +363,11 @@ class Sim868(InOut):
             sleep(0.1)
 
           # Raising if no response after 2 seconds
-          if 'OK' not in ret:
+          if 'ERROR' in ret:
+            raise IOError("Got an ERROR message from the Sim868")
+          elif 'OK' not in ret:
             raise ConnectionError(
               "Could not get answer from Sim868 after 2 seconds")
-          elif 'ERROR' in ret:
-            raise IOError("Got an ERROR message from the Sim868")
 
   def close(self) -> None:
     """Closes the serial port."""
