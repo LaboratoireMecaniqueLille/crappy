@@ -101,7 +101,7 @@ class Camera(metaclass=MetaCamera):
 
     self.set_all(**kwargs)
 
-  def get_image(self) -> Optional[Union[Tuple[Dict[str, Any], float],
+  def get_image(self) -> Optional[Tuple[Union[Dict[str, Any], float],
                                         np.ndarray]]:
     """Acquires an image and returns it along with its metadata or timestamp.
 
