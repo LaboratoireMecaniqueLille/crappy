@@ -366,16 +366,16 @@ class Camera(metaclass=MetaCamera):
     # Instantiating the CameraSetting objects
     self.log(logging.INFO, "Adding the software ROI settings")
     self.settings[self.roi_x_name] = CameraScaleSetting(
-        name=self.roi_x_name, lowest=0, highest=width-1, getter=None,
+        name=self.roi_x_name, lowest=0, highest=width - 2, getter=None,
         setter=None, default=0)
     self.settings[self.roi_y_name] = CameraScaleSetting(
-        name=self.roi_y_name, lowest=0, highest=height - 1, getter=None,
+        name=self.roi_y_name, lowest=0, highest=height - 2, getter=None,
         setter=None, default=0)
     self.settings[self.roi_width_name] = CameraScaleSetting(
-        name=self.roi_width_name, lowest=1, highest=width, getter=None,
+        name=self.roi_width_name, lowest=2, highest=width, getter=None,
         setter=None, default=width)
     self.settings[self.roi_height_name] = CameraScaleSetting(
-        name=self.roi_height_name, lowest=1, highest=height, getter=None,
+        name=self.roi_height_name, lowest=2, highest=height, getter=None,
         setter=None, default=height)
 
     self._soft_roi_set = True
