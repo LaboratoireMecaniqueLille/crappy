@@ -20,7 +20,7 @@ setting, that lets the user select the ROI in the configuration window. The
 goal here is to show how to implement a software ROI in Camera objects.
 
 After starting this script, a configuration window appears in which you can see
-the generated images. There are four settings that you cna tune, that
+the generated images. There are four settings that you can tune, that
 correspond to software ROI settings. Change their values, click on the Apply
 Setting button, and see how the image is impacted. When you're done, close the
 configuration window and see how the settings values are applied to the
