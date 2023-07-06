@@ -286,7 +286,7 @@ class Camera(metaclass=MetaCamera):
     are :
     ::
 
-      'Free run', 'Hdw after config','Hardware'
+      'Free run', 'Hdw after config', 'Hardware'
 
     Default is ``'Free run'``.
 
