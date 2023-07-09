@@ -2,9 +2,9 @@
 
 """
 This example demonstrates the instantiation of a custom InOut object in Crappy,
-in the case when the InOut only acquired data from hardware. The example
+in the case when the InOut only acquires data from hardware. The example
 presented here shows only the basic steps for creating an InOut object that
-acquires data. See the custom_inout_basic_out.py for an example of InOut
+acquires data. See the custom_inout_basic_inout.py for an example of InOut
 setting commands on hardware. It does not require any hardware nor specific
 Python module to run.
 
@@ -43,7 +43,7 @@ class CustomInOut(crappy.inout.InOut):
     """In this method you should initialize the Python objects that you will
     use in the class.
 
-    You must initialize the parent class somewhere in this method. his is also
+    You must initialize the parent class somewhere in this method. It is also
     where the arguments are passed to the InOut by the IOBlock.
     """
 
@@ -112,7 +112,7 @@ if __name__ == '__main__':
       # Sticking to default for the other arguments
   )
 
-  # This Dashboard Block displays the dat it receives from the IOBlock. It
+  # This Dashboard Block displays the data it receives from the IOBlock. It
   # prints the current timestamp and the value of the 'signal' label.
   dash = crappy.blocks.Dashboard(
       ('t(s)', 'signal'),  # The names of the labels to display
