@@ -148,7 +148,7 @@ class Generator(Block):
       # Getting the next command to send
       self._last_t = time()
       cmd = self._current_path.get_cmd(data)
-      self.log(logging.DEBUG, f"Next command: {cmd}")
+      self.log(logging.DEBUG, f"Returned command: {cmd}")
     except StopIteration:
       try:
         # Switching to the next path if we reached the end of one
@@ -161,6 +161,10 @@ class Generator(Block):
         # Case when the Generator shouldn't raise CrappyStop after it ended
         self._ended_no_raise = True
         return
+
+    # Not sending if no command was output by the get_cmd method
+    if cmd is None:
+      return
 
     # The command is sent if it's different from the previous, or if we
     # switched to the next path, or if spam is True
