@@ -2,7 +2,8 @@
 
 """
 This example demonstrates the use of a Generator Block to generate an extremely
-complex path. It does not require any hardware to run.
+complex path. It does not require any specific hardware to run, but
+necessitates the matplotlib Python module to be installed.
 
 The Generator Block outputs a signal following a provided path. Several paths
 are available, each with a different behavior and different options. They can

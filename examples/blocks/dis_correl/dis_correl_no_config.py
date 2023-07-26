@@ -2,8 +2,8 @@
 
 """
 This example demonstrates the use of the DISCorrel Block in the case when the
-patch is manually entered by the user. It does not require any hardware to
-run.
+patch is manually entered by the user. It does not require any hardware to run,
+but necessitates the opencv-python and matplotlib modules to be installed.
 
 It is the exact same script as dis_correl_basic.py, except the patch is
 manually provided and the configuration window is disabled. Refer to the other

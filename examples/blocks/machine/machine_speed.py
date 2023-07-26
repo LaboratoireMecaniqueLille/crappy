@@ -3,7 +3,8 @@
 """
 This example demonstrates the use of a Machine Block in the case when a speed
 value is specified while driving in position mode. It does not require any
-hardware nor specific Python module to run.
+specific hardware to run, but necessitates the matplotlib Python module to be
+installed.
 
 The Machine Block can drive one or several Actuators in speed or in position,
 based on the setpoints it receives from upstream Blocks. It can also retrieve

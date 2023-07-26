@@ -3,7 +3,8 @@
 """
 This example demonstrates the use of the Camera Block, for the use case of
 triggering the image acquisition using a software trigger. The acquired images
-are then displayed. It does not require any hardware to run.
+are then displayed. It does not require any hardware to run, but necessitates
+the opencv-python and Pillow modules to be installed.
 
 It acquires images on a fake camera, and displays them in a small visualization
 window. Before the test starts, it also lets the user adjust some settings on

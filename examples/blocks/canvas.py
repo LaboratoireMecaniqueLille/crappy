@@ -2,7 +2,8 @@
 
 """
 This example demonstrates the use of the Canvas Block. It does not require any
-hardware to run.
+specific hardware to run, but necessitates the matplotlib Python module to be
+installed.
 
 This Block can display custom text, the current time, colored spots and a color
 bar in a window. At each loop, the values of the texts and the color of the

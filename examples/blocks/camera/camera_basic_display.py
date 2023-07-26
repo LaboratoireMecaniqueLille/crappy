@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the Camera Block, for the basic use case
 of just displaying the acquired images. It does not require any hardware to
-run.
+run, but necessitates the opencv-python and Pillow modules to be installed.
 
 It acquires images on a fake camera, and displays them in a small visualization
 window. Before the test starts, it also lets the user adjust some settings on

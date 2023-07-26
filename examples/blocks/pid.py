@@ -2,7 +2,8 @@
 
 """
 This example demonstrates the use of the PID Block. It does not require any
-hardware nor specific Python module to run.
+specific hardware to run, but necessitates the matplotlib Python module to be
+installed.
 
 The PID Block emulates a PID controller. It takes as inputs a target value and
 a measured value, and outputs the best command to set on an actuator so that

@@ -2,7 +2,8 @@
 
 """
 This example demonstrates the use of the Multiplexer Block. It does not require
-any hardware nor specific Python module to run.
+any specific hardware to run, but necessitates the matplotlib Python module to
+be installed.
 
 The Multiplexer Block takes inputs from several Blocks, and interpolates the
 target labels so that their data is output on a common time basis. This is

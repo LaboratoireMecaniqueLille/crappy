@@ -2,7 +2,8 @@
 
 """
 This example demonstrates the use of the FakeMachine Block. It does not require
-any hardware to run.
+any specific hardware to run, but necessitates the matplotlib Python module to
+be installed.
 
 This Block simulates the behavior of a tensile test machine. It takes a speed
 or position command as an input, and outputs the position, force and strain on

@@ -2,7 +2,8 @@
 
 """
 This example demonstrates the use of the Integrate Modifier. It does not
-require any hardware nor specific Python module to run.
+require any specific hardware to run, but necessitates the matplotlib Python
+module to be installed.
 
 The Integrate Modifier calculates the time integral of a given label, and adds
 it to the message to send. It is useful for driving Blocks that need to take

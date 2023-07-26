@@ -2,7 +2,8 @@
 
 """
 This example demonstrates the use of the DICVE Block in the simplest possible
-use case. It does not require any hardware to run.
+use case. It does not require any hardware to run, but necessitates the
+opencv-python, matplotlib and Pillow modules to be installed.
 
 This Block computes the strain on acquired images by tracking several patches
 using digital image correlation techniques. It outputs the computed strain as

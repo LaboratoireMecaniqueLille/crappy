@@ -2,7 +2,9 @@
 
 """
 This example demonstrates the use of the Camera Block, for the basic use case
-of just recording the acquired images. It does not require any hardware to run.
+of just recording the acquired images. It does not require any hardware to run,
+but necessitates the opencv-python, scikit-image and Pillow modules to be
+installed.
 
 It acquires images on a fake camera, and records part of them at the given
 location. Before the test starts, it also lets the user adjust some settings on

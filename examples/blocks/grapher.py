@@ -2,7 +2,8 @@
 
 """
 This example demonstrates the use of the Grapher Block. It does not require any
-hardware to run.
+specific hardware to run, but necessitates the matplotlib Python module to be
+installed.
 
 The Grapher Block displays the data it received from 1 or more Blocks in a
 scatter plot. It can display the values of a label vs time, or vs another label

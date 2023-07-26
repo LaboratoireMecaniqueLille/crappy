@@ -3,7 +3,7 @@
 """
 This example demonstrates the use of the DICVE Block in the case when the
 patches are manually entered by the user. It does not require any hardware to
-run.
+run, but necessitates the opencv-python and matplotlib modules to be installed.
 
 It is the exact same script as dic_ve_basic.py, except the patches are manually
 provided and the configuration window is disabled. Refer to the other script

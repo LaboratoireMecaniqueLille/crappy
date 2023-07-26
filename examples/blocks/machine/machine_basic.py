@@ -2,8 +2,8 @@
 
 """
 This example demonstrates the use of a Machine Block in the simplest possible
-use case, for driving a fake motor in speed. It does not require any hardware
-nor specific Python module to run.
+use case, for driving a fake motor in speed. It does not require any specific
+hardware to run, but necessitates the matplotlib Python module to be installed.
 
 The Machine Block can drive one or several Actuators in speed or in position,
 based on the setpoints it receives from upstream Blocks. It can also retrieve
