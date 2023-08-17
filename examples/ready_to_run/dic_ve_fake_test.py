@@ -1,89 +1,90 @@
 # coding: utf-8
 
 """
-Demonstration of a DIC Video Extensometry controlled test.
+This example is an extension of the fake_test.py script, that includes
+digital image correlation based video-extensometry to emulate the extension
+measurement on the fake sample. Its goal is to emulate a fake tensile test
+driven with Crappy and featuring digital image correlation.
 
-This program is intended as a demonstration and is fully virtual.
-
-No hardware required
-Requires the cv2 module to be installed.
+It requires matplotlib, opencv-python, scikit-image and Pillow to run.
 """
 
 import crappy
-import numpy as np
-import cv2
 
 
-class Apply_strain_img:
-  """This class reshapes an image depending on input strain values."""
-
-  def __init__(self,
-               image: np.ndarray) -> None:
-    """Sets the base image and initializes the necessary objects to use."""
-
-    self._img = image
-
-    # Building the lookup arrays for the cv2.remap method
-    height, width, *_ = image.shape
-    orig_x, orig_y = np.meshgrid(range(width), range(height))
-    # These arrays correspond to the original state of the image
-    self._orig_x = orig_x.astype(np.float32)
-    self._orig_y = orig_y.astype(np.float32)
-
-    # These arrays are meant to be added to the original image ones
-    # If added as is, they correspond to a 100% strain state in both directions
-    self._x_strain = self._orig_x * width / (width - 1) - width / 2
-    self._y_strain = self._orig_y * height / (height - 1) - height / 2
-
-  def __call__(self, exx: float, eyy: float) -> np.ndarray:
-    """Returns the reshaped image, based on the given strain values."""
-
-    exx /= 100
-    eyy /= 100
-
-    # The final lookup table is the sum of the original state ones plus the
-    # 100% strain one weighted by a ratio
-    transform_x = self._orig_x - (exx / (1 + exx)) * self._x_strain
-    transform_y = self._orig_y - (eyy / (1 + eyy)) * self._y_strain
-
-    return cv2.remap(self._img, transform_x, transform_y, 1)
-
-
-def elastic_law(_: float) -> float:
-  """No elastic law in this simple example."""
+def plastic_law(_: float) -> float:
+  """No plastic law in this simple example."""
 
   return 0.
 
 
 if __name__ == "__main__":
+
+  # Loading the example image for performing image correlation
+  # This image is distributed with Crappy
   img = crappy.resources.speckle
 
-  speed = 5 / 60  # mm/sec
+  # This Generator Block generates the speed command to send to the FakeMachine
+  # Block. The signal is so that the FakeMachine will stretch the fake sample
+  # in cycles of increasing amplitude
+  gen = crappy.blocks.Generator(
+      # Generating pairs of constant paths of opposite value, with increasing
+      # amplitudes
+      path=sum([[{'type': 'Constant', 'value': 5 / 60,
+                  'condition': f'Exx(%)>{5 * i}'},
+                 {'type': 'Constant', 'value': -5 / 60, 'condition': 'F(N)<0'}]
+                for i in range(1, 5)], list()),
+      cmd_label='cmd',  # The label carrying the generated signal
+      freq=30,  # Lowering the default frequency because it's just a demo
 
-  # Load until the strain is reached, then unload until force is 0
-  generator = crappy.blocks.Generator(path=sum([[
-    {'type': 'Constant', 'value': speed,
-     'condition': 'Exx(%)>{}'.format(5 * i)},
-    {'type': 'Constant', 'value': -speed, 'condition': 'F(N)<0'}]
-    for i in range(1, 5)], []), spam=False)
+      # Sticking to default for the other arguments
+  )
 
-  # Our fake machine
-  machine = crappy.blocks.FakeMachine(rigidity=5000, l0=20, max_strain=17,
-                                      sigma={'F(N)': 0.5},
-                                      plastic_law=elastic_law)
+  # This FakeMachine Block takes the speed command from the Generator Block
+  # as an input, and outputs the extension and the stress to the DICVE Block
+  machine = crappy.blocks.FakeMachine(
+      rigidity=5000,  # The stiffness of the fake sample
+      l0=20,  # The initial length of the fake sample
+      max_strain=17,  # The fake sample breaks passed this strain value
+      sigma={'F(N)': 0.5},  # Adding noise to the effort signal
+      plastic_law=plastic_law,  # Adding the custom plastic law to the model of
+      # the fake sample
+      freq=50,  # Lowering the default frequency because it's just a demo
 
-  crappy.link(generator, machine)
-  crappy.link(machine, generator)
+      # Sticking to default for the other arguments
+  )
 
-  # The block performing the video-extensometry
-  dicve = crappy.blocks.DICVE('', display_images=True,
-                              image_generator=Apply_strain_img(img),
-                              display_freq=True)
-  # This modifier will generate an image with the values of strain
-  # coming from the FakeMachine block
+  # This DICVE Block computes the extension using image-correlation based
+  # video-extensometry, on an image stretched based on the extension values
+  # received from the FakeMachine Block. The pair FakeMachine + DICVE Blocks
+  # thus models the behavior of an equivalent tensile test setup
+  dicve = crappy.blocks.DICVE(
+      '',  # The name of Camera to open is ignored because image_generator is
+      # given
+      display_images=True,  # The displayer window will allow to follow the
+      # spots on the acquired images
+      image_generator=crappy.tool.ApplyStrainToImage(img),  # This argument
+      # makes the Block generate fake strain on the given image, only useful
+      # for demos
+      freq=50,  # Lowering the default frequency because it's just a demo
+
+      # Sticking to default for the other arguments
+  )
+
+  # This Grapher Block plots the extension data it receives from the DICVE
+  # Block
+  graph = crappy.blocks.Grapher(
+      # The names of the labels to plot on the graph
+      ('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'),
+
+      # Sticking to default for the other arguments
+  )
+
+  # Linking the Block so that the information is correctly sent and received
+  crappy.link(gen, machine)
   crappy.link(machine, dicve)
+  crappy.link(machine, gen)
+  crappy.link(dicve, graph)
 
-  graph_def2 = crappy.blocks.Grapher(('t(s)', 'Exx(%)'), ('t(s)', 'Eyy(%)'))
-  crappy.link(dicve, graph_def2, modifier=crappy.modifier.Mean(10))
-
+  # Mandatory line for starting the test, this call is blocking
   crappy.start()

@@ -1,37 +1,56 @@
 # coding: utf-8
 
 """
-A fully autonomous example of a tensile test using a virtual machine.
+This example demonstrates how to use a FakeMachine Block to emulate a fake
+tensile test. It is very similar to the blocks/fake_machine.py example. It does
+not make use of video-processing Blocks, unlike the other examples in the same
+folder.
 
-This program is meant to replicate a tensile test without the need for an
-actual machine.
-
-No hardware required.
+It requires matplotlib to run.
 """
 
 import crappy
 
 if __name__ == "__main__":
-  speed = 5/60  # mm/sec
 
-  generator = crappy.blocks.Generator(path=sum([[
-    {'type': 'Constant', 'value': speed,
-     'condition': 'Exx(%)>{}'.format(i / 3)},
-    {'type': 'Constant', 'value': -speed, 'condition': 'F(N)<0'}]
-    for i in range(1, 6)], []), spam=False, cmd_label='cmd')
+  # This Generator Block generates the speed command to send to the FakeMachine
+  # Block. The signal is so that the FakeMachine will stretch the fake sample
+  # in cycles of increasing amplitude
+  gen = crappy.blocks.Generator(
+      # Generating pairs of constant paths of opposite value, with increasing
+      # amplitudes
+      path=sum([[{'type': 'Constant', 'value': 5/60,
+                  'condition': f'Exx(%)>{i / 3}'},
+                 {'type': 'Constant', 'value': -5/60, 'condition': 'F(N)<0'}]
+                for i in range(1, 6)], list()),
+      freq=30,  # Lowering the default frequency because it's just a demo
+      cmd_label='cmd',  # The label carrying the generated signal
 
-  machine = crappy.blocks.FakeMachine()
+      # Sticking to default for the other arguments
+  )
 
-  crappy.link(generator, machine)
-  crappy.link(machine, generator)
+  # This FakeMachine Block takes the speed command from the Generator Block
+  # as an input, and outputs the extension and the stress to the Grapher Block
+  machine = crappy.blocks.FakeMachine(
+      freq=50,  # Lowering the default frequency because it's just a demo
 
-  # graph_def = crappy.blocks.Grapher(('t(s)', 'Exx(%)'))
-  # crappy.link(machine, graph_def)
+      # Sticking to default for the other arguments
+  )
 
-  graph_f = crappy.blocks.Grapher(('Exx(%)', 'F(N)'))
-  crappy.link(machine, graph_f)
+  # This Grapher Block plots the stress-strain data it receives from the
+  # FakeMachine Block. It can do so because both channels are on the same time
+  # basis
+  graph = crappy.blocks.Grapher(
+      # The names of the labels to plot in the grapher window
+      ('Exx(%)', 'F(N)'),
 
-  # graph_x = crappy.blocks.Grapher(('t(s)', 'x(mm)'))
-  # crappy.link(machine, graph_x)
+      # Sticking to default for the other argument
+  )
 
+  # Linking the Block so that the information is correctly sent and received
+  crappy.link(gen, machine)
+  crappy.link(machine, gen)
+  crappy.link(machine, graph)
+
+  # Mandatory line for starting the test, this call is blocking
   crappy.start()

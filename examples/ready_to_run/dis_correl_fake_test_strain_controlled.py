@@ -1,118 +1,118 @@
 # coding: utf-8
 
 """
-Demonstration of a DIC controlled test.
+This example is an extension of the dic_ve_fake_test.py script, in which the
+deformation speed is not imposed by a Generator but driven by a PID to match a
+target value. It would correspond to a real-life situation where the
+extension of the sample cannot be driven easily and a controller has to be used
+for that purpose.
 
-This program is intended as a demonstration and is fully virtual. The strain is
-measured using DIC and a PID controller drives the machine to apply a ramp of
-strain.
-
-No hardware required.
-Requires the cv2 module to be installed.
+It requires matplotlib, opencv-python, scikit-image and Pillow to run.
 """
 
 import crappy
-import numpy as np
-import cv2
-
-
-class Apply_strain_img:
-  """This class reshapes an image depending on input strain values."""
-
-  def __init__(self,
-               image: np.ndarray) -> None:
-    """Sets the base image and initializes the necessary objects to use."""
-
-    self._img = image
-
-    # Building the lookup arrays for the cv2.remap method
-    height, width, *_ = image.shape
-    orig_x, orig_y = np.meshgrid(range(width), range(height))
-    # These arrays correspond to the original state of the image
-    self._orig_x = orig_x.astype(np.float32)
-    self._orig_y = orig_y.astype(np.float32)
-
-    # These arrays are meant to be added to the original image ones
-    # If added as is, they correspond to a 100% strain state in both directions
-    self._x_strain = self._orig_x * width / (width - 1) - width / 2
-    self._y_strain = self._orig_y * height / (height - 1) - height / 2
-
-  def __call__(self, exx: float, eyy: float) -> np.ndarray:
-    """Returns the reshaped image, based on the given strain values."""
-
-    exx /= 100
-    eyy /= 100
-
-    # The final lookup table is the sum of the original state ones plus the
-    # 100% strain one weighted by a ratio
-    transform_x = self._orig_x - (exx / (1 + exx)) * self._x_strain
-    transform_y = self._orig_y - (eyy / (1 + eyy)) * self._y_strain
-
-    return cv2.remap(self._img, transform_x, transform_y, 1)
 
 
 def plastic_law(_: float) -> float:
-  """No elastic law in this simple example."""
+  """No plastic law in this simple example."""
 
   return 0.
 
 
 if __name__ == "__main__":
+
+  # Loading the example image for performing image correlation
+  # This image is distributed with Crappy
   img = crappy.resources.speckle
 
-  speed = .05  # Strain rate (%/s)
+  # This Generator Block generates the target extension command to send to the
+  # PID Block as a setpoint. The signal is so that the target extension has a
+  # triangle shape oscillating between 0 and 1
+  gen = crappy.blocks.Generator(
+      # Generating 3 successive triangles starting
+      path=[{'type': 'CyclicRamp',
+             'speed1': 5 / 60,
+             'condition1': 'target_Exx(%)>1',
+             'speed2': -5 / 60,
+             'condition2': 'target_Exx(%)<0',
+             'cycles': 3,
+             'init_value': 0}],
+      cmd_label='target_Exx(%)',  # The label carrying the generated signal
+      freq=30,  # Lowering the default frequency because it's just a demo
 
-  # Simply create a sawtooth signal at 0.05 units/s between 0 and 1
-  # Note that this generator takes no feedback
-  generator = crappy.blocks.Generator(path=[
-    {'type': 'CyclicRamp', 'speed1': speed, 'condition1': 'target_Exx(%)>1',
-     'speed2': -speed, 'condition2': 'target_Exx(%)<0', 'cycles': 3,
-     'init_value': 0}], cmd_label='target_Exx(%)')
-  crappy.link(generator, generator)
+      # Sticking to default for the other arguments
+  )
 
-  # The Block emulating the behavior of a tensile test machine
-  machine = crappy.blocks.FakeMachine(rigidity=5000, l0=20, max_strain=1.7,
-                                      sigma={'F(N)': 0.5},
-                                      plastic_law=plastic_law, cmd_label='pid')
+  # This FakeMachine Block takes the speed command from the PID Block
+  # as an input, and outputs the extension and the stress to the DISCorrel
+  # Block
+  machine = crappy.blocks.FakeMachine(
+      rigidity=5000,  # The stiffness of the fake sample
+      l0=20,  # The initial length of the fake sample
+      max_strain=17,  # The fake sample breaks passed this strain value
+      sigma={'F(N)': 0.5},  # Adding noise to the effort signal
+      plastic_law=plastic_law,  # Adding the custom plastic law to the model of
+      # the fake sample
+      freq=50,  # Lowering the default frequency because it's just a demo
+      cmd_label='pid',  # The label carrying the output of the pid
 
-  # The Block performing the DIC
-  dis = crappy.blocks.DISCorrel('', display_images=True,
-                                labels=['t(s)', 'meta', 'x', 'y',
-                                        'measured_Exx(%)', 'measured_Eyy(%)'],
-                                display_freq=True, iterations=0,
-                                finest_scale=2,
-                                image_generator=Apply_strain_img(img))
-  crappy.link(machine, dis)
+      # Sticking to default for the other arguments
+  )
 
-  # The PID block takes TWO inputs: the setpoint and the feedback
-  # Here the setpoint is coming from the generator (target_Exx(%))
-  # and the feedback is the strain measured with the DIC (measured_Exx(%))
-  # The output is the command sent to the machine
-  # In a real-world scenario, consider using out_min and out_max
-  # to clamp the output value and i_limit to prevent over_integration.
-  pid = crappy.blocks.PID(kp=0.5, ki=1.0, kd=0.025,
-                          setpoint_label='target_Exx(%)',
-                          input_label='measured_Exx(%)', send_terms=True)
+  # This DISCorrel Block computes the extension using image correlation, on an
+  # image stretched based on the extension values received from the FakeMachine
+  # Block. The pair FakeMachine + DISCorrel Blocks thus models the behavior of
+  # an equivalent tensile test setup
+  dis = crappy.blocks.DISCorrel(
+      '',  # The name of Camera to open is ignored because image_generator is
+      # given
+      display_images=True,  # The displayer window will allow to follow the
+      # spots on the acquired images
+      labels=['t(s)', 'meta', 'x', 'y', 'meas_Exx(%)', 'meas_Eyy(%)'],
+      image_generator=crappy.tool.ApplyStrainToImage(img),  # This argument
+      # makes the Block generate fake strain on the given image, only useful
+      # for demos
+      freq=50,  # Lowering the default frequency because it's just a demo
+      iterations=0,  # Limiting the time spent on each computation
+      finest_scale=2,  # Limiting the time spent on each computation
 
-  # We link the two inputs and the output
-  # The order does not matter, the inputs are identified thanks to the
-  # keywords target_label (setpoint) and input_label (feedback)
-  crappy.link(generator, pid)
+      # Sticking to default for the other arguments
+  )
+
+  # This PID Block modulates the deformation speed of the fake sample so that
+  # the extension measured by the DISCorrel Block matches the target extension
+  # generated by the Generator Block. It takes the setpoint as an input from
+  # the Generator, and the measured extension as an input from the DISCorrel.
+  # It outputs the deformation speed to the FakeMachine Block.
+  pid = crappy.blocks.PID(
+      kp=0.5,  # The coefficient of the proportional term of the PID
+      ki=1.0,  # The coefficient of the integral term of the PID
+      kd=0.025,  # The coefficient of the derivative term of the PID
+      setpoint_label='target_Exx(%)',  # The label carrying the setpoint
+      input_label='meas_Exx(%)',  # The label carrying the measured extension
+      # value
+      freq=50,  # Lowering the default frequency because it's just a demo
+
+      # Sticking to default for the other arguments
+  )
+
+  # This Grapher Block plots the extension data it receives from the
+  # DISCorrel Block
+  graph = crappy.blocks.Grapher(
+      # The names of the labels to plot on the graph
+      ('t(s)', 'meas_Exx(%)'), ('t(s)', 'target_Exx(%)'),
+
+      # Sticking to default for the other arguments
+  )
+
+  # Linking the Block so that the information is correctly sent and received
+  crappy.link(gen, pid)
+  crappy.link(gen, gen)
   crappy.link(dis, pid)
   crappy.link(pid, machine)
+  crappy.link(machine, dis)
+  crappy.link(dis, graph)
+  crappy.link(gen, graph)
 
-  # To see what is sent to the machine
-  # Since send_terms is given to the PID block, it also returns the 3
-  # channels of the PID (P, I and D). This can be useful when adjusting
-  # the gains
-  graph_pid = crappy.blocks.Grapher(('t(s)', 'pid'), ('t(s)', 'p_term'),
-                                    ('t(s)', 'i_term'), ('t(s)', 'd_term'))
-  crappy.link(pid, graph_pid, modifier=crappy.modifier.Mean(10))
-
-  # To see the commanded and the measured strains
-  graph_def2 = crappy.blocks.Grapher(('t(s)', 'measured_Exx(%)'),
-                                     ('t(s)', 'target_Exx(%)'))
-  crappy.link(dis, graph_def2, modifier=crappy.modifier.Mean(10))
-  crappy.link(generator, graph_def2, modifier=crappy.modifier.Mean(10))
-
+  # Mandatory line for starting the test, this call is blocking
   crappy.start()
