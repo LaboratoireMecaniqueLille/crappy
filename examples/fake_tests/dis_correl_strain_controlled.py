@@ -1,11 +1,11 @@
 # coding: utf-8
 
 """
-This example is an extension of the dic_ve_fake_test.py script, in which the
-deformation speed is not imposed by a Generator but driven by a PID to match a
-target value. It would correspond to a real-life situation where the
-extension of the sample cannot be driven easily and a controller has to be used
-for that purpose.
+This example is an extension of the dic_ve.py script, in which the deformation
+speed is not imposed by a Generator but driven by a PID to match a target
+value. It would correspond to a real-life situation where the extension of the
+sample cannot be driven easily and a controller has to be used for that
+purpose.
 
 It requires matplotlib, opencv-python, scikit-image and Pillow to run.
 """
