@@ -88,7 +88,7 @@ if __name__ == '__main__':
                                   cmd_labels=[f'pwm{i}' for i in PINS],
                                   display_freq=True)
 
-  # the Blocks displaying the temperature and command values in real-time
+  # The Blocks displaying the temperature and command values in real-time
   graph_cmd = crappy.blocks.Grapher(*[('t(s)', f'pwm{i}') for i in PINS])
   graph_temp = crappy.blocks.Grapher(*[('t(s)', f'T{i}') for i in PINS])
   crappy.link(labjack, graph_temp,
@@ -106,7 +106,7 @@ if __name__ == '__main__':
                                       i_limit=(0.5, -0.5),
                                       send_terms=(SHOW_PID is not None
                                                   and i == SHOW_PID),
-                                      labels=['t(s)', f'pwm{i}']))
+                                      labels=('t(s)', f'pwm{i}')))
 
     gen_list.append(crappy.blocks.Generator(
       [dict(type='Constant', condition=None, value=TEMP[i])]))
