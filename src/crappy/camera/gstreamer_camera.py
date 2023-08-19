@@ -24,8 +24,7 @@ try:
   require_version('GstApp', '1.0')
   from gi.repository import Gst, GstApp
 except (ImportError, ModuleNotFoundError, ValueError):
-  Gst = GstApp = OptionalModule('gi', 'You need to install the python bindings'
-                                      ' for GStreamer ! ')
+  Gst = GstApp = OptionalModule('PyGObject')
 
 
 class CameraGstreamer(Camera):
