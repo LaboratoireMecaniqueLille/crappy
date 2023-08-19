@@ -1,7 +1,5 @@
 # coding: utf-8
 
-from .meta_block import Block
-from .._global import OptionalModule
 from typing import Dict, Union, Any, Optional, Iterable, List, Tuple
 from time import time, sleep
 from subprocess import Popen, PIPE, STDOUT, TimeoutExpired
@@ -12,6 +10,9 @@ from pickle import loads, dumps, UnpicklingError
 from socket import timeout, gaierror
 from itertools import chain
 import logging
+
+from .meta_block import Block
+from .._global import OptionalModule
 
 try:
   import paho.mqtt.client as mqtt

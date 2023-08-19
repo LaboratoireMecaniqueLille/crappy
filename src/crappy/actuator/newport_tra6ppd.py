@@ -4,6 +4,7 @@ from time import sleep
 from re import findall
 from typing import Optional
 import logging
+
 from .meta_actuator import Actuator
 from .._global import OptionalModule
 

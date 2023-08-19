@@ -1,6 +1,6 @@
 # coding: utf-8
-import logging
 
+import logging
 import numpy as np
 from typing import Dict, Optional, Iterable, Union
 from collections import defaultdict
