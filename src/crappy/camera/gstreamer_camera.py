@@ -46,8 +46,8 @@ class CameraGstreamer(Camera):
     `v4l-utils` installed.
 
   Note:
-    This Camera requires the module :mod:`gst-python3-1.0` to be installed, as
-    well as GStreamer.
+    This Camera requires the module :mod:`PyGObject` to be installed, as well
+    as GStreamer.
   """
 
   def __init__(self) -> None:
