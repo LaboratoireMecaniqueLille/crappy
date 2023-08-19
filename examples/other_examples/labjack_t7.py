@@ -18,7 +18,7 @@ if __name__ == "__main__":
   # of the Labjack
   gen = crappy.blocks.Generator(
       # Generating a linearly increasing signal
-      ({"type": "Ramp", "speed": 5 / 60, "condition": None},),
+      ({"type": "Ramp", "speed": 5 / 60, "condition": None, 'init_value': 0},),
       cmd_label='cmd',  # The label carrying the generated signal
       freq=30,  # Lowering the default frequency because it's just a demo
 
