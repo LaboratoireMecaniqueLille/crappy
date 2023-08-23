@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
   # This IOBlock drives a Labjack acquisition board. It acquires data from the
   # AIN0 and AIN1 ports, and sends it to the Grapher Block for display. It also
-  # drives the TDAC0 output based on the command received from the Generator
+  # drives the DAC0 output based on the command received from the Generator
   # Block
   daq = crappy.blocks.IOBlock(
       'LabjackT7',  # The name of the InOut to drive
@@ -35,10 +35,10 @@ if __name__ == "__main__":
       # to use on the Labjack
       channels=[{'name': 'AIN0', 'gain': 1},
                 {'name': 'AIN1', 'gain': 1, 'make_zero': True},
-                {'name': 'TDAC0', 'gain': 1}],
+                {'name': 'DAC0', 'gain': 1}],
       labels=['t(s)', 'AIN0', 'AIN1'],  # The labels to send to downstream
       # Blocks carrying the acquired signals
-      cmd_labels=['cmd'],  # The label carrying the command to set on TDAC0
+      cmd_labels=['cmd'],  # The label carrying the command to set on DAC0
       freq=50,  # Lowering the default frequency because it's just a demo
 
       # Sticking to default for the other arguments
