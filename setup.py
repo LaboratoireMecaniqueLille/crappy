@@ -10,6 +10,9 @@ https://github.com/pypa/sampleproject
 from setuptools import find_namespace_packages, setup, Extension
 from os import popen, walk
 import platform
+from pathlib import Path
+
+# Change long description
 
 # Reading version from __version__.py file
 with open('src/crappy/__version__.py') as file:
@@ -18,8 +21,7 @@ with open('src/crappy/__version__.py') as file:
       __version__ = line.split("'")[1]
 
 # Get the long description from the relevant file
-with open('docs/source/what_is_crappy.rst', encoding='utf-8') as f:
-  long_description = f.read()
+long_description = Path('docs/source/what_is_crappy.rst').read_text()
 
 # Getting the current version of Python
 py_ver = '.'.join(platform.python_version().split('.')[:2])
