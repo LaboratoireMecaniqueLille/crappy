@@ -49,9 +49,7 @@ autodoc_default_options = {'undoc-members': True}
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
     'sphinx.ext.autosectionlabel',
     'sphinx_rtd_theme',
     'sphinx.ext.napoleon',
