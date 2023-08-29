@@ -38,4 +38,3 @@ python:
    - requirements: docs/source/requirements.txt
    - method: pip
      path: .
-   system_packages: false
