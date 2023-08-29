@@ -101,6 +101,7 @@ setup(
   version=__version__,
   description='Command and Real-time Acquisition in Parallelized Python',
   long_description=long_description,
+  long_description_content_type='text/x-rst',
   keywords='control,command,acquisition,multiprocessing',
   license='GPL V2',
   classifiers=['Development Status :: 4 - Beta ',
