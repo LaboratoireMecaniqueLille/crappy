@@ -132,10 +132,10 @@ setup(
   maintainer_email='antoine.weisrock@gmail.com',
 
   # Packaging information
-  packages=find_namespace_packages(where="src",
-                                   exclude=['contrib', 'docs', 'tests*']),
+  packages=find_namespace_packages(where="src", exclude=list()),
   package_dir={"": "src"},
   include_package_data=True,
+  package_data={'crappy': ['tool/data/*', 'tool/data/microcontroller.*']},
   ext_package='crappy',
   ext_modules=extensions,
 
