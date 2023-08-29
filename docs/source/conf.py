@@ -53,8 +53,15 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     'sphinx_rtd_theme',
     'sphinx.ext.napoleon',
-    'sphinx.ext.mathjax'
+    'sphinx.ext.mathjax',
+    'sphinx.ext.duration',
+    'sphinx_copybutton',
+    'sphinx_tabs.tabs'
 ]
+
+# Tabs settings
+sphinx_tabs_valid_builders = ['linkcheck']
+sphinx_tabs_disable_tab_closing = True
 
 # Napoleon settings
 napoleon_google_docstring = True
