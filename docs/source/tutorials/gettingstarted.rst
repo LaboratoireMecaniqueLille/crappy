@@ -346,8 +346,7 @@ previous sections:
   
        gen = crappy.blocks.Generator([
              {'type': 'constant', 'value': 1000, 'condition': 'delay=3'},
-             {'type': 'ramp', 'speed': 100, 'condition': 'delay=5',
-              'cmd': 0},
+             {'type': 'ramp', 'speed': 100, 'condition': 'delay=5'},
              {'type': 'constant', 'value': 1800, 'condition': 'delay=3'},
              {'type': 'constant', 'value': 500, 'condition': 'delay=3'},
              {'type': 'sine', 'amplitude': 2000, 'offset': 1000, 'freq': .3,
@@ -370,7 +369,7 @@ previous sections:
                                kd=0.05,
                                out_max=10,
                                out_min=-10,
-                               i_limit=0.5,
+                               i_limit=(-5, 5),
                                target_label='command_speed',
                                labels=['t(s)', 'voltage'],
                                input_label='actual_speed')
@@ -389,7 +388,7 @@ outputted by the PID block. Finally the grapher needs to know the current speed
 and the command speed, just like the PID. So let's add the appropriate links :
 
 .. code-block:: python
-   :emphasize-lines: 37-45
+   :emphasize-lines: 36-44
 
    import crappy
   
@@ -397,8 +396,7 @@ and the command speed, just like the PID. So let's add the appropriate links :
   
        gen = crappy.blocks.Generator([
              {'type': 'constant', 'value': 1000, 'condition': 'delay=3'},
-             {'type': 'ramp', 'speed': 100, 'condition': 'delay=5',
-              'cmd': 0},
+             {'type': 'ramp', 'speed': 100, 'condition': 'delay=5'},
              {'type': 'constant', 'value': 1800, 'condition': 'delay=3'},
              {'type': 'constant', 'value': 500, 'condition': 'delay=3'},
              {'type': 'sine', 'amplitude': 2000, 'offset': 1000, 'freq': .3,
@@ -422,7 +420,7 @@ and the command speed, just like the PID. So let's add the appropriate links :
                                kd=0.05,
                                out_max=10,
                                out_min=-10,
-                               i_limit=0.5,
+                               i_limit=(-5, 5),
                                target_label='command_speed',
                                labels=['t(s)', 'voltage'],
                                input_label='actual_speed')
