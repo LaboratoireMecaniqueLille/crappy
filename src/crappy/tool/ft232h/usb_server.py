@@ -20,7 +20,7 @@ try:
   from usb import util
 except (FileNotFoundError, ModuleNotFoundError):
   find = OptionalModule('pyusb')
-  Device = OptionalModule('pyusb')
+  Device = OptionalModule
   USBTimeoutError = OptionalModule('pyusb')
   util = OptionalModule('pyusb')
 
