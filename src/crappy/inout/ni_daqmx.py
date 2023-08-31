@@ -310,7 +310,7 @@ class NIDAQmx(InOut):
 
     # Reading the digital channels
     if self._digital_in:
-      data = np.empty((len(self._digital_in), 1), dtype=np.bool)
+      data = np.empty((len(self._digital_in), 1), dtype=bool)
       self._stream_di.read_one_sample_multi_line(data)
 
       ret.extend(list(data[:, 0]))
@@ -357,7 +357,7 @@ class NIDAQmx(InOut):
     if self._digital_out:
       self._stream_do.write_one_sample_multi_line(
         np.array(cmd[len(self._analog_out):],
-                 dtype=np.bool).reshape(len(self._digital_out), 1))
+                 dtype=bool).reshape(len(self._digital_out), 1))
 
   def stop_stream(self) -> None:
     """Stops all the acquisition tasks."""
