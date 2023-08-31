@@ -12,8 +12,8 @@ try:
   from serial import Serial
   from serial.serialutil import SerialException
 except (ModuleNotFoundError, ImportError):
-  serial = OptionalModule("serial", "Please install the module serial to use "
-                          "the Sim868 InOut: pip install pyserial")
+  Serial = OptionalModule("pyserial")
+  SerialException = OptionalModule("pyserial")
 
 
 class Sim868(InOut):

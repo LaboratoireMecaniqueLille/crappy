@@ -34,7 +34,7 @@ try:
                      util.CTRL_TYPE_VENDOR |
                      util.CTRL_RECIPIENT_DEVICE}
 except (ModuleNotFoundError, ImportError):
-  usb = OptionalModule("pyusb")
+  util = core = OptionalModule("pyusb")
   Tic_usb_request = {'Cmd': 0x40,
                      'Var': 0xC0}
 
