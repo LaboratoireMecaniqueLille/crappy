@@ -21,5 +21,5 @@ and an extensive documentation that you can explore here !
   documentation.rst
   developers.rst
   citing.rst
-  bugs.rst
+  troubleshooting.rst
   license.rst
