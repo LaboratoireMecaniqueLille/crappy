@@ -16,12 +16,6 @@ from ...tool.camera_config import SpotsBoxes, Box
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
 try:
-  from PIL import ImageTk, Image
-except (ModuleNotFoundError, ImportError):
-  ImageTk = OptionalModule("Pillow")
-  Image = OptionalModule("Pillow")
-
-try:
   import cv2
 except (ModuleNotFoundError, ImportError):
   cv2 = OptionalModule("opencv-python")
