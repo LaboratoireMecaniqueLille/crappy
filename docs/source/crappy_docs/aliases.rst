@@ -12,17 +12,15 @@ Open Online Documentation
 
 Classes aliases
 ---------------
-.. autoclass:: crappy.Block
-   :noindex:
 .. autoclass:: crappy.Actuator
+   :noindex:
+.. autoclass:: crappy.Block
    :noindex:
 .. autoclass:: crappy.Camera
    :noindex:
 .. autoclass:: crappy.InOut
    :noindex:
 .. autoclass:: crappy.Modifier
-   :noindex:
-.. autoclass:: crappy.Block
    :noindex:
 .. autoclass:: crappy.Path
    :noindex:
