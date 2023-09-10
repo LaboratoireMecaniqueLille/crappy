@@ -134,7 +134,8 @@ setup(
   packages=['crappy'],
   package_dir={"crappy": "src/crappy"},
   include_package_data=True,
-  package_data={'crappy': ['tool/data/*', 'tool/data/microcontroller.*']},
+  package_data={'crappy': ['tool/data/*', 'tool/microcontroller.*',
+                           'tool/image_processing/kernels.cu']},
   ext_package='crappy',
   ext_modules=extensions,
 
