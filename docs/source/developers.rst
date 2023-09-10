@@ -217,8 +217,7 @@ Here's a list of all these features, that can all be found on the `GitHub repo
   The Python module itself, described in details on this very page.
 - **Documentation**:
   You are currently reading it ! The Makefile and all the ``.rst`` files
-  necessary for building the doc are in the ``docs`` folder on GitHub. See the
-  :ref:`Documentation` section for more information.
+  necessary for building the doc are in the ``docs`` folder on GitHub.
 - **Templates** :
   A set of templates, mainly intended for internal use in our lab. They can
   still prove interesting to a larger public as they show how an actual complex

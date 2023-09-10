@@ -15,11 +15,8 @@ and an extensive documentation that you can explore here !
   what_is_crappy.rst
   installation.rst
   tutorials.rst
-  embedded.rst
   features.rst
   api.rst
-  documentation.rst
   developers.rst
   citing.rst
   troubleshooting.rst
-  license.rst

@@ -1409,7 +1409,6 @@ contributions the better !** Here are the different possibilities :
     point add your ``.py`` file to the right folder with the right import and
     inheritance modifications, change the corresponding ``__init__.py`` file,
     and that's it ! Next time you import Crappy your object should be available.
-    For changing the ``.rst`` files see the :ref:`Documentation` section.
 
       .. Important::
          It's likely that your modifications will be discarded if you then
