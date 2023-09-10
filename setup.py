@@ -7,7 +7,7 @@ https://packaging.python.org/en/latest/distributing.html
 https://github.com/pypa/sampleproject
 """
 
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 from os import popen, walk
 import platform
 from pathlib import Path
@@ -131,8 +131,8 @@ setup(
   maintainer_email='antoine.weisrock@gmail.com',
 
   # Packaging information
-  packages=['crappy'],
-  package_dir={"crappy": "src/crappy"},
+  packages=find_packages('src'),
+  package_dir={'crappy': 'src/crappy'},
   include_package_data=True,
   package_data={'crappy': ['tool/data/*', 'tool/microcontroller.*',
                            'tool/image_processing/kernels.cu']},
