@@ -42,9 +42,9 @@ if platform.system() == "Linux":
   if cl_path is not None:
     cl_module = Extension(
       'camera.cameralink.clModule',
-      sources=['sources/Cl_lib/CameraLink.cpp',
-               'sources/Cl_lib/pyCameraLink.cpp',
-               'sources/Cl_lib/clSerial.cpp'],
+      sources=['src/ext/Cl_lib/CameraLink.cpp',
+               'src/ext/Cl_lib/pyCameraLink.cpp',
+               'src/ext/Cl_lib/clSerial.cpp'],
       extra_compile_args=["-std=c++11"],
       extra_link_args=["-l", f"python{py_ver}", "-L", cl_path, "-l", "display",
                        "-l", "clsersis", "-l", "fglib5"],
@@ -69,7 +69,7 @@ if platform.system() == "Windows":
                   "C:\\Program Files (x86)\\IVI Foundation\\VISA\\WinNT\\"
                   "include",
                   "C:\\Program Files\\IVI Foundation\\IVI\\Include"],
-    sources=['sources/niFgen/pyFgen.cpp'], libraries=["niFgen"],
+    sources=['src/ext/niFgen/pyFgen.cpp'], libraries=["niFgen"],
     library_dirs=["C:\\Program Files\\IVI Foundation\\IVI\\Lib_x64\\msc"],
     extra_compile_args=["/EHsc", "/WX"])
 
@@ -82,8 +82,8 @@ if platform.system() == "Windows":
     include_dirs=[f"{cl_path}include",
                   f"C:\\python{py_ver.replace('.', '')}\\Lib\\site-packages\\"
                   f"numpy\\core\\include"],
-    sources=['sources/Cl_lib/CameraLink.cpp',
-             'sources/Cl_lib/pyCameraLink.cpp', 'sources/Cl_lib/clSerial.cpp'],
+    sources=['src/ext/Cl_lib/CameraLink.cpp',
+             'src/ext/Cl_lib/pyCameraLink.cpp', 'src/ext/Cl_lib/clSerial.cpp'],
     libraries=["clsersis", "fglib5"], library_dirs=[f"{cl_path}lib\\visualc"],
     extra_compile_args=["/EHsc", "/WX"])
 
