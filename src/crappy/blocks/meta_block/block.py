@@ -678,10 +678,10 @@ class Block(Process, metaclass=MetaBlock):
 
     # In all cases, trying to properly close the block
     finally:
-      self.log(logging.INFO, "Setting the stop event")
-      self._stop_event.set()
-      self.log(logging.INFO, "Calling the finish method")
       try:
+        self.log(logging.INFO, "Setting the stop event")
+        self._stop_event.set()
+        self.log(logging.INFO, "Calling the finish method")
         self.finish()
       except KeyboardInterrupt:
         self.log(logging.INFO, "Caught KeyboardInterrupt while finishing, "
