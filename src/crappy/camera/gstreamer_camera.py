@@ -474,7 +474,10 @@ videoconvert ! autovideosink
       format_name, img_size, fps = img_format, None, None
 
     # Adding a mjpeg decoder to the pipeline if needed
-    img_format = '! jpegdec' if format_name == 'MJPG' else ''
+    if format_name == 'MJPG':
+      img_format = '! jpegdec'
+    elif format_name == 'H264':
+      img_format = '! h264parse ! avdec_h264'
 
     # Getting the width and height from the second half of the string
     if img_size is not None:
