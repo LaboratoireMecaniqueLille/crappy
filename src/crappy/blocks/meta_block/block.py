@@ -21,7 +21,7 @@ from .meta_block import MetaBlock
 from ...links import Link
 from ..._global import LinkDataError, StartTimeout, PrepareError, \
   T0NotSetError, GeneratorStop, ReaderStop, CameraPrepareError, \
-  CameraRuntimeError, CameraConfigError
+  CameraRuntimeError, CameraConfigError, CrappyFail
 from ...tool.ft232h import USBServer
 
 
@@ -50,6 +50,8 @@ class Block(Process, metaclass=MetaBlock):
   ready_barrier: Optional[synchronize.Barrier] = None
   start_event: Optional[synchronize.Event] = None
   stop_event: Optional[synchronize.Event] = None
+  raise_event: Optional[synchronize.Event] = None
+  kbi_event: Optional[synchronize.Event] = None
   logger: Optional[logging.Logger] = None
   log_queue: Optional[queues.Queue] = None
   log_thread: Optional[Thread] = None
@@ -79,6 +81,8 @@ class Block(Process, metaclass=MetaBlock):
     self._ready_barrier: Optional[synchronize.Barrier] = None
     self._start_event: Optional[synchronize.Event] = None
     self._stop_event: Optional[synchronize.Event] = None
+    self._raise_event: Optional[synchronize.Event] = None
+    self._kbi_event: Optional[synchronize.Event] = None
 
     # The objects for logging will be set later
     self._log_queue: Optional[queues.Queue] = None
@@ -169,36 +173,40 @@ class Block(Process, metaclass=MetaBlock):
         possible levels.
     """
 
+    # Making sure that the Block classmethods are called in the right order
+    if cls.prepared_all:
+      cls.cls_log(logging.ERROR,
+                  "The method prepare_all was already called ! Call "
+                  "crappy.reset() before calling prepare_all again !")
+      raise RuntimeError
+    if cls.launched_all:
+      cls.cls_log(logging.ERROR,
+                  "Please call crappy.reset() before calling the prepare_all "
+                  "method again !")
+      raise RuntimeError
+
+    cls.log_level = log_level
+
+    # Initializing the logger and displaying the first messages
+    cls._set_logger()
+    cls.cls_log(logging.INFO,
+                "===================== CRAPPY =====================")
+    cls.cls_log(logging.INFO, f'Starting the script {argv[0]}\n')
+    cls.cls_log(logging.INFO, 'Logger configured')
+
+    # Setting all the synchronization objects at the class level
+    cls.ready_barrier = Barrier(len(cls.instances) + 1)
+    cls.shared_t0 = Value('d', -1.0)
+    cls.start_event = Event()
+    cls.stop_event = Event()
+    cls.raise_event = Event()
+    cls.kbi_event = Event()
+    cls.cls_log(logging.INFO, 'Multiprocessing synchronization objects set '
+                              'for main process')
+
+    # Until that point, there would be nothing to clean up if an exception is
+    # raised
     try:
-
-      if cls.prepared_all:
-        cls.cls_log(logging.ERROR,
-                    "The method prepare_all was already called ! Stop the "
-                    "processes and reset Crappy before calling it again. Not "
-                    "doing anything.")
-        return
-      if cls.launched_all:
-        cls.cls_log(logging.ERROR,
-                    "Please reset Crappy before calling the prepare_all "
-                    "method again ! Not doing anything.")
-        return
-
-      cls.log_level = log_level
-
-      # Initializing the logger and displaying the first messages
-      cls._set_logger()
-      cls.cls_log(logging.INFO,
-                  "===================== CRAPPY =====================")
-      cls.cls_log(logging.INFO, f'Starting the script {argv[0]}\n')
-      cls.cls_log(logging.INFO, 'Logger configured')
-
-      # Setting all the synchronization objects at the class level
-      cls.ready_barrier = Barrier(len(cls.instances) + 1)
-      cls.shared_t0 = Value('d', -1.0)
-      cls.start_event = Event()
-      cls.stop_event = Event()
-      cls.cls_log(logging.INFO, 'Multiprocessing synchronization objects set '
-                                'for main process')
 
       # Initializing the objects required for logging
       cls.log_queue = Queue()
@@ -218,6 +226,8 @@ class Block(Process, metaclass=MetaBlock):
         instance._instance_t0 = cls.shared_t0
         instance._stop_event = cls.stop_event
         instance._start_event = cls.start_event
+        instance._raise_event = cls.raise_event
+        instance._kbi_event = cls.kbi_event
         instance._log_queue = cls.log_queue
         cls.cls_log(logging.INFO, f'Multiprocessing synchronization objects '
                                   f'set for {instance.name} Block')
@@ -239,10 +249,33 @@ class Block(Process, metaclass=MetaBlock):
       # Setting the prepared flag
       cls.prepared_all = True
 
-    except KeyboardInterrupt:
-      cls.cls_log(logging.INFO, 'KeyboardInterrupt caught while running '
-                                'prepare_all')
-      cls._exception()
+    # At that point the Blocks might be started or not. If started, they are
+    # preparing or waiting at the Barrier
+    except (Exception, KeyboardInterrupt) as exc:
+      # KeyboardInterrupt is a separate case
+      if isinstance(exc, KeyboardInterrupt):
+        cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
+                                     "Process while running prepare_all !")
+        # Special Event for the KeyboardInterrupt
+        cls.kbi_event.set()
+        cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
+                                     'KeyboardInterrupt in the main Process '
+                                     'in prepare_all')
+      # General case
+      else:
+        cls.logger.exception("Caught exception while running prepare_all, "
+                             "aborting", exc_info=exc)
+        # Any Exception caught in the main Process must stop the script
+        cls.raise_event.set()
+        cls.cls_log(logging.WARNING, 'Set the raise Event after exception was '
+                                     'caught in the main Process in '
+                                     'prepare_all')
+      # Breaking the Barrier to warn other Processes that something went wrong
+      cls.ready_barrier.abort()
+      cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
+                                   "caught in prepare_all")
+      # Need to clean up as some Blocks might already be running
+      cls._cleanup()
 
   @classmethod
   def renice_all(cls, allow_root: bool) -> None:
@@ -262,11 +295,12 @@ class Block(Process, metaclass=MetaBlock):
       if not cls.prepared_all:
         cls.cls_log(logging.ERROR, "Cannot call renice before calling "
                                    "prepare ! Aborting")
-        return
+        raise RuntimeError
       if cls.launched_all:
         cls.cls_log(logging.ERROR,
                     "Please call crappy.reset() before calling the renice_all "
                     "method again ! Aborting")
+        raise RuntimeError
 
       # There's no niceness on Windows
       if system() == "Windows":
@@ -292,10 +326,32 @@ class Block(Process, metaclass=MetaBlock):
           cls.cls_log(logging.INFO, f"Reniced process {inst.name} with PID "
                                     f"{inst.pid} to niceness {niceness}")
 
-    except KeyboardInterrupt:
-      cls.cls_log(logging.INFO, 'KeyboardInterrupt caught while running '
-                                'renice_all')
-      cls._exception()
+    # At that point the Blocks should be preparing or waiting at the Barrier
+    except (Exception, KeyboardInterrupt) as exc:
+      # KeyboardInterrupt is a separate case
+      if isinstance(exc, KeyboardInterrupt):
+        cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
+                                     "Process while running renice_all !")
+        # Special Event for the KeyboardInterrupt
+        cls.kbi_event.set()
+        cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
+                                     'KeyboardInterrupt in the main Process '
+                                     'in renice_all')
+      # General case
+      else:
+        cls.logger.exception("Caught exception while running renice_all, "
+                             "aborting", exc_info=exc)
+        # Any Exception caught in the main Process must stop the script
+        cls.raise_event.set()
+        cls.cls_log(logging.WARNING, 'Set the raise Event after exception was '
+                                     'caught in the main Process in '
+                                     'renice_all')
+      # Breaking the Barrier to warn other Processes that something went wrong
+      cls.ready_barrier.abort()
+      cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
+                                   "caught in renice_all")
+      # Need to clean up the running Blocks and other Processes / Threads
+      cls._cleanup()
 
   @classmethod
   def launch_all(cls) -> None:
@@ -315,13 +371,13 @@ class Block(Process, metaclass=MetaBlock):
       # Making sure that the Block classmethods are called in the right order
       if not cls.prepared_all:
         cls.cls_log(logging.ERROR, "Cannot call launch_all before calling "
-        return
                                    "prepare_all ! Aborting")
+        raise RuntimeError
       if cls.launched_all:
         cls.cls_log(logging.ERROR,
-                    "Please reset Crappy before calling the launch_all method "
-                    "again ! Not doing anything.")
-        return
+                    "Please call crappy.reset() before calling the launch_all "
+                    "method again ! Aborting")
+        raise RuntimeError
 
       cls.launched_all = True
 
@@ -345,68 +401,72 @@ class Block(Process, metaclass=MetaBlock):
         cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
                                   "other ones to follow")
 
-    # A Block crashed while preparing
-    except BrokenBarrierError:
-      cls.cls_log(logging.ERROR, "Exception raised in a Block while waiting "
-                                 "for all Blocks to be ready, stopping")
-      cls._exception()
-    # The user ended the script while preparing
-    except KeyboardInterrupt:
-      cls.cls_log(logging.INFO, 'KeyboardInterrupt caught while running '
-                                'launch_all')
-      cls._exception()
-    # Another exception occurred
-    except (Exception,) as exc:
-      cls.logger.exception("Caught exception while running launch_all, "
-                           "aborting", exc_info=exc)
-      cls._exception()
-
-    # Performing the cleanup actions before exiting
+    except (BrokenBarrierError, KeyboardInterrupt, Exception) as exc:
+      # KeyboardInterrupt is a separate case
+      if isinstance(exc, KeyboardInterrupt):
+        cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
+                                     "Process while running launch_all !")
+        # Special Event for the KeyboardInterrupt
+        cls.kbi_event.set()
+        cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
+                                     'KeyboardInterrupt in the main Process '
+                                     'in launch_all')
+      # Case when a Block crashed while preparing
+      elif isinstance(exc, BrokenBarrierError):
+        cls.cls_log(logging.ERROR, "Exception raised in a Block while waiting "
+                                   "for all Blocks to be ready, stopping")
+      # General case
+      else:
+        cls.logger.exception("Caught exception while running launch_all, "
+                             "aborting", exc_info=exc)
+        # Any Exception caught in the main Process must stop the script
+        cls.raise_event.set()
+        cls.cls_log(logging.WARNING, 'Set the raise Event after exception was '
+                                     'caught in the main Process in '
+                                     'launch_all')
+      # Breaking the Barrier to warn other Processes that something went wrong
+      cls.ready_barrier.abort()
+      cls.cls_log(logging.WARNING, "Broke the Barrier due to an exception "
+                                   "caught in launch_all")
     finally:
       # Need to clean up the running Blocks and other Processes / Threads
       cls._cleanup()
 
   @classmethod
-  def _exception(cls) -> None:
-    """This method is called when an exception is caught in the main Process.
+  def _cleanup(cls) -> None:
+    """Method called at the very end of every script execution.
 
     It waits for all the Blocks to end, and kills them if they don't stop by
     themselves. Also stops the Thread managing the logging.
     """
 
-    cls.stop_event.set()
-    cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks to '
-                              'finish')
-    t = time()
-
-    # Waiting at most 3 seconds for all the blocks to finish
-    while cls.instances and not all(not inst.is_alive() for inst
-                                    in cls.instances):
-      cls.cls_log(logging.INFO, "All Blocks not stopped yet")
-      sleep(0.5)
-
-      # After 3 seconds, killing the blocks that didn't stop
-      if time() - t > 3:
-        cls.cls_log(logging.WARNING, 'All Blocks not stopped, terminating the '
-                                     'living ones')
-        for inst in cls.instances:
-          if inst.is_alive():
-            inst.terminate()
-            cls.cls_log(logging.WARNING, f'Block {inst.name} terminated')
-          else:
-            cls.cls_log(logging.INFO, f'Block {inst.name} done')
-
-        break
-
-  @classmethod
-  def _cleanup(cls) -> None:
-    """Method called at the very end of every script execution.
-
-    It stops, if relevant, the USBServer and the log_thread, and warns the user
-    in case Processes would still be running.
-    """
-
     try:
+
+      # Setting the stop Event, to indicate all the Blocks to finish
+      cls.stop_event.set()
+      cls.cls_log(logging.INFO, 'Stop event set, waiting for all Blocks to '
+                                'finish')
+      t = time()
+
+      # Waiting at most 3 seconds for all the Blocks to finish
+      while cls.instances and not all(not inst.is_alive() for inst
+                                      in cls.instances):
+        cls.cls_log(logging.INFO, "All Blocks not stopped yet")
+        sleep(0.5)
+
+        # After 3 seconds, killing the Blocks that didn't stop
+        if time() - t > 3:
+          cls.cls_log(logging.WARNING, 'All Blocks not stopped, terminating '
+                                       'the living ones')
+          for inst in cls.instances:
+            if inst.is_alive():
+              inst.terminate()
+              cls.cls_log(logging.WARNING, f'Block {inst.name} terminated')
+            else:
+              cls.cls_log(logging.INFO, f'Block {inst.name} done')
+
+          break
+
       # Stopping the USB server if required
       if USBServer.initialized:
         cls.cls_log(logging.INFO, "Stopping the USB server")
@@ -428,16 +488,47 @@ class Block(Process, metaclass=MetaBlock):
                             if inst.is_alive())
         cls.cls_log(logging.ERROR, f"Crappy failed to finish gracefully, "
                                    f"Block(s) {running} still running !")
+        # An Exception is raised in case all the Blocks don't finish gracefully
+        cls.raise_event.set()
+        cls.cls_log(logging.WARNING, 'Set the raise Event because all the '
+                                     'Blocks did not terminate as requested')
       else:
         cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
                                   'gracefully !\n')
 
-    except KeyboardInterrupt:
-      cls.cls_log(logging.INFO, "Caught KeyboardInterrupt while cleaning up, "
-                                "ignoring it")
-    except (Exception,) as exc:
-      cls.logger.exception("Caught exception while cleaning up !",
-                           exc_info=exc)
+    # Exceptions at that point cannot really be handled, but should still raise
+    # in the main Process
+    except (Exception, KeyboardInterrupt) as exc:
+      # KeyboardInterrupt is a separate case
+      if isinstance(exc, KeyboardInterrupt):
+        cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt while "
+                                     "cleaning up, ignoring it !")
+        # Special Event for the KeyboardInterrupt
+        cls.kbi_event.set()
+        cls.cls_log(logging.WARNING, 'Set the KbI Event after catching '
+                                     'KeyboardInterrupt while cleaning up')
+      else:
+        cls.logger.exception("Caught exception while cleaning up !",
+                             exc_info=exc)
+
+        # Any Exception caught in the main Process must stop the script
+        cls.raise_event.set()
+        cls.cls_log(logging.WARNING, 'Set the raise Event after exception was '
+                                     'caught in the main Process while '
+                                     'cleaning up')
+
+    # Deciding whether to raise and stop the main Process
+    finally:
+      if cls.raise_event.is_set():
+        cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                   "execution, raising CrappyFail !")
+        raise CrappyFail
+      elif cls.kbi_event.is_set():
+        cls.cls_log(logging.ERROR, "KeyboardInterrupt called while running "
+                                   "Crappy, raising it !")
+        raise KeyboardInterrupt("Stopping Crappy using CTRL+C is deprecated "
+                                "in the general case ! Use CTRL+D on Linux "
+                                "and macOS, or CTRL+Z and ENTER on Windows.")
 
   @classmethod
   def _set_logger(cls) -> None:
@@ -536,6 +627,8 @@ class Block(Process, metaclass=MetaBlock):
     cls.ready_barrier = None
     cls.start_event = None
     cls.stop_event = None
+    cls.raise_event = None
+    cls.kbi_event = None
 
     if cls.logger is not None:
       cls.cls_log(logging.INFO, 'Crappy was reset by the reset() command')
@@ -589,16 +682,19 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     try:
-      # Initializes the logger for the Block
-      self._set_block_logger()
-      self.log(logging.INFO, "Block launched")
-
-      # Running the preliminary actions before the test starts
+      # Any Exception caught at the beginning should break the Barrier
       try:
+        # Initializes the Logger for the Block
+        self._set_block_logger()
+        self.log(logging.INFO, "Block launched")
+
+        # Running the preliminary actions before the test starts
         self.log(logging.INFO, "Block preparing")
         self.prepare()
-      except (Exception,):
-        # If exception is raised, breaking the barrier to warn the other blocks
+
+      # If an Exception is raised, warning the other Blocks by breaking the
+      # Barrier
+      except (Exception, KeyboardInterrupt):
         self._ready_barrier.abort()
         self.log(logging.WARNING, "Broke the Barrier after an Exception was "
                                   "caught while preparing")
@@ -638,6 +734,10 @@ class Block(Process, metaclass=MetaBlock):
     except LinkDataError:
       self.log(logging.ERROR, "Tried to send a wrong data type through a Link,"
                               " stopping !")
+      # Any unexpected Exception should stop the script
+      self._raise_event.set()
+      self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                'unexpected Exception while running')
     # An error occurred in another Block while preparing
     except PrepareError:
       self.log(logging.ERROR, "Exception raised in another Block while waiting"
@@ -646,22 +746,42 @@ class Block(Process, metaclass=MetaBlock):
     except CameraConfigError:
       self.log(logging.ERROR, "Exception raised in a configuration window, "
                               "stopping")
+      # Any unexpected Exception should stop the script
+      self._raise_event.set()
+      self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                'unexpected Exception while running')
     # An error occurred in a Camera process while preparing
     except CameraPrepareError:
       self.log(logging.ERROR, "Exception raised in a Camera Process while "
                               "preparing, stopping")
+      # Any unexpected Exception should stop the script
+      self._raise_event.set()
+      self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                'unexpected Exception while running')
       # An error occurred in a Camera Process while running
     except CameraRuntimeError:
       self.log(logging.ERROR, "Exception raised in a Camera process while "
                               "running, stopping")
+      # Any unexpected Exception should stop the script
+      self._raise_event.set()
+      self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                'unexpected Exception while running')
     # The start Event took too long to be set
     except StartTimeout:
       self.log(logging.ERROR, "Waited too long for start time to be set, "
                               "aborting !")
+      # Any unexpected Exception should stop the script
+      self._raise_event.set()
+      self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                'unexpected Exception while running')
     # Tried to access t0 but it's not set yet
     except T0NotSetError:
       self.log(logging.ERROR, "Trying to get the value of t0 when it's not "
                               "set yet, aborting")
+      # Any unexpected Exception should stop the script
+      self._raise_event.set()
+      self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                'unexpected Exception while running')
     # A Generator Block finished its Path
     except GeneratorStop:
       self.log(logging.WARNING, f"Generator Path exhausted, stopping the "
@@ -672,11 +792,18 @@ class Block(Process, metaclass=MetaBlock):
                                 "FileReader Camera, stopping the Block")
     # The user requested the script to stop
     except KeyboardInterrupt:
-      self.log(logging.INFO, f"KeyBoardInterrupt caught, stopping")
+      self.log(logging.WARNING, f"KeyboardInterrupt caught, stopping")
+      # A KeyboardInterrupt should stop the script and be raised as is
+      self._kbi_event.set()
+      self.log(logging.WARNING, 'Set the KbI Event after catching a '
+                                'KeyboardInterrupt while running')
     # Another Exception occurred
     except (Exception,) as exc:
-      self._logger.exception("Caught exception while running !", exc_info=exc)
       self._logger.exception("Caught Exception while running !", exc_info=exc)
+      # Any unexpected Exception should stop the script
+      self._raise_event.set()
+      self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                'unexpected Exception while running')
 
     # In all cases, trying to properly close the Block
     finally:
@@ -686,11 +813,19 @@ class Block(Process, metaclass=MetaBlock):
         self.log(logging.INFO, "Calling the finish method")
         self.finish()
       except KeyboardInterrupt:
-        self.log(logging.INFO, "Caught KeyboardInterrupt while finishing, "
-                               "ignoring it")
+        self.log(logging.WARNING, "Caught KeyboardInterrupt while finishing, "
+                                  "ignoring it")
+        # A KeyboardInterrupt should stop the script and be raised as is
+        self._kbi_event.set()
+        self.log(logging.WARNING, 'Set the KbI Event after catching a '
+                                  'KeyboardInterrupt while finishing')
       except (Exception,) as exc:
         self._logger.exception("Caught Exception while finishing !",
                                exc_info=exc)
+        # Any unexpected Exception should stop the script
+        self._raise_event.set()
+        self.log(logging.WARNING, 'Set the raise Event after catching an '
+                                  'unexpected Exception while finishing')
 
   def main(self) -> None:
     """The main loop of the :meth:`run` method. Repeatedly calls the
