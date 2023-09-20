@@ -614,8 +614,7 @@ videoconvert ! autovideosink
 
     # Reloading the software ROI selection settings
     if self._soft_roi_set and self._formats and ' ' in self._formats[0]:
-      sleep(0.1)
-      width, height = search(r'(\d+)x(\d+)', self._get_format()).groups()
+      width, height = search(r'(\d+)x(\d+)', img_format).groups()
       self.reload_software_roi(int(width), int(height))
 
   def _get_format(self) -> str:
