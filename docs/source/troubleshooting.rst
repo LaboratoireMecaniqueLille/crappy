@@ -17,3 +17,6 @@ on the GitHub page. Alternatively, you can also `open a new discussion
 to chat in a more informal way with the community. When reporting a bug, make
 sure to always **indicate which OS you're running, which version of Python**
 **you're using, and include both your script and the error Traceback you get**.
+You can also attach the log file, located at ``/tmp/crappy/logs.txt`` on Linux
+and macOS, or at ``C:\Users\<User>\AppData\Local\Temp\crappy\logs.txt`` on
+Windows.
