@@ -2,9 +2,9 @@
 
 from platform import system
 from multiprocessing import Process, Value, Barrier, Event, Queue, \
-  get_start_method
+  get_start_method, synchronize, queues
 from multiprocessing.sharedctypes import Synchronized
-from multiprocessing import synchronize, queues
+from multiprocessing.connection import wait
 from threading import BrokenBarrierError, Thread
 from queue import Empty
 import logging
@@ -341,9 +341,9 @@ class Block(Process, metaclass=MetaBlock):
       # The main Process mustn't finish before all the Blocks are stopped
       cls.cls_log(logging.INFO, 'Main Process done, waiting for all Blocks to '
                                 'finish')
-      for inst in cls.instances:
-        inst.join()
-        cls.cls_log(logging.INFO, f'{inst.name} finished by itself')
+      for _ in wait([inst.sentinel for inst in cls.instances]):
+        cls.cls_log(logging.INFO, "A Block has finished, waiting for the "
+                                  "other ones to follow")
 
     # A Block crashed while preparing
     except BrokenBarrierError:
