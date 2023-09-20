@@ -163,6 +163,9 @@ class Block(Process, metaclass=MetaBlock):
     Once started with this method, the Blocks will call their :meth:`prepare`
     method and then be blocked by a :obj:`multiprocessing.Barrier`.
 
+    If an error is caught at a moment when the Blocks might already be running,
+    performs an extensive cleanup to ensure everything stops as expected.
+
     Args:
       log_level: The maximum logging level that will be handled by Crappy. By
         default, it is set to the lowest level (:obj:`~logging.DEBUG`) so that 
@@ -283,6 +286,9 @@ class Block(Process, metaclass=MetaBlock):
     associated with the Blocks.
 
     On Windows, does nothing.
+
+    If an error is caught, performs an extensive cleanup to ensure everything
+    stops as expected.
 
     Args:
       allow_root: If set to :obj:`True`, tries to renice the Processes with 
@@ -436,8 +442,14 @@ class Block(Process, metaclass=MetaBlock):
   def _cleanup(cls) -> None:
     """Method called at the very end of every script execution.
 
-    It waits for all the Blocks to end, and kills them if they don't stop by
-    themselves. Also stops the Thread managing the logging.
+    It first waits for all the Blocks to end, and kills them if they don't stop
+    by themselves. Then, it also stops, if relevant, the USBServer and the
+    log_thread, and warns the user in case Processes would still be running.
+
+    Finally, it raises an exception if needed, in order to stop the script of
+    the main Process. This way, any action that could follow the normal
+    execution of Crappy won't happen, unless the user explicitly catches
+    Crappy's exception and decides to go on with the script.
     """
 
     try:
