@@ -86,6 +86,7 @@ class CameraScaleSetting(CameraSetting):
   def reload(self,
              lowest: NbrType,
              highest: NbrType,
+             value: NbrType,
              default: Optional[NbrType] = None) -> None:
     """Allows modifying the limits of the scale bar once it is already
     instantiated."""
@@ -104,4 +105,4 @@ class CameraScaleSetting(CameraSetting):
     if self.tk_obj is not None:
       self.tk_obj.configure(to=self.highest, from_=self.lowest)
     if self.tk_var is not None:
-      self.tk_var.set(self.value)
+      self.tk_var.set(value)

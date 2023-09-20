@@ -395,13 +395,13 @@ class Camera(metaclass=MetaCamera):
     if self._soft_roi_set:
       self.log(logging.DEBUG, "Reloading the software ROI settings")
       self.settings[self.roi_x_name].reload(lowest=0, highest=width-1,
-                                            default=0)
+                                            value=0, default=0)
       self.settings[self.roi_y_name].reload(lowest=0, highest=height - 1,
-                                            default=0)
+                                            value=0, default=0)
       self.settings[self.roi_width_name].reload(lowest=1, highest=width,
-                                                default=width)
+                                                value=width, default=width)
       self.settings[self.roi_height_name].reload(lowest=1, highest=height,
-                                                 default=height)
+                                                 value=height, default=height)
       self.settings[self.roi_x_name].value = 0
       self.settings[self.roi_y_name].value = 0
       self.settings[self.roi_width_name].value = width
