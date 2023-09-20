@@ -212,7 +212,7 @@ class Block(Process, metaclass=MetaBlock):
         cls.cls_log(logging.INFO, "Starting the USB server")
         USBServer.start_server(cls.log_queue, logging.INFO)
 
-      # Passing the synchronization and logging objects to each block
+      # Passing the synchronization and logging objects to each Block
       for instance in cls.instances:
         instance._ready_barrier = cls.ready_barrier
         instance._instance_t0 = cls.shared_t0
@@ -231,7 +231,7 @@ class Block(Process, metaclass=MetaBlock):
         cls.cls_log(logging.INFO, f"Log level set for the {instance.name} "
                                   f"Block")
 
-      # Starting all the blocks
+      # Starting all the Blocks
       for instance in cls.instances:
         instance.start()
         cls.cls_log(logging.INFO, f'Started the {instance.name} Block')
@@ -258,22 +258,22 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     try:
-      # Making sure the prepare method has already been called
+      # Making sure that the Block classmethods are called in the right order
       if not cls.prepared_all:
         cls.cls_log(logging.ERROR, "Cannot call renice before calling "
                                    "prepare ! Aborting")
         return
       if cls.launched_all:
         cls.cls_log(logging.ERROR,
-                    "Please reset Crappy before calling the renice_all method "
-                    "again ! Not doing anything.")
+                    "Please call crappy.reset() before calling the renice_all "
+                    "method again ! Aborting")
 
       # There's no niceness on Windows
       if system() == "Windows":
         cls.cls_log(logging.INFO, 'Not renicing processes on Windows')
         return
 
-      # Renicing all the blocks
+      # Renicing all the Blocks
       cls.cls_log(logging.INFO, 'Renicing processes')
       for inst in cls.instances:
         # If root is not allowed then the minimum niceness is 0
@@ -312,11 +312,11 @@ class Block(Process, metaclass=MetaBlock):
     """
 
     try:
-      # Making sure the prepare method has already been called
+      # Making sure that the Block classmethods are called in the right order
       if not cls.prepared_all:
         cls.cls_log(logging.ERROR, "Cannot call launch_all before calling "
-                                   "prepare ! Aborting")
         return
+                                   "prepare_all ! Aborting")
       if cls.launched_all:
         cls.cls_log(logging.ERROR,
                     "Please reset Crappy before calling the launch_all method "
@@ -325,21 +325,21 @@ class Block(Process, metaclass=MetaBlock):
 
       cls.launched_all = True
 
-      # The barrier waits for the main process to be ready so that the
+      # The Barrier waits for the main Process to be ready so that the
       # prepare_all and launch_all methods can be used separately for a finer
       # grained control
       cls.cls_log(logging.INFO, 'Waiting for all Blocks to be ready')
       cls.ready_barrier.wait()
       cls.cls_log(logging.INFO, 'All Blocks ready now')
 
-      # Setting t0 and telling all the block to start
+      # Setting t0 and telling all the Blocks to start
       cls.shared_t0.value = time_ns() / 1e9
       cls.cls_log(logging.INFO, f'Start time set to {cls.shared_t0.value}s')
       cls.start_event.set()
       cls.cls_log(logging.INFO, 'Start event set, all Blocks can now start')
 
-      # The main process mustn't finish before all the blocks are done running
-      cls.cls_log(logging.INFO, 'Main process done, waiting for all Blocks to '
+      # The main Process mustn't finish before all the Blocks are stopped
+      cls.cls_log(logging.INFO, 'Main Process done, waiting for all Blocks to '
                                 'finish')
       for inst in cls.instances:
         inst.join()
@@ -363,6 +363,7 @@ class Block(Process, metaclass=MetaBlock):
 
     # Performing the cleanup actions before exiting
     finally:
+      # Need to clean up the running Blocks and other Processes / Threads
       cls._cleanup()
 
   @classmethod
@@ -418,7 +419,7 @@ class Block(Process, metaclass=MetaBlock):
 
       # Warning in case the log thread did not stop correctly
       if cls.log_thread.is_alive():
-        cls.cls_log(logging.WARNING, "The thread reading the log messages did "
+        cls.cls_log(logging.WARNING, "The Thread reading the log messages did "
                                      "not terminate in time !")
 
       # Checking whether all Blocks terminated gracefully
@@ -429,7 +430,7 @@ class Block(Process, metaclass=MetaBlock):
                                    f"Block(s) {running} still running !")
       else:
         cls.cls_log(logging.INFO, 'All Blocks done, Crappy terminated '
-                                  'gracefully\n')
+                                  'gracefully !\n')
 
     except KeyboardInterrupt:
       cls.cls_log(logging.INFO, "Caught KeyboardInterrupt while cleaning up, "
@@ -451,7 +452,7 @@ class Block(Process, metaclass=MetaBlock):
     always being saved to the log file.
     """
 
-    # The logger handling all messages
+    # The Logger handling all messages
     crappy_log = logging.getLogger('crappy')
 
     if cls.log_level is not None:
@@ -501,7 +502,7 @@ class Block(Process, metaclass=MetaBlock):
       if file_handler is not None:
         file_handler.setFormatter(log_format)
 
-      # Adding the handlers to the logger
+      # Adding the handlers to the Logger
       crappy_log.addHandler(stream_handler)
       crappy_log.addHandler(stream_handler_err)
       if file_handler is not None:
@@ -599,11 +600,11 @@ class Block(Process, metaclass=MetaBlock):
       except (Exception,):
         # If exception is raised, breaking the barrier to warn the other blocks
         self._ready_barrier.abort()
-        self.log(logging.WARNING, "Breaking the barrier due to caught "
-                                  "exception while preparing")
+        self.log(logging.WARNING, "Broke the Barrier after an Exception was "
+                                  "caught while preparing")
         raise
 
-      # Waiting for all blocks to be ready, except if the barrier was broken
+      # Waiting for all Blocks to be ready, except if the Barrier was broken
       try:
         self.log(logging.INFO, "Waiting for the other Blocks to be ready")
         self._ready_barrier.wait()
@@ -631,7 +632,7 @@ class Block(Process, metaclass=MetaBlock):
       # Running the main loop until told to stop
       self.log(logging.INFO, "Entering main loop")
       self.main()
-      self.log(logging.INFO, "Exiting main loop after stop event was set")
+      self.log(logging.INFO, "Exiting main loop after stop Event was set")
 
     # A wrong data type was sent through a Link
     except LinkDataError:
@@ -647,13 +648,13 @@ class Block(Process, metaclass=MetaBlock):
                               "stopping")
     # An error occurred in a Camera process while preparing
     except CameraPrepareError:
-      self.log(logging.ERROR, "Exception raised in a Camera process while "
+      self.log(logging.ERROR, "Exception raised in a Camera Process while "
                               "preparing, stopping")
-      # An error occurred in a Camera process while running
+      # An error occurred in a Camera Process while running
     except CameraRuntimeError:
       self.log(logging.ERROR, "Exception raised in a Camera process while "
                               "running, stopping")
-    # The start event took too long to be set
+    # The start Event took too long to be set
     except StartTimeout:
       self.log(logging.ERROR, "Waited too long for start time to be set, "
                               "aborting !")
@@ -661,25 +662,26 @@ class Block(Process, metaclass=MetaBlock):
     except T0NotSetError:
       self.log(logging.ERROR, "Trying to get the value of t0 when it's not "
                               "set yet, aborting")
-    # A Generator Block finished its path
+    # A Generator Block finished its Path
     except GeneratorStop:
-      self.log(logging.WARNING, f"Generator path exhausted, stopping the "
+      self.log(logging.WARNING, f"Generator Path exhausted, stopping the "
                                 f"Block")
     # A FileReader Camera object has no more file to read from
     except ReaderStop:
       self.log(logging.WARNING, "Exhausted all the images to read from a "
-                                "FileReader camera, stopping the Block")
+                                "FileReader Camera, stopping the Block")
     # The user requested the script to stop
     except KeyboardInterrupt:
       self.log(logging.INFO, f"KeyBoardInterrupt caught, stopping")
-    # Another exception occurred
+    # Another Exception occurred
     except (Exception,) as exc:
       self._logger.exception("Caught exception while running !", exc_info=exc)
+      self._logger.exception("Caught Exception while running !", exc_info=exc)
 
-    # In all cases, trying to properly close the block
+    # In all cases, trying to properly close the Block
     finally:
       try:
-        self.log(logging.INFO, "Setting the stop event")
+        self.log(logging.INFO, "Setting the stop Event")
         self._stop_event.set()
         self.log(logging.INFO, "Calling the finish method")
         self.finish()
@@ -687,7 +689,7 @@ class Block(Process, metaclass=MetaBlock):
         self.log(logging.INFO, "Caught KeyboardInterrupt while finishing, "
                                "ignoring it")
       except (Exception,) as exc:
-        self._logger.exception("Caught exception while finishing !",
+        self._logger.exception("Caught Exception while finishing !",
                                exc_info=exc)
 
   def main(self) -> None:
