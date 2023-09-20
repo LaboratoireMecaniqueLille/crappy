@@ -131,3 +131,15 @@ class GeneratorStop(Exception):
 class ReaderStop(Exception):
   """Exception raised when a :class:`~crappy.camera.FileReader` Camera has
   exhausted all the images to read."""
+
+
+class CrappyFail(Exception):
+  """Exception raised when an unexpected Exception is caught in Crappy. Also
+  raised when all the Blocks do not terminate gracefully."""
+
+  def __init__(self) -> None:
+    """Only defined here to set the message to display when raised."""
+
+    super().__init__("This Exception means that an error occurred while "
+                     "running Crappy. Check the Traceback in the terminal for "
+                     "more information")

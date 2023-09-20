@@ -4,6 +4,7 @@ Exceptions & missing Python modules
 
 .. autoexception:: crappy._global.CameraPrepareError
 .. autoexception:: crappy._global.CameraRuntimeError
+.. autoexception:: crappy._global.CrappyFail
 .. autoexception:: crappy._global.DefinitionError
 .. autoexception:: crappy._global.GeneratorStop
 .. autoexception:: crappy._global.LinkDataError
