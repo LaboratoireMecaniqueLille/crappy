@@ -25,6 +25,8 @@ Here are the BibTex codes for referencing the articles :
              keywords = {Control-command, Acquisition, Python, Experimental setup},
     }
 
+.. code-block:: shell-session
+
     @article{WEISROCK2023101348,
             title = {CRAPPY goes embedded: Including low-cost hardware in experimental setups},
             journal = {SoftwareX},
