@@ -56,6 +56,7 @@ class Block(Process, metaclass=MetaBlock):
   log_queue: Optional[queues.Queue] = None
   log_thread: Optional[Thread] = None
   thread_stop: bool = False
+  no_raise: bool = False
 
   prepared_all: bool = False
   launched_all: bool = False
@@ -123,7 +124,8 @@ class Block(Process, metaclass=MetaBlock):
   @classmethod
   def start_all(cls,
                 allow_root: bool = False,
-                log_level: Optional[int] = logging.DEBUG) -> None:
+                log_level: Optional[int] = logging.DEBUG,
+                no_raise: bool = False) -> None:
     """Method for starting a script with Crappy.
 
     It sets the synchronization objects for all the Blocks, renices the
@@ -147,11 +149,17 @@ class Block(Process, metaclass=MetaBlock):
         set to :obj:`None`, logging is totally disabled. Refer to the
         documentation of the :mod:`logging` module for information on the
         possible levels.
+      no_raise: When set to :obj:`False`, the Exceptions encountered during
+        Crappy's execution, as well as the :exc:`KeyboardInterrupt`, will raise
+        an Exception right before Crappy returns. This is meant to prevent the
+        execution of code that would come after Crappy, in case Crappy does not
+        terminate as expected. This behavior can be disabled by setting this
+        argument to :obj:`True`.
     """
 
     cls.prepare_all(log_level)
     cls.renice_all(allow_root)
-    cls.launch_all()
+    cls.launch_all(no_raise)
 
   @classmethod
   def prepare_all(cls, log_level: Optional[int] = logging.DEBUG) -> None:
@@ -360,7 +368,7 @@ class Block(Process, metaclass=MetaBlock):
       cls._cleanup()
 
   @classmethod
-  def launch_all(cls) -> None:
+  def launch_all(cls, no_raise: bool = False) -> None:
     """The final method being called by the main
     :obj:`~multiprocessing.Process` running a script with Crappy.
 
@@ -371,7 +379,18 @@ class Block(Process, metaclass=MetaBlock):
     In case an exception is raised, sets the stop :obj:`~multiprocessing.Event`
     for warning the Blocks, waits for the Blocks to finish, and if they don't,
     terminates them.
+
+    Args:
+      no_raise: When set to :obj:`False`, the Exceptions encountered during
+        Crappy's execution, as well as the :exc:`KeyboardInterrupt`, will raise
+        an Exception right before Crappy returns. This is meant to prevent the
+        execution of code that would come after Crappy, in case Crappy does not
+        terminate as expected. This behavior can be disabled by setting this
+        argument to :obj:`True`.
     """
+
+    # Setting the no_raise flag
+    cls.no_raise = no_raise
 
     try:
       # Making sure that the Block classmethods are called in the right order
@@ -531,16 +550,16 @@ class Block(Process, metaclass=MetaBlock):
 
     # Deciding whether to raise and stop the main Process
     finally:
-      if cls.raise_event.is_set():
+      if cls.raise_event.is_set() and not cls.no_raise:
         cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
                                    "execution, raising CrappyFail !")
         raise CrappyFail
-      elif cls.kbi_event.is_set():
+      elif cls.kbi_event.is_set() and not cls.no_raise:
         cls.cls_log(logging.ERROR, "KeyboardInterrupt called while running "
                                    "Crappy, raising it !")
-        raise KeyboardInterrupt("Stopping Crappy using CTRL+C is deprecated "
-                                "in the general case ! Use CTRL+D on Linux "
-                                "and macOS, or CTRL+Z and ENTER on Windows.")
+        raise KeyboardInterrupt("Crappy was stopped using CTRL+C ! To disable "
+                                "this Exception, set the no_raise argument of "
+                                "crappy.start() or crappy.launch() to True.")
 
   @classmethod
   def _set_logger(cls) -> None:
