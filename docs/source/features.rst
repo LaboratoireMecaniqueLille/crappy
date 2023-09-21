@@ -436,8 +436,8 @@ Sensors
 - :ref:`PiJuice`
 
   Reads the charging status and battery level of Kubii's `PiJuice <https://
-  www.kubii.fr/14-chargeurs-alimentations-raspberry/2019-pijuice-hat-kubii-
-  3272496008793.html>`_ Raspberry Pi power supply.
+  www.kubii.com/fr/14-chargeurs-alimentations-raspberry/2019-pijuice-hat-kubii
+  -3272496008793.html>`_ Raspberry Pi power supply.
 
   .. Important::
      This InOut was written for a specific application, so it may not be
