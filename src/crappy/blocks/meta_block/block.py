@@ -1099,6 +1099,7 @@ class Block(Process, metaclass=MetaBlock):
                                 f"{type(data)}) to dict ! Please ensure that "
                                 f"the data is given as an iterable, as well as"
                                 f" self.labels.")
+        raise
 
     # Sending the data to the downstream Blocks
     for link in self.outputs:
