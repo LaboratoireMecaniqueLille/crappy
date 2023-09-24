@@ -9,14 +9,16 @@ desired location. It can only record data from one Block, so multiple Recorders
 must be used for recording data from multiple Blocks.
 
 Here, a Recorder Block is used for saving the data recorded by an IOBlock
-driving a FakeInOut that measures the RAM usage of the computer.
+driving a FakeInOut that measures the RAM usage of the computer. Note that in
+addition, A StopButton Block allows stopping the script properly without using
+CTRL+C by clicking on a button.
 
 After starting the script, a new file is created at demo_recorder/data.csv.
-Nothing visual should happen. The test should then be stopped by hitting
-CTRL+C. After stopping it, you can check that the data was recorded by opening
-the created .csv file. Try to open and close memory-intensive applications
-(like web browsers) during the test to see important RAM variations in the
-data.
+Nothing visual should happen. To end this demo, click on the stop button that
+appears. You can also hit CTRL+C, but it is not a clean way to stop Crappy.
+After stopping it, you can check that the data was recorded by opening the
+created .csv file. Try to open and close memory-intensive applications (like
+web browsers) during the test to see important RAM variations in the data.
 """
 
 import crappy
@@ -44,6 +46,11 @@ if __name__ == '__main__':
       freq=20,  # No need to run at a higher frequency than the label to record
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Linking the Block so that the information is correctly sent and received

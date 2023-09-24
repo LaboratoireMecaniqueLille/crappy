@@ -8,13 +8,16 @@ installed.
 
 It acquires images on a fake camera, and records part of them at the given
 location. Before the test starts, it also lets the user adjust some settings on
-the camera in a configuration window.
+the camera in a configuration window. Note that in addition, A StopButton Block
+allows stopping the script properly without using CTRL+C by clicking on a
+button.
 
 After starting this script, you can play with the parameters in the
 configuration window. Once you're done, close the configuration window. Nothing
 should happen, except images will start being recorded at the given location.
-Stop the test after a few seconds by hitting CTRL+C, and check the destination
-folder to see the recorded images.
+Stop the test after a few seconds by clicking on the stop button that appears,
+and check the destination folder to see the recorded images. You can also hit
+CTRL+C, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -43,6 +46,11 @@ if __name__ == '__main__':
 
       # Sticking to default for the other arguments
       )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
+  )
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

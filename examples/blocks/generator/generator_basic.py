@@ -13,9 +13,9 @@ Here, the Generator is used to output first a ramp signal during 10s, followed
 by a sine signal during 10s. The output signal is displayed by a Grapher Block.
 
 After starting this script, you can visualize the shape of the generated signal
-in the Grapher window. This script ends after 22s, or it can be stopped before
-by hitting CTRL+C. You can also restart it with different parameters for the
-Generator paths.
+in the Grapher window. This script ends after 22s. You can also hit CTRL+C to
+stop it earlier, but it is not a clean  way to stop Crappy. You can restart it
+with different parameters for the Generator paths.
 """
 
 import crappy

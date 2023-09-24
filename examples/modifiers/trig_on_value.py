@@ -18,7 +18,8 @@ time.
 
 After starting this script, watch how the TrigOnValue Modifier filters the
 data so that values are only sent when the signal is equal to 1. This demo ends
-after 32s, but it can be stopped earlier by hitting CTRL+C.
+after 32s. You can also hit CTRL+C to stop it earlier, but it is not a clean
+way to stop Crappy.
 """
 
 import crappy

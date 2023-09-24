@@ -18,12 +18,15 @@ Because the make_zero_delay argument of the IOBlock is given, values are
 acquired before the test starts. While the normal behavior would be for these
 values to be used for offsetting the signal to 0, the behavior is here modified
 by supplying a custom make_zero method in the custom InOut. The goal here is to
-show how to define a custom make_zero method for InOut objects.
+show how to define a custom make_zero method for InOut objects. Note that in
+addition, a StopButton Block allows stopping the script properly without using
+CTRL+C by clicking on a button.
 
 After starting this script, observe how the given offset is inverted instead of
 being compensated to 0. You can modify the delay of the acquisition, or the
-value of the offset, and see how the behavior persists. This demo never ends,
-and must be stopped by hitting CTRL+C.
+value of the offset, and see how the behavior persists. To end this demo, click
+on the stop button that appears. You can also hit CTRL+C, but it is not a clean
+way to stop Crappy.
 """
 
 import crappy
@@ -137,6 +140,11 @@ if __name__ == '__main__':
       freq=30,  # Useless to loop at a higher frequency than the IOBlock
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Linking the Block so that the information is correctly sent and received

@@ -16,10 +16,13 @@ sends the acquired data to a Dashboard Block for display, with a Demux Modifier
 on the Link that converts the stream to regular data. The acquired data is
 simply randomly generated numbers. The goal here is to show the basic methods
 to use for creating a custom InOut object that acquires data in streamer mode.
+Note that in addition, a StopButton Block allows stopping the script properly
+without using CTRL+C by clicking on a button.
 
 After starting this script, simply watch how the data is successfully generated
 by the InOut object, transmitted by the IOBlock and displayed by the Dashboard
-Block. This demo never ends, and must be stopped by hitting CTRL+C.
+Block. To end this demo, click on the stop button that appears. You can also
+hit CTRL+C, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -131,6 +134,11 @@ if __name__ == '__main__':
               # regular data readable by the Dashboard Block
               modifier=crappy.modifier.Demux(labels=('signal',),
                                              stream_label='stream'))
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
+  )
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

@@ -20,8 +20,9 @@ Mean Modifier is always close to 0.
 
 After starting this script, just watch how the raw signal is transformed by the
 Mean Modifier and averaged to 0. Also notice how the initial data rate of the
-signal is divided when passing through the Mean Modifier. This demo never ends,
-and must be stopped by hitting CTRL+C.
+signal is divided when passing through the Mean Modifier. This demo ends after
+22s. You can also hit CTRL+C to stop it earlier, but it is not a clean way to
+stop Crappy.
 """
 
 import crappy
@@ -33,7 +34,7 @@ if __name__ == '__main__':
   # receives it averaged by the Mean Modifier
   gen = crappy.blocks.Generator(
       # Generating a sine wave of amplitude 2 and frequency 1
-      ({'type': 'Sine', 'condition': None, 'amplitude': 2, 'freq': 1},),
+      ({'type': 'Sine', 'condition': 'delay=20', 'amplitude': 2, 'freq': 1},),
       freq=30,  # Lowering the default frequency because it's just a demo
       cmd_label='sine',  # The label carrying the generated signal
 

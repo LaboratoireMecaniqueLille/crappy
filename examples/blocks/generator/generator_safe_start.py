@@ -16,8 +16,9 @@ starts generating data.
 
 After starting this script, the Grapher remains empty as long as the user does
 not click on the Button to generate a first value of 'control'. Then, the
-signal starts to be generated and is displayed on the Grapher. This demo never
-ends, and must be stopped by hitting CTRL+C.
+signal starts to be generated and is displayed on the Grapher. This demo ends
+when the 'control' label reaches the value of 11. You can also hit CTRL+C to
+stop it earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -32,7 +33,7 @@ if __name__ == '__main__':
       # a value is received for 'control'
       ({'type': 'Ramp',
         'speed': 1,
-        'condition': 'control<0',  # The 'control' label is the condition here
+        'condition': 'control>10',  # The 'control' label is the condition here
         'init_value': 0},),
       freq=50,  # Lowering the default frequency because it's just a demo
       cmd_label='signal',  # The label carrying the value of the generated

@@ -19,8 +19,8 @@ variations of the target and the command speed.
 After starting this script, just watch how the measured speed value evolves to
 match the target speed, and how it reacts when the target changes. You can try
 to play with the PID settings to see how that impacts its performance and
-stability. This demo ends after 32s, but it can be stopped earlier by hitting
-CTRL+C.
+stability. This demo ends after 32s. You can also hit CTRL+C to stop it
+earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy

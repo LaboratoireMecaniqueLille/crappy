@@ -16,7 +16,7 @@ Block, that allows sending values before any data is received from the server.
 Then, start the server.py script. The server starts sending data, and the
 second curve for the server time appears. The 'flag' label on the Dashboard is
 also updated. You can then stop the server.py script, and finally stop this one
-by hitting CTRL+C..
+by hitting CTRL+C.
 """
 
 import crappy
@@ -65,5 +65,5 @@ if __name__ == '__main__':
   crappy.link(client, graph)
   crappy.link(client, dash)
 
-  # Mandatory line for starting the test, this call is blocking
-  crappy.start()
+  # Setting no_raise because CTRL+C is the most natural way to stop this demo
+  crappy.start(no_raise=True)

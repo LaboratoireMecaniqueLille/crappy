@@ -9,12 +9,15 @@ number of clicks, and sends it to downstream Blocks.
 
 In this example, the number of clicks is simply displayed on the window of a
 Dashboard Block. The windows of the Button and the Dashboard might first be
-overlapping, you may need to move one to uncover the other.
+overlapping, you may need to move one to uncover the other. Note that in
+addition, A StopButton Block allows stopping the script properly without using
+CTRL+C by clicking on a button.
 
 After starting this script, you should click on the button that appeared and
 watch how the Dashboard reacts accordingly. You can try to click multiple times
-at once, or to leave a few seconds between you clicks. This demo never ends,
-and must be stopped by hitting CTRL+C.
+at once, or to leave a few seconds between you clicks. To end this demo, click
+on the stop button that appears. You can also hit CTRL+C, but it is not a clean
+way to stop Crappy.
 """
 
 import crappy
@@ -44,6 +47,11 @@ if __name__ == '__main__':
 
       # Sticking to default for the other arguments
       )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
+  )
 
   # Linking the Block so that the information is correctly sent and received
   crappy.link(button, graph)

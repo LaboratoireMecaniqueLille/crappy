@@ -12,11 +12,14 @@ be combined to form a custom global path.
 Here, the Generator is used to output a very complex path, creating using list
 comprehension and f-strings. The overall shape of this path could have been
 generated more smoothly by other means, but the goal here is to show the
-potential complexity of the Generator paths.
+potential complexity of the Generator paths. Note that in addition, A
+StopButton Block allows stopping the script properly without using CTRL+C by
+clicking on a button.
 
 After starting this script, you can visualize the shape of the generated signal
 in the Grapher window. Take a moment to contemplate how twisted the path
-instantiation is. This demo never ends, and must be stopped by hitting CTRL+C.
+instantiation is. To end this demo, click on the stop button that appears. You
+can also hit CTRL+C, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -57,6 +60,11 @@ if __name__ == '__main__':
 
   # This Grapher displays the signal it receives from the Generator
   graph = crappy.blocks.Grapher(('t(s)', 'signal'))
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
+  )
 
   # Linking the Block so that the information is correctly sent and received
   crappy.link(gen, graph)

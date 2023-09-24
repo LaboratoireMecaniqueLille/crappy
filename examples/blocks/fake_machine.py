@@ -15,7 +15,8 @@ the test is displayed by a Grapher Block.
 
 After starting this script, watch the force-strain curve being displayed. After
 a few cycles, the plastic behavior of the sample should be clearly visible.
-This demo ends after a few minutes, or it can be stopped by hitting CTRL+C.
+This demo ends after a few minutes. You can also hit CTRL+C to stop it earlier,
+but it is not a clean way to stop Crappy.
 """
 
 import crappy

@@ -20,7 +20,9 @@ that displays the acquired images. The Camera object features a trigger
 setting, that lets the user select the trigger mode in the configuration
 window. Because there's no actual hardware involved, the hardware trigger mode
 is emulated by only allowing one image acquisition per second. The goal here is
-to show how to implement a trigger setting in Camera objects.
+to show how to implement a trigger setting in Camera objects. Note that in
+addition, A StopButton Block allows stopping the script properly without using
+CTRL+C by clicking on a button.
 
 After starting this script, a configuration window appears in which you can see
 the generated images. You can only tune the trigger mode setting. Select one
@@ -33,7 +35,8 @@ mode is always applied. And in Hdw after config trigger mode, the configuration
 window should run normally at ~30 FPS, but the displayer window should only
 update at ~1 Hz. The Free run mode remains active until the configuration
 window is closed, and the Camera is then switched to Hardware trigger mode.
-This demo never ends and must be stopped by hitting CTRL+C.
+To end this demo, click on the stop button that appears. You can also hit
+CTRL+C, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -156,6 +159,11 @@ if __name__ == '__main__':
       save_images=False,  # No need to record images in this example
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Mandatory line for starting the test, this call is blocking

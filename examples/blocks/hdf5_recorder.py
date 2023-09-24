@@ -11,12 +11,14 @@ mode.
 
 Here, the HDF5Recorder records data sent by an IOBlock driving a FakeInOut. By
 default, it records it to the newly created demo_hdf5_recorder folder in the
-data.hdf5 file.
+data.hdf5 file. Note that in addition, A StopButton Block allows stopping the
+script properly without using CTRL+C by clicking on a button.
 
 After starting this script, nothing more happens but data is being recorded to
-the destination file. Stop the test by hitting CTRL+C after a few seconds, and
-notice how the data has been written to the destination file. For reading it,
-you'll need to load the data, for example using the h5py Python module.
+the destination file. To end this demo, click on the stop button that appears.
+You can also hit CTRL+C, but it is not a clean way to stop Crappy. Then, notice
+how the data has been written to the destination file. For reading it, you'll
+need to load the data, for example using the h5py Python module.
 """
 
 import crappy
@@ -47,6 +49,11 @@ if __name__ == '__main__':
       # smoothly
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Linking the Blocks together so that each one sends and received the correct

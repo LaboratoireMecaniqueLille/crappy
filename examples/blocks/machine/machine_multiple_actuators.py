@@ -19,8 +19,8 @@ sent to a Grapher Block for display.
 
 After starting this script, observe how both Actuators are successfully being
 driven in a symmetrical way. Notice how little the script differs from the
-basic one that only drives one Actuator. This script never ends and must be
-stopped by hitting CTRL+C.
+basic one that only drives one Actuator. This script ends after 20s. You can
+also hit CTRL+C to stop it earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -54,7 +54,7 @@ if __name__ == '__main__':
         'value2': -1,
         'condition1': 'delay=4',
         'condition2': 'delay=2',
-        'cycles': 0},),
+        'cycles': 3},),
       freq=50,  # Lowering the default frequency because it is just a demo
       cmd_label=cmd_label,  # The label carrying the speed command
 

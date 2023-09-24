@@ -20,8 +20,9 @@ is allowed to go faster when moving towards positive positions. This
 demonstrates the possibility to adjust the speed at runtime in position mode.
 
 After starting this script, watch how the speed command is set on the motor and
-how the speed differs for the two position setpoints. This script never ends
-and must be stopped by hitting CTRL+C.
+how the speed differs for the two position setpoints. This script ends after 
+32s. You can also hit CTRL+C to stop it earlier, but it is not a clean way to
+stop Crappy.
 """
 
 import crappy
@@ -39,7 +40,7 @@ if __name__ == '__main__':
         'value2': -10,
         'condition1': 'delay=5',
         'condition2': 'delay=5',
-        'cycles': 0},),
+        'cycles': 3},),
       freq=50,  # Lowering the default frequency because it is just a demo
       cmd_label='cmd_pos(mm)',  # The label carrying the position command
 

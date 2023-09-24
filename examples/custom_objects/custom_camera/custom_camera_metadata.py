@@ -18,15 +18,17 @@ that displays the acquired images. The Camera object generates images randomly,
 and does not feature any setting. 1 out of 3 images are recorded to a newly
 created demo_metadata folder, along with a metadata.csv storing the metadata of
 all the images. The goal here is to show how to implement custom metadata
-acquisition in Camera objects.
+acquisition in Camera objects. Note that in addition, A StopButton Block allows
+stopping the script properly without using CTRL+C by clicking on a button.
 
 After starting this script, a configuration window appears in which you can see
 the generated images. There is no setting to tune. Close this window to start
 the test, the actual smaller displayer window should then appear and display
-the acquired images. After a few seconds, stop the test by hitting CTRL+C. A
-demo_metadata folder should have been created, that contains the recorded
-images and a metadata.csv file. You can open this file and check that the
-metadata returned in the get_image method was correctly saved.
+the acquired images. To end this demo, click after a few seconds on the stop
+button that appears. You can also hit CTRL+C, but it is not a clean way to stop
+Crappy. A demo_metadata folder should have been created, that contains the
+recorded images and a metadata.csv file. You can open this file and check that
+the metadata returned in the get_image method was correctly saved.
 """
 
 import crappy
@@ -124,6 +126,11 @@ if __name__ == '__main__':
       save_period=3,  # Only saving 1 out of 3 images to avoid saving too many
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Mandatory line for starting the test, this call is blocking

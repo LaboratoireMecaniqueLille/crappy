@@ -21,7 +21,8 @@ the MovingMed Modifier quickly becomes close to 0.
 After starting this script, just watch how the raw signal is transformed by the
 MovingMed Modifier and filtered to 0. Also notice how the initial data rate of
 the signal is preserved when passing through the MovingMed Modifier. This demo
-never ends, and must be stopped by hitting CTRL+C.
+ends after 22s. You can also hit CTRL+C to stop it earlier, but it is not a
+clean way to stop Crappy.
 """
 
 import crappy
@@ -33,7 +34,7 @@ if __name__ == '__main__':
   # receives it filtered by the MovingMed Modifier
   gen = crappy.blocks.Generator(
       # Generating a sine wave of amplitude 2 and frequency 1
-      ({'type': 'Sine', 'condition': None, 'amplitude': 2, 'freq': 1},),
+      ({'type': 'Sine', 'condition': 'delay=20', 'amplitude': 2, 'freq': 1},),
       freq=30,  # Lowering the default frequency because it's just a demo
       cmd_label='sine',  # The label carrying the generated signal
 

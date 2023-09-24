@@ -7,13 +7,16 @@ run, but necessitates the opencv-python and Pillow modules to be installed.
 
 It acquires images on a fake camera, and displays them in a small visualization
 window. Before the test starts, it also lets the user adjust some settings on
-the camera in a configuration window.
+the camera in a configuration window. Note that in addition, A StopButton Block
+allows stopping the script properly without using CTRL+C by clicking on a
+button.
 
 After starting this script, you can play with the parameters in the
 configuration window. Once you're done, close the configuration and watch the
 displayer broadcast the images with the chosen settings. You can run this
-script multiple times and set new parameters. This demo never ends, and must be
-stopped by hitting CTRL+C.
+script multiple times and set new parameters. To end this demo, click on the
+stop button that appears. You can also hit CTRL+C, but it is not a clean way to
+stop Crappy.
 """
 
 import crappy
@@ -38,6 +41,11 @@ if __name__ == '__main__':
 
       # Sticking to default for the other arguments
       )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
+  )
 
   # Mandatory line for starting the test, this call is blocking
   crappy.start()

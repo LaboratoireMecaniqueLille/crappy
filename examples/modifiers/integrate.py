@@ -16,8 +16,8 @@ Grapher displays both the sine wave and its integral.
 
 After starting this script, just observe the sine wave and its integral be
 displayed on the graph. You can recognize a nice 1 - cos(x) wave for the
-integral of the sine. This demo never ends, and must be stopped by hitting
-CTRL+C.
+integral of the sine. This demo ends after 22s. You can also hit CTRL+C to stop
+it earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -33,7 +33,7 @@ if __name__ == '__main__':
       # Generating a sine wave of amplitude 2 and frequency 1 / (2 * pi)
       # This frequency ensures that its integral will also have an amplitude
       # of 2
-      ({'type': 'Sine', 'condition': None, 'freq': 1 / (2 * pi),
+      ({'type': 'Sine', 'condition': 'delay=20', 'freq': 1 / (2 * pi),
         'amplitude': 2},),
       cmd_label='sine',  # The label carrying the generated signal
       freq=100,  # Using a quite high frequency to get a smooth display

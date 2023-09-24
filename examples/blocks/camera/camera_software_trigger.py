@@ -11,13 +11,15 @@ window. Before the test starts, it also lets the user adjust some settings on
 the camera in a configuration window. The difference with the basic display
 example is that here a Button Block lets the user decide when to acquire the
 images. The trigger is only active once the test starts, so the configuration
-window runs normally.
+window runs normally. Note that in addition, A StopButton Block allows stopping
+the script properly without using CTRL+C by clicking on a button.
 
 After starting this script, you can play with the parameters in the
 configuration window. Once you're done, close the configuration window. Then,
 click on the button to trigger an image acquisition and watch the acquired
-images be broadcast in the displayer window. This demo never ends, and must be
-stopped by hitting CTRL+C.
+images be broadcast in the displayer window. To end this demo, click on the
+stop button that appears. You can also hit CTRL+C, but it is not a clean way to
+stop Crappy.
 """
 
 import crappy
@@ -59,6 +61,11 @@ if __name__ == '__main__':
 
       # Sticking to default for the other arguments
       )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
+  )
 
   # Linking the Block so that the information is correctly sent and received
   crappy.link(button, cam)

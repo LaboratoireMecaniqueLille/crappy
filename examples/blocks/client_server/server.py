@@ -78,4 +78,5 @@ if __name__ == '__main__':
   crappy.link(gen, server, modifier=is_positive)
 
   # Mandatory line for starting the test, this call is blocking
-  crappy.start()
+  # Setting no_raise because CTRL+C is the most natural way to stop this demo
+  crappy.start(no_raise=True)

@@ -21,7 +21,8 @@ After starting this script, watch how the data is modified by the custom
 Modifier on its way to the Dashboard. The RMS value is successfully calculated
 and added, while the 'index' label is removed. The RMs value stabilizes little
 by little to sqrt(2)/2, which is expected for a sine wave with no offset. This
-demo never ends, and must be stopped by hitting CTRL+C.
+demo ends after 22s. You can also hit CTRL+C to stop it earlier, but it is not
+a clean way to stop Crappy.
 """
 
 import crappy
@@ -106,7 +107,8 @@ if __name__ == '__main__':
   # and modified by the CustomModifier Modifier defined above
   gen = crappy.blocks.Generator(
       # Generating a sine wave of period 6s and amplitude 2
-      ({'type': 'Sine', 'amplitude': 2, 'freq': 1/6, 'condition': None},),
+      ({'type': 'Sine', 'amplitude': 2, 'freq': 1/6, 
+        'condition': 'delay=20'},),
       cmd_label='signal',  # The label carrying the generated signal
       path_index_label='index',  # The label carrying the current Path index
       freq=30,  # Lowering the default frequency because it's just a demo

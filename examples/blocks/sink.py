@@ -15,7 +15,8 @@ that's it.
 After starting this script, watch how really nothing happens as the generated
 data is immediately discarded. In the console, you can still see that the Sink
 Block is alive as it displays its looping frequency. This script ends after
-17s, but you can stop it earlier by hitting CTRL+C.
+17s. You can also hit CTRL+C to stop it earlier, but it is not a clean way to
+stop Crappy.
 """
 
 import crappy

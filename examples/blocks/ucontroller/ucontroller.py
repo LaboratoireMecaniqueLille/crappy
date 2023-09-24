@@ -33,8 +33,8 @@ LED to your microcontroller.
 
 After starting the script, watch how the LED blinks at the target frequency,
 and how the frequency increases every 10s. The blink count is also successfully
-returned and displayed. This script automatically ends after 42s, but it can be
-stopped earlier by hitting CTRL+C.
+returned and displayed. This script automatically ends after 52s. You can also
+hit CTRL+C to stop it earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -68,7 +68,7 @@ if __name__ == '__main__':
       # microcontroller
       init_output={'nr': 0},  # The value to output for each label as long as
       # no value was received from the microcontroller
-      t_device=True, # The returned time is the one read from the
+      t_device=True,  # The returned time is the one read from the
       # microcontroller, not the one of Crappy
       port='/dev/ttyUSB0',  # The port on which the microcontroller is
       # connected, might need to be adjusted depending on your OS, setup, and

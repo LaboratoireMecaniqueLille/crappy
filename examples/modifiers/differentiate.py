@@ -16,7 +16,8 @@ displays both the sine wave and its derivative.
 
 After starting this script, just observe the sine wave and its derivative be
 displayed on the graph. You can recognize a nice cosine wave for the derivative
-of the sine. This demo never ends, and must be stopped by hitting CTRL+C.
+of the sine. This demo ends after 22s. You can also hit CTRL+C to stop it
+earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -33,7 +34,7 @@ if __name__ == '__main__':
       # This frequency ensures that its derivative will also have an amplitude
       # of 2
       ({'type': 'Sine', 'amplitude': 2, 'freq': 1 / (2 * pi),
-        'condition': None},),
+        'condition': 'delay=20'},),
       cmd_label='sine',  # The label carrying the generated signal
       freq=100,  # Using a quite high frequency to get a smooth display
 

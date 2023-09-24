@@ -15,13 +15,15 @@ the make_zero_delay argument is provided, the IOBlock acquires data for a few
 seconds before the test starts, and takes the average of these acquired value
 as the 0 for values acquired during the test. This means that the memory values
 sent to downstream Blocks will all be relative to the memory value just before
-the test starts.
+the test starts. Note that in addition, A StopButton Block allows stopping the
+script properly without using CTRL+C by clicking on a button.
 
 After starting this script, watch the memory usage of the system being plotted
 on the Grapher. It should evolve if you open or close heavy applications, like
 videos in browser tabs. Unlike in the other examples of the IOBlock, the memory
 values start around 0 because they are all offset due to the make_zero_delay
-argument. To stop this demo, you must press CTRL+C.
+argument. To end this demo, click on the stop button that appears. You can also
+hit CTRL+C, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -49,6 +51,11 @@ if __name__ == '__main__':
       ('t(s)', 'memory'),
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Linking the Block so that the information is correctly sent and received

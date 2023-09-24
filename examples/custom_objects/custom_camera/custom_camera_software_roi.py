@@ -17,15 +17,18 @@ ROI setting only requires calling two methods, as demonstrated in this example.
 Here, a very simple Camera object is instantiated, and driven by a Camera Block
 that displays the acquired images. The Camera object features a software ROI
 setting, that lets the user select the ROI in the configuration window. The
-goal here is to show how to implement a software ROI in Camera objects.
+goal here is to show how to implement a software ROI in Camera objects. Note
+that in addition, A StopButton Block allows stopping the script properly
+without using CTRL+C by clicking on a button.
 
 After starting this script, a configuration window appears in which you can see
 the generated images. There are four settings that you can tune, that
 correspond to software ROI settings. Change their values, click on the Apply
 Setting button, and see how the image is impacted. When you're done, close the
 configuration window and see how the settings values are applied to the
-displayed images during the test. This demo never ends and must be stopped by
-hitting CTRL+C.
+displayed images during the test. To end this demo, click on the stop button
+that appears. You can also hit CTRL+C, but it is not a clean way to stop
+Crappy.
 """
 
 import crappy
@@ -111,6 +114,11 @@ if __name__ == '__main__':
       save_images=False,  # No need to record images in this example
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Mandatory line for starting the test, this call is blocking

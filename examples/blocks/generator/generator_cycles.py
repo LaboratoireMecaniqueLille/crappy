@@ -13,12 +13,15 @@ Here, the Generator is used to output cyclic constant signals. The given path
 first oscillates 3 times between 1 and -1, then 3 times between 2 and -2. When
 the path is exhausted, it is then repeated and loops forever. This example
 demonstrates how the path_index_label allows to track the index of the current
-path, even when the repeat argument is set to True.
+path, even when the repeat argument is set to True. Note that in addition, A
+StopButton Block allows stopping the script properly without using CTRL+C by
+clicking on a button.
 
 After starting this script, you can visualize the shape of the generated signal
 in the Grapher window, and watch how the 'index' label is updated each time the
-Generator switches to a new path. This script never ends, and must be stopped
-by hitting CTRL+C.
+Generator switches to a new path. To end this demo, click on the stop button
+that appears. You can also hit CTRL+C, but it is not a clean way to stop
+Crappy.
 """
 
 import crappy
@@ -63,6 +66,11 @@ if __name__ == '__main__':
   # This Grapher displays the signal it receives from the Generator, along with
   # the index of the current path
   graph = crappy.blocks.Grapher(('t(s)', 'signal'), ('t(s)', 'index'))
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
+  )
 
   # Linking the Block so that the information is correctly sent and received
   # The Generator is linked to itself because it takes decision based on its

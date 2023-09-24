@@ -23,8 +23,8 @@ After starting this script, simply watch how the command values are
 successfully sent to the IOBlock, set on the InOut, read back from the InOut,
 and transmitted to the Dashboard. You can adjust the value of the max_value
 setting on the IOBlock, and see how it is successfully set on the InOut and
-modifies its output accordingly. This demo never ends, and must be stopped by
-hitting CTRL+C.
+modifies its output accordingly. This demo ends after 22s. You can also hit
+CTRL+C to stop it earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -105,7 +105,8 @@ if __name__ == '__main__':
   # a command to set on the InOut
   gen = crappy.blocks.Generator(
       # Generating a sine wave of amplitude 2 and frequency 0.2 centered on 0
-      ({'type': 'Sine', 'amplitude': 2, 'condition': None, 'freq': 1 / 5},),
+      ({'type': 'Sine', 'amplitude': 2, 'condition': 'delay=20', 
+        'freq': 1 / 5},),
       cmd_label='cmd',  # Tha label carrying the generated signal
       freq=10,  # Lowering the default frequency because it's just a demo
 

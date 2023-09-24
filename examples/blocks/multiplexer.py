@@ -21,8 +21,8 @@ is sent to a Grapher for display.
 After starting this script, just watch how the two interpolated labels are
 displayed at the same frequency by the Grapher, whereas they have originally
 very different frequencies. You can try to change the different frequencies and
-see what the result is.This demo never ends, and must be stopped by hitting
-CTRL+C.
+see what the result is. This demo ends after 22s. You can also hit CTRL+C to
+stop it earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -33,7 +33,8 @@ if __name__ == '__main__':
   # the Multiplexer Block for interpolation
   gen_fast = crappy.blocks.Generator(
       # Generating an increasing Ramp signal with a speed of 1
-      ({'type': 'Ramp', 'speed': 1, 'condition': None, 'init_value': 0},),
+      ({'type': 'Ramp', 'speed': 1, 'condition': 'delay=20', 
+        'init_value': 0},),
       freq=50,  # This Generator outputs signal at a moderately high frequency
       cmd_label='cmd_slow',  # The label carrying the output signal
 

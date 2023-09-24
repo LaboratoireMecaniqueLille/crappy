@@ -12,10 +12,13 @@ spots are updated based on the values received from the upstream Blocks.
 In this example, the Canvas displays the image of a brake pad. A Generator
 simulates a temperature variation and sends it to the Canvas. It is displayed
 as a spot whose color changes according to the temperature value. The current
-time and the current path index of the Generator are also displayed.
+time and the current path index of the Generator are also displayed. Note that
+in addition, A StopButton Block allows stopping the script properly without
+using CTRL+C by clicking on a button.
 
-After starting this script, just watch how the Canvas evolves. This demo never
-ends, and must be stopped by hitting CTRL+C.
+After starting this script, just watch how the Canvas evolves. To end this
+demo, click on the stop button that appears. You can also hit CTRL+C, but it is
+not a clean way to stop Crappy.
 """
 
 import crappy
@@ -83,6 +86,11 @@ if __name__ == '__main__':
 
       # Sticking to default for the other arguments
       )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
+  )
 
   # Linking the Block so that the information is correctly sent and received
   crappy.link(gen_temp, canvas)

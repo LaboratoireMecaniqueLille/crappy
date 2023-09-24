@@ -17,7 +17,8 @@ initial value of the ramp to 0.
 
 After starting this script, just notice how the ramp with an initial offset of
 10 is forcibly shifted to 0 offset by the Offset Modifier. This demo ends after
-12s, but it can be stopped earlier by hitting CTRL+C.
+12s. You can also hit CTRL+C to stop it earlier, but it is not a clean way to
+stop Crappy.
 """
 
 import crappy

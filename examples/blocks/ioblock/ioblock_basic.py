@@ -13,15 +13,17 @@ Here, the IOBlock drives the FakeInOut InOut that can read and/or adjust the
 memory usage of the system. A Generator generates a sinusoidal memory usage
 target, and the IOBlock drives the FakeInOut so that the actual memory usage
 stays as close as possible to that target. A Grapher Block displays the target
-and actual values.
+and actual values. Note that in addition, A StopButton Block allows stopping
+the script properly without using CTRL+C by clicking on a button.
 
 After starting this script, just watch how the actual memory usage is being
 driven to match the target. You can monitor the memory usage of the computer
 independently using the Task Manager (Windows) or htop (Linux), it should match
 with the one displayed in Crappy. Depending on your memory level at the moment
 when you start this script, you might need to adjust the offset of the target
-to be able to see the effects of this script. For ending this script, press
-CTRL+C.
+to be able to see the effects of this script. To end this demo, click on the
+stop button that appears. You can also hit CTRL+C, but it is not a clean way to
+stop Crappy.
 """
 
 import crappy
@@ -68,6 +70,11 @@ if __name__ == '__main__':
       ('t(s)', 'target'), ('t(s)', 'memory')
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Linking the Block so that the information is correctly sent and received

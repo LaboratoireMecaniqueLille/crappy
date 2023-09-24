@@ -17,8 +17,8 @@ the strain on the images, and outputs it to a Grapher Block for display.
 After starting this script, you have to select the patch in the configuration
 window. Draw the patch by left-clicking and dragging. Then, close the
 configuration window and watch the strain be calculated in real time. This demo
-normally ends automatically after 2 minutes, but can also be stopped by hitting
-CTRL+C.
+normally ends automatically after 2 minutes. You can also hit CTRL+C to stop it
+earlier, but it is not a clean way to stop Crappy.
 """
 
 import crappy

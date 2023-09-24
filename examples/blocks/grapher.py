@@ -16,7 +16,8 @@ Grapher, the first one limits the number of datapoints it can display, and the
 second displays non-interpolated data points.
 
 After starting this script, just watch the curves evolve on the two Graphers.
-This demo ends after 27s, or it can be stopped before by hitting CTRL+C.
+This demo ends after 27s. You can also hit CTRL+C to stop it earlier, but it is
+not a clean way to stop Crappy.
 """
 
 import crappy

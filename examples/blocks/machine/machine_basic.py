@@ -17,7 +17,8 @@ the real-time dynamic behavior of the emulated DC motor.
 After starting this script, observe how the speed of the DC motor evolves
 according to the cyclic tension setpoint. You can also adjust the parameters of
 the setpoint (magnitude, frequency) and see how the emulated DC motor reacts.
-This script never ends and must be stopped by hitting CTRL+C.
+This script ends after 20s. You can also hit CTRL+C to stop it earlier, but it
+is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -33,7 +34,7 @@ if __name__ == '__main__':
         'condition1': 'delay=3',
         'value2': 10,
         'condition2': 'delay=3',
-        'cycles': 0},),
+        'cycles': 3},),
       freq=50,  # Lowering the default frequency because it is just a demo
       cmd_label='tension(V)',  # The output of the Generator is a tension
 

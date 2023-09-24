@@ -20,7 +20,8 @@ difference in pixels between the center of the markers and the center of the
 image) is displayed on a Grapher.
 
 After starting this script, just sit back and watch it run. This demo normally
-ends automatically after 2 minutes, but can also be stopped by hitting CTRL+C.
+ends automatically after 2 minutes. You can also hit CTRL+C to stop it earlier,
+but it is not a clean way to stop Crappy.
 """
 
 import crappy

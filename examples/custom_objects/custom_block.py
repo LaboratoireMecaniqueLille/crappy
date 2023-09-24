@@ -22,7 +22,8 @@ see how the data is successfully sent by the CustomBlock. You can adjust the
 various settings of the Block, especially the method to use for receiving data.
 Also play with the looping frequency of the custom and Generator Blocks to see
 what happens when several chunks are waiting in the Links. This demo ends after
-t_limit seconds, but can be stopped earlier by hitting CTRL+C.
+t_limit seconds. You can also hit CTRL+C to stop it earlier, but it is not a
+clean way to stop Crappy.
 """
 
 import crappy

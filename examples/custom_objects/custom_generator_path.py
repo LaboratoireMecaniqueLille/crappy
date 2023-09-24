@@ -20,7 +20,8 @@ custom Path object.
 After starting this script, watch how the signal is generated as desired by the
 custom Path and displayed in the Grapher. You can adjust the various settings
 of the Path in the Generator Block and see how it affects the signal. This demo
-never ends, and must be stopped by hitting CTRL+C.
+ends after 22s. You can also hit CTRL+C to stop it earlier, but it is not a
+clean way to stop Crappy.
 """
 
 import crappy
@@ -128,7 +129,7 @@ if __name__ == '__main__':
         'freq': 0.5,  # The period of the sine wave is 2s
         'power': 2,  # The sine is elevated to the power 2
         'offset': 3,  # The sine is generated with an offset of 3
-        'condition': None},),  # The Path never stops generating the sine
+        'condition': 'delay=20'},),  # The Path stops after 20s
       freq=30,  # Lowering the default frequency because it's just a demo
       cmd_label='signal',  # The label carrying the generated signal
 

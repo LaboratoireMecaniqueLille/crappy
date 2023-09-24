@@ -22,8 +22,9 @@ mode, but it is very similar to the position mode.
 
 After starting this script, watch how the target position is set on the
 Actuator and how its position is simultaneously acquired. Notice how the
-position of the Actuator evolves towards the target. This demo never ends, and
-must be stopped by hitting CTRL+C.
+position of the Actuator evolves towards the target. This demo ends after 42s.
+You can also hit CTRL+C to stop it earlier, but it is not a clean way to stop
+Crappy.
 """
 
 import crappy

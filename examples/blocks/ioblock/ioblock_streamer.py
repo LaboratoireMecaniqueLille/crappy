@@ -14,12 +14,15 @@ sends it to a Grapher Block for display. It is only possible to set the
 streamer mode to True because this specific InOut supports it. Stream data is
 mostly meant to be saved in Crappy, but that is already demonstrated in the
 hdf5_recorder example. Instead, this example demonstrates how to make stream
-data readable by any Block using the Demux Modifier.
+data readable by any Block using the Demux Modifier. Note that in addition, A
+StopButton Block allows stopping the script properly without using CTRL+C by
+clicking on a button.
 
 After starting the script, just watch the memory consumption being displayed
 in the Grapher. You can open and close heavy applications (like videos in a web
-browser) and watch how the memory usage evolves accordingly. This script must
-be stopped by pressing CTRL+C.
+browser) and watch how the memory usage evolves accordingly. To end this demo,
+click on the stop button that appears. You can also hit CTRL+C, but it is not a
+clean way to stop Crappy.
 """
 
 import crappy
@@ -45,6 +48,11 @@ if __name__ == '__main__':
       ('t(s)', 'memory'),
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Linking the Block so that the information is correctly sent and received

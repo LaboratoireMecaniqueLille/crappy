@@ -16,13 +16,16 @@ Here, a very simple InOut object is instantiated for reading data. It is driven
 by an IOBlock that sends the acquired data to a Dashboard Block for display.
 The InOut object simply returns the index of its current loop, and has one
 parameter that can be tuned. The goal here is to show the basic methods to
-use for creating a custom InOut object that acquires data.
+use for creating a custom InOut object that acquires data. Note that in
+addition, A StopButton Block allows stopping the script properly without using
+CTRL+C by clicking on a button.
 
 After starting this script, simply watch how the data is successfully generated
 by the InOut object, transmitted by the IOBlock and displayed by the Dashboard
 Block. You can adjust the value of the max_value setting in the IOBlock and see
-how it is successfully set on the InOut. This demo never ends, and must be
-stopped by hitting CTRL+C.
+how it is successfully set on the InOut. To end this demo, click on the stop
+button that appears. You can also hit CTRL+C, but it is not a clean way to stop
+Crappy.
 """
 
 import crappy
@@ -119,6 +122,11 @@ if __name__ == '__main__':
       freq=30,  # Useless to loop at a higher frequency than the IOBlock
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Linking the Block so that the information is correctly sent and received

@@ -53,6 +53,11 @@ if __name__ == "__main__":
       # Sticking to default for the other arguments
   )
 
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
+  )
+
   # Linking the Block so that the information is correctly sent and received
   crappy.link(gen, daq)
   crappy.link(daq, graph)

@@ -14,13 +14,16 @@ in the distributed version of Crappy.
 Here, a very simple Camera object is instantiated, and driven by a Camera Block
 that displays the acquired images. The Camera object generates images randomly,
 and does not feature any setting. The goal here is to show the basic methods to
-use for creating a custom Camera object.
+use for creating a custom Camera object. Note that in addition, A StopButton
+Block allows stopping the script properly without using CTRL+C by clicking on a
+button.
 
 After starting this script, a configuration window appears in which you can see
 the generated images. There is no setting to tune. Close this window to start
 the test, the actual smaller displayer window should then appear. You can see
-how the code written in this example translates to a usable Camera object. This
-demo never ends, and must be stopped by hitting CTRL+C.
+how the code written in this example translates to a usable Camera object. To
+end this demo, click on the stop button that appears. You can also hit CTRL+C,
+but it is not a clean way to stop Crappy.
 """
 
 import crappy
@@ -106,6 +109,11 @@ if __name__ == '__main__':
       save_images=False,  # No need to record the images in this demo
 
       # Sticking to default for the other arguments
+  )
+
+  # This Block allows the user to properly exit the script
+  stop = crappy.blocks.StopButton(
+      # No specific argument to give for this Block
   )
 
   # Mandatory line for starting the test, this call is blocking
