@@ -1,7 +1,4 @@
 # coding: utf-8
-# Blocks are classes, running indefinitely in a single process.
-# Some of them are already implemented (see the reference manual),
-# but you can also implement your own.
 
 from .auto_drive_video_extenso import AutoDriveVideoExtenso
 from .meta_block import Block
@@ -26,6 +23,8 @@ from .pid import PID
 from .link_reader import LinkReader
 from .recorder import Recorder
 from .sink import Sink
+from .stop_block import StopBlock
+from .stop_button import StopButton
 from .ucontroller import UController
 from .video_extenso import VideoExtenso
 

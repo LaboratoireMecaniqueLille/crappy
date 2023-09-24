@@ -167,6 +167,16 @@ Others
 
   Discards any received data. Used for prototyping and debugging only.
 
+- :ref:`Stop Block`
+
+  Stops the current Crappy script if the received data meets one of the given
+  criteria. One of the clean ways to stop a script in Crappy.
+
+- :ref:`Stop Button`
+
+  Stops the current Crappy script when the user clicks on a button in a GUI.
+  One of the clean ways to stop a script in Crappy.
+
 Supported hardware (Cameras, InOuts, Actuators)
 -----------------------------------------------
 

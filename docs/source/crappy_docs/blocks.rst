@@ -137,6 +137,18 @@ Sink
    :members: loop
    :special-members: __init__
 
+Stop Block
+++++++++++
+.. autoclass:: crappy.blocks.StopBlock
+   :members: loop
+   :special-members: __init__
+
+Stop Button
++++++++++++
+.. autoclass:: crappy.blocks.StopButton
+   :members: prepare, loop, finish
+   :special-members: __init__
+
 UController
 +++++++++++
 .. autoclass:: crappy.blocks.UController
