@@ -189,116 +189,101 @@ sections !
 2. The most used Blocks
 -----------------------
 
-2.a The Generator Block
-+++++++++++++++++++++++
+In this third section, you will **learn how to handle the most used Blocks of**
+**Crappy**. These Blocks are all essential, and you'll come across at least one
+of them in most scripts. For an extensive list of all the implemented Blocks,
+refer to the :ref:`Current functionalities` section of the documentation.
 
-Most of the time actuators need to be driven according to a pre-determined
-scheme, which thus needs to be given by the user to the program. In Crappy, this
-is achieved using the :ref:`Generator` block. This section specifically
-illustrates the syntax for building signals with a Generator. We'll start from
-the example described in the previous section.
+2.a The Generator Block and its Paths
++++++++++++++++++++++++++++++++++++++
 
-Previously, we were simply driving the :ref:`Fake machine` at a constant pace.
-Let's say that we now want to perform cyclic stretching and relaxation (5
-cycles), and then stretch the sample until failure at a constant pace. The only
-thing that needs to be changed in our previous script is actually the ``path``
-argument in the Generator block !
+Let's start this tour of the most used Blocks with the :ref:`Generator`. It
+allows to **generate a signal according to a pre-defined pattern**, and to send
+it to downstream Blocks. It is mostly used for generating commands when driving
+actuators or motors, but has actually many more possible applications (trigger
+generation, target for a PID, etc.). In the previous section, the presented
+example already contained an instance of the Generator Block. So let's take a
+closer look at it :
 
-This argument must be a :obj:`list` containing :obj:`dict`. Each :obj:`dict`
-provides information for generating signal following a specific pattern. All
-the patterns can be found in :ref:`the generator path section <Generator Paths>`.
-The dicts in the list are considered successively by the Generator, until
-there's no dict left in which case the program stops.
+.. literalinclude:: /downloads/crappy_syntax.py
+   :language: python
+   :emphasize-lines: 7-10
+   :lines: 1-11
 
-We previously used the :ref:`constant` pattern, which is why we specified
-``'type': 'constant'``. The only argument characterizing a constant is its
-value, specified by ``'value': '5/60'``. The third key entered is
-``'condition'``. It tells Crappy which condition must be satisfied for the
-Generator to move on to the next dict. Here it is simply :obj:`None`, the signal
-will be generated indefinitely if the program doesn't stop.
+As you can see, the first argument of the Generator is its *path*. It describes
+the shape of the generated signal, and is the main parameter to set when
+instantiating a Generator Block. It has to be an
+:obj:`~collections.abc.Iterable` (like a :obj:`list` or a :obj:`tuple`), that
+contains one or several :obj:`dict` with the correct keys. **Each dictionary**
+**represents one type of signal to generate**, and these signals are generated
+in the same order as the dictionaries are given. The moment when the Generator
+switches to the next dictionary is usually determined by the :py:`'condition'`
+argument of the current dictionary, if applicable. After finishing the last
+dictionary, the default behavior for the Generator is to stop the current
+script.
 
-Now for a cyclic stretching, we have to use the :ref:`cyclic` pattern. It
-alternatively switches between two constant signals, here allowing to impose
-either a positive or a negative speed. To know what arguments it takes, we need
-to refer to the documentation. So we have to specify the ``'value1'`` and the
-``'value2'``, as well as the ``'condition1'`` and ``'condition2'``. When the
-condition associated with the value currently generated is met, it switches to
-the other value. the fifth argument, ``'cycles'``, indicates how many cycles
-should be run before the Generator switches to the next dict.
+To know the available types of signals and their mandatory and optional
+arguments, you'll need to refer to the :ref:`Generator Paths` section of the
+:ref:`API` page. There are quite many options available, and if you have a very
+specific need you can always
+:ref:`create your own Generator Path <1. Custom Generator Paths>`. The name of
+the :class:`~crappy.blocks.generator_path.meta_path.Path` to use (the type of
+signal to generate) is given by the :py:`'type'` key of each dictionary. The
+other keys represent the possible arguments for the given Path, and thus
+depend on the type of Path.
 
-For the two speed values, let's stick to the 5/60 mm/s we previously had. For
-the cycles, we said we wanted 5 of them. And regarding the condition, let's say
-we want our cycles to last 4 seconds, so 2 seconds stretching and 2 seconds
-relaxing. The syntax is as follows: ``'condition1': 'delay=2'``. The dict
-for the cyclic pattern is thus :
+In the example above, the first and only chosen Path is the
+:class:`~crappy.blocks.generator_path.Constant` one. As you can read in the
+API, it requires the :py:`'condition'` and :py:`'value'` arguments, which are
+indeed present in the dictionary. The Constant Path generates a constant signal
+of value :py:`'value'`, and stops when :py:`'condition'` is met. The syntax for
+the conditions is described in detail in the
+:meth:`~crappy.blocks.generator_path.meta_path.Path.parse_condition` method of
+the base Path, and :ref:`a tutorial section <3. Advanced Generator Paths>` is
+dedicated to the advanced uses of this argument. For a number of applications,
+setting it to :py:`'delay=xx'` (next Path after *xx* seconds) or to :obj:`None`
+(never switches to next Path) is fine.
 
-.. code-block:: python
+Let's now try to modify the previous example, so that the :ref:`Fake machine`
+is driven with a more complex pattern than just a constant speed. Let's say
+that we now want to perform cyclic stretching and relaxation on the fake
+sample, and then stretch it until failure. Compared to the previous example, we
+can keep the :class:`~crappy.blocks.generator_path.Constant` Path, but we must
+add a :class:`~crappy.blocks.generator_path.Cyclic` Path before to perform the
+cyclic stretching. Here's how it looks :
 
-   {'type': 'cyclic',
-    'value1': 5/60, 'value2': -5/60,
-    'condition1': 'delay=2', 'condition2': 'delay=2',
-    'cycles': 5}
+.. literalinclude:: /downloads/tuto_generator.py
+   :language: python
+   :emphasize-lines: 7-16
+   :lines: 1-17
 
-We still need to add a second dictionary for the second part of the assay, the
-monotonic stretching. This is actually what was performed in the last section,
-so let's just reuse the same dict. Our generator block now looks like this :
+As you may have guessed (or read in the API), the Cyclic Path alternates
+between two Constant Paths, and must thus be given the arguments for these two
+Paths. The :py:`'condition{1,2}'` keys indicate when to switch to the other
+Constant, and the :py:`'cycles'` key indicates after how many cycles to end the
+Cyclic Path and switch to the next one. Here, the Generator will switch to the
+Constant Path once the Cyclic one ends, and then end the test once the
+Constant Path finishes. To make the script runnable, let's complete it with the
+same code as in the previous example :
 
-.. code-block:: python
+.. literalinclude:: /downloads/tuto_generator.py
+   :language: python
+   :emphasize-lines: 18, 20-21, 23, 25, 27, 29-31, 33
 
-   import crappy
+The script should run in the exact same way as the one of the previous section,
+except this time there should be two cycles of stretching and relaxation before
+the final step of stretching until failure. **That reflects the changes we**
+**made to the path of the Generator Block**. Just like previously, the script
+will stop by itself. You can stop it earlier with CTRL+C, but this is not
+considered as a clean way to stop Crappy. :download:`Download this Generator
+example </downloads/tuto_generator.py>` to run it locally on your machine !
 
-   if __name__ == '__main__':
-
-       gen = crappy.blocks.Generator(path=[{'type': 'cyclic',
-                                            'value1': 5/60, 'value2': -5/60,
-                                            'condition1': 'delay=2',
-                                            'condition2': 'delay=2',
-                                            'cycles': 5},
-                                           {'type': 'constant',
-                                            'value': 5/60,
-                                            'condition': None}],
-                                     cmd_label='input_speed')
-
-Now you can try to run the script and see the changes. The program still needs
-to be stopped using CTRL+C otherwise it will run forever.
-
-.. code-block:: python
-   :emphasize-lines: 15-30
-
-   import crappy
-
-   if __name__ == '__main__':
-
-       gen = crappy.blocks.Generator(path=[{'type': 'cyclic',
-                                            'value1': 5/60, 'value2': -5/60,
-                                            'condition1': 'delay=2',
-                                            'condition2': 'delay=2',
-                                            'cycles': 5},
-                                           {'type': 'constant',
-                                            'value': 5/60,
-                                            'condition': None}],
-                                     cmd_label='input_speed')
-
-       machine = crappy.blocks.FakeMachine(cmd_label='input_speed')
-
-       record = crappy.blocks.Recorder(filename='data.csv',
-                                       labels=['t(s)', 'F(N)', 'x(mm)'])
-
-       graph_force = crappy.blocks.Grapher(('t(s)', 'F(N)'))
-
-       graph_pos = crappy.blocks.Grapher(('t(s)', 'x(mm)'))
-
-       crappy.link(gen, machine)
-
-       crappy.link(machine, record)
-       crappy.link(machine, graph_pos)
-       crappy.link(machine, graph_force)
-
-       crappy.start()
-
-So now you should be able to build any protocol, it is actually just a matter
-of adding dictionaries to the path list ! The many path types we provide should
-be more than sufficient for most protocols.
+**You should now be able to build an run a variety of patterns for your**
+**Generator Blocks** ! It is after all just a matter of reading the API,
+selecting the Paths that you want to use, and include them in the *path*
+argument of the Generator Block with the correct parameters. As mentioned
+earlier in this section, more information about the Generator Paths can be
+found in :ref:`another tutorial section <3. Advanced Generator Paths>`.
 
 2.b The Camera Block
 ++++++++++++++++++++

@@ -239,10 +239,10 @@ In a previous section we saw how to create everlasting generator paths and ones
 ending after a given delay. In many tests, this is not sufficient. Let's imagine
 that you have a tensile test setup on which you want to perform force-driven
 cyclic stretching. Consider the example from :ref:`the second section
-<2.a The Generator Block>`. We still want to perform 5 cycles of stretching
-and relaxation, still at a 5/60 mm/s pace, but now the condition for switching
-from stretching to relaxation is to reach 10kN. This needs to be somehow
-indicated to the ``'condition'`` key.
+<2.a The Generator Block and its Paths>`. We still want to perform 5 cycles of
+stretching and relaxation, still at a 5/60 mm/s pace, but now the condition for
+switching from stretching to relaxation is to reach 10kN. This needs to be
+somehow indicated to the ``'condition'`` key.
 
 Luckily, this is actually pretty easy to do in Crappy ! The first step is to
 make the Generator block aware of the current force value, which means to create
