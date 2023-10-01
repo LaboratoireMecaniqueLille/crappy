@@ -24,18 +24,29 @@ class FakeCamera(Camera):
     self._frame_nr = -1
 
     self.add_scale_setting('width', 1, 4096, None, self._gen_image, 1280)
-    self.add_scale_setting('height', 1, 4096, None, self._gen_image, 1024)
+    self.add_scale_setting('height', 1, 4096, None, self._gen_image, 720)
     self.add_scale_setting('speed', 0., 800., None, None, 100.)
     self.add_scale_setting('fps', 0.1, 100., None, None, 50.)
 
     self._t0 = time()
     self._t = self._t0
 
-  def open(self, **kwargs) -> None:
-    """Sets the settings, generates the first image and initializes the time
-    counter."""
+  def open(self,
+           width: int = 1280,
+           height: int = 720,
+           speed: float = 100.,
+           fps: float = 50.) -> None:
+    """Sets the settings, initializes the first image and starts the time
+    counter.
 
-    self.set_all(**kwargs)
+    Args:
+      width: The width of the image to generate in pixels.
+      height: The height of the image to generate in pixels.
+      speed: The evolution speed of the image, in pixels per second.
+      fps: The maximum update frequency of the generated images.
+    """
+
+    self.set_all(width=width, height=height, speed=speed, fps=fps)
 
     self._gen_image()
 
