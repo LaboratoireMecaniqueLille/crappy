@@ -28,7 +28,6 @@ class Recorder(Block):
                file_name: Union[str, Path],
                delay: float = 2,
                labels: Optional[Union[str, Iterable[str]]] = None,
-               time_label: str = 't(s)',
                freq: Optional[float] = 200,
                display_freq: bool = False,
                debug: Optional[bool] = False) -> None:
@@ -42,7 +41,6 @@ class Recorder(Block):
       delay: Delay between each write in seconds.
       labels: If provided, only the data carried by these labels will be saved.
         Otherwise, all the received data is saved.
-      time_label: The label carrying the time information, by default `'t(s)'`.
       freq: The target looping frequency for the Block. If :obj:`None`, loops 
         as fast as possible.
       display_freq: If :obj:`True`, displays the looping frequency of the
@@ -61,7 +59,6 @@ class Recorder(Block):
 
     self._delay = delay
     self._path = Path(file_name)
-    self._time_label = time_label
 
     # Forcing the labels into a list
     if labels is not None and isinstance(labels, str):
