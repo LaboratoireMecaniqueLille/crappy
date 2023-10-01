@@ -12,25 +12,19 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-from time import asctime
-__version__ = '2.0.0.dev3'
 
-sys.path.insert(0, os.path.abspath('../..'))
-sys.setrecursionlimit(1500)
+from time import gmtime, strftime
+from re import match
+
+__version__ = '2.0.0.dev3'
 
 # -- Project information -----------------------------------------------------
 
 project = 'Crappy'
-copyright = asctime()[-4:]  # The current year
-author = 'LaMcube'
-
-# The short X.Y version
-version = '.'.join(__version__.split('.')[:2])
-# The full version, including alpha/beta/rc tags
+author = 'Antoine Weisrock'
+copyright = f"{strftime('%Y', gmtime())}, {author}"
+version = match(r'\d+\.\d+', __version__).group()
 release = __version__
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -42,6 +36,8 @@ release = __version__
 autodoc_member_order = 'bysource'
 # Including undocumented features
 autodoc_default_options = {'undoc-members': True}
+# The codeauthor and sectionauthor directives do produce output
+show_authors = True
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -65,9 +61,9 @@ sphinx_tabs_disable_tab_closing = True
 
 # Napoleon settings
 napoleon_google_docstring = True
-napoleon_numpy_docstring = True
+napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = True
-napoleon_include_private_with_doc = False
+napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True
 napoleon_use_admonition_for_examples = True
 napoleon_use_admonition_for_notes = False
@@ -79,7 +75,7 @@ napoleon_use_rtype = False
 napoleon_preprocess_types = False
 napoleon_type_aliases = None
 napoleon_attr_annotations = True
-napoleon_custom_sections = ['Requirements', 'Presentation', 'Usage']
+napoleon_custom_sections = list()
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -116,11 +112,25 @@ pygments_style = 'sphinx'
 #
 html_theme = 'sphinx_rtd_theme'
 
+# To display a link to the documentation files on GitHub
+html_context = {'display_github': True,
+                'github_user': 'LaboratoireMecaniqueLille',
+                'github_repo': 'crappy',
+                'github_version': 'master/docs/source/'}
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {'collapse_navigation': False,
+                      'sticky_navigation': False,
+                      'navigation_depth': 4,
+                      'includehidden': False,
+                      'display_version': True,
+                      'logo_only': False,
+                      'prev_next_buttons_location': 'both',
+                      'style_external_links': False,
+                      'vcs_pageview_mode': 'blob'}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -135,7 +145,8 @@ html_static_path = []
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-html_sidebars = {'**': ['searchbox.html', 'globaltoc.html', 'sourcelink.html']}
+html_sidebars = {'**': ['searchbox.html', 'globaltoc.html', 'sourcelink.html',
+                        'relations.html']}
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
