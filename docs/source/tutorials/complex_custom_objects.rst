@@ -21,7 +21,6 @@ reload
 ---------------------------
 
 niceness, name
-Advanced control over runtime
 
 5. Including custom objects in a distribution of Crappy
 -------------------------------------------------------

@@ -308,7 +308,10 @@ generator path !
 4. Dealing with streams
 -----------------------
 
-5. Writing scripts efficiently
+5. Advanced control over the runtime
+------------------------------------
+
+6. Writing scripts efficiently
 ------------------------------
 
 This last section of the Getting started tutorial focuses on how to use Python's
@@ -317,7 +320,7 @@ they're within Crappy's particular framework, some of our users tend to forget
 that they can actually use all the other Python packages or methods ! Here we're
 going to show a few examples of code simplification.
 
-5.a. Using variables
+6.a. Using variables
 ++++++++++++++++++++
 
 Until now in this tutorial all the numeric values needed as arguments in the
@@ -377,13 +380,13 @@ path in the recorder :
 Now a unique variable handles all the changes implied, more convenient
 isn't it ?
 
-5.b. Defining arguments efficiently
+6.b. Defining arguments efficiently
 +++++++++++++++++++++++++++++++++++
 
 As previously showed in the tutorial, some Crappy objects have to take lists or
 dicts as arguments. Until now, we always created these objects explicitly and
 inside the blocks definition in order to keep the code simple and easily
-understandable. If you followed :ref:`the previous section <5.a. Using
+understandable. If you followed :ref:`the previous section <6.a. Using
 variables>`, you should know that it is also possible to define these objects
 before instantiating the block by storing them in variables. This allows
 building lists and dicts in a smart and efficient way, as we're now going to
@@ -482,7 +485,7 @@ Note that if you choose to define the path this way, it doesn't even need to be
 defined before the block instantiation and you could simply write
 ``path=[{...} for ...]``.
 
-5.c. Using other packages
+6.c. Using other packages
 +++++++++++++++++++++++++
 
 In this section of the tutorial, we're going to demonstrate how libraries other
@@ -571,7 +574,7 @@ unique features. This is a good transition towards :ref:`the second tutorial
 <Creating and using custom objects in Crappy>`, that pushes customization even
 further by presenting how to create and use your own Crappy objects !
 
-5.d. Using Crappy objects outside of a Crappy test
+6.d. Using Crappy objects outside of a Crappy test
 ++++++++++++++++++++++++++++++++++++++++++++++++++
 
 To conclude this tutorial, we're going to see how Crappy objects can actually be
