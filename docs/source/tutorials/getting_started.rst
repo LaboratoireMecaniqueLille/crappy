@@ -201,9 +201,9 @@ Let's start this tour of the most used Blocks with the :ref:`Generator`. It
 allows to **generate a signal according to a pre-defined pattern**, and to send
 it to downstream Blocks. It is mostly used for generating commands when driving
 actuators or motors, but has actually many more possible applications (trigger
-generation, target for a PID, etc.). In the previous section, the presented
-example already contained an instance of the Generator Block. So let's take a
-closer look at it :
+generation, target value for a PID, etc.). In the previous section, the
+presented example already contained an instance of the Generator Block. So
+let's take a closer look at it :
 
 .. literalinclude:: /downloads/crappy_syntax.py
    :language: python
@@ -453,11 +453,114 @@ of the IOBlock can be found in the `examples folder on GitHub
 <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_. Note
 that the *streamer* mode of the IOBlock is presented in :ref:`a dedicated
 section <4. Dealing with streams>`, while the *make_zero* functionality is just
-not presented in the tutorials. Directly check the documentation of the Block
+not presented in the tutorials. Directly check the documentation of the IOBlock
 to learn more about it.
 
 2.f The Machine Block
 +++++++++++++++++++++
 
+Similar to the :ref:`IOBlock`, the :ref:`Machine` Block can send commands to
+hardware and acquire data from it. The difference is that the IOBlock can send
+any type of command and acquire any type of data, whereas the Machine Block can
+only send speed or position commands and acquire speed and position data.
+**The Machine Block is therefore specifically designed to drive motors**, or
+comparable actuators. The Machine Block relies on the :ref:`Actuators` objects
+for communicating with the hardware. The syntax of the arguments to provide to
+the Machine Block is quite similar to that of the :ref:`Generator` Block, as
+demonstrated here :
+
+.. literalinclude:: /downloads/tuto_machine.py
+   :language: python
+   :emphasize-lines: 16-21
+
+As you can see, the Machine Block accepts an iterable of :obj:`dict` as its
+first argument. **Each dictionary contains the information corresponding to**
+**one Actuator to drive**. This means that it is possible to drive several
+Actuators from only one Machine Block ! In each dictionary, the :py:`'type'`
+key indicates the name of the Actuator to use. Then, other keys like
+:py:`'mode'` or :py:`'cmd_label'` provide information on how to drive the
+Actuator. The :py:`'speed_label'` key indicates which information to acquire
+from the Actuator and under which label to return it. To have an overview of
+the keys that are not Actuator-dependent and their effect, refer to the
+documentation of the :class:`~crappy.blocks.Machine` Block in the API. Finally,
+the arguments to pass to the Actuator should also be given in the dictionary,
+here through the :py:`'kv'` key for example. The Actuator used here is the
+:class:`~crappy.actuator.FakeDCMotor`, that does not require any hardware to
+run. Check its documentation to get all the possible arguments it accepts.
+
+.. Note::
+   Driving several Actuators with one Machine Block is only recommended when
+   these Actuators need to be synchronized, e.g. on a bi-motor machine.
+   Otherwise, you should rather drive each Actuator with a different Machine
+   Block.
+
+You can :download:`download this Machine Block example
+</downloads/tuto_ioblock.py>` to run it locally on your machine. It should
+last only 20s before stopping by itself. The Grapher window that appears
+displays the current speed of the Actuator driven by the Machine Block, and
+responding to the voltage command (treated as a speed by the Machine) received
+from the Generator. More examples of the Machine Block can be found in the
+`examples folder on GitHub
+<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+
 3. Properly stopping a script
 -----------------------------
+
+In the previous sections, several different ways to stop a script in Crappy
+have been presented. In this section, **you will learn about the best**
+**practices for stopping Crappy** and the right objects to use.
+
+First, why is it important to stop a script in a clean way ? Depending on what
+you do, you might want, or even need, to properly de-initialize stuff. For
+example, you certainly don't want a motor to keep running forever when a test
+stops ! It should instead halt, regardless of the reason why the script ends.
+Another reason why scripts should be properly stopped is because otherwise it
+could lead to "zombie" processes running on your computer, and taking up
+memory and processor resources. This situation should of course be avoided.
+
+So, what should you *not* do to stop a script ? Obviously, you should **avoid**
+**any "aggressive" termination method, like abruptly closing the terminal**
+**where Crappy runs** or stopping Crappy from a Task Manager. Keep these
+extreme solutions for the (very unlikely) situations when Crappy would become
+totally unresponsive...
+
+Starting from version 2.0.0, hitting CTRL+C to stop Crappy (i.e. raising
+:exc:`KeyboardInterrupt`) is also considered as an invalid behavior.
+**However**, unlike more aggressive methods, CTRL+C is still handled internally
+and **should lead to a proper termination of the Blocks**. As it might lead to
+unexpected behavior, and to deter users from using it, we chose to have CTRL+C
+raise an Exception once all the Blocks are correctly stopped. This behavior can
+be tuned, see the :ref:`5. Advanced control over the runtime` section of the
+tutorials. The take-home message about CTRL+C is : **using CTRL+C to stop a**
+**script is fine in most cases but it is preferable to do otherwise, so it**
+**will by default raise an error even if everything went fine** !
+
+Now that we know what are the forbidden and not recommended ways of stopping
+Crappy, let's review the 100% approved ones ! As you should have noticed in the
+tutorials above, some objects in Crappy have the ability to stop a script once
+they are done. The most common one is the :ref:`Generator`, that can stop a
+script once its :ref:`Generator Paths` are exhausted. Same goes for the
+:ref:`File Reader` Camera object, that can stop a script once its images are
+exhausted. In addition to these two Blocks, two other ones are specifically
+designed to stop a test in a clean way. They are the :ref:`Stop Block` and
+:ref:`Stop Button` Blocks, designed to respectively stop a test automatically
+when a condition is met, and stop a test manually when the user clicks on a
+button. For users integrating Crappy in a GUI, the :ref:`crappy.stop()` method
+is also an option.
+
+.. Note::
+   A test in Crappy will also end if an unexpected Exception is raised anywhere
+   in the module. In that case, all Blocks will instantly stop and, just like
+   with CTRL+C, an error will be raised once all the Blocks are stopped. The
+   unexpected Exception will still be handled and all Blocks should terminate
+   properly if the problem is not too serious.
+
+When writing a script, first determine which termination way seems more
+appropriate. **If you want to be able to stop the test anytime, opt for the**
+**Stop Button Block** (for example if you use samples with variable properties
+that would make the duration of a test unpredictable). **And if there's an**
+**objective condition that signals the end of your test, rather choose the**
+**Stop Block or rely on the Generator Block** if applicable. Note that you can
+use both a Stop Button and a Stop Block together. And in the specific case when
+you want to trigger Crappy's termination from a GUI, use :ref:`crappy.stop()`
+instead.
