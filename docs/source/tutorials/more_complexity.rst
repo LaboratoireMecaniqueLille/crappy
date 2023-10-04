@@ -2,132 +2,67 @@
 Towards more complexity
 =======================
 
-Advanced use of Crappy Block and its arguments
+.. role:: py(code)
+  :language: python
+  :class: highlight
+
+In this second page of the tutorials, we're going to cover **topics that will**
+**help you customize your scripts and write them more efficiently**. The tools
+and concepts presented here are really not that advanced or complicated, and
+will be needed by anyone who wants to write scripts with a minimum of
+complexity. So, make sure to read this page until the end !
 
 1. Using feedback loops
 -----------------------
 
-In the previous sections we only used linear data flow patterns. Here we're
-going to spice it up by introducing loop patterns in our script. To this end
-let's consider a new example. No we simply want to drive a DC motor with known
-properties to a target speed, but the motor takes Volts as an input so we need
-to setup a control for converting the speed command into a voltage input.
+In the previous tutorials page, we only used linear data flow patterns. Here,
+we're going to **introduce the concept of feedback loops in a script**. The
+main idea is that although :ref:`Links` are unidirectional, it is totally
+possible to have them form a loop to send back information to a Block. This is
+especially useful for driving :ref:`Generator` Blocks, as detailed in
+:ref:`a next section <3. Advanced Generator Paths>`. For now, let's look at
+the example script given in :ref:`the tutorial section dedicated to the Machine
+Block <2.f The Machine Block>`. The :ref:`Fake Machine` Actuator that is used
+takes its commands as a voltage, which is quite unsatisfying since the achieved
+speed will vary depending on the characteristics of the motor. Instead, it
+would be preferable to send speed commands, and to somehow have the motor adapt
+and reach this speed.
 
-Since not everyone has a DC motor at home, let's use a :ref:`Fake DC Motor`
-object instead. It simply simulates the dynamic behavior of a DC motor. We're
-going to use a `PID controller <https://en.wikipedia.org/wiki/PID_controller>`_
-for converting the speed command into Volts, implemented in the :ref:`PID`
-block. We also need a :ref:`Generator` for generating the speed command, and a
-:ref:`Grapher` for plotting the command speed next to the actual speed.
+To achieve this behavior, a possibility is to use the :ref:`PID` Block. It will
+receive on the one hand the target speed, and on the other hand the current
+speed of the motor. Based on these inputs, it will generate a voltage command
+to send to the Machine Block driving the Fake Motor. If the PID is well set,
+the measured speed should reach the target value after some time ! Here's how
+the Blocks look like :
 
-The beginning of the code should be fairly understandable if you followed the
-previous sections:
+.. literalinclude:: /downloads/tuto_loops.py
+   :language: python
+   :emphasize-lines: 7-15, 17-24, 26-27, 29-37
+   :lines: 1-38
 
-.. code-block:: python
+As you can see, the Generator sends the target speed under the label
+:py:`'target_speed'`, the Machine Block takes the :py:`'voltage'` label as a
+command and returns the :py:`'actual_speed'`, and the PID Block takes both tha
+:py:`'target_speed'` and :py:`'actual_speed'` labels as inputs and returns the
+:py:`'voltage'` label. There is also a Grapher Block plotting both the
+:py:`'target_speed'` and :py:`'actual_speed'` labels. Also, notice the
+:py:`'spam'` argument of the Generator Block, that ensures that the Block sends
+the command at each loop, for a nice display on the graph. Let's now link the
+Block together consistently :
 
-   import crappy
+.. literalinclude:: /downloads/tuto_loops.py
+   :language: python
+   :emphasize-lines: 39-40, 42, 44-45
 
-   if __name__ == '__main__':
-
-       gen = crappy.blocks.Generator([
-             {'type': 'constant', 'value': 1000, 'condition': 'delay=3'},
-             {'type': 'ramp', 'speed': 100, 'condition': 'delay=5',
-              'cmd': 0},
-             {'type': 'constant', 'value': 1800, 'condition': 'delay=3'},
-             {'type': 'constant', 'value': 500, 'condition': 'delay=3'},
-             {'type': 'sine', 'amplitude': 2000, 'offset': 1000, 'freq': .3,
-              'condition': 'delay=15'}], spam=True,
-                                     cmd_label='command_speed')
-
-       mot = crappy.blocks.Machine([{'type': 'Fake_motor',
-                                     'cmd': 'voltage',
-                                     'mode': 'speed',
-                                     'speed_label': 'actual_speed',
-                                     'kv': 1000,
-                                     'inertia': 4,
-                                     'rv': .2,
-                                     'fv': 1e-5}])
-
-       graph = crappy.blocks.Grapher(('t(s)', 'speed'), ('t(s)', 'cmd'))
-
-       pid = crappy.blocks.PID(kp=0.038,
-                               ki=2,
-                               kd=0.05,
-                               out_max=10,
-                               out_min=-10,
-                               i_limit=0.5,
-                               target_label='command_speed',
-                               labels=['t(s)', 'voltage'],
-                               input_label='actual_speed')
-
-Notice the ``spam`` argument in the Generator, it is meant to ensure that the
-command is resent again and again even if it is constant (the default behavior
-is not to resend it if it doesn't change). Also notice the syntax for
-instantiating the fake motor: it is pretty similar to the Generator paths. This
-syntax allows controlling several actuators from a same :ref:`Machine` block
-(one dict per actuator), which is convenient if they need to be synchronized.
-
-In order for the PID to run it needs to know the speed command and the actual
-speed, so it needs inputs from the Generator and the Machine (the fake motor
-outputs its current speed). And the Machine needs a voltage input, which is
-outputted by the PID block. Finally the grapher needs to know the current speed
-and the command speed, just like the PID. So let's add the appropriate links :
-
-.. code-block:: python
-   :emphasize-lines: 37-45
-
-   import crappy
-
-   if __name__ == '__main__':
-
-       gen = crappy.blocks.Generator([
-             {'type': 'constant', 'value': 1000, 'condition': 'delay=3'},
-             {'type': 'ramp', 'speed': 100, 'condition': 'delay=5',
-              'cmd': 0},
-             {'type': 'constant', 'value': 1800, 'condition': 'delay=3'},
-             {'type': 'constant', 'value': 500, 'condition': 'delay=3'},
-             {'type': 'sine', 'amplitude': 2000, 'offset': 1000, 'freq': .3,
-              'condition': 'delay=15'}], spam=True,
-                                     cmd_label='command_speed')
-
-       mot = crappy.blocks.Machine([{'type': 'Fake_motor',
-                                     'cmd': 'voltage',
-                                     'mode': 'speed',
-                                     'speed_label': 'actual_speed',
-                                     'kv': 1000,
-                                     'inertia': 4,
-                                     'rv': .2,
-                                     'fv': 1e-5}])
-
-       graph = crappy.blocks.Grapher(('t(s)', 'command_speed'),
-                                     ('t(s)', 'actual_speed'))
-
-       pid = crappy.blocks.PID(kp=0.038,
-                               ki=2,
-                               kd=0.05,
-                               out_max=10,
-                               out_min=-10,
-                               i_limit=0.5,
-                               target_label='command_speed',
-                               labels=['t(s)', 'voltage'],
-                               input_label='actual_speed')
-
-       crappy.link(gen, pid)
-       crappy.link(mot, pid)
-
-       crappy.link(pid, mot)
-
-       crappy.link(gen, graph)
-       crappy.link(mot, graph)
-
-       crappy.start()
-
-Did you notice ? We have both ``crappy.link(gen, graph)`` and
-``crappy.link(mot, graph)``, there's a loop in the data ! As this kind of
-pattern is not uncommon in experimental setups, we wanted to make it clear that
-it can be used in Crappy with no additional effort. You can now test it, and
-notice that unlike the previous examples this one will terminate on its own
-because the Generator path comes to an end at some point.
+Can you see it ? We have both :py:`crappy.link(mot, pid)` and
+:py:`crappy.link(pid, mot)`, which means that there is a feedback loop in the
+script ! The whole point of this section is to **outline that feedback loops**
+**are not only possible in Crappy, but also necessary in some cases**. Most of
+the time, it is in situations when a Block needs to modify its output based on
+the effect it has on another target Block. You can :download:`download this
+feedback loop example </downloads/tuto_loops.py>` to run this example locally
+on your machine. You can then tune the settings of the motor and see how the
+PID will react.
 
 2. Using Modifiers
 ------------------
