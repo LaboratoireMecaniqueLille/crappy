@@ -82,7 +82,7 @@ class Displayer(CameraProcess):
         self._backend = 'cv2'
       else:
         try:
-          _ = plt.use
+          _ = plt.Figure
           self._backend = 'mpl'
         except RuntimeError:
           raise ModuleNotFoundError("Neither opencv-python nor matplotlib "
