@@ -64,7 +64,7 @@ work as expected, please signal it to the developers (see the
 The first thing to do when writing a script for Crappy is to open a new *.py*
 file. In this new file, you should start by **importing the module Crappy** :
 
-.. literalinclude:: /downloads/crappy_syntax.py
+.. literalinclude:: /downloads/getting_started/crappy_syntax.py
    :language: python
    :emphasize-lines: 3
    :lines: 1-3
@@ -100,7 +100,7 @@ In the case of the Fake Machine Block, its description is given in the API at
 optional, and it outputs data over specific labels. Let's still specify the
 :py:`cmd_label` argument. The code now looks as follows :
 
-.. literalinclude:: /downloads/crappy_syntax.py
+.. literalinclude:: /downloads/getting_started/crappy_syntax.py
    :language: python
    :emphasize-lines: 7
    :lines: 1-6, 12-13
@@ -117,7 +117,7 @@ be a :ref:`Generator` Block for driving the Fake Machine. The usage of the most
 used Blocks is detailed in :ref:`the next section <2. The most used Blocks>`.
 In our specific example, the script could be as follows :
 
-.. literalinclude:: /downloads/crappy_syntax.py
+.. literalinclude:: /downloads/getting_started/crappy_syntax.py
    :language: python
    :emphasize-lines: 7-10, 14-15, 17, 19
    :lines: 1-20
@@ -136,7 +136,7 @@ Fake Machine, and the Fake Machine has to transfer the data it acquired to both
 Graphers and to the Recorder Block. Here's what the script becomes after adding
 the Links :
 
-.. literalinclude:: /downloads/crappy_syntax.py
+.. literalinclude:: /downloads/getting_started/crappy_syntax.py
    :language: python
    :emphasize-lines: 21, 23-25
    :lines: 1-25
@@ -159,7 +159,7 @@ track of the data flow throughout the code.
 
 There's only one final line to add before you can run this first example :
 
-.. literalinclude:: /downloads/crappy_syntax.py
+.. literalinclude:: /downloads/getting_started/crappy_syntax.py
    :language: python
    :emphasize-lines: 27
 
@@ -181,10 +181,10 @@ the different ways to stop a script in Crappy in :ref:`a later section <3.
 Properly stopping a script>`.
 
 **You now know learned the very basics of writing scripts for Crappy** ! You
-can :download:`download this first example </downloads/crappy_syntax.py>` to
-run it locally on your computer. This second section of the tutorials was only
-a brief introduction, there's still much more to learn in the following
-sections !
+can :download:`download this first example
+</downloads/getting_started/crappy_syntax.py>` to run it locally on your
+computer. This second section of the tutorials was only a brief introduction,
+there's still much more to learn in the following sections !
 
 2. The most used Blocks
 -----------------------
@@ -205,7 +205,7 @@ generation, target value for a PID, etc.). In the previous section, the
 presented example already contained an instance of the Generator Block. So
 let's take a closer look at it :
 
-.. literalinclude:: /downloads/crappy_syntax.py
+.. literalinclude:: /downloads/getting_started/crappy_syntax.py
    :language: python
    :emphasize-lines: 7-10
    :lines: 1-11
@@ -256,7 +256,7 @@ can keep the :class:`~crappy.blocks.generator_path.Constant` Path, but we must
 add a :class:`~crappy.blocks.generator_path.Cyclic` Path before to perform the
 cyclic stretching. Here's how it looks :
 
-.. literalinclude:: /downloads/tuto_generator.py
+.. literalinclude:: /downloads/getting_started/tuto_generator.py
    :language: python
    :emphasize-lines: 7-16
    :lines: 1-17
@@ -270,7 +270,7 @@ Constant Path once the Cyclic one ends, and then end the test once the
 Constant Path finishes. To make the script runnable, let's complete it with the
 same code as in the previous example :
 
-.. literalinclude:: /downloads/tuto_generator.py
+.. literalinclude:: /downloads/getting_started/tuto_generator.py
    :language: python
    :emphasize-lines: 18, 20-21, 23, 25, 27, 29-31, 33
 
@@ -280,7 +280,8 @@ the final step of stretching until failure. **That reflects the changes we**
 **made to the path of the Generator Block**. Just like previously, the script
 will stop by itself. You can stop it earlier with CTRL+C, but this is not
 considered as a clean way to stop Crappy. :download:`Download this Generator
-example </downloads/tuto_generator.py>` to run it locally on your machine !
+example </downloads/getting_started/tuto_generator.py>` to run it locally on
+your machine !
 
 **You should now be able to build an run a variety of patterns for your**
 **Generator Blocks** ! It is after all just a matter of reading the API,
@@ -302,7 +303,7 @@ processing (see the :ref:`Video extenso`, :ref:`DIS Correl` or :ref:`DIC VE`
 Blocks). The instantiation of a Camera Block is quite simple, here's how it
 looks like :
 
-.. literalinclude:: /downloads/tuto_camera.py
+.. literalinclude:: /downloads/getting_started/tuto_camera.py
    :language: python
    :emphasize-lines: 7-12
    :lines: 1-13
@@ -339,14 +340,15 @@ always possible to stop Crappy using CTRL+C, but this is not considered a
 proper way of ending the script. After inserting the stop button, here's the
 final runnable script :
 
-.. literalinclude:: /downloads/tuto_camera.py
+.. literalinclude:: /downloads/getting_started/tuto_camera.py
    :language: python
    :emphasize-lines: 14, 16
 
-:download:`Download this Camera example </downloads/tuto_camera.py>` to run it
-locally on your machine ! You can adjust the parameters to see what the effect
-is. You'll find more information on the possible arguments and their effects in
-the documentation. **The children of the Camera Block that perform image**
+:download:`Download this Camera example
+</downloads/getting_started/tuto_camera.py>` to run it locally on your
+machine ! You can adjust the parameters to see what the effect is. You'll find
+more information on the possible arguments and their effects in the
+documentation. **The children of the Camera Block that perform image**
 **processing work on the exact sample principle**, except they accept extra
 arguments and can output data to downstream Blocks. More examples of the Camera
 Block and its children can be found in the `examples folder on GitHub
@@ -369,7 +371,7 @@ be adjusted. You can find the exact list in the API, at the
 example, where the force is plotted against the position and where some extra
 arguments of the Grapher Block are set :
 
-.. literalinclude:: /downloads/tuto_grapher.py
+.. literalinclude:: /downloads/getting_started/tuto_grapher.py
    :language: python
    :emphasize-lines: 17-19, 24
 
@@ -377,8 +379,9 @@ Note that **there are other ways of displaying data in Crappy**, check the
 :ref:`Dashboard` and the :ref:`Link Reader` Blocks for example. The Grapher
 Block takes up quite much CPU and memory, so it is better not to have too many
 of its instances in a script. You can :download:`download this Grapher example
-</downloads/tuto_grapher.py>` to run it locally on your machine. Another
-example of the Grapher Block can be found in the `examples folder on GitHub
+</downloads/getting_started/tuto_grapher.py>` to run it locally on your
+machine. Another example of the Grapher Block can be found in the `examples
+folder on GitHub
 <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
 
 2.d The Recorder Block
@@ -407,7 +410,7 @@ hardware supporting it. To communicate with hardware, the IOBlock relies on the
 :ref:`In / Out` objects, that each implement the communication with a different
 device. Here's an example of code featuring an IOBlock for data acquisition :
 
-.. literalinclude:: /downloads/tuto_ioblock.py
+.. literalinclude:: /downloads/getting_started/tuto_ioblock.py
    :language: python
    :emphasize-lines: 7-9
    :lines: 1-6, 15, 17-23, 25-27
@@ -427,7 +430,7 @@ visualize on the graph corresponds to the current RAM usage of your computer.
 You can open or close a web browser to see it change consistently. Let's now
 write another example where a command is set by an IOBlock :
 
-.. literalinclude:: /downloads/tuto_ioblock.py
+.. literalinclude:: /downloads/getting_started/tuto_ioblock.py
    :language: python
    :emphasize-lines: 15-17
    :lines: 1-16, 18, 23-24, 26-27
@@ -442,16 +445,16 @@ and 70% of RAM usage. You can visualize the effect of the script by opening a
 RAM monitor, such as the Task Manager in Windows or *htop* in Linux. Finally,
 it is possible to use both behaviors of the IOBlock simultaneously :
 
-.. literalinclude:: /downloads/tuto_ioblock.py
+.. literalinclude:: /downloads/getting_started/tuto_ioblock.py
    :language: python
    :emphasize-lines: 15-18
 
 Notice how the two functionalities of the IOBlock integrate seamlessly into a
 single common script. You can :download:`download this IOBlock example
-</downloads/tuto_ioblock.py>` to run it locally on your machine. More examples
-of the IOBlock can be found in the `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_. Note
-that the *streamer* mode of the IOBlock is presented in :ref:`a dedicated
+</downloads/getting_started/tuto_ioblock.py>` to run it locally on your
+machine. More examples of the IOBlock can be found in the `examples folder on
+GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+Note that the *streamer* mode of the IOBlock is presented in :ref:`a dedicated
 section <4. Dealing with streams>`, while the *make_zero* functionality is just
 not presented in the tutorials. Directly check the documentation of the IOBlock
 to learn more about it.
@@ -469,7 +472,7 @@ for communicating with the hardware. The syntax of the arguments to provide to
 the Machine Block is quite similar to that of the :ref:`Generator` Block, as
 demonstrated here :
 
-.. literalinclude:: /downloads/tuto_machine.py
+.. literalinclude:: /downloads/getting_started/tuto_machine.py
    :language: python
    :emphasize-lines: 16-21
 
@@ -495,12 +498,12 @@ run. Check its documentation to get all the possible arguments it accepts.
    Block.
 
 You can :download:`download this Machine Block example
-</downloads/tuto_ioblock.py>` to run it locally on your machine. It should
-last only 20s before stopping by itself. The Grapher window that appears
-displays the current speed of the Actuator driven by the Machine Block, and
-responding to the voltage command (treated as a speed by the Machine) received
-from the Generator. More examples of the Machine Block can be found in the
-`examples folder on GitHub
+</downloads/getting_started/tuto_ioblock.py>` to run it locally on your
+machine. It should last only 20s before stopping by itself. The Grapher window
+that appears displays the current speed of the Actuator driven by the Machine
+Block, and responding to the voltage command (treated as a speed by the
+Machine) received from the Generator. More examples of the Machine Block can be
+found in the `examples folder on GitHub
 <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
 
 3. Properly stopping a script

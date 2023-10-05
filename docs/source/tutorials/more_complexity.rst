@@ -35,7 +35,7 @@ to send to the Machine Block driving the Fake Motor. If the PID is well set,
 the measured speed should reach the target value after some time ! Here's how
 the Blocks look like :
 
-.. literalinclude:: /downloads/tuto_loops.py
+.. literalinclude:: /downloads/more_complexity/tuto_loops.py
    :language: python
    :emphasize-lines: 7-15, 17-24, 26-27, 29-37
    :lines: 1-38
@@ -50,7 +50,7 @@ command and returns the :py:`'actual_speed'`, and the PID Block takes both tha
 the command at each loop, for a nice display on the graph. Let's now link the
 Block together consistently :
 
-.. literalinclude:: /downloads/tuto_loops.py
+.. literalinclude:: /downloads/more_complexity/tuto_loops.py
    :language: python
    :emphasize-lines: 39-40, 42, 44-45
 
@@ -60,9 +60,9 @@ script ! The whole point of this section is to **outline that feedback loops**
 **are not only possible in Crappy, but also necessary in some cases**. Most of
 the time, it is in situations when a Block needs to modify its output based on
 the effect it has on another target Block. You can :download:`download this
-feedback loop example </downloads/tuto_loops.py>` to run it locally on your
-machine. You can then tune the settings of the motor and see how the PID will
-react.
+feedback loop example </downloads/more_complexity/tuto_loops.py>` to run it
+locally on your machine. You can then tune the settings of the motor and see
+how the PID will react.
 
 2. Using Modifiers
 ------------------
@@ -93,7 +93,7 @@ Modifier ! Luckily, Crappy already implements the :ref:`Integrate` Modifier for
 integrating a signal over time. Let's add it on a Link starting from the
 Machine Block and pointing towards a new :ref:`Grapher` for the position :
 
-.. literalinclude:: /downloads/tuto_modifiers.py
+.. literalinclude:: /downloads/more_complexity/tuto_modifiers.py
    :language: python
    :emphasize-lines: 39, 49-51
 
@@ -113,7 +113,8 @@ tune the data flowing through the Links. As the Modifiers distributed with
 Crappy will surely not cover all the possible use cases, we strongly encourage
 you to have a look at the section detailing :ref:`how to code your own
 Modifiers <1. Custom Modifiers>`. You can :download:`download this Modifier
-example </downloads/tuto_modifiers.py>` to run it locally on your machine.
+example </downloads/more_complexity/tuto_modifiers.py>` to run it locally on
+your machine.
 
 3. Advanced Generator Paths
 ---------------------------
