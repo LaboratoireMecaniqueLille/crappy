@@ -60,112 +60,60 @@ script ! The whole point of this section is to **outline that feedback loops**
 **are not only possible in Crappy, but also necessary in some cases**. Most of
 the time, it is in situations when a Block needs to modify its output based on
 the effect it has on another target Block. You can :download:`download this
-feedback loop example </downloads/tuto_loops.py>` to run this example locally
-on your machine. You can then tune the settings of the motor and see how the
-PID will react.
+feedback loop example </downloads/tuto_loops.py>` to run it locally on your
+machine. You can then tune the settings of the motor and see how the PID will
+react.
 
 2. Using Modifiers
 ------------------
 
-When you setup a test, it is common that the data outputted by a sensor can't be
-used as such and needs a bit of processing, for example if it is very noisy. You
-may also want to perform logical operations on data, like driving a device only
-if a condition on an input is satisfied. To handle all these situations, Crappy
-features :ref:`Modifiers` able to perform operations on data traveling through
-the links.
+One of Crappy's most powerful features is the possibility to **use**
+:ref:`Modifiers` **to alter the data flowing through the** :ref:`Links`. The
+rationale behind is that the data that a Block outputs might not always be
+exactly what you need. For example, data from a sensor might be too noisy and
+require some filtering. Or a command might have to be sent to two different
+motors, but with an offset on one of them. Such small alterations of the data
+should not necessitate to use a new :ref:`Block`, or to modify an existing
+one ! To deal with these minor adjustments, we created the Modifier objects.
 
-To put it in a simple way, the modifiers can access all the labels sent through
-a link and modify their values, delete them or even add new labels. They can
-also choose not to transmit the labels to the target block, based on a condition
-on them for example.
+The principle of Modifiers is that each Modifier is attached to a given Link.
+**Every time a Block wants to send data through the Link, the Modifier alters**
+**it before it gets sent**. A same Link can have several Modifiers attached, in
+which case they are called in the same order as they are given. Unlike the
+operations performed by the Blocks, the ones carried out by the Modifiers are
+not optimized at all. Therefore, **Modifiers should only be used for simple**
+**tasks**. The syntax for adding Modifiers is very simple, let's get familiar
+with it in an example !
 
-To illustrate that, let's consider the following example: using the same (fake)
-DC motor as in the previous example, we want to measure the temporal derivative
-of speed to make sure it never goes too high (what may for example damage a real
-setup). We now also want to save the speed, but we don't need to save it at the
-maximum frequency (which is probably higher than 100 Hz, depending on your
-computer). The :ref:`Differentiate` and :ref:`Mean` modifiers will allow us to
-write the corresponding script.
+Starting from the example of the previous section, we now want to know the
+current position of the motor. To calculate this value, we just have to
+integrate the measured speed over time. This is numerically a very simple
+operation, since it is equivalent to a sum. It is thus a perfect job for a
+Modifier ! Luckily, Crappy already implements the :ref:`Integrate` Modifier for
+integrating a signal over time. Let's add it on a Link starting from the
+Machine Block and pointing towards a new :ref:`Grapher` for the position :
 
-A modifier is always added on a given link. The syntax for adding one is as
-follows :
+.. literalinclude:: /downloads/tuto_modifiers.py
+   :language: python
+   :emphasize-lines: 39, 49-51
 
-.. code-block:: python
+As you can see, the Modifiers are expected to be given to the :py:`'modifier'`
+argument of the :func:`crappy.link()` function. Each Modifier has to be
+instantiated, and might require arguments. To know what the effect of a
+Modifier is, and which argument it takes, refer to the :ref:`Modifiers` section
+of the API. Here, the chosen Modifier is :class:`~crappy.modifier.Integrate`.
+It must be given the name of the label to integrate, and here the name of the
+label carrying the integral value is also specified. This new label is added to
+the data flowing through the Link, and can then be used by the downstream
+Block ! In the case of the Integrate Modifier, all the other labels are
+preserved.
 
-  crappy.link(<block1>, <block2>, modifier=crappy.modifier.<Name>(<args>))
-
-The syntax for adding several is very similar, except the multiple modifiers
-need to be put in a :obj:`list` :
-
-.. code-block:: python
-
-  crappy.link(<block1>, <block2>, modifier=[crappy.modifier.<Name1>(<args>),
-                                            crappy.modifier.<Name2>(<args>)])
-
-To know which arguments the modifiers take, the only way is to look in the
-documentation. Here let's say we want to average the signals by a factor of 10
-before saving, and the derivative of speed will have the label ``'accel'``.
-After adding the recorders and the modifiers and modifying the grapher so that
-it plots ``'accel'``, the code is now :
-
-.. code-block:: python
-   :emphasize-lines: 24,36-37,44-48
-
-   import crappy
-
-   if __name__ == '__main__':
-
-       gen = crappy.blocks.Generator([
-             {'type': 'constant', 'value': 1000, 'condition': 'delay=3'},
-             {'type': 'ramp', 'speed': 100, 'condition': 'delay=5',
-              'cmd': 0},
-             {'type': 'constant', 'value': 1800, 'condition': 'delay=3'},
-             {'type': 'constant', 'value': 500, 'condition': 'delay=3'},
-             {'type': 'sine', 'amplitude': 2000, 'offset': 1000, 'freq': .3,
-              'condition': 'delay=15'}], spam=True,
-                                     cmd_label='command_speed')
-
-       mot = crappy.blocks.Machine([{'type': 'Fake_motor',
-                                     'cmd': 'voltage',
-                                     'mode': 'speed',
-                                     'speed_label': 'actual_speed',
-                                     'kv': 1000,
-                                     'inertia': 4,
-                                     'rv': .2,
-                                     'fv': 1e-5}])
-
-       graph = crappy.blocks.Grapher(('t(s)', 'accel'))
-
-       pid = crappy.blocks.PID(kp=0.038,
-                               ki=2,
-                               kd=0.05,
-                               out_max=10,
-                               out_min=-10,
-                               i_limit=0.5,
-                               target_label='command_speed',
-                               labels=['t(s)', 'voltage'],
-                               input_label='actual_speed')
-
-       rec = crappy.blocks.Recorder(filename='speeds.csv',
-                                    labels=['t(s)', 'actual_speed'])
-
-       crappy.link(gen, pid)
-       crappy.link(mot, pid)
-
-       crappy.link(pid, mot)
-
-       crappy.link(mot, graph,
-                   modifier=crappy.modifier.Diff(label='actual_speed',
-                                                 out_label='accel'))
-
-       crappy.link(mot, rec)
-
-       crappy.start()
-
-As illustrated here, modifiers are a powerful and simple way of tuning the way
-your script manages data. As not every need can be covered by the provided
-Crappy modifiers, it is truly worth having a look at :ref:`the section detailing
-how to easily implement your own modifiers <1. Custom Modifiers>` !
+As illustrated with this example, Modifiers are a simple yet powerful way to
+tune the data flowing through the Links. As the Modifiers distributed with
+Crappy will surely not cover all the possible use cases, we strongly encourage
+you to have a look at the section detailing :ref:`how to code your own
+Modifiers <1. Custom Modifiers>`. You can :download:`download this Modifier
+example </downloads/tuto_modifiers.py>` to run it locally on your machine.
 
 3. Advanced Generator Paths
 ---------------------------
