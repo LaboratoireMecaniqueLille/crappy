@@ -243,10 +243,10 @@ indeed present in the dictionary. The Constant Path generates a constant signal
 of value :py:`'value'`, and stops when :py:`'condition'` is met. The syntax for
 the conditions is described in detail in the
 :meth:`~crappy.blocks.generator_path.meta_path.Path.parse_condition` method of
-the base Path, and :ref:`a tutorial section <3. Advanced Generator Paths>` is
-dedicated to the advanced uses of this argument. For a number of applications,
-setting it to :py:`'delay=xx'` (next Path after *xx* seconds) or to :obj:`None`
-(never switches to next Path) is fine.
+the base Path, and :ref:`a tutorial section <3. Advanced Generator condition>`
+is dedicated to the advanced uses of this argument. For a number of
+applications, setting it to :py:`'delay=xx'` (next Path after *xx* seconds) or
+to :obj:`None` (never switches to next Path) is fine.
 
 Let's now try to modify the previous example, so that the :ref:`Fake machine`
 is driven with a more complex pattern than just a constant speed. Let's say
@@ -288,9 +288,9 @@ your machine !
 selecting the Paths that you want to use, and include them in the *path*
 argument of the Generator Block with the correct parameters. As mentioned
 earlier in this section, more information about the Generator Paths can be
-found in :ref:`another tutorial section <3. Advanced Generator Paths>`. More
-examples of the Generator Block can be found in the `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+found in :ref:`another tutorial section <3. Advanced Generator condition>`.
+More examples of the Generator Block can be found in the `examples folder on
+GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
 
 2.b The Camera Block
 ++++++++++++++++++++
@@ -533,7 +533,7 @@ Starting from version 2.0.0, hitting CTRL+C to stop Crappy (i.e. raising
 and **should lead to a proper termination of the Blocks**. As it might lead to
 unexpected behavior, and to deter users from using it, we chose to have CTRL+C
 raise an Exception once all the Blocks are correctly stopped. This behavior can
-be tuned, see the :ref:`5. Advanced control over the runtime` section of the
+be tuned, see the :ref:`7. Advanced control over the runtime` section of the
 tutorials. The take-home message about CTRL+C is : **using CTRL+C to stop a**
 **script is fine in most cases but it is preferable to do otherwise, so it**
 **will by default raise an error even if everything went fine** !
