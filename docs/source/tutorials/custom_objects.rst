@@ -9,31 +9,32 @@ Creating and using custom objects in Crappy
 If you have read over the two first pages of the documentation, you should now
 have a good understanding of how Crappy works and the possibilities it offers.
 However, at that point, you are still limited by the functionalities that the
-Blocks and other objects natively distributed with Crappy. It is now time for
-you to create your own objects in Crappy, to adapt your scripts to your own
-needs ! This page of the tutorials covers the basics of the instantiation of
-custom objects, while the :ref:`next and last page of the tutorials
-<More about custom objects in Crappy>` covers the advanced aspects of custom
-object instantiation.
+Blocks and other objects natively distributed with Crappy. **It is now time**
+**for you to create your own objects in Crappy, to adapt your scripts to your**
+**own needs** ! This page of the tutorials covers the basics of the
+instantiation of custom objects, while the :ref:`next and last page of the
+tutorials <More about custom objects in Crappy>` covers the advanced aspects of
+custom object instantiation.
 
 1. Custom Modifiers
 -------------------
 
 The first type of custom objects that we'll cover here are the
-:ref:`Modifiers`, because they are by far the simplest objects ! The Modifiers
-come in use in a variety of situations, and it is often required to write your
-own ones as the catalog of Crappy cannot cover every single case. Luckily, the
-only requirement for an object to qualify as a Modifier is to be a
-:obj:`~collections.abc.Callable`, which means that functions can be provided !
+:ref:`Modifiers`, because they are by far the simplest objects ! **The**
+**Modifiers come in use in a variety of situations, and it is often required**
+**to write your own ones as the catalog of Crappy cannot cover every single**
+**case**. Luckily, the only requirement for an object to qualify as a Modifier
+is to be a :obj:`~collections.abc.Callable`, which means that functions can be
+provided !
 
 More precisely, a Modifier should accept a :obj:`dict` as its sole argument and
-return a :obj:`dict` as well (:obj:`None` is also accepted). This dictionary is
-the representation of a chunk of data flowing through the :ref:`Link`, and the
-Modifier has direct access to it ! It can add keys, delete others, change the
-value of a key, etc. Each key is a label, and has a value it carries. In the
-end, all a Modifier does is to modify the incoming dictionary and return it
-after modification. As usual, let's put these concepts in application on a real
-runnable example !
+return a :obj:`dict` as well (:obj:`None` is also accepted). **This**
+**dictionary is the representation of a chunk of data flowing through the**
+:ref:`Link`, **and the Modifier has direct access to it** ! It can add keys,
+delete others, change the value of a key, etc. Each key is a label, and has a
+value it carries. In the end, all a Modifier does is to modify the incoming
+dictionary and return it after modification. As usual, let's put these concepts
+in application on a real runnable example !
 
 For this first example, let's create a Modifier that simply doubles the value
 of a given label. If you have understood the last paragraph, this Modifier will
@@ -68,9 +69,9 @@ A concrete example of that is the :class:`~crappy.modifier.Integrate` Modifier,
 that integrates a signal over time. It needs to store the integral between
 consecutive chunks of data, and therefore cannot rely on a function.
 
-To circumvent this limitation, we made it possible to instantiate Modifiers as
-classes instead of functions. It is mentioned above that the Modifiers need to
-be :obj:`~collections.abc.Callable` objects, but a class defining the
+To circumvent this limitation, we made it **possible to instantiate Modifiers**
+**as classes** instead of functions. It is mentioned above that the Modifiers
+need to be :obj:`~collections.abc.Callable` objects, but a class defining the
 :py:`__call__` method is actually callable ! Here is the minimal template of a
 Modifier as a class :
 
