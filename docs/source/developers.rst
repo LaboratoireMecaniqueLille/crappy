@@ -386,7 +386,7 @@ at least one Block is done, :ref:`The cleanup phase` starts. This phase also
 starts in case an Exception is caught.
 
 The cleanup phase
-"""""""""""""""""""
+"""""""""""""""""
 
 This phase is triggered every time an exception (of any nature) is caught in
 the ``__main__`` Process, or if at least one Block has stopped. The
