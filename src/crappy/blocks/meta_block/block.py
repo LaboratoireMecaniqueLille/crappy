@@ -548,18 +548,27 @@ class Block(Process, metaclass=MetaBlock):
                                      'caught in the main Process while '
                                      'cleaning up')
 
-    # Deciding whether to raise and stop the main Process
+    # Deciding whether to raise and stop the main Process, and also resetting
     finally:
-      if cls.raise_event.is_set() and not cls.no_raise:
-        cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
-                                   "execution, raising CrappyFail !")
-        raise CrappyFail
-      elif cls.kbi_event.is_set() and not cls.no_raise:
-        cls.cls_log(logging.ERROR, "KeyboardInterrupt called while running "
-                                   "Crappy, raising it !")
-        raise KeyboardInterrupt("Crappy was stopped using CTRL+C ! To disable "
-                                "this Exception, set the no_raise argument of "
-                                "crappy.start() or crappy.launch() to True.")
+      # The try/finally is needed to reset Crappy before the exception is
+      # raised but after the class Events are accessed
+      try:
+        # Deciding whether to raise or not
+        if cls.raise_event.is_set() and not cls.no_raise:
+          cls.cls_log(logging.ERROR, "An error occurred during Crappy's "
+                                     "execution, raising CrappyFail !")
+          raise CrappyFail
+        elif cls.kbi_event.is_set() and not cls.no_raise:
+          cls.cls_log(logging.ERROR, "KeyboardInterrupt called while running "
+                                     "Crappy, raising it !")
+          raise KeyboardInterrupt("Crappy was stopped using CTRL+C ! To "
+                                  "disable this Exception, set the no_raise "
+                                  "argument of crappy.start() or "
+                                  "crappy.launch() to True.")
+      finally:
+        # Always resetting Crappy as the Blocks and synchronization objects
+        # won't come in use anymore
+        cls.reset()
 
   @classmethod
   def _set_logger(cls) -> None:
@@ -645,8 +654,12 @@ class Block(Process, metaclass=MetaBlock):
   @classmethod
   def reset(cls) -> None:
     """Resets Crappy by emptying the :obj:`~weakref.WeakSet` containing
-    references to all the Blocks. Only useful for restarting Crappy from a
-    script where Crappy was already started."""
+    references to all the Blocks and resetting the synchronization objects.
+
+    This method is called at the very end of the :meth:`_cleanup` method, but
+    can also be called to "revert" the instantiation of Blocks while Crappy
+    isn't started yet.
+    """
 
     cls.instances = WeakSet()
     cls.names = list()
@@ -662,7 +675,7 @@ class Block(Process, metaclass=MetaBlock):
     cls.kbi_event = None
 
     if cls.logger is not None:
-      cls.cls_log(logging.INFO, 'Crappy was reset by the reset() command')
+      cls.cls_log(logging.INFO, 'Crappy was successfully reset')
   
   @classmethod
   def cls_log(cls, level: int, msg: str) -> None:
