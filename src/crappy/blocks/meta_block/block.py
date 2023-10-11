@@ -666,6 +666,7 @@ class Block(Process, metaclass=MetaBlock):
     cls.thread_stop = False
     cls.prepared_all = False
     cls.launched_all = False
+    cls.no_raise = False
 
     cls.shared_t0 = None
     cls.ready_barrier = None
