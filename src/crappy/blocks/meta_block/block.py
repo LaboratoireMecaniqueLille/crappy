@@ -184,40 +184,50 @@ class Block(Process, metaclass=MetaBlock):
         possible levels.
     """
 
-    # Making sure that the Block classmethods are called in the right order
-    if cls.prepared_all:
-      cls.cls_log(logging.ERROR,
-                  "The method prepare_all was already called ! Call "
-                  "crappy.reset() before calling prepare_all again !")
-      raise RuntimeError
-    if cls.launched_all:
-      cls.cls_log(logging.ERROR,
-                  "Please call crappy.reset() before calling the prepare_all "
-                  "method again !")
-      raise RuntimeError
+    # Flag indicating whether to perform the cleanup action or not
+    cleanup = False
 
-    cls.log_level = log_level
-
-    # Initializing the logger and displaying the first messages
-    cls._set_logger()
-    cls.cls_log(logging.INFO,
-                "===================== CRAPPY =====================")
-    cls.cls_log(logging.INFO, f'Starting the script {argv[0]}\n')
-    cls.cls_log(logging.INFO, 'Logger configured')
-
-    # Setting all the synchronization objects at the class level
-    cls.ready_barrier = Barrier(len(cls.instances) + 1)
-    cls.shared_t0 = Value('d', -1.0)
-    cls.start_event = Event()
-    cls.stop_event = Event()
-    cls.raise_event = Event()
-    cls.kbi_event = Event()
-    cls.cls_log(logging.INFO, 'Multiprocessing synchronization objects set '
-                              'for main process')
-
-    # Until that point, there would be nothing to clean up if an exception is
-    # raised
     try:
+      # Making sure that the Block classmethods are called in the right order
+      if cls.prepared_all:
+        cls.cls_log(logging.ERROR,
+                    "The method prepare_all was already called ! This is "
+                    "unexpected, aborting !")
+        # As Crappy was already initialized, it must now be cleaned up
+        cleanup = True
+        # Raising will skip all the setup part and keep the existing context
+        raise RuntimeError
+
+      if cls.launched_all:
+        cls.cls_log(logging.ERROR, "The launched_all flag is unexpectedly "
+                                   "raised, aborting !")
+        # As Crappy was already initialized, it must now be cleaned up
+        cleanup = True
+        # Raising will skip all the setup part and keep the existing context
+        raise RuntimeError
+
+      cls.log_level = log_level
+
+      # Initializing the logger and displaying the first messages
+      cls._set_logger()
+      cls.cls_log(logging.INFO,
+                  "===================== CRAPPY =====================")
+      cls.cls_log(logging.INFO, f'Starting the script {argv[0]}\n')
+      cls.cls_log(logging.INFO, 'Logger configured')
+
+      # Setting all the synchronization objects at the class level
+      cls.ready_barrier = Barrier(len(cls.instances) + 1)
+      cls.shared_t0 = Value('d', -1.0)
+      cls.start_event = Event()
+      cls.stop_event = Event()
+      cls.raise_event = Event()
+      cls.kbi_event = Event()
+      cls.cls_log(logging.INFO, 'Multiprocessing synchronization objects set '
+                                'for main process')
+
+      # Starting from that point, Crappy has to be cleaned up if anything wrong
+      # happens
+      cleanup = True
 
       # Initializing the objects required for logging
       cls.log_queue = Queue()
@@ -263,6 +273,11 @@ class Block(Process, metaclass=MetaBlock):
     # At that point the Blocks might be started or not. If started, they are
     # preparing or waiting at the Barrier
     except (Exception, KeyboardInterrupt) as exc:
+
+      # If there is no specific cleanup to perform, only raising
+      if not cleanup:
+        raise
+
       # KeyboardInterrupt is a separate case
       if isinstance(exc, KeyboardInterrupt):
         cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
@@ -304,16 +319,22 @@ class Block(Process, metaclass=MetaBlock):
         sudo privilege, otherwise it has no effect.
     """
 
+    # Flag indicating whether to perform the cleanup action or not
+    cleanup = True
+
     try:
       # Making sure that the Block classmethods are called in the right order
       if not cls.prepared_all:
         cls.cls_log(logging.ERROR, "Cannot call renice before calling "
                                    "prepare ! Aborting")
-        raise RuntimeError
+        # If prepare wasn't called, there is no need to clean up Crappy
+        cleanup = False
+        raise RuntimeError("Cannot call renice before calling prepare ! "
+                           "Aborting")
+
       if cls.launched_all:
-        cls.cls_log(logging.ERROR,
-                    "Please call crappy.reset() before calling the renice_all "
-                    "method again ! Aborting")
+        cls.cls_log(logging.ERROR, "The launched_all flag is unexpectedly "
+                                   "raised, aborting !")
         raise RuntimeError
 
       # There's no niceness on Windows
@@ -342,6 +363,11 @@ class Block(Process, metaclass=MetaBlock):
 
     # At that point the Blocks should be preparing or waiting at the Barrier
     except (Exception, KeyboardInterrupt) as exc:
+
+      # If there is no specific cleanup to perform, only raising
+      if not cleanup:
+        raise
+
       # KeyboardInterrupt is a separate case
       if isinstance(exc, KeyboardInterrupt):
         cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
@@ -392,16 +418,22 @@ class Block(Process, metaclass=MetaBlock):
     # Setting the no_raise flag
     cls.no_raise = no_raise
 
+    # Flag indicating whether to perform the cleanup action or not
+    cleanup = True
+
     try:
       # Making sure that the Block classmethods are called in the right order
       if not cls.prepared_all:
         cls.cls_log(logging.ERROR, "Cannot call launch_all before calling "
                                    "prepare_all ! Aborting")
-        raise RuntimeError
+        # If prepare wasn't called, there is no need to clean up Crappy
+        cleanup = False
+        raise RuntimeError("Cannot call launch before calling prepare ! "
+                           "Aborting")
+
       if cls.launched_all:
-        cls.cls_log(logging.ERROR,
-                    "Please call crappy.reset() before calling the launch_all "
-                    "method again ! Aborting")
+        cls.cls_log(logging.ERROR, "The launched_all flag is unexpectedly "
+                                   "raised, aborting !")
         raise RuntimeError
 
       cls.launched_all = True
@@ -427,6 +459,11 @@ class Block(Process, metaclass=MetaBlock):
                                   "other ones to follow")
 
     except (BrokenBarrierError, KeyboardInterrupt, Exception) as exc:
+
+      # If there is no specific cleanup to perform, only raising
+      if not cleanup:
+        raise
+
       # KeyboardInterrupt is a separate case
       if isinstance(exc, KeyboardInterrupt):
         cls.cls_log(logging.WARNING, "Caught KeyboardInterrupt in the main "
@@ -455,7 +492,8 @@ class Block(Process, metaclass=MetaBlock):
                                    "caught in launch_all")
     finally:
       # Need to clean up the running Blocks and other Processes / Threads
-      cls._cleanup()
+      if cleanup:
+        cls._cleanup()
 
   @classmethod
   def _cleanup(cls) -> None:
