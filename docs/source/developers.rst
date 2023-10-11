@@ -398,8 +398,11 @@ finish as soon as possible. It then lets 3 seconds for all the Blocks to
 finish. If any Block is still alive passed this delay, it is mercilessly
 terminated. Then, the :obj:`~multiprocessing.Process` in charge of the
 :class:`~crappy.tool.ft232h.USBServer` is stopped, if applicable. Same goes for
-the :obj:`~threading.Thread` collecting all the log messages. Finally, an
-exception might be raised in three cases :
+the :obj:`~threading.Thread` collecting all the log messages. Short before
+returning, Crappy is reset by the :meth:`~crappy.blocks.Block.reset` method,
+that re-initializes all the synchronization objects. They are after all not
+needed anymore at that point. Finally, an exception might be raised in three
+cases :
 
 - If all the Blocks are not done running at the end of this phase.
 - If an :exc:`Exception` was caught during Crappy's execution.
