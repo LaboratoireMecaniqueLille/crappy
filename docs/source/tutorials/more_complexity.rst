@@ -125,7 +125,7 @@ Modifiers <1. Custom Modifiers>`. You can :download:`download this Modifier
 example </downloads/more_complexity/tuto_modifiers.py>` to run it locally on
 your machine. The Modifiers distributed with Crappy are also showcased in the
 `examples folder on GitHub
-<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+<https://github.com/LaboratoireMecaniqueLille/crappy/examples/modifiers>`_.
 
 3. Advanced Generator condition
 -------------------------------
@@ -181,7 +181,7 @@ breaks, no matter the elongation speed. The code is as follows :
    installed.
 
 You can :download:`download this advanced Generator example
-</downloads/more_complexity/tuto_modifiers.py>` to run it locally on your
+</downloads/more_complexity/advanced_generator.py>` to run it locally on your
 machine. Try to modify the value of the speed command, and see how the script
 always stops at the given condition. With the new type of stop condition for
 the Generator, you now know everything there is to know about this Block !

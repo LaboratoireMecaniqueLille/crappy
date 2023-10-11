@@ -498,7 +498,7 @@ run. Check its documentation to get all the possible arguments it accepts.
    Block.
 
 You can :download:`download this Machine Block example
-</downloads/getting_started/tuto_ioblock.py>` to run it locally on your
+</downloads/getting_started/tuto_machine.py>` to run it locally on your
 machine. It should last only 20s before stopping by itself. The Grapher window
 that appears displays the current speed of the Actuator driven by the Machine
 Block, and responding to the voltage command (treated as a speed by the
