@@ -9,20 +9,24 @@ More about custom objects in Crappy
 ---------------------------
 
 Make zero
+Streams
 
-3. More about custom Cameras
+3. More about custom Actuators
+------------------------------
+
+4. More about custom Cameras
 ----------------------------
 
 add trigger setting
 add software roi
 reload
 
-4. More about custom Blocks
+5. More about custom Blocks
 ---------------------------
 
 niceness, name
 
-5. Including custom objects in a distribution of Crappy
+6. Including custom objects in a distribution of Crappy
 -------------------------------------------------------
 
 You can either add an object locally or to the entire project. If it's locally,
