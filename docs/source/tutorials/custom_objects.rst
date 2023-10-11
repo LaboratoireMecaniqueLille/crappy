@@ -133,364 +133,155 @@ custom Modifiers ! They stand after all among the simplest objects in Crappy.
 2. Custom Actuators
 -------------------
 
-Creating custom actuators presents no particular challenge once you've read the
-two previous sections. All actuators must inherit from the :ref:`Actuator`
-object, and must implement the ``open``, ``close``, ``stop`` and either
-``set_position`` or ``set_speed`` methods. It is possible to define both.
-Additionally, the ``get_speed`` and ``get_position`` methods can be defined.
+After introducing how custom Modifiers work in the first section, this second
+section will focus on the use of custom :ref:`Actuators`. Knowing how to add
+and use your own :class:`~crappy.actuator.Actuator` objects in Crappy is
+critical for anyone who wants to drive their own tests, as **the equipment**
+**that we already integrated in the module will likely not match the one you**
+**have at your disposal**. In this situation, you'll have no choice but to
+implement it yourself in Crappy !
 
-- ``open`` is meant to perform any action required before starting the assay,
-  like initializing hardware and setting parameters.
-- ``close`` is meant to perform actions once the assay ends, like switching
-  hardware off or closing a bus.
-- ``stop`` should instantly stop a device, preferably as fast as possible since
-  this method is only called in case an error happens.
-- ``set_speed`` and ``set_position`` should make the actuator reach a target
-  speed or position.
-- ``get_speed`` and ``get_position`` should return the current speed or the
-  current position of the actuator.
+Unlike Modifiers, Actuators usually communicate with hardware. The code for
+driving a custom Actuator is therefore quite different than the one for a
+Modifier that simply handles data. That being said, what are the steps for
+writing code for your Actuator ? First, **make sure that the hardware you**
+**want to use can be driven with Python** ! If that is not the case, you
+unfortunately won't be able to drive it with Crappy. There are usually many
+different ways to drive hardware from Python, so **just because there is no**
+**Python library for your device doesn't mean you cannot drive it from**
+**Python** ! Here are a few ways to drive hardware from Python :
 
-When an actuator is driven by the :ref:`Machine` block, is repeatedly calls
-either ``set_speed`` or ``set_position`` according to the chosen driving mode
-and with the input command as argument. If a ``get_speed`` or ``get_position``
-exists, it is also repeatedly called according to the chosen mode and a value is
-returned. Otherwise no value is returned.
+- Use a Python library provided by the manufacturer or a third party
+- Get the correct communication syntax and protocol from the datasheet, and
+  code the communication yourself over the right protocol (serial, USB, I2C,
+  SPI, etc.)
+- Send commands in the terminal from Python, if the manufacturer provides a way
+  to drive hardware from the console
+- Write Python bindings for a C/C++ library, if the manufacturer provides one
 
-For the sake of the example, let's create a fake actuator that doesn't
-necessitate any actual hardware. It will just emulate the behavior of a stepper
-motor controlled by a conditioner, i.e. try to reach the target speed or
-position and then maintain the target as long as no new command is sent. An
-argument allows to tune the refreshment rate for the position calculation.
+Note that all these solutions require various levels of expertise in Python,
+some are very simple and others much more difficult ! For now, let's assume
+that you have found a way to drive your device from Python. The next step is to
+**write a draft code completely independent from Crappy, and in which you're**
+**able to initialize the connection to the device, set its parameters, set**
+**its speed or target position, acquire its current speed or position, and**
+**properly de-initialize the device and the connection**. We advise you to
+write this independent draft so that in a first time you don't have to bother
+with Crappy's syntax.
 
-So let's get to work ! Here's the very minimal actuator class, that does
-nothing. It can only be driven in position, but we could simply replace position
-by speed.
+Once you have a working draft, it is time to integrate it in Crappy ! Just like
+the Modifier previously, there is also a template for the
+:class:`~crappy.actuator.Actuator` objects :
 
 .. code-block:: python
 
    import crappy
 
-   class My_actuator(crappy.actuator.Actuator):
+   class MyActuator(crappy.actuator.Actuator):
 
        def __init__(self):
            super().__init__()
 
        def open(self):
-           pass
+           ...
 
-       def set_position(self, pos, speed=3):
-           pass
-
-       def stop(self):
-           pass
-
-       def close(self):
-           pass
-
-Notice that the ``set_position`` method takes the target position as an
-argument, but can also take a speed. See the :ref:`Machine` block for details.
-Here we'll consider the default speed to be 3 mm/s. Now for the sake of the
-example let's add the optional methods and the argument :
-
-.. code-block:: python
-   :emphasize-lines: 5-6,14-21
-
-   import crappy
-
-   class My_actuator(crappy.actuator.Actuator):
-
-       def __init__(self, refresh):
-           self.t = 1 / refresh
-           super().__init__()
-
-       def open(self):
-           pass
-
-       def set_position(self, pos, speed=3):
-           pass
+       def set_position(self, pos, speed):
+           ...
 
        def set_speed(self, speed):
-           pass
+           ...
 
        def get_position(self):
-           return 0
+           ...
 
        def get_speed(self):
-           return 0
+           ...
 
        def stop(self):
-           pass
+           ...
 
        def close(self):
-           pass
+           ...
 
-We're going to use a `threading.Thread <https://docs.python.org/3/library/
-threading.html#threading.Thread>`_ to emulate the behavior of the stepper motor.
-If you're not familiar with it, check out `this tutorial <https://realpython.
-com/intro-to-python-threading/>`_ from RealPython which is complete, accessible
-and very well-writen. Or to keep it short, simply consider that two flows of
-execution will run in parallel: the regular one handling the user inputs, and
-another one exclusively dedicated to emulating the motor. The thread will loop
-at a tunable frequency, and simply update the position according to the target
-and the current speed. So we also need variables to store the current speed,
-position, and position target if any. Without going further into detail, after
-adding the thread the code looks this way :
+This template looks much bigger than the one for the Modifier, but actually
+part of the methods are optional. Out of the :py:`set_position`,
+:py:`set_speed`, :py:`get_position` and :py:`get_speed` methods, you only need
+to implement at least one. You could even get away with implementing none, but
+the interest is limited. Let's review what each method is intended for :
 
-.. code-block:: python
-   :emphasize-lines: 2,3,10-17,20,38-58
+- :meth:`~crappy.actuator.Actuator.__init__` is where you should initialize the
+  Python objects that your class uses. It is also where the class accepts its
+  arguments. Avoid interacting with hardware already in this method, this will
+  come later. Also, don't forget to initialize the parent class with
+  :py:`super().__init__()` !
+- In :meth:`~crappy.actuator.Actuator.open` you should perform any action
+  required for configuring the device. That includes opening the communication
+  with it, configuring its parameters, or maybe energizing it.
+- :meth:`~crappy.actuator.Actuator.set_speed` and
+  :meth:`~crappy.actuator.Actuator.set_position` are for sending respectively a
+  target speed or position command to the device. It is possible to implement
+  both if the device supports it, or only one, or even none if the device is
+  only used as a sensor in Crappy. These methods take as an argument the target
+  speed and position respectively, and do not return anything. Note that the
+  :meth:`~crappy.actuator.Actuator.set_position` method always accepts a second
+  :py:`speed` argument, that may be equal to :obj:`None`. You'll find more
+  about it in :ref:`a dedicated section on the next page
+  <3. More about custom Actuators>`.
+- In a similar way, :meth:`~crappy.actuator.Actuator.get_speed` and
+  :meth:`~crappy.actuator.Actuator.get_position` are for acquiring the current
+  speed or position of the device. These methods do not take any argument, and
+  return the acquired speed or position as a :obj:`float`. Again, it is
+  possible to define both methods, or only one, or none.
+- :meth:`~crappy.actuator.Actuator.stop` should stop the device in the fastest
+  and more durable possible way. It is called if a problem occurs, and at the
+  very end of the test. If there is no other way to stop the device than
+  setting its speed to 0, this method doesn't need to be defined.
+- In :meth:`~crappy.actuator.Actuator.close` you should perform any action
+  required for properly de-initializing the device. For example, this is where
+  you put a device to sleep mode or close the connection to it.
 
-   import crappy
-   import time
-   from threading import Thread, RLock
+Also note how the class inherits from the parent
+:class:`crappy.actuator.Actuator` class. That must not be forgotten, otherwise
+the Actuator won't work ! At that point, you should **use your working draft**
+**to fill in the corresponding methods in the template**. You should be able to
+obtain a working Actuator in no time! To give you a better idea of what the
+result could look like, here's an example inspired from the custom Actuator in
+the `examples folder on GitHub <https://github.com/LaboratoireMecaniqueLille/
+crappy/examples/custom_objects>`_ :
 
-   class My_actuator(crappy.actuator.Actuator):
+.. literalinclude:: /downloads/custom_objects/custom_actuator.py
+   :language: python
+   :emphasize-lines: 7-36
+   :lines: 1-37
 
-       def __init__(self, refresh):
-           self.t = 1 / refresh
-           super().__init__()
-           self.position = 0
-           self.speed = 0
-           self.target_pos = None
+As you can see, the :py:`__init__` method takes on argument and initializes
+various objects used elsewhere in the class. The :py:`open` method does not
+much, as this example emulates hardware and does not interact with any
+real-world device. For the same reason, the :py:`close` and :py:`stop` methods
+are missing. This Actuator can only be driven in speed, so the
+:py:`set_position` method is also missing. The :py:`set_speed` and
+:py:`get_speed` methods are present for setting the target speed and measuring
+the current one, as well as the :py:`get_position` method since the position
+is also measurable. Now that the Actuator is defined, it is time to add some
+context to make it run :
 
-           self.stop_thread = False
+.. literalinclude:: /downloads/custom_objects/custom_actuator.py
+   :language: python
 
-           self.lock = RLock()
-           self.thread = Thread(target=self.run)
+You can :download:`download this custom Actuator example
+</downloads/custom_objects/custom_actuator.py>` to run it locally on your
+machine. **The concepts presented in this section will be re-used for all the**
+**other types of custom objects**, so make sure to understand them well ! You
+can also have a look at the `Actuators distributed with Crappy
+<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/actuator>`_ to
+see how the implementation of real-life Actuators looks like.
 
-       def open(self):
-           self.thread.start()
-
-       def set_position(self, pos, speed=3):
-           pass
-
-       def set_speed(self, speed):
-           pass
-
-       def get_position(self):
-           return 0
-
-       def get_speed(self):
-           return 0
-
-       def stop(self):
-           pass
-
-       def close(self):
-           self.stop_thread = True
-           self.thread.join()
-
-       def run(self):
-           while not self.stop_thread:
-               self.lock.acquire()
-               if self.target_pos is not None:
-                   if self.target_pos < self.position:
-                       if self.position - self.speed * self.t < self.target_pos:
-                           self.position = self.target_pos
-                       else:
-                           self.position -= self.speed * self.t
-                   elif self.target_pos > self.position:
-                       if self.position + self.speed * self.t > self.target_pos:
-                           self.position = self.target_pos
-                       else:
-                           self.position += self.speed * self.t
-               else:
-                   self.position += self.speed * self.t
-               self.lock.release()
-               time.sleep(self.t)
-
-Now the motor emulation is functional, but it doesn't take into account the user
-inputs. So now all that's left to do is write the ``get`` and ``set`` methods
-and the block will be ready !
-
-.. code-block:: python
-   :emphasize-lines: 23-25,28-29,32-33,36-45,48
-
-   import crappy
-   import time
-   from threading import Thread, RLock
-
-   class My_actuator(crappy.actuator.Actuator):
-
-       def __init__(self, refresh):
-           self.t = 1 / refresh
-           super().__init__()
-           self.position = 0
-           self.speed = 0
-           self.target_pos = None
-
-           self.stop_thread = False
-
-           self.lock = RLock()
-           self.thread = Thread(target=self.run)
-
-       def open(self):
-           self.thread.start()
-
-       def set_position(self, pos, speed=3):
-           with self.lock:
-               self.target_pos = pos
-               self.speed = speed
-
-       def set_speed(self, speed):
-           with self.lock:
-               self.speed = speed
-
-       def get_position(self):
-           with self.lock:
-               return self.position
-
-       def get_speed(self):
-           with self.lock:
-               if self.target_pos is None:
-                   return self.speed
-               else:
-                   if self.target_pos < self.position:
-                       return -self.speed
-                   if self.target_pos > self.position:
-                       return self.speed
-                   else:
-                       return 0
-
-       def stop(self):
-           self.set_speed(0)
-
-       def close(self):
-           self.stop()
-
-           self.stop_thread = True
-           self.thread.join()
-
-       def run(self):
-           while not self.stop_thread:
-               self.lock.acquire()
-               if self.target_pos is not None:
-                   if self.target_pos < self.position:
-                       if self.position - self.speed * self.t < self.target_pos:
-                           self.position = self.target_pos
-                       else:
-                           self.position -= self.speed * self.t
-                   elif self.target_pos > self.position:
-                       if self.position + self.speed * self.t > self.target_pos:
-                           self.position = self.target_pos
-                       else:
-                           self.position += self.speed * self.t
-               else:
-                   self.position += self.speed * self.t
-               self.lock.release()
-               time.sleep(self.t)
-
-Now we can integrate our custom actuator in a Crappy script in order to test it.
-We'll simply drive it in position, and plot the position and speed.
-
-.. code-block:: python
-   :emphasize-lines: 75-103
-
-   import crappy
-   import time
-   from threading import Thread, RLock
-
-   class My_actuator(crappy.actuator.Actuator):
-
-       def __init__(self, refresh):
-           self.t = 1 / refresh
-           super().__init__()
-           self.position = 0
-           self.speed = 0
-           self.target_pos = None
-
-           self.stop_thread = False
-
-           self.lock = RLock()
-           self.thread = Thread(target=self.run)
-
-       def open(self):
-           self.thread.start()
-
-       def set_position(self, pos, speed=3):
-           with self.lock:
-               self.target_pos = pos
-               self.speed = speed
-
-       def set_speed(self, speed):
-           with self.lock:
-               self.speed = speed
-
-       def get_position(self):
-           with self.lock:
-               return self.position
-
-       def get_speed(self):
-           with self.lock:
-               if self.target_pos is None:
-                   return self.speed
-               else:
-                   if self.target_pos < self.position:
-                       return -self.speed
-                   if self.target_pos > self.position:
-                       return self.speed
-                   else:
-                       return 0
-
-       def stop(self):
-           self.set_speed(0)
-
-       def close(self):
-           self.stop()
-
-           self.stop_thread = True
-           self.thread.join()
-
-       def run(self):
-           while not self.stop_thread:
-               self.lock.acquire()
-               if self.target_pos is not None:
-                   if self.target_pos < self.position:
-                       if self.position - self.speed * self.t < self.target_pos:
-                           self.position = self.target_pos
-                       else:
-                           self.position -= self.speed * self.t
-                   elif self.target_pos > self.position:
-                       if self.position + self.speed * self.t > self.target_pos:
-                           self.position = self.target_pos
-                       else:
-                           self.position += self.speed * self.t
-               else:
-                   self.position += self.speed * self.t
-               self.lock.release()
-               time.sleep(self.t)
-
-   if __name__ == '__main__':
-
-       mot = crappy.blocks.Machine([{'type': 'My_actuator',
-                                     'mode': 'position',
-                                     'cmd': 'target_position',
-                                     'pos_label': 'position',
-                                     'speed_label': 'speed',
-                                     'refresh': 200}])
-
-       gen = crappy.blocks.Generator([{'type': 'constant',
-                                       'value': 0,
-                                       'condition': 'delay=5'},
-                                      {'type': 'constant',
-                                       'value': 10,
-                                       'condition': 'delay=5'},
-                                      {'type': 'constant',
-                                       'value': -10,
-                                       'condition': 'delay=10'},
-                                      {'type': 'constant',
-                                       'value': 0,
-                                       'condition': 'delay=5'}],
-                                     cmd_label='target_position')
-
-       graph = crappy.blocks.Grapher(('t(s)', 'position'), ('t(s)', 'speed'))
-
-       crappy.link(gen, mot)
-       crappy.link(mot, graph)
-
-       crappy.start()
-
-Simply switch the ``'mode'`` key from ``'position'`` to ``'speed'`` to drive
-the motor in speed rather than in position !
+.. Note::
+   If you want to have debug information displayed in the terminal from your
+   Actuator, do not use the :func:`print` function ! Instead, use the
+   :meth:`~crappy.actuator.Actuator.log` method provided by the parent
+   :class:`~crappy.actuator.Actuator` class. This way, the log messages are
+   included in the log file and handled in a nicer way by Crappy.
 
 3. Custom InOuts
 ----------------
