@@ -2,186 +2,132 @@
 Creating and using custom objects in Crappy
 ===========================================
 
-Do not forget logging !
+.. role:: py(code)
+  :language: python
+  :class: highlight
+
+If you have read over the two first pages of the documentation, you should now
+have a good understanding of how Crappy works and the possibilities it offers.
+However, at that point, you are still limited by the functionalities that the
+Blocks and other objects natively distributed with Crappy. It is now time for
+you to create your own objects in Crappy, to adapt your scripts to your own
+needs ! This page of the tutorials covers the basics of the instantiation of
+custom objects, while the :ref:`next and last page of the tutorials
+<More about custom objects in Crappy>` covers the advanced aspects of custom
+object instantiation.
 
 1. Custom Modifiers
 -------------------
 
-The last type of Crappy object we have to go over is the modifier. The syntax
-is much freer than for the previous objects, since modifiers can actually be
-either classes or just functions. Using functions is the easiest way to go, and
-that's what we recommend. In most cases, classes are necessary either if you
-need to store data between loops, or if you want to easily instantiate similar
-modifiers but with a varying parameter.
+The first type of custom objects that we'll cover here are the
+:ref:`Modifiers`, because they are by far the simplest objects ! The Modifiers
+come in use in a variety of situations, and it is often required to write your
+own ones as the catalog of Crappy cannot cover every single case. Luckily, the
+only requirement for an object to qualify as a Modifier is to be a
+:obj:`~collections.abc.Callable`, which means that functions can be provided !
 
-So let's begin with the functions. It is really straightforward since any
-function will be accepted as a modifier. For it to work properly, functions
-should take a :obj:`dict` as only parameter, and return only a :obj:`dict`. This
-:obj:`dict` will contain the data coming from the upstream block. Its keys are
-the different labels, and to each key is associated a single value. The
-available labels and the type of the values depend on the kind of block the link
-comes from.
+More precisely, a Modifier should accept a :obj:`dict` as its sole argument and
+return a :obj:`dict` as well (:obj:`None` is also accepted). This dictionary is
+the representation of a chunk of data flowing through the :ref:`Link`, and the
+Modifier has direct access to it ! It can add keys, delete others, change the
+value of a key, etc. Each key is a label, and has a value it carries. In the
+end, all a Modifier does is to modify the incoming dictionary and return it
+after modification. As usual, let's put these concepts in application on a real
+runnable example !
 
-Inside the function, you actually have a direct access to the data flowing
-through the links. You can add keys, delete others or modify their values, it's
-all up to you ! So as an example, let's say we want to invert the value of the
-``'lab'`` label (and leave it to 0 if it's 0). We'll create three functions for
-that: one modifying the label, one adding a new label ``'lab_inv'`` and keeping
-the original one, and one adding the new label but deleting the original one :
+For this first example, let's create a Modifier that simply doubles the value
+of a given label. If you have understood the last paragraph, this Modifier will
+basically only perform something like :py:`data['label'] = data['label'] * 2`.
+Now, how to integrate it to your code in practice ? Start by defining the
+function somewhere, preferably before the :py:`if __name__ == "__main__"`
+statement. Then, simply pass it to the :py:`'modifier'` argument of the target
+:class:`~crappy.links.Link`, and that's it ! Do not forget to return the
+modified dictionary in the function !
 
-.. code-block:: python
+.. literalinclude:: /downloads/custom_objects/custom_modifier.py
+   :language: python
+   :emphasize-lines: 6-9, 24
+   :lines: 1-3, 5-12, 32-41, 43-45, 47-48
 
-   def modify(dic):
-       if dic['lab'] != 0:
-           dic['lab'] = 1 / dic['lab']
-       return dic
+In this first example, you can see that instead of replacing the value of the
+:py:`'cmd'` label with its double, it was chosen to store the double value in
+the newly created :py:`'cmdx2'` label. A new label was added ! This is just how
+powerful of a tool the Modifiers are ! Notice how the Modifier is added to the
+Link between the :ref:`Generator` and the :ref:`Grapher`, the syntax couldn't
+be more straightforward. If you need to change the name of the target label, or
+the value of the multiplier, they can simply be modified in the definition of
+the function. Alternatively, you could add arguments to you function and use
+:obj:`functools.partial` when passing it to the Link, but that is quite an
+advanced design already.
 
-   def add(dic):
-       if dic['lab'] != 0:
-           dic['lab_inv'] = 1 / dic['lab']
-       else:
-           dic['lab_inv'] = 0
-       return dic
+In the example, a basic function was passed as a Modifier. While functions are
+very versatile and well-known even to beginners, there are many situations when
+they will show strong limitations. For example, what if you want to store a
+value between two chunks of data ? That is simply not possible with functions !
+A concrete example of that is the :class:`~crappy.modifier.Integrate` Modifier,
+that integrates a signal over time. It needs to store the integral between
+consecutive chunks of data, and therefore cannot rely on a function.
 
-   def add_del(dic):
-       if dic['lab'] != 0:
-           dic['lab_inv'] = 1 / dic['lab']
-       else:
-           dic['lab_inv'] = 0
-       dic.pop('lab')
-       return dic
-
-Now if you need to create a class for your modifier, there's only one condition:
-the class must define an ``evaluate`` method. This method should be similar to
-the functions we defined previously: take only a :obj:`dict` as argument (except
-for the ``self`` argument), and return a :obj:`dict`. The only difference with
-the functions is that the ``evaluate`` method has access to class and instance
-attributes, opening more possibilities. Also, your class can (but doesn't need
-to) inherit from the :ref:`Modifier` object. This may become mandatory in a
-future release.
-
-To fully demonstrate the use of a modifier as a class, let's create one that
-sends a different signal if the difference between the maximum and the minimum
-values ever recorded is higher than a given threshold. The user has to specify
-the label to listen to, and the label on which the signal will be sent. This
-would be impossible with a function as it cannot store the successive values of
-the signal. The labels could also not simply be given as arguments. Let's start
-from the minimal template :
+To circumvent this limitation, we made it possible to instantiate Modifiers as
+classes instead of functions. It is mentioned above that the Modifiers need to
+be :obj:`~collections.abc.Callable` objects, but a class defining the
+:py:`__call__` method is actually callable ! Here is the minimal template of a
+Modifier as a class :
 
 .. code-block:: python
 
    import crappy
 
-   class My_modifier(crappy.modifier.Modifier):
+   class MyModifier(crappy.modifier.Modifier):
 
        def __init__(self):
            super().__init__()
 
-       def evaluate(self, dic):
+       def __call__(self, dic):
            return dic
 
-Let's now add our specific features :
+Some aspects of the code are worth commenting. First, the class should be a
+child of the base :class:`crappy.modifier.Modifier`, and initialize its parent
+class during :py:`__init__` (via the call to :py:`super().__init__()`). And
+second, it needs to define a :py:`__call__` method taking a :obj:`dict` as its
+sole argument and returning a :obj:`dict`. The :py:`__call__` method plays the
+same role as the function in the previous example, but the class structure
+makes it possible to store attributes and to achieve much more complex
+behaviors ! To demonstrate that, let's recreate a simpler version of the
+Integrate Modifier :
 
-.. code-block:: python
-   :emphasize-lines: 5,7-11,14-27
+.. literalinclude:: /downloads/custom_objects/custom_modifier.py
+   :language: python
+   :emphasize-lines: 7-23, 37
+   :lines: 1-6, 13-39, 42-44, 46-48
 
-   import crappy
+As you can see, compared to the template, several features have been added.
+First, the Modifier takes one argument at instantiation, that indicates the
+name of the label to integrate over time. This label is indeed provided in the
+line where the Modifier is given as an argument to the Link. And then, several
+attributes are defined in the :py:`__init__` method to handle the calculation
+of the integral during :py:`__call__`. This ability to store values between
+consecutive calls is exactly what was desired when using classes as Modifiers !
+The two examples presented in this section can finally be merged into a single
+big one :
 
-   class My_modifier(crappy.modifier.Modifier):
+.. literalinclude:: /downloads/custom_objects/custom_modifier.py
+   :language: python
 
-       def __init__(self, label_in, label_out, threshold):
-           super().__init__()
-           self.label_in = label_in
-           self.label_out = label_out
-           self.threshold = threshold
-           self.max = None
-           self.min = None
+You can :download:`download this custom Modifier example
+</downloads/custom_objects/custom_modifier.py>` to run it locally on your
+machine. An extra example of a custom Modifier can also be found in the
+`examples folder on GitHub <https://github.com/LaboratoireMecaniqueLille/
+crappy/examples/custom_objects>`_. Except fot what was detailed in this
+section, there is actually not much more to know about the definition of
+custom Modifiers ! They stand after all among the simplest objects in Crappy.
 
-       def evaluate(self, dic):
-           if self.max is None:
-               self.max = dic[self.label_in]
-           if self.min is None:
-               self.min = dic[self.label_in]
-
-           if dic[self.label_in] > self.max:
-               self.max = dic[self.label_in]
-           if dic[self.label_in] < self.min:
-               self.min = dic[self.label_in]
-
-           if self.max - self.min > self.threshold:
-               dic[self.label_out] = 1
-           else:
-               dic[self.label_out] = 0
-
-           return dic
-
-We can now test our modifiers in a simple script. It will just generate a signal
-and display it along with the modified signals.
-
-.. code-block:: python
-   :emphasize-lines: 5,7-11,14-27
-
-   import crappy
-
-   class My_modifier(crappy.modifier.Modifier):
-
-       def __init__(self, label_in, label_out, threshold):
-           super().__init__()
-           self.label_in = label_in
-           self.label_out = label_out
-           self.threshold = threshold
-           self.max = None
-           self.min = None
-
-       def evaluate(self, dic):
-           if self.max is None:
-               self.max = dic[self.label_in]
-           if self.min is None:
-               self.min = dic[self.label_in]
-
-           if dic[self.label_in] > self.max:
-               self.max = dic[self.label_in]
-           if dic[self.label_in] < self.min:
-               self.min = dic[self.label_in]
-
-           if self.max - self.min > self.threshold:
-               dic[self.label_out] = 1
-           else:
-               dic[self.label_out] = 0
-
-           return dic
-
-   def add(dic):
-       if dic['signal'] != 0:
-           dic['signal_inv'] = 1 / dic['signal']
-       else:
-           dic['signal_inv'] = 0
-       return dic
-
-   if __name__ == '__main__':
-
-       gen = crappy.blocks.Generator([{'type': 'sine',
-                                       'freq': 1/3,
-                                       'amplitude': 1,
-                                       'offset': 1,
-                                       'condition': 'delay=15'},
-                                      {'type': 'ramp',
-                                       'speed': 1/3,
-                                       'condition': 'delay=12.5'}],
-                                     cmd_label='signal')
-
-       graph_inv = crappy.blocks.Grapher(('t(s)', 'signal'),
-                                         ('t(s)', 'signal_inv'))
-
-       graph_thresh = crappy.blocks.Grapher(('t(s)', 'signal'),
-                                            ('t(s)', 'signal_thresh'))
-
-       crappy.link(gen, graph_inv, modifier=[add])
-       crappy.link(gen, graph_thresh, modifier=[My_modifier('signal',
-                                                            'signal_thresh',
-                                                            3)])
-
-       crappy.start()
+.. Note::
+   If you want to have debug information displayed in the terminal from your
+   Modifier, do not use the :func:`print` function ! Instead, use the
+   :meth:`~crappy.modifier.Modifier.log` method provided by the parent
+   :class:`~crappy.modifier.Modifier` class. This way, the log messages are
+   included in the log file and handled in a nicer way by Crappy.
 
 2. Custom Actuators
 -------------------
