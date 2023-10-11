@@ -504,12 +504,12 @@ class Block(Process, metaclass=MetaBlock):
         USBServer.stop_server()
 
       # Stopping the log thread if required
-      if get_start_method() == 'spawn':
+      if get_start_method() == 'spawn' and cls.log_thread is not None:
         cls.thread_stop = True
         cls.log_thread.join(timeout=0.1)
 
       # Warning in case the log thread did not stop correctly
-      if cls.log_thread.is_alive():
+      if cls.log_thread is not None and cls.log_thread.is_alive():
         cls.cls_log(logging.WARNING, "The Thread reading the log messages did "
                                      "not terminate in time !")
 
