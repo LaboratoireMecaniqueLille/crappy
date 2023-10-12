@@ -211,9 +211,9 @@ the interest is limited. Let's review what each method is intended for :
 
 - :meth:`~crappy.actuator.Actuator.__init__` is where you should initialize the
   Python objects that your class uses. It is also where the class accepts its
-  arguments. Avoid interacting with hardware already in this method, this will
-  come later. Also, don't forget to initialize the parent class with
-  :py:`super().__init__()` !
+  arguments, that are given in the dictionary passed to the :ref:`Machine`
+  Block. Avoid interacting with hardware already in this method. Also, don't
+  forget to initialize the parent class with :py:`super().__init__()` !
 - In :meth:`~crappy.actuator.Actuator.open` you should perform any action
   required for configuring the device. That includes opening the communication
   with it, configuring its parameters, or maybe energizing it.
@@ -222,7 +222,12 @@ the interest is limited. Let's review what each method is intended for :
   target speed or position command to the device. It is possible to implement
   both if the device supports it, or only one, or even none if the device is
   only used as a sensor in Crappy. These methods take as an argument the target
-  speed and position respectively, and do not return anything. Note that the
+  speed and position respectively, and do not return anything. As you may have
+  guessed, :meth:`~crappy.actuator.Actuator.set_speed` is called if the
+  Actuator is driven in *speed* mode, and
+  :meth:`~crappy.actuator.Actuator.set_position` is called if the Actuator is
+  driven in *position* mode. These methods are only called if the Machine Block
+  receives commands via an incoming :ref:`Link`. Note that the
   :meth:`~crappy.actuator.Actuator.set_position` method always accepts a second
   :py:`speed` argument, that may be equal to :obj:`None`. You'll find more
   about it in :ref:`a dedicated section on the next page
@@ -231,7 +236,11 @@ the interest is limited. Let's review what each method is intended for :
   :meth:`~crappy.actuator.Actuator.get_position` are for acquiring the current
   speed or position of the device. These methods do not take any argument, and
   return the acquired speed or position as a :obj:`float`. Again, it is
-  possible to define both methods, or only one, or none.
+  possible to define both methods, or only one, or none. They can be called no
+  matter what the driving mode is, provided that the :py:`position_label`
+  and/or :py:`speed_label` keys are provided as arguments in the dictionary
+  passed to the Machine Block. The data is only sent to downstream Blocks if
+  the Machine Block has outgoing Links.
 - :meth:`~crappy.actuator.Actuator.stop` should stop the device in the fastest
   and more durable possible way. It is called if a problem occurs, and at the
   very end of the test. If there is no other way to stop the device than
