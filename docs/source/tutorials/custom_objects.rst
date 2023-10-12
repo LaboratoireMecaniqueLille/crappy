@@ -295,184 +295,214 @@ see how the implementation of real-life Actuators looks like.
 3. Custom InOuts
 ----------------
 
-Just like the actuators we've just covered, creating custom inouts is fairly
-easy. They must inherit from the :ref:`InOut` object, and implement the
-following methods: ``open``, ``close``, and either ``set_cmd`` or ``get_data``.
-Note that it is possible to implement both.
+Creating custom :ref:`In / Out` objects is extremely similar to creating custom
+:ref:`Actuators`, so make sure to first read and understand the previous
+section first ! Just like for Actuators, **anyone who wants to drive their**
+**own setups with Crappy will surely need at some point to create their own**
+:class:`~crappy.inout.InOut` **objects**. This section covers the specificities
+of creating new InOuts.
 
-- ``open`` is meant to perform any action required before starting the assay,
-  like initializing hardware and setting parameters.
-- ``close`` is meant to perform actions once the assay ends, like switching
-  hardware off or closing a bus.
-- ``set_cmd`` takes one or several arguments, and does something with it.
-  Usually it is used to set the output of a DAC or to control hardware that
-  doesn't fit in the actuator category. But it can actually perform any action.
-- ``get_data`` takes no arguments but returns one or several values. Usually it
-  returns values read from sensors or ADCs, but again it can actually be any
-  kind of data.
+3.a Regular mode
+++++++++++++++++
 
-**Do not** define ``set_cmd`` or ``get_data`` if not needed, even if the method
-does nothing. Crappy could then have issues finding your object in its database.
-During the main part of the assay, Crappy will repeatedly call ``set_cmd`` or
-``get_data`` depending on what is defined and how the :ref:`IOBlock` is linked
-to the other blocks.
-
-For the example we'll use the capacity every computer has to monitor the
-real-time memory usage, that will be the value returned by the ``get_data``
-method. There's also a way to influence the memory usage by creating big Python
-objects, so the ``set_cmd`` method will try to reach a target memory usage. All
-memory usages will be given as a percentage.
-
-First let's start from a minimal inout object possessing both the ``set_cmd``
-and ``get_data`` methods :
+First, let's cover the similarities with the creation of Actuator objects, in
+the case of a regular usage. The case of the *streamer* mode is covered in
+:ref:`the next sub-section <3.b Streamer mode>`. Just like for an Actuator,
+you'll need to write your class before the :py:`if __name__ == "__main__"`
+statement, or to import it from another file. You should also start from a
+working draft in which you're able to drive your device in Python. And in both
+cases, creating your custom class can be simply achieved by filling in a
+template ! That being said, the objects and methods to manipulate will of
+course differ, here's how the template for an InOut looks like :
 
 .. code-block:: python
 
    import crappy
-   import time
 
-   class My_inout(crappy.inout.InOut):
+   class MyInOut(crappy.inout.InOut):
 
        def __init__(self):
            super().__init__()
 
        def open(self):
-           pass
+           ...
 
        def get_data(self):
-           return [time.time(), 0]
+           ...
 
        def set_cmd(self, cmd):
-           pass
+           ...
 
        def close(self):
-           pass
+           ...
 
-Note that if the class only uses ``get_data`` or ``set_cmd``, the unused method
-should be removed. Now we'll use the :mod:`psutil` module to monitor the memory
-consumption. This will only affect the ``get_data`` method :
+As you can see, there are two main differences. First, the parent class from
+which your InOut must inherit is now :class:`crappy.inout.InOut`, and second
+you now have to define the :py:`get_data` and/or :py:`set_cmd` methods. The
+:meth:`~crappy.inout.InOut.__init__`, :meth:`~crappy.inout.InOut.open` and
+:meth:`~crappy.inout.InOut.close` methods serve the same purpose as for the
+Actuators. The new methods are :
+
+- :meth:`~crappy.inout.InOut.get_data`, that takes no argument and should
+  return the data acquired by the device. The first returned value must be the
+  timestamp of the acquisition, as returned by :obj:`time.time`. Then, you can
+  return as many values as you want, usually corresponding to different
+  channels you device can acquire. The number of returned values should always
+  be the same, and for each value a label should be given in the :py:`labels`
+  argument of the :ref:`IOBlock`. The data will only be acquired if the IOBlock
+  has outgoing :ref:`Links` !
+- :meth:`~crappy.inout.InOut.set_cmd` takes one or several arguments, and does
+  not return anything. Instead, the arguments it receives should be used to set
+  commands on the device to drive. The number of arguments this method receives
+  only depends on the number of labels given as the :py:`cmd_labels` argument
+  to the IOBlock. The order of the arguments is also the same as the one of the
+  labels in :py:`cmd_labels`.
+
+Once again, let's switch to practice by writing a custom InOut class. We'll
+keep it very basic, you can browse the `InOuts distributed with Crappy
+<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/inout>`_ to
+have an overview of what a real-life InOut looks like.
+
+.. literalinclude:: /downloads/custom_objects/custom_inout.py
+   :language: python
+   :emphasize-lines: 7-22
+   :lines: 1-23
+
+In this example, the InOut simply stores two values. When :py:`get_data` is
+called, it simply returns these two values as well as a timestamp. When,
+:py:`set_cmd` is called, it expects two arguments and sets their values as the
+new stored values. Let's now integrate the InOut into a runnable code :
+
+.. literalinclude:: /downloads/custom_objects/custom_inout.py
+   :language: python
+
+In order to obtain two commands from a single :ref:`Generator`, a
+:ref:`Modifier` is added to create a new label. In the IOBlock, the two labels
+carrying the commands are indicated in the :py:`cmd_labels` argument. The
+values acquired by the :py:`get_data` method are transmitted to the
+:ref:`Grapher` Block over the labels indicated in the :py:`labels` argument of
+the IOBlock. And in the end it all works fine together ! You can
+:download:`download this custom InOut example
+</downloads/custom_objects/custom_inout.py>` to run it locally on your
+machine, and have a look at the `examples folder on GitHub
+<https://github.com/LaboratoireMecaniqueLille/crappy/examples/custom_objects>`_
+to find more examples of custom InOut objects.
+
+.. Note::
+   If you want to have debug information displayed in the terminal from your
+   InOut, do not use the :func:`print` function ! Instead, use the
+   :meth:`~crappy.inout.InOut.log` method provided by the parent
+   :class:`~crappy.inout.InOut` class. This way, the log messages are
+   included in the log file and handled in a nicer way by Crappy.
+
+3.b Streamer mode
++++++++++++++++++
+
+If you want to be able to use your custom InOut object in *streamer* mode, the
+methods described above will not be sufficient. Instead, **there is a**
+**particular framework to follow that is detailed in this sub-section**. For
+more details on how to use the *streamer* mode, refer to the :ref:`Dealing with
+streams section <4. Dealing with streams>` of the tutorials. Getting straight
+to the point, here's how the template for an InOut supporting the *streamer*
+mode looks like :
 
 .. code-block:: python
-   :emphasize-lines: 3,14
 
    import crappy
-   import time
-   import psutil
 
-   class My_inout(crappy.inout.InOut):
+   class MyStreamerInOut(crappy.inout.InOut):
 
        def __init__(self):
            super().__init__()
 
        def open(self):
-           pass
+           ...
 
        def get_data(self):
-           return [time.time(), psutil.virtual_memory().percent]
+           ...
 
        def set_cmd(self, cmd):
-           pass
+           ...
+
+       def start_stream(self):
+           ...
+
+       def get_stream(self):
+           ...
+
+       def stop_stream(self):
+           ...
 
        def close(self):
-           pass
+           ...
 
-Now we need to add a structure for adding or removing memory. We'll create a
-:obj:`list` containing a variable amount of other (huge) :obj:`list`, what will
-allow us to influence the memory usage. We'll also add an argument for setting
-a maximal memory usage that shouldn't be reached :
+It is the exact same as the one for the regular InOuts, except there are three
+additional methods. **You can still define the**
+:meth:`~crappy.inout.InOut.get_data` **and**
+:meth:`~crappy.inout.InOut.set_cmd` **methods, so that your InOut can be used**
+**both in regular and streamer mode** depending on the value of the
+:py:`streamer` argument of the :ref:`IOBlock` ! Now, what are the new methods
+supposed to do ?
 
-.. code-block:: python
-   :emphasize-lines: 7,9,12,18-26,29
+- :meth:`~crappy.inout.InOut.start_stream` should perform any action required
+  to start the acquisition of a stream on the device. It can for example
+  configure the device, or send a specific command. It is fine not to define
+  this method if no particular action is required. The actions performed in
+  this method must be specific to the *streamer* mode, the general
+  initialization commands should still be executed in the
+  :meth:`~crappy.inout.InOut.open` method.
+- :meth:`~crappy.inout.InOut.get_stream` is where the stream data is acquired.
+  This method does not take any parameter, and should return two objects. The
+  first one is a :mod:`numpy` array of shape `(m,)`, and the second another
+  :mod:`numpy` array of shape `(m, n)`, where `m` is the number of timestamps
+  and `n` the number of channels of the InOut. The first array contains only
+  one column with all the timestamps at which data was acquired. It is
+  equivalent to the timestamp value in :meth:`~crappy.inout.InOut.get_data`,
+  except here there are several timestamps to return. The second array is a
+  table containing for each timestamp and each label the acquired value.
+  Instead of returning one value per channel like in the
+  :meth:`~crappy.inout.InOut.get_data`, only one object contains all the
+  values.
+- :meth:`~crappy.inout.InOut.stop_stream` should perform any action required
+  for stopping the acquisition of the stream. It is fine not to define this
+  method if no particular action is required. The actions performed in this
+  method must be specific to the *streamer* mode, the general de-initialization
+  commands should still be executed in the :meth:`~crappy.inout.InOut.close`
+  method.
 
-   import crappy
-   import time
-   import psutil
+At that point, the syntax of the objects to return in the
+:meth:`~crappy.inout.InOut.get_stream` method might still not be very clear to
+you. A short example should help you understand it, it's not as difficult as it
+first seems ! The following example is the continuation of the one presented in
+the previous sub-section :
 
-   class My_inout(crappy.inout.InOut):
+.. literalinclude:: /downloads/custom_objects/custom_inout_streamer.py
+   :language: python
+   :emphasize-lines: 5, 25-35, 52, 54-55, 61-62
 
-       def __init__(self, max_mem):
-           super().__init__()
-           self.max_mem = max_mem
+The first difference is that the module :mod:`numpy` must be used, but that is
+not a problem since it is a requirement of Crappy. Then, the
+:meth:`~crappy.inout.InOut.get_stream` method is defined. The structure of the
+returned arrays should not be too difficult to understand if you're familiar
+with :mod:`numpy`. Note that here the returned arrays are built iteratively,
+but for real-life InOuts they are usually derived directly from a big message
+sent by the driven device. Just like previously, the
+:meth:`~crappy.inout.InOut.start_stream`,
+:meth:`~crappy.inout.InOut.stop_stream`,
+:meth:`~crappy.inout.InOut.open` and :meth:`~crappy.inout.InOut.close` methods
+don't need to be defined. At the IOBlock level, the :py:`streamer` argument is
+now set to :obj:`True`, and the :py:`labels` argument has also been updated.
+Finally, a :ref:`Demux` Modifier is now needed on the :ref:`Link` from the
+IOBlock to the Grapher in order for the data to be displayed.
 
-       def open(self):
-           self.buf = list()
-
-       def get_data(self):
-           return [time.time(), psutil.virtual_memory().percent]
-
-       def set_cmd(self, cmd):
-           if cmd > self.max_mem:
-               cmd = self.max_mem
-           if cmd > psutil.virtual_memory().percent:
-               self.buf.append([0] * 1024*1024)
-           elif cmd < psutil.virtual_memory().percent:
-               try:
-                   del self.buf[-1]
-               except IndexError:
-                   return
-
-       def close(self):
-           del self.buf
-
-Now we simply need to integrate out custom inout in a script, that will simply
-send a memory usage command and display the current memory usage :
-
-.. code-block:: python
-   :emphasize-lines: 31-53
-
-   import crappy
-   import time
-   import psutil
-
-   class My_inout(crappy.inout.InOut):
-
-       def __init__(self, max_mem):
-           super().__init__()
-           self.max_mem = max_mem
-
-       def open(self):
-           self.buf = list()
-
-       def get_data(self):
-           return [time.time(), psutil.virtual_memory().percent]
-
-       def set_cmd(self, cmd):
-           if cmd > self.max_mem:
-               cmd = self.max_mem
-           if cmd > psutil.virtual_memory().percent:
-               self.buf.append([0] * 1024*1024)
-           elif cmd < psutil.virtual_memory().percent:
-               try:
-                   del self.buf[-1]
-               except IndexError:
-                   return
-
-       def close(self):
-           del self.buf
-
-   if __name__ == '__main__':
-
-       gen = crappy.blocks.Generator([{'type': 'constant',
-                                       'value': 50,
-                                       'condition': 'delay=10'},
-                                      {'type': 'constant',
-                                       'value': 10,
-                                       'condition': 'delay=10'},
-                                      {'type': 'constant',
-                                       'value': 90,
-                                       'condition': 'delay=10'}
-                                      ], spam=True)
-
-       inout = crappy.blocks.IOBlock('My_inout', labels=['t(s)', 'Memory'],
-                                     cmd_labels=['cmd'], spam=True, max_mem=90)
-
-       graph = crappy.blocks.Grapher(('t(s)', 'Memory'))
-
-       crappy.link(inout, graph)
-
-       crappy.link(gen, inout)
-
-       crappy.start()
+You can :download:`download this custom streamer InOut example
+</downloads/custom_objects/custom_inout_streamer.py>` to run it locally on your
+machine. The only real difficulty with the instantiation of custom InOuts
+supporting the *streamer* mode is building the arrays to return, but you can
+find an additional example of a custom InOut in the `examples folder on GitHub
+<https://github.com/LaboratoireMecaniqueLille/crappy/examples/custom_objects>`_
+and in the `InOuts distributed with Crappy
+<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/inout>`_.
 
 4. Custom Cameras
 -----------------
