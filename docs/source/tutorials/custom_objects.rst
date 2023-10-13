@@ -507,310 +507,161 @@ and in the `InOuts distributed with Crappy
 4. Custom Cameras
 -----------------
 
-Adding cameras, and all the other Crappy objects, actually follows the same
-scheme as adding blocks but with different rules. Consequently we'll go over it
-a bit quicker than for the blocks.
+Now that you're getting familiar with the instantiation of custom objects in
+Crappy, adding your own :ref:`Cameras` to Crappy should not present any
+particular difficulty. **The camera management is one of the big strengths of**
+**Crappy, as Crappy handles the parallelization of the acquisition, display,**
+**recording and processing of the images.** The result is a very high
+performance when dealing with images. Also, **Crappy comes with a variety of**
+**Blocks for performing advanced and optimized image processing**, that you can
+use with your own :class:`~crappy.camera.Camera` objects (see the
+:ref:`DIS Correl`, :ref:`DIC VE` or :ref:`Video Extenso` Blocks for example).
+For these reasons, integrating your own cameras into Crappy might prove very
+advantageous.
 
-As you may have guessed, custom cameras must inherit from the :ref:`Camera
-<Meta Camera>` object (not the :ref:`Camera` block !). They must also initialize
-their parent object during ``__init__``. Their mandatory methods are
-``get_image``, ``open`` and ``close``, with ``get_image`` returning the current
-time and an array. So the very minimal camera would look like that :
+The first step for integrating a camera in Crappy is to check whether it can be
+read by one of the existing :ref:`Cameras`. The :ref:`Camera OpenCV` and
+:ref:`Camera GStreamer` objects in particular are designed to be compatible
+with a wide range of cameras, using the :mod:`opencv-python` and GStreamer
+modules respectively, so it might be worth testing them on your hardware
+first ! If your camera is not compatible, you'll have to write your own
+:class:`~crappy.camera.Camera` object.
+
+Just like in the previous sections, there is a template for the Camera
+objects :
 
 .. code-block:: python
 
    import crappy
-   import numpy as np
-   import time
 
-   class My_camera(crappy.camera.Camera):
+   class MyCamera(crappy.camera.Camera):
 
        def __init__(self):
            super().__init__()
 
        def open(self, **kwargs):
-           pass
+           ...
 
        def get_image(self):
-           return time.time(), np.array([0])
+           ...
 
        def close(self):
-           pass
+           ...
 
-Notice the ``**kwargs`` argument in the ``open`` method. When instantiating a
-camera block it is possible to specify setting values to the camera object,
-we'll cover it later on.
+The base class from which each Camera must inherit is
+:class:`crappy.camera.Camera`. The :meth:`~crappy.camera.Camera.open` and
+:meth:`~crappy.camera.Camera.close` methods are, as usual, meant for
+(de-)initializing the camera and the connection to it. A big difference with
+the custom classes that were defined in the previous sections is that here the
+:meth:`~crappy.camera.Camera.__init__` method does not accept any argument.
+Instead, all the arguments to pass to the Camera will be given as *kwargs* to
+the :meth:`~crappy.camera.Camera.open` method. Why did we choose a different
+implementation ? As detailed below, it is possible to define settings of the
+Camera objects that can be adjusted interactively in a nice
+:ref:`Camera Configurator` interface. Because the settings are handled in a
+special way and applied during :meth:`~crappy.camera.Camera.open`, it then
+makes sense to catch the arguments here !
 
-All the methods automatically called by Crappy are there, there's no optional
-one like for the blocks. ``open`` is called during Crappy's ``prepare`` and
-should be used to initialize streams, open buses, etc. ``close`` is called
-during ``finish`` and should be used to close streams, buses, etc. ``get_image``
-is called by a ``loop`` during the main part of the program, and should grab a
-frame and return it along with the associated timestamp.
+The method unique to the Camera objects is
+:meth:`~crappy.camera.Camera.get_image`, that should acquire one image at a
+time, normally by communicating with the hardware. This method does not accept
+any argument, and should return two values. The first one is the timestamp at
+which the image was acquires, as returned by :obj:`time.time`. The second one
+is the acquired image, as a :mod:`numpy` array or numpy-compatible object. The
+image can be an array of dimension two, if it is a grey level image, or of
+dimension three if it is a color image. It can also be encoded over 8 or 16
+bits indifferently.
 
-Now it is difficult to illustrate how a frame can be grabbed in this example
-that mustn't require any hardware, so if you want real examples you should go
-over the existing cameras. What can however be explained here is how the
-settings can be added and tuned in Crappy. If you never tried to use a camera
-in Crappy and your computer has a webcam, you should run the displayer example
-to see how the graphical interface allows tuning the settings. To actually start
-the test don't forget to close the setting window !
+As always, let's write a basic example to make it clear how the implementation
+should look like in an actual script, inspired from an `example available on
+GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/examples/
+custom_objects>`_ :
 
-Settings must be added during ``__init__`` using the ``self.add_setting``
-method. It takes as arguments the name, a getter method, a setter method, the
-limits and the default value. This means that a getter and a setter method have
-to be defined for each setting added. The getter method should return the
-current value of the setting, (most likely) as returned by the hardware. The
-setter method should (most likely) send a command to the hardware in order to
-set the parameter. There's a specific syntax for the limits according to the
-type:
+.. literalinclude:: /downloads/custom_objects/custom_camera.py
+   :language: python
+   :emphasize-lines: 8-41
+   :lines: 1-17, 52-76, 86-97
 
-- A :obj:`bool` indicates that the possible values are :obj:`True` and
-  :obj:`False`. A checkbox will be displayed in the interface.
-- A :obj:`dict` will have its keys displayed in the graphical interface among
-  which the user has to pick one, and the values of the :obj:`dict` correspond
-  to the value of the setting actually used in the program.
-- A :obj:`tuple` of two elements indicates that the possible values are in the
-  range between the first and the second element. If it is a tuple of :obj:`int`
-  the possible values will be :obj:`int`, and if it is a :obj:`tuple` of
-  :obj:`float` the possible values will be :obj:`float`. In both cases a slider
-  will be displayed in the interface.
-- :obj:`None` indicates that this setting is not accessible to the user, not
-  the most interesting option !
+In this first example, the Camera object generates a random image with several
+settings that can be adjusted in the :meth:`~crappy.camera.Camera.__init__`
+method. If you run the script, you'll however notice that the settings cannot
+be interactively tuned in the configuration window. The possibility to do so
+will be introduced in the next paragraphs. Except for the part that customizes
+the output image, the syntax is fairly simple. Once the image is acquired, it
+just has to be returned by the :meth:`~crappy.camera.Camera.get_image` method
+along with a timestamp. Here, the :meth:`~crappy.camera.Camera.open` and
+:meth:`~crappy.camera.Camera.close` methods don't need to be defined as there
+is no interactive setting defined nor any hardware to (de-)initialize.
 
-And the default argument simply indicates the default value of the setting,
-which should of course be one of the values allowed by the specified type.
+In the previous example, we've seen that the settings couldn't be interactively
+adjusted in the configuration window. To enable this feature, a set of specific
+methods has to be used instead of managing the settings ourselves. These
+methods are :
 
-So now to illustrate this, let's create a custom camera object that will take a
-given image and animate it. We'll add a setting to activate or not the
-animation, a setting to tune the animation speed, and one to choose the
-orientation. This way we'll cover all the setting types of interest.
+- :meth:`~crappy.camera.Camera.add_bool_setting`, that allows to add a setting
+  taking a boolean value (:obj:`True` or :obj:`False`). It is accessible in the
+  configuration window as a checkbox that can be checked and unchecked.
+- :meth:`~crappy.camera.Camera.add_choice_setting`, for adding a setting that
+  takes one :obj:`str` value out of a given set of possible values. It is
+  accessible in the configuration window as a menu in which you choose one out
+  of several possible values.
+- :meth:`~crappy.camera.Camera.add_scale_setting`, that adds a setting taking
+  an :obj:`int` or :obj:`float` value within given limits. It is accessible in
+  the configuration window as a horizontal slider that the user can adjust.
 
-The image is distributed in Crappy's package, stored in
-``crappy.resources.ve_markers``. To animate it, we'll simply fill a variable
-portion of it with black. First we create the structure :
+There are actually more methods available, but they are covered in :ref:`a
+dedicated section <4. More about custom Cameras>` on the next page. By calling
+any of the presented methods, you'll add a
+:class:`~crappy.camera.meta_camera.camera_setting.CameraSetting` that manages
+automatically the integration of your setting in the configuration window. It
+also ensures that any value you would try to set is valid, and manages the
+communication with hardware provided that you indicate a getter and a setter
+method as arguments. Otherwise, the value of the setting is simply stored
+internally like any other attribute. Every setting can be accessed by calling
+:py:`self.name`, with :py:`name` the name of the setting in plain text, or
+:py:`getattr(name, self)` with the name as a :obj:`str` if the name contains
+spaces. Let's now modify the first example to include a better setting
+management :
 
-.. code-block:: python
-   :emphasize-lines: 9-17, 20-23, 31-47
+.. literalinclude:: /downloads/custom_objects/custom_camera.py
+   :language: python
+   :emphasize-lines: 13, 15-42, 69-71, 73-75
+   :lines: 1-12, 21-97
 
-   import crappy
-   import numpy as np
-   import time
+After the changes, notice that the :meth:`~crappy.camera.Camera.get_image`
+method remains unchanged. The values of the settings, that were previously
+defined as attributes in the :meth:`~crappy.camera.Camera.__init__` method, are
+still accessed the same way, because the same names were given when adding the
+settings. An :meth:`~crappy.camera.Camera.open` method is now defined, in which
+the settings are instantiated and where their initial value can be provided as
+arguments. What happens is that :meth:`~crappy.camera.Camera.set_all` will call
+the setter of each setting, effectively setting it on the device with the
+indicated value. If :meth:`~crappy.camera.Camera.set_all` is not called, the
+setter is never called and there is no interaction with the hardware until you
+modify a setting in the configuration window.
 
-   class My_camera(crappy.camera.Camera):
+Here, there is no actual hardware to drive so there is no need for getters and
+setters. However, an example is still provided for the :py:`high` setting to
+show you how it works. The getter and the setter are usually methods of the
+class, in which you communicate with the camera. When changing the value of the
+setting, the setter will first be called, followed by the getter to check if
+the setting was set to the correct value. It is possible to only provide a
+setter, or only a getter.
 
-       def __init__(self):
-           super().__init__()
-           self.add_setting('Enable animation',
-                            self.get_anim, self.set_anim,
-                            True, True)
-           self.add_setting('Speed (img/s)',
-                            self.get_speed, self.set_speed,
-                            (0.5, 2), 1.)
-           self.add_setting('Orientation',
-                            self.get_orientation, self.set_orientation,
-                            {'Vertical': 1, 'Horizontal': 0}, 'Vertical')
+You can :download:`download this custom Camera example
+</downloads/custom_objects/custom_camera.py>` to run it locally on your
+machine. Cameras are quite complex objects, so **there's much more to**
+**discover by reading the documentation of the** :class:`~crappy.camera.Camera`
+in the API. You can also have a look at the `Cameras distributed with Crappy
+<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/inout>`_ to see
+how they are implemented.
 
-       def open(self, **kwargs):
-           self.orient = 1
-           self.speed = 1.
-           self.anim = True
-           self.set_all(**kwargs)
-
-       def get_image(self):
-           return time.time(), np.array([0])
-
-       def close(self):
-           pass
-
-       def get_speed(self):
-           return self.speed
-
-       def set_speed(self, speed):
-           self.speed = speed
-
-       def get_orientation(self):
-           return self.orient
-
-       def set_orientation(self, orient):
-           self.orient = orient
-
-       def get_anim(self):
-           return self.anim
-
-       def set_anim(self, anim):
-           self.anim = anim
-
-Notice the ``self.set_all(**kwargs)`` call during ``open``. It's at this very
-moment that the default settings are applied.
-
-Now let's play a bit with the image. We're going to use the timestamp to
-determine how blacked the image is. Every ``speed`` seconds the image has
-to be completely black, and the mask should then disappear in a linear way. The
-displayed array is simply made of the part of the image we keep plus the other
-part that's filled with black :
-
-.. code-block:: python
-   :emphasize-lines: 23, 27-47
-
-   import crappy
-   import numpy as np
-   import time
-
-   class My_camera(crappy.camera.Camera):
-
-       def __init__(self):
-           super().__init__()
-           self.add_setting('Enable animation',
-                            self.get_anim, self.set_anim,
-                            True, True)
-           self.add_setting('Speed (s/img)',
-                            self.get_speed, self.set_speed,
-                            (1., 5.), 2.)
-           self.add_setting('Orientation',
-                            self.get_orientation, self.set_orientation,
-                            {'Vertical': 1, 'Horizontal': 0}, 'Vertical')
-
-       def open(self, **kwargs):
-           self.orient = 1
-           self.speed = 1.
-           self.anim = True
-           self.frame = crappy.resources.ve_markers
-           self.set_all(**kwargs)
-
-       def get_image(self):
-           t = time.time()
-           num_row = int((t % self.get_speed()) *
-                         self.frame.shape[0] / self.get_speed())
-           num_column = int((t % self.get_speed()) *
-                            self.frame.shape[1] / self.get_speed())
-           row_mask = np.array([True] * num_row +
-                               [False] * (self.frame.shape[0] - num_row))
-           column_mask = np.array([True] * num_column +
-                                  [False] * (self.frame.shape[1] -
-                                             num_column))
-           if self.get_anim():
-               if self.get_orientation():
-                   mask = row_mask
-                   return t, np.concatenate((self.frame[mask, :],
-                                             self.frame[~mask, :] * 0))
-               else:
-                   mask = column_mask
-                   return t, np.concatenate((self.frame[:, mask],
-                                             self.frame[:, ~mask] * 0),
-                                            axis=1)
-           return time.time(), self.frame
-
-       def close(self):
-           pass
-
-       def get_speed(self):
-           return self.speed
-
-       def set_speed(self, speed):
-           self.speed = speed
-
-       def get_orientation(self):
-           return self.orient
-
-       def set_orientation(self, orient):
-           self.orient = orient
-
-       def get_anim(self):
-           return self.anim
-
-       def set_anim(self, anim):
-           self.anim = anim
-
-There's no need to do anything special at exit, so the ``close`` method remains
-as it was. Now we'll simply write a short program displaying our animated image.
-To do so we only need a Displayer block, and of course our custom camera.
-Notice that the argument for choosing a camera object in the :ref:`Camera` block
-is a :obj:`str`, you should give the name not the object. We'll also set the
-frame rate to 50, because the camera may loop way too fast for the screen to
-follow. In the end, here's the working code :
-
-.. code-block:: python
-   :emphasize-lines: 70-78
-
-   import crappy
-   import numpy as np
-   import time
-
-   class My_camera(crappy.camera.Camera):
-
-       def __init__(self):
-           super().__init__()
-           self.add_setting('Enable animation',
-                            self.get_anim, self.set_anim,
-                            True, True)
-           self.add_setting('Speed (s/img)',
-                            self.get_speed, self.set_speed,
-                            (1., 5.), 2.)
-           self.add_setting('Orientation',
-                            self.get_orientation, self.set_orientation,
-                            {'Vertical': 1, 'Horizontal': 0}, 'Vertical')
-
-       def open(self, **kwargs):
-           self.orient = 1
-           self.speed = 1.
-           self.anim = True
-           self.frame = crappy.resources.ve_markers
-           self.set_all(**kwargs)
-
-       def get_image(self):
-           t = time.time()
-           num_row = int((t % self.get_speed()) *
-                         self.frame.shape[0] / self.get_speed())
-           num_column = int((t % self.get_speed()) *
-                            self.frame.shape[1] / self.get_speed())
-           row_mask = np.array([True] * num_row +
-                               [False] * (self.frame.shape[0] - num_row))
-           column_mask = np.array([True] * num_column +
-                                  [False] * (self.frame.shape[1] -
-                                             num_column))
-           if self.get_anim():
-               if self.get_orientation():
-                   mask = row_mask
-                   return t, np.concatenate((self.frame[mask, :],
-                                             self.frame[~mask, :] * 0))
-               else:
-                   mask = column_mask
-                   return t, np.concatenate((self.frame[:, mask],
-                                             self.frame[:, ~mask] * 0),
-                                            axis=1)
-           return time.time(), self.frame
-
-       def close(self):
-           pass
-
-       def get_speed(self):
-           return self.speed
-
-       def set_speed(self, speed):
-           self.speed = speed
-
-       def get_orientation(self):
-           return self.orient
-
-       def set_orientation(self, orient):
-           self.orient = orient
-
-       def get_anim(self):
-           return self.anim
-
-       def set_anim(self, anim):
-           self.anim = anim
-
-   if __name__ == '__main__':
-
-       cam = crappy.blocks.Camera('My_camera')
-
-       disp = crappy.blocks.Displayer(framerate=50)
-
-       crappy.link(cam, disp)
-
-       crappy.start()
+.. Note::
+   If you want to have debug information displayed in the terminal from your
+   Camera, do not use the :func:`print` function ! Instead, use the
+   :meth:`~crappy.camera.Camera.log` method provided by the parent
+   :class:`~crappy.camera.Camera` class. This way, the log messages are
+   included in the log file and handled in a nicer way by Crappy.
 
 5. Custom Blocks
 ----------------
