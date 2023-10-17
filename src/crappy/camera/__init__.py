@@ -4,7 +4,6 @@ from typing import Dict, Type
 
 from .fake_camera import FakeCamera
 from .file_reader import FileReader
-from .gstreamer_camera import CameraGstreamer
 from .opencv_camera import CameraOpencv
 from .opencv_camera_basic import Webcam
 from .raspberry_pi_camera import RaspberryPiCamera
@@ -15,5 +14,17 @@ from .cameralink import BaslerIronmanCameraLink
 from .cameralink import JaiGO5000CPMCL, JaiGO5000CPMCL8Bits
 
 from .meta_camera import Camera, MetaCamera, camera_setting
+
+from platform import system
+from subprocess import run
+if system() == 'Linux':
+  try:
+    run(['v4l2-ctl'], capture_output=True)
+  except FileNotFoundError:
+    from .gstreamer_camera import CameraGstreamerBasic as CameraGstreamer
+  else:
+    from .gstreamer_camera import CameraGstreamerV4l2 as CameraGstreamer
+else:
+  from .gstreamer_camera import CameraGstreamerBasic as CameraGstreamer
 
 camera_dict: Dict[str, Type[Camera]] = MetaCamera.classes
