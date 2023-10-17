@@ -776,7 +776,7 @@ class CameraConfig(tk.Tk):
                           f'V: {self._reticle_val.get():d}')
 
   def _update_apply_settings(self, _, __, ___) -> None:
-    """"""
+    """Disable the Apply Settings button when Auto apply button is checked."""
 
     if self._auto_apply.get():
       self._update_button['state'] = 'disabled'
@@ -798,7 +798,9 @@ class CameraConfig(tk.Tk):
   def _auto_apply_scale_settings(self, _: tk.Event):
     """Applies the settings without clicking on the Apply Settings
      button when the Auto apply button is checked.
-     The scale settings will be applied when the slicer is released."""
+
+     The scale settings will be applied when the slicer is released.
+     """
 
     if self._auto_apply.get():
       self._update_settings()
@@ -806,7 +808,9 @@ class CameraConfig(tk.Tk):
   def _auto_apply_bool_settings(self):
     """Applies the settings without clicking on the Apply Settings
      button when the Auto apply button is checked.
-     The bool settings will be applied when the bool button is checked."""
+
+     The bool settings will be applied when the bool button is checked.
+     """
 
     if self._auto_apply.get():
       self._update_settings()
@@ -814,7 +818,9 @@ class CameraConfig(tk.Tk):
   def _auto_apply_choice_settings(self):
     """Applies the settings without clicking on the Apply Settings
      button when the Auto apply button is checked.
-     The choice settings will be applied when the choice button is checked."""
+
+     The choice settings will be applied when the choice button is checked.
+     """
 
     if self._auto_apply.get():
       self._update_settings()
