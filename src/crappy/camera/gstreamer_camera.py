@@ -131,13 +131,6 @@ videoconvert ! autovideosink
     """
 
     # Checking the validity of the arguments
-    if device is not None and system() == 'Linux' and not isinstance(device,
-                                                                     str):
-      raise ValueError("In Linux, device should be a string !")
-    elif device is not None and system() in ['Darwin', 'Windows'] and not \
-            isinstance(device, int):
-      raise ValueError("In Windows and Mac, device should be an integer !")
-
     if img_depth is not None and img_depth not in [8, 16]:
       raise ValueError('The img_depth must be either 8 or 16 (bits)')
 
@@ -241,51 +234,40 @@ videoconvert ! autovideosink
                                  highest=expo_max, getter=self._get_exposure,
                                  setter=self._set_exposure, default=default)
 
-      # Then, trying to get the available image encodings and formats
-      if system() == 'Linux':
+      # Trying to get the available image encodings and formats
+      self._formats = []
 
-        self._formats = []
+      # Trying to run v4l2-ctl to get the available formats
+      command = ['v4l2-ctl', '--list-formats-ext'] if device is None \
+          else ['v4l2-ctl', '-d', device, '--list-formats-ext']
+      self.log(logging.INFO, f"Getting the available image formats with "
+                             f"command {command}")
+      try:
+        check = run(command, capture_output=True, text=True)
+      except FileNotFoundError:
+        check = None
+      check = check.stdout if check is not None else ''
 
-        # Trying to run v4l2-ctl to get the available formats
-        command = ['v4l2-ctl', '--list-formats-ext'] if device is None \
-            else ['v4l2-ctl', '-d', device, '--list-formats-ext']
-        self.log(logging.INFO, f"Getting the available image formats with "
-                               f"command {command}")
-        try:
-          check = run(command, capture_output=True, text=True)
-        except FileNotFoundError:
-          check = None
-        check = check.stdout if check is not None else ''
-
-        # Splitting the returned string to isolate each encoding
-        if findall(r'\[\d+]', check):
-          check = split(r'\[\d+]', check)[1:]
-        elif findall(r'Pixel\sFormat', check):
-          check = split(r'Pixel\sFormat', check)[1:]
-        else:
-          check = []
-
-        if check:
-          for img_format in check:
-            # For each encoding, finding its name
-            name, *_ = search(r"'(\w+)'", img_format).groups()
-            sizes = findall(r'\d+x\d+', img_format)
-            fps_sections = split(r'\d+x\d+', img_format)[1:]
-
-            # For each name, finding the available sizes
-            for size, fps_section in zip(sizes, fps_sections):
-              fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
-              for fps in fps_list:
-                self._formats.append(f'{name} {size} ({fps} fps)')
-
-        else:
-          # If v4l-utils is not installed, proposing two encodings without
-          # further detail
-          self._formats = ['Default', 'MJPG']
-
-      # For Windows and Mac proposing two encodings without further detail
+      # Splitting the returned string to isolate each encoding
+      if findall(r'\[\d+]', check):
+        check = split(r'\[\d+]', check)[1:]
+      elif findall(r'Pixel\sFormat', check):
+        check = split(r'Pixel\sFormat', check)[1:]
       else:
-        self._formats = ['Default', 'MJPG']
+        check = []
+
+      if check:
+        for img_format in check:
+          # For each encoding, finding its name
+          name, *_ = search(r"'(\w+)'", img_format).groups()
+          sizes = findall(r'\d+x\d+', img_format)
+          fps_sections = split(r'\d+x\d+', img_format)[1:]
+
+          # For each name, finding the available sizes
+          for size, fps_section in zip(sizes, fps_sections):
+            fps_list = findall(r'\((\d+\.\d+)\sfps\)', fps_section)
+            for fps in fps_list:
+              self._formats.append(f'{name} {size} ({fps} fps)')
 
       # Finally, creating the parameter if applicable
       if self._formats:
@@ -446,21 +428,9 @@ videoconvert ! autovideosink
     if self._user_pipeline is not None:
       return self._user_pipeline
 
-    # Choosing the source according to the platform
-    if system() == "Linux":
-      source = 'v4l2src'
-    elif system() == 'Windows':
-      source = 'ksvideosrc'
-    elif system() == 'Darwin':
-      source = 'vfsvideosrc'
-    else:
-      source = 'autovideosrc'
-
     # The source argument is handled differently according to the platform
-    if system() == 'Linux' and self._device is not None:
+    if self._device is not None:
       device = f'device={self._device}'
-    elif system() in ['Darwin', 'Windows'] and self._device is not None:
-      device = f'device-index={self._device}'
     else:
       device = ''
 
