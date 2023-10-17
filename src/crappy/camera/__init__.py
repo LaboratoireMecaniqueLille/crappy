@@ -21,10 +21,10 @@ if system() == 'Linux':
   try:
     run(['v4l2-ctl'], capture_output=True)
   except FileNotFoundError:
-    from .gstreamer_camera import CameraGstreamerBasic as CameraGstreamer
+    from .gstreamer_camera_basic import CameraGstreamer
   else:
-    from .gstreamer_camera import CameraGstreamerV4l2 as CameraGstreamer
+    from .gstreamer_camera_v4l2 import CameraGstreamer
 else:
-  from .gstreamer_camera import CameraGstreamerBasic as CameraGstreamer
+  from .gstreamer_camera_basic import CameraGstreamer
 
 camera_dict: Dict[str, Type[Camera]] = MetaCamera.classes
