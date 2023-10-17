@@ -633,10 +633,6 @@ class CameraGstreamerBasic(Camera):
   OpenCV.
 
   Note:
-    For a better performance of this class in Linux, it is recommended to have
-    `v4l-utils` installed.
-
-  Note:
     This Camera requires the module :mod:`PyGObject` to be installed, as well
     as GStreamer.
   """
@@ -870,7 +866,6 @@ videoconvert ! autovideosink
 
     Args:
       pipeline: The new pipeline to use, as a :obj:`str`.
-      exposure: The new exposure value to set, as an :obj:`int`.
     """
 
     # Stops the previous pipeline
