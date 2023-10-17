@@ -420,6 +420,10 @@ videoconvert ! autovideosink
       img_format = '! jpegdec'
     elif format_name == 'H264':
       img_format = '! h264parse ! avdec_h264'
+    elif format_name == 'HEVC':
+      img_format = '! h265parse ! avdec_h265'
+    elif format_name == 'YUYV':
+      img_format = ''
 
     # Getting the width and height from the second half of the string
     if img_size is not None:
