@@ -28,7 +28,7 @@ except (ImportError, ModuleNotFoundError, ValueError):
 
 
 class CameraGstreamerV4l2(Camera):
-  """A class for reading images from a video device using Gstreamer.
+  """A class for reading images from a video device using Gstreamer in Linux.
 
   It can read images from the default video source, or a video device can be
   specified. In this case, the user has access to a range of parameters for
@@ -41,9 +41,7 @@ class CameraGstreamerV4l2(Camera):
   installation of GStreamer is however less straightforward than the one of
   OpenCV.
 
-  Note:
-    For a better performance of this class in Linux, it is recommended to have
-    `v4l-utils` installed.
+  To use this class, `v4l-utils` must be installed.
 
   Note:
     This Camera requires the module :mod:`PyGObject` to be installed, as well
@@ -111,8 +109,7 @@ videoconvert ! autovideosink
 
     Args:
       device: The video device to open, if the device opened by default isn't
-        the right one. In Linux, should be a path like `/dev/video0`. In
-        Windows and Mac, should be the index of the video device. This argument
+        the right one. It should be a path like `/dev/video0`. This argument
         is ignored if a ``user_pipeline`` is given.
       user_pipeline: A custom pipeline that can optionally be given as a
         :obj:`str`. If given, the ``device`` argument is ignored. The pipeline
@@ -358,7 +355,6 @@ videoconvert ! autovideosink
 
     Args:
       pipeline: The new pipeline to use, as a :obj:`str`.
-      exposure: The new exposure value to set, as an :obj:`int`.
     """
 
     # Stops the previous pipeline
@@ -383,12 +379,6 @@ videoconvert ! autovideosink
     If a user-defined pipeline was given, it will always be returned.
 
     Args:
-      brightness: The brightness value to set, as a :obj:`float` between -1 and
-        1.
-      contrast: The contrast value to set, as a :obj:`float` between 0 and 2.
-      hue: The hue value to set, as a :obj:`float` between -1 and 1.
-      saturation: The saturation value to set, as a :obj:`float` between 0 and
-        2.
       img_format: The image format to set, as a :obj:`str` containing the name
         of the encoding and optionally both the width and height in pixels.
 
