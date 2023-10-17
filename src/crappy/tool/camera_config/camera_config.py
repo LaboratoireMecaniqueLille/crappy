@@ -744,6 +744,8 @@ class CameraConfig(tk.Tk):
     self._y_pos.trace_add('write', self._update_reticle)
     self._reticle_val.trace_add('write', self._update_reticle)
 
+    self._auto_apply.trace_add('write', self._update_apply_settings)
+
   def _update_fps(self, _, __, ___) -> None:
     """Auto-update of the FPS display."""
 
@@ -772,6 +774,14 @@ class CameraConfig(tk.Tk):
     self._reticle_txt.set(f'X: {self._x_pos.get():d}, '
                           f'Y: {self._y_pos.get():d}, '
                           f'V: {self._reticle_val.get():d}')
+
+  def _update_apply_settings(self, _, __, ___) -> None:
+    """"""
+
+    if self._auto_apply.get():
+      self._update_button['state'] = 'disabled'
+    else:
+      self._update_button['state'] = 'normal'
 
   def _update_settings(self) -> None:
     """Tries to update the settings values upon clicking on the Apply Settings
