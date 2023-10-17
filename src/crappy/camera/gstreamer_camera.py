@@ -60,7 +60,6 @@ class CameraGstreamerV4l2(Camera):
     self._frame_nr = 0
 
     # These attributes will be set later
-    self._exposure_mode: Optional[str] = None
     self._pipeline = None
     self._process: Optional[Popen] = None
     self._img: Optional[ndarray] = None
@@ -68,8 +67,6 @@ class CameraGstreamerV4l2(Camera):
     self._user_pipeline: Optional[str] = None
     self._nb_channels: int = 3
     self._img_depth: int = 8
-    self._exposure_setting: str = ''
-    self._exposure_auto: str = ''
     self._formats: List[str] = list()
     self._app_sink = None
 
@@ -182,57 +179,6 @@ videoconvert ! autovideosink
 
     # Defining the settings in case no custom pipeline was given
     if user_pipeline is None:
-
-      # First, determine if the exposure can be set (Linux only)
-      if system() == "Linux":
-
-        # Trying to run v4l2-ctl to get the available settings
-        command = ['v4l2-ctl', '-l'] if device is None \
-          else ['v4l2-ctl', '-d', device, '-l']
-        self.log(logging.INFO, f"Getting the available image settings with "
-                               f"command {command}")
-        try:
-          check = run(command, capture_output=True, text=True)
-        except FileNotFoundError:
-          self.log(logging.WARNING, "The performance of the CameraOpencv "
-                                    "class could be improved if v4l-utils "
-                                    "was installed !")
-          check = None
-        check = check.stdout if check is not None else ''
-
-        # Trying to find the exposure parameters in the returned string
-        expo = search(r'(?=.*\sexposure\s.*).+min=(?P<min>\d+)\s'
-                      r'max=(?P<max>\d+).+default=(\d+)',
-                      check)
-        expo_auto = search(r'(?=.*exposure.*)(?=.*auto.*)(?=.*menu.*)\s+'
-                           r'\s(\w+)\s', check)
-        expo_abso = search(r'(?=.*absolute.*)(?=.*exposure.*)(?=.*int.*)\s+'
-                           r'\s(\w+)\s.+min=(\d+)\smax=(\d+).+default=(\d+)',
-                           check)
-
-        # If there's an exposure parameter, getting its upper and lower limits
-        if expo:
-          expo_min, expo_max, default = map(int, expo.groups())
-          self._exposure_mode = 'direct'
-          self._exposure_setting = 'exposure'
-
-        # If there's an exposure parameter, getting its upper and lower limits
-        elif expo_auto and expo_abso:
-          self._exposure_mode = 'manual'
-          self._exposure_setting = expo_abso.groups()[0]
-          self._exposure_auto = expo_auto.groups()[0]
-          expo_min, expo_max, default = map(int, expo_abso.groups()[1:])
-
-        else:
-          expo_min = None
-          expo_max = None
-          default = None
-
-        # Creating the parameter if applicable
-        if expo_min is not None:
-          self.add_scale_setting(name='exposure', lowest=expo_min,
-                                 highest=expo_max, getter=self._get_exposure,
-                                 setter=self._set_exposure, default=default)
 
       # Trying to get the available image encodings and formats
       self._formats = []
@@ -355,9 +301,7 @@ videoconvert ! autovideosink
       self.log(logging.INFO, "Stopping the image generating process")
       self._process.terminate()
 
-  def _restart_pipeline(self,
-                        pipeline: str,
-                        exposure: Optional[int] = None) -> None:
+  def _restart_pipeline(self, pipeline: str) -> None:
     """Stops the current pipeline, redefines it, and restarts it.
 
     Args:
@@ -376,25 +320,6 @@ videoconvert ! autovideosink
     self._app_sink = self._pipeline.get_by_name('sink')
     self._app_sink.set_property("emit-signals", True)
     self._app_sink.connect("new-sample", self._on_new_sample)
-
-    # There's an extra step to set the exposure
-    if system() == "Linux" and exposure is not None and \
-            self._exposure_mode is not None:
-      # Two different ways of setting the exposure
-      if self._exposure_mode == 'direct':
-        extra_args = (f"controls,"
-                      f"""exposure={exposure if exposure is not None 
-                                else self.exposure}""")
-      else:
-        extra_args = (f"controls,{self._exposure_auto}=1,"
-                      f"{self._exposure_setting}="
-                      f"{exposure if exposure is not None else self.exposure}")
-
-      # Setting the exposure is done via the 'extra-controls' property of the
-      # 'v4l2src' source
-      self._app_source = self._pipeline.get_by_name('source')
-      structure, _ = Gst.Structure.from_string(extra_args)
-      self._app_source.set_property('extra-controls', structure)
 
     # Restarts the pipeline
     self.log(logging.INFO, "Starting the GST pipeline")
@@ -543,39 +468,6 @@ videoconvert ! autovideosink
     """Sets the image saturation."""
 
     self._restart_pipeline(self._get_pipeline(saturation=saturation))
-
-  def _set_exposure(self, exposure: int) -> None:
-    """Sets the exposure using v4l2.
-
-    Only works when the platform is Linux.
-    """
-
-    self._restart_pipeline(self._get_pipeline(), exposure=exposure)
-
-  def _get_exposure(self) -> int:
-    """Returns the current exposure value.
-
-    Only works when the platform is Linux.
-    """
-
-    # Trying to run v4l2-ctl to get the exposure value
-    if self._device is not None:
-      command = ['v4l2-ctl', '-d', self._device, '--all']
-    else:
-      command = ['v4l2-ctl', '--all']
-    try:
-      self.log(logging.DEBUG, f"Getting exposure with command {command}")
-      expo = run(command, capture_output=True, text=True)
-    except FileNotFoundError:
-      expo = None
-
-    # Extracting the exposure from the returned string
-    expo = expo.stdout if expo is not None else ''
-    expo = search(rf'(?=.*\s{self._exposure_setting}\s.*).+value=(\d+)', expo)
-    if expo:
-      return int(expo.groups()[0])
-    else:
-      raise IOError("Couldn't read exposure value from v4l2 !")
 
   def _set_format(self, img_format) -> None:
     """Sets the image encoding and dimensions."""
