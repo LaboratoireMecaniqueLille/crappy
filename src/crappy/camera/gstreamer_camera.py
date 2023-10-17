@@ -2,10 +2,10 @@
 
 from time import time, sleep
 from numpy import uint8, ndarray, uint16, copy, squeeze
-from typing import Tuple, Optional, Union, List
+from typing import Tuple, Optional, Union, List, Callable
 from subprocess import Popen, PIPE, run
 from platform import system
-from re import findall, split, search
+from re import findall, split, search, finditer
 import logging
 from fractions import Fraction
 
@@ -228,16 +228,68 @@ videoconvert ! autovideosink
           self.add_choice_setting(name='format', choices=tuple(self._formats),
                                   setter=self._set_format)
 
-      # These settings are always available no matter the platform
+      # Trying to run v4l2-ctl to get the available settings
+      command = ['v4l2-ctl', '-l'] if device is None \
+          else ['v4l2-ctl', '-d', device, '-l']
+      self.log(logging.INFO, f"Getting the available image settings with "
+                             f"command {command}")
+      try:
+        check = run(command, capture_output=True, text=True)
+      except FileNotFoundError:
+        self.log(logging.WARNING, "The performance of the CameraOpencv "
+                                  "class could be improved if v4l-utils "
+                                  "was installed !")
+        check = None
+      check = check.stdout if check is not None else ''
+
+      # Regex to extract the different parameters and their information
+      param_pattern = (r'(\w+)\s+0x\w+\s+\((\w+)\)\s+:\s*'
+                       r'(min=(-?\d+)\s+)?'
+                       r'(max=(-?\d+)\s+)?'
+                       r'(step=(\d+)\s+)?'
+                       r'(default=(-?\d+)\s+)?'
+                       r'value=(-?\d+)\s*'
+                       r'(flags=([^\\n]+))?')
+      parameters = []
+      # Extract the different parameters and their information
+      matches = finditer(param_pattern, check)
+      for match in matches:
+        param_info = {
+          'name': match.group(1),
+          'type': match.group(2),
+          'min': int(match.group(4)) if match.group(4) else None,
+          'max': int(match.group(6)) if match.group(6) else None,
+          'step': int(match.group(8)) if match.group(8) else None,
+          'default': int(match.group(10)) if match.group(10) else None,
+          'value': int(match.group(11)),
+          'flags': match.group(13) if match.group(13) else None
+        }
+        parameters.append(param_info)
+      for param in parameters:
+        if not param['flags']:
+          if param['type'] == 'int':
+            self.add_scale_setting(name=param['name'],
+                                   lowest=int(param['min']),
+                                   highest=int(param['max']),
+                                   getter=self._add_scale_getter(
+                                     param['name']),
+                                   setter=self._add_setter(param['name']),
+                                   default=int(param['default']))
+          elif param['type'] == 'bool':
+            self.add_bool_setting(name=param['name'],
+                                  getter=self._add_bool_getter(param['name']),
+                                  setter=self._add_setter(param['name']),
+                                  default=bool(int(param['default'])))
+          elif param['type'] == 'menu':
+            self.add_choice_setting(name=param['name'],
+                                    choices=tuple(range(int(param['min']),
+                                                  int(param['max'])+1)),
+                                    getter=self._add_menu_getter(
+                                      param['name']),
+                                    setter=self._add_setter(param['name']),
+                                    default=param['default'])
+
       self.add_choice_setting(name="channels", choices=('1', '3'), default='1')
-      self.add_scale_setting(name='brightness', lowest=-1., highest=1.,
-                             setter=self._set_brightness, default=0.)
-      self.add_scale_setting(name='contrast', lowest=0., highest=2.,
-                             setter=self._set_contrast, default=1.)
-      self.add_scale_setting(name='hue', lowest=-1., highest=1.,
-                             setter=self._set_hue, default=0.)
-      self.add_scale_setting(name='saturation', lowest=0., highest=2.,
-                             setter=self._set_saturation, default=1.)
 
       # Adding the software ROI selection settings
       if self._formats and ' ' in self._formats[0]:
@@ -325,12 +377,7 @@ videoconvert ! autovideosink
     self.log(logging.INFO, "Starting the GST pipeline")
     self._pipeline.set_state(Gst.State.PLAYING)
 
-  def _get_pipeline(self,
-                    brightness: Optional[float] = None,
-                    contrast: Optional[float] = None,
-                    hue: Optional[float] = None,
-                    saturation: Optional[float] = None,
-                    img_format: Optional[int] = None) -> str:
+  def _get_pipeline(self, img_format: Optional[int] = None) -> str:
     """Method that generates a pipeline, according to the given settings.
 
     If a user-defined pipeline was given, it will always be returned.
@@ -389,16 +436,8 @@ videoconvert ! autovideosink
       fps_str = ''
 
     # Finally, generate a single pipeline containing all the user settings
-    return f"""{source} {device} name=source {img_format} ! videoconvert ! 
-           video/x-raw,format=BGR{img_size}{fps_str} ! 
-           videobalance 
-           brightness={brightness if brightness is not None 
-                       else self.brightness:.3f} 
-           contrast={contrast if contrast is not None else self.contrast:.3f} 
-           hue={hue if hue is not None else self.hue:.3f}
-           saturation={saturation if saturation is not None 
-                       else self.saturation:.3f} ! 
-           appsink name=sink"""
+    return f"""v4l2src {device} name=source {img_format} ! videoconvert ! 
+           video/x-raw,format=BGR{img_size}{fps_str} ! appsink name=sink"""
 
   def _on_new_sample(self, app_sink):
     """Callback that reads every new frame and puts it into a buffer.
@@ -449,26 +488,6 @@ videoconvert ! autovideosink
 
     return Gst.FlowReturn.OK
 
-  def _set_brightness(self, brightness: float) -> None:
-    """Sets the image brightness."""
-
-    self._restart_pipeline(self._get_pipeline(brightness=brightness))
-
-  def _set_contrast(self, contrast: float) -> None:
-    """Sets the image contrast."""
-
-    self._restart_pipeline(self._get_pipeline(contrast=contrast))
-
-  def _set_hue(self, hue: float) -> None:
-    """Sets the image hue."""
-
-    self._restart_pipeline(self._get_pipeline(hue=hue))
-
-  def _set_saturation(self, saturation: float) -> None:
-    """Sets the image saturation."""
-
-    self._restart_pipeline(self._get_pipeline(saturation=saturation))
-
   def _set_format(self, img_format) -> None:
     """Sets the image encoding and dimensions."""
 
@@ -500,6 +519,109 @@ videoconvert ! autovideosink
       fps, *_ = search(r"Frames per second\s*:\s*(\d+.\d+)", check).groups()
 
     return f'{format_} {width}x{height} ({fps} fps)'
+
+  def _add_setter(self, name: str) -> Callable:
+    """Creates a setter function for a setting named 'name'.
+    Args:
+      name: Name of the setting.
+
+    Returns:
+      The setter function.
+    """
+
+    def setter(value) -> None:
+      """The method to set the value of a setting running v4l2-ctl.
+      """
+
+      if self._device is not None:
+        command = ['v4l2-ctl', '-d', self._device, '--set-ctrl',
+                   name+f'={int(value)}']
+      else:
+        command = ['v4l2-ctl', '--set-ctrl', name+f'={int(value)}']
+      self.log(logging.DEBUG, "Setting "+name+f" with command {command}")
+      run(command, capture_output=True, text=True)
+    return setter
+
+  def _add_scale_getter(self, name: str) -> Callable:
+    """Creates a getter function for a setting named 'name'.
+    Args:
+      name: Name of the setting.
+
+    Returns:
+      The getter function.
+    """
+
+    def getter() -> int:
+      """The method to get the current value of a scale setting
+      running v4l2-ctl.
+      """
+
+      # Trying to run v4l2-ctl to get the value
+      if self._device is not None:
+        command = ['v4l2-ctl', '-d', self._device, '--get-ctrl', name]
+      else:
+        command = ['v4l2-ctl', '--get-ctrl', name]
+      try:
+        self.log(logging.DEBUG, "Getting "+name+f" with command {command}")
+        value = run(command, capture_output=True, text=True).stdout.split()[-1]
+      except FileNotFoundError:
+        value = None
+      return int(value)
+    return getter
+
+  def _add_bool_getter(self, name: str) -> Callable:
+    """Creates a getter function for a setting named 'name'.
+    Args:
+      name: Name of the setting.
+
+    Returns:
+      The getter function.
+    """
+
+    def getter() -> bool:
+      """The method to get the current value of a bool setting
+      running v4l2-ctl.
+      """
+
+      # Trying to run v4l2-ctl to get the value
+      if self._device is not None:
+        command = ['v4l2-ctl', '-d', self._device, '--get-ctrl', name]
+      else:
+        command = ['v4l2-ctl', '--get-ctrl', name]
+      try:
+        self.log(logging.DEBUG, "Getting " + name + f" with command {command}")
+        value = run(command, capture_output=True, text=True).stdout.split()[-1]
+      except FileNotFoundError:
+        value = None
+      return bool(int(value))
+    return getter
+
+  def _add_menu_getter(self, name: str) -> Callable:
+    """Creates a getter function for a setting named 'name'.
+    Args:
+      name: Name of the setting.
+
+    Returns:
+      The getter function.
+    """
+
+    def getter() -> str:
+      """The method to get the current value of a choice setting
+      running v4l2-ctl.
+      """
+
+      # Trying to run v4l2-ctl to get the value
+      if self._device is not None:
+        command = ['v4l2-ctl', '-d', self._device, '--get-ctrl', name]
+      else:
+        command = ['v4l2-ctl', '--get-ctrl', name]
+      try:
+        self.log(logging.DEBUG, "Getting " + name + f" with command {command}")
+        value = run(command, capture_output=True, text=True).stdout.split()[-1]
+      except FileNotFoundError:
+        value = None
+      return value
+    return getter
 
 
 class CameraGstreamerBasic(Camera):
