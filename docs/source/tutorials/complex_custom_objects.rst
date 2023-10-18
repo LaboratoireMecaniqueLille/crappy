@@ -146,8 +146,40 @@ labels).
 2. More about custom InOuts
 ---------------------------
 
-Make zero
-Streams
+In addition to what was described in the tutorial section about :ref:`how to
+create custom InOut objects <3. Custom InOuts>`, there is one more minor
+feature that the :ref:`In / Out` possess and that is worth describing in the
+tutorials. That is **the ability for an InOut to acquire data before a test**
+**starts, and to use this data to offset the channels to zero**. To do so, the
+script must match two conditions. First, the :py:`make_zero_delay` argument of
+the :ref:`IOBlock` must be set to a positive value. And second, the used InOut
+must have its :meth:`~crappy.inout.InOut.get_data` method defined (it cannot be
+a pure stream class). If both of these conditions are met, then the InOut will
+acquire data using :meth:`~crappy.inout.InOut.get_data` during
+:meth:`~crappy.blocks.IOBlock.prepare` for the specified delay, and create
+offsets so that for each acquired channel its value starts from zero at the
+beginning of the test. It also works for streams, provided that the number of
+channels acquired in *streamer* mode is the same as the number of channels
+acquired by :meth:`~crappy.inout.InOut.get_data`.
+
+**Thing get a bit trickier when the hardware can handle and tune offsets for**
+**its channels** ! In such a case, it might be advantageous to set the zeroing
+offsets directly on the device rather than relying on Crappy. To achieve that,
+the :meth:`~crappy.inout.InOut.make_zero` method of the base
+:class:`~crappy.inout.InOut` has to be overriden in the child InOut class, and
+the way it is performed depends on the capabilities of the hardware. What is
+usually done is that the :meth:`~crappy.inout.InOut.make_zero` method of the
+base class calculates the offset values, and the one of the child class sets
+these values on the hardware and resets the offsets on Crappy's side. This
+kind of implementation can be found in the :ref:`Labjack T7` or the
+:ref:`Comedi` InOuts. Check their code to see how it looks ! There is also a
+very basic example of offsetting in the `examples on GitHub
+<https://github.com/LaboratoireMecaniqueLille/crappy/examples/custom_objects>`_
+where the method is overriden and the offsets are simply doubled.
+
+There is no need for a specific example in this sub-section, it is mostly
+included to signal the existence of the zeroing feature and the possibility for
+users to override it.
 
 3. More about custom Actuators
 ------------------------------

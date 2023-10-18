@@ -455,9 +455,9 @@ single common script. You can :download:`download this IOBlock example
 machine. More examples of the IOBlock can be found in the `examples folder on
 GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
 Note that the *streamer* mode of the IOBlock is presented in :ref:`a dedicated
-section <4. Dealing with streams>`, while the *make_zero* functionality is just
-not presented in the tutorials. Directly check the documentation of the IOBlock
-to learn more about it.
+section <4. Dealing with streams>`, and same goes for the :ref:`make_zero
+functionality <2. More about custom InOuts>`. Directly check the documentation
+of the IOBlock to learn more about it.
 
 2.f The Machine Block
 +++++++++++++++++++++
