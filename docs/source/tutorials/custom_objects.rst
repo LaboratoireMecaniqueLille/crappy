@@ -666,305 +666,357 @@ how they are implemented.
 5. Custom Blocks
 ----------------
 
-Mandatory methods
-Useful attributes
-Sending data
-Receiving data
+For the last section of this tutorial page, we are going to **cover the most**
+**difficult but also most interesting and powerful object that you can**
+**customize in Crappy : the** :ref:`Block`. Unlike the other objects introduced
+on this page, Blocks are much more complex and as a user you are only supposed
+to tune a very small part of it for your application. The rest of the code
+should remain untouched, as it is the one that allows Crappy to run smoothly.
+If you are able to define your own :class:`~crappy.blocks.Block`, **you**
+**should be able to highly customize your scripts in Crappy and to drive**
+**almost any experimental setup** ! Remember that the Blocks are usually not
+meant to directly interact with hardware, the helper classes like the
+:ref:`Actuators` and the :ref:`Cameras` are here for that. Instead, Blocks
+usually create data, perform processing on existing data, interact with the
+system, display data, etc.
 
-Depending on your research field, it is possible that the hardware you're using
-or planning to use is not yet implemented in Crappy. Don't worry, Crappy's been
-written so that you can easily add new hardware or blocks and use it right
-away ! In this first part of the tutorial we'll see how to create custom Crappy
-objects directly in a test script. This is the most flexible way to go, but the
-objects won't truly be part of Crappy.
+5.1 Methods of the Block
+++++++++++++++++++++++++
 
-What makes a Python class part of Crappy's framework is basically just
-inheriting from one of Crappy's base classes. These classes are :ref:`Block`,
-:ref:`InOut`,
-:ref:`Camera`, :ref:`Actuator` or :ref:`Modifier`, and allow creating
-:ref:`blocks`, :ref:`inouts <In / Out>`, :ref:`cameras`, :ref:`actuators` and
-:ref:`modifiers` respectively. If you're not familiar with inheritance in
-Python you'll find more info `here <https://docs.python.org/3/tutorial/classes.
-html#inheritance>`_. Additionally to inheritance, there are also a few specific
-rules to follow for each type of object. They will be detailed now for each
-type, and illustrated with examples.
-
-To create a block, you first need to instantiate a class inheriting from the
-:ref:`Block` class :
+First, all the Blocks must be children of the base :class:`crappy.blocks.Block`
+parent class. Let's now see what methods you can define when instantiating your
+own Blocks :
 
 .. code-block:: python
 
    import crappy
   
-   class my_block(crappy.blocks.Block):
-
-For your block to integrate within Crappy's framework, it is then necessary to
-initialize the parent class :
-
-.. code-block:: python
-   :emphasize-lines: 5,6
-
-   import crappy
-  
-   class my_block(crappy.blocks.Block):
+   class MyBlock(crappy.blocks.Block):
   
        def __init__(self):
            super().__init__()
 
-The last constraint is then to add a ``loop`` method to your class, otherwise an
-error will be raised. During the main part of the test (i.e. not when
-initializing or closing) the ``loop`` method will be called repeatedly by
-Crappy, all you have to do is to define it. You can make it perform any desired
-action, but keep in mind that to ensure a smooth termination of the test the
-``loop`` method mustn't be blocking (e.g. if it waits for a certain event a
-timeout should be given). So here's the **minimal block object**, that literally
-does nothing :
-
-.. code-block:: python
-   :emphasize-lines: 8,9
-
-   import crappy
-  
-   class my_block(crappy.blocks.Block):
-  
-       def __init__(self):
-           super().__init__()
-  
-       def loop(self):
-           pass
-
-Apart from the ``loop`` method, several other special methods will be
-automatically called by Crappy. Except for ``__init__`` they're however optional
-and will not do anything if you don't define them yourself :
-
-- ``__init__`` is called when the class is instantiated, even before
-  ``crappy.start()`` is called. Here you should handle the block arguments (if
-  it takes any), and declare most of the instance attributes.
-
-- ``prepare`` is called after ``crappy.start()``, i.e. after Crappy truly
-  starts but before the actual test is launched. Here you should perform any
-  action needed to prepare the test, like creating a data structure or
-  initializing hardware.
-
-- ``begin`` is called when the test actually starts, but unlike ``loop`` it is
-  only called once. It allows performing a special action on startup, like
-  sending a trigger signal to a device. Once it returns, ``loop`` will be called
-  repeatedly until the end of the test.
-
-- ``finish`` is called when the assay stops (either in a normal way or due to an
-  error). It is meant to perform any action needed before leaving, like
-  switching off a device.
-
-In addition to these methods that will be automatically called, you're of course
-free to define as many other methods as you need.
-
-There's also one aspect we didn't talk about: the interaction of your block with
-the others. So first, the links pointing towards your blocks will be accessible
-in the ``self.inputs`` :obj:`list`. You don't have to create it, Crappy handles
-it for you. Once you have accessed a link object - we'll call it ``link`` - you
-can access the waiting data by calling ``link.recv_chunk()``. It returns a
-:obj:`dict`, whose keys are the labels and whose values are :obj:`list`
-containing all the values received since the last ``recv`` call. Alternatively,
-``link.recv_last()`` returns a :obj:`dict` whose keys are the labels and values
-are the last value received in the link (only the last one is kept, others are
-discarded). ``link.recv_last()`` might return :obj:`None`, while
-``link.recv_chunk()`` is blocking and waits for at least one value to return.
-If you're a bit confused no worries, the example will probably make it all
-clearer !
-
-Now what about sending data to downstream blocks ? It's much simpler than
-receiving data ! The data should first be organized in a :obj:`dict` whose keys
-are labels and values are whatever you want to send. Preferably the values
-should be :obj:`int`, :obj:`float`, :obj:`bool` or :obj:`str` and not
-:obj:`list` or :obj:`dict` for compatibility with the other Crappy blocks. It
-means that if your block generates several values for the same label, you should
-send them separately and not together in a same :obj:`list`. Once your
-:obj:`dict` is created, let's call it ``out``, just call ``self.send(out)``.
-That's it ! Again, it will probably be much clearer in an example.
-
-So now to illustrate what was just explained, let's build a block performing
-logical operations on signals. This block will take as many logical inputs as
-desired, and output the AND, OR and XOR results on all values at once. Since the
-values from different blocks may not come at the same frequency, the last
-received value is stored for each input and considered to be the current value.
-Inputs that didn't send a value yet are all considered either :obj:`True` or
-:obj:`False` according to the user's choice. Now let's get to work !
-
-We're starting from the minimal template given previously. What arguments does
-the user need to provide ? First the labels to consider as inputs and then the
-label of the outputs. We also decided that the user could provide the default
-value for labels that do not have a value yet. For simplicity let's say that
-only one label should be provided for the output, to which the suffixes
-``'_AND', '_OR', '_XOR'`` will be added. So if we stick to the essentials the
-``__init__`` method should be pretty concise :
-
-.. code-block:: python
-   :emphasize-lines: 5,7-9
-
-   import crappy
-  
-   class my_block(crappy.blocks.Block):
-  
-       def __init__(self, cmd_labels, label='logical', default=False):
-           super().__init__()
-           self.cmd_labels = cmd_labels
-           self.out_label = label
-           self.default = default
-  
-       def loop(self):
-           pass
-
-Now we need to build a data structure before startup, so let's write a
-``prepare`` method. We simply need to define one variable per label, which will
-store the last received value or the default value if no value was received.
-A :obj:`dict` is well-suited for that. We'll keep the syntax understandable to
-everyone even though it's not the optimal :
-
-.. code-block:: python
-   :emphasize-lines: 11-14
-
-   import crappy
-  
-   class my_block(crappy.blocks.Block):
-  
-       def __init__(self, cmd_labels, label='logical', default=False):
-           super().__init__()
-           self.cmd_labels = cmd_labels
-           self.out_label = label
-           self.default = default
-  
        def prepare(self):
-           self.values = {}
-           for label in self.cmd_labels:
-               self.values[label] = self.default
+           ...
+
+       def begin(self):
+           ...
   
        def loop(self):
-           pass
+           ...
 
-Now the main part that will be run again and again during the test. We actually
-simply need to get the last received value for each label, calculate the 3
-logical outputs and send the results with the right labeling. For each link
-we'll try to receive values, if there's any we'll go through the labels to check
-if there are ones matching with the ``cmd_labels``, and if so we'll write the
-corresponding value to our ``self.values`` structure. The logical values
-calculations may be a bit too straightforward depending on your level in Python,
-but it's not the important part. We must not forget to add the time to the
-output. All of this should be pretty quick :
+       def finish(self):
+           ...
 
-.. code-block:: python
-   :emphasize-lines: 2,18-35
+There are actually not that many methods for you to fill in, and almost all of
+them are optional ! For each method, here's what it does and how it should be
+used :
 
-   import crappy
-   import time
-  
-   class my_block(crappy.blocks.Block):
-  
-       def __init__(self, cmd_labels, label='logical', default=False):
-           super().__init__()
-           self.cmd_labels = cmd_labels
-           self.out_label = label
-           self.default = default
-  
-       def prepare(self):
-           self.values = {}
-           for label in self.cmd_labels:
-               self.values[label] = self.default
-  
-       def loop(self):
-           for link in self.inputs:
-               recv_dict = link.recv_last()
-               if recv_dict is not None:
-                   for label in recv_dict:
-                       if label in self.cmd_labels:
-                           self.values[label] = recv_dict[label]
-  
-           log_and = all(log_value for log_value in self.values.values())
-           log_or = any(log_value for log_value in self.values.values())
-           val_list = list(self.values.values())
-           log_xor = any(log_1 ^ log_2 for log_1, log_2 in
-                         zip(val_list[:-1], val_list[1:]))
-  
-           out = {'t(s)': time.time() - self.t0,
-                  self.out_label + '_AND': log_and,
-                  self.out_label + '_OR': log_or,
-                  self.out_label + '_XOR': log_xor}
-           self.send(out)
+- :meth:`~crappy.blocks.Block.__init__` should be used for initializing the
+  Python objects that will be used in your Block. Avoid doing too much in this
+  method, as there is no mechanism for properly de-initializing what you do
+  there in case Crappy crashes very early. This method is also where your
+  Block accepts arguments.
+- :meth:`~crappy.blocks.Block.prepare` is where you should perform the
+  initialization steps necessary for your Block to run. That can include
+  starting a :obj:`~threading.Thread`, creating a file, populating an object,
+  connecting to a website, etc. The actions performed here will be properly
+  de-initialized by the :meth:`~crappy.blocks.Block.finish` method in case
+  Crappy crashes. It is fine not to define this method if no particular setup
+  action is required.
+- :meth:`~crappy.blocks.Block.begin` is equivalent to to the first call of
+  :meth:`~crappy.blocks.Block.loop`. It is the moment where the Block starts
+  being allowed to send and receive data to/from other Blocks, and performs its
+  main task. For the very first loop, you might want to do something special,
+  like sending a trigger to another application. If so, you should use this
+  method. Otherwise, this method doesn't need to be defined.
+- :meth:`~crappy.blocks.Block.loop` is a method that will be called repeatedly
+  during the execution of the script. It is where your Block performs its main
+  task, and can send and receive data to/from other Blocks. This method does
+  not take any argument, and also doesn't return anything.
+- :meth:`~crappy.blocks.Block.finish` should perform the de-initialization
+  steps necessary to properly stop your Block before the script ends. This
+  method *should* always be called, even in case something goes wrong in your
+  script. It is fine not to define this method if no particular action is
+  required in your Block before exiting.
 
-There's no particular need to perform any action before program termination, so
-a ``finish`` method is not needed. Our custom block is then finished ! Now for
-using it like a regular Crappy object, all you need to do is to instantiate it.
-Here's an example code that will allow us to test it :
+.. Important::
+  Avoid including any call or structure that would prevent a method of your
+  Block from returning ! For example, avoid using blocking calls without a
+  short timeout (at most a few seconds), and do not use infinite loops that
+  could never end. That is because in the smooth termination scenarios, the
+  Blocks are only told to terminate once their current method call returns.
+  Otherwise, you'll have to use CTRL+C to stop your script, which is now
+  considered an invalid way to stop Crappy.
 
-.. code-block:: python
-   :emphasize-lines: 37-65
+Now that the possible methods have been described, it is time to put them into
+application in an example. However, as the Block object is quite complex, such
+an example needs to include aspects described in the next sub-sections. So,
+instead of building and improving an example iteratively over the sub-sections,
+we'll simply comment the relevant parts of one complete example in each
+sub-section.
 
-   import crappy
-   import time
-  
-   class my_block(crappy.blocks.Block):
-  
-       def __init__(self, cmd_labels, label='logical', default=False):
-           super().__init__()
-           self.cmd_labels = cmd_labels
-           self.out_label = label
-           self.default = default
-  
-       def prepare(self):
-           self.values = {}
-           for label in self.cmd_labels:
-               self.values[label] = self.default
-  
-       def loop(self):
-           for link in self.inputs:
-               recv_dict = link.recv_last()
-               if recv_dict is not None:
-                   for label in recv_dict:
-                       if label in self.cmd_labels:
-                           self.values[label] = recv_dict[label]
-  
-           log_and = all(log_value for log_value in self.values.values())
-           log_or = any(log_value for log_value in self.values.values())
-           val_list = list(self.values.values())
-           log_xor = any(log_1 ^ log_2 for log_1, log_2 in
-                         zip(val_list[:-1], val_list[1:]))
-  
-           out = {'t(s)': time.time() - self.t0,
-                  self.out_label + '_AND': log_and,
-                  self.out_label + '_OR': log_or,
-                  self.out_label + '_XOR': log_xor}
-           self.send(out)
-  
-   if __name__ == '__main__':
-  
-       gen_1 = crappy.blocks.Generator([{'type': 'constant',
-                                         'value': 0,
-                                         'condition': 'delay=10'},
-                                        {'type': 'constant',
-                                         'value': 1,
-                                         'condition': 'delay=5'}],
-                                        cmd_label='cmd_1')
-  
-       gen_2 = crappy.blocks.Generator([{'type': 'constant',
-                                         'value': 0,
-                                         'condition': 'delay=5'},
-                                        {'type': 'constant',
-                                         'value': 1,
-                                         'condition': 'delay=10'}],
-                                        cmd_label='cmd_2')
-  
-       logic = my_block(cmd_labels=['cmd_1', 'cmd_2'])
-  
-       graph = crappy.blocks.Grapher(('t(s)', 'logical_AND'),
-                                     ('t(s)', 'logical_OR'),
-                                     ('t(s)', 'logical_XOR'))
-  
-       crappy.link(gen_1, logic)
-       crappy.link(gen_2, logic)
-       crappy.link(logic, graph)
-  
-       crappy.start()
+For this example, we have created a fully functional Block that can send and/or
+receive data to/from network sockets. It can be useful for communicating with
+remote devices over a network, although the :ref:`Client Server` Block already
+provides this functionality using MQTT. The demo Block is really not advanced
+enough to be distributed with Crappy, but it will do just fine for this
+tutorial ! Here is the full code :
 
-This is it ! See how straightforward it was to use the block we just created.
-Note that it can easily be reused elsewhere without copy/pasting by just
-importing it, see the corresponding `documentation on imports <https://docs.
-python.org/3/reference/import.html>`_.
+.. literalinclude:: /downloads/custom_objects/custom_block.py
+   :language: python
+   :emphasize-lines: 13-22, 46, 97, 127
+
+In this Block, only the :meth:`~crappy.blocks.Block.begin` method is not
+defined. That is not a big deal, most Blocks do not need to define this method,
+especially for beginners. Overall, the Block can send the value of a given
+input label to a given output network address along with a timestamp. It can
+also receive a value and a timestamp from a given input network address and
+send it to downstream Blocks over a given output label. It can thus basically
+receive and/or send data over the network. Let's review its methods one by
+one :
+
+- :meth:`~crappy.blocks.Block.__init__` only sets attributes, and accepts
+  arguments. It also instantiates two sockets, which is fine since
+  instantiation alone does not actually trigger any connection to anything. In
+  your own Blocks, you can define as many arguments as you want to provide the
+  desired level of granularity, but this comes of course at the cost of
+  complexity. You can see that some attributes have a leading underscore in
+  their name, this is discussed in the
+  :ref:`next sub-section <5.2 Useful attributes of the Block>`.
+- In :meth:`~crappy.blocks.Block.prepare`, quite a lot of initialization is
+  performed. There are two parts in the implementation : one executed if the
+  Block has input Links, the other if it has output Links. If there are input
+  Links, the Block tries to connect to the provided port at the provided
+  address. If there are output Links, the Block waits for an external
+  connection on the desired address and port, and accepts one connection. If
+  any of these operations fail, an exception is raised and the Block stops.
+- In :meth:`~crappy.blocks.Block.loop`, incoming data is first received. Then,
+  if the data contains all the necessary information, the timestamp and the
+  value are cast to bytes and sent over the network. If there are output Links,
+  the Block then checks if data is ready to be read from the network. If so, it
+  unpacks the timestamp and the value and sends them to downstream Blocks.
+- :meth:`~crappy.blocks.Block.finish` simply closes all the opened network
+  sockets, in order to free the associated resources.
+
+You'll need to have a closer look at the code if you want to understand every
+single line, but you should already have a rough idea of how it works. More
+details about the methods and attributes that are used are given in the next
+sub-sections. You can :download:`download this custom Block example
+</downloads/custom_objects/custom_block.py>` to run it locally on your machine.
+
+.. Note::
+   If you want to have debug information displayed in the terminal from your
+   Block, do not use the :func:`print` function ! Instead, use the
+   :meth:`~crappy.blocks.Block.log` method provided by the parent
+   :class:`~crappy.blocks.Block` class. This way, the log messages are
+   included in the log file and handled in a nicer way by Crappy.
+
+5.2 Useful attributes of the Block
+++++++++++++++++++++++++++++++++++
+
+While writing your own Blocks, you are free to use whatever names you want for
+the attributes you define. Any name, really ? Actually, **a few attribute**
+**names are already used by the parent** :class:`~crappy.blocks.Block`
+**class, and provide some very useful functionalities**. This sub-section lists
+them, as well as their meaning and effect when applicable. In the general case,
+none of the attributes presented here is mandatory to use. Nothing bad can
+happen if you choose not to use them, what happens if you override them is a
+different story !
+
+.. Note::
+   When defining your own attributes, you can put a leading underscore in their
+   names to indicate that an attribute is for internal use only and should not
+   be accessed or modified by any external user or program.
+
+Here is the exhaustive list of all the attributes you can access and their
+meaning :
+
+- :py:`outputs` is a :obj:`list` containing the reference to all the incoming
+  Links. It is useful for checking whether the Block has input Links or not. It
+  should not be modified !
+- :py:`inputs` is a :obj:`list` containing the reference to all the outgoing
+  Links. It is useful for checking whether the Block has output Links or not.
+  It should not be modified ! It is sometimes used to put a limit on the number
+  of incoming Links (for example the :class:`~crappy.blocks.Recorder` Block
+  raises an error if it has more than one incoming Link).
+- :py:`niceness` can be set during :meth:`~crappy.blocks.Block.__init__`, and
+  the corresponding niceness value will be set for the Process by
+  :meth:`~crappy.blocks.Block.renice_all`. It is only relevant on Linux, and
+  barely used. Most users can ignore it.
+- :py:`freq` sets the target looping frequency for the Block. It can be set to
+  any positive value, or to :obj:`None` to switch to free-run mode. If a value
+  is given, the Block will *try* to reach it but this is not guaranteed. It
+  can be set anytime, but is usually set during
+  :meth:`~crappy.blocks.Block.__init__`. Depending on the application, a
+  reasonable value for this attribute is usually somewhere between 20 and 200.
+- :py:`display_freq` is a :obj:`bool` that enables the display of the achieved
+  looping frequency of the Block. If set to :obj:`True`, the looping frequency
+  is displayed in the terminal every two seconds. It can be set anytime, but is
+  usually set during :meth:`~crappy.blocks.Block.__init__`.
+- :py:`debug` can be either :obj:`True`, :obj:`False`, or :obj:`None`. If set
+  to :obj:`False` (the default), it only displays a limited amount of
+  information in the terminal. If set to :obj:`True`, additional debug
+  information is displayed for this Block. When the debug mode is enabled,
+  there is usually way too much information displayed to follow ! The extra
+  information is useful for debugging, for skilled enough users. The last
+  option is to set :py:`debug` to :obj:`None`, in which case no information is
+  displayed at all for the Block. That is not advised in the general case. This
+  attribute must be set during :meth:`~crappy.blocks.Block.__init__`.
+- :py:`labels` contains the names of the labels to send to downstream Blocks.
+  When given, the values to send can be given as a :obj:`tuple` (for example),
+  rather than as a :obj:`dict` containing both the names of the labels and the
+  values. More about it in :ref:`the next section
+  <5.3 Sending data to other Blocks>`. This attribute can be set at any moment.
+- :py:`t0` contains the timestamp of the exact moment when all the Blocks start
+  looping together. It is useful for obtaining the timestamp of the current
+  moment relative to the beginning of the test. This attribute can only be
+  read starting from :meth:`~crappy.blocks.Block.begin`, and must not be
+  modified !
+- :py:`name` contains the unique name attributed to the Block by Crappy. It can
+  be read at any time, and even modified. This name is only used for logging,
+  and appears in the log messages for identifying where a message comes from.
+
+In the presented example, you may have recognized a few of the presented
+attributes. They are highlighted here for convenience :
+
+.. literalinclude:: /downloads/custom_objects/custom_block.py
+   :language: python
+   :emphasize-lines: 27-29, 49, 74
+   :lines: 1-96
+
+There is not much more to say about the available attributes of the Block that
+you can use, you'll see for yourself which ones you need and which ones you
+don't when developing !
+
+5.3 Sending data to other Blocks
+++++++++++++++++++++++++++++++++
+
+A very important aspects of Blocks is how they communicate with each other. You
+normally already know that for two Blocks to exchange data, they must be linked
+by a :class:`~crappy.links.Link`. But when writing your own Blocks, how to tell
+Crappy what to send exactly ? That is the topic of this sub-section !
+
+**Sending data to downstream Blocks in Crappy is extremely simple, because**
+**there is only one way to achieve it : you have to use the**
+:meth:`~crappy.blocks.Block.send` **method**. This method accepts only one
+argument, either a :obj:`dict` or an :obj:`~collections.abc.Iterable` (like a
+:obj:`list` or a :obj:`tuple`) of values to send (usually the values are
+:obj:`float` or :obj:`str`). If a dictionary is given, its keys are the names
+of the labels to send. For each label, a single value must be provided, and the
+same labels should be sent throughout a given test. If the values are given in
+an Iterable without labels, then the :py:`labels` attribute of the Block must
+have been set beforehand. The dictionary to send will be reconstructed from the
+labels and the given values. There should, of course, be as many given values
+as there are labels. And that's basically all there is to know about sending
+data to downstream Blocks in Crappy !
+
+.. Note::
+   The dictionary sent through the Links are exactly the same that the
+   :ref:`Modifiers` can access and modify. See the :ref:`dedicated section
+   <1. Custom Modifiers>` for more information.
+
+The line in the example where the data gets sent is outlined below :
+
+.. literalinclude:: /downloads/custom_objects/custom_block.py
+   :language: python
+   :emphasize-lines: 29
+   :lines: 97-126
+
+As you can see, it was chosen to send a dictionary here, but a solution using
+the :py:`labels` attribute would also have worked. The dictionary is built in
+a quite elegant way, using the :obj:`zip` method. You can see that the labels
+to send are :py:`'t(s)'` fo the time, and the chosen output label for the
+transferred value. The values to send are given by the :obj:`~struct.unpack`
+function, that returns two :obj:`float` from binary data.
+
+5.4 Receiving data from other Blocks
+++++++++++++++++++++++++++++++++++++
+
+Now that the method for sending data has been covered, it is time to describe
+the complementary methods that allow a Block to receive data from upstream
+Blocks. Things get a bit more complex at that point, because **there are no**
+**less than four possible methods that you can use** ! Each of them serves a
+different purpose, let's review them all in this sub-section :
+
+- :meth:`~crappy.blocks.Block.recv_data` is by far the simplest method. It
+  creates an empty :obj:`dict`, that it updates with **one** message (i.e. one
+  sent :obj:`dict`) from each of the incoming :ref:`Links`, and then returns
+  it. This means that some data might be lost if several Links carry a same
+  label, which is very often the case with the time label ! Also, only the
+  first available message of each Link is read, meaning that if there are
+  several incoming messages in the queue, only one is queued out. For this
+  reason, this method is barely used, but it is still implemented for whoever
+  would find an application to it !
+- :meth:`~crappy.blocks.Block.recv_last_data` is based on the same principle as
+  the previous method, except it includes a loop that updates the dictionary
+  to return with **all** the queued messages. In the end, only the latest
+  received value for each label is present in the returned dictionary, hence
+  the name of the method. A :py:`fill_missing` argument allows to control
+  whether the last known value of each label is included if no newer value is
+  available, thus returning the latest known value of **all** the known labels
+  (not just the ones whose values were recently received). Just like the
+  previous method, this one doesn't keep the integrity of the time information
+  if there are several incoming Links, and only returns one value per label
+  even if several messages were received.
+- :meth:`~crappy.blocks.Block.recv_all_data` allows to keep and return
+  multiple values for each label, if several messages were received from
+  upstream Links. To do so, it returns a :obj:`dict` whose keys are the
+  received labels, but whose values are :obj:`list` containing for each label
+  all the successive values that were received. This way, the history of each
+  label is preserved, which is crucial for certain applications (integration
+  for example). However, just like the previous ones, this method isn't safe in
+  case several Links carry a same label. Therefore, it also doesn't preserve
+  the time information. Note that this method possesses two arguments for
+  acquiring data continuously over a given delay, but you'll need to check the
+  API for more information about them.
+- :meth:`~crappy.blocks.Block.recv_all_data_raw` is by far the most complex way
+  of receiving data ! This method returns **everything** that flows into each
+  single incoming Link, with no possible loss ! However, the returned object is
+  of course much more complex. Basically, it is equivalent to a call to
+  :meth:`~crappy.blocks.Block.recv_all_data` on each Link taken separately. All
+  the results are then put together in one list, so this method returns a
+  :obj:`list` of :obj:`dict` (one per Link) whose keys are :obj:`str` (labels)
+  and values are :obj:`list` of all the received data for the given label.
+  **Using this method is mandatory when you have to retrieve all the exact**
+  **timestamps for several labels that can come from different Links**. You can
+  check the :class:`~crappy.blocks.Grapher` or the
+  :class:`~crappy.blocks.Multiplexer` Blocks for examples of usage.
+
+There is quite much choice, but choosing the right method for your Block is
+really not that difficult. Put aside :meth:`~crappy.blocks.Block.recv_data`
+that is almost never used, you can decide for the right method in one or two
+steps. Can you work with only the latest value of each label ? If so, go for
+:meth:`~crappy.blocks.Block.recv_last_data`. Otherwise, will you use the
+history of the time label **and** does your Block accept multiple incoming
+Links ? If so, no other choice than using
+:meth:`~crappy.blocks.Block.recv_all_data_raw`. Else,
+:meth:`~crappy.blocks.Block.recv_all_data` will do just fine !
+
+.. Note::
+   An additional :meth:`~crappy.blocks.Block.data_available` method allows
+   checking for the availability of new data in the incoming Links. It returns
+   a :obj:`bool` indicating whether new data is available or not. It can be
+   useful to avoid useless calls to *recv* methods.
+
+.. literalinclude:: /downloads/custom_objects/custom_block.py
+   :language: python
+   :emphasize-lines: 4
+   :lines: 97-126
+
+In the custom Block example, you can see that we opted for the
+:meth:`~crappy.blocks.Block.recv_last_data` method. The handling of the
+returned data is then fairly simple, as a single :obj:`dict` with single values
+is returned. This dictionary must still be checked before processing it, as it
+might be empty or not contain all the necessary data at each loop !
+
+Finally, that's it ! If you have been through this entire page of tutorials
+and the previous ones, **you should now be ready to use Crappy at a**
+**reasonably high level to drive all kinds of experimental setups**. We know
+that the module is far from being simple, and that there are many things to
+keep in mind when using it. This is why we're trying to keep the documentation
+as extensive as possible, and we provide a wide variety of `ready-to-run
+examples  <https://github.com/LaboratoireMecaniqueLille/crappy/examples>`_. At
+that point of the tutorials, there are still a few uncovered topics only
+relevant to advanced users. You can check them on the :ref:`next and last page
+of the tutorials <More about custom objects in Crappy>`.
