@@ -278,8 +278,8 @@ videoconvert ! autovideosink
                                   default=bool(int(param['default'])))
           elif param['type'] == 'menu':
             self.add_choice_setting(name=param['name'],
-                                    choices=tuple(range(int(param['min']),
-                                                  int(param['max'])+1)),
+                                    choices=tuple(str(i) for i in range(
+                                      int(param['min']), int(param['max'])+1)),
                                     getter=self._add_menu_getter(
                                       param['name']),
                                     setter=self._add_setter(param['name']),
