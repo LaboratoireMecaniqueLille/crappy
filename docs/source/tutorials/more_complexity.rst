@@ -184,7 +184,12 @@ You can :download:`download this advanced Generator example
 </downloads/more_complexity/advanced_generator.py>` to run it locally on your
 machine. Try to modify the value of the speed command, and see how the script
 always stops at the given condition. With the new type of stop condition for
-the Generator, you now know everything there is to know about this Block !
+the Generator, you are now ready to use this block to its full extent !
+
+.. Note::
+   There is actually one more possibility to define custom stop conditions,
+   that is much more advanced and is described in :ref:`a later tutorial
+   section <1. Custom Generator Paths>`.
 
 4. Dealing with streams
 -----------------------
