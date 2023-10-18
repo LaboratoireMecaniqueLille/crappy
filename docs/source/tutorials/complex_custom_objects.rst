@@ -199,79 +199,58 @@ niceness, name
 6. Including custom objects in a distribution of Crappy
 -------------------------------------------------------
 
-You can either add an object locally or to the entire project. If it's locally,
-you'll be the only one having access to the modifications but you're free to do
-whatever you want. Any modification to the entire project requires an approval
-and is subject to few rules, but then everyone will be able to use your object.
-**We always recommend you to add any improvement to the entire project, the more
-contributions the better !** Here are the different possibilities :
+6. Sharing custom objects and Blocks
+------------------------------------
 
-- **Adding your object locally** :
+You have been through all the tutorials of Crappy and have now become a master
+at creating and using your own objects, and you now **want to share your**
+**works with other user** ? No problem ! There are several options for that,
+some very simple and some other much more demanding. Let's review them all in
+this last section of the tutorials !
 
-  - If Crappy was installed using ``git``, simply copy a ``.py`` file
-    containing your block or your object into the right folder. The class
-    inheritance changes compared with an in-script object definition. Refer to
-    objects that are already implemented for the appropriate syntax. For example
-    if you had :
+The first and **most simple option for sharing your custom objects is to put**
+**them in separate files**, along with their necessary imports, and to share
+these files. Other people will be able to use them by importing your custom
+objects in their script, e.g. with :py:`from file_name import CustomObject`. It
+is the way to go in most situations, as it is very quicly done and only
+requires to send one or a few files. The persons who receive the file can also
+easily modify it and share it themselves. You got it, the main advantage of
+processing this way is that it is very flexible. The only drawback is that the
+versions of Crappy for the sender and the receiver might not be the same, in
+which case the code might not run on the receiver's side. Also, for the
+receiver, two steps are involved : installing Crappy and copying the sent
+files.
 
-    .. code-block:: python
+Some users might want to distribute their work in a more rigid way, for example
+an engineer distributing the same immutable code to several users of a machine.
+It is possible to **create and share installation files**, a.k.a *wheels*,
+**that contain a modified version of Crappy** that can be installed using
+:mod:`pip`. To do so, one has to clone Crappy, i.e. make a local copy of its
+source files, modify it to include the new custom objects, and build the wheel
+to share. This way, everyone runs the same code, and also cannot have an
+incompatible version since the version is fixed by the creator of the wheel.
+How to properly modify a Python module to include new files is not described
+here, neither is how to build and install a new wheel. This paragraph simply
+indicates the possibility to do so. You should however find plenty of help on
+internet if you want to give it a try !
 
-       import crappy
+There is one last possible way to share your work, it is to **integrate it to**
+**the collection of classes and Blocks distributed with the official version**
+**of Crappy** ! To do so, you should first *fork* Crappy, i.e. create a copy of
+it on your own GitHub account. After modifying this copy to include your own
+files, you can submit a *pull request* to the maintainers to request
+integration of your work on the official repository of Crappy. Again, this
+paragraph is not a *git* or GitHub tutorial, and we're not going to give more
+details about this whole process. If you wish to contribute to Crappy, you
+should anyway get in touch with the developers on GitHub at some point ! For
+contributors, the :ref:`Developers information` page of the documentation
+provides a few guidelines, as well as more insights on the content of the
+module than the tutorials. If there's a feature you would like to see in
+Crappy, but that you don't feel capable of implementing yourself, you can also
+request improvements directly on GitHub.
 
-       class My_block(crappy.blocks.Block):
-
-    Now you should have :
-
-    .. code-block:: python
-
-       from .block import Block
-
-       class My_block(Block)
-
-    Then modify the ``__init__.py`` file of the folder in which you placed your
-    new object. For example if the block mentioned a few lines above is
-    contained in ``my_block.py``, you should write in
-    ``crappy/blocks/__init__.py`` :
-
-    .. code-block:: python
-
-       from .my_block import My_block
-
-    If you included docstrings in your file and you wish to include them in a
-    local documentation, add your object in the corresponding ``.rst`` file in
-    the ``/docs/source/crappydocs/`` folder. Again the syntax should be
-    self-explanatory. Still following the same example, here we should write in
-    ``/docs/source/crappydocs/blocks.rst`` :
-
-    .. code-block:: rst
-
-       My Block
-       --------
-       .. automodule:: crappy.blocks.my_block
-          :members:
-
-    Now simply reinstall Crappy (see :ref:`Installation`, the syntax slightly
-    differs according to your OS) and that's it, you can freely use your object
-    in scripts !
-
-  - If Crappy was installed using ``pip``,  the quick-and-dirty way is to do
-    almost the same steps as in the previous point, except now Crappy's folder
-    may be harder to find. If it is installed in a virtualenv you should find it
-    easily, otherwise you can open a Python terminal, and type :
-
-      >>> import crappy
-      >>> crappy
-
-    This will display the location of Crappy's files. Now like in the previous
-    point add your ``.py`` file to the right folder with the right import and
-    inheritance modifications, change the corresponding ``__init__.py`` file,
-    and that's it ! Next time you import Crappy your object should be available.
-
-      .. Important::
-         It's likely that your modifications will be discarded if you then
-         update Crappy using ``pip`` !
-
-- **Adding your object to the Crappy project** : see the
-  :ref:`Developers information` section. There are a few rules to respect, but
-  if your pull request is accepted then all the Crappy users will be able to use
-  your object !
+That concludes the tutorials of Crappy ! We hope they have been helpful for
+getting started with the module, and that you were able to find an answer to
+all your questions here. If not, do not hesitate to request halp on our GitHub
+page ! Also, **if you publish any academic work conducted with the help of**
+**Crappy, please do not forget to** :ref:`cite us <Citing Crappy>` !
