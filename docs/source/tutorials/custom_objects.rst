@@ -50,6 +50,10 @@ modified dictionary in the function !
    :emphasize-lines: 6-9, 24
    :lines: 1-3, 5-12, 32-41, 43-45, 47-48
 
+.. Note::
+   To run this example, you'll need to have the *matplotlib* Python module
+   installed.
+
 In this first example, you can see that instead of replacing the value of the
 :py:`'cmd'` label with its double, it was chosen to store the double value in
 the newly created :py:`'cmdx2'` label. A new label was added ! This is just how
@@ -101,6 +105,10 @@ Integrate Modifier :
    :language: python
    :emphasize-lines: 7-23, 37
    :lines: 1-6, 13-39, 42-44, 46-48
+
+.. Note::
+   To run this example, you'll need to have the *matplotlib* Python module
+   installed.
 
 As you can see, compared to the template, several features have been added.
 First, the Modifier takes one argument at instantiation, that indicates the
@@ -277,6 +285,10 @@ context to make it run :
 .. literalinclude:: /downloads/custom_objects/custom_actuator.py
    :language: python
 
+.. Note::
+   To run this example, you'll need to have the *matplotlib* Python module
+   installed.
+
 You can :download:`download this custom Actuator example
 </downloads/custom_objects/custom_actuator.py>` to run it locally on your
 machine. **The concepts presented in this section will be re-used for all the**
@@ -375,6 +387,10 @@ new stored values. Let's now integrate the InOut into a runnable code :
 
 .. literalinclude:: /downloads/custom_objects/custom_inout.py
    :language: python
+
+.. Note::
+   To run this example, you'll need to have the *matplotlib* Python module
+   installed.
 
 In order to obtain two commands from a single :ref:`Generator`, a
 :ref:`Modifier` is added to create a new label. In the IOBlock, the two labels
@@ -479,6 +495,10 @@ the previous sub-section :
 .. literalinclude:: /downloads/custom_objects/custom_inout_streamer.py
    :language: python
    :emphasize-lines: 5, 25-35, 52, 54-55, 61-62
+
+.. Note::
+   To run this example, you'll need to have the *matplotlib* Python module
+   installed.
 
 The first difference is that the module :mod:`numpy` must be used, but that is
 not a problem since it is a requirement of Crappy. Then, the
@@ -628,6 +648,10 @@ management :
    :emphasize-lines: 13, 15-42, 69-71, 73-75
    :lines: 1-12, 21-97
 
+.. Note::
+   To run this example, you'll need to have the *opencv-python*, *matplotlib*
+   and *Pillow* Python modules installed.
+
 After the changes, notice that the :meth:`~crappy.camera.Camera.get_image`
 method remains unchanged. The values of the settings, that were previously
 defined as attributes in the :meth:`~crappy.camera.Camera.__init__` method, are
@@ -766,6 +790,10 @@ tutorial ! Here is the full code :
 .. literalinclude:: /downloads/custom_objects/custom_block.py
    :language: python
    :emphasize-lines: 13-22, 46, 97, 127
+
+.. Note::
+   To run this example, you'll need to have the *matplotlib* Python module
+   installed.
 
 In this Block, only the :meth:`~crappy.blocks.Block.begin` method is not
 defined. That is not a big deal, most Blocks do not need to define this method,
