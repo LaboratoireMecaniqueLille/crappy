@@ -232,13 +232,10 @@ add trigger setting
 add software roi
 reload
 
-5. More about custom Blocks
----------------------------
+5. Custom Camera Blocks
+-----------------------
 
-niceness, name
-
-6. Including custom objects in a distribution of Crappy
--------------------------------------------------------
+Custom Camera processing
 
 6. Sharing custom objects and Blocks
 ------------------------------------
