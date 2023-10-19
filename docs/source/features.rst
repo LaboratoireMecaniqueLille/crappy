@@ -113,7 +113,7 @@ Signal generation
 - :ref:`Generator`
 
   Generates a signal following a given pattern. See :ref:`the tutorials
-  <2.a The Generator Block and its Paths>` for information on how to use it.
+  <2.a. The Generator Block and its Paths>` for information on how to use it.
 
 - :ref:`PID`
 

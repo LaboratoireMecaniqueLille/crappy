@@ -314,12 +314,12 @@ section first ! Just like for Actuators, **anyone who wants to drive their**
 :class:`~crappy.inout.InOut` **objects**. This section covers the specificities
 of creating new InOuts.
 
-3.a Regular mode
-++++++++++++++++
+3.a. Regular mode
++++++++++++++++++
 
 First, let's cover the similarities with the creation of Actuator objects, in
 the case of a regular usage. The case of the *streamer* mode is covered in
-:ref:`the next sub-section <3.b Streamer mode>`. Just like for an Actuator,
+:ref:`the next sub-section <3.b. Streamer mode>`. Just like for an Actuator,
 you'll need to write your class before the :py:`if __name__ == "__main__"`
 statement, or to import it from another file. You should also start from a
 working draft in which you're able to drive your device in Python. And in both
@@ -411,8 +411,8 @@ to find more examples of custom InOut objects.
    :class:`~crappy.inout.InOut` class. This way, the log messages are
    included in the log file and handled in a nicer way by Crappy.
 
-3.b Streamer mode
-+++++++++++++++++
+3.b. Streamer mode
+++++++++++++++++++
 
 If you want to be able to use your custom InOut object in *streamer* mode, the
 methods described above will not be sufficient. Instead, **there is a**
@@ -704,8 +704,8 @@ meant to directly interact with hardware, the helper classes like the
 usually create data, perform processing on existing data, interact with the
 system, display data, etc.
 
-5.1 Methods of the Block
-++++++++++++++++++++++++
+5.a. Methods of the Block
++++++++++++++++++++++++++
 
 First, all the Blocks must be children of the base :class:`crappy.blocks.Block`
 parent class. Let's now see what methods you can define when instantiating your
@@ -811,7 +811,7 @@ one :
   desired level of granularity, but this comes of course at the cost of
   complexity. You can see that some attributes have a leading underscore in
   their name, this is discussed in the
-  :ref:`next sub-section <5.2 Useful attributes of the Block>`.
+  :ref:`next sub-section <5.b. Useful attributes of the Block>`.
 - In :meth:`~crappy.blocks.Block.prepare`, quite a lot of initialization is
   performed. There are two parts in the implementation : one executed if the
   Block has input Links, the other if it has output Links. If there are input
@@ -840,8 +840,8 @@ sub-sections. You can :download:`download this custom Block example
    :class:`~crappy.blocks.Block` class. This way, the log messages are
    included in the log file and handled in a nicer way by Crappy.
 
-5.2 Useful attributes of the Block
-++++++++++++++++++++++++++++++++++
+5.b. Useful attributes of the Block
++++++++++++++++++++++++++++++++++++
 
 While writing your own Blocks, you are free to use whatever names you want for
 the attributes you define. Any name, really ? Actually, **a few attribute**
@@ -895,7 +895,7 @@ meaning :
   When given, the values to send can be given as a :obj:`tuple` (for example),
   rather than as a :obj:`dict` containing both the names of the labels and the
   values. More about it in :ref:`the next section
-  <5.3 Sending data to other Blocks>`. This attribute can be set at any moment.
+  <5.c. Sending data to other Blocks>`. This attribute can be set at any moment.
 - :py:`t0` contains the timestamp of the exact moment when all the Blocks start
   looping together. It is useful for obtaining the timestamp of the current
   moment relative to the beginning of the test. This attribute can only be
@@ -917,8 +917,8 @@ There is not much more to say about the available attributes of the Block that
 you can use, you'll see for yourself which ones you need and which ones you
 don't when developing !
 
-5.3 Sending data to other Blocks
-++++++++++++++++++++++++++++++++
+5.c. Sending data to other Blocks
++++++++++++++++++++++++++++++++++
 
 A very important aspects of Blocks is how they communicate with each other. You
 normally already know that for two Blocks to exchange data, they must be linked
@@ -958,8 +958,8 @@ to send are :py:`'t(s)'` fo the time, and the chosen output label for the
 transferred value. The values to send are given by the :obj:`~struct.unpack`
 function, that returns two :obj:`float` from binary data.
 
-5.4 Receiving data from other Blocks
-++++++++++++++++++++++++++++++++++++
+5.d. Receiving data from other Blocks
++++++++++++++++++++++++++++++++++++++
 
 Now that the method for sending data has been covered, it is time to describe
 the complementary methods that allow a Block to receive data from upstream

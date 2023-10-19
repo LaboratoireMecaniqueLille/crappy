@@ -22,7 +22,7 @@ possible to have them form a loop to send back information to a Block. This is
 especially useful for driving :ref:`Generator` Blocks, as detailed in
 :ref:`a next section <3. Advanced Generator condition>`. For now, let's look at
 the example script given in :ref:`the tutorial section dedicated to the Machine
-Block <2.f The Machine Block>`. The :ref:`Fake Machine` Actuator that is used
+Block <2.f. The Machine Block>`. The :ref:`Fake Machine` Actuator that is used
 takes its commands as a voltage, which is quite unsatisfying since the achieved
 speed will vary depending on the characteristics of the motor. Instead, it
 would be preferable to send speed commands, and to somehow have the motor adapt
@@ -130,7 +130,7 @@ your machine. The Modifiers distributed with Crappy are also showcased in the
 3. Advanced Generator condition
 -------------------------------
 
-In :ref:`a previous section <2.a The Generator Block and its Paths>`, the
+In :ref:`a previous section <2.a. The Generator Block and its Paths>`, the
 :ref:`Generator` Block and its :ref:`Generator Paths` were introduced. In that
 section, two possible syntax were given for the :py:`'condition'` key of a
 Path :obj:`dict`. The value :obj:`None` can be given, in which case the Path
@@ -194,7 +194,7 @@ the Generator, you are now ready to use this block to its full extent !
 4. Dealing with streams
 -----------------------
 
-In :ref:`the tutorial section dedicated to IOBlocks <2.e The IOBlock Block>`,
+In :ref:`the tutorial section dedicated to IOBlocks <2.e. The IOBlock Block>`,
 only the regular usage mode of the :ref:`IOBlock` was presented. In this mode,
 the data points are acquired from the :ref:`In / Out` object one by one, which
 results in a limited data rate usually around a few hundred samples per second.
@@ -442,8 +442,8 @@ finer-grained control over Crappy's runtime. **There are two ways to control**
 **Crappy in a more accurate way : passing arguments to** :ref:`crappy.start()`,
 **and/or using alternative startup methods**.
 
-7.1 Alternative startup methods
-+++++++++++++++++++++++++++++++
+7.a. Alternative startup methods
+++++++++++++++++++++++++++++++++
 
 So far, the only option that was presented for starting a script in Crappy was
 to use the :ref:`crappy.start()` method. There are actually more options
@@ -487,8 +487,8 @@ section. We consider that users skilled enough to use these methods safely
 should be able to do so without an example. Still, these methods exist and are
 part of the API, and as such they are presented in this tutorial section.
 
-7.2 Arguments to the startup method
-+++++++++++++++++++++++++++++++++++
+7.b. Arguments to the startup method
+++++++++++++++++++++++++++++++++++++
 
 The :meth:`crappy.start()` method, alias to the
 :meth:`~crappy.blocks.Block.start_all` method of the class
