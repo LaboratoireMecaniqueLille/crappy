@@ -228,9 +228,163 @@ examples/blocks>`_.
 4. More about custom Cameras
 ----------------------------
 
-add trigger setting
-add software roi
-reload
+Because image acquisition is such a complex topic, the
+:class:`~crappy.camera.Camera` object is by far the richest of the classes
+interfacing with hardware in Crappy. For that reason, not all of its features
+could be presented in the previous tutorial sections. The missing ones are
+introduced here instead. Note that they are clearly secondary compared to the
+other features already presented !
+
+4.a. Pre-defined settings
++++++++++++++++++++++++++
+
+4.a.1. Trigger setting
+""""""""""""""""""""""
+
+:ref:`On the previous page <4. Custom Cameras>`, the three methods allowing to
+instantiate a :class:`~crappy.camera.meta_camera.camera_setting.CameraSetting`
+were presented. While these methods cover a wide range of situations, we found
+that they were not always well-suited to manage the trigger setting that some
+cameras possess. Indeed, when a camera is switched to external trigger mode, it
+will only acquire images when receiving an external signal. But if this signal
+is itself issued by a device controlled from Crappy, then the camera cannot
+acquire images for display in the
+:class:`~crappy.tool.camera_config.CameraConfig` window, as the
+:class:`~crappy.inout.InOut` used for generating the signal will only do so
+once the configuration window closes ! To address this problem, **a new**
+**method was introduced specifically for instantiating a trigger setting :**
+**the** :meth:`~crappy.camera.Camera.add_trigger_setting` **method** !
+
+When calling this method, a new
+:class:`~crappy.camera.meta_camera.camera_setting.CameraChoiceSetting` is
+instantiated with the name :py:`'trigger'`. Its possible choices are
+:py:`'Free run'`, :py:`'Hdw after config'` and :py:`'Hardware'`, and its
+default is :py:`'Free run'`. The only arguments left for the user to set are
+thus the getter and the setter methods. This trigger setting appears in the
+configuration window just like any other setting, and can be accessed and
+modified in the code as well. It is really just a normal setting, but with a
+pre-determined name and choices !
+
+When set to :py:`'Free run'` mode, the camera should acquire images without
+needing an external trigger. When set to :py:`'Hardware'`, the camera should
+only acquire images when receiving a hardware trigger. What is more interesting
+is definitely the :py:`'Hdw after config'` mode : when set, the camera stays in
+free run mode as long as the configuration window is opened, but switches to
+hardware trigger mode as soon as the window is closed ! **This way, you can**
+**adjust the various settings interactively in the configuration window, but**
+**still use the hardware trigger mode for the test** !
+
+As mentioned above, the user still has to define the getter and setter methods.
+For the setter, both the :py:`'Free run'` and :py:`'Hdw after config'` settings
+should set the camera to free run mode, and the :py:`'Hardware'` setting should
+set the camera to hardware trigger mode. For the getter now, it should return
+:py:`'Hardware'` is the camera is in hardware trigger mode, and either
+:py:`'Free run'` or :py:`'Hdw after config'` otherwise, depending on the last
+value set by the setter. It is not the most straightforward getter to
+implement, we know ! This aspect should be improved in future releases, but for
+now you'll have to cope with it. You can get inspiration from the :ref:`Xi API`
+Camera that implements it already.
+
+4.a.2. Software ROI setting
+"""""""""""""""""""""""""""
+
+In addition to the trigger setting, another improvement was brought to make
+user's life easier : the :meth:`~crappy.camera.Camera.add_software_roi` method.
+**It allows to crop the acquired images to the desired dimension**, so that
+they take less space when recorded, or can be processed faster. The remaining
+Region Of Interest should of course only contain the area relevant to your
+test. Unlike the hardware ROI setting that some cameras might possess, this
+setting does not influence the image acquisition, and thus does not improve the
+acquisition rate.
+
+Under the hood, the :meth:`~crappy.camera.Camera.add_software_roi` method
+instantiates four
+:class:`~crappy.camera.meta_camera.camera_setting.CameraScaleSetting` managing
+the position and size of the ROI. These settings are :py:`'ROI_x'`,
+:py:`'ROI_y'`, :py:`'ROI_width'` and :py:`'ROI_height'`, and their arguments
+are inaccessible to the user. The only values that the user has to provide are
+the width and the height of the acquired images, as arguments to the
+:meth:`~crappy.camera.Camera.add_software_roi` method.
+
+The application of the software ROI to the acquired images is not automatic,
+you have to run the :meth:`~crappy.camera.Camera.apply_soft_roi` on the
+acquired image in order for it to be effective. It returns the cropped image,
+or :obj:`None` if there's nothing left to display (shouldn't happen). You can
+find examples of usage for the software ROI in
+:class:`~crappy.camera.CameraOpencv`, or in the `examples folder on GitHub
+<https://github.com/LaboratoireMecaniqueLille/crappy/examples/blocks>`_.
+
+4.b. Reload slider and choice settings
+++++++++++++++++++++++++++++++++++++++
+
+The software ROI setting described in the previous sub-section sure is nice,
+but what happens to it when the size of the acquired images change because of
+another setting that controls the image format ? After all, the limits of the
+sliders that it creates depend on the image size given by the user, and once
+the :meth:`~crappy.camera.Camera.open` method of :class:`~crappy.camera.Camera`
+returns, there's no way to re-instantiate the settings. To address this
+problem, and all the similar ones that users might face, we added the
+possibility to "reload" the
+:class:`~crappy.camera.meta_camera.camera_setting.CameraScaleSetting` and the
+:class:`~crappy.camera.meta_camera.camera_setting.CameraChoiceSetting`.
+**Reloading a setting means either adjusting the limits of the slider, or**
+**changing the labels and/or the number of choices, depending on the type of**
+**setting**.
+
+In practice, each setting (except for the boolean ones) possess a
+:meth:`~crappy.camera.meta_camera.camera_setting.CameraSetting.reload` method,
+that allows to reload it. The arguments to provide depend on the type of
+setting. The calls to
+:meth:`~crappy.camera.meta_camera.camera_setting.CameraSetting.reload` should
+be placed in the relevant getter or setter methods, so that when the value of a
+setting changes it adjusts the other settings accordingly. It is totally not
+mandatory to do so, and most Cameras won't ever need to reload any setting. For
+the specific case of the software ROI setting, the
+:class:`~crappy.camera.Camera` class defines a specific
+:meth:`~crappy.camera.Camera.reload_software_roi` method for reloading it. You
+can check the :class:`~crappy.camera.CameraOpencv` Camera to see an example of
+a class implementing a setting reload.
+
+.. Important::
+   The possibility to reload settings is still recent, and might not be fully
+   stable. If you have trouble using it, please report it (see the
+   :ref:`Troubleshooting` page).
+
+4.c. Manage the metadata of the images
+++++++++++++++++++++++++++++++++++++++
+
+For the last feature of th :class:`~crappy.camera.Camera` objects presented in
+the tutorials, let's introduce **the possibility to include metadata in the**
+**information returned by a Camera** ! So far, it was always mentioned that the
+first value that the :meth:`~crappy.camera.Camera.open` method of Cameras
+should return is the timestamp of the acquired image. That is actually
+incorrect, since it is also possible to return a :obj:`dict` containing
+metadata about the acquired image ! This option is only interesting if the
+used camera can return metadata, such as the frame number, the aperture, the
+exposure time, etc.
+
+The returned dictionary should replace the bare timestamp value, and must
+contain at least two keys. The :py:`'t(s)'` key contains the timestamp of the
+image, as given by the :obj:`time.time`. And the :py:`'ImageUniqueID'` key
+should contain an integer allowing to identify the image, like the index of
+the acquired frame. In the case when only a timestamp is returned (and not a
+metadata :obj:`dict`), the frame index is calculated automatically by Crappy
+based on the images it sees, but might not correspond to the real frame index
+of the camera.
+
+Apart from these two mandatory keys, the user is free to include any other key
+carrying any other type of information. Relevant information in the context of
+experimental research could be the moment when the image was captured
+(different from the moment when it was transmitted to Crappy), the exposure
+time, etc. All the data included in the returned dictionary is meant to be
+written in a *metadata.csv* file saved along with the recorded images, that
+contains for each image its metadata. For each key of the dictionary that is a
+valid EXIF tag, the metadata will also be embedded in the recorded images if
+the :mod:`PIL` backend is used for recording. The :py:`'ImageUniqueID'` is
+already a valid EXIF tag, and the time information is split and recorded over
+the :py:`'DateTimeOriginal'` and :py:`'SubsecTimeOriginal'` tags. For now, none
+of the Cameras implemented in Crappy return metadata as a :obj:`dict`, but that
+will change in future releases !
 
 5. Custom Camera Blocks
 -----------------------
