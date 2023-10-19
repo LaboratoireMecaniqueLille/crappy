@@ -184,6 +184,47 @@ users to override it.
 3. More about custom Actuators
 ------------------------------
 
+In the tutorial section about :ref:`how to create custom Actuator objects
+<2. Custom Actuators>`, then entire speed management aspect in :py:`position`
+mode was left out. **In this section, we're going to cover in more details**
+**the possibilities for driving the speed in** :py:`position` mode, **and how**
+**to write a** :meth:`~crappy.actuator.Actuator.set_position` **method**
+**accordingly**.
+
+In the :obj:`dict` containing information about the
+:class:`~crappy.actuator.Actuator` to drive, there are two optional keys that
+allow tuning the target speed in :py:`position` mode. They can both be set, or
+only one, or none. These keys are :
+
+- :py:`'speed'`, that sets a target speed value from the beginning of the test.
+  This value might be overriden if :py:`'speed_cmd_label'` is given. If it is
+  not overriden, it persists forever.
+- :py:`'speed_cmd_label'`, that provides the name of a label carrying the
+  target speed values. As soon as a value is received over this label, the
+  previous target value is overriden and the new one is set.
+
+If no target speed value is set, i.e. if none of the two possible keys is
+provided or if :py:`'speed'` is not set and no target speed has been received
+over the :py:`'speed_cmd_label'` so far, the target speed is set to
+:obj:`None`.
+
+Now, how is that reflected on your code when creating a custom Actuator ?
+First, note that it only influences the
+:meth:`~crappy.actuator.Actuator.set_position` method, all the other ones are
+unaffected. The target speed value is always passed to the Actuator as the
+second argument of the :meth:`~crappy.actuator.Actuator.set_position` method.
+It is passed no matter its value, so it might be equal to :obj:`None` ! It is
+your duty to handle the two situations when it has or hasn't an actual value.
+For hardware that doesn't support speed adjustment when operated in position
+mode, this argument can always be ignored. You can have a look at the
+`Actuators distributed with Crappy
+<https://github.com/LaboratoireMecaniqueLille/crappy/src/crappy/actuator>`_
+to see how the various :meth:`~crappy.actuator.Actuator.set_position` methods
+implement the speed management in position mode. Also, an example of a
+:ref:`Machine` Block with a variable target speed can be found in the `examples
+folder on GitHub <https://github.com/LaboratoireMecaniqueLille/crappy/
+examples/blocks>`_.
+
 4. More about custom Cameras
 ----------------------------
 
