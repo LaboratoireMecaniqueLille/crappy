@@ -150,8 +150,8 @@ directory called `ext`. It contains the C++ extensions that were historically
 used by some objects in the module. It is very unsure whether these extensions
 still work, but they were kept around as a legacy waiting for pure-Python
 replacement solution to be added to Crappy. To enable extension module(s), one
-has to locally clone Crappy and `setup` install it manually with the correct
-drivers installed on the machine.
+has to locally clone Crappy and install it manually with the correct drivers
+installed on the machine.
 
 Other objects
 +++++++++++++
