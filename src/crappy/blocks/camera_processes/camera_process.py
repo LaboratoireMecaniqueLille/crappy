@@ -101,7 +101,7 @@ class CameraProcess(Process):
                  dtype,
                  to_draw_conn: Optional[Connection],
                  outputs: List[Link],
-                 labels: List[str]) -> None:
+                 labels: Optional[List[str]]) -> None:
     """Method allowing the :class:`~crappy.blocks.Camera` Block to share
     :mod:`multiprocessing` synchronization objects with this class.
     

@@ -389,6 +389,7 @@ class Camera(Block):
                               "image processing process")
       overlay_conn = (self._overlay_conn_in if self._display_proc is not None
                       else None)
+      labels = self.labels if self.labels is not None else None
       self._process_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._proc_lock,
@@ -398,7 +399,7 @@ class Camera(Block):
                                     dtype=self._img_dtype,
                                     to_draw_conn=overlay_conn,
                                     outputs=self.outputs,
-                                    labels=list(self.labels))
+                                    labels=labels)
       self.log(logging.INFO, "Starting the image processing process")
       self._process_proc.start()
 
