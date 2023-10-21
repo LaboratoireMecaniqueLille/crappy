@@ -9,12 +9,17 @@ from .overlay_object import Overlay
 
 
 @dataclass
-  """This class represents a box to be drawn on top of the image of a
-  :class:`~crappy.tool.camera_config.CameraConfig` window.
 class Box(Overlay):
+  """This class represents a box to be drawn on top of the images of a
+  :class:`~crappy.tool.camera_config.CameraConfig` window or
+  :class:`~crappy.blocks.camera_processes.Displayer` Process of a
+  :class:`~crappy.blocks.Camera` Block.
 
-  It can be either the box drawn when selecting a region, or the bounding box
-  of a previously detected area."""
+  It is a child of :class:`~crappy.tool.camera_config.config_tools.Overlay`.
+
+  It can represent either the box drawn when selecting a region, or the
+  bounding box of a tracked area.
+  """
 
   x_start: Optional[int] = None
   x_end: Optional[int] = None
