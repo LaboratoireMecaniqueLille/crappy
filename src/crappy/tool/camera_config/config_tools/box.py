@@ -32,6 +32,12 @@ class Box(Overlay):
   x_centroid: Optional[float] = None
   y_centroid: Optional[float] = None
 
+  def __post_init__(self) -> None:
+    """Needed to have the :obj:`~logging.Logger` of the parent class properly
+    initialized."""
+
+    super().__init__()
+
   def __str__(self) -> str:
     """The string representation of this class, only for debugging."""
 
