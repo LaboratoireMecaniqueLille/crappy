@@ -45,7 +45,7 @@ class Box(Overlay):
     return (f"Box with coordinates ({self.x_start}, {self.y_start}), "
             f"({self.x_end}, {self.y_end})")
 
-  def draw(self, img: np.ndarray) -> np.ndarray:
+  def draw(self, img: np.ndarray) -> None:
     """Draws the Box on top of the given image, and returns the modified image.
 
     The thickness of the drawn lines adapts to the size of the image, so that
@@ -57,13 +57,12 @@ class Box(Overlay):
     if self.no_points():
       self.log(logging.DEBUG, f"Cannot draw {self}, not all points are "
                               f"defined !")
-      return img
 
     # Getting the thickness of the lines to draw
     x_top, x_bottom, y_left, y_right = self.sorted()
     max_fact = max(img.shape[0] // 480, img.shape[1] // 640, 1)
 
-    # Drawing the lines on top of the image and returning the modified image
+    # Drawing the lines on top of the image
     try:
       for line in (line for i in range(max_fact + 1) for line in
                    ((self.y_start + i, slice(x_top, x_bottom)),
@@ -71,15 +70,12 @@ class Box(Overlay):
                     (slice(y_left, y_right), x_top + i),
                     (slice(y_left, y_right), x_bottom - i))):
         img[line] = 255 * int(np.mean(img[line]) < 128)
-
       self.log(logging.DEBUG, f"Drew {self} on top of the image to display")
-      return img
 
     # If anything goes wrong, aborting
     except (Exception,) as exc:
       self._logger.exception("Encountered exception while drawing boxes, "
                              "ignoring", exc_info=exc)
-      return img
 
   def update(self, box: Box) -> None:
     """Changes the coordinates of the box to those of another box."""

@@ -24,7 +24,7 @@ class Overlay:
 
     self._logger: Optional[logging.Logger] = None
 
-  def draw(self, img: ndarray) -> ndarray:
+  def draw(self, img: ndarray) -> None:
     """This method takes the image to display as an input, draws an overlay on
     top of it, and returns the modified image.
 
