@@ -164,4 +164,4 @@ class DISCorrelProcess(CameraProcess):
     self._send([self._metadata['t(s)'], self._metadata, *data])
 
     # Sending the ROI to the Displayer for display
-    self._send_box(SpotsBoxes(self._dis_correl.box))
+    self._send_to_draw(SpotsBoxes(self._dis_correl.box))

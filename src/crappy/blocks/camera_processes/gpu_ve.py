@@ -176,7 +176,7 @@ class GPUVEProcess(CameraProcess):
     self._send(data)
 
     # Sending the patches to the Displayer for display
-    self._send_box(self._spots)
+    self._send_to_draw(self._spots)
 
   def _finish(self) -> None:
     """Performs cleanup on the several

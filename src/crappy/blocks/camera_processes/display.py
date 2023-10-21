@@ -4,14 +4,14 @@ from multiprocessing.queues import Queue
 from threading import Thread
 from math import log2, ceil
 import numpy as np
-from typing import Optional
+from typing import Optional, Iterable
 from time import time, sleep
 import logging
 import logging.handlers
 
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
-from ...tool.camera_config import SpotsBoxes, Box
+from ...tool.camera_config import Overlay
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
@@ -29,10 +29,10 @@ class Displayer(CameraProcess):
   It is meant to serve as a control or validation feature, its resolution is
   thus limited to `640x480` and it should not be used at high framerates. On
   top of the displayed image, it can also draw 
-  :class:`~crappy.tool.camera_config.config_tools.Box` or 
-  :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` for the Blocks
-  that use them. This way, the user can for example visualize the spots being
-  tracked by the :class:`~crappy.blocks.VideoExtenso` Block.
+  :class:`~crappy.tool.camera_config.config_tools.Overlay` objects sent by
+  other :class:`~crappy.blocks.camera_processes.CameraProcess`. This way, the
+  user can for example visualize the spots being tracked by the
+  :class:`~crappy.blocks.VideoExtenso` Block in real time.
 
   The images can be displayed using two different backends : either using
   :mod:`cv2` (OpenCV), or using :mod:`matplotlib`. OpenCV is by far the fastest
@@ -65,8 +65,8 @@ class Displayer(CameraProcess):
     """
 
     # The thread must be initialized later for compatibility with Windows
-    self._box_thread: Optional[Thread] = None
-    self._boxes: SpotsBoxes = SpotsBoxes()
+    self._overlay_thread: Optional[Thread] = None
+    self._overlay: Iterable[Overlay] = list()
     self._stop_thread = False
 
     super().__init__(log_queue=log_queue,
@@ -102,28 +102,28 @@ class Displayer(CameraProcess):
 
   def __del__(self) -> None:
     """On exit, ensuring that the :obj:`~threading.Thread` in charge of
-    grabbing the :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` to
+    grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay` to
     display has stopped, otherwise stopping it."""
 
-    if self._box_thread is not None and self._box_thread.is_alive():
+    if self._overlay_thread is not None and self._overlay_thread.is_alive():
       self._stop_thread = True
       try:
-        self._box_thread.join(0.05)
+        self._overlay_thread.join(0.05)
       except RuntimeError:
         pass
 
   def _init(self) -> None:
     """Starts the :obj:`~threading.Thread` for grabbing the
-    :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` to display, and 
+    :class:`~crappy.tool.camera_config.config_tools.Overlay` to display, and
     initializes the Displayer window."""
 
-    # Instantiating and starting the Thread for grabbing the SpotsBoxes
-    self._log(logging.INFO, "Instantiating the thread for getting the boxes "
-                            "to display")
-    self._box_thread = Thread(target=self._thread_target)
-    self._log(logging.INFO, "Starting the thread for getting the boxes to "
+    # Instantiating and starting the Thread for grabbing the Overlays
+    self._log(logging.INFO, "Instantiating the thread for getting the Overlays"
+                            " to display")
+    self._overlay_thread = Thread(target=self._thread_target)
+    self._log(logging.INFO, "Starting the thread for getting the Overlays to "
                             "display")
-    self._box_thread.start()
+    self._overlay_thread.start()
 
     # Preparing the Displayer window
     self._log(logging.INFO, f"Opening the displayer window with the backend "
@@ -174,7 +174,7 @@ class Displayer(CameraProcess):
     and updates the Displayer window to draw it.
     
     It also draws the latest received 
-    :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` on top of the
+    :class:`~crappy.tool.camera_config.config_tools.Overlay` on top of the
     displayed frame.
     """
 
@@ -196,12 +196,12 @@ class Displayer(CameraProcess):
     else:
       img = self._img.copy()
 
-    # Drawing the latest known position of the boxes
-    for box in self._boxes:
-      if box is not None:
-        self._log(logging.DEBUG, "Drawing boxes on top of the image to "
+    # Drawing the latest known overlay
+    for overlay in self._overlay:
+      if overlay is not None:
+        self._log(logging.DEBUG, f"Drawing {overlay} on top of the image to "
                                  "display")
-        self._draw_box(img, box)
+        overlay.draw(img)
 
     # Calling the right update method
     if self._backend == 'cv2':
@@ -211,7 +211,7 @@ class Displayer(CameraProcess):
 
   def _finish(self) -> None:
     """Closes the Displayer window and stops the :obj:`~threading.Thread`
-    grabbing the :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes`"""
+    grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay`"""
 
     # Closing the Displayer window
     self._log(logging.INFO, "Closing the displayer window")
@@ -220,64 +220,43 @@ class Displayer(CameraProcess):
     elif self._backend == 'mpl':
       self._finish_mpl()
 
-    # Stooping the Thread grabbing the SpotsBoxes to draw
-    if self._box_thread is not None and self._box_thread.is_alive():
+    # Stooping the Thread grabbing the Overlay to draw
+    if self._overlay_thread is not None and self._overlay_thread.is_alive():
       self._stop_thread = True
       try:
-        self._box_thread.join(0.05)
+        self._overlay_thread.join(0.05)
       except RuntimeError:
-        self._log(logging.WARNING, "Thread for receiving the boxes did not "
+        self._log(logging.WARNING, "Thread for receiving the Overlay did not "
                                    "stop as expected")
 
   def _thread_target(self) -> None:
     """This method is the target to the :obj:`~threading.Thread` in charge of
-    grabbing the :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` to
+    grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay` to
     draw on top of the displayed image.
     
     It repeatedly polls the :obj:`~multiprocessing.Connection` through which
-    the Boxes are received, and stores the last received Boxes.
+    the Overlays are received, and stores the last received Overlays.
     """
 
     # Looping until the entire CameraProcess is told to stop, or the 
     # _stop_thread flag is raised
     while not self._stop_event.is_set() and not self._stop_thread:
 
-      # Receiving the latest Boxes to draw
-      boxes = None
-      while self._box_conn.poll():
-        boxes = self._box_conn.recv()
+      # Receiving the latest Overlay to draw
+      overlay = None
+      while self._to_draw_conn.poll():
+        overlay = self._to_draw_conn.recv()
 
-      # Saving the received Boxes
-      if boxes is not None:
-        self._log(logging.DEBUG, f"Received boxes to display: {boxes}")
-        self._boxes = boxes
+      # Saving the received Overlay
+      if overlay is not None:
+        self._log(logging.DEBUG, f"Received overlay to display: {overlay}")
+        self._overlay = overlay
 
       # To avoid spamming the CPU in vain
       else:
         sleep(0.001)
 
-    self._log(logging.INFO, "Thread for receiving the boxes ended")
-
-  def _draw_box(self, img: np.ndarray, box: Box) -> None:
-    """Draws a :class:`~crappy.tool.camera_config.config_tools.Box` on top of 
-    an image."""
-
-    if box.no_points():
-      return
-
-    x_top, x_bottom, y_left, y_right = box.sorted()
-    max_fact = max(img.shape[0] // 480, img.shape[1] // 640, 1)
-
-    try:
-      for line in (line for i in range(max_fact + 1) for line in
-                   ((box.y_start + i, slice(x_top, x_bottom)),
-                    (box.y_end - i, slice(x_top, x_bottom)),
-                    (slice(y_left, y_right), x_top + i),
-                    (slice(y_left, y_right), x_bottom - i))):
-        img[line] = 255 * int(np.mean(img[line]) < 128)
-    except (Exception,) as exc:
-      self._logger.exception("Encountered exception while drawing boxes, "
-                             "ignoring", exc_info=exc)
+    self._log(logging.INFO, "Thread for receiving the Overlays ended")
 
   def _prepare_cv2(self) -> None:
     """Instantiates the display window of :mod:`cv2`."""

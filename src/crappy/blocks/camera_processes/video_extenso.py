@@ -110,7 +110,7 @@ class VideoExtensoProcess(CameraProcess):
           self._send([self._metadata['t(s)'], self._metadata, *data])
 
         # Sending the detected spots to the Displayer for display
-        self._send_box(self._ve.spots)
+        self._send_to_draw(self._ve.spots)
 
       # In case the spots were just lost
       except LostSpotError:

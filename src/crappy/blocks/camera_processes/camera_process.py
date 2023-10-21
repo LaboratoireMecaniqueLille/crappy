@@ -17,7 +17,7 @@ from platform import system
 
 from ...links import Link
 from ..._global import LinkDataError
-from ...tool.camera_config import SpotsBoxes
+from ...tool.camera_config import Overlay
 
 
 class CameraProcess(Process):
@@ -77,7 +77,7 @@ class CameraProcess(Process):
     self._cam_barrier: Optional[Barrier] = None
     self._stop_event: Optional[Event] = None
     self._shape: Optional[Tuple[int, int]] = None
-    self._box_conn: Optional[Connection] = None
+    self._to_draw_conn: Optional[Connection] = None
     self._outputs: List[Link] = list()
     self._labels: List[str] = list()
     self._img: Optional[np.ndarray] = None
@@ -99,9 +99,9 @@ class CameraProcess(Process):
                  event: Event,
                  shape: Tuple[int, int],
                  dtype,
-                 box_conn: Optional[Connection],
+                 to_draw_conn: Optional[Connection],
                  outputs: List[Link],
-                 labels: List[str]) -> None:
+                 labels: Optional[List[str]]) -> None:
     """Method allowing the :class:`~crappy.blocks.Camera` Block to share
     :mod:`multiprocessing` synchronization objects with this class.
     
@@ -123,9 +123,9 @@ class CameraProcess(Process):
         necessary as the frames are shared as a one-dimensional array.
       dtype: The expected dtype of the image. It is necessary for 
         reconstructing the image from the one-dimensional shared array.
-      box_conn: A :obj:`~multiprocessing.Connection` for sending or receiving
-        :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` objects to
-        draw on top of the displayed image.
+      to_draw_conn: A :obj:`~multiprocessing.Connection` for sending or
+        receiving :class:`~crappy.tool.camera_config.config_tools.Overlay`
+        objects to draw on top of the displayed image.
       outputs: The :class:`~crappy.links.Link` objects for sending data to
         downstream Blocks. They are the same as those owned by the Camera 
         Block.
@@ -139,7 +139,7 @@ class CameraProcess(Process):
     self._stop_event = event
     self._shape = shape
     self._dtype = dtype
-    self._box_conn = box_conn
+    self._to_draw_conn = to_draw_conn
     self._outputs = outputs
     self._labels = labels
 
@@ -332,33 +332,33 @@ class CameraProcess(Process):
       self._logger.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
 
-  def _send_box(self, boxes: SpotsBoxes) -> None:
-    """This method sends
-    :class:`~crappy.tool.camera_config.config_tools.SpotsBoxes` objects to the
+  def _send_to_draw(self, to_draw: Iterable[Overlay]) -> None:
+    """This method sends a collection of
+    :class:`~crappy.tool.camera_config.config_tools.Overlay` objects to the
     :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.
 
-    The boxes are sent by the CameraProcess performing the image processing, so
-    that the area(s) of interest can be displayed simultaneously.
+    The overlays are sent by the CameraProcess performing the image processing,
+    so that the area(s) of interest can be displayed simultaneously.
     """
 
     # Not sending if there's no Connection to send data through
-    if self._box_conn is None:
+    if self._to_draw_conn is None:
       return
 
-    self._log(logging.DEBUG, "Sending the box(es) to the displayer process")
+    self._log(logging.DEBUG, "Sending the overlays to the displayer process")
 
-    # Sending the boxes
+    # Sending the overlay
     if self._system == 'Linux':
-      if select([], [self._box_conn], [], 0)[1]:
+      if select([], [self._to_draw_conn], [], 0)[1]:
         # Can only check on Linux if a pipe is full
-        self._box_conn.send(boxes)
+        self._to_draw_conn.send(to_draw)
       elif time() - self._last_warn > 1:
         # Warning in case the pipe is full
           self._last_warn = time()
-          self._log(logging.WARNING, f"Cannot send the box(es) to draw to the "
+          self._log(logging.WARNING, f"Cannot send the overlay to draw to the "
                                      f"Displayer process, the Pipe is full !")
     else:
-      self._box_conn.send(boxes)
+      self._to_draw_conn.send(to_draw)
 
   def _set_logger(self) -> None:
     """Initializes the :obj:`~logging.Logger` for the CameraProcess.
