@@ -237,8 +237,8 @@ class Camera(Block):
     self._metadata: Optional[managers.DictProxy] = None
     self._cam_barrier: Optional[synchronize.Barrier] = None
     self._stop_event_cam: Optional[synchronize.Event] = None
-    self._box_conn_in: Optional[connection.Connection] = None
-    self._box_conn_out: Optional[connection.Connection] = None
+    self._overlay_conn_in: Optional[connection.Connection] = None
+    self._overlay_conn_out: Optional[connection.Connection] = None
     self._save_lock: Optional[synchronize.RLock] = None
     self._disp_lock: Optional[synchronize.RLock] = None
     self._proc_lock: Optional[synchronize.RLock] = None
@@ -299,7 +299,7 @@ class Camera(Block):
     self._manager = Manager()
     self._metadata = self._manager.dict()
     self._stop_event_cam = Event()
-    self._box_conn_in, self._box_conn_out = Pipe()
+    self._overlay_conn_in, self._overlay_conn_out = Pipe()
     self._save_lock = RLock()
     self._disp_lock = RLock()
     self._proc_lock = RLock()
@@ -387,7 +387,8 @@ class Camera(Block):
     if self._process_proc is not None:
       self.log(logging.DEBUG, "Sharing the synchronization objects with the "
                               "image processing process")
-      box_conn = self._box_conn_in if self._display_proc is not None else None
+      overlay_conn = (self._overlay_conn_in if self._display_proc is not None
+                      else None)
       self._process_proc.set_shared(array=self._img_array,
                                     data_dict=self._metadata,
                                     lock=self._proc_lock,
@@ -395,7 +396,7 @@ class Camera(Block):
                                     event=self._stop_event_cam,
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
-                                    box_conn=box_conn,
+                                    to_draw_conn=overlay_conn,
                                     outputs=self.outputs,
                                     labels=list(self.labels))
       self.log(logging.INFO, "Starting the image processing process")
@@ -410,10 +411,8 @@ class Camera(Block):
                                  lock=self._save_lock,
                                  barrier=self._cam_barrier,
                                  event=self._stop_event_cam,
-                                 shape=self._img_shape,
-                                 dtype=self._img_dtype,
-                                 box_conn=None,
-                                 outputs=list(),
+                                 shape=self._img_shape, dtype=self._img_dtype,
+                                 to_draw_conn=None, outputs=list(),
                                  labels=list())
       self.log(logging.INFO, "Starting the image saver process")
       self._save_proc.start()
@@ -429,9 +428,8 @@ class Camera(Block):
                                     event=self._stop_event_cam,
                                     shape=self._img_shape,
                                     dtype=self._img_dtype,
-                                    box_conn=self._box_conn_out,
-                                    outputs=list(),
-                                    labels=list())
+                                    to_draw_conn=self._overlay_conn_out,
+                                    outputs=list(), labels=list())
       self.log(logging.INFO, "Starting the image displayer process")
       self._display_proc.start()
 
