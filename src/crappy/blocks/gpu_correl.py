@@ -304,7 +304,7 @@ class GPUCorrel(Camera):
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
     method of the parent class.
 
-    In addition to that is instantiates the
+    In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.GPUCorrelProcess` object that
     performs the GPU-accelerated image correlation.
     """
