@@ -76,6 +76,12 @@ Histogram Process
    :members: run, log
    :special-members: __init__
 
+Overlay
+"""""""
+.. autoclass:: crappy.tool.camera_config.config_tools.Overlay
+   :members: draw, log
+   :special-members: __init__
+
 Spots Boxes
 """""""""""
 .. autoclass:: crappy.tool.camera_config.config_tools.SpotsBoxes
