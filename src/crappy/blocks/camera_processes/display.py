@@ -11,7 +11,7 @@ import logging.handlers
 
 from .camera_process import CameraProcess
 from ..._global import OptionalModule
-from ...tool.camera_config import SpotsBoxes, Box
+from ...tool.camera_config import SpotsBoxes
 
 plt = OptionalModule('matplotlib.pyplot', lazy_import=True)
 
@@ -199,9 +199,9 @@ class Displayer(CameraProcess):
     # Drawing the latest known position of the boxes
     for box in self._boxes:
       if box is not None:
-        self._log(logging.DEBUG, "Drawing boxes on top of the image to "
+        self._log(logging.DEBUG, f"Drawing {box} on top of the image to "
                                  "display")
-        self._draw_box(img, box)
+        box.draw(img)
 
     # Calling the right update method
     if self._backend == 'cv2':
@@ -257,27 +257,6 @@ class Displayer(CameraProcess):
         sleep(0.001)
 
     self._log(logging.INFO, "Thread for receiving the boxes ended")
-
-  def _draw_box(self, img: np.ndarray, box: Box) -> None:
-    """Draws a :class:`~crappy.tool.camera_config.config_tools.Box` on top of 
-    an image."""
-
-    if box.no_points():
-      return
-
-    x_top, x_bottom, y_left, y_right = box.sorted()
-    max_fact = max(img.shape[0] // 480, img.shape[1] // 640, 1)
-
-    try:
-      for line in (line for i in range(max_fact + 1) for line in
-                   ((box.y_start + i, slice(x_top, x_bottom)),
-                    (box.y_end - i, slice(x_top, x_bottom)),
-                    (slice(y_left, y_right), x_top + i),
-                    (slice(y_left, y_right), x_bottom - i))):
-        img[line] = 255 * int(np.mean(img[line]) < 128)
-    except (Exception,) as exc:
-      self._logger.exception("Encountered exception while drawing boxes, "
-                             "ignoring", exc_info=exc)
 
   def _prepare_cv2(self) -> None:
     """Instantiates the display window of :mod:`cv2`."""
