@@ -72,8 +72,8 @@ class Box(Overlay):
                     (slice(y_left, y_right), x_bottom - i))):
         img[line] = 255 * int(np.mean(img[line]) < 128)
 
-        self.log(logging.DEBUG, f"Drew {self} on top of the image to display")
-        return img
+      self.log(logging.DEBUG, f"Drew {self} on top of the image to display")
+      return img
 
     # If anything goes wrong, aborting
     except (Exception,) as exc:
