@@ -3,12 +3,15 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, Tuple
+import logging
+
+from .overlay_object import Overlay
 
 
 @dataclass
-class Box:
   """This class represents a box to be drawn on top of the image of a
   :class:`~crappy.tool.camera_config.CameraConfig` window.
+class Box(Overlay):
 
   It can be either the box drawn when selecting a region, or the bounding box
   of a previously detected area."""
@@ -24,8 +27,16 @@ class Box:
   x_centroid: Optional[float] = None
   y_centroid: Optional[float] = None
 
+  def __str__(self) -> str:
+    """The string representation of this class, only for debugging."""
+
+    return (f"Box with coordinates ({self.x_start}, {self.y_start}), "
+            f"({self.x_end}, {self.y_end})")
+
   def update(self, box: Box) -> None:
     """Changes the coordinates of the box to those of another box."""
+
+    self.log(logging.DEBUG, f"Updating {self} to {box}")
 
     self.x_start = box.x_start
     self.y_start = box.y_start
@@ -47,6 +58,8 @@ class Box:
   def reset(self) -> None:
     """Resets the sides to :obj:`None`."""
 
+    self.log(logging.DEBUG, f"Resetting {self}")
+
     self.x_start = None
     self.x_end = None
     self.y_start = None
@@ -60,11 +73,16 @@ class Box:
     min y, max y."""
 
     if self.no_points():
+      self.log(logging.WARNING, f"Trying to sort the Box, but some of its "
+                                f"coordinates are undefined !")
       raise ValueError("Cannot sort, some values are None !")
 
     x_top = min(self.x_start, self.x_end)
     x_bottom = max(self.x_start, self.x_end)
     y_left = min(self.y_start, self.y_end)
     y_right = max(self.y_start, self.y_end)
+
+    self.log(logging.DEBUG, f"Sorted {self}, returning ({x_top}, {x_bottom}, "
+                            f"{y_left}, {y_right})")
 
     return x_top, x_bottom, y_left, y_right
