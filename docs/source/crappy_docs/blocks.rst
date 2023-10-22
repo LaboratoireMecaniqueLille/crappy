@@ -233,42 +233,49 @@ Camera Processes
 Camera Process
 ++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.CameraProcess
-   :members: set_shared, run
+   :members: set_shared, run, init, loop, finish, send, send_to_draw
+   :special-members: __init__
+
+DIC VE Process
+++++++++++++++
+.. autoclass:: crappy.blocks.camera_processes.DICVEProcess
+   :members: init, loop
    :special-members: __init__
 
 DIS Correl Process
 ++++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.DISCorrelProcess
-   :special-members: __init__
-
-DIS VE Process
-++++++++++++++
-.. autoclass:: crappy.blocks.camera_processes.DICVEProcess
+   :members: init, loop
    :special-members: __init__
 
 Displayer Process
 +++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.Displayer
+   :members: init, loop, finish
    :special-members: __init__, __del__
 
 GPU Correl Process
 ++++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.GPUCorrelProcess
+   :members: init, loop, finish
    :special-members: __init__
 
 GPU VE Process
 ++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.GPUVEProcess
+   :members: init, loop, finish
    :special-members: __init__
 
 Recorder Process
 ++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.ImageSaver
+   :members: init, loop
    :special-members: __init__
 
 Video Extenso Process
 +++++++++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.VideoExtensoProcess
+   :members: init, loop, finish
    :special-members: __init__
 
 Parent Block

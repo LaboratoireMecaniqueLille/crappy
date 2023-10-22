@@ -274,7 +274,9 @@ class CameraProcess(Process):
     
     It is called repeatedly until the :obj:`~multiprocessing.Process` is told
     to stop. It should perform the desired action for handling the latest
-    available frame, that can be grabbed by calling :meth:`_get_data`.
+    available frame, stored in the *self.img* attribute. The latest available
+    metadata containing at least the timestamp and frame index of the latest
+    image is stored in *self.metadata*.
     
     This method is meant to be overwritten by children classes, at is otherwise 
     does not perform any action.
