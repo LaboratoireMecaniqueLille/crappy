@@ -248,22 +248,17 @@ class Camera(Block):
     self._last_cam_fps = time()
 
     # Instantiating the ImageSaver if requested
-    if not save_images:
-      self._save_proc_kw = None
-    else:
-      self._save_proc_kw = dict(img_extension=img_extension,
-                                save_folder=save_folder,
-                                save_period=save_period,
-                                save_backend=save_backend)
+    self._save_images = save_images
+    self._img_extension = img_extension
+    self._save_folder = save_folder
+    self._save_period = save_period
+    self._save_backend = save_backend
 
     # Instantiating the Displayer window if requested
-    if not display_images:
-      self._display_proc_kw = None
-    else:
-      self._display_proc_kw = dict(
-        title=f"Displayer {camera} "
-              f"{Camera.cam_count[self._camera_name]}",
-        framerate=displayer_framerate, backend=displayer_backend)
+    self._display_images = display_images
+    self._title = f"Displayer {camera} {Camera.cam_count[self._camera_name]}"
+    self._framerate = displayer_framerate
+    self._displayer_backend = displayer_backend
 
   def __del__(self) -> None:
     """Safety method called when deleting the Block and ensuring that all the
@@ -305,14 +300,19 @@ class Camera(Block):
     self._proc_lock = RLock()
 
     # instantiating the ImageSaver CameraProcess
-    if self._save_proc_kw is not None:
+    if self._save_images:
       self.log(logging.INFO, "Instantiating the saver process")
-      self._save_proc = ImageSaver(**self._save_proc_kw)
+      self._save_proc = ImageSaver(img_extension=self._img_extension,
+                                   save_folder=self._save_folder,
+                                   save_period=self._save_period,
+                                   save_backend=self._save_backend)
 
     # instantiating the Displayer CameraProcess
-    if self._display_proc_kw is not None:
+    if self._display_images:
       self.log(logging.INFO, "Instantiating the displayer process")
-      self._display_proc = Displayer(**self._display_proc_kw)
+      self._display_proc = Displayer(title=self._title,
+                                     framerate=self._framerate,
+                                     backend=self._displayer_backend)
 
     # Creating the Barrier for the synchronization of the CameraProcesses
     n_proc = sum(int(proc is not None) for proc in (self.process_proc,

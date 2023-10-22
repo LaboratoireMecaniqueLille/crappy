@@ -309,17 +309,18 @@ class DISCorrel(Camera):
         "The number of fields is inconsistent with the number "
         "of labels !\nMake sure that the time label was given")
 
-    self._dis_correl_kw = dict(fields=fields,
-                               alpha=alpha,
-                               delta=delta,
-                               gamma=gamma,
-                               finest_scale=finest_scale,
-                               init=init,
-                               iterations=iterations,
-                               gradient_iterations=gradient_iterations,
-                               patch_size=patch_size,
-                               patch_stride=patch_stride,
-                               residual=residual)
+    # These arguments are for the DISCorrelProcess
+    self._fields = fields
+    self._alpha = alpha
+    self._delta = delta
+    self._gamma = gamma
+    self._finest_scale = finest_scale
+    self._init = init
+    self._iterations = iterations
+    self._gradient_iterations = gradient_iterations
+    self._patch_size = patch_size
+    self._patch_stride = patch_stride
+    self._residual = residual
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
@@ -340,8 +341,19 @@ class DISCorrel(Camera):
       self._patch = Box()
 
     # Instantiating the DISCorrelProcess
-    self.process_proc = DISCorrelProcess(patch=self._patch,
-                                         **self._dis_correl_kw)
+    self.process_proc = DISCorrelProcess(
+        patch=self._patch,
+        fields=self._fields,
+        alpha=self._alpha,
+        delta=self._delta,
+        gamma=self._gamma,
+        finest_scale=self._finest_scale,
+        init=self._init,
+        iterations=self._iterations,
+        gradient_iterations=self._gradient_iterations,
+        patch_size=self._patch_size,
+        patch_stride=self._patch_stride,
+        residual=self._residual)
 
     super().prepare()
 
