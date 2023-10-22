@@ -232,43 +232,6 @@ class CameraProcess(Process):
 
     ...
 
-  def _get_data(self) -> bool:
-    """This method allows to grab the latest available frame.
-    
-    It first acquired the :obj:`~multiprocessing.RLock` protecting the shared
-    :obj:`~multiprocessing.Array` containing the image, then copies the image
-    locally and releases the Lock. It also copies the metadata associated to 
-    the image.
-    
-    Returns:
-      :obj:`True` in case a frame was acquired and needs to be handled, or
-      :obj:`False` if no frame was grabbed and nothing should be done.
-    """
-
-    # Acquiring the Lock to avoid conflicts with other CameraProcesses
-    with self._lock:
-
-      # In case there's no frame grabbed yet
-      if 'ImageUniqueID' not in self._data_dict:
-        return False
-
-      # In case the frame in buffer was already handled during a previous loop
-      if self._data_dict['ImageUniqueID'] == self._metadata['ImageUniqueID']:
-        return False
-
-      # Copying the metadata
-      self._metadata = self._data_dict.copy()
-
-      self._log(logging.DEBUG, f"Got new image to process with id "
-                               f"{self._metadata['ImageUniqueID']}")
-
-      # Copying the frame
-      np.copyto(self._img,
-                np.frombuffer(self._img_array.get_obj(),
-                              dtype=self._dtype).reshape(self._shape))
-
-    return True
-
   def loop(self) -> None:
     """This method is the main loop of the CameraProcess.
     
@@ -361,6 +324,43 @@ class CameraProcess(Process):
                                      f"Displayer process, the Pipe is full !")
     else:
       self._to_draw_conn.send(to_draw)
+
+  def _get_data(self) -> bool:
+    """This method allows to grab the latest available frame.
+
+    It first acquired the :obj:`~multiprocessing.RLock` protecting the shared
+    :obj:`~multiprocessing.Array` containing the image, then copies the image
+    locally and releases the Lock. It also copies the metadata associated to
+    the image.
+
+    Returns:
+      :obj:`True` in case a frame was acquired and needs to be handled, or
+      :obj:`False` if no frame was grabbed and nothing should be done.
+    """
+
+    # Acquiring the Lock to avoid conflicts with other CameraProcesses
+    with self._lock:
+
+      # In case there's no frame grabbed yet
+      if 'ImageUniqueID' not in self._data_dict:
+        return False
+
+      # In case the frame in buffer was already handled during a previous loop
+      if self._data_dict['ImageUniqueID'] == self._metadata['ImageUniqueID']:
+        return False
+
+      # Copying the metadata
+      self._metadata = self._data_dict.copy()
+
+      self._log(logging.DEBUG, f"Got new image to process with id "
+                               f"{self._metadata['ImageUniqueID']}")
+
+      # Copying the frame
+      np.copyto(self._img,
+                np.frombuffer(self._img_array.get_obj(),
+                              dtype=self._dtype).reshape(self._shape))
+
+    return True
 
   def _set_logger(self) -> None:
     """Initializes the :obj:`~logging.Logger` for the CameraProcess.
