@@ -233,7 +233,7 @@ Camera Processes
 Camera Process
 ++++++++++++++
 .. autoclass:: crappy.blocks.camera_processes.CameraProcess
-   :members: set_shared, run, init, loop, finish, send, send_to_draw
+   :members: set_shared, run, init, loop, finish, send, send_to_draw, log
    :special-members: __init__
 
 DIC VE Process
