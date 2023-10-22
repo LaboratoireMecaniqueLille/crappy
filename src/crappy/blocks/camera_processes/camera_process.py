@@ -183,7 +183,10 @@ class CameraProcess(Process):
 
       # Looping forever until told to stop or an exception is raised
       while not self._stop_event.is_set():
-        self.loop()
+        # Only looping if a new image is available
+        if self._get_data():
+          self._log(logging.DEBUG, "Running the loop method")
+          self.loop()
 
         # Displaying the looping frequency is required
         if self.display_freq:

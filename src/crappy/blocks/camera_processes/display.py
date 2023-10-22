@@ -177,10 +177,6 @@ class Displayer(CameraProcess):
     :class:`~crappy.tool.camera_config.config_tools.Overlay` on top of the
     displayed frame.
     """
-
-    # Nothing to do if no new frame was grabbed
-    if not self._get_data():
-      return
     
     self.fps_count += 1
 

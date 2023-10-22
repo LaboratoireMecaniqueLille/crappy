@@ -196,10 +196,6 @@ class ImageSaver(CameraProcess):
     populated using the metadata of the frame.
     """
 
-    # Nothing to do if no new frame was grabbed
-    if not self._get_data():
-      return
-
     self.fps_count += 1
 
     # Creating the .csv containing the metadata on the first received frame

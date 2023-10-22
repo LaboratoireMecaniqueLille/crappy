@@ -162,10 +162,6 @@ class DICVEProcess(CameraProcess):
     CameraProcess.
     """
 
-    # Nothing to do if no new frame was grabbed
-    if not self._get_data():
-      return
-
     # Do nothing if the patches were already lost
     if not self._lost_patch:
       self.fps_count += 1

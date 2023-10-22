@@ -92,10 +92,6 @@ class VideoExtensoProcess(CameraProcess):
     the :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.
     """
 
-    # Nothing to do if no new frame was grabbed
-    if not self._get_data():
-      return
-
     # Processing only if the spots haven't been lost
     if not self._lost_spots:
       self.fps_count += 1
