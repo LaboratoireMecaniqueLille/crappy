@@ -61,7 +61,7 @@ class VideoExtensoProcess(CameraProcess):
     self._raise_on_lost_spot = raise_on_lost_spot
     self._lost_spots = False
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Instantiates the 
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` and
     starts tracking the spots."""
@@ -81,7 +81,7 @@ class VideoExtensoProcess(CameraProcess):
                             "processes")
     self._ve.start_tracking()
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool`. Then
     sends the strain and displacement data to the downstream Blocks.
@@ -107,10 +107,10 @@ class VideoExtensoProcess(CameraProcess):
         
         # Sending the results to the downstream Blocks
         if data is not None:
-          self._send([self._metadata['t(s)'], self._metadata, *data])
+          self.send([self._metadata['t(s)'], self._metadata, *data])
 
         # Sending the detected spots to the Displayer for display
-        self._send_to_draw(self._ve.spots)
+        self.send_to_draw(self._ve.spots)
 
       # In case the spots were just lost
       except LostSpotError:
@@ -132,7 +132,7 @@ class VideoExtensoProcess(CameraProcess):
     else:
       sleep(0.1)
 
-  def _finish(self) -> None:
+  def finish(self) -> None:
     """Indicates the 
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` to
     stop tracking the spots."""

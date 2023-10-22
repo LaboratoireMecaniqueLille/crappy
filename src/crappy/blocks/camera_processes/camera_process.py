@@ -166,7 +166,7 @@ class CameraProcess(Process):
       # Initializing the CameraProcess, and breaking the Barrier to warn the
       # other CameraProcesses in case something goes wrong
       try:
-        self._init()
+        self.init()
       except (Exception,):
         self._cam_barrier.abort()
         self._log(logging.ERROR, "Breaking the barrier due to caught exception"
@@ -183,7 +183,7 @@ class CameraProcess(Process):
 
       # Looping forever until told to stop or an exception is raised
       while not self._stop_event.is_set():
-        self._loop()
+        self.loop()
 
         # Displaying the looping frequency is required
         if self.display_freq:
@@ -217,9 +217,9 @@ class CameraProcess(Process):
 
     # Always calling finish in the end
     finally:
-      self._finish()
+      self.finish()
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """This method should perform any action required for initializing the
     CameraProcess.
 
@@ -269,7 +269,7 @@ class CameraProcess(Process):
 
     return True
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method is the main loop of the CameraProcess.
     
     It is called repeatedly until the :obj:`~multiprocessing.Process` is told
@@ -282,7 +282,7 @@ class CameraProcess(Process):
 
     ...
 
-  def _finish(self) -> None:
+  def finish(self) -> None:
     """This method should perform any action required for properly exiting the
     CameraProcess.
 
@@ -295,8 +295,8 @@ class CameraProcess(Process):
 
     ...
 
-  def _send(self, data: Optional[Union[Dict[str, Any],
-                                       Iterable[Any]]]) -> None:
+  def send(self, data: Optional[Union[Dict[str, Any],
+                                      Iterable[Any]]]) -> None:
     """This method allows sending data to downstream Blocks.
 
     It is similar to the :meth:`~crappy.blocks.Block.send` method of the
@@ -332,7 +332,7 @@ class CameraProcess(Process):
       self._logger.log(logging.DEBUG, f"Sending {data} to Link {link.name}")
       link.send(data)
 
-  def _send_to_draw(self, to_draw: Iterable[Overlay]) -> None:
+  def send_to_draw(self, to_draw: Iterable[Overlay]) -> None:
     """This method sends a collection of
     :class:`~crappy.tool.camera_config.config_tools.Overlay` objects to the
     :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.

@@ -142,7 +142,7 @@ class GPUCorrelProcess(CameraProcess):
     self._discard_ref = discard_ref
     self._calc_res = calc_res
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Initializes the GPUCorrelTool, and set its reference image if a
     ``img_ref`` argument was provided."""
 
@@ -160,7 +160,7 @@ class GPUCorrelProcess(CameraProcess):
       self._log(logging.INFO, "Preparing the GPUCorrel tool")
       self._correl.prepare()
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
     :class:`~crappy.tool.image_processing.GPUCorrelTool`. Then sends the result
     of the correlation to the downstream Blocks.
@@ -213,9 +213,9 @@ class GPUCorrelProcess(CameraProcess):
           return
 
     # Sending the data to downstream Blocks
-    self._send(data)
+    self.send(data)
 
-  def _finish(self) -> None:
+  def finish(self) -> None:
     """Performs cleanup on the
     :class:`~crappy.tool.image_processing.GPUCorrelTool`."""
 

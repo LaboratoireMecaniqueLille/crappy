@@ -114,7 +114,7 @@ class ImageSaver(CameraProcess):
     self._csv_path = None
     self._metadata_name = 'metadata.csv'
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Creates the folder for saving the images.
 
     If a folder is already present at the indicated path and contains images,
@@ -188,7 +188,7 @@ class ImageSaver(CameraProcess):
 
     return True
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame, writes its metadata to a `.csv` file
     and saves the image at the chosen location using the chosen backend.
 

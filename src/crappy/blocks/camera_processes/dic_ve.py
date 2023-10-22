@@ -143,14 +143,14 @@ class DICVEProcess(CameraProcess):
     self._img0_set = False
     self._lost_patch = False
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Instantiates the :obj:`~crappy.tool.image_processing.DICVETool` that
     will perform the image correlation."""
 
     self._log(logging.INFO, "Instantiating the Disve tool")
     self._disve = DICVETool(**self._dic_ve_kw)
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
     :obj:`~crappy.tool.image_processing.DICVETool`. Then sends the result of
     the correlation to the downstream Blocks.
@@ -181,10 +181,10 @@ class DICVEProcess(CameraProcess):
         # Calculating the displacement and sending it to downstream Blocks
         self._log(logging.DEBUG, "Processing the received image")
         data = self._disve.calculate_displacement(self._img)
-        self._send([self._metadata['t(s)'], self._metadata, *data])
+        self.send([self._metadata['t(s)'], self._metadata, *data])
 
         # Sending the patches to the Displayer for display
-        self._send_to_draw(self._disve.patches)
+        self.send_to_draw(self._disve.patches)
 
       # If the patches are lost, deciding whether to raise exception or not
       except RuntimeError as exc:

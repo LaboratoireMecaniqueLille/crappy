@@ -112,7 +112,7 @@ class GPUVEProcess(CameraProcess):
 
     self._img0_set = img_ref is not None
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Initializes the GPUCorrelTool instances, and set their reference image
     if a ``img_ref`` argument was provided."""
 
@@ -136,7 +136,7 @@ class GPUVEProcess(CameraProcess):
           self._img_ref[oy:oy + h, ox:ox + w].astype(np.float32))
         correl.prepare()
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
     several instances of :class:`~crappy.tool.image_processing.GPUCorrelTool`.
     Then sends the displacement data to the downstream Blocks.
@@ -173,12 +173,12 @@ class GPUVEProcess(CameraProcess):
         self._img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
 
     # Sending the data to downstream Blocks
-    self._send(data)
+    self.send(data)
 
     # Sending the patches to the Displayer for display
-    self._send_to_draw(self._spots)
+    self.send_to_draw(self._spots)
 
-  def _finish(self) -> None:
+  def finish(self) -> None:
     """Performs cleanup on the several
     :class:`~crappy.tool.image_processing.GPUCorrelTool` used."""
 

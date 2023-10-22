@@ -112,7 +112,7 @@ class Displayer(CameraProcess):
       except RuntimeError:
         pass
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Starts the :obj:`~threading.Thread` for grabbing the
     :class:`~crappy.tool.camera_config.config_tools.Overlay` to display, and
     initializes the Displayer window."""
@@ -169,7 +169,7 @@ class Displayer(CameraProcess):
 
     return True
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame, casts it to 8 bits if necessary,
     and updates the Displayer window to draw it.
     
@@ -209,7 +209,7 @@ class Displayer(CameraProcess):
     elif self._backend == 'mpl':
       self._update_mpl(img)
 
-  def _finish(self) -> None:
+  def finish(self) -> None:
     """Closes the Displayer window and stops the :obj:`~threading.Thread`
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay`"""
 
