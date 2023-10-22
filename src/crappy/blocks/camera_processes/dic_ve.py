@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 from typing import Optional
 import numpy as np
 import logging
@@ -28,8 +27,6 @@ class DICVEProcess(CameraProcess):
 
   def __init__(self,
                patches: SpotsBoxes,
-               log_queue: Queue,
-               log_level: int = 20,
                method: str = 'Disflow',
                alpha: float = 3,
                delta: float = 1,
@@ -42,8 +39,7 @@ class DICVEProcess(CameraProcess):
                border: float = 0.2,
                safe: bool = True,
                follow: bool = True,
-               raise_on_exit: bool = True,
-               display_freq: bool = False) -> None:
+               raise_on_exit: bool = True) -> None:
     """Sets the arguments and initializes the parent class.
 
     Args:
@@ -52,10 +48,6 @@ class DICVEProcess(CameraProcess):
         containing the coordinates of the patches to track. This argument is
         passed to the :obj:`~crappy.tool.image_processing.DICVETool` and not
         used in this class.
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       method: The method to use to calculate the displacement. `Disflow` uses
         opencv's DISOpticalFlow and `Lucas Kanade` uses opencv's
         calcOpticalFlowPyrLK, while all other methods are based on a basic
@@ -117,40 +109,51 @@ class DICVEProcess(CameraProcess):
       raise_on_exit: If :obj:`True`, raises an exception and stops the test
         when losing the patches. Otherwise, simply stops processing but lets 
         the test go on.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
     """
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     display_freq=display_freq)
+    super().__init__()
 
-    self._dic_ve_kw = dict(patches=patches,
-                           method=method,
-                           alpha=alpha,
-                           delta=delta,
-                           gamma=gamma,
-                           finest_scale=finest_scale,
-                           iterations=iterations,
-                           gradient_iterations=gradient_iterations,
-                           patch_size=patch_size,
-                           patch_stride=patch_stride,
-                           border=border,
-                           safe=safe,
-                           follow=follow)
+    # Arguments to pass to the DICVETool
+    self._patches = patches
+    self._method = method
+    self._alpha = alpha
+    self._delta = delta
+    self._gamma = gamma
+    self._finest_scale = finest_scale
+    self._iterations = iterations
+    self._gradient_iterations = gradient_iterations
+    self._patch_size = patch_size
+    self._patch_stride = patch_stride
+    self._border = border
+    self._safe = safe
+    self._follow = follow
+    
+    # Other attributes
     self._raise_on_exit = raise_on_exit
     self._disve: Optional[DICVETool] = None
     self._img0_set = False
     self._lost_patch = False
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Instantiates the :obj:`~crappy.tool.image_processing.DICVETool` that
     will perform the image correlation."""
 
-    self._log(logging.INFO, "Instantiating the Disve tool")
-    self._disve = DICVETool(**self._dic_ve_kw)
+    self.log(logging.INFO, "Instantiating the Disve tool")
+    self._disve = DICVETool(patches=self._patches,
+                            method=self._method,
+                            alpha=self._alpha,
+                            delta=self._delta,
+                            gamma=self._gamma,
+                            finest_scale=self._finest_scale,
+                            iterations=self._iterations,
+                            gradient_iterations=self._gradient_iterations,
+                            patch_size=self._patch_size,
+                            patch_stride=self._patch_stride,
+                            border=self._border,
+                            safe=self._safe,
+                            follow=self._follow)
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
     :obj:`~crappy.tool.image_processing.DICVETool`. Then sends the result of
     the correlation to the downstream Blocks.
@@ -162,29 +165,24 @@ class DICVEProcess(CameraProcess):
     CameraProcess.
     """
 
-    # Nothing to do if no new frame was grabbed
-    if not self._get_data():
-      return
-
     # Do nothing if the patches were already lost
     if not self._lost_patch:
-      self.fps_count += 1
       try:
 
         # On the first frame, initialize the correlation
         if not self._img0_set:
-          self._log(logging.INFO, "Setting the reference image")
-          self._disve.set_img0(np.copy(self._img))
+          self.log(logging.INFO, "Setting the reference image")
+          self._disve.set_img0(np.copy(self.img))
           self._img0_set = True
           return
 
         # Calculating the displacement and sending it to downstream Blocks
-        self._log(logging.DEBUG, "Processing the received image")
-        data = self._disve.calculate_displacement(self._img)
-        self._send([self._metadata['t(s)'], self._metadata, *data])
+        self.log(logging.DEBUG, "Processing the received image")
+        data = self._disve.calculate_displacement(self.img)
+        self.send([self.metadata['t(s)'], self.metadata, *data])
 
         # Sending the patches to the Displayer for display
-        self._send_to_draw(self._disve.patches)
+        self.send_to_draw(self._disve.patches)
 
       # If the patches are lost, deciding whether to raise exception or not
       except RuntimeError as exc:
@@ -192,9 +190,10 @@ class DICVEProcess(CameraProcess):
           self._logger.exception("Patch exiting the ROI !", exc_info=exc)
           raise
         self._lost_patch = True
-        self._log(logging.WARNING, "Patch exiting the ROI, not processing "
-                                   "data anymore !")
+        self.log(logging.WARNING, "Patch exiting the ROI, not processing "
+                                  "data anymore !")
     
     # If the patches are lost, sleep to avoid spamming the CPU in vain
     else:
+      self.fps_count -= 1
       sleep(0.1)

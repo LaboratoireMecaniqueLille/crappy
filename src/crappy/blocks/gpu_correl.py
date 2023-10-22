@@ -287,18 +287,18 @@ class GPUCorrel(Camera):
       raise ValueError("The number of fields is inconsistent with the number "
                        "of labels !\nMake sure that the time label was given")
 
-    self._gpu_correl_kw = dict(discard_limit=discard_limit,
-                               discard_ref=discard_ref,
-                               calc_res=res,
-                               img_ref=img_ref,
-                               verbose=verbose,
-                               levels=levels,
-                               resampling_factor=resampling_factor,
-                               kernel_file=kernel_file,
-                               iterations=iterations,
-                               fields=fields,
-                               mask=mask,
-                               mul=mul)
+    # These arguments are for the GPUCorrelProcess
+    self._discard_limit = discard_limit
+    self._discard_ref = discard_ref
+    self._img_ref = img_ref
+    self._verbose = verbose
+    self._levels = levels
+    self._resampling_factor = resampling_factor
+    self._kernel_file = kernel_file
+    self._iterations = iterations
+    self._fields = fields
+    self._mask = mask
+    self._mul = mul
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
@@ -310,9 +310,19 @@ class GPUCorrel(Camera):
     """
 
     # Instantiating the GPUCorrelProcess
-    self._process_proc = GPUCorrelProcess(log_queue=self._log_queue,
-                                          log_level=self._log_level,
-                                          **self._gpu_correl_kw)
+    self.process_proc = GPUCorrelProcess(
+        discard_limit=self._discard_limit,
+        discard_ref=self._discard_ref,
+        calc_res=self._calc_res,
+        img_ref=self._img_ref,
+        verbose=self._verbose,
+        levels=self._levels,
+        resampling_factor=self._resampling_factor,
+        kernel_file=self._kernel_file,
+        iterations=self._iterations,
+        fields=self._fields,
+        mask=self._mask,
+        mul=self._mul)
 
     super().prepare()
 

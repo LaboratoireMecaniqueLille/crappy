@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 import numpy as np
 from typing import Optional, Tuple, List, Union
 from pathlib import Path
@@ -35,8 +34,6 @@ class GPUVEProcess(CameraProcess):
 
   def __init__(self,
                patches: List[Tuple[int, int, int, int]],
-               log_queue: Queue,
-               log_level: int = 20,
                verbose: int = 0,
                kernel_file: Optional[Union[str, Path]] = None,
                iterations: int = 4,
@@ -49,13 +46,9 @@ class GPUVEProcess(CameraProcess):
         track, as a :obj:`tuple` for each patch. Each tuple should contain
         exactly `4` elements, giving in pixels the `y` origin, `x` origin,
         height and width of the patch.
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
-        is displayed that is slows the code down. This argument is passed to
+        is displayed that it slows the code down. This argument is passed to
         the :class:`~crappy.tool.image_processing.GPUCorrelTool` and not used
         in this class.
       kernel_file: The path to the file containing the kernels to use for the
@@ -85,24 +78,20 @@ class GPUVEProcess(CameraProcess):
         used in this class.
     """
 
-    super().__init__(log_queue=log_queue, log_level=log_level,
-                     display_freq=bool(verbose))
+    super().__init__()
 
     # Making a CUDA context common to all the patches
     pycuda.driver.init()
-    context = pycuda.tools.make_default_context()
+    self._context = pycuda.tools.make_default_context()
+    
+    # Arguments to pass to the GPUCorrelTools
+    self._verbose = verbose
+    self._kernel_file = kernel_file
+    self._iterations = iterations
+    self._ref_img = img_ref
+    self._mul = mul
 
-    self._gpu_ve_kw = dict(context=context,
-                           verbose=verbose,
-                           levels=1,
-                           resampling_factor=2,
-                           kernel_file=kernel_file,
-                           iterations=iterations,
-                           fields=['x', 'y'],
-                           ref_img=img_ref,
-                           mask=None,
-                           mul=mul)
-
+    # Other attributes
     self._correls: Optional[List[GPUCorrelTool]] = None
     self._patches = patches
     self._img_ref = img_ref
@@ -112,31 +101,40 @@ class GPUVEProcess(CameraProcess):
 
     self._img0_set = img_ref is not None
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Initializes the GPUCorrelTool instances, and set their reference image
     if a ``img_ref`` argument was provided."""
 
     # Instantiating the GPUCorrelTool instances
-    self._log(logging.INFO, "Instantiating the GPUCorrel tool instances")
-    self._gpu_ve_kw.update(logger_name=self.name)
-    self._correls = [GPUCorrelTool(**self._gpu_ve_kw) for _ in self._patches]
+    self.log(logging.INFO, "Instantiating the GPUCorrel tool instances")
+    self._correls = [GPUCorrelTool(logger_name=self.name,
+                                   context=self._context,
+                                   verbose=self._verbose,
+                                   levels=1,
+                                   resampling_factor=2,
+                                   kernel_file=self._kernel_file,
+                                   iterations=self._iterations,
+                                   fields=['x', 'y'],
+                                   ref_img=self._img_ref,
+                                   mask=None,
+                                   mul=self._mul) for _ in self._patches]
 
     # We can already set the sizes of the images as they are already known
-    self._log(logging.INFO, "Setting the sizes of the patches")
+    self.log(logging.INFO, "Setting the sizes of the patches")
     for correl, (_, __, h, w) in zip(self._correls, self._patches):
       correl.set_img_size((h, w))
 
     # Setting the reference image if it was given as an argument
     if self._img_ref is not None:
-      self._log(logging.INFO, "Initializing the GPUCorrel tool instances "
-                              "with the given reference image and preparing "
-                              "them")
+      self.log(logging.INFO, "Initializing the GPUCorrel tool instances "
+                             "with the given reference image and preparing "
+                             "them")
       for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
         correl.set_orig(
           self._img_ref[oy:oy + h, ox:ox + w].astype(np.float32))
         correl.prepare()
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
     several instances of :class:`~crappy.tool.image_processing.GPUCorrelTool`.
     Then sends the displacement data to the downstream Blocks.
@@ -148,41 +146,34 @@ class GPUVEProcess(CameraProcess):
     :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.
     """
 
-    # Nothing to do if no new frame was grabbed
-    if not self._get_data():
-      return
-
-    self.fps_count += 1
-
     # Setting the reference image with the first received frame if it was not
     # given as an argument
     if not self._img0_set:
-      self._log(logging.INFO, "Setting the reference image")
+      self.log(logging.INFO, "Setting the reference image")
       for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
-        correl.set_orig(self._img[oy:oy + h,
-                        ox:ox + w].astype(np.float32))
+        correl.set_orig(self.img[oy:oy + h, ox:ox + w].astype(np.float32))
         correl.prepare()
       self._img0_set = True
       return
 
     # Performing the image correlation
-    self._log(logging.DEBUG, "Processing the received image")
-    data = [self._metadata['t(s)'], self._metadata]
+    self.log(logging.DEBUG, "Processing the received image")
+    data = [self.metadata['t(s)'], self.metadata]
     for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
       data.extend(correl.get_disp(
-        self._img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
+          self.img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
 
     # Sending the data to downstream Blocks
-    self._send(data)
+    self.send(data)
 
     # Sending the patches to the Displayer for display
-    self._send_to_draw(self._spots)
+    self.send_to_draw(self._spots)
 
-  def _finish(self) -> None:
+  def finish(self) -> None:
     """Performs cleanup on the several
     :class:`~crappy.tool.image_processing.GPUCorrelTool` used."""
 
     if self._correls is not None:
-      self._log(logging.INFO, "Cleaning up the GPUCorrel instances")
+      self.log(logging.INFO, "Cleaning up the GPUCorrel instances")
       for correl in self._correls:
         correl.clean()

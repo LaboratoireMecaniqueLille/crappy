@@ -244,26 +244,29 @@ class GPUVE(Camera):
                        "of labels !\nMake sure that the time and metadata "
                        "labels were given")
 
-    self._gpu_ve_kw = dict(patches=patches,
-                           verbose=verbose,
-                           kernel_file=kernel_file,
-                           iterations=iterations,
-                           img_ref=img_ref,
-                           mul=mul)
+    # These arguments are for the GPUVEProcess
+    self._patches = patches
+    self._verbose = verbose
+    self._kernel_file = kernel_file
+    self._iterations = iterations
+    self._mul = mul
 
   def prepare(self) -> None:
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
     method of the parent class.
 
-    In addition to that is instantiates the
+    In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.GPUVEProcess` object that
     performs the GPU-accelerated image correlation.
     """
 
     # Instantiating the GPUVEProcess
-    self._process_proc = GPUVEProcess(log_queue=self._log_queue,
-                                      log_level=self._log_level,
-                                      **self._gpu_ve_kw)
+    self.process_proc = GPUVEProcess(patches=self._patches,
+                                     verbose=self._verbose,
+                                     kernel_file=self._kernel_file,
+                                     iterations=self._iterations,
+                                     img_ref=self._img_ref,
+                                     mul=self._mul)
 
     super().prepare()
 

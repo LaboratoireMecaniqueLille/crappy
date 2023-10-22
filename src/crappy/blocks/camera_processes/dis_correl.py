@@ -1,6 +1,5 @@
 # coding: utf-8
 
-from multiprocessing.queues import Queue
 import numpy as np
 from typing import Optional, List
 import logging
@@ -26,9 +25,7 @@ class DISCorrelProcess(CameraProcess):
   """
 
   def __init__(self,
-               log_queue: Queue,
                patch: Box,
-               log_level: int = 20,
                fields: Optional[List[str]] = None,
                alpha: float = 3,
                delta: float = 1,
@@ -39,20 +36,15 @@ class DISCorrelProcess(CameraProcess):
                init: bool = True,
                patch_size: int = 8,
                patch_stride: int = 3,
-               residual: bool = False,
-               display_freq: bool = False) -> None:
+               residual: bool = False) -> None:
     """Sets the arguments and initializes the parent class.
     
     Args:
-      log_queue: A :obj:`~multiprocessing.Queue` for sending the log messages
-        to the main :obj:`~logging.Logger`, only used in Windows.
       patch: An instance of the
         :class:`~crappy.tool.camera_config.config_tools.Box` class, containing
         the coordinates of the ROI to perform DIS on. This argument is passed
         to the :obj:`~crappy.tool.image_processing.DISCorrelTool` and not used
         in this class.
-      log_level: The minimum logging level of the entire Crappy script, as an
-        :obj:`int`.
       fields: The base of fields to use for the projection, given as a
         :obj:`list` of :obj:`str`. The available fields are :
         ::
@@ -103,38 +95,48 @@ class DISCorrelProcess(CameraProcess):
       residual: If :obj:`True`, the residuals will be computed at each new
         frame and sent to downstream Blocks, by default under the ``'res'``
         label.
-      display_freq: If :obj:`True`, the looping frequency of this class will be
-        displayed while running.
     """
 
-    super().__init__(log_queue=log_queue,
-                     log_level=log_level,
-                     display_freq=display_freq)
+    super().__init__()
 
-    self._dis_correl_kw = dict(box=patch,
-                               fields=fields,
-                               alpha=alpha,
-                               delta=delta,
-                               gamma=gamma,
-                               finest_scale=finest_scale,
-                               init=init,
-                               iterations=iterations,
-                               gradient_iterations=gradient_iterations,
-                               patch_size=patch_size,
-                               patch_stride=patch_stride)
+    # Arguments to pass to the DISCorrelTool
+    self._box = patch
+    self._fields = fields
+    self._alpha = alpha
+    self._delta = delta
+    self._gamma = gamma
+    self._finest_scale = finest_scale
+    self._init = init
+    self._iterations = iterations
+    self._gradient_iterations = gradient_iterations
+    self._patch_size = patch_size
+    self._patch_stride = patch_stride
+    
+    # Other attributes
     self._residual = residual
     self._dis_correl: Optional[DISCorrelTool] = None
     self._img0_set = False
 
-  def _init(self) -> None:
+  def init(self) -> None:
     """Instantiates the :obj:`~crappy.tool.image_processing.DISCorrelTool` that
     will perform the Dense Inverse Search."""
 
-    self._log(logging.INFO, "Instantiating the Discorrel tool")
-    self._dis_correl = DISCorrelTool(**self._dis_correl_kw)
+    self.log(logging.INFO, "Instantiating the Discorrel tool")
+    self._dis_correl = DISCorrelTool(
+        box=self._box,
+        fields=self._fields,
+        alpha=self._alpha,
+        delta=self._delta,
+        gamma=self._gamma,
+        finest_scale=self._finest_scale,
+        init=self._init,
+        iterations=self._iterations,
+        gradient_iterations=self._gradient_iterations,
+        patch_size=self._patch_size,
+        patch_stride=self._patch_stride)
     self._dis_correl.set_box()
 
-  def _loop(self) -> None:
+  def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
     :obj:`~crappy.tool.image_processing.DISCorrelTool`. Then sends the result
     of the dense inverse search to the downstream Blocks.
@@ -145,23 +147,17 @@ class DISCorrelProcess(CameraProcess):
     :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.
     """
 
-    # Nothing to do if no new frame was grabbed
-    if not self._get_data():
-      return
-
-    self.fps_count += 1
-
     # On the first frame, initializes the dense inverse search
     if not self._img0_set:
-      self._log(logging.INFO, "Setting the reference image")
-      self._dis_correl.set_img0(np.copy(self._img))
+      self.log(logging.INFO, "Setting the reference image")
+      self._dis_correl.set_img0(np.copy(self.img))
       self._img0_set = True
       return
 
     # Calculating the fields and sending them to downstream Blocks
-    self._log(logging.DEBUG, "Processing the received image")
-    data = self._dis_correl.get_data(self._img, self._residual)
-    self._send([self._metadata['t(s)'], self._metadata, *data])
+    self.log(logging.DEBUG, "Processing the received image")
+    data = self._dis_correl.get_data(self.img, self._residual)
+    self.send([self.metadata['t(s)'], self.metadata, *data])
 
     # Sending the ROI to the Displayer for display
-    self._send_to_draw(SpotsBoxes(self._dis_correl.box))
+    self.send_to_draw(SpotsBoxes(self._dis_correl.box))
