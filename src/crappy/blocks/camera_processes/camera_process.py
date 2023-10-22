@@ -328,6 +328,18 @@ class CameraProcess(Process):
     else:
       self._to_draw_conn.send(to_draw)
 
+  def log(self, level: int, msg: str) -> None:
+    """Sends a log message to the :obj:`~logging.Logger`.
+
+    Args:
+      level: The logging level, as an :obj:`int`.
+      msg: The message to log, as a :obj:`str`.
+    """
+
+    if self._logger is None:
+      return
+    self._logger.log(level, msg)
+
   def _get_data(self) -> bool:
     """This method allows to grab the latest available frame.
 
@@ -388,15 +400,3 @@ class CameraProcess(Process):
       logger.addHandler(queue_handler)
 
     self._logger = logger
-
-  def log(self, level: int, msg: str) -> None:
-    """Sends a log message to the :obj:`~logging.Logger`.
-
-    Args:
-      level: The logging level, as an :obj:`int`.
-      msg: The message to log, as a :obj:`str`.
-    """
-
-    if self._logger is None:
-      return
-    self._logger.log(level, msg)
