@@ -94,7 +94,6 @@ class VideoExtensoProcess(CameraProcess):
 
     # Processing only if the spots haven't been lost
     if not self._lost_spots:
-      self.fps_count += 1
       
       # Processing the received frame
       try:
@@ -126,6 +125,7 @@ class VideoExtensoProcess(CameraProcess):
     
     # If the spots were lost, avoid spamming the CPU in vain
     else:
+      self.fps_count -= 1
       sleep(0.1)
 
   def finish(self) -> None:

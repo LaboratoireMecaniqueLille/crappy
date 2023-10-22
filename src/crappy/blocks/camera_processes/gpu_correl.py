@@ -172,8 +172,6 @@ class GPUCorrelProcess(CameraProcess):
     provided limit. Otherwise, just drops the calculated data.
     """
 
-    self.fps_count += 1
-
     # Setting the reference image with the first received frame if it was not
     # given as an argument
     if not self._img0_set:

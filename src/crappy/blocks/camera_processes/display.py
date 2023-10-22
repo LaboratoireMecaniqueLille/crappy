@@ -177,8 +177,6 @@ class Displayer(CameraProcess):
     :class:`~crappy.tool.camera_config.config_tools.Overlay` on top of the
     displayed frame.
     """
-    
-    self.fps_count += 1
 
     # Casting the image to uint8 if it's not already in this format
     if self._img.dtype != np.uint8:

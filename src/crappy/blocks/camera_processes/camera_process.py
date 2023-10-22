@@ -187,6 +187,7 @@ class CameraProcess(Process):
         if self._get_data():
           self.log(logging.DEBUG, "Running the loop method")
           self.loop()
+          self.fps_count += 1
 
         # Displaying the looping frequency is required
         if self.display_freq:

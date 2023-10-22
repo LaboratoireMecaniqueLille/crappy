@@ -164,7 +164,6 @@ class DICVEProcess(CameraProcess):
 
     # Do nothing if the patches were already lost
     if not self._lost_patch:
-      self.fps_count += 1
       try:
 
         # On the first frame, initialize the correlation
@@ -193,4 +192,5 @@ class DICVEProcess(CameraProcess):
     
     # If the patches are lost, sleep to avoid spamming the CPU in vain
     else:
+      self.fps_count -= 1
       sleep(0.1)

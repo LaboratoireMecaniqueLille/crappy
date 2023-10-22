@@ -145,8 +145,6 @@ class DISCorrelProcess(CameraProcess):
     :class:`~crappy.blocks.camera_processes.Displayer` CameraProcess.
     """
 
-    self.fps_count += 1
-
     # On the first frame, initializes the dense inverse search
     if not self._img0_set:
       self.log(logging.INFO, "Setting the reference image")
