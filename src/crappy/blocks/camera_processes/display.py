@@ -118,16 +118,16 @@ class Displayer(CameraProcess):
     initializes the Displayer window."""
 
     # Instantiating and starting the Thread for grabbing the Overlays
-    self._log(logging.INFO, "Instantiating the thread for getting the Overlays"
-                            " to display")
+    self.log(logging.INFO, "Instantiating the thread for getting the Overlays"
+                           " to display")
     self._overlay_thread = Thread(target=self._thread_target)
-    self._log(logging.INFO, "Starting the thread for getting the Overlays to "
-                            "display")
+    self.log(logging.INFO, "Starting the thread for getting the Overlays to "
+                           "display")
     self._overlay_thread.start()
 
     # Preparing the Displayer window
-    self._log(logging.INFO, f"Opening the displayer window with the backend "
-                            f"{self._backend}")
+    self.log(logging.INFO, f"Opening the displayer window with the backend "
+                           f"{self._backend}")
     if self._backend == 'cv2':
       self._prepare_cv2()
     elif self._backend == 'mpl':
@@ -159,8 +159,8 @@ class Displayer(CameraProcess):
       self._metadata = self._data_dict.copy()
       self._last_upd = time()
 
-      self._log(logging.DEBUG, f"Got new image to process with id "
-                               f"{self._metadata['ImageUniqueID']}")
+      self.log(logging.DEBUG, f"Got new image to process with id "
+                              f"{self._metadata['ImageUniqueID']}")
 
       # Copying the frame
       np.copyto(self._img,
@@ -182,8 +182,8 @@ class Displayer(CameraProcess):
 
     # Casting the image to uint8 if it's not already in this format
     if self._img.dtype != np.uint8:
-      self._log(logging.DEBUG, f"Casting displayed image from "
-                               f"{self._img.dtype} to uint8")
+      self.log(logging.DEBUG, f"Casting displayed image from "
+                              f"{self._img.dtype} to uint8")
       if np.max(self._img) > 255:
         factor = max(ceil(log2(np.max(self._img) + 1) - 8), 0)
         img = (self._img / 2 ** factor).astype(np.uint8)
@@ -195,8 +195,8 @@ class Displayer(CameraProcess):
     # Drawing the latest known overlay
     for overlay in self._overlay:
       if overlay is not None:
-        self._log(logging.DEBUG, f"Drawing {overlay} on top of the image to "
-                                 "display")
+        self.log(logging.DEBUG, f"Drawing {overlay} on top of the image to "
+                                "display")
         overlay.draw(img)
 
     # Calling the right update method
@@ -210,7 +210,7 @@ class Displayer(CameraProcess):
     grabbing the :class:`~crappy.tool.camera_config.config_tools.Overlay`"""
 
     # Closing the Displayer window
-    self._log(logging.INFO, "Closing the displayer window")
+    self.log(logging.INFO, "Closing the displayer window")
     if self._backend == 'cv2':
       self._finish_cv2()
     elif self._backend == 'mpl':
@@ -222,8 +222,8 @@ class Displayer(CameraProcess):
       try:
         self._overlay_thread.join(0.05)
       except RuntimeError:
-        self._log(logging.WARNING, "Thread for receiving the Overlay did not "
-                                   "stop as expected")
+        self.log(logging.WARNING, "Thread for receiving the Overlay did not "
+                                  "stop as expected")
 
   def _thread_target(self) -> None:
     """This method is the target to the :obj:`~threading.Thread` in charge of
@@ -245,14 +245,14 @@ class Displayer(CameraProcess):
 
       # Saving the received Overlay
       if overlay is not None:
-        self._log(logging.DEBUG, f"Received overlay to display: {overlay}")
+        self.log(logging.DEBUG, f"Received overlay to display: {overlay}")
         self._overlay = overlay
 
       # To avoid spamming the CPU in vain
       else:
         sleep(0.001)
 
-    self._log(logging.INFO, "Thread for receiving the Overlays ended")
+    self.log(logging.INFO, "Thread for receiving the Overlays ended")
 
   def _prepare_cv2(self) -> None:
     """Instantiates the display window of :mod:`cv2`."""
@@ -275,14 +275,13 @@ class Displayer(CameraProcess):
 
     if img.shape[0] > 480 or img.shape[1] > 640:
       factor = min(480 / img.shape[0], 640 / img.shape[1])
-      self._log(
-        logging.DEBUG,
-        f"Reshaping displayed image from {img.shape} to "
-        f"{int(img.shape[1] * factor), int(img.shape[0] * factor)}")
+      self.log(logging.DEBUG,
+               f"Reshaping displayed image from {img.shape} to "
+               f"{int(img.shape[1] * factor), int(img.shape[0] * factor)}")
       img = cv2.resize(img, (int(img.shape[1] * factor),
                              int(img.shape[0] * factor)))
 
-    self._log(logging.DEBUG, "Displaying the image")
+    self.log(logging.DEBUG, "Displaying the image")
     cv2.imshow(self._title, img)
     cv2.waitKey(1)
 
@@ -292,14 +291,13 @@ class Displayer(CameraProcess):
 
     if img.shape[0] > 480 or img.shape[1] > 640:
       factor = max(ceil(img.shape[0] / 480), ceil(img.shape[1] / 640))
-      self._log(
-        logging.DEBUG,
-        f"Reshaping the displayed image from {img.shape} to "
-        f"{(img.shape[0] / factor, img.shape[1] / factor)}")
+      self.log(logging.DEBUG,
+               f"Reshaping the displayed image from {img.shape} to "
+               f"{(img.shape[0] / factor, img.shape[1] / factor)}")
       img = img[::factor, ::factor]
 
     self._ax.clear()
-    self._log(logging.DEBUG, "Displaying the image")
+    self.log(logging.DEBUG, "Displaying the image")
     self._ax.imshow(img, cmap='gray')
     plt.pause(0.001)
     plt.show()

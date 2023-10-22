@@ -66,7 +66,7 @@ class VideoExtensoProcess(CameraProcess):
     :class:`~crappy.tool.image_processing.video_extenso.VideoExtensoTool` and
     starts tracking the spots."""
 
-    self._log(logging.INFO, "Instantiating the VideoExtenso tool")
+    self.log(logging.INFO, "Instantiating the VideoExtenso tool")
     self._ve = VideoExtensoTool(spots=self._detector.spots,
                                 thresh=self._detector.thresh,
                                 log_level=self._log_level,
@@ -77,8 +77,8 @@ class VideoExtensoProcess(CameraProcess):
                                 border=self._detector.border,
                                 blur=self._detector.blur)
 
-    self._log(logging.INFO, "Starting the VideoExtenso spot tracker "
-                            "processes")
+    self.log(logging.INFO, "Starting the VideoExtenso spot tracker "
+                           "processes")
     self._ve.start_tracking()
 
   def loop(self) -> None:
@@ -98,7 +98,7 @@ class VideoExtensoProcess(CameraProcess):
       
       # Processing the received frame
       try:
-        self._log(logging.DEBUG, "Processing the received image")
+        self.log(logging.DEBUG, "Processing the received image")
         data = self._ve.get_data(self._img)
         
         # Sending the results to the downstream Blocks
@@ -110,19 +110,19 @@ class VideoExtensoProcess(CameraProcess):
 
       # In case the spots were just lost
       except LostSpotError:
-        self._log(logging.INFO, "Spots lost, stopping the spot trackers")
+        self.log(logging.INFO, "Spots lost, stopping the spot trackers")
         self._ve.stop_tracking()
         # Raising if specified by the user
         if self._raise_on_lost_spot:
-          self._log(logging.ERROR, "Spots lost, stopping the VideoExtenso "
-                                   "process")
+          self.log(logging.ERROR, "Spots lost, stopping the VideoExtenso "
+                                  "process")
           raise
         # Otherwise, simply setting a flag so that no additional
         # processing is performed
         else:
           self._lost_spots = True
-          self._log(logging.WARNING, "Spots lost, VideoExtenso staying "
-                                     "idle until the test ends")
+          self.log(logging.WARNING, "Spots lost, VideoExtenso staying "
+                                    "idle until the test ends")
     
     # If the spots were lost, avoid spamming the CPU in vain
     else:
@@ -134,5 +134,5 @@ class VideoExtensoProcess(CameraProcess):
     stop tracking the spots."""
 
     if self._ve is not None:
-      self._log(logging.INFO, "Stopping the spot trackers before returning")
+      self.log(logging.INFO, "Stopping the spot trackers before returning")
       self._ve.stop_tracking()

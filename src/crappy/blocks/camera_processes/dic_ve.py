@@ -147,7 +147,7 @@ class DICVEProcess(CameraProcess):
     """Instantiates the :obj:`~crappy.tool.image_processing.DICVETool` that
     will perform the image correlation."""
 
-    self._log(logging.INFO, "Instantiating the Disve tool")
+    self.log(logging.INFO, "Instantiating the Disve tool")
     self._disve = DICVETool(**self._dic_ve_kw)
 
   def loop(self) -> None:
@@ -169,13 +169,13 @@ class DICVEProcess(CameraProcess):
 
         # On the first frame, initialize the correlation
         if not self._img0_set:
-          self._log(logging.INFO, "Setting the reference image")
+          self.log(logging.INFO, "Setting the reference image")
           self._disve.set_img0(np.copy(self._img))
           self._img0_set = True
           return
 
         # Calculating the displacement and sending it to downstream Blocks
-        self._log(logging.DEBUG, "Processing the received image")
+        self.log(logging.DEBUG, "Processing the received image")
         data = self._disve.calculate_displacement(self._img)
         self.send([self._metadata['t(s)'], self._metadata, *data])
 
@@ -188,8 +188,8 @@ class DICVEProcess(CameraProcess):
           self._logger.exception("Patch exiting the ROI !", exc_info=exc)
           raise
         self._lost_patch = True
-        self._log(logging.WARNING, "Patch exiting the ROI, not processing "
-                                   "data anymore !")
+        self.log(logging.WARNING, "Patch exiting the ROI, not processing "
+                                  "data anymore !")
     
     # If the patches are lost, sleep to avoid spamming the CPU in vain
     else:

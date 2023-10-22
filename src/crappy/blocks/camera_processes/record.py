@@ -127,26 +127,26 @@ class ImageSaver(CameraProcess):
       content = (path.name for path in self._save_folder.iterdir())
       # If it contains images, saving to a different folder
       if self._metadata_name in content:
-        self._log(logging.WARNING, f"The folder {self._save_folder} already "
-                                   f"seems to contain images from Crappy !")
+        self.log(logging.WARNING, f"The folder {self._save_folder} already "
+                                  f"seems to contain images from Crappy !")
         parent, name = self._save_folder.parent, self._save_folder.name
         i = 1
         # Adding an integer at the end of the folder name to differentiate it
         while (parent / f'{name}_{i:05d}').exists():
           i += 1
         self._save_folder = parent / f'{name}_{i:05d}'
-        self._log(logging.WARNING, f"Saving the images at {self._save_folder} "
-                                   f"instead !")
+        self.log(logging.WARNING, f"Saving the images at {self._save_folder} "
+                                  f"instead !")
 
       else:
-        self._log(logging.DEBUG,
-                  f"The folder {self._save_folder} for recording images exists"
-                  f" but does not contain images yet.")
+        self.log(logging.DEBUG,
+                 f"The folder {self._save_folder} for recording images exists"
+                 f" but does not contain images yet.")
 
     # Creating the folder for recording images
     if not self._save_folder.exists():
-      self._log(logging.INFO, f"Creating the folder for saving images at: "
-                              f"{self._save_folder}")
+      self.log(logging.INFO, f"Creating the folder for saving images at: "
+                             f"{self._save_folder}")
       Path.mkdir(self._save_folder, exist_ok=True, parents=True)
 
   def _get_data(self) -> bool:
@@ -178,8 +178,8 @@ class ImageSaver(CameraProcess):
       # Copying the metadata
       self._metadata = self._data_dict.copy()
 
-      self._log(logging.DEBUG, f"Got new image to process with id "
-                               f"{self._metadata['ImageUniqueID']}")
+      self.log(logging.DEBUG, f"Got new image to process with id "
+                              f"{self._metadata['ImageUniqueID']}")
 
       # Copying the frame
       np.copyto(self._img,
@@ -202,8 +202,8 @@ class ImageSaver(CameraProcess):
     if not self._csv_created:
       self._csv_path = (self._save_folder / self._metadata_name)
 
-      self._log(logging.INFO, f"Creating file for saving the metadata: "
-                              f"{self._csv_path}")
+      self.log(logging.INFO, f"Creating file for saving the metadata: "
+                             f"{self._csv_path}")
 
       # Also writing the header of the .csv file when creating it
       with open(self._csv_path, 'w') as csvfile:
@@ -213,7 +213,7 @@ class ImageSaver(CameraProcess):
       self._csv_created = True
 
     # Saving the received metadata to the .csv file
-    self._log(logging.DEBUG, f"Saving metadata: {self._metadata}")
+    self.log(logging.DEBUG, f"Saving metadata: {self._metadata}")
     with open(self._csv_path, 'a') as csvfile:
       writer = DictWriter(csvfile, fieldnames=self._metadata.keys())
       writer.writerow({**self._metadata, 't(s)': self._metadata['t(s)']})
@@ -228,7 +228,7 @@ class ImageSaver(CameraProcess):
                                      f"{self._metadata['t(s)']:.3f}")
 
     # Saving the image at the destination path using the chosen backend
-    self._log(logging.DEBUG, "Saving image")
+    self.log(logging.DEBUG, "Saving image")
     if self._save_backend == 'sitk':
       Sitk.WriteImage(Sitk.GetImageFromArray(self._img), path)
 

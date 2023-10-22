@@ -117,20 +117,20 @@ class GPUVEProcess(CameraProcess):
     if a ``img_ref`` argument was provided."""
 
     # Instantiating the GPUCorrelTool instances
-    self._log(logging.INFO, "Instantiating the GPUCorrel tool instances")
+    self.log(logging.INFO, "Instantiating the GPUCorrel tool instances")
     self._gpu_ve_kw.update(logger_name=self.name)
     self._correls = [GPUCorrelTool(**self._gpu_ve_kw) for _ in self._patches]
 
     # We can already set the sizes of the images as they are already known
-    self._log(logging.INFO, "Setting the sizes of the patches")
+    self.log(logging.INFO, "Setting the sizes of the patches")
     for correl, (_, __, h, w) in zip(self._correls, self._patches):
       correl.set_img_size((h, w))
 
     # Setting the reference image if it was given as an argument
     if self._img_ref is not None:
-      self._log(logging.INFO, "Initializing the GPUCorrel tool instances "
-                              "with the given reference image and preparing "
-                              "them")
+      self.log(logging.INFO, "Initializing the GPUCorrel tool instances "
+                             "with the given reference image and preparing "
+                             "them")
       for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
         correl.set_orig(
           self._img_ref[oy:oy + h, ox:ox + w].astype(np.float32))
@@ -153,7 +153,7 @@ class GPUVEProcess(CameraProcess):
     # Setting the reference image with the first received frame if it was not
     # given as an argument
     if not self._img0_set:
-      self._log(logging.INFO, "Setting the reference image")
+      self.log(logging.INFO, "Setting the reference image")
       for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
         correl.set_orig(self._img[oy:oy + h,
                         ox:ox + w].astype(np.float32))
@@ -162,7 +162,7 @@ class GPUVEProcess(CameraProcess):
       return
 
     # Performing the image correlation
-    self._log(logging.DEBUG, "Processing the received image")
+    self.log(logging.DEBUG, "Processing the received image")
     data = [self._metadata['t(s)'], self._metadata]
     for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
       data.extend(correl.get_disp(
@@ -179,6 +179,6 @@ class GPUVEProcess(CameraProcess):
     :class:`~crappy.tool.image_processing.GPUCorrelTool` used."""
 
     if self._correls is not None:
-      self._log(logging.INFO, "Cleaning up the GPUCorrel instances")
+      self.log(logging.INFO, "Cleaning up the GPUCorrel instances")
       for correl in self._correls:
         correl.clean()

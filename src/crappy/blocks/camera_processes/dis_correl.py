@@ -130,7 +130,7 @@ class DISCorrelProcess(CameraProcess):
     """Instantiates the :obj:`~crappy.tool.image_processing.DISCorrelTool` that
     will perform the Dense Inverse Search."""
 
-    self._log(logging.INFO, "Instantiating the Discorrel tool")
+    self.log(logging.INFO, "Instantiating the Discorrel tool")
     self._dis_correl = DISCorrelTool(**self._dis_correl_kw)
     self._dis_correl.set_box()
 
@@ -149,13 +149,13 @@ class DISCorrelProcess(CameraProcess):
 
     # On the first frame, initializes the dense inverse search
     if not self._img0_set:
-      self._log(logging.INFO, "Setting the reference image")
+      self.log(logging.INFO, "Setting the reference image")
       self._dis_correl.set_img0(np.copy(self._img))
       self._img0_set = True
       return
 
     # Calculating the fields and sending them to downstream Blocks
-    self._log(logging.DEBUG, "Processing the received image")
+    self.log(logging.DEBUG, "Processing the received image")
     data = self._dis_correl.get_data(self._img, self._residual)
     self.send([self._metadata['t(s)'], self._metadata, *data])
 

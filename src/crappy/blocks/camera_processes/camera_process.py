@@ -161,7 +161,7 @@ class CameraProcess(Process):
     try:
       # First thing, setting the Logger
       self._set_logger()
-      self._log(logging.INFO, "Logger configured")
+      self.log(logging.INFO, "Logger configured")
 
       # Initializing the CameraProcess, and breaking the Barrier to warn the
       # other CameraProcesses in case something goes wrong
@@ -169,15 +169,15 @@ class CameraProcess(Process):
         self.init()
       except (Exception,):
         self._cam_barrier.abort()
-        self._log(logging.ERROR, "Breaking the barrier due to caught exception"
-                                 " while preparing")
+        self.log(logging.ERROR, "Breaking the barrier due to caught exception"
+                                " while preparing")
         raise
 
       # Waiting for all other CameraProcess to be ready
-      self._log(logging.INFO, "Waiting for the other Camera processes to be "
-                              "ready")
+      self.log(logging.INFO, "Waiting for the other Camera processes to be "
+                             "ready")
       self._cam_barrier.wait()
-      self._log(logging.INFO, "All Camera processes ready now")
+      self.log(logging.INFO, "All Camera processes ready now")
 
       self._last_fps = time()
 
@@ -185,36 +185,36 @@ class CameraProcess(Process):
       while not self._stop_event.is_set():
         # Only looping if a new image is available
         if self._get_data():
-          self._log(logging.DEBUG, "Running the loop method")
+          self.log(logging.DEBUG, "Running the loop method")
           self.loop()
 
         # Displaying the looping frequency is required
         if self.display_freq:
           t = time()
           if t - self._last_fps > 2:
-            self._log(logging.INFO, f"Images processed /s: "
-                                    f"{self.fps_count / (t - self._last_fps)}")
+            self.log(logging.INFO, f"Images processed /s: "
+                                   f"{self.fps_count / (t - self._last_fps)}")
             self._last_fps = t
             self.fps_count = 0
 
-      self._log(logging.INFO, "Stop event set, stopping the processing")
+      self.log(logging.INFO, "Stop event set, stopping the processing")
 
     # Case when CTRL+C was pressed
     except KeyboardInterrupt:
-      self._log(logging.INFO, "KeyboardInterrupt caught, stopping the "
-                              "processing")
+      self.log(logging.INFO, "KeyboardInterrupt caught, stopping the "
+                             "processing")
 
     # Case when another CameraProcess raised an exception while initializing
     except BrokenBarrierError:
-      self._log(logging.WARNING,
-                "Exception raised in another Camera process while waiting "
-                "for all Camera processes to be ready, stopping")
+      self.log(logging.WARNING,
+               "Exception raised in another Camera process while waiting "
+               "for all Camera processes to be ready, stopping")
 
     # Handling any other unexpected exception
     except (Exception,) as exc:
       self._logger.exception("Exception caught wile running !", exc_info=exc)
-      self._log(logging.ERROR, "Setting the stop event to stop the other "
-                               "Camera processes")
+      self.log(logging.ERROR, "Setting the stop event to stop the other "
+                              "Camera processes")
       self._stop_event.set()
       raise
 
@@ -313,7 +313,7 @@ class CameraProcess(Process):
     if self._to_draw_conn is None:
       return
 
-    self._log(logging.DEBUG, "Sending the overlays to the displayer process")
+    self.log(logging.DEBUG, "Sending the overlays to the displayer process")
 
     # Sending the overlay
     if self._system == 'Linux':
@@ -322,9 +322,9 @@ class CameraProcess(Process):
         self._to_draw_conn.send(to_draw)
       elif time() - self._last_warn > 1:
         # Warning in case the pipe is full
-          self._last_warn = time()
-          self._log(logging.WARNING, f"Cannot send the overlay to draw to the "
-                                     f"Displayer process, the Pipe is full !")
+        self._last_warn = time()
+        self.log(logging.WARNING, f"Cannot send the overlay to draw to the "
+                                  f"Displayer process, the Pipe is full !")
     else:
       self._to_draw_conn.send(to_draw)
 
@@ -355,8 +355,8 @@ class CameraProcess(Process):
       # Copying the metadata
       self._metadata = self._data_dict.copy()
 
-      self._log(logging.DEBUG, f"Got new image to process with id "
-                               f"{self._metadata['ImageUniqueID']}")
+      self.log(logging.DEBUG, f"Got new image to process with id "
+                              f"{self._metadata['ImageUniqueID']}")
 
       # Copying the frame
       np.copyto(self._img,
@@ -389,7 +389,7 @@ class CameraProcess(Process):
 
     self._logger = logger
 
-  def _log(self, level: int, msg: str) -> None:
+  def log(self, level: int, msg: str) -> None:
     """Sends a log message to the :obj:`~logging.Logger`.
 
     Args:

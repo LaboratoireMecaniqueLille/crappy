@@ -147,17 +147,17 @@ class GPUCorrelProcess(CameraProcess):
     ``img_ref`` argument was provided."""
 
     # Instantiating the GPUCorrelTool
-    self._log(logging.INFO, "Instantiating the GPUCorrel tool")
+    self.log(logging.INFO, "Instantiating the GPUCorrel tool")
     self._gpu_correl_kw.update(logger_name=self.name)
     self._correl = GPUCorrelTool(**self._gpu_correl_kw)
 
     # Setting the reference image if it was given as an argument
     if self._img_ref is not None:
-      self._log(logging.INFO, "Initializing the GPUCorrel tool with the "
-                              "given reference image")
+      self.log(logging.INFO, "Initializing the GPUCorrel tool with the "
+                             "given reference image")
       self._correl.set_img_size(self._img_ref.shape)
       self._correl.set_orig(self._img_ref.astype(np.float32))
-      self._log(logging.INFO, "Preparing the GPUCorrel tool")
+      self.log(logging.INFO, "Preparing the GPUCorrel tool")
       self._correl.prepare()
 
   def loop(self) -> None:
@@ -177,7 +177,7 @@ class GPUCorrelProcess(CameraProcess):
     # Setting the reference image with the first received frame if it was not
     # given as an argument
     if not self._img0_set:
-      self._log(logging.INFO, "Setting the reference image")
+      self.log(logging.INFO, "Setting the reference image")
       self._correl.set_img_size(self._img.shape)
       self._correl.set_orig(self._img.astype(np.float32))
       self._correl.prepare()
@@ -185,27 +185,27 @@ class GPUCorrelProcess(CameraProcess):
       return
 
     # Performing the image correlation
-    self._log(logging.DEBUG, "Processing the received image")
+    self.log(logging.DEBUG, "Processing the received image")
     data = [self._metadata['t(s)'], self._metadata]
     data += self._correl.get_disp(self._img.astype(np.float32)).tolist()
 
     # Calculating the residuals if requested
     if self._calc_res:
-      self._log(logging.DEBUG, "Calculating the residuals")
+      self.log(logging.DEBUG, "Calculating the residuals")
       res = self._correl.get_res()
       data.append(res)
 
       # Checking that the residuals are within the given limit, otherwise
       # dropping the calculated data
       if self._discard_limit:
-        self._log(logging.DEBUG, "Adding residuals to the residuals "
-                                 "history")
+        self.log(logging.DEBUG, "Adding residuals to the residuals "
+                                "history")
         self._res_history.append(res)
         self._res_history = self._res_history[-self._discard_ref - 1:]
 
         if res > self._discard_limit * np.average(self._res_history[:-1]):
-          self._log(logging.WARNING, "Residual too high, not sending "
-                                     "values")
+          self.log(logging.WARNING, "Residual too high, not sending "
+                                    "values")
           return
 
     # Sending the data to downstream Blocks
@@ -216,5 +216,5 @@ class GPUCorrelProcess(CameraProcess):
     :class:`~crappy.tool.image_processing.GPUCorrelTool`."""
 
     if self._correl is not None:
-      self._log(logging.INFO, "Cleaning up the GPUCorrel tool")
+      self.log(logging.INFO, "Cleaning up the GPUCorrel tool")
       self._correl.clean()
