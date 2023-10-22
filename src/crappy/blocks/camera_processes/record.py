@@ -166,23 +166,23 @@ class ImageSaver(CameraProcess):
         return False
 
       # In case the frame in buffer was already handled during a previous loop,
-      if self._data_dict['ImageUniqueID'] == self._metadata['ImageUniqueID']:
+      if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID']:
         return False
 
      # In case it's too early to save the new frame
-      if self._metadata['ImageUniqueID'] is not None and \
-          self._data_dict['ImageUniqueID'] - self._metadata['ImageUniqueID'] \
+      if self.metadata['ImageUniqueID'] is not None and \
+          self._data_dict['ImageUniqueID'] - self.metadata['ImageUniqueID'] \
           < self._save_period:
         return False
 
       # Copying the metadata
-      self._metadata = self._data_dict.copy()
+      self.metadata = self._data_dict.copy()
 
       self.log(logging.DEBUG, f"Got new image to process with id "
-                              f"{self._metadata['ImageUniqueID']}")
+                              f"{self.metadata['ImageUniqueID']}")
 
       # Copying the frame
-      np.copyto(self._img,
+      np.copyto(self.img,
                 np.frombuffer(self._img_array.get_obj(),
                               dtype=self._dtype).reshape(self._shape))
 
@@ -205,38 +205,38 @@ class ImageSaver(CameraProcess):
 
       # Also writing the header of the .csv file when creating it
       with open(self._csv_path, 'w') as csvfile:
-        writer = DictWriter(csvfile, fieldnames=self._metadata.keys())
+        writer = DictWriter(csvfile, fieldnames=self.metadata.keys())
         writer.writeheader()
 
       self._csv_created = True
 
     # Saving the received metadata to the .csv file
-    self.log(logging.DEBUG, f"Saving metadata: {self._metadata}")
+    self.log(logging.DEBUG, f"Saving metadata: {self.metadata}")
     with open(self._csv_path, 'a') as csvfile:
-      writer = DictWriter(csvfile, fieldnames=self._metadata.keys())
-      writer.writerow({**self._metadata, 't(s)': self._metadata['t(s)']})
+      writer = DictWriter(csvfile, fieldnames=self.metadata.keys())
+      writer.writerow({**self.metadata, 't(s)': self.metadata['t(s)']})
 
     # Only include the extension for the image file if applicable
     if self._img_extension:
-      path = str(self._save_folder / f"{self._metadata['ImageUniqueID']}_"
-                                     f"{self._metadata['t(s)']:.3f}."
+      path = str(self._save_folder / f"{self.metadata['ImageUniqueID']}_"
+                                     f"{self.metadata['t(s)']:.3f}."
                                      f"{self._img_extension}")
     else:
-      path = str(self._save_folder / f"{self._metadata['ImageUniqueID']}_"
-                                     f"{self._metadata['t(s)']:.3f}")
+      path = str(self._save_folder / f"{self.metadata['ImageUniqueID']}_"
+                                     f"{self.metadata['t(s)']:.3f}")
 
     # Saving the image at the destination path using the chosen backend
     self.log(logging.DEBUG, "Saving image")
     if self._save_backend == 'sitk':
-      Sitk.WriteImage(Sitk.GetImageFromArray(self._img), path)
+      Sitk.WriteImage(Sitk.GetImageFromArray(self.img), path)
 
     elif self._save_backend == 'cv2':
-      cv2.imwrite(path, self._img)
+      cv2.imwrite(path, self.img)
 
     elif self._save_backend == 'pil':
-      PIL.Image.fromarray(self._img).save(
-        path, exif={TAGS_INV[key]: val for key, val in self._metadata.items()
+      PIL.Image.fromarray(self.img).save(
+        path, exif={TAGS_INV[key]: val for key, val in self.metadata.items()
                     if key in TAGS_INV})
 
     elif self._save_backend == 'npy':
-      np.save(path, self._img)
+      np.save(path, self.img)

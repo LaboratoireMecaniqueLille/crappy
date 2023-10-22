@@ -151,19 +151,19 @@ class Displayer(CameraProcess):
 
       # In case the frame in buffer was already handled during a previous loop,
       # or it's too early to grab a new frame because of the target framerate
-      if self._data_dict['ImageUniqueID'] == self._metadata['ImageUniqueID'] \
+      if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID'] \
           or time() - self._last_upd < 1 / self._framerate:
         return False
 
       # Copying the metadata
-      self._metadata = self._data_dict.copy()
+      self.metadata = self._data_dict.copy()
       self._last_upd = time()
 
       self.log(logging.DEBUG, f"Got new image to process with id "
-                              f"{self._metadata['ImageUniqueID']}")
+                              f"{self.metadata['ImageUniqueID']}")
 
       # Copying the frame
-      np.copyto(self._img,
+      np.copyto(self.img,
                 np.frombuffer(self._img_array.get_obj(),
                               dtype=self._dtype).reshape(self._shape))
 
@@ -179,16 +179,16 @@ class Displayer(CameraProcess):
     """
 
     # Casting the image to uint8 if it's not already in this format
-    if self._img.dtype != np.uint8:
+    if self.img.dtype != np.uint8:
       self.log(logging.DEBUG, f"Casting displayed image from "
-                              f"{self._img.dtype} to uint8")
-      if np.max(self._img) > 255:
-        factor = max(ceil(log2(np.max(self._img) + 1) - 8), 0)
-        img = (self._img / 2 ** factor).astype(np.uint8)
+                              f"{self.img.dtype} to uint8")
+      if np.max(self.img) > 255:
+        factor = max(ceil(log2(np.max(self.img) + 1) - 8), 0)
+        img = (self.img / 2 ** factor).astype(np.uint8)
       else:
-        img = self._img.astype(np.uint8)
+        img = self.img.astype(np.uint8)
     else:
-      img = self._img.copy()
+      img = self.img.copy()
 
     # Drawing the latest known overlay
     for overlay in self._overlay:

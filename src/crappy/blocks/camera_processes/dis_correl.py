@@ -148,14 +148,14 @@ class DISCorrelProcess(CameraProcess):
     # On the first frame, initializes the dense inverse search
     if not self._img0_set:
       self.log(logging.INFO, "Setting the reference image")
-      self._dis_correl.set_img0(np.copy(self._img))
+      self._dis_correl.set_img0(np.copy(self.img))
       self._img0_set = True
       return
 
     # Calculating the fields and sending them to downstream Blocks
     self.log(logging.DEBUG, "Processing the received image")
-    data = self._dis_correl.get_data(self._img, self._residual)
-    self.send([self._metadata['t(s)'], self._metadata, *data])
+    data = self._dis_correl.get_data(self.img, self._residual)
+    self.send([self.metadata['t(s)'], self.metadata, *data])
 
     # Sending the ROI to the Displayer for display
     self.send_to_draw(SpotsBoxes(self._dis_correl.box))

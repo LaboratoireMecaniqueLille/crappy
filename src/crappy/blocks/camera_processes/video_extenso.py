@@ -98,11 +98,11 @@ class VideoExtensoProcess(CameraProcess):
       # Processing the received frame
       try:
         self.log(logging.DEBUG, "Processing the received image")
-        data = self._ve.get_data(self._img)
+        data = self._ve.get_data(self.img)
         
         # Sending the results to the downstream Blocks
         if data is not None:
-          self.send([self._metadata['t(s)'], self._metadata, *data])
+          self.send([self.metadata['t(s)'], self.metadata, *data])
 
         # Sending the detected spots to the Displayer for display
         self.send_to_draw(self._ve.spots)

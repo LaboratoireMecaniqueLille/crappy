@@ -80,15 +80,15 @@ class CameraProcess(Process):
     self._to_draw_conn: Optional[Connection] = None
     self._outputs: List[Link] = list()
     self._labels: List[str] = list()
-    self._img: Optional[np.ndarray] = None
+    self.img: Optional[np.ndarray] = None
     self._dtype = None
-    self._metadata = {'ImageUniqueID': None}
+    self.metadata = {'ImageUniqueID': None}
     self._img0_set = False
 
     # Other attribute for internal use
     self._last_warn = time()
     self.fps_count = 0
-    self.display_freq = display_freq
+    self._display_freq = display_freq
     self._last_fps = time()
 
   def set_shared(self,
@@ -143,7 +143,7 @@ class CameraProcess(Process):
     self._outputs = outputs
     self._labels = labels
 
-    self._img = np.empty(shape=shape, dtype=dtype)
+    self.img = np.empty(shape=shape, dtype=dtype)
 
   def run(self) -> None:
     """This method is the core of the :obj:`~multiprocessing.Process`.
@@ -190,7 +190,7 @@ class CameraProcess(Process):
           self.fps_count += 1
 
         # Displaying the looping frequency is required
-        if self.display_freq:
+        if self._display_freq:
           t = time()
           if t - self._last_fps > 2:
             self.log(logging.INFO, f"Images processed /s: "
@@ -362,17 +362,17 @@ class CameraProcess(Process):
         return False
 
       # In case the frame in buffer was already handled during a previous loop
-      if self._data_dict['ImageUniqueID'] == self._metadata['ImageUniqueID']:
+      if self._data_dict['ImageUniqueID'] == self.metadata['ImageUniqueID']:
         return False
 
       # Copying the metadata
-      self._metadata = self._data_dict.copy()
+      self.metadata = self._data_dict.copy()
 
       self.log(logging.DEBUG, f"Got new image to process with id "
-                              f"{self._metadata['ImageUniqueID']}")
+                              f"{self.metadata['ImageUniqueID']}")
 
       # Copying the frame
-      np.copyto(self._img,
+      np.copyto(self.img,
                 np.frombuffer(self._img_array.get_obj(),
                               dtype=self._dtype).reshape(self._shape))
 

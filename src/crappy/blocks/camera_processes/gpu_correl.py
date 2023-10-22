@@ -176,16 +176,16 @@ class GPUCorrelProcess(CameraProcess):
     # given as an argument
     if not self._img0_set:
       self.log(logging.INFO, "Setting the reference image")
-      self._correl.set_img_size(self._img.shape)
-      self._correl.set_orig(self._img.astype(np.float32))
+      self._correl.set_img_size(self.img.shape)
+      self._correl.set_orig(self.img.astype(np.float32))
       self._correl.prepare()
       self._img0_set = True
       return
 
     # Performing the image correlation
     self.log(logging.DEBUG, "Processing the received image")
-    data = [self._metadata['t(s)'], self._metadata]
-    data += self._correl.get_disp(self._img.astype(np.float32)).tolist()
+    data = [self.metadata['t(s)'], self.metadata]
+    data += self._correl.get_disp(self.img.astype(np.float32)).tolist()
 
     # Calculating the residuals if requested
     if self._calc_res:

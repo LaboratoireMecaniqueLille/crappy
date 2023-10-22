@@ -153,18 +153,17 @@ class GPUVEProcess(CameraProcess):
     if not self._img0_set:
       self.log(logging.INFO, "Setting the reference image")
       for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
-        correl.set_orig(self._img[oy:oy + h,
-                        ox:ox + w].astype(np.float32))
+        correl.set_orig(self.img[oy:oy + h, ox:ox + w].astype(np.float32))
         correl.prepare()
       self._img0_set = True
       return
 
     # Performing the image correlation
     self.log(logging.DEBUG, "Processing the received image")
-    data = [self._metadata['t(s)'], self._metadata]
+    data = [self.metadata['t(s)'], self.metadata]
     for correl, (oy, ox, h, w) in zip(self._correls, self._patches):
       data.extend(correl.get_disp(
-        self._img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
+          self.img[oy:oy + h, ox:ox + w].astype(np.float32)).tolist())
 
     # Sending the data to downstream Blocks
     self.send(data)

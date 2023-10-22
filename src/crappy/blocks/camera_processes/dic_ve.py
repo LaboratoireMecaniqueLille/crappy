@@ -169,14 +169,14 @@ class DICVEProcess(CameraProcess):
         # On the first frame, initialize the correlation
         if not self._img0_set:
           self.log(logging.INFO, "Setting the reference image")
-          self._disve.set_img0(np.copy(self._img))
+          self._disve.set_img0(np.copy(self.img))
           self._img0_set = True
           return
 
         # Calculating the displacement and sending it to downstream Blocks
         self.log(logging.DEBUG, "Processing the received image")
-        data = self._disve.calculate_displacement(self._img)
-        self.send([self._metadata['t(s)'], self._metadata, *data])
+        data = self._disve.calculate_displacement(self.img)
+        self.send([self.metadata['t(s)'], self.metadata, *data])
 
         # Sending the patches to the Displayer for display
         self.send_to_draw(self._disve.patches)
