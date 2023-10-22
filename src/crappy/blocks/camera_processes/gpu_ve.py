@@ -82,19 +82,16 @@ class GPUVEProcess(CameraProcess):
 
     # Making a CUDA context common to all the patches
     pycuda.driver.init()
-    context = pycuda.tools.make_default_context()
+    self._context = pycuda.tools.make_default_context()
+    
+    # Arguments to pass to the GPUCorrelTools
+    self._verbose = verbose
+    self._kernel_file = kernel_file
+    self._iterations = iterations
+    self._ref_img = img_ref
+    self._mul = mul
 
-    self._gpu_ve_kw = dict(context=context,
-                           verbose=verbose,
-                           levels=1,
-                           resampling_factor=2,
-                           kernel_file=kernel_file,
-                           iterations=iterations,
-                           fields=['x', 'y'],
-                           ref_img=img_ref,
-                           mask=None,
-                           mul=mul)
-
+    # Other attributes
     self._correls: Optional[List[GPUCorrelTool]] = None
     self._patches = patches
     self._img_ref = img_ref
@@ -110,8 +107,17 @@ class GPUVEProcess(CameraProcess):
 
     # Instantiating the GPUCorrelTool instances
     self.log(logging.INFO, "Instantiating the GPUCorrel tool instances")
-    self._gpu_ve_kw.update(logger_name=self.name)
-    self._correls = [GPUCorrelTool(**self._gpu_ve_kw) for _ in self._patches]
+    self._correls = [GPUCorrelTool(logger_name=self.name,
+                                   context=self._context,
+                                   verbose=self._verbose,
+                                   levels=1,
+                                   resampling_factor=2,
+                                   kernel_file=self._kernel_file,
+                                   iterations=self._iterations,
+                                   fields=['x', 'y'],
+                                   ref_img=self._img_ref,
+                                   mask=None,
+                                   mul=self._mul) for _ in self._patches]
 
     # We can already set the sizes of the images as they are already known
     self.log(logging.INFO, "Setting the sizes of the patches")

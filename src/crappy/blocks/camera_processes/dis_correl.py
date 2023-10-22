@@ -99,17 +99,20 @@ class DISCorrelProcess(CameraProcess):
 
     super().__init__()
 
-    self._dis_correl_kw = dict(box=patch,
-                               fields=fields,
-                               alpha=alpha,
-                               delta=delta,
-                               gamma=gamma,
-                               finest_scale=finest_scale,
-                               init=init,
-                               iterations=iterations,
-                               gradient_iterations=gradient_iterations,
-                               patch_size=patch_size,
-                               patch_stride=patch_stride)
+    # Arguments to pass to the DISCorrelTool
+    self._box = patch
+    self._fields = fields
+    self._alpha = alpha
+    self._delta = delta
+    self._gamma = gamma
+    self._finest_scale = finest_scale
+    self._init = init
+    self._iterations = iterations
+    self._gradient_iterations = gradient_iterations
+    self._patch_size = patch_size
+    self._patch_stride = patch_stride
+    
+    # Other attributes
     self._residual = residual
     self._dis_correl: Optional[DISCorrelTool] = None
     self._img0_set = False
@@ -119,7 +122,18 @@ class DISCorrelProcess(CameraProcess):
     will perform the Dense Inverse Search."""
 
     self.log(logging.INFO, "Instantiating the Discorrel tool")
-    self._dis_correl = DISCorrelTool(**self._dis_correl_kw)
+    self._dis_correl = DISCorrelTool(
+        box=self._box,
+        fields=self._fields,
+        alpha=self._alpha,
+        delta=self._delta,
+        gamma=self._gamma,
+        finest_scale=self._finest_scale,
+        init=self._init,
+        iterations=self._iterations,
+        gradient_iterations=self._gradient_iterations,
+        patch_size=self._patch_size,
+        patch_stride=self._patch_stride)
     self._dis_correl.set_box()
 
   def loop(self) -> None:

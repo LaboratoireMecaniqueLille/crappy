@@ -114,17 +114,17 @@ class GPUCorrelProcess(CameraProcess):
 
     super().__init__()
 
-    self._gpu_correl_kw = dict(context=None,
-                               verbose=verbose,
-                               levels=levels,
-                               resampling_factor=resampling_factor,
-                               kernel_file=kernel_file,
-                               iterations=iterations,
-                               fields=fields,
-                               ref_img=img_ref,
-                               mask=mask,
-                               mul=mul)
+    # Arguments to pass to the GPUCorrelTool
+    self._verbose = verbose
+    self._levels = levels
+    self._resampling_factor = resampling_factor
+    self._kernel_file = kernel_file
+    self._iterations = iterations
+    self._fields = fields
+    self._mask = mask
+    self._mul = mul
 
+    # Other attributes
     self._correl: Optional[GPUCorrelTool] = None
     self._img_ref = img_ref
     self._img0_set = img_ref is not None
@@ -140,8 +140,17 @@ class GPUCorrelProcess(CameraProcess):
 
     # Instantiating the GPUCorrelTool
     self.log(logging.INFO, "Instantiating the GPUCorrel tool")
-    self._gpu_correl_kw.update(logger_name=self.name)
-    self._correl = GPUCorrelTool(**self._gpu_correl_kw)
+    self._correl = GPUCorrelTool(logger_name=self.name,
+                                 context=None,
+                                 verbose=self._verbose,
+                                 levels=self._levels,
+                                 resampling_factor=self._resampling_factor,
+                                 kernel_file=self._kernel_file,
+                                 iterations=self._iterations,
+                                 fields=self._fields,
+                                 ref_img=self._img_ref,
+                                 mask=self._mask,
+                                 mul=self._mul)
 
     # Setting the reference image if it was given as an argument
     if self._img_ref is not None:

@@ -113,19 +113,22 @@ class DICVEProcess(CameraProcess):
 
     super().__init__()
 
-    self._dic_ve_kw = dict(patches=patches,
-                           method=method,
-                           alpha=alpha,
-                           delta=delta,
-                           gamma=gamma,
-                           finest_scale=finest_scale,
-                           iterations=iterations,
-                           gradient_iterations=gradient_iterations,
-                           patch_size=patch_size,
-                           patch_stride=patch_stride,
-                           border=border,
-                           safe=safe,
-                           follow=follow)
+    # Arguments to pass to the DICVETool
+    self._patches = patches
+    self._method = method
+    self._alpha = alpha
+    self._delta = delta
+    self._gamma = gamma
+    self._finest_scale = finest_scale
+    self._iterations = iterations
+    self._gradient_iterations = gradient_iterations
+    self._patch_size = patch_size
+    self._patch_stride = patch_stride
+    self._border = border
+    self._safe = safe
+    self._follow = follow
+    
+    # Other attributes
     self._raise_on_exit = raise_on_exit
     self._disve: Optional[DICVETool] = None
     self._img0_set = False
@@ -136,7 +139,19 @@ class DICVEProcess(CameraProcess):
     will perform the image correlation."""
 
     self.log(logging.INFO, "Instantiating the Disve tool")
-    self._disve = DICVETool(**self._dic_ve_kw)
+    self._disve = DICVETool(patches=self._patches,
+                            method=self._method,
+                            alpha=self._alpha,
+                            delta=self._delta,
+                            gamma=self._gamma,
+                            finest_scale=self._finest_scale,
+                            iterations=self._iterations,
+                            gradient_iterations=self._gradient_iterations,
+                            patch_size=self._patch_size,
+                            patch_stride=self._patch_stride,
+                            border=self._border,
+                            safe=self._safe,
+                            follow=self._follow)
 
   def loop(self) -> None:
     """This method grabs the latest frame and gives it for processing to the
