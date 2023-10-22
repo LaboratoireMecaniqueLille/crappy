@@ -363,11 +363,11 @@ class DICVE(Camera):
       self._patches.save_length()
 
     # Instantiating the DICVEProcess
-    self._process_proc = DICVEProcess(log_queue=self._log_queue,
-                                      log_level=self._log_level,
-                                      display_freq=self.display_freq,
-                                      patches=self._patches,
-                                      **self._dic_ve_kw)
+    self.process_proc = DICVEProcess(log_queue=self._log_queue,
+                                     log_level=self._log_level,
+                                     display_freq=self.display_freq,
+                                     patches=self._patches,
+                                     **self._dic_ve_kw)
 
     super().prepare()
 

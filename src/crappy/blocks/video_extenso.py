@@ -297,7 +297,7 @@ class VideoExtenso(Camera):
     self._spot_detector = SpotsDetector(**self._detector_kw)
 
     # Instantiating the VideoExtensoProcess
-    self._process_proc = VideoExtensoProcess(
+    self.process_proc = VideoExtensoProcess(
       detector=self._spot_detector,
       log_queue=self._log_queue,
       log_level=self._log_level,

@@ -340,11 +340,11 @@ class DISCorrel(Camera):
       self._patch = Box()
 
     # Instantiating the DISCorrelProcess
-    self._process_proc = DISCorrelProcess(log_queue=self._log_queue,
-                                          log_level=self._log_level,
-                                          display_freq=self.display_freq,
-                                          patch=self._patch,
-                                          **self._dis_correl_kw)
+    self.process_proc = DISCorrelProcess(log_queue=self._log_queue,
+                                         log_level=self._log_level,
+                                         display_freq=self.display_freq,
+                                         patch=self._patch,
+                                         **self._dis_correl_kw)
 
     super().prepare()
 

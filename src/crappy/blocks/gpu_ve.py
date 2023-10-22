@@ -261,9 +261,9 @@ class GPUVE(Camera):
     """
 
     # Instantiating the GPUVEProcess
-    self._process_proc = GPUVEProcess(log_queue=self._log_queue,
-                                      log_level=self._log_level,
-                                      **self._gpu_ve_kw)
+    self.process_proc = GPUVEProcess(log_queue=self._log_queue,
+                                     log_level=self._log_level,
+                                     **self._gpu_ve_kw)
 
     super().prepare()
 

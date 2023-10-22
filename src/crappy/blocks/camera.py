@@ -194,7 +194,7 @@ class Camera(Block):
 
     self._save_proc: Optional[ImageSaver] = None
     self._display_proc: Optional[Displayer] = None
-    self._process_proc: Optional[CameraProcess] = None
+    self.process_proc: Optional[CameraProcess] = None
     self._manager: Optional[managers.SyncManager] = None
 
     self._camera: Optional[BaseCam] = None
@@ -273,8 +273,8 @@ class Camera(Block):
     If they did not stop in time, just terminates them.
     """
 
-    if self._process_proc is not None and self._process_proc.is_alive():
-      self._process_proc.terminate()
+    if self.process_proc is not None and self.process_proc.is_alive():
+      self.process_proc.terminate()
 
     if self._save_proc is not None and self._save_proc.is_alive():
       self._save_proc.terminate()
@@ -321,7 +321,7 @@ class Camera(Block):
                                      **self._display_proc_kw)
 
     # Creating the Barrier for the synchronization of the CameraProcesses
-    n_proc = sum(int(proc is not None) for proc in (self._process_proc,
+    n_proc = sum(int(proc is not None) for proc in (self.process_proc,
                                                     self._save_proc,
                                                     self._display_proc))
     if not n_proc:
@@ -384,24 +384,24 @@ class Camera(Block):
                               dtype=self._img_dtype).reshape(self._img_shape)
 
     # Starting the CameraProcess for image processing if it was instantiated
-    if self._process_proc is not None:
+    if self.process_proc is not None:
       self.log(logging.DEBUG, "Sharing the synchronization objects with the "
                               "image processing process")
       overlay_conn = (self._overlay_conn_in if self._display_proc is not None
                       else None)
       labels = self.labels if self.labels is not None else None
-      self._process_proc.set_shared(array=self._img_array,
-                                    data_dict=self._metadata,
-                                    lock=self._proc_lock,
-                                    barrier=self._cam_barrier,
-                                    event=self._stop_event_cam,
-                                    shape=self._img_shape,
-                                    dtype=self._img_dtype,
-                                    to_draw_conn=overlay_conn,
-                                    outputs=self.outputs,
-                                    labels=labels)
+      self.process_proc.set_shared(array=self._img_array,
+                                   data_dict=self._metadata,
+                                   lock=self._proc_lock,
+                                   barrier=self._cam_barrier,
+                                   event=self._stop_event_cam,
+                                   shape=self._img_shape,
+                                   dtype=self._img_dtype,
+                                   to_draw_conn=overlay_conn,
+                                   outputs=self.outputs,
+                                   labels=labels)
       self.log(logging.INFO, "Starting the image processing process")
-      self._process_proc.start()
+      self.process_proc.start()
 
     # Starting the ImageSaver CameraProcess if it was instantiated
     if self._save_proc is not None:
@@ -558,10 +558,10 @@ class Camera(Block):
       sleep(0.2)
 
     # If the processing CameraProcess is not done, terminating it
-    if self._process_proc is not None and self._process_proc.is_alive():
+    if self.process_proc is not None and self.process_proc.is_alive():
       self.log(logging.WARNING, "Image processing process not stopped, "
                                 "killing it !")
-      self._process_proc.terminate()
+      self.process_proc.terminate()
     # If the ImageSaver CameraProcess is not done, terminating it
     if self._save_proc is not None and self._save_proc.is_alive():
       self.log(logging.WARNING, "Image saver process not stopped, "
