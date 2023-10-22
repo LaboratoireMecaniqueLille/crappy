@@ -67,7 +67,7 @@ class GPUCorrelProcess(CameraProcess):
         this class.
       verbose: The verbose level as an integer, between `0` and `3`. At level
         `0` no information is displayed, and at level `3` so much information
-        is displayed that is slows the code down. This argument is passed to
+        is displayed that it slows the code down. This argument is passed to
         the :class:`~crappy.tool.image_processing.GPUCorrelTool` and not used
         in this class.
       levels: Number of levels of the pyramid. More levels may help converging
