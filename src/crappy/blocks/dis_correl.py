@@ -325,7 +325,7 @@ class DISCorrel(Camera):
     """This method mostly calls the :meth:`~crappy.blocks.Camera.prepare`
     method of the parent class.
 
-    In addition to that is instantiates the
+    In addition to that it instantiates the
     :class:`~crappy.blocks.camera_processes.DISCorrelProcess` object that
     performs the image correlation and the tracking.
     """
